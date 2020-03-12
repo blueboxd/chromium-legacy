@@ -67,6 +67,34 @@ TEST_F('CrSettingsCheckboxTest', 'All', function() {
 });
 
 /**
+ * Test fixture for
+ * chrome/browser/resources/settings/privacy_page/cookies_page.html
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsCookiesPageTest() {}
+
+CrSettingsCookiesPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/privacy_page/cookies_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_util.js',
+    '../test_browser_proxy.js',
+    'test_util.js',
+    'test_site_settings_prefs_browser_proxy.js',
+    'cookies_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsCookiesPageTest', 'All', function() {
+  mocha.run();
+});
+
+/**
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */

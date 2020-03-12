@@ -5,6 +5,7 @@
 #include "ui/views/layout/proposed_layout.h"
 
 #include <map>
+#include <string>
 
 #include "ui/gfx/animation/tween.h"
 

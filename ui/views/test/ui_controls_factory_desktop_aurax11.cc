@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/test/ui_controls_factory_desktop_aurax11.h"
+
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -112,11 +117,11 @@ class UIControlsDesktopX11 : public UIControlsAura {
     return true;
   }
 
-  bool SendMouseMove(long screen_x, long screen_y) override {
+  bool SendMouseMove(int screen_x, int screen_y) override {
     return SendMouseMoveNotifyWhenDone(screen_x, screen_y, base::OnceClosure());
   }
-  bool SendMouseMoveNotifyWhenDone(long screen_x,
-                                   long screen_y,
+  bool SendMouseMoveNotifyWhenDone(int screen_x,
+                                   int screen_y,
                                    base::OnceClosure closure) override {
     gfx::Point screen_location(screen_x, screen_y);
     gfx::Point root_location = screen_location;

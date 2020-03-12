@@ -194,6 +194,19 @@ TEST_F(BrowserSwitcherSitelistTest, ShouldMatchAnySchema) {
   EXPECT_FALSE(ShouldSwitch(GURL("https://reddit.com/r/pics")));
 }
 
+TEST_F(BrowserSwitcherSitelistTest, ShouldRedirectPort) {
+  Initialize(
+      {"//example.com", "//test.com:3000", "lol.com:3000", "trololo.com"}, {});
+  EXPECT_TRUE(ShouldSwitch(GURL("http://example.com:2000/something")));
+  EXPECT_TRUE(ShouldSwitch(GURL("http://test.com:3000/something")));
+  EXPECT_TRUE(ShouldSwitch(GURL("http://lol.com:3000/something")));
+  EXPECT_TRUE(ShouldSwitch(GURL("http://trololo.com/something")));
+  EXPECT_TRUE(ShouldSwitch(GURL("http://trololo.com:3000/something")));
+  EXPECT_FALSE(ShouldSwitch(GURL("http://test.com:2000/something")));
+  EXPECT_FALSE(ShouldSwitch(GURL("http://test.com:2000/something:3000")));
+  EXPECT_FALSE(ShouldSwitch(GURL("http://test.com/something:3000")));
+}
+
 TEST_F(BrowserSwitcherSitelistTest, ShouldPickUpPrefChanges) {
   Initialize({}, {});
   prefs_backend()->SetManagedPref(prefs::kUrlList,

@@ -4,6 +4,8 @@
 
 #include "ui/views/painter.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_delegate.h"

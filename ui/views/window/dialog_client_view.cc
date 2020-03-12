@@ -5,6 +5,9 @@
 #include "ui/views/window/dialog_client_view.h"
 
 #include <algorithm>
+#include <memory>
+#include <utility>
+#include <vector>
 
 #include "build/build_config.h"
 #include "ui/events/keycodes/keyboard_codes.h"

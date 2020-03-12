@@ -45,6 +45,12 @@ bool RecordHintsFetcherCoverage(content::NavigationHandle* navigation_handle) {
   return was_host_covered_by_fetch;
 }
 
+bool IsValidOptimizationGuideNavigation(
+    content::NavigationHandle* navigation_handle) {
+  return navigation_handle->IsInMainFrame() &&
+         navigation_handle->GetURL().SchemeIsHTTPOrHTTPS();
+}
+
 }  // namespace
 
 OptimizationGuideWebContentsObserver::OptimizationGuideWebContentsObserver(
@@ -69,21 +75,20 @@ OptimizationGuideNavigationData* OptimizationGuideWebContentsObserver::
   if (inflight_optimization_guide_navigation_datas_.find(navigation_id) ==
       inflight_optimization_guide_navigation_datas_.end()) {
     // We do not have one already - create one.
-    inflight_optimization_guide_navigation_datas_.emplace(
-        std::piecewise_construct, std::forward_as_tuple(navigation_id),
-        std::forward_as_tuple(navigation_id));
+    inflight_optimization_guide_navigation_datas_[navigation_id] =
+        std::make_unique<OptimizationGuideNavigationData>(navigation_id);
   }
 
   DCHECK(inflight_optimization_guide_navigation_datas_.find(navigation_id) !=
          inflight_optimization_guide_navigation_datas_.end());
-  return &(inflight_optimization_guide_navigation_datas_.find(navigation_id)
-               ->second);
+  return inflight_optimization_guide_navigation_datas_.find(navigation_id)
+      ->second.get();
 }
 
 void OptimizationGuideWebContentsObserver::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!navigation_handle->IsInMainFrame())
+  if (!IsValidOptimizationGuideNavigation(navigation_handle))
     return;
 
   content::WebContents* web_contents = navigation_handle->GetWebContents();
@@ -114,7 +119,7 @@ void OptimizationGuideWebContentsObserver::DidRedirectNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!navigation_handle->IsInMainFrame())
+  if (!IsValidOptimizationGuideNavigation(navigation_handle))
     return;
 
   // Record the HintsFetcher coverage for the navigation, regardless if the
@@ -137,6 +142,8 @@ void OptimizationGuideWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  if (!IsValidOptimizationGuideNavigation(navigation_handle))
+    return;
 
   // Delete Optimization Guide information later, so that other
   // DidFinishNavigation methods can reliably use
@@ -146,12 +153,12 @@ void OptimizationGuideWebContentsObserver::DidFinishNavigation(
   // etc.) might not have navigation data associated with them, but we reduce
   // likelihood of future leaks by always trying to remove the data.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&OptimizationGuideWebContentsObserver::
-                                    FlushMetricsAndNotifyNavigationFinish,
-                                weak_factory_.GetWeakPtr(),
-                                navigation_handle->GetNavigationId(),
-                                navigation_handle->GetRedirectChain(),
-                                navigation_handle->HasCommitted()));
+      FROM_HERE,
+      base::BindOnce(
+          &OptimizationGuideWebContentsObserver::NotifyNavigationFinish,
+          weak_factory_.GetWeakPtr(), navigation_handle->GetNavigationId(),
+          navigation_handle->GetRedirectChain(),
+          navigation_handle->HasCommitted()));
 
   if (!optimization_guide_keyed_service_)
     return;
@@ -162,11 +169,10 @@ void OptimizationGuideWebContentsObserver::DidFinishNavigation(
       WasHostCoveredByFetch(navigation_handle));
 }
 
-void OptimizationGuideWebContentsObserver::
-    FlushMetricsAndNotifyNavigationFinish(
-        int64_t navigation_id,
-        const std::vector<GURL>& navigation_redirect_chain,
-        bool has_committed) {
+void OptimizationGuideWebContentsObserver::NotifyNavigationFinish(
+    int64_t navigation_id,
+    const std::vector<GURL>& navigation_redirect_chain,
+    bool has_committed) {
   auto nav_data_iter =
       inflight_optimization_guide_navigation_datas_.find(navigation_id);
   if (nav_data_iter == inflight_optimization_guide_navigation_datas_.end())
@@ -174,11 +180,15 @@ void OptimizationGuideWebContentsObserver::
 
   if (optimization_guide_keyed_service_) {
     optimization_guide_keyed_service_->OnNavigationFinish(
-        navigation_redirect_chain, &nav_data_iter->second);
+        navigation_redirect_chain, nav_data_iter->second.get());
   }
+  nav_data_iter->second.get()->set_has_committed(has_committed);
 
-  (nav_data_iter->second).RecordMetrics(has_committed);
-
+  // We keep the last navigation data around to keep track of events happening
+  // for the navigation that can happen after commit, such as a fetch for the
+  // navigation successfully completing (which is not guaranteed to come back
+  // before commit, if at all).
+  last_navigation_data_ = std::move(nav_data_iter->second);
   inflight_optimization_guide_navigation_datas_.erase(navigation_id);
 }
 

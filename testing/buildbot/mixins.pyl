@@ -157,11 +157,26 @@
       },
     },
   },
+  'chrome-gold-service-account': {
+    'swarming': {
+      'service_account': 'chrome-gold@chops-service-accounts.iam.gserviceaccount.com',
+    },
+  },
+  'chrome-gpu-gold-service-account': {
+    'swarming': {
+      'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com',
+    },
+  },
   'chrome-swarming-pool': {
     'swarming': {
       'dimensions': {
         'pool': 'chrome.tests',
       },
+    },
+  },
+  'chrome-tester-service-account': {
+    'swarming': {
+      'service_account': 'chrome-tester@chops-service-accounts.iam.gserviceaccount.com',
     },
   },
   # TODO(crbug.com/812428): Remove this mixin after all test pools have migrated
@@ -171,6 +186,16 @@
       'dimensions': {
         'pool': 'chromium.tests.template',
       },
+    },
+  },
+  'chromium-tester-dev-service-account': {
+    'swarming': {
+      'service_account': 'chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com',
+    },
+  },
+  'chromium-tester-service-account': {
+    'swarming': {
+      'service_account': 'chromium-tester@chops-service-accounts.iam.gserviceaccount.com',
     },
   },
   'code-coverage': {

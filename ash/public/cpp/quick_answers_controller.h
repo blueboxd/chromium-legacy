@@ -31,13 +31,16 @@ class ASH_PUBLIC_EXPORT QuickAnswersController {
   virtual void SetClient(
       std::unique_ptr<chromeos::quick_answers::QuickAnswersClient> client) = 0;
 
-  // Initiate the quick answers view. |anchor_bounds| is the bounds of anchor
-  // view which is context menu. |title| is the text selected by the user.
-  virtual void CreateQuickAnswersView(const gfx::Rect& anchor_bounds,
-                                      const std::string& title) = 0;
+  // Show the quick-answers view (and/or any accompanying/associated views like
+  // user-consent view instead, if consent is not yet granted). |anchor_bounds|
+  // is the bounds of the anchor view (which is the context menu for browser).
+  // |title| is the text selected by the user.
+  virtual void MaybeShowQuickAnswers(const gfx::Rect& anchor_bounds,
+                                     const std::string& title) = 0;
 
-  // Dismiss the quick answers view.
-  virtual void DismissQuickAnswersView() = 0;
+  // Dismiss the quick-answers view (and/or any associated views like
+  // user-consent view) currently shown.
+  virtual void DismissQuickAnswers() = 0;
 
   virtual chromeos::quick_answers::QuickAnswersDelegate*
   GetQuickAnswersDelegate() = 0;

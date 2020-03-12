@@ -1041,6 +1041,90 @@ TEST_F(TouchEventConverterEvdevTest, PalmShouldCancelTouch) {
   EXPECT_EQ(1, ev2_4.slot);
 }
 
+TEST_F(TouchEventConverterEvdevTest, PalmWithDataAndFingerAfterStillCancelled) {
+  ui::MockTouchEventConverterEvdev* dev = device();
+
+  EventDeviceInfo devinfo;
+  EXPECT_TRUE(CapabilitiesToDeviceInfo(kLinkWithToolTypeTouchscreen, &devinfo));
+
+  timeval time = {1429651083, 686882};
+  // A regular sequence of events, but in the middle the touch in slot 0 is
+  // marked as a palm. Afterwards, the firmware continues reporting data about
+  // the touch, even marking it as a finger later. The intended behavior is that
+  // it is ignored.
+  struct input_event mock_kernel_queue_tool_palm[] = {
+      {time, EV_ABS, ABS_MT_SLOT, 0},
+      {time, EV_ABS, ABS_MT_TRACKING_ID, 2},
+      {time, EV_ABS, ABS_MT_TOOL_TYPE, MT_TOOL_FINGER},
+      {time, EV_ABS, ABS_MT_POSITION_X, 1003},
+      {time, EV_ABS, ABS_MT_POSITION_Y, 749},
+      {time, EV_ABS, ABS_MT_PRESSURE, 50},
+      {time, EV_ABS, ABS_MT_TOUCH_MAJOR, 116},
+      {time, EV_ABS, ABS_MT_SLOT, 1},
+      {time, EV_ABS, ABS_MT_TRACKING_ID, 3},
+      {time, EV_ABS, ABS_MT_TOOL_TYPE, MT_TOOL_FINGER},
+      {time, EV_ABS, ABS_MT_POSITION_X, 1103},
+      {time, EV_ABS, ABS_MT_POSITION_Y, 649},
+      {time, EV_ABS, ABS_MT_PRESSURE, 50},
+      {time, EV_ABS, ABS_MT_TOUCH_MAJOR, 116},
+      {time, EV_KEY, BTN_TOUCH, 1},
+      {time, EV_ABS, ABS_X, 1003},
+      {time, EV_ABS, ABS_Y, 749},
+      {time, EV_ABS, ABS_PRESSURE, 50},
+      {time, EV_SYN, SYN_REPORT, 0},
+      {time, EV_ABS, ABS_MT_SLOT, 0},
+      {time, EV_ABS, ABS_MT_TOOL_TYPE, MT_TOOL_PALM},
+      {time, EV_SYN, SYN_REPORT, 0},
+      {time, EV_ABS, ABS_MT_SLOT, 0},
+      {time, EV_ABS, ABS_MT_POSITION_X, 1005},
+      {time, EV_ABS, ABS_MT_POSITION_Y, 790},
+      {time, EV_ABS, ABS_MT_PRESSURE, 19},
+      {time, EV_ABS, ABS_MT_TOUCH_MAJOR, 90},
+      {time, EV_SYN, SYN_REPORT, 0},
+      {time, EV_ABS, ABS_MT_POSITION_X, 1055},
+      {time, EV_ABS, ABS_MT_POSITION_Y, 173},
+      {time, EV_ABS, ABS_MT_PRESSURE, 30},
+      {time, EV_ABS, ABS_MT_TOUCH_MAJOR, 45},
+      {time, EV_ABS, ABS_MT_TOOL_TYPE, MT_TOOL_FINGER},
+      {time, EV_SYN, SYN_REPORT, 0},
+      {time, EV_ABS, ABS_MT_TRACKING_ID, -1},
+      {time, EV_SYN, SYN_REPORT, 0},
+  };
+
+  // Set test now time to ensure above timestamps are in the past.
+  SetTestNowTime(time);
+
+  // Initialize the device.
+  dev->Initialize(devinfo);
+
+  dev->ConfigureReadMock(mock_kernel_queue_tool_palm,
+                         base::size(mock_kernel_queue_tool_palm), 0);
+  dev->ReadNow();
+  EXPECT_EQ(4u, size());
+
+  ui::TouchEventParams ev_1 = dispatched_touch_event(0);
+  EXPECT_EQ(ET_TOUCH_PRESSED, ev_1.type);
+  EXPECT_EQ(0, ev_1.slot);
+  EXPECT_EQ(1003, ev_1.location.x());
+  EXPECT_EQ(749, ev_1.location.y());
+
+  ui::TouchEventParams ev_2 = dispatched_touch_event(1);
+  EXPECT_EQ(ET_TOUCH_PRESSED, ev_2.type);
+  EXPECT_EQ(1, ev_2.slot);
+  EXPECT_EQ(1103, ev_2.location.x());
+  EXPECT_EQ(649, ev_2.location.y());
+
+  ui::TouchEventParams ev_3 = dispatched_touch_event(2);
+  EXPECT_EQ(ET_TOUCH_CANCELLED, ev_3.type);
+  EXPECT_EQ(0, ev_3.slot);
+
+  // We expect both touches to be cancelled even though
+  // just one reported MT_TOOL_PALM.
+  ui::TouchEventParams ev_4 = dispatched_touch_event(3);
+  EXPECT_EQ(ET_TOUCH_CANCELLED, ev_4.type);
+  EXPECT_EQ(1, ev_4.slot);
+}
+
 // crbug.com/773087
 TEST_F(TouchEventConverterEvdevTest, TrackingIdShouldNotResetCancelByPalm) {
   ui::MockTouchEventConverterEvdev* dev = device();

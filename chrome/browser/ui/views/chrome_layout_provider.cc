@@ -17,7 +17,6 @@ namespace {
 // respected (there's 3 * unit / 4 in use to express 12).
 // The Harmony layout unit. All distances are in terms of this unit.
 constexpr int kHarmonyLayoutUnit = 16;
-constexpr int kExtraSmallBubbleSize = 240;
 constexpr int kSmallSnapPoint = 320;
 constexpr int kMediumSnapPoint = 448;
 constexpr int kLargeSnapPoint = 512;
@@ -156,8 +155,6 @@ int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
       return kHarmonyLayoutUnit;
     case DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE:
       return kHarmonyLayoutUnit;
-    case DISTANCE_BUBBLE_TABSTRIP_PREFERRED_WIDTH:
-      return kExtraSmallBubbleSize;
     case DISTANCE_BUBBLE_PREFERRED_WIDTH:
       return kSmallSnapPoint;
     case DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH:

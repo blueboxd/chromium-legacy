@@ -40,6 +40,11 @@ namespace scheduler {
 namespace frame_scheduler_impl_unittest {
 
 using FeatureHandle = FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle;
+using PrioritisationType = MainThreadTaskQueue::QueueTraits::PrioritisationType;
+
+void AppendToVectorTestTask(Vector<String>* vector, String value) {
+  vector->push_back(std::move(value));
+}
 
 class FrameSchedulerDelegateForTesting : public FrameScheduler::Delegate {
  public:
@@ -124,6 +129,49 @@ class FrameSchedulerImplTest : public testing::Test {
     scheduler_->OnFirstContentfulPaint();
     ASSERT_EQ(scheduler_->main_thread_only().current_use_case,
               UseCase::kLoading);
+  }
+
+  // Helper for posting several tasks of specific prioritisation types for
+  // testing the relative order of tasks. |task_descriptor| is a string with
+  // space delimited task identifiers. The first letter of each task identifier
+  // specifies the prioritisation type:
+  // - 'R': Regular (normal priority)
+  // - 'V': Very high
+  // - 'B': Best-effort
+  // - 'D': Database
+  void PostTestTasksForPrioritisationType(Vector<String>* run_order,
+                                          const String& task_descriptor) {
+    std::istringstream stream(task_descriptor.Utf8());
+    PrioritisationType prioritisation_type;
+    while (!stream.eof()) {
+      std::string task;
+      stream >> task;
+      switch (task[0]) {
+        case 'R':
+          prioritisation_type = PrioritisationType::kRegular;
+          break;
+        case 'V':
+          prioritisation_type = PrioritisationType::kVeryHigh;
+          break;
+        case 'B':
+          prioritisation_type = PrioritisationType::kBestEffort;
+          break;
+        case 'D':
+          prioritisation_type = PrioritisationType::kExperimentalDatabase;
+          break;
+        default:
+          EXPECT_FALSE(true);
+          return;
+      }
+      auto queue_traits =
+          FrameSchedulerImpl::PausableTaskQueueTraits().SetPrioritisationType(
+              prioritisation_type);
+      GetTaskQueue(queue_traits)
+          ->task_runner()
+          ->PostTask(FROM_HERE,
+                     base::BindOnce(&AppendToVectorTestTask, run_order,
+                                    String::FromUTF8(task)));
+    }
   }
 
   static void ResetForNavigation(FrameSchedulerImpl* frame_scheduler) {
@@ -306,17 +354,8 @@ void IncrementCounter(int* counter) {
   ++*counter;
 }
 
-void ExpectAndIncrementCounter(int expected, int* actual) {
-  EXPECT_EQ(expected, *actual);
-  IncrementCounter(actual);
-}
-
 void RecordQueueName(String name, Vector<String>* tasks) {
   tasks->push_back(std::move(name));
-}
-
-void AppendToVectorTestTask(Vector<String>* vector, String value) {
-  vector->push_back(std::move(value));
 }
 
 // Simulate running a task of a particular length by fast forwarding the task
@@ -1795,37 +1834,11 @@ class FrameSchedulerImplDatabaseAccessWithoutHighPriority
 };
 
 TEST_F(FrameSchedulerImplDatabaseAccessWithoutHighPriority, QueueTraits) {
-  // These tests will start to fail if the default task queues or queue traits
-  // change for these task types.
-
-  int counter = 0;
-
-  auto loading_queue = GetTaskQueue(TaskType::kInternalContinueScriptLoading);
-  EXPECT_EQ(loading_queue->GetQueuePriority(),
-            TaskQueue::QueuePriority::kVeryHighPriority);
-  loading_queue->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&ExpectAndIncrementCounter, 0,
-                                base::Unretained(&counter)));
-
   auto da_queue = GetTaskQueue(TaskType::kDatabaseAccess);
   EXPECT_EQ(da_queue->GetQueueTraits().prioritisation_type,
             MainThreadTaskQueue::QueueTraits::PrioritisationType::kRegular);
   EXPECT_EQ(da_queue->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
-  da_queue->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&ExpectAndIncrementCounter, 1,
-                                base::Unretained(&counter)));
-
-  auto content_queue = GetTaskQueue(TaskType::kInternalContentCapture);
-  EXPECT_EQ(content_queue->GetQueuePriority(),
-            TaskQueue::QueuePriority::kBestEffortPriority);
-  content_queue->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&ExpectAndIncrementCounter, 2,
-                                base::Unretained(&counter)));
-
-  EXPECT_EQ(0, counter);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3, counter);
 }
 
 class FrameSchedulerImplDatabaseAccessWithHighPriority
@@ -1836,37 +1849,31 @@ class FrameSchedulerImplDatabaseAccessWithHighPriority
 };
 
 TEST_F(FrameSchedulerImplDatabaseAccessWithHighPriority, QueueTraits) {
-  // These tests will start to fail if the default task queues or queue traits
-  // change for these task types.
-
-  int counter = 0;
-
-  auto loading_queue = GetTaskQueue(TaskType::kInternalContinueScriptLoading);
-  EXPECT_EQ(loading_queue->GetQueuePriority(),
-            TaskQueue::QueuePriority::kVeryHighPriority);
-  loading_queue->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&ExpectAndIncrementCounter, 0,
-                                base::Unretained(&counter)));
-
   auto da_queue = GetTaskQueue(TaskType::kDatabaseAccess);
   EXPECT_EQ(da_queue->GetQueueTraits().prioritisation_type,
-            MainThreadTaskQueue::QueueTraits::PrioritisationType::kHigh);
+            MainThreadTaskQueue::QueueTraits::PrioritisationType::
+                kExperimentalDatabase);
   EXPECT_EQ(da_queue->GetQueuePriority(),
             TaskQueue::QueuePriority::kHighPriority);
-  da_queue->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&ExpectAndIncrementCounter, 1,
-                                base::Unretained(&counter)));
+}
 
-  auto pausable_queue = PausableTaskQueue();
-  EXPECT_EQ(pausable_queue->GetQueuePriority(),
-            TaskQueue::QueuePriority::kNormalPriority);
-  pausable_queue->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&ExpectAndIncrementCounter, 2,
-                                base::Unretained(&counter)));
+TEST_F(FrameSchedulerImplDatabaseAccessWithHighPriority, RunOrder) {
+  Vector<String> run_order;
+  PostTestTasksForPrioritisationType(&run_order, "D1 R1 D2 V1 B1");
 
-  EXPECT_EQ(0, counter);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3, counter);
+  EXPECT_THAT(run_order, testing::ElementsAre("V1", "D1", "D2", "R1", "B1"));
+}
+
+TEST_F(FrameSchedulerImplDatabaseAccessWithHighPriority,
+       NormalPriorityInBackground) {
+  page_scheduler_->SetPageVisible(false);
+
+  Vector<String> run_order;
+  PostTestTasksForPrioritisationType(&run_order, "D1 R1 D2 V1 B1");
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order, testing::ElementsAre("V1", "D1", "R1", "D2", "B1"));
 }
 
 TEST_F(FrameSchedulerImplTest, ContentCaptureHasIdleTaskQueue) {

@@ -26,7 +26,7 @@ enum BackgroundRenderMode {
 
 ScopedStyleContext GetTooltipContext() {
   return AppendCssNodeToStyleContext(
-      nullptr, GtkVersionCheck(3, 20) ? "#tooltip.background"
+      nullptr, GtkCheckVersion(3, 20) ? "#tooltip.background"
                                       : "GtkWindow#window.background.tooltip");
 }
 
@@ -117,13 +117,13 @@ base::Optional<SkColor> SkColorFromColorId(
     case ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor:
       return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem:disabled GtkLabel");
     case ui::NativeTheme::kColorId_MenuItemMinorTextColor:
-      if (GtkVersionCheck(3, 20)) {
+      if (GtkCheckVersion(3, 20)) {
         return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem #accelerator");
       }
       return GetFgColor(
           "GtkMenu#menu GtkMenuItem#menuitem GtkLabel.accelerator");
     case ui::NativeTheme::kColorId_MenuSeparatorColor:
-      if (GtkVersionCheck(3, 20)) {
+      if (GtkCheckVersion(3, 20)) {
         return GetSeparatorColor(
             "GtkMenu#menu GtkSeparator#separator.horizontal");
       }
@@ -158,10 +158,10 @@ base::Optional<SkColor> SkColorFromColorId(
     case ui::NativeTheme::kColorId_LabelSecondaryColor:
       return GetFgColor("GtkLabel:disabled");
     case ui::NativeTheme::kColorId_LabelTextSelectionColor:
-      return GetFgColor(GtkVersionCheck(3, 20) ? "GtkLabel #selection"
+      return GetFgColor(GtkCheckVersion(3, 20) ? "GtkLabel #selection"
                                                : "GtkLabel:selected");
     case ui::NativeTheme::kColorId_LabelTextSelectionBackgroundFocused:
-      return GetSelectionBgColor(GtkVersionCheck(3, 20) ? "GtkLabel #selection"
+      return GetSelectionBgColor(GtkCheckVersion(3, 20) ? "GtkLabel #selection"
                                                         : "GtkLabel:selected");
 
     // Link
@@ -171,11 +171,11 @@ base::Optional<SkColor> SkColorFromColorId(
                                      color_scheme),
           0xBB);
     case ui::NativeTheme::kColorId_LinkPressed:
-      if (GtkVersionCheck(3, 12))
+      if (GtkCheckVersion(3, 12))
         return GetFgColor("GtkLabel.link:link:hover:active");
       FALLTHROUGH;
     case ui::NativeTheme::kColorId_LinkEnabled: {
-      if (GtkVersionCheck(3, 12))
+      if (GtkCheckVersion(3, 12))
         return GetFgColor("GtkLabel.link:link");
 #if !GTK_CHECK_VERSION(3, 90, 0)
       auto link_context = GetStyleContextFromCss("GtkLabel.view");
@@ -263,7 +263,7 @@ base::Optional<SkColor> SkColorFromColorId(
     case ui::NativeTheme::kColorId_TabTitleColorInactive:
       return GetFgColor("GtkLabel:disabled");
     case ui::NativeTheme::kColorId_TabBottomBorder:
-      return GetBorderColor(GtkVersionCheck(3, 20) ? "GtkFrame#frame #border"
+      return GetBorderColor(GtkCheckVersion(3, 20) ? "GtkFrame#frame #border"
                                                    : "GtkFrame#frame");
     case ui::NativeTheme::kColorId_TabHighlightBackground:
       return GetBgColor("GtkNotebook#notebook #tab:checked");
@@ -272,27 +272,27 @@ base::Optional<SkColor> SkColorFromColorId(
 
     // Textfield
     case ui::NativeTheme::kColorId_TextfieldDefaultColor:
-      return GetFgColor(GtkVersionCheck(3, 20)
+      return GetFgColor(GtkCheckVersion(3, 20)
                             ? "GtkTextView#textview.view #text"
                             : "GtkTextView.view");
     case ui::NativeTheme::kColorId_TextfieldDefaultBackground:
-      return GetBgColor(GtkVersionCheck(3, 20) ? "GtkTextView#textview.view"
+      return GetBgColor(GtkCheckVersion(3, 20) ? "GtkTextView#textview.view"
                                                : "GtkTextView.view");
     case ui::NativeTheme::kColorId_TextfieldReadOnlyColor:
-      return GetFgColor(GtkVersionCheck(3, 20)
+      return GetFgColor(GtkCheckVersion(3, 20)
                             ? "GtkTextView#textview.view:disabled #text"
                             : "GtkTextView.view:disabled");
     case ui::NativeTheme::kColorId_TextfieldReadOnlyBackground:
-      return GetBgColor(GtkVersionCheck(3, 20)
+      return GetBgColor(GtkCheckVersion(3, 20)
                             ? "GtkTextView#textview.view:disabled"
                             : "GtkTextView.view:disabled");
     case ui::NativeTheme::kColorId_TextfieldSelectionColor:
-      return GetFgColor(GtkVersionCheck(3, 20)
+      return GetFgColor(GtkCheckVersion(3, 20)
                             ? "GtkTextView#textview.view #text #selection"
                             : "GtkTextView.view:selected");
     case ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused:
       return GetSelectionBgColor(
-          GtkVersionCheck(3, 20) ? "GtkTextView#textview.view #text #selection"
+          GtkCheckVersion(3, 20) ? "GtkTextView#textview.view #text #selection"
                                  : "GtkTextView.view:selected");
 
     // Tooltips
@@ -365,7 +365,7 @@ base::Optional<SkColor> SkColorFromColorId(
     }
 
     case ui::NativeTheme::kColorId_DefaultIconColor:
-      if (GtkVersionCheck(3, 20))
+      if (GtkCheckVersion(3, 20))
         return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem #radio");
       return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem.radio");
 
@@ -450,7 +450,7 @@ void NativeThemeGtk::OnThemeChanged(GtkSettings* settings,
   // cause black patches to be rendered on GtkFileChooser dialogs.
   std::string theme_name =
       GetGtkSettingsStringProperty(settings, "gtk-theme-name");
-  if (!GtkVersionCheck(3, 14)) {
+  if (!GtkCheckVersion(3, 14)) {
     if (theme_name == "Adwaita") {
       SetThemeCssOverride(GetCssProvider(
           "GtkFileChooser GtkPaned { background-color: @theme_bg_color; }"));
@@ -504,7 +504,7 @@ void NativeThemeGtk::PaintArrowButton(
     ColorScheme color_scheme,
     const ScrollbarArrowExtraParams& arrow) const {
   auto context = GetStyleContextFromCss(
-      GtkVersionCheck(3, 20)
+      GtkCheckVersion(3, 20)
           ? "GtkScrollbar#scrollbar #contents GtkButton#button"
           : "GtkRange.scrollbar.button");
   GtkStateFlags state_flags = StateToStateFlags(state);
@@ -540,7 +540,7 @@ void NativeThemeGtk::PaintScrollbarTrack(
     ColorScheme color_scheme) const {
   PaintWidget(
       canvas, rect,
-      GetStyleContextFromCss(GtkVersionCheck(3, 20)
+      GetStyleContextFromCss(GtkCheckVersion(3, 20)
                                  ? "GtkScrollbar#scrollbar #contents #trough"
                                  : "GtkScrollbar.scrollbar.trough"),
       BG_RENDER_NORMAL, true);
@@ -554,7 +554,7 @@ void NativeThemeGtk::PaintScrollbarThumb(
     NativeTheme::ScrollbarOverlayColorTheme theme,
     ColorScheme color_scheme) const {
   auto context = GetStyleContextFromCss(
-      GtkVersionCheck(3, 20)
+      GtkCheckVersion(3, 20)
           ? "GtkScrollbar#scrollbar #contents #trough #slider"
           : "GtkScrollbar.scrollbar.slider");
   gtk_style_context_set_state(context, StateToStateFlags(state));
@@ -566,7 +566,7 @@ void NativeThemeGtk::PaintScrollbarCorner(cc::PaintCanvas* canvas,
                                           const gfx::Rect& rect,
                                           ColorScheme color_scheme) const {
   auto context = GetStyleContextFromCss(
-      GtkVersionCheck(3, 19, 2)
+      GtkCheckVersion(3, 19, 2)
           ? "GtkScrolledWindow#scrolledwindow #junction"
           : "GtkScrolledWindow.scrolledwindow.scrollbars-junction");
   PaintWidget(canvas, rect, context, BG_RENDER_NORMAL, true);
@@ -619,7 +619,7 @@ void NativeThemeGtk::PaintMenuSeparator(
         return (rect.height() - separator_thickness) / 2;
     }
   };
-  if (GtkVersionCheck(3, 20)) {
+  if (GtkCheckVersion(3, 20)) {
     auto context = GetStyleContextFromCss(
         "GtkMenu#menu GtkSeparator#separator.horizontal");
     GtkBorder margin, border, padding;

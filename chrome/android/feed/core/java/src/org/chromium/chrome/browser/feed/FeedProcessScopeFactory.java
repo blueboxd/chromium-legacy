@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.feed.library.api.host.config.DebugBehavior;
 import org.chromium.chrome.browser.feed.library.api.host.network.NetworkClient;
 import org.chromium.chrome.browser.feed.library.api.host.storage.ContentStorageDirect;
 import org.chromium.chrome.browser.feed.library.api.host.storage.JournalStorageDirect;
+import org.chromium.chrome.browser.feed.library.common.time.SystemClockImpl;
 import org.chromium.chrome.browser.feed.tooltip.BasicTooltipSupportedApi;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
@@ -161,7 +162,7 @@ public class FeedProcessScopeFactory {
         NetworkClient networkClient =
                 sTestNetworkClient == null ? new FeedNetworkBridge(profile) : sTestNetworkClient;
 
-        sFeedLoggingBridge = new FeedLoggingBridge(profile);
+        sFeedLoggingBridge = new FeedLoggingBridge(profile, new SystemClockImpl());
 
         SequencedTaskRunner sequencedTaskRunner =
                 PostTask.createSequencedTaskRunner(TaskTraits.USER_VISIBLE_MAY_BLOCK);

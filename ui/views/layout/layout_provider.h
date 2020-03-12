@@ -161,10 +161,8 @@ class VIEWS_EXPORT LayoutProvider {
   gfx::Insets GetDialogInsetsForContentType(DialogContentType leading,
                                             DialogContentType trailing) const;
 
-  // TODO (https://crbug.com/822000): Possibly combine the following two
-  // functions into a single function returning a struct. Keeping them separate
-  // for now in case different emphasis is needed for different elements in the
-  // same context. Delete this TODO in Q4 2018.
+  // TODO(https://crbug.com/822000): Possibly combine the following two
+  // functions into a single function returning a struct.
 
   // Returns the corner radius specific to the given emphasis metric.
   virtual int GetCornerRadiusMetric(EmphasisMetric emphasis_metric,

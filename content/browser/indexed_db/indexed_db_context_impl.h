@@ -23,6 +23,7 @@
 #include "components/services/storage/public/mojom/indexed_db_control_test.mojom.h"
 #include "components/services/storage/public/mojom/native_file_system_context.mojom.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
+#include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -73,6 +74,9 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void Bind(mojo::PendingReceiver<storage::mojom::IndexedDBControl> control);
 
   // mojom::IndexedDBControl implementation:
+  void BindIndexedDB(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void GetUsage(GetUsageCallback usage_callback) override;
   void DeleteForOrigin(const url::Origin& origin,
                        DeleteForOriginCallback callback) override;
@@ -224,6 +228,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // Returns |origin_set_| (this context's in-memory cache of origins with
   // backing stores); the cache will be primed as needed by checking disk.
   std::set<url::Origin>* GetOriginSet();
+
+  IndexedDBDispatcherHost indexed_db_factory_;
 
   // Bound and accessed on the |idb_task_runner_|.
   mojo::Remote<storage::mojom::BlobStorageContext> blob_storage_context_;

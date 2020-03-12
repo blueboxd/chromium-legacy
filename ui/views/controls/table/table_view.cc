@@ -744,8 +744,9 @@ void TableView::OnPaintImpl(gfx::Canvas* canvas) {
   if (sort_on_paint_)
     SortItemsAndUpdateMapping(/*schedule_paint=*/false);
 
-  canvas->DrawColor(GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TableBackground));
+  const SkColor default_bg_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TableBackground);
+  canvas->DrawColor(default_bg_color);
 
   if (!GetRowCount() || visible_columns_.empty())
     return;
@@ -760,6 +761,8 @@ void TableView::OnPaintImpl(gfx::Canvas* canvas) {
       GetNativeTheme()->GetSystemColor(ui::NativeTheme::kColorId_TableText);
   const SkColor selected_fg_color =
       GetNativeTheme()->GetSystemColor(selected_text_color_id(HasFocus()));
+  const SkColor alternate_bg_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TableBackgroundAlternate);
   const int cell_margin = GetCellMargin();
   const int cell_element_spacing = GetCellElementSpacing();
   for (int i = region.min_row; i < region.max_row; ++i) {
@@ -767,6 +770,8 @@ void TableView::OnPaintImpl(gfx::Canvas* canvas) {
     const bool is_selected = selection_model_.IsSelected(model_index);
     if (is_selected)
       canvas->FillRect(GetRowBounds(i), selected_bg_color);
+    else if (alternate_bg_color != default_bg_color && (i % 2))
+      canvas->FillRect(GetRowBounds(i), alternate_bg_color);
     for (int j = region.min_column; j < region.max_column; ++j) {
       const gfx::Rect cell_bounds(GetCellBounds(i, j));
       int text_x = cell_margin + cell_bounds.x();

@@ -226,8 +226,8 @@ public final class ProcessScopeBuilder {
         FeedSessionManager feedSessionManager = fsmFactory.create();
         RequestManagerImpl clientRequestManager =
                 new RequestManagerImpl(feedRequestManager, feedSessionManager);
-        ActionManager actionManager = new FeedActionManagerImpl(
-                feedSessionManager, store, threadUtils, taskQueue, mainThreadRunner, mClock);
+        ActionManager actionManager = new FeedActionManagerImpl(feedSessionManager, store,
+                threadUtils, taskQueue, mainThreadRunner, mClock, mBasicLoggingApi);
 
         FeedKnownContent feedKnownContent =
                 new FeedKnownContentImpl(feedSessionManager, mainThreadRunner, threadUtils);

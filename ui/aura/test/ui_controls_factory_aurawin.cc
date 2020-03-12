@@ -55,12 +55,12 @@ class UIControlsWin : public UIControlsAura {
     return ui_controls::internal::SendKeyPressImpl(window, key, control, shift,
                                                    alt, std::move(task));
   }
-  bool SendMouseMove(long screen_x, long screen_y) override {
+  bool SendMouseMove(int screen_x, int screen_y) override {
     return ui_controls::internal::SendMouseMoveImpl(screen_x, screen_y,
                                                     base::OnceClosure());
   }
-  bool SendMouseMoveNotifyWhenDone(long screen_x,
-                                   long screen_y,
+  bool SendMouseMoveNotifyWhenDone(int screen_x,
+                                   int screen_y,
                                    base::OnceClosure task) override {
     return ui_controls::internal::SendMouseMoveImpl(screen_x, screen_y,
                                                     std::move(task));

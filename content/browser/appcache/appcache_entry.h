@@ -29,32 +29,17 @@ class AppCacheEntry {
     INTERCEPT = 1 << 5,
   };
 
-  AppCacheEntry()
-      : types_(0),
-        response_id_(blink::mojom::kAppCacheNoResponseId),
-        response_size_(0),
-        padding_size_(0) {}
-
-  explicit AppCacheEntry(int type)
-      : types_(type),
-        response_id_(blink::mojom::kAppCacheNoResponseId),
-        response_size_(0),
-        padding_size_(0) {}
-
-  AppCacheEntry(int type, int64_t response_id)
-      : types_(type),
-        response_id_(response_id),
-        response_size_(0),
-        padding_size_(0) {}
-
-  AppCacheEntry(int type,
-                int64_t response_id,
-                int64_t response_size,
-                int64_t padding_size)
+  explicit AppCacheEntry(
+      int type = 0,
+      int64_t response_id = blink::mojom::kAppCacheNoResponseId,
+      int64_t response_size = 0,
+      int64_t padding_size = 0,
+      base::Time token_expires = base::Time())
       : types_(type),
         response_id_(response_id),
         response_size_(response_size),
-        padding_size_(padding_size) {
+        padding_size_(padding_size),
+        token_expires_(token_expires) {
     DCHECK_GE(response_size, 0);
     DCHECK_GE(padding_size, 0);
 
@@ -106,11 +91,17 @@ class AppCacheEntry {
     padding_size_ = padding_size;
   }
 
+  base::Time token_expires() const { return token_expires_; }
+  void set_token_expires(base::Time expires) { token_expires_ = expires; }
+
  private:
   int types_;
   int64_t response_id_;
   int64_t response_size_;
   int64_t padding_size_;
+  // Origin Trial expiration time for this entry.
+  // This is base::Time() if this was never updated with an OT token.
+  base::Time token_expires_;
 };
 
 }  // namespace content

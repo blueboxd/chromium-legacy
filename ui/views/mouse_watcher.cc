@@ -4,6 +4,8 @@
 
 #include "ui/views/mouse_watcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"

@@ -47,11 +47,13 @@ bool PasswordStoreDefault::InitOnBackgroundSequence(
 
 void PasswordStoreDefault::ReportMetricsImpl(
     const std::string& sync_username,
-    bool custom_passphrase_sync_enabled) {
+    bool custom_passphrase_sync_enabled,
+    BulkCheckDone bulk_check_done) {
   if (!login_db_)
     return;
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
-  login_db_->ReportMetrics(sync_username, custom_passphrase_sync_enabled);
+  login_db_->ReportMetrics(sync_username, custom_passphrase_sync_enabled,
+                           bulk_check_done);
 }
 
 PasswordStoreChangeList PasswordStoreDefault::AddLoginImpl(

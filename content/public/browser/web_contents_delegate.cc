@@ -347,4 +347,8 @@ WebContents* WebContentsDelegate::GetResponsibleWebContents(
   return web_contents;
 }
 
+base::WeakPtr<WebContentsDelegate> WebContentsDelegate::GetDelegateWeakPtr() {
+  return nullptr;
+}
+
 }  // namespace content

@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/native_library.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
+#include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_posix_util.h"
 #include "gpu/vulkan/vulkan_surface.h"
@@ -168,17 +169,14 @@ bool VulkanImplementationGbm::CanImportGpuMemoryBuffer(
   return false;
 }
 
-bool VulkanImplementationGbm::CreateImageFromGpuMemoryHandle(
-    VkDevice vk_device,
+std::unique_ptr<gpu::VulkanImage>
+VulkanImplementationGbm::CreateImageFromGpuMemoryHandle(
+    gpu::VulkanDeviceQueue* device_queue,
     gfx::GpuMemoryBufferHandle gmb_handle,
     gfx::Size size,
-    VkImage* vk_image,
-    VkImageCreateInfo* vk_image_info,
-    VkDeviceMemory* vk_device_memory,
-    VkDeviceSize* mem_allocation_size,
-    base::Optional<gpu::VulkanYCbCrInfo>* ycbcr_info) {
+    VkFormat vk_formae) {
   NOTIMPLEMENTED();
-  return false;
+  return nullptr;
 }
 
 }  // namespace ui

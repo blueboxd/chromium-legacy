@@ -78,8 +78,12 @@ class PopupTracker : public content::WebContentsObserver,
 
   ui::ScopedVisibilityTracker visibility_tracker_;
 
-  // The number of user interactions occuring in this popup tab.
+  // The number of user interactions occurring in this popup tab.
   int num_interactions_ = 0;
+  // The number of user interacitons in a popup tab broken down into
+  // user activation and gesture scroll begin events.
+  int num_activation_events_ = 0;
+  int num_gesture_scroll_begin_events_ = 0;
 
   // The id of the web contents that created the popup at the time of creation.
   // SourceIds are permanent so it's okay to use at any point so long as it's

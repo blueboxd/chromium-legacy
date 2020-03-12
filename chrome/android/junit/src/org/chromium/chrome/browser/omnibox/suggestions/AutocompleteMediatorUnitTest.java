@@ -8,6 +8,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyObject;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -113,6 +114,7 @@ public class AutocompleteMediatorUnitTest {
 
     @Test
     @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP)
     public void updateSuggestionsList_showsAtLeast5Suggestions() {
         mMediator.onNativeInitialized();
 
@@ -127,6 +129,7 @@ public class AutocompleteMediatorUnitTest {
 
     @Test
     @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP)
     public void updateSuggestionsList_fillsInAvailableSpace() {
         mMediator.onNativeInitialized();
 
@@ -140,7 +143,10 @@ public class AutocompleteMediatorUnitTest {
     }
 
     @Test
-    @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @Features.DisableFeatures({
+        ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
+        ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP
+    })
     public void updateSuggestionsList_notEffectiveWhenDisabled() {
         mMediator.onNativeInitialized();
 
@@ -155,6 +161,7 @@ public class AutocompleteMediatorUnitTest {
 
     @Test
     @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP)
     public void updateSuggestionsList_worksWithNullList() {
         mMediator.onNativeInitialized();
 
@@ -169,6 +176,7 @@ public class AutocompleteMediatorUnitTest {
 
     @Test
     @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP)
     public void updateSuggestionsList_worksWithEmptyList() {
         mMediator.onNativeInitialized();
 
@@ -183,6 +191,7 @@ public class AutocompleteMediatorUnitTest {
 
     @Test
     @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP)
     public void updateSuggestionsList_reusesExistingSuggestionsWhenHinted() {
         mMediator.onNativeInitialized();
 
@@ -255,5 +264,78 @@ public class AutocompleteMediatorUnitTest {
         Assert.assertTrue(mMediator.setNewSuggestions(list2));
         // Changing from an empty list to populated list.
         Assert.assertTrue(mMediator.setNewSuggestions(list1));
+    }
+
+    @Test
+    @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP)
+    public void updateSuggestionsList_defersKeyboardPopupWhenHaveLotsOfSuggestionsToShow() {
+        mMediator.onNativeInitialized();
+        mMediator.signalPendingKeyboardShowDecision();
+        mMediator.onSuggestionsReceived(mSuggestionsList, "");
+        verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(false));
+        verify(mAutocompleteDelegate, never()).setKeyboardVisibility(eq(true));
+    }
+
+    @Test
+    @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP)
+    public void updateSuggestionsList_showsKeyboardWhenHaveFewSuggestionsToShow() {
+        mMediator.onNativeInitialized();
+        mMediator.signalPendingKeyboardShowDecision();
+        mMediator.onSuggestionsReceived(
+                mSuggestionsList.subList(0, MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW), "");
+        verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(true));
+        verify(mAutocompleteDelegate, never()).setKeyboardVisibility(eq(false));
+    }
+
+    @Test
+    @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP)
+    public void updateSuggestionsList_doesNotShowKeyboardAfterReceivingSubsequentSuggestionLists() {
+        mMediator.onNativeInitialized();
+        mMediator.signalPendingKeyboardShowDecision();
+        mMediator.onSuggestionsReceived(mSuggestionsList, "");
+        mMediator.onSuggestionsReceived(mSuggestionsList.subList(0, 1), "");
+        verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(false));
+        verify(mAutocompleteDelegate, never()).setKeyboardVisibility(eq(true));
+    }
+
+    @Test
+    @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP)
+    public void updateSuggestionsList_hidesKeyboardOnScrollWithLotsOfSuggestions() {
+        // It is quite important that we hide keyboard every time the user initiates scroll.
+        // The reason for this is that the keyboard could be requested by the user when they press
+        // the omnibox field. This is beyond our control.
+        mMediator.onNativeInitialized();
+        mMediator.signalPendingKeyboardShowDecision();
+        mMediator.onSuggestionsReceived(mSuggestionsList, "");
+        verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(false));
+        // Should request keyboard hide.
+        mMediator.onSuggestionListScroll();
+        verify(mAutocompleteDelegate, times(2)).setKeyboardVisibility(eq(false));
+        // Should also request keyboard hide.
+        mMediator.onSuggestionListScroll();
+        verify(mAutocompleteDelegate, times(3)).setKeyboardVisibility(eq(false));
+        verify(mAutocompleteDelegate, never()).setKeyboardVisibility(eq(true));
+    }
+
+    @Test
+    @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP)
+    public void updateSuggestionsList_retainsKeyboardOnScrollWithFewSuggestions() {
+        mMediator.onNativeInitialized();
+        mMediator.signalPendingKeyboardShowDecision();
+        mMediator.onSuggestionsReceived(
+                mSuggestionsList.subList(0, MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW), "");
+        verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(true));
+
+        // Should perform no action.
+        mMediator.onSuggestionListScroll();
+        // Should perform no action.
+        mMediator.onSuggestionListScroll();
+
+        verify(mAutocompleteDelegate, never()).setKeyboardVisibility(eq(false));
     }
 }

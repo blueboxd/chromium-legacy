@@ -61,8 +61,30 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest,
 
     bool played = false;
     EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-        browser->tab_strip_model()->GetActiveWebContents(), "attemptPlay();",
-        &played));
+        browser->tab_strip_model()->GetActiveWebContents(),
+        "attemptPlayVideo();", &played));
+    return played;
+  }
+
+  static bool SetupPageAndStartPlayingAudioOnly(Browser* browser,
+                                                const GURL& url) {
+    ui_test_utils::NavigateToURL(browser, url);
+
+    bool played = false;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        browser->tab_strip_model()->GetActiveWebContents(),
+        "attemptPlayAudioOnly();", &played));
+    return played;
+  }
+
+  static bool SetupPageAndStartPlayingVideoOnly(Browser* browser,
+                                                const GURL& url) {
+    ui_test_utils::NavigateToURL(browser, url);
+
+    bool played = false;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        browser->tab_strip_model()->GetActiveWebContents(),
+        "attemptPlayVideoOnly();", &played));
     return played;
   }
 
@@ -81,6 +103,14 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest,
   static bool FinishPlaying(Browser* browser) {
     return content::ExecuteScript(
         browser->tab_strip_model()->GetActiveWebContents(), "finishPlaying();");
+  }
+
+  static bool WaitForSignificantPlayback(Browser* browser) {
+    bool seeked = false;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        browser->tab_strip_model()->GetActiveWebContents(),
+        "waitForSignificantPlayback();", &seeked));
+    return seeked;
   }
 
   static std::vector<mojom::MediaHistoryPlaybackSessionRowPtr>
@@ -126,6 +156,36 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest,
 
     run_loop.Run();
     return stats_out;
+  }
+
+  static std::vector<mojom::MediaHistoryPlaybackRowPtr> GetPlaybacksSync(
+      MediaHistoryKeyedService* service) {
+    base::RunLoop run_loop;
+    std::vector<mojom::MediaHistoryPlaybackRowPtr> out;
+
+    service->GetMediaHistoryPlaybackRowsForDebug(base::BindLambdaForTesting(
+        [&](std::vector<mojom::MediaHistoryPlaybackRowPtr> playbacks) {
+          out = std::move(playbacks);
+          run_loop.Quit();
+        }));
+
+    run_loop.Run();
+    return out;
+  }
+
+  static std::vector<mojom::MediaHistoryOriginRowPtr> GetOriginsSync(
+      MediaHistoryKeyedService* service) {
+    base::RunLoop run_loop;
+    std::vector<mojom::MediaHistoryOriginRowPtr> out;
+
+    service->GetOriginRowsForDebug(base::BindLambdaForTesting(
+        [&](std::vector<mojom::MediaHistoryOriginRowPtr> origins) {
+          out = std::move(origins);
+          run_loop.Quit();
+        }));
+
+    run_loop.Run();
+    return out;
   }
 
   media_session::MediaMetadata GetExpectedMetadata() {
@@ -686,6 +746,205 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
   // The OTR service should have the same data.
   EXPECT_EQ(sessions,
             GetPlaybackSessionsSync(GetOTRMediaHistoryService(browser), 2));
+}
+
+IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, RecordWatchtime_AudioVideo) {
+  auto* browser = CreateBrowserFromParam();
+
+  // Start a page and wait for significant playback so we record watchtime.
+  EXPECT_TRUE(SetupPageAndStartPlaying(browser, GetTestURL()));
+  EXPECT_TRUE(WaitForSignificantPlayback(browser));
+  SimulateNavigationToCommit(browser);
+
+  {
+    auto playbacks = GetPlaybacksSync(GetMediaHistoryService(browser));
+    auto origins = GetOriginsSync(GetMediaHistoryService(browser));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(playbacks.empty());
+      EXPECT_TRUE(origins.empty());
+    } else {
+      EXPECT_EQ(1u, playbacks.size());
+      EXPECT_TRUE(playbacks[0]->has_audio);
+      EXPECT_TRUE(playbacks[0]->has_video);
+      EXPECT_EQ(GetTestURL(), playbacks[0]->url);
+      EXPECT_GE(base::TimeDelta::FromSeconds(7), playbacks[0]->watchtime);
+
+      EXPECT_EQ(1u, origins.size());
+      EXPECT_EQ(url::Origin::Create(GetTestURL()), origins[0]->origin);
+      EXPECT_EQ(playbacks[0]->watchtime,
+                origins[0]->cached_audio_video_watchtime);
+      EXPECT_EQ(playbacks[0]->watchtime,
+                origins[0]->actual_audio_video_watchtime);
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(playbacks, GetPlaybacksSync(GetOTRMediaHistoryService(browser)));
+    EXPECT_EQ(origins, GetOriginsSync(GetOTRMediaHistoryService(browser)));
+  }
+
+  // Start playing again.
+  EXPECT_TRUE(SetupPageAndStartPlaying(browser, GetTestURL()));
+  EXPECT_TRUE(WaitForSignificantPlayback(browser));
+  SimulateNavigationToCommit(browser);
+
+  {
+    auto playbacks = GetPlaybacksSync(GetMediaHistoryService(browser));
+    auto origins = GetOriginsSync(GetMediaHistoryService(browser));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(playbacks.empty());
+      EXPECT_TRUE(origins.empty());
+    } else {
+      EXPECT_EQ(2u, playbacks.size());
+
+      // Calculate the total watchtime across the playbacks.
+      base::TimeDelta total_time;
+      for (auto& playback : playbacks) {
+        EXPECT_EQ(GetTestURL(), playback->url);
+        total_time += playback->watchtime;
+      }
+
+      // The total aggregate watchtime should have increased.
+      EXPECT_EQ(1u, origins.size());
+      EXPECT_EQ(url::Origin::Create(GetTestURL()), origins[0]->origin);
+      EXPECT_EQ(total_time, origins[0]->cached_audio_video_watchtime);
+      EXPECT_EQ(total_time, origins[0]->actual_audio_video_watchtime);
+
+      // The OTR service should have the same data.
+      EXPECT_EQ(playbacks,
+                GetPlaybacksSync(GetOTRMediaHistoryService(browser)));
+      EXPECT_EQ(origins, GetOriginsSync(GetOTRMediaHistoryService(browser)));
+    }
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, RecordWatchtime_AudioOnly) {
+  auto* browser = CreateBrowserFromParam();
+
+  // Start a page and wait for significant playback so we record watchtime.
+  EXPECT_TRUE(SetupPageAndStartPlayingAudioOnly(browser, GetTestURL()));
+  EXPECT_TRUE(WaitForSignificantPlayback(browser));
+
+  SimulateNavigationToCommit(browser);
+
+  {
+    auto playbacks = GetPlaybacksSync(GetMediaHistoryService(browser));
+    auto origins = GetOriginsSync(GetMediaHistoryService(browser));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(playbacks.empty());
+      EXPECT_TRUE(origins.empty());
+    } else {
+      EXPECT_EQ(1u, playbacks.size());
+      EXPECT_TRUE(playbacks[0]->has_audio);
+      EXPECT_FALSE(playbacks[0]->has_video);
+      EXPECT_EQ(GetTestURL(), playbacks[0]->url);
+      EXPECT_GE(base::TimeDelta::FromSeconds(7), playbacks[0]->watchtime);
+
+      EXPECT_EQ(1u, origins.size());
+      EXPECT_EQ(url::Origin::Create(GetTestURL()), origins[0]->origin);
+      EXPECT_TRUE(origins[0]->cached_audio_video_watchtime.is_zero());
+      EXPECT_TRUE(origins[0]->actual_audio_video_watchtime.is_zero());
+
+      // The OTR service should have the same data.
+      EXPECT_EQ(playbacks,
+                GetPlaybacksSync(GetOTRMediaHistoryService(browser)));
+      EXPECT_EQ(origins, GetOriginsSync(GetOTRMediaHistoryService(browser)));
+    }
+  }
+
+  // Start playing again.
+  EXPECT_TRUE(SetupPageAndStartPlayingAudioOnly(browser, GetTestURL()));
+  EXPECT_TRUE(WaitForSignificantPlayback(browser));
+  SimulateNavigationToCommit(browser);
+
+  {
+    auto playbacks = GetPlaybacksSync(GetMediaHistoryService(browser));
+    auto origins = GetOriginsSync(GetMediaHistoryService(browser));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(playbacks.empty());
+      EXPECT_TRUE(origins.empty());
+    } else {
+      EXPECT_EQ(2u, playbacks.size());
+
+      // The total aggregate watchtime should not have increased..
+      EXPECT_EQ(1u, origins.size());
+      EXPECT_EQ(url::Origin::Create(GetTestURL()), origins[0]->origin);
+      EXPECT_TRUE(origins[0]->cached_audio_video_watchtime.is_zero());
+      EXPECT_TRUE(origins[0]->actual_audio_video_watchtime.is_zero());
+
+      // The OTR service should have the same data.
+      EXPECT_EQ(playbacks,
+                GetPlaybacksSync(GetOTRMediaHistoryService(browser)));
+      EXPECT_EQ(origins, GetOriginsSync(GetOTRMediaHistoryService(browser)));
+    }
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, RecordWatchtime_VideoOnly) {
+  auto* browser = CreateBrowserFromParam();
+
+  // Start a page and wait for significant playback so we record watchtime.
+  EXPECT_TRUE(SetupPageAndStartPlayingVideoOnly(browser, GetTestURL()));
+  EXPECT_TRUE(WaitForSignificantPlayback(browser));
+
+  SimulateNavigationToCommit(browser);
+
+  {
+    auto playbacks = GetPlaybacksSync(GetMediaHistoryService(browser));
+    auto origins = GetOriginsSync(GetMediaHistoryService(browser));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(playbacks.empty());
+      EXPECT_TRUE(origins.empty());
+    } else {
+      EXPECT_EQ(1u, playbacks.size());
+      EXPECT_FALSE(playbacks[0]->has_audio);
+      EXPECT_TRUE(playbacks[0]->has_video);
+      EXPECT_EQ(GetTestURL(), playbacks[0]->url);
+      EXPECT_GE(base::TimeDelta::FromSeconds(7), playbacks[0]->watchtime);
+
+      EXPECT_EQ(1u, origins.size());
+      EXPECT_EQ(url::Origin::Create(GetTestURL()), origins[0]->origin);
+      EXPECT_TRUE(origins[0]->cached_audio_video_watchtime.is_zero());
+      EXPECT_TRUE(origins[0]->actual_audio_video_watchtime.is_zero());
+
+      // The OTR service should have the same data.
+      EXPECT_EQ(playbacks,
+                GetPlaybacksSync(GetOTRMediaHistoryService(browser)));
+      EXPECT_EQ(origins, GetOriginsSync(GetOTRMediaHistoryService(browser)));
+    }
+  }
+
+  // Start playing again.
+  EXPECT_TRUE(SetupPageAndStartPlayingVideoOnly(browser, GetTestURL()));
+  EXPECT_TRUE(WaitForSignificantPlayback(browser));
+  SimulateNavigationToCommit(browser);
+
+  {
+    auto playbacks = GetPlaybacksSync(GetMediaHistoryService(browser));
+    auto origins = GetOriginsSync(GetMediaHistoryService(browser));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(playbacks.empty());
+      EXPECT_TRUE(origins.empty());
+    } else {
+      EXPECT_EQ(2u, playbacks.size());
+
+      // The total aggregate watchtime should not have increased.
+      EXPECT_EQ(1u, origins.size());
+      EXPECT_EQ(url::Origin::Create(GetTestURL()), origins[0]->origin);
+      EXPECT_TRUE(origins[0]->cached_audio_video_watchtime.is_zero());
+      EXPECT_TRUE(origins[0]->actual_audio_video_watchtime.is_zero());
+
+      // The OTR service should have the same data.
+      EXPECT_EQ(playbacks,
+                GetPlaybacksSync(GetOTRMediaHistoryService(browser)));
+      EXPECT_EQ(origins, GetOriginsSync(GetOTRMediaHistoryService(browser)));
+    }
+  }
 }
 
 }  // namespace media_history

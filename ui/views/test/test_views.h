@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_TEST_TEST_VIEWS_H_
 #define UI_VIEWS_TEST_TEST_VIEWS_H_
 
+#include <map>
 #include <memory>
 
 #include "base/macros.h"

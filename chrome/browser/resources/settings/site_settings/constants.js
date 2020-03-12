@@ -74,6 +74,18 @@ cr.define('settings', function() {
   };
 
   /**
+   * Possible preference settings for the profile.cookie_controls_mode pref.
+   * This should be kept in sync with the |CookieControlsMode| enum in
+   * components/content_settings/core/browser/cookie_settings.h
+   * @enum {number}
+   */
+  const CookieControlsMode = {
+    DISABLED: 0,
+    ENABLED: 1,
+    INCOGNITO_ONLY: 2,
+  };
+
+  /**
    * Contains the possible sources of a ContentSetting.
    * This should be kept in sync with the |SiteSettingSource| enum in
    * chrome/browser/ui/webui/site_settings_helper.h
@@ -171,6 +183,7 @@ cr.define('settings', function() {
     ChooserType,
     ContentSetting,
     ContentSettingsTypes,
+    CookieControlsMode,
     INVALID_CATEGORY_SUBTYPE,
     SITE_EXCEPTION_WILDCARD,
     SiteSettingSource,

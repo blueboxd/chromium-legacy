@@ -5,6 +5,10 @@
 #ifndef UI_VIEWS_TEST_UI_CONTROLS_FACTORY_DESKTOP_AURAX11_H_
 #define UI_VIEWS_TEST_UI_CONTROLS_FACTORY_DESKTOP_AURAX11_H_
 
+namespace ui_controls {
+class UIControlsAura;
+}
+
 namespace views {
 namespace test {
 

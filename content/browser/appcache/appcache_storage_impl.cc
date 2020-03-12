@@ -689,9 +689,12 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
 
   AppCacheDatabase::GroupRecord existing_group;
   success_ = database_->FindGroup(group_record_.group_id, &existing_group);
+  // TODO(enne): get correct token expires here.
+  base::Time token_expires;
   if (!success_) {
     group_record_.creation_time = base::Time::Now();
     group_record_.last_access_time = base::Time::Now();
+    group_record_.token_expires = base::Time();
     success_ = database_->InsertGroup(&group_record_);
   } else {
     DCHECK(group_record_.group_id == existing_group.group_id);
@@ -701,10 +704,11 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
     database_->UpdateLastAccessTime(group_record_.group_id,
                                     base::Time::Now());
 
-    database_->UpdateEvictionTimes(
-        group_record_.group_id,
-        group_record_.last_full_update_check_time,
-        group_record_.first_evictable_error_time);
+    group_record_.token_expires =
+        std::max(group_record_.token_expires, token_expires);
+    database_->UpdateEvictionTimesAndTokenExpires(
+        group_record_.group_id, group_record_.last_full_update_check_time,
+        group_record_.first_evictable_error_time, group_record_.token_expires);
 
     AppCacheDatabase::CacheRecord cache;
     if (database_->FindCacheForGroup(group_record_.group_id, &cache)) {
@@ -732,6 +736,8 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
       NOTREACHED() << "A existing group without a cache is unexpected";
     }
   }
+
+  cache_record_.token_expires = token_expires;
 
   success_ =
       success_ &&
@@ -1342,12 +1348,12 @@ class AppCacheStorageImpl::CommitLastAccessTimesTask
 class AppCacheStorageImpl::UpdateEvictionTimesTask
     : public DatabaseTask {
  public:
-  UpdateEvictionTimesTask(
-      AppCacheStorageImpl* storage, AppCacheGroup* group)
-      : DatabaseTask(storage), group_id_(group->group_id()),
+  UpdateEvictionTimesTask(AppCacheStorageImpl* storage, AppCacheGroup* group)
+      : DatabaseTask(storage),
+        group_id_(group->group_id()),
         last_full_update_check_time_(group->last_full_update_check_time()),
-        first_evictable_error_time_(group->first_evictable_error_time()) {
-  }
+        first_evictable_error_time_(group->first_evictable_error_time()),
+        token_expires_(group->token_expires()) {}
 
   // DatabaseTask:
   void Run() override;
@@ -1359,12 +1365,13 @@ class AppCacheStorageImpl::UpdateEvictionTimesTask
   int64_t group_id_;
   base::Time last_full_update_check_time_;
   base::Time first_evictable_error_time_;
+  base::Time token_expires_;
 };
 
 void AppCacheStorageImpl::UpdateEvictionTimesTask::Run() {
-  database_->UpdateEvictionTimes(group_id_,
-                                 last_full_update_check_time_,
-                                 first_evictable_error_time_);
+  database_->UpdateEvictionTimesAndTokenExpires(
+      group_id_, last_full_update_check_time_, first_evictable_error_time_,
+      token_expires_);
 }
 
 // AppCacheStorageImpl ---------------------------------------------------

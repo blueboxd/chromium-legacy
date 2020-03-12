@@ -9,4 +9,6 @@ namespace chromeos {
 const char kChromeUIPrintManagementHost[] = "print-management";
 const char kChromeUIPrintManagementAppUrl[] = "chrome://print-management";
 
+const char kChromeUIScanningHost[] = "scanning";
+
 }  // namespace chromeos

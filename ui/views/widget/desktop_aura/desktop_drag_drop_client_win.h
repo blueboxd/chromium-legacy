@@ -7,6 +7,8 @@
 
 #include <wrl/client.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

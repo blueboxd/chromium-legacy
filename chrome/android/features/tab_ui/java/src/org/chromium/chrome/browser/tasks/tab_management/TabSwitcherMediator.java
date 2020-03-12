@@ -31,7 +31,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -616,8 +615,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
      *  @return whether tabs should show in MRU order
      */
     static boolean isShowingTabsInMRUOrder() {
-        String feature =
-                CachedFeatureFlags.getValue(StartSurfaceConfiguration.START_SURFACE_VARIATION);
+        String feature = StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue();
         return TextUtils.equals(feature, "twopanes");
     }
 

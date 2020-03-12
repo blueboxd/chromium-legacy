@@ -1948,11 +1948,6 @@ StyleDifference LayoutObject::AdjustStyleDifference(
       diff.SetNeedsFullLayout();
   }
 
-  // TODO(wangxianzhu): We may avoid subtree paint invalidation on CSS clip
-  // change for CAP.
-  if (diff.CssClipChanged())
-    diff.SetNeedsPaintInvalidationSubtree();
-
   // Optimization: for decoration/color property changes, invalidation is only
   // needed if we have style or text affected by these properties.
   if (diff.TextDecorationOrColorChanged() &&

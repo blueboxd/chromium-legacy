@@ -466,7 +466,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   void OnActivateApp(BOOL active, DWORD thread_id);
   // TODO(beng): return BOOL is temporary until this object becomes a
   //             WindowImpl.
-  BOOL OnAppCommand(HWND window, short command, WORD device, int keystate);
+  BOOL OnAppCommand(HWND window, int command, WORD device, WORD keystate);
   void OnCancelMode();
   void OnCaptureChanged(HWND window);
   void OnClose();
@@ -713,11 +713,11 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // messages synthesized by Windows for touch which are not flagged by the OS
   // as synthesized mouse messages. For more information please refer to the
   // IsMouseEventFromTouch function.
-  static long last_touch_or_pen_message_time_;
+  static LONG last_touch_or_pen_message_time_;
 
   // Time the last WM_MOUSEHWHEEL message is received. Please refer to the
   // HandleMouseEventInternal function as to why this is needed.
-  long last_mouse_hwheel_time_;
+  LONG last_mouse_hwheel_time_;
 
   // On Windows Vista and beyond, if we are transitioning from custom frame
   // to Aero(glass) we delay setting the DWM related properties in full

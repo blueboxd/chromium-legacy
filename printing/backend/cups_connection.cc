@@ -106,12 +106,17 @@ std::vector<CupsPrinter> CupsConnection::GetDests() {
     return std::vector<CupsPrinter>();
   }
 
+  // On macOS, AirPrint destinations show up even if they're not added to the
+  // system, and their capabilities cannot be read in that situation
+  // (crbug.com/1027834). Therefore, only show discovered destinations that have
+  // been added locally. Also exclude fax and scanner devices.
+  constexpr cups_ptype_t kMask =
+      CUPS_PRINTER_FAX | CUPS_PRINTER_SCANNER | CUPS_PRINTER_DISCOVERED;
   DestinationEnumerator enumerator;
-  int success =
+  const int success =
       cupsEnumDests(CUPS_DEST_FLAGS_NONE, kTimeoutMs,
-                    nullptr,               // no cancel signal
-                    0,                     // all the printers
-                    CUPS_PRINTER_SCANNER,  // except the scanners
+                    /*cancel=*/nullptr,
+                    /*type=*/CUPS_PRINTER_LOCAL, kMask,
                     &DestinationEnumerator::cups_callback, &enumerator);
 
   if (!success) {

@@ -495,9 +495,10 @@ TEST_F(AppCacheDatabaseTest, GroupAccessAndEvictionTimes) {
   const base::Time kDayTwo = kDayOne + base::TimeDelta::FromDays(1);
 
   // See that the methods behave as expected with an empty db.
-  // To accomodate lazy updating, for consistency, none of them fail
+  // To accommodate lazy updating, for consistency, none of them fail
   // given ids not found in the db.
-  EXPECT_TRUE(db.UpdateEvictionTimes(1, kDayOne, kDayTwo));
+  EXPECT_TRUE(
+      db.UpdateEvictionTimesAndTokenExpires(1, kDayOne, kDayTwo, kDayTwo));
   EXPECT_TRUE(db.UpdateLastAccessTime(1, kDayOne));
   EXPECT_TRUE(db.CommitLazyLastAccessTimes());
   EXPECT_TRUE(db.LazyUpdateLastAccessTime(1, kDayTwo));
@@ -512,6 +513,7 @@ TEST_F(AppCacheDatabaseTest, GroupAccessAndEvictionTimes) {
   record.last_access_time = kDayOne;
   record.last_full_update_check_time = kDayOne;
   record.first_evictable_error_time = kDayOne;
+  record.token_expires = kDayOne;
   EXPECT_TRUE(db.InsertGroup(&record));
 
   // Verify the round trip.
@@ -520,15 +522,18 @@ TEST_F(AppCacheDatabaseTest, GroupAccessAndEvictionTimes) {
   EXPECT_EQ(kDayOne, record.last_access_time);
   EXPECT_EQ(kDayOne, record.last_full_update_check_time);
   EXPECT_EQ(kDayOne, record.first_evictable_error_time);
+  EXPECT_EQ(kDayOne, record.token_expires);
 
   // Update the times to DAY2 and verify.
-  EXPECT_TRUE(db.UpdateEvictionTimes(1, kDayTwo, kDayTwo));
+  EXPECT_TRUE(
+      db.UpdateEvictionTimesAndTokenExpires(1, kDayTwo, kDayTwo, kDayTwo));
   EXPECT_TRUE(db.UpdateLastAccessTime(1, kDayTwo));
   record = AppCacheDatabase::GroupRecord();
   EXPECT_TRUE(db.FindGroup(1, &record));
   EXPECT_EQ(kDayTwo, record.last_access_time);
   EXPECT_EQ(kDayTwo, record.last_full_update_check_time);
   EXPECT_EQ(kDayTwo, record.first_evictable_error_time);
+  EXPECT_EQ(kDayTwo, record.token_expires);
 
   // Lazy update back to DAY1 and verify its reflected without having committed.
   EXPECT_TRUE(db.lazy_last_access_times_.empty());
@@ -935,11 +940,11 @@ TEST_F(AppCacheDatabaseTest,
   EXPECT_TRUE(db.db_->DoesColumnExist("Entries", "padding_size"));
   EXPECT_TRUE(db.db_->DoesColumnExist("Caches", "manifest_parser_version"));
   EXPECT_TRUE(db.db_->DoesColumnExist("Caches", "manifest_scope"));
-  EXPECT_EQ(9, db.meta_table_->GetVersionNumber());
-  EXPECT_EQ(9, db.meta_table_->GetCompatibleVersionNumber());
+  EXPECT_EQ(10, db.meta_table_->GetVersionNumber());
+  EXPECT_EQ(10, db.meta_table_->GetCompatibleVersionNumber());
 }
 
-TEST_F(AppCacheDatabaseTest, UpgradeSchemaFrom7to9) {
+TEST_F(AppCacheDatabaseTest, UpgradeSchemaFrom7) {
   // Real file on disk for this test.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -967,9 +972,13 @@ TEST_F(AppCacheDatabaseTest, UpgradeSchemaFrom7to9) {
         "CREATE TABLE Caches(cache_id INTEGER PRIMARY KEY, group_id INTEGER)";
     static const char kCreateEntriesSql[] =
         "CREATE TABLE Entries(cache_id INTEGER, url TEXT, response_id INTEGER)";
+    static const char kCreateNamespacesSql[] =
+        "CREATE TABLE Namespaces(cache_id INTEGER, origin TEXT, type INTEGER,"
+        "namespace_url TEXT, target_url TEXT, is_pattern INTEGER)";
     EXPECT_TRUE(db.Execute(kCreateGroupsSql));
     EXPECT_TRUE(db.Execute(kCreateCachesSql));
     EXPECT_TRUE(db.Execute(kCreateEntriesSql));
+    EXPECT_TRUE(db.Execute(kCreateNamespacesSql));
 
     // Insert version 7 records (with 0 padding) to test the backfill.
     static const char kInsertGroupSql[] =
@@ -1019,7 +1028,7 @@ TEST_F(AppCacheDatabaseTest, UpgradeSchemaFrom7to9) {
   EXPECT_EQ(GetCacheManifestScope(db, 3), "/");
 }
 
-TEST_F(AppCacheDatabaseTest, UpgradeSchemaFrom8to9) {
+TEST_F(AppCacheDatabaseTest, UpgradeSchemaFrom8) {
   // Real file on disk for this test.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -1045,8 +1054,17 @@ TEST_F(AppCacheDatabaseTest, UpgradeSchemaFrom8to9) {
         "CREATE TABLE Groups(group_id INTEGER PRIMARY KEY, manifest_url TEXT)";
     static const char kCreateCachesSql[] =
         "CREATE TABLE Caches(cache_id INTEGER PRIMARY KEY, group_id INTEGER)";
+    static const char kCreateEntriesSql[] =
+        "CREATE TABLE Entries(cache_id INTEGER, url TEXT,"
+        "flags INTEGER, response_id INTEGER, response_size INTEGER,"
+        "padding_size INTEGER)";
+    static const char kCreateNamespacesSql[] =
+        "CREATE TABLE Namespaces(cache_id INTEGER, origin TEXT, type INTEGER,"
+        "namespace_url TEXT, target_url TEXT, is_pattern INTEGER)";
     EXPECT_TRUE(db.Execute(kCreateGroupsSql));
     EXPECT_TRUE(db.Execute(kCreateCachesSql));
+    EXPECT_TRUE(db.Execute(kCreateEntriesSql));
+    EXPECT_TRUE(db.Execute(kCreateNamespacesSql));
 
     // Insert a version 8 record to test the backfill.
     static const char kInsertGroupSql[] =
@@ -1072,6 +1090,102 @@ TEST_F(AppCacheDatabaseTest, UpgradeSchemaFrom8to9) {
   EXPECT_EQ(GetCacheManifestScope(db, 2), "/");
   EXPECT_EQ(GetCacheManifestParserVersion(db, 3), 0);
   EXPECT_EQ(GetCacheManifestScope(db, 3), "/");
+}
+
+TEST_F(AppCacheDatabaseTest, UpgradeSchemaFrom9) {
+  // Real file on disk for this test.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  const base::FilePath kDbFile =
+      temp_dir.GetPath().AppendASCII("upgrade9to10.db");
+
+  {
+    sql::Database db;
+    EXPECT_TRUE(db.Open(kDbFile));
+
+    sql::MetaTable meta_table;
+    EXPECT_TRUE(meta_table.Init(&db, 9, 9));
+
+    // Create a database with a table name that does not show up in the AppCache
+    // schema. Its persistence across the migration indicates that the migration
+    // did not nuke the database.
+    static const char kCreateUnusedTableSql[] =
+        "CREATE TABLE Unused(id INTEGER PRIMARY KEY)";
+    EXPECT_TRUE(db.Execute(kCreateUnusedTableSql));
+
+    static const char kCreateGroupsSql[] =
+        "CREATE TABLE Groups(group_id INTEGER PRIMARY KEY, origin TEXT,"
+        "manifest_url TEXT, creation_time INTEGER, last_access_time INTEGER,"
+        "last_full_update_check_time INTEGER,"
+        "first_evictalbe_error_time INTEGER)";
+    static const char kCreateCachesSql[] =
+        "CREATE TABLE Caches(cache_id INTEGER PRIMARY KEY, group_id INTEGER,"
+        "online_wildcard INTEGER, update_time INTEGER, cache_size INTEGER,"
+        "padding_size INTEGER, manifest_parser_version INTEGER,"
+        "manifest_scope TEXT)";
+    static const char kCreateEntriesSql[] =
+        "CREATE TABLE Entries(cache_id INTEGER, url TEXT,"
+        "flags INTEGER, response_id INTEGER, response_size INTEGER,"
+        "padding_size INTEGER)";
+    static const char kCreateNamespacesSql[] =
+        "CREATE TABLE Namespaces(cache_id INTEGER, origin TEXT, type INTEGER,"
+        "namespace_url TEXT, target_url TEXT, is_pattern INTEGER)";
+    EXPECT_TRUE(db.Execute(kCreateGroupsSql));
+    EXPECT_TRUE(db.Execute(kCreateCachesSql));
+    EXPECT_TRUE(db.Execute(kCreateEntriesSql));
+    EXPECT_TRUE(db.Execute(kCreateNamespacesSql));
+
+    static const char kInsertCacheSql[] =
+        "INSERT INTO Caches(cache_id, group_id) VALUES (1, 1)";
+    static const char kInsertGroupSql[] =
+        "INSERT INTO Groups (group_id, manifest_url) VALUES "
+        " (1, 'manifest_url')";
+    static const char kInsertEntrySql[] =
+        "INSERT INTO Entries (cache_id, url, response_id) VALUES (1, 'url', 1)";
+    static const char kInsertNamespaceSql[] =
+        "INSERT INTO Namespaces(cache_id, origin) VALUES (1, 'origin')";
+
+    EXPECT_TRUE(db.Execute(kInsertCacheSql));
+    EXPECT_TRUE(db.Execute(kInsertGroupSql));
+    EXPECT_TRUE(db.Execute(kInsertEntrySql));
+    EXPECT_TRUE(db.Execute(kInsertNamespaceSql));
+  }
+
+  AppCacheDatabase db(kDbFile);
+  EXPECT_TRUE(db.LazyOpen(/*create_if_needed=*/false));
+  EXPECT_TRUE(db.db_->DoesColumnExist("Unused", "id"));
+  EXPECT_TRUE(db.db_->DoesColumnExist("Caches", "token_expires"));
+  EXPECT_TRUE(db.db_->DoesColumnExist("Groups", "token_expires"));
+  EXPECT_TRUE(db.db_->DoesColumnExist("Entries", "token_expires"));
+  EXPECT_TRUE(db.db_->DoesColumnExist("Namespaces", "token_expires"));
+
+  static const char kFindCacheSql[] =
+      "SELECT token_expires FROM Entries WHERE cache_id = 1";
+  sql::Statement find_cache_statement(
+      db.db_->GetUniqueStatement(kFindCacheSql));
+  EXPECT_TRUE(find_cache_statement.Step());
+  EXPECT_EQ(0, find_cache_statement.ColumnInt64(0));
+
+  static const char kFindGroupSql[] =
+      "SELECT token_expires FROM Entries WHERE cache_id = 1";
+  sql::Statement find_group_statement(
+      db.db_->GetUniqueStatement(kFindGroupSql));
+  EXPECT_TRUE(find_group_statement.Step());
+  EXPECT_EQ(0, find_group_statement.ColumnInt64(0));
+
+  static const char kFindEntrySql[] =
+      "SELECT token_expires FROM Entries WHERE cache_id = 1";
+  sql::Statement find_entry_statement(
+      db.db_->GetUniqueStatement(kFindEntrySql));
+  EXPECT_TRUE(find_entry_statement.Step());
+  EXPECT_EQ(0, find_entry_statement.ColumnInt64(0));
+
+  static const char kFindNamespaceSql[] =
+      "SELECT token_expires FROM Namespaces WHERE cache_id = 1";
+  sql::Statement find_namespace_statement(
+      db.db_->GetUniqueStatement(kFindNamespaceSql));
+  EXPECT_TRUE(find_namespace_statement.Step());
+  EXPECT_EQ(0, find_namespace_statement.ColumnInt64(0));
 }
 
 }  // namespace content

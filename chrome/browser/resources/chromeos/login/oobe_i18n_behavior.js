@@ -30,7 +30,7 @@ const OobeI18nBehaviorImpl = {
   },
 
   i18nUpdateLocale() {
-    // TODO(crbug.com/893934): move i18nUpdateLocale from I18nBehavior to this
+    // TODO(crbug.com/955194): move i18nUpdateLocale from I18nBehavior to this
     // class.
     I18nBehavior.i18nUpdateLocale.call(this);
     var matches = Polymer.dom(this.root).querySelectorAll('.i18n-dynamic');

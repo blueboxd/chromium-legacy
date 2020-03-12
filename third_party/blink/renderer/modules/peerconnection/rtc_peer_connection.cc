@@ -3225,9 +3225,6 @@ void RTCPeerConnection::ChangeSignalingState(
   if (signaling_state_ !=
       webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     signaling_state_ = signaling_state;
-    if (closed_) {
-      return;
-    }
     Event* event = Event::Create(event_type_names::kSignalingstatechange);
     if (dispatch_event_immediately)
       DispatchEvent(*event);

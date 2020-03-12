@@ -300,7 +300,8 @@ void RealTimeUrlLookupService::MayBeCacheRealTimeUrlVerdict(
   }
 }
 
-bool RealTimeUrlLookupService::CanCheckUrl(const GURL& url) const {
+// static
+bool RealTimeUrlLookupService::CanCheckUrl(const GURL& url) {
   if (!url.SchemeIsHTTPOrHTTPS()) {
     return false;
   }

@@ -44,10 +44,14 @@ class StartSurfaceToolbarCoordinator {
                         .with(StartSurfaceToolbarProperties.IS_VISIBLE, true)
                         .build();
 
-        mToolbarMediator = new StartSurfaceToolbarMediator(mPropertyModel, identityDiscController,
-                (iphCommandBuilder)
-                        -> userEducationHelper.requestShowIPH(
-                                iphCommandBuilder.setAnchorView(mView).build()));
+        mToolbarMediator = new StartSurfaceToolbarMediator(
+                mPropertyModel, identityDiscController, (iphCommandBuilder) -> {
+                    // TODO(crbug.com/865801): Replace the null check with an assert after fixing or
+                    // removing the ShareButtonControllerTest that necessitated it.
+                    if (mView == null) return;
+                    userEducationHelper.requestShowIPH(
+                            iphCommandBuilder.setAnchorView(mView.getIdentityDiscView()).build());
+                });
     }
 
     /**

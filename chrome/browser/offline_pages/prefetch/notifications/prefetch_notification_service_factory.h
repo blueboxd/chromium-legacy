@@ -18,13 +18,15 @@ struct DefaultSingletonTraits;
 }  // namespace base
 
 namespace offline_pages {
+namespace prefetch {
 class PrefetchNotificationService;
+}  // namespace prefetch
 }  // namespace offline_pages
 
 class PrefetchNotificationServiceFactory : public SimpleKeyedServiceFactory {
  public:
   static PrefetchNotificationServiceFactory* GetInstance();
-  static offline_pages::PrefetchNotificationService* GetForKey(
+  static offline_pages::prefetch::PrefetchNotificationService* GetForKey(
       SimpleFactoryKey* key);
 
  private:

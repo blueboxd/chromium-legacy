@@ -55,7 +55,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"
@@ -105,7 +106,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"
@@ -142,7 +144,8 @@
               "cpu": "x86-64",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests"
@@ -164,7 +167,8 @@
               "cpu": "x86-64",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests_apprtc",
         "test_target": "//chrome/test:browser_tests_apprtc"
@@ -184,7 +188,8 @@
               "cpu": "x86-64",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"
@@ -208,7 +213,8 @@
               "cpu": "x86-64",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"
@@ -228,7 +234,8 @@
               "cpu": "x86-64",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -245,7 +252,8 @@
               "cpu": "x86-64",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "jingle_unittests",
         "test_target": "//jingle:jingle_unittests"
@@ -265,7 +273,8 @@
               "cpu": "x86-64",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "remoting_unittests",
         "test_target": "//remoting:remoting_unittests"
@@ -302,7 +311,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.12.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests"
@@ -324,7 +334,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.12.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests_apprtc",
         "test_target": "//chrome/test:browser_tests_apprtc"
@@ -344,7 +355,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.12.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"
@@ -368,7 +380,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.12.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"
@@ -388,7 +401,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.12.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -405,7 +419,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.12.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "jingle_unittests",
         "test_target": "//jingle:jingle_unittests"
@@ -425,7 +440,8 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.12.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "remoting_unittests",
         "test_target": "//remoting:remoting_unittests"
@@ -462,7 +478,8 @@
               "cpu": "x86-64",
               "os": "Windows-10-15063"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests"
@@ -484,7 +501,8 @@
               "cpu": "x86-64",
               "os": "Windows-10-15063"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests_apprtc",
         "test_target": "//chrome/test:browser_tests_apprtc"
@@ -504,7 +522,8 @@
               "cpu": "x86-64",
               "os": "Windows-10-15063"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"
@@ -528,7 +547,8 @@
               "cpu": "x86-64",
               "os": "Windows-10-15063"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"
@@ -548,7 +568,8 @@
               "cpu": "x86-64",
               "os": "Windows-10-15063"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -565,7 +586,8 @@
               "cpu": "x86-64",
               "os": "Windows-10-15063"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "jingle_unittests",
         "test_target": "//jingle:jingle_unittests"
@@ -585,7 +607,8 @@
               "cpu": "x86-64",
               "os": "Windows-10-15063"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "remoting_unittests",
         "test_target": "//remoting:remoting_unittests"
@@ -612,7 +635,8 @@
               "cpu": "x86-64",
               "os": "Windows-7-SP1"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests"
@@ -634,7 +658,8 @@
               "cpu": "x86-64",
               "os": "Windows-7-SP1"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests_apprtc",
         "test_target": "//chrome/test:browser_tests_apprtc"
@@ -654,7 +679,8 @@
               "cpu": "x86-64",
               "os": "Windows-7-SP1"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"
@@ -678,7 +704,8 @@
               "cpu": "x86-64",
               "os": "Windows-7-SP1"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"
@@ -698,7 +725,8 @@
               "cpu": "x86-64",
               "os": "Windows-7-SP1"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -715,7 +743,8 @@
               "cpu": "x86-64",
               "os": "Windows-7-SP1"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "jingle_unittests",
         "test_target": "//jingle:jingle_unittests"
@@ -735,7 +764,8 @@
               "cpu": "x86-64",
               "os": "Windows-7-SP1"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "remoting_unittests",
         "test_target": "//remoting:remoting_unittests"
@@ -762,7 +792,8 @@
               "cpu": "x86-64",
               "os": "Windows-8.1-SP0"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests"
@@ -784,7 +815,8 @@
               "cpu": "x86-64",
               "os": "Windows-8.1-SP0"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests_apprtc",
         "test_target": "//chrome/test:browser_tests_apprtc"
@@ -804,7 +836,8 @@
               "cpu": "x86-64",
               "os": "Windows-8.1-SP0"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"
@@ -828,7 +861,8 @@
               "cpu": "x86-64",
               "os": "Windows-8.1-SP0"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"
@@ -848,7 +882,8 @@
               "cpu": "x86-64",
               "os": "Windows-8.1-SP0"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -865,7 +900,8 @@
               "cpu": "x86-64",
               "os": "Windows-8.1-SP0"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "jingle_unittests",
         "test_target": "//jingle:jingle_unittests"
@@ -885,7 +921,8 @@
               "cpu": "x86-64",
               "os": "Windows-8.1-SP0"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "remoting_unittests",
         "test_target": "//remoting:remoting_unittests"

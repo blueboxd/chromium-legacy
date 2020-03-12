@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Wed, 26 Feb 2020 14:58:14 -0800
-Subject: [PATCH 5/5] Remove NEVER() macro
+Subject: [PATCH 5/6] Remove NEVER() macro
 
 Backports https://www.sqlite.org/src/info/ee034fe916448e95
 
@@ -24,5 +24,5 @@ index ccc8bcc6e691..9b2cbdfc8e10 100644
          }
          if( iFree2 ){
 -- 
-2.25.0.265.gbab2e86ba0-goog
+2.25.1.481.gfbce0eb801-goog
 

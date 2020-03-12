@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.feed.FeedAppLifecycle.AppLifecycleEvent;
 import org.chromium.chrome.browser.feed.library.api.client.lifecycle.AppLifecycleListener;
 import org.chromium.chrome.browser.feed.library.api.host.network.NetworkClient;
+import org.chromium.chrome.browser.feed.library.common.time.testing.FakeClock;
 import org.chromium.chrome.browser.feed.library.hostimpl.storage.testing.InMemoryContentStorage;
 import org.chromium.chrome.browser.feed.library.hostimpl.storage.testing.InMemoryJournalStorage;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -110,8 +111,9 @@ public class FeedAppLifecycleTest {
             mAppLifecycle =
                     new FeedAppLifecycle(mAppLifecycleListener, mLifecycleBridge, mFeedScheduler);
             FeedProcessScopeFactory.createFeedProcessScopeForTesting(mFeedScheduler, mNetworkClient,
-                    mOfflineIndicator, mAppLifecycle, new FeedLoggingBridge(profile),
-                    new InMemoryContentStorage(), new InMemoryJournalStorage());
+                    mOfflineIndicator, mAppLifecycle,
+                    new FeedLoggingBridge(profile, new FakeClock()), new InMemoryContentStorage(),
+                    new InMemoryJournalStorage());
         });
 
         mActivityTestRule.startMainActivityOnBlankPage();

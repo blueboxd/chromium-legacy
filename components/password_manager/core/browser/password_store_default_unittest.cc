@@ -23,6 +23,7 @@
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store_origin_unittest.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -99,6 +100,7 @@ class PasswordStoreDefaultTestDelegate {
 
   base::test::TaskEnvironment task_environment_{base::test::TaskEnvironment::MainThreadType::UI};
   base::ScopedTempDir temp_dir_;
+  TestingPrefServiceSimple prefs_;
   scoped_refptr<PasswordStoreDefault> store_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreDefaultTestDelegate);
@@ -142,7 +144,7 @@ PasswordStoreDefaultTestDelegate::CreateInitializedStore(
     std::unique_ptr<LoginDatabase> database) {
   scoped_refptr<PasswordStoreDefault> store(
       new PasswordStoreDefault(std::move(database)));
-  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+  store->Init(syncer::SyncableService::StartSyncFlare(), &prefs_);
 
   return store;
 }

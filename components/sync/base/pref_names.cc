@@ -28,6 +28,10 @@ const char kSyncFirstSetupComplete[] = "sync.has_setup_completed";
 const char kSyncKeepEverythingSynced[] = "sync.keep_everything_synced";
 
 #if defined(OS_CHROMEOS)
+// Boolean pref that records whether OS sync preferences were migrated due to
+// SplitSettingsSync rollout.
+const char kOsSyncPrefsMigrated[] = "sync.os_sync_prefs_migrated";
+
 // Boolean indicating that the user has enabled the Chrome OS system-setting
 // sync feature.
 const char kOsSyncFeatureEnabled[] = "sync.os_sync_feature_enabled";

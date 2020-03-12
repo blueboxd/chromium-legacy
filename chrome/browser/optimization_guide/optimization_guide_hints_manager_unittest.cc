@@ -2228,17 +2228,16 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   InitializeWithDefaultConfig("1.0.0.0");
 
-  // Set ECT estimate so hint is activated.
+  // Set ECT estimate so fetch is activated.
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           url_without_hints());
-  base::RunLoop run_loop;
   base::HistogramTester histogram_tester;
   hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
-                                               run_loop.QuitClosure());
-  run_loop.Run();
+                                               base::DoNothing());
+  RunUntilIdle();
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1, 1);
   histogram_tester.ExpectUniqueSample(
@@ -2269,7 +2268,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
       BuildTestHintsFetcherFactory(
           {HintsFetcherEndState::kFetchSuccessWithURLHints}));
 
-  // Set ECT estimate so hint is activated.
+  // Set ECT estimate so fetch is activated.
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
@@ -2332,6 +2331,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
     EXPECT_TRUE(navigation_data->has_hint_before_commit().value());
     EXPECT_FALSE(navigation_data->was_hint_for_host_attempted_to_be_fetched()
                      .has_value());
+    EXPECT_TRUE(navigation_data->hints_fetch_latency().has_value());
 
     histogram_tester.ExpectBucketCount(
         "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus",
@@ -2355,6 +2355,12 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
         optimization_guide::RaceNavigationFetchAttemptStatus::
             kRaceNavigationFetchNotAttempted,
         1);
+
+    // Make sure navigation data is populated correctly.
+    OptimizationGuideNavigationData* navigation_data =
+        OptimizationGuideNavigationData::GetFromNavigationHandle(
+            navigation_handle.get());
+    EXPECT_FALSE(navigation_data->hints_fetch_latency().has_value());
   }
 }
 
@@ -2379,10 +2385,9 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
         CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
             url_without_hints());
 
-    base::RunLoop run_loop;
     hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
-                                                 run_loop.QuitClosure());
-    run_loop.Run();
+                                                 base::DoNothing());
+    RunUntilIdle();
     histogram_tester.ExpectTotalCount(
         "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
 
@@ -2392,6 +2397,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
             navigation_handle.get());
     EXPECT_TRUE(navigation_data->was_hint_for_host_attempted_to_be_fetched()
                     .has_value());
+    EXPECT_TRUE(navigation_data->hints_fetch_latency().has_value());
 
     histogram_tester.ExpectBucketCount(
         "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus",
@@ -2418,6 +2424,10 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
         optimization_guide::RaceNavigationFetchAttemptStatus::
             kRaceNavigationFetchHost,
         1);
+    OptimizationGuideNavigationData* navigation_data =
+        OptimizationGuideNavigationData::GetFromNavigationHandle(
+            navigation_handle.get());
+    EXPECT_TRUE(navigation_data->hints_fetch_latency().has_value());
   }
 }
 
@@ -2429,17 +2439,16 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   InitializeWithDefaultConfig("1.0.0.0");
 
-  // Set ECT estimate so hint is activated.
+  // Set ECT estimate so fetch is activated.
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           url_without_hints());
   base::HistogramTester histogram_tester;
-  base::RunLoop run_loop;
   hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
-                                               run_loop.QuitClosure());
-  run_loop.Run();
+                                               base::DoNothing());
+  RunUntilIdle();
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
   // Make sure navigation data is populated correctly.
@@ -2449,6 +2458,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   EXPECT_FALSE(navigation_data->has_hint_before_commit().value());
   EXPECT_FALSE(
       navigation_data->was_hint_for_host_attempted_to_be_fetched().has_value());
+  EXPECT_FALSE(navigation_data->hints_fetch_latency().has_value());
 
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus", 0);

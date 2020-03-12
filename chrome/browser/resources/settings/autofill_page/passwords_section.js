@@ -97,6 +97,18 @@ Polymer({
     haveCheckedPasswordsBefore_: Boolean,
 
     /** @private */
+    hasLeakedCredentials_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * The number of compromised passwords as a formatted string.
+     * @private
+     */
+    compromisedPasswordsCount_: String,
+
+    /** @private */
     hidePasswordsLink_: {
       type: Boolean,
       computed: 'computeHidePasswordsLink_(syncPrefs_, syncStatus_)',
@@ -197,6 +209,18 @@ Polymer({
    */
   setPasswordExceptionsListener_: null,
 
+  /**
+   * @type {?function(!PasswordManagerProxy.CompromisedCredentials):void}
+   * @private
+   */
+  setLeakedCredentialsListener_: null,
+
+  /**
+   * @type {?function(!PasswordManagerProxy.PasswordCheckStatus):void}
+   * @private
+   */
+  statusChangedListener_: null,
+
   /** @override */
   attached() {
     // Create listener functions.
@@ -216,10 +240,29 @@ Polymer({
       this.passwordExceptions = list;
     };
 
+    // TODO(https://crbug.com/1047726) Remove code duplication with
+    // password_check.js
+    const setLeakedCredentialsListener = credentials => {
+      this.hasLeakedCredentials_ = credentials.length > 0;
+      settings.PluralStringProxyImpl.getInstance()
+          .getPluralString('compromisedPasswords', credentials.length)
+          .then(compromisedPasswordCount => {
+            this.compromisedPasswordsCount_ = compromisedPasswordCount;
+          });
+    };
+
+    // TODO(https://crbug.com/1047726) Remove code duplication with
+    // password_check.js
+    const statusChangeListener = status => {
+      this.haveCheckedPasswordsBefore_ = !!status.elapsedTimeSinceLastCheck;
+    };
+
     this.setIsOptedInForAccountStorageListener_ =
         setIsOptedInForAccountStorageListener;
     this.setSavedPasswordsListener_ = setSavedPasswordsListener;
     this.setPasswordExceptionsListener_ = setPasswordExceptionsListener;
+    this.setLeakedCredentialsListener_ = setLeakedCredentialsListener;
+    this.statusChangedListener_ = statusChangeListener;
 
     // Set the manager. These can be overridden by tests.
     this.passwordManager_ = PasswordManagerImpl.getInstance();
@@ -242,10 +285,10 @@ Polymer({
         setIsOptedInForAccountStorageListener);
     this.passwordManager_.getSavedPasswordList(setSavedPasswordsListener);
     this.passwordManager_.getExceptionList(setPasswordExceptionsListener);
-
-    this.passwordManager_.getPasswordCheckStatus().then(status => {
-      this.haveCheckedPasswordsBefore_ = !!status.elapsedTimeSinceLastCheck;
-    });
+    this.passwordManager_.getCompromisedCredentials().then(
+        this.setLeakedCredentialsListener_);
+    this.passwordManager_.getPasswordCheckStatus().then(
+        this.statusChangedListener_);
 
     // Listen for changes.
     this.passwordManager_.addAccountStorageOptInStateListener(
@@ -254,6 +297,10 @@ Polymer({
         setSavedPasswordsListener);
     this.passwordManager_.addExceptionListChangedListener(
         setPasswordExceptionsListener);
+    this.passwordManager_.addCompromisedCredentialsListener(
+        this.setLeakedCredentialsListener_);
+    this.passwordManager_.addPasswordCheckStatusListener(
+        this.statusChangedListener_);
 
     this.notifySplices('savedPasswords', []);
 
@@ -289,6 +336,11 @@ Polymer({
          * @type {function(boolean):void}
          */
         (this.setIsOptedInForAccountStorageListener_));
+
+    this.passwordManager_.removeCompromisedCredentialsListener(
+        assert(this.setLeakedCredentialsListener_));
+    this.passwordManager_.removePasswordCheckStatusListener(
+        assert(this.statusChangedListener_));
 
     if (cr.toastManager.getToastManager().isToastOpen) {
       cr.toastManager.getToastManager().hide();

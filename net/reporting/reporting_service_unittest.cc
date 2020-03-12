@@ -138,6 +138,18 @@ TEST_P(ReportingServiceTest, ProcessHeader) {
   EXPECT_EQ(1u, context()->cache()->GetEndpointCount());
 }
 
+TEST_P(ReportingServiceTest, ProcessHeaderPathAbsolute) {
+  service()->ProcessHeader(kUrl_,
+                           "{\"endpoints\":[{\"url\":\"/path-absolute\"}],"
+                           "\"group\":\"" +
+                               kGroup_ +
+                               "\","
+                               "\"max_age\":86400}");
+  FinishLoading(true /* load_success */);
+
+  EXPECT_EQ(1u, context()->cache()->GetEndpointCount());
+}
+
 TEST_P(ReportingServiceTest, ProcessHeader_TooLong) {
   const std::string header_too_long =
       "{\"endpoints\":[{\"url\":\"" + kEndpoint_.spec() +

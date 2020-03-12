@@ -3107,7 +3107,6 @@ void Document::SetIsXrOverlay(bool val, Element* overlay_element) {
   if (val == is_xr_overlay_)
     return;
 
-  DCHECK(RuntimeEnabledFeatures::WebXRIncubationsEnabled(this));
   is_xr_overlay_ = val;
 
   // On navigation, the layout view may be invalid, skip style changes.

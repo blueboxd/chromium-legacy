@@ -13,6 +13,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
+#include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "ui/gl/buildflags.h"
@@ -25,15 +26,11 @@ ExternalVkImageDawnRepresentation::ExternalVkImageDawnRepresentation(
     MemoryTypeTracker* tracker,
     WGPUDevice device,
     WGPUTextureFormat wgpu_format,
-    int memory_fd,
-    VkDeviceSize allocation_size,
-    uint32_t memory_type_index)
+    int memory_fd)
     : SharedImageRepresentationDawn(manager, backing, tracker),
       device_(device),
       wgpu_format_(wgpu_format),
       memory_fd_(memory_fd),
-      allocation_size_(allocation_size),
-      memory_type_index_(memory_type_index),
       dawn_procs_(dawn_native::GetProcs()) {
   DCHECK(device_);
 
@@ -68,8 +65,8 @@ WGPUTexture ExternalVkImageDawnRepresentation::BeginAccess(
   dawn_native::vulkan::ExternalImageDescriptorOpaqueFD descriptor = {};
   descriptor.cTextureDescriptor = &texture_descriptor;
   descriptor.isCleared = IsCleared();
-  descriptor.allocationSize = allocation_size_;
-  descriptor.memoryTypeIndex = memory_type_index_;
+  descriptor.allocationSize = backing_impl()->image()->device_size();
+  descriptor.memoryTypeIndex = backing_impl()->image()->memory_type_index();
   descriptor.memoryFD = memory_fd_;
   descriptor.waitFDs = {};
 

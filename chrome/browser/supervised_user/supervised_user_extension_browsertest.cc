@@ -107,12 +107,6 @@ class SupervisedUserExtensionTest : public ExtensionBrowserTest {
         extensions::disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);
   }
 
-  bool IsDisabledForBlockedMature(const std::string& extension_id) {
-    ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile());
-    return extension_prefs->HasDisableReason(
-        extension_id, extensions::disable_reason::DISABLE_BLOCKED_MATURE);
-  }
-
  private:
   InProcessBrowserTestMixinHost mixin_host_;
 
@@ -146,7 +140,6 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserExtensionTest,
   // disabled.
   EXPECT_TRUE(extension_registry()->disabled_extensions().Contains(kGoodCrxId));
   EXPECT_TRUE(IsDisabledForCustodianApproval(kGoodCrxId));
-  EXPECT_FALSE(IsDisabledForBlockedMature(kGoodCrxId));
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserExtensionTest,
@@ -160,73 +153,6 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserExtensionTest,
   // The extension should be enabled now after removing supervision.
   EXPECT_TRUE(extension_registry()->enabled_extensions().Contains(kGoodCrxId));
   EXPECT_FALSE(IsDisabledForCustodianApproval(kGoodCrxId));
-  EXPECT_FALSE(IsDisabledForBlockedMature(kGoodCrxId));
-}
-
-// Removing supervision should also remove associated disable reasons, such as
-// DISABLE_BLOCKED_MATURE. Extensions should become enabled again after removing
-// supervision. Prevents a regression to crbug/1045625.
-IN_PROC_BROWSER_TEST_F(SupervisedUserExtensionTest,
-                       PRE_RemovingSupervisionBlockedMature) {
-  SetSupervisedUserExtensionsMayRequestPermissionsPref(true);
-
-  EXPECT_TRUE(profile()->IsChild());
-
-  base::FilePath path = test_data_dir_.AppendASCII("good.crx");
-  EXPECT_FALSE(LoadExtensionWithFlags(path, kFlagNone));
-  const Extension* extension =
-      extension_registry()->GetInstalledExtension(kGoodCrxId);
-  EXPECT_TRUE(extension);
-
-  // Let's pretend this extension is mature.
-  GetSupervisedUserService()->MarkExtensionMatureForTesting(
-      kGoodCrxId /*extension_id*/, true /*mature_rating*/);
-
-  // This extension is a supervised user initiated install and should remain
-  // disabled.
-  EXPECT_TRUE(extension_registry()->disabled_extensions().Contains(kGoodCrxId));
-  EXPECT_TRUE(IsDisabledForCustodianApproval(kGoodCrxId));
-  EXPECT_TRUE(IsDisabledForBlockedMature(kGoodCrxId));
-}
-
-IN_PROC_BROWSER_TEST_F(SupervisedUserExtensionTest,
-                       RemovingSupervisionBlockedMature) {
-  EXPECT_FALSE(profile()->IsChild());
-  // The extension should still be installed since we are sharing the same data
-  // directory as the PRE test.
-  const Extension* extension =
-      extension_registry()->GetInstalledExtension(kGoodCrxId);
-  EXPECT_TRUE(extension);
-  // The extension should be enabled now after removing supervision.
-  EXPECT_TRUE(extension_registry()->enabled_extensions().Contains(kGoodCrxId));
-  EXPECT_FALSE(IsDisabledForCustodianApproval(kGoodCrxId));
-  EXPECT_FALSE(IsDisabledForBlockedMature(kGoodCrxId));
-}
-
-// Prevent a regression to crbug/1047026.
-IN_PROC_BROWSER_TEST_F(SupervisedUserExtensionTest,
-                       PRE_RemovingSupervisionBlockedMatureZombie) {
-  SetSupervisedUserExtensionsMayRequestPermissionsPref(true);
-
-  EXPECT_TRUE(profile()->IsChild());
-
-  // Mark this extension as mature even though it's not even installed.
-  GetSupervisedUserService()->MarkExtensionMatureForTesting(
-      kGoodCrxId /*extension_id*/, true /*mature_rating*/);
-}
-
-IN_PROC_BROWSER_TEST_F(SupervisedUserExtensionTest,
-                       RemovingSupervisionBlockedMatureZombie) {
-  EXPECT_FALSE(profile()->IsChild());
-
-  base::FilePath path = test_data_dir_.AppendASCII("good.crx");
-  const Extension* extension = LoadExtensionWithFlags(path, kFlagNone);
-  EXPECT_TRUE(extension);
-  // The extension should be enabled after installing on a non-supervised
-  // profile.
-  EXPECT_TRUE(extension_registry()->enabled_extensions().Contains(kGoodCrxId));
-  EXPECT_FALSE(IsDisabledForCustodianApproval(kGoodCrxId));
-  EXPECT_FALSE(IsDisabledForBlockedMature(kGoodCrxId));
 }
 
 }  // namespace extensions

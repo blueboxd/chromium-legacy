@@ -4,6 +4,8 @@
 
 #include "ui/views/widget/drop_helper.h"
 
+#include <set>
+
 #include "base/callback.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"

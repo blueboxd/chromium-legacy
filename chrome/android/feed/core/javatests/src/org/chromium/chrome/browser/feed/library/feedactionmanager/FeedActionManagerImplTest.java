@@ -23,6 +23,7 @@ import org.mockito.Mock;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Consumer;
+import org.chromium.chrome.browser.feed.FeedLoggingBridge;
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
 import org.chromium.chrome.browser.feed.library.api.internal.actionmanager.ActionManager;
 import org.chromium.chrome.browser.feed.library.api.internal.common.Model;
@@ -70,6 +71,8 @@ public class FeedActionManagerImplTest {
     private LocalActionMutation mLocalActionMutation;
     @Mock
     private Consumer<Result<Model>> mModelConsumer;
+    @Mock
+    private FeedLoggingBridge mFeedLoggingBridge;
     @Captor
     private ArgumentCaptor<Integer> mActionTypeCaptor;
     @Captor
@@ -89,7 +92,7 @@ public class FeedActionManagerImplTest {
     public void setUp() throws Exception {
         initMocks(this);
         mActionManager = new FeedActionManagerImpl(mFeedSessionManager, mStore, mFakeThreadUtils,
-                getTaskQueue(), mFakeMainThreadRunner, mFakeClock);
+                getTaskQueue(), mFakeMainThreadRunner, mFakeClock, mFeedLoggingBridge);
     }
 
     @Test

@@ -33,9 +33,9 @@ class UIControlsAura {
                                           base::OnceClosure task) = 0;
 
   // Simulate a mouse move. (x,y) are absolute screen coordinates.
-  virtual bool SendMouseMove(long x, long y) = 0;
-  virtual bool SendMouseMoveNotifyWhenDone(long x,
-                                           long y,
+  virtual bool SendMouseMove(int x, int y) = 0;
+  virtual bool SendMouseMoveNotifyWhenDone(int x,
+                                           int y,
                                            base::OnceClosure task) = 0;
 
   // Sends a mouse down and/or up message. The click will be sent to wherever

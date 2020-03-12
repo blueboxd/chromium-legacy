@@ -4,6 +4,8 @@
 
 #include "ui/views/accessible_pane_view.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/base/accelerators/accelerator.h"

@@ -8100,6 +8100,15 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="IGNORED"/>
 </enum>
 
+<enum name="CaptivePortalProbeReason">
+  <int value="0" label="UNSPECIFIED"/>
+  <int value="1" label="TIMEOUT"/>
+  <int value="2" label="CERTIFICATE_ERROR"/>
+  <int value="3" label="SSL_PROTOCOL_ERROR"/>
+  <int value="4" label="LOGIN_TAB_LOAD"/>
+  <int value="5" label="SECURE_DNS_ERROR"/>
+</enum>
+
 <enum name="CaptivePortalStatus">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="OFFLINE"/>
@@ -18797,6 +18806,12 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1" label="Cound not bind to domain controller."/>
 </enum>
 
+<enum name="EnterpriseCloudExtensionRequestListUpdate">
+  <summary>Extension request pending list update event.</summary>
+  <int value="0" label="New request added"/>
+  <int value="1" label="Existing request removed"/>
+</enum>
+
 <enum name="EnterpriseCloudReportingResponse">
   <summary>Result of uploading an enterprise report.</summary>
   <int value="0" label="Success"/>
@@ -19849,6 +19864,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="685" label="AdvancedProtectionExtraSecurityAllowed"/>
   <int value="686" label="ReportDeviceBacklightInfo"/>
   <int value="687" label="ScrollToTextFragmentEnabled"/>
+  <int value="688" label="ManagedGuestSessionAutoLaunchNotificationReduced"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -26905,6 +26921,13 @@ Called by update_feature_policy_enum.py.-->
   <int value="8" label="Assistant"/>
 </enum>
 
+<enum name="FeedEngagementType">
+  <int value="0" label="Engaged - scrolled an inch or interacted"/>
+  <int value="1" label="Engaged Simple - scrolled any amount or interacted"/>
+  <int value="2" label="Interacted - opened page or used menu"/>
+  <int value="3" label="Scrolled - scrolled any amount"/>
+</enum>
+
 <enum name="FeedHostMismatch">
   <int value="0" label="Agree neither are set"/>
   <int value="1" label="Feed is set only"/>
@@ -32794,6 +32817,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="415" label="415: Unsupported Media Type"/>
   <int value="416" label="416: Requested Range Not Satisfiable"/>
   <int value="417" label="417: Expectation Failed"/>
+  <int value="429" label="429: Too Many Requests"/>
   <int value="500" label="500: Internal Server Error"/>
   <int value="501" label="501: Not Implemented"/>
   <int value="502" label="502: Bad Gateway"/>

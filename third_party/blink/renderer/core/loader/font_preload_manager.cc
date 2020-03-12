@@ -6,7 +6,9 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/renderer/core/css/font_face.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/loader/resource/font_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_finish_observer.h"
 
 namespace blink {
@@ -38,6 +40,33 @@ class FontPreloadFinishObserver final : public ResourceFinishObserver {
   Member<Document> document_;
 };
 
+class ImperativeFontLoadFinishedCallback final
+    : public GarbageCollected<ImperativeFontLoadFinishedCallback>,
+      public FontFace::LoadFontCallback {
+  USING_GARBAGE_COLLECTED_MIXIN(ImperativeFontLoadFinishedCallback);
+
+ public:
+  explicit ImperativeFontLoadFinishedCallback(Document& document)
+      : document_(document) {}
+  ~ImperativeFontLoadFinishedCallback() final = default;
+
+  void Trace(Visitor* visitor) final {
+    visitor->Trace(document_);
+    FontFace::LoadFontCallback::Trace(visitor);
+  }
+
+ private:
+  void NotifyLoaded(FontFace*) final {
+    document_->GetFontPreloadManager().ImperativeFontLoadingFinished();
+  }
+
+  void NotifyError(FontFace*) final {
+    document_->GetFontPreloadManager().ImperativeFontLoadingFinished();
+  }
+
+  Member<Document> document_;
+};
+
 }  // namespace
 
 FontPreloadManager::FontPreloadManager(Document& document)
@@ -62,26 +91,44 @@ void FontPreloadManager::FontPreloadingStarted(FontResource* font_resource) {
   if (font_resource->IsLoaded())
     return;
 
-  switch (state_) {
-    case State::kInitial:
-      render_delay_timer_.StartOneShot(render_delay_timeout_, FROM_HERE);
-      FALLTHROUGH;
-    case State::kLoading:
-    case State::kLoaded: {
-      FontPreloadFinishObserver* observer =
-          MakeGarbageCollected<FontPreloadFinishObserver>(*font_resource,
-                                                          *document_);
-      font_resource->AddFinishObserver(
-          observer, document_->GetTaskRunner(TaskType::kInternalLoading).get());
-      finish_observers_.insert(observer);
-      state_ = State::kLoading;
-      break;
-    }
-    case State::kUnblocked:
-      break;
-    default:
-      NOTREACHED();
-  }
+  if (state_ == State::kUnblocked)
+    return;
+
+  FontPreloadFinishObserver* observer =
+      MakeGarbageCollected<FontPreloadFinishObserver>(*font_resource,
+                                                      *document_);
+  font_resource->AddFinishObserver(
+      observer, document_->GetTaskRunner(TaskType::kInternalLoading).get());
+  finish_observers_.insert(observer);
+
+  RenderBlockingFontLoadingStarted();
+}
+
+void FontPreloadManager::ImperativeFontLoadingStarted(FontFace* font_face) {
+  if (!base::FeatureList::IsEnabled(features::kFontPreloadingDelaysRendering))
+    return;
+
+  if (font_face->LoadStatus() != FontFace::kLoading)
+    return;
+
+  if (state_ == State::kUnblocked)
+    return;
+
+  ImperativeFontLoadFinishedCallback* callback =
+      MakeGarbageCollected<ImperativeFontLoadFinishedCallback>(*document_);
+  font_face->AddCallback(callback);
+  ++imperative_font_loading_count_;
+
+  RenderBlockingFontLoadingStarted();
+}
+
+void FontPreloadManager::RenderBlockingFontLoadingStarted() {
+  DCHECK(
+      base::FeatureList::IsEnabled(features::kFontPreloadingDelaysRendering));
+  DCHECK_NE(State::kUnblocked, state_);
+  if (state_ == State::kInitial)
+    render_delay_timer_.StartOneShot(render_delay_timeout_, FROM_HERE);
+  state_ = State::kLoading;
 }
 
 void FontPreloadManager::FontPreloadingFinished(
@@ -96,9 +143,28 @@ void FontPreloadManager::FontPreloadingFinished(
 
   DCHECK(finish_observers_.Contains(observer));
   finish_observers_.erase(observer);
-  if (!finish_observers_.IsEmpty())
-    return;
+  RenderBlockingFontLoadingFinished();
+}
 
+void FontPreloadManager::ImperativeFontLoadingFinished() {
+  DCHECK(
+      base::FeatureList::IsEnabled(features::kFontPreloadingDelaysRendering));
+  if (state_ == State::kUnblocked) {
+    imperative_font_loading_count_ = 0;
+    return;
+  }
+
+  DCHECK(imperative_font_loading_count_);
+  --imperative_font_loading_count_;
+  RenderBlockingFontLoadingFinished();
+}
+
+void FontPreloadManager::RenderBlockingFontLoadingFinished() {
+  DCHECK(
+      base::FeatureList::IsEnabled(features::kFontPreloadingDelaysRendering));
+  DCHECK_NE(State::kUnblocked, state_);
+  if (!finish_observers_.IsEmpty() || imperative_font_loading_count_)
+    return;
   state_ = State::kLoaded;
   document_->FontPreloadingFinishedOrTimedOut();
 }
@@ -111,6 +177,7 @@ void FontPreloadManager::WillBeginRendering() {
 
   state_ = State::kUnblocked;
   finish_observers_.clear();
+  imperative_font_loading_count_ = 0;
 }
 
 void FontPreloadManager::FontPreloadingDelaysRenderingTimerFired(TimerBase*) {

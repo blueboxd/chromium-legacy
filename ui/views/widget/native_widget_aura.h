@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_WIDGET_NATIVE_WIDGET_AURA_H_
 #define UI_VIEWS_WIDGET_NATIVE_WIDGET_AURA_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"

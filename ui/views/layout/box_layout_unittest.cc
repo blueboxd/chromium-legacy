@@ -7,6 +7,8 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/insets.h"

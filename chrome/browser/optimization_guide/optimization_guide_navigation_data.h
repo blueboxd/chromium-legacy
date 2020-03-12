@@ -11,33 +11,42 @@
 #include <utility>
 
 #include "base/containers/flat_map.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/optimization_guide_enums.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
 
 // A representation of optimization guide information related to a navigation.
-// This also includes methods for recording metrics based on this data.
+// Metrics will be recorded upon this object's destruction.
 class OptimizationGuideNavigationData {
  public:
   explicit OptimizationGuideNavigationData(int64_t navigation_id);
   ~OptimizationGuideNavigationData();
 
-  OptimizationGuideNavigationData(const OptimizationGuideNavigationData& other);
+  OptimizationGuideNavigationData(
+      const OptimizationGuideNavigationData& other) = delete;
+  OptimizationGuideNavigationData& operator=(
+      const OptimizationGuideNavigationData&) = delete;
 
   // Returns the OptimizationGuideNavigationData for |navigation_handle|. Will
   // return nullptr if one cannot be created for it for any reason.
   static OptimizationGuideNavigationData* GetFromNavigationHandle(
       content::NavigationHandle* navigation_handle);
 
-  // Records metrics based on data currently held in |this|. |has_committed|
-  // indicates whether commit-time metrics should be recorded.
-  void RecordMetrics(bool has_committed) const;
+  base::WeakPtr<OptimizationGuideNavigationData> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
 
   // The navigation ID of the navigation handle that this data is associated
   // with.
   int64_t navigation_id() const { return navigation_id_; }
+
+  // Whether the navigation associated with |this| has committed.
+  bool has_committed() const { return has_committed_; }
+  void set_has_committed(bool has_committed) { has_committed_ = has_committed; }
 
   // The serialized hints version for the hint that applied to the navigation.
   base::Optional<std::string> serialized_hint_version_string() const {
@@ -153,7 +162,22 @@ class OptimizationGuideNavigationData {
     is_same_origin_navigation_ = is_same_origin_navigation;
   }
 
+  // The duration between the fetch for a hint for the navigation going out to
+  // when it was received by the client if a fetch was initiated for the
+  // navigation.
+  base::Optional<base::TimeDelta> hints_fetch_latency() const;
+  void set_hints_fetch_start(base::TimeTicks hints_fetch_start) {
+    hints_fetch_start_ = hints_fetch_start;
+  }
+  void set_hints_fetch_end(base::TimeTicks hints_fetch_end) {
+    hints_fetch_end_ = hints_fetch_end;
+  }
+
  private:
+  // Records metrics based on data currently held in |this|. |has_committed|
+  // indicates whether commit-time metrics should be recorded.
+  void RecordMetrics(bool has_committed) const;
+
   // Records the hint cache and fetch coverage based on data currently held in
   // |this|.
   void RecordHintCoverage(bool has_committed) const;
@@ -178,6 +202,9 @@ class OptimizationGuideNavigationData {
   // The navigation ID of the navigation handle that this data is associated
   // with.
   const int64_t navigation_id_;
+
+  // Whether the navigation has committed.
+  bool has_committed_ = false;
 
   // The serialized hints version for the hint that applied to the navigation.
   base::Optional<std::string> serialized_hint_version_string_;
@@ -231,7 +258,16 @@ class OptimizationGuideNavigationData {
   // Whether the initiation of the navigation was from a same origin URL or not.
   bool is_same_origin_navigation_ = false;
 
-  DISALLOW_ASSIGN(OptimizationGuideNavigationData);
+  // The time that the hints fetch for this navigation started. Is only present
+  // if a fetch was initiated for this navigation.
+  base::Optional<base::TimeTicks> hints_fetch_start_;
+
+  // The time that the hints fetch for the navigation ended. Is only present if
+  // a fetch was initiated and successfully completed for this navigation.
+  base::Optional<base::TimeTicks> hints_fetch_end_;
+
+  // Used to get |weak_ptr_| to self on the UI thread.
+  base::WeakPtrFactory<OptimizationGuideNavigationData> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_NAVIGATION_DATA_H_

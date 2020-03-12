@@ -80,14 +80,14 @@ class UIControlsAsh : public UIControlsAura {
                window, key, control, shift, alt, command, std::move(closure));
   }
 
-  bool SendMouseMove(long x, long y) override {
+  bool SendMouseMove(int x, int y) override {
     gfx::Point p(x, y);
     UIControlsAura* ui_controls = GetUIControlsAt(p);
     return ui_controls && ui_controls->SendMouseMove(p.x(), p.y());
   }
 
-  bool SendMouseMoveNotifyWhenDone(long x,
-                                   long y,
+  bool SendMouseMoveNotifyWhenDone(int x,
+                                   int y,
                                    base::OnceClosure closure) override {
     gfx::Point p(x, y);
     UIControlsAura* ui_controls = GetUIControlsAt(p);

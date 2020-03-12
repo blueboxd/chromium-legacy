@@ -7,15 +7,34 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-namespace offline_pages {
+namespace notifications {
+struct ThrottleConfig;
+}
 
+namespace offline_pages {
+namespace prefetch {
 // Service to manage offline prefetch notifications via
 // notifications::NotificationScheduleService.
 class PrefetchNotificationService : public KeyedService {
  public:
+  using ThrottleConfigCallback =
+      base::OnceCallback<void(std::unique_ptr<notifications::ThrottleConfig>)>;
+
+  // Schedules an prefetch notification.
+  virtual void Schedule(const base::string16& title,
+                        const base::string16& body) = 0;
+
+  // Called when the notification is clicked by the user.
+  virtual void OnClick() = 0;
+
+  // Gives customized throttle config.
+  virtual void GetThrottleConfig(ThrottleConfigCallback callback) = 0;
+
   ~PrefetchNotificationService() override = default;
 
  protected:
@@ -24,7 +43,7 @@ class PrefetchNotificationService : public KeyedService {
  private:
   DISALLOW_COPY_AND_ASSIGN(PrefetchNotificationService);
 };
-
+}  // namespace prefetch
 }  // namespace offline_pages
 
 #endif  // CHROME_BROWSER_OFFLINE_PAGES_PREFETCH_NOTIFICATIONS_PREFETCH_NOTIFICATION_SERVICE_H_

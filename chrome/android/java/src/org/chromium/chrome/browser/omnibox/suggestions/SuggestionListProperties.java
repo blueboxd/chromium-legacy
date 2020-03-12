@@ -24,6 +24,11 @@ public class SuggestionListProperties {
          * @param newHeightPx New height of the suggestion list in pixels.
          */
         void onSuggestionListHeightChanged(int newHeightPx);
+
+        /**
+         * Invoked whenever the User scrolls the list.
+         */
+        void onSuggestionListScroll();
     }
 
     /** Whether the suggestion list is visible. */

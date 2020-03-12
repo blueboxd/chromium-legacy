@@ -174,12 +174,10 @@ base::ScopedCFTypeRef<CFDictionaryRef> CreateGoogleUpdateCheckLaunchdPlist(
   // See the man page for launchd.plist.
   NSDictionary* launchd_plist = @{
     @LAUNCH_JOBKEY_LABEL : GetGoogleUpdateCheckLaunchDLabel(),
-    @LAUNCH_JOBKEY_PROGRAM : base::SysUTF8ToNSString(updater_path->value()),
-    @LAUNCH_JOBKEY_PROGRAMARGUMENTS : @[ @"--ua" ],
+    @LAUNCH_JOBKEY_PROGRAMARGUMENTS :
+        @[ base::SysUTF8ToNSString(updater_path->value()), @"--ua" ],
     @LAUNCH_JOBKEY_MACHSERVICES : @{GetGoogleUpdateCheckMachName() : @YES},
-    @LAUNCH_JOBKEY_RUNATLOAD : @YES,
     @LAUNCH_JOBKEY_STARTINTERVAL : @18000,
-    @LAUNCH_JOBKEY_KEEPALIVE : @{@LAUNCH_JOBKEY_KEEPALIVE_SUCCESSFULEXIT : @NO},
     @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @NO,
     @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : @"Aqua"
   };
@@ -194,11 +192,9 @@ base::ScopedCFTypeRef<CFDictionaryRef> CreateGoogleUpdateServiceLaunchdPlist(
   // See the man page for launchd.plist.
   NSDictionary* launchd_plist = @{
     @LAUNCH_JOBKEY_LABEL : GetGoogleUpdateServiceLaunchDLabel(),
-    @LAUNCH_JOBKEY_PROGRAM : base::SysUTF8ToNSString(updater_path->value()),
-    @LAUNCH_JOBKEY_PROGRAMARGUMENTS : @[ @"--server" ],
+    @LAUNCH_JOBKEY_PROGRAMARGUMENTS :
+        @[ base::SysUTF8ToNSString(updater_path->value()), @"--server" ],
     @LAUNCH_JOBKEY_MACHSERVICES : @{GetGoogleUpdateServiceMachName() : @YES},
-    @LAUNCH_JOBKEY_RUNATLOAD : @YES,
-    @LAUNCH_JOBKEY_KEEPALIVE : @{@LAUNCH_JOBKEY_KEEPALIVE_SUCCESSFULEXIT : @NO},
     @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @NO,
     @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : @"Aqua"
   };

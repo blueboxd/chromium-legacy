@@ -31,7 +31,7 @@
         android:order="4"
         android:title="@string/search_engine_settings"/>
     <org.chromium.chrome.browser.settings.ChromeBasePreference
-        android:fragment="org.chromium.chrome.browser.settings.password.PasswordSettings"
+        android:fragment="org.chromium.chrome.browser.password_manager.settings.PasswordSettings"
         android:key="passwords"
         android:order="5"
         android:title="@string/password_settings_title"/>

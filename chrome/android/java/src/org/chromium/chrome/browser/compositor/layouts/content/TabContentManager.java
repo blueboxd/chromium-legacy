@@ -32,7 +32,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.SadTab;
@@ -206,7 +205,7 @@ public class TabContentManager {
         mPriorityTabIds = new int[mFullResThumbnailsMaxSize];
 
         if (TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()
-                || CachedFeatureFlags.getValue(ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION)) {
+                || ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION.getValue()) {
             mRefectchedTabIds = new HashSet<>();
             mExpectedThumbnailAspectRatio =
                     (float) ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
@@ -457,7 +456,7 @@ public class TabContentManager {
                     notifyOnLastThumbnail();
                 }
                 if (jpeg != null) {
-                    if (CachedFeatureFlags.getValue(ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION)) {
+                    if (ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION.getValue()) {
                         double jpegAspectRatio = jpeg.getHeight() == 0
                                 ? 0
                                 : 1.0 * jpeg.getWidth() / jpeg.getHeight();

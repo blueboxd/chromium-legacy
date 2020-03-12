@@ -22,7 +22,8 @@
               "os": "linux-intel-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -47,7 +48,8 @@
               "os": "linux-intel-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -71,7 +73,8 @@
               "os": "linux-intel-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -96,7 +99,8 @@
               "os": "linux-intel-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -121,7 +125,8 @@
               "os": "linux-intel-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -145,7 +150,8 @@
               "os": "linux-intel-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -169,7 +175,8 @@
               "os": "linux-intel-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -190,7 +197,8 @@
               "os": "linux-intel-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests"
@@ -212,7 +220,8 @@
               "os": "linux-intel-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests"
@@ -241,7 +250,8 @@
               "os": "linux-intel-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:dawn_perf_tests"
       },
@@ -271,7 +281,8 @@
               "os": "linux-intel-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//:blink_web_tests"
       }
@@ -296,7 +307,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -321,7 +333,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -345,7 +358,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -370,7 +384,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -395,7 +410,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -419,7 +435,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -443,7 +460,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -464,7 +482,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests"
@@ -486,7 +505,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests"
@@ -515,7 +535,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:dawn_perf_tests"
       },
@@ -545,7 +566,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//:blink_web_tests"
       }
@@ -570,7 +592,8 @@
               "os": "linux-intel-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -595,7 +618,8 @@
               "os": "linux-intel-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -619,7 +643,8 @@
               "os": "linux-intel-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -644,7 +669,8 @@
               "os": "linux-intel-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -669,7 +695,8 @@
               "os": "linux-intel-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -693,7 +720,8 @@
               "os": "linux-intel-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -717,7 +745,8 @@
               "os": "linux-intel-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -746,7 +775,8 @@
               "os": "linux-intel-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:dawn_perf_tests"
       }
@@ -771,7 +801,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -796,7 +827,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -820,7 +852,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -845,7 +878,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -870,7 +904,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -894,7 +929,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -918,7 +954,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -947,7 +984,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:dawn_perf_tests"
       }
@@ -975,7 +1013,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1001,7 +1040,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1026,7 +1066,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1052,7 +1093,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1078,7 +1120,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1103,7 +1146,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1128,7 +1172,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1150,7 +1195,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests"
@@ -1172,7 +1218,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests"
@@ -1202,7 +1249,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:dawn_perf_tests"
       },
@@ -1232,7 +1280,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//:blink_web_tests"
       }
@@ -1256,7 +1305,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1280,7 +1330,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1303,7 +1354,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1327,7 +1379,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1351,7 +1404,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1374,7 +1428,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1397,7 +1452,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1417,7 +1473,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests"
@@ -1437,7 +1494,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests"
@@ -1465,7 +1523,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:dawn_perf_tests"
       },
@@ -1493,7 +1552,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//:blink_web_tests"
       }
@@ -1519,7 +1579,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1545,7 +1606,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1570,7 +1632,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1596,7 +1659,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1622,7 +1686,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1647,7 +1712,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1672,7 +1738,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1702,7 +1769,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:dawn_perf_tests"
       }
@@ -1726,7 +1794,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1750,7 +1819,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1773,7 +1843,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1797,7 +1868,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1821,7 +1893,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1844,7 +1917,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1867,7 +1941,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1895,7 +1970,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:dawn_perf_tests"
       }
@@ -1922,7 +1998,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1947,7 +2024,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1971,7 +2049,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -1996,7 +2075,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2021,7 +2101,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2045,7 +2126,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2069,7 +2151,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2090,7 +2173,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests"
@@ -2111,7 +2195,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests"
@@ -2140,7 +2225,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:dawn_perf_tests"
       },
@@ -2170,7 +2256,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//:blink_web_tests"
       }
@@ -2195,7 +2282,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2220,7 +2308,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2244,7 +2333,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2269,7 +2359,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2294,7 +2385,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2318,7 +2410,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2342,7 +2435,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2363,7 +2457,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests"
@@ -2384,7 +2479,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests"
@@ -2413,7 +2509,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:dawn_perf_tests"
       },
@@ -2443,7 +2540,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//:blink_web_tests"
       }
@@ -2468,7 +2566,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2493,7 +2592,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2517,7 +2617,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2542,7 +2643,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2567,7 +2669,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2591,7 +2694,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2615,7 +2719,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2644,7 +2749,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:dawn_perf_tests"
       }
@@ -2669,7 +2775,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2694,7 +2801,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2718,7 +2826,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2743,7 +2852,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2768,7 +2878,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2792,7 +2903,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2816,7 +2928,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2845,7 +2958,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:dawn_perf_tests"
       }
@@ -2872,7 +2986,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2897,7 +3012,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2921,7 +3037,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2946,7 +3063,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2971,7 +3089,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -2995,7 +3114,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3019,7 +3139,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3040,7 +3161,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests"
@@ -3061,7 +3183,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests"
@@ -3090,7 +3213,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:dawn_perf_tests"
       },
@@ -3119,7 +3243,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//:blink_web_tests"
       }
@@ -3144,7 +3269,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3169,7 +3295,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3193,7 +3320,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3218,7 +3346,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3243,7 +3372,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3267,7 +3397,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3291,7 +3422,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3312,7 +3444,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests"
@@ -3333,7 +3466,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests"
@@ -3362,7 +3496,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:dawn_perf_tests"
       },
@@ -3391,7 +3526,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//:blink_web_tests"
       }
@@ -3416,7 +3552,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3441,7 +3578,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3465,7 +3603,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3490,7 +3629,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3515,7 +3655,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3539,7 +3680,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3563,7 +3705,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3592,7 +3735,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:dawn_perf_tests"
       }
@@ -3617,7 +3761,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3642,7 +3787,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3666,7 +3812,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3691,7 +3838,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3716,7 +3864,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3740,7 +3889,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3764,7 +3914,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
         "test_target": "//third_party/dawn:dawn_end2end_tests"
@@ -3793,7 +3944,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:dawn_perf_tests"
       }

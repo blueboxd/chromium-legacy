@@ -16,6 +16,7 @@
 namespace chromeos {
 namespace quick_answers {
 struct QuickAnswer;
+class QuickAnswersConsent;
 }  // namespace quick_answers
 }  // namespace chromeos
 
@@ -40,10 +41,10 @@ class ASH_EXPORT QuickAnswersControllerImpl
 
   // SetClient is required to be called before using these methods.
   // TODO(yanxiao): refactor to delegate to browser.
-  void CreateQuickAnswersView(const gfx::Rect& anchor_bounds,
-                              const std::string& title) override;
+  void MaybeShowQuickAnswers(const gfx::Rect& anchor_bounds,
+                             const std::string& title) override;
 
-  void DismissQuickAnswersView() override;
+  void DismissQuickAnswers() override;
 
   chromeos::quick_answers::QuickAnswersDelegate* GetQuickAnswersDelegate()
       override;
@@ -63,8 +64,17 @@ class ASH_EXPORT QuickAnswersControllerImpl
   // Update the bounds of the anchor view.
   void UpdateQuickAnswersAnchorBounds(const gfx::Rect& anchor_bounds);
 
+  // Called by the UI Controller when user grants consent for the Quick Answers
+  // feature.
+  void OnUserConsentGranted();
+
+  // Called by the UI Controller when user requests detailed settings regarding
+  // consent for the Quick Answers feature.
+  void OnConsentSettingsRequestedByUser();
+
  private:
   void SendAssistantQuery(const std::string& query);
+  void MaybeDismissQuickAnswersConsent();
 
   // Bounds of the anchor view.
   gfx::Rect anchor_bounds_;
@@ -74,6 +84,8 @@ class ASH_EXPORT QuickAnswersControllerImpl
 
   std::unique_ptr<chromeos::quick_answers::QuickAnswersClient>
       quick_answers_client_;
+  std::unique_ptr<chromeos::quick_answers::QuickAnswersConsent>
+      consent_controller_;
 
   // Whether the feature is enabled and all eligibility criteria are met (
   // locale, consents, etc).

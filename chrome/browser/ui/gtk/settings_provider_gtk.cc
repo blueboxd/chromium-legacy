@@ -86,7 +86,7 @@ SettingsProviderGtk::SettingsProviderGtk(GtkUi* delegate)
     : delegate_(delegate), signal_id_decoration_layout_(0) {
   DCHECK(delegate_);
   GtkSettings* settings = gtk_settings_get_default();
-  if (GtkVersionCheck(3, 14)) {
+  if (GtkCheckVersion(3, 14)) {
     signal_id_decoration_layout_ = g_signal_connect(
         settings, "notify::gtk-decoration-layout",
         G_CALLBACK(OnDecorationButtonLayoutChangedThunk), this);

@@ -28,6 +28,8 @@ namespace content_settings {
 
 // This enum is used in prefs, do not change values.
 // The enum needs to correspond to CookieControlsMode in enums.xml.
+// This enum needs to be kept in sync with the enum of the same name in
+// browser/resources/settings/site_settings/constants.js.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.content_settings
 enum class CookieControlsMode {
   kOff = 0,

@@ -129,7 +129,7 @@ gfx::Size GetMinimumWidgetSize(gfx::Size content_size,
   gfx::Rect widget_rect = gfx::Rect(content_size);
   if (content_context)
     widget_rect.Inset(-MarginFromStyleContext(content_context, state));
-  if (GtkVersionCheck(3, 20)) {
+  if (GtkCheckVersion(3, 20)) {
     int min_width, min_height;
 #if GTK_CHECK_VERSION(3, 90, 0)
     gtk_style_context_get(widget_context, "min-width", &min_width, "min-height",
@@ -277,7 +277,7 @@ class NavButtonImageSource : public gfx::ImageSkiaSource {
 
     cairo_save(cr);
     cairo_scale(cr, scale, scale);
-    if (GtkVersionCheck(3, 11, 3) ||
+    if (GtkCheckVersion(3, 11, 3) ||
         (button_state & (GTK_STATE_FLAG_PRELIGHT | GTK_STATE_FLAG_ACTIVE))) {
       gtk_render_background(button_context, cr, 0, 0, button_size_.width(),
                             button_size_.height());

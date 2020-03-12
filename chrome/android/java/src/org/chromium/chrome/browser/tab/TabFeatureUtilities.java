@@ -64,11 +64,11 @@ public class TabFeatureUtilities {
 
     private static class GridTabSwitcherUtil {
         private static int getMinSdkVersion() {
-            return CachedFeatureFlags.getValue(TabFeatureUtilities.ZOOMING_MIN_SDK);
+            return TabFeatureUtilities.ZOOMING_MIN_SDK.getValue();
         }
 
         private static int getMinMemoryMB() {
-            return CachedFeatureFlags.getValue(TabFeatureUtilities.ZOOMING_MIN_MEMORY);
+            return TabFeatureUtilities.ZOOMING_MIN_MEMORY.getValue();
         }
     }
 }

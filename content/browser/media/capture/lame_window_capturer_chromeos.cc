@@ -14,7 +14,6 @@
 #include "media/base/limits.h"
 #include "media/base/video_util.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/gfx/geometry/rect.h"
@@ -227,7 +226,7 @@ void LameWindowCapturerChromeOS::CaptureNextFrame() {
       VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420, capture_size_);
   base::MappedReadOnlyRegion buffer;
   if (buffer_pool_.empty()) {
-    buffer = mojo::CreateReadOnlySharedMemoryRegion(allocation_size);
+    buffer = base::ReadOnlySharedMemoryRegion::Create(allocation_size);
     if (!buffer.IsValid()) {
       // If the shared memory region creation failed, just abort this frame,
       // hoping the issue is a transient one (e.g., lack of an available region

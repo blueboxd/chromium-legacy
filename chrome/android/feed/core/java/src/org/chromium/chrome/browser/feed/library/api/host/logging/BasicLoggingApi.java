@@ -243,4 +243,14 @@ public interface BasicLoggingApi {
      * @param taskTime how long it took from the task starting to when it finished executing.
      */
     void onTaskFinished(@Task int task, int delayTime, int taskTime);
+
+    /**
+     * For activity monitoring, report that the user scrolled.
+     *
+     * @param scrollAmount Distance scrolled in pixels
+     */
+    public void reportScrollActivity(int scrollAmount);
+
+    /** For activity monitoring, report that the user opened a page. */
+    public void reportFeedInteraction();
 }

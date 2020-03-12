@@ -23,6 +23,14 @@ public class BooleanCachedFieldTrialParameter extends CachedFieldTrialParameter 
         mDefaultValue = defaultValue;
     }
 
+    /**
+     * @return the value of the field trial parameter that should be used in this run.
+     */
+    public boolean getValue() {
+        return CachedFeatureFlags.getConsistentBooleanValue(
+                getSharedPreferenceKey(), getDefaultValue());
+    }
+
     public boolean getDefaultValue() {
         return mDefaultValue;
     }

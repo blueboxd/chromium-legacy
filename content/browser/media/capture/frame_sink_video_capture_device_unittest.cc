@@ -18,7 +18,6 @@
 #include "media/base/video_frame.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -365,8 +364,9 @@ class FrameSinkVideoCaptureDeviceTest : public testing::Test {
       int frame_number,
       MockFrameSinkVideoConsumerFrameCallbacks* callbacks) {
     // Allocate a buffer and fill it with values based on |frame_number|.
-    base::MappedReadOnlyRegion region = mojo::CreateReadOnlySharedMemoryRegion(
-        media::VideoFrame::AllocationSize(kFormat, kResolution));
+    base::MappedReadOnlyRegion region =
+        base::ReadOnlySharedMemoryRegion::Create(
+            media::VideoFrame::AllocationSize(kFormat, kResolution));
     CHECK(region.IsValid());
     memset(region.mapping.memory(), GetFrameFillValue(frame_number),
            region.mapping.size());

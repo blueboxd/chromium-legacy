@@ -110,7 +110,6 @@ namespace content {
 class AgentMetricsCollectorHost;
 class CodeCacheHostImpl;
 class FileSystemManagerImpl;
-class IndexedDBDispatcherHost;
 class InProcessChildThreadParams;
 class IsolationContext;
 class MediaStreamTrackMetricsHost;
@@ -261,7 +260,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) override;
   void BindIndexedDB(
-      int render_frame_id,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void ForceCrash() override;
@@ -1112,9 +1110,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // The memory allocator, if any, in which the renderer will write its metrics.
   std::unique_ptr<base::PersistentMemoryAllocator> metrics_allocator_;
-
-  std::unique_ptr<IndexedDBDispatcherHost, base::OnTaskRunnerDeleter>
-      indexed_db_factory_;
 
   std::unique_ptr<CodeCacheHostImpl> code_cache_host_impl_;
 

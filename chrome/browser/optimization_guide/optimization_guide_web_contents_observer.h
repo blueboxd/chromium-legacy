@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_WEB_CONTENTS_OBSERVER_H_
 #define CHROME_BROWSER_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_WEB_CONTENTS_OBSERVER_H_
 
-#include <map>
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
@@ -49,7 +49,7 @@ class OptimizationGuideWebContentsObserver
   explicit OptimizationGuideWebContentsObserver(
       content::WebContents* web_contents);
 
-  // Overridden from content::WebContentsObserver.
+  // content::WebContentsObserver implementation:
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidRedirectNavigation(
@@ -57,18 +57,19 @@ class OptimizationGuideWebContentsObserver
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  // Synchronously flushes the metrics for the navigation with ID
-  // |navigation_id| and then removes any data associated with it, including its
-  // entry in |inflight_optimization_guide_navigation_datas_|. It also notifies
-  // |optimization_guide_keyed_service_| that the navigation has finished.
-  void FlushMetricsAndNotifyNavigationFinish(
+  // Notifies |optimization_guide_keyed_service_| that the navigation has
+  // finished.
+  void NotifyNavigationFinish(
       int64_t navigation_id,
       const std::vector<GURL>& navigation_redirect_chain,
       bool has_committed);
 
   // The data related to a given navigation ID.
-  std::map<int64_t, OptimizationGuideNavigationData>
+  base::flat_map<int64_t, std::unique_ptr<OptimizationGuideNavigationData>>
       inflight_optimization_guide_navigation_datas_;
+
+  // The navigation data for the last completed navigation.
+  std::unique_ptr<OptimizationGuideNavigationData> last_navigation_data_;
 
   // Initialized in constructor. It may be null if the
   // OptimizationGuideKeyedService feature is not enabled.

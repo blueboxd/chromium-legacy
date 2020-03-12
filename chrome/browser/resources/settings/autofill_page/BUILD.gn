@@ -127,6 +127,7 @@ js_library("passwords_section") {
     ":password_list_item",
     ":password_manager_proxy",
     "..:global_scroll_target_behavior",
+    "..:plural_string_proxy",
     "..:route",
     "../people_page:sync_browser_proxy",
     "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
@@ -330,6 +331,7 @@ js_library("passwords_section.m") {
     ":password_list_item.m",
     ":password_manager_proxy.m",
     "..:global_scroll_target_behavior.m",
+    "..:plural_string_proxy.m",
     "..:route.m",
     "../people_page:sync_browser_proxy.m",
     "../prefs:prefs_behavior.m",
@@ -527,6 +529,7 @@ polymer_modulizer("passwords_section") {
   auto_imports = settings_auto_imports + [
                    "chrome/browser/resources/settings/autofill_page/password_manager_proxy.html|PasswordManagerImpl,PasswordManagerProxy",
                    "chrome/browser/resources/settings/people_page/sync_browser_proxy.html|SyncBrowserProxyImpl,SyncPrefs,SyncStatus",
+                   "chrome/browser/resources/settings/plural_string_proxy.html|PluralStringProxyImpl",
                    "chrome/browser/resources/settings/route.html|routes",
                    "chrome/browser/resources/settings/router.html|Router",
                    "third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html|IronA11yKeysBehavior",

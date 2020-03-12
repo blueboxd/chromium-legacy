@@ -8,5 +8,5 @@
     ImplementedAs=ElementXR
 ]
 partial interface Element {
-  [RuntimeEnabled=WebXRIncubations] attribute EventHandler onbeforexrselect;
+  attribute EventHandler onbeforexrselect;
 };

@@ -599,6 +599,7 @@ void OptimizationGuideHintsManager::OnTopHostsHintsFetched(
 }
 
 void OptimizationGuideHintsManager::OnPageNavigationHintsFetched(
+    base::WeakPtr<OptimizationGuideNavigationData> navigation_data_weak_ptr,
     const base::Optional<GURL>& navigation_url,
     const base::flat_set<GURL>& page_navigation_urls_requested,
     const base::flat_set<std::string>& page_navigation_hosts_requested,
@@ -617,8 +618,8 @@ void OptimizationGuideHintsManager::OnPageNavigationHintsFetched(
       page_navigation_urls_requested,
       base::BindOnce(
           &OptimizationGuideHintsManager::OnFetchedPageNavigationHintsStored,
-          ui_weak_ptr_factory_.GetWeakPtr(), navigation_url,
-          page_navigation_hosts_requested));
+          ui_weak_ptr_factory_.GetWeakPtr(), navigation_data_weak_ptr,
+          navigation_url, page_navigation_hosts_requested));
 }
 
 void OptimizationGuideHintsManager::OnFetchedTopHostsHintsStored() {
@@ -634,9 +635,14 @@ void OptimizationGuideHintsManager::OnFetchedTopHostsHintsStored() {
 }
 
 void OptimizationGuideHintsManager::OnFetchedPageNavigationHintsStored(
+    base::WeakPtr<OptimizationGuideNavigationData> navigation_data_weak_ptr,
     const base::Optional<GURL>& navigation_url,
     const base::flat_set<std::string>& page_navigation_hosts_requested) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (navigation_data_weak_ptr) {
+    navigation_data_weak_ptr->set_hints_fetch_end(base::TimeTicks::Now());
+  }
 
   if (navigation_url) {
     PrepareToInvokeRegisteredCallbacks(*navigation_url);
@@ -778,8 +784,8 @@ void OptimizationGuideHintsManager::OnPredictionUpdated(
       optimization_guide::proto::CONTEXT_PAGE_NAVIGATION,
       base::BindOnce(
           &OptimizationGuideHintsManager::OnPageNavigationHintsFetched,
-          ui_weak_ptr_factory_.GetWeakPtr(), base::nullopt, target_urls,
-          target_hosts));
+          ui_weak_ptr_factory_.GetWeakPtr(), nullptr, base::nullopt,
+          target_urls, target_hosts));
 
   for (const auto& host : target_hosts)
     LoadHintForHost(host, base::DoNothing());
@@ -1134,14 +1140,14 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
     return;
   }
 
+  OptimizationGuideNavigationData* navigation_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle);
+
   std::vector<std::string> hosts;
   std::vector<GURL> urls;
   if (!hint_cache_->HasHint(url.host())) {
     hosts.push_back(url.host());
-
-    OptimizationGuideNavigationData* navigation_data =
-        OptimizationGuideNavigationData::GetFromNavigationHandle(
-            navigation_handle);
     navigation_data->set_was_hint_for_host_attempted_to_be_fetched(true);
     race_navigation_recorder.set_race_attempt_status(
         optimization_guide::RaceNavigationFetchAttemptStatus::
@@ -1170,12 +1176,14 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
       "OptimizationGuide.HintsManager.ConcurrentPageNavigationFetches",
       page_navigation_hints_fetchers_.size());
 
+  navigation_data->set_hints_fetch_start(base::TimeTicks::Now());
   it->second->FetchOptimizationGuideServiceHints(
       hosts, urls, registered_optimization_types_,
       optimization_guide::proto::CONTEXT_PAGE_NAVIGATION,
       base::BindOnce(
           &OptimizationGuideHintsManager::OnPageNavigationHintsFetched,
-          ui_weak_ptr_factory_.GetWeakPtr(), url, base::flat_set<GURL>({url}),
+          ui_weak_ptr_factory_.GetWeakPtr(), navigation_data->GetWeakPtr(), url,
+          base::flat_set<GURL>({url}),
           base::flat_set<std::string>({url.host()})));
 
   if (!hosts.empty() && !urls.empty()) {

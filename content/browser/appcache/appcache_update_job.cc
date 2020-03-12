@@ -713,6 +713,8 @@ void AppCacheUpdateJob::HandleResourceFetchCompleted(URLFetcher* url_fetcher,
     entry.SetResponseAndPaddingSizes(
         entry_fetcher->response_writer()->amount_written(),
         ComputeAppCacheResponsePadding(url, manifest_url_));
+    // TODO(enne): get correct token_expires here.
+    // entry.set_token_expires(token from request header).
     if (!inprogress_cache_->AddOrModifyEntry(url, entry))
       duplicate_response_ids_.push_back(entry.response_id());
 
@@ -798,6 +800,8 @@ void AppCacheUpdateJob::HandleResourceFetchCompleted(URLFetcher* url_fetcher,
     entry.SetResponseAndPaddingSizes(
         entry_fetcher->existing_entry().response_size(),
         entry_fetcher->existing_entry().padding_size());
+    // TODO(enne): get correct token_expires here.
+    // entry.set_token_expires(token from request header).
     inprogress_cache_->AddOrModifyEntry(url, entry);
   }
 
@@ -824,6 +828,8 @@ void AppCacheUpdateJob::ContinueHandleResourceFetchCompleted(
   entry.SetResponseAndPaddingSizes(
       cache_copier->response_writer()->amount_written(),
       ComputeAppCacheResponsePadding(url, manifest_url_));
+  // TODO(enne): get correct token_expires here.
+  // entry.set_token_expires(token from request header).
   inprogress_cache_->AddOrModifyEntry(url, entry);
   cache_copier.reset();
   cache_copier_by_url_.erase(url);
@@ -880,9 +886,12 @@ void AppCacheUpdateJob::HandleNewMasterEntryFetchCompleted(
     DCHECK(entry_fetcher->response_writer());
     // Master entries cannot be cross-origin by definition, so they do not
     // require padding.
+    // TODO(enne): get correct token_expires here
+    base::Time token_expires;
     AppCacheEntry master_entry(
         AppCacheEntry::MASTER, entry_fetcher->response_writer()->response_id(),
-        entry_fetcher->response_writer()->amount_written(), /*padding_size=*/0);
+        entry_fetcher->response_writer()->amount_written(),
+        /*padding_size=*/0, token_expires);
     if (cache->AddOrModifyEntry(url, master_entry))
       added_master_entries_.push_back(url);
     else
@@ -1034,10 +1043,12 @@ void AppCacheUpdateJob::OnManifestDataWriteComplete(int result) {
   if (result > 0) {
     // The manifest determines the cache's origin, so the manifest entry is
     // always same-origin, and thus does not require padding.
+    // TODO(enne): get correct token expires here.
+    base::Time token_expires;
     AppCacheEntry entry(AppCacheEntry::MANIFEST,
                         manifest_response_writer_->response_id(),
                         manifest_response_writer_->amount_written(),
-                        /*padding_size=*/0);
+                        /*padding_size=*/0, token_expires);
     if (!inprogress_cache_->AddOrModifyEntry(manifest_url_, entry))
       duplicate_response_ids_.push_back(entry.response_id());
     StoreGroupAndCache();
@@ -1616,6 +1627,8 @@ void AppCacheUpdateJob::OnResponseInfoLoaded(
       entry.set_response_id(response_id);
       entry.SetResponseAndPaddingSizes(copy_me->response_size(),
                                        copy_me->padding_size());
+      // TODO(enne): get correct token_expires here.
+      // entry.set_token_expires(token from request header).
       inprogress_cache_->AddOrModifyEntry(url, entry);
       NotifyAllProgress(url);
       ++url_fetches_completed_;

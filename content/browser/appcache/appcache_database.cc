@@ -42,8 +42,9 @@ namespace {
 // Version 7 - 2015-07-09 - https://crrev.com/879393002
 // Version 8 - 2019-03-18 - https://crrev.com/c/1488059
 // Version 9 - 2019-11-25 - https://crrev.com/c/1935034
-const int kCurrentVersion = 9;
-const int kCompatibleVersion = 9;
+// Version 10 - 2020-03-09 - https://crrev.com/c/2099463
+const int kCurrentVersion = 10;
+const int kCompatibleVersion = 10;
 const bool kCreateIfNeeded = true;
 const bool kDontCreate = false;
 
@@ -81,7 +82,8 @@ const TableInfo kTables[] = {
      " creation_time INTEGER,"
      " last_access_time INTEGER,"
      " last_full_update_check_time INTEGER,"
-     " first_evictable_error_time INTEGER)"},
+     " first_evictable_error_time INTEGER,"
+     " token_expires INTEGER)"},
 
     {kCachesTable,
      "(cache_id INTEGER PRIMARY KEY,"
@@ -91,7 +93,8 @@ const TableInfo kTables[] = {
      " cache_size INTEGER,"    // intentionally not normalized
      " padding_size INTEGER,"  // intentionally not normalized
      " manifest_parser_version INTEGER,"
-     " manifest_scope TEXT)"},
+     " manifest_scope TEXT,"
+     " token_expires INTEGER)"},
 
     {kEntriesTable,
      "(cache_id INTEGER,"
@@ -99,7 +102,8 @@ const TableInfo kTables[] = {
      " flags INTEGER,"
      " response_id INTEGER,"
      " response_size INTEGER,"
-     " padding_size INTEGER)"},
+     " padding_size INTEGER,"
+     " token_expires INTEGER)"},
 
     // The |is_pattern| field is obsolete.
     {kNamespacesTable,
@@ -108,7 +112,8 @@ const TableInfo kTables[] = {
      " type INTEGER,"
      " namespace_url TEXT,"
      " target_url TEXT,"
-     " is_pattern INTEGER CHECK(is_pattern IN (0, 1)))"},
+     " is_pattern INTEGER CHECK(is_pattern IN (0, 1)),"
+     " token_expires INTEGER)"},
 
     // The |is_pattern| field is obsolete.
     {kOnlineWhiteListsTable,
@@ -340,7 +345,8 @@ bool AppCacheDatabase::FindGroup(int64_t group_id, GroupRecord* record) {
       "SELECT group_id, origin, manifest_url,"
       "       creation_time, last_access_time,"
       "       last_full_update_check_time,"
-      "       first_evictable_error_time"
+      "       first_evictable_error_time,"
+      "       token_expires"
       "  FROM Groups WHERE group_id = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -364,7 +370,8 @@ bool AppCacheDatabase::FindGroupForManifestUrl(
       "SELECT group_id, origin, manifest_url,"
       "       creation_time, last_access_time,"
       "       last_full_update_check_time,"
-      "       first_evictable_error_time"
+      "       first_evictable_error_time,"
+      "       token_expires"
       "  FROM Groups WHERE manifest_url = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -388,7 +395,8 @@ bool AppCacheDatabase::FindGroupsForOrigin(const url::Origin& origin,
       "SELECT group_id, origin, manifest_url,"
       "       creation_time, last_access_time,"
       "       last_full_update_check_time,"
-      "       first_evictable_error_time"
+      "       first_evictable_error_time,"
+      "       token_expires"
       "   FROM Groups WHERE origin = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -413,7 +421,8 @@ bool AppCacheDatabase::FindGroupForCache(int64_t cache_id,
       "SELECT g.group_id, g.origin, g.manifest_url,"
       "       g.creation_time, g.last_access_time,"
       "       g.last_full_update_check_time,"
-      "       g.first_evictable_error_time"
+      "       g.first_evictable_error_time,"
+      "       g.token_expires"
       "  FROM Groups g, Caches c"
       "  WHERE c.cache_id = ? AND c.group_id = g.group_id";
 
@@ -434,8 +443,9 @@ bool AppCacheDatabase::InsertGroup(const GroupRecord* record) {
   static const char kSql[] =
       "INSERT INTO Groups"
       "  (group_id, origin, manifest_url, creation_time, last_access_time,"
-      "   last_full_update_check_time, first_evictable_error_time)"
-      "  VALUES(?, ?, ?, ?, ?, ?, ?)";
+      "   last_full_update_check_time, first_evictable_error_time,"
+      "   token_expires)"
+      "  VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, record->group_id);
   statement.BindString(1, SerializeOrigin(record->origin));
@@ -444,6 +454,7 @@ bool AppCacheDatabase::InsertGroup(const GroupRecord* record) {
   statement.BindInt64(4, record->last_access_time.ToInternalValue());
   statement.BindInt64(5, record->last_full_update_check_time.ToInternalValue());
   statement.BindInt64(6, record->first_evictable_error_time.ToInternalValue());
+  statement.BindInt64(7, record->token_expires.ToInternalValue());
   return statement.Run();
 }
 
@@ -492,21 +503,25 @@ bool AppCacheDatabase::CommitLazyLastAccessTimes() {
   return transaction.Commit();
 }
 
-bool AppCacheDatabase::UpdateEvictionTimes(
+bool AppCacheDatabase::UpdateEvictionTimesAndTokenExpires(
     int64_t group_id,
     base::Time last_full_update_check_time,
-    base::Time first_evictable_error_time) {
+    base::Time first_evictable_error_time,
+    base::Time token_expires) {
   if (!LazyOpen(kCreateIfNeeded))
     return false;
 
   static const char kSql[] =
       "UPDATE Groups"
-      " SET last_full_update_check_time = ?, first_evictable_error_time = ?"
+      " SET last_full_update_check_time = ?,"
+      "     first_evictable_error_time = ?,"
+      "     token_expires = ?"
       " WHERE group_id = ?";
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, last_full_update_check_time.ToInternalValue());
   statement.BindInt64(1, first_evictable_error_time.ToInternalValue());
-  statement.BindInt64(2, group_id);
+  statement.BindInt64(2, token_expires.ToInternalValue());
+  statement.BindInt64(3, group_id);
   return statement.Run();  // Will succeed even if group_id is invalid.
 }
 
@@ -517,7 +532,7 @@ bool AppCacheDatabase::FindCache(int64_t cache_id, CacheRecord* record) {
 
   static const char kSql[] =
       "SELECT cache_id, group_id, online_wildcard, update_time, cache_size, "
-      "padding_size, manifest_parser_version, manifest_scope"
+      "padding_size, manifest_parser_version, manifest_scope, token_expires"
       " FROM Caches WHERE cache_id = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -538,7 +553,7 @@ bool AppCacheDatabase::FindCacheForGroup(int64_t group_id,
 
   static const char kSql[] =
       "SELECT cache_id, group_id, online_wildcard, update_time, cache_size, "
-      "padding_size, manifest_parser_version, manifest_scope"
+      "padding_size, manifest_parser_version, manifest_scope, token_expires"
       "  FROM Caches WHERE group_id = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -573,8 +588,9 @@ bool AppCacheDatabase::InsertCache(const CacheRecord* record) {
   static const char kSql[] =
       "INSERT INTO Caches (cache_id, group_id, online_wildcard,"
       "                    update_time, cache_size, padding_size,"
-      "                    manifest_parser_version, manifest_scope)"
-      "  VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
+      "                    manifest_parser_version, manifest_scope,"
+      "                    token_expires)"
+      "  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, record->cache_id);
@@ -589,6 +605,7 @@ bool AppCacheDatabase::InsertCache(const CacheRecord* record) {
   DCHECK_NE(record->manifest_parser_version, -1);
   statement.BindString(7, record->manifest_scope);
   DCHECK_NE(record->manifest_scope, "");
+  statement.BindInt64(8, record->token_expires.ToInternalValue());
 
   return statement.Run();
 }
@@ -612,7 +629,8 @@ bool AppCacheDatabase::FindEntriesForCache(int64_t cache_id,
     return false;
 
   static const char kSql[] =
-      "SELECT cache_id, url, flags, response_id, response_size, padding_size "
+      "SELECT cache_id, url, flags, response_id, response_size, padding_size, "
+      "  token_expires "
       "FROM Entries"
       "  WHERE cache_id = ?";
 
@@ -635,7 +653,8 @@ bool AppCacheDatabase::FindEntriesForUrl(
     return false;
 
   static const char kSql[] =
-      "SELECT cache_id, url, flags, response_id, response_size, padding_size "
+      "SELECT cache_id, url, flags, response_id, response_size, padding_size, "
+      "  token_expires "
       "FROM Entries"
       "  WHERE url = ?";
 
@@ -659,7 +678,8 @@ bool AppCacheDatabase::FindEntry(int64_t cache_id,
     return false;
 
   static const char kSql[] =
-      "SELECT cache_id, url, flags, response_id, response_size, padding_size "
+      "SELECT cache_id, url, flags, response_id, response_size, padding_size, "
+      "  token_expires "
       "FROM Entries"
       "  WHERE cache_id = ? AND url = ?";
 
@@ -682,8 +702,8 @@ bool AppCacheDatabase::InsertEntry(const EntryRecord* record) {
 
   static const char kSql[] =
       "INSERT INTO Entries (cache_id, url, flags, response_id, response_size, "
-      "padding_size)"
-      "  VALUES(?, ?, ?, ?, ?, ?)";
+      "padding_size, token_expires)"
+      "  VALUES(?, ?, ?, ?, ?, ?, ?)";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, record->cache_id);
@@ -694,6 +714,7 @@ bool AppCacheDatabase::InsertEntry(const EntryRecord* record) {
   statement.BindInt64(4, record->response_size);
   DCHECK_GE(record->padding_size, 0);
   statement.BindInt64(5, record->padding_size);
+  statement.BindInt64(6, record->token_expires.ToInternalValue());
 
   return statement.Run();
 }
@@ -751,7 +772,7 @@ bool AppCacheDatabase::FindNamespacesForOrigin(
     return false;
 
   static const char kSql[] =
-      "SELECT cache_id, origin, type, namespace_url, target_url"
+      "SELECT cache_id, origin, type, namespace_url, target_url, token_expires"
       "  FROM Namespaces WHERE origin = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -772,7 +793,7 @@ bool AppCacheDatabase::FindNamespacesForCache(
     return false;
 
   static const char kSql[] =
-      "SELECT cache_id, origin, type, namespace_url, target_url"
+      "SELECT cache_id, origin, type, namespace_url, target_url, token_expires"
       "  FROM Namespaces WHERE cache_id = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -790,8 +811,9 @@ bool AppCacheDatabase::InsertNamespace(
 
   static const char kSql[] =
       "INSERT INTO Namespaces"
-      "  (cache_id, origin, type, namespace_url, target_url, is_pattern)"
-      "  VALUES (?, ?, ?, ?, ?, ?)";
+      "  (cache_id, origin, type, namespace_url, target_url, is_pattern,"
+      "   token_expires)"
+      "  VALUES (?, ?, ?, ?, ?, ?, ?)";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, record->cache_id);
@@ -800,6 +822,7 @@ bool AppCacheDatabase::InsertNamespace(
   statement.BindString(3, record->namespace_.namespace_url.spec());
   statement.BindString(4, record->namespace_.target_url.spec());
   statement.BindBool(5, /*is_pattern=*/false);
+  statement.BindInt64(6, record->token_expires.ToInternalValue());
   return statement.Run();
 }
 
@@ -1010,6 +1033,8 @@ void AppCacheDatabase::ReadGroupRecord(
       base::Time::FromInternalValue(statement.ColumnInt64(5));
   record->first_evictable_error_time =
       base::Time::FromInternalValue(statement.ColumnInt64(6));
+  record->token_expires =
+      base::Time::FromInternalValue(statement.ColumnInt64(7));
 }
 
 void AppCacheDatabase::ReadCacheRecord(
@@ -1023,6 +1048,8 @@ void AppCacheDatabase::ReadCacheRecord(
   record->padding_size = statement.ColumnInt64(5);
   record->manifest_parser_version = statement.ColumnInt64(6);
   record->manifest_scope = statement.ColumnString(7);
+  record->token_expires =
+      base::Time::FromInternalValue(statement.ColumnInt64(8));
 }
 
 void AppCacheDatabase::ReadEntryRecord(
@@ -1033,6 +1060,8 @@ void AppCacheDatabase::ReadEntryRecord(
   record->response_id = statement.ColumnInt64(3);
   record->response_size = statement.ColumnInt64(4);
   record->padding_size = statement.ColumnInt64(5);
+  record->token_expires =
+      base::Time::FromInternalValue(statement.ColumnInt64(6));
 }
 
 void AppCacheDatabase::ReadNamespaceRecords(
@@ -1060,6 +1089,8 @@ void AppCacheDatabase::ReadNamespaceRecord(
   DCHECK(record->namespace_.type == APPCACHE_FALLBACK_NAMESPACE ||
          record->namespace_.type == APPCACHE_INTERCEPT_NAMESPACE);
   // The APPCACHE_NETWORK_NAMESPACE are stored as OnlineWhiteListRecords.
+  record->token_expires =
+      base::Time::FromInternalValue(statement->ColumnInt64(5));
 }
 
 void AppCacheDatabase::ReadOnlineWhiteListRecord(
@@ -1213,6 +1244,28 @@ bool AppCacheDatabase::UpgradeSchema() {
              .BackfillManifestParserVersionAndScope()) {
       return false;
     }
+    if (!transaction.Commit())
+      return false;
+  }
+
+  if (meta_table_->GetVersionNumber() < 10) {
+    sql::Transaction transaction(db_.get());
+    if (!transaction.Begin())
+      return false;
+
+    if (!db_->Execute("ALTER TABLE Groups ADD COLUMN token_expires INTEGER"))
+      return false;
+    if (!db_->Execute("ALTER TABLE Caches ADD COLUMN token_expires INTEGER"))
+      return false;
+    if (!db_->Execute("ALTER TABLE Entries ADD COLUMN token_expires INTEGER"))
+      return false;
+    if (!db_->Execute(
+            "ALTER TABLE Namespaces ADD COLUMN token_expires INTEGER"))
+      return false;
+    meta_table_->SetVersionNumber(10);
+    meta_table_->SetCompatibleVersionNumber(10);
+    // No backfilling needed as all of these values default to zero,
+    // which is desired.
     if (!transaction.Commit())
       return false;
   }

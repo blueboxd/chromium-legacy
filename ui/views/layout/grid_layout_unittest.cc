@@ -4,6 +4,7 @@
 
 #include "ui/views/layout/grid_layout.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 

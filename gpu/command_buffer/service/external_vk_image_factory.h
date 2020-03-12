@@ -22,7 +22,7 @@ class VulkanCommandPool;
 // that allow it to be exported out and shared with GL.
 class ExternalVkImageFactory : public SharedImageBackingFactory {
  public:
-  ExternalVkImageFactory(SharedContextState* context_state);
+  explicit ExternalVkImageFactory(SharedContextState* context_state);
   ~ExternalVkImageFactory() override;
 
   // SharedImageBackingFactory implementation.

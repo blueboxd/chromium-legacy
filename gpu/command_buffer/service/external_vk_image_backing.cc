@@ -23,6 +23,7 @@
 #include "gpu/vulkan/vulkan_command_pool.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
+#include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_util.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/buildflags.h"
@@ -83,74 +84,21 @@ static const struct {
 static_assert(base::size(kFormatTable) == (viz::RESOURCE_FORMAT_MAX + 1),
               "kFormatTable does not handle all cases.");
 
-GrVkImageInfo CreateGrVkImageInfo(
-    VkImage image,
-    VkFormat vk_format,
-    VkDeviceMemory memory,
-    size_t memory_size,
-    bool use_protected_memory,
-    const GrVkYcbcrConversionInfo& gr_ycbcr_info) {
-  GrVkAlloc alloc(memory, 0 /* offset */, memory_size, 0 /* flags */);
+GrVkImageInfo CreateGrVkImageInfo(SharedContextState* context_state,
+                                  VulkanImage* image,
+                                  bool use_protected_memory) {
+  VkPhysicalDevice physical_device = context_state->vk_context_provider()
+                                         ->GetDeviceQueue()
+                                         ->GetVulkanPhysicalDevice();
+  GrVkYcbcrConversionInfo gr_ycbcr_info = CreateGrVkYcbcrConversionInfo(
+      physical_device, image->image_tiling(), image->ycbcr_info());
+  GrVkAlloc alloc(image->device_memory(), 0 /* offset */, image->device_size(),
+                  0 /* flags */);
   return GrVkImageInfo(
-      image, alloc, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_LAYOUT_UNDEFINED,
-      vk_format, 1 /* levelCount */, VK_QUEUE_FAMILY_IGNORED,
+      image->image(), alloc, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_LAYOUT_UNDEFINED,
+      image->format(), 1 /* levelCount */, VK_QUEUE_FAMILY_IGNORED,
       use_protected_memory ? GrProtected::kYes : GrProtected::kNo,
       gr_ycbcr_info);
-}
-
-VkResult CreateVkImage(SharedContextState* context_state,
-                       viz::ResourceFormat viz_format,
-                       VkFormat format,
-                       const gfx::Size& size,
-                       bool is_transfer_dst,
-                       bool is_external,
-                       uint32_t shared_image_usage,
-                       const VulkanImageUsageCache* image_usage_cache,
-                       VkImage* image) {
-  VkExternalMemoryImageCreateInfoKHR external_info = {
-      .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR,
-      .handleTypes = context_state->vk_context_provider()
-                         ->GetVulkanImplementation()
-                         ->GetExternalImageHandleType(),
-  };
-
-  VkImageUsageFlags usage =
-      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-  if (is_transfer_dst)
-    usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-
-  // Requested usage flags must be supported.
-  DCHECK_EQ(usage & image_usage_cache->optimal_tiling_usage[viz_format], usage);
-
-  if (is_external && (shared_image_usage & SHARED_IMAGE_USAGE_GLES2)) {
-    // Must request all available image usage flags if aliasing GL texture. This
-    // is a spec requirement.
-    usage |= image_usage_cache->optimal_tiling_usage[viz_format];
-  }
-
-  VkImageCreateInfo create_info = {
-      .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-      .pNext = is_external ? &external_info : nullptr,
-      .flags = shared_image_usage & SHARED_IMAGE_USAGE_PROTECTED
-                   ? VK_IMAGE_CREATE_PROTECTED_BIT
-                   : 0,
-      .imageType = VK_IMAGE_TYPE_2D,
-      .format = format,
-      .extent = {size.width(), size.height(), 1},
-      .mipLevels = 1,
-      .arrayLayers = 1,
-      .samples = VK_SAMPLE_COUNT_1_BIT,
-      .tiling = VK_IMAGE_TILING_OPTIMAL,
-      .usage = usage,
-      .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-      .queueFamilyIndexCount = 0,
-      .pQueueFamilyIndices = nullptr,
-      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-  };
-
-  VkDevice device =
-      context_state->vk_context_provider()->GetDeviceQueue()->GetVulkanDevice();
-  return vkCreateImage(device, &create_info, nullptr, image);
 }
 
 uint32_t FindMemoryTypeIndex(SharedContextState* context_state,
@@ -231,85 +179,55 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
     const VulkanImageUsageCache* image_usage_cache,
     base::span<const uint8_t> pixel_data,
     bool using_gmb) {
-  VkDevice device =
-      context_state->vk_context_provider()->GetDeviceQueue()->GetVulkanDevice();
-  VkFormat vk_format = ToVkFormat(format);
-  VkImage image;
   bool is_external = context_state->support_vulkan_external_object();
   bool is_transfer_dst = using_gmb || !pixel_data.empty() || !is_external;
-  if (context_state->vk_context_provider()
-          ->GetVulkanImplementation()
-          ->enforce_protected_memory()) {
-    usage |= SHARED_IMAGE_USAGE_PROTECTED;
-  }
-  VkResult result =
-      CreateVkImage(context_state, format, vk_format, size, is_transfer_dst,
-                    is_external, usage, image_usage_cache, &image);
-  if (result != VK_SUCCESS) {
-    DLOG(ERROR) << "Failed to create external VkImage: " << result;
-    return nullptr;
-  }
 
-  VkMemoryRequirements requirements;
-  vkGetImageMemoryRequirements(device, image, &requirements);
+  auto* device_queue = context_state->vk_context_provider()->GetDeviceQueue();
+  VkFormat vk_format = ToVkFormat(format);
+  VkImageUsageFlags vk_usage =
+      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+  if (is_transfer_dst)
+    vk_usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-  if (!requirements.memoryTypeBits) {
-    DLOG(ERROR)
-        << "Unable to find appropriate memory type for external VkImage";
-    vkDestroyImage(device, image, nullptr);
-    return nullptr;
+  // Requested usage flags must be supported.
+  DCHECK_EQ(vk_usage & image_usage_cache->optimal_tiling_usage[format],
+            vk_usage);
+
+  if (is_external && (usage & SHARED_IMAGE_USAGE_GLES2)) {
+    // Must request all available image usage flags if aliasing GL texture. This
+    // is a spec requirement.
+    vk_usage |= image_usage_cache->optimal_tiling_usage[format];
   }
 
-  // Some vulkan implementations require dedicated memory for sharing memory
-  // object between vulkan instances.
-  VkMemoryDedicatedAllocateInfoKHR dedicated_memory_info = {
-      .sType = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO_KHR,
-      .image = image,
+  auto* vulkan_implementation =
+      context_state->vk_context_provider()->GetVulkanImplementation();
+  VkImageCreateFlags vk_flags =
+      vulkan_implementation->enforce_protected_memory()
+          ? VK_IMAGE_CREATE_PROTECTED_BIT
+          : 0;
+
+  auto handle_type = vulkan_implementation->GetExternalImageHandleType();
+
+  VkExternalMemoryImageCreateInfoKHR external_image_create_info = {
+      .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR,
+      .handleTypes = handle_type,
   };
 
-  VkExportMemoryAllocateInfoKHR external_info = {
+  VkExportMemoryAllocateInfoKHR external_memory_allocate_info = {
       .sType = VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_KHR,
-      .pNext = &dedicated_memory_info,
-      .handleTypes = context_state->vk_context_provider()
-                         ->GetVulkanImplementation()
-                         ->GetExternalImageHandleType(),
+      .handleTypes = handle_type,
   };
 
-  VkMemoryAllocateInfo mem_alloc_info = {
-      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-      .pNext = is_external ? &external_info : nullptr,
-      .allocationSize = requirements.size,
-      .memoryTypeIndex = FindMemoryTypeIndex(
-          context_state, requirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT),
-  };
-
-  VkDeviceMemory memory;
-  // TODO(crbug.com/932286): Allocating a separate piece of memory for every
-  // VkImage might have too much overhead. It is recommended that one large
-  // VkDeviceMemory be sub-allocated to multiple VkImages instead.
-  result = vkAllocateMemory(device, &mem_alloc_info, nullptr, &memory);
-  if (result != VK_SUCCESS) {
-    DLOG(ERROR) << "Failed to allocate memory for external VkImage: " << result;
-    vkDestroyImage(device, image, nullptr);
+  auto image = VulkanImage::Create(
+      device_queue, size, vk_format, vk_usage, vk_flags,
+      is_external ? &external_image_create_info : nullptr,
+      is_external ? &external_memory_allocate_info : nullptr);
+  if (!image)
     return nullptr;
-  }
 
-  result = vkBindImageMemory(device, image, memory, 0);
-  if (result != VK_SUCCESS) {
-    DLOG(ERROR) << "Failed to bind memory to external VkImage: " << result;
-    vkFreeMemory(device, memory, nullptr);
-    vkDestroyImage(device, image, nullptr);
-    return nullptr;
-  }
-
-  base::Optional<WGPUTextureFormat> wgpu_format = viz::ToWGPUFormat(format);
-  if (wgpu_format.value() == WGPUTextureFormat_Undefined) {
-    wgpu_format = base::nullopt;
-  }
-  auto backing = base::WrapUnique(new ExternalVkImageBacking(
-      mailbox, format, size, color_space, usage, context_state, image, memory,
-      requirements.size, vk_format, command_pool, GrVkYcbcrConversionInfo(),
-      wgpu_format, mem_alloc_info.memoryTypeIndex));
+  auto backing = std::make_unique<ExternalVkImageBacking>(
+      util::PassKey<ExternalVkImageBacking>(), mailbox, format, size,
+      color_space, usage, context_state, std::move(image), command_pool);
 
   if (!pixel_data.empty()) {
     backing->WritePixels(
@@ -342,48 +260,20 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
       context_state->vk_context_provider()->GetVulkanImplementation();
   auto resource_format = viz::GetResourceFormat(buffer_format);
   if (vulkan_implementation->CanImportGpuMemoryBuffer(handle.type)) {
-    VkDevice vk_device = context_state->vk_context_provider()
-                             ->GetDeviceQueue()
-                             ->GetVulkanDevice();
-    VkImage vk_image = VK_NULL_HANDLE;
-    VkImageCreateInfo vk_image_info = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
-    VkDeviceMemory vk_device_memory = VK_NULL_HANDLE;
-    VkDeviceSize memory_size = 0;
-    base::Optional<VulkanYCbCrInfo> ycbcr_info;
-
-    if (!vulkan_implementation->CreateImageFromGpuMemoryHandle(
-            vk_device, std::move(handle), size, &vk_image, &vk_image_info,
-            &vk_device_memory, &memory_size, &ycbcr_info)) {
+    auto* device_queue = context_state->vk_context_provider()->GetDeviceQueue();
+    VkFormat vk_format = ToVkFormat(resource_format);
+    auto image = vulkan_implementation->CreateImageFromGpuMemoryHandle(
+        device_queue, std::move(handle), size, vk_format);
+    if (!image) {
       DLOG(ERROR) << "Failed to create VkImage from GpuMemoryHandle.";
       return nullptr;
     }
 
-    VkFormat expected_format = ToVkFormat(resource_format);
-    if (expected_format != vk_image_info.format) {
-      DLOG(ERROR) << "BufferFormat doesn't match the buffer ";
-      vkFreeMemory(vk_device, vk_device_memory, nullptr);
-      vkDestroyImage(vk_device, vk_image, nullptr);
-      return nullptr;
-    }
-
-    GrVkYcbcrConversionInfo gr_ycbcr_info =
-        CreateGrVkYcbcrConversionInfo(context_state->vk_context_provider()
-                                          ->GetDeviceQueue()
-                                          ->GetVulkanPhysicalDevice(),
-                                      vk_image_info.tiling, ycbcr_info);
-
-    base::Optional<WGPUTextureFormat> wgpu_format =
-        viz::ToWGPUFormat(resource_format);
-    if (wgpu_format.value() == WGPUTextureFormat_Undefined) {
-      wgpu_format = base::nullopt;
-    }
-
-    auto result = base::WrapUnique(new ExternalVkImageBacking(
-        mailbox, resource_format, size, color_space, usage, context_state,
-        vk_image, vk_device_memory, memory_size, vk_image_info.format,
-        command_pool, gr_ycbcr_info, wgpu_format, {}));
-    result->SetCleared();
-    return result;
+    auto backing = std::make_unique<ExternalVkImageBacking>(
+        util::PassKey<ExternalVkImageBacking>(), mailbox, resource_format, size,
+        color_space, usage, context_state, std::move(image), command_pool);
+    backing->SetCleared();
+    return backing;
   }
 
   if (gfx::NumberOfPlanesForLinearBufferFormat(buffer_format) != 1) {
@@ -472,39 +362,31 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
 }
 
 ExternalVkImageBacking::ExternalVkImageBacking(
+    util::PassKey<ExternalVkImageBacking>,
     const Mailbox& mailbox,
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage,
     SharedContextState* context_state,
-    VkImage image,
-    VkDeviceMemory memory,
-    size_t memory_size,
-    VkFormat vk_format,
-    VulkanCommandPool* command_pool,
-    const GrVkYcbcrConversionInfo& ycbcr_info,
-    base::Optional<WGPUTextureFormat> wgpu_format,
-    base::Optional<uint32_t> memory_type_index)
+    std::unique_ptr<VulkanImage> image,
+    VulkanCommandPool* command_pool)
     : ClearTrackingSharedImageBacking(mailbox,
                                       format,
                                       size,
                                       color_space,
                                       usage,
-                                      memory_size,
+                                      image->device_size(),
                                       false /* is_thread_safe */),
       context_state_(context_state),
-      backend_texture_(size.width(),
-                       size.height(),
-                       CreateGrVkImageInfo(image,
-                                           vk_format,
-                                           memory,
-                                           memory_size,
-                                           usage & SHARED_IMAGE_USAGE_PROTECTED,
-                                           ycbcr_info)),
-      command_pool_(command_pool),
-      wgpu_format_(wgpu_format),
-      memory_type_index_(memory_type_index) {}
+      image_(std::move(image)),
+      backend_texture_(
+          size.width(),
+          size.height(),
+          CreateGrVkImageInfo(context_state_,
+                              image_.get(),
+                              usage & SHARED_IMAGE_USAGE_PROTECTED)),
+      command_pool_(command_pool) {}
 
 ExternalVkImageBacking::~ExternalVkImageBacking() {
   GrVkImageInfo image_info;
@@ -515,8 +397,7 @@ ExternalVkImageBacking::~ExternalVkImageBacking() {
                            ->vk_context_provider()
                            ->GetDeviceQueue()
                            ->GetFenceHelper();
-  fence_helper->EnqueueImageCleanupForSubmittedWork(image_info.fImage,
-                                                    image_info.fAlloc.fMemory);
+  fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(std::move(image_));
   backend_texture_ = GrBackendTexture();
 
   if (texture_) {
@@ -680,13 +561,10 @@ ExternalVkImageBacking::ProduceDawn(SharedImageManager* manager,
                                     MemoryTypeTracker* tracker,
                                     WGPUDevice wgpuDevice) {
 #if defined(OS_LINUX) && BUILDFLAG(USE_DAWN)
-  if (!wgpu_format_) {
-    DLOG(ERROR) << "Format not supported for Dawn";
-    return nullptr;
-  }
+  auto wgpu_format = viz::ToWGPUFormat(format());
 
-  if (!memory_type_index_) {
-    DLOG(ERROR) << "No type index info provided";
+  if (wgpu_format == WGPUTextureFormat_Undefined) {
+    DLOG(ERROR) << "Format not supported for Dawn";
     return nullptr;
   }
 
@@ -700,8 +578,7 @@ ExternalVkImageBacking::ProduceDawn(SharedImageManager* manager,
   }
 
   return std::make_unique<ExternalVkImageDawnRepresentation>(
-      manager, this, tracker, wgpuDevice, wgpu_format_.value(), memory_fd,
-      image_info.fAlloc.fSize, memory_type_index_.value());
+      manager, this, tracker, wgpuDevice, wgpu_format, memory_fd);
 #else  // !defined(OS_LINUX) || !BUILDFLAG(USE_DAWN)
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;

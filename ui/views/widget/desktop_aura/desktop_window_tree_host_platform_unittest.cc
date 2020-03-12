@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
+
+#include <memory>
+#include <utility>
+
 #include "base/run_loop.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"

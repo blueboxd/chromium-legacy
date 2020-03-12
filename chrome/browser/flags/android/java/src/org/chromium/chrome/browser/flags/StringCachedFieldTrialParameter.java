@@ -23,6 +23,14 @@ public class StringCachedFieldTrialParameter extends CachedFieldTrialParameter {
         mDefaultValue = defaultValue;
     }
 
+    /**
+     * @return the value of the field trial parameter that should be used in this run.
+     */
+    public String getValue() {
+        return CachedFeatureFlags.getConsistentStringValue(
+                getSharedPreferenceKey(), getDefaultValue());
+    }
+
     public String getDefaultValue() {
         return mDefaultValue;
     }

@@ -1514,12 +1514,10 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   // of the process, so the histogram names are runtime constant.
   const char* client_name = GetClientNameForMetrics();
   if (client_name) {
-    size_t total_memory_in_bytes = 0;
     size_t total_gpu_memory_for_tilings_in_bytes = 0;
     int layers_with_text_count = 0;
     int layers_with_text_no_lcd_text_count = 0;
     for (const PictureLayerImpl* layer : active_tree()->picture_layers()) {
-      total_memory_in_bytes += layer->GetRasterSource()->GetMemoryUsage();
       total_gpu_memory_for_tilings_in_bytes += layer->GPUMemoryUsageInBytes();
       if (layer->GetRasterSource()->HasText()) {
         layers_with_text_count++;
@@ -1527,13 +1525,6 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
           layers_with_text_no_lcd_text_count++;
         }
       }
-    }
-
-    if (total_memory_in_bytes != 0) {
-      UMA_HISTOGRAM_COUNTS_1M(
-          base::StringPrintf("Compositing.%s.PictureMemoryUsageKb",
-                             client_name),
-          base::saturated_cast<int>(total_memory_in_bytes / 1024));
     }
 
     UMA_HISTOGRAM_CUSTOM_COUNTS(

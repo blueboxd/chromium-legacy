@@ -1444,7 +1444,7 @@ void StoragePartitionImpl::Initialize() {
   native_file_system_manager_->BindInternalsReceiver(
       native_file_system_context.InitWithNewPipeAndPassReceiver());
   base::FilePath path = is_in_memory_ ? base::FilePath() : partition_path_;
-  indexed_db_context_ = new IndexedDBContextImpl(
+  indexed_db_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
       path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy,
       base::DefaultClock::GetInstance(),
       ChromeBlobStorageContext::GetRemoteFor(browser_context_),

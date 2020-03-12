@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -70,9 +71,17 @@ class ColorPickerElementView : public views::Button,
     views::HighlightPathGenerator::Install(
         this, std::make_unique<ColorPickerHighlightPathGenerator>());
 
-    SetBorder(
-        views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
-            views::INSETS_VECTOR_IMAGE_BUTTON)));
+    // When calculating padding, halve the value because color elements are
+    // displayed side-by-side and each contribute half the spacing between them.
+    const int padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
+                            views::DISTANCE_RELATED_BUTTON_HORIZONTAL) /
+                        2;
+    // The padding of the color element circle is adaptive, to improve the hit
+    // target size on touch devices.
+    gfx::Insets insets = ui::TouchUiController::Get()->touch_ui()
+                             ? gfx::Insets(padding * 2)
+                             : gfx::Insets(padding);
+    SetBorder(views::CreateEmptyBorder(insets));
 
     SetInkDropMode(InkDropMode::OFF);
     set_animate_on_state_change(true);
@@ -113,7 +122,12 @@ class ColorPickerElementView : public views::Button,
 
   gfx::Size CalculatePreferredSize() const override {
     const gfx::Insets insets = GetInsets();
-    gfx::Size size(gfx::kFaviconSize, gfx::kFaviconSize);
+    // The size of the color element circle is adaptive, to improve the hit
+    // target size on touch devices.
+    const int circle_size = ui::TouchUiController::Get()->touch_ui()
+                                ? 3 * gfx::kFaviconSize / 2
+                                : gfx::kFaviconSize;
+    gfx::Size size(circle_size, circle_size);
     size.Enlarge(insets.width(), insets.height());
     return size;
   }
@@ -186,6 +200,8 @@ ColorPickerView::ColorPickerView(
     SkColor initial_color,
     ColorSelectedCallback callback)
     : callback_(std::move(callback)) {
+  DCHECK(!colors.empty());
+
   elements_.reserve(colors.size());
   for (const auto& color : colors) {
     // Create the views for each color, passing them our callback and saving
@@ -197,6 +213,13 @@ ColorPickerView::ColorPickerView(
     if (initial_color == color.first)
       elements_.back()->SetSelected(true);
   }
+
+  // Set the internal padding to be equal to the horizontal insets of a color
+  // picker element, since that is the amount by which the color picker's
+  // margins should be adjusted to make it visually align with other controls.
+  gfx::Insets child_insets = elements_[0]->GetInsets();
+  SetProperty(views::kInternalPaddingKey,
+              gfx::Insets(0, child_insets.left(), 0, child_insets.right()));
 
   // Our children should take keyboard focus, not us.
   SetFocusBehavior(views::View::FocusBehavior::NEVER);

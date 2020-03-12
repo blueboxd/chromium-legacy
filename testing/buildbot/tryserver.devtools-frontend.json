@@ -24,6 +24,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test_target": "//:blink_web_tests"
@@ -50,6 +51,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test_target": "//:devtools_web_tests"
@@ -78,6 +80,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
         "test_target": "//:blink_web_tests"
@@ -104,6 +107,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test_target": "//:devtools_web_tests"

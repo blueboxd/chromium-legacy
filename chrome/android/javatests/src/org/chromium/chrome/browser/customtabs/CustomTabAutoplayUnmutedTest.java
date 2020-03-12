@@ -43,7 +43,7 @@ public final class CustomTabAutoplayUnmutedTest {
     private @ActivityType int mActivityType;
 
     @Rule
-    public final ChromeActivityTestRule mActivityTestRule;
+    public final ChromeActivityTestRule<?> mActivityTestRule;
 
     public CustomTabAutoplayUnmutedTest(@ActivityType int activityType) {
         mActivityType = activityType;

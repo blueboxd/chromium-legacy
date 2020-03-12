@@ -4,6 +4,7 @@
 
 #include "ui/views/paint_info.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"

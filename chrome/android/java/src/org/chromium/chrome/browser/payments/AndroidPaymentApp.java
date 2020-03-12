@@ -4,27 +4,21 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.os.IBinder;
-import android.os.RemoteException;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.IsReadyToPayService;
-import org.chromium.IsReadyToPayServiceCallback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.components.payments.ErrorStrings;
+import org.chromium.components.payments.intent.IsReadyToPayServiceHelper;
 import org.chromium.components.payments.intent.WebPaymentIntentHelper;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
@@ -48,15 +42,8 @@ import java.util.Set;
  * The point of interaction with a locally installed 3rd party native Android payment app.
  * https://developers.google.com/web/fundamentals/payments/payment-apps-developer-guide/android-payment-apps
  */
-public class AndroidPaymentApp extends PaymentApp implements WindowAndroid.IntentCallback {
-    /** The maximum number of milliseconds to wait for a response from a READY_TO_PAY service. */
-    private static final long READY_TO_PAY_TIMEOUT_MS = 400;
-
-    /** The maximum number of milliseconds to wait for a connection to READY_TO_PAY service. */
-    private static final long SERVICE_CONNECTION_TIMEOUT_MS = 1000;
-
-    private static final String EMPTY_JSON_DATA = "{}";
-
+public class AndroidPaymentApp extends PaymentApp
+        implements WindowAndroid.IntentCallback, IsReadyToPayServiceHelper.ResultHandler {
     private final Handler mHandler;
     private final WebContents mWebContents;
     private final Set<String> mMethodNames;
@@ -66,11 +53,9 @@ public class AndroidPaymentApp extends PaymentApp implements WindowAndroid.Inten
     private final String mIsReadyToPayServiceName;
     private IsReadyToPayCallback mIsReadyToPayCallback;
     private InstrumentDetailsCallback mInstrumentDetailsCallback;
-    private ServiceConnection mServiceConnection;
+    private IsReadyToPayServiceHelper mIsReadyToPayServiceHelper;
     @Nullable
     private String mApplicationIdentifierToHide;
-    private boolean mIsReadyToPayQueried;
-    private boolean mIsServiceBindingInitiated;
     private boolean mBypassIsReadyToPayServiceInTest;
 
     /**
@@ -127,6 +112,7 @@ public class AndroidPaymentApp extends PaymentApp implements WindowAndroid.Inten
     /* package */ void maybeQueryIsReadyToPayService(Map<String, PaymentMethodData> methodDataMap,
             String origin, String iframeOrigin, @Nullable byte[][] certificateChain,
             Map<String, PaymentDetailsModifier> modifiers, IsReadyToPayCallback callback) {
+        ThreadUtils.assertOnUiThread();
         assert mMethodNames.containsAll(methodDataMap.keySet());
         assert mIsReadyToPayCallback
                 == null : "Have not responded to previous IS_READY_TO_PAY request";
@@ -138,62 +124,17 @@ public class AndroidPaymentApp extends PaymentApp implements WindowAndroid.Inten
         }
 
         assert !mIsIncognito;
-        mServiceConnection = new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-                IsReadyToPayService isReadyToPayService =
-                        IsReadyToPayService.Stub.asInterface(service);
-                if (isReadyToPayService == null) {
-                    respondToIsReadyToPayQuery(false);
-                } else {
-                    sendIsReadyToPayIntentToPaymentApp(isReadyToPayService);
-                }
-            }
-
-            // "Called when a connection to the Service has been lost. This typically happens when
-            // the process hosting the service has crashed or been killed. This does not remove the
-            // ServiceConnection itself -- this binding to the service will remain active, and you
-            // will receive a call to onServiceConnected(ComponentName, IBinder) when the Service is
-            // next running."
-            // https://developer.android.com/reference/android/content/ServiceConnection.html#onServiceDisconnected(android.content.ComponentName)
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-                // Do not wait for the service to restart.
-                respondToIsReadyToPayQuery(false);
-            }
-        };
 
         Intent isReadyToPayIntent = WebPaymentIntentHelper.createIsReadyToPayIntent(
                 /*packageName=*/mPackageName, /*serviceName=*/mIsReadyToPayServiceName,
                 removeUrlScheme(origin), removeUrlScheme(iframeOrigin), certificateChain,
                 WebPaymentIntentHelperTypeConverter.fromMojoPaymentMethodDataMap(methodDataMap));
-
         if (mBypassIsReadyToPayServiceInTest) {
             respondToIsReadyToPayQuery(true);
             return;
         }
-
-        try {
-            // This method returns "true if the system is in the process of bringing up a service
-            // that your client has permission to bind to; false if the system couldn't find the
-            // service or if your client doesn't have permission to bind to it. If this value is
-            // true, you should later call unbindService(ServiceConnection) to release the
-            // connection."
-            // https://developer.android.com/reference/android/content/Context.html#bindService(android.content.Intent,%20android.content.ServiceConnection,%20int)
-            mIsServiceBindingInitiated = ContextUtils.getApplicationContext().bindService(
-                    isReadyToPayIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
-        } catch (SecurityException e) {
-            // Intentionally blank, so mIsServiceBindingInitiated is false.
-        }
-
-        if (!mIsServiceBindingInitiated) {
-            respondToIsReadyToPayQuery(false);
-            return;
-        }
-
-        mHandler.postDelayed(() -> {
-            if (!mIsReadyToPayQueried) respondToIsReadyToPayQuery(false);
-        }, SERVICE_CONNECTION_TIMEOUT_MS);
+        mIsReadyToPayServiceHelper = new IsReadyToPayServiceHelper(
+                ContextUtils.getApplicationContext(), isReadyToPayIntent, /*resultHandler=*/this);
     }
 
     @VisibleForTesting
@@ -203,41 +144,9 @@ public class AndroidPaymentApp extends PaymentApp implements WindowAndroid.Inten
 
     private void respondToIsReadyToPayQuery(boolean isReadyToPay) {
         ThreadUtils.assertOnUiThread();
-        if (mServiceConnection != null) {
-            if (mIsServiceBindingInitiated) {
-                // mServiceConnection "parameter must not be null."
-                // https://developer.android.com/reference/android/content/Context.html#unbindService(android.content.ServiceConnection)
-                ContextUtils.getApplicationContext().unbindService(mServiceConnection);
-                mIsServiceBindingInitiated = false;
-            }
-            mServiceConnection = null;
-        }
-
         if (mIsReadyToPayCallback == null) return;
         mIsReadyToPayCallback.onIsReadyToPayResponse(/*app=*/this, isReadyToPay);
         mIsReadyToPayCallback = null;
-    }
-
-    private void sendIsReadyToPayIntentToPaymentApp(IsReadyToPayService isReadyToPayService) {
-        ThreadUtils.assertOnUiThread();
-        if (mIsReadyToPayCallback == null) return;
-        mIsReadyToPayQueried = true;
-        IsReadyToPayServiceCallback.Stub callback = new IsReadyToPayServiceCallback.Stub() {
-            @Override
-            public void handleIsReadyToPay(boolean isReadyToPay) throws RemoteException {
-                PostTask.runOrPostTask(
-                        UiThreadTaskTraits.DEFAULT, () -> respondToIsReadyToPayQuery(isReadyToPay));
-            }
-        };
-        try {
-            isReadyToPayService.isReadyToPay(callback);
-        } catch (Throwable e) {
-            // Many undocumented exceptions are not caught in the remote Service but passed on to
-            // the Service caller, see writeException in Parcel.java.
-            respondToIsReadyToPayQuery(false);
-            return;
-        }
-        mHandler.postDelayed(() -> respondToIsReadyToPayQuery(false), READY_TO_PAY_TIMEOUT_MS);
     }
 
     @Override
@@ -348,4 +257,16 @@ public class AndroidPaymentApp extends PaymentApp implements WindowAndroid.Inten
 
     @Override
     public void dismissInstrument() {}
+
+    // IsReadyToPayServiceHelper.ResultHandler:
+    @Override
+    public void onIsReadyToPayServiceError() {
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> respondToIsReadyToPayQuery(false));
+    }
+
+    @Override
+    public void onIsReadyToPayServiceResponse(boolean isReadyToPay) {
+        PostTask.runOrPostTask(
+                UiThreadTaskTraits.DEFAULT, () -> respondToIsReadyToPayQuery(isReadyToPay));
+    }
 }

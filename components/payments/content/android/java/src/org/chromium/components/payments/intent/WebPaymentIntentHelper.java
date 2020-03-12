@@ -74,7 +74,7 @@ public class WebPaymentIntentHelper {
          * @param methodName The method name parsed from the intent response.
          * @param details The instrument details parsed from the intent response.
          */
-        void onSuccess(String methodName, String details);
+        void onIsReadyToPayServiceResponse(String methodName, String details);
     }
 
     /**
@@ -105,7 +105,8 @@ public class WebPaymentIntentHelper {
             if (methodName == null) methodName = "";
             // TODO(crbug.com/1026667): Support payer data delegation for native apps instead of
             // returning empty PayerData.
-            successCallback.onSuccess(/*methodName=*/methodName, /*details=*/details);
+            successCallback.onIsReadyToPayServiceResponse(
+                    /*methodName=*/methodName, /*details=*/details);
         }
     }
 

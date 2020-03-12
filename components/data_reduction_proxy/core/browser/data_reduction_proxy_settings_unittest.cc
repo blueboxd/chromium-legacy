@@ -187,14 +187,6 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
         test_url_loader_factory.GetPendingRequest(0),
         std::move(url_response_head), test_case.response_body,
         network::URLLoaderCompletionStatus(test_case.net_error_code));
-
-    if (test_case.expected_restricted) {
-      EXPECT_EQ(std::vector<net::ProxyServer>(1, kHttpProxy),
-                drp_test_context->GetConfiguredProxiesForHttp());
-    } else {
-      EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
-                drp_test_context->GetConfiguredProxiesForHttp());
-    }
   }
 }
 

@@ -4209,6 +4209,117 @@ TEST_F(DisplayTest, DrawOcclusionSplit) {
   TearDownDisplay();
 }
 
+// Tests cases in which occlusion culling splits are performed due to first pass
+// complexity reduction in visible regions. For more details, see:
+// https://tinyurl.com/RegionComplexityReduction#heading=h.fg95k5w5t791
+TEST_F(DisplayTest, FirstPassVisibleComplexityReduction) {
+  SetUpGpuDisplay(RendererSettings());
+
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+
+  CompositorFrame frame = MakeDefaultCompositorFrame();
+
+  const bool is_clipped = false;
+  const bool are_contents_opaque = true;
+  const float opacity = 1.f;
+
+  //  +---------+-------+--------------+
+  //  |*********|       |**************|
+  //  |*********|       +------+*******|
+  //  |*********|       |      |*******|
+  //  |*********|       +------+*******|
+  //  |*********|       |**************|
+  //  +---------+-------+--------------+
+  //
+  //  *--> occluded quad
+  //
+  // This configuration will produce the following visible region for the
+  // occluded quad.
+  //  +---------+       +--------------+
+  //  |    1    |       |      2       |
+  //  |---------+       +------+-------|
+  //  |    3    |              |   4   |
+  //  |---------+       +------+-------|
+  //  |    5    |       |      6       |
+  //  +---------+       +--------------+
+  //
+  // The above split is unnecessarily complex. Rectangles 1, 3, and 5 should be
+  // merged:
+  //  +---------+       +--------------+
+  //  |         |       |      2       |
+  //  |         |       +------+-------|
+  //  |    1    |              |   3   |
+  //  |         |       +------+-------|
+  //  |         |       |      4       |
+  //  +---------+       +--------------+
+  //
+  // If the merge is not done, this visible region will be discarded and the
+  // quad will not be split.
+
+  const gfx::Rect occluding_rects[2] = {
+      gfx::Rect(300, 0, 550, 270),
+      gfx::Rect(850, 50, 150, 150),
+  };
+  for (const auto& r : occluding_rects) {
+    SharedQuadState* shared_quad_state_occluder =
+        frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
+    shared_quad_state_occluder->SetAll(gfx::Transform(), r, r, gfx::RRectF(), r,
+                                       is_clipped, are_contents_opaque, opacity,
+                                       SkBlendMode::kSrcOver, 0);
+    SolidColorDrawQuad* quad =
+        frame.render_pass_list.front()
+            ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+    quad->SetNew(shared_quad_state_occluder, r, r, SK_ColorRED, false);
+  }
+
+  const gfx::Rect occluded_rect(0, 0, 1350, 270);
+  {
+    SharedQuadState* shared_quad_state_occluded =
+        frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
+    shared_quad_state_occluded->SetAll(
+        gfx::Transform(), occluded_rect, occluded_rect, gfx::RRectF(),
+        occluded_rect, is_clipped, are_contents_opaque, opacity,
+        SkBlendMode::kSrcOver, 0);
+    SolidColorDrawQuad* occluded_quad =
+        frame.render_pass_list.front()
+            ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+    occluded_quad->SetNew(shared_quad_state_occluded, occluded_rect,
+                          occluded_rect, SK_ColorRED, false);
+  }
+
+  EXPECT_EQ(3u, frame.render_pass_list.front()->quad_list.size());
+  display_->RemoveOverdrawQuads(&frame);
+  ASSERT_EQ(6u, frame.render_pass_list.front()->quad_list.size());
+
+  //  Expected visible quads:
+  //  +---------+-------+--------------+
+  //  |*********|       |******4*******|
+  //  |*********|       +------+-------|
+  //  |****3****|   1   |   2  |***5***|
+  //  |*********|       +------+-------|
+  //  |*********|       |******6*******|
+  //  +---------+-------+--------------+
+  //
+  // * -> Visible rect for the quads.
+
+  const gfx::Rect expected_visible_rects[6] = {
+      occluding_rects[0],
+      occluding_rects[1],
+      gfx::Rect(0, 0, 300, 270),
+      gfx::Rect(850, 0, 500, 50),
+      gfx::Rect(1000, 50, 350, 150),
+      gfx::Rect(850, 200, 500, 70),
+  };
+
+  for (size_t i = 0; i < base::size(expected_visible_rects); ++i) {
+    EXPECT_EQ(
+        expected_visible_rects[i],
+        frame.render_pass_list.front()->quad_list.ElementAt(i)->visible_rect);
+  }
+  TearDownDisplay();
+}
+
 // Test that the threshold we use to determine if it's worth splitting a quad or
 // not takes into account the device scale factor. In particular, this test
 // would not pass if we had a display scale factor equal to 1.f instead of 1.5f

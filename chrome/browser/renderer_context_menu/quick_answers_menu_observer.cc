@@ -72,7 +72,7 @@ QuickAnswersMenuObserver::QuickAnswersMenuObserver(
         content::BrowserContext::GetDefaultStoragePartition(browser_context)
             ->GetURLLoaderFactoryForBrowserProcess()
             .get(),
-        assistant_state, this);
+        assistant_state, /*delegate=*/this);
     quick_answers_controller_ = ash::QuickAnswersController::Get();
     DCHECK(quick_answers_controller_);
     quick_answers_controller_->SetClient(std::make_unique<QuickAnswersClient>(
@@ -139,7 +139,7 @@ void QuickAnswersMenuObserver::OnContextMenuShown(
   if (selected_text.empty())
     return;
 
-  quick_answers_controller_->CreateQuickAnswersView(bounds, selected_text);
+  quick_answers_controller_->MaybeShowQuickAnswers(bounds, selected_text);
 }
 
 void QuickAnswersMenuObserver::OnMenuClosed() {
@@ -149,7 +149,7 @@ void QuickAnswersMenuObserver::OnMenuClosed() {
   if (!is_eligible_ || !quick_answers_controller_)
     return;
 
-  quick_answers_controller_->DismissQuickAnswersView();
+  quick_answers_controller_->DismissQuickAnswers();
 }
 
 bool QuickAnswersMenuObserver::IsCommandIdSupported(int command_id) {

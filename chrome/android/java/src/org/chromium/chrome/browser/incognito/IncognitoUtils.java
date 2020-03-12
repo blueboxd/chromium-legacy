@@ -41,7 +41,8 @@ public class IncognitoUtils {
      * happen, which can leave behind incognito cookies from an existing session.
      */
     @SuppressLint("NewApi")
-    public static boolean shouldDestroyIncognitoProfileOnStartup() {
+    public static boolean shouldDestroyIncognitoProfileOnStartup(
+            boolean selectedTabModelIsIncognito) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
                 || !Profile.getLastUsedRegularProfile().hasOffTheRecordProfile()) {
             return false;
@@ -71,10 +72,10 @@ public class IncognitoUtils {
         }
 
         // If all tabbed mode tasks listed in Android recents are alive, check to see if
-        // any have incognito tabs exist.  If all are alive and no tabs exist, we should ensure that
-        // we delete the incognito profile if one is around still.
+        // any incognito tabs exist and the current tab model isn't incognito. If so, we should
+        // destroy the incognito profile; otherwise it's not safe to do so yet.
         if (tabbedModeTaskIds.size() == 0) {
-            return !doIncognitoTabsExist();
+            return !(doIncognitoTabsExist() || selectedTabModelIsIncognito);
         }
 
         // In this case, we have tabbed mode activities listed in recents that do not have an
@@ -83,7 +84,6 @@ public class IncognitoUtils {
         // tabbed mode.  Thus we do not proactively destroy the incognito profile.
         return false;
     }
-
 
     /**
      * Determine whether there are any incognito tabs.

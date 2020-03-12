@@ -5,6 +5,9 @@
 #ifndef UI_VIEWS_WIDGET_NATIVE_WIDGET_MAC_H_
 #define UI_VIEWS_WIDGET_NATIVE_WIDGET_MAC_H_
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/window_open_disposition.h"

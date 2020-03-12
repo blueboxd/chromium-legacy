@@ -62,12 +62,12 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 base::OnceClosure task);
 
 // Simulate a mouse move.
-bool SendMouseMove(long screen_x, long screen_y);
+bool SendMouseMove(int screen_x, int screen_y);
 
 // Returns false on Windows if the desired position is not over a window
 // belonging to the current process.
-bool SendMouseMoveNotifyWhenDone(long screen_x,
-                                 long screen_y,
+bool SendMouseMoveNotifyWhenDone(int screen_x,
+                                 int screen_y,
                                  base::OnceClosure task);
 
 enum MouseButton {

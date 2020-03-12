@@ -4,6 +4,8 @@
 
 #include "ui/views/layout/layout_provider.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/style/typography.h"

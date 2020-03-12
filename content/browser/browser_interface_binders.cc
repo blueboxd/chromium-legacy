@@ -767,10 +767,10 @@ void PopulateBinderMapWithContext(
   }
   map->Add<blink::mojom::NotificationService>(BindWorkerReceiverForOrigin(
       &RenderProcessHost::CreateNotificationService, host));
+  map->Add<blink::mojom::IDBFactory>(
+      BindWorkerReceiverForOrigin(&RenderProcessHost::BindIndexedDB, host));
 
   // render process host binders taking a frame id and an origin
-  map->Add<blink::mojom::IDBFactory>(BindWorkerReceiverForOriginAndFrameId(
-      &RenderProcessHost::BindIndexedDB, host));
   map->Add<blink::mojom::LockManager>(BindWorkerReceiverForOriginAndFrameId(
       &RenderProcessHost::CreateLockManager, host));
   map->Add<blink::mojom::QuotaDispatcherHost>(
@@ -837,12 +837,12 @@ void PopulateBinderMapWithContext(
       &RenderProcessHost::CreateNotificationService, host));
   map->Add<blink::mojom::WebSocketConnector>(BindWorkerReceiverForOrigin(
       &RenderProcessHost::CreateWebSocketConnector, host));
+  map->Add<blink::mojom::IDBFactory>(
+      BindWorkerReceiverForOrigin(&RenderProcessHost::BindIndexedDB, host));
 
   // render process host binders taking a frame id and an origin
   map->Add<blink::mojom::LockManager>(BindWorkerReceiverForOriginAndFrameId(
       &RenderProcessHost::CreateLockManager, host));
-  map->Add<blink::mojom::IDBFactory>(BindWorkerReceiverForOriginAndFrameId(
-      &RenderProcessHost::BindIndexedDB, host));
   map->Add<blink::mojom::QuotaDispatcherHost>(
       BindWorkerReceiverForOriginAndFrameId(
           &RenderProcessHost::BindQuotaDispatcherHost, host));
@@ -939,11 +939,10 @@ void PopulateBinderMapWithContext(
       BindServiceWorkerReceiverForOrigin(
           &RenderProcessHost::BindRestrictedCookieManagerForServiceWorker,
           host));
+  map->Add<blink::mojom::IDBFactory>(BindServiceWorkerReceiverForOrigin(
+      &RenderProcessHost::BindIndexedDB, host));
 
   // render process host binders taking a frame id and an origin
-  map->Add<blink::mojom::IDBFactory>(
-      BindServiceWorkerReceiverForOriginAndFrameId(
-          &RenderProcessHost::BindIndexedDB, host));
   map->Add<blink::mojom::LockManager>(
       BindServiceWorkerReceiverForOriginAndFrameId(
           &RenderProcessHost::CreateLockManager, host));

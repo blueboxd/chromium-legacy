@@ -257,7 +257,7 @@ void X11WholeScreenMoveLoop::GrabEscKey() {
 }
 
 void X11WholeScreenMoveLoop::CreateDragInputWindow(XDisplay* display) {
-  unsigned long attribute_mask = CWEventMask | CWOverrideRedirect;
+  unsigned long attribute_mask = CWOverrideRedirect;
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
   swa.override_redirect = x11::True;

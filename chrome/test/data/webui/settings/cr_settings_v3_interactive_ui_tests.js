@@ -45,6 +45,12 @@ var SettingsUIV3InteractiveTest = class extends CrSettingsV3InteractiveUITest {
   }
 };
 
-TEST_F('SettingsUIV3InteractiveTest', 'All', function() {
+// Times out on Mac. See https://crbug.com/1060981.
+GEN('#if defined(OS_MACOSX)');
+GEN('#define MAYBE_SettingsUIV3 DISABLED_SettingsUIV3');
+GEN('#else');
+GEN('#define MAYBE_SettingsUIV3 SettingsUIV3');
+GEN('#endif');
+TEST_F('SettingsUIV3InteractiveTest', 'MAYBE_SettingsUIV3', function() {
   mocha.run();
 });

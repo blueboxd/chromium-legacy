@@ -21,7 +21,6 @@ import org.chromium.weblayer.shell.InstrumentationActivity;
 import java.lang.ref.PhantomReference;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * Basic tests to make sure WebLayer works as expected.
@@ -40,7 +39,7 @@ public class SmokeTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { activity.getBrowser().setSupportsEmbedding(true, (result) -> {}); });
 
-        CountDownLatch latch = new CountDownLatch(1);
+        BoundedCountDownLatch latch = new BoundedCountDownLatch(1);
         String url = "data:text,foo";
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -50,11 +49,7 @@ public class SmokeTest {
             });
         });
 
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            Assert.fail(e.toString());
-        }
+        latch.timedAwait();
         mActivityTestRule.navigateAndWait(url);
     }
 

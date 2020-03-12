@@ -29,7 +29,8 @@
               "os": "Android"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -58,7 +59,8 @@
               "os": "Android"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -87,7 +89,8 @@
               "os": "Android"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -116,7 +119,8 @@
               "os": "Android"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -232,7 +236,8 @@
               "os": "Android"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -261,7 +266,8 @@
               "os": "Android"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -292,6 +298,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
         }
       },
@@ -323,6 +330,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
         }
       }
@@ -355,7 +363,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -383,7 +392,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -411,7 +421,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -439,7 +450,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -552,7 +564,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -580,7 +593,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -611,6 +625,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         }
       },
@@ -641,6 +656,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         }
       }
@@ -673,7 +689,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -701,7 +718,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -729,7 +747,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -757,7 +776,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -870,7 +890,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -898,7 +919,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -929,6 +951,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         }
       },
@@ -959,6 +982,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         }
       }
@@ -990,7 +1014,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1017,7 +1042,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1044,7 +1070,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1071,7 +1098,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1181,7 +1209,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1208,7 +1237,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1238,6 +1268,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         }
       },
@@ -1267,6 +1298,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         }
       }
@@ -1294,7 +1326,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_unittests",
         "test_target": "//third_party/blink/renderer/controller:blink_unittests"
@@ -1321,6 +1354,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
         "test_target": "//:blink_web_tests"
@@ -1344,7 +1378,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_unittests",
         "test_target": "//third_party/blink/renderer/controller:blink_unittests"
@@ -1372,6 +1407,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
         "test_target": "//:blink_web_tests"
@@ -1395,7 +1431,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_unittests",
         "test_target": "//third_party/blink/renderer/controller:blink_unittests"
@@ -1423,6 +1460,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
         "test_target": "//:blink_web_tests"
@@ -1447,7 +1485,8 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "hard_timeout": 900
+          "hard_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_unittests",
         "test_target": "//third_party/blink/renderer/controller:blink_unittests"
@@ -1475,6 +1514,7 @@
             }
           ],
           "hard_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
         "test_target": "//:blink_web_tests"
@@ -1498,7 +1538,8 @@
             {
               "os": "Mac-10.13"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_unittests",
         "test_target": "//third_party/blink/renderer/controller:blink_unittests"
@@ -1525,6 +1566,7 @@
               "os": "Mac-10.13"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
         "test_target": "//:blink_web_tests"
@@ -1553,6 +1595,7 @@
               "os": "Windows-10-15063"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
         "test_target": "//:blink_web_tests"
@@ -1636,7 +1679,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1664,7 +1708,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1692,7 +1737,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1720,7 +1766,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1833,7 +1880,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1861,7 +1909,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1892,6 +1941,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         }
       },
@@ -1922,6 +1972,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         }
       }

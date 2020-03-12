@@ -665,13 +665,13 @@ public class NfcImpl implements Nfc {
     protected void processPendingOperations(NfcTagHandler tagHandler) {
         mTagHandler = tagHandler;
 
-        // This tag is not NDEF compatible.
+        // This tag is not supported.
         if (mTagHandler == null) {
-            Log.w(TAG, "This tag is not NDEF compatible.");
+            Log.w(TAG, "This tag is not supported.");
             notifyErrorToAllWatchers(
-                    createError(NdefErrorType.NOT_SUPPORTED, "This tag is not NDEF compatible."));
+                    createError(NdefErrorType.NOT_SUPPORTED, "This tag is not supported."));
             pendingPushOperationCompleted(
-                    createError(NdefErrorType.NOT_SUPPORTED, "This tag is not NDEF compatible."));
+                    createError(NdefErrorType.NOT_SUPPORTED, "This tag is not supported."));
             return;
         }
 

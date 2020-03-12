@@ -454,7 +454,6 @@ void SafeBrowsingUrlCheckerImpl::StartLookupOnUIThread(
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager) {
   DCHECK(CurrentlyOnThread(ThreadID::UI));
   if (!url_lookup_service_on_ui ||
-      !url_lookup_service_on_ui->CanCheckUrl(url) ||
       url_lookup_service_on_ui->IsInBackoffMode()) {
     base::PostTask(
         FROM_HERE, CreateTaskTraits(ThreadID::IO),

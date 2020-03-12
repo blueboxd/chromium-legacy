@@ -79,7 +79,13 @@ HeaderEndpointOutcome ProcessEndpoint(
   if (!dict->GetString(kUrlKey, &endpoint_url_string))
     return HeaderEndpointOutcome::DISCARDED_URL_NOT_STRING;
 
-  GURL endpoint_url(endpoint_url_string);
+  GURL endpoint_url;
+  // Support path-absolute-URL string
+  if (std::strspn(endpoint_url_string.c_str(), "/") == 1) {
+    endpoint_url = group_key.origin.GetURL().Resolve(endpoint_url_string);
+  } else {
+    endpoint_url = GURL(endpoint_url_string);
+  }
   if (!endpoint_url.is_valid())
     return HeaderEndpointOutcome::DISCARDED_URL_INVALID;
   if (!endpoint_url.SchemeIsCryptographic())

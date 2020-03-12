@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -461,7 +460,7 @@ public class NavigationTest {
         NavigationController navigationController =
                 runOnUiThreadBlocking(() -> tab.getNavigationController());
 
-        final CountDownLatch navigationComplete = new CountDownLatch(1);
+        final BoundedCountDownLatch navigationComplete = new BoundedCountDownLatch(1);
         final AtomicReference<String> navigationUrl = new AtomicReference<String>();
         NavigationCallback navigationCallback = new NavigationCallback() {
             @Override
@@ -476,7 +475,7 @@ public class NavigationTest {
             navigationController.goToIndex(index);
         });
 
-        navigationComplete.await();
+        navigationComplete.timedAwait();
 
         runOnUiThreadBlocking(
                 () -> { navigationController.unregisterNavigationCallback(navigationCallback); });

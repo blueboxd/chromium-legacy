@@ -10,7 +10,6 @@
 
 #include "base/single_thread_task_runner.h"
 #include "base/time/tick_clock.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_type_info.h"
@@ -22,19 +21,15 @@ using testing::_;
 
 namespace data_reduction_proxy {
 
-TestDataReductionProxyConfig::TestDataReductionProxyConfig(
-    DataReductionProxyConfigurator* configurator)
+TestDataReductionProxyConfig::TestDataReductionProxyConfig()
     : TestDataReductionProxyConfig(
-          std::make_unique<TestDataReductionProxyParams>(),
-          configurator) {}
+          std::make_unique<TestDataReductionProxyParams>()) {}
 
 TestDataReductionProxyConfig::TestDataReductionProxyConfig(
-    std::unique_ptr<DataReductionProxyConfigValues> config_values,
-    DataReductionProxyConfigurator* configurator)
+    std::unique_ptr<DataReductionProxyConfigValues> config_values)
     : DataReductionProxyConfig(
           network::TestNetworkConnectionTracker::GetInstance(),
-          std::move(config_values),
-          configurator),
+          std::move(config_values)),
       tick_clock_(nullptr),
       is_captive_portal_(false),
       add_default_proxy_bypass_rules_(true) {}
@@ -71,14 +66,6 @@ void TestDataReductionProxyConfig::SetIsCaptivePortal(bool is_captive_portal) {
 
 bool TestDataReductionProxyConfig::GetIsCaptivePortal() const {
   return is_captive_portal_;
-}
-
-void TestDataReductionProxyConfig::AddDefaultProxyBypassRules() {
-  if (!add_default_proxy_bypass_rules_) {
-    // Set bypass rules which allow proxying localhost.
-    configurator_->SetBypassRules(
-        net::ProxyBypassRules::GetRulesToSubtractImplicit());
-  }
 }
 
 void TestDataReductionProxyConfig::SetShouldAddDefaultProxyBypassRules(
@@ -137,10 +124,8 @@ void TestDataReductionProxyConfig::SetWarmupURLFetchAttemptCounts(
 }
 
 MockDataReductionProxyConfig::MockDataReductionProxyConfig(
-    std::unique_ptr<DataReductionProxyConfigValues> config_values,
-    DataReductionProxyConfigurator* configurator)
-    : TestDataReductionProxyConfig(std::move(config_values),
-                                   configurator) {}
+    std::unique_ptr<DataReductionProxyConfigValues> config_values)
+    : TestDataReductionProxyConfig(std::move(config_values)) {}
 
 MockDataReductionProxyConfig::~MockDataReductionProxyConfig() {
 }

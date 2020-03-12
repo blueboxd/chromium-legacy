@@ -30,6 +30,7 @@
           ],
           "expiration": 18000,
           "hard_timeout": 14400,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 15
         },
         "test_target": "//weblayer/shell/android:weblayer_shell_wpt"
@@ -80,7 +81,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "android_webview_unittests",
         "test_target": "//android_webview/test:android_webview_unittests"
@@ -127,7 +129,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "system_webview_shell_layout_test_apk",
         "test_target": "//android_webview/tools/system_webview_shell:system_webview_shell_layout_test_apk"
@@ -180,6 +183,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "webview_cts_tests",
@@ -235,6 +239,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "webview_cts_tests",
@@ -283,6 +288,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
         "test": "webview_instrumentation_test_apk",
@@ -330,7 +336,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "webview_ui_test_app_test_apk",
         "test_target": "//android_webview/tools/automated_ui_tests:webview_ui_test_app_test_apk"
@@ -367,6 +374,7 @@
           ],
           "expiration": 18000,
           "hard_timeout": 14400,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 15
         },
         "test_target": "//chrome/android:chrome_public_wpt"
@@ -401,6 +409,7 @@
           ],
           "expiration": 18000,
           "hard_timeout": 14400,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 15
         },
         "test_target": "//android_webview/test:system_webview_wpt"
@@ -453,6 +462,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
         "test": "webview_instrumentation_test_apk",
@@ -487,6 +497,7 @@
           ],
           "expiration": 18000,
           "hard_timeout": 14400,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 15
         },
         "test_target": "//chrome/android:chrome_public_wpt"
@@ -518,6 +529,7 @@
           ],
           "expiration": 18000,
           "hard_timeout": 14400,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 15
         },
         "test_target": "//android_webview/test:system_webview_wpt"
@@ -569,7 +581,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "android_browsertests",
         "test_target": "//chrome/test:android_browsertests"
@@ -618,6 +631,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -667,6 +681,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "content_browsertests",
@@ -716,6 +731,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
         "test": "content_shell_test_apk",
@@ -765,6 +781,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 10
         },
         "test": "content_unittests",
@@ -814,6 +831,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 10
         },
         "test": "unit_tests",
@@ -876,7 +894,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "android_browsertests",
         "test_target": "//chrome/test:android_browsertests"
@@ -934,7 +953,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "android_webview_unittests",
         "test_target": "//android_webview/test:android_webview_unittests"
@@ -992,7 +1012,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests"
@@ -1050,7 +1071,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
         "test_target": "//base:base_unittests"
@@ -1108,7 +1130,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_util_unittests",
         "test_target": "//base/util:base_util_unittests"
@@ -1166,7 +1189,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_common_unittests",
         "test_target": "//third_party/blink/common:blink_common_unittests"
@@ -1224,7 +1248,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_heap_unittests",
         "test_target": "//third_party/blink/renderer/platform/heap:blink_heap_unittests"
@@ -1282,7 +1307,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_platform_unittests",
         "test_target": "//third_party/blink/renderer/platform:blink_platform_unittests"
@@ -1342,6 +1368,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test": "blink_unittests",
@@ -1400,7 +1427,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_crypto_tests",
         "test_target": "//third_party/boringssl:boringssl_crypto_tests"
@@ -1458,7 +1486,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_ssl_tests",
         "test_target": "//third_party/boringssl:boringssl_ssl_tests"
@@ -1516,7 +1545,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "breakpad_unittests",
         "test_target": "//third_party/breakpad:breakpad_unittests"
@@ -1574,7 +1604,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cacheinvalidation_unittests",
         "test_target": "//third_party/cacheinvalidation:cacheinvalidation_unittests"
@@ -1633,7 +1664,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "capture_unittests",
         "test_target": "//media/capture:capture_unittests"
@@ -1691,7 +1723,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_unittests",
         "test_target": "//media/cast:cast_unittests"
@@ -1750,7 +1783,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cc_unittests",
         "test_target": "//cc:cc_unittests"
@@ -1808,7 +1842,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chrome_modern_public_bundle_fake_modules_smoke_test",
         "test_target": "//chrome/android:chrome_modern_public_bundle_fake_modules_smoke_test"
@@ -1866,7 +1901,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chrome_modern_public_bundle_smoke_test",
         "test_target": "//chrome/android:chrome_modern_public_bundle_smoke_test"
@@ -1924,7 +1960,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chrome_modern_public_smoke_test",
         "test_target": "//chrome/android:chrome_modern_public_smoke_test"
@@ -1982,7 +2019,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chrome_public_smoke_test",
         "test_target": "//chrome/android:chrome_public_smoke_test"
@@ -2041,6 +2079,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -2102,6 +2141,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -2160,7 +2200,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_browsertests",
         "test_target": "//components:components_browsertests"
@@ -2220,7 +2261,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_browsertests",
         "test_target": "//components:components_browsertests"
@@ -2279,6 +2321,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test": "components_unittests",
@@ -2339,6 +2382,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 9
         },
         "test": "content_browsertests",
@@ -2401,6 +2445,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
         "test": "content_browsertests",
@@ -2461,6 +2506,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "content_shell_test_apk",
@@ -2523,6 +2569,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
         "test": "content_shell_test_apk",
@@ -2582,6 +2629,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "content_unittests",
@@ -2640,7 +2688,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crypto_unittests",
         "test_target": "//crypto:crypto_unittests"
@@ -2698,7 +2747,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "device_unittests",
         "test_target": "//device:device_unittests"
@@ -2756,7 +2806,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "display_unittests",
         "test_target": "//ui/display:display_unittests"
@@ -2814,7 +2865,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "events_unittests",
         "test_target": "//ui/events:events_unittests"
@@ -2872,7 +2924,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gcm_unit_tests",
         "test_target": "//google_apis/gcm:gcm_unit_tests"
@@ -2930,7 +2983,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gfx_unittests",
         "test_target": "//ui/gfx:gfx_unittests"
@@ -2988,7 +3042,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gin_unittests",
         "test_target": "//gin:gin_unittests"
@@ -3047,7 +3102,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests"
@@ -3105,7 +3161,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests"
@@ -3163,7 +3220,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "google_apis_unittests",
         "test_target": "//google_apis:google_apis_unittests"
@@ -3221,7 +3279,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gpu_unittests",
         "test_target": "//gpu:gpu_unittests"
@@ -3279,7 +3338,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gwp_asan_unittests",
         "test_target": "//components/gwp_asan:gwp_asan_unittests"
@@ -3337,7 +3397,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ipc_tests",
         "test_target": "//ipc:ipc_tests"
@@ -3395,7 +3456,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "jingle_unittests",
         "test_target": "//jingle:jingle_unittests"
@@ -3453,7 +3515,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "latency_unittests",
         "test_target": "//ui/latency:latency_unittests"
@@ -3511,7 +3574,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "libjingle_xmpp_unittests",
         "test_target": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests"
@@ -3569,7 +3633,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_blink_unittests",
         "test_target": "//media/blink:media_blink_unittests"
@@ -3627,7 +3692,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_service_unittests",
         "test_target": "//media/mojo/services:media_service_unittests"
@@ -3686,7 +3752,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_unittests",
         "test_target": "//media:media_unittests"
@@ -3744,7 +3811,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "midi_unittests",
         "test_target": "//media/midi:midi_unittests"
@@ -3802,7 +3870,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "mojo_test_apk",
         "test_target": "//mojo/public/java/system:mojo_test_apk"
@@ -3860,7 +3929,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "mojo_unittests",
         "test_target": "//mojo:mojo_unittests"
@@ -3920,6 +3990,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "net_unittests",
@@ -3979,7 +4050,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sandbox_linux_unittests",
         "test_target": "//sandbox/linux:sandbox_linux_unittests"
@@ -4037,7 +4109,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "services_unittests",
         "test_target": "//services:services_unittests"
@@ -4095,7 +4168,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "shell_dialogs_unittests",
         "test_target": "//ui/shell_dialogs:shell_dialogs_unittests"
@@ -4153,7 +4227,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "skia_unittests",
         "test_target": "//skia:skia_unittests"
@@ -4211,7 +4286,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sql_unittests",
         "test_target": "//sql:sql_unittests"
@@ -4269,7 +4345,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "storage_unittests",
         "test_target": "//storage:storage_unittests"
@@ -4327,7 +4404,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_android_unittests",
         "test_target": "//ui/android:ui_android_unittests"
@@ -4385,7 +4463,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_base_unittests",
         "test_target": "//ui/base:ui_base_unittests"
@@ -4443,7 +4522,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_touch_selection_unittests",
         "test_target": "//ui/touch_selection:ui_touch_selection_unittests"
@@ -4502,6 +4582,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "unit_tests",
@@ -4560,7 +4641,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "url_unittests",
         "test_target": "//url:url_unittests"
@@ -4619,7 +4701,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "viz_unittests",
         "test_target": "//components/viz:viz_unittests"
@@ -4677,7 +4760,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "weblayer_browsertests",
         "test_target": "//weblayer/test:weblayer_browsertests"
@@ -4735,7 +4819,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "weblayer_instrumentation_test_apk",
         "test_target": "//weblayer/browser/android/javatests:weblayer_instrumentation_test_apk"
@@ -4793,7 +4878,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "weblayer_private_instrumentation_test_apk",
         "test_target": "//weblayer/browser/android/javatests:weblayer_private_instrumentation_test_apk"
@@ -4852,6 +4938,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 7
         },
         "test": "webview_instrumentation_test_apk",
@@ -4914,6 +5001,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "webview_instrumentation_test_apk",
@@ -4972,7 +5060,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "wtf_unittests",
         "test_target": "//third_party/blink/renderer/platform/wtf:wtf_unittests"
@@ -5013,7 +5102,8 @@
               "name": "system_images_android_23_google_apis_x86",
               "path": ".emulator_sdk"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//components:components_perftests"
       },
@@ -5049,7 +5139,8 @@
               "name": "system_images_android_23_google_apis_x86",
               "path": ".emulator_sdk"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//content/shell:content_shell_crash_test"
       },
@@ -5084,7 +5175,8 @@
               "name": "system_images_android_23_google_apis_x86",
               "path": ".emulator_sdk"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/android/monochrome:monochrome_apk_checker"
       },
@@ -5121,6 +5213,7 @@
               "path": ".emulator_sdk"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
         "test_target": "//chrome/test:telemetry_perf_unittests"
@@ -5183,7 +5276,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "android_browsertests",
         "test_target": "//chrome/test:android_browsertests"
@@ -5241,7 +5335,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "android_webview_unittests",
         "test_target": "//android_webview/test:android_webview_unittests"
@@ -5299,7 +5394,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests"
@@ -5357,7 +5453,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
         "test_target": "//base:base_unittests"
@@ -5415,7 +5512,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_util_unittests",
         "test_target": "//base/util:base_util_unittests"
@@ -5473,7 +5571,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_common_unittests",
         "test_target": "//third_party/blink/common:blink_common_unittests"
@@ -5531,7 +5630,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_heap_unittests",
         "test_target": "//third_party/blink/renderer/platform/heap:blink_heap_unittests"
@@ -5589,7 +5689,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_platform_unittests",
         "test_target": "//third_party/blink/renderer/platform:blink_platform_unittests"
@@ -5649,6 +5750,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test": "blink_unittests",
@@ -5707,7 +5809,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_crypto_tests",
         "test_target": "//third_party/boringssl:boringssl_crypto_tests"
@@ -5765,7 +5868,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_ssl_tests",
         "test_target": "//third_party/boringssl:boringssl_ssl_tests"
@@ -5823,7 +5927,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "breakpad_unittests",
         "test_target": "//third_party/breakpad:breakpad_unittests"
@@ -5881,7 +5986,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cacheinvalidation_unittests",
         "test_target": "//third_party/cacheinvalidation:cacheinvalidation_unittests"
@@ -5940,7 +6046,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "capture_unittests",
         "test_target": "//media/capture:capture_unittests"
@@ -5998,7 +6105,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_unittests",
         "test_target": "//media/cast:cast_unittests"
@@ -6057,7 +6165,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cc_unittests",
         "test_target": "//cc:cc_unittests"
@@ -6115,7 +6224,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chrome_java_test_pagecontroller_tests",
         "test_target": "//chrome/test/android:chrome_java_test_pagecontroller_tests"
@@ -6173,7 +6283,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chrome_public_smoke_test",
         "test_target": "//chrome/android:chrome_public_smoke_test"
@@ -6234,6 +6345,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -6297,6 +6409,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -6355,7 +6468,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_browsertests",
         "test_target": "//components:components_browsertests"
@@ -6415,7 +6529,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_browsertests",
         "test_target": "//components:components_browsertests"
@@ -6474,6 +6589,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test": "components_unittests",
@@ -6534,6 +6650,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 9
         },
         "test": "content_browsertests",
@@ -6596,6 +6713,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 10
         },
         "test": "content_browsertests",
@@ -6656,6 +6774,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "content_shell_test_apk",
@@ -6718,6 +6837,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
         "test": "content_shell_test_apk",
@@ -6777,6 +6897,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "content_unittests",
@@ -6835,7 +6956,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crypto_unittests",
         "test_target": "//crypto:crypto_unittests"
@@ -6893,7 +7015,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "device_unittests",
         "test_target": "//device:device_unittests"
@@ -6951,7 +7074,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "display_unittests",
         "test_target": "//ui/display:display_unittests"
@@ -7009,7 +7133,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "events_unittests",
         "test_target": "//ui/events:events_unittests"
@@ -7067,7 +7192,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gcm_unit_tests",
         "test_target": "//google_apis/gcm:gcm_unit_tests"
@@ -7125,7 +7251,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gfx_unittests",
         "test_target": "//ui/gfx:gfx_unittests"
@@ -7183,7 +7310,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gin_unittests",
         "test_target": "//gin:gin_unittests"
@@ -7242,7 +7370,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests"
@@ -7300,7 +7429,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests"
@@ -7358,7 +7488,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "google_apis_unittests",
         "test_target": "//google_apis:google_apis_unittests"
@@ -7416,7 +7547,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gpu_unittests",
         "test_target": "//gpu:gpu_unittests"
@@ -7474,7 +7606,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gwp_asan_unittests",
         "test_target": "//components/gwp_asan:gwp_asan_unittests"
@@ -7532,7 +7665,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ipc_tests",
         "test_target": "//ipc:ipc_tests"
@@ -7590,7 +7724,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "jingle_unittests",
         "test_target": "//jingle:jingle_unittests"
@@ -7648,7 +7783,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "latency_unittests",
         "test_target": "//ui/latency:latency_unittests"
@@ -7706,7 +7842,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "libjingle_xmpp_unittests",
         "test_target": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests"
@@ -7764,7 +7901,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_blink_unittests",
         "test_target": "//media/blink:media_blink_unittests"
@@ -7822,7 +7960,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_service_unittests",
         "test_target": "//media/mojo/services:media_service_unittests"
@@ -7881,7 +8020,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_unittests",
         "test_target": "//media:media_unittests"
@@ -7939,7 +8079,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "midi_unittests",
         "test_target": "//media/midi:midi_unittests"
@@ -7997,7 +8138,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "mojo_test_apk",
         "test_target": "//mojo/public/java/system:mojo_test_apk"
@@ -8055,7 +8197,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "mojo_unittests",
         "test_target": "//mojo:mojo_unittests"
@@ -8113,7 +8256,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "monochrome_public_bundle_fake_modules_smoke_test",
         "test_target": "//chrome/android:monochrome_public_bundle_fake_modules_smoke_test"
@@ -8171,7 +8315,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "monochrome_public_bundle_smoke_test",
         "test_target": "//chrome/android:monochrome_public_bundle_smoke_test"
@@ -8229,7 +8374,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "monochrome_public_smoke_test",
         "test_target": "//chrome/android:monochrome_public_smoke_test"
@@ -8289,6 +8435,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "net_unittests",
@@ -8348,7 +8495,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sandbox_linux_unittests",
         "test_target": "//sandbox/linux:sandbox_linux_unittests"
@@ -8406,7 +8554,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "services_unittests",
         "test_target": "//services:services_unittests"
@@ -8464,7 +8613,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "shell_dialogs_unittests",
         "test_target": "//ui/shell_dialogs:shell_dialogs_unittests"
@@ -8522,7 +8672,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "skia_unittests",
         "test_target": "//skia:skia_unittests"
@@ -8580,7 +8731,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sql_unittests",
         "test_target": "//sql:sql_unittests"
@@ -8638,7 +8790,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "storage_unittests",
         "test_target": "//storage:storage_unittests"
@@ -8696,7 +8849,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "system_webview_shell_layout_test_apk",
         "test_target": "//android_webview/tools/system_webview_shell:system_webview_shell_layout_test_apk"
@@ -8754,7 +8908,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_android_unittests",
         "test_target": "//ui/android:ui_android_unittests"
@@ -8812,7 +8967,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_base_unittests",
         "test_target": "//ui/base:ui_base_unittests"
@@ -8870,7 +9026,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_touch_selection_unittests",
         "test_target": "//ui/touch_selection:ui_touch_selection_unittests"
@@ -8929,6 +9086,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "unit_tests",
@@ -8987,7 +9145,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "url_unittests",
         "test_target": "//url:url_unittests"
@@ -9046,7 +9205,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "viz_unittests",
         "test_target": "//components/viz:viz_unittests"
@@ -9104,7 +9264,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "weblayer_browsertests",
         "test_target": "//weblayer/test:weblayer_browsertests"
@@ -9162,7 +9323,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "weblayer_instrumentation_test_apk",
         "test_target": "//weblayer/browser/android/javatests:weblayer_instrumentation_test_apk"
@@ -9220,7 +9382,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "weblayer_private_instrumentation_test_apk",
         "test_target": "//weblayer/browser/android/javatests:weblayer_private_instrumentation_test_apk"
@@ -9284,6 +9447,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "webview_cts_tests",
@@ -9343,6 +9507,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 7
         },
         "test": "webview_instrumentation_test_apk",
@@ -9405,6 +9570,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "webview_instrumentation_test_apk",
@@ -9463,7 +9629,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "webview_ui_test_app_test_apk",
         "test_target": "//android_webview/tools/automated_ui_tests:webview_ui_test_app_test_apk"
@@ -9521,7 +9688,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "wtf_unittests",
         "test_target": "//third_party/blink/renderer/platform/wtf:wtf_unittests"

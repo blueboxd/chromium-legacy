@@ -17,6 +17,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.ListView;
 
 import androidx.annotation.VisibleForTesting;
@@ -37,7 +39,7 @@ import java.util.ArrayList;
  * A widget for showing a list of omnibox suggestions.
  */
 @VisibleForTesting
-public class OmniboxSuggestionsList extends ListView {
+public class OmniboxSuggestionsList extends ListView implements OnScrollListener {
     private final int[] mTempPosition = new int[2];
     private final Rect mTempRect = new Rect();
     private final int mStandardBgColor;
@@ -110,6 +112,8 @@ public class OmniboxSuggestionsList extends ListView {
         } else {
             mAlignmentViewLayoutListener = null;
         }
+
+        setOnScrollListener(this);
     }
 
     void setObserver(SuggestionListObserver observer) {
@@ -288,5 +292,16 @@ public class OmniboxSuggestionsList extends ListView {
             }
         }
         return super.onGenericMotionEvent(event);
+    }
+
+    @Override
+    public void onScroll(
+            AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {}
+
+    @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
+        if (scrollState == SCROLL_STATE_TOUCH_SCROLL && mObserver != null) {
+            mObserver.onSuggestionListScroll();
+        }
     }
 }

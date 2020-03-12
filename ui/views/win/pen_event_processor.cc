@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "pen_event_processor.h"
+#include "ui/views/win/pen_event_processor.h"
 
 #include "base/time/time.h"
 #include "ui/events/event_utils.h"

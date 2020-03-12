@@ -4,6 +4,10 @@
 
 #include "ui/views/examples/vector_example.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"

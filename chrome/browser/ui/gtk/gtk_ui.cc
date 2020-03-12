@@ -144,7 +144,7 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
       gfx::Rect focus_rect(width, height);
 
 #if !GTK_CHECK_VERSION(3, 90, 0)
-      if (!GtkVersionCheck(3, 14)) {
+      if (!GtkCheckVersion(3, 14)) {
         gint focus_pad;
         gtk_style_context_get_style(context, "focus-padding", &focus_pad,
                                     nullptr);
@@ -163,7 +163,7 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
       }
 #endif
 
-      if (!GtkVersionCheck(3, 20)) {
+      if (!GtkCheckVersion(3, 20)) {
         GtkBorder border;
 #if GTK_CHECK_VERSION(3, 90, 0)
         gtk_style_context_get_border(context, &border);
@@ -237,7 +237,7 @@ int indicators_count;
 const char kUnknownContentType[] = "application/octet-stream";
 
 std::unique_ptr<SettingsProvider> CreateSettingsProvider(GtkUi* gtk_ui) {
-  if (GtkVersionCheck(3, 14))
+  if (GtkCheckVersion(3, 14))
     return std::make_unique<SettingsProviderGtk>(gtk_ui);
 #if defined(USE_GIO)
   return std::make_unique<SettingsProviderGSettings>(gtk_ui);
@@ -296,7 +296,7 @@ gfx::FontRenderParams GetGtkFontRenderParams() {
 }
 
 views::LinuxUI::WindowFrameAction GetDefaultMiddleClickAction() {
-  if (GtkVersionCheck(3, 14))
+  if (GtkCheckVersion(3, 14))
     return views::LinuxUI::WindowFrameAction::kNone;
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   switch (base::nix::GetDesktopEnvironment(env.get())) {
@@ -747,7 +747,7 @@ bool GtkUi::AnimationsEnabled() const {
 }
 
 std::unique_ptr<views::NavButtonProvider> GtkUi::CreateNavButtonProvider() {
-  if (GtkVersionCheck(3, 14))
+  if (GtkCheckVersion(3, 14))
     return std::make_unique<gtk::NavButtonProviderGtk>();
   return nullptr;
 }
@@ -883,11 +883,11 @@ void GtkUi::UpdateColors() {
     colors_[ThemeProperties::COLOR_LOCATION_BAR_BORDER] = location_bar_border;
 
   inactive_selection_bg_color_ = GetSelectionBgColor(
-      GtkVersionCheck(3, 20) ? "GtkTextView#textview.view:backdrop "
+      GtkCheckVersion(3, 20) ? "GtkTextView#textview.view:backdrop "
                                "#text:backdrop #selection:backdrop"
                              : "GtkTextView.view:selected:backdrop");
   inactive_selection_fg_color_ =
-      GetFgColor(GtkVersionCheck(3, 20) ? "GtkTextView#textview.view:backdrop "
+      GetFgColor(GtkCheckVersion(3, 20) ? "GtkTextView#textview.view:backdrop "
                                           "#text:backdrop #selection:backdrop"
                                         : "GtkTextView.view:selected:backdrop");
 

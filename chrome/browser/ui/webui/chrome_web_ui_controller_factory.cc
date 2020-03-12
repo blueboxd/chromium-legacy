@@ -198,6 +198,7 @@
 #include "chromeos/components/multidevice/debug_webui/proximity_auth_ui.h"
 #include "chromeos/components/multidevice/debug_webui/url_constants.h"
 #include "chromeos/components/print_management/print_management_ui.h"
+#include "chromeos/components/print_management/scanning_ui.h"
 #include "chromeos/components/print_management/url_constants.h"
 #include "chromeos/components/sample_system_web_app_ui/url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -587,6 +588,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
           chromeos::features::kPrintJobManagementApp) &&
       url.host_piece() == chromeos::kChromeUIPrintManagementHost)
     return &NewWebUI<chromeos::PrintManagementUI>;
+  if (base::FeatureList::IsEnabled(chromeos::features::kScanningUI) &&
+      url.host_piece() == chromeos::kChromeUIScanningHost) {
+    return &NewWebUI<chromeos::ScanningUI>;
+  }
   if (base::FeatureList::IsEnabled(chromeos::features::kMediaApp)) {
     if (url.host_piece() == chromeos::kChromeUIMediaAppHost)
       return &NewWebUI<chromeos::MediaAppUI>;

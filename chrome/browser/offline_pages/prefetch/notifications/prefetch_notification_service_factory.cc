@@ -9,6 +9,7 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/notifications/scheduler/notification_schedule_service_factory.h"
+#include "chrome/browser/offline_pages/prefetch/notifications/prefetch_notification_service_bridge_android.h"
 #include "chrome/browser/offline_pages/prefetch/notifications/prefetch_notification_service_impl.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -21,15 +22,16 @@ PrefetchNotificationServiceFactory::GetInstance() {
 }
 
 // static
-offline_pages::PrefetchNotificationService*
+offline_pages::prefetch::PrefetchNotificationService*
 PrefetchNotificationServiceFactory::GetForKey(SimpleFactoryKey* key) {
-  return static_cast<offline_pages::PrefetchNotificationService*>(
+  return static_cast<offline_pages::prefetch::PrefetchNotificationService*>(
       GetInstance()->GetServiceForKey(key, true /* create */));
 }
 
 PrefetchNotificationServiceFactory::PrefetchNotificationServiceFactory()
-    : SimpleKeyedServiceFactory("offline_pages::PrefetchNotificationService",
-                                SimpleDependencyManager::GetInstance()) {
+    : SimpleKeyedServiceFactory(
+          "offline_pages::prefetch::PrefetchNotificationService",
+          SimpleDependencyManager::GetInstance()) {
   DependsOn(NotificationScheduleServiceFactory::GetInstance());
 }
 
@@ -39,9 +41,12 @@ PrefetchNotificationServiceFactory::~PrefetchNotificationServiceFactory() =
 std::unique_ptr<KeyedService>
 PrefetchNotificationServiceFactory::BuildServiceInstanceFor(
     SimpleFactoryKey* key) const {
+  auto bridge = std::make_unique<
+      offline_pages::prefetch::PrefetchNotificationServiceBridgeAndroid>();
   auto* schedule_service = NotificationScheduleServiceFactory::GetForKey(key);
-  return std::make_unique<offline_pages::PrefetchNotificationServiceImpl>(
-      schedule_service);
+  return std::make_unique<
+      offline_pages::prefetch::PrefetchNotificationServiceImpl>(
+      schedule_service, std::move(bridge));
 }
 
 SimpleFactoryKey* PrefetchNotificationServiceFactory::GetKeyToUse(

@@ -4,6 +4,8 @@
 
 #include "ui/views/window/client_view.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"

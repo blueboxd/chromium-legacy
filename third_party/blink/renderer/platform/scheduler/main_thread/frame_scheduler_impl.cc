@@ -401,7 +401,7 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
     case TaskType::kDatabaseAccess:
       if (base::FeatureList::IsEnabled(kHighPriorityDatabaseTaskType)) {
         return PausableTaskQueueTraits().SetPrioritisationType(
-            QueueTraits::PrioritisationType::kHigh);
+            QueueTraits::PrioritisationType::kExperimentalDatabase);
       } else {
         return PausableTaskQueueTraits();
       }
@@ -989,6 +989,16 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
   if (task_queue->GetPrioritisationType() ==
       MainThreadTaskQueue::QueueTraits::PrioritisationType::kFindInPage) {
     return main_thread_scheduler_->find_in_page_priority();
+  }
+
+  if (task_queue->GetPrioritisationType() ==
+      MainThreadTaskQueue::QueueTraits::PrioritisationType::
+          kExperimentalDatabase) {
+    // TODO(shaseley): This decision should probably be based on Agent
+    // visibility. Consider changing this before shipping anything.
+    return parent_page_scheduler_->IsPageVisible()
+               ? TaskQueue::QueuePriority::kHighPriority
+               : TaskQueue::QueuePriority::kNormalPriority;
   }
 
   return TaskQueue::QueuePriority::kNormalPriority;

@@ -27,7 +27,6 @@
 #include "base/task_runner_util.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
@@ -178,17 +177,14 @@ namespace data_reduction_proxy {
 
 DataReductionProxyConfig::DataReductionProxyConfig(
     network::NetworkConnectionTracker* network_connection_tracker,
-    std::unique_ptr<DataReductionProxyConfigValues> config_values,
-    DataReductionProxyConfigurator* configurator)
+    std::unique_ptr<DataReductionProxyConfigValues> config_values)
     : unreachable_(false),
       enabled_by_user_(false),
       config_values_(std::move(config_values)),
       network_connection_tracker_(network_connection_tracker),
-      configurator_(configurator),
       connection_type_(network::mojom::ConnectionType::CONNECTION_UNKNOWN),
       network_properties_manager_(nullptr) {
   DCHECK(network_connection_tracker_);
-  DCHECK(configurator);
 
   // Constructed on the UI thread, but should be checked on the IO thread.
   thread_checker_.DetachFromThread();
@@ -221,8 +217,6 @@ void DataReductionProxyConfig::Initialize(
         user_agent);
   }
 
-  AddDefaultProxyBypassRules();
-
   network_connection_tracker_->AddNetworkConnectionObserver(this);
   network_connection_tracker_->GetConnectionType(
       &connection_type_,
@@ -241,15 +235,6 @@ void DataReductionProxyConfig::OnNewClientConfigFetched() {
 
 void DataReductionProxyConfig::ReloadConfig() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(configurator_);
-
-  if (enabled_by_user_ && !params::IsIncludedInHoldbackFieldTrial() &&
-      !config_values_->proxies_for_http().empty()) {
-    configurator_->Enable(*network_properties_manager_,
-                          config_values_->proxies_for_http());
-  } else {
-    configurator_->Disable();
-  }
 }
 
 base::Optional<DataReductionProxyTypeInfo>
@@ -606,39 +591,6 @@ void DataReductionProxyConfig::ContinueNetworkChanged(
   }
 }
 
-void DataReductionProxyConfig::AddDefaultProxyBypassRules() {
-  DCHECK(configurator_);
-  // Under the hood we use an instance of ProxyBypassRules to evaluate these
-  // rules. ProxyBypassRules implicitly bypasses localhost, loopback, and
-  // link-local addresses, so it is not necessary to explicitly add them here.
-  // See ProxyBypassRules::MatchesImplicitRules() for details.
-  configurator_->SetBypassRules(
-      // Hostnames with no dot in them.
-      "<local>,"
-
-      // WebSockets
-      "ws://*,"
-      "wss://*,"
-
-      // RFC6890 current network (only valid as source address).
-      "0.0.0.0/8,"
-
-      // RFC1918 private addresses.
-      "10.0.0.0/8,"
-      "172.16.0.0/12,"
-      "192.168.0.0/16,"
-
-      // RFC3513 unspecified address.
-      "::/128,"
-
-      // RFC4193 private addresses.
-      "fc00::/7,"
-
-      // IPV6 probe addresses.
-      "*-ds.metric.gstatic.com,"
-      "*-v4.metric.gstatic.com");
-}
-
 void DataReductionProxyConfig::SecureProxyCheck(
     SecureProxyCheckerCallback fetcher_callback) {
   if (params::IsIncludedInHoldbackFieldTrial())
@@ -720,14 +672,6 @@ bool DataReductionProxyConfig::enabled_by_user_and_reachable() const {
 base::TimeTicks DataReductionProxyConfig::GetTicksNow() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return base::TimeTicks::Now();
-}
-
-net::ProxyConfig DataReductionProxyConfig::ProxyConfigIgnoringHoldback() const {
-  if (!enabled_by_user_ || config_values_->proxies_for_http().empty())
-    return net::ProxyConfig::CreateDirect();
-  return configurator_->CreateProxyConfig(false /* probe_url_config */,
-                                          *network_properties_manager_,
-                                          config_values_->proxies_for_http());
 }
 
 std::vector<DataReductionProxyServer>

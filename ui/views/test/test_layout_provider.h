@@ -6,6 +6,7 @@
 #define UI_VIEWS_TEST_TEST_LAYOUT_PROVIDER_H_
 
 #include <map>
+#include <utility>
 
 #include "base/macros.h"
 #include "ui/views/layout/layout_provider.h"

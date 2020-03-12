@@ -4,6 +4,9 @@
 
 #include "ui/views/widget/root_view.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
@@ -15,7 +18,6 @@
 #include "ui/views/test/test_views.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view_targeter.h"
-#include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget_deletion_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 

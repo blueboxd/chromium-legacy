@@ -7,6 +7,8 @@
 #include <oleacc.h>
 #include <windows.h>
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"

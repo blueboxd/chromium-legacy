@@ -86,7 +86,6 @@ paint/invalidation/scroll/overflow-hidden-yet-scrolled.html [ Failure ]
 
 # Extra raster invalidations.
 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure ]
-paint/invalidation/compositing/clipping-should-not-repaint-composited-descendants.html [ Failure ]
 paint/invalidation/compositing/dont-invalidate-root-layer-when-composited-layer-becomes-visible.html [ Failure ]
 paint/invalidation/compositing/should-not-repaint-move-backface-hidden.html [ Failure ]
 paint/invalidation/compositing/tricky-element-removal-crash.html [ Failure ]

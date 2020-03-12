@@ -8,6 +8,11 @@
 
 namespace captive_portal {
 
+void CaptivePortalMetrics::LogCaptivePortalProbeReason(
+    CaptivePortalProbeReason probe_reason) {
+  UMA_HISTOGRAM_ENUMERATION("CaptivePortal.ProbeReason", probe_reason);
+}
+
 void CaptivePortalMetrics::LogCaptivePortalBlockingPageEvent(
     CaptivePortalBlockingPageEvent event) {
   UMA_HISTOGRAM_ENUMERATION("interstitial.captive_portal", event,

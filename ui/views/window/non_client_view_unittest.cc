@@ -4,6 +4,8 @@
 
 #include "ui/views/window/non_client_view.h"
 
+#include <memory>
+
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"

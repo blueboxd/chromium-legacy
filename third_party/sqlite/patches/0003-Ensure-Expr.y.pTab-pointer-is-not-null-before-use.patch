@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Wed, 26 Feb 2020 14:41:38 -0800
-Subject: [PATCH 3/5] Ensure Expr.y.pTab pointer is not null before use
+Subject: [PATCH 3/6] Ensure Expr.y.pTab pointer is not null before use
 
 Backports https://www.sqlite.org/cgi/src/info/9d0d4ab95dc0c56e
 
@@ -91,5 +91,5 @@ index 2e0804f90039..0cc0290f6b24 100644
        SWAP(Expr*, pLeft, pRight);
      }
 -- 
-2.25.0.265.gbab2e86ba0-goog
+2.25.1.481.gfbce0eb801-goog
 

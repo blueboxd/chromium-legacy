@@ -11,6 +11,7 @@
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
+#include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_posix_util.h"
 #include "gpu/vulkan/vulkan_surface.h"
@@ -186,19 +187,16 @@ bool VulkanImplementationAndroid::CanImportGpuMemoryBuffer(
   return false;
 }
 
-bool VulkanImplementationAndroid::CreateImageFromGpuMemoryHandle(
-    VkDevice vk_device,
+std::unique_ptr<VulkanImage>
+VulkanImplementationAndroid::CreateImageFromGpuMemoryHandle(
+    VulkanDeviceQueue* device_queue,
     gfx::GpuMemoryBufferHandle gmb_handle,
     gfx::Size size,
-    VkImage* vk_image,
-    VkImageCreateInfo* vk_image_info,
-    VkDeviceMemory* vk_device_memory,
-    VkDeviceSize* mem_allocation_size,
-    base::Optional<VulkanYCbCrInfo>* ycbcr_info) {
+    VkFormat vk_formae) {
   // TODO(sergeyu): Move code from CreateVkImageAndImportAHB() here and remove
   // CreateVkImageAndImportAHB().
   NOTIMPLEMENTED();
-  return false;
+  return nullptr;
 }
 
 bool VulkanImplementationAndroid::CreateVkImageAndImportAHB(

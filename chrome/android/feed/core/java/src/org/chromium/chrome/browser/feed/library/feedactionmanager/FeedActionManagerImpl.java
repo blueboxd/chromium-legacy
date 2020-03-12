@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
+import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.api.host.logging.Task;
 import org.chromium.chrome.browser.feed.library.api.internal.actionmanager.ActionManager;
 import org.chromium.chrome.browser.feed.library.api.internal.common.Model;
@@ -40,16 +41,18 @@ public class FeedActionManagerImpl implements ActionManager {
     private final TaskQueue mTaskQueue;
     private final MainThreadRunner mMainThreadRunner;
     private final Clock mClock;
+    private final BasicLoggingApi mBasicLoggingApi;
 
     public FeedActionManagerImpl(FeedSessionManager feedSessionManager, Store store,
             ThreadUtils threadUtils, TaskQueue taskQueue, MainThreadRunner mainThreadRunner,
-            Clock clock) {
+            Clock clock, BasicLoggingApi basicLoggingApi) {
         this.mFeedSessionManager = feedSessionManager;
         this.mStore = store;
         this.mThreadUtils = threadUtils;
         this.mTaskQueue = taskQueue;
         this.mMainThreadRunner = mainThreadRunner;
         this.mClock = clock;
+        this.mBasicLoggingApi = basicLoggingApi;
     }
 
     @Override
@@ -70,6 +73,7 @@ public class FeedActionManagerImpl implements ActionManager {
     public void dismiss(
             List<StreamDataOperation> streamDataOperations, @Nullable String sessionId) {
         executeStreamDataOperations(streamDataOperations, sessionId);
+        mBasicLoggingApi.reportFeedInteraction();
     }
 
     @Override

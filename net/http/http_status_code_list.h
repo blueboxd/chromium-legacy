@@ -63,6 +63,7 @@ HTTP_STATUS(EXPECTATION_FAILED, 417, "Expectation Failed")
 // 418 returned by Cloud Print.
 HTTP_STATUS(INVALID_XPRIVET_TOKEN, 418, "Invalid XPrivet Token")
 HTTP_STATUS(TOO_EARLY, 425, "Too Early")
+HTTP_STATUS(TOO_MANY_REQUESTS, 429, "Too Many Requests")
 
 // Server error 5xx
 HTTP_STATUS(INTERNAL_SERVER_ERROR, 500, "Internal Server Error")

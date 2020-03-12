@@ -24,8 +24,12 @@ DohProviderEntry::DohProviderEntry(std::string provider,
       privacy_policy(std::move(privacy_policy)),
       display_globally(display_globally),
       display_countries(std::move(display_countries)) {
-  DCHECK(!display_globally || display_countries.empty());
-  for (const auto& display_country : display_countries) {
+  DCHECK(!display_globally || this->display_countries.empty());
+  if (display_globally || !this->display_countries.empty()) {
+    DCHECK(!this->ui_name.empty());
+    DCHECK(!this->privacy_policy.empty());
+  }
+  for (const auto& display_country : this->display_countries) {
     DCHECK_EQ(2u, display_country.size());
   }
   for (const std::string& ip_str : ip_strs) {
@@ -58,7 +62,7 @@ const std::vector<DohProviderEntry>& GetDohProviderList() {
            "2a0d:2a00:1::", "2a0d:2a00:2::"},
           {"family-filter-dns.cleanbrowsing.org"} /* dot_hostnames */,
           "https://doh.cleanbrowsing.org/doh/family-filter{?dns}",
-          "CleanBrowsing family filter" /* ui_name */,
+          "CleanBrowsing (Family Filter)" /* ui_name */,
           "https://cleanbrowsing.org/privacy" /* privacy_policy */,
           true /* display_globally */, {} /* display_countries */),
       DohProviderEntry(
@@ -76,7 +80,7 @@ const std::vector<DohProviderEntry>& GetDohProviderList() {
           {"one.one.one.one",
            "1dot1dot1dot1.cloudflare-dns.com"} /* dns_over_tls_hostnames */,
           "https://chrome.cloudflare-dns.com/dns-query",
-          "Cloudflare" /* ui_name */,
+          "Cloudflare (1.1.1.1)" /* ui_name */,
           "https://developers.cloudflare.com/1.1.1.1/commitment-to-privacy/"
           "privacy-policy/privacy-policy/" /* privacy_policy */,
           true /* display_globally */, {} /* display_countries */),
@@ -93,27 +97,32 @@ const std::vector<DohProviderEntry>& GetDohProviderList() {
           {"dns.sb"} /* dns_over_tls_hostnames */,
           {"https://doh.dns.sb/dns-query?no_ecs=true{&dns}",
            false /* use_post */},
-          "DNS.SB" /* ui_name */, "https://dns.sb/privacy" /* privacy_policy */,
-          false /* display_globally */, {"DE", "EE"} /* display_countries */),
+          "" /* ui_name */, "" /* privacy_policy */,
+          false /* display_globally */, {} /* display_countries */),
       DohProviderEntry("Google",
                        {"8.8.8.8", "8.8.4.4", "2001:4860:4860::8888",
                         "2001:4860:4860::8844"},
                        {"dns.google", "dns.google.com",
                         "8888.google"} /* dns_over_tls_hostnames */,
                        "https://dns.google/dns-query{?dns}",
-                       "Google" /* ui_name */,
+                       "Google (Public DNS)" /* ui_name */,
                        "https://developers.google.com/speed/public-dns/"
                        "privacy" /* privacy_policy */,
                        true /* display_globally */, {} /* display_countries */),
+      DohProviderEntry("Iij", {} /* ip_strs */, {} /* dns_over_tls_hostnames */,
+                       "https://public.dns.iij.jp/dns-query",
+                       "IIJ (Public DNS)" /* ui_name */,
+                       "https://public.dns.iij.jp/" /* privacy_policy */,
+                       false /* display_globally */,
+                       {"JP"} /* display_countries */),
       DohProviderEntry("OpenDNS",
                        {"208.67.222.222", "208.67.220.220", "2620:119:35::35",
                         "2620:119:53::53"},
                        {""} /* dns_over_tls_hostnames */,
                        "https://doh.opendns.com/dns-query{?dns}",
-                       "OpenDNS" /* ui_name */,
-                       "https://www.cisco.com/c/en/us/about/legal/"
-                       "privacy-full.html" /* privacy_policy */,
-                       true /* display_globally */, {} /* display_countries */),
+                       "" /* ui_name */, "" /* privacy_policy */,
+                       false /* display_globally */,
+                       {} /* display_countries */),
       DohProviderEntry("OpenDNSFamily",
                        {"208.67.222.123", "208.67.220.123", "2620:119:35::123",
                         "2620:119:53::123"},
@@ -141,7 +150,7 @@ const std::vector<DohProviderEntry>& GetDohProviderList() {
           "Quad9Secure",
           {"9.9.9.9", "149.112.112.112", "2620:fe::fe", "2620:fe::9"},
           {"dns.quad9.net", "dns9.quad9.net"} /* dns_over_tls_hostnames */,
-          "https://dns.quad9.net/dns-query", "Quad9" /* ui_name */,
+          "https://dns.quad9.net/dns-query", "Quad9 (9.9.9.9)" /* ui_name */,
           "https://www.quad9.net/home/privacy/" /* privacy_policy */,
           true /* display_globally */, {} /* display_countries */),
   }};

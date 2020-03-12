@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <vector>
+
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"

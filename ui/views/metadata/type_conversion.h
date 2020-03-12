@@ -6,6 +6,8 @@
 #define UI_VIEWS_METADATA_TYPE_CONVERSION_H_
 
 #include <stdint.h>
+
+#include <utility>
 #include <vector>
 
 #include "base/no_destructor.h"

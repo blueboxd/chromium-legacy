@@ -4,6 +4,8 @@
 
 #include "ui/views/layout/fill_layout.h"
 
+#include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/border.h"
 #include "ui/views/test/test_views.h"

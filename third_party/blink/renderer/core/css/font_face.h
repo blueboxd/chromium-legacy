@@ -129,6 +129,8 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
   void LoadWithCallback(LoadFontCallback*);
   void AddCallback(LoadFontCallback*);
 
+  void DidBeginImperativeLoad();
+
   // ScriptWrappable:
   bool HasPendingActivity() const final;
 

@@ -35,6 +35,7 @@
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/native_theme/native_theme.h"
@@ -70,12 +71,6 @@ views::Widget* TabGroupEditorBubbleView::ShowWithRect(
           browser, group, nullptr, anchor_rect, false));
   widget->Show();
   return widget;
-}
-
-gfx::Size TabGroupEditorBubbleView::CalculatePreferredSize() const {
-  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_BUBBLE_TABSTRIP_PREFERRED_WIDTH);
-  return gfx::Size(width, GetHeightForWidth(width));
 }
 
 ui::ModalType TabGroupEditorBubbleView::GetModalType() const {
@@ -120,36 +115,41 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   const auto* layout_provider = ChromeLayoutProvider::Get();
   const int horizontal_spacing = layout_provider->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
-  const int vertical_menu_spacing = layout_provider->GetDistanceMetric(
+  const int vertical_spacing = layout_provider->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_VERTICAL);
-
-  // The vertical spacing for the non menu items within the editor bubble.
-  const int vertical_dialog_content_spacing = 16;
+  // The padding of the editing controls is adaptive, to improve the hit target
+  // size on touch devices.
+  const gfx::Insets control_insets =
+      ui::TouchUiController::Get()->touch_ui()
+          ? gfx::Insets(3 * vertical_spacing / 2, 3 * horizontal_spacing / 2)
+          : gfx::Insets(vertical_spacing, horizontal_spacing);
+  // Some spacing is only present on non-touch UI, since real estate is
+  // generally more precious on touch devices.
+  const int nontouch_only_spacing =
+      ui::TouchUiController::Get()->touch_ui()
+          ? 0
+          : ChromeLayoutProvider::Get()->GetDistanceMetric(
+                ChromeDistanceMetric::DISTANCE_CONTENT_LIST_VERTICAL_SINGLE);
 
   views::View* group_modifier_container =
       AddChildView(std::make_unique<views::View>());
+  group_modifier_container->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(control_insets.top(), 0)));
 
-  gfx::Insets color_element_insets =
-      ChromeLayoutProvider::Get()->GetInsetsMetric(
-          views::INSETS_VECTOR_IMAGE_BUTTON);
-  group_modifier_container->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(vertical_dialog_content_spacing,
-                  horizontal_spacing - color_element_insets.left(),
-                  vertical_dialog_content_spacing,
-                  horizontal_spacing - color_element_insets.right())));
-
-  views::FlexLayout* container_layout =
+  views::FlexLayout* group_modifier_container_layout =
       group_modifier_container->SetLayoutManager(
           std::make_unique<views::FlexLayout>());
-  container_layout->SetOrientation(views::LayoutOrientation::kVertical)
+  group_modifier_container_layout
+      ->SetOrientation(views::LayoutOrientation::kVertical)
       .SetIgnoreDefaultMainAxisMargins(true);
 
   // Add the text field for editing the title.
   views::View* title_field_container =
       group_modifier_container->AddChildView(std::make_unique<views::View>());
-  title_field_container->SetBorder(views::CreateEmptyBorder(gfx::Insets(
-      0, color_element_insets.left(), vertical_dialog_content_spacing,
-      color_element_insets.right())));
+  title_field_container->SetBorder(views::CreateEmptyBorder(control_insets));
+  title_field_container->SetProperty(views::kMarginsKey,
+                                     gfx::Insets(nontouch_only_spacing, 0));
+
   title_field_ = title_field_container->AddChildView(
       std::make_unique<TitleField>(stop_context_menu_propagation));
   title_field_->SetText(title);
@@ -171,42 +171,41 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
           colors_, background_color(), initial_color,
           base::Bind(&TabGroupEditorBubbleView::UpdateGroup,
                      base::Unretained(this))));
+  color_selector_->SetProperty(
+      views::kMarginsKey,
+      gfx::Insets(0, control_insets.left(), nontouch_only_spacing,
+                  control_insets.right()));
 
   AddChildView(std::make_unique<views::Separator>());
 
   views::View* menu_items_container =
       AddChildView(std::make_unique<views::View>());
   menu_items_container->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(vertical_menu_spacing, 0)));
+      views::CreateEmptyBorder(gfx::Insets(control_insets.top(), 0)));
   views::FlexLayout* layout_manager_ = menu_items_container->SetLayoutManager(
       std::make_unique<views::FlexLayout>());
   layout_manager_->SetOrientation(views::LayoutOrientation::kVertical)
       .SetIgnoreDefaultMainAxisMargins(true);
 
-  gfx::Insets menu_item_border_inset =
-      gfx::Insets(vertical_menu_spacing, horizontal_spacing);
-
   std::unique_ptr<views::LabelButton> new_tab_menu_item = CreateBubbleMenuItem(
       TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP,
       l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP),
       &button_listener_);
-  new_tab_menu_item->SetBorder(
-      views::CreateEmptyBorder(menu_item_border_inset));
+  new_tab_menu_item->SetBorder(views::CreateEmptyBorder(control_insets));
   menu_items_container->AddChildView(std::move(new_tab_menu_item));
 
   std::unique_ptr<views::LabelButton> ungroup_menu_item = CreateBubbleMenuItem(
       TAB_GROUP_HEADER_CXMENU_UNGROUP,
       l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_UNGROUP),
       &button_listener_);
-  ungroup_menu_item->SetBorder(
-      views::CreateEmptyBorder(menu_item_border_inset));
+  ungroup_menu_item->SetBorder(views::CreateEmptyBorder(control_insets));
   menu_items_container->AddChildView(std::move(ungroup_menu_item));
 
   std::unique_ptr<views::LabelButton> close_menu_item = CreateBubbleMenuItem(
       TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP,
       l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP),
       &button_listener_);
-  close_menu_item->SetBorder(views::CreateEmptyBorder(menu_item_border_inset));
+  close_menu_item->SetBorder(views::CreateEmptyBorder(control_insets));
   menu_items_container->AddChildView(std::move(close_menu_item));
 
   std::unique_ptr<views::LabelButton> move_to_new_window_menu_item =
@@ -216,15 +215,14 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
               IDS_TAB_GROUP_HEADER_CXMENU_MOVE_GROUP_TO_NEW_WINDOW),
           &button_listener_);
   move_to_new_window_menu_item->SetBorder(
-      views::CreateEmptyBorder(menu_item_border_inset));
+      views::CreateEmptyBorder(control_insets));
   menu_items_container->AddChildView(std::move(move_to_new_window_menu_item));
 
   std::unique_ptr<views::LabelButton> feedback_menu_item = CreateBubbleMenuItem(
       TAB_GROUP_HEADER_CXMENU_FEEDBACK,
       l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_SEND_FEEDBACK),
       &button_listener_);
-  feedback_menu_item->SetBorder(
-      views::CreateEmptyBorder(menu_item_border_inset));
+  feedback_menu_item->SetBorder(views::CreateEmptyBorder(control_insets));
   menu_items_container->AddChildView(std::move(feedback_menu_item));
 
   views::FlexLayout* menu_layout_manager_ =

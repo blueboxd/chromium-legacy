@@ -13,6 +13,8 @@
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_client.h"
 
 namespace offline_pages {
+namespace prefetch {
+
 class PrefetchNotificationService;
 
 // Client side code for offline prefetch notification, integrated with
@@ -39,10 +41,14 @@ class PrefetchNotificationClient
   void OnUserAction(const UserActionData& action_data) override;
   void GetThrottleConfig(ThrottleConfigCallback callback) override;
 
-  GetServiceCallback get_service_callback_;
+  PrefetchNotificationService* GetPrefetchNotificationService();
+
+  GetServiceCallback prefetch_service_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchNotificationClient);
 };
+
+}  // namespace prefetch
 }  // namespace offline_pages
 
 #endif  // CHROME_BROWSER_OFFLINE_PAGES_PREFETCH_NOTIFICATIONS_PREFETCH_NOTIFICATION_CLIENT_H_

@@ -25,7 +25,7 @@ String RTCEncodedVideoFrame::type() const {
 }
 
 uint64_t RTCEncodedVideoFrame::timestamp() const {
-  return delegate_ ? delegate_->ReceivedTime() : 0;
+  return delegate_ ? delegate_->Timestamp() : 0;
 }
 
 DOMArrayBuffer* RTCEncodedVideoFrame::data() const {

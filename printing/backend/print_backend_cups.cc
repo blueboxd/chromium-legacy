@@ -39,14 +39,21 @@ PrintBackendCUPS::PrintBackendCUPS(const GURL& print_server_url,
 bool PrintBackendCUPS::PrinterBasicInfoFromCUPS(
     const cups_dest_t& printer,
     PrinterBasicInfo* printer_info) {
-  // CUPS can have 'printers' that are actually scanners. (not MFC)
-  // At least on Mac. Check for scanners and skip them.
   const char* type_str =
       cupsGetOption(kCUPSOptPrinterType, printer.num_options, printer.options);
   if (type_str) {
-    int type;
-    if (base::StringToInt(type_str, &type) && (type & CUPS_PRINTER_SCANNER))
-      return false;
+    cups_ptype_t type;
+    if (base::StringToUint(type_str, &type)) {
+      // Exclude fax and scanner devices.
+      // Also exclude discovered printers that have not been added locally.
+      // On macOS, AirPrint destinations show up even if they're not added to
+      // the system, and their capabilities cannot be read in that situation.
+      // (crbug.com/1027834)
+      constexpr cups_ptype_t kMask =
+          CUPS_PRINTER_FAX | CUPS_PRINTER_SCANNER | CUPS_PRINTER_DISCOVERED;
+      if (type & kMask)
+        return false;
+    }
   }
 
   printer_info->printer_name = printer.name;

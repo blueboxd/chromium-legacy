@@ -41,7 +41,6 @@ class TestURLLoaderFactory;
 namespace data_reduction_proxy {
 
 class ClientConfig;
-class DataReductionProxyConfigurator;
 class DataReductionProxyMutableConfigValues;
 class DataReductionProxyRequestOptions;
 class DataReductionProxyServer;
@@ -382,10 +381,6 @@ class DataReductionProxyTestContext {
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory() const {
     return test_shared_url_loader_factory_;
-  }
-
-  DataReductionProxyConfigurator* configurator() const {
-    return settings_->data_reduction_proxy_service()->configurator();
   }
 
   DataReductionProxySettings* settings() const { return settings_.get(); }

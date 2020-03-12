@@ -511,8 +511,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 }
 
 - (void)waitForWebStateContainingText:(const std::string&)UTF8Text {
-  [self waitForWebStateContainingText:UTF8Text
-                              timeout:kWaitForUIElementTimeout];
+  [self waitForWebStateContainingText:UTF8Text timeout:kWaitForPageLoadTimeout];
 }
 
 - (void)waitForWebStateFrameContainingText:(const std::string&)UTF8Text {
@@ -584,6 +583,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 - (void)triggerRestoreViaTabGridRemoveAllUndo {
   [ChromeEarlGrey showTabSwitcher];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   [ChromeEarlGrey
       waitForAndTapButton:chrome_test_util::TabGridCloseAllButton()];
   [ChromeEarlGrey

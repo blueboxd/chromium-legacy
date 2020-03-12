@@ -64,8 +64,6 @@ const base::char16 kControlSetNrptPath[] = STRING16_LITERAL(
 const base::char16 kDnsConnectionsPath[] = STRING16_LITERAL(
     "SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters"
     "\\DnsConnections");
-const base::char16 kDnsActiveIfs[] = STRING16_LITERAL(
-    "SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters\\DnsActiveIfs");
 const base::char16 kDnsConnectionsProxies[] = STRING16_LITERAL(
     "SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters"
     "\\DnsConnectionsProxies");
@@ -216,13 +214,10 @@ ConfigParseWinResult ReadSystemSettings(DnsSystemSettings* settings) {
 
   base::win::RegistryKeyIterator dns_connections(HKEY_LOCAL_MACHINE,
                                                  kDnsConnectionsPath);
-  base::win::RegistryKeyIterator dns_active_ifs(HKEY_LOCAL_MACHINE,
-                                                kDnsActiveIfs);
   base::win::RegistryKeyIterator dns_connections_proxies(
       HKEY_LOCAL_MACHINE, kDnsConnectionsProxies);
-  settings->have_proxy =
-      (dns_connections.SubkeyCount() > 0 || dns_active_ifs.SubkeyCount() > 0 ||
-       dns_connections_proxies.SubkeyCount() > 0);
+  settings->have_proxy = (dns_connections.SubkeyCount() > 0 ||
+                          dns_connections_proxies.SubkeyCount() > 0);
 
   return CONFIG_PARSE_WIN_OK;
 }

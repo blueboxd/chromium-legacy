@@ -124,12 +124,12 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     // Separate enum class for handling prioritisation decisions in task queues.
     enum class PrioritisationType {
       kVeryHigh = 0,
-      kHigh = 1,
-      kBestEffort = 2,
-      kRegular = 3,
-      kLoading = 4,
-      kLoadingControl = 5,
-      kFindInPage = 6,
+      kBestEffort = 1,
+      kRegular = 2,
+      kLoading = 3,
+      kLoadingControl = 4,
+      kFindInPage = 5,
+      kExperimentalDatabase = 6,
 
       kCount = 7
     };

@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_EVENT_MONITOR_AURA_H_
 #define UI_VIEWS_EVENT_MONITOR_AURA_H_
 
+#include <set>
+
 #include "base/macros.h"
 #include "ui/views/event_monitor.h"
 

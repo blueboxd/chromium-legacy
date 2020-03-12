@@ -4,6 +4,8 @@
 
 #include "ui/views/win/scoped_fullscreen_visibility.h"
 
+#include <utility>
+
 #include "base/logging.h"
 
 namespace views {

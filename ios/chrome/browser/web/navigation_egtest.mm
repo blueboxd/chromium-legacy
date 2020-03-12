@@ -331,9 +331,7 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   // Tap the forward button and verify test page is loaded.
   [[EarlGrey selectElementWithMatcher:ForwardButton()]
       performAction:grey_tap()];
-  const NSTimeInterval kWaitForWebStateTimeout = 10;
-  [ChromeEarlGrey waitForWebStateContainingText:"pony"
-                                        timeout:kWaitForWebStateTimeout];
+  [ChromeEarlGrey waitForWebStateContainingText:"pony"];
 }
 
 #pragma mark window.location.hash operations
@@ -602,8 +600,7 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   
   // Navigating right after session restore seems to sometimes be slow, so wait with twice the
   // usual timeout.
-  [ChromeEarlGrey waitForWebStateContainingText:"pony"
-                                        timeout:2 * kWaitForUIElementTimeout];
+  [ChromeEarlGrey waitForWebStateContainingText:"pony"];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }

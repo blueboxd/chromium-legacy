@@ -5,6 +5,7 @@
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 
 #include <memory>
+#include <string>
 
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/env.h"

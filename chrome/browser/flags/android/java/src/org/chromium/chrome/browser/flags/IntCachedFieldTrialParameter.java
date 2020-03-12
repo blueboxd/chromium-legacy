@@ -18,6 +18,14 @@ public class IntCachedFieldTrialParameter extends CachedFieldTrialParameter {
         mDefaultValue = defaultValue;
     }
 
+    /**
+     * @return the value of the field trial parameter that should be used in this run.
+     */
+    public int getValue() {
+        return CachedFeatureFlags.getConsistentIntValue(
+                getSharedPreferenceKey(), getDefaultValue());
+    }
+
     public int getDefaultValue() {
         return mDefaultValue;
     }

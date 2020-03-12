@@ -50,7 +50,7 @@ public class BottomToolbarVariationManager {
         if (!BottomToolbarConfiguration.isBottomToolbarEnabled()) {
             return Variations.HOME_SEARCH_TAB_SWITCHER;
         }
-        sVariation = CachedFeatureFlags.getValue(BOTTOM_TOOLBAR_VARIATION);
+        sVariation = BOTTOM_TOOLBAR_VARIATION.getValue();
         if (sVariation.equals(Variations.NONE)) {
             return Variations.HOME_SEARCH_TAB_SWITCHER;
         }

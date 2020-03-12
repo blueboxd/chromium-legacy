@@ -178,7 +178,6 @@ class MockRenderProcessHost : public RenderProcessHost {
       mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver)
       override {}
   void BindIndexedDB(
-      int render_frame_id,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void BindRestrictedCookieManagerForServiceWorker(

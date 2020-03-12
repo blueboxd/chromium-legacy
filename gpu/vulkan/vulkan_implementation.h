@@ -33,6 +33,7 @@ struct GpuMemoryBufferHandle;
 namespace gpu {
 class VulkanDeviceQueue;
 class VulkanSurface;
+class VulkanImage;
 class VulkanInstance;
 struct VulkanYCbCrInfo;
 
@@ -109,15 +110,11 @@ class VULKAN_EXPORT VulkanImplementation {
   // |vk_image|, |vk_image_info|, |vk_device_memory| and |mem_allocation_size|.
   // Implementation must verify that the specified |size| fits in the size
   // specified when |gmb_handle| was allocated.
-  virtual bool CreateImageFromGpuMemoryHandle(
-      VkDevice vk_device,
+  virtual std::unique_ptr<VulkanImage> CreateImageFromGpuMemoryHandle(
+      VulkanDeviceQueue* device_queue,
       gfx::GpuMemoryBufferHandle gmb_handle,
       gfx::Size size,
-      VkImage* vk_image,
-      VkImageCreateInfo* vk_image_info,
-      VkDeviceMemory* vk_device_memory,
-      VkDeviceSize* mem_allocation_size,
-      base::Optional<VulkanYCbCrInfo>* ycbcr_info) = 0;
+      VkFormat vk_formae) = 0;
 
 #if defined(OS_ANDROID)
   // Create a VkImage, import Android AHardwareBuffer object created outside of

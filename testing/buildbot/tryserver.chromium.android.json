@@ -45,7 +45,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "opus_tests",
         "test_target": "//third_party/opus:opus_tests"
@@ -94,7 +95,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_heap_unittests",
         "test_target": "//third_party/blink/renderer/platform/heap:blink_heap_unittests"
@@ -140,7 +142,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_unittests",
         "test_target": "//third_party/blink/renderer/controller:blink_unittests"
@@ -174,6 +177,7 @@
               "os": "Android"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
         "test_target": "//:blink_web_tests"

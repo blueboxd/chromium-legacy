@@ -4,9 +4,14 @@
 
 #include "ash/quick_answers/quick_answers_controller_impl.h"
 
+#include "ash/public/cpp/new_window_delegate.h"
 #include "ash/quick_answers/quick_answers_ui_controller.h"
+#include "ash/session/session_controller_impl.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "chromeos/components/quick_answers/quick_answers_consents.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
+#include "url/gurl.h"
 
 // TODO(yanxiao):Add a unit test for QuickAnswersControllerImpl.
 namespace {
@@ -14,6 +19,9 @@ using chromeos::quick_answers::QuickAnswer;
 using chromeos::quick_answers::QuickAnswersClient;
 using chromeos::quick_answers::QuickAnswersRequest;
 using chromeos::quick_answers::ResultType;
+
+constexpr char kAssistantRelatedInfoUrl[] =
+    "chrome://os-settings/googleAssistant";
 
 // TODO:(yanxiao) move the string to grd source file.
 constexpr char kNoResult[] = "See result in Assistant";
@@ -30,9 +38,12 @@ QuickAnswersControllerImpl::~QuickAnswersControllerImpl() = default;
 void QuickAnswersControllerImpl::SetClient(
     std::unique_ptr<QuickAnswersClient> client) {
   quick_answers_client_ = std::move(client);
+  consent_controller_ =
+      std::make_unique<chromeos::quick_answers::QuickAnswersConsent>(
+          Shell::Get()->session_controller()->GetPrimaryUserPrefService());
 }
 
-void QuickAnswersControllerImpl::CreateQuickAnswersView(
+void QuickAnswersControllerImpl::MaybeShowQuickAnswers(
     const gfx::Rect& anchor_bounds,
     const std::string& title) {
   DCHECK(quick_answers_client_);
@@ -41,8 +52,23 @@ void QuickAnswersControllerImpl::CreateQuickAnswersView(
   if (!is_eligible_)
     return;
 
+  // Cache anchor-bounds and query.
   anchor_bounds_ = anchor_bounds;
   query_ = title;
+
+  // User-consent is required for the Quick-Answers feature.
+  if (!consent_controller_->HasConsented()) {
+    // Optionally display a user-consent view informing users about the feature.
+    if (consent_controller_->ShouldShowConsent() &&
+        !quick_answers_ui_controller_->is_showing_user_consent_view()) {
+      quick_answers_ui_controller_->CreateUserConsentView(anchor_bounds);
+      consent_controller_->StartConsent();
+    }
+
+    // Quick-Answers will not be displayed without user's consent.
+    return;
+  }
+
   quick_answers_ui_controller_->CreateQuickAnswersView(anchor_bounds, title);
 
   // Fetch Quick Answer.
@@ -51,14 +77,16 @@ void QuickAnswersControllerImpl::CreateQuickAnswersView(
   quick_answers_client_->SendRequest(request);
 }
 
-void QuickAnswersControllerImpl::DismissQuickAnswersView() {
-  quick_answers_ui_controller_->Close();
+void QuickAnswersControllerImpl::DismissQuickAnswers() {
+  MaybeDismissQuickAnswersConsent();
+  quick_answers_ui_controller_->CloseQuickAnswersView();
 }
 
 chromeos::quick_answers::QuickAnswersDelegate*
 QuickAnswersControllerImpl::GetQuickAnswersDelegate() {
   return this;
 }
+
 void QuickAnswersControllerImpl::OnQuickAnswerReceived(
     std::unique_ptr<QuickAnswer> quick_answer) {
   if (quick_answer) {
@@ -105,6 +133,27 @@ void QuickAnswersControllerImpl::OnQuickAnswerClick() {
 void QuickAnswersControllerImpl::UpdateQuickAnswersAnchorBounds(
     const gfx::Rect& anchor_bounds) {
   quick_answers_ui_controller_->UpdateQuickAnswersBounds(anchor_bounds);
+}
+
+void QuickAnswersControllerImpl::OnUserConsentGranted() {
+  quick_answers_ui_controller_->CloseUserConsentView();
+  consent_controller_->AcceptConsent();
+
+  // Display Quick-Answer for the cached query when user consents.
+  MaybeShowQuickAnswers(anchor_bounds_, query_);
+}
+
+void QuickAnswersControllerImpl::OnConsentSettingsRequestedByUser() {
+  quick_answers_ui_controller_->CloseUserConsentView();
+  consent_controller_->DismissConsent();
+  NewWindowDelegate::GetInstance()->NewTabWithUrl(
+      GURL(kAssistantRelatedInfoUrl), /*from_user_interaction=*/true);
+}
+
+void QuickAnswersControllerImpl::MaybeDismissQuickAnswersConsent() {
+  if (quick_answers_ui_controller_->is_showing_user_consent_view())
+    consent_controller_->DismissConsent();
+  quick_answers_ui_controller_->CloseUserConsentView();
 }
 
 }  // namespace ash

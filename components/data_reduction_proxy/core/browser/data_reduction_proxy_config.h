@@ -36,7 +36,6 @@ class ProxyServer;
 namespace data_reduction_proxy {
 
 class DataReductionProxyConfigValues;
-class DataReductionProxyConfigurator;
 class NetworkPropertiesManager;
 class SecureProxyChecker;
 struct DataReductionProxyTypeInfo;
@@ -78,12 +77,10 @@ class DataReductionProxyConfig
   // The caller must ensure that all parameters remain alive for the lifetime
   // of the |DataReductionProxyConfig| instance, with the exception of
   // |config_values| which is owned by |this|. |config_values| contains the Data
-  // Reduction Proxy configuration values. |configurator| is the target for a
-  // configuration update.
+  // Reduction Proxy configuration values.
   DataReductionProxyConfig(
       network::NetworkConnectionTracker* network_connection_tracker,
-      std::unique_ptr<DataReductionProxyConfigValues> config_values,
-      DataReductionProxyConfigurator* configurator);
+      std::unique_ptr<DataReductionProxyConfigValues> config_values);
   ~DataReductionProxyConfig() override;
 
   // Performs initialization on the IO thread.
@@ -126,10 +123,6 @@ class DataReductionProxyConfig
   // Returns true if the data saver has been enabled by the user, and the data
   // saver proxy is reachable.
   bool enabled_by_user_and_reachable() const;
-
-  // Gets the ProxyConfig that would be used ignoring the holdback experiment.
-  // This should only be used for logging purposes.
-  net::ProxyConfig ProxyConfigIgnoringHoldback() const;
 
   std::vector<DataReductionProxyServer> GetProxiesForHttp() const;
 
@@ -238,10 +231,6 @@ class DataReductionProxyConfig
                                       int net_status,
                                       int http_response_code);
 
-  // Adds the default proxy bypass rules for the Data Reduction Proxy.
-  // Virtualized for testing.
-  virtual void AddDefaultProxyBypassRules();
-
   // Checks if all configured data reduction proxies are in the retry map.
   // Returns true if the request is bypassed by all configured data reduction
   // proxies that apply to the request scheme. If all possible data reduction
@@ -286,9 +275,6 @@ class DataReductionProxyConfig
 
   // Watches for network connection changes.
   network::NetworkConnectionTracker* network_connection_tracker_;
-
-  // The caller must ensure that the |configurator_| outlives this instance.
-  DataReductionProxyConfigurator* configurator_;
 
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;

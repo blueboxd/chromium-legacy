@@ -476,6 +476,7 @@ ScriptPromise FontFace::FontStatusPromise(ScriptState* script_state) {
 ScriptPromise FontFace::load(ScriptState* script_state) {
   if (status_ == kUnloaded)
     css_font_face_->Load();
+  DidBeginImperativeLoad();
   return FontStatusPromise(script_state);
 }
 
@@ -783,6 +784,11 @@ bool FontFace::HasPendingActivity() const {
 
 FontDisplay FontFace::GetFontDisplay() const {
   return CSSValueToFontDisplay(display_.Get());
+}
+
+void FontFace::DidBeginImperativeLoad() {
+  if (GetDocument())
+    GetDocument()->GetFontPreloadManager().ImperativeFontLoadingStarted(this);
 }
 
 }  // namespace blink

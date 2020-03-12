@@ -63,8 +63,6 @@ enum ChromeDistanceMetric {
   DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH,
   // Width of larger modal dialogs that require extra width.
   DISTANCE_LARGE_MODAL_DIALOG_PREFERRED_WIDTH,
-  // Width of a bubble attached to the tabstrip.
-  DISTANCE_BUBBLE_TABSTRIP_PREFERRED_WIDTH,
   // Width of a bubble unless the content is too wide to make that
   // feasible.
   DISTANCE_BUBBLE_PREFERRED_WIDTH,

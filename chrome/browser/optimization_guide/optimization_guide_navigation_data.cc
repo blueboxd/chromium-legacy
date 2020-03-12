@@ -40,31 +40,8 @@ OptimizationGuideNavigationData::OptimizationGuideNavigationData(
     int64_t navigation_id)
     : navigation_id_(navigation_id) {}
 
-OptimizationGuideNavigationData::~OptimizationGuideNavigationData() = default;
-
-OptimizationGuideNavigationData::OptimizationGuideNavigationData(
-    const OptimizationGuideNavigationData& other)
-    : navigation_id_(other.navigation_id_),
-      serialized_hint_version_string_(other.serialized_hint_version_string_),
-      optimization_type_decisions_(other.optimization_type_decisions_),
-      optimization_target_decisions_(other.optimization_target_decisions_),
-      optimization_target_model_versions_(
-          other.optimization_target_model_versions_),
-      optimization_target_model_prediction_scores_(
-          other.optimization_target_model_prediction_scores_),
-      has_hint_before_commit_(other.has_hint_before_commit_),
-      has_hint_after_commit_(other.has_hint_after_commit_),
-      was_host_covered_by_fetch_at_navigation_start_(
-          other.was_host_covered_by_fetch_at_navigation_start_),
-      was_host_covered_by_fetch_at_commit_(
-          other.was_host_covered_by_fetch_at_commit_),
-      was_hint_for_host_attempted_to_be_fetched_(
-          other.was_hint_for_host_attempted_to_be_fetched_),
-      is_same_origin_navigation_(other.is_same_origin_navigation_) {
-  if (other.has_page_hint_value()) {
-    page_hint_ = std::make_unique<optimization_guide::proto::PageHint>(
-        *other.page_hint());
-  }
+OptimizationGuideNavigationData::~OptimizationGuideNavigationData() {
+  RecordMetrics(has_committed_);
 }
 
 // static
@@ -297,6 +274,13 @@ void OptimizationGuideNavigationData::RecordOptimizationGuideUKM() const {
     did_record_metric = true;
   }
 
+  // Record fetch latency metrics.
+  if (hints_fetch_latency().has_value()) {
+    builder.SetNavigationHintsFetchRequestLatency(
+        hints_fetch_latency()->InMilliseconds());
+    did_record_metric = true;
+  }
+
   // Only record UKM if a metric was recorded.
   if (did_record_metric)
     builder.Record(ukm::UkmRecorder::Get());
@@ -394,4 +378,21 @@ OptimizationGuideNavigationData::GetValueForModelFeatureForTesting(
   if (it == prediction_model_features_.end())
     return base::nullopt;
   return it->second;
+}
+
+base::Optional<base::TimeDelta>
+OptimizationGuideNavigationData::hints_fetch_latency() const {
+  if (!hints_fetch_start_ || !hints_fetch_end_) {
+    // Either a fetch was not initiated for this navigation or the fetch did not
+    // completely successfully.
+    return base::nullopt;
+  }
+
+  if (*hints_fetch_end_ < *hints_fetch_start_) {
+    // This can happen if a hints fetch was started for a redirect, but the
+    // fetch had not successfully completed yet.
+    return base::nullopt;
+  }
+
+  return *hints_fetch_end_ - *hints_fetch_start_;
 }

@@ -63,6 +63,8 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
+#include "chrome/browser/media/history/media_history_keyed_service.h"
+#include "chrome/browser/media/history/media_history_store.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -1605,6 +1607,18 @@ bool Browser::IsFrameLowPriority(
       ChromeSubresourceFilterClient::FromWebContents(web_contents);
   return client &&
          client->GetThrottleManager()->IsFrameTaggedAsAd(render_frame_host);
+}
+
+void Browser::MediaWatchTimeChanged(
+    const content::MediaPlayerWatchTime& watch_time) {
+  if (media_history::MediaHistoryKeyedService::IsEnabled()) {
+    media_history::MediaHistoryKeyedService::Get(profile())->SavePlayback(
+        watch_time);
+  }
+}
+
+base::WeakPtr<content::WebContentsDelegate> Browser::GetDelegateWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 bool Browser::IsMouseLocked() const {

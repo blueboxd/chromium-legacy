@@ -9,17 +9,18 @@
 #include "chrome/browser/offline_pages/prefetch/notifications/prefetch_notification_service.h"
 
 namespace offline_pages {
+namespace prefetch {
 
 PrefetchNotificationClient::PrefetchNotificationClient(
     GetServiceCallback callback)
-    : get_service_callback_(std::move(callback)) {}
+    : prefetch_service_getter_(std::move(callback)) {}
 
 PrefetchNotificationClient::~PrefetchNotificationClient() = default;
 
 void PrefetchNotificationClient::BeforeShowNotification(
     std::unique_ptr<NotificationData> notification_data,
     NotificationDataCallback callback) {
-  NOTIMPLEMENTED();
+  std::move(callback).Run(std::move(notification_data));
 }
 
 void PrefetchNotificationClient::OnSchedulerInitialized(
@@ -30,12 +31,20 @@ void PrefetchNotificationClient::OnSchedulerInitialized(
 
 void PrefetchNotificationClient::OnUserAction(
     const UserActionData& action_data) {
-  NOTIMPLEMENTED();
+  if (action_data.action_type == notifications::UserActionType::kClick) {
+    GetPrefetchNotificationService()->OnClick();
+  }
 }
 
 void PrefetchNotificationClient::GetThrottleConfig(
     ThrottleConfigCallback callback) {
-  std::move(callback).Run(nullptr);
+  GetPrefetchNotificationService()->GetThrottleConfig(std::move(callback));
 }
 
+PrefetchNotificationService*
+PrefetchNotificationClient::GetPrefetchNotificationService() {
+  return prefetch_service_getter_.Run();
+}
+
+}  // namespace prefetch
 }  // namespace offline_pages

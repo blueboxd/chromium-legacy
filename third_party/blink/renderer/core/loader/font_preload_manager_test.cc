@@ -383,4 +383,96 @@ TEST_F(FontPreloadManagerTest, OptionalFontFastPreloading) {
   EXPECT_FALSE(GetTargetFont().ShouldSkipDrawing());
 }
 
+TEST_F(FontPreloadManagerTest, OptionalFontSlowImperativeLoad) {
+  SimRequest main_resource("https://example.com", "text/html");
+  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+
+  LoadURL("https://example.com");
+  main_resource.Complete(R"HTML(
+    <!doctype html>
+    <style>
+      @font-face {
+        font-family: custom-font;
+        src: url(https://example.com/Ahem.woff2) format("woff2");
+        font-display: optional;
+      }
+      #target {
+        font: 25px/1 custom-font, monospace;
+      }
+    </style>
+    <script>
+    document.fonts.load('25px/1 custom-font');
+    </script>
+    <span id=target>0123456789</span>
+  )HTML");
+
+  // Rendering is blocked due to font being loaded via JavaScript API.
+  EXPECT_TRUE(Compositor().DeferMainFrameUpdate());
+  EXPECT_TRUE(GetFontPreloadManager().HasPendingRenderBlockingFonts());
+  EXPECT_EQ(State::kLoading, GetState());
+
+  GetFontPreloadManager().FontPreloadingDelaysRenderingTimerFired(nullptr);
+
+  // Rendering is unblocked after the font preloading has timed out.
+  EXPECT_FALSE(Compositor().DeferMainFrameUpdate());
+  EXPECT_FALSE(GetFontPreloadManager().HasPendingRenderBlockingFonts());
+  EXPECT_EQ(State::kUnblocked, GetState());
+
+  // First frame renders text with visible fallback, as the 'optional' web font
+  // isn't loaded yet, and should be treated as in the failure period.
+  Compositor().BeginFrame();
+  EXPECT_GT(250, GetTarget()->OffsetWidth());
+  EXPECT_FALSE(GetTargetFont().ShouldSkipDrawing());
+
+  font_resource.Complete(ReadAhemWoff2());
+
+  // The 'optional' web font should not cause relayout even if it finishes
+  // loading now.
+  Compositor().BeginFrame();
+  EXPECT_GT(250, GetTarget()->OffsetWidth());
+  EXPECT_FALSE(GetTargetFont().ShouldSkipDrawing());
+}
+
+TEST_F(FontPreloadManagerTest, OptionalFontFastImperativeLoad) {
+  SimRequest main_resource("https://example.com", "text/html");
+  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+
+  LoadURL("https://example.com");
+  main_resource.Complete(R"HTML(
+    <!doctype html>
+    <style>
+      @font-face {
+        font-family: custom-font;
+        src: url(https://example.com/Ahem.woff2) format("woff2");
+        font-display: optional;
+      }
+      #target {
+        font: 25px/1 custom-font, monospace;
+      }
+    </style>
+    <script>
+    document.fonts.load('25px/1 custom-font');
+    </script>
+    <span id=target>0123456789</span>
+  )HTML");
+
+  // Rendering is blocked due to font being preloaded.
+  EXPECT_TRUE(Compositor().DeferMainFrameUpdate());
+  EXPECT_TRUE(GetFontPreloadManager().HasPendingRenderBlockingFonts());
+  EXPECT_EQ(State::kLoading, GetState());
+
+  font_resource.Complete(ReadAhemWoff2());
+  test::RunPendingTasks();
+
+  // Rendering is unblocked after the font is preloaded.
+  EXPECT_FALSE(Compositor().DeferMainFrameUpdate());
+  EXPECT_FALSE(GetFontPreloadManager().HasPendingRenderBlockingFonts());
+  EXPECT_EQ(State::kUnblocked, GetState());
+
+  // The 'optional' web font should be used in the first paint.
+  Compositor().BeginFrame();
+  EXPECT_EQ(250, GetTarget()->OffsetWidth());
+  EXPECT_FALSE(GetTargetFont().ShouldSkipDrawing());
+}
+
 }  // namespace blink

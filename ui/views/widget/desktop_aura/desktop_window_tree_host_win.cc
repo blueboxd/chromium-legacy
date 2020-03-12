@@ -4,6 +4,10 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 
+#include <algorithm>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
@@ -794,7 +798,7 @@ void DesktopWindowTreeHostWin::HandleActivationChanged(bool active) {
   desktop_native_widget_aura_->HandleActivationChanged(active);
 }
 
-bool DesktopWindowTreeHostWin::HandleAppCommand(short command) {
+bool DesktopWindowTreeHostWin::HandleAppCommand(int command) {
   // We treat APPCOMMAND ids as an extension of our command namespace, and just
   // let the delegate figure out what to do...
   return GetWidget()->widget_delegate() &&

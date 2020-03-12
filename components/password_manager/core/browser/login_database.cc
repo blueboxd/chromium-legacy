@@ -732,7 +732,8 @@ void LoginDatabase::InitPasswordRecoveryUtil(
 #endif
 
 void LoginDatabase::ReportMetrics(const std::string& sync_username,
-                                  bool custom_passphrase_sync_enabled) {
+                                  bool custom_passphrase_sync_enabled,
+                                  BulkCheckDone bulk_check_done) {
   TRACE_EVENT0("passwords", "LoginDatabase::ReportMetrics");
   sql::Statement s(db_.GetCachedStatement(
       SQL_FROM_HERE,
@@ -991,6 +992,7 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
     LogAccountStat("PasswordManager.CredentialsWithMismatchedDuplicates",
                    credentials_with_mismatched_duplicates);
   }
+  compromised_credentials_table_.ReportMetrics(bulk_check_done);
 }
 
 PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form,

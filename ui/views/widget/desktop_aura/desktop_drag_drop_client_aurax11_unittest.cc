@@ -4,11 +4,8 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 #include <vector>
-
-// Include views_test_base.h first because the definition of None in X.h
-// conflicts with the definition of None in gtest-type-util.h
-#include "ui/views/test/views_test_base.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -28,6 +25,7 @@
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -422,7 +420,7 @@ void BasicStep2(TestDragDropClient* client, XID toplevel) {
 
   EXPECT_TRUE(client->MessageHasType(events[1], "XdndPosition"));
   EXPECT_EQ(client->source_xwindow(), static_cast<XID>(events[0].data.l[0]));
-  const long kCoords =
+  const int kCoords =
       TestDragDropClient::kMouseMoveX << 16 | TestDragDropClient::kMouseMoveY;
   EXPECT_EQ(kCoords, events[1].data.l[2]);
   EXPECT_EQ(client->GetAtom("XdndActionCopy"),

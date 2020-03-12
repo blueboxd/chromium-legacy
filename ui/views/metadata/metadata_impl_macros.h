@@ -5,6 +5,10 @@
 #ifndef UI_VIEWS_METADATA_METADATA_IMPL_MACROS_H_
 #define UI_VIEWS_METADATA_METADATA_IMPL_MACROS_H_
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "ui/views/metadata/metadata_cache.h"
 #include "ui/views/metadata/metadata_macros_internal.h"
 #include "ui/views/metadata/property_metadata.h"

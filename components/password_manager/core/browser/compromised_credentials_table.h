@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "url/gurl.h"
 
 namespace sql {
@@ -14,6 +15,8 @@ class Database;
 }
 
 namespace password_manager {
+
+using BulkCheckDone = util::StrongAlias<class BulkCheckDoneTag, bool>;
 
 enum class CompromiseType {
   // If the credentials was leaked by a data breach.
@@ -95,6 +98,10 @@ class CompromisedCredentialsTable {
 
   // Returns all compromised credentials from the database.
   std::vector<CompromisedCredentials> GetAllRows();
+
+  // Reports UMA metrics about the table. |bulk_check_done| means that the
+  // password bulk leak check was executed in the past.
+  void ReportMetrics(BulkCheckDone bulk_check_done);
 
  private:
   sql::Database* db_ = nullptr;

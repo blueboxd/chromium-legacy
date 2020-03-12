@@ -3,15 +3,18 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../site_settings/category_setting_exceptions.html">
 <link rel="import" href="../site_settings/constants.html">
+<link rel="import" href="../site_settings/site_settings_prefs_browser_proxy.html">
 <link rel="import" href="collapse_radio_button.html">
 <link rel="import" href="do_not_track_toggle.html">
-
 
 <dom-module id="settings-cookies-page">
   <template>
@@ -38,10 +41,10 @@
     <img src="chrome://settings/images/cookies_banner.svg">
     <div class="settings-box block first">
       <h2>$i18n{cookiePageGeneralControls}</h2>
-      <cr-radio-group selected="[[selectCookiesControlRadio_]]"
+      <cr-radio-group selected="[[cookiesControlRadioSelected_]]"
           selectable-elements="cr-radio-button, settings-collapse-radio-button"
           on-selected-changed="onCookiesControlRadioChange_">
-        <settings-collapse-radio-button
+        <settings-collapse-radio-button id="allowAll"
             name="[[cookiesControlEnum_.ALLOW_ALL]]"
             label="$i18n{cookiePageAllowAll}">
           <div slot="collapse">
@@ -55,8 +58,8 @@
             </div>
           </div>
         </settings-collapse-radio-button>
-        <settings-collapse-radio-button
-            name="[[cookiesControlEnum_.BLOCK_THIRD_INCOGNITO]]"
+        <settings-collapse-radio-button id="blockThirdPartyIncognito"
+            name="[[cookiesControlEnum_.BLOCK_THIRD_PARTY_INCOGNITO]]"
             label="$i18n{cookiePageBlockThirdIncognito}">
           <div slot="collapse">
             <div class="bullet-line">
@@ -73,8 +76,8 @@
             </div>
           </div>
         </settings-collapse-radio-button>
-        <settings-collapse-radio-button
-            name="[[cookiesControlEnum_.BLOCK_THIRD]]"
+        <settings-collapse-radio-button id="blockThirdParty"
+            name="[[cookiesControlEnum_.BLOCK_THIRD_PARTY]]"
             label="$i18n{cookiePageBlockThird}">
           <div slot="collapse">
             <div class="bullet-line">
@@ -87,7 +90,7 @@
             </div>
           </div>
         </settings-collapse-radio-button>
-        <settings-collapse-radio-button
+        <settings-collapse-radio-button id="blockAll"
             name="[[cookiesControlEnum_.BLOCK_ALL]]"
             label="$i18n{cookiePageBlockAll}">
           <div slot="collapse">
@@ -107,13 +110,17 @@
         </settings-collapse-radio-button>
       </cr-radio-group>
     </div>
-
-    <div class="settings-box first">
-      <h2>$i18n{cookiesManageSiteSpecificExceptions}</h2>
-    </div>
+    <settings-toggle-button id="clearOnExit"  no-set-pref
+        pref="{{clearOnExitPref_}}" label="$i18n{deleteDataPostSession}"
+        disabled$="[[clearOnExitDisabled_]]"
+        on-settings-boolean-control-change="onClearOnExitChange_">
+    </settings-toggle-button>
     <settings-do-not-track-toggle id="doNotTrack"
         prefs="{{prefs}}">
     </settings-do-not-track-toggle>
+    <div class="settings-box first">
+      <h2>$i18n{cookiesManageSiteSpecificExceptions}</h2>
+    </div>
     <category-setting-exceptions
         category="[[ContentSettingsTypes.COOKIES]]"
         block-header="$i18n{siteSettingsBlock}">

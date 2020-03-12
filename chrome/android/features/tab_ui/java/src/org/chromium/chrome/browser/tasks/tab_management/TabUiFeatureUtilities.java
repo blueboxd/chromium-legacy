@@ -145,15 +145,14 @@ public class TabUiFeatureUtilities {
         if (sTabThumbnailAspectRatioForTesting != null) {
             aspectRatio = sTabThumbnailAspectRatioForTesting;
         } else {
-            aspectRatio = CachedFeatureFlags.getValue(THUMBNAIL_ASPECT_RATIO);
+            aspectRatio = THUMBNAIL_ASPECT_RATIO.getValue();
         }
 
         return Double.compare(1.0, aspectRatio) != 0;
     }
 
     public static boolean isTabGridLayoutAndroidNewTabTileEnabled() {
-        return TextUtils.equals(
-                CachedFeatureFlags.getValue(TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE), "NewTabTile");
+        return TextUtils.equals(TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE.getValue(), "NewTabTile");
     }
 
     @VisibleForTesting

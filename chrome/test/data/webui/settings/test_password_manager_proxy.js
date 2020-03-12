@@ -40,6 +40,7 @@
       addSavedPasswordListChangedListener: null,
       addExceptionListChangedListener: null,
       requestPlaintextPassword: null,
+      addCompromisedCredentialsListener: null,
     };
 
     this.plaintextPassword_ = '';
@@ -176,7 +177,9 @@
   }
 
   /** @override */
-  addCompromisedCredentialsListener(listener) {}
+  addCompromisedCredentialsListener(listener) {
+    this.lastCallback.addCompromisedCredentialsListener = listener;
+  }
 
   /** @override */
   removeCompromisedCredentialsListener(listener) {}

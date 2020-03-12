@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FONT_PRELOAD_MANAGER_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/css/remote_font_face_source.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
@@ -14,10 +13,12 @@ namespace blink {
 
 class Document;
 class FontResource;
+class FontFace;
 class ResourceFinishObserver;
 
-// This class monitors font preloading and notifies the relevant document, so
-// that it can manage the first rendering timing to work with preloaded fonts.
+// This class monitors font preloading (via <link rel="preload"> or Font Loading
+// API) and notifies the relevant document, so that it can manage the first
+// rendering timing to work with preloaded fonts.
 // Design doc: https://bit.ly/36E8UKB
 class CORE_EXPORT FontPreloadManager final {
   DISALLOW_NEW();
@@ -36,6 +37,9 @@ class CORE_EXPORT FontPreloadManager final {
   void FontPreloadingStarted(FontResource*);
   void FontPreloadingFinished(FontResource*, ResourceFinishObserver*);
   void FontPreloadingDelaysRenderingTimerFired(TimerBase*);
+
+  void ImperativeFontLoadingStarted(FontFace*);
+  void ImperativeFontLoadingFinished();
 
   // Exposed to web tests via internals.
   void SetRenderDelayTimeoutForTest(base::TimeDelta timeout);
@@ -59,18 +63,22 @@ class CORE_EXPORT FontPreloadManager final {
     kUnblocked
   };
 
+  void RenderBlockingFontLoadingStarted();
+  void RenderBlockingFontLoadingFinished();
+
   Member<Document> document_;
 
   // Need to hold strong references here, otherwise they'll be GC-ed immediately
   // as Resource only holds weak references.
   HeapHashSet<Member<ResourceFinishObserver>> finish_observers_;
 
+  unsigned imperative_font_loading_count_ = 0;
+
   TaskRunnerTimer<FontPreloadManager> render_delay_timer_;
   base::TimeDelta render_delay_timeout_;
 
   State state_ = State::kInitial;
 
-  // TODO(xiaochengh): Do the same for fonts preloaded with Font Loading API
   // TODO(xiaochengh): Do the same for fonts loaded for other reasons?
 };
 

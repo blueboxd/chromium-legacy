@@ -10,6 +10,8 @@ namespace chromeos {
 extern const char kChromeUIPrintManagementHost[];
 extern const char kChromeUIPrintManagementAppUrl[];
 
+extern const char kChromeUIScanningHost[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_COMPONENTS_PRINT_MANAGEMENT_URL_CONSTANTS_H_

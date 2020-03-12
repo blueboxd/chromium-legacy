@@ -33,7 +33,6 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/h264_parser.h"
 #include "media/video/video_encode_accelerator.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/webrtc/webrtc_video_frame_adapter.h"
@@ -632,9 +631,9 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
   input_frame_coded_size_ = input_coded_size;
 
   for (unsigned int i = 0; i < input_count + kInputBufferExtraCount; ++i) {
-    base::UnsafeSharedMemoryRegion shm =
-        mojo::CreateUnsafeSharedMemoryRegion(media::VideoFrame::AllocationSize(
-            media::PIXEL_FORMAT_I420, input_coded_size));
+    base::UnsafeSharedMemoryRegion shm = base::UnsafeSharedMemoryRegion::Create(
+        media::VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420,
+                                          input_coded_size));
     if (!shm.IsValid()) {
       LogAndNotifyError(FROM_HERE, "failed to create input buffer ",
                         media::VideoEncodeAccelerator::kPlatformFailureError);

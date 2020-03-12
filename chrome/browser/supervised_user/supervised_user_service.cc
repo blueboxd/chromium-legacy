@@ -66,7 +66,6 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/supervised_user/mature_extension_checker.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #endif
@@ -304,9 +303,6 @@ SupervisedUserService::SupervisedUserService(Profile* profile)
   url_filter_.AddObserver(this);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   registry_observer_.Add(extensions::ExtensionRegistry::Get(profile));
-
-  mature_extension_checker_ =
-      std::make_unique<extensions::MatureExtensionChecker>(profile);
 #endif
 
   std::string client_id = component_updater::SupervisedUserWhitelistInstaller::
@@ -403,14 +399,6 @@ void SupervisedUserService::
       std::make_unique<base::Value>(!enabled));
   profile_->GetPrefs()->SetBoolean(
       prefs::kSupervisedUserExtensionsMayRequestPermissions, enabled);
-}
-
-void SupervisedUserService::MarkExtensionMatureForTesting(
-    const std::string& extension_id,
-    bool maturity_rating) {
-  mature_extension_checker_->CheckMatureDataForExtension(extension_id);
-  mature_extension_checker_->MarkExtensionMatureForTesting(extension_id,
-                                                           maturity_rating);
 }
 
 bool SupervisedUserService::CanInstallExtensions() const {
@@ -767,16 +755,6 @@ SupervisedUserService::ExtensionState SupervisedUserService::GetExtensionState(
       extensions::Manifest::IsExternalLocation(extension.location());
 #endif
 
-  if (base::FeatureList::IsEnabled(
-          supervised_users::kSupervisedUserInitiatedExtensionInstall)) {
-    // If the extension is mature (inappropriate for child users), block it.
-    // Doing this check early in this function blocks both mature extensions and
-    // themes.
-    if (mature_extension_checker_->IsExtensionMature(extension.id())) {
-      return ExtensionState::BLOCKED;
-    }
-  }
-
   // Note: Component extensions are protected from modification/uninstallation
   // anyway, so there's no need to enforce them again for supervised users.
   // Also, leave policy-installed extensions alone - they have their own
@@ -831,19 +809,6 @@ std::string SupervisedUserService::GetDebugPolicyProviderName() const {
 bool SupervisedUserService::UserMayLoad(const Extension* extension,
                                         base::string16* error) const {
   DCHECK(IsChild());
-  if (base::FeatureList::IsEnabled(
-          supervised_users::kSupervisedUserInitiatedExtensionInstall)) {
-    // Issue RPC call to check for mature content here only because
-    // UserMayLoad() is guaranteed called for every extension and theme.
-    // Note: this RPC call is asynchronous and will not complete in time to make
-    // GetExtensionState() below return BLOCKED, even if the extension is
-    // mature. Disabling mature extensions is done in the callback handlers,
-    // specifically OnWebstoreResponseParseSuccess().
-    if (!mature_extension_checker_->HasRequestForExtension(extension->id()) &&
-        !mature_extension_checker_->HasDataForExtension(extension->id())) {
-      mature_extension_checker_->CheckMatureDataForExtension(extension->id());
-    }
-  }
   ExtensionState result = GetExtensionState(*extension);
   bool may_load = result != ExtensionState::BLOCKED;
   if (!may_load && error)

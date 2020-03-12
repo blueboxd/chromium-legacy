@@ -273,6 +273,21 @@ template("chrome_public_common_apk_or_module_tmpl") {
     }
 
     if (use_chromium_linker) {
+      _is_non_trichrome_3264 =
+          _is_trichrome && android_64bit_target_cpu && !_is_64_bit_browser
+
+      if (_is_non_trichrome_3264) {
+        _seconday_linker = "//base/android/linker:chromium_android_linker($android_secondary_abi_toolchain)"
+        deps += [ _seconday_linker ]
+        _secondary_out_dir = get_label_info(_seconday_linker, "root_out_dir")
+        secondary_abi_loadable_modules +=
+            [ "$_secondary_out_dir/libchromium_android_linker$shlib_extension" ]
+      } else {
+        deps += [ "//base/android/linker:chromium_android_linker" ]
+        loadable_modules +=
+            [ "$root_out_dir/libchromium_android_linker$shlib_extension" ]
+      }
+
       if (!defined(load_library_from_apk)) {
         # Whether native libraries should be loaded from within the apk.
         # Only attempt loading the library from the APK for 64 bit devices

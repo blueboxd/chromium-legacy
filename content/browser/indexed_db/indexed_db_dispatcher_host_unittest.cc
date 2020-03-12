@@ -82,7 +82,6 @@ MATCHER_P(MatchesIDBKey, key, "") {
 
 static const char kDatabaseName[] = "db";
 static const char kOrigin[] = "https://www.example.com";
-static const int kFakeProcessId = 2;
 
 base::FilePath CreateAndReturnTempDir(base::ScopedTempDir* temp_dir) {
   CHECK(temp_dir->CreateUniqueTempDir());
@@ -186,9 +185,7 @@ class IndexedDBDispatcherHostTest : public testing::Test {
             mojo::NullRemote(),
             mojo::NullRemote(),
             task_environment_.GetMainThreadTaskRunner(),
-            nullptr)),
-        host_(new IndexedDBDispatcherHost(kFakeProcessId, context_impl_),
-              base::OnTaskRunnerDeleter(context_impl_->IDBTaskRunner())) {}
+            nullptr)) {}
 
   void TearDown() override {
     // Cycle the IndexedDBTaskQueue to remove all IDB tasks.
@@ -204,7 +201,6 @@ class IndexedDBDispatcherHostTest : public testing::Test {
                                                loop.Quit();
                                              }));
     loop.Run();
-    host_.reset();
     context_impl_ = nullptr;
     quota_manager_ = nullptr;
     task_environment_.RunUntilIdle();
@@ -216,10 +212,9 @@ class IndexedDBDispatcherHostTest : public testing::Test {
     base::RunLoop loop;
     context_impl_->IDBTaskRunner()->PostTask(
         FROM_HERE, base::BindLambdaForTesting([&]() {
-          constexpr int kRenderFrameId = 42;
-          host_->AddReceiver(kFakeProcessId, kRenderFrameId,
-                             url::Origin::Create(GURL(kOrigin)),
-                             idb_mojo_factory_.BindNewPipeAndPassReceiver());
+          context_impl_->BindIndexedDB(
+              url::Origin::Create(GURL(kOrigin)),
+              idb_mojo_factory_.BindNewPipeAndPassReceiver());
           loop.Quit();
         }));
     loop.Run();
@@ -231,7 +226,6 @@ class IndexedDBDispatcherHostTest : public testing::Test {
   scoped_refptr<storage::MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<storage::MockQuotaManager> quota_manager_;
   scoped_refptr<IndexedDBContextImpl> context_impl_;
-  std::unique_ptr<IndexedDBDispatcherHost, base::OnTaskRunnerDeleter> host_;
   mojo::Remote<blink::mojom::IDBFactory> idb_mojo_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDispatcherHostTest);

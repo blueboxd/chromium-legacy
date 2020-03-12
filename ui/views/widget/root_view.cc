@@ -5,6 +5,7 @@
 #include "ui/views/widget/root_view.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -470,8 +471,6 @@ void RootView::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 void RootView::OnMouseCaptureLost() {
-  // TODO: this likely needs to reset touch handler too.
-
   if (mouse_pressed_handler_ || gesture_handler_) {
     // Synthesize a release event for UpdateCursor.
     if (mouse_pressed_handler_) {

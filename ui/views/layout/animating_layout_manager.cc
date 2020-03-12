@@ -38,6 +38,10 @@ const ChildLayout* FindChildViewInLayout(const ProposedLayout& layout,
   return nullptr;
 }
 
+ChildLayout* FindChildViewInLayout(ProposedLayout* layout, const View* view) {
+  return const_cast<ChildLayout*>(FindChildViewInLayout(*layout, view));
+}
+
 // Describes the type of fade, used by LayoutFadeInfo (see below).
 enum LayoutFadeType {
   // This view is fading in as part of the current animation.
@@ -49,14 +53,6 @@ enum LayoutFadeType {
   // position off of it.
   kContinuingFade
 };
-
-// Non-const version of above.
-ChildLayout* FindChildViewInLayout(ProposedLayout& layout, const View* view) {
-  // This const_cast is safe because we know we were passed in a non-const
-  // layout (also we don't want to duplicate the logic).
-  return const_cast<ChildLayout*>(
-      FindChildViewInLayout(const_cast<const ProposedLayout&>(layout), view));
-}
 
 }  // namespace
 
@@ -684,7 +680,7 @@ void AnimatingLayoutManager::UpdateCurrentLayout(double percent) {
     }
 
     ChildLayout* const to_overwrite =
-        FindChildViewInLayout(current_layout_, fade_info.child_view);
+        FindChildViewInLayout(&current_layout_, fade_info.child_view);
     if (to_overwrite)
       *to_overwrite = child_layout;
     else

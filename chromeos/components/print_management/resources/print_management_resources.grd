@@ -18,6 +18,8 @@
       <include name="IDR_PRINT_MANAGEMENT_MANIFEST" file="manifest.json" type="BINDATA" compress="gzip" />
       <include name="IDR_PRINT_MANAGEMENT_ICON" file="app_icon_192.png" type="BINDATA" compress="gzip" />
       <include name="IDR_PRINT_MANAGEMENT_PWA_HTML" file="pwa.html" type="BINDATA" compress="gzip" />
+      <include name="IDR_SCANNING_UI_INDEX_HTML" file="scanning_ui_index.html" type="BINDATA" compress="gzip" />
+      <include name="IDR_SCANNING_UI_JS" file="${root_gen_dir}/chromeos/components/print_management/resources/scanning_ui.js" use_base_dir="false" compress="gzip" type="BINDATA"/>
     </includes>
   </release>
 </grit>

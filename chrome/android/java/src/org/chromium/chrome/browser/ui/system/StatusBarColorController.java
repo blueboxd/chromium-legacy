@@ -237,44 +237,14 @@ public class StatusBarColorController
     }
 
     public void updateStatusBarColor() {
-        @ColorInt
-        int statusBarColor = calculateBaseStatusBarColor();
-        boolean isDefaultThemeColor = (statusBarColor == DEFAULT_STATUS_BAR_COLOR);
-        if (isDefaultThemeColor) {
-            statusBarColor =
-                    mIsIncognito ? mIncognitoDefaultThemeColor : mStandardDefaultThemeColor;
-        }
-
-        mStatusBarColorWithoutStatusIndicator = statusBarColor;
-
-        final boolean statusIndicatorColorSet = mStatusIndicatorColor != UNDEFINED_STATUS_BAR_COLOR;
-        if (statusIndicatorColorSet) {
-            statusBarColor = mStatusIndicatorColor;
-        }
-
-        // If the API level is not at least M, the status bar icons will be always light. So, we
-        // should darken the status bar color.
-        boolean shouldDarkenStatusBar = Build.VERSION.SDK_INT < Build.VERSION_CODES.M;
-
-        // Calculate the color without the status indicator.
-        if (shouldDarkenStatusBar && isDefaultThemeColor) {
-            mStatusBarColorWithoutStatusIndicator = Color.BLACK;
-        } else if (shouldDarkenStatusBar) {
+        mStatusBarColorWithoutStatusIndicator = calculateBaseStatusBarColor();
+        if (shouldDarkenStatusBarColor()) {
             mStatusBarColorWithoutStatusIndicator =
                     ColorUtils.getDarkenedColorForStatusBar(mStatusBarColorWithoutStatusIndicator);
         }
 
-        // If we need to darken the color and the theme color is default, the status bar color
-        // should be black. However, we should use the status indicator color if it's set.
-        if (shouldDarkenStatusBar && isDefaultThemeColor && !statusIndicatorColorSet) {
-            statusBarColor = Color.BLACK;
-        } else if (shouldDarkenStatusBar) {
-            statusBarColor = ColorUtils.getDarkenedColorForStatusBar(statusBarColor);
-        } else {
-            // If we aren't darkening the color, we should apply scrim if it's showing.
-            statusBarColor = applyCurrentScrimToColor(statusBarColor);
-        }
-
+        int statusBarColor = applyStatusBarIndicatorColor(mStatusBarColorWithoutStatusIndicator);
+        statusBarColor = applyCurrentScrimToColor(statusBarColor);
         setStatusBarColor(statusBarColor);
     }
 
@@ -292,6 +262,9 @@ public class StatusBarColorController
     private @ColorInt int calculateBaseStatusBarColor() {
         // Return overridden status bar color from StatusBarColorProvider if specified.
         final int baseStatusBarColor = mStatusBarColorProvider.getBaseStatusBarColor(mCurrentTab);
+        if (baseStatusBarColor == DEFAULT_STATUS_BAR_COLOR) {
+            return calculateDefaultStatusBarColor();
+        }
         if (baseStatusBarColor != UNDEFINED_STATUS_BAR_COLOR) {
             return baseStatusBarColor;
         }
@@ -302,8 +275,7 @@ public class StatusBarColorController
 
         // Return status bar color in overview mode.
         if (mIsInOverviewMode) {
-            boolean supportsDarkStatusIcons = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
-            if (!supportsDarkStatusIcons) return Color.BLACK;
+            if (shouldDarkenStatusBarColor()) return Color.BLACK;
 
             return (mIsIncognito && ToolbarColors.canUseIncognitoToolbarThemeColorInOverview())
                     ? mIncognitoPrimaryBgColor
@@ -313,8 +285,7 @@ public class StatusBarColorController
         // Return status bar color in standard NewTabPage. If location bar is not shown in NTP, we
         // use the tab theme color regardless of the URL expansion percentage.
         if (isLocationBarShownInNTP()) {
-            boolean supportsDarkStatusIcons = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
-            if (!supportsDarkStatusIcons) return Color.BLACK;
+            if (shouldDarkenStatusBarColor()) return Color.BLACK;
 
             return ColorUtils.getColorWithOverlay(
                     TabThemeColorHelper.getBackgroundColor(mCurrentTab),
@@ -326,7 +297,17 @@ public class StatusBarColorController
             return TabThemeColorHelper.getColor(mCurrentTab);
         }
 
-        return DEFAULT_STATUS_BAR_COLOR;
+        return calculateDefaultStatusBarColor();
+    }
+
+    /**
+     * Calculates the default status bar color based on the Android version and incognito state.
+     */
+    private @ColorInt int calculateDefaultStatusBarColor() {
+        if (shouldDarkenStatusBarColor()) {
+            return Color.BLACK;
+        }
+        return mIsIncognito ? mIncognitoDefaultThemeColor : mStandardDefaultThemeColor;
     }
 
     /**
@@ -344,11 +325,28 @@ public class StatusBarColorController
     }
 
     /**
+     * Takes status bar indicator into account in status bar color computation.
+     * @param color The status bar color without the status indicator's color taken into
+     *              consideration. (as specified in
+     *              {@link getStatusBarColorWithoutStatusIndicator()}).
+     * @return The resulting color.
+     */
+    private @ColorInt int applyStatusBarIndicatorColor(@ColorInt int darkenedBaseColor) {
+        if (mStatusIndicatorColor == UNDEFINED_STATUS_BAR_COLOR) return darkenedBaseColor;
+
+        return shouldDarkenStatusBarColor()
+                ? ColorUtils.getDarkenedColorForStatusBar(mStatusIndicatorColor)
+                : mStatusIndicatorColor;
+    }
+
+    /**
      * Get the scrim applied color if the scrim is showing. Otherwise, return the original color.
      * @param color Color to maybe apply scrim to.
      * @return The resulting color.
      */
     private @ColorInt int applyCurrentScrimToColor(@ColorInt int color) {
+        if (shouldDarkenStatusBarColor()) return color;
+
         if (mScrimColor == 0) {
             final View root = mWindow.getDecorView().getRootView();
             final Resources resources = root.getResources();
@@ -359,6 +357,14 @@ public class StatusBarColorController
         int scrimColorOpaque = mScrimColor & 0xFF000000;
         return ColorUtils.getColorWithOverlay(
                 color, scrimColorOpaque, mStatusBarScrimFraction * scrimColorAlpha);
+    }
+
+    /**
+     * @return Whether to to darken the status bar color because the OS version does not support
+     * light status bar icons.
+     */
+    private boolean shouldDarkenStatusBarColor() {
+        return (Build.VERSION.SDK_INT < Build.VERSION_CODES.M);
     }
 
     /**

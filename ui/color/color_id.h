@@ -84,6 +84,8 @@
   E(kColorTabSelectedForeground, \
     NativeTheme::kColorId_TabTitleColorActive) \
   E(kColorTableBackground, NativeTheme::kColorId_TableBackground) \
+  E(kColorTableBackgroundAlternate, \
+    NativeTheme::kColorId_TableBackgroundAlternate) \
   E(kColorTableForeground, NativeTheme::kColorId_TableText) \
   E(kColorTableGroupingIndicator, \
     NativeTheme::kColorId_TableGroupingIndicatorColor) \

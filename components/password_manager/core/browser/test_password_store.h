@@ -87,7 +87,8 @@ class TestPasswordStore : public PasswordStore {
 
   // Unused portions of PasswordStore interface
   void ReportMetricsImpl(const std::string& sync_username,
-                         bool custom_passphrase_sync_enabled) override;
+                         bool custom_passphrase_sync_enabled,
+                         BulkCheckDone bulk_check_done) override;
   PasswordStoreChangeList RemoveLoginsByURLAndTimeImpl(
       const base::Callback<bool(const GURL&)>& url_filter,
       base::Time begin,

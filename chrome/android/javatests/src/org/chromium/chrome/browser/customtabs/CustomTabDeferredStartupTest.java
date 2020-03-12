@@ -139,7 +139,7 @@ public class CustomTabDeferredStartupTest {
     private @ActivityType int mActivityType;
 
     @Rule
-    public final ChromeActivityTestRule mActivityTestRule;
+    public final ChromeActivityTestRule<?> mActivityTestRule;
 
     public CustomTabDeferredStartupTest(@ActivityType int activityType) {
         mActivityType = activityType;

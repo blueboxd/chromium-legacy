@@ -2005,6 +2005,8 @@ jumbo_static_library("ui") {
       "webui/settings/chromeos/multidevice_handler.h",
       "webui/settings/chromeos/os_settings_localized_strings_provider.cc",
       "webui/settings/chromeos/os_settings_localized_strings_provider.h",
+      "webui/settings/chromeos/os_settings_localized_strings_provider_factory.cc",
+      "webui/settings/chromeos/os_settings_localized_strings_provider_factory.h",
       "webui/settings/chromeos/os_settings_ui.cc",
       "webui/settings/chromeos/os_settings_ui.h",
       "webui/settings/chromeos/parental_controls_handler.cc",

@@ -860,8 +860,8 @@ public class ChromeTabbedActivity
     public void onResumeWithNative() {
         super.onResumeWithNative();
 
-        if (IncognitoUtils.shouldDestroyIncognitoProfileOnStartup()) {
-            getTabModelSelector().selectModel(false);
+        if (IncognitoUtils.shouldDestroyIncognitoProfileOnStartup(
+                    getTabModelSelector().getCurrentModel().isIncognito())) {
             Profile.getLastUsedRegularProfile().getOffTheRecordProfile().destroyWhenAppropriate();
         } else {
             CookiesFetcher.restoreCookies();

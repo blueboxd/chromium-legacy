@@ -43,7 +43,7 @@ class MockView : public View {
   }
 
   int GetHeightForWidth(int width) const override {
-    DCHECK(width > 0);
+    DCHECK_GT(width, 0);
     const gfx::Size preferred = GetPreferredSize();
     switch (size_mode_) {
       case SizeMode::kUsePreferredSize:

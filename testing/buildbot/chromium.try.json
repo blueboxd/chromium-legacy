@@ -45,7 +45,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "opus_tests",
         "test_target": "//third_party/opus:opus_tests"
@@ -94,7 +95,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_heap_unittests",
         "test_target": "//third_party/blink/renderer/platform/heap:blink_heap_unittests"
@@ -140,7 +142,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_unittests",
         "test_target": "//third_party/blink/renderer/controller:blink_unittests"
@@ -174,6 +177,7 @@
               "os": "Android"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
         "test_target": "//:blink_web_tests"
@@ -206,6 +210,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
         "test_target": "//:blink_web_tests"
@@ -238,6 +243,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
         "test_target": "//:blink_web_tests"
@@ -258,7 +264,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "accessibility_unittests",
         "test_target": "//ui/accessibility:accessibility_unittests"
@@ -275,7 +282,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests"
@@ -292,7 +300,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "app_shell_unittests",
         "test_target": "//extensions/shell:app_shell_unittests"
@@ -309,7 +318,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
         "test_target": "//base:base_unittests"
@@ -326,7 +336,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_util_unittests",
         "test_target": "//base/util:base_util_unittests"
@@ -343,7 +354,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_common_unittests",
         "test_target": "//third_party/blink/common:blink_common_unittests"
@@ -360,7 +372,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_fuzzer_unittests",
         "test_target": "//third_party/blink/renderer/platform:blink_fuzzer_unittests"
@@ -377,7 +390,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_heap_unittests",
         "test_target": "//third_party/blink/renderer/platform/heap:blink_heap_unittests"
@@ -394,7 +408,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_platform_unittests",
         "test_target": "//third_party/blink/renderer/platform:blink_platform_unittests"
@@ -412,7 +427,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_unittests",
         "test_target": "//third_party/blink/renderer/controller:blink_unittests"
@@ -429,7 +445,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_crypto_tests",
         "test_target": "//third_party/boringssl:boringssl_crypto_tests"
@@ -446,7 +463,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_ssl_tests",
         "test_target": "//third_party/boringssl:boringssl_ssl_tests"
@@ -463,7 +481,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cacheinvalidation_unittests",
         "test_target": "//third_party/cacheinvalidation:cacheinvalidation_unittests"
@@ -483,7 +502,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "capture_unittests",
         "test_target": "//media/capture:capture_unittests"
@@ -500,7 +520,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_unittests",
         "test_target": "//media/cast:cast_unittests"
@@ -517,7 +538,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cc_unittests",
         "test_target": "//cc:cc_unittests"
@@ -534,7 +556,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chrome_app_unittests",
         "test_target": "//chrome/test:chrome_app_unittests"
@@ -551,7 +574,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chromedriver_unittests",
         "test_target": "//chrome/test/chromedriver:chromedriver_unittests"
@@ -568,7 +592,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_browsertests",
         "test_target": "//components:components_browsertests"
@@ -585,7 +610,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_unittests",
         "test_target": "//components:components_unittests"
@@ -603,6 +629,7 @@
               "os": "Mac-10.13.6"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
         },
         "test": "content_browsertests",
@@ -620,7 +647,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_nocompile_tests",
         "test_target": "//content/test:content_nocompile_tests"
@@ -637,7 +665,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -654,7 +683,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crashpad_tests",
         "test_target": "//third_party/crashpad/crashpad:crashpad_tests"
@@ -671,7 +701,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cronet_tests",
         "test_target": "//components/cronet:cronet_tests"
@@ -688,7 +719,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cronet_unittests",
         "test_target": "//components/cronet:cronet_unittests"
@@ -705,7 +737,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crypto_unittests",
         "test_target": "//crypto:crypto_unittests"
@@ -722,7 +755,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "device_unittests",
         "test_target": "//device:device_unittests"
@@ -739,7 +773,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "display_unittests",
         "test_target": "//ui/display:display_unittests"
@@ -756,7 +791,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "events_unittests",
         "test_target": "//ui/events:events_unittests"
@@ -773,7 +809,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "extensions_browsertests",
         "test_target": "//extensions:extensions_browsertests"
@@ -790,7 +827,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "extensions_unittests",
         "test_target": "//extensions:extensions_unittests"
@@ -807,7 +845,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "filesystem_service_unittests",
         "test_target": "//components/services/filesystem:filesystem_service_unittests"
@@ -824,7 +863,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gcm_unit_tests",
         "test_target": "//google_apis/gcm:gcm_unit_tests"
@@ -841,7 +881,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gfx_unittests",
         "test_target": "//ui/gfx:gfx_unittests"
@@ -858,7 +899,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gin_unittests",
         "test_target": "//gin:gin_unittests"
@@ -875,7 +917,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "google_apis_unittests",
         "test_target": "//google_apis:google_apis_unittests"
@@ -892,7 +935,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gpu_unittests",
         "test_target": "//gpu:gpu_unittests"
@@ -909,7 +953,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gwp_asan_unittests",
         "test_target": "//components/gwp_asan:gwp_asan_unittests"
@@ -926,7 +971,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "headless_browsertests",
         "test_target": "//headless:headless_browsertests"
@@ -943,7 +989,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "headless_unittests",
         "test_target": "//headless:headless_unittests"
@@ -961,6 +1008,7 @@
               "os": "Mac-10.13.6"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "interactive_ui_tests",
@@ -978,7 +1026,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ipc_tests",
         "test_target": "//ipc:ipc_tests"
@@ -995,7 +1044,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "jingle_unittests",
         "test_target": "//jingle:jingle_unittests"
@@ -1012,7 +1062,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "latency_unittests",
         "test_target": "//ui/latency:latency_unittests"
@@ -1029,7 +1080,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "libjingle_xmpp_unittests",
         "test_target": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests"
@@ -1046,7 +1098,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_blink_unittests",
         "test_target": "//media/blink:media_blink_unittests"
@@ -1063,7 +1116,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_service_unittests",
         "test_target": "//media/mojo/services:media_service_unittests"
@@ -1080,7 +1134,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_unittests",
         "test_target": "//media:media_unittests"
@@ -1097,7 +1152,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "message_center_unittests",
         "test_target": "//ui/message_center:message_center_unittests"
@@ -1114,7 +1170,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "midi_unittests",
         "test_target": "//media/midi:midi_unittests"
@@ -1131,7 +1188,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "mojo_unittests",
         "test_target": "//mojo:mojo_unittests"
@@ -1148,7 +1206,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "nacl_loader_unittests",
         "test_target": "//components/nacl/loader:nacl_loader_unittests"
@@ -1165,7 +1224,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "native_theme_unittests",
         "test_target": "//ui/native_theme:native_theme_unittests"
@@ -1182,7 +1242,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "net_unittests",
         "test_target": "//net:net_unittests"
@@ -1199,7 +1260,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "pdf_unittests",
         "test_target": "//pdf:pdf_unittests"
@@ -1216,7 +1278,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "perfetto_unittests",
         "test_target": "//third_party/perfetto:perfetto_unittests"
@@ -1233,7 +1296,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ppapi_unittests",
         "test_target": "//ppapi:ppapi_unittests"
@@ -1250,7 +1314,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "printing_unittests",
         "test_target": "//printing:printing_unittests"
@@ -1267,7 +1332,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "remoting_unittests",
         "test_target": "//remoting:remoting_unittests"
@@ -1284,7 +1350,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sandbox_mac_unittests",
         "test_target": "//sandbox/mac:sandbox_mac_unittests"
@@ -1301,7 +1368,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "service_manager_unittests",
         "test_target": "//services/service_manager/tests:service_manager_unittests"
@@ -1318,7 +1386,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "services_unittests",
         "test_target": "//services:services_unittests"
@@ -1335,7 +1404,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "shell_dialogs_unittests",
         "test_target": "//ui/shell_dialogs:shell_dialogs_unittests"
@@ -1352,7 +1422,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "skia_unittests",
         "test_target": "//skia:skia_unittests"
@@ -1369,7 +1440,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "snapshot_unittests",
         "test_target": "//ui/snapshot:snapshot_unittests"
@@ -1386,7 +1458,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sql_unittests",
         "test_target": "//sql:sql_unittests"
@@ -1403,7 +1476,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "storage_unittests",
         "test_target": "//storage:storage_unittests"
@@ -1420,7 +1494,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sync_integration_tests",
         "test_target": "//chrome/test:sync_integration_tests"
@@ -1437,7 +1512,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_base_unittests",
         "test_target": "//ui/base:ui_base_unittests"
@@ -1454,7 +1530,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_touch_selection_unittests",
         "test_target": "//ui/touch_selection:ui_touch_selection_unittests"
@@ -1471,7 +1548,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "unit_tests",
         "test_target": "//chrome/test:unit_tests"
@@ -1488,7 +1566,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "updater_tests",
         "test_target": "//chrome/updater:updater_tests"
@@ -1505,7 +1584,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "url_unittests",
         "test_target": "//url:url_unittests"
@@ -1522,7 +1602,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "views_unittests",
         "test_target": "//ui/views:views_unittests"
@@ -1539,7 +1620,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "viz_unittests",
         "test_target": "//components/viz:viz_unittests"
@@ -1556,7 +1638,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "wtf_unittests",
         "test_target": "//third_party/blink/renderer/platform/wtf:wtf_unittests"
@@ -1574,7 +1657,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "xr_browser_tests",
         "test_target": "//chrome/test:xr_browser_tests"
@@ -1595,7 +1679,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//:blink_python_tests"
       },
@@ -1620,6 +1705,7 @@
               "os": "Mac-10.13.6"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 25
         },
         "test_target": "//:blink_web_tests"
@@ -1641,7 +1727,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test/chromedriver:chromedriver_py_tests"
       },
@@ -1659,7 +1746,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test/chromedriver:chromedriver_replay_unittests"
       },
@@ -1682,7 +1770,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//components:components_perftests"
       },
@@ -1700,7 +1789,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//content/shell:content_shell_crash_test"
       },
@@ -1718,7 +1808,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//third_party/flatbuffers:flatbuffers_unittests"
       },
@@ -1736,7 +1827,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//tools/grit:grit_python_unittests"
       },
@@ -1754,7 +1846,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/installer/mac:mac_signing_tests"
       },
@@ -1772,7 +1865,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//tools/metrics:metrics_python_tests"
       },
@@ -1791,7 +1885,8 @@
               "os": "Mac-10.13.6"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:telemetry_gpu_unittests"
       },
@@ -1815,6 +1910,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test_target": "//chrome/test:telemetry_unittests"
@@ -1838,7 +1934,8 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//ui/views:views_perftests"
       }

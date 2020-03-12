@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_TEST_VIEWS_TEST_HELPER_H_
 #define UI_VIEWS_TEST_VIEWS_TEST_HELPER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
 

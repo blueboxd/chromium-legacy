@@ -36,6 +36,8 @@
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/browser/sync/password_sync_bridge.h"
 #include "components/password_manager/core/browser/sync/password_syncable_service.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
@@ -149,8 +151,8 @@ bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare,
   background_task_runner_ = CreateBackgroundTaskRunner();
   DCHECK(background_task_runner_);
   sync_enabled_or_disabled_cb_ = std::move(sync_enabled_or_disabled_cb);
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   prefs_ = prefs;
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   hash_password_manager_.set_prefs(prefs);
 #endif
   if (background_task_runner_) {
@@ -326,9 +328,11 @@ void PasswordStore::ReportMetrics(const std::string& sync_username,
                                   bool is_under_advanced_protection) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   if (background_task_runner_) {
-    base::Closure task =
-        base::Bind(&PasswordStore::ReportMetricsImpl, this, sync_username,
-                   custom_passphrase_sync_enabled);
+    base::Closure task = base::Bind(
+        &PasswordStore::ReportMetricsImpl, this, sync_username,
+        custom_passphrase_sync_enabled,
+        BulkCheckDone(prefs_ && prefs_->HasPrefPath(
+                                    prefs::kLastTimePasswordCheckCompleted)));
     background_task_runner_->PostDelayedTask(FROM_HERE, task,
                                              base::TimeDelta::FromSeconds(30));
   }

@@ -2213,6 +2213,10 @@ OsSettingsLocalizedStringsProvider::GetCanonicalTagMetadata(
   return it->second;
 }
 
+void OsSettingsLocalizedStringsProvider::Shutdown() {
+  index_remote_.reset();
+}
+
 void OsSettingsLocalizedStringsProvider::AddSearchTagsGroup(
     const std::vector<SearchConcept>& tags_group) {
   index_remote_->AddOrUpdate(ConceptVectorToDataPtrVector(tags_group),

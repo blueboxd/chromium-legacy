@@ -116,6 +116,21 @@ class PixelIntegrationTest(
           # test makes assertions about the active GPU.
           time.sleep(4)
 
+  def GetExpectedCrashes(self, args):
+    """Returns which crashes, per process type, to expect for the current test.
+
+    Args:
+      args: The list passed to _RunGpuTest()
+
+    Returns:
+      A dictionary mapping crash types as strings to the number of expected
+      crashes of that type. Examples include 'gpu' for the GPU process,
+      'renderer' for the renderer process, and 'browser' for the browser
+      process.
+    """
+    # args[0] is the PixelTestPage for the current test.
+    return args[0].expected_per_process_crashes
+
   def _RunSkiaGoldBasedPixelTest(self, do_page_action, page):
     """Captures and compares a test image using Skia Gold.
 

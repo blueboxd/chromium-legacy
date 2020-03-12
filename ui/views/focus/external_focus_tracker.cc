@@ -4,6 +4,8 @@
 
 #include "ui/views/focus/external_focus_tracker.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "ui/views/view.h"
 #include "ui/views/view_tracker.h"

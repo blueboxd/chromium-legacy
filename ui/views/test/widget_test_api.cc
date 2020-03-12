@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/test/widget_test_api.h"
+
 #include "ui/views/widget/widget.h"
 
 namespace views {

@@ -37,16 +37,16 @@ class QuickAnswersConsent {
   // Whether the consent should be shown (based on consent state, impression
   // count and impression duration). Virtual for testing.
   virtual bool ShouldShowConsent() const;
+  // Whether users have granted the consent.
+  bool HasConsented() const;
 
  private:
-  // Whether users have grained the consent.
-  bool HasConsented() const;
   // Whether the consent has been seen by users for |kImpressionCap| times.
   bool HasReachedImpressionCap() const;
   // Whether the consent has been seen by users for |kDurationCap| seconds.
   bool HasReachedDurationCap() const;
   // Increments the perf counter by |count|.
-  void IncrementPerfCounter(const std::string& path, int count);
+  void IncrementPrefCounter(const std::string& path, int count);
   // Records how long the consent has been seen by the users.
   void RecordImpressionDuration();
 

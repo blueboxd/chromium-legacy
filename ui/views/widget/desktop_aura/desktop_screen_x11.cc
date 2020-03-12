@@ -4,6 +4,8 @@
 
 #include "ui/views/widget/desktop_aura/desktop_screen_x11.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/aura/window.h"

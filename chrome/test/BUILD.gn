@@ -5208,6 +5208,7 @@ test("unit_tests") {
       "../browser/notifications/win/notification_image_retainer_unittest.cc",
       "../browser/notifications/win/notification_template_builder_unittest.cc",
       "../browser/ui/input_method/input_method_engine_unittest.cc",
+      "../browser/ui/views/uninstall_view_unittest.cc",
     ]
     deps += [
       "//chrome:other_version",
@@ -5289,6 +5290,7 @@ test("unit_tests") {
       "../browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc",
       "../browser/ui/views/bookmarks/bookmark_menu_delegate_unittest.cc",
       "../browser/ui/views/confirm_bubble_views_unittest.cc",
+      "../browser/ui/views/content_setting_bubble_contents_unittest.cc",
       "../browser/ui/views/desktop_capture/desktop_media_picker_views_unittest.cc",
       "../browser/ui/views/device_chooser_content_view_unittest.cc",
       "../browser/ui/views/download/download_item_view_unittest.cc",
@@ -5406,10 +5408,6 @@ test("unit_tests") {
       "../browser/supervised_user/supervised_user_url_filter_unittest.cc",
       "../browser/supervised_user/supervised_user_whitelist_service_unittest.cc",
     ]
-    if (enable_extensions) {
-      sources +=
-          [ "../browser/supervised_user/mature_extension_checker_unittest.cc" ]
-    }
     deps += [
       "//chrome/browser/supervised_user/supervised_user_error_page:unit_tests",
     ]

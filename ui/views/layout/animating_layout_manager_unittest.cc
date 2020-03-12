@@ -4,6 +4,7 @@
 
 #include "ui/views/layout/animating_layout_manager.h"
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 

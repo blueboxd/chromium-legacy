@@ -63,6 +63,7 @@ js_library("category_default_setting") {
   deps = [
     ":constants",
     ":site_settings_behavior",
+    "..:route",
     "../settings_page:settings_animated_pages",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",

@@ -4,6 +4,8 @@
 
 #include "ui/views/background.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"

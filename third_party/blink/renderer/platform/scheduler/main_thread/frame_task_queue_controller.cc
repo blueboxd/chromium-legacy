@@ -107,10 +107,6 @@ void FrameTaskQueueController::CreateTaskQueue(
       queue_creation_params = queue_creation_params.SetFixedPriority(
         TaskQueue::QueuePriority::kVeryHighPriority);
       break;
-    case QueueTraits::PrioritisationType::kHigh:
-      queue_creation_params = queue_creation_params.SetFixedPriority(
-        TaskQueue::QueuePriority::kHighPriority);
-      break;
     case QueueTraits::PrioritisationType::kBestEffort:
       queue_creation_params = queue_creation_params.SetFixedPriority(
         TaskQueue::QueuePriority::kBestEffortPriority);

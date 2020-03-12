@@ -26,13 +26,6 @@ Polymer({
     },
 
     /**
-     * System locale.
-     */
-    locale: {
-      type: String,
-    },
-
-    /**
      * Default url for locale en_us.
      */
     defaultUrl: {
@@ -197,7 +190,8 @@ Polymer({
 
     this.loadingError_ = false;
     this.headerReceived_ = false;
-    this.valuePropView_.src = this.urlTemplate_.replace('$', this.locale);
+    let locale = this.locale.replace('-', '_').toLowerCase();
+    this.valuePropView_.src = this.urlTemplate_.replace('$', locale);
 
     this.buttonsDisabled = true;
   },
@@ -351,8 +345,6 @@ Polymer({
     this.$['overlay-close-button'].addEventListener(
         'click', this.hideOverlay.bind(this));
     this.valuePropView_ = this.$['value-prop-view'];
-    this.locale =
-        loadTimeData.getString('locale').replace('-', '_').toLowerCase();
 
     if (!this.initialized_) {
       this.valuePropView_.request.onErrorOccurred.addListener(

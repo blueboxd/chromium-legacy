@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
+#include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_posix_util.h"
 #include "gpu/vulkan/vulkan_surface.h"
@@ -175,17 +176,14 @@ bool VulkanImplementationX11::CanImportGpuMemoryBuffer(
   return false;
 }
 
-bool VulkanImplementationX11::CreateImageFromGpuMemoryHandle(
-    VkDevice vk_device,
+std::unique_ptr<VulkanImage>
+VulkanImplementationX11::CreateImageFromGpuMemoryHandle(
+    VulkanDeviceQueue* device_queue,
     gfx::GpuMemoryBufferHandle gmb_handle,
     gfx::Size size,
-    VkImage* vk_image,
-    VkImageCreateInfo* vk_image_info,
-    VkDeviceMemory* vk_device_memory,
-    VkDeviceSize* mem_allocation_size,
-    base::Optional<VulkanYCbCrInfo>* ycbcr_info) {
+    VkFormat vk_formae) {
   NOTIMPLEMENTED();
-  return false;
+  return nullptr;
 }
 
 }  // namespace gpu

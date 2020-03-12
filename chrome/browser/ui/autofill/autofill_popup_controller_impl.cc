@@ -113,7 +113,11 @@ void AutofillPopupControllerImpl::Show(
         ->UpdateSourceAvailability(FillingSource::AUTOFILL,
                                    !suggestions.empty());
 #endif
+    WeakPtr<AutofillPopupControllerImpl> weak_this = GetWeakPtr();
     view_->Show();
+    // crbug.com/1055981. |this| can be destroyed synchronously at this point.
+    if (!weak_this)
+      return;
 
     // We only fire the event when a new popup shows. We do not fire the
     // event when suggestions changed.

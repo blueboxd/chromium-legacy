@@ -9,30 +9,55 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 
 namespace notifications {
 class NotificationScheduleService;
+struct ClientOverview;
 }  // namespace notifications
 
 namespace offline_pages {
+namespace prefetch {
+
+class PrefetchNotificationServiceBridge;
 
 // Service to manage offline prefetch notifications via
 // notifications::NotificationScheduleService.
 class PrefetchNotificationServiceImpl : public PrefetchNotificationService {
  public:
   PrefetchNotificationServiceImpl(
-      notifications::NotificationScheduleService* schedule_service);
+      notifications::NotificationScheduleService* schedule_service,
+      std::unique_ptr<PrefetchNotificationServiceBridge> bridge);
   ~PrefetchNotificationServiceImpl() override;
 
  private:
+  // PrefetchNotificationService implementation.
+  void Schedule(const base::string16& title,
+                const base::string16& body) override;
+  void OnClick() override;
+  void GetThrottleConfig(ThrottleConfigCallback callback) override;
+
+  // Called after querying the client status, and execute schedule actual task.
+  void ScheduleInternal(const base::string16& title,
+                        const base::string16& body,
+                        notifications::ClientOverview);
+  // Called when client_overview is queried, and determine the custom throttle
+  // config.
+  void OnClientOverviewQueried(ThrottleConfigCallback callback,
+                               notifications::ClientOverview client_overview);
+
   // Used to schedule notification to show in the future. Must outlive this
   // class.
   notifications::NotificationScheduleService* schedule_service_;
 
+  std::unique_ptr<PrefetchNotificationServiceBridge> bridge_;
+
+  base::WeakPtrFactory<PrefetchNotificationServiceImpl> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(PrefetchNotificationServiceImpl);
 };
 
+}  // namespace prefetch
 }  // namespace offline_pages
 
 #endif  // CHROME_BROWSER_OFFLINE_PAGES_PREFETCH_NOTIFICATIONS_PREFETCH_NOTIFICATION_SERVICE_IMPL_H_

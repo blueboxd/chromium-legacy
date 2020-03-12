@@ -408,7 +408,8 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
   number_of_web_app_icons_to_download_and_decode_++;
 
   content::GlobalFrameRoutingId frame_routing_id;
-  if (initiator_render_frame_host_) {
+  if (initiator_render_frame_host_ &&
+      initiator_render_frame_host_->GetProcess()) {
     frame_routing_id = content::GlobalFrameRoutingId(
         initiator_render_frame_host_->GetProcess()->GetID(),
         initiator_render_frame_host_->GetRoutingID());

@@ -106,6 +106,7 @@
   OP(kColorId_TreeSelectionBackgroundUnfocused),                               \
   /* Table */                                                                  \
   OP(kColorId_TableBackground),                                                \
+  OP(kColorId_TableBackgroundAlternate),                                       \
   OP(kColorId_TableText),                                                      \
   OP(kColorId_TableSelectedText),                                              \
   OP(kColorId_TableSelectedTextUnfocused),                                     \

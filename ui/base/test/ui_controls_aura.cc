@@ -43,13 +43,13 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
 }
 
 // static
-bool SendMouseMove(long x, long y) {
+bool SendMouseMove(int x, int y) {
   CHECK(g_ui_controls_enabled);
   return instance_->SendMouseMove(x, y);
 }
 
 // static
-bool SendMouseMoveNotifyWhenDone(long x, long y, base::OnceClosure task) {
+bool SendMouseMoveNotifyWhenDone(int x, int y, base::OnceClosure task) {
   CHECK(g_ui_controls_enabled);
   return instance_->SendMouseMoveNotifyWhenDone(x, y, std::move(task));
 }

@@ -9,6 +9,7 @@ import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "mojo/public/mojom/base/time.mojom";
+import "third_party/blink/public/mojom/indexeddb/indexeddb.mojom";
 import "url/mojom/origin.mojom";
 
 // Recorded in histograms, so append only.
@@ -54,6 +55,10 @@ interface IndexedDBObserver {
 // implementation will eventually live in the storage service which may run
 // out-of-process.
 interface IndexedDBControl {
+  // Binds an IDBFactory to the given origin.
+  BindIndexedDB(url.mojom.Origin origin,
+                pending_receiver<blink.mojom.IDBFactory> receiver);
+
   // Retrieves some basic usage information about the IndexedDB state. The
   // returned array has one IndexedDBStorageUsageInfo per origin in the
   // partition that has IndexedDB usage data.

@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/captive_portal/content/captive_portal_service.h"
@@ -137,12 +138,15 @@ class CaptivePortalTabReloader {
   friend class ::CaptivePortalBrowserTest;
 
   // Sets |state_| and takes any action associated with the new state.  Also
-  // stops the timer, if needed.
-  void SetState(State new_state);
+  // stops the timer, if needed. If |new_state| is STATE_MAYBE_BROKEN_BY_PORTAL,
+  // |probe_trigger| should be specified.
+  void SetState(
+      State new_state,
+      base::Optional<CaptivePortalProbeReason> probe_reason = base::nullopt);
 
   // Called by a timer when an SSL main frame provisional load is taking a
   // while to commit.
-  void OnSlowSSLConnect();
+  void OnSlowSSLConnect(CaptivePortalProbeReason probe_reason);
 
   // Called when a main frame loads with a secure DNS network error.
   void OnSecureDnsNetworkError();
@@ -163,7 +167,7 @@ class CaptivePortalTabReloader {
   virtual void MaybeOpenCaptivePortalLoginTab();
 
   // Has |captive_portal_service_| (if present) start a captive portal check.
-  virtual void CheckForCaptivePortal();
+  virtual void CheckForCaptivePortal(CaptivePortalProbeReason probe_reason);
 
   CaptivePortalService* captive_portal_service_;
   content::WebContents* web_contents_;

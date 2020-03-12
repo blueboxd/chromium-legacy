@@ -2307,8 +2307,8 @@ TEST_F(ViewTest, ActivateAcceleratorOnMac) {
 }
 #endif  // OS_MACOSX
 
-// TODO: these tests were initially commented out when getting aura to
-// run. Figure out if still valuable and either nuke or fix. crbug.com/667757.
+// TODO(crbug.com/667757): these tests were initially commented out when getting
+// aura to run. Figure out if still valuable and either nuke or fix.
 #if defined(OS_MACOSX)
 TEST_F(ViewTest, ActivateAccelerator) {
   ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
@@ -2393,8 +2393,8 @@ TEST_F(ViewTest, ViewInHiddenWidgetWithAccelerator) {
 }
 #endif  // OS_MACOSX
 
-// TODO: these tests were initially commented out when getting aura to
-// run. Figure out if still valuable and either nuke or fix.
+// TODO(crbug.com/667757): these tests were initially commented out when getting
+// aura to run. Figure out if still valuable and either nuke or fix.
 #if 0
 ////////////////////////////////////////////////////////////////////////////////
 // Mouse-wheel message rerouting

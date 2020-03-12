@@ -15,9 +15,13 @@
 
 /** @polymerBehavior */
 /* #export */ const I18nBehavior = {
+  // <if expr="chromeos">
+  // Dynamic locale changes are only relevant in ChromeOS OOBE/Login flows.
+  // On other platforms Chrome process is restarted upon locale changes.
+  // TODO(crbug.com/955194): move it to OobeI18nBehavior.
   properties: {
     /**
-     * The language the UI is presented in. Used to signal dynamic language
+     * The locale the UI is presented in. Used to signal dynamic locale
      * change.
      */
     locale: {
@@ -25,6 +29,16 @@
       value: '',
     },
   },
+
+  /**
+   * Call this when UI strings may have changed. This will send an update to
+   * any data bindings to i18nDynamic(locale, ...).
+   * @suppress {checkTypes}
+   */
+  i18nUpdateLocale() {
+    this.locale = loadTimeData.getString('app_locale');
+  },
+  // </if>
 
   /**
    * Returns a translated string where $1 to $9 are replaced by the given
@@ -115,17 +129,6 @@
    */
   i18nExists(id) {
     return loadTimeData.valueExists(id);
-  },
-
-  /**
-   * Call this when UI strings may have changed. This will send an update to
-   * any data bindings to i18nDynamic(locale, ...).
-   * @suppress {checkTypes}
-   */
-  i18nUpdateLocale() {
-    // Force reload.
-    this.locale = undefined;
-    this.locale = loadTimeData.getString('language');
   },
 };
 

@@ -29,9 +29,11 @@ public interface AutocompleteDelegate extends EditUrlSuggestionProcessor.Locatio
     void onSuggestionsHidden();
 
     /**
-     * Requests the keyboard be hidden.
+     * Requests the keyboard visibility update.
+     *
+     * @param shouldShow When true, keyboard should be made visible.
      */
-    void hideKeyboard();
+    void setKeyboardVisibility(boolean shouldShow);
 
     /**
      * Requests that the given URL be loaded in the current tab.

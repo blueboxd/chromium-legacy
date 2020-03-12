@@ -102,8 +102,6 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/histogram_controller.h"
-#include "content/browser/indexed_db/indexed_db_context_impl.h"
-#include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/browser/locks/lock_manager.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
@@ -1521,13 +1519,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       is_unused_(true),
       delayed_cleanup_needed_(false),
       within_process_died_observer_(false),
-      indexed_db_factory_(
-          new IndexedDBDispatcherHost(
-              id_,
-              storage_partition_impl_->GetIndexedDBContextInternal()),
-          base::OnTaskRunnerDeleter(
-              storage_partition_impl_->GetIndexedDBContextInternal()
-                  ->IDBTaskRunner())),
       channel_connected_(false),
       sent_render_process_ready_(false),
       push_messaging_manager_(
@@ -1947,11 +1938,9 @@ void RenderProcessHostImpl::BindCacheStorage(
 }
 
 void RenderProcessHostImpl::BindIndexedDB(
-    int render_frame_id,
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   if (origin.opaque()) {
     // Opaque origins aren't valid for IndexedDB access, so we won't bind
     // |receiver| to |indexed_db_factory_|.  Return early here which
@@ -1959,19 +1948,8 @@ void RenderProcessHostImpl::BindIndexedDB(
     // freed, we expect the pipe on the client will be closed.
     return;
   }
-
-  // Send the receiver to IDB sequenced task runner to let IndexedDB handle Mojo
-  // IPC there.  |indexed_db_factory_| is being invoked on the IDB task runner,
-  // and |this| owns |indexed_db_factory_| via a unique_ptr with an IDB task
-  // runner deleter, so if |this| is destroyed immediately after this call,
-  // the IDB task runner deleter's task will be run after the next call,
-  // guaranteeing that the usage of base::Unretained(indexed_db_factory_.get())
-  // here is safe.
-  indexed_db_factory_->context()->IDBTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IndexedDBDispatcherHost::AddReceiver,
-                     base::Unretained(indexed_db_factory_.get()), GetID(),
-                     render_frame_id, origin, std::move(receiver)));
+  storage_partition_impl_->GetIndexedDBControl().BindIndexedDB(
+      origin, std::move(receiver));
 }
 
 void RenderProcessHostImpl::ForceCrash() {
@@ -4696,24 +4674,12 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
                "has_pending_views", priority.boost_for_pending_views);
   priority_ = priority;
 
-  bool allow_background_change = true;
-#if defined(OS_WIN)
-  // The cbstext.dll loads as a global GetMessage hook in the browser process
-  // and intercepts/unintercepts the kernel32 API SetPriorityClass in a
-  // background thread. If the UI thread invokes this API just when it is
-  // intercepted the stack is messed up on return from the interceptor
-  // which causes random crashes in the browser process. Our hack for now
-  // is to not invoke the SetPriorityClass API if the dll is loaded.
-  if (GetModuleHandle(L"cbstext.dll"))
-    allow_background_change = false;
-#endif  // OS_WIN
-
   // Control the background state from the browser process, otherwise the task
   // telling the renderer to "unbackground" itself may be preempted by other
   // tasks executing at lowered priority ahead of it or simply by not being
   // swiftly scheduled by the OS per the low process priority
   // (http://crbug.com/398103).
-  if (!run_renderer_in_process() && allow_background_change) {
+  if (!run_renderer_in_process()) {
     DCHECK(child_process_launcher_.get());
     DCHECK(!child_process_launcher_->IsStarting());
     // Make sure to keep the pid in the trace so we can tell which process is
@@ -4728,7 +4694,7 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
 
   // When switching in/out of the background, update the time spent in the
   // background so the time spent backgrounded vs overall can be reported.
-  if (background_state_changed && allow_background_change) {
+  if (background_state_changed) {
     is_backgrounded_ = priority_.is_background();
     // Don't update backgrounding metrics until the render process finishes
     // initializing, at which point it will set |background_status_update_time_|
@@ -4744,8 +4710,7 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
   }
 
   // Notify the child process of the change in state.
-  if ((background_state_changed && allow_background_change) ||
-      visibility_state_changed) {
+  if ((background_state_changed) || visibility_state_changed) {
     SendProcessStateToRenderer();
   }
 }

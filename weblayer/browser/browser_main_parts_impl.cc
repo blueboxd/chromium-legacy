@@ -23,6 +23,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
+#include "weblayer/browser/permissions/weblayer_permissions_client.h"
 #include "weblayer/browser/stateful_ssl_host_state_delegate_factory.h"
 #include "weblayer/browser/webui/web_ui_controller_factory.h"
 #include "weblayer/public/main.h"
@@ -88,6 +89,8 @@ BrowserMainPartsImpl::BrowserMainPartsImpl(
 BrowserMainPartsImpl::~BrowserMainPartsImpl() = default;
 
 int BrowserMainPartsImpl::PreCreateThreads() {
+  // Make sure permissions client has been set.
+  WebLayerPermissionsClient::GetInstance();
 #if defined(OS_ANDROID)
   // The ChildExitObserver needs to be created before any child process is
   // created because it needs to be notified during process creation.

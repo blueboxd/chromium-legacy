@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_EVENT_MONITOR_MAC_H_
 #define UI_VIEWS_EVENT_MONITOR_MAC_H_
 
+#include <set>
+
 #include "base/macros.h"
 #include "ui/base/cocoa/weak_ptr_nsobject.h"
 #include "ui/gfx/native_widget_types.h"

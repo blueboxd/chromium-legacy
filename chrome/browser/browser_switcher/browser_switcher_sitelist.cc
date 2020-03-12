@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
@@ -29,8 +30,9 @@ namespace {
 // This type is cheap and lives on the stack, which can be faster compared to
 // calling |GURL::host()| multiple times.
 struct NoCopyUrl {
-  base::StringPiece host;
+  base::StringPiece host_and_port;
   base::StringPiece spec;
+  base::StringPiece spec_without_port;
 };
 
 // Returns true if |input| contains |token|, ignoring case for ASCII
@@ -66,12 +68,20 @@ bool UrlMatchesPattern(const NoCopyUrl& url, base::StringPiece pattern) {
     // Check prefix using the normalized URL. Case sensitive, but with
     // case-insensitive scheme/hostname.
     size_t pos = url.spec.find(pattern);
-    if (pos == base::StringPiece::npos)
-      return false;
-    return IsValidPrefix(base::StringPiece(url.spec.data(), pos));
+    if (pos != base::StringPiece::npos &&
+        IsValidPrefix(base::StringPiece(url.spec.data(), pos))) {
+      return true;
+    }
+    if (!url.spec_without_port.empty()) {
+      pos = url.spec_without_port.find(pattern);
+      return pos != base::StringPiece::npos &&
+             IsValidPrefix(
+                 base::StringPiece(url.spec_without_port.data(), pos));
+    }
+    return false;
   }
-  // Compare hosts, case-insensitive.
-  return StringContainsInsensitiveASCII(url.host, pattern);
+  // Compare hosts and ports, case-insensitive.
+  return StringContainsInsensitiveASCII(url.host_and_port, pattern);
 }
 
 // Checks whether |patterns| contains a pattern that matches |url|, and returns
@@ -203,8 +213,17 @@ Decision BrowserSwitcherSitelistImpl::GetDecisionImpl(const GURL& url) const {
     return {kStay, kProtocol, ""};
   }
 
-  std::string url_host = url.host();
-  NoCopyUrl no_copy_url = {url_host, url.spec()};
+  int int_port = url.IntPort();
+  std::string port;
+  std::string spec_without_port;
+  if (int_port != url::PORT_UNSPECIFIED) {
+    port = base::StrCat({":", base::NumberToString(int_port)});
+    spec_without_port = url.spec();
+    base::ReplaceSubstringsAfterOffset(&spec_without_port, 0, port,
+                                       base::StringPiece());
+  }
+  std::string host_and_port = base::StrCat({url.host(), port});
+  NoCopyUrl no_copy_url = {host_and_port, url.spec(), spec_without_port};
 
   base::StringPiece reason_to_go = std::max(
       {

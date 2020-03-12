@@ -4,6 +4,8 @@
 
 #include "ui/views/layout/layout_types.h"
 
+#include <algorithm>
+
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 

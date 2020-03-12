@@ -23,6 +23,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_deqp_egl_tests",
@@ -48,6 +49,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "angle_deqp_gles2_tests",
@@ -73,6 +75,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test": "angle_deqp_gles31_tests",
@@ -98,6 +101,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 9
         },
         "test": "angle_deqp_gles3_tests",
@@ -122,7 +126,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
@@ -146,7 +151,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
@@ -171,6 +177,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_end2end_tests",
@@ -200,6 +207,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_deqp_egl_tests",
@@ -225,6 +233,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "angle_deqp_gles2_tests",
@@ -250,6 +259,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test": "angle_deqp_gles31_tests",
@@ -275,6 +285,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 9
         },
         "test": "angle_deqp_gles3_tests",
@@ -299,7 +310,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
@@ -323,7 +335,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
@@ -348,6 +361,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_end2end_tests",
@@ -377,6 +391,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_deqp_egl_tests",
@@ -402,6 +417,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "angle_deqp_gles2_tests",
@@ -427,6 +443,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test": "angle_deqp_gles31_tests",
@@ -452,6 +469,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 9
         },
         "test": "angle_deqp_gles3_tests",
@@ -476,7 +494,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
@@ -500,7 +519,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
@@ -525,6 +545,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_end2end_tests",
@@ -554,6 +575,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_deqp_egl_tests",
@@ -579,6 +601,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "angle_deqp_gles2_tests",
@@ -604,6 +627,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test": "angle_deqp_gles31_tests",
@@ -629,6 +653,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 9
         },
         "test": "angle_deqp_gles3_tests",
@@ -653,7 +678,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
@@ -677,7 +703,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
@@ -702,6 +729,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_end2end_tests",
@@ -731,6 +759,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_deqp_egl_tests",
@@ -756,6 +785,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "angle_deqp_gles2_tests",
@@ -781,6 +811,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test": "angle_deqp_gles31_tests",
@@ -806,6 +837,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 9
         },
         "test": "angle_deqp_gles3_tests",
@@ -830,7 +862,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
@@ -854,7 +887,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
@@ -879,6 +913,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_end2end_tests",
@@ -908,6 +943,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_deqp_egl_tests",
@@ -933,6 +969,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "angle_deqp_gles2_tests",
@@ -958,6 +995,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test": "angle_deqp_gles31_tests",
@@ -983,6 +1021,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 9
         },
         "test": "angle_deqp_gles3_tests",
@@ -1007,7 +1046,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
@@ -1031,7 +1071,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
@@ -1056,6 +1097,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_end2end_tests",
@@ -1085,6 +1127,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_deqp_egl_tests",
@@ -1110,6 +1153,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "angle_deqp_gles2_tests",
@@ -1135,6 +1179,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test": "angle_deqp_gles31_tests",
@@ -1160,6 +1205,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 9
         },
         "test": "angle_deqp_gles3_tests",
@@ -1184,7 +1230,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
@@ -1208,7 +1255,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
@@ -1233,6 +1281,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_end2end_tests",
@@ -1262,6 +1311,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_deqp_egl_tests",
@@ -1287,6 +1337,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "angle_deqp_gles2_tests",
@@ -1312,6 +1363,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test": "angle_deqp_gles31_tests",
@@ -1337,6 +1389,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 9
         },
         "test": "angle_deqp_gles3_tests",
@@ -1361,7 +1414,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
@@ -1385,7 +1439,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
@@ -1410,6 +1465,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_end2end_tests",
@@ -1439,6 +1495,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_deqp_egl_tests",
@@ -1464,6 +1521,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "angle_deqp_gles2_tests",
@@ -1489,6 +1547,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test": "angle_deqp_gles31_tests",
@@ -1514,6 +1573,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 9
         },
         "test": "angle_deqp_gles3_tests",
@@ -1538,7 +1598,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
@@ -1562,7 +1623,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
@@ -1587,6 +1649,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_end2end_tests",
@@ -1616,6 +1679,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_deqp_egl_tests",
@@ -1641,6 +1705,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "angle_deqp_gles2_tests",
@@ -1666,6 +1731,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test": "angle_deqp_gles31_tests",
@@ -1691,6 +1757,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 9
         },
         "test": "angle_deqp_gles3_tests",
@@ -1715,7 +1782,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
@@ -1739,7 +1807,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
@@ -1764,6 +1833,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_end2end_tests",
@@ -1793,6 +1863,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_deqp_egl_tests",
@@ -1818,6 +1889,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "angle_deqp_gles2_tests",
@@ -1843,6 +1915,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test": "angle_deqp_gles31_tests",
@@ -1868,6 +1941,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 9
         },
         "test": "angle_deqp_gles3_tests",
@@ -1892,7 +1966,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
@@ -1916,7 +1991,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
@@ -1941,6 +2017,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_end2end_tests",
@@ -1970,6 +2047,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_deqp_egl_tests",
@@ -1995,6 +2073,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "angle_deqp_gles2_tests",
@@ -2020,6 +2099,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test": "angle_deqp_gles31_tests",
@@ -2045,6 +2125,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 9
         },
         "test": "angle_deqp_gles3_tests",
@@ -2069,7 +2150,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
@@ -2093,7 +2175,8 @@
             }
           ],
           "hard_timeout": 900,
-          "io_timeout": 900
+          "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
         "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
@@ -2118,6 +2201,7 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "angle_end2end_tests",

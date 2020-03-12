@@ -16,7 +16,8 @@ gfx::Size GetCaptionButtonLayoutSize(CaptionButtonLayoutSize size) {
 
   // |kBrowserMaximizedCaptionButtonHeight| should be kept in sync with those
   // for TAB_HEIGHT in // chrome/browser/ui/layout_constants.cc.
-  // TODO: Ideally these values should be obtained from a common location.
+  // TODO(pkasting): Ideally these values should be obtained from a common
+  // location.
   int height = ui::TouchUiController::Get()->touch_ui() ? 41 : 34;
   if (size == CaptionButtonLayoutSize::kBrowserCaptionRestored)
     height += 8;  // Restored window titlebars are 8 DIP taller than maximized.

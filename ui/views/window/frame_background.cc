@@ -4,6 +4,8 @@
 
 #include "ui/views/window/frame_background.h"
 
+#include <algorithm>
+
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"

@@ -34,10 +34,11 @@ class ASH_EXPORT QuickAnswersUiController {
   QuickAnswersUiController(const QuickAnswersUiController&) = delete;
   QuickAnswersUiController& operator=(const QuickAnswersUiController&) = delete;
 
-  void Close();
   // Constructs/resets |quick_answers_view_|.
   void CreateQuickAnswersView(const gfx::Rect& anchor_bounds,
                               const std::string& title);
+
+  void CloseQuickAnswersView();
 
   void OnQuickAnswersViewPressed();
 
@@ -59,6 +60,8 @@ class ASH_EXPORT QuickAnswersUiController {
   // anchor.
   void CreateUserConsentView(const gfx::Rect& anchor_bounds);
 
+  void CloseUserConsentView();
+
   // Invoked when user clicks the consent button to grant consent for using
   // Quick Answers.
   void OnConsentGrantedButtonPressed();
@@ -66,6 +69,12 @@ class ASH_EXPORT QuickAnswersUiController {
   // Invoked when user clicks the settings button related to consent for Quick
   // Answers.
   void OnManageSettingsButtonPressed();
+
+  // Used by the controller to check if the user-consent view is currently
+  // showing instead of QuickAnswers.
+  bool is_showing_user_consent_view() const {
+    return user_consent_view_ != nullptr;
+  }
 
  private:
   QuickAnswersControllerImpl* controller_ = nullptr;

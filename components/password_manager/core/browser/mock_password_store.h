@@ -33,7 +33,8 @@ class MockPasswordStore : public PasswordStore {
                void(const autofill::PasswordForm&,
                     const autofill::PasswordForm&));
   MOCK_METHOD3(ReportMetrics, void(const std::string&, bool, bool));
-  MOCK_METHOD2(ReportMetricsImpl, void(const std::string&, bool));
+  MOCK_METHOD3(ReportMetricsImpl,
+               void(const std::string&, bool, BulkCheckDone));
   MOCK_METHOD2(AddLoginImpl,
                PasswordStoreChangeList(const autofill::PasswordForm&,
                                        AddLoginError* error));

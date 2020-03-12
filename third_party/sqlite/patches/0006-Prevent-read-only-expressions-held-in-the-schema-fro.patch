@@ -1,0 +1,101 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Darwin Huang <huangdarwin@chromium.org>
+Date: Wed, 11 Mar 2020 18:35:23 -0700
+Subject: [PATCH 6/6] Prevent read-only expressions held in the schema from
+ being passed down into code generating subroutines where they might be
+ changed.
+
+Backports https://sqlite.org/src/info/2b750b0f74e5a116
+
+Bug: 1059669
+---
+ third_party/sqlite/patched/src/expr.c        | 5 +++--
+ third_party/sqlite/patched/src/insert.c      | 9 +++++++--
+ third_party/sqlite/patched/test/default.test | 9 +++++++++
+ 3 files changed, 19 insertions(+), 4 deletions(-)
+
+diff --git a/third_party/sqlite/patched/src/expr.c b/third_party/sqlite/patched/src/expr.c
+index 89b4b5a48f79..5a1b71156b21 100644
+--- a/third_party/sqlite/patched/src/expr.c
++++ b/third_party/sqlite/patched/src/expr.c
+@@ -2850,6 +2850,7 @@ void sqlite3CodeRhsOfIN(
+ 
+     /* Begin coding the subroutine */
+     ExprSetProperty(pExpr, EP_Subrtn);
++    assert( !ExprHasProperty(pExpr, EP_TokenOnly|EP_Reduced) );
+     pExpr->y.sub.regReturn = ++pParse->nMem;
+     pExpr->y.sub.iAddr =
+       sqlite3VdbeAddOp2(v, OP_Integer, 0, pExpr->y.sub.regReturn) + 1;
+@@ -3496,7 +3497,7 @@ void sqlite3ExprCodeGeneratedColumn(
+   }else{
+     iAddr = 0;
+   }
+-  sqlite3ExprCode(pParse, pCol->pDflt, regOut);
++  sqlite3ExprCodeCopy(pParse, pCol->pDflt, regOut);
+   if( pCol->affinity>=SQLITE_AFF_TEXT ){
+     sqlite3VdbeAddOp4(v, OP_Affinity, regOut, 1, 0, &pCol->affinity, 1);
+   }
+@@ -4595,7 +4596,7 @@ void sqlite3ExprCodeFactorable(Parse *pParse, Expr *pExpr, int target){
+   if( pParse->okConstFactor && sqlite3ExprIsConstantNotJoin(pExpr) ){
+     sqlite3ExprCodeAtInit(pParse, pExpr, target);
+   }else{
+-    sqlite3ExprCode(pParse, pExpr, target);
++    sqlite3ExprCodeCopy(pParse, pExpr, target);
+   }
+ }
+ 
+diff --git a/third_party/sqlite/patched/src/insert.c b/third_party/sqlite/patched/src/insert.c
+index a4be2ab0c2e8..2f9ce9012915 100644
+--- a/third_party/sqlite/patched/src/insert.c
++++ b/third_party/sqlite/patched/src/insert.c
+@@ -1606,7 +1606,7 @@ void sqlite3GenerateConstraintChecks(
+             VdbeCoverage(v);
+             assert( (pCol->colFlags & COLFLAG_GENERATED)==0 );
+             nSeenReplace++;
+-            sqlite3ExprCode(pParse, pCol->pDflt, iReg);
++            sqlite3ExprCodeCopy(pParse, pCol->pDflt, iReg);
+             sqlite3VdbeJumpHere(v, addr1);
+             break;
+           }
+@@ -1661,6 +1661,7 @@ void sqlite3GenerateConstraintChecks(
+     onError = overrideError!=OE_Default ? overrideError : OE_Abort;
+     for(i=0; i<pCheck->nExpr; i++){
+       int allOk;
++      Expr *pCopy;
+       Expr *pExpr = pCheck->a[i].pExpr;
+       if( aiChng
+        && !sqlite3ExprReferencesUpdatedColumn(pExpr, aiChng, pkChng)
+@@ -1671,7 +1672,11 @@ void sqlite3GenerateConstraintChecks(
+       }
+       allOk = sqlite3VdbeMakeLabel(pParse);
+       sqlite3VdbeVerifyAbortable(v, onError);
+-      sqlite3ExprIfTrue(pParse, pExpr, allOk, SQLITE_JUMPIFNULL);
++      pCopy = sqlite3ExprDup(db, pExpr, 0);
++      if( !db->mallocFailed ){
++        sqlite3ExprIfTrue(pParse, pCopy, allOk, SQLITE_JUMPIFNULL);
++      }
++      sqlite3ExprDelete(db, pCopy);
+       if( onError==OE_Ignore ){
+         sqlite3VdbeGoto(v, ignoreDest);
+       }else{
+diff --git a/third_party/sqlite/patched/test/default.test b/third_party/sqlite/patched/test/default.test
+index 77fa88cf542f..4019248667cf 100644
+--- a/third_party/sqlite/patched/test/default.test
++++ b/third_party/sqlite/patched/test/default.test
+@@ -128,4 +128,13 @@ do_catchsql_test default-4.4 {
+   CREATE TABLE t2(a TEXT, b TEXT DEFAULT(98+coalesce(5,:xyz)));
+ } {1 {default value of column [b] is not constant}}
+ 
++# 2020-03-09 out-of-bounds memory access discovered by "Eternal Sakura"
++# and reported to chromium.
++#
++reset_db
++do_catchsql_test default-5.1 {
++  CREATE TABLE t1 (a,b DEFAULT(random() NOTNULL IN (RAISE(IGNORE),2,3)));
++  INSERT INTO t1(a) VALUES(1);
++} {1 {RAISE() may only be used within a trigger-program}}
++
+ finish_test
+-- 
+2.25.1.481.gfbce0eb801-goog
+

@@ -51,6 +51,9 @@ const char kUkmTrusted[] = "Trusted";
 const char kUkmNumInteractions[] = "NumInteractions";
 const char kUkmSafeBrowsingStatus[] = "SafeBrowsingStatus";
 const char kUkmWindowOpenDisposition[] = "WindowOpenDisposition";
+const char kUkmNumActivationInteractions[] = "NumActivationInteractions";
+const char kUkmNumGestureScrollBeginInteractions[] =
+    "NumGestureScrollBeginInteractions";
 }  // namespace
 
 using UkmEntry = ukm::builders::Popup_Closed;
@@ -137,6 +140,10 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest,
   test_ukm_recorder_->ExpectEntryMetric(entry, kUkmUserInitiatedClose, 1u);
   test_ukm_recorder_->ExpectEntryMetric(entry, kUkmTrusted, 0u);
   test_ukm_recorder_->ExpectEntryMetric(entry, kUkmNumInteractions, 0u);
+  test_ukm_recorder_->ExpectEntryMetric(entry, kUkmNumActivationInteractions,
+                                        0u);
+  test_ukm_recorder_->ExpectEntryMetric(
+      entry, kUkmNumGestureScrollBeginInteractions, 0u);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest,
@@ -161,7 +168,8 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest,
   // Perform some user gestures on the page.
   content::SimulateMouseClick(popup, 0, blink::WebMouseEvent::Button::kLeft);
   content::SimulateMouseClick(popup, 0, blink::WebMouseEvent::Button::kLeft);
-  content::SimulateMouseClick(popup, 0, blink::WebMouseEvent::Button::kLeft);
+  content::SimulateGestureScrollSequence(popup, gfx::Point(100, 100),
+                                         gfx::Vector2dF(0, 15));
 
   // Close the popup and check metric.
   int active_index = browser()->tab_strip_model()->active_index();
@@ -178,6 +186,10 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest,
   test_ukm_recorder_->ExpectEntryMetric(entry, kUkmUserInitiatedClose, 1u);
   test_ukm_recorder_->ExpectEntryMetric(entry, kUkmTrusted, 0u);
   test_ukm_recorder_->ExpectEntryMetric(entry, kUkmNumInteractions, 3u);
+  test_ukm_recorder_->ExpectEntryMetric(entry, kUkmNumActivationInteractions,
+                                        2u);
+  test_ukm_recorder_->ExpectEntryMetric(
+      entry, kUkmNumGestureScrollBeginInteractions, 1u);
 }
 
 // OpenURLFromTab goes through a different code path than traditional popups
@@ -221,6 +233,10 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, ControlClick_HasTracker) {
   test_ukm_recorder_->ExpectEntryMetric(entry, kUkmUserInitiatedClose, 0u);
   test_ukm_recorder_->ExpectEntryMetric(entry, kUkmTrusted, 1u);
   test_ukm_recorder_->ExpectEntryMetric(entry, kUkmNumInteractions, 0u);
+  test_ukm_recorder_->ExpectEntryMetric(entry, kUkmNumActivationInteractions,
+                                        0u);
+  test_ukm_recorder_->ExpectEntryMetric(
+      entry, kUkmNumGestureScrollBeginInteractions, 0u);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, ShiftClick_HasTracker) {
@@ -258,6 +274,10 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, ShiftClick_HasTracker) {
   test_ukm_recorder_->ExpectEntryMetric(entry, kUkmUserInitiatedClose, 0u);
   test_ukm_recorder_->ExpectEntryMetric(entry, kUkmTrusted, 1u);
   test_ukm_recorder_->ExpectEntryMetric(entry, kUkmNumInteractions, 0u);
+  test_ukm_recorder_->ExpectEntryMetric(entry, kUkmNumActivationInteractions,
+                                        0u);
+  test_ukm_recorder_->ExpectEntryMetric(
+      entry, kUkmNumGestureScrollBeginInteractions, 0u);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, WhitelistedPopup_HasTracker) {
@@ -294,6 +314,10 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, WhitelistedPopup_HasTracker) {
   test_ukm_recorder_->ExpectEntryMetric(entry, kUkmUserInitiatedClose, 0u);
   test_ukm_recorder_->ExpectEntryMetric(entry, kUkmTrusted, 1u);
   test_ukm_recorder_->ExpectEntryMetric(entry, kUkmNumInteractions, 0u);
+  test_ukm_recorder_->ExpectEntryMetric(entry, kUkmNumActivationInteractions,
+                                        0u);
+  test_ukm_recorder_->ExpectEntryMetric(
+      entry, kUkmNumGestureScrollBeginInteractions, 0u);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, NoOpener_NoTracker) {

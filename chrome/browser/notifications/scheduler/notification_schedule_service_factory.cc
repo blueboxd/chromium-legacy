@@ -49,7 +49,7 @@ RegisterClients(ProfileKey* key) {
   auto prefetch_notification_service_getter =
       base::BindRepeating(&PrefetchNotificationServiceFactory::GetForKey, key);
   auto prefetch_client =
-      std::make_unique<offline_pages::PrefetchNotificationClient>(
+      std::make_unique<offline_pages::prefetch::PrefetchNotificationClient>(
           std::move(prefetch_notification_service_getter));
   client_registrar->RegisterClient(
       notifications::SchedulerClientType::kPrefetch,

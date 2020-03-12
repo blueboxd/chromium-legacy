@@ -4,6 +4,8 @@
 
 #include "ui/views/examples/webview_example.h"
 
+#include <memory>
+
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/views/controls/webview/webview.h"

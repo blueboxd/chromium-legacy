@@ -11,8 +11,7 @@ enum XRDOMOverlayType {
 // https://immersive-web.github.io/dom-overlays/#dictdef-xrdomoverlaystate
 [
     SecureContext,
-    Exposed=Window,
-    RuntimeEnabled=WebXRIncubations
+    Exposed=Window
 ] interface XRDOMOverlayState {
   readonly attribute XRDOMOverlayType type;
 };

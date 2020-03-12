@@ -260,7 +260,8 @@ std::vector<InteractionsStats> TestPasswordStore::GetSiteStatsImpl(
 }
 
 void TestPasswordStore::ReportMetricsImpl(const std::string& sync_username,
-                                          bool custom_passphrase_sync_enabled) {
+                                          bool custom_passphrase_sync_enabled,
+                                          BulkCheckDone bulk_check_done) {
   NOTIMPLEMENTED();
 }
 

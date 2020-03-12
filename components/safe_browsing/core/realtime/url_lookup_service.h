@@ -62,7 +62,7 @@ class RealTimeUrlLookupService : public KeyedService {
   ~RealTimeUrlLookupService() override;
 
   // Returns true if |url|'s scheme can be checked.
-  bool CanCheckUrl(const GURL& url) const;
+  static bool CanCheckUrl(const GURL& url);
 
   // Returns true if real time URL lookup is enabled. The check is based on
   // pref settings of the associated profile, whether the profile is an off the

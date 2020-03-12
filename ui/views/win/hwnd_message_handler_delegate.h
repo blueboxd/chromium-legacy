@@ -124,7 +124,7 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
 
   // Called when a well known "app command" from the system was performed.
   // Returns true if the command was handled.
-  virtual bool HandleAppCommand(short command) = 0;
+  virtual bool HandleAppCommand(int command) = 0;
 
   // Called from WM_CANCELMODE.
   virtual void HandleCancelMode() = 0;

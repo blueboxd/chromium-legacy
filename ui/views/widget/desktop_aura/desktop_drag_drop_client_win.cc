@@ -4,6 +4,8 @@
 
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_win.h"
 
+#include <memory>
+
 #include "base/metrics/histogram_macros.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_source_win.h"

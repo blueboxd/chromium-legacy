@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/tick_clock.h"
 #include "build/build_config.h"
+#include "components/captive_portal/core/captive_portal_metrics.h"
 #include "components/captive_portal/core/captive_portal_types.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -118,20 +119,6 @@ CaptivePortalDetectionResult GetHistogramEntryForDetectionResult(
   }
 }
 
-bool ShouldDeferToNativeCaptivePortalDetection() {
-  // On Windows 8, defer to the native captive portal detection.  OSX Lion and
-  // later also have captive portal detection, but experimentally, this code
-  // works in cases its does not.
-  //
-  // TODO(mmenke): Investigate how well Windows 8's captive portal detection
-  // works.
-#if defined(OS_WIN)
-  return base::win::GetVersion() >= base::win::Version::WIN8;
-#else
-  return false;
-#endif
-}
-
 }  // namespace
 
 CaptivePortalService::TestingState CaptivePortalService::testing_state_ =
@@ -205,7 +192,8 @@ CaptivePortalService::~CaptivePortalService() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-void CaptivePortalService::DetectCaptivePortal() {
+void CaptivePortalService::DetectCaptivePortal(
+    CaptivePortalProbeReason probe_reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Detection should be disabled only in tests.
@@ -221,11 +209,13 @@ void CaptivePortalService::DetectCaptivePortal() {
   // Start asynchronously.
   state_ = STATE_TIMER_RUNNING;
   check_captive_portal_timer_.Start(
-      FROM_HERE, time_until_next_check, this,
-      &CaptivePortalService::DetectCaptivePortalInternal);
+      FROM_HERE, time_until_next_check,
+      base::BindOnce(&CaptivePortalService::DetectCaptivePortalInternal,
+                     base::Unretained(this), probe_reason));
 }
 
-void CaptivePortalService::DetectCaptivePortalInternal() {
+void CaptivePortalService::DetectCaptivePortalInternal(
+    CaptivePortalProbeReason probe_reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(state_ == STATE_TIMER_RUNNING || state_ == STATE_IDLE);
   DCHECK(!TimerRunning());
@@ -269,6 +259,9 @@ void CaptivePortalService::DetectCaptivePortalInternal() {
             }
           }
         })");
+
+  captive_portal::CaptivePortalMetrics::LogCaptivePortalProbeReason(
+      probe_reason);
   captive_portal_detector_->DetectCaptivePortal(
       test_url_,
       base::BindOnce(&CaptivePortalService::OnPortalDetectionCompleted,
@@ -379,12 +372,6 @@ void CaptivePortalService::UpdateEnabledState() {
   enabled_ = testing_state_ != DISABLED_FOR_TESTING &&
              resolve_errors_with_web_service_.GetValue();
 
-  if (testing_state_ != SKIP_OS_CHECK_FOR_TESTING &&
-      testing_state_ != IGNORE_REQUESTS_FOR_TESTING &&
-      ShouldDeferToNativeCaptivePortalDetection()) {
-    enabled_ = false;
-  }
-
   if (enabled_before == enabled_)
     return;
 
@@ -404,7 +391,7 @@ void CaptivePortalService::UpdateEnabledState() {
 
     // Since a captive portal request was queued or running, something may be
     // expecting to receive a captive portal result.
-    DetectCaptivePortal();
+    DetectCaptivePortal(CaptivePortalProbeReason::kUnspecified);
   }
 }
 

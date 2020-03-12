@@ -45,7 +45,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
         "test_target": "//base:base_unittests"
@@ -93,6 +94,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 15
         },
         "test": "chrome_public_test_apk",
@@ -141,6 +143,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 10
         },
         "test": "content_browsertests",
@@ -189,6 +192,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "content_shell_test_apk",
@@ -237,6 +241,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "content_unittests",
@@ -285,6 +290,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test": "net_unittests",
@@ -333,6 +339,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
         "test": "unit_tests",
@@ -384,7 +391,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
         "test_target": "//base:base_unittests"
@@ -432,6 +440,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 15
         },
         "test": "chrome_public_test_apk",
@@ -480,6 +489,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 10
         },
         "test": "content_browsertests",
@@ -528,6 +538,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "content_shell_test_apk",
@@ -576,6 +587,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "content_unittests",
@@ -624,6 +636,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test": "net_unittests",
@@ -672,6 +685,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 8
         },
         "test": "unit_tests",
@@ -720,6 +734,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 7
         },
         "test": "webview_instrumentation_test_apk",
@@ -742,7 +757,8 @@
               "os": "Ubuntu-16.04",
               "pool": "chromium.tests.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
         "test_target": "//base:base_unittests"
@@ -761,6 +777,7 @@
               "pool": "chromium.tests.template"
             }
           ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "browser_tests",
@@ -779,7 +796,8 @@
               "os": "Ubuntu-16.04",
               "pool": "chromium.tests.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"
@@ -797,7 +815,8 @@
               "os": "Ubuntu-16.04",
               "pool": "chromium.tests.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -815,7 +834,8 @@
               "os": "Ubuntu-16.04",
               "pool": "chromium.tests.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "interactive_ui_tests",
         "test_target": "//chrome/test:interactive_ui_tests"
@@ -833,7 +853,8 @@
               "os": "Ubuntu-16.04",
               "pool": "chromium.tests.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "net_unittests",
         "test_target": "//net:net_unittests"
@@ -851,7 +872,8 @@
               "os": "Ubuntu-16.04",
               "pool": "chromium.tests.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "unit_tests",
         "test_target": "//chrome/test:unit_tests"
@@ -871,7 +893,8 @@
             {
               "pool": "chromium.tests.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
         "test_target": "//base:base_unittests"
@@ -887,7 +910,8 @@
             {
               "pool": "chromium.tests.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"
@@ -903,7 +927,8 @@
             {
               "pool": "chromium.tests.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -919,7 +944,8 @@
             {
               "pool": "chromium.tests.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "interactive_ui_tests",
         "test_target": "//chrome/test:interactive_ui_tests"
@@ -935,7 +961,8 @@
             {
               "pool": "chromium.tests.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "net_unittests",
         "test_target": "//net:net_unittests"
@@ -951,7 +978,8 @@
             {
               "pool": "chromium.tests.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "unit_tests",
         "test_target": "//chrome/test:unit_tests"
@@ -971,7 +999,8 @@
             {
               "pool": "chromium.tests.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
         "test_target": "//base:base_unittests"
@@ -987,7 +1016,8 @@
             {
               "pool": "chromium.tests.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"
@@ -1003,7 +1033,8 @@
             {
               "pool": "chromium.tests.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -1019,7 +1050,8 @@
             {
               "pool": "chromium.tests.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "interactive_ui_tests",
         "test_target": "//chrome/test:interactive_ui_tests"
@@ -1035,7 +1067,8 @@
             {
               "pool": "chromium.tests.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "net_unittests",
         "test_target": "//net:net_unittests"
@@ -1051,7 +1084,8 @@
             {
               "pool": "chromium.tests.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "unit_tests",
         "test_target": "//chrome/test:unit_tests"

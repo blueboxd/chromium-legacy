@@ -588,6 +588,7 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
     handler->GetLocalizedStrings(localized_strings);
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, localized_strings);
+  localized_strings->SetString("app_locale", app_locale);
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   localized_strings->SetString("buildType", "chrome");

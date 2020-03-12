@@ -20,6 +20,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -55,6 +56,8 @@ class ArcSettingsServiceTest : public BrowserWithTestWindowTest {
     ArcSessionManager::SetUiEnabledForTesting(false);
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
+    network_config_helper_ = std::make_unique<
+        chromeos::network_config::CrosNetworkConfigTestHelper>();
     chromeos::StatsReportingController::RegisterLocalStatePrefs(
         local_state_.registry());
     chromeos::StatsReportingController::Initialize(&local_state_);
@@ -95,6 +98,7 @@ class ArcSettingsServiceTest : public BrowserWithTestWindowTest {
     arc_session_manager()->Shutdown();
 
     arc_service_manager_->set_browser_context(nullptr);
+    network_config_helper_.reset();
     BrowserWithTestWindowTest::TearDown();
 
     arc_session_manager_.reset();
@@ -133,6 +137,8 @@ class ArcSettingsServiceTest : public BrowserWithTestWindowTest {
   }
 
  private:
+  std::unique_ptr<chromeos::network_config::CrosNetworkConfigTestHelper>
+      network_config_helper_;
   TestingPrefServiceSimple local_state_;
   user_manager::ScopedUserManager user_manager_enabler_;
   std::unique_ptr<ArcIntentHelperBridge> arc_intent_helper_bridge_;

@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_NAMESPACE_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_NAMESPACE_H_
 
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
@@ -28,6 +29,7 @@ struct CONTENT_EXPORT AppCacheNamespace {
   AppCacheNamespaceType type;
   GURL namespace_url;
   GURL target_url;
+  base::Time token_expires;
 };
 
 }  // namespace content

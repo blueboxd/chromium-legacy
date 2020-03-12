@@ -6,7 +6,7 @@
 
 // clang-format off
 // #import {getToastManager, PasswordManagerImpl} from 'chrome://settings/settings.js';
-// #import {PasswordSectionElementFactory, createExceptionEntry, createPasswordEntry} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
+// #import {PasswordSectionElementFactory, createExceptionEntry, createPasswordEntry, makeCompromisedCredential, makePasswordCheckStatus} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
 // #import {runStartExportTest, runExportFlowFastTest, runExportFlowErrorTest, runExportFlowErrorRetryTest, runExportFlowSlowTest, runCancelExportTest, runFireCloseEventAfterExportCompleteTest} from 'chrome://test/settings/passwords_export_test.m.js';
 // #import {eventToPromise} from 'chrome://test/test_util.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -17,6 +17,8 @@
 // clang-format-on
 
 cr.define('settings_passwords_section', function() {
+  const PasswordCheckState = chrome.passwordsPrivate.PasswordCheckState;
+
   /**
    * Helper method that validates a that elements in the password list match
    * the expected data.
@@ -810,6 +812,7 @@ cr.define('settings_passwords_section', function() {
     });
 
     test('showPasswordCheckBannerWhenNotCheckedBefore', function() {
+      // Suppose no check done initially.
       assertEquals(
           passwordManager.data.checkStatus.elapsedTimeSinceLastCheck,
           undefined);
@@ -824,9 +827,67 @@ cr.define('settings_passwords_section', function() {
       });
     });
 
-    test('hidePasswordCheckBannerWhenCheckedBefore', function() {
-      passwordManager.data.checkStatus.elapsedTimeSinceLastCheck =
-          '5 minutes ago';
+    test(
+        'showPasswordCheckLinkButtonWithoutWarningWhenNoCredentialsLeaked',
+        function() {
+          // Suppose no leaks detected initially.
+          passwordManager.data.leakedCredentials = [];
+          passwordManager.data.checkStatus.elapsedTimeSinceLastCheck =
+              '5 min ago';
+          const passwordsSection =
+              elementFactory.createPasswordsSection(passwordManager, [], []);
+          return passwordManager.whenCalled('getPasswordCheckStatus')
+              .then(() => {
+                Polymer.dom.flush();
+                assertTrue(passwordsSection.$$('#checkPasswordsBannerContainer')
+                               .hidden);
+                assertTrue(passwordsSection.$$('#checkPasswordsButton').hidden);
+                assertFalse(
+                    passwordsSection.$$('#checkPasswordsLinkRow').hidden);
+                assertFalse(passwordsSection.$$('#checkPasswordLeakDescription')
+                                .hidden);
+                assertTrue(
+                    passwordsSection.$$('#checkPasswordWarningIcon').hidden);
+                assertTrue(
+                    passwordsSection.$$('#checkPasswordLeakCount').hidden);
+              });
+        });
+
+    test(
+        'showPasswordCheckLinkButtonWithWarningWhenSomeCredentialsLeaked',
+        function() {
+          // Suppose two leaks detected initially.
+          passwordManager.data.leakedCredentials = [
+            autofill_test_util.makeCompromisedCredential(
+                'one.com', 'test4', 'LEAKED'),
+            autofill_test_util.makeCompromisedCredential(
+                'two.com', 'test3', 'PHISHED'),
+          ];
+          passwordManager.data.checkStatus.elapsedTimeSinceLastCheck =
+              '5 min ago';
+          const passwordsSection =
+              elementFactory.createPasswordsSection(passwordManager, [], []);
+          return passwordManager.whenCalled('getPasswordCheckStatus')
+              .then(() => {
+                Polymer.dom.flush();
+                assertTrue(passwordsSection.$$('#checkPasswordsBannerContainer')
+                               .hidden);
+                assertTrue(passwordsSection.$$('#checkPasswordsButton').hidden);
+                assertFalse(
+                    passwordsSection.$$('#checkPasswordsLinkRow').hidden);
+                assertTrue(passwordsSection.$$('#checkPasswordLeakDescription')
+                               .hidden);
+                assertFalse(
+                    passwordsSection.$$('#checkPasswordWarningIcon').hidden);
+                assertFalse(
+                    passwordsSection.$$('#checkPasswordLeakCount').hidden);
+              });
+        });
+
+    test('makeWarningAppearWhenLeaksDetected', function() {
+      // Suppose no leaks detected initially.
+      passwordManager.data.leakedCredentials = [];
+      passwordManager.data.checkStatus.elapsedTimeSinceLastCheck = '5 min ago';
       const passwordsSection =
           elementFactory.createPasswordsSection(passwordManager, [], []);
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
@@ -835,6 +896,39 @@ cr.define('settings_passwords_section', function() {
             passwordsSection.$$('#checkPasswordsBannerContainer').hidden);
         assertTrue(passwordsSection.$$('#checkPasswordsButton').hidden);
         assertFalse(passwordsSection.$$('#checkPasswordsLinkRow').hidden);
+        assertFalse(
+            passwordsSection.$$('#checkPasswordLeakDescription').hidden);
+        assertTrue(passwordsSection.$$('#checkPasswordWarningIcon').hidden);
+        assertTrue(passwordsSection.$$('#checkPasswordLeakCount').hidden);
+        // Suppose two newly detected leaks come in.
+        const leakedCredentials = [
+          autofill_test_util.makeCompromisedCredential(
+              'one.com', 'test4', 'LEAKED'),
+          autofill_test_util.makeCompromisedCredential(
+              'two.com', 'test3', 'PHISHED'),
+        ];
+        const elapsedTimeSinceLastCheck = 'just now';
+        passwordManager.data.leakedCredentials = leakedCredentials;
+        passwordManager.data.checkStatus.elapsedTimeSinceLastCheck =
+            elapsedTimeSinceLastCheck;
+        passwordManager.lastCallback.addCompromisedCredentialsListener(
+            leakedCredentials);
+        passwordManager.lastCallback.addPasswordCheckStatusListener(
+            autofill_test_util.makePasswordCheckStatus(
+                /*state=*/ PasswordCheckState.RUNNING,
+                /*checked=*/ 2,
+                /*remaining=*/ 0,
+                /*elapsedTime=*/ elapsedTimeSinceLastCheck));
+        Polymer.dom.flush();
+        assertTrue(
+            passwordsSection.$$('#checkPasswordsBannerContainer').hidden);
+        assertTrue(passwordsSection.$$('#checkPasswordsButton').hidden);
+        assertFalse(passwordsSection.$$('#checkPasswordsLinkRow').hidden);
+        assertTrue(
+            passwordsSection.$$('#checkPasswordLeakDescription').hidden);
+        assertFalse(
+            passwordsSection.$$('#checkPasswordWarningIcon').hidden);
+        assertFalse(passwordsSection.$$('#checkPasswordLeakCount').hidden);
       });
     });
   });

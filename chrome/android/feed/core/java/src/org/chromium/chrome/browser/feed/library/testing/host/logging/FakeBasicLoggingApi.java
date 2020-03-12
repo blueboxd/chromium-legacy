@@ -121,4 +121,10 @@ public class FakeBasicLoggingApi implements BasicLoggingApi {
         lastTaskTime = taskTime;
         lastTaskLogged = task;
     }
+
+    @Override
+    public void reportScrollActivity(int scrollAmount) {}
+
+    @Override
+    public void reportFeedInteraction() {}
 }

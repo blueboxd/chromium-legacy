@@ -6963,8 +6963,7 @@ void RenderFrameHostImpl::CreateLockManager(
 
 void RenderFrameHostImpl::CreateIDBFactory(
     mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
-  GetProcess()->BindIndexedDB(GetRoutingID(), GetLastCommittedOrigin(),
-                              std::move(receiver));
+  GetProcess()->BindIndexedDB(GetLastCommittedOrigin(), std::move(receiver));
 }
 
 void RenderFrameHostImpl::CreatePermissionService(

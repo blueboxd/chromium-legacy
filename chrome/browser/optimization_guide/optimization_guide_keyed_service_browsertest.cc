@@ -394,6 +394,15 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   // load a hint that succeeds.
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
                                       true, 1);
+  // We had a hint and it was loaded and it was painful enough.
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            last_should_target_navigation_decision());
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            last_can_apply_optimization_decision());
+
+  // Navigate away so metrics get recorded.
+  ui_test_utils::NavigateToURL(browser(), url_with_hints());
+
   // Make sure hint cache match UMA was logged.
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.HasHint.BeforeCommit", true, 1);
@@ -407,12 +416,6 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
       "OptimizationGuide.HintCache.HostMatch.AtCommit", true, 1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.PageMatch.AtCommit", true, 1);
-
-  // We had a hint and it was loaded and it was painful enough.
-  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
-            last_should_target_navigation_decision());
-  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
-            last_can_apply_optimization_decision());
   // Expect that the optimization guide UKM was recorded.
   auto entries = ukm_recorder.GetEntriesByName(
       ukm::builders::OptimizationGuide::kEntryName);
@@ -453,6 +456,10 @@ IN_PROC_BROWSER_TEST_F(
             last_should_target_navigation_decision());
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
             last_can_apply_optimization_decision());
+
+  // Navigate away so metrics get recorded.
+  ui_test_utils::NavigateToURL(browser(), url_with_hints());
+
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.TargetDecision.PainfulPageLoad",
       static_cast<int>(optimization_guide::OptimizationTargetDecision::
@@ -502,6 +509,10 @@ IN_PROC_BROWSER_TEST_F(
             last_should_target_navigation_decision());
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
             last_can_apply_optimization_decision());
+
+  // Navigate away so metrics get recorded.
+  ui_test_utils::NavigateToURL(browser(), url_with_hints());
+
   // Make sure hint cache match UMA was logged.
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.HasHint.BeforeCommit", true, 1);
@@ -550,6 +561,10 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
             last_should_target_navigation_decision());
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
             last_can_apply_optimization_decision());
+
+  // Navigate away so metrics get recorded.
+  ui_test_utils::NavigateToURL(browser(), url_with_hints());
+
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.ApplyDecision.NoScript",
       static_cast<int>(
@@ -605,6 +620,10 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
             last_should_target_navigation_decision());
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
             last_can_apply_optimization_decision());
+
+  // Navigate away so metrics get recorded.
+  ui_test_utils::NavigateToURL(browser(), url_with_hints());
+
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.ApplyDecision.NoScript",
       static_cast<int>(
@@ -660,6 +679,10 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
             last_should_target_navigation_decision());
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
             last_can_apply_optimization_decision());
+
+  // Navigate away so metrics get recorded.
+  ui_test_utils::NavigateToURL(browser(), url_with_hints());
+
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.ApplyDecision.NoScript",
       static_cast<int>(
@@ -874,6 +897,10 @@ IN_PROC_BROWSER_TEST_F(
             last_should_target_navigation_decision());
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
             last_can_apply_optimization_decision());
+
+  // Navigate away so metrics get recorded.
+  ui_test_utils::NavigateToURL(browser(), url_with_hints());
+
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.TargetDecision.PainfulPageLoad",
       static_cast<int>(optimization_guide::OptimizationTargetDecision::

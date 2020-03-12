@@ -94,4 +94,10 @@ public final class NoOpBasicLoggingApi implements BasicLoggingApi {
 
     @Override
     public void onTaskFinished(@Task int task, int delayTime, int taskTime) {}
+
+    @Override
+    public void reportScrollActivity(int scrollAmount) {}
+
+    @Override
+    public void reportFeedInteraction() {}
 }

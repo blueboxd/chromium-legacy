@@ -37,10 +37,14 @@
 namespace {
 
 using encryption_helper::GetServerNigori;
-using encryption_helper::KeyParams;
 using encryption_helper::SetNigoriInFakeServer;
 using testing::NotNull;
 using testing::SizeIs;
+
+struct KeyParams {
+  syncer::KeyDerivationParams derivation_params;
+  std::string password;
+};
 
 MATCHER_P(IsDataEncryptedWith, key_params, "") {
   const sync_pb::EncryptedData& encrypted_data = arg;

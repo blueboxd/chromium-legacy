@@ -35,7 +35,7 @@ public class StartSurfaceConfiguration {
         // The values cached to START_SURFACE_SINGLE_PANE_ENABLED_KEY should be considered for
         // some time. Remove only after M85 to be safe.
         return isStartSurfaceEnabled()
-                && (CachedFeatureFlags.getValue(START_SURFACE_VARIATION).equals("single")
+                && (START_SURFACE_VARIATION.getValue().equals("single")
                         || SharedPreferencesManager.getInstance().readBoolean(
                                 ChromePreferenceKeys.START_SURFACE_SINGLE_PANE_ENABLED_KEY, false));
     }

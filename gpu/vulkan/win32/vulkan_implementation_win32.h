@@ -42,15 +42,11 @@ class COMPONENT_EXPORT(VULKAN_WIN32) VulkanImplementationWin32
   VkExternalMemoryHandleTypeFlagBits GetExternalImageHandleType() override;
   bool CanImportGpuMemoryBuffer(
       gfx::GpuMemoryBufferType memory_buffer_type) override;
-  bool CreateImageFromGpuMemoryHandle(
-      VkDevice vk_device,
+  std::unique_ptr<VulkanImage> CreateImageFromGpuMemoryHandle(
+      VulkanDeviceQueue* device_queue,
       gfx::GpuMemoryBufferHandle gmb_handle,
       gfx::Size size,
-      VkImage* vk_image,
-      VkImageCreateInfo* vk_image_info,
-      VkDeviceMemory* vk_device_memory,
-      VkDeviceSize* mem_allocation_size,
-      base::Optional<VulkanYCbCrInfo>* ycbcr_info) override;
+      VkFormat vk_formae) override;
 
  private:
   VulkanInstance vulkan_instance_;

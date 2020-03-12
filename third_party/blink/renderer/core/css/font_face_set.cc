@@ -152,8 +152,10 @@ void FontFaceSet::LoadFontPromiseResolver::LoadFonts() {
     return;
   }
 
-  for (wtf_size_t i = 0; i < font_faces_.size(); i++)
+  for (wtf_size_t i = 0; i < font_faces_.size(); i++) {
     font_faces_[i]->LoadWithCallback(this);
+    font_faces_[i]->DidBeginImperativeLoad();
+  }
 }
 
 ScriptPromise FontFaceSet::load(ScriptState* script_state,

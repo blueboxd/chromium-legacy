@@ -10,12 +10,12 @@
 #include "base/bits.h"
 #include "base/logging.h"
 #include "base/memory/platform_shared_memory_region.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/video_accelerator/protected_buffer_allocator.h"
 #include "media/gpu/macros.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/size.h"
@@ -107,7 +107,7 @@ ProtectedBufferManager::ProtectedSharedMemory::Create(
   size_t aligned_size =
       base::bits::Align(size, base::SysInfo::VMAllocationGranularity());
 
-  auto shmem_region = mojo::CreateUnsafeSharedMemoryRegion(aligned_size);
+  auto shmem_region = base::UnsafeSharedMemoryRegion::Create(aligned_size);
   if (!shmem_region.IsValid()) {
     VLOGF(1) << "Failed to allocate shared memory";
     return nullptr;

@@ -196,12 +196,10 @@ class IndexedDBDataItemReader : public storage::mojom::BlobDataItemReader {
 };
 
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
-    int ipc_process_id,
-    scoped_refptr<IndexedDBContextImpl> indexed_db_context)
-    : indexed_db_context_(std::move(indexed_db_context)),
+    IndexedDBContextImpl* indexed_db_context)
+    : indexed_db_context_(indexed_db_context),
       file_task_runner_(base::ThreadPool::CreateTaskRunner(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
-      ipc_process_id_(ipc_process_id) {
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(indexed_db_context_);
 }
@@ -211,13 +209,10 @@ IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
 }
 
 void IndexedDBDispatcherHost::AddReceiver(
-    int render_process_id,
-    int render_frame_id,
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::IDBFactory> pending_receiver) {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(render_process_id, ipc_process_id_);
   receivers_.Add(this, std::move(pending_receiver), origin);
 }
 

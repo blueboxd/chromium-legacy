@@ -5,6 +5,7 @@
 #include "chrome/browser/enterprise_reporting/notification/extension_request_observer.h"
 
 #include "base/json/json_reader.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
@@ -64,6 +65,9 @@ constexpr char kExtensionSettingsUpdate[] = R"({
     "update_url": "https://clients2.google.com/service/update2/crx"
   }
 })";
+
+constexpr char kPendingListUpdateMetricsName[] =
+    "Enterprise.CloudExtensionRequestUpdated";
 
 }  // namespace
 
@@ -149,9 +153,17 @@ class ExtensionRequestObserverTest : public BrowserWithTestWindowTest {
                 std::find(expected_removed_requests.begin(),
                           expected_removed_requests.end(), it.first));
     }
+    closed_notification_count_ += 1;
+    histogram_tester()->ExpectBucketCount(kPendingListUpdateMetricsName,
+                                          /*removed*/ 1,
+                                          closed_notification_count_);
   }
 
+  base::HistogramTester* histogram_tester() { return &histogram_tester_; }
+
  private:
+  base::HistogramTester histogram_tester_;
+  int closed_notification_count_ = 0;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_tester_;
 };
 
@@ -162,6 +174,7 @@ TEST_F(ExtensionRequestObserverTest, NoPendingRequestTest) {
 
   SetExtensionSettings(kExtensionSettings);
   VerifyNotification(false);
+  histogram_tester()->ExpectTotalCount(kPendingListUpdateMetricsName, 0);
 }
 
 TEST_F(ExtensionRequestObserverTest, UserConfirmNotification) {
@@ -200,6 +213,7 @@ TEST_F(ExtensionRequestObserverTest, NotificationClosedWithoutUserConfirmed) {
                 ->GetPrefs()
                 ->GetDictionary(prefs::kCloudExtensionRequestIds)
                 ->DictSize());
+  histogram_tester()->ExpectTotalCount(kPendingListUpdateMetricsName, 0);
 }
 
 TEST_F(ExtensionRequestObserverTest, NotificationClose) {
@@ -213,6 +227,7 @@ TEST_F(ExtensionRequestObserverTest, NotificationClose) {
 
   SetExtensionSettings("{}");
   VerifyNotification(false);
+  histogram_tester()->ExpectTotalCount(kPendingListUpdateMetricsName, 0);
 }
 
 TEST_F(ExtensionRequestObserverTest, NotificationUpdate) {
@@ -226,6 +241,7 @@ TEST_F(ExtensionRequestObserverTest, NotificationUpdate) {
 
   SetExtensionSettings(kExtensionSettingsUpdate);
   VerifyNotification(true);
+  histogram_tester()->ExpectTotalCount(kPendingListUpdateMetricsName, 0);
 }
 
 TEST_F(ExtensionRequestObserverTest, ExtensionRequestPolicyToggle) {
@@ -254,6 +270,7 @@ TEST_F(ExtensionRequestObserverTest, ExtensionRequestPolicyToggle) {
                 ->GetPrefs()
                 ->GetDictionary(prefs::kCloudExtensionRequestIds)
                 ->DictSize());
+  histogram_tester()->ExpectTotalCount(kPendingListUpdateMetricsName, 0);
 }
 
 TEST_F(ExtensionRequestObserverTest, PendingRequestAddedAfterPolicyUpdated) {
@@ -262,10 +279,13 @@ TEST_F(ExtensionRequestObserverTest, PendingRequestAddedAfterPolicyUpdated) {
 
   SetExtensionSettings(kExtensionSettings);
   VerifyNotification(false);
+  histogram_tester()->ExpectTotalCount(kPendingListUpdateMetricsName, 0);
 
   SetPendingList({kExtensionId1, kExtensionId2, kExtensionId3, kExtensionId4,
                   kExtensionId5, kExtensionId6});
   VerifyNotification(true);
+  histogram_tester()->ExpectUniqueSample(kPendingListUpdateMetricsName,
+                                         /*added*/ 0, 1);
 }
 
 }  // namespace enterprise_reporting

@@ -27,6 +27,8 @@ import android.nfc.FormatException;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcAdapter.ReaderCallback;
 import android.nfc.NfcManager;
+import android.nfc.Tag;
+import android.nfc.tech.TagTechnology;
 import android.os.Bundle;
 
 import org.junit.Before;
@@ -1467,6 +1469,44 @@ public class NFCTest {
         assertEquals(NdefErrorType.NOT_SUPPORTED, mErrorCaptor.getValue().errorType);
     }
 
+    /**
+     * Test that when the tag in proximity is found to be blocked, an error event will
+     * be dispatched to the client and the pending push operation will also be ended with an error.
+     */
+    @Test
+    @Feature({"NFCTest"})
+    public void testBlockedTagFound() {
+        TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
+        mDelegate.invokeCallback();
+        nfc.setClient(mNfcClient);
+        // Prepare at least one watcher, otherwise the error won't be notified.
+        WatchResponse mockWatchCallback = mock(WatchResponse.class);
+        nfc.watch(createNdefScanOptions(), mNextWatchId, mockWatchCallback);
+        // Start a push.
+        PushResponse mockCallback = mock(PushResponse.class);
+        nfc.push(createMojoNdefMessage(), createNdefWriteOptions(), mockCallback);
+
+        // Mocks blocked 'NFC tag found' event.
+        NfcBlocklist.setIsTagBlockedForTesting(true);
+        Tag tag = Tag.createMockTag(
+                new byte[] {0x00}, new int[] {TagTechnology.NDEF}, new Bundle[] {});
+        NfcTagHandler nfcTagHandler = NfcTagHandler.create(tag);
+        nfc.processPendingOperationsForTesting(nfcTagHandler);
+
+        // An error is notified.
+        verify(mNfcClient, times(1)).onError(mErrorCaptor.capture());
+        assertNotNull(mErrorCaptor.getValue());
+        assertEquals(NdefErrorType.NOT_SUPPORTED, mErrorCaptor.getValue().errorType);
+        // No watch.
+        verify(mNfcClient, times(0))
+                .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
+                        any(NdefMessage.class));
+
+        // The pending push failed with the correct error.
+        verify(mockCallback).call(mErrorCaptor.capture());
+        assertNotNull(mErrorCaptor.getValue());
+        assertEquals(NdefErrorType.NOT_SUPPORTED, mErrorCaptor.getValue().errorType);
+    }
     /**
      * Test that when the tag in proximity is found to be not NDEF compatible, an error event will
      * not be dispatched to the client if there is no watcher present.

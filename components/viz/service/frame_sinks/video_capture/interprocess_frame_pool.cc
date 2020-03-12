@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
 
 using media::VideoFrame;
 using media::VideoPixelFormat;
@@ -56,7 +55,7 @@ scoped_refptr<VideoFrame> InterprocessFramePool::ReserveVideoFrame(
       marked_frame_buffer_ = nullptr;
     available_buffers_.erase(it.base() - 1);  // Release before allocating more.
     PooledBuffer reallocated =
-        mojo::CreateReadOnlySharedMemoryRegion(bytes_required);
+        base::ReadOnlySharedMemoryRegion::Create(bytes_required);
     if (!reallocated.IsValid()) {
       LOG_IF(WARNING, CanLogSharedMemoryFailure())
           << "Failed to re-allocate " << bytes_required << " bytes.";
@@ -71,7 +70,7 @@ scoped_refptr<VideoFrame> InterprocessFramePool::ReserveVideoFrame(
     return nullptr;
   }
   PooledBuffer additional =
-      mojo::CreateReadOnlySharedMemoryRegion(bytes_required);
+      base::ReadOnlySharedMemoryRegion::Create(bytes_required);
   if (!additional.IsValid()) {
     LOG_IF(WARNING, CanLogSharedMemoryFailure())
         << "Failed to allocate " << bytes_required << " bytes.";

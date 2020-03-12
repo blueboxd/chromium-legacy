@@ -1533,13 +1533,6 @@ config("default_warnings") {
           # valid on Windows, which is LLP64.
           "-Wno-microsoft-cast",
         ]
-
-        if (llvm_force_head_revision && is_win) {
-          cflags += [
-            # TODO(https://crbug.com/1059231): Clean up, enable.
-            "-Wno-pointer-to-int-cast",
-          ]
-        }
       }
     }
   }

@@ -316,6 +316,7 @@ js2gtest("browser_tests_js_mojo_lite_webui") {
       "chromeos/crostini_upgrader_browsertest.js",
       "chromeos/machine_learning_internals_browsertest.js",
       "chromeos/print_management/print_management_browsertest.js",
+      "chromeos/print_management/scanning_ui_browsertest.js",
       "multidevice_setup/multidevice_setup_browsertest.js",
     ]
     deps += [ "//chromeos/services/machine_learning/public/cpp:test_support" ]

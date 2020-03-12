@@ -18,7 +18,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests"
@@ -34,7 +35,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
         "test_target": "//base:base_unittests"
@@ -50,7 +52,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_util_unittests",
         "test_target": "//base/util:base_util_unittests"
@@ -66,7 +69,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_common_unittests",
         "test_target": "//third_party/blink/common:blink_common_unittests"
@@ -82,7 +86,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_heap_unittests",
         "test_target": "//third_party/blink/renderer/platform/heap:blink_heap_unittests"
@@ -98,7 +103,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_platform_unittests",
         "test_target": "//third_party/blink/renderer/platform:blink_platform_unittests"
@@ -115,7 +121,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_unittests",
         "test_target": "//third_party/blink/renderer/controller:blink_unittests"
@@ -131,7 +138,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_crypto_tests",
         "test_target": "//third_party/boringssl:boringssl_crypto_tests"
@@ -147,7 +155,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_ssl_tests",
         "test_target": "//third_party/boringssl:boringssl_ssl_tests"
@@ -163,7 +172,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cacheinvalidation_unittests",
         "test_target": "//third_party/cacheinvalidation:cacheinvalidation_unittests"
@@ -182,7 +192,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "capture_unittests",
         "test_target": "//media/capture:capture_unittests"
@@ -198,7 +209,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_audio_backend_unittests",
         "test_target": "//chromecast/media/cma/backend:cast_audio_backend_unittests"
@@ -214,7 +226,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_base_unittests",
         "test_target": "//chromecast/base:cast_base_unittests"
@@ -230,7 +243,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_crash_unittests",
         "test_target": "//chromecast/crash:cast_crash_unittests"
@@ -246,7 +260,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_media_unittests",
         "test_target": "//chromecast/media:cast_media_unittests"
@@ -279,7 +294,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_shell_unittests",
         "test_target": "//chromecast:cast_shell_unittests"
@@ -295,7 +311,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_unittests",
         "test_target": "//media/cast:cast_unittests"
@@ -311,7 +328,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_browsertests",
         "test_target": "//components:components_browsertests"
@@ -327,7 +345,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_unittests",
         "test_target": "//components:components_unittests"
@@ -347,6 +366,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
         },
         "test": "content_browsertests",
@@ -363,7 +383,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -379,7 +400,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crypto_unittests",
         "test_target": "//crypto:crypto_unittests"
@@ -395,7 +417,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "events_unittests",
         "test_target": "//ui/events:events_unittests"
@@ -411,7 +434,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gcm_unit_tests",
         "test_target": "//google_apis/gcm:gcm_unit_tests"
@@ -427,7 +451,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gin_unittests",
         "test_target": "//gin:gin_unittests"
@@ -443,7 +468,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "google_apis_unittests",
         "test_target": "//google_apis:google_apis_unittests"
@@ -459,7 +485,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gpu_unittests",
         "test_target": "//gpu:gpu_unittests"
@@ -475,7 +502,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gwp_asan_unittests",
         "test_target": "//components/gwp_asan:gwp_asan_unittests"
@@ -491,7 +519,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ipc_tests",
         "test_target": "//ipc:ipc_tests"
@@ -507,7 +536,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "jingle_unittests",
         "test_target": "//jingle:jingle_unittests"
@@ -523,7 +553,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "latency_unittests",
         "test_target": "//ui/latency:latency_unittests"
@@ -539,7 +570,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "libjingle_xmpp_unittests",
         "test_target": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests"
@@ -555,7 +587,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_blink_unittests",
         "test_target": "//media/blink:media_blink_unittests"
@@ -571,7 +604,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_service_unittests",
         "test_target": "//media/mojo/services:media_service_unittests"
@@ -587,7 +621,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_unittests",
         "test_target": "//media:media_unittests"
@@ -603,7 +638,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "midi_unittests",
         "test_target": "//media/midi:midi_unittests"
@@ -619,7 +655,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "mojo_unittests",
         "test_target": "//mojo:mojo_unittests"
@@ -635,7 +672,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "net_unittests",
         "test_target": "//net:net_unittests"
@@ -651,7 +689,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "perfetto_unittests",
         "test_target": "//third_party/perfetto:perfetto_unittests"
@@ -667,7 +706,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sandbox_linux_unittests",
         "test_target": "//sandbox/linux:sandbox_linux_unittests"
@@ -683,7 +723,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "services_unittests",
         "test_target": "//services:services_unittests"
@@ -699,7 +740,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "shell_dialogs_unittests",
         "test_target": "//ui/shell_dialogs:shell_dialogs_unittests"
@@ -715,7 +757,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "skia_unittests",
         "test_target": "//skia:skia_unittests"
@@ -731,7 +774,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sql_unittests",
         "test_target": "//sql:sql_unittests"
@@ -747,7 +791,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "storage_unittests",
         "test_target": "//storage:storage_unittests"
@@ -763,7 +808,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_base_unittests",
         "test_target": "//ui/base:ui_base_unittests"
@@ -779,7 +825,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_touch_selection_unittests",
         "test_target": "//ui/touch_selection:ui_touch_selection_unittests"
@@ -795,7 +842,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "url_unittests",
         "test_target": "//url:url_unittests"
@@ -811,7 +859,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "wtf_unittests",
         "test_target": "//third_party/blink/renderer/platform/wtf:wtf_unittests"
@@ -835,7 +884,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests"
@@ -851,7 +901,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
         "test_target": "//base:base_unittests"
@@ -867,7 +918,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_util_unittests",
         "test_target": "//base/util:base_util_unittests"
@@ -883,7 +935,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_common_unittests",
         "test_target": "//third_party/blink/common:blink_common_unittests"
@@ -899,7 +952,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_heap_unittests",
         "test_target": "//third_party/blink/renderer/platform/heap:blink_heap_unittests"
@@ -915,7 +969,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_platform_unittests",
         "test_target": "//third_party/blink/renderer/platform:blink_platform_unittests"
@@ -932,7 +987,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_unittests",
         "test_target": "//third_party/blink/renderer/controller:blink_unittests"
@@ -948,7 +1004,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_crypto_tests",
         "test_target": "//third_party/boringssl:boringssl_crypto_tests"
@@ -964,7 +1021,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_ssl_tests",
         "test_target": "//third_party/boringssl:boringssl_ssl_tests"
@@ -980,7 +1038,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cacheinvalidation_unittests",
         "test_target": "//third_party/cacheinvalidation:cacheinvalidation_unittests"
@@ -999,7 +1058,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "capture_unittests",
         "test_target": "//media/capture:capture_unittests"
@@ -1015,7 +1075,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_audio_backend_unittests",
         "test_target": "//chromecast/media/cma/backend:cast_audio_backend_unittests"
@@ -1031,7 +1092,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_base_unittests",
         "test_target": "//chromecast/base:cast_base_unittests"
@@ -1047,7 +1109,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_crash_unittests",
         "test_target": "//chromecast/crash:cast_crash_unittests"
@@ -1063,7 +1126,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_graphics_unittests",
         "test_target": "//chromecast/graphics:cast_graphics_unittests"
@@ -1079,7 +1143,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_media_unittests",
         "test_target": "//chromecast/media:cast_media_unittests"
@@ -1112,7 +1177,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_shell_unittests",
         "test_target": "//chromecast:cast_shell_unittests"
@@ -1128,7 +1194,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_unittests",
         "test_target": "//media/cast:cast_unittests"
@@ -1144,7 +1211,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_browsertests",
         "test_target": "//components:components_browsertests"
@@ -1160,7 +1228,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_unittests",
         "test_target": "//components:components_unittests"
@@ -1180,6 +1249,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
         },
         "test": "content_browsertests",
@@ -1196,7 +1266,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -1212,7 +1283,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crypto_unittests",
         "test_target": "//crypto:crypto_unittests"
@@ -1228,7 +1300,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "events_unittests",
         "test_target": "//ui/events:events_unittests"
@@ -1244,7 +1317,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "exo_unittests",
         "test_target": "//components/exo:exo_unittests"
@@ -1260,7 +1334,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gcm_unit_tests",
         "test_target": "//google_apis/gcm:gcm_unit_tests"
@@ -1276,7 +1351,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gin_unittests",
         "test_target": "//gin:gin_unittests"
@@ -1292,7 +1368,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "google_apis_unittests",
         "test_target": "//google_apis:google_apis_unittests"
@@ -1308,7 +1385,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gpu_unittests",
         "test_target": "//gpu:gpu_unittests"
@@ -1324,7 +1402,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gwp_asan_unittests",
         "test_target": "//components/gwp_asan:gwp_asan_unittests"
@@ -1340,7 +1419,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ipc_tests",
         "test_target": "//ipc:ipc_tests"
@@ -1356,7 +1436,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "jingle_unittests",
         "test_target": "//jingle:jingle_unittests"
@@ -1372,7 +1453,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "latency_unittests",
         "test_target": "//ui/latency:latency_unittests"
@@ -1388,7 +1470,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "libjingle_xmpp_unittests",
         "test_target": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests"
@@ -1404,7 +1487,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_blink_unittests",
         "test_target": "//media/blink:media_blink_unittests"
@@ -1420,7 +1504,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_service_unittests",
         "test_target": "//media/mojo/services:media_service_unittests"
@@ -1436,7 +1521,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_unittests",
         "test_target": "//media:media_unittests"
@@ -1452,7 +1538,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "midi_unittests",
         "test_target": "//media/midi:midi_unittests"
@@ -1468,7 +1555,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "mojo_unittests",
         "test_target": "//mojo:mojo_unittests"
@@ -1484,7 +1572,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "net_unittests",
         "test_target": "//net:net_unittests"
@@ -1500,7 +1589,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "perfetto_unittests",
         "test_target": "//third_party/perfetto:perfetto_unittests"
@@ -1516,7 +1606,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sandbox_linux_unittests",
         "test_target": "//sandbox/linux:sandbox_linux_unittests"
@@ -1532,7 +1623,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "services_unittests",
         "test_target": "//services:services_unittests"
@@ -1548,7 +1640,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "shell_dialogs_unittests",
         "test_target": "//ui/shell_dialogs:shell_dialogs_unittests"
@@ -1564,7 +1657,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "skia_unittests",
         "test_target": "//skia:skia_unittests"
@@ -1580,7 +1674,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sql_unittests",
         "test_target": "//sql:sql_unittests"
@@ -1596,7 +1691,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "storage_unittests",
         "test_target": "//storage:storage_unittests"
@@ -1612,7 +1708,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_base_unittests",
         "test_target": "//ui/base:ui_base_unittests"
@@ -1628,7 +1725,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_touch_selection_unittests",
         "test_target": "//ui/touch_selection:ui_touch_selection_unittests"
@@ -1644,7 +1742,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "url_unittests",
         "test_target": "//url:url_unittests"
@@ -1661,7 +1760,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "views_unittests",
         "test_target": "//ui/views:views_unittests"
@@ -1677,7 +1777,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "wtf_unittests",
         "test_target": "//third_party/blink/renderer/platform/wtf:wtf_unittests"
@@ -1709,7 +1810,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests"
@@ -1729,7 +1831,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
         "test_target": "//base:base_unittests"
@@ -1749,7 +1852,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_util_unittests",
         "test_target": "//base/util:base_util_unittests"
@@ -1769,7 +1873,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_common_unittests",
         "test_target": "//third_party/blink/common:blink_common_unittests"
@@ -1789,7 +1894,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_heap_unittests",
         "test_target": "//third_party/blink/renderer/platform/heap:blink_heap_unittests"
@@ -1809,7 +1915,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_platform_unittests",
         "test_target": "//third_party/blink/renderer/platform:blink_platform_unittests"
@@ -1829,7 +1936,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_crypto_tests",
         "test_target": "//third_party/boringssl:boringssl_crypto_tests"
@@ -1849,7 +1957,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_ssl_tests",
         "test_target": "//third_party/boringssl:boringssl_ssl_tests"
@@ -1869,7 +1978,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_runner_browsertests",
         "test_target": "//fuchsia/runners:cast_runner_browsertests"
@@ -1889,7 +1999,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_runner_integration_tests",
         "test_target": "//fuchsia/runners:cast_runner_integration_tests"
@@ -1909,7 +2020,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_runner_unittests",
         "test_target": "//fuchsia/runners:cast_runner_unittests"
@@ -1930,7 +2042,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -1950,7 +2063,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cr_fuchsia_base_unittests",
         "test_target": "//fuchsia/base:cr_fuchsia_base_unittests"
@@ -1970,7 +2084,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cronet_tests",
         "test_target": "//components/cronet:cronet_tests"
@@ -1990,7 +2105,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cronet_unittests",
         "test_target": "//components/cronet:cronet_unittests"
@@ -2010,7 +2126,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crypto_unittests",
         "test_target": "//crypto:crypto_unittests"
@@ -2030,7 +2147,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "events_unittests",
         "test_target": "//ui/events:events_unittests"
@@ -2050,7 +2168,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gfx_unittests",
         "test_target": "//ui/gfx:gfx_unittests"
@@ -2070,7 +2189,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gpu_unittests",
         "test_target": "//gpu:gpu_unittests"
@@ -2090,7 +2210,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "http_service_tests",
         "test_target": "//fuchsia/http:http_service_tests"
@@ -2110,7 +2231,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ipc_tests",
         "test_target": "//ipc:ipc_tests"
@@ -2130,7 +2252,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_unittests",
         "test_target": "//media:media_unittests"
@@ -2151,7 +2274,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "mojo_unittests",
         "test_target": "//mojo:mojo_unittests"
@@ -2172,7 +2296,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "net_unittests",
         "test_target": "//net:net_unittests"
@@ -2192,7 +2317,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "perfetto_unittests",
         "test_target": "//third_party/perfetto:perfetto_unittests"
@@ -2212,7 +2338,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "service_manager_unittests",
         "test_target": "//services/service_manager/tests:service_manager_unittests"
@@ -2233,7 +2360,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "services_unittests",
         "test_target": "//services:services_unittests"
@@ -2253,7 +2381,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "skia_unittests",
         "test_target": "//skia:skia_unittests"
@@ -2273,7 +2402,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sql_unittests",
         "test_target": "//sql:sql_unittests"
@@ -2294,7 +2424,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_base_unittests",
         "test_target": "//ui/base:ui_base_unittests"
@@ -2314,7 +2445,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "url_unittests",
         "test_target": "//url:url_unittests"
@@ -2335,7 +2467,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "viz_unittests",
         "test_target": "//components/viz:viz_unittests"
@@ -2355,7 +2488,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "web_engine_browsertests",
         "test_target": "//fuchsia/engine:web_engine_browsertests"
@@ -2375,7 +2509,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "web_engine_integration_tests",
         "test_target": "//fuchsia/engine:web_engine_integration_tests"
@@ -2395,7 +2530,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "web_engine_unittests",
         "test_target": "//fuchsia/engine:web_engine_unittests"
@@ -2415,7 +2551,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "web_runner_integration_tests",
         "test_target": "//fuchsia/runners:web_runner_integration_tests"
@@ -2444,7 +2581,8 @@
               "kvm": "1",
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//:blink_web_tests"
       }
@@ -2483,6 +2621,7 @@
           "hard_timeout": 10800,
           "ignore_task_failure": false,
           "io_timeout": 3600,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 10
         },
         "test_target": "//chrome/test:performance_test_suite"
@@ -2497,7 +2636,8 @@
       {
         "isolate_coverage_data": true,
         "name": "check_network_annotations",
-        "script": "check_network_annotations.py"
+        "script": "check_network_annotations.py",
+        "swarming": {}
       }
     ]
   },
@@ -2532,7 +2672,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "views_unittests",
         "test_target": "//ui/views:views_unittests"
@@ -2555,7 +2696,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -2574,7 +2716,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ozone_x11_unittests",
         "test_target": "//ui/ozone:ozone_x11_unittests"
@@ -2594,7 +2737,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "views_unittests",
         "test_target": "//ui/views:views_unittests"
@@ -2615,7 +2759,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "accessibility_unittests",
         "test_target": "//ui/accessibility:accessibility_unittests"
@@ -2632,7 +2777,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests"
@@ -2649,7 +2795,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "app_shell_unittests",
         "test_target": "//extensions/shell:app_shell_unittests"
@@ -2666,7 +2813,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "aura_unittests",
         "test_target": "//ui/aura:aura_unittests"
@@ -2683,7 +2831,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
         "test_target": "//base:base_unittests"
@@ -2700,7 +2849,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_util_unittests",
         "test_target": "//base/util:base_util_unittests"
@@ -2717,7 +2867,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_common_unittests",
         "test_target": "//third_party/blink/common:blink_common_unittests"
@@ -2734,7 +2885,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_fuzzer_unittests",
         "test_target": "//third_party/blink/renderer/platform:blink_fuzzer_unittests"
@@ -2751,7 +2903,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_heap_unittests",
         "test_target": "//third_party/blink/renderer/platform/heap:blink_heap_unittests"
@@ -2768,7 +2921,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_platform_unittests",
         "test_target": "//third_party/blink/renderer/platform:blink_platform_unittests"
@@ -2786,7 +2940,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_unittests",
         "test_target": "//third_party/blink/renderer/controller:blink_unittests"
@@ -2803,7 +2958,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_crypto_tests",
         "test_target": "//third_party/boringssl:boringssl_crypto_tests"
@@ -2820,7 +2976,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_ssl_tests",
         "test_target": "//third_party/boringssl:boringssl_ssl_tests"
@@ -2838,6 +2995,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 10
         },
         "test": "browser_tests",
@@ -2855,7 +3013,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cacheinvalidation_unittests",
         "test_target": "//third_party/cacheinvalidation:cacheinvalidation_unittests"
@@ -2875,7 +3034,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "capture_unittests",
         "test_target": "//media/capture:capture_unittests"
@@ -2892,7 +3052,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_unittests",
         "test_target": "//media/cast:cast_unittests"
@@ -2909,7 +3070,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cc_unittests",
         "test_target": "//cc:cc_unittests"
@@ -2926,7 +3088,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chrome_app_unittests",
         "test_target": "//chrome/test:chrome_app_unittests"
@@ -2943,7 +3106,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chromedriver_unittests",
         "test_target": "//chrome/test/chromedriver:chromedriver_unittests"
@@ -2960,7 +3124,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_browsertests",
         "test_target": "//components:components_browsertests"
@@ -2977,7 +3142,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_unittests",
         "test_target": "//components:components_unittests"
@@ -2994,7 +3160,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "compositor_unittests",
         "test_target": "//ui/compositor:compositor_unittests"
@@ -3012,6 +3179,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
         },
         "test": "content_browsertests",
@@ -3029,7 +3197,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -3046,7 +3215,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crashpad_tests",
         "test_target": "//third_party/crashpad/crashpad:crashpad_tests"
@@ -3063,7 +3233,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cronet_tests",
         "test_target": "//components/cronet:cronet_tests"
@@ -3080,7 +3251,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cronet_unittests",
         "test_target": "//components/cronet:cronet_unittests"
@@ -3097,7 +3269,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crypto_unittests",
         "test_target": "//crypto:crypto_unittests"
@@ -3114,7 +3287,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dbus_unittests",
         "test_target": "//dbus:dbus_unittests"
@@ -3131,7 +3305,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "device_unittests",
         "test_target": "//device:device_unittests"
@@ -3148,7 +3323,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "display_unittests",
         "test_target": "//ui/display:display_unittests"
@@ -3165,7 +3341,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "events_unittests",
         "test_target": "//ui/events:events_unittests"
@@ -3182,7 +3359,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "extensions_browsertests",
         "test_target": "//extensions:extensions_browsertests"
@@ -3199,7 +3377,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "extensions_unittests",
         "test_target": "//extensions:extensions_unittests"
@@ -3216,7 +3395,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "filesystem_service_unittests",
         "test_target": "//components/services/filesystem:filesystem_service_unittests"
@@ -3233,7 +3413,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gcm_unit_tests",
         "test_target": "//google_apis/gcm:gcm_unit_tests"
@@ -3250,7 +3431,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gfx_unittests",
         "test_target": "//ui/gfx:gfx_unittests"
@@ -3267,7 +3449,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gin_unittests",
         "test_target": "//gin:gin_unittests"
@@ -3284,7 +3467,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "google_apis_unittests",
         "test_target": "//google_apis:google_apis_unittests"
@@ -3301,7 +3485,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gpu_unittests",
         "test_target": "//gpu:gpu_unittests"
@@ -3318,7 +3503,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gwp_asan_unittests",
         "test_target": "//components/gwp_asan:gwp_asan_unittests"
@@ -3335,7 +3521,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "headless_browsertests",
         "test_target": "//headless:headless_browsertests"
@@ -3352,7 +3539,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "headless_unittests",
         "test_target": "//headless:headless_unittests"
@@ -3370,6 +3558,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "interactive_ui_tests",
@@ -3387,7 +3576,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ipc_tests",
         "test_target": "//ipc:ipc_tests"
@@ -3404,7 +3594,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "jingle_unittests",
         "test_target": "//jingle:jingle_unittests"
@@ -3421,7 +3612,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "latency_unittests",
         "test_target": "//ui/latency:latency_unittests"
@@ -3438,7 +3630,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "libjingle_xmpp_unittests",
         "test_target": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests"
@@ -3455,7 +3648,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_blink_unittests",
         "test_target": "//media/blink:media_blink_unittests"
@@ -3472,7 +3666,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_service_unittests",
         "test_target": "//media/mojo/services:media_service_unittests"
@@ -3489,7 +3684,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_unittests",
         "test_target": "//media:media_unittests"
@@ -3506,7 +3702,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "message_center_unittests",
         "test_target": "//ui/message_center:message_center_unittests"
@@ -3523,7 +3720,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "midi_unittests",
         "test_target": "//media/midi:midi_unittests"
@@ -3540,7 +3738,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "mojo_core_unittests",
         "test_target": "//mojo/core:mojo_core_unittests"
@@ -3557,7 +3756,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "mojo_unittests",
         "test_target": "//mojo:mojo_unittests"
@@ -3574,7 +3774,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "nacl_helper_nonsfi_unittests",
         "test_target": "//components/nacl/loader:nacl_helper_nonsfi_unittests"
@@ -3591,7 +3792,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "nacl_loader_unittests",
         "test_target": "//components/nacl/loader:nacl_loader_unittests"
@@ -3608,7 +3810,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "native_theme_unittests",
         "test_target": "//ui/native_theme:native_theme_unittests"
@@ -3625,7 +3828,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "net_unittests",
         "test_target": "//net:net_unittests"
@@ -3642,7 +3846,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "pdf_unittests",
         "test_target": "//pdf:pdf_unittests"
@@ -3659,7 +3864,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "perfetto_unittests",
         "test_target": "//third_party/perfetto:perfetto_unittests"
@@ -3676,7 +3882,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ppapi_unittests",
         "test_target": "//ppapi:ppapi_unittests"
@@ -3693,7 +3900,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "printing_unittests",
         "test_target": "//printing:printing_unittests"
@@ -3710,7 +3918,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "remoting_unittests",
         "test_target": "//remoting:remoting_unittests"
@@ -3727,7 +3936,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sandbox_linux_unittests",
         "test_target": "//sandbox/linux:sandbox_linux_unittests"
@@ -3744,7 +3954,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "service_manager_unittests",
         "test_target": "//services/service_manager/tests:service_manager_unittests"
@@ -3761,7 +3972,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "services_unittests",
         "test_target": "//services:services_unittests"
@@ -3778,7 +3990,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "shell_dialogs_unittests",
         "test_target": "//ui/shell_dialogs:shell_dialogs_unittests"
@@ -3795,7 +4008,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "skia_unittests",
         "test_target": "//skia:skia_unittests"
@@ -3812,7 +4026,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "snapshot_unittests",
         "test_target": "//ui/snapshot:snapshot_unittests"
@@ -3829,7 +4044,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sql_unittests",
         "test_target": "//sql:sql_unittests"
@@ -3846,7 +4062,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "storage_unittests",
         "test_target": "//storage:storage_unittests"
@@ -3863,7 +4080,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sync_integration_tests",
         "test_target": "//chrome/test:sync_integration_tests"
@@ -3880,7 +4098,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "traffic_annotation_auditor_unittests",
         "test_target": "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests"
@@ -3897,7 +4116,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_base_unittests",
         "test_target": "//ui/base:ui_base_unittests"
@@ -3914,7 +4134,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_touch_selection_unittests",
         "test_target": "//ui/touch_selection:ui_touch_selection_unittests"
@@ -3931,7 +4152,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "unit_tests",
         "test_target": "//chrome/test:unit_tests"
@@ -3948,7 +4170,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "url_unittests",
         "test_target": "//url:url_unittests"
@@ -3965,7 +4188,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "views_unittests",
         "test_target": "//ui/views:views_unittests"
@@ -3982,7 +4206,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "viz_unittests",
         "test_target": "//components/viz:viz_unittests"
@@ -3999,7 +4224,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "vr_common_unittests",
         "test_target": "//chrome/browser/vr:vr_common_unittests"
@@ -4016,7 +4242,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "vr_pixeltests",
         "test_target": "//chrome/browser/vr:vr_pixeltests"
@@ -4033,7 +4260,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "weblayer_browsertests",
         "test_target": "//weblayer/test:weblayer_browsertests"
@@ -4050,7 +4278,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "wm_unittests",
         "test_target": "//ui/wm:wm_unittests"
@@ -4067,7 +4296,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "wtf_unittests",
         "test_target": "//third_party/blink/renderer/platform/wtf:wtf_unittests"
@@ -4085,7 +4315,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "xr_browser_tests",
         "test_target": "//chrome/test:xr_browser_tests"
@@ -4106,7 +4337,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//:blink_python_tests"
       },
@@ -4132,6 +4364,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
         "test_target": "//:blink_web_tests"
@@ -4153,7 +4386,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test/chromedriver:chromedriver_py_tests"
       },
@@ -4171,7 +4405,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test/chromedriver:chromedriver_replay_unittests"
       },
@@ -4189,7 +4424,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//content/shell:content_shell_crash_test"
       },
@@ -4207,7 +4443,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//third_party/flatbuffers:flatbuffers_unittests"
       },
@@ -4225,7 +4462,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//tools/grit:grit_python_unittests"
       },
@@ -4243,7 +4481,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//tools/metrics:metrics_python_tests"
       },
@@ -4271,7 +4510,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//:blink_web_tests"
       },
@@ -4301,6 +4541,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 10
         },
         "test_target": "//:blink_web_tests"
@@ -4320,7 +4561,8 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:telemetry_gpu_unittests"
       },
@@ -4344,6 +4586,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
         "test_target": "//chrome/test:telemetry_perf_unittests"
@@ -4368,6 +4611,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test_target": "//chrome/test:telemetry_unittests"
@@ -4391,7 +4635,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//ui/views:views_perftests"
       },
@@ -4427,7 +4672,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//:blink_web_tests"
       }
@@ -4478,7 +4724,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "accessibility_unittests",
         "test_target": "//ui/accessibility:accessibility_unittests"
@@ -4494,7 +4741,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests"
@@ -4510,7 +4758,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "app_shell_unittests",
         "test_target": "//extensions/shell:app_shell_unittests"
@@ -4526,7 +4775,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "aura_unittests",
         "test_target": "//ui/aura:aura_unittests"
@@ -4542,7 +4792,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
         "test_target": "//base:base_unittests"
@@ -4558,7 +4809,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_util_unittests",
         "test_target": "//base/util:base_util_unittests"
@@ -4574,7 +4826,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_common_unittests",
         "test_target": "//third_party/blink/common:blink_common_unittests"
@@ -4590,7 +4843,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_fuzzer_unittests",
         "test_target": "//third_party/blink/renderer/platform:blink_fuzzer_unittests"
@@ -4606,7 +4860,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_heap_unittests",
         "test_target": "//third_party/blink/renderer/platform/heap:blink_heap_unittests"
@@ -4622,7 +4877,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_platform_unittests",
         "test_target": "//third_party/blink/renderer/platform:blink_platform_unittests"
@@ -4639,7 +4895,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_unittests",
         "test_target": "//third_party/blink/renderer/controller:blink_unittests"
@@ -4655,7 +4912,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_crypto_tests",
         "test_target": "//third_party/boringssl:boringssl_crypto_tests"
@@ -4671,7 +4929,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_ssl_tests",
         "test_target": "//third_party/boringssl:boringssl_ssl_tests"
@@ -4688,6 +4947,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 10
         },
         "test": "browser_tests",
@@ -4704,7 +4964,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cacheinvalidation_unittests",
         "test_target": "//third_party/cacheinvalidation:cacheinvalidation_unittests"
@@ -4723,7 +4984,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "capture_unittests",
         "test_target": "//media/capture:capture_unittests"
@@ -4739,7 +5001,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_unittests",
         "test_target": "//media/cast:cast_unittests"
@@ -4755,7 +5018,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cc_unittests",
         "test_target": "//cc:cc_unittests"
@@ -4771,7 +5035,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chrome_app_unittests",
         "test_target": "//chrome/test:chrome_app_unittests"
@@ -4787,7 +5052,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chromedriver_unittests",
         "test_target": "//chrome/test/chromedriver:chromedriver_unittests"
@@ -4803,7 +5069,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_browsertests",
         "test_target": "//components:components_browsertests"
@@ -4819,7 +5086,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_unittests",
         "test_target": "//components:components_unittests"
@@ -4835,7 +5103,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "compositor_unittests",
         "test_target": "//ui/compositor:compositor_unittests"
@@ -4852,6 +5121,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
         },
         "test": "content_browsertests",
@@ -4868,7 +5138,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -4884,7 +5155,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crashpad_tests",
         "test_target": "//third_party/crashpad/crashpad:crashpad_tests"
@@ -4900,7 +5172,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cronet_tests",
         "test_target": "//components/cronet:cronet_tests"
@@ -4916,7 +5189,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cronet_unittests",
         "test_target": "//components/cronet:cronet_unittests"
@@ -4932,7 +5206,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crypto_unittests",
         "test_target": "//crypto:crypto_unittests"
@@ -4948,7 +5223,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dbus_unittests",
         "test_target": "//dbus:dbus_unittests"
@@ -4964,7 +5240,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "device_unittests",
         "test_target": "//device:device_unittests"
@@ -4980,7 +5257,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "display_unittests",
         "test_target": "//ui/display:display_unittests"
@@ -4996,7 +5274,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "events_unittests",
         "test_target": "//ui/events:events_unittests"
@@ -5012,7 +5291,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "extensions_browsertests",
         "test_target": "//extensions:extensions_browsertests"
@@ -5028,7 +5308,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "extensions_unittests",
         "test_target": "//extensions:extensions_unittests"
@@ -5044,7 +5325,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "filesystem_service_unittests",
         "test_target": "//components/services/filesystem:filesystem_service_unittests"
@@ -5060,7 +5342,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gcm_unit_tests",
         "test_target": "//google_apis/gcm:gcm_unit_tests"
@@ -5076,7 +5359,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gfx_unittests",
         "test_target": "//ui/gfx:gfx_unittests"
@@ -5092,7 +5376,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gin_unittests",
         "test_target": "//gin:gin_unittests"
@@ -5108,7 +5393,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "google_apis_unittests",
         "test_target": "//google_apis:google_apis_unittests"
@@ -5124,7 +5410,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gpu_unittests",
         "test_target": "//gpu:gpu_unittests"
@@ -5140,7 +5427,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gwp_asan_unittests",
         "test_target": "//components/gwp_asan:gwp_asan_unittests"
@@ -5156,7 +5444,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "headless_browsertests",
         "test_target": "//headless:headless_browsertests"
@@ -5172,7 +5461,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "headless_unittests",
         "test_target": "//headless:headless_unittests"
@@ -5189,6 +5479,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "interactive_ui_tests",
@@ -5205,7 +5496,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ipc_tests",
         "test_target": "//ipc:ipc_tests"
@@ -5221,7 +5513,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "jingle_unittests",
         "test_target": "//jingle:jingle_unittests"
@@ -5237,7 +5530,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "latency_unittests",
         "test_target": "//ui/latency:latency_unittests"
@@ -5253,7 +5547,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "libjingle_xmpp_unittests",
         "test_target": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests"
@@ -5269,7 +5564,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_blink_unittests",
         "test_target": "//media/blink:media_blink_unittests"
@@ -5285,7 +5581,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_service_unittests",
         "test_target": "//media/mojo/services:media_service_unittests"
@@ -5301,7 +5598,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_unittests",
         "test_target": "//media:media_unittests"
@@ -5317,7 +5615,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "message_center_unittests",
         "test_target": "//ui/message_center:message_center_unittests"
@@ -5333,7 +5632,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "midi_unittests",
         "test_target": "//media/midi:midi_unittests"
@@ -5349,7 +5649,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "mojo_core_unittests",
         "test_target": "//mojo/core:mojo_core_unittests"
@@ -5365,7 +5666,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "mojo_unittests",
         "test_target": "//mojo:mojo_unittests"
@@ -5381,7 +5683,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "nacl_helper_nonsfi_unittests",
         "test_target": "//components/nacl/loader:nacl_helper_nonsfi_unittests"
@@ -5397,7 +5700,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "nacl_loader_unittests",
         "test_target": "//components/nacl/loader:nacl_loader_unittests"
@@ -5413,7 +5717,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "native_theme_unittests",
         "test_target": "//ui/native_theme:native_theme_unittests"
@@ -5430,6 +5735,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "net_unittests",
@@ -5446,7 +5752,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "pdf_unittests",
         "test_target": "//pdf:pdf_unittests"
@@ -5462,7 +5769,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "perfetto_unittests",
         "test_target": "//third_party/perfetto:perfetto_unittests"
@@ -5478,7 +5786,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ppapi_unittests",
         "test_target": "//ppapi:ppapi_unittests"
@@ -5494,7 +5803,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "printing_unittests",
         "test_target": "//printing:printing_unittests"
@@ -5510,7 +5820,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "remoting_unittests",
         "test_target": "//remoting:remoting_unittests"
@@ -5526,7 +5837,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sandbox_linux_unittests",
         "test_target": "//sandbox/linux:sandbox_linux_unittests"
@@ -5542,7 +5854,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "service_manager_unittests",
         "test_target": "//services/service_manager/tests:service_manager_unittests"
@@ -5558,7 +5871,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "services_unittests",
         "test_target": "//services:services_unittests"
@@ -5574,7 +5888,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "shell_dialogs_unittests",
         "test_target": "//ui/shell_dialogs:shell_dialogs_unittests"
@@ -5590,7 +5905,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "skia_unittests",
         "test_target": "//skia:skia_unittests"
@@ -5606,7 +5922,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "snapshot_unittests",
         "test_target": "//ui/snapshot:snapshot_unittests"
@@ -5622,7 +5939,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sql_unittests",
         "test_target": "//sql:sql_unittests"
@@ -5638,7 +5956,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "storage_unittests",
         "test_target": "//storage:storage_unittests"
@@ -5654,7 +5973,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sync_integration_tests",
         "test_target": "//chrome/test:sync_integration_tests"
@@ -5670,7 +5990,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "traffic_annotation_auditor_unittests",
         "test_target": "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests"
@@ -5686,7 +6007,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_base_unittests",
         "test_target": "//ui/base:ui_base_unittests"
@@ -5702,7 +6024,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_touch_selection_unittests",
         "test_target": "//ui/touch_selection:ui_touch_selection_unittests"
@@ -5718,7 +6041,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "unit_tests",
         "test_target": "//chrome/test:unit_tests"
@@ -5734,7 +6058,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "url_unittests",
         "test_target": "//url:url_unittests"
@@ -5750,7 +6075,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "views_unittests",
         "test_target": "//ui/views:views_unittests"
@@ -5766,7 +6092,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "viz_unittests",
         "test_target": "//components/viz:viz_unittests"
@@ -5782,7 +6109,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "vr_common_unittests",
         "test_target": "//chrome/browser/vr:vr_common_unittests"
@@ -5798,7 +6126,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "vr_pixeltests",
         "test_target": "//chrome/browser/vr:vr_pixeltests"
@@ -5814,7 +6143,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "weblayer_browsertests",
         "test_target": "//weblayer/test:weblayer_browsertests"
@@ -5830,7 +6160,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "wm_unittests",
         "test_target": "//ui/wm:wm_unittests"
@@ -5846,7 +6177,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "wtf_unittests",
         "test_target": "//third_party/blink/renderer/platform/wtf:wtf_unittests"
@@ -5863,7 +6195,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "xr_browser_tests",
         "test_target": "//chrome/test:xr_browser_tests"
@@ -5883,7 +6216,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//:blink_python_tests"
       },
@@ -5908,6 +6242,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test_target": "//:blink_web_tests"
@@ -5925,7 +6260,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//content/shell:content_shell_crash_test"
       },
@@ -5942,7 +6278,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//third_party/flatbuffers:flatbuffers_unittests"
       },
@@ -5959,7 +6296,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//tools/grit:grit_python_unittests"
       },
@@ -5976,7 +6314,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//tools/metrics:metrics_python_tests"
       },
@@ -5994,7 +6333,8 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:telemetry_gpu_unittests"
       },
@@ -6017,6 +6357,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
         "test_target": "//chrome/test:telemetry_perf_unittests"
@@ -6040,6 +6381,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test_target": "//chrome/test:telemetry_unittests"
@@ -6062,7 +6404,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//ui/views:views_perftests"
       },
@@ -6082,6 +6425,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test_target": "//:webdriver_wpt_tests"
@@ -6106,6 +6450,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 15
         },
         "test": "browser_tests",
@@ -6127,6 +6472,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 15
         },
         "test": "browser_tests",
@@ -6148,6 +6494,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "test": "content_browsertests",
@@ -6195,7 +6542,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -6212,7 +6560,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "events_unittests",
         "test_target": "//ui/events:events_unittests"
@@ -6228,7 +6577,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ozone_unittests",
         "test_target": "//ui/ozone:ozone_unittests"
@@ -6244,7 +6594,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "services_unittests",
         "test_target": "//services:services_unittests"
@@ -6264,7 +6615,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "accessibility_unittests",
         "test_target": "//ui/accessibility:accessibility_unittests"
@@ -6280,7 +6632,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests"
@@ -6296,7 +6649,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "app_shell_unittests",
         "test_target": "//extensions/shell:app_shell_unittests"
@@ -6312,7 +6666,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "aura_unittests",
         "test_target": "//ui/aura:aura_unittests"
@@ -6328,7 +6683,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
         "test_target": "//base:base_unittests"
@@ -6344,7 +6700,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_util_unittests",
         "test_target": "//base/util:base_util_unittests"
@@ -6360,7 +6717,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_common_unittests",
         "test_target": "//third_party/blink/common:blink_common_unittests"
@@ -6376,7 +6734,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_fuzzer_unittests",
         "test_target": "//third_party/blink/renderer/platform:blink_fuzzer_unittests"
@@ -6392,7 +6751,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_heap_unittests",
         "test_target": "//third_party/blink/renderer/platform/heap:blink_heap_unittests"
@@ -6408,7 +6768,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_platform_unittests",
         "test_target": "//third_party/blink/renderer/platform:blink_platform_unittests"
@@ -6425,7 +6786,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_unittests",
         "test_target": "//third_party/blink/renderer/controller:blink_unittests"
@@ -6441,7 +6803,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_crypto_tests",
         "test_target": "//third_party/boringssl:boringssl_crypto_tests"
@@ -6457,7 +6820,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_ssl_tests",
         "test_target": "//third_party/boringssl:boringssl_ssl_tests"
@@ -6477,6 +6841,7 @@
               "os": "Ubuntu-14.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 10
         },
         "test": "browser_tests",
@@ -6493,7 +6858,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cacheinvalidation_unittests",
         "test_target": "//third_party/cacheinvalidation:cacheinvalidation_unittests"
@@ -6512,7 +6878,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "capture_unittests",
         "test_target": "//media/capture:capture_unittests"
@@ -6528,7 +6895,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_unittests",
         "test_target": "//media/cast:cast_unittests"
@@ -6544,7 +6912,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cc_unittests",
         "test_target": "//cc:cc_unittests"
@@ -6560,7 +6929,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chrome_app_unittests",
         "test_target": "//chrome/test:chrome_app_unittests"
@@ -6576,7 +6946,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chromedriver_unittests",
         "test_target": "//chrome/test/chromedriver:chromedriver_unittests"
@@ -6592,7 +6963,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_browsertests",
         "test_target": "//components:components_browsertests"
@@ -6608,7 +6980,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_unittests",
         "test_target": "//components:components_unittests"
@@ -6624,7 +6997,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "compositor_unittests",
         "test_target": "//ui/compositor:compositor_unittests"
@@ -6641,6 +7015,7 @@
               "os": "Ubuntu-14.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
         },
         "test": "content_browsertests",
@@ -6657,7 +7032,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -6673,7 +7049,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crashpad_tests",
         "test_target": "//third_party/crashpad/crashpad:crashpad_tests"
@@ -6689,7 +7066,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cronet_tests",
         "test_target": "//components/cronet:cronet_tests"
@@ -6705,7 +7083,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cronet_unittests",
         "test_target": "//components/cronet:cronet_unittests"
@@ -6721,7 +7100,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crypto_unittests",
         "test_target": "//crypto:crypto_unittests"
@@ -6737,7 +7117,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dbus_unittests",
         "test_target": "//dbus:dbus_unittests"
@@ -6753,7 +7134,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "device_unittests",
         "test_target": "//device:device_unittests"
@@ -6769,7 +7151,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "display_unittests",
         "test_target": "//ui/display:display_unittests"
@@ -6785,7 +7168,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "events_unittests",
         "test_target": "//ui/events:events_unittests"
@@ -6801,7 +7185,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "extensions_browsertests",
         "test_target": "//extensions:extensions_browsertests"
@@ -6817,7 +7202,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "extensions_unittests",
         "test_target": "//extensions:extensions_unittests"
@@ -6833,7 +7219,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "filesystem_service_unittests",
         "test_target": "//components/services/filesystem:filesystem_service_unittests"
@@ -6849,7 +7236,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gcm_unit_tests",
         "test_target": "//google_apis/gcm:gcm_unit_tests"
@@ -6865,7 +7253,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gfx_unittests",
         "test_target": "//ui/gfx:gfx_unittests"
@@ -6881,7 +7270,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gin_unittests",
         "test_target": "//gin:gin_unittests"
@@ -6897,7 +7287,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "google_apis_unittests",
         "test_target": "//google_apis:google_apis_unittests"
@@ -6913,7 +7304,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gpu_unittests",
         "test_target": "//gpu:gpu_unittests"
@@ -6929,7 +7321,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gwp_asan_unittests",
         "test_target": "//components/gwp_asan:gwp_asan_unittests"
@@ -6945,7 +7338,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "headless_browsertests",
         "test_target": "//headless:headless_browsertests"
@@ -6961,7 +7355,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "headless_unittests",
         "test_target": "//headless:headless_unittests"
@@ -6978,6 +7373,7 @@
               "os": "Ubuntu-14.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "interactive_ui_tests",
@@ -6994,7 +7390,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ipc_tests",
         "test_target": "//ipc:ipc_tests"
@@ -7010,7 +7407,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "jingle_unittests",
         "test_target": "//jingle:jingle_unittests"
@@ -7026,7 +7424,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "latency_unittests",
         "test_target": "//ui/latency:latency_unittests"
@@ -7042,7 +7441,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "libjingle_xmpp_unittests",
         "test_target": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests"
@@ -7058,7 +7458,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_blink_unittests",
         "test_target": "//media/blink:media_blink_unittests"
@@ -7074,7 +7475,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_service_unittests",
         "test_target": "//media/mojo/services:media_service_unittests"
@@ -7090,7 +7492,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_unittests",
         "test_target": "//media:media_unittests"
@@ -7106,7 +7509,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "message_center_unittests",
         "test_target": "//ui/message_center:message_center_unittests"
@@ -7122,7 +7526,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "midi_unittests",
         "test_target": "//media/midi:midi_unittests"
@@ -7138,7 +7543,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "mojo_core_unittests",
         "test_target": "//mojo/core:mojo_core_unittests"
@@ -7154,7 +7560,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "mojo_unittests",
         "test_target": "//mojo:mojo_unittests"
@@ -7170,7 +7577,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "nacl_helper_nonsfi_unittests",
         "test_target": "//components/nacl/loader:nacl_helper_nonsfi_unittests"
@@ -7186,7 +7594,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "nacl_loader_unittests",
         "test_target": "//components/nacl/loader:nacl_loader_unittests"
@@ -7202,7 +7611,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "native_theme_unittests",
         "test_target": "//ui/native_theme:native_theme_unittests"
@@ -7218,7 +7628,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "net_unittests",
         "test_target": "//net:net_unittests"
@@ -7234,7 +7645,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "pdf_unittests",
         "test_target": "//pdf:pdf_unittests"
@@ -7250,7 +7662,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "perfetto_unittests",
         "test_target": "//third_party/perfetto:perfetto_unittests"
@@ -7266,7 +7679,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ppapi_unittests",
         "test_target": "//ppapi:ppapi_unittests"
@@ -7282,7 +7696,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "printing_unittests",
         "test_target": "//printing:printing_unittests"
@@ -7298,7 +7713,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "remoting_unittests",
         "test_target": "//remoting:remoting_unittests"
@@ -7314,7 +7730,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sandbox_linux_unittests",
         "test_target": "//sandbox/linux:sandbox_linux_unittests"
@@ -7330,7 +7747,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "service_manager_unittests",
         "test_target": "//services/service_manager/tests:service_manager_unittests"
@@ -7346,7 +7764,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "services_unittests",
         "test_target": "//services:services_unittests"
@@ -7362,7 +7781,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "shell_dialogs_unittests",
         "test_target": "//ui/shell_dialogs:shell_dialogs_unittests"
@@ -7378,7 +7798,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "skia_unittests",
         "test_target": "//skia:skia_unittests"
@@ -7394,7 +7815,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "snapshot_unittests",
         "test_target": "//ui/snapshot:snapshot_unittests"
@@ -7410,7 +7832,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sql_unittests",
         "test_target": "//sql:sql_unittests"
@@ -7426,7 +7849,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "storage_unittests",
         "test_target": "//storage:storage_unittests"
@@ -7442,7 +7866,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sync_integration_tests",
         "test_target": "//chrome/test:sync_integration_tests"
@@ -7458,7 +7883,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "traffic_annotation_auditor_unittests",
         "test_target": "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests"
@@ -7474,7 +7900,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_base_unittests",
         "test_target": "//ui/base:ui_base_unittests"
@@ -7490,7 +7917,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_touch_selection_unittests",
         "test_target": "//ui/touch_selection:ui_touch_selection_unittests"
@@ -7506,7 +7934,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "unit_tests",
         "test_target": "//chrome/test:unit_tests"
@@ -7522,7 +7951,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "url_unittests",
         "test_target": "//url:url_unittests"
@@ -7538,7 +7968,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "views_unittests",
         "test_target": "//ui/views:views_unittests"
@@ -7554,7 +7985,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "viz_unittests",
         "test_target": "//components/viz:viz_unittests"
@@ -7570,7 +8002,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "vr_common_unittests",
         "test_target": "//chrome/browser/vr:vr_common_unittests"
@@ -7586,7 +8019,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "vr_pixeltests",
         "test_target": "//chrome/browser/vr:vr_pixeltests"
@@ -7602,7 +8036,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "weblayer_browsertests",
         "test_target": "//weblayer/test:weblayer_browsertests"
@@ -7618,7 +8053,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "wm_unittests",
         "test_target": "//ui/wm:wm_unittests"
@@ -7634,7 +8070,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "wtf_unittests",
         "test_target": "//third_party/blink/renderer/platform/wtf:wtf_unittests"
@@ -7651,7 +8088,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "xr_browser_tests",
         "test_target": "//chrome/test:xr_browser_tests"
@@ -7671,7 +8109,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//:blink_python_tests"
       },
@@ -7695,6 +8134,7 @@
               "os": "Ubuntu-14.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
         "test_target": "//:blink_web_tests"
@@ -7715,7 +8155,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test/chromedriver:chromedriver_py_tests"
       },
@@ -7732,7 +8173,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test/chromedriver:chromedriver_replay_unittests"
       },
@@ -7749,7 +8191,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//content/shell:content_shell_crash_test"
       },
@@ -7766,7 +8209,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//third_party/flatbuffers:flatbuffers_unittests"
       },
@@ -7783,7 +8227,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//tools/grit:grit_python_unittests"
       },
@@ -7800,7 +8245,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//tools/metrics:metrics_python_tests"
       },
@@ -7827,7 +8273,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//:blink_web_tests"
       },
@@ -7855,6 +8302,7 @@
               "os": "Ubuntu-14.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 10
         },
         "test_target": "//:blink_web_tests"
@@ -7873,7 +8321,8 @@
               "os": "Ubuntu-14.04"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:telemetry_gpu_unittests"
       },
@@ -7896,6 +8345,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
         "test_target": "//chrome/test:telemetry_perf_unittests"
@@ -7919,6 +8369,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test_target": "//chrome/test:telemetry_unittests"
@@ -7941,7 +8392,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//ui/views:views_perftests"
       },
@@ -7976,7 +8428,8 @@
             {
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//:blink_web_tests"
       },
@@ -7996,6 +8449,7 @@
               "os": "Ubuntu-14.04"
             }
           ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
         "test_target": "//:webdriver_wpt_tests"

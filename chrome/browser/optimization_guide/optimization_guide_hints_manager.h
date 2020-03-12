@@ -242,6 +242,7 @@ class OptimizationGuideHintsManager
   // |this| to be fetched. |page_navigation_hosts_requested| contains the hosts
   // that were requested by |this| to be fetched.
   void OnPageNavigationHintsFetched(
+      base::WeakPtr<OptimizationGuideNavigationData> navigation_data_weak_ptr,
       const base::Optional<GURL>& navigation_url,
       const base::flat_set<GURL>& page_navigation_urls_requested,
       const base::flat_set<std::string>& page_navigation_hosts_requested,
@@ -259,6 +260,7 @@ class OptimizationGuideHintsManager
   // initiated the fetch. |page_navigation_hosts_requested| contains the hosts
   // whose hints should be loaded into memory when invoked.
   void OnFetchedPageNavigationHintsStored(
+      base::WeakPtr<OptimizationGuideNavigationData> navigation_data_weak_ptr,
       const base::Optional<GURL>& navigation_url,
       const base::flat_set<std::string>& page_navigation_hosts_requested);
 

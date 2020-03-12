@@ -271,6 +271,7 @@ void SyncPrefs::RegisterProfilePrefs(
     RegisterTypeSelectedPref(registry, type);
   }
 #if defined(OS_CHROMEOS)
+  registry->RegisterBooleanPref(prefs::kOsSyncPrefsMigrated, false);
   registry->RegisterBooleanPref(prefs::kOsSyncFeatureEnabled, false);
   registry->RegisterBooleanPref(prefs::kSyncAllOsTypes, true);
   for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {

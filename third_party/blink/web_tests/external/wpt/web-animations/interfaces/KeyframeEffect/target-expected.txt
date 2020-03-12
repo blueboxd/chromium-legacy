@@ -18,9 +18,10 @@ FAIL Change target from an existing to a different non-existing pseudo-element b
 FAIL Change target from an existing to a different non-existing pseudo-element by setting pseudoElement. assert_equals: Value of 2nd element (currently targeted) after changing the effect target expected "50px" but got "20px"
 FAIL Change target from a non-existing to a different non-existing pseudo-element by setting target. assert_equals: Value of 2nd element (currently targeted) after changing the effect target expected "50px" but got "20px"
 FAIL Change target from a non-existing to a different non-existing pseudo-element by setting pseudoElement. assert_equals: Value of 2nd element (currently targeted) after changing the effect target expected "50px" but got "20px"
-FAIL Changing pseudoElement to invalid pseudo-selector '' throws a TypeError assert_throws_js: function "() => effect.pseudoElement = pseudo" threw object "SyntaxError: Failed to set the 'pseudoElement' property on 'KeyframeEffect': A valid pseudo-selector must be null or start with ::." ("SyntaxError") expected instance of function "function TypeError() { [native code] }" ("TypeError")
-FAIL Changing pseudoElement to invalid pseudo-selector 'before' throws a TypeError assert_throws_js: function "() => effect.pseudoElement = pseudo" threw object "SyntaxError: Failed to set the 'pseudoElement' property on 'KeyframeEffect': A valid pseudo-selector must be null or start with ::." ("SyntaxError") expected instance of function "function TypeError() { [native code] }" ("TypeError")
-FAIL Changing pseudoElement to invalid pseudo-selector '::abc' throws a TypeError assert_throws_js: function "() => effect.pseudoElement = pseudo" did not throw
-FAIL Changing pseudoElement to invalid pseudo-selector '::placeholder' throws a TypeError assert_throws_js: function "() => effect.pseudoElement = pseudo" did not throw
+PASS Changing pseudoElement to a non-null invalid pseudo-selector '' throws a SyntaxError
+PASS Changing pseudoElement to a non-null invalid pseudo-selector 'before' throws a SyntaxError
+PASS Changing pseudoElement to a non-null invalid pseudo-selector ':abc' throws a SyntaxError
+FAIL Changing pseudoElement to a non-null invalid pseudo-selector '::abc' throws a SyntaxError assert_throws_dom: function "() => effect.pseudoElement = pseudo" did not throw
+FAIL Changing pseudoElement to a non-null invalid pseudo-selector '::placeholder' throws a SyntaxError assert_throws_dom: function "() => effect.pseudoElement = pseudo" did not throw
 Harness: the test ran to completion.
 

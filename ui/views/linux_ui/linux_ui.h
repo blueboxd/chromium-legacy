@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_LINUX_UI_LINUX_UI_H_
 #define UI_VIEWS_LINUX_UI_LINUX_UI_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"

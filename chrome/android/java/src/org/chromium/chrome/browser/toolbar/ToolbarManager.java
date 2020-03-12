@@ -575,6 +575,9 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                 setCurrentProfile(newModel.getProfile());
+                if (mTabModelSelector != null) {
+                    refreshSelectedTab(mTabModelSelector.getCurrentTab());
+                }
             }
         };
 

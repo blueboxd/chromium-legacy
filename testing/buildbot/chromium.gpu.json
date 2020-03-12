@@ -30,7 +30,8 @@
               "os": "Android"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -60,7 +61,8 @@
               "os": "Android"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -90,7 +92,8 @@
               "os": "Android"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -120,7 +123,8 @@
               "os": "Android"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -154,7 +158,8 @@
               "os": "Android"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -268,7 +273,8 @@
               "device_type": "bullhead",
               "os": "Android"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:rendering_representative_perf_tests"
       },
@@ -300,7 +306,8 @@
               "os": "Android"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -330,7 +337,8 @@
               "os": "Android"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -362,6 +370,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
         }
       }
@@ -394,7 +403,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests"
@@ -416,7 +426,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests"
@@ -439,7 +450,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests"
@@ -472,7 +484,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -501,7 +514,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -531,7 +545,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -560,7 +575,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -589,7 +605,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -622,7 +639,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -738,7 +756,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -767,7 +786,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -798,6 +818,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         }
       }
@@ -825,7 +846,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests"
@@ -847,7 +869,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests"
@@ -870,7 +893,8 @@
               "os": "linux-nvidia-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests"
@@ -903,7 +927,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -932,7 +957,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -962,7 +988,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -991,7 +1018,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1020,7 +1048,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1053,7 +1082,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1169,7 +1199,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1198,7 +1229,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1229,6 +1261,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         }
       }
@@ -1254,7 +1287,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests"
@@ -1275,7 +1309,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests"
@@ -1296,7 +1331,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests"
@@ -1328,7 +1364,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1356,7 +1393,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1384,7 +1422,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1412,7 +1451,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1444,7 +1484,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1557,7 +1598,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1585,7 +1627,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1615,6 +1658,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         }
       }
@@ -1640,7 +1684,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests"
@@ -1665,7 +1710,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests"
@@ -1686,7 +1732,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests"
@@ -1707,7 +1754,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests"
@@ -1739,7 +1787,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1767,7 +1816,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1795,7 +1845,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1823,7 +1874,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1855,7 +1907,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1961,7 +2014,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:rendering_representative_perf_tests"
       },
@@ -1991,7 +2045,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -2019,7 +2074,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -2049,6 +2105,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         }
       }
@@ -2075,7 +2132,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests"
@@ -2101,7 +2159,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests"
@@ -2123,7 +2182,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests"
@@ -2145,7 +2205,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests"
@@ -2178,7 +2239,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -2207,7 +2269,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -2236,7 +2299,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -2265,7 +2329,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -2298,7 +2363,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -2407,7 +2473,8 @@
               "gpu": "8086:0a2e",
               "os": "mac-intel-stable"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:rendering_representative_perf_tests"
       },
@@ -2438,7 +2505,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -2467,7 +2535,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -2498,6 +2567,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         }
       }
@@ -2525,7 +2595,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests"
@@ -2548,7 +2619,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests"
@@ -2571,7 +2643,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests"
@@ -2605,7 +2678,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -2635,7 +2709,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -2665,7 +2740,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -2695,7 +2771,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -2729,7 +2806,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -2848,7 +2926,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -2878,7 +2957,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -2910,6 +2990,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         }
       }
@@ -2937,7 +3018,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests"
@@ -2964,7 +3046,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests"
@@ -2987,7 +3070,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests"
@@ -3010,7 +3094,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests"
@@ -3044,7 +3129,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -3074,7 +3160,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -3104,7 +3191,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -3134,7 +3222,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -3168,7 +3257,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -3280,7 +3370,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:rendering_representative_perf_tests"
       },
@@ -3312,7 +3403,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -3342,7 +3434,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -3374,6 +3467,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         }
       }
@@ -3402,7 +3496,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests"
@@ -3430,7 +3525,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests"
@@ -3454,7 +3550,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests"
@@ -3478,7 +3575,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests"
@@ -3513,7 +3611,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -3544,7 +3643,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -3575,7 +3675,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -3606,7 +3707,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -3641,7 +3743,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -3756,7 +3859,8 @@
               "os": "mac-amd-stable",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:rendering_representative_perf_tests"
       },
@@ -3789,7 +3893,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -3820,7 +3925,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -3853,6 +3959,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         }
       }
@@ -3879,7 +3986,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests"
@@ -3905,7 +4013,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests"
@@ -3927,7 +4036,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests"
@@ -3949,7 +4059,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests"
@@ -3972,7 +4083,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "xr_browser_tests",
         "test_target": "//chrome/test:xr_browser_tests"
@@ -4005,7 +4117,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -4034,7 +4147,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -4064,7 +4178,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -4093,7 +4208,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -4122,7 +4238,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -4155,7 +4272,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -4271,7 +4389,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -4300,7 +4419,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -4331,6 +4451,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         }
       }
@@ -4357,7 +4478,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests",
@@ -4392,7 +4514,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests",
@@ -4423,7 +4546,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests",
@@ -4454,7 +4578,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests",
@@ -4486,7 +4611,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "xr_browser_tests",
         "test_target": "//chrome/test:xr_browser_tests",
@@ -4528,7 +4654,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "trigger_script": {
           "args": [
@@ -4566,7 +4693,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "trigger_script": {
           "args": [
@@ -4605,7 +4733,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "trigger_script": {
           "args": [
@@ -4643,7 +4772,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "trigger_script": {
           "args": [
@@ -4681,7 +4811,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "trigger_script": {
           "args": [
@@ -4723,7 +4854,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "trigger_script": {
           "args": [
@@ -4861,7 +4993,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test:rendering_representative_perf_tests",
         "trigger_script": {
@@ -4901,7 +5034,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "trigger_script": {
           "args": [
@@ -4939,7 +5073,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "trigger_script": {
           "args": [
@@ -4979,6 +5114,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "trigger_script": {
@@ -5015,7 +5151,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
         "test_target": "//third_party/angle/src/tests:angle_unittests",
@@ -5051,7 +5188,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests",
@@ -5083,7 +5221,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
         "test_target": "//gpu:gl_tests",
@@ -5115,7 +5254,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
         "test_target": "//ui/gl:gl_unittests",
@@ -5148,7 +5288,8 @@
               "os": "Windows-10",
               "pool": "chromium.tests.gpu.template"
             }
-          ]
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "xr_browser_tests",
         "test_target": "//chrome/test:xr_browser_tests",
@@ -5191,7 +5332,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "trigger_script": {
           "args": [
@@ -5230,7 +5372,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "trigger_script": {
           "args": [
@@ -5270,7 +5413,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "trigger_script": {
           "args": [
@@ -5309,7 +5453,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "trigger_script": {
           "args": [
@@ -5348,7 +5493,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "trigger_script": {
           "args": [
@@ -5391,7 +5537,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "trigger_script": {
           "args": [
@@ -5537,7 +5684,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "trigger_script": {
           "args": [
@@ -5576,7 +5724,8 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "trigger_script": {
           "args": [
@@ -5617,6 +5766,7 @@
             }
           ],
           "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
         "trigger_script": {

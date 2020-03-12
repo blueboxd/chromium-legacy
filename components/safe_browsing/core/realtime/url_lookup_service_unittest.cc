@@ -70,7 +70,9 @@ class RealTimeUrlLookupServiceTest : public PlatformTest {
     content_setting_map_->ShutdownOnUIThread();
   }
 
-  bool CanCheckUrl(const GURL& url) { return rt_service_->CanCheckUrl(url); }
+  bool CanCheckUrl(const GURL& url) {
+    return RealTimeUrlLookupService::CanCheckUrl(url);
+  }
   void HandleLookupError() { rt_service_->HandleLookupError(); }
   void HandleLookupSuccess() { rt_service_->HandleLookupSuccess(); }
   bool IsInBackoffMode() { return rt_service_->IsInBackoffMode(); }

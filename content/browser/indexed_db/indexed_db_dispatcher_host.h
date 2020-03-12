@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "components/services/storage/public/mojom/native_file_system_context.mojom-forward.h"
@@ -38,18 +37,14 @@ class IndexedDBCursor;
 class IndexedDBDataItemReader;
 class IndexedDBTransaction;
 
-// Constructed on UI thread.  All remaining calls (including destruction) should
+// All calls but the constructor (including destruction) must
 // happen on the IDB sequenced task runner.
 class CONTENT_EXPORT IndexedDBDispatcherHost : public blink::mojom::IDBFactory {
  public:
-  // Only call the constructor from the UI thread.
-  IndexedDBDispatcherHost(
-      int ipc_process_id,
-      scoped_refptr<IndexedDBContextImpl> indexed_db_context);
+  explicit IndexedDBDispatcherHost(IndexedDBContextImpl* indexed_db_context);
+  ~IndexedDBDispatcherHost() override;
 
   void AddReceiver(
-      int render_process_id,
-      int render_frame_id,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::IDBFactory> pending_receiver);
 
@@ -68,10 +63,9 @@ class CONTENT_EXPORT IndexedDBDispatcherHost : public blink::mojom::IDBFactory {
       mojo::PendingAssociatedReceiver<blink::mojom::IDBTransaction> receiver);
 
   // A shortcut for accessing our context.
-  IndexedDBContextImpl* context() const { return indexed_db_context_.get(); }
+  IndexedDBContextImpl* context() const { return indexed_db_context_; }
   storage::mojom::BlobStorageContext* mojo_blob_storage_context();
   storage::mojom::NativeFileSystemContext* native_file_system_context();
-  int ipc_process_id() const { return ipc_process_id_; }
 
   // Must be called on the IDB sequence.
   base::WeakPtr<IndexedDBDispatcherHost> AsWeakPtr() {
@@ -101,12 +95,7 @@ class CONTENT_EXPORT IndexedDBDispatcherHost : public blink::mojom::IDBFactory {
       std::vector<blink::mojom::IDBExternalObjectPtr>* mojo_objects);
 
  private:
-  class IDBSequenceHelper;
-  // Friends to enable OnDestruct() delegation.
   friend class IndexedDBDispatcherHostTest;
-  friend class base::DeleteHelper<IndexedDBDispatcherHost>;
-
-  ~IndexedDBDispatcherHost() override;
 
   // blink::mojom::IDBFactory implementation:
   void GetDatabaseInfo(mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
@@ -136,13 +125,11 @@ class CONTENT_EXPORT IndexedDBDispatcherHost : public blink::mojom::IDBFactory {
 
   base::SequencedTaskRunner* IDBTaskRunner() const;
 
-  scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
+  // IndexedDBDispatcherHost is owned by IndexedDBContextImpl.
+  IndexedDBContextImpl* indexed_db_context_;
 
   // Shared task runner used to read blob files on.
   scoped_refptr<base::TaskRunner> file_task_runner_;
-
-  // Used to set file permissions for blob storage.
-  const int ipc_process_id_;
 
   mojo::ReceiverSet<blink::mojom::IDBFactory, url::Origin> receivers_;
   mojo::UniqueAssociatedReceiverSet<blink::mojom::IDBDatabase>

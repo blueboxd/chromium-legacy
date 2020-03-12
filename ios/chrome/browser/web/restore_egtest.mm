@@ -36,10 +36,6 @@ const char kPageTwoTitle[] = "page 2";
 // Path to a test page used to count each page load.
 const char kCountURL[] = "/countme.html";
 
-// Extended timeout used for restore page loads to account for navigating to
-// the SlimNav placeholder and then the target page.
-const CGFloat kRestoreTimeout = 10;
-
 // Response handler for page1 and page2 that supports 'airplane mode' by
 // returning an empty RawHttpResponse when |responds_with_content| us false.
 std::unique_ptr<net::test_server::HttpResponse> RestoreResponse(
@@ -265,8 +261,7 @@ std::unique_ptr<net::test_server::HttpResponse> CountResponse(
   [[EarlGrey selectElementWithMatcher:OmniboxText(pageTwo.GetContent())]
       assertWithMatcher:grey_notNil()];
   if (checkServerData) {
-    [ChromeEarlGrey waitForWebStateContainingText:kPageTwoContent
-                                          timeout:kRestoreTimeout];
+    [ChromeEarlGrey waitForWebStateContainingText:kPageTwoContent];
   }
 
   // Confirm page1 is still in the history.
@@ -281,33 +276,30 @@ std::unique_ptr<net::test_server::HttpResponse> CountResponse(
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:OmniboxText("ndtv1234.com")]
       assertWithMatcher:grey_notNil()];
-  [ChromeEarlGrey waitForWebStateContainingText:"ERR_" timeout:kRestoreTimeout];
+  [ChromeEarlGrey waitForWebStateContainingText:"ERR_"];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   [self triggerRestore];
   [[EarlGrey selectElementWithMatcher:OmniboxText("ndtv1234.com")]
       assertWithMatcher:grey_notNil()];
-  [ChromeEarlGrey waitForWebStateContainingText:"ERR_" timeout:kRestoreTimeout];
+  [ChromeEarlGrey waitForWebStateContainingText:"ERR_"];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   // Go back to chrome url.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:OmniboxText("chrome://chrome-urls")]
       assertWithMatcher:grey_notNil()];
-  [ChromeEarlGrey waitForWebStateContainingText:"List of Chrome"
-                                        timeout:kRestoreTimeout];
+  [ChromeEarlGrey waitForWebStateContainingText:"List of Chrome"];
   [self triggerRestore];
   [[EarlGrey selectElementWithMatcher:OmniboxText("chrome://chrome-urls")]
       assertWithMatcher:grey_notNil()];
-  [ChromeEarlGrey waitForWebStateContainingText:"List of Chrome"
-                                        timeout:kRestoreTimeout];
+  [ChromeEarlGrey waitForWebStateContainingText:"List of Chrome"];
 
   // Go back to page1 and confirm page2 is still in the forward history.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:OmniboxText(pageOne.GetContent())]
       assertWithMatcher:grey_notNil()];
   if (checkServerData) {
-    [ChromeEarlGrey waitForWebStateContainingText:kPageOneContent
-                                          timeout:kRestoreTimeout];
+    [ChromeEarlGrey waitForWebStateContainingText:kPageOneContent];
     [[EarlGrey selectElementWithMatcher:ForwardButton()]
         performAction:grey_longPress()];
     [[EarlGrey selectElementWithMatcher:grey_text(base::SysUTF8ToNSString(
@@ -320,8 +312,7 @@ std::unique_ptr<net::test_server::HttpResponse> CountResponse(
   [[EarlGrey selectElementWithMatcher:OmniboxText(pageOne.GetContent())]
       assertWithMatcher:grey_notNil()];
   if (checkServerData) {
-    [ChromeEarlGrey waitForWebStateContainingText:kPageOneContent
-                                          timeout:kRestoreTimeout];
+    [ChromeEarlGrey waitForWebStateContainingText:kPageOneContent];
     [[EarlGrey selectElementWithMatcher:ForwardButton()]
         performAction:grey_longPress()];
     [[EarlGrey selectElementWithMatcher:grey_text(base::SysUTF8ToNSString(

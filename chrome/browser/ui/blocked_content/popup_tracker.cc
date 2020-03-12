@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -15,6 +17,14 @@
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+
+namespace {
+
+int CappedUserInteractions(int user_interactions, int max_interactions) {
+  return std::min(user_interactions, max_interactions);
+}
+
+}  // namespace
 
 PopupTracker* PopupTracker::CreateForWebContents(
     content::WebContents* contents,
@@ -77,17 +87,20 @@ void PopupTracker::WebContentsDestroyed() {
 
   if (opener_source_id_ != ukm::kInvalidSourceId) {
     const int kMaxInteractions = 100;
-    int capped_interactions = num_interactions_ > kMaxInteractions
-                                  ? kMaxInteractions
-                                  : num_interactions_;
+    const int kMaxSubcatagoryInteractions = 50;
     ukm::builders::Popup_Closed(opener_source_id_)
         .SetEngagementTime(ukm::GetExponentialBucketMinForUserTiming(
             total_foreground_duration.InMilliseconds()))
         .SetUserInitiatedClose(web_contents()->GetClosedByUserGesture())
         .SetTrusted(is_trusted_)
-        .SetNumInteractions(capped_interactions)
         .SetSafeBrowsingStatus(static_cast<int>(safe_browsing_status_))
         .SetWindowOpenDisposition(static_cast<int>(window_open_disposition_))
+        .SetNumInteractions(
+            CappedUserInteractions(num_interactions_, kMaxInteractions))
+        .SetNumActivationInteractions(CappedUserInteractions(
+            num_activation_events_, kMaxSubcatagoryInteractions))
+        .SetNumGestureScrollBeginInteractions(CappedUserInteractions(
+            num_gesture_scroll_begin_events_, kMaxSubcatagoryInteractions))
         .Record(ukm::UkmRecorder::Get());
   }
 }
@@ -122,6 +135,12 @@ void PopupTracker::DidGetUserInteraction(
   // TODO(csharrison): It would be nice if ctrl-W could be filtered out here,
   // but the initial ctrl key press is registered as a kRawKeyDown.
   num_interactions_++;
+
+  if (type == blink::WebInputEvent::kGestureScrollBegin) {
+    num_gesture_scroll_begin_events_++;
+  } else {
+    num_activation_events_++;
+  }
 }
 
 // This method will always be called before the DidFinishNavigation associated

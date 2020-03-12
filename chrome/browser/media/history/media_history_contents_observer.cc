@@ -59,12 +59,6 @@ void MediaHistoryContentsObserver::WebContentsDestroyed() {
   MaybeCommitMediaSession();
 }
 
-void MediaHistoryContentsObserver::MediaWatchTimeChanged(
-    const content::MediaPlayerWatchTime& watch_time) {
-  if (service_)
-    service_->SavePlayback(watch_time);
-}
-
 void MediaHistoryContentsObserver::MediaSessionInfoChanged(
     media_session::mojom::MediaSessionInfoPtr session_info) {
   if (session_info->state ==

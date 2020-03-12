@@ -373,6 +373,24 @@ Polymer({
   },
 
   /**
+   * Logs interactions with the installed app dialog to UMA.
+   * @private
+   */
+  recordInstalledAppsInteractions_: function() {
+    if (this.installedApps_.length === 0) {
+      return;
+    }
+
+    const uncheckedAppCount = this.installedApps_.filter(app => !app.isChecked)
+        .length;
+    chrome.metricsPrivate.recordCount(
+        'History.ClearBrowsingData.InstalledDeselectedNum', uncheckedAppCount);
+    chrome.metricsPrivate.recordPercentage(
+        'History.ClearBrowsingData.InstalledDeselectedPercent',
+        Math.round(100 * uncheckedAppCount / this.installedApps_.length));
+  },
+
+  /**
    * Clears browsing data and maybe shows a history notice.
    * @return {!Promise}
    * @private
@@ -392,6 +410,7 @@ Polymer({
     this.shadowRoot.querySelectorAll('settings-checkbox[no-set-pref]')
         .forEach(checkbox => checkbox.sendPrefChange());
 
+    this.recordInstalledAppsInteractions_();
     const shouldShowNotice = await this.browserProxy_.clearBrowsingData(
         dataTypes, timePeriod, this.installedApps_);
     this.clearingInProgress_ = false;

@@ -1188,6 +1188,12 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_DiscardTabsWithMinimizedWindow) {
   // Non-active tabs can be discarded on all platforms.
   EXPECT_TRUE(
       IsTabDiscarded(browser()->tab_strip_model()->GetWebContentsAt(1)));
+
+  // Showing the browser again should reload the active tab.
+  browser()->window()->Show();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(
+      IsTabDiscarded(browser()->tab_strip_model()->GetWebContentsAt(0)));
 }
 
 // Do not run in debug builds to avoid timeouts due to multiple navigations.

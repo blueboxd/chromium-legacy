@@ -4,8 +4,10 @@
 
 #include "ui/views/layout/grid_layout.h"
 
+#include <algorithm>
 #include <cmath>
 #include <numeric>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -112,7 +114,7 @@ class LayoutElement {
 
   explicit LayoutElement(float resize_percent)
       : resize_percent_(resize_percent) {
-    DCHECK(resize_percent >= 0);
+    DCHECK_GE(resize_percent, 0);
   }
 
   virtual ~LayoutElement() = default;
@@ -787,7 +789,7 @@ void GridLayout::AddPaddingRow(float vertical_resize, int pixel_count) {
 }
 
 void GridLayout::SkipColumns(int col_count) {
-  DCHECK(col_count > 0);
+  DCHECK_GT(col_count, 0);
   next_column_ += col_count;
   DCHECK(current_row_col_set_ &&
          next_column_ <= current_row_col_set_->num_columns());

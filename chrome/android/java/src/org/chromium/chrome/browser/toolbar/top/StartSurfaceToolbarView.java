@@ -182,6 +182,11 @@ class StartSurfaceToolbarView extends RelativeLayout {
         mNewTabButton.onAccessibilityStatusChanged();
     }
 
+    /** @return The View for the identity disc. */
+    View getIdentityDiscView() {
+        return mIdentityDiscButton;
+    }
+
     /**
      * @param isVisible Whether the identity disc is visible.
      */

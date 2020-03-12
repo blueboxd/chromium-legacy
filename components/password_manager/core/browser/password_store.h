@@ -452,7 +452,8 @@ class PasswordStore : protected PasswordStoreSync,
   // Methods below will be run in PasswordStore's own sequence.
   // Synchronous implementation that reports usage metrics.
   virtual void ReportMetricsImpl(const std::string& sync_username,
-                                 bool custom_passphrase_sync_enabled) = 0;
+                                 bool custom_passphrase_sync_enabled,
+                                 BulkCheckDone bulk_check_done) = 0;
 
   // Synchronous implementation to remove the given logins.
   virtual PasswordStoreChangeList RemoveLoginsByURLAndTimeImpl(
@@ -807,8 +808,8 @@ class PasswordStore : protected PasswordStoreSync,
   std::unique_ptr<CompromisedCredentialsObserver>
       compromised_credentials_observer_;
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   PrefService* prefs_ = nullptr;
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // PasswordReuseDetector can be only destroyed on the background sequence. It
   // can't be owned by PasswordStore because PasswordStore can be destroyed on
   // the UI thread and DestroyOnBackgroundThread isn't guaranteed to be called.

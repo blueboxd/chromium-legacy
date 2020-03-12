@@ -517,7 +517,7 @@ bool SendKeyPressImpl(HWND window,
   return true;
 }
 
-bool SendMouseMoveImpl(long screen_x, long screen_y, base::OnceClosure task) {
+bool SendMouseMoveImpl(int screen_x, int screen_y, base::OnceClosure task) {
   gfx::Point screen_point =
       display::win::ScreenWin::DIPToScreenPoint({screen_x, screen_y});
   screen_x = screen_point.x();

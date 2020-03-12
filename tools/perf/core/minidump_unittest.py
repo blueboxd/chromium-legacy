@@ -149,6 +149,10 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     self.assertEquals(after_symbolize_all_unsymbolized_paths,
         [first_crash_path])
 
+    # Explicitly ignore the remaining minidump so that it isn't detected during
+    # teardown by the test runner.
+    self._browser.IgnoreMinidump(first_crash_path)
+
   def _LoadPageThenWait(self, script, value):
     # We are occasionally seeing these tests fail on the first load and
     # call to GetMostRecentMinidumpPath, where the directory is coming up empty.

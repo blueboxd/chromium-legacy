@@ -47,6 +47,8 @@ if (enable_vulkan) {
       "vulkan_fence_helper.h",
       "vulkan_function_pointers.cc",
       "vulkan_function_pointers.h",
+      "vulkan_image.cc",
+      "vulkan_image.h",
       "vulkan_implementation.cc",
       "vulkan_implementation.h",
       "vulkan_instance.cc",
@@ -68,6 +70,8 @@ if (enable_vulkan) {
 
     deps = [
       "//base",
+      "//base/util/type_safety",
+      "//gpu/ipc/common:vulkan_ycbcr_info",
       "//ui/gfx",
     ]
     public_deps = [ "//gpu/config:vulkan_info" ]

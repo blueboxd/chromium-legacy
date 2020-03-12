@@ -15,10 +15,6 @@
 
 class Browser;
 
-namespace gfx {
-class Size;
-}
-
 namespace tab_groups {
 enum class TabGroupColorId;
 class TabGroupId;
@@ -52,7 +48,6 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
                                      gfx::Rect anchor_rect);
 
   // views::BubbleDialogDelegateView:
-  gfx::Size CalculatePreferredSize() const override;
   ui::ModalType GetModalType() const override;
   views::View* GetInitiallyFocusedView() override;
 

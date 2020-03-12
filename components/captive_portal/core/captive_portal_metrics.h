@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "components/captive_portal/core/captive_portal_export.h"
+#include "components/captive_portal/core/captive_portal_types.h"
 
 namespace captive_portal {
 
@@ -20,6 +21,9 @@ class CAPTIVE_PORTAL_EXPORT CaptivePortalMetrics {
     OPEN_LOGIN_PAGE,
     CAPTIVE_PORTAL_BLOCKING_PAGE_EVENT_COUNT
   };
+
+  static void LogCaptivePortalProbeReason(
+      CaptivePortalProbeReason probe_reason);
 
   // Logs a user action when the user is shown a captive portal error page.
   static void LogCaptivePortalBlockingPageEvent(

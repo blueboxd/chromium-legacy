@@ -37,12 +37,10 @@ IN_PROC_BROWSER_TEST_F(SendMouseMoveUITest, DISABLED_Fullscreen) {
 
   display::Screen* const screen = display::Screen::GetScreen();
   const gfx::Rect screen_bounds = screen->GetPrimaryDisplay().bounds();
-  for (long scan_y = screen_bounds.y(),
-            bound_y = scan_y + screen_bounds.height();
-       scan_y < bound_y; ++scan_y) {
-    for (long scan_x = screen_bounds.x(),
-              bound_x = scan_x + screen_bounds.width();
-         scan_x < bound_x; ++scan_x) {
+  for (int scan_y = screen_bounds.y(); scan_y < screen_bounds.bottom();
+       ++scan_y) {
+    for (int scan_x = screen_bounds.x(); scan_x < screen_bounds.right();
+         ++scan_x) {
       SCOPED_TRACE(testing::Message()
                    << "(" << scan_x << ", " << scan_y << ")");
       // Move the pointer.

@@ -87,6 +87,7 @@ public class FeedActionHandler implements ActionApi {
     @Override
     public void openUrl(String url) {
         openOfflineIfPossible(WindowOpenDisposition.CURRENT_TAB, url);
+        mLoggingBridge.reportFeedInteraction();
     }
 
     @Override
@@ -98,6 +99,7 @@ public class FeedActionHandler implements ActionApi {
     public void openUrlInIncognitoMode(String url) {
         mDelegate.openUrl(WindowOpenDisposition.OFF_THE_RECORD, createLoadUrlParams(url));
         mSuggestionConsumedObserver.run();
+        mLoggingBridge.reportFeedInteraction();
     }
 
     @Override
@@ -108,6 +110,7 @@ public class FeedActionHandler implements ActionApi {
     @Override
     public void openUrlInNewTab(String url) {
         openOfflineIfPossible(WindowOpenDisposition.NEW_BACKGROUND_TAB, url);
+        mLoggingBridge.reportFeedInteraction();
     }
 
     @Override
@@ -130,6 +133,7 @@ public class FeedActionHandler implements ActionApi {
         mDelegate.openUrl(
                 WindowOpenDisposition.SAVE_TO_DISK, createLoadUrlParams(contentMetadata.getUrl()));
         mSuggestionConsumedObserver.run();
+        mLoggingBridge.reportFeedInteraction();
     }
 
     @Override
@@ -166,12 +170,14 @@ public class FeedActionHandler implements ActionApi {
 
         HelpAndFeedback.getInstance().showFeedback(mActivity, mProfile, contentMetadata.getUrl(),
                 contextTag, feedContext, feedbackContext);
+        mLoggingBridge.reportFeedInteraction();
         return;
     }
 
     @Override
     public void learnMore() {
         mDelegate.navigateToHelpPage();
+        mLoggingBridge.reportFeedInteraction();
     }
 
     @Override

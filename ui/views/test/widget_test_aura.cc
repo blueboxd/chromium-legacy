@@ -127,7 +127,7 @@ gfx::Size WidgetTest::GetNativeWidgetMinimumContentSize(Widget* widget) {
   return widget->GetNativeWindow()->delegate()->GetMinimumSize();
 #elif defined(USE_X11)
   XSizeHints hints;
-  long supplied_return;
+  long supplied_return;  // NOLINT(runtime/int)
   XGetWMNormalHints(
       gfx::GetXDisplay(),
       widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget(), &hints,

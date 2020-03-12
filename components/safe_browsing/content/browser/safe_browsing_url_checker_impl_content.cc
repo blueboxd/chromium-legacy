@@ -21,7 +21,8 @@ namespace safe_browsing {
 bool SafeBrowsingUrlCheckerImpl::CanPerformFullURLLookup(const GURL& url) {
   return real_time_lookup_enabled_ &&
          RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
-             resource_type_);
+             resource_type_) &&
+         RealTimeUrlLookupService::CanCheckUrl(url);
 }
 
 void SafeBrowsingUrlCheckerImpl::OnRTLookupRequest(

@@ -101,6 +101,8 @@ class CONTENT_EXPORT AppCacheGroup
   void set_first_evictable_error_time(base::Time time) {
     first_evictable_error_time_ = time;
   }
+  base::Time token_expires() const { return token_expires_; }
+  void set_token_expires(base::Time expires) { token_expires_ = expires; }
 
   AppCache* newest_complete_cache() const { return newest_complete_cache_; }
 
@@ -176,6 +178,10 @@ class CONTENT_EXPORT AppCacheGroup
   // Groups that fail to update for a sufficiently long time are evicted. This
   // value is reset after a successful update or update check.
   base::Time first_evictable_error_time_;
+
+  // Origin Trial expiration time for this group.
+  // This is base::Time() if this was never updated with an OT token.
+  base::Time token_expires_;
 
   // Old complete app caches.
   std::vector<AppCache*> old_caches_;

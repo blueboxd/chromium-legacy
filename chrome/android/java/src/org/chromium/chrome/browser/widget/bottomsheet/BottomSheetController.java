@@ -347,7 +347,11 @@ public class BottomSheetController implements Destroyable {
 
             @Override
             public void onSheetStateChanged(@SheetState int state) {
-                if (state != SheetState.HIDDEN || mIsSuppressed) return;
+                // If hiding request is in progress, destroy the current sheet content being hidden
+                // even when it is in suppressed state. See https://crbug.com/1057966.
+                if (state != SheetState.HIDDEN || (!mIsProcessingHideRequest && mIsSuppressed)) {
+                    return;
+                }
                 if (mBottomSheet.getCurrentSheetContent() != null) {
                     mBottomSheet.getCurrentSheetContent().destroy();
                 }
@@ -556,12 +560,7 @@ public class BottomSheetController implements Destroyable {
         if (mBottomSheet == null) mSheetInitializer.run();
 
         // If already showing the requested content, do nothing.
-        if (content == mBottomSheet.getCurrentSheetContent()) {
-            if (getSheetState() == SheetState.HIDDEN) {
-                mBottomSheet.setSheetState(mBottomSheet.getOpeningState(), animate);
-            }
-            return true;
-        }
+        if (content == mBottomSheet.getCurrentSheetContent()) return true;
 
         // Showing the sheet requires a tab.
         if (mTabProvider.get() == null) return false;

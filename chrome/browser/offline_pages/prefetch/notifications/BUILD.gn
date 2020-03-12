@@ -11,6 +11,7 @@ source_set("notifications") {
     "prefetch_notification_client.cc",
     "prefetch_notification_client.h",
     "prefetch_notification_service.h",
+    "prefetch_notification_service_bridge.h",
     "prefetch_notification_service_impl.cc",
     "prefetch_notification_service_impl.h",
   ]

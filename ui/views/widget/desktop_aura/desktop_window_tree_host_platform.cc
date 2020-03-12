@@ -4,6 +4,10 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -500,13 +504,13 @@ Widget::MoveLoopResult DesktopWindowTreeHostPlatform::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     Widget::MoveLoopSource source,
     Widget::MoveLoopEscapeBehavior escape_behavior) {
-  // TODO: needs PlatformWindow support.
+  // TODO(crbug.com/896640): needs PlatformWindow support.
   NOTIMPLEMENTED_LOG_ONCE();
   return Widget::MOVE_LOOP_CANCELED;
 }
 
 void DesktopWindowTreeHostPlatform::EndMoveLoop() {
-  // TODO: needs PlatformWindow support.
+  // TODO(crbug.com/896640): needs PlatformWindow support.
   NOTIMPLEMENTED_LOG_ONCE();
 }
 

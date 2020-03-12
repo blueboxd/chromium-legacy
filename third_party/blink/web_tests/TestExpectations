@@ -4079,10 +4079,6 @@ crbug.com/1034807 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css
 
 crbug.com/982116 http/tests/devtools/elements/styles-4/styles-new-API.js [ Pass Timeout ]
 
-# Shared memory growth temporarily disabled.
-crbug.com/951795 external/wpt/wasm/jsapi/memory/grow.any.html [ Pass Failure ]
-crbug.com/951795 external/wpt/wasm/jsapi/memory/grow.any.worker.html [ Pass Failure ]
-
 crbug.com/829028 external/wpt/css/css-break/avoid-border-break.html [ Failure ]
 crbug.com/967329 external/wpt/css/css-multicol/columnfill-auto-max-height-001.html [ Failure ]
 crbug.com/967329 external/wpt/css/css-multicol/columnfill-auto-max-height-002.html [ Failure ]
@@ -7027,3 +7023,7 @@ crbug.com/1060175 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/form
 crbug.com/1060175 [ Mac ] virtual/threaded/printing/page-count-with-one-word.html [ Pass Timeout ]
 crbug.com/1060175 [ Mac ] virtual/web-components-v0-disabled/fast/dom/SelectorAPI/resig-SelectorsAPI-test.xhtml [ Pass Timeout ]
 crbug.com/1060175 [ Mac ] virtual/web-components-v0-disabled/fast/dom/zoom-scroll-page-test.html [ Pass Timeout ]
+crbug.com/1061131 [ Linux ] virtual/threaded-no-composited-antialiasing/animations/animationworklet/playback-rate-scroll-timeline-accelerated-property.html [ Pass Crash ]
+crbug.com/1061131 [ Linux ] virtual/threaded-no-composited-antialiasing/animations/animationworklet/scroll-timeline-non-scrollable.html [ Pass Crash ]
+crbug.com/1061131 [ Linux ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Pass Crash ]
+crbug.com/1061131 [ Linux ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Pass Crash ]

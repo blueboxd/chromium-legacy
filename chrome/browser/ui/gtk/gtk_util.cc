@@ -35,6 +35,9 @@
 #include "ui/gfx/x/x11_types.h"                             // nogncheck
 #endif
 
+WEAK_GTK_FN(gtk_widget_path_iter_set_object_name);
+WEAK_GTK_FN(gtk_widget_path_iter_set_state);
+
 namespace {
 
 const char kAuraTransientParent[] = "aura-transient-parent";
@@ -203,14 +206,6 @@ float GetDeviceScaleFactor() {
 
 }  // namespace
 
-void* GetGtkSharedLibrary() {
-  std::string lib_name =
-      "libgtk-" + base::NumberToString(GTK_MAJOR_VERSION) + ".so.0";
-  static void* gtk_lib = dlopen(lib_name.c_str(), RTLD_LAZY);
-  DCHECK(gtk_lib);
-  return gtk_lib;
-}
-
 CairoSurface::CairoSurface(SkBitmap& bitmap)
     : surface_(cairo_image_surface_create_for_data(
           static_cast<unsigned char*>(bitmap.getAddr(0, 0)),
@@ -262,24 +257,11 @@ SkColor CairoSurface::GetAveragePixelValue(bool frame) {
                         g * 255 / a, b * 255 / a);
 }
 
-bool GtkVersionCheck(int major, int minor, int micro) {
-  static int actual_major = gtk_get_major_version();
-  if (actual_major > major)
-    return true;
-  else if (actual_major < major)
-    return false;
-
-  static int actual_minor = gtk_get_minor_version();
-  if (actual_minor > minor)
-    return true;
-  else if (actual_minor < minor)
-    return false;
-
-  static int actual_micro = gtk_get_micro_version();
-  if (actual_micro >= micro)
-    return true;
-  else
-    return false;
+bool GtkCheckVersion(int major, int minor, int micro) {
+  static auto version =
+      std::make_tuple(gtk_get_major_version(), gtk_get_minor_version(),
+                      gtk_get_micro_version());
+  return version >= std::make_tuple(major, minor, micro);
 }
 
 GtkStateFlags StateToStateFlags(ui::NativeTheme::State state) {
@@ -358,27 +340,25 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
           NOTREACHED();
       }
     } else {
-      using GtkSetObjectName = void (*)(GtkWidgetPath*, gint, const char*);
-      static GtkSetObjectName _gtk_widget_path_iter_set_object_name =
-          reinterpret_cast<GtkSetObjectName>(dlsym(
-              GetGtkSharedLibrary(), "gtk_widget_path_iter_set_object_name"));
       switch (part_type) {
         case CSS_NAME:
           gtk_widget_path_iter_set_name(path, -1, t.token().c_str());
           break;
         case CSS_OBJECT_NAME:
-          if (GtkVersionCheck(3, 20))
-            _gtk_widget_path_iter_set_object_name(path, -1, t.token().c_str());
-          else
+          if (GtkCheckVersion(3, 20)) {
+            DCHECK(gtk_widget_path_iter_set_object_name);
+            gtk_widget_path_iter_set_object_name(path, -1, t.token().c_str());
+          } else {
             gtk_widget_path_iter_add_class(path, -1, t.token().c_str());
+          }
           break;
         case CSS_TYPE: {
           GType type = g_type_from_name(t.token().c_str());
           DCHECK(type);
           gtk_widget_path_append_type(path, type);
-          if (GtkVersionCheck(3, 20)) {
-            if (t.token() == "GtkLabel")
-              _gtk_widget_path_iter_set_object_name(path, -1, "label");
+          if (GtkCheckVersion(3, 20) && t.token() == "GtkLabel") {
+            DCHECK(gtk_widget_path_iter_set_object_name);
+            gtk_widget_path_iter_set_object_name(path, -1, "label");
           }
           break;
         }
@@ -406,18 +386,14 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
   // widgets specially if they want to.
   gtk_widget_path_iter_add_class(path, -1, "chromium");
 
-  if (GtkVersionCheck(3, 14)) {
-    using GtkSetState = void (*)(GtkWidgetPath*, gint, GtkStateFlags);
-    static GtkSetState _gtk_widget_path_iter_set_state =
-        reinterpret_cast<GtkSetState>(
-            dlsym(GetGtkSharedLibrary(), "gtk_widget_path_iter_set_state"));
-    DCHECK(_gtk_widget_path_iter_set_state);
-    _gtk_widget_path_iter_set_state(path, -1, state);
+  if (GtkCheckVersion(3, 14)) {
+    DCHECK(gtk_widget_path_iter_set_state);
+    gtk_widget_path_iter_set_state(path, -1, state);
   }
 
   ScopedStyleContext child_context(gtk_style_context_new());
   gtk_style_context_set_path(child_context, path);
-  if (GtkVersionCheck(3, 14)) {
+  if (GtkCheckVersion(3, 14)) {
     gtk_style_context_set_state(child_context, state);
   } else {
     GtkStateFlags child_state = state;
@@ -537,7 +513,7 @@ SkColor GetBorderColor(const std::string& css_selector) {
 
 SkColor GetSelectionBgColor(const std::string& css_selector) {
   auto context = GetStyleContextFromCss(css_selector);
-  if (GtkVersionCheck(3, 20))
+  if (GtkCheckVersion(3, 20))
     return GetBgColorFromStyleContext(context);
   // This is verbatim how Gtk gets the selection color on versions before 3.20.
   GdkRGBA selection_color;
@@ -559,7 +535,7 @@ bool ContextHasClass(GtkStyleContext* context, const std::string& style_class) {
 }
 
 SkColor GetSeparatorColor(const std::string& css_selector) {
-  if (!GtkVersionCheck(3, 20))
+  if (!GtkCheckVersion(3, 20))
     return GetFgColor(css_selector);
 
   auto context = GetStyleContextFromCss(css_selector);

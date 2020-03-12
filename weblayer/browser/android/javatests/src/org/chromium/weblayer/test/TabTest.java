@@ -15,8 +15,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
-import java.util.concurrent.CountDownLatch;
-
 /**
  * Tests for Tab.
  */
@@ -30,7 +28,7 @@ public class TabTest {
 
     @Test
     @SmallTest
-    public void testBeforeUnload() throws InterruptedException {
+    public void testBeforeUnload() {
         String url = mActivityTestRule.getTestDataURL("before_unload.html");
         mActivity = mActivityTestRule.launchShellWithUrl(url);
         Assert.assertNotNull(mActivity);
@@ -46,8 +44,8 @@ public class TabTest {
                 () -> { mActivity.getBrowser().getActiveTab().dispatchBeforeUnloadAndClose(); });
 
         // Wait till the main window loses focus due to the app modal beforeunload dialog.
-        CountDownLatch noFocusLatch = new CountDownLatch(1);
-        CountDownLatch hasFocusLatch = new CountDownLatch(1);
+        BoundedCountDownLatch noFocusLatch = new BoundedCountDownLatch(1);
+        BoundedCountDownLatch hasFocusLatch = new BoundedCountDownLatch(1);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mActivity.getWindow()
                     .getDecorView()
@@ -56,7 +54,7 @@ public class TabTest {
                         (hasFocus ? hasFocusLatch : noFocusLatch).countDown();
                     });
         });
-        noFocusLatch.await();
+        noFocusLatch.timedAwait();
 
         // Verify closing the tab works still while beforeunload is showing (no crash).
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -65,7 +63,7 @@ public class TabTest {
 
         // Focus returns to the main window because the dialog is dismissed when the tab is
         // destroyed.
-        hasFocusLatch.await();
+        hasFocusLatch.timedAwait();
     }
 
     @Test

@@ -2672,15 +2672,8 @@ if (enable_java_templates) {
       _loadable_modules = invoker.loadable_modules
     }
 
-    _loadable_modules_deps = []
     if (_native_libs_deps != []) {
       _loadable_modules += _sanitizer_runtimes
-      if (_use_chromium_linker) {
-        _loadable_modules +=
-            [ "$root_out_dir/libchromium_android_linker$shlib_extension" ]
-        _loadable_modules_deps +=
-            [ "//base/android/linker:chromium_android_linker" ]
-      }
     }
 
     if (_generate_buildconfig_java) {
@@ -3066,8 +3059,7 @@ if (enable_java_templates) {
       }
     }
 
-    _all_native_libs_deps = _native_libs_deps + _loadable_modules_deps +
-                            _secondary_abi_native_libs_deps
+    _all_native_libs_deps = _native_libs_deps + _secondary_abi_native_libs_deps
     if (_all_native_libs_deps != []) {
       _native_libs_file_arg_dep = ":$_build_config_target"
       _all_native_libs_deps += [ _native_libs_file_arg_dep ]
@@ -3351,8 +3343,8 @@ if (enable_java_templates) {
 
       if (_incremental_apk) {
         # device/commands is used by the installer script to push files via .zip.
-        data_deps += [ "//build/android/pylib/device/commands" ] +
-                     _native_libs_deps + _loadable_modules_deps
+        data_deps +=
+            [ "//build/android/pylib/device/commands" ] + _native_libs_deps
       }
       if (_uses_static_library) {
         data_deps += [ invoker.static_library_provider ]

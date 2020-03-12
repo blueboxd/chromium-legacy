@@ -217,7 +217,7 @@ void CountFiringEventListeners(const Event& event,
 
 void RegisterWithScheduler(ExecutionContext* execution_context,
                            const AtomicString& event_type) {
-  if (!execution_context)
+  if (!execution_context || !execution_context->GetScheduler())
     return;
   // TODO(altimin): Ideally we would also support tracking unregistration of
   // event listeners, but we don't do this for performance reasons.

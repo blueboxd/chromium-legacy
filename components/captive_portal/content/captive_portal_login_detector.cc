@@ -24,7 +24,8 @@ void CaptivePortalLoginDetector::OnStoppedLoading() {
     return;
   }
 
-  captive_portal_service_->DetectCaptivePortal();
+  captive_portal_service_->DetectCaptivePortal(
+      CaptivePortalProbeReason::kLoginTabLoad);
 }
 
 void CaptivePortalLoginDetector::OnCaptivePortalResults(

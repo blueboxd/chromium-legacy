@@ -9,10 +9,20 @@
 
 namespace offline_pages {
 namespace prefetch {
-// Functions for calling into PrefetchNotifiactionServiceBridge.java.
 
-// Launch offline home in ChromeActivity.
-void LaunchDownloadHome();
+class PrefetchNotificationServiceBridge {
+ public:
+  // Launched download home, show the offline pages home("Articles for you").
+  virtual void LaunchDownloadHome() = 0;
+
+  virtual ~PrefetchNotificationServiceBridge() = default;
+
+ protected:
+  PrefetchNotificationServiceBridge() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PrefetchNotificationServiceBridge);
+};
 
 }  // namespace prefetch
 }  // namespace offline_pages

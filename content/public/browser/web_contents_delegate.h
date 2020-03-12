@@ -44,6 +44,8 @@ class GURL;
 
 namespace base {
 class FilePath;
+template <typename T>
+class WeakPtr;
 }
 
 namespace blink {
@@ -63,6 +65,7 @@ class SiteInstance;
 class WebContentsImpl;
 struct ContextMenuParams;
 struct DropData;
+struct MediaPlayerWatchTime;
 struct NativeWebKeyboardEvent;
 struct Referrer;
 struct SecurityStyleExplanations;
@@ -713,6 +716,12 @@ class CONTENT_EXPORT WebContentsDelegate {
   // directly user-visible feature), simply returning the contents is
   // appropriate.
   virtual WebContents* GetResponsibleWebContents(WebContents* web_contents);
+
+  // Invoked when media playback is interrupted or completed.
+  virtual void MediaWatchTimeChanged(const MediaPlayerWatchTime& watch_time) {}
+
+  // Returns a weak ptr to the web contents delegate.
+  virtual base::WeakPtr<WebContentsDelegate> GetDelegateWeakPtr();
 
  protected:
   virtual ~WebContentsDelegate();

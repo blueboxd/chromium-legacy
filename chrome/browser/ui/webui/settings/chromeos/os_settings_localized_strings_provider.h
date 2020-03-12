@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include "chrome/services/local_search_service/public/mojom/local_search_service.mojom.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 class Profile;
@@ -43,7 +44,7 @@ struct SearchConcept;
 //     show Bluetooth settings unless the device has Bluetooth capabilities),
 //     these strings are added/removed according to the Add/Remove*SearchTags()
 //     instance functions.
-class OsSettingsLocalizedStringsProvider {
+class OsSettingsLocalizedStringsProvider : public KeyedService {
  public:
   // Adds the strings needed by the OS settings page to |html_source|
   // This function causes |html_source| to expose a strings.js file from its
@@ -58,7 +59,7 @@ class OsSettingsLocalizedStringsProvider {
       const OsSettingsLocalizedStringsProvider& other) = delete;
   OsSettingsLocalizedStringsProvider& operator=(
       const OsSettingsLocalizedStringsProvider& other) = delete;
-  ~OsSettingsLocalizedStringsProvider();
+  ~OsSettingsLocalizedStringsProvider() override;
 
   void AddNetworkSearchTags();
   void RemoveNetworkSearchTags();
@@ -76,6 +77,9 @@ class OsSettingsLocalizedStringsProvider {
   const SearchConcept* GetCanonicalTagMetadata(int canonical_message_id) const;
 
  private:
+  // KeyedService:
+  void Shutdown() override;
+
   void AddSearchTagsGroup(const std::vector<SearchConcept>& tags_group);
   void RemoveSearchTagsGroup(const std::vector<SearchConcept>& tags_group);
 

@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -289,6 +290,40 @@ TEST_F(CompromisedCredentialsTableTest, EmptySignonRealm) {
   EXPECT_THAT(db()->GetAllRows(), IsEmpty());
   EXPECT_FALSE(db()->RemoveRow(test_data().signon_realm, test_data().username,
                                RemoveCompromisedCredentialsReason::kRemove));
+}
+
+TEST_F(CompromisedCredentialsTableTest, ReportMetricsBeforeBulkCheck) {
+  EXPECT_TRUE(db()->AddRow(test_data()));
+  test_data().signon_realm = kTestDomain2;
+  test_data().username = base::ASCIIToUTF16(kUsername2);
+  EXPECT_TRUE(db()->AddRow(test_data()));
+  test_data().signon_realm = kTestDomain3;
+  test_data().username = base::ASCIIToUTF16(kUsername3);
+  test_data().compromise_type = CompromiseType::kPhished;
+  EXPECT_TRUE(db()->AddRow(test_data()));
+
+  base::HistogramTester histogram_tester;
+  db()->ReportMetrics(BulkCheckDone(false));
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.CompromisedCredentials.CountLeaked", 2, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.CompromisedCredentials.CountPhished", 1, 1);
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.CompromisedCredentials.CountLeakedAfterBulkCheck", 0);
+}
+
+TEST_F(CompromisedCredentialsTableTest, ReportMetricsAfterBulkCheck) {
+  EXPECT_TRUE(db()->AddRow(test_data()));
+  test_data().signon_realm = kTestDomain2;
+  test_data().username = base::ASCIIToUTF16(kUsername2);
+  EXPECT_TRUE(db()->AddRow(test_data()));
+
+  base::HistogramTester histogram_tester;
+  db()->ReportMetrics(BulkCheckDone(true));
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.CompromisedCredentials.CountLeaked", 2, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.CompromisedCredentials.CountLeakedAfterBulkCheck", 2, 1);
 }
 
 }  // namespace

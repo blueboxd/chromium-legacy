@@ -4,6 +4,8 @@
 
 #include "ui/views/view_targeter.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -12,7 +14,6 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/views/masked_targeter_delegate.h"
 #include "ui/views/test/views_test_base.h"
-#include "ui/views/view_targeter.h"
 #include "ui/views/view_targeter_delegate.h"
 #include "ui/views/widget/root_view.h"
 

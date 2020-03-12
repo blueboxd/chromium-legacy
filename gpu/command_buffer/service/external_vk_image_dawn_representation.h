@@ -17,9 +17,7 @@ class ExternalVkImageDawnRepresentation : public SharedImageRepresentationDawn {
                                     MemoryTypeTracker* tracker,
                                     WGPUDevice device,
                                     WGPUTextureFormat dawn_format,
-                                    int memory_fd,
-                                    VkDeviceSize allocation_size,
-                                    uint32_t memory_type_index);
+                                    int memory_fd);
   ~ExternalVkImageDawnRepresentation() override;
 
   WGPUTexture BeginAccess(WGPUTextureUsage usage) override;
@@ -29,8 +27,6 @@ class ExternalVkImageDawnRepresentation : public SharedImageRepresentationDawn {
   const WGPUDevice device_;
   const WGPUTextureFormat wgpu_format_;
   const int memory_fd_;
-  const VkDeviceSize allocation_size_;
-  const uint32_t memory_type_index_;
 
   WGPUTexture texture_ = nullptr;
 

@@ -229,7 +229,7 @@ BOOL CALLBACK SendDwmCompositionChanged(HWND window, LPARAM param) {
 constexpr int kAutoHideTaskbarThicknessPx = 2;
 
 bool IsTopLevelWindow(HWND window) {
-  long style = ::GetWindowLong(window, GWL_STYLE);
+  LONG style = ::GetWindowLong(window, GWL_STYLE);
   if (!(style & WS_CHILD))
     return true;
   HWND parent = ::GetParent(window);
@@ -391,7 +391,7 @@ base::LazyInstance<HWNDMessageHandler::FullscreenWindowMonitorMap>::
 ////////////////////////////////////////////////////////////////////////////////
 // HWNDMessageHandler, public:
 
-long HWNDMessageHandler::last_touch_or_pen_message_time_ = 0;
+LONG HWNDMessageHandler::last_touch_or_pen_message_time_ = 0;
 
 HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate,
                                        const std::string& debugging_id)
@@ -1548,9 +1548,9 @@ void HWNDMessageHandler::OnActivateApp(BOOL active, DWORD thread_id) {
 }
 
 BOOL HWNDMessageHandler::OnAppCommand(HWND window,
-                                      short command,
+                                      int command,
                                       WORD device,
-                                      int keystate) {
+                                      WORD keystate) {
   BOOL handled = !!delegate_->HandleAppCommand(command);
   SetMsgHandled(handled);
   // Make sure to return TRUE if the event was handled or in some cases the
@@ -2006,9 +2006,9 @@ LRESULT HWNDMessageHandler::OnInputEvent(UINT message,
   DCHECK_EQ(0u, result);
 
   // Retrieve the input record.
-  uint8_t buffer[size];
-  RAWINPUT* input = reinterpret_cast<RAWINPUT*>(&buffer);
-  result = ::GetRawInputData(input_handle, RID_INPUT, &buffer, &size,
+  auto buffer = std::make_unique<uint8_t[]>(size);
+  RAWINPUT* input = reinterpret_cast<RAWINPUT*>(buffer.get());
+  result = ::GetRawInputData(input_handle, RID_INPUT, buffer.get(), &size,
                              sizeof(RAWINPUTHEADER));
   if (result == static_cast<UINT>(-1)) {
     PLOG(ERROR) << "GetRawInputData() failed";
@@ -2969,7 +2969,7 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
     SetCapture();
   }
 
-  long message_time = GetMessageTime();
+  LONG message_time = GetMessageTime();
   MSG msg = {hwnd(),
              message,
              w_param,

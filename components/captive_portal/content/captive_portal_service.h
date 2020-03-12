@@ -47,10 +47,7 @@ class CaptivePortalService : public KeyedService {
   enum TestingState {
     NOT_TESTING,
     DISABLED_FOR_TESTING,        // The service is always disabled.
-    SKIP_OS_CHECK_FOR_TESTING,   // The service can be enabled even if the OS
-                                 // has native captive portal detection.
-    IGNORE_REQUESTS_FOR_TESTING  // Disables actual portal checks. This also
-                                 // implies SKIP_OS_CHECK_FOR_TESTING.
+    IGNORE_REQUESTS_FOR_TESTING  // Disables actual portal checks.
   };
 
   // The details sent to consumers on a query completing.
@@ -76,7 +73,7 @@ class CaptivePortalService : public KeyedService {
   // Triggers a check for a captive portal.  If there's already a check in
   // progress, does nothing.  Throttles the rate at which requests are sent.
   // Always sends the result notification asynchronously.
-  void DetectCaptivePortal();
+  void DetectCaptivePortal(CaptivePortalProbeReason probe_reason);
 
   std::unique_ptr<Subscription> RegisterCallback(
       const base::RepeatingCallback<void(const Results&)>& cb) {
@@ -136,7 +133,7 @@ class CaptivePortalService : public KeyedService {
 
   // Initiates a captive portal check, without any throttling.  If the service
   // is disabled, just acts like there's an Internet connection.
-  void DetectCaptivePortalInternal();
+  void DetectCaptivePortalInternal(CaptivePortalProbeReason probe_reason);
 
   // Called by CaptivePortalDetector when detection completes.
   void OnPortalDetectionCompleted(

@@ -101,6 +101,7 @@ class MetaBuildWrapper(object):
     self.mixins = {}
     self.isolate_exe = 'isolate.exe' if self.platform.startswith(
         'win') else 'isolate'
+    self.use_luci_auth = False
 
   def Main(self, args):
     self.ParseArgs(args)
@@ -156,6 +157,19 @@ class MetaBuildWrapper(object):
                              'the commands that will run)')
       subp.add_argument('-v', '--verbose', action='store_true',
                         help='verbose logging')
+
+      # TODO(crbug.com/1060857): Remove this once swarming task templates
+      # support command prefixes.
+      luci_auth_group = subp.add_mutually_exclusive_group()
+      luci_auth_group.add_argument(
+          '--luci-auth',
+          action='store_true',
+          help='Run isolated commands under `luci-auth context`.')
+      luci_auth_group.add_argument(
+          '--no-luci-auth',
+          action='store_false',
+          dest='luci_auth',
+          help='Do not run isolated commands under `luci-auth context`.')
 
     parser = argparse.ArgumentParser(
       prog='mb', description='mb (meta-build) is a python wrapper around GN. '
@@ -333,6 +347,7 @@ class MetaBuildWrapper(object):
     self.args = parser.parse_args(argv)
 
     self.group_by_bucket = getattr(self.args, 'master', None) is None
+    self.use_luci_auth = getattr(self.args, 'luci_auth', False)
 
     # Use the correct default config file
     # Not using hasattr here because it would still require a None check
@@ -1533,12 +1548,19 @@ class MetaBuildWrapper(object):
     executable_suffix = isolate_map[target].get(
         'executable_suffix', '.exe' if is_win else '')
 
-    if use_python3:
-      cmdline = [ 'vpython3' ]
-      extra_files = [ '../../.vpython3' ]
+    # TODO(crbug.com/1060857): Remove this once swarming task templates
+    # support command prefixes.
+    if self.use_luci_auth:
+      cmdline = ['luci-auth.exe' if is_win else 'luci-auth', 'context', '--']
     else:
-      cmdline = [ 'vpython' ]
-      extra_files = [ '../../.vpython' ]
+      cmdline = []
+
+    if use_python3:
+      cmdline += ['vpython3']
+      extra_files = ['../../.vpython3']
+    else:
+      cmdline += ['vpython']
+      extra_files = ['../../.vpython']
     extra_files += [
       '../../testing/test_env.py',
     ]

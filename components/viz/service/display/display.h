@@ -250,6 +250,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   // Overlay Processor.
   std::unique_ptr<OverlayProcessorInterface> overlay_processor_;
   std::vector<ui::LatencyInfo> stored_latency_info_;
+  std::vector<gfx::Rect> cached_visible_region_;
 
   // |pending_presentation_group_timings_| stores a
   // Display::PresentationGroupTiming for each group currently waiting for

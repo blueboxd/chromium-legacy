@@ -5,6 +5,7 @@
 #include "ui/views/selection_controller.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/numerics/ranges.h"
 #include "build/build_config.h"

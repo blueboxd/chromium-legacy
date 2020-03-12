@@ -28,7 +28,7 @@ QuickAnswersConsent::~QuickAnswersConsent() = default;
 
 void QuickAnswersConsent::StartConsent() {
   // Increments impression count.
-  IncrementPerfCounter(prefs::kQuickAnswersConsentImpressionCount, 1);
+  IncrementPrefCounter(prefs::kQuickAnswersConsentImpressionCount, 1);
   start_time_ = base::TimeTicks::Now();
 }
 
@@ -60,11 +60,10 @@ bool QuickAnswersConsent::HasReachedImpressionCap() const {
 bool QuickAnswersConsent::HasReachedDurationCap() const {
   int duration_secs =
       prefs_->GetInteger(prefs::kQuickAnswersConsentImpressionDuration);
-
   return duration_secs >= kDurationCap;
 }
 
-void QuickAnswersConsent::IncrementPerfCounter(const std::string& path,
+void QuickAnswersConsent::IncrementPrefCounter(const std::string& path,
                                                int count) {
   prefs_->SetInteger(path, prefs_->GetInteger(path) + count);
 }
@@ -74,7 +73,7 @@ void QuickAnswersConsent::RecordImpressionDuration() {
 
   // Records duration in pref.
   base::TimeDelta duration = base::TimeTicks::Now() - start_time_;
-  IncrementPerfCounter(prefs::kQuickAnswersConsentImpressionDuration,
+  IncrementPrefCounter(prefs::kQuickAnswersConsentImpressionDuration,
                        duration.InSeconds());
 }
 

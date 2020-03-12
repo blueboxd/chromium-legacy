@@ -21,7 +21,6 @@ class TickClock;
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyConfigurator;
 class DataReductionProxyMutableConfigValues;
 class TestDataReductionProxyParams;
 
@@ -31,15 +30,13 @@ class TestDataReductionProxyParams;
 // change the underlying state.
 class TestDataReductionProxyConfig : public DataReductionProxyConfig {
  public:
-  TestDataReductionProxyConfig(
-      DataReductionProxyConfigurator* configurator);
+  TestDataReductionProxyConfig();
 
   // Creates a |TestDataReductionProxyConfig| with the provided |config_values|.
   // This permits any DataReductionProxyConfigValues to be used (such as
   // DataReductionProxyParams or DataReductionProxyMutableConfigValues).
   TestDataReductionProxyConfig(
-      std::unique_ptr<DataReductionProxyConfigValues> config_values,
-      DataReductionProxyConfigurator* configurator);
+      std::unique_ptr<DataReductionProxyConfigValues> config_values);
 
   ~TestDataReductionProxyConfig() override;
 
@@ -66,8 +63,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
       network::mojom::ConnectionType connection_type) {
     connection_type_ = connection_type;
   }
-
-  void AddDefaultProxyBypassRules() override;
 
   void SetShouldAddDefaultProxyBypassRules(bool add_default_proxy_bypass_rules);
 
@@ -126,8 +121,7 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
  public:
   // Creates a |MockDataReductionProxyConfig|.
   MockDataReductionProxyConfig(
-      std::unique_ptr<DataReductionProxyConfigValues> config_values,
-      DataReductionProxyConfigurator* configurator);
+      std::unique_ptr<DataReductionProxyConfigValues> config_values);
   ~MockDataReductionProxyConfig() override;
 
   MOCK_CONST_METHOD1(ContainsDataReductionProxy,

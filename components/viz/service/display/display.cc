@@ -159,26 +159,52 @@ gfx::Rect SafeConvertRectForRegion(const gfx::Rect& r) {
   return safe_rect;
 }
 
-// TODO(sashamcintosh): consider moving to cc::Region
-int ComputeRegionArea(const cc::Region& region) {
+// Computes the accumulated area of all the rectangles in the list of |rects|.
+int ComputeArea(const std::vector<gfx::Rect>& rects) {
   int area = 0;
-  for (const auto& r : region)
+  for (const auto& r : rects)
     area += r.size().GetArea();
   return area;
 }
 
+// Decides whether or not a DrawQuad should be split into a more complex visible
+// region in order to avoid overdraw.
 bool CanSplitQuad(const DrawQuad::Material m,
-                  const cc::Region& visible_region,
-                  const int quad_split_limit,
+                  const int visible_region_area,
+                  const int visible_region_bounding_area,
                   const int minimum_fragments_reduced,
                   const float device_scale_factor,
                   const bool enable_quad_splitting) {
   return enable_quad_splitting && !base::Contains(kNonSplittableMaterials, m) &&
-         visible_region.GetRegionComplexity() < quad_split_limit &&
-         (visible_region.bounds().size().GetArea() -
-          ComputeRegionArea(visible_region)) *
+         (visible_region_bounding_area - visible_region_area) *
                  device_scale_factor * device_scale_factor >
              minimum_fragments_reduced;
+}
+
+// Attempts to consolidate rectangles that were only split because of the
+// nature of base::Region and transforms the region into a list of visible
+// rectangles. Returns true upon successful reduction of the region to under
+// |complexity_limit|, false otherwise.
+bool ReduceComplexity(const cc::Region& region,
+                      size_t complexity_limit,
+                      std::vector<gfx::Rect>* reduced_region) {
+  DCHECK(reduced_region);
+
+  reduced_region->clear();
+  for (const gfx::Rect& r : region) {
+    auto it =
+        std::find_if(reduced_region->begin(), reduced_region->end(),
+                     [&r](const gfx::Rect& a) { return a.SharesEdgeWith(r); });
+    if (it != reduced_region->end()) {
+      it->Union(r);
+      continue;
+    }
+    reduced_region->push_back(r);
+
+    if (reduced_region->size() >= complexity_limit)
+      return false;
+  }
+  return true;
 }
 
 }  // namespace
@@ -1030,14 +1056,18 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
 
       // Split quad into multiple draw quads when area can be reduce by
       // more than X fragments.
-      const bool should_split_quads = CanSplitQuad(
-          quad->material, visible_region, settings_.quad_split_limit,
-          settings_.minimum_fragments_reduced, device_scale_factor_,
-          !overlay_processor_->DisableSplittingQuads());
+      const bool should_split_quads =
+          ReduceComplexity(visible_region, settings_.quad_split_limit,
+                           &cached_visible_region_) &&
+          CanSplitQuad(quad->material, ComputeArea(cached_visible_region_),
+                       visible_region.bounds().size().GetArea(),
+                       settings_.minimum_fragments_reduced,
+                       device_scale_factor_,
+                       !overlay_processor_->DisableSplittingQuads());
       if (should_split_quads) {
         auto new_quad = pass->quad_list.InsertCopyBeforeDrawQuad(
-            quad, visible_region.GetRegionComplexity() - 1);
-        for (const auto& visible_rect : visible_region) {
+            quad, cached_visible_region_.size() - 1);
+        for (const auto& visible_rect : cached_visible_region_) {
           new_quad->visible_rect = visible_rect;
           ++new_quad;
         }

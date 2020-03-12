@@ -28,7 +28,8 @@ QuickAnswersUiController::QuickAnswersUiController(
     : controller_(controller) {}
 
 QuickAnswersUiController::~QuickAnswersUiController() {
-  Close();
+  CloseQuickAnswersView();
+  CloseUserConsentView();
 }
 
 void QuickAnswersUiController::CreateQuickAnswersView(
@@ -42,7 +43,7 @@ void QuickAnswersUiController::CreateQuickAnswersView(
 }
 
 void QuickAnswersUiController::OnQuickAnswersViewPressed() {
-  Close();
+  CloseQuickAnswersView();
   mojo::Remote<chromeos::assistant::mojom::AssistantController>
       assistant_controller;
   ash::AssistantInterfaceBinder::GetInstance()->BindController(
@@ -53,14 +54,10 @@ void QuickAnswersUiController::OnQuickAnswersViewPressed() {
   controller_->OnQuickAnswerClick();
 }
 
-void QuickAnswersUiController::Close() {
+void QuickAnswersUiController::CloseQuickAnswersView() {
   if (quick_answers_view_) {
     quick_answers_view_->GetWidget()->Close();
     quick_answers_view_ = nullptr;
-  }
-  if (user_consent_view_) {
-    user_consent_view_->GetWidget()->Close();
-    user_consent_view_ = nullptr;
   }
 }
 
@@ -106,13 +103,19 @@ void QuickAnswersUiController::CreateUserConsentView(
   user_consent_view_->GetWidget()->ShowInactive();
 }
 
+void QuickAnswersUiController::CloseUserConsentView() {
+  if (user_consent_view_) {
+    user_consent_view_->GetWidget()->Close();
+    user_consent_view_ = nullptr;
+  }
+}
+
 void QuickAnswersUiController::OnConsentGrantedButtonPressed() {
-  // TODO(siabhijeet): Convey user-consent to QuickAnswersController.
+  controller_->OnUserConsentGranted();
 }
 
 void QuickAnswersUiController::OnManageSettingsButtonPressed() {
-  // TODO(siabhijeet): Convey user-intent to open consent-settings to
-  // QuickAnswersController.
+  controller_->OnConsentSettingsRequestedByUser();
 }
 
 }  // namespace ash

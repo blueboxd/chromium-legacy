@@ -6,6 +6,7 @@
 #define UI_VIEWS_LAYOUT_NORMALIZED_GEOMETRY_H_
 
 #include <string>
+#include <utility>
 
 #include "base/optional.h"
 #include "ui/views/layout/flex_layout_types.h"

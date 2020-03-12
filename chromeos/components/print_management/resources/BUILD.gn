@@ -24,6 +24,15 @@ polymer_modulizer("print_management") {
   html_type = "v3-ready"
 }
 
+polymer_modulizer("scanning_ui") {
+  js_file = "scanning_ui.js"
+  html_file = "scanning_ui.html"
+  html_type = "v3-ready"
+}
+
 group("polymer3_elements") {
-  deps = [ ":print_management_module" ]
+  deps = [
+    ":print_management_module",
+    ":scanning_ui_module",
+  ]
 }

@@ -220,6 +220,10 @@ class CONTENT_EXPORT AppCache
   // when this cache was last updated
   base::Time update_time_;
 
+  // Origin Trial expiration time for the appcache's manifest.
+  // This is base::Time() if no Origin Trial token was presented.
+  base::Time token_expires_;
+
   int64_t cache_size_;
   int64_t padding_size_;
 

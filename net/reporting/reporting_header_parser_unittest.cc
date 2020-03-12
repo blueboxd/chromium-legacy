@@ -145,6 +145,8 @@ class ReportingHeaderParserTest : public ReportingTestBase,
   const GURL kEndpoint_ = GURL("https://endpoint.test/");
   const GURL kEndpoint2_ = GURL("https://endpoint2.test/");
   const GURL kEndpoint3_ = GURL("https://endpoint3.test/");
+  const GURL kEndpointPathAbsolute_ =
+      GURL("https://origin.test/path-absolute-url");
   const std::string kGroup_ = "group";
   const std::string kGroup2_ = "group2";
   const std::string kType_ = "type";
@@ -168,9 +170,12 @@ TEST_P(ReportingHeaderParserTest, Invalid) {
   } kInvalidHeaderTestCases[] = {
       {"{\"max_age\":1, \"endpoints\": [{}]}", "missing url"},
       {"{\"max_age\":1, \"endpoints\": [{\"url\":0}]}", "non-string url"},
+      {"{\"max_age\":1, \"endpoints\": [{\"url\":\"//scheme/relative\"}]}",
+       "scheme-relative url"},
+      {"{\"max_age\":1, \"endpoints\": [{\"url\":\"relative/path\"}]}",
+       "path relative url"},
       {"{\"max_age\":1, \"endpoints\": [{\"url\":\"http://insecure/\"}]}",
        "insecure url"},
-
       {"{\"endpoints\": [{\"url\":\"https://endpoint/\"}]}", "missing max_age"},
       {"{\"max_age\":\"\", \"endpoints\": [{\"url\":\"https://endpoint/\"}]}",
        "non-integer max_age"},
@@ -250,6 +255,47 @@ TEST_P(ReportingHeaderParserTest, Basic) {
                                    kGroupKey_, kEndpoint_);
     expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
                                    kGroupKey_);
+    EXPECT_THAT(mock_store()->GetAllCommands(),
+                testing::IsSupersetOf(expected_commands));
+  }
+}
+
+TEST_P(ReportingHeaderParserTest, PathAbsoluteURLEndpoint) {
+  std::string header =
+      "{\"group\": \"group\", \"max_age\":1, \"endpoints\": "
+      "[{\"url\":\"/path-absolute-url\"}]}";
+
+  ParseHeader(kUrl_, header);
+  EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
+  EXPECT_TRUE(
+      EndpointGroupExistsInCache(kGroupKey_, OriginSubdomains::DEFAULT));
+  EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin_));
+  EXPECT_EQ(1u, cache()->GetEndpointCount());
+  ReportingEndpoint endpoint =
+      FindEndpointInCache(kGroupKey_, kEndpointPathAbsolute_);
+  ASSERT_TRUE(endpoint);
+  EXPECT_EQ(kOrigin_, endpoint.group_key.origin);
+  EXPECT_EQ(kGroup_, endpoint.group_key.group_name);
+  EXPECT_EQ(kEndpointPathAbsolute_, endpoint.info.url);
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultPriority,
+            endpoint.info.priority);
+  EXPECT_EQ(ReportingEndpoint::EndpointInfo::kDefaultWeight,
+            endpoint.info.weight);
+
+  if (mock_store()) {
+    mock_store()->Flush();
+    EXPECT_EQ(1, mock_store()->StoredEndpointsCount());
+    EXPECT_EQ(1, mock_store()->StoredEndpointGroupsCount());
+    MockPersistentReportingStore::CommandList expected_commands;
+    expected_commands.emplace_back(
+        CommandType::ADD_REPORTING_ENDPOINT,
+        ReportingEndpoint(kGroupKey_, ReportingEndpoint::EndpointInfo{
+                                          kEndpointPathAbsolute_}));
+    expected_commands.emplace_back(
+        CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+        CachedReportingEndpointGroup(
+            kGroupKey_, OriginSubdomains::DEFAULT /* irrelevant */,
+            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }

@@ -9,10 +9,17 @@ import("//weblayer/variables.gni")
 android_resources("weblayer_resources") {
   resource_dirs = [ "res" ]
   custom_package = "org.chromium.weblayer_private"
+  deps = [ "//components/permissions/android:java_resources" ]
 }
 
 generate_product_config_srcjar("weblayer_product_config") {
   java_package = weblayer_product_config_java_package
+}
+
+java_cpp_template("resource_id_javagen") {
+  sources = [ "ResourceId.template" ]
+  package_path = "org/chromium/weblayer_private/resources"
+  inputs = [ "//components/permissions/android/resource_id.h" ]
 }
 
 java_cpp_enum("generated_enums") {
@@ -61,6 +68,7 @@ android_library("java") {
     "org/chromium/weblayer_private/WebLayerTabModalPresenter.java",
     "org/chromium/weblayer_private/metrics/MetricsServiceClient.java",
     "org/chromium/weblayer_private/metrics/UmaUtils.java",
+    "org/chromium/weblayer_private/resources/ResourceMapper.java",
   ]
 
   deps = [
@@ -85,6 +93,7 @@ android_library("java") {
     "//components/metrics:metrics_java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/omnibox/browser:browser_java",
+    "//components/permissions/android:java",
     "//components/security_interstitials/content/android:java",
     "//components/spellcheck/browser/android:java",
     "//components/variations/android:variations_java",
@@ -97,6 +106,7 @@ android_library("java") {
   ]
   srcjar_deps = [
     ":generated_enums",
+    ":resource_id_javagen",
     ":weblayer_product_config",
   ]
   jar_excluded_patterns = [ "*/ProductConfig.class" ]
@@ -145,6 +155,7 @@ generate_jni("jni") {
     "org/chromium/weblayer_private/WebLayerImpl.java",
     "org/chromium/weblayer_private/metrics/MetricsServiceClient.java",
     "org/chromium/weblayer_private/metrics/UmaUtils.java",
+    "org/chromium/weblayer_private/resources/ResourceMapper.java",
   ]
 }
 

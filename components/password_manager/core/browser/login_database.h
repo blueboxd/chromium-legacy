@@ -72,7 +72,8 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
 
   // Reports usage metrics to UMA.
   void ReportMetrics(const std::string& sync_username,
-                     bool custom_passphrase_sync_enabled);
+                     bool custom_passphrase_sync_enabled,
+                     BulkCheckDone bulk_check_done);
 
   // Adds |form| to the list of remembered password forms. Returns the list of
   // changes applied ({}, {ADD}, {REMOVE, ADD}). If it returns {REMOVE, ADD}

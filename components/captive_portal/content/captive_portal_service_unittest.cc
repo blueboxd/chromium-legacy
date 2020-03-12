@@ -148,7 +148,7 @@ class CaptivePortalServiceTest : public testing::Test,
     ASSERT_EQ(base::TimeDelta(), GetTimeUntilNextRequest());
 
     CaptivePortalObserver observer(service());
-    service()->DetectCaptivePortal();
+    service()->DetectCaptivePortal(CaptivePortalProbeReason::kCertificateError);
 
     EXPECT_EQ(CaptivePortalService::STATE_TIMER_RUNNING, service()->state());
     EXPECT_FALSE(FetchingURL());
@@ -180,7 +180,7 @@ class CaptivePortalServiceTest : public testing::Test,
     ASSERT_EQ(base::TimeDelta(), GetTimeUntilNextRequest());
 
     CaptivePortalObserver observer(service());
-    service()->DetectCaptivePortal();
+    service()->DetectCaptivePortal(CaptivePortalProbeReason::kCertificateError);
 
     EXPECT_EQ(CaptivePortalService::STATE_TIMER_RUNNING, service()->state());
     EXPECT_FALSE(FetchingURL());
@@ -272,7 +272,7 @@ class CaptivePortalServiceTest : public testing::Test,
 
 // Verify that an observer doesn't get messages from the wrong browser_context.
 TEST_F(CaptivePortalServiceTest, CaptivePortalTwoBrowserContexts) {
-  Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
+  Initialize(CaptivePortalService::NOT_TESTING);
   content::TestBrowserContext browser_context2;
 
   TestingPrefServiceSimple pref_service2;
@@ -289,7 +289,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalTwoBrowserContexts) {
 
 // Checks exponential backoff when the Internet is connected.
 TEST_F(CaptivePortalServiceTest, CaptivePortalRecheckInternetConnected) {
-  Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
+  Initialize(CaptivePortalService::NOT_TESTING);
 
   // This value should have no effect on this test, until the end.
   set_initial_backoff_portal(base::TimeDelta::FromSeconds(1));
@@ -306,7 +306,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalRecheckInternetConnected) {
 
 // Checks exponential backoff when there's an HTTP error.
 TEST_F(CaptivePortalServiceTest, CaptivePortalRecheckError) {
-  Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
+  Initialize(CaptivePortalService::NOT_TESTING);
 
   // This value should have no effect on this test.
   set_initial_backoff_portal(base::TimeDelta::FromDays(1));
@@ -322,7 +322,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalRecheckError) {
 
 // Checks exponential backoff when there's a captive portal.
 TEST_F(CaptivePortalServiceTest, CaptivePortalRecheckBehindPortal) {
-  Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
+  Initialize(CaptivePortalService::NOT_TESTING);
 
   // This value should have no effect on this test, until the end.
   set_initial_backoff_no_portal(base::TimeDelta::FromSeconds(250));
@@ -339,7 +339,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalRecheckBehindPortal) {
 // Check that everything works as expected when captive portal checking is
 // disabled, including throttling.  Then enables it again and runs another test.
 TEST_F(CaptivePortalServiceTest, CaptivePortalPrefDisabled) {
-  Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
+  Initialize(CaptivePortalService::NOT_TESTING);
 
   // This value should have no effect on this test.
   set_initial_backoff_no_portal(base::TimeDelta::FromDays(1));
@@ -360,11 +360,11 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefDisabled) {
 // Check that disabling the captive portal service while a check is running
 // works.
 TEST_F(CaptivePortalServiceTest, CaptivePortalPrefDisabledWhileRunning) {
-  Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
+  Initialize(CaptivePortalService::NOT_TESTING);
   CaptivePortalObserver observer(service());
 
   // Needed to create the URLFetcher, even if it never returns any results.
-  service()->DetectCaptivePortal();
+  service()->DetectCaptivePortal(CaptivePortalProbeReason::kCertificateError);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(FetchingURL());
@@ -387,11 +387,11 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefDisabledWhileRunning) {
 // Check that disabling the captive portal service while a check is pending
 // works.
 TEST_F(CaptivePortalServiceTest, CaptivePortalPrefDisabledWhilePending) {
-  Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
+  Initialize(CaptivePortalService::NOT_TESTING);
   set_initial_backoff_no_portal(base::TimeDelta::FromDays(1));
 
   CaptivePortalObserver observer(service());
-  service()->DetectCaptivePortal();
+  service()->DetectCaptivePortal(CaptivePortalProbeReason::kCertificateError);
   EXPECT_FALSE(FetchingURL());
   EXPECT_TRUE(TimerRunning());
 
@@ -412,13 +412,13 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefDisabledWhilePending) {
 // Check that disabling the captive portal service while a check is pending
 // works.
 TEST_F(CaptivePortalServiceTest, CaptivePortalPrefEnabledWhilePending) {
-  Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
+  Initialize(CaptivePortalService::NOT_TESTING);
 
   EnableCaptivePortalDetectionPreference(false);
   RunDisabledTest(0);
 
   CaptivePortalObserver observer(service());
-  service()->DetectCaptivePortal();
+  service()->DetectCaptivePortal(CaptivePortalProbeReason::kCertificateError);
   EXPECT_FALSE(FetchingURL());
   EXPECT_TRUE(TimerRunning());
 
@@ -446,7 +446,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalDisableForTests) {
 
 // Checks that jitter gives us values in the correct range.
 TEST_F(CaptivePortalServiceTest, CaptivePortalJitter) {
-  Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
+  Initialize(CaptivePortalService::NOT_TESTING);
   set_jitter_factor(0.3);
   set_initial_backoff_no_portal(base::TimeDelta::FromSeconds(100));
   RunTest(RESULT_INTERNET_CONNECTED, net::OK, 204, 0, nullptr);
@@ -462,7 +462,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalJitter) {
 
 // Check a Retry-After header that contains a delay in seconds.
 TEST_F(CaptivePortalServiceTest, CaptivePortalRetryAfterSeconds) {
-  Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
+  Initialize(CaptivePortalService::NOT_TESTING);
   set_initial_backoff_no_portal(base::TimeDelta::FromSeconds(100));
   const char* retry_after = "HTTP/1.1 503 OK\nRetry-After: 101\n\n";
 
@@ -480,7 +480,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalRetryAfterSeconds) {
 // Check that the RecheckPolicy is still respected on 503 responses with
 // Retry-After headers.
 TEST_F(CaptivePortalServiceTest, CaptivePortalRetryAfterSecondsTooShort) {
-  Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
+  Initialize(CaptivePortalService::NOT_TESTING);
   set_initial_backoff_no_portal(base::TimeDelta::FromSeconds(100));
   const char* retry_after = "HTTP/1.1 503 OK\nRetry-After: 99\n\n";
 
@@ -492,7 +492,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalRetryAfterSecondsTooShort) {
 
 // Check a Retry-After header that contains a date.
 TEST_F(CaptivePortalServiceTest, CaptivePortalRetryAfterDate) {
-  Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
+  Initialize(CaptivePortalService::NOT_TESTING);
   set_initial_backoff_no_portal(base::TimeDelta::FromSeconds(50));
 
   // base has a function to get a time in the right format from a string, but

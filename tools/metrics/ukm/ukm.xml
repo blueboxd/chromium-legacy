@@ -6785,6 +6785,13 @@ be describing additional metrics about the same event.
       applied on the page load.
     </summary>
   </metric>
+  <metric name="NavigationHintsFetchRequestLatency">
+    <summary>
+      The duration (in milliseconds) for how long it took from the request to go
+      out to when it was usable on the client. Only recorded if a fetch was
+      initiated for the navigation and the fetch was successful.
+    </summary>
+  </metric>
   <metric name="NavigationHostCovered"
       enum="OptimizationGuideNavigationHostCoveredStatus">
     <summary>
@@ -8436,6 +8443,18 @@ be describing additional metrics about the same event.
       The time (in ms, rounded down to the nearest power of 2) a popup
       WebContents is visible / foregrounded, until it is closed. Keyed by the
       popup opener's URL (not the URL of the popup).
+    </summary>
+  </metric>
+  <metric name="NumActivationInteractions">
+    <summary>
+      Integer value representing how many mouse down, touch start user, or raw
+      key down interactions the popup had. This is capped at 50.
+    </summary>
+  </metric>
+  <metric name="NumGestureScrollBeginInteractions">
+    <summary>
+      Integer value representing how many gesture scroll begin user interactions
+      the popup had. This is capped at 50.
     </summary>
   </metric>
   <metric name="NumInteractions">

@@ -142,6 +142,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
       // Table
       case NativeTheme::kColorId_TableBackground:
+      case NativeTheme::kColorId_TableBackgroundAlternate:
         return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900,
                                        0.04f);
       case NativeTheme::kColorId_TableText:
@@ -429,6 +430,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
     // Table
     case NativeTheme::kColorId_TableBackground:
+    case NativeTheme::kColorId_TableBackgroundAlternate:
       return SK_ColorWHITE;
     case NativeTheme::kColorId_TableText:
     case NativeTheme::kColorId_TableSelectedText:

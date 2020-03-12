@@ -47,7 +47,6 @@ namespace data_reduction_proxy {
 class DataReductionProxyCompressionStats;
 class DataReductionProxyConfig;
 class DataReductionProxyConfigServiceClient;
-class DataReductionProxyConfigurator;
 class DataReductionProxyRequestOptions;
 class DataReductionProxyServer;
 class DataReductionProxySettings;
@@ -169,10 +168,6 @@ class DataReductionProxyService
     return url_loader_factory_->Clone();
   }
 
-  DataReductionProxyConfigurator* configurator() const {
-    return configurator_.get();
-  }
-
   DataReductionProxyConfig* config() const { return config_.get(); }
 
   DataReductionProxyConfigServiceClient* config_client() const {
@@ -198,7 +193,6 @@ class DataReductionProxyService
   void SetDependenciesForTesting(
       std::unique_ptr<DataReductionProxyConfig> config,
       std::unique_ptr<DataReductionProxyRequestOptions> request_options,
-      std::unique_ptr<DataReductionProxyConfigurator> configurator,
       std::unique_ptr<DataReductionProxyConfigServiceClient> config_client);
 
  private:
@@ -274,9 +268,6 @@ class DataReductionProxyService
 
   // Parameters including DNS names and allowable configurations.
   std::unique_ptr<DataReductionProxyConfig> config_;
-
-  // Setter of the Data Reduction Proxy-specific proxy configuration.
-  std::unique_ptr<DataReductionProxyConfigurator> configurator_;
 
   // Constructs credentials suitable for authenticating the client.
   std::unique_ptr<DataReductionProxyRequestOptions> request_options_;

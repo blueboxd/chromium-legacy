@@ -258,50 +258,6 @@ public class CachedFeatureFlags {
     }
 
     /**
-     * TODO(crbug.com/1012975): Move this to BooleanCachedFieldTrialParameter when
-     * CachedFeatureFlags is in chrome/browser/flags.
-     *
-     * @return the value of the field trial parameter that should be used in this run.
-     */
-    public static boolean getValue(BooleanCachedFieldTrialParameter parameter) {
-        return getConsistentBooleanValue(
-                parameter.getSharedPreferenceKey(), parameter.getDefaultValue());
-    }
-
-    /**
-     * TODO(crbug.com/1012975): Move this to StringCachedFieldTrialParameter when
-     * CachedFeatureFlags is in chrome/browser/flags.
-     *
-     * @return the value of the field trial parameter that should be used in this run.
-     */
-    public static String getValue(StringCachedFieldTrialParameter parameter) {
-        return getConsistentStringValue(
-                parameter.getSharedPreferenceKey(), parameter.getDefaultValue());
-    }
-
-    /**
-     * TODO(crbug.com/1012975): Move this to IntCachedFieldTrialParameter when
-     * CachedFeatureFlags is in chrome/browser/flags.
-     *
-     * @return the value of the field trial parameter that should be used in this run.
-     */
-    public static int getValue(IntCachedFieldTrialParameter parameter) {
-        return getConsistentIntValue(
-                parameter.getSharedPreferenceKey(), parameter.getDefaultValue());
-    }
-
-    /**
-     * TODO(crbug.com/1012975): Move this to DoubleCachedFieldTrialParameter when
-     * CachedFeatureFlags is in chrome/browser/flags.
-     *
-     * @return the value of the field trial parameter that should be used in this run.
-     */
-    public static double getValue(DoubleCachedFieldTrialParameter parameter) {
-        return getConsistentDoubleValue(
-                parameter.getSharedPreferenceKey(), parameter.getDefaultValue());
-    }
-
-    /**
      * Cache whether warming up network service process is enabled, so that the value
      * can be made available immediately on next start up.
      */

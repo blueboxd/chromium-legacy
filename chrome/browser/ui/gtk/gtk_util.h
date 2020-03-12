@@ -12,6 +12,10 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/window/frame_buttons.h"
 
+// Function availability can be tested by checking if the address of gtk_* is
+// not nullptr.
+#define WEAK_GTK_FN(x) extern "C" __attribute__((weak)) decltype(x) x
+
 typedef union _GdkEvent GdkEvent;
 
 namespace aura {
@@ -54,8 +58,6 @@ void ParseButtonLayout(const std::string& button_string,
                        std::vector<views::FrameButton>* leading_buttons,
                        std::vector<views::FrameButton>* trailing_buttons);
 
-void* GetGtkSharedLibrary();
-
 class CairoSurface {
  public:
   // Attaches a cairo surface to an SkBitmap so that GTK can render
@@ -83,7 +85,7 @@ class CairoSurface {
 
 // Returns true iff the runtime version of Gtk used meets
 // |major|.|minor|.|micro|.
-bool GtkVersionCheck(int major, int minor = 0, int micro = 0);
+bool GtkCheckVersion(int major, int minor = 0, int micro = 0);
 
 using ScopedStyleContext = ScopedGObject<GtkStyleContext>;
 using ScopedCssProvider = ScopedGObject<GtkCssProvider>;
@@ -102,7 +104,7 @@ inline void gtk::ScopedStyleContext::Unref() {
   while (context) {
     GtkStyleContext* parent = gtk_style_context_get_parent(context);
     if (parent && G_OBJECT(context)->ref_count == 1 &&
-        !gtk::GtkVersionCheck(3, 15, 4)) {
+        !gtk::GtkCheckVersion(3, 15, 4)) {
       g_object_ref(parent);
       gtk_style_context_set_parent(context, nullptr);
       g_object_unref(context);

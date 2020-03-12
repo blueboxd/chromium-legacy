@@ -121,8 +121,7 @@ base::Optional<device::mojom::XRSessionFeature> StringToXRSessionFeature(
   } else if (RuntimeEnabledFeatures::WebXRHitTestEnabled(doc) &&
              feature_string == "hit-test") {
     return device::mojom::XRSessionFeature::HIT_TEST;
-  } else if (RuntimeEnabledFeatures::WebXRIncubationsEnabled(doc) &&
-             feature_string == "dom-overlay") {
+  } else if (feature_string == "dom-overlay") {
     return device::mojom::XRSessionFeature::DOM_OVERLAY;
   }
 

@@ -283,9 +283,10 @@ class StructuredHeaderParser {
       }
       if (is_duplicate_key) {
         for (auto& param : parameters) {
-          if (param.first == name)
+          if (param.first == name) {
             param.second = std::move(value);
-          break;
+            break;
+          }
         }
       } else {
         parameters.emplace_back(std::move(*name), std::move(value));

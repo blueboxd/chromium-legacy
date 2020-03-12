@@ -112,11 +112,11 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     return true;
   }
 
-  bool SendMouseMove(long screen_x, long screen_y) override {
+  bool SendMouseMove(int screen_x, int screen_y) override {
     return SendMouseMoveNotifyWhenDone(screen_x, screen_y, base::OnceClosure());
   }
-  bool SendMouseMoveNotifyWhenDone(long screen_x,
-                                   long screen_y,
+  bool SendMouseMoveNotifyWhenDone(int screen_x,
+                                   int screen_y,
                                    base::OnceClosure closure) override {
     gfx::PointF host_location(screen_x, screen_y);
     int64_t display_id = display::kInvalidDisplayId;

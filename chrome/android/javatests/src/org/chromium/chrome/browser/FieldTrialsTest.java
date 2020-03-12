@@ -59,7 +59,7 @@ public final class FieldTrialsTest {
         Assert.assertTrue(CachedFeatureFlags.isEnabled(sFeature1));
         StringCachedFieldTrialParameter parameterA1 =
                 new StringCachedFieldTrialParameter(sFeature1, "a1", "default");
-        Assert.assertEquals("b1", CachedFeatureFlags.getValue(parameterA1));
+        Assert.assertEquals("b1", parameterA1.getValue());
     }
 
     @Test
@@ -82,19 +82,19 @@ public final class FieldTrialsTest {
         Assert.assertTrue(CachedFeatureFlags.isEnabled(sFeature2));
         StringCachedFieldTrialParameter parameterA1 =
                 new StringCachedFieldTrialParameter(sFeature1, "a1", "");
-        Assert.assertEquals("b1", CachedFeatureFlags.getValue(parameterA1));
+        Assert.assertEquals("b1", parameterA1.getValue());
 
         StringCachedFieldTrialParameter parameterA2 =
                 new StringCachedFieldTrialParameter(sFeature1, "a2", "");
-        Assert.assertEquals("b2", CachedFeatureFlags.getValue(parameterA2));
+        Assert.assertEquals("b2", parameterA2.getValue());
 
         StringCachedFieldTrialParameter parameterB1 =
                 new StringCachedFieldTrialParameter(sFeature2, "a1", "");
-        Assert.assertEquals("b1", CachedFeatureFlags.getValue(parameterB1));
+        Assert.assertEquals("b1", parameterB1.getValue());
 
         StringCachedFieldTrialParameter parameterB2 =
                 new StringCachedFieldTrialParameter(sFeature2, "a2", "");
-        Assert.assertEquals("b2", CachedFeatureFlags.getValue(parameterB2));
+        Assert.assertEquals("b2", parameterB2.getValue());
     }
 
     @Test
@@ -115,14 +115,14 @@ public final class FieldTrialsTest {
         Assert.assertTrue(CachedFeatureFlags.isEnabled(sFeature2));
         DoubleCachedFieldTrialParameter parameterA1 =
                 new DoubleCachedFieldTrialParameter(sFeature1, "a1", 0.1);
-        Assert.assertEquals(0.5, CachedFeatureFlags.getValue(parameterA1), 1e-7);
+        Assert.assertEquals(0.5, parameterA1.getValue(), 1e-7);
 
         IntCachedFieldTrialParameter parameterA2 =
                 new IntCachedFieldTrialParameter(sFeature1, "a2", 0);
-        Assert.assertEquals(100, CachedFeatureFlags.getValue(parameterA2));
+        Assert.assertEquals(100, parameterA2.getValue());
 
         BooleanCachedFieldTrialParameter parameterB =
                 new BooleanCachedFieldTrialParameter(sFeature2, "a3", false);
-        Assert.assertEquals(true, CachedFeatureFlags.getValue(parameterB));
+        Assert.assertEquals(true, parameterB.getValue());
     }
 }

@@ -20,7 +20,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
@@ -85,20 +84,12 @@ DataReductionProxyService::DataReductionProxyService(
   DCHECK(network_quality_tracker_);
   DCHECK(network_connection_tracker_);
 
-  configurator_ = std::make_unique<DataReductionProxyConfigurator>();
-  // It is safe to use base::Unretained here, since it gets executed
-  // synchronously on the UI thread, and |this| outlives the caller (since the
-  // caller is owned by |this|.
-  configurator_->SetConfigUpdatedCallback(
-      base::BindRepeating(&DataReductionProxyService::OnProxyConfigUpdated,
-                          base::Unretained(this)));
   DataReductionProxyMutableConfigValues* raw_mutable_config = nullptr;
   std::unique_ptr<DataReductionProxyMutableConfigValues> mutable_config =
       std::make_unique<DataReductionProxyMutableConfigValues>();
   raw_mutable_config = mutable_config.get();
   config_ = std::make_unique<DataReductionProxyConfig>(
-      network_connection_tracker_, std::move(mutable_config),
-      configurator_.get());
+      network_connection_tracker_, std::move(mutable_config));
   request_options_ = std::make_unique<DataReductionProxyRequestOptions>(
       client_, config_.get());
   request_options_->Init();
@@ -421,21 +412,6 @@ DataReductionProxyService::CreateCustomProxyConfig(
     bool is_warmup_url,
     const std::vector<DataReductionProxyServer>& proxies_for_http) const {
   auto config = network::mojom::CustomProxyConfig::New();
-  if (params::IsIncludedInHoldbackFieldTrial()) {
-    config->rules =
-        configurator_
-            ->CreateProxyConfig(is_warmup_url,
-                                config_->GetNetworkPropertiesManager(),
-                                std::vector<DataReductionProxyServer>())
-            .proxy_rules();
-  } else {
-    config->rules =
-        configurator_
-            ->CreateProxyConfig(is_warmup_url,
-                                config_->GetNetworkPropertiesManager(),
-                                proxies_for_http)
-            .proxy_rules();
-  }
 
   net::EffectiveConnectionType type = GetEffectiveConnectionType();
   if (type > net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
@@ -469,7 +445,6 @@ void DataReductionProxyService::StoreSerializedConfig(
 void DataReductionProxyService::SetDependenciesForTesting(
     std::unique_ptr<DataReductionProxyConfig> config,
     std::unique_ptr<DataReductionProxyRequestOptions> request_options,
-    std::unique_ptr<DataReductionProxyConfigurator> configurator,
     std::unique_ptr<DataReductionProxyConfigServiceClient> config_client) {
   config_ = std::move(config);
   config_->Initialize(
@@ -481,11 +456,6 @@ void DataReductionProxyService::SetDependenciesForTesting(
   request_options_ = std::move(request_options);
   request_options_->SetUpdateHeaderCallback(
       base::BindRepeating(&DataReductionProxyService::UpdateProxyRequestHeaders,
-                          base::Unretained(this)));
-
-  configurator_ = std::move(configurator);
-  configurator_->SetConfigUpdatedCallback(
-      base::BindRepeating(&DataReductionProxyService::OnProxyConfigUpdated,
                           base::Unretained(this)));
 
   config_client_ = std::move(config_client);

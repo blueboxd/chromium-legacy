@@ -125,6 +125,8 @@ public class LocationBarLayout extends FrameLayout
 
     private AssistantVoiceSearchService mAssistantVoiceSearchService;
     private Runnable mKeyboardResizeModeTask;
+    private Runnable mKeyboardHideTask;
+    private boolean mKeyboardShouldShow;
 
     /**
      * Class to handle input from a hardware keyboard when the focus is on the URL bar. In
@@ -402,7 +404,7 @@ public class LocationBarLayout extends FrameLayout
                 setUrlBarText(mToolbarDataProvider.getUrlBarData(), UrlBar.ScrollType.NO_SCROLL,
                         SelectionState.SELECT_ALL);
             }
-            hideKeyboard();
+            setKeyboardVisibility(false);
         }
     }
 
@@ -456,6 +458,7 @@ public class LocationBarLayout extends FrameLayout
         updateShouldAnimateIconChanges();
 
         if (mUrlHasFocus) {
+            mKeyboardShouldShow = false;
             if (mNativeInitialized) RecordUserAction.record("FocusLocation");
             UrlBarData urlBarData = mToolbarDataProvider.getUrlBarData();
             if (urlBarData.editingText != null) {
@@ -687,8 +690,9 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
-    public void hideKeyboard() {
-        getWindowAndroid().getKeyboardDelegate().hideKeyboard(mUrlBar);
+    public void setKeyboardVisibility(boolean shouldShow) {
+        mKeyboardShouldShow = shouldShow;
+        setKeyboardVisibilityInternal(false);
     }
 
     @Override
@@ -1003,7 +1007,7 @@ public class LocationBarLayout extends FrameLayout
             }
         } else {
             assert pastedText == null;
-            hideKeyboard();
+            setKeyboardVisibility(false);
             mUrlBar.clearFocus();
         }
 
@@ -1186,21 +1190,46 @@ public class LocationBarLayout extends FrameLayout
      * @param hasFocus Whether the URL field has gained focus.
      */
     protected void finishUrlFocusChange(boolean hasFocus) {
-        if (!hasFocus) {
-            // The animation rendering may not yet be 100% complete and hiding the keyboard makes
-            // the animation quite choppy.
-            postDelayed(() -> getWindowAndroid().getKeyboardDelegate().hideKeyboard(mUrlBar),
-                    KEYBOARD_HIDE_DELAY_MS);
-            // Convert the keyboard back to resize mode (delay the change for an arbitrary amount
-            // of time in hopes the keyboard will be completely hidden before making this change).
-            setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE, true);
-        } else {
-            setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN, false);
-            getWindowAndroid().getKeyboardDelegate().showKeyboard(mUrlBar);
-        }
+        setKeyboardVisibilityInternal(true);
         mStatusViewCoordinator.onUrlAnimationFinished(hasFocus);
         setUrlFocusChangeInProgress(false);
         updateShouldAnimateIconChanges();
+    }
+
+    /**
+     * Controls keyboard visibility.
+     * TODO(https://crbug.com/1060729): This should be relocated to UrlBar component.
+     *
+     * @param shouldDelayHiding When true, keyboard hide operation will be delayed slightly to
+     *         improve the animation smoothness.
+     */
+    private void setKeyboardVisibilityInternal(boolean shouldDelayHiding) {
+        boolean showKeyboard = mUrlHasFocus && mKeyboardShouldShow;
+        // Cancel pending jobs to prevent any possibility of keyboard flicker.
+        if (mKeyboardHideTask != null) {
+            removeCallbacks(mKeyboardHideTask);
+        }
+
+        // Note: due to nature of this mechanism, we may occasionally experience subsequent requests
+        // to show or hide keyboard anyway. This may happen when we schedule keyboard hide, and
+        // receive a second request to hide the keyboard instantly.
+        if (showKeyboard) {
+            setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN, /* delay */ false);
+            getWindowAndroid().getKeyboardDelegate().showKeyboard(mUrlBar);
+        } else {
+            // The animation rendering may not yet be 100% complete and hiding the keyboard makes
+            // the animation quite choppy.
+            // clang-format off
+            mKeyboardHideTask = () -> {
+                getWindowAndroid().getKeyboardDelegate().hideKeyboard(mUrlBar);
+                mKeyboardHideTask = null;
+            };
+            // clang-format on
+            postDelayed(mKeyboardHideTask, shouldDelayHiding ? KEYBOARD_HIDE_DELAY_MS : 0);
+            // Convert the keyboard back to resize mode (delay the change for an arbitrary amount
+            // of time in hopes the keyboard will be completely hidden before making this change).
+            setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE, /* delay */ true);
+        }
     }
 
     /**

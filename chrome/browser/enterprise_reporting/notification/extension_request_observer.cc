@@ -4,6 +4,7 @@
 
 #include "chrome/browser/enterprise_reporting/notification/extension_request_observer.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -12,6 +13,17 @@
 #include "extensions/common/extension_urls.h"
 
 namespace enterprise_reporting {
+namespace {
+
+constexpr char kPendingListUpdateMetricsName[] =
+    "Enterprise.CloudExtensionRequestUpdated";
+enum class PendlingListUpdateMetricEvent {
+  kAdded = 0,
+  kRemoved = 1,
+  kMaxValue = kRemoved
+};
+
+}  // namespace
 
 ExtensionRequestObserver::ExtensionRequestObserver(Profile* profile)
     : profile_(profile) {
@@ -43,9 +55,15 @@ void ExtensionRequestObserver::OnPendingListChanged() {
   // are removed from the list. There is no need to show new notification at
   // this point.
   if (closing_notification_and_deleting_requests_) {
+    // Record id removed event.
+    base::UmaHistogramEnumeration(kPendingListUpdateMetricsName,
+                                  PendlingListUpdateMetricEvent::kRemoved);
     closing_notification_and_deleting_requests_ = false;
     return;
   }
+  // Record new id added event.
+  base::UmaHistogramEnumeration(kPendingListUpdateMetricsName,
+                                PendlingListUpdateMetricEvent::kAdded);
   ShowAllNotifications();
 }
 

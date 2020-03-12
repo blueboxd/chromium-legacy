@@ -247,6 +247,14 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id,
           NSSystemColorToSkColor([NSColor keyboardFocusIndicatorColor]),
           0x66);
 
+    case kColorId_TableBackgroundAlternate:
+      if (@available(macOS 10.14, *)) {
+        return NSSystemColorToSkColor(
+            NSColor.alternatingContentBackgroundColors[1]);
+      }
+      return NSSystemColorToSkColor(
+          NSColor.controlAlternatingRowBackgroundColors[1]);
+
     default:
       break;
   }

@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Fri, 7 Feb 2020 15:34:05 -0800
-Subject: [PATCH 2/5] Fix fts3 problems found by asan
+Subject: [PATCH 2/6] Fix fts3 problems found by asan
 
 Backports https://sqlite.org/src/info/fb7ccf61bed8d862
 
@@ -61,5 +61,5 @@ index bf31d155f6d3..f33654d6aec7 100644
 +
  finish_test
 -- 
-2.25.0.265.gbab2e86ba0-goog
+2.25.1.481.gfbce0eb801-goog
 

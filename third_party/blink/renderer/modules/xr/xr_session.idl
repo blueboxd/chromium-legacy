@@ -32,7 +32,7 @@ enum XRVisibilityState {
   readonly attribute XRVisibilityState visibilityState;
   [SameObject] readonly attribute XRRenderState renderState;
   [MeasureAs=XRSessionGetInputSources, SameObject] readonly attribute XRInputSourceArray inputSources;
-  [RuntimeEnabled=WebXRIncubations, SameObject] readonly attribute XRDOMOverlayState domOverlayState;
+  [SameObject] readonly attribute XRDOMOverlayState domOverlayState;
 
   attribute EventHandler onend;
   attribute EventHandler onselect;

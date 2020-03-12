@@ -333,10 +333,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   class QuotaManagedDataDeletionHelper;
   class URLLoaderFactoryForBrowserProcess;
 
-  // TODO(enne): temporary access to get IndexedDBContextImpl until
-  // construction of IndexedDBDispatcherHost moves into storage service.
-  friend class RenderProcessHostImpl;
-
   friend class BackgroundSyncManagerTest;
   friend class BackgroundSyncServiceImplTestHarness;
   friend class CookieStoreManagerTest;

@@ -62,10 +62,6 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-namespace extensions {
-class MatureExtensionChecker;
-}
-
 // This class handles all the information related to a given supervised profile
 // (e.g. the installed content packs, the default URL filtering behavior, or
 // manual whitelist/blacklist overrides).
@@ -218,9 +214,6 @@ class SupervisedUserService : public KeyedService,
   bool CanInstallExtensions() const;
 
   bool IsExtensionAllowed(const extensions::Extension& extension) const;
-
-  void MarkExtensionMatureForTesting(const std::string& extension_id,
-                                     bool maturity_rating);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
  private:
@@ -380,8 +373,6 @@ class SupervisedUserService : public KeyedService,
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       registry_observer_{this};
-
-  std::unique_ptr<extensions::MatureExtensionChecker> mature_extension_checker_;
 #endif
 
   base::ObserverList<SupervisedUserServiceObserver>::Unchecked observer_list_;

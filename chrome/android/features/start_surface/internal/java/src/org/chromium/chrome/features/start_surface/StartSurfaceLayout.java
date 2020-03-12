@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -172,8 +171,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         boolean showShrinkingAnimation = animate && TabFeatureUtilities.isTabToGtsAnimationEnabled()
                 && !isCurrentTabModelEmpty;
         boolean quick = mTabListDelegate.prepareOverview();
-        boolean skipSlowZooming =
-                CachedFeatureFlags.getValue(TabUiFeatureUtilities.SKIP_SLOW_ZOOMING);
+        boolean skipSlowZooming = TabUiFeatureUtilities.SKIP_SLOW_ZOOMING.getValue();
         Log.d(TAG, "SkipSlowZooming = " + skipSlowZooming);
         if (skipSlowZooming) {
             showShrinkingAnimation &= quick;

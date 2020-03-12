@@ -2868,8 +2868,8 @@ jumbo_static_library("browser") {
       "notifications/scheduler/display_agent_android.h",
       "notifications/scheduler/notification_background_task_scheduler_android.cc",
       "notifications/scheduler/notification_background_task_scheduler_android.h",
-      "offline_pages/prefetch/notifications/prefetch_notification_service_bridge.cc",
-      "offline_pages/prefetch/notifications/prefetch_notification_service_bridge.h",
+      "offline_pages/prefetch/notifications/prefetch_notification_service_bridge_android.cc",
+      "offline_pages/prefetch/notifications/prefetch_notification_service_bridge_android.h",
       "offline_pages/prefetch/notifications/prefetch_notification_service_factory.cc",
       "offline_pages/prefetch/notifications/prefetch_notification_service_factory.h",
       "optimization_guide/android/optimization_guide_bridge.cc",
@@ -5369,8 +5369,6 @@ jumbo_static_library("browser") {
   }
   if (enable_supervised_users && enable_extensions) {
     sources += [
-      "supervised_user/mature_extension_checker.cc",
-      "supervised_user/mature_extension_checker.h",
       "supervised_user/supervised_user_extensions_metrics_recorder.cc",
       "supervised_user/supervised_user_extensions_metrics_recorder.h",
       "supervised_user/supervised_user_service_management_api_delegate.cc",

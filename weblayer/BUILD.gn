@@ -394,8 +394,6 @@ static_library("weblayer_lib") {
 grit("resources") {
   source = "weblayer_resources.grd"
 
-  source_is_generated = true
-
   outputs = [
     "grit/weblayer_resources.h",
     "weblayer_resources.pak",

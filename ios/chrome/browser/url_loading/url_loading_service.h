@@ -15,7 +15,7 @@
 
 class AppUrlLoadingService;
 class Browser;
-class UrlLoadingNotifier;
+class UrlLoadingNotifierBrowserAgent;
 struct UrlLoadParams;
 
 // Objective-C delegate for UrlLoadingService.
@@ -31,7 +31,7 @@ struct UrlLoadParams;
 // Service used to load url in current or new tab.
 class UrlLoadingService : public KeyedService {
  public:
-  UrlLoadingService(UrlLoadingNotifier* notifier);
+  UrlLoadingService();
 
   void SetAppService(AppUrlLoadingService* app_service);
   void SetDelegate(id<URLLoadingServiceDelegate> delegate);
@@ -56,7 +56,7 @@ class UrlLoadingService : public KeyedService {
   __weak id<URLLoadingServiceDelegate> delegate_;
   AppUrlLoadingService* app_service_;
   Browser* browser_;
-  UrlLoadingNotifier* notifier_;
+  UrlLoadingNotifierBrowserAgent* notifier_;
 };
 
 #endif  // IOS_CHROME_BROWSER_URL_LOADING_URL_LOADING_SERVICE_H_

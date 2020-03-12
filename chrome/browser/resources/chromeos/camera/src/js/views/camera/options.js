@@ -247,8 +247,12 @@ export class Options {
    *     on HALv1 devices.
    */
   async videoDeviceIds() {
-    /** @type{!Array<(!Camera3DeviceInfo|!MediaDeviceInfo)>} */
+    /** @type {!Array<(!Camera3DeviceInfo|!MediaDeviceInfo)>} */
     let devices;
+    /**
+     * Object mapping from device id to facing. Set to null on HALv1 device.
+     * @type {?Object<string, !Facing>}
+     */
     let facings = null;
 
     const camera3Info = await this.infoUpdater_.getCamera3DevicesInfo();
@@ -264,8 +268,8 @@ export class Options {
     }
 
     const defaultFacing = await ChromeHelper.getInstance().isTabletMode() ?
-        cros.mojom.CameraFacing.CAMERA_FACING_BACK :
-        cros.mojom.CameraFacing.CAMERA_FACING_FRONT;
+        Facing.ENVIRONMENT :
+        Facing.USER;
     // Put the selected video device id first.
     const sorted = devices.map((device) => device.deviceId).sort((a, b) => {
       if (a === b) {

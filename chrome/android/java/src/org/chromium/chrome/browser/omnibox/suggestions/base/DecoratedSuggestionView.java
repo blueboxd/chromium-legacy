@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.omnibox.suggestions.base;
 
 import android.content.Context;
-import android.support.annotation.DrawableRes;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+
+import androidx.annotation.DrawableRes;
 
 import org.chromium.chrome.R;
 import org.chromium.components.browser_ui.widget.RoundedCornerImageView;

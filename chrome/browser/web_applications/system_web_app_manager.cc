@@ -123,6 +123,7 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
                   SystemAppInfo("Media", GURL("chrome://media-app/pwa.html")));
     infos.at(SystemAppType::MEDIA).include_launch_directory = true;
     infos.at(SystemAppType::MEDIA).show_in_launcher = false;
+    infos.at(SystemAppType::MEDIA).show_in_search = false;
   }
 
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::PRINT_MANAGEMENT)) {
@@ -413,6 +414,13 @@ bool SystemWebAppManager::ShouldShowInLauncher(SystemAppType type) const {
   if (it == system_app_infos_.end())
     return false;
   return it->second.show_in_launcher;
+}
+
+bool SystemWebAppManager::ShouldShowInSearch(SystemAppType type) const {
+  auto it = system_app_infos_.find(type);
+  if (it == system_app_infos_.end())
+    return false;
+  return it->second.show_in_search;
 }
 
 gfx::Size SystemWebAppManager::GetMinimumWindowSize(const AppId& app_id) const {

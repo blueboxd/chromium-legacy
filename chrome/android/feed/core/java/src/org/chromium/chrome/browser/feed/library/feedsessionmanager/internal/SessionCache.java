@@ -4,9 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.feedsessionmanager.internal;
 
-import android.support.annotation.VisibleForTesting;
-
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.api.host.logging.Task;

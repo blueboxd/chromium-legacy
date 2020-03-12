@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.host.storage;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 /** A mutation to the underlying {@link JournalStorage}. */
 public abstract class JournalOperation {

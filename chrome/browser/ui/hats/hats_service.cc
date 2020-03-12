@@ -345,10 +345,10 @@ void HatsService::CheckSurveyStatusAndMaybeShow(Browser* browser,
     checker_ = std::make_unique<HatsSurveyStatusChecker>(profile_);
   checker_->CheckSurveyStatus(
       survey_configs_by_triggers_[trigger].en_site_id_,
-      base::BindOnce(&HatsService::ShowSurvey, base::Unretained(this), browser,
-                     trigger),
-      base::BindOnce(&HatsService::OnSurveyStatusError, base::Unretained(this),
-                     trigger));
+      base::BindOnce(&HatsService::ShowSurvey, weak_ptr_factory_.GetWeakPtr(),
+                     browser, trigger),
+      base::BindOnce(&HatsService::OnSurveyStatusError,
+                     weak_ptr_factory_.GetWeakPtr(), trigger));
 }
 
 void HatsService::ShowSurvey(Browser* browser, const std::string& trigger) {

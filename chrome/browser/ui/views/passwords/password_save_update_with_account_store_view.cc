@@ -282,7 +282,8 @@ std::unique_ptr<views::Combobox> CreateDestinationCombobox(
   else
     combobox->SetSelectedRow(1);
 
-  // TODO(crbug.com/1044038): SetAccessibleName of the combobox.
+  // TODO(crbug.com/1044038): Use an internationalized string instead.
+  combobox->SetAccessibleName(base::ASCIIToUTF16("Destination"));
   return combobox;
 }
 

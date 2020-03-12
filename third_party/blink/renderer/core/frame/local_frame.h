@@ -546,6 +546,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Indicate that this frame was attached as a MainFrame.
   void WasAttachedAsLocalMainFrame();
 
+  // Returns the first URL loaded in this frame that is cross-origin to the
+  // parent frame.
+  base::Optional<String> FirstUrlCrossOriginToParent() const;
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -701,6 +705,14 @@ class CORE_EXPORT LocalFrame final : public Frame,
   Member<SystemClipboard> system_clipboard_;
   // Access to the global raw/unsanitized system clipboard
   Member<RawSystemClipboard> raw_system_clipboard_;
+
+  // Stores the first URL that was loaded in this frame that is cross-origin
+  // to the parent frame. For this URL we know that the parent origin provided
+  // it by either setting the |src| attribute or by navigating the iframe.
+  // Thus we can safely reveal it to the parent origin in Web APIs.
+  // TODO(ulan): Move this to the browser process once performance.measureMemory
+  // starts using Performance Manager to support cross-site iframes.
+  base::Optional<String> first_url_cross_origin_to_parent_;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

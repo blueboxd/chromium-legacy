@@ -19,10 +19,13 @@
         android:key="binary_toggle"
         android:defaultValue="true" />
     <!-- A common Allow/Ask/Block 3-state toggle (radio group). Only shown when
-         the category requires these 3 states. Mutual exclusive with the
-         "binary_toggle" above. -->
+         the category requires these 3 states. Mutually exclusive with the
+         "binary_toggle" above and the "four_state_cookie_toggle" below. -->
     <org.chromium.chrome.browser.site_settings.TriStateSiteSettingsPreference
         android:key="tri_state_toggle" />
+    <!-- A four state toggle for cookie preferences, only shown for the Cookies category. -->
+    <org.chromium.chrome.browser.site_settings.FourStateCookieSettingsPreference
+        android:key="four_state_cookie_toggle" />
 
     <!-- A toggle for blocking third-party cookies, only shown for the Cookies category. -->
     <org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference

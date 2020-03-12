@@ -26,7 +26,6 @@ class CORE_EXPORT DocumentModuleScriptFetcher final
   // Implements ModuleScriptFetcher.
   void Fetch(FetchParameters&,
              ResourceFetcher*,
-             const Modulator* modulator_for_built_in_modules,
              ModuleGraphLevel,
              Client*) override;
 
@@ -37,9 +36,6 @@ class CORE_EXPORT DocumentModuleScriptFetcher final
   void Trace(Visitor*) override;
 
  private:
-  bool FetchIfLayeredAPI(const Modulator& modulator_for_built_in_modules,
-                         FetchParameters&);
-
   Member<Client> client_;
 };
 

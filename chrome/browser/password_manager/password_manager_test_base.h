@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
@@ -134,12 +135,34 @@ class BubbleObserver {
   DISALLOW_COPY_AND_ASSIGN(BubbleObserver);
 };
 
+// A helper class that synchronously waits until the password store handles a
+// GetLogins() request.
+class PasswordStoreResultsObserver
+    : public password_manager::PasswordStoreConsumer {
+ public:
+  PasswordStoreResultsObserver();
+  ~PasswordStoreResultsObserver() override;
+
+  // Waits for OnGetPasswordStoreResults() and returns the result.
+  std::vector<std::unique_ptr<autofill::PasswordForm>> WaitForResults();
+
+ private:
+  void OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
+
+  base::RunLoop run_loop_;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> results_;
+
+  DISALLOW_COPY_AND_ASSIGN(PasswordStoreResultsObserver);
+};
+
 class PasswordManagerBrowserTestBase : public CertVerifierBrowserTest {
  public:
   PasswordManagerBrowserTestBase();
   ~PasswordManagerBrowserTestBase() override;
 
   // InProcessBrowserTest:
+  void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
 
@@ -151,6 +174,11 @@ class PasswordManagerBrowserTestBase : public CertVerifierBrowserTest {
   static void SetUpOnMainThreadAndGetNewTab(
       Browser* browser,
       content::WebContents** web_contents);
+
+  // Creates a new tab with all the password manager test hooks and returns it
+  // in |web_contents|.
+  static void GetNewTab(Browser* browser, content::WebContents** web_contents);
+
   // Make sure that the password store associated with the given browser
   // processed all the previous calls, calls executed on another thread.
   static void WaitForPasswordStore(Browser* browser);
@@ -217,9 +245,17 @@ class PasswordManagerBrowserTestBase : public CertVerifierBrowserTest {
   net::EmbeddedTestServer& https_test_server() { return https_test_server_; }
 
  private:
+  static void OnWillCreateBrowserContextServices(
+      content::BrowserContext* context);
+
   net::EmbeddedTestServer https_test_server_;
   // A tab with some hooks injected.
   content::WebContents* web_contents_;
+
+  std::unique_ptr<
+      base::CallbackList<void(content::BrowserContext*)>::Subscription>
+      will_create_browser_context_services_subscription_;
+
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerBrowserTestBase);
 };
 

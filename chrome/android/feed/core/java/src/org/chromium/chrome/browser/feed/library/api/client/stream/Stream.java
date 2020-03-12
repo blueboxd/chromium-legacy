@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.feed.library.api.client.stream;
 
 import android.os.Bundle;
-import android.support.annotation.IntDef;
 import android.view.View;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import java.util.List;

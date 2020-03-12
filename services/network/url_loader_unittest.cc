@@ -4645,7 +4645,8 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
 
 TEST_F(URLLoaderTest, CrossOriginEmbedderPolicyValue) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kCrossOriginIsolation);
+  scoped_feature_list.InitAndEnableFeature(
+      features::kCrossOriginEmbedderPolicy);
 
   constexpr auto kNone = mojom::CrossOriginEmbedderPolicyValue::kNone;
   constexpr auto kRequireCorp =

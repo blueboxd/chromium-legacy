@@ -50,6 +50,5 @@ and replace `new Worker(scriptURL)` with `newWorkerViaBlob(scriptURL)`.
 Note that you may also have to fix `importScripts()` or `fetch()` from the worker script that use relative URLs, because the worker’s base URL is now `blob://...`.
 
 ### Other things that do not work in unsigned bundles
-- Scripts using the value of `location.href` may not work (use `document.baseURI`'s value instead).
 - Service workers (does not work in file://)
 - History API (does not work in opaque origins)

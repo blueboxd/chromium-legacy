@@ -38,8 +38,6 @@ LLVM_BOOTSTRAP_INSTALL_DIR = os.path.join(THIRD_PARTY_DIR,
 LLVM_INSTRUMENTED_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-instrumented')
 LLVM_PROFDATA_FILE = os.path.join(LLVM_INSTRUMENTED_DIR, 'profdata.prof')
 CHROME_TOOLS_SHIM_DIR = os.path.join(LLVM_DIR, 'llvm', 'tools', 'chrometools')
-THREADS_ENABLED_BUILD_DIR = os.path.join(THIRD_PARTY_DIR,
-                                         'llvm-threads-enabled')
 COMPILER_RT_BUILD_DIR = os.path.join(LLVM_BUILD_DIR, 'compiler-rt')
 LLVM_BUILD_TOOLS_DIR = os.path.abspath(
     os.path.join(LLVM_DIR, '..', 'llvm-build-tools'))
@@ -613,7 +611,6 @@ def main():
       projects += ';libcxx;compiler-rt'
 
     instrument_args = base_cmake_args + [
-        '-DLLVM_ENABLE_THREADS=OFF',
         '-DLLVM_ENABLE_PROJECTS=' + projects,
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
@@ -641,6 +638,9 @@ def main():
     # training by actually building a target in Chromium. (For comparison, a
     # C++-y "Hello World" program only resulted in 14% faster builds.)
     # See https://crbug.com/966403#c16 for all numbers.
+    #
+    # Although the training currently only exercises Clang, it does involve LLVM
+    # internals, and so LLD also benefits when used for ThinLTO links.
     #
     # NOTE: Tidy uses binaries built with this profile, but doesn't seem to
     # gain much from it. If tidy's execution time becomes a concern, it might
@@ -726,37 +726,6 @@ def main():
     deployment_env = os.environ.copy()
     deployment_env['MACOSX_DEPLOYMENT_TARGET'] = deployment_target
 
-  # Build lld and code coverage tools. This is done separately from the rest of
-  # the build because these tools require threading support.
-  print('Building thread-enabled tools.')
-  tools_with_threading = [ 'dsymutil', 'lld', 'llvm-cov', 'llvm-profdata' ]
-  print('Building the following tools with threading support: %s' %
-        str(tools_with_threading))
-
-  if os.path.exists(THREADS_ENABLED_BUILD_DIR):
-    RmTree(THREADS_ENABLED_BUILD_DIR)
-  EnsureDirExists(THREADS_ENABLED_BUILD_DIR)
-  os.chdir(THREADS_ENABLED_BUILD_DIR)
-
-  threads_enabled_cmake_args = base_cmake_args + [
-      '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
-      '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
-      '-DCMAKE_EXE_LINKER_FLAGS=' + ' '.join(ldflags),
-      '-DCMAKE_SHARED_LINKER_FLAGS=' + ' '.join(ldflags),
-      '-DCMAKE_MODULE_LINKER_FLAGS=' + ' '.join(ldflags)]
-  if cc is not None:
-    threads_enabled_cmake_args.append('-DCMAKE_C_COMPILER=' + cc)
-  if cxx is not None:
-    threads_enabled_cmake_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
-  if lld is not None:
-    threads_enabled_cmake_args.append('-DCMAKE_LINKER=' + lld)
-
-  RunCommand(['cmake'] + threads_enabled_cmake_args +
-             [os.path.join(LLVM_DIR, 'llvm')],
-             msvc_arch='x64', env=deployment_env)
-  CopyLibstdcpp(args, THREADS_ENABLED_BUILD_DIR)
-  RunCommand(['ninja'] + tools_with_threading, msvc_arch='x64')
-
   print('Building final compiler.')
 
   default_tools = ['plugins', 'blink_gc_plugin', 'translation_unit']
@@ -765,7 +734,6 @@ def main():
   if cxx is not None: base_cmake_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
   if lld is not None: base_cmake_args.append('-DCMAKE_LINKER=' + lld)
   cmake_args = base_cmake_args + compiler_rt_args + [
-      '-DLLVM_ENABLE_THREADS=OFF',
       '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
       '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
       '-DCMAKE_EXE_LINKER_FLAGS=' + ' '.join(ldflags),
@@ -791,17 +759,6 @@ def main():
              msvc_arch='x64', env=deployment_env)
   CopyLibstdcpp(args, LLVM_BUILD_DIR)
   RunCommand(['ninja'], msvc_arch='x64')
-
-  # Copy in the threaded versions of lld and other tools.
-  if sys.platform == 'win32':
-    CopyFile(os.path.join(THREADS_ENABLED_BUILD_DIR, 'bin', 'lld-link.exe'),
-             os.path.join(LLVM_BUILD_DIR, 'bin'))
-    CopyFile(os.path.join(THREADS_ENABLED_BUILD_DIR, 'bin', 'lld.pdb'),
-             os.path.join(LLVM_BUILD_DIR, 'bin'))
-  else:
-    for tool in tools_with_threading:
-      CopyFile(os.path.join(THREADS_ENABLED_BUILD_DIR, 'bin', tool),
-               os.path.join(LLVM_BUILD_DIR, 'bin'))
 
   if chrome_tools:
     # If any Chromium tools were built, install those now.
@@ -830,7 +787,6 @@ def main():
       cflags += ['-m32']
       cxxflags += ['-m32']
     compiler_rt_args = base_cmake_args + [
-        '-DLLVM_ENABLE_THREADS=OFF',
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
         '-DCOMPILER_RT_BUILD_BUILTINS=OFF',
@@ -887,7 +843,6 @@ def main():
                 '--sysroot=%s/sysroot' % toolchain_dir,
                 '-B%s' % toolchain_dir]
       android_args = base_cmake_args + [
-        '-DLLVM_ENABLE_THREADS=OFF',
         '-DCMAKE_C_COMPILER=' + os.path.join(LLVM_BUILD_DIR, 'bin/clang'),
         '-DCMAKE_CXX_COMPILER=' + os.path.join(LLVM_BUILD_DIR, 'bin/clang++'),
         '-DLLVM_CONFIG_PATH=' + os.path.join(LLVM_BUILD_DIR, 'bin/llvm-config'),
@@ -936,7 +891,6 @@ def main():
       # TODO(thakis): Might have to pass -B here once sysroot contains
       # binaries (e.g. gas for arm64?)
       fuchsia_args = base_cmake_args + [
-        '-DLLVM_ENABLE_THREADS=OFF',
         '-DCMAKE_C_COMPILER=' + os.path.join(LLVM_BUILD_DIR, 'bin/clang'),
         '-DCMAKE_CXX_COMPILER=' + os.path.join(LLVM_BUILD_DIR, 'bin/clang++'),
         '-DCMAKE_LINKER=' + os.path.join(LLVM_BUILD_DIR, 'bin/clang'),

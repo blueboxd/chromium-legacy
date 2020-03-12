@@ -5,9 +5,10 @@
 package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.app.Activity;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeVersionInfo;

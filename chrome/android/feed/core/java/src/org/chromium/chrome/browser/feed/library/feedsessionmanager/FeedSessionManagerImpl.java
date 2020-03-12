@@ -4,9 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.feedsessionmanager;
 
-import android.support.annotation.VisibleForTesting;
-
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Consumer;
 import org.chromium.base.Function;

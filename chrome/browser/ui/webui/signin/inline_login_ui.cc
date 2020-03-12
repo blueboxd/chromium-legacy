@@ -45,6 +45,10 @@ void AddEduStrings(content::WebUIDataSource* source) {
 
   source->AddLocalizedString("welcomeTitle", IDS_EDU_LOGIN_WELCOME_TITLE);
   source->AddLocalizedString("welcomeBody", IDS_EDU_LOGIN_WELCOME_BODY);
+  source->AddLocalizedString("welcomeReauthTitle",
+                             IDS_EDU_LOGIN_WELCOME_REAUTH_TITLE);
+  source->AddLocalizedString("welcomeReauthBody",
+                             IDS_EDU_LOGIN_WELCOME_REAUTH_BODY);
 }
 #endif  // defined(OS_CHROMEOS)
 

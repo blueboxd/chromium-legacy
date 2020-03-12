@@ -24,9 +24,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
+
+import androidx.annotation.Nullable;
 
 import org.junit.Before;
 import org.junit.Rule;

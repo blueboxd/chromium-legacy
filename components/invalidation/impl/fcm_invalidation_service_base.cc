@@ -14,6 +14,7 @@
 #include "components/invalidation/impl/fcm_network_handler.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
 #include "components/invalidation/public/invalidator_state.h"
+#include "components/invalidation/public/topic_data.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
 #include "components/prefs/scoped_user_pref_update.h"
 
@@ -84,24 +85,20 @@ void FCMInvalidationServiceBase::RegisterInvalidationHandler(
 
 bool FCMInvalidationServiceBase::UpdateInterestedTopics(
     syncer::InvalidationHandler* handler,
-    const syncer::TopicSet& topic_set) {
+    const syncer::TopicSet& legacy_topic_set) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   update_was_requested_ = true;
-  DVLOG(2) << "Subscribing to topics: " << topic_set.size();
-  // TODO(crbug.com/1029698): |is_public| should be a part of dedicated Topic
-  // type, that would allow to avoid the conversion below and removal of
-  // syncer::Topics, syncer::TopicMetadata and
-  // InvalidationHandler::IsPublicTopic().
-  syncer::Topics topic_map;
-  for (const auto& topic : topic_set) {
-    topic_map.emplace(topic,
-                      syncer::TopicMetadata{handler->IsPublicTopic(topic)});
+  DVLOG(2) << "Subscribing to topics: " << legacy_topic_set.size();
+  std::set<TopicData> topic_set;
+  for (const auto& topic_name : legacy_topic_set) {
+    topic_set.insert(TopicData(topic_name, handler->IsPublicTopic(topic_name)));
   }
   // TODO(crbug.com/1054404): UpdateRegisteredTopics() should be renamed to
   // clarify that it actually updates whether topics need subscription (aka
   // interested).
-  if (!invalidator_registrar_.UpdateRegisteredTopics(handler, topic_map))
+  if (!invalidator_registrar_.UpdateRegisteredTopics(handler, topic_set)) {
     return false;
+  }
   DoUpdateSubscribedTopicsIfNeeded();
   logger_.OnUpdatedTopics(invalidator_registrar_.GetHandlerNameToTopicsMap());
   return true;

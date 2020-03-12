@@ -16,6 +16,7 @@ import {DeviceInfoUpdater} from '../device/device_info_updater.js';
 import * as nav from '../nav.js';
 import * as state from '../state.js';
 import {
+  Facing,
   Resolution,      // eslint-disable-line no-unused-vars
   ResolutionList,  // eslint-disable-line no-unused-vars
 } from '../type.js';
@@ -315,13 +316,13 @@ export class ResolutionSettings extends BaseSettings {
           },
         };
         switch (facing) {
-          case cros.mojom.CameraFacing.CAMERA_FACING_FRONT:
+          case Facing.USER:
             this.frontSetting_ = deviceSetting;
             break;
-          case cros.mojom.CameraFacing.CAMERA_FACING_BACK:
+          case Facing.ENVIRONMENT:
             this.backSetting_ = deviceSetting;
             break;
-          case cros.mojom.CameraFacing.CAMERA_FACING_EXTERNAL:
+          case Facing.EXTERNAL:
             this.externalSettings_.push(deviceSetting);
             break;
           default:

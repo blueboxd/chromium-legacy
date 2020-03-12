@@ -22,8 +22,10 @@ class CrossOriginOpenerPolicyBrowserTest : public ContentBrowserTest {
   CrossOriginOpenerPolicyBrowserTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     std::vector<base::Feature> features;
-    feature_list_.InitWithFeatures({network::features::kCrossOriginIsolation},
-                                   {});
+    feature_list_.InitWithFeatures(
+        {network::features::kCrossOriginOpenerPolicy,
+         network::features::kCrossOriginEmbedderPolicy},
+        {});
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kIgnoreCertificateErrors);
   }

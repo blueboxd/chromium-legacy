@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.host.logging;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 /** IntDef representing the different types of scrolls. */
 @IntDef({ScrollType.UNKNOWN, ScrollType.STREAM_SCROLL, ScrollType.NEXT_VALUE})

@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -110,6 +111,25 @@ void LogZeroStateResultsListMetrics(
   // impressed on screen for some amount of time.
   UMA_HISTOGRAM_BOOLEAN("Apps.AppList.ZeroStateResultsList.Clicked",
                         launched_index >= 0);
+}
+
+void LogChipUsageMetrics(const AppLaunchData& launch) {
+  // Filter launches that aren't from the chips.
+  if (launch.launched_from !=
+      ash::AppListLaunchedFrom::kLaunchedFromSuggestionChip)
+    return;
+
+  // Total usage.
+  UMA_HISTOGRAM_BOOLEAN("Apps.AppList.SuggestedFiles.ChipLaunched", true);
+
+  // Usage per chip type.
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppList.SuggestedFiles.LaunchType",
+                            launch.ranking_item_type);
+
+  // Launch index. At most 5 chips are shown and indices are 0-based, so the
+  // maximum index is 4.
+  UMA_HISTOGRAM_EXACT_LINEAR("Apps.AppList.SuggestedFiles.LaunchIndex",
+                             launch.suggestion_index, 4);
 }
 
 }  // namespace app_list

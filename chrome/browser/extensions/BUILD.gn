@@ -288,6 +288,8 @@ jumbo_static_library("extensions") {
     "api/passwords_private/passwords_private_event_router_factory.h",
     "api/passwords_private/passwords_private_utils.cc",
     "api/passwords_private/passwords_private_utils.h",
+    "api/passwords_private/test_passwords_private_delegate.cc",
+    "api/passwords_private/test_passwords_private_delegate.h",
     "api/permissions/permissions_api.cc",
     "api/permissions/permissions_api.h",
     "api/permissions/permissions_api_helpers.cc",

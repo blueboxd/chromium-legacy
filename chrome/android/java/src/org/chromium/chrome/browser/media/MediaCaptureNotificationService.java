@@ -10,10 +10,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 import android.util.SparseIntArray;
 
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import org.chromium.base.ContextUtils;

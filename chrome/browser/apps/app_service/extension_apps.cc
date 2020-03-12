@@ -1064,7 +1064,10 @@ void ExtensionApps::SetShowInFields(apps::mojom::AppPtr& app,
           system_web_app_manager.ShouldShowInLauncher(system_app_type.value())
               ? apps::mojom::OptionalBool::kTrue
               : apps::mojom::OptionalBool::kFalse;
-      app->show_in_search = apps::mojom::OptionalBool::kTrue;
+      app->show_in_search =
+          system_web_app_manager.ShouldShowInSearch(system_app_type.value())
+              ? apps::mojom::OptionalBool::kTrue
+              : apps::mojom::OptionalBool::kFalse;
     }
   } else {
     app->show_in_launcher = apps::mojom::OptionalBool::kFalse;

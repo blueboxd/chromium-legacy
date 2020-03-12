@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.omnibox.suggestions.basic;
 
 import android.content.Context;
-import android.support.annotation.DrawableRes;
 import android.text.TextUtils;
+
+import androidx.annotation.DrawableRes;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;

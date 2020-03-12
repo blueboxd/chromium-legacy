@@ -76,8 +76,11 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   AnimationEffect* effect() { return GetEffect(); }
   AnimationTimeline* timeline() { return timeline_; }
   String playState();
-  double currentTime(bool& is_null);
-  double startTime(bool& is_null);
+  base::Optional<double> currentTime();
+  base::Optional<double> startTime();
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  double currentTime(bool& is_null);  // DEPRECATED
+  double startTime(bool& is_null);    // DEPRECATED
 
   double playbackRate(ScriptState* script_state) const;
   void setPlaybackRate(ScriptState* script_state, double playback_rate);

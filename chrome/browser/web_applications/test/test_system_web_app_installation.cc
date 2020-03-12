@@ -161,6 +161,15 @@ TestSystemWebAppInstallation::SetUpAppNotShownInLauncher() {
 
 // static
 std::unique_ptr<TestSystemWebAppInstallation>
+TestSystemWebAppInstallation::SetUpAppNotShownInSearch() {
+  SystemAppInfo app_info("Test", GURL("chrome://test-system-app/pwa.html"));
+  app_info.show_in_search = false;
+  return base::WrapUnique(new TestSystemWebAppInstallation(
+      SystemAppType::SETTINGS, std::move(app_info)));
+}
+
+// static
+std::unique_ptr<TestSystemWebAppInstallation>
 TestSystemWebAppInstallation::SetUpAppWithAdditionalSearchTerms() {
   SystemAppInfo app_info("Test", GURL("chrome://test-system-app/pwa.html"));
   app_info.additional_search_terms = {IDS_SETTINGS_SECURITY};

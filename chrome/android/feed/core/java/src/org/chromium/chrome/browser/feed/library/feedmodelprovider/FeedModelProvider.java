@@ -4,9 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.feedmodelprovider;
 
-import android.support.annotation.VisibleForTesting;
-
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.google.protobuf.ByteString;
 

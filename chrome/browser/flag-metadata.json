@@ -596,9 +596,9 @@
     "expiry_milestone": 80
   },
   {
-    "name": "cross-origin-isolation",
-    "owners": [ "yhirano" ],
-    "expiry_milestone": 83
+    "name": "cross-origin-opener-policy",
+    "owners": [ "clamy" ],
+    "expiry_milestone": 84
   },
   {
     "name": "crostini-disk-resizing",

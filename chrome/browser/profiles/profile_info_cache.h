@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_info_interface.h"
+#include "components/signin/public/base/persistent_repeating_timer.h"
 
 namespace gfx {
 class Image;
@@ -120,6 +121,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   bool GetProfileAttributesWithPath(const base::FilePath& path,
                                     ProfileAttributesEntry** entry) override;
+  void DisableProfileMetricsForTesting() override;
 
   void NotifyProfileAuthInfoChanged(const base::FilePath& profile_path);
   void NotifyIfProfileNamesHaveChanged();
@@ -177,6 +179,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // recomputed to "Person 1" and "Person 2".
   void MigrateLegacyProfileNamesAndRecomputeIfNeeded();
   static void SetLegacyProfileMigrationForTesting(bool value);
+
+  std::unique_ptr<signin::PersistentRepeatingTimer> repeating_timer_;
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
   std::vector<std::string> keys_;

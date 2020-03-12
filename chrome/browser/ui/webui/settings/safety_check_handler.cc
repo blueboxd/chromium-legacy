@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_factory.h"
 #include "chrome/browser/password_manager/bulk_leak_check_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
@@ -81,6 +82,7 @@ void SafetyCheckHandler::PerformSafetyCheck() {
   if (!version_updater_) {
     version_updater_.reset(VersionUpdater::Create(web_ui()->GetWebContents()));
   }
+  DCHECK(version_updater_);
   CheckUpdates();
 
   CheckSafeBrowsing();
@@ -90,6 +92,12 @@ void SafetyCheckHandler::PerformSafetyCheck() {
         Profile::FromWebUI(web_ui()));
   }
   DCHECK(leak_service_);
+  if (!passwords_delegate_) {
+    passwords_delegate_ =
+        extensions::PasswordsPrivateDelegateFactory::GetForBrowserContext(
+            Profile::FromWebUI(web_ui()), true);
+  }
+  DCHECK(passwords_delegate_);
   CheckPasswords();
 
   if (!extension_prefs_) {
@@ -109,10 +117,12 @@ void SafetyCheckHandler::PerformSafetyCheck() {
 SafetyCheckHandler::SafetyCheckHandler(
     std::unique_ptr<VersionUpdater> version_updater,
     password_manager::BulkLeakCheckService* leak_service,
+    extensions::PasswordsPrivateDelegate* passwords_delegate,
     extensions::ExtensionPrefs* extension_prefs,
     extensions::ExtensionServiceInterface* extension_service)
     : version_updater_(std::move(version_updater)),
       leak_service_(leak_service),
+      passwords_delegate_(passwords_delegate),
       extension_prefs_(extension_prefs),
       extension_service_(extension_service) {}
 
@@ -391,13 +401,20 @@ void SafetyCheckHandler::OnStateChanged(
   using password_manager::BulkLeakCheckService;
   switch (state) {
     case BulkLeakCheckService::State::kIdle:
-    case BulkLeakCheckService::State::kCanceled:
-      // TODO(crbug.com/1015841): Implement retrieving the number
-      // of leaked passwords (if any) once PasswordsPrivateDelegate provides an
-      // API for that (see crrev.com/c/2072742).
+    case BulkLeakCheckService::State::kCanceled: {
+      size_t num_compromised =
+          passwords_delegate_->GetCompromisedCredentials().size();
+      if (num_compromised == 0) {
+        OnPasswordsCheckResult(PasswordsStatus::kSafe, 0);
+      } else {
+        OnPasswordsCheckResult(PasswordsStatus::kCompromisedExist,
+                               num_compromised);
+      }
       break;
+    }
     case BulkLeakCheckService::State::kRunning:
       OnPasswordsCheckResult(PasswordsStatus::kChecking, 0);
+      // Non-terminal state, so nothing else needs to be done.
       return;
     case BulkLeakCheckService::State::kSignedOut:
       OnPasswordsCheckResult(PasswordsStatus::kSignedOut, 0);

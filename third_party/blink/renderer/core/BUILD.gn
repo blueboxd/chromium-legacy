@@ -247,7 +247,7 @@ jumbo_source_set("testing") {
     ":core",
     ":generated_testing_idls",
     "//third_party/blink/renderer/bindings/core/v8:testing",
-    "//ui/base/mojom:cursor_type",
+    "//ui/base/mojom:cursor_type_blink",
   ]
 
   sources = [
@@ -1391,7 +1391,6 @@ jumbo_source_set("unit_tests") {
     "scheduler_integration_tests/virtual_time_test.cc",
     "script/document_modulator_impl_test.cc",
     "script/dynamic_module_resolver_test.cc",
-    "script/layered_api_test.cc",
     "script/mock_script_element_base.h",
     "script/module_map_test.cc",
     "script/module_record_resolver_impl_test.cc",
@@ -1482,7 +1481,7 @@ jumbo_source_set("unit_tests") {
     "//third_party/blink/renderer/core/fileapi:unit_tests",
     "//third_party/blink/renderer/core/html:unit_tests",
     "//ui/base/cursor",
-    "//ui/base/mojom:cursor_type",
+    "//ui/base/mojom:cursor_type_blink",
   ]
 
   data_deps = [ ":unit_tests_data" ]

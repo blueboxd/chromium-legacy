@@ -7,13 +7,13 @@ package org.chromium.chrome.browser.autofill_assistant.user_data;
 import static org.chromium.chrome.browser.autofill_assistant.AssistantAccessibilityUtils.setAccessibility;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.autofill_assistant.R;
 

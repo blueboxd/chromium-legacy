@@ -96,6 +96,9 @@ struct SystemAppInfo {
 
   // If set to false, this app will be hidden from the Chrome OS app launcher.
   bool show_in_launcher = true;
+
+  // If set to false, this app will be hidden from the Chrome OS search.
+  bool show_in_search = true;
 };
 
 // Installs, uninstalls, and updates System Web Apps.
@@ -171,6 +174,9 @@ class SystemWebAppManager {
 
   // Returns whether the app should be shown in the launcher.
   bool ShouldShowInLauncher(SystemAppType type) const;
+
+  // Returns whether the app should be shown in search.
+  bool ShouldShowInSearch(SystemAppType type) const;
 
   // Returns the minimum window size for |app_id| or an empty size if the app
   // doesn't specify a minimum.

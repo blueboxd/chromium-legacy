@@ -109,7 +109,6 @@ grit("resources") {
     "grit/headless_lib_resources.h",
     "$root_gen_dir/headless/headless_lib_resources.pak",
   ]
-  source_is_generated = true
 }
 
 devtools_domains = [

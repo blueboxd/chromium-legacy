@@ -3136,9 +3136,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCorsForContentScriptsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(network::features::kCorbAllowlistAlsoAppliesToOorCors)},
 
-    {"cross-origin-isolation", flag_descriptions::kCrossOriginIsolationName,
-     flag_descriptions::kCrossOriginIsolationDescription, kOsAll,
-     FEATURE_VALUE_TYPE(network::features::kCrossOriginIsolation)},
+    {"cross-origin-opener-policy",
+     flag_descriptions::kCrossOriginOpenerPolicyName,
+     flag_descriptions::kCrossOriginOpenerPolicyDescription, kOsAll,
+     FEATURE_VALUE_TYPE(network::features::kCrossOriginOpenerPolicy)},
 
     {"disable-keepalive-fetch", flag_descriptions::kDisableKeepaliveFetchName,
      flag_descriptions::kDisableKeepaliveFetchDescription, kOsAll,
@@ -3465,10 +3466,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDuetTabStripIntegrationAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kDuetTabStripIntegrationAndroid)},
 #endif  // OS_ANDROID
-
-    {"enable-built-in-module-all", flag_descriptions::kBuiltInModuleAllName,
-     flag_descriptions::kBuiltInModuleAllDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kBuiltInModuleAll)},
 
     {"enable-layout-ng", flag_descriptions::kEnableLayoutNGName,
      flag_descriptions::kEnableLayoutNGDescription, kOsAll,
@@ -4090,10 +4087,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCCTTargetTranslateLanguageDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kCCTTargetTranslateLanguage)},
 #endif
-
-    {"enable-built-in-module-infra", flag_descriptions::kBuiltInModuleInfraName,
-     flag_descriptions::kBuiltInModuleInfraDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kBuiltInModuleInfra)},
 
     {"native-file-system-api", flag_descriptions::kNativeFileSystemAPIName,
      flag_descriptions::kNativeFileSystemAPIDescription, kOsDesktop,

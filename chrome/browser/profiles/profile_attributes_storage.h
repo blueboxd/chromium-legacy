@@ -127,6 +127,10 @@ class ProfileAttributesStorage
   // ProfileAttributesEntry.
   void NotifyOnProfileAvatarChanged(const base::FilePath& profile_path) const;
 
+  // Disables the periodic reporting of profile metrics, as this is causing
+  // tests to time out.
+  virtual void DisableProfileMetricsForTesting() {}
+
  protected:
   FRIEND_TEST_ALL_PREFIXES(ProfileInfoCacheTest, EntriesInAttributesStorage);
   FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest,

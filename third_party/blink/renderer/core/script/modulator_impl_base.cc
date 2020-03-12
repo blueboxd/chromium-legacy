@@ -53,54 +53,6 @@ bool ModulatorImplBase::ImportMapsEnabled() const {
   return RuntimeEnabledFeatures::ImportMapsEnabled(GetExecutionContext());
 }
 
-bool ModulatorImplBase::BuiltInModuleInfraEnabled() const {
-  return RuntimeEnabledFeatures::BuiltInModuleInfraEnabled(
-      GetExecutionContext());
-}
-
-bool ModulatorImplBase::BuiltInModuleEnabled(layered_api::Module module) const {
-  DCHECK(BuiltInModuleInfraEnabled());
-
-  // Some built-in APIs are available only on SecureContexts.
-  // https://crbug.com/977470
-  if (BuiltInModuleRequireSecureContext(module) &&
-      !GetExecutionContext()->IsSecureContext()) {
-    return false;
-  }
-
-  if (RuntimeEnabledFeatures::BuiltInModuleAllEnabled())
-    return true;
-  switch (module) {
-    case layered_api::Module::kBlank:
-      return true;
-    case layered_api::Module::kElementsVirtualScroller:
-      return false;
-  }
-}
-
-bool ModulatorImplBase::BuiltInModuleRequireSecureContext(
-    layered_api::Module module) {
-  switch (module) {
-    case layered_api::Module::kBlank:
-    case layered_api::Module::kElementsVirtualScroller:
-      return false;
-  }
-}
-
-void ModulatorImplBase::BuiltInModuleUseCount(
-    layered_api::Module module) const {
-  DCHECK(BuiltInModuleInfraEnabled());
-  DCHECK(BuiltInModuleEnabled(module));
-  switch (module) {
-    case layered_api::Module::kBlank:
-      break;
-    case layered_api::Module::kElementsVirtualScroller:
-      UseCounter::Count(GetExecutionContext(),
-                        WebFeature::kBuiltInModuleVirtualScroller);
-      break;
-  }
-}
-
 // <specdef label="fetch-a-module-script-tree"
 // href="https://html.spec.whatwg.org/C/#fetch-a-module-script-tree">
 // <specdef label="fetch-a-module-worker-script-tree"
@@ -149,7 +101,7 @@ KURL ModulatorImplBase::ResolveModuleSpecifier(const String& specifier,
                                                const KURL& base_url,
                                                String* failure_reason) {
   ParsedSpecifier parsed_specifier =
-      ParsedSpecifier::Create(specifier, base_url, BuiltInModuleInfraEnabled());
+      ParsedSpecifier::Create(specifier, base_url);
 
   if (!parsed_specifier.IsValid()) {
     if (failure_reason) {

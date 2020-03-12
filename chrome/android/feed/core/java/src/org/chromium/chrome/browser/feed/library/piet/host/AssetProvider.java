@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.feed.library.piet.host;
 
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.VisibleForTesting;
+
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Consumer;
 import org.chromium.base.supplier.Supplier;

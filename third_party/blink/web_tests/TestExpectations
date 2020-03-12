@@ -2394,9 +2394,6 @@ crbug.com/1032016 virtual/threaded/http/tests/devtools/tracing/timeline-js/timel
 crbug.com/1032016 http/tests/devtools/bindings/inline-styles-binding.js [ Pass Failure ]
 crbug.com/1032016 http/tests/devtools/bindings/livelocation-main-frame-navigated.js [ Pass Failure ]
 
-# Temporarily disabled so we can land a frontend change that removes side-effect handling in the frontend.
-crbug.com/1031243 http/tests/devtools/console-cd-completions.js [ Pass Failure ]
-
 # We only want to run one of the web-animations-api tests in stable mode.
 crbug.com/441553 virtual/stable/web-animations-api/* [ Skip ]
 # These tests *only* run in stable, to verify that these features are unsupported and throw exceptions.
@@ -4326,10 +4323,6 @@ crbug.com/826419 external/wpt/html/semantics/embedded-content/media-elements/tra
 crbug.com/825798 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-webvtt-non-snap-to-lines.html [ Failure ]
 
 crbug.com/927477 external/wpt/import-maps/acquire-import-maps-flag/worker-request/* [ Skip ]
-crbug.com/927477 virtual/import-maps-without-builtin-modules/external/wpt/import-maps/acquire-import-maps-flag/worker-request/* [ Skip ]
-
-# Excludes tests that require built-in module supports.
-crbug.com/1010751 external/wpt/import-maps/imported/* [ Skip ]
 
 # Disabled temporarliy until eager evaluation is fixed/re-baselined in DevTools.
 crbug.com/1043151 http/tests/devtools/console/viewport-testing/console-runtime-result-below-prompt.js [ Pass Failure ]
@@ -6004,8 +5997,6 @@ crbug.com/994008 [ Linux ] http/tests/devtools/elements/styles-3/styles-computed
 crbug.com/994008 [ Win ] http/tests/devtools/elements/styles-3/styles-computed-trace.js [ Pass Failure Timeout ]
 crbug.com/994034 [ Linux ] http/tests/devtools/elements/styles-3/styles-add-new-rule-colon.js [ Pass Failure Timeout ]
 crbug.com/994034 [ Win ] http/tests/devtools/elements/styles-3/styles-add-new-rule-colon.js [ Pass Failure Timeout ]
-crbug.com/994027 [ Linux ] http/tests/devtools/elements/styles-2/force-pseudo-state.js [ Pass Failure Timeout ]
-crbug.com/994027 [ Win ] http/tests/devtools/elements/styles-2/force-pseudo-state.js [ Pass Failure Timeout ]
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-canvas.html [ Pass Failure ]
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-resize.html [ Pass Failure ]
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated.html [ Pass Failure ]
@@ -6279,8 +6270,8 @@ http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Skip ]
 
 # Memory measurement tests are run as virtual tests.
 external/wpt/measure-memory/measure-memory.tentative.any.html [ Skip ]
-external/wpt/measure-memory/measure-memory.tentative.any.worker.html [ Skip ]
 external/wpt/measure-memory/measure-memory-cross-origin-iframe.tentative.window.html [ Skip ]
+external/wpt/measure-memory/measure-memory-cross-origin-redirecting-iframe.tentative.window.html [ Skip ]
 external/wpt/measure-memory/measure-memory-same-origin-iframe.tentative.window.html [ Skip ]
 
 # Assertion errors need to be fixed
@@ -7017,9 +7008,6 @@ crbug.com/1060175 [ Win ] wpt_internal/storage/estimate-usage-details-filesystem
 crbug.com/1060175 [ Win ] wpt_internal/storage/estimate-usage-details-filesystem.https.tentative.any.worker.html [ Pass Failure ]
 crbug.com/1060175 [ Win ] wpt_internal/virtual-scroller/large-child-comment.html [ Pass Failure ]
 crbug.com/1060175 [ Win ] wpt_internal/webxr/xr_view_projection_detached.https.html [ Pass Failure ]
-
-# Note: This is disabled on other platforms already.
-crbug.com/1060270 [ Mac ] http/tests/devtools/elements/styles-2/force-pseudo-state.js [ Failure ]
 
 # Temporarily disable to land https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2090785
 crbug.com/1011811 third_party/blink/web_tests/http/tests/devtools/changes/changes-sidebar.js [ Pass Failure ]

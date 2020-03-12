@@ -11,9 +11,10 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffXfermode;
-import android.support.annotation.IntDef;
-import android.support.annotation.VisibleForTesting;
 import android.util.LruCache;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
 /** Caches rounded corner masks to save memory and time spent creating them */
 public class RoundedCornerMaskCache {

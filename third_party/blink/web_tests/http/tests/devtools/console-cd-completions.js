@@ -113,7 +113,7 @@
 
   function checkIframeCompletions(completions) {
     TestRunner.addResult('myIFrame completions:');
-    dumpCompletions(completions, ['self', 'top', 'window']);
+    dumpCompletions(completions, []);
     requestProxyCompletions();
   }
 

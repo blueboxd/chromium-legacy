@@ -231,14 +231,6 @@ void WebRuntimeFeatures::EnableInputMultipleFieldsUI(bool enable) {
   RuntimeEnabledFeatures::SetInputMultipleFieldsUIEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableBuiltInModuleAll(bool enable) {
-  RuntimeEnabledFeatures::SetBuiltInModuleAllEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableBuiltInModuleInfra(bool enable) {
-  RuntimeEnabledFeatures::SetBuiltInModuleInfraEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableLayoutNG(bool enable) {
   RuntimeEnabledFeatures::SetLayoutNGEnabled(enable);
 }
@@ -665,6 +657,10 @@ void WebRuntimeFeatures::EnableSurfaceEmbeddingFeatures(bool enable) {
 
 void WebRuntimeFeatures::EnableAcceleratedSmallCanvases(bool enable) {
   RuntimeEnabledFeatures::SetAcceleratedSmallCanvasesEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableTrustTokens(bool enable) {
+  RuntimeEnabledFeatures::SetTrustTokensEnabled(enable);
 }
 
 }  // namespace blink

@@ -9,13 +9,13 @@ import static org.chromium.chrome.browser.feed.library.piet.StyleProvider.DIMENS
 
 import android.content.Context;
 import android.os.Build;
-import android.support.annotation.VisibleForTesting;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.piet.DebugLogger.MessageType;

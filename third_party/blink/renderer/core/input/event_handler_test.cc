@@ -47,7 +47,7 @@
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
-#include "ui/base/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/mojom/cursor_type.mojom-blink.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 
@@ -622,14 +622,14 @@ TEST_F(EventHandlerTest, AnchorTextCannotStartSelection) {
   EXPECT_TRUE(
       GetDocument().GetFrame()->GetEventHandler().ShouldShowIBeamForNode(
           text, result));
-  EXPECT_EQ(
-      GetDocument()
-          .GetFrame()
-          ->GetEventHandler()
-          .SelectCursor(location, result)
-          .value()
-          .GetType(),
-      ui::mojom::CursorType::kHand);  // A hand signals ability to navigate.
+  EXPECT_EQ(GetDocument()
+                .GetFrame()
+                ->GetEventHandler()
+                .SelectCursor(location, result)
+                .value()
+                .GetType(),
+            ui::mojom::blink::CursorType::kHand);  // A hand signals ability to
+                                                   // navigate.
 }
 
 TEST_F(EventHandlerTest, EditableAnchorTextCanStartSelection) {
@@ -646,13 +646,14 @@ TEST_F(EventHandlerTest, EditableAnchorTextCanStartSelection) {
   EXPECT_TRUE(
       GetDocument().GetFrame()->GetEventHandler().ShouldShowIBeamForNode(
           text, result));
-  EXPECT_EQ(GetDocument()
-                .GetFrame()
-                ->GetEventHandler()
-                .SelectCursor(location, result)
-                .value()
-                .GetType(),
-            ui::mojom::CursorType::kIBeam);  // An I-beam signals editability.
+  EXPECT_EQ(
+      GetDocument()
+          .GetFrame()
+          ->GetEventHandler()
+          .SelectCursor(location, result)
+          .value()
+          .GetType(),
+      ui::mojom::blink::CursorType::kIBeam);  // An I-beam signals editability.
 }
 
 TEST_F(EventHandlerTest, CursorForVerticalResizableTextArea) {
@@ -672,7 +673,7 @@ TEST_F(EventHandlerTest, CursorForVerticalResizableTextArea) {
                 .value()
                 .GetType(),
             // A north-south resize signals vertical resizability.
-            ui::mojom::CursorType::kNorthSouthResize);
+            ui::mojom::blink::CursorType::kNorthSouthResize);
 }
 
 TEST_F(EventHandlerTest, CursorForHorizontalResizableTextArea) {
@@ -692,7 +693,7 @@ TEST_F(EventHandlerTest, CursorForHorizontalResizableTextArea) {
                 .value()
                 .GetType(),
             // An east-west resize signals horizontal resizability.
-            ui::mojom::CursorType::kEastWestResize);
+            ui::mojom::blink::CursorType::kEastWestResize);
 }
 
 TEST_F(EventHandlerTest, CursorForResizableTextArea) {
@@ -713,7 +714,7 @@ TEST_F(EventHandlerTest, CursorForResizableTextArea) {
                 .GetType(),
             // An south-east resize signals both horizontal and
             // vertical resizability.
-            ui::mojom::CursorType::kSouthEastResize);
+            ui::mojom::blink::CursorType::kSouthEastResize);
 }
 
 TEST_F(EventHandlerTest, CursorForRtlResizableTextArea) {
@@ -735,7 +736,7 @@ TEST_F(EventHandlerTest, CursorForRtlResizableTextArea) {
                 .GetType(),
             // An south-west resize signals both horizontal and
             // vertical resizability when direction is RTL.
-            ui::mojom::CursorType::kSouthWestResize);
+            ui::mojom::blink::CursorType::kSouthWestResize);
 }
 
 TEST_F(EventHandlerTest, CursorForInlineVerticalWritingMode) {
@@ -757,7 +758,7 @@ TEST_F(EventHandlerTest, CursorForInlineVerticalWritingMode) {
                 .SelectCursor(location, result)
                 .value()
                 .GetType(),
-            ui::mojom::CursorType::kSouthEastResize);
+            ui::mojom::blink::CursorType::kSouthEastResize);
 }
 
 TEST_F(EventHandlerTest, CursorForBlockVerticalWritingMode) {
@@ -779,7 +780,7 @@ TEST_F(EventHandlerTest, CursorForBlockVerticalWritingMode) {
                 .SelectCursor(location, result)
                 .value()
                 .GetType(),
-            ui::mojom::CursorType::kSouthEastResize);
+            ui::mojom::blink::CursorType::kSouthEastResize);
 }
 
 TEST_F(EventHandlerTest, implicitSend) {
@@ -1593,11 +1594,11 @@ TEST_F(EventHandlerSimTest, CursorStyleBeforeStartDragging) {
   mouse_move_event.SetFrameScale(1);
   GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
       mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
-  EXPECT_EQ(ui::mojom::CursorType::kHelp, GetDocument()
-                                              .GetFrame()
-                                              ->GetChromeClient()
-                                              .LastSetCursorForTesting()
-                                              .GetType());
+  EXPECT_EQ(ui::mojom::blink::CursorType::kHelp, GetDocument()
+                                                     .GetFrame()
+                                                     ->GetChromeClient()
+                                                     .LastSetCursorForTesting()
+                                                     .GetType());
 }
 
 // Ensure that tap on element in iframe should apply active state.
@@ -2122,7 +2123,7 @@ TEST_F(EventHandlerSimTest, LargeCustomCursorIntersectsViewport) {
 
     const Cursor& cursor =
         GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
-    EXPECT_EQ(ui::mojom::CursorType::kCustom, cursor.GetType());
+    EXPECT_EQ(ui::mojom::blink::CursorType::kCustom, cursor.GetType());
   }
 
   // Now, move the cursor so that it intersects the visual viewport. The cursor
@@ -2138,7 +2139,7 @@ TEST_F(EventHandlerSimTest, LargeCustomCursorIntersectsViewport) {
 
     const Cursor& cursor =
         GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
-    EXPECT_EQ(ui::mojom::CursorType::kPointer, cursor.GetType());
+    EXPECT_EQ(ui::mojom::blink::CursorType::kPointer, cursor.GetType());
   }
 }
 
@@ -2181,7 +2182,7 @@ TEST_F(EventHandlerSimTest, SmallCustomCursorIntersectsViewport) {
 
     const Cursor& cursor =
         GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
-    EXPECT_EQ(ui::mojom::CursorType::kCustom, cursor.GetType());
+    EXPECT_EQ(ui::mojom::blink::CursorType::kCustom, cursor.GetType());
   }
 
   // Now, move the cursor so that it intersects the visual viewport. The cursor
@@ -2198,7 +2199,7 @@ TEST_F(EventHandlerSimTest, SmallCustomCursorIntersectsViewport) {
 
     const Cursor& cursor =
         GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
-    EXPECT_EQ(ui::mojom::CursorType::kCustom, cursor.GetType());
+    EXPECT_EQ(ui::mojom::blink::CursorType::kCustom, cursor.GetType());
   }
 }
 

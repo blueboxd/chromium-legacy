@@ -1227,6 +1227,19 @@ interface TransformStream
     getter readable
     getter writable
     method constructor
+interface TrustedTypePolicyFactory
+    attribute @@toStringTag
+    getter defaultPolicy
+    getter emptyHTML
+    getter emptyScript
+    method constructor
+    method createPolicy
+    method getAttributeType
+    method getPropertyType
+    method getTypeMapping
+    method isHTML
+    method isScript
+    method isScriptURL
 interface URL
     attribute @@toStringTag
     getter hash
@@ -2599,6 +2612,7 @@ interface WorkerGlobalScope : EventTarget
     getter origin
     getter performance
     getter self
+    getter trustedTypes
     method atob
     method btoa
     method clearInterval

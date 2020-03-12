@@ -259,16 +259,6 @@
       name: "BrowserVerifiedUserActivationMouse",
     },
     {
-      name: "BuiltInModuleAll",
-      implied_by: ["ExperimentalProductivityFeatures"],
-    },
-    {
-      name: "BuiltInModuleInfra",
-      origin_trial_feature_name: "BuiltInModuleInfra",
-      implied_by: ["ExperimentalProductivityFeatures",
-                   "BuiltInModuleAll"],
-    },
-    {
       name: "CacheInlineScriptCode"
     },
     {
@@ -842,7 +832,7 @@
     },
     {
       name: "ImportMaps",
-      implied_by: ["ExperimentalProductivityFeatures", "BuiltInModuleInfra"],
+      implied_by: ["ExperimentalProductivityFeatures"],
     },
     {
       name: "InertAttribute",
@@ -1699,6 +1689,10 @@
     {
       name: "TrustedDOMTypes",
       status: "experimental",
+    },
+    {
+      name: "TrustTokens",
+      status: "test",
     },
     {
       name: "UnclosedFormControlIsInvalid",

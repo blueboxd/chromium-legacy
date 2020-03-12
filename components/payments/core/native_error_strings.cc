@@ -163,5 +163,59 @@ const char kShippingAddressInvalid[] =
 const char kShippingOptionEmpty[] =
     "Payment app returned invalid response. Missing field \"shipping option\".";
 
+const char kCanMakePaymentEventRejected[] =
+    "Payment handler rejected the promise passed into "
+    "CanMakePaymentEvent.respondWith().";
+
+const char kCanMakePaymentEventTimeout[] =
+    "The \"canmakepayment\" event timed out.";
+
+const char kCanMakePaymentEventNoResponse[] =
+    "Payment handler did not respond to \"canmakepayment\" event.";
+
+const char kCanMakePaymentEventNoReadyForMinimalUiValue[] =
+    "Payment handler did not specify a value for \"readyForMinimalUI\" in "
+    "CanMakePaymentEvent.respondWithMinimalUI()..";
+
+const char kCanMakePaymentEventBooleanConversionError[] =
+    "Unable to convert the value of \"canmakepayment\" response to a boolean.";
+
+const char kCanMakePaymentEventBrowserError[] =
+    "Browser encountered an error when firing the \"canmakepayment\" event in "
+    "the payment handler.";
+
+const char kCanMakePaymentEventInternalError[] =
+    "Payment handler encountered an error (e.g., threw a JavaScript exception) "
+    "while responding to \"canmakepayment\" event.";
+
+const char kCanMakePaymentEventInvalidAccountBalanceValue[] =
+    "Payment handler provided invalid account balance value in "
+    "CanMakePaymentEvent.respondWithMinimalUI().";
+
+const char kCanMakePaymentEventMinimalUiResponseConversionError[] =
+    "Unable to parse the object that the payment handler passed into "
+    "CanMakePaymentEvent.respondWithMinimalUI().";
+
+const char kCanMakePaymentEventNoAccountBalanceValue[] =
+    "Payment handler did not specify account balance in "
+    "CanMakePaymentEvent.respondWithMinimalUI().";
+
+const char kCanMakePaymentEventNoCanMakePaymentValue[] =
+    "Payment handler did not specify a value for \"canMakePayment\" in "
+    "CanMakePaymentEvent.respondWithMinimalUI().";
+
+const char kCanMakePaymentEventNoUrlBasedPaymentMethods[] =
+    "Browser did not fire \"canmakepayment\" event because the payment handler "
+    "does not support any URL-based payment methods.";
+
+const char kCanMakePaymentEventNotInstalled[] =
+    "Browser did not fire \"canmakepayment\" event because the payment handler "
+    "is not yet installed. It will be installed on demand when the user "
+    "selects it.";
+
+const char kCanMakePaymentEventNoExplicitlyVerifiedMethods[] =
+    "Browser did not fire \"canmakepayment\" event because the payment handler "
+    "does not support any explicitly verified payment methods.";
+
 }  // namespace errors
 }  // namespace payments

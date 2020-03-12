@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -21,10 +21,6 @@ import zipfile
 _DIR_SOURCE_ROOT = os.path.normpath(
     os.path.join(os.path.dirname(__file__), '..', '..'))
 
-sys.path.insert(1, os.path.join(_DIR_SOURCE_ROOT, 'build', 'android', 'gyp'))
-from util import zipalign
-zipalign.ApplyZipFileZipAlignFix()
-
 _GSUTIL = os.path.join(_DIR_SOURCE_ROOT, 'third_party', 'depot_tools',
                        'gsutil.py')
 _RESOURCE_SIZES = os.path.join(_DIR_SOURCE_ROOT, 'build', 'android',
@@ -32,10 +28,9 @@ _RESOURCE_SIZES = os.path.join(_DIR_SOURCE_ROOT, 'build', 'android',
 
 
 class _Artifact(object):
-
-  def __init__(self, signed_prefix, name):
+  def __init__(self, prefix, name):
     self.name = name
-    self._gs_url = posixpath.join(signed_prefix, name)
+    self._gs_url = posixpath.join(prefix, name)
     self._temp = tempfile.NamedTemporaryFile(suffix=posixpath.basename(name))
     self._path = self._temp.name
     self._resource_sizes_json = None
@@ -55,20 +50,27 @@ class _Artifact(object):
     logging.warning(' '.join(args))
     self._resource_sizes_json = json.loads(subprocess.check_output(args))
 
-  def AddSize(self, metrics):
-    metrics[self.name] = self._resource_sizes_json['charts']['InstallSize'][
-        'APK size']['value']
+  def GetCompressedSize(self):
+    return self._resource_sizes_json['charts']['TransferSize'][
+        'Transfer size (deflate)']['value']
 
-  def AddAndroidGoSize(self, metrics):
-    metrics[self.name + ' (Android Go)'] = self._resource_sizes_json['charts'][
-        'InstallSize']['Estimated installed size (Android Go)']['value']
+  def GetApkSize(self):
+    return self._resource_sizes_json['charts']['InstallSize']['APK size'][
+        'value']
+
+  def GetAndroidGoSize(self):
+    return self._resource_sizes_json['charts']['InstallSize'][
+        'Estimated installed size (Android Go)']['value']
+
+  def AddSize(self, metrics):
+    metrics[self.name] = self.GetApkSize()
 
   def AddMethodCount(self, metrics):
     metrics[self.name + ' (method count)'] = self._resource_sizes_json[
         'charts']['Dex']['unique methods']['value']
 
   def AddDfmSizes(self, metrics):
-    for k, v in sorted(self._resource_sizes_json['charts'].iteritems()):
+    for k, v in sorted(self._resource_sizes_json['charts'].items()):
       if k.startswith('DFM_'):
         metrics['DFM: ' + k[4:]] = v['Size with hindi']['value']
 
@@ -88,11 +90,11 @@ def _DumpCsv(metrics):
   csv_writer.writerow(metrics)
 
 
-def _DownloadAndAnalyze(signed_prefix):
+def _DownloadAndAnalyze(signed_prefix, unsigned_prefix):
   artifacts = []
 
-  def make_artifact(name):
-    artifacts.append(_Artifact(signed_prefix, name))
+  def make_artifact(name, prefix=signed_prefix):
+    artifacts.append(_Artifact(prefix, name))
     return artifacts[-1]
 
   chrome = make_artifact('arm/ChromeStable.apk')
@@ -102,8 +104,29 @@ def _DownloadAndAnalyze(signed_prefix):
   chrome_modern64 = make_artifact('arm_64/ChromeModernStable.apks')
   monochrome = make_artifact('arm/MonochromeStable.apks')
   monochrome64 = make_artifact('arm_64/MonochromeStable.apks')
+  trichrome_chrome = make_artifact('arm/TrichromeChromeGoogleStable.apks')
+  trichrome_webview = make_artifact('arm/TrichromeWebViewGoogleStable.apk')
+  trichrome_library = make_artifact('arm/TrichromeLibraryGoogleStable.apk')
+  trichrome64_chrome = make_artifact('arm_64/TrichromeChromeGoogleStable.apks')
+  trichrome64_webview = make_artifact('arm_64/TrichromeWebViewGoogleStable.apk')
+  trichrome64_library = make_artifact('arm_64/TrichromeLibraryGoogleStable.apk')
 
-  # Download in parallel.
+  trichrome_system_apks = [
+      make_artifact('arm/TrichromeWebViewGoogleSystemStable.apk'),
+      make_artifact('arm/TrichromeLibraryGoogleSystemStable.apk'),
+      make_artifact(
+          'arm/for-signing-only/TrichromeChromeGoogleSystemStable.apk',
+          prefix=unsigned_prefix),
+  ]
+  trichrome_system_stubs = [
+      make_artifact('arm/TrichromeWebViewGoogleSystemStubStable.apk'),
+      make_artifact('arm/TrichromeLibraryGoogleSystemStubStable.apk'),
+      make_artifact(
+          'arm/for-signing-only/TrichromeChromeGoogleSystemStubStable.apk',
+          prefix=unsigned_prefix),
+  ]
+
+  # Download and run resource_sizes.py concurrently.
   pool = multiprocessing.dummy.Pool()
   pool.map(_Artifact.FetchAndMeasure, artifacts)
   pool.close()
@@ -113,17 +136,34 @@ def _DownloadAndAnalyze(signed_prefix):
   chrome.AddSize(metrics)
   chrome_modern.AddSize(metrics)
   chrome_modern64.AddSize(metrics)
-  monochrome.AddSize(metrics)
-  monochrome64.AddSize(metrics)
   webview.AddSize(metrics)
   webview64.AddSize(metrics)
+  monochrome.AddSize(metrics)
+  monochrome64.AddSize(metrics)
+  trichrome_chrome.AddSize(metrics)
+  trichrome_webview.AddSize(metrics)
+  trichrome_library.AddSize(metrics)
+  trichrome64_chrome.AddSize(metrics)
+  trichrome64_webview.AddSize(metrics)
+  trichrome64_library.AddSize(metrics)
+
   _DumpCsv(metrics)
 
   metrics = collections.OrderedDict()
-  monochrome.AddAndroidGoSize(metrics)
+
+  # AndroidGo size exists only for webview & library.
+  go_install_size = (
+      trichrome_chrome.GetApkSize() + trichrome_webview.GetAndroidGoSize() +
+      trichrome_library.GetAndroidGoSize())
+  metrics['Android Go TriChrome Install Size'] = go_install_size
+
+  system_apks_size = sum(x.GetCompressedSize() for x in trichrome_system_apks)
+  stubs_sizes = sum(x.GetApkSize() for x in trichrome_system_stubs)
+  metrics['Trichrome Compressed System Image'] = system_apks_size + stubs_sizes
+
   chrome.AddMethodCount(metrics)
   monochrome.AddMethodCount(metrics)
-  monochrome.AddDfmSizes(metrics)
+  trichrome_chrome.AddDfmSizes(metrics)
   _DumpCsv(metrics)
 
   webview.PrintLibraryCompression()
@@ -139,7 +179,8 @@ def main():
   options = parser.parse_args()
 
   signed_prefix = posixpath.join(options.signed_bucket, options.version)
-  _DownloadAndAnalyze(signed_prefix)
+  unsigned_prefix = signed_prefix.replace('signed', 'unsigned')
+  _DownloadAndAnalyze(signed_prefix, unsigned_prefix)
 
 
 if __name__ == '__main__':

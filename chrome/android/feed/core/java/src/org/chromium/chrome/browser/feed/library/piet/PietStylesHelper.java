@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.feed.library.piet;
 
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkNotNull;
 
-import android.support.annotation.VisibleForTesting;
 import android.util.LruCache;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.piet.DebugLogger.MessageType;

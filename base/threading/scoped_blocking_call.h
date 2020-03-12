@@ -6,6 +6,7 @@
 #define BASE_THREADING_SCOPED_BLOCKING_CALL_H
 
 #include "base/base_export.h"
+#include "base/debug/activity_tracker.h"
 #include "base/location.h"
 #include "base/logging.h"
 
@@ -35,7 +36,8 @@ class BlockingObserver;
 // ScopedBlockingCallWithBaseSyncPrimitives without assertions.
 class BASE_EXPORT UncheckedScopedBlockingCall {
  public:
-  explicit UncheckedScopedBlockingCall(BlockingType blocking_type);
+  explicit UncheckedScopedBlockingCall(const Location& from_here,
+                                       BlockingType blocking_type);
   ~UncheckedScopedBlockingCall();
 
  private:
@@ -47,6 +49,8 @@ class BASE_EXPORT UncheckedScopedBlockingCall {
   // Whether the BlockingType of the current thread was WILL_BLOCK after this
   // ScopedBlockingCall was instantiated.
   const bool is_will_block_;
+
+  base::debug::ScopedActivity scoped_activity_;
 
   DISALLOW_COPY_AND_ASSIGN(UncheckedScopedBlockingCall);
 };

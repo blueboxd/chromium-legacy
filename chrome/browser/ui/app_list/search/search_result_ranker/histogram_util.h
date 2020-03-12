@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_data.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 
 namespace app_list {
@@ -108,6 +109,17 @@ void LogZeroStateReceivedScore(const std::string& suffix,
 void LogZeroStateResultsListMetrics(
     const std::vector<RankingItemType>& result_types,
     int launched_index);
+
+// Logs three metrics of interest related to the suggested chips.
+//
+//  1. How many chips are launched overall.
+//  2. How many of each chip type is launched: local file, drive file, app.
+//  3. The index of a launched chip.
+//
+// We are interested in absolute numbers for these values, not CTR, because
+// we expect experiments with the chips to change the base rate usage of the
+// launcher chips itself.
+void LogChipUsageMetrics(const AppLaunchData& app_launch_data);
 
 }  // namespace app_list
 

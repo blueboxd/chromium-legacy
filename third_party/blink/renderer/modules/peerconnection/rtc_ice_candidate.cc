@@ -87,6 +87,10 @@ String RTCIceCandidate::sdpMid() const {
   return platform_candidate_->SdpMid();
 }
 
+base::Optional<uint16_t> RTCIceCandidate::sdpMLineIndex() const {
+  return platform_candidate_->SdpMLineIndex();
+}
+
 uint16_t RTCIceCandidate::sdpMLineIndex(bool& is_null) const {
   is_null = !platform_candidate_->SdpMLineIndex().has_value();
   return platform_candidate_->SdpMLineIndex().value_or(0);
@@ -109,6 +113,10 @@ String RTCIceCandidate::component() const {
   return platform_candidate_->Component();
 }
 
+base::Optional<uint32_t> RTCIceCandidate::priority() const {
+  return platform_candidate_->Priority();
+}
+
 uint32_t RTCIceCandidate::priority(bool& is_null) const {
   is_null = !platform_candidate_->Priority().has_value();
   return platform_candidate_->Priority().value_or(0);
@@ -120,6 +128,10 @@ String RTCIceCandidate::address() const {
 
 String RTCIceCandidate::protocol() const {
   return platform_candidate_->Protocol();
+}
+
+base::Optional<uint16_t> RTCIceCandidate::port() const {
+  return platform_candidate_->Port();
 }
 
 uint16_t RTCIceCandidate::port(bool& is_null) const {
@@ -137,6 +149,10 @@ String RTCIceCandidate::tcpType() const {
 
 String RTCIceCandidate::relatedAddress() const {
   return platform_candidate_->RelatedAddress();
+}
+
+base::Optional<uint16_t> RTCIceCandidate::relatedPort() const {
+  return platform_candidate_->RelatedPort();
 }
 
 uint16_t RTCIceCandidate::relatedPort(bool& is_null) const {

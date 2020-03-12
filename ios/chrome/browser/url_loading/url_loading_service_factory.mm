@@ -9,7 +9,6 @@
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/url_loading/test_url_loading_service.h"
-#include "ios/chrome/browser/url_loading/url_loading_notifier_factory.h"
 #include "ios/chrome/browser/url_loading/url_loading_service.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -31,10 +30,7 @@ UrlLoadingServiceFactory* UrlLoadingServiceFactory::GetInstance() {
 
 std::unique_ptr<KeyedService> BuildTestUrlLoadingService(
     web::BrowserState* context) {
-  ChromeBrowserState* browser_state =
-      ChromeBrowserState::FromBrowserState(context);
-  return std::make_unique<TestUrlLoadingService>(
-      UrlLoadingNotifierFactory::GetForBrowserState(browser_state));
+  return std::make_unique<TestUrlLoadingService>();
 }
 
 // static
@@ -46,18 +42,13 @@ UrlLoadingServiceFactory::GetDefaultFactory() {
 UrlLoadingServiceFactory::UrlLoadingServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "UrlLoadingService",
-          BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(UrlLoadingNotifierFactory::GetInstance());
-}
+          BrowserStateDependencyManager::GetInstance()) {}
 
 UrlLoadingServiceFactory::~UrlLoadingServiceFactory() {}
 
 std::unique_ptr<KeyedService> UrlLoadingServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ChromeBrowserState* browser_state =
-      ChromeBrowserState::FromBrowserState(context);
-  return std::make_unique<UrlLoadingService>(
-      UrlLoadingNotifierFactory::GetForBrowserState(browser_state));
+  return std::make_unique<UrlLoadingService>();
 }
 
 web::BrowserState* UrlLoadingServiceFactory::GetBrowserStateToUse(

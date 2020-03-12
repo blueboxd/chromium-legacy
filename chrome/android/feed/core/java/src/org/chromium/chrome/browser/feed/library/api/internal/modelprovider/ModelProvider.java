@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.internal.modelprovider;
 
-import android.support.annotation.IntDef;
-
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;

@@ -150,8 +150,9 @@ TEST_F(SigninGlobalErrorTest, AuthStatusEnumerateAllErrors) {
     EXPECT_FALSE(global_error()->GetBubbleViewAcceptButtonLabel().empty());
     EXPECT_TRUE(global_error()->GetBubbleViewCancelButtonLabel().empty());
 
-    ProfileMetrics::LogNumberOfProfiles(
-        testing_profile_manager()->profile_manager());
+    ProfileMetrics::LogNumberOfProfiles(&testing_profile_manager()
+                                             ->profile_manager()
+                                             ->GetProfileAttributesStorage());
 
     if (entry.is_error) {
       histogram_tester.ExpectBucketCount("Signin.AuthError", entry.error_state,

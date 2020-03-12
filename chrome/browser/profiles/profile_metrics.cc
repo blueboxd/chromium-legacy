@@ -156,22 +156,21 @@ enum ProfileAvatar {
   NUM_PROFILE_AVATAR_METRICS
 };
 
-bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
+void ProfileMetrics::CountProfileInformation(ProfileAttributesStorage* storage,
                                              profile_metrics::Counts* counts) {
-  ProfileAttributesStorage& storage = manager->GetProfileAttributesStorage();
-  size_t number_of_profiles = storage.GetNumberOfProfiles();
+  size_t number_of_profiles = storage->GetNumberOfProfiles();
   counts->total = number_of_profiles;
 
   // Ignore other metrics if we have no profiles.
   if (!number_of_profiles)
-    return false;
+    return;
 
   // Maximum age for "active" profile is 4 weeks.
   base::Time oldest = base::Time::Now() -
       base::TimeDelta::FromDays(kMaximumDaysOfDisuse);
 
   std::vector<ProfileAttributesEntry*> entries =
-      storage.GetAllProfilesAttributes();
+      storage->GetAllProfilesAttributes();
   for (ProfileAttributesEntry* entry : entries) {
     if (!HasProfileBeenActiveSince(entry, oldest)) {
       counts->unused++;
@@ -190,7 +189,6 @@ bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
       }
     }
   }
-  return true;
 }
 
 profile_metrics::BrowserProfileType ProfileMetrics::GetBrowserProfileType(
@@ -221,9 +219,9 @@ void ProfileMetrics::LogNumberOfProfileSwitches() {
 }
 #endif
 
-void ProfileMetrics::LogNumberOfProfiles(ProfileManager* manager) {
+void ProfileMetrics::LogNumberOfProfiles(ProfileAttributesStorage* storage) {
   profile_metrics::Counts counts;
-  CountProfileInformation(manager, &counts);
+  CountProfileInformation(storage, &counts);
   profile_metrics::LogProfileMetricsCounts(counts);
 }
 

@@ -2166,10 +2166,8 @@ bool AXLayoutObject::ShouldUseDOMTraversal() const {
   if (IsA<HTMLRubyElement>(*node))
     return false;
 
-  // <table>: thead/tfoot move around
-  // This may mean a thead/tfoot in the middle will be bumped to the top/bottom.
-  // TODO(aleventhal): not sure about this, try to remove and see what breaks.
-  // Alternatively, we may decide to simply not support this, to simplify.
+  // <table>: a thead/tfoot in the middle are bumped to the top/bottom in
+  // the layout representation.
   if (IsA<HTMLTableElement>(*node))
     return false;
 
@@ -2180,10 +2178,9 @@ bool AXLayoutObject::ShouldUseDOMTraversal() const {
   if (!element)
     return false;
 
-  // Pseudo elements are not visited in layout tree builder traversal, used by
-  // AXDOMNode::AddChildren()
-  // TODO(aleventhal) Actually LayoutTreeBuilderTraversal does visit pseudo
-  // elements, so we should try removing this check and see if anything breaks.
+  // Pseudo elements often have text children that are not
+  // visited by the LayoutTreeBuilderTraversal class used in DOM traversal.
+  // Without this condition, list bullets would not have static text children.
   if (element->IsPseudoElement())
     return false;
 

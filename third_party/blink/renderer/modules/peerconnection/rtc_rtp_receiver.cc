@@ -65,7 +65,22 @@ RTCDtlsTransport* RTCRtpReceiver::rtcpTransport() {
   return nullptr;
 }
 
-double RTCRtpReceiver::playoutDelayHint(bool& is_null, ExceptionState&) {
+base::Optional<double> RTCRtpReceiver::playoutDelayHint() const {
+  return playout_delay_hint_;
+}
+
+void RTCRtpReceiver::setPlayoutDelayHint(base::Optional<double> hint,
+                                         ExceptionState& exception_state) {
+  if (hint.has_value() && hint.value() < 0.0) {
+    exception_state.ThrowTypeError("playoutDelayHint can't be negative");
+    return;
+  }
+
+  playout_delay_hint_ = hint;
+  receiver_->SetJitterBufferMinimumDelay(playout_delay_hint_);
+}
+
+double RTCRtpReceiver::playoutDelayHint(bool& is_null) {
   is_null = !playout_delay_hint_.has_value();
   return playout_delay_hint_.value_or(0.0);
 }

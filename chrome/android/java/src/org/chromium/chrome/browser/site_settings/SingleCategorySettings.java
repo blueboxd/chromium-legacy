@@ -52,8 +52,10 @@ import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.settings.SearchUtils;
 import org.chromium.chrome.browser.settings.SettingsUtils;
+import org.chromium.chrome.browser.site_settings.FourStateCookieSettingsPreference.CookieSettingsState;
 import org.chromium.chrome.browser.site_settings.Website.StoredDataClearedCallback;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.ui.widget.Toast;
 
@@ -116,6 +118,8 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
     private List<WebsitePreference> mWebsites;
     // Whether tri-state ContentSetting is required.
     private boolean mRequiresTriStateSetting;
+    // Whether four-state ContentSetting is required.
+    private boolean mRequiresFourStateSetting;
     // Locally-saved reference to the "notifications_quiet_ui" preference to allow hiding/showing
     // it.
     private ChromeBaseCheckBoxPreference mNotificationsQuietUiPref;
@@ -123,10 +127,11 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
     @Nullable
     private Set<String> mSelectedDomains;
 
-    // Keys for common ContentSetting toggle for categories. These two toggles are mutually
+    // Keys for common ContentSetting toggle for categories. These three toggles are mutually
     // exclusive: a category should only show one of them, at most.
     public static final String BINARY_TOGGLE_KEY = "binary_toggle";
     public static final String TRI_STATE_TOGGLE_KEY = "tri_state_toggle";
+    public static final String FOUR_STATE_COOKIE_TOGGLE_KEY = "four_state_cookie_toggle";
 
     // Keys for category-specific preferences (toggle, link, button etc.), dynamically shown.
     public static final String THIRD_PARTY_COOKIES_TOGGLE_KEY = "third_party_cookies";
@@ -290,6 +295,8 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
         int contentType = mCategory.getContentSettingsType();
         mRequiresTriStateSetting =
                 WebsitePreferenceBridge.requiresTriStateContentSetting(contentType);
+        mRequiresFourStateSetting =
+                WebsitePreferenceBridge.requiresFourStateContentSetting(contentType);
 
         ViewGroup view = (ViewGroup) super.onCreateView(inflater, container, savedInstanceState);
 
@@ -517,6 +524,8 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
             int setting = (int) newValue;
             WebsitePreferenceBridge.setContentSetting(mCategory.getContentSettingsType(), setting);
             getInfoForOrigins();
+        } else if (FOUR_STATE_COOKIE_TOGGLE_KEY.equals(preference.getKey())) {
+            setCookieSettingsPreference((CookieSettingsState) newValue);
         } else if (THIRD_PARTY_COOKIES_TOGGLE_KEY.equals(preference.getKey())) {
             PrefServiceBridge.getInstance().setBoolean(
                     Pref.BLOCK_THIRD_PARTY_COOKIES, ((boolean) newValue));
@@ -527,6 +536,38 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
             WebsitePreferenceBridge.setQuietNotificationsUiEnabled((boolean) newValue);
         }
         return true;
+    }
+
+    private void setCookieSettingsPreference(CookieSettingsState state) {
+        boolean allowCookies;
+        @CookieControlsMode
+        int mode;
+
+        switch (state) {
+            case ALLOW:
+                allowCookies = true;
+                mode = CookieControlsMode.OFF;
+                break;
+            case BLOCK_THIRD_PARTY_INCOGNITO:
+                allowCookies = true;
+                mode = CookieControlsMode.INCOGNITO_ONLY;
+                break;
+            case BLOCK_THIRD_PARTY:
+                allowCookies = true;
+                mode = CookieControlsMode.ON;
+                break;
+            case BLOCK:
+                allowCookies = false;
+                mode = CookieControlsMode.ON;
+                break;
+            default:
+                return;
+        }
+
+        WebsitePreferenceBridge.setCategoryEnabled(ContentSettingsType.COOKIES, allowCookies);
+        PrefServiceBridge.getInstance().setInteger(Pref.COOKIE_CONTROLS_MODE, mode);
+        PrefServiceBridge.getInstance().setBoolean(
+                Pref.BLOCK_THIRD_PARTY_COOKIES, mode == CookieControlsMode.ON);
     }
 
     private String getAddExceptionDialogMessage() {
@@ -810,6 +851,11 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
                     (TriStateSiteSettingsPreference) getPreferenceScreen().findPreference(
                             TRI_STATE_TOGGLE_KEY);
             return (triStateToggle.getCheckedSetting() == ContentSettingValues.BLOCK);
+        } else if (mRequiresFourStateSetting) {
+            FourStateCookieSettingsPreference fourStateCookieToggle =
+                    (FourStateCookieSettingsPreference) getPreferenceScreen().findPreference(
+                            FOUR_STATE_COOKIE_TOGGLE_KEY);
+            return fourStateCookieToggle.getState() == CookieSettingsState.BLOCK;
         } else {
             ChromeSwitchPreference binaryToggle =
                     (ChromeSwitchPreference) getPreferenceScreen().findPreference(
@@ -829,6 +875,9 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
                 (ChromeSwitchPreference) screen.findPreference(BINARY_TOGGLE_KEY);
         TriStateSiteSettingsPreference triStateToggle =
                 (TriStateSiteSettingsPreference) screen.findPreference(TRI_STATE_TOGGLE_KEY);
+        FourStateCookieSettingsPreference fourStateCookieToggle =
+                (FourStateCookieSettingsPreference) screen.findPreference(
+                        FOUR_STATE_COOKIE_TOGGLE_KEY);
         Preference thirdPartyCookies = screen.findPreference(THIRD_PARTY_COOKIES_TOGGLE_KEY);
         Preference notificationsVibrate = screen.findPreference(NOTIFICATIONS_VIBRATE_TOGGLE_KEY);
         Preference notificationsQuietUi = screen.findPreference(NOTIFICATIONS_QUIET_UI_TOGGLE_KEY);
@@ -848,11 +897,18 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
         if (hideMainToggles) {
             screen.removePreference(binaryToggle);
             screen.removePreference(triStateToggle);
+            screen.removePreference(fourStateCookieToggle);
         } else if (mRequiresTriStateSetting) {
             screen.removePreference(binaryToggle);
+            screen.removePreference(fourStateCookieToggle);
             configureTriStateToggle(triStateToggle, contentType);
+        } else if (mRequiresFourStateSetting) {
+            screen.removePreference(binaryToggle);
+            screen.removePreference(triStateToggle);
+            configureFourStateCookieToggle(fourStateCookieToggle);
         } else {
             screen.removePreference(triStateToggle);
+            screen.removePreference(fourStateCookieToggle);
             configureBinaryToggle(binaryToggle, contentType);
         }
 
@@ -879,7 +935,7 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
         }
 
         // Configure/hide the third-party cookies toggle, as needed.
-        if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)) {
+        if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES) && !mRequiresFourStateSetting) {
             thirdPartyCookies.setOnPreferenceChangeListener(this);
             updateThirdPartyCookiesCheckBox();
         } else {
@@ -951,6 +1007,34 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
             osWarningExtra.setKey(SingleWebsiteSettings.PREF_OS_PERMISSIONS_WARNING_EXTRA);
             screen.addPreference(osWarningExtra);
         }
+    }
+
+    private void configureFourStateCookieToggle(
+            FourStateCookieSettingsPreference fourStateCookieToggle) {
+        fourStateCookieToggle.setOnPreferenceChangeListener(this);
+        // These conditions only check the preference combinations that deterministically decide
+        // your cookie settings state. In the future we would refactor the backend preferences to
+        // reflect the only possible states you can be in
+        // (Allow/BlockThirdPartyIncognito/BlockThirdParty/Block), instead of using this
+        // combination of multiple signals.
+        CookieSettingsState state;
+        if (!WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES)) {
+            state = CookieSettingsState.BLOCK;
+        } else if (PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES)
+                || PrefServiceBridge.getInstance().getInteger(Pref.COOKIE_CONTROLS_MODE)
+                        == CookieControlsMode.ON) {
+            // Having CookieControlsMode.ON is equivalent to having the BLOCK_THIRD_PARTY_COOKIES
+            // pref set to enabled, because it means third party cookie blocking is always on.
+            state = CookieSettingsState.BLOCK_THIRD_PARTY;
+        } else if (PrefServiceBridge.getInstance().getInteger(Pref.COOKIE_CONTROLS_MODE)
+                == CookieControlsMode.INCOGNITO_ONLY) {
+            state = CookieSettingsState.BLOCK_THIRD_PARTY_INCOGNITO;
+        } else {
+            state = CookieSettingsState.ALLOW;
+        }
+
+        // TODO(crbug.com/1060118): Add managed state for third-party cookie blocking.
+        fourStateCookieToggle.setState(state);
     }
 
     private void configureTriStateToggle(

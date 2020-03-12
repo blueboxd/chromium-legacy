@@ -48,9 +48,13 @@ class MODULES_EXPORT DeviceMotionEventRotationRate final
 
   bool HasRotationData() const;
 
-  double alpha(bool& is_null) const;
-  double beta(bool& is_null) const;
-  double gamma(bool& is_null) const;
+  base::Optional<double> alpha() const;
+  base::Optional<double> beta() const;
+  base::Optional<double> gamma() const;
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  double alpha(bool& is_null) const;  // DEPRECATED
+  double beta(bool& is_null) const;   // DEPRECATED
+  double gamma(bool& is_null) const;  // DEPRECATED
 
  private:
   const double alpha_;

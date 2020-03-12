@@ -16,7 +16,9 @@ class OrientationSensor : public Sensor {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  Vector<double> quaternion(bool& is_null);
+  base::Optional<Vector<double>> quaternion();
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  Vector<double> quaternion(bool& is_null);  // DEPRECATED
   void populateMatrix(Float32ArrayOrFloat64ArrayOrDOMMatrix&, ExceptionState&);
 
   bool isReadingDirty() const;

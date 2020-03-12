@@ -9,7 +9,10 @@ const CheckState = chrome.passwordsPrivate.PasswordCheckState;
 Polymer({
   is: 'settings-password-check',
 
-  behaviors: [I18nBehavior],
+  behaviors: [
+    I18nBehavior,
+    WebUIListenerBehavior,
+  ],
 
   properties: {
     /**
@@ -51,7 +54,19 @@ Polymer({
       value: () => {
         return {state: CheckState.IDLE};
       },
-    }
+    },
+
+    /** @private */
+    suppressCheckupLink_: {
+      type: Boolean,
+      computed: 'suppressesCheckupLink_(status_, syncPrefs_, syncStatus_)',
+    },
+
+    /** @private {settings.SyncPrefs} */
+    syncPrefs_: Object,
+
+    /** @private {settings.SyncStatus} */
+    syncStatus_: Object,
   },
 
   /**
@@ -82,6 +97,7 @@ Polymer({
   attached() {
     // Set the manager. These can be overridden by tests.
     this.passwordManager_ = PasswordManagerImpl.getInstance();
+    const syncBrowserProxy = settings.SyncBrowserProxyImpl.getInstance();
 
     const statusChangeListener = status => this.status_ = status;
     const setLeakedCredentialsListener = compromisedCredentials => {
@@ -93,6 +109,9 @@ Polymer({
             this.compromisedPasswordsCount_ = count;
           });
     };
+    // TODO(crbug.com/1047726): Deduplicate with updates in password_section.js.
+    const syncStatusChanged = syncStatus => this.syncStatus_ = syncStatus;
+    const syncPrefsChanged = syncPrefs => this.syncPrefs_ = syncPrefs;
 
     this.statusChangedListener_ = statusChangeListener;
     this.leakedCredentialsListener_ = setLeakedCredentialsListener;
@@ -102,12 +121,15 @@ Polymer({
         this.statusChangedListener_);
     this.passwordManager_.getCompromisedCredentials().then(
         this.leakedCredentialsListener_);
+    syncBrowserProxy.getSyncStatus().then(syncStatusChanged);
 
     // Listen for changes.
     this.passwordManager_.addPasswordCheckStatusListener(
         this.statusChangedListener_);
     this.passwordManager_.addCompromisedCredentialsListener(
         this.leakedCredentialsListener_);
+    this.addWebUIListener('sync-status-changed', syncStatusChanged);
+    this.addWebUIListener('sync-prefs-changed', syncPrefsChanged);
   },
 
   /** @override */
@@ -222,20 +244,19 @@ Polymer({
 
   /**
    * Returns the title message indicating the state of the last/ongoing check.
-   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
    * @return {string}
    * @private
    */
-  getTitle_(status) {
-    switch (status.state) {
+  getTitle_() {
+    switch (this.status_.state) {
       case CheckState.IDLE:
         return this.i18n('checkPasswords');
       case CheckState.CANCELED:
         return this.i18n('checkPasswordsCanceled');
       case CheckState.RUNNING:
         return this.i18n(
-            'checkPasswordsProgress', status.alreadyProcessed || 0,
-            status.remainingInQueue + status.alreadyProcessed);
+            'checkPasswordsProgress', this.status_.alreadyProcessed || 0,
+            this.status_.remainingInQueue + this.status_.alreadyProcessed);
       case CheckState.OFFLINE:
         return this.i18n('checkPasswordsErrorOffline');
       case CheckState.SIGNED_OUT:
@@ -243,13 +264,15 @@ Polymer({
       case CheckState.NO_PASSWORDS:
         return this.i18n('checkPasswordsErrorNoPasswords');
       case CheckState.TOO_MANY_PASSWORDS:
-        return this.i18n('checkPasswordsErrorTooManyPasswords');
+        return this.suppressesCheckupLink_() ?
+            this.i18n('checkPasswordsErrorInterruptedTooManyPasswords') :
+            this.i18n('checkPasswordsErrorTooManyPasswords');
       case CheckState.QUOTA_LIMIT:
         return this.i18n('checkPasswordsErrorQuota');
       case CheckState.OTHER_ERROR:
         return this.i18n('checkPasswordsErrorGeneric');
     }
-    throw 'Can\'t find a title for state: ' + status.state;
+    assertNotReached('Can\'t find a title for state: ' + this.status_.state);
   },
 
   /**
@@ -322,17 +345,6 @@ Polymer({
   },
 
   /**
-   * Returns true iff the backend communicated that there are too many saved
-   * passwords to check them locally.
-   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
-   * @return {boolean}
-   * @private
-   */
-  hasTooManyPasswords_(status) {
-    return status.state == CheckState.TOO_MANY_PASSWORDS;
-  },
-
-  /**
    * Returns the chrome:// address where the banner image is located.
    * @param {boolean} isDarkMode
    * @return {string}
@@ -389,28 +401,50 @@ Polymer({
   /**
    * Returns true if there are leaked credentials or the status is unexpected
    * for a regular password check.
-   * @param {!PasswordManagerProxy.PasswordCheckStatus} status
-   * @param {!Array<PasswordManagerProxy.CompromisedCredential>}
-   *     leakedPasswords
    * @return {boolean}
    * @private
    */
-  showsPasswordsCount_(status, leakedPasswords) {
-    switch (status.state) {
+  showsPasswordsCount_() {
+    if (this.hasLeakedCredentials_(this.leakedPasswords)) {
+      return true;
+    }
+    switch (this.status_.state) {
       case CheckState.IDLE:
         return true;
       case CheckState.CANCELED:
       case CheckState.RUNNING:
-        return this.hasLeakedCredentials_(leakedPasswords);
       case CheckState.OFFLINE:
       case CheckState.SIGNED_OUT:
       case CheckState.NO_PASSWORDS:
-      case CheckState.TOO_MANY_PASSWORDS:
       case CheckState.QUOTA_LIMIT:
       case CheckState.OTHER_ERROR:
         return false;
+      case CheckState.TOO_MANY_PASSWORDS:
+        return this.suppressesCheckupLink_();
     }
-    throw 'Not specified whether to show passwords for state: ' + status.state;
+    assertNotReached(
+        'Not specified whether to show passwords for state: ' +
+        this.status_.state);
+  },
+
+  /**
+   * Returns true iff the user cannot retry the password check in their account.
+   * Either because they are syncing or because they use a custom passphrase.
+   * @return {boolean}
+   * @private
+   */
+  suppressesCheckupLink_() {
+    if (!this.isButtonHidden_(this.status_)) {
+      return true;  // Never show the retry link alongside a button.
+    }
+    if (this.status_.state != CheckState.TOO_MANY_PASSWORDS) {
+      return true;  // Never show the retry link for other states.
+    }
+    if (!this.syncStatus_ || !this.syncStatus_.signedIn) {
+      return true;  // Never show the retry link for signed-out users.
+    }
+    // Show the retry link only, if user data is unencrypted.
+    return !!this.syncPrefs_ && !!this.syncPrefs_.encryptAllData;
   },
 
   /**

@@ -5,9 +5,10 @@
 package org.chromium.chrome.browser.feed.library.piet;
 
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.common.time.Clock;

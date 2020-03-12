@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "ui/base/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/mojom/cursor_type.mojom-blink.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef CopyCursor
@@ -48,7 +48,7 @@ class PLATFORM_EXPORT Cursor {
  public:
   Cursor()
       // This is an invalid Cursor and should never actually get used.
-      : type_(ui::mojom::CursorType::kNull) {}
+      : type_(ui::mojom::blink::CursorType::kNull) {}
 
   Cursor(Image*, bool hot_spot_specified, const IntPoint& hot_spot);
 
@@ -62,11 +62,11 @@ class PLATFORM_EXPORT Cursor {
   ~Cursor();
   Cursor& operator=(const Cursor&);
 
-  explicit Cursor(ui::mojom::CursorType);
+  explicit Cursor(ui::mojom::blink::CursorType);
   ui::Cursor GetCursor() const;
-  ui::mojom::CursorType GetType() const {
-    DCHECK_GE(type_, static_cast<ui::mojom::CursorType>(0));
-    DCHECK_LE(type_, ui::mojom::CursorType::kCustom);
+  ui::mojom::blink::CursorType GetType() const {
+    DCHECK_GE(type_, static_cast<ui::mojom::blink::CursorType>(0));
+    DCHECK_LE(type_, ui::mojom::blink::CursorType::kCustom);
     return type_;
   }
   Image* GetImage() const { return image_.get(); }
@@ -75,7 +75,7 @@ class PLATFORM_EXPORT Cursor {
   float ImageScaleFactor() const { return image_scale_factor_; }
 
  private:
-  ui::mojom::CursorType type_;
+  ui::mojom::blink::CursorType type_;
   scoped_refptr<Image> image_;
   IntPoint hot_spot_;
   float image_scale_factor_;

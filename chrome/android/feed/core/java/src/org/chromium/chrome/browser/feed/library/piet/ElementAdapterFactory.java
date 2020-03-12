@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.feed.library.piet;
 
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
 import android.view.View;
+
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.piet.DebugLogger.MessageType;
 import org.chromium.chrome.browser.feed.library.piet.TemplateBinder.TemplateKey;

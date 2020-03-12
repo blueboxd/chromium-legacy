@@ -6,11 +6,11 @@ package org.chromium.components.browser_ui.widget.scrim;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
-import android.support.annotation.Nullable;
 import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.MathUtils;

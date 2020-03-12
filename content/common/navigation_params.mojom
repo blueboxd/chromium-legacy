@@ -373,9 +373,8 @@ struct CommitNavigationParams {
   // Used as an additional identifier for MemoryCache.
   url.mojom.Url web_bundle_physical_url;
 
-  // The base URL which will be set for the document to support relative path
-  // subresource loading in unsigned Web Bundle file.
-  url.mojom.Url base_url_override_for_web_bundle;
+  // The claimed URL inside Web Bundle from which the document is loaded.
+  url.mojom.Url web_bundle_claimed_url;
 
   // A snapshot value of frame policy(both sandbox flags and container policy)
   // of the frame that is being navigated. The snapshot value is captured at the

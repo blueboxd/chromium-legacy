@@ -93,9 +93,6 @@ if (enable_mojom_closure_compile || closure_compile) {
 grit("resources") {
   source = "mojo_bindings_resources.grd"
 
-  # The .grd contains references to generated files.
-  source_is_generated = true
-
   outputs = [
     "grit/mojo_bindings_resources.h",
     "grit/mojo_bindings_resources_map.cc",

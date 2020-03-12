@@ -216,7 +216,7 @@ void ModuleScriptLoader::FetchInternal(
   module_fetcher_ =
       modulator_->CreateModuleScriptFetcher(custom_fetch_type, PassKey());
   module_fetcher_->Fetch(fetch_params, fetch_client_settings_object_fetcher,
-                         modulator_, level, this);
+                         level, this);
 }
 
 // <specdef href="https://html.spec.whatwg.org/C/#fetch-a-single-module-script">

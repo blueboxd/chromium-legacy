@@ -30,8 +30,11 @@ class MODULES_EXPORT WorkletAnimationEffect : public ScriptWrappable {
   EffectTiming* getTiming() const;
   ComputedEffectTiming* getComputedTiming() const;
 
-  void setLocalTime(double time_ms, bool is_null);
-  double localTime(bool& is_null) const;
+  base::Optional<double> localTime() const;
+  void setLocalTime(base::Optional<double> time_ms);
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  void setLocalTime(double time_ms, bool is_null);  // DEPRECATED
+  double localTime(bool& is_null) const;            // DEPRECATED
   base::Optional<base::TimeDelta> local_time() const;
 
  private:

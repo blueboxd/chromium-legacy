@@ -1053,6 +1053,10 @@ java_library("shadows_core_java") {
   ]
 
   annotation_processor_deps = [ ":robolectric_processor" ]
+
+  # GOMA does not know to upload the sdk .jars needed by robolectric_processor.
+  never_goma = true
+
   deps = [
     ":android-all-10-robolectric-5803371_java",
     ":robolectric_annotations_java",
@@ -1091,6 +1095,10 @@ java_library("shadows_multidex_java") {
   ]
 
   annotation_processor_deps = [ ":robolectric_processor" ]
+
+  # GOMA does not know to upload the sdk .jars needed by robolectric_processor.
+  never_goma = true
+
   deps = [
     ":android-all-10-robolectric-5803371_java",
     ":robolectric_annotations_java",
@@ -1130,6 +1138,10 @@ java_library("shadows_play_services_java") {
   ]
 
   annotation_processor_deps = [ ":robolectric_processor" ]
+
+  # GOMA does not know to upload the sdk .jars needed by robolectric_processor.
+  never_goma = true
+
   deps = [
     ":android-all-10-robolectric-5803371_java",
     ":robolectric_annotations_java",

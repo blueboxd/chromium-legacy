@@ -11,8 +11,9 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
-import android.support.annotation.Nullable;
 import android.support.test.filters.SmallTest;
+
+import androidx.annotation.Nullable;
 
 import org.junit.Assert;
 import org.junit.Before;

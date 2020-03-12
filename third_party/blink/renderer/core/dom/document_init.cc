@@ -422,6 +422,12 @@ DocumentInit& DocumentInit::WithReportOnlyDocumentPolicyHeader(
   return *this;
 }
 
+DocumentInit& DocumentInit::WithWebBundleClaimedUrl(
+    const KURL& web_bundle_claimed_url) {
+  web_bundle_claimed_url_ = web_bundle_claimed_url;
+  return *this;
+}
+
 bool IsPagePopupRunningInWebTest(LocalFrame* frame) {
   return frame && frame->GetPage()->GetChromeClient().IsPopup() &&
          WebTestSupport::IsRunningWebTest();

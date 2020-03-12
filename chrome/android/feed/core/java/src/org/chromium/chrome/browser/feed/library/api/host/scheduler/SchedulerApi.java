@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.host.scheduler;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 /** Allows host to change behavior based on Feed requests and their status */
 public interface SchedulerApi {

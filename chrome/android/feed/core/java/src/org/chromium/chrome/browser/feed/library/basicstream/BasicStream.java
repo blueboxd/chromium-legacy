@@ -11,14 +11,14 @@ import android.content.Context;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
-import android.support.annotation.IntDef;
-import android.support.annotation.VisibleForTesting;
 import android.util.Base64;
 import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;

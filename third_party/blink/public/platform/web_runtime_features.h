@@ -114,8 +114,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableImplicitRootScroller(bool);
   BLINK_PLATFORM_EXPORT static void EnableCSSOMViewScrollCoordinates(bool);
   BLINK_PLATFORM_EXPORT static void EnableInputMultipleFieldsUI(bool);
-  BLINK_PLATFORM_EXPORT static void EnableBuiltInModuleAll(bool);
-  BLINK_PLATFORM_EXPORT static void EnableBuiltInModuleInfra(bool);
   BLINK_PLATFORM_EXPORT static void EnableLayoutNG(bool);
   BLINK_PLATFORM_EXPORT static void EnableLazyFrameLoading(bool);
   BLINK_PLATFORM_EXPORT static void EnableLazyFrameVisibleLoadTimeMetrics(bool);
@@ -237,6 +235,8 @@ class WebRuntimeFeatures {
 
   BLINK_PLATFORM_EXPORT static void EnableSurfaceEmbeddingFeatures(bool);
   BLINK_PLATFORM_EXPORT static void EnableAcceleratedSmallCanvases(bool);
+
+  BLINK_PLATFORM_EXPORT static void EnableTrustTokens(bool);
 
  private:
   WebRuntimeFeatures();

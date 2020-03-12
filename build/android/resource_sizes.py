@@ -316,9 +316,11 @@ def _DoApkAnalysis(apk_filename, apks_path, tool_prefix, out_dir, report_func):
   # E.g. with obfuscation, the 4.04 changes to 4.46.
   speed_profile_dex_multiplier = 1.17
   orig_filename = apks_path or apk_filename
-  is_monochrome = 'Monochrome' in orig_filename
   is_webview = 'WebView' in orig_filename
-  is_shared_apk = sdk_version >= 24 and (is_monochrome or is_webview)
+  is_monochrome = 'Monochrome' in orig_filename
+  is_library = 'Library' in orig_filename
+  is_shared_apk = sdk_version >= 24 and (is_monochrome or is_webview
+                                         or is_library)
   if sdk_version < 21:
     # JellyBean & KitKat
     dex_multiplier = 1.16
@@ -472,10 +474,12 @@ def _DoApkAnalysis(apk_filename, apks_path, tool_prefix, out_dir, report_func):
   # As of now, padding_fraction ~= .007
   padding_fraction = -_PercentageDifference(
       native_code.ComputeUncompressedSize(), native_code_unaligned_size)
-  assert 0 <= padding_fraction < .02, (
-      'Padding was: {} (file_size={}, sections_sum={})'.format(
-          padding_fraction, native_code.ComputeUncompressedSize(),
-          native_code_unaligned_size))
+  # Ignore this check for small / no native code
+  if native_code.ComputeUncompressedSize() > 100000:
+    assert 0 <= padding_fraction < .02, (
+        'Padding was: {} (file_size={}, sections_sum={})'.format(
+            padding_fraction, native_code.ComputeUncompressedSize(),
+            native_code_unaligned_size))
 
   if apks_path:
     # Locale normalization not needed when measuring only one locale.

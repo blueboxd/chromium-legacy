@@ -12,9 +12,10 @@ import android.hardware.fingerprint.FingerprintManager.AuthenticationResult;
 import android.os.Build;
 import android.os.CancellationSignal;
 import android.os.Handler;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.View.OnClickListener;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.payments.PackageManagerDelegate;

@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 

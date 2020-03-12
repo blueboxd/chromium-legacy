@@ -28,7 +28,6 @@ class CORE_EXPORT ImportMap final : public GarbageCollected<ImportMap> {
   static ImportMap* Parse(const Modulator&,
                           const String& text,
                           const KURL& base_url,
-                          bool support_builtin_modules,
                           ConsoleLogger& logger,
                           ScriptValue* error_to_rethrow);
 
@@ -47,10 +46,7 @@ class CORE_EXPORT ImportMap final : public GarbageCollected<ImportMap> {
   // Empty import map.
   ImportMap();
 
-  ImportMap(const Modulator&,
-            bool support_builtin_modules,
-            SpecifierMap&& imports,
-            ScopeType&& scopes);
+  ImportMap(SpecifierMap&& imports, ScopeType&& scopes);
 
   base::Optional<KURL> Resolve(const ParsedSpecifier&,
                                const KURL& base_url,
@@ -58,7 +54,7 @@ class CORE_EXPORT ImportMap final : public GarbageCollected<ImportMap> {
 
   String ToString() const;
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) {}
 
  private:
   using MatchResult = SpecifierMap::const_iterator;
@@ -74,7 +70,6 @@ class CORE_EXPORT ImportMap final : public GarbageCollected<ImportMap> {
                                           const SpecifierMap&) const;
   static SpecifierMap SortAndNormalizeSpecifierMap(const JSONObject* imports,
                                                    const KURL& base_url,
-                                                   bool support_builtin_modules,
                                                    ConsoleLogger&);
 
   base::Optional<KURL> ResolveImportsMatchInternal(
@@ -87,10 +82,6 @@ class CORE_EXPORT ImportMap final : public GarbageCollected<ImportMap> {
 
   // https://wicg.github.io/import-maps/#import-map-scopes.
   ScopeType scopes_;
-
-  const bool support_builtin_modules_;
-
-  Member<const Modulator> modulator_for_built_in_modules_;
 };
 
 }  // namespace blink

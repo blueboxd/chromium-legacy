@@ -4,9 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.feedsessionmanager.internal;
 
-import android.support.annotation.VisibleForTesting;
-
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
 import org.chromium.chrome.browser.feed.library.api.internal.common.ThreadUtils;

@@ -8,6 +8,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/request_destination.h"
 #include "services/network/public/cpp/request_mode.h"
+#include "services/network/public/mojom/trust_tokens.mojom-blink.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -28,6 +29,7 @@
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/core/fetch/fetch_manager.h"
 #include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
+#include "third_party/blink/renderer/core/fetch/trust_token.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -51,6 +53,106 @@
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
+
+namespace {
+// Converts an IDL trustToken object to its Mojo counterpart.
+// The elements of trustToken (and of TrustTokenParams) comprise:
+// - an operation type, always populated
+// - remaining elements partitioned into groups of parameters used for specific
+// operations.
+//
+// The method sets only |type| and the fields corresponding to the operation
+// specified by |type|, namely
+// - for issuance, no additional fields;
+// - for redemption, |refresh_policy|;
+// - for signing: |issuer|, |additional_signed_headers|, |sign_request_data|,
+// and |include_timestamp_header|.
+//
+// Performs some validity checking against inputs:
+// - for signing, |issuer| must be provided and must be a valid HTTP(S) URL.
+// If this validation fails, throws a TypeError against |exception_state| and
+// returns false.
+bool ConvertTrustTokenToMojom(const TrustToken& in,
+                              ExceptionState* exception_state,
+                              network::mojom::blink::TrustTokenParams* out) {
+  DCHECK(in.hasType());  // field is required in IDL
+  if (in.type() == "token-request") {
+    out->type = network::mojom::blink::TrustTokenOperationType::kIssuance;
+    return true;
+  }
+
+  if (in.type() == "srr-token-redemption") {
+    out->type = network::mojom::blink::TrustTokenOperationType::kRedemption;
+
+    CHECK(in.hasRefreshPolicy());  // default is defined
+    out->include_timestamp_header = in.includeTimestampHeader();
+
+    if (in.refreshPolicy() == "none") {
+      out->refresh_policy =
+          network::mojom::blink::TrustTokenRefreshPolicy::kUseCached;
+    } else if (in.refreshPolicy() == "refresh") {
+      out->refresh_policy =
+          network::mojom::blink::TrustTokenRefreshPolicy::kRefresh;
+    }
+    return true;
+  }
+
+  DCHECK_EQ(in.type(), "send-srr");  // final possible value of the input enum
+  out->type = network::mojom::blink::TrustTokenOperationType::kSigning;
+
+  if (in.hasSignRequestData()) {
+    if (in.signRequestData() == "omit") {
+      out->sign_request_data =
+          network::mojom::blink::TrustTokenSignRequestData::kOmit;
+    } else if (in.signRequestData() == "include") {
+      out->sign_request_data =
+          network::mojom::blink::TrustTokenSignRequestData::kInclude;
+    } else if (in.signRequestData() == "headers-only") {
+      out->sign_request_data =
+          network::mojom::blink::TrustTokenSignRequestData::kHeadersOnly;
+    }
+  }
+
+  if (in.hasAdditionalSignedHeaders()) {
+    out->additional_signed_headers = in.additionalSignedHeaders();
+  }
+
+  CHECK(in.hasIncludeTimestampHeader());  // default is defined
+  out->include_timestamp_header = in.includeTimestampHeader();
+
+  if (in.hasIssuer()) {
+    // Two conditions on the issuer:
+    // 1. HTTP or HTTPS (because much Trust Tokens protocol state is
+    // stored keyed by issuer origin, requiring HTTP or HTTPS is a way to ensure
+    // these origins serialize to unique values);
+    // 2. potentially trustworthy (a security requirement).
+    KURL parsed_url = KURL(in.issuer());
+    if (!parsed_url.ProtocolIsInHTTPFamily()) {
+      exception_state->ThrowTypeError(
+          "trustToken: operation type 'send-srr' requires that the 'issuer' "
+          "field parse to a HTTP(S) origin, but it did not: " +
+          in.issuer());
+      return false;
+    }
+    out->issuer = blink::SecurityOrigin::Create(parsed_url);
+    if (!out->issuer->IsPotentiallyTrustworthy()) {
+      exception_state->ThrowTypeError(
+          "trustToken: operation type 'send-srr' requires that the 'issuer' "
+          "field parse to a secure origin, but it did not: " +
+          in.issuer());
+      return false;
+    }
+  } else {
+    exception_state->ThrowTypeError(
+        "trustToken: operation type 'send-srr' requires that the 'issuer' "
+        "field "
+        "be present and parse to a secure HTTP(S) URL, but it was missing.");
+    return false;
+  }
+
+  return true;
+}
+}  // namespace
 
 FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
     ScriptState* script_state,
@@ -83,6 +185,7 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
     request->SetURLLoaderFactory(std::move(factory_clone));
   }
   request->SetWindowId(original->WindowId());
+  request->SetTrustTokenParams(original->TrustTokenParams());
   return request;
 }
 
@@ -91,7 +194,7 @@ static bool AreAnyMembersPresent(const RequestInit* init) {
          init->hasReferrer() || init->hasReferrerPolicy() || init->hasMode() ||
          init->hasCredentials() || init->hasCache() || init->hasRedirect() ||
          init->hasIntegrity() || init->hasKeepalive() ||
-         init->hasImportance() || init->hasSignal();
+         init->hasImportance() || init->hasSignal() || init->hasTrustToken();
 }
 
 static BodyStreamBuffer* ExtractBody(ScriptState* script_state,
@@ -493,6 +596,19 @@ Request* Request::CreateRequestWithRequestOrString(
   // "If |init|'s signal member is present, then set |signal| to it."
   if (init->hasSignal()) {
     signal = init->signal();
+  }
+
+  if (init->hasTrustToken()) {
+    network::mojom::blink::TrustTokenParams params;
+    if (!ConvertTrustTokenToMojom(*init->trustToken(), &exception_state,
+                                  &params)) {
+      // Whenever parsing the trustToken argument fails, we expect a suitable
+      // exception to be thrown.
+      DCHECK(exception_state.HadException());
+      return nullptr;
+    }
+
+    request->SetTrustTokenParams(std::move(params));
   }
 
   // "Let |r| be a new Request object associated with |request| and a new

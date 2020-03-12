@@ -140,7 +140,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/mojom/cursor_type.mojom-blink.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "v8/include/v8.h"
 
@@ -3282,10 +3282,13 @@ class MiddleClickAutoscrollWebWidgetClient
     last_cursor_type_ = cursor.type();
   }
 
-  ui::mojom::CursorType GetLastCursorType() const { return last_cursor_type_; }
+  ui::mojom::blink::CursorType GetLastCursorType() const {
+    return last_cursor_type_;
+  }
 
  private:
-  ui::mojom::CursorType last_cursor_type_ = ui::mojom::CursorType::kPointer;
+  ui::mojom::blink::CursorType last_cursor_type_ =
+      ui::mojom::blink::CursorType::kPointer;
 };
 
 TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
@@ -3305,7 +3308,7 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
   struct CursorTests {
     int resize_width;
     int resize_height;
-    ui::mojom::CursorType expected_cursor;
+    ui::mojom::blink::CursorType expected_cursor;
   } cursor_tests[] = {{100, 100, MiddlePanningCursor().GetType()},
                       {1010, 100, MiddlePanningVerticalCursor().GetType()},
                       {100, 2010, MiddlePanningHorizontalCursor().GetType()}};

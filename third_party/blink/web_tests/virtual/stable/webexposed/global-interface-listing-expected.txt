@@ -7250,6 +7250,38 @@ interface TreeWalker
     method previousNode
     method previousSibling
     setter currentNode
+interface TrustedHTML
+    attribute @@toStringTag
+    method constructor
+    method toString
+interface TrustedScript
+    attribute @@toStringTag
+    method constructor
+    method toString
+interface TrustedScriptURL
+    attribute @@toStringTag
+    method constructor
+    method toString
+interface TrustedTypePolicy
+    attribute @@toStringTag
+    getter name
+    method constructor
+    method createHTML
+    method createScript
+    method createScriptURL
+interface TrustedTypePolicyFactory
+    attribute @@toStringTag
+    getter defaultPolicy
+    getter emptyHTML
+    getter emptyScript
+    method constructor
+    method createPolicy
+    method getAttributeType
+    method getPropertyType
+    method getTypeMapping
+    method isHTML
+    method isScript
+    method isScriptURL
 interface UIEvent : Event
     attribute @@toStringTag
     getter detail
@@ -9507,6 +9539,7 @@ interface webkitURL
     getter statusbar
     getter styleMedia
     getter toolbar
+    getter trustedTypes
     getter visualViewport
     getter webkitStorageInfo
     method NodeFilter

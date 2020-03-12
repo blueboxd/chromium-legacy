@@ -9,6 +9,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/hats/hats_survey_status_checker.h"
@@ -83,6 +84,8 @@ class HatsService : public KeyedService {
   std::unique_ptr<HatsSurveyStatusChecker> checker_;
 
   base::flat_map<std::string, SurveyConfig> survey_configs_by_triggers_;
+
+  base::WeakPtrFactory<HatsService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HatsService);
 };

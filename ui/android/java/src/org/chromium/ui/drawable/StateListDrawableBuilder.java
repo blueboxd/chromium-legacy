@@ -11,8 +11,9 @@ import android.graphics.drawable.AnimatedStateListDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
 import android.os.Build;
-import android.support.annotation.DrawableRes;
 import android.support.v7.content.res.AppCompatResources;
+
+import androidx.annotation.DrawableRes;
 
 import java.util.ArrayList;
 import java.util.List;

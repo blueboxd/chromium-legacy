@@ -210,12 +210,13 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, MediaAppEligibleOpenTask) {
   }
 }
 
-IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, HiddenInLauncher) {
+IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, HiddenInLauncherAndSearch) {
   WaitForTestSystemAppInstall();
 
   // Check system_web_app_manager has the correct attributes for Media App.
   EXPECT_FALSE(
       GetManager().ShouldShowInLauncher(web_app::SystemAppType::MEDIA));
+  EXPECT_FALSE(GetManager().ShouldShowInSearch(web_app::SystemAppType::MEDIA));
 }
 
 // End-to-end test to ensure that the MediaApp successfully registers as a file

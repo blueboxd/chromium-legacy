@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.payments.handler.toolbar;
 
 import android.os.Handler;
-import android.support.annotation.DrawableRes;
 import android.view.View;
+
+import androidx.annotation.DrawableRes;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeActivity;

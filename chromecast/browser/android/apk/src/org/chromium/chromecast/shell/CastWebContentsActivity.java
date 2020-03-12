@@ -12,13 +12,14 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.RemovableInRelease;

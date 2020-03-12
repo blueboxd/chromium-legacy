@@ -33,8 +33,12 @@ class MODULES_EXPORT EncodedVideoChunk final : public ScriptWrappable {
   // encoded_video_chunk.idl implementation.
   String type() const;
   uint64_t timestamp() const;
-  uint64_t duration(bool* is_null) const;
-  uint64_t duration(bool& is_null) const { return duration(&is_null); }
+  base::Optional<uint64_t> duration() const;
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  uint64_t duration(bool* is_null) const;   // DEPRECATED
+  uint64_t duration(bool& is_null) const {  // DEPRECATED
+    return duration(&is_null);
+  }
   DOMArrayBuffer* data() const;
 
  private:

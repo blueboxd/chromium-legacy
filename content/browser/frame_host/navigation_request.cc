@@ -1820,7 +1820,8 @@ void NavigationRequest::OnResponseStarted(
 
   auto cross_origin_embedder_policy =
       response_head_->cross_origin_embedder_policy;
-  if (base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation)) {
+  if (base::FeatureList::IsEnabled(
+          network::features::kCrossOriginEmbedderPolicy)) {
     // https://mikewest.github.io/corpp/#process-navigation-response
     if (auto* const parent_frame = GetParentFrame()) {
       const auto& parent_coep = parent_frame->cross_origin_embedder_policy();
@@ -1862,7 +1863,10 @@ void NavigationRequest::OnResponseStarted(
         return;
       }
     }
+  }
 
+  if (base::FeatureList::IsEnabled(
+          network::features::kCrossOriginOpenerPolicy)) {
     // The Cross-Origin-Opener-Policy header should be ignored if delivered in
     // insecure contexts.
     if (!IsOriginSecure(common_params_->url)) {
@@ -4057,7 +4061,8 @@ void NavigationRequest::ForceEnableOriginTrials(
 
 base::Optional<network::BlockedByResponseReason>
 NavigationRequest::IsBlockedByCorp() {
-  if (!base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation)) {
+  if (!base::FeatureList::IsEnabled(
+          network::features::kCrossOriginEmbedderPolicy)) {
     return base::nullopt;
   }
   // https://mikewest.github.io/corpp/#integration-html

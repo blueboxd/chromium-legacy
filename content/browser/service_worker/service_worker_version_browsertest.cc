@@ -453,6 +453,7 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
     version_ = CreateNewServiceWorkerVersion(
         wrapper()->context()->registry(), registration_.get(),
         embedded_test_server()->GetURL(worker_url), script_type);
+    version_->set_initialize_global_scope_after_main_script_loaded();
     // Make the registration findable via storage functions.
     wrapper()->context()->registry()->NotifyInstallingRegistration(
         registration_.get());
@@ -1603,10 +1604,10 @@ class ServiceWorkerVersionCoepTest : public ServiceWorkerVersionBrowserTest,
   ServiceWorkerVersionCoepTest() {
     if (IsCrossOriginIsolationEnabled()) {
       feature_list_.InitAndEnableFeature(
-          network::features::kCrossOriginIsolation);
+          network::features::kCrossOriginEmbedderPolicy);
     } else {
       feature_list_.InitAndDisableFeature(
-          network::features::kCrossOriginIsolation);
+          network::features::kCrossOriginEmbedderPolicy);
     }
   }
 

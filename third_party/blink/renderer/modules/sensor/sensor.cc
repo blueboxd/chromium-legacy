@@ -117,23 +117,20 @@ bool Sensor::hasReading() const {
   return sensor_proxy_->GetReading().timestamp() != 0.0;
 }
 
-DOMHighResTimeStamp Sensor::timestamp(ScriptState* script_state,
-                                      bool& is_null) const {
+base::Optional<DOMHighResTimeStamp> Sensor::timestamp(
+    ScriptState* script_state) const {
   if (!hasReading()) {
-    is_null = true;
-    return 0.0;
+    return base::nullopt;
   }
 
   LocalDOMWindow* window = LocalDOMWindow::From(script_state);
   if (!window) {
-    is_null = true;
-    return 0.0;
+    return base::nullopt;
   }
 
   WindowPerformance* performance = DOMWindowPerformance::performance(*window);
   DCHECK(performance);
   DCHECK(sensor_proxy_);
-  is_null = false;
 
   if (WebTestSupport::IsRunningWebTest()) {
     // In web tests performance.now() * 0.001 is passed to the shared buffer.
@@ -143,6 +140,13 @@ DOMHighResTimeStamp Sensor::timestamp(ScriptState* script_state,
   return performance->MonotonicTimeToDOMHighResTimeStamp(
       base::TimeTicks() +
       base::TimeDelta::FromSecondsD(sensor_proxy_->GetReading().timestamp()));
+}
+
+DOMHighResTimeStamp Sensor::timestamp(ScriptState* script_state,
+                                      bool& is_null) const {
+  base::Optional<DOMHighResTimeStamp> result = timestamp(script_state);
+  is_null = !result;
+  return result.value_or(0);
 }
 
 void Sensor::Trace(Visitor* visitor) {

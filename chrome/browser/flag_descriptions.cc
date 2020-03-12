@@ -626,18 +626,6 @@ const char kEnablePreviewsCoinFlipName[] = "Enable Previews Coin Flip";
 const char kEnablePreviewsCoinFlipDescription[] =
     "Enable coin flip experimentation of Previews.";
 
-const char kBuiltInModuleAllName[] = "All experimental built-in modules";
-const char kBuiltInModuleAllDescription[] =
-    "Enable all experimental built-in modules, as well as built-in module "
-    "infrastructure and import maps. The syntax and the APIs exposed are "
-    "experimental and will change over time.";
-
-const char kBuiltInModuleInfraName[] = "Built-in module infra and import maps";
-const char kBuiltInModuleInfraDescription[] =
-    "Enable built-in module infrastructure and import maps. Individual "
-    "built-in modules should be enabled by other flags. The syntax and the "
-    "APIs exposed are experimental and will change over time.";
-
 const char kDownloadAutoResumptionNativeName[] =
     "Enable download auto-resumption in native";
 const char kDownloadAutoResumptionNativeDescription[] =
@@ -699,9 +687,9 @@ const char kCorsForContentScriptsName[] = "CORS for content scripts";
 const char kCorsForContentScriptsDescription[] =
     "Prevent content scripts of Chrome Extensions from bypassing CORS.";
 
-const char kCrossOriginIsolationName[] = "Cross Origin Isolation";
-const char kCrossOriginIsolationDescription[] =
-    "Enable Cross Origin Opener Policy and Cross Origin Embedder Policy.";
+const char kCrossOriginOpenerPolicyName[] = "Cross Origin Opener Policy";
+const char kCrossOriginOpenerPolicyDescription[] =
+    "Enables Cross Origin Opener Policy.";
 
 const char kDisableKeepaliveFetchName[] = "Disable fetch with keepalive set";
 const char kDisableKeepaliveFetchDescription[] =
@@ -875,7 +863,7 @@ const char kExperimentalProductivityFeaturesName[] =
     "Experimental Productivity Features";
 const char kExperimentalProductivityFeaturesDescription[] =
     "Enable support for experimental developer productivity features, such as "
-    "built-in modules and policies for avoiding slow rendering.";
+    "import maps and policies for avoiding slow rendering.";
 
 const char kExperimentalWebPlatformFeaturesName[] =
     "Experimental Web Platform features";

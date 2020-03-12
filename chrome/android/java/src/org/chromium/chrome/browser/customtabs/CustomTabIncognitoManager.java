@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import android.support.annotation.Nullable;
 import android.view.WindowManager;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.browser.ChromeActivity;

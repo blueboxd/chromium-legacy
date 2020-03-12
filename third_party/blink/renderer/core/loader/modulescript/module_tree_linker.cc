@@ -7,7 +7,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
-#include "third_party/blink/renderer/core/script/layered_api.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -181,12 +180,6 @@ void ModuleTreeLinker::FetchRoot(const KURL& original_url,
   AdvanceState(State::kFetchingSelf);
 
   KURL url = original_url;
-  // <spec
-  // href="https://github.com/drufball/layered-apis/blob/master/spec.md#fetch-a-module-script-graph"
-  // step="1">Set url to the layered API fetching URL given url and the current
-  // settings object's API base URL.</spec>
-  if (modulator_->BuiltInModuleInfraEnabled())
-    url = blink::layered_api::ResolveFetchingURL(*modulator_, url);
 
 #if DCHECK_IS_ON()
   url_ = url;

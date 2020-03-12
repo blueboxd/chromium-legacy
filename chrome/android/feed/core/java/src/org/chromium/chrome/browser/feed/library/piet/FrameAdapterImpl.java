@@ -9,7 +9,6 @@ import static org.chromium.components.feed.core.proto.ui.piet.ErrorsProto.ErrorC
 import static org.chromium.components.feed.core.proto.ui.piet.ErrorsProto.ErrorCode.ERR_POOR_FRAME_RATE;
 
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +16,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.api.host.config.DebugBehavior;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;

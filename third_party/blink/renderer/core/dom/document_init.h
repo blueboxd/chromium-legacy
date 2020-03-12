@@ -185,6 +185,9 @@ class CORE_EXPORT DocumentInit final {
     return report_only_document_policy_header_;
   }
 
+  DocumentInit& WithWebBundleClaimedUrl(const KURL& web_bundle_claimed_url);
+  const KURL& GetWebBundleClaimedUrl() const { return web_bundle_claimed_url_; }
+
   WindowAgentFactory* GetWindowAgentFactory() const;
   Settings* GetSettingsForWindowAgentFactory() const;
 
@@ -267,6 +270,11 @@ class CORE_EXPORT DocumentInit final {
   // The document policy set via response header.
   DocumentPolicy::FeatureState document_policy_;
   String report_only_document_policy_header_;
+
+  // The claimed URL inside Web Bundle file from which the document is loaded.
+  // This URL is used for window.location and document.URL and relative path
+  // computation in the document.
+  KURL web_bundle_claimed_url_;
 
   bool is_for_external_handler_ = false;
   Color plugin_background_color_;

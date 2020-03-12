@@ -127,6 +127,7 @@ Polymer({
    */
   saveNewPassphrase_() {
     assert(this.creatingNewPassphrase_);
+    chrome.metricsPrivate.recordUserAction('Sync_SaveNewPassphraseClicked');
     // Might happen within the transient time between the request to
     // |setSyncEncryption| and receiving the response.
     if (this.syncPrefs.encryptAllData) {

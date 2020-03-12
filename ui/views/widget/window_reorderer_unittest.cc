@@ -118,10 +118,6 @@ TEST_F(WindowReordererTest, Basic) {
   EXPECT_EQ("w1 w2", ChildWindowNamesAsString(*parent_window));
   EXPECT_EQ("w1 v w2",
             ui::test::ChildLayerNamesAsString(*parent_window->layer()));
-
-  // Work around for bug in NativeWidgetAura.
-  // TODO: fix bug and remove this.
-  parent->Close();
 }
 
 // Test that different orderings of:
@@ -178,10 +174,6 @@ TEST_F(WindowReordererTest, Association) {
   EXPECT_EQ("w2 w1", ChildWindowNamesAsString(*parent_window));
   EXPECT_EQ("w2 w1",
             ui::test::ChildLayerNamesAsString(*parent_window->layer()));
-
-  // Work around for bug in NativeWidgetAura.
-  // TODO: fix bug and remove this.
-  parent->Close();
 }
 
 // It is possible to associate a window to a view which has a parent layer
@@ -250,10 +242,6 @@ TEST_F(WindowReordererTest, HostViewParentHasLayer) {
   EXPECT_EQ("w", ChildWindowNamesAsString(*parent_window));
   EXPECT_EQ("v1 v2 w",
             ui::test::ChildLayerNamesAsString(*parent_window->layer()));
-
-  // Work around for bug in NativeWidgetAura.
-  // TODO: fix bug and remove this.
-  parent->Close();
 }
 
 // Test that a layer added beneath a view is restacked correctly.

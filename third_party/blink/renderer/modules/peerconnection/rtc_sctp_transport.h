@@ -45,7 +45,9 @@ class MODULES_EXPORT RTCSctpTransport final
   RTCDtlsTransport* transport() const;
   String state() const;
   double maxMessageSize() const;
-  int16_t maxChannels(bool& is_null) const;
+  base::Optional<int16_t> maxChannels() const;
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  int16_t maxChannels(bool& is_null) const;  // DEPRECATED
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange)
 

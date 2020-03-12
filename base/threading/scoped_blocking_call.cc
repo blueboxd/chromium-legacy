@@ -8,12 +8,17 @@
 #include "base/scoped_clear_last_error.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 
 namespace base {
 
 namespace {
+
+// The first 8 characters of sha1 of "ScopedBlockingCall".
+// echo -n "ScopedBlockingCall" | sha1sum
+constexpr uint32_t kActivityTrackerId = 0x11be9915;
 
 LazyInstance<ThreadLocalPointer<internal::BlockingObserver>>::Leaky
     tls_blocking_observer = LAZY_INSTANCE_INITIALIZER;
@@ -35,12 +40,14 @@ LazyInstance<ThreadLocalBoolean>::Leaky tls_construction_in_progress =
 namespace internal {
 
 UncheckedScopedBlockingCall::UncheckedScopedBlockingCall(
+    const Location& from_here,
     BlockingType blocking_type)
     : blocking_observer_(tls_blocking_observer.Get().Get()),
       previous_scoped_blocking_call_(tls_last_scoped_blocking_call.Get().Get()),
       is_will_block_(blocking_type == BlockingType::WILL_BLOCK ||
                      (previous_scoped_blocking_call_ &&
-                      previous_scoped_blocking_call_->is_will_block_)) {
+                      previous_scoped_blocking_call_->is_will_block_)),
+      scoped_activity_(from_here, 0, kActivityTrackerId, 0) {
   tls_last_scoped_blocking_call.Get().Set(this);
 
   if (blocking_observer_) {
@@ -50,6 +57,14 @@ UncheckedScopedBlockingCall::UncheckedScopedBlockingCall(
                !previous_scoped_blocking_call_->is_will_block_) {
       blocking_observer_->BlockingTypeUpgraded();
     }
+  }
+
+  if (scoped_activity_.IsRecorded()) {
+    // Also record the data for extended crash reporting.
+    const base::TimeTicks now = base::TimeTicks::Now();
+    auto& user_data = scoped_activity_.user_data();
+    user_data.SetUint("timestamp_us", now.since_origin().InMicroseconds());
+    user_data.SetUint("blocking_type", static_cast<uint64_t>(blocking_type));
   }
 }
 
@@ -67,7 +82,7 @@ UncheckedScopedBlockingCall::~UncheckedScopedBlockingCall() {
 
 ScopedBlockingCall::ScopedBlockingCall(const Location& from_here,
                                        BlockingType blocking_type)
-    : UncheckedScopedBlockingCall(blocking_type) {
+    : UncheckedScopedBlockingCall(from_here, blocking_type) {
 #if DCHECK_IS_ON()
   DCHECK(!tls_construction_in_progress.Get().Get());
   tls_construction_in_progress.Get().Set(true);
@@ -91,7 +106,7 @@ namespace internal {
 ScopedBlockingCallWithBaseSyncPrimitives::
     ScopedBlockingCallWithBaseSyncPrimitives(const Location& from_here,
                                              BlockingType blocking_type)
-    : UncheckedScopedBlockingCall(blocking_type) {
+    : UncheckedScopedBlockingCall(from_here, blocking_type) {
 #if DCHECK_IS_ON()
   DCHECK(!tls_construction_in_progress.Get().Get());
   tls_construction_in_progress.Get().Set(true);

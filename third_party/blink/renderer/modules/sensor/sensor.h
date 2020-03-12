@@ -54,7 +54,10 @@ class MODULES_EXPORT Sensor : public EventTargetWithInlineData,
   // Getters
   bool activated() const;
   bool hasReading() const;
-  DOMHighResTimeStamp timestamp(ScriptState*, bool& is_null) const;
+  base::Optional<DOMHighResTimeStamp> timestamp(ScriptState*) const;
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  DOMHighResTimeStamp timestamp(ScriptState*,
+                                bool& is_null) const;  // DEPRECATED
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(reading, kReading)

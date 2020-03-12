@@ -711,6 +711,7 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   request.SetRequestDestination(fetch_request_data_->Destination());
   request.SetHttpMethod(fetch_request_data_->Method());
   request.SetFetchWindowId(fetch_request_data_->WindowId());
+  request.SetTrustTokenParams(fetch_request_data_->TrustTokenParams());
 
   switch (fetch_request_data_->Mode()) {
     case RequestMode::kSameOrigin:

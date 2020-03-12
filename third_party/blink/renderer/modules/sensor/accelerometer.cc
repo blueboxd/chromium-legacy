@@ -39,6 +39,24 @@ Accelerometer::Accelerometer(
              sensor_type,
              features) {}
 
+base::Optional<double> Accelerometer::x() const {
+  if (hasReading())
+    return GetReading().accel.x;
+  return base::nullopt;
+}
+
+base::Optional<double> Accelerometer::y() const {
+  if (hasReading())
+    return GetReading().accel.y;
+  return base::nullopt;
+}
+
+base::Optional<double> Accelerometer::z() const {
+  if (hasReading())
+    return GetReading().accel.z;
+  return base::nullopt;
+}
+
 double Accelerometer::x(bool& is_null) const {
   INIT_IS_NULL_AND_RETURN(is_null, 0.0);
   return GetReading().accel.x;

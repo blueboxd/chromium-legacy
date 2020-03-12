@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.browser.signin;
 
-import android.support.annotation.Nullable;
-
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;

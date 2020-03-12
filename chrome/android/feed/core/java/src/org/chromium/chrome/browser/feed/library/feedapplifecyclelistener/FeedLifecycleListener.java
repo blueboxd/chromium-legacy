@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.feedapplifecyclelistener;
 
-import android.support.annotation.StringDef;
+import androidx.annotation.StringDef;
 
 /**
  * Internal interface used to register Feed components with the {@link FeedAppLifecycleListener},

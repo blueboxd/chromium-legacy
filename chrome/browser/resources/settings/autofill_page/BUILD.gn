@@ -478,6 +478,7 @@ polymer_modulizer("password_check") {
   html_type = "dom-module"
   auto_imports = [
     "chrome/browser/resources/settings/autofill_page/password_manager_proxy.html|PasswordManagerImpl,PasswordManagerProxy",
+    "chrome/browser/resources/settings/people_page/sync_browser_proxy.html|SyncBrowserProxyImpl,SyncPrefs,SyncStatus",
     "chrome/browser/resources/settings/plural_string_proxy.html|PluralStringProxyImpl",
     "ui/webui/resources/html/assert.html|assert",
   ]

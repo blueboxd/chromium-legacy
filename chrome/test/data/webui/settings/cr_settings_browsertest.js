@@ -360,6 +360,7 @@ CrSettingsPasswordsCheckTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
     'passwords_and_autofill_fake_data.js',
+    'sync_test_util.js',
     'test_password_manager_proxy.js',
     'password_check_test.js',
   ]),

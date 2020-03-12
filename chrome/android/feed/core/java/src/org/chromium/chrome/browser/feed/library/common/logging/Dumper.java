@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.feed.library.common.logging;
 
-import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;

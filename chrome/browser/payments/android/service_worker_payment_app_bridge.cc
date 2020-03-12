@@ -179,8 +179,16 @@ void OnGetServiceWorkerPaymentAppsInfo(
 void OnCanMakePayment(const JavaRef<jobject>& jcallback,
                       const JavaRef<jobject>& japp,
                       payments::mojom::CanMakePaymentResponsePtr response) {
+  JNIEnv* env = AttachCurrentThread();
   Java_PaymentHandlerFinder_onCanMakePaymentEventResponse(
-      AttachCurrentThread(), jcallback, japp, response->can_make_payment);
+      env, jcallback, japp,
+      ConvertUTF8ToJavaString(
+          env, payments::ConvertCanMakePaymentEventResponseTypeToErrorString(
+                   response->response_type)),
+      response->can_make_payment, response->ready_for_minimal_ui,
+      response->account_balance
+          ? ConvertUTF8ToJavaString(env, *response->account_balance)
+          : nullptr);
 }
 
 void OnPaymentAppInvoked(

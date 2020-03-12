@@ -43,7 +43,7 @@ CrossOriginResourcePolicy::ParsedHeader ParseHeaderByString(
   if (header_value == "same-site")
     return CrossOriginResourcePolicy::kSameSite;
 
-  if (base::FeatureList::IsEnabled(features::kCrossOriginIsolation) &&
+  if (base::FeatureList::IsEnabled(features::kCrossOriginEmbedderPolicy) &&
       header_value == "cross-origin") {
     return CrossOriginResourcePolicy::kCrossOrigin;
   }
@@ -120,7 +120,7 @@ base::Optional<BlockedByResponseReason> IsBlockedInternal(
   if ((policy == CrossOriginResourcePolicy::kNoHeader ||
        policy == CrossOriginResourcePolicy::kParsingError) &&
       embedder_policy == mojom::CrossOriginEmbedderPolicyValue::kRequireCorp) {
-    DCHECK(base::FeatureList::IsEnabled(features::kCrossOriginIsolation));
+    DCHECK(base::FeatureList::IsEnabled(features::kCrossOriginEmbedderPolicy));
     policy = CrossOriginResourcePolicy::kSameOrigin;
     upgrade_to_same_origin = true;
   }

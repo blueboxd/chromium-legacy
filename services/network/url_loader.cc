@@ -125,14 +125,16 @@ void PopulateResourceResponse(net::URLRequest* request,
   // TODO(ahemery): Cross origin isolation headers should only be parsed for
   // secure contexts. Check here using IsUrlPotentiallyTrustworthy() once the
   // tests are updated to use HTTPS.
-  if (base::FeatureList::IsEnabled(features::kCrossOriginIsolation)) {
-    // Parse the Cross-Origin-Embedder-Policy and
-    // Cross-Origin-Embedder-Policy-Report-Only headers.
+  // Parse the Cross-Origin-Embedder-Policy and
+  // Cross-Origin-Embedder-Policy-Report-Only headers.
+  if (base::FeatureList::IsEnabled(features::kCrossOriginEmbedderPolicy)) {
     response->cross_origin_embedder_policy =
         URLLoader::ParseCrossOriginEmbedderPolicyValue(
             request->response_headers());
+  }
 
-    // Parse the Cross-Origin-Opener-Policy header.
+  // Parse the Cross-Origin-Opener-Policy header.
+  if (base::FeatureList::IsEnabled(features::kCrossOriginOpenerPolicy)) {
     std::string raw_coop_string;
     if (request->response_headers() &&
         request->response_headers()->GetNormalizedHeader(

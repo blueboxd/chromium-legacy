@@ -136,7 +136,7 @@ constexpr char kGeneratedPath[] =
 #endif
 
 // static
-int SettingsUI::hats_timeout_ms_ = 10000;
+int SettingsUI::hats_timeout_ms_ = 20000;
 
 // static
 void SettingsUI::SetHatsTimeoutForTesting(int timeout) {

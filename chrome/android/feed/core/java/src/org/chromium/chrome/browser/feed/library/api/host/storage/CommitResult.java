@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.host.storage;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 /** Status after completion of a commit to storage. */
 public final class CommitResult {

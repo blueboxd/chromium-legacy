@@ -8,11 +8,11 @@ import static org.chromium.chrome.browser.feed.library.api.host.imageloader.Imag
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkState;
 
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.piet.AdapterFactory.SingletonKeySupplier;
 import org.chromium.chrome.browser.feed.library.piet.ui.AspectRatioScalingImageView;

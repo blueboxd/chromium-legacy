@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.feed.library.piet.host;
 
-import android.support.annotation.IntDef;
 import android.view.View;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.components.feed.core.proto.ui.piet.ActionsProto.Action;
 import org.chromium.components.feed.core.proto.ui.piet.LogDataProto.LogData;

@@ -12,17 +12,8 @@
       "bounds": [404, 544],
       "backfaceVisibility": "hidden",
       "backgroundColor": "#FFFF00",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='target'",
-          "rect": [0, 0, 404, 544],
-          "reason": "full layer"
-        },
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='target'",
-          "rect": [0, 0, 200, 200],
-          "reason": "full layer"
-        }
+      "invalidations": [
+        [0, 0, 404, 544]
       ],
       "transform": 1
     },

@@ -6,12 +6,13 @@ package org.chromium.chrome.browser.gesturenav;
 
 import android.content.Context;
 import android.os.Handler;
-import android.support.annotation.IdRes;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import androidx.annotation.IdRes;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;

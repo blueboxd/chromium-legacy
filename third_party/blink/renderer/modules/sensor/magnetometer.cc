@@ -34,6 +34,24 @@ Magnetometer::Magnetometer(ExecutionContext* execution_context,
              SensorType::MAGNETOMETER,
              {mojom::blink::FeaturePolicyFeature::kMagnetometer}) {}
 
+base::Optional<double> Magnetometer::x() const {
+  if (hasReading())
+    return GetReading().magn.x;
+  return base::nullopt;
+}
+
+base::Optional<double> Magnetometer::y() const {
+  if (hasReading())
+    return GetReading().magn.y;
+  return base::nullopt;
+}
+
+base::Optional<double> Magnetometer::z() const {
+  if (hasReading())
+    return GetReading().magn.z;
+  return base::nullopt;
+}
+
 double Magnetometer::x(bool& is_null) const {
   INIT_IS_NULL_AND_RETURN(is_null, 0.0);
   return GetReading().magn.x;

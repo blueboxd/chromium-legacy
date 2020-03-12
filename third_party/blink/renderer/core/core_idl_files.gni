@@ -661,6 +661,7 @@ core_dictionary_idl_files =
                     "events/wheel_event_init.idl",
                     "fetch/request_init.idl",
                     "fetch/response_init.idl",
+                    "fetch/trust_token.idl",
                     "fileapi/blob_property_bag.idl",
                     "fileapi/file_property_bag.idl",
                     "frame/navigator_ua_brand_version.idl",

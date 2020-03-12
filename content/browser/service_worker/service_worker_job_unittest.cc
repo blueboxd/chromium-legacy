@@ -2040,7 +2040,7 @@ class ServiceWorkerUpdateJobTestWithCrossOriginIsolation
  public:
   ServiceWorkerUpdateJobTestWithCrossOriginIsolation() {
     feature_list_.InitAndEnableFeature(
-        ::network::features::kCrossOriginIsolation);
+        ::network::features::kCrossOriginEmbedderPolicy);
   }
 
  private:

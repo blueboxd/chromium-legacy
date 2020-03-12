@@ -39,6 +39,7 @@
 #include "services/network/public/mojom/cors.mojom-blink-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
+#include "services/network/public/mojom/trust_tokens.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -440,6 +441,15 @@ class PLATFORM_EXPORT ResourceRequestHead {
         prefetch_maybe_for_top_level_navigation;
   }
 
+  const base::Optional<network::mojom::blink::TrustTokenParams>&
+  TrustTokenParams() const {
+    return trust_token_params_;
+  }
+  void SetTrustTokenParams(
+      base::Optional<network::mojom::blink::TrustTokenParams> params) {
+    trust_token_params_ = std::move(params);
+  }
+
   // Whether either RequestorOrigin or IsolatedWorldOrigin can display the
   // |url|,
   bool CanDisplay(const KURL&) const;
@@ -494,6 +504,7 @@ class PLATFORM_EXPORT ResourceRequestHead {
   bool is_external_request_;
   network::mojom::CorsPreflightPolicy cors_preflight_policy_;
   RedirectStatus redirect_status_;
+  base::Optional<network::mojom::blink::TrustTokenParams> trust_token_params_;
 
   base::Optional<String> suggested_filename_;
 

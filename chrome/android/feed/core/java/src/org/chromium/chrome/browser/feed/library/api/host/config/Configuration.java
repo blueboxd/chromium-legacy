@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.host.config;
 
-import android.support.annotation.StringDef;
+import androidx.annotation.StringDef;
 
 import java.util.HashMap;
 

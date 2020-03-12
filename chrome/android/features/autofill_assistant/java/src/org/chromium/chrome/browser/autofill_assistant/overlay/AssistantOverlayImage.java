@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.autofill_assistant.overlay;
 
 import android.graphics.Bitmap;
-import android.support.annotation.Nullable;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.Nullable;
 
 /** Java equivalent to {@code OverlayImageProto}. */
 public class AssistantOverlayImage {

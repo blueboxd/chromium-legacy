@@ -19,7 +19,7 @@
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
-#include "ui/base/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/mojom/cursor_type.mojom-blink.h"
 
 using testing::_;
 
@@ -195,7 +195,7 @@ TEST_F(LinkSelectionTest, HandCursorDuringLinkDrag) {
   test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(50));
   const auto& cursor =
       main_frame_->GetFrame()->GetChromeClient().LastSetCursorForTesting();
-  EXPECT_EQ(ui::mojom::CursorType::kHand, cursor.GetType());
+  EXPECT_EQ(ui::mojom::blink::CursorType::kHand, cursor.GetType());
 }
 
 TEST_F(LinkSelectionTest, DragOnNothingShowsPointer) {
@@ -207,7 +207,7 @@ TEST_F(LinkSelectionTest, DragOnNothingShowsPointer) {
   test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(50));
   const auto& cursor =
       main_frame_->GetFrame()->GetChromeClient().LastSetCursorForTesting();
-  EXPECT_EQ(ui::mojom::CursorType::kPointer, cursor.GetType());
+  EXPECT_EQ(ui::mojom::blink::CursorType::kPointer, cursor.GetType());
 }
 
 TEST_F(LinkSelectionTest, CaretCursorOverLinkDuringSelection) {
@@ -220,7 +220,7 @@ TEST_F(LinkSelectionTest, CaretCursorOverLinkDuringSelection) {
   test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(50));
   const auto& cursor =
       main_frame_->GetFrame()->GetChromeClient().LastSetCursorForTesting();
-  EXPECT_EQ(ui::mojom::CursorType::kIBeam, cursor.GetType());
+  EXPECT_EQ(ui::mojom::blink::CursorType::kIBeam, cursor.GetType());
 }
 
 TEST_F(LinkSelectionTest, HandCursorOverLinkAfterContextMenu) {
@@ -239,7 +239,7 @@ TEST_F(LinkSelectionTest, HandCursorOverLinkAfterContextMenu) {
   test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(50));
   const auto& cursor =
       main_frame_->GetFrame()->GetChromeClient().LastSetCursorForTesting();
-  EXPECT_EQ(ui::mojom::CursorType::kHand, cursor.GetType());
+  EXPECT_EQ(ui::mojom::blink::CursorType::kHand, cursor.GetType());
 }
 
 TEST_F(LinkSelectionTest, SingleClickWithAltStartsDownload) {

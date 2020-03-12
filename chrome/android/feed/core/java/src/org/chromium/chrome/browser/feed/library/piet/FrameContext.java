@@ -11,10 +11,10 @@ import static org.chromium.components.feed.core.proto.ui.piet.ErrorsProto.ErrorC
 import static org.chromium.components.feed.core.proto.ui.piet.ErrorsProto.ErrorCode.ERR_MISSING_BINDING_VALUE;
 import static org.chromium.components.feed.core.proto.ui.piet.ErrorsProto.ErrorCode.ERR_MISSING_TEMPLATE;
 
-import android.support.annotation.VisibleForTesting;
 import android.view.View;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.api.host.config.DebugBehavior;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;

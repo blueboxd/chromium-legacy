@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.host.stream;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 /** Interface for callbacks for tooltip events. */
 public interface TooltipCallbackApi {

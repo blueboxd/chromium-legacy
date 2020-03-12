@@ -7,8 +7,8 @@ package org.chromium.components.browser_ui.widget.dragreorder;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
-import android.support.annotation.Nullable;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.graphics.ColorUtils;
 import androidx.core.view.ViewCompat;

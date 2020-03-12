@@ -57,17 +57,25 @@ class MODULES_EXPORT RTCIceCandidate final : public ScriptWrappable {
 
   String candidate() const;
   String sdpMid() const;
-  uint16_t sdpMLineIndex(bool& is_null) const;
+  base::Optional<uint16_t> sdpMLineIndex() const;
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  uint16_t sdpMLineIndex(bool& is_null) const;  // DEPRECATED
   String foundation() const;
   String component() const;
-  uint32_t priority(bool& is_null) const;
+  base::Optional<uint32_t> priority() const;
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  uint32_t priority(bool& is_null) const;  // DEPRECATED
   String address() const;
   String protocol() const;
-  uint16_t port(bool& is_null) const;
+  base::Optional<uint16_t> port() const;
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  uint16_t port(bool& is_null) const;  // DEPRECATED
   String type() const;
   String tcpType() const;
   String relatedAddress() const;
-  uint16_t relatedPort(bool& is_null) const;
+  base::Optional<uint16_t> relatedPort() const;
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  uint16_t relatedPort(bool& is_null) const;  // DEPRECATED
   String usernameFragment() const;
 
   ScriptValue toJSONForBinding(ScriptState*);

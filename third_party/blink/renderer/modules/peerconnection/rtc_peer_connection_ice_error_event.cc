@@ -62,6 +62,10 @@ String RTCPeerConnectionIceErrorEvent::address() const {
   return address_;
 }
 
+base::Optional<uint16_t> RTCPeerConnectionIceErrorEvent::port() const {
+  return port_;
+}
+
 uint16_t RTCPeerConnectionIceErrorEvent::port(bool& is_null) const {
   is_null = !port_.has_value();
   return is_null ? uint16_t() : port_.value();

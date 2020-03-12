@@ -7,9 +7,10 @@ package org.chromium.chrome.browser.autofill_assistant.generic_ui;
 import static org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantValue.isDateSingleton;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;

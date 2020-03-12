@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/util/type_safety/strong_alias.h"
+#include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/webui/help/version_updater.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
@@ -81,6 +82,7 @@ class SafetyCheckHandler
  protected:
   SafetyCheckHandler(std::unique_ptr<VersionUpdater> version_updater,
                      password_manager::BulkLeakCheckService* leak_service,
+                     extensions::PasswordsPrivateDelegate* passwords_delegate,
                      extensions::ExtensionPrefs* extension_prefs,
                      extensions::ExtensionServiceInterface* extension_service);
 
@@ -151,6 +153,7 @@ class SafetyCheckHandler
 
   std::unique_ptr<VersionUpdater> version_updater_;
   password_manager::BulkLeakCheckService* leak_service_ = nullptr;
+  extensions::PasswordsPrivateDelegate* passwords_delegate_ = nullptr;
   extensions::ExtensionPrefs* extension_prefs_ = nullptr;
   extensions::ExtensionServiceInterface* extension_service_ = nullptr;
   ScopedObserver<password_manager::BulkLeakCheckService,

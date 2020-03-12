@@ -61,34 +61,4 @@ HandlerOwnerType OwnerNameToHandlerType(const std::string& owner_name) {
   return HandlerOwnerType::kUnknown;
 }
 
-const Topic* FindMatchingTopic(const Topics& lhs, const Topics& rhs) {
-  for (auto lhs_it = lhs.begin(), rhs_it = rhs.begin();
-       lhs_it != lhs.end() && rhs_it != rhs.end();) {
-    if (lhs_it->first == rhs_it->first) {
-      return &lhs_it->first;
-    } else if (lhs_it->first < rhs_it->first) {
-      ++lhs_it;
-    } else {
-      ++rhs_it;
-    }
-  }
-  return nullptr;
-}
-
-std::vector<Topic> FindRemovedTopics(const Topics& lhs, const Topics& rhs) {
-  std::vector<Topic> result;
-  for (auto lhs_it = lhs.begin(), rhs_it = rhs.begin(); lhs_it != lhs.end();) {
-    if (rhs_it == rhs.end() || lhs_it->first < rhs_it->first) {
-      result.push_back(lhs_it->first);
-      ++lhs_it;
-    } else if (lhs_it->first == rhs_it->first) {
-      ++lhs_it;
-      ++rhs_it;
-    } else {
-      ++rhs_it;
-    }
-  }
-  return result;
-}
-
 }  // namespace syncer

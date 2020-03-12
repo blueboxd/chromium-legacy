@@ -107,7 +107,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/mojom/cursor_type.mojom-blink.h"
 
 namespace blink {
 
@@ -805,7 +805,7 @@ void WebPluginContainerImpl::HandleMouseEvent(MouseEvent& event) {
   if (event.type() == event_type_names::kMousedown)
     FocusPlugin();
 
-  ui::Cursor cursor(ui::mojom::CursorType::kPointer);
+  ui::Cursor cursor(ui::mojom::blink::CursorType::kPointer);
   if (web_plugin_ && web_plugin_->HandleInputEvent(
                          WebCoalescedInputEvent(transformed_event), &cursor) !=
                          WebInputEventResult::kNotHandled)

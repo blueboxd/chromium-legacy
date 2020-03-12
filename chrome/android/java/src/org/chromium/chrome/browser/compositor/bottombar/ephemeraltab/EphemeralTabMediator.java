@@ -6,8 +6,9 @@ package org.chromium.chrome.browser.compositor.bottombar.ephemeraltab;
 
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.support.annotation.DrawableRes;
 import android.text.TextUtils;
+
+import androidx.annotation.DrawableRes;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPage;

@@ -76,7 +76,6 @@ class WorkletModuleResponsesMapTest : public testing::Test {
         MakeGarbageCollected<WorkletModuleScriptFetcher>(
             map_.Get(), ModuleScriptLoader::CreatePassKeyForTests());
     module_fetcher->Fetch(fetch_params, fetcher_.Get(),
-                          nullptr /* modulator_for_built_in_modules */,
                           ModuleGraphLevel::kTopLevelModuleFetch, client);
   }
 

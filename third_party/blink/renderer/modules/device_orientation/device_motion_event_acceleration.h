@@ -46,9 +46,13 @@ class MODULES_EXPORT DeviceMotionEventAcceleration final
 
   bool HasAccelerationData() const;
 
-  double x(bool& is_null) const;
-  double y(bool& is_null) const;
-  double z(bool& is_null) const;
+  base::Optional<double> x() const;
+  base::Optional<double> y() const;
+  base::Optional<double> z() const;
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  double x(bool& is_null) const;  // DEPRECATED
+  double y(bool& is_null) const;  // DEPRECATED
+  double z(bool& is_null) const;  // DEPRECATED
 
  private:
   const double x_;

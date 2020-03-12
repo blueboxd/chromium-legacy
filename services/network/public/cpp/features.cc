@@ -87,12 +87,24 @@ const base::Feature kProactivelyThrottleLowPriorityRequests{
     "ProactivelyThrottleLowPriorityRequests",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// This is for Cross-Origin-Opener-Policy (COOP) and
-// Cross-Origin-Embedder-Policy (COEP).
+// Enables Cross-Origin Opener Policy (COOP).
 // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
+const base::Feature kCrossOriginOpenerPolicy{"CrossOriginOpenerPolicy",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables Cross-Origin Embedder Policy (COEP).
 // https://github.com/mikewest/corpp
-const base::Feature kCrossOriginIsolation{"CrossOriginIsolation",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+// Currently this feature is enabled for all platforms except WebView. It is not
+// possible to distinguish between Android and WebView here, so we enable the
+// feature on Android via finch.
+const base::Feature kCrossOriginEmbedderPolicy {
+  "CrossOriginEmbedderPolicy",
+#if defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // When kBlockNonSecureExternalRequests is enabled, requests initiated from a
 // pubic network may only target a private network if the initiating context

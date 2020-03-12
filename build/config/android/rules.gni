@@ -1464,6 +1464,7 @@ if (enable_java_templates) {
   #         [ [ path_to_file, path_to_put_in_jar ] ]
   #
   #   javac_args: Additional arguments to pass to javac.
+  #   never_goma: When true, ignore the value of use_java_goma.
   #   errorprone_args: Additional arguments to pass to errorprone.
   #
   #   data_deps, testonly

@@ -343,8 +343,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       const KURL&,
       const scoped_refptr<const SecurityOrigin> initiator_origin,
       Document* owner_document,
-      const AtomicString& mime_type,
-      const KURL& overriding_url);
+      const AtomicString& mime_type);
   void DidInstallNewDocument(Document*);
   void WillCommitNavigation();
   void DidCommitNavigation();
@@ -533,7 +532,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   Member<SourceKeyedCachedMetadataHandler> cached_metadata_handler_;
   Member<PrefetchedSignedExchangeManager> prefetched_signed_exchange_manager_;
   KURL web_bundle_physical_url_;
-  KURL base_url_override_for_web_bundle_;
+  KURL web_bundle_claimed_url_;
 
   // This UseCounterHelper tracks feature usage associated with the lifetime of
   // the document load. Features recorded prior to commit will be recorded

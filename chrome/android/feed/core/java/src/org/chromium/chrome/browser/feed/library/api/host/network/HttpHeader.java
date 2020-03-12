@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.host.network;
 
-import android.support.annotation.StringDef;
+import androidx.annotation.StringDef;
 
 public final class HttpHeader {
     /** These string values correspond with the actual header name. */

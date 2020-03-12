@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.omnibox.suggestions.clipboard;
 
 import android.content.Context;
-import android.support.annotation.DrawableRes;
+
+import androidx.annotation.DrawableRes;
 
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;

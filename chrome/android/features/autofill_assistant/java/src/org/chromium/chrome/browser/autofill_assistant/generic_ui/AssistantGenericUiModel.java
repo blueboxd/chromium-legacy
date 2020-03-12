@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.autofill_assistant.generic_ui;
 
-import android.support.annotation.Nullable;
 import android.view.View;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;

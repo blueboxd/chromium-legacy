@@ -1276,6 +1276,8 @@ class BASE_EXPORT ScopedActivity
   ALWAYS_INLINE
   ScopedActivity(uint8_t action, uint32_t id, int32_t info)
       : ScopedActivity(GetProgramCounter(), action, id, info) {}
+  ScopedActivity(Location from_here, uint8_t action, uint32_t id, int32_t info)
+      : ScopedActivity(from_here.program_counter(), action, id, info) {}
   ScopedActivity() : ScopedActivity(0, 0, 0) {}
 
   // Changes the |action| and/or |info| of this activity on the stack. This

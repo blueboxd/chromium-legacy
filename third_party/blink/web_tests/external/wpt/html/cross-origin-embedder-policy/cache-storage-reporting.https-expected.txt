@@ -5,7 +5,7 @@ FAIL COEP support on DedicatedWorker. promise_test: Unhandled rejection with val
 FAIL COEP-Report-Only support on DedicatedWorker. promise_test: Unhandled rejection with value: "Report not send"
 FAIL COEP support on SharedWorker. promise_test: Unhandled rejection with value: "Report not send"
 FAIL COEP-Report-Only support on SharedWorker. promise_test: Unhandled rejection with value: "Report not send"
-FAIL COEP support on ServiceWorker. promise_test: Unhandled rejection with value: "Report not send"
-FAIL COEP-Report-Only support on ServiceWorker. promise_test: Unhandled rejection with value: "Report not send"
+PASS COEP support on ServiceWorker.
+PASS COEP-Report-Only support on ServiceWorker.
 Harness: the test ran to completion.
 

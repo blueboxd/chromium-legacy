@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.host.stream;
 
-import android.support.annotation.StringDef;
+import androidx.annotation.StringDef;
 
 /** All the information necessary to render a tooltip. */
 public interface TooltipInfo {

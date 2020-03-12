@@ -148,8 +148,6 @@ jumbo_static_library("driver") {
 grit("resources") {
   source = "resources.grd"
 
-  # The .grd contains references to generated files.
-  source_is_generated = true
   outputs = [
     "grit/sync_driver_resources.h",
     "sync_driver_resources.pak",

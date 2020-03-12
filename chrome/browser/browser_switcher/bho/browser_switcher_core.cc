@@ -65,7 +65,7 @@ bool BrowserSwitcherCore::InvokeChrome(const std::wstring& url) const {
   HINSTANCE browser_instance =
       ::ShellExecute(NULL, NULL, chrome_path_.c_str(), command_line.c_str(),
                      NULL, SW_SHOWNORMAL);
-  if (reinterpret_cast<int>(browser_instance) <= 32) {
+  if (reinterpret_cast<uintptr_t>(browser_instance) <= 32) {
     LOG(ERR) << "Could not start Chrome! Handle: " << browser_instance << " "
              << ::GetLastError() << std::endl;
     return false;

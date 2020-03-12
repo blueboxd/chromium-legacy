@@ -780,20 +780,20 @@ class EmbeddedWorkerInstance::StartTask {
               std::move(factory_bundle_for_new_scripts));
     }
 
-    // Create cache storage now as an optimization, so the service worker can
-    // use the Cache Storage API immediately on startup.
-    if (base::FeatureList::IsEnabled(
-            blink::features::kEagerCacheStorageSetupForServiceWorkers)) {
-      instance_->BindCacheStorage(params->provider_info->cache_storage
-                                      .InitWithNewPipeAndPassReceiver());
-    }
-
     // Bind COEP reporter created on the UI thread, which has the onwership of
     // the instance. The |coep_reporter| might be null when the COEP value is
     // not known because the main script has not been loaded yet. In that case,
     // COEP reporter will be bound after the main script is loaded.
     if (coep_reporter) {
       instance_->coep_reporter_.Bind(std::move(coep_reporter));
+    }
+
+    // Create cache storage now as an optimization, so the service worker can
+    // use the Cache Storage API immediately on startup.
+    if (base::FeatureList::IsEnabled(
+            blink::features::kEagerCacheStorageSetupForServiceWorkers)) {
+      instance_->BindCacheStorage(params->provider_info->cache_storage
+                                      .InitWithNewPipeAndPassReceiver());
     }
 
     instance_->SendStartWorker(std::move(params));
@@ -1033,8 +1033,6 @@ void EmbeddedWorkerInstance::OnScriptLoaded() {
   // Renderer side has started to launch the worker thread.
   starting_phase_ = SCRIPT_LOADED;
   owner_version_->OnMainScriptLoaded();
-
-  BindCacheStorageInternal();
 }
 
 void EmbeddedWorkerInstance::OnWorkerVersionInstalled() {
@@ -1459,15 +1457,18 @@ void EmbeddedWorkerInstance::BindCacheStorageInternal() {
   // loaded the headers and the COEP one is known.
   if (!owner_version_->cross_origin_embedder_policy())
     return;
+
   network::CrossOriginEmbedderPolicy coep =
       owner_version_->cross_origin_embedder_policy().value();
 
-  // TODO(https://crbug.com/1059727) Plumb a CrossOriginEmbedderPolicyReporter
-  // to handle reports.
-  mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
-      coep_reporter_remote;
-
   for (auto& receiver : pending_cache_storage_receivers_) {
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+        coep_reporter_remote;
+    if (coep_reporter_) {
+      coep_reporter_->Clone(
+          coep_reporter_remote.InitWithNewPipeAndPassReceiver());
+    }
+
     RunOrPostTaskOnThread(
         FROM_HERE, BrowserThread::UI,
         base::BindOnce(content::BindCacheStorageOnUIThread, process_id(),
@@ -1484,9 +1485,11 @@ void EmbeddedWorkerInstance::OnCreatedFactoryBundles(
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
         coep_reporter) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+
   if (coep_reporter) {
     coep_reporter_.Bind(std::move(coep_reporter));
   }
+  BindCacheStorageInternal();
   std::move(callback).Run(std::move(script_bundle),
                           std::move(subresource_bundle));
 }

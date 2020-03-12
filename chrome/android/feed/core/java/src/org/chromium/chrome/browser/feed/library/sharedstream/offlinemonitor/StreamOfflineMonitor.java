@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.sharedstream.offlinemonitor;
 
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.host.offlineindicator.OfflineIndicatorApi;

@@ -6,9 +6,10 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import android.content.Context;
 import android.graphics.Rect;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;

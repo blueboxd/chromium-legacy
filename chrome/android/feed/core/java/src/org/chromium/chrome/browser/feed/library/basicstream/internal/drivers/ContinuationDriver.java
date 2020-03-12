@@ -8,11 +8,11 @@ import static org.chromium.chrome.browser.feed.library.common.Validators.checkNo
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkState;
 
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
 import android.view.View;
 import android.view.View.OnClickListener;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;

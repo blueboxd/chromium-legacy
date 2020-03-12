@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.sharedstream.logging;
 
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.api.host.logging.SpinnerType;

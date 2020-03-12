@@ -22582,6 +22582,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Sync_SaveNewPassphraseClicked">
+  <owner>msalama@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    The user has clicked on save in the encryption option section from
+    chrome://settings/syncSetup to encrypt the data with a custom passphrase.
+  </description>
+</action>
+
 <action name="Sync_SyncEverything">
   <owner>msalama@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>

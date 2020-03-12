@@ -11,10 +11,13 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/constants.h"
+#include "services/network/public/cpp/optional_trust_token_params.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
+#include "services/network/public/mojom/trust_tokens.mojom-blink.h"
+#include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
@@ -173,6 +176,30 @@ mojom::ResourceType RequestContextToResourceType(
   }
 }
 
+// Converts a mojom::blink TrustTokenParams object to its non-Blink counterpart
+// by copying all fields.
+network::OptionalTrustTokenParams ConvertTrustTokenParams(
+    const base::Optional<network::mojom::blink::TrustTokenParams>& maybe_in) {
+  if (!maybe_in)
+    return base::nullopt;
+  const network::mojom::blink::TrustTokenParams& in = *maybe_in;
+
+  network::mojom::TrustTokenParamsPtr out =
+      network::mojom::TrustTokenParams::New();
+  out->type = in.type;
+  out->refresh_policy = in.refresh_policy;
+  out->sign_request_data = in.sign_request_data;
+  out->include_timestamp_header = in.include_timestamp_header;
+  // Optional value:
+  if (in.issuer)
+    out->issuer = in.issuer->ToUrlOrigin();
+  for (const String& additional_header : in.additional_signed_headers) {
+    out->additional_signed_headers.push_back(additional_header.Latin1());
+  }
+
+  return network::OptionalTrustTokenParams(std::move(out));
+}
+
 }  // namespace
 
 void PopulateResourceRequestBody(const EncodedFormData& src,
@@ -307,6 +334,7 @@ void PopulateResourceRequest(const ResourceRequest& src,
   // longer used in a network delegate. https://crbug.com/842233
   dest->previews_state = static_cast<int>(src.GetPreviewsState());
   dest->throttling_profile_id = src.GetDevToolsToken();
+  dest->trust_token_params = ConvertTrustTokenParams(src.TrustTokenParams());
 
   if (base::UnguessableToken window_id = src.GetFetchWindowId())
     dest->fetch_window_id = base::make_optional(window_id);

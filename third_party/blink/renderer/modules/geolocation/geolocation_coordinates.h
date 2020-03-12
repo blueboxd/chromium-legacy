@@ -61,11 +61,17 @@ class GeolocationCoordinates : public ScriptWrappable {
 
   double latitude() const { return latitude_; }
   double longitude() const { return longitude_; }
-  double altitude(bool& is_null) const;
+  base::Optional<double> altitude() const;
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  double altitude(bool& is_null) const;  // DEPRECATED
   double accuracy() const { return accuracy_; }
-  double altitudeAccuracy(bool& is_null) const;
-  double heading(bool& is_null) const;
-  double speed(bool& is_null) const;
+  base::Optional<double> altitudeAccuracy() const;
+  base::Optional<double> heading() const;
+  base::Optional<double> speed() const;
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  double altitudeAccuracy(bool& is_null) const;  // DEPRECATED
+  double heading(bool& is_null) const;           // DEPRECATED
+  double speed(bool& is_null) const;             // DEPRECATED
 
  private:
   double latitude_;

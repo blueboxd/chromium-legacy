@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/script/layered_api_module.h"
 #include "third_party/blink/renderer/core/script/module_import_meta.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -122,9 +121,6 @@ class CORE_EXPORT Modulator : public GarbageCollected<Modulator>,
   virtual bool IsScriptingDisabled() const = 0;
 
   virtual bool ImportMapsEnabled() const = 0;
-  virtual bool BuiltInModuleInfraEnabled() const = 0;
-  virtual bool BuiltInModuleEnabled(layered_api::Module) const = 0;
-  virtual void BuiltInModuleUseCount(layered_api::Module) const = 0;
 
   // https://html.spec.whatwg.org/C/#fetch-a-module-script-tree
   // https://html.spec.whatwg.org/C/#fetch-a-module-worker-script-tree

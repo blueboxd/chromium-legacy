@@ -36293,6 +36293,22 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="8" label="HandleUpdateOrigins Invalid"/>
 </enum>
 
+<enum name="LauncherRankingItemType">
+  <summary>
+    The type of a result in the Chrome OS launcher, simplified to fewer
+    categories for the purposes of ranking.
+  </summary>
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Ignored"/>
+  <int value="2" label="File"/>
+  <int value="3" label="App"/>
+  <int value="4" label="OmniboxGeneric"/>
+  <int value="5" label="ArcAppShortcut"/>
+  <int value="6" label="ZeroStateFile"/>
+  <int value="7" label="DriveQuickAccess"/>
+  <int value="8" label="Chip"/>
+</enum>
+
 <enum name="LaunchErrorCodes">
   <int value="0" label="SBOX_ALL_OK"/>
   <int value="1" label="SBOX_ERROR_GENERIC"/>
@@ -37367,7 +37383,6 @@ from previous Chrome versions.
   <int value="-1961648833" label="show_summary"/>
   <int value="-1961497025" label="tint-gl-composited-content"/>
   <int value="-1961062505" label="VrBrowsingInCustomTab:disabled"/>
-  <int value="-1960766118" label="CrossOriginIsolation:disabled"/>
   <int value="-1960567385" label="KeepPrefetchedContentSuggestions:enabled"/>
   <int value="-1959563554" label="ChromeOSAccountManager:enabled"/>
   <int value="-1958315092" label="EnableGamepadButtonAxisEvents:disabled"/>
@@ -38219,7 +38234,6 @@ from previous Chrome versions.
   <int value="-992785453" label="ExplicitLanguageAsk:disabled"/>
   <int value="-991253797"
       label="OmniboxSpeculativeServiceWorkerStartOnQueryInput:disabled"/>
-  <int value="-990374250" label="CrossOriginIsolation:enabled"/>
   <int value="-990187062" label="SendTabToSelfShowSendingUI:enabled"/>
   <int value="-989671895" label="OfflineIndicatorAlwaysHttpProbe:enabled"/>
   <int value="-987470173" label="ClickToCallOpenDialerDirectly:disabled"/>
@@ -38875,6 +38889,7 @@ from previous Chrome versions.
   <int value="-181279574" label="NativeFilesystemAPI:enabled"/>
   <int value="-181093956" label="ScrollAnchoring:enabled"/>
   <int value="-180481252" label="CompositorThreadedScrollbarScrolling:enabled"/>
+  <int value="-179580377" label="CrossOriginOpenerPolicy:enabled"/>
   <int value="-178364053" label="TerminalSystemAppLegacySettings:enabled"/>
   <int value="-177974995" label="CrostiniShowMicSetting:disabled"/>
   <int value="-175666252" label="Portals:disabled"/>
@@ -40280,6 +40295,7 @@ from previous Chrome versions.
   <int value="1500390299" label="NtpCustomizationMenuV2:disabled"/>
   <int value="1505194447" label="disable-transition-compositing"/>
   <int value="1508761653" label="disable-site-isolation-trials"/>
+  <int value="1509586356" label="CrossOriginOpenerPolicy:disabled"/>
   <int value="1509901380" label="disable-drive-search-in-app-launcher"/>
   <int value="1510476448" label="disable-prefixed-encrypted-media"/>
   <int value="1510659184" label="MacMDDownloadShelf:enabled"/>

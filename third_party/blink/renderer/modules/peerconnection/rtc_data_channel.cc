@@ -268,6 +268,20 @@ bool RTCDataChannel::ordered() const {
   return channel()->ordered();
 }
 
+base::Optional<uint16_t> RTCDataChannel::maxPacketLifeTime() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (channel()->maxPacketLifeTime())
+    return *channel()->maxPacketLifeTime();
+  return base::nullopt;
+}
+
+base::Optional<uint16_t> RTCDataChannel::maxRetransmits() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (channel()->maxRetransmitsOpt())
+    return *channel()->maxRetransmitsOpt();
+  return base::nullopt;
+}
+
 uint16_t RTCDataChannel::maxPacketLifeTime(bool& is_null) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (channel()->maxPacketLifeTime()) {
@@ -296,6 +310,13 @@ String RTCDataChannel::protocol() const {
 bool RTCDataChannel::negotiated() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return channel()->negotiated();
+}
+
+base::Optional<uint16_t> RTCDataChannel::id() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (channel()->id() == -1)
+    return base::nullopt;
+  return channel()->id();
 }
 
 uint16_t RTCDataChannel::id(bool& is_null) const {

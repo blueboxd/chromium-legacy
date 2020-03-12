@@ -556,6 +556,14 @@ class WebBundleTrustableFileBrowserTest
   }
   ~WebBundleTrustableFileBrowserTest() override = default;
 
+  std::string ExecuteAndGetString(const std::string& script) {
+    std::string result;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        shell()->web_contents(), "domAutomationController.send(" + script + ")",
+        &result));
+    return result;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebBundleTrustableFileBrowserTest);
 };
@@ -635,6 +643,34 @@ IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, NavigationWithHash) {
     return;
   NavigateToBundleAndWaitForReady(test_data_url(), GURL(kTestPageUrl));
   NavigateToURLAndWaitForTitle(GURL(kTestPageForHashUrl), "#hello");
+
+  EXPECT_EQ(ExecuteAndGetString("window.location.href"),
+            "https://test.example.org/hash.html#hello");
+  EXPECT_EQ(ExecuteAndGetString("document.location.href"),
+            "https://test.example.org/hash.html#hello");
+  EXPECT_EQ(ExecuteAndGetString("document.URL"),
+            "https://test.example.org/hash.html#hello");
+}
+
+IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, BaseURI) {
+  // Don't run the test if we couldn't override BrowserClient. It happens only
+  // on Android Kitkat or older systems.
+  if (!original_client_)
+    return;
+  NavigateToBundleAndWaitForReady(test_data_url(), GURL(kTestPageUrl));
+  EXPECT_EQ(ExecuteAndGetString("(new Request('./foo/bar')).url"),
+            "https://test.example.org/foo/bar");
+  EXPECT_EQ(ExecuteAndGetString(R"(
+            (() => {
+              const base_element = document.createElement('base');
+              base_element.href = 'https://example.org/piyo/';
+              document.body.appendChild(base_element);
+              return document.baseURI;
+            })()
+            )"),
+            "https://example.org/piyo/");
+  EXPECT_EQ(ExecuteAndGetString("(new Request('./foo/bar')).url"),
+            "https://example.org/piyo/foo/bar");
 }
 
 INSTANTIATE_TEST_SUITE_P(WebBundleTrustableFileBrowserTests,

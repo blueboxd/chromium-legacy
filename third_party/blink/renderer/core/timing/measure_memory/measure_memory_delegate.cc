@@ -87,11 +87,17 @@ const Frame* GetFrame(v8::Local<v8::Context> context) {
 }
 
 String GetUrl(const Frame* frame) {
-  // TODO(ulan): Find a way to return the URL at frames open time.
+  // TODO(ulan): Refactor the rest of the code to make the parameter LocalFrame.
   const LocalFrame* local_frame = To<LocalFrame>(frame);
-  ExecutionContext* execution_context =
-      local_frame->GetDocument()->ToExecutionContext();
-  return execution_context->Url().GetString();
+  if (local_frame->IsCrossOriginToParentFrame()) {
+    // The function must be called only for the first cross-origin iframe on
+    // the path down from the main frame. Thus the parent frame is guaranteed
+    // to be the same origin as the main frame.
+    DCHECK(!local_frame->Tree().Parent()->IsCrossOriginToMainFrame());
+    base::Optional<String> url = local_frame->FirstUrlCrossOriginToParent();
+    return url ? url.value() : "";
+  }
+  return local_frame->GetDocument()->Url().GetString();
 }
 
 // To avoid information leaks cross-origin iframes are considered opaque for

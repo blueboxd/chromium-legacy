@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.feed.library.basicstream.internal.drivers;
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkNotNull;
 
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;

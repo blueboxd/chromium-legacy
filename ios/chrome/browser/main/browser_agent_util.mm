@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #include "ios/chrome/browser/tabs/synced_window_delegate_browser_agent.h"
+#import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -31,6 +32,7 @@ void AttachBrowserAgents(Browser* browser) {
   AttachInfobarOverlayBrowserAgent(browser);
   SyncedWindowDelegateBrowserAgent::CreateForBrowser(browser);
   WebUsageEnablerBrowserAgent::CreateForBrowser(browser);
+  UrlLoadingNotifierBrowserAgent::CreateForBrowser(browser);
 
   // SessionRestorartionAgent requires WebUsageEnablerBrowserAgent.
   SessionRestorationBrowserAgent::CreateForBrowser(

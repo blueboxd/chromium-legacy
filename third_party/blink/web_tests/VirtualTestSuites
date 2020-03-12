@@ -645,12 +645,6 @@
     "args": ["--disable-blink-features=ExperimentalProductivityFeatures"]
   },
   {
-    "prefix": "import-maps-without-builtin-modules",
-    "bases": ["external/wpt/import-maps"],
-    "args": ["--enable-blink-features=ImportMaps",
-             "--disable-blink-features=ExperimentalProductivityFeatures"]
-  },
-  {
     "prefix": "overlay-scrollbar",
     "bases": [],
     "args": ["--enable-features=OverlayScrollbar"]

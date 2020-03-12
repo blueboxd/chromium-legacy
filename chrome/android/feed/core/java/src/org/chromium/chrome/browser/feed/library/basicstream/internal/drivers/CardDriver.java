@@ -6,9 +6,8 @@ package org.chromium.chrome.browser.feed.library.basicstream.internal.drivers;
 
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkState;
 
-import android.support.annotation.VisibleForTesting;
-
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;

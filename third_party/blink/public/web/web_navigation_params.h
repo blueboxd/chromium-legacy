@@ -363,9 +363,10 @@ struct BLINK_EXPORT WebNavigationParams {
   // Used as an additional identifier for MemoryCache.
   WebURL web_bundle_physical_url;
 
-  // The base URL which will be set for the document to support relative path
-  // subresource loading in an unsigned Web Bundle file.
-  WebURL base_url_override_for_web_bundle;
+  // The claimed URL inside Web Bundle file from which the document is loaded.
+  // This URL is used for window.location and document.URL and relative path
+  // computation in the document.
+  WebURL web_bundle_claimed_url;
 
   // The frame policy specified by the frame owner element.
   // Should be base::nullopt for top level navigations

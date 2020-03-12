@@ -80,13 +80,6 @@ base::string16 ContactInfoEditorViewController::GetInitialValueForType(
   if (!profile_to_edit_)
     return base::string16();
   return GetValueForType(*profile_to_edit_, type);
-
-  if (type == autofill::PHONE_HOME_WHOLE_NUMBER) {
-    return autofill::i18n::GetFormattedPhoneNumberForDisplay(
-        *profile_to_edit_, state()->GetApplicationLocale());
-  }
-
-  return profile_to_edit_->GetInfo(type, state()->GetApplicationLocale());
 }
 
 bool ContactInfoEditorViewController::ValidateModelAndSave() {

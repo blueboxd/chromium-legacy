@@ -13,7 +13,7 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"
-#import "ios/chrome/browser/url_loading/url_loading_notifier.h"
+#import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
@@ -60,8 +60,7 @@ void InduceBrowserCrash(const GURL& url) {
 }
 }
 
-UrlLoadingService::UrlLoadingService(UrlLoadingNotifier* notifier)
-    : notifier_(notifier) {}
+UrlLoadingService::UrlLoadingService() {}
 
 void UrlLoadingService::SetAppService(AppUrlLoadingService* app_service) {
   app_service_ = app_service;
@@ -73,6 +72,8 @@ void UrlLoadingService::SetDelegate(id<URLLoadingServiceDelegate> delegate) {
 
 void UrlLoadingService::SetBrowser(Browser* browser) {
   browser_ = browser;
+  if (browser_)
+    notifier_ = UrlLoadingNotifierBrowserAgent::FromBrowser(browser_);
 }
 
 void UrlLoadingService::Load(const UrlLoadParams& params) {

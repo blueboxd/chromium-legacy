@@ -337,6 +337,22 @@ void WorkletAnimation::play(ExceptionState& exception_state) {
   }
 }
 
+base::Optional<double> WorkletAnimation::currentTime() {
+  base::Optional<base::TimeDelta> current_time = CurrentTime();
+  if (!current_time)
+    return base::nullopt;
+  return ToMilliseconds(current_time.value());
+}
+
+base::Optional<double> WorkletAnimation::startTime() {
+  // The timeline may have become newly active or inactive, which then can cause
+  // the start time to change.
+  UpdateCurrentTimeIfNeeded();
+  if (!start_time_)
+    return base::nullopt;
+  return ToMilliseconds(start_time_.value());
+}
+
 double WorkletAnimation::currentTime(bool& is_null) {
   base::Optional<base::TimeDelta> current_time = CurrentTime();
   is_null = !current_time.has_value();

@@ -16,6 +16,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
+#include "components/signin/public/base/persistent_repeating_timer.h"
 
 class AccountInfoFetcher;
 class AccountTrackerService;
@@ -100,8 +101,6 @@ class AccountFetcherService : public ProfileOAuth2TokenServiceObserver {
   friend class AccountInfoFetcher;
 
   void RefreshAllAccountInfo(bool only_fetch_if_invalid);
-  void RefreshAllAccountsAndScheduleNext();
-  void ScheduleNextRefresh();
 
 #if defined(OS_ANDROID)
   // Called on all account state changes. Decides whether to fetch new child
@@ -150,8 +149,7 @@ class AccountFetcherService : public ProfileOAuth2TokenServiceObserver {
   bool refresh_tokens_loaded_ = false;
   bool shutdown_called_ = false;
   bool enable_account_removal_for_test_ = false;
-  base::Time last_updated_;
-  base::OneShotTimer timer_;
+  std::unique_ptr<signin::PersistentRepeatingTimer> repeating_timer_;
 
 #if defined(OS_ANDROID)
   CoreAccountId child_request_account_id_;

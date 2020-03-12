@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 import {DeviceOperator} from '../mojo/device_operator.js';
-import {FpsRangeList,  // eslint-disable-line no-unused-vars
-        MaxFpsInfo,    // eslint-disable-line no-unused-vars
-        Resolution,
-        ResolutionList,  // eslint-disable-line no-unused-vars
-        VideoConfig,     // eslint-disable-line no-unused-vars
+import {
+  Facing,        // eslint-disable-line no-unused-vars
+  FpsRangeList,  // eslint-disable-line no-unused-vars
+  MaxFpsInfo,    // eslint-disable-line no-unused-vars
+  Resolution,
+  ResolutionList,  // eslint-disable-line no-unused-vars
+  VideoConfig,     // eslint-disable-line no-unused-vars
 } from '../type.js';
 
 /**
@@ -16,7 +18,7 @@ import {FpsRangeList,  // eslint-disable-line no-unused-vars
 export class Camera3DeviceInfo {
   /**
    * @param {!MediaDeviceInfo} deviceInfo Information of the video device.
-   * @param {!cros.mojom.CameraFacing} facing Camera facing of the video device.
+   * @param {!Facing} facing Camera facing of the video device.
    * @param {!ResolutionList} photoResols Supported available photo resolutions
    *     of the video device.
    * @param {!Array<!VideoConfig>} videoResolFpses Supported available video
@@ -31,7 +33,7 @@ export class Camera3DeviceInfo {
     this.deviceId = deviceInfo.deviceId;
 
     /**
-     * @const {cros.mojom.CameraFacing}
+     * @const {!Facing}
      * @public
      */
     this.facing = facing;

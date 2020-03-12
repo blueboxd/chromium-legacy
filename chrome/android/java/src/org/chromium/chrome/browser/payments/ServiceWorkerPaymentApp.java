@@ -56,6 +56,16 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
      */
     private PaymentHandlerHost mPaymentHandlerHost;
 
+    /** Whether the app can show its own UI when it is invoked. */
+    private boolean mCanShowOwnUI = true;
+
+    /** Whether the app is ready for minial UI flow. */
+    private boolean mIsReadyForMinimalUI;
+
+    /** The account balance to be used in the minimal UI flow. */
+    @Nullable
+    private String mAccountBalance;
+
     /**
      * This class represents capabilities of a payment instrument. It is currently only used for
      * 'basic-card' payment instrument.
@@ -305,6 +315,32 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
     public void dismissInstrument() {}
 
     @Override
+    public void setIsReadyForMinimalUI(boolean isReadyForMinimalUI) {
+        mIsReadyForMinimalUI = isReadyForMinimalUI;
+    }
+
+    @Override
+    public boolean isReadyForMinimalUI() {
+        return mIsReadyForMinimalUI;
+    }
+
+    @Override
+    public void setAccountBalance(@Nullable String accountBalance) {
+        mAccountBalance = accountBalance;
+    }
+
+    @Override
+    @Nullable
+    public String accountBalance() {
+        return mAccountBalance;
+    }
+
+    @Override
+    public void disableShowingOwnUI() {
+        mCanShowOwnUI = false;
+    }
+
+    @Override
     public boolean canPreselect() {
         return mCanPreselect;
     }
@@ -327,17 +363,6 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
     @Override
     public boolean handlesPayerPhone() {
         return mSupportedDelegations.getPayerPhone();
-    }
-
-    @Override
-    public boolean isReadyForMicrotransaction() {
-        return true; // TODO(https://crbug.com/1000432): Implement microtransactions.
-    }
-
-    @Override
-    @Nullable
-    public String accountBalance() {
-        return "18.00"; // TODO(https://crbug.com/1000432): Implement microtransactions.
     }
 
     @Override

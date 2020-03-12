@@ -125,7 +125,8 @@ void ServiceWorkerLoaderHelpers::SaveResponseHeaders(
 
   // TODO(yhirano): Remove the code duplication with
   // //services/network/url_loader.cc.
-  if (base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation)) {
+  if (base::FeatureList::IsEnabled(
+          network::features::kCrossOriginEmbedderPolicy)) {
     // Parse the Cross-Origin-Embedder-Policy and
     // Cross-Origin-Embedder-Policy-Report-Only headers.
 

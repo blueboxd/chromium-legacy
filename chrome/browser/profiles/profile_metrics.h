@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 
 class Profile;
+class ProfileAttributesStorage;
 class ProfileManager;
 
 namespace base {
@@ -151,8 +152,8 @@ class ProfileMetrics {
 #endif  // defined(OS_ANDROID)
 
   // Count and return summary information about the profiles currently in the
-  // |manager|. This information is returned in the output variable |counts|.
-  static bool CountProfileInformation(ProfileManager* manager,
+  // |storage|. This information is returned in the output variable |counts|.
+  static void CountProfileInformation(ProfileAttributesStorage* storage,
                                       profile_metrics::Counts* counts);
 
 #if !defined(OS_ANDROID)
@@ -163,7 +164,7 @@ class ProfileMetrics {
   static profile_metrics::BrowserProfileType GetBrowserProfileType(
       Profile* profile);
 
-  static void LogNumberOfProfiles(ProfileManager* manager);
+  static void LogNumberOfProfiles(ProfileAttributesStorage* storage);
   static void LogProfileAddNewUser(ProfileAdd metric);
   static void LogProfileAvatarSelection(size_t icon_index);
   static void LogProfileDeleteUser(ProfileDelete metric);

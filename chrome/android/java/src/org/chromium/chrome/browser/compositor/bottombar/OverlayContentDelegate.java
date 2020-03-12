@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.compositor.bottombar;
 
-import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
+import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.navigation_interception.NavigationParams;
 
 /**

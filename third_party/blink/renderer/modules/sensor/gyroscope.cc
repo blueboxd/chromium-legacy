@@ -33,6 +33,24 @@ Gyroscope::Gyroscope(ExecutionContext* execution_context,
              SensorType::GYROSCOPE,
              {mojom::blink::FeaturePolicyFeature::kGyroscope}) {}
 
+base::Optional<double> Gyroscope::x() const {
+  if (hasReading())
+    return GetReading().gyro.x;
+  return base::nullopt;
+}
+
+base::Optional<double> Gyroscope::y() const {
+  if (hasReading())
+    return GetReading().gyro.y;
+  return base::nullopt;
+}
+
+base::Optional<double> Gyroscope::z() const {
+  if (hasReading())
+    return GetReading().gyro.z;
+  return base::nullopt;
+}
+
 double Gyroscope::x(bool& is_null) const {
   INIT_IS_NULL_AND_RETURN(is_null, 0.0);
   return GetReading().gyro.x;

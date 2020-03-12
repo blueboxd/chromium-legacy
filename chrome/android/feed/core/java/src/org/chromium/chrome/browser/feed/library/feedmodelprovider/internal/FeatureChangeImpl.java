@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.feedmodelprovider.internal;
 
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.FeatureChange;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelChild;

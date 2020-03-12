@@ -85,7 +85,7 @@ _INCLUDE_ORDER_WARNING = (
 # * Sequence of path or filename exceptions to this rule
 _BANNED_JAVA_IMPORTS = (
     (
-      'java.net.URI',
+      'java.net.URI;',
       (
        'Use org.chromium.url.GURL instead of java.net.URI, where possible.',
       ),

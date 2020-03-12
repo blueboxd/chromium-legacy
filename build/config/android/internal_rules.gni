@@ -2695,6 +2695,7 @@ if (enable_java_templates) {
   #    javac:processor_classes
   #  javac_jar_path: Path to the final output .jar file.
   #  javac_args: Optional list of extra arguments to pass to javac.
+  #  never_goma: When true, ignore the value of use_java_goma.
   #  chromium_code: Whether this corresponds to Chromium-specific sources.
   #  requires_android: True if these sources can only run on Android.
   #  additional_jar_files: Optional list of files to copy into the resulting
@@ -2791,7 +2792,8 @@ if (enable_java_templates) {
       if (invoker.supports_android) {
         args += [ "--java-version=1.8" ]
       }
-      if (use_java_goma) {
+      if ((!defined(invoker.never_goma) || !invoker.never_goma) &&
+          use_java_goma) {
         args += [ "--gomacc-path=$goma_dir/gomacc" ]
 
         # Override the default action_pool when goma is enabled.
@@ -2920,6 +2922,7 @@ if (enable_java_templates) {
   #  requires_android: Optional. True if target can only run on Android.
   #  java_files: Optional list of Java source file paths for this target.
   #  javac_args: Optional list of extra arguments to pass to javac.
+  #  never_goma: When true, ignore the value of use_java_goma.
   #  errorprone_args: Optional list of extra arguments to pass to .
   #  srcjar_deps: Optional list of .srcjar targets (not file paths). The Java
   #    source files they contain will also be compiled for this target.
@@ -3365,6 +3368,7 @@ if (enable_java_templates) {
         "provider_configurations",
         "javac_args",
         "jar_excluded_patterns",
+        "never_goma",
       ]
       compile_java_helper(_compile_java_target) {
         forward_variables_from(invoker, _compile_java_forward_variables)

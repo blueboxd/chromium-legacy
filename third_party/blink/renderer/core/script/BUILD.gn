@@ -26,10 +26,6 @@ blink_core_sources("script") {
     "import_map.h",
     "js_module_script.cc",
     "js_module_script.h",
-    "layered_api.cc",
-    "layered_api.h",
-    "layered_api_module.h",
-    "layered_api_resources.h",
     "modulator.cc",
     "modulator.h",
     "modulator_impl_base.cc",
@@ -73,21 +69,4 @@ blink_core_sources("script") {
   deps = [ "//third_party/blink/public:resources" ]
 
   jumbo_excluded_sources = [ "modulator.cc" ]  # https://crbug.com/716395
-}
-
-copy("layered_apis_elements_virtual_scroller_js") {
-  testonly = true
-
-  sources = [
-    "resources/layered_api/elements/virtual-scroller/find-element.mjs",
-    "resources/layered_api/elements/virtual-scroller/sets.mjs",
-    "resources/layered_api/elements/virtual-scroller/visibility-manager.mjs",
-  ]
-
-  outputs = [ "{{source_gen_dir}}/{{source_file_part}}" ]
-}
-
-group("js_files_for_web_tests") {
-  testonly = true
-  data_deps = [ ":layered_apis_elements_virtual_scroller_js" ]
 }

@@ -113,7 +113,6 @@ class ModuleMapTestModulator final : public DummyModulator {
         : ModuleScriptFetcher(pass_key), modulator_(modulator) {}
     void Fetch(FetchParameters& request,
                ResourceFetcher*,
-               const Modulator* modulator_for_built_in_modules,
                ModuleGraphLevel,
                ModuleScriptFetcher::Client* client) override {
       TestRequest* test_request = MakeGarbageCollected<TestRequest>(

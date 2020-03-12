@@ -25,7 +25,9 @@ class XRRenderState : public ScriptWrappable {
   // Session's views.
   double depthNear() const { return depth_near_; }
   double depthFar() const { return depth_far_; }
-  double inlineVerticalFieldOfView(bool& is_null) const;
+  base::Optional<double> inlineVerticalFieldOfView() const;
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  double inlineVerticalFieldOfView(bool& is_null) const;  // DEPRECATED
   XRWebGLLayer* baseLayer() const { return base_layer_; }
 
   HTMLCanvasElement* output_canvas() const;

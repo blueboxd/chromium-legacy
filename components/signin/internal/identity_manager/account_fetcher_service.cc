@@ -75,8 +75,11 @@ void AccountFetcherService::Initialize(
   DCHECK(image_decoder);
   DCHECK(!image_decoder_);
   image_decoder_ = std::move(image_decoder);
-  last_updated_ = signin_client_->GetPrefs()->GetTime(
-      AccountFetcherService::kLastUpdatePref);
+  repeating_timer_ = std::make_unique<signin::PersistentRepeatingTimer>(
+      signin_client_->GetPrefs(), AccountFetcherService::kLastUpdatePref,
+      kRefreshFromTokenServiceDelay,
+      base::Bind(&AccountFetcherService::RefreshAllAccountInfo,
+                 base::Unretained(this), false));
 
   // Tokens may have already been loaded and we will not receive a
   // notification-on-registration for |token_service_->AddObserver(this)| few
@@ -162,35 +165,12 @@ void AccountFetcherService::MaybeEnableNetworkFetches() {
     return;
   if (!network_fetches_enabled_) {
     network_fetches_enabled_ = true;
-    ScheduleNextRefresh();
+    repeating_timer_->Start();
   }
   RefreshAllAccountInfo(true);
 #if defined(OS_ANDROID)
   UpdateChildInfo();
 #endif
-}
-
-void AccountFetcherService::RefreshAllAccountsAndScheduleNext() {
-  DCHECK(network_fetches_enabled_);
-  RefreshAllAccountInfo(false);
-  last_updated_ = base::Time::Now();
-  signin_client_->GetPrefs()->SetTime(AccountFetcherService::kLastUpdatePref,
-                                      last_updated_);
-  ScheduleNextRefresh();
-}
-
-void AccountFetcherService::ScheduleNextRefresh() {
-  DCHECK(!timer_.IsRunning());
-  DCHECK(network_fetches_enabled_);
-
-  const base::TimeDelta time_since_update = base::Time::Now() - last_updated_;
-  if (time_since_update > kRefreshFromTokenServiceDelay) {
-    RefreshAllAccountsAndScheduleNext();
-  } else {
-    timer_.Start(FROM_HERE, kRefreshFromTokenServiceDelay - time_since_update,
-                 this,
-                 &AccountFetcherService::RefreshAllAccountsAndScheduleNext);
-  }
 }
 
 // Starts fetching user information. This is called periodically to refresh.

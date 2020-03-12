@@ -73,6 +73,10 @@
 }
 
 - (NSString*)pageSecurityStatusIconImageName {
+  // If the URL scheme corresponds to Chrome on iOS, the icon is not set.
+  if (self.URL.SchemeIs(kChromeUIScheme))
+    return @"";
+
   if (self.isOffline)
     return @"page_info_offline";
 

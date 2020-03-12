@@ -36,6 +36,8 @@ class TestSystemWebAppInstallation {
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpAppNotShownInLauncher();
   static std::unique_ptr<TestSystemWebAppInstallation>
+  SetUpAppNotShownInSearch();
+  static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpAppWithAdditionalSearchTerms();
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpChromeUntrustedApp();

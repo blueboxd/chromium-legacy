@@ -4,10 +4,11 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.basic;
 
-import android.support.annotation.ColorRes;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.annotation.ColorRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;

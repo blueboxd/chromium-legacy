@@ -23,6 +23,7 @@ dictionary RequestInit {
     boolean keepalive;
     [RuntimeEnabled=PriorityHints] RequestImportance importance;
     AbortSignal? signal;
+    [RuntimeEnabled=TrustTokens, SecureContext] TrustToken trustToken;
     // TODO(domfarolino): add support for RequestInit window member.
     //any window; // can only be set to null
 };

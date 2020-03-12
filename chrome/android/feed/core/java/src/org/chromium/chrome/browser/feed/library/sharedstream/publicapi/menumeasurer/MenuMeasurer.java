@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.feed.library.sharedstream.publicapi.menumeasurer;
 
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
@@ -13,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.feed.R;
 

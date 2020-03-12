@@ -118,7 +118,7 @@ std::unique_ptr<display::DisplaySnapshot> DrmDisplay::Update(
 bool DrmDisplay::Configure(const drmModeModeInfo* mode,
                            const gfx::Point& origin) {
   VLOG(1) << "DRM configuring: device=" << drm_->device_path().value()
-          << " crtc=" << crtc_ << " connector=" << connector_
+          << " crtc=" << crtc_ << " connector=" << connector_->connector_id
           << " origin=" << origin.ToString()
           << " size=" << (mode ? GetDrmModeSize(*mode).ToString() : "0x0")
           << " refresh_rate=" << (mode ? mode->vrefresh : 0) << "Hz";
@@ -127,7 +127,7 @@ bool DrmDisplay::Configure(const drmModeModeInfo* mode,
     if (!screen_manager_->ConfigureDisplayController(
             drm_, crtc_, connector_->connector_id, origin, *mode)) {
       VLOG(1) << "Failed to configure: device=" << drm_->device_path().value()
-              << " crtc=" << crtc_ << " connector=" << connector_;
+              << " crtc=" << crtc_ << " connector=" << connector_->connector_id;
       return false;
     }
   } else {

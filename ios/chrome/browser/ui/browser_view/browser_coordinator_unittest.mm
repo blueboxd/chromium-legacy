@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/download/features.h"
+#import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -27,17 +28,20 @@
 class BrowserCoordinatorTest : public PlatformTest {
  protected:
   BrowserCoordinatorTest()
-      : base_view_controller_([[UIViewController alloc] init]) {}
+      : base_view_controller_([[UIViewController alloc] init]),
+        browser_(std::make_unique<TestBrowser>()) {
+    UrlLoadingNotifierBrowserAgent::CreateForBrowser(browser_.get());
+  }
 
   BrowserCoordinator* GetBrowserCoordinator() {
     return [[BrowserCoordinator alloc]
         initWithBaseViewController:base_view_controller_
-                           browser:&browser_];
+                           browser:browser_.get()];
   }
 
   web::WebTaskEnvironment task_environment_;
   UIViewController* base_view_controller_;
-  TestBrowser browser_;
+  std::unique_ptr<TestBrowser> browser_;
 };
 
 // Tests if the URL to open the downlads directory from files.app is valid.
@@ -64,7 +68,7 @@ TEST_F(BrowserCoordinatorTest, ShowDownloadsFolder) {
 
   [browser_coordinator start];
 
-  CommandDispatcher* dispatcher = browser_.GetCommandDispatcher();
+  CommandDispatcher* dispatcher = browser_->GetCommandDispatcher();
   id<BrowserCoordinatorCommands> handler =
       HandlerForProtocol(dispatcher, BrowserCoordinatorCommands);
   [handler showDownloadsFolder];

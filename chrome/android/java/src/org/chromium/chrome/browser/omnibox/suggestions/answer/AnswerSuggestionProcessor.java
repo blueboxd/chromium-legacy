@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.omnibox.suggestions.answer;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.support.annotation.DrawableRes;
+
+import androidx.annotation.DrawableRes;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;

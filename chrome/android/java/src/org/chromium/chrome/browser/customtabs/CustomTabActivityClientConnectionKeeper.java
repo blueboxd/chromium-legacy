@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import android.support.annotation.IntDef;
-
+import androidx.annotation.IntDef;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.chromium.base.metrics.RecordHistogram;

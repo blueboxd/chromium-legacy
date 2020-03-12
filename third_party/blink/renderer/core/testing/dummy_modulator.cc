@@ -63,16 +63,6 @@ bool DummyModulator::ImportMapsEnabled() const {
   return false;
 }
 
-bool DummyModulator::BuiltInModuleInfraEnabled() const {
-  return false;
-}
-
-bool DummyModulator::BuiltInModuleEnabled(blink::layered_api::Module) const {
-  return false;
-}
-
-void DummyModulator::BuiltInModuleUseCount(blink::layered_api::Module) const {}
-
 ModuleRecordResolver* DummyModulator::GetModuleRecordResolver() {
   return resolver_.Get();
 }

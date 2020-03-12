@@ -8,6 +8,8 @@ android_library("java") {
   sources = [
     "java/src/org/chromium/components/external_intents/ExternalIntentsFeatureList.java",
     "java/src/org/chromium/components/external_intents/ExternalIntentsSwitches.java",
+    "java/src/org/chromium/components/external_intents/ExternalNavigationDelegate.java",
+    "java/src/org/chromium/components/external_intents/ExternalNavigationHandler.java",
     "java/src/org/chromium/components/external_intents/ExternalNavigationParams.java",
     "java/src/org/chromium/components/external_intents/RedirectHandler.java",
   ]
@@ -16,6 +18,11 @@ android_library("java") {
   deps = [
     "//base:base_java",
     "//base:jni_java",
+    "//components/embedder_support/android:util_java",
+    "//content/public/android:content_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//ui/android:ui_java",
+    "//url:gurl_java",
   ]
 }
 

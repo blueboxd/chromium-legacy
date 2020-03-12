@@ -18,6 +18,8 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/token.h"
+#include "components/payments/core/native_error_strings.h"
+#include "components/payments/core/payments_validators.h"
 #include "content/browser/payments/payment_app_context_impl.h"
 #include "content/browser/payments/payment_app_installer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -34,6 +36,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/mojom/base/time.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
@@ -668,18 +671,33 @@ void OnResponseForCanMakePaymentOnUiThread(
     const std::string& payment_request_id,
     PaymentAppProvider::CanMakePaymentCallback callback,
     CanMakePaymentResponsePtr response) {
-  // TODO(rouslan): Validate, log, and forward these fields from the renderer to
-  // the browser.
-  response->ready_for_minimal_ui = false;
-  response->account_balance.reset();
+  std::string error_message;
+  if (response->account_balance && !response->account_balance->empty() &&
+      !payments::PaymentsValidators::IsValidAmountFormat(
+          *response->account_balance, &error_message)) {
+    mojo::ReportBadMessage(
+        payments::errors::kCanMakePaymentEventInvalidAccountBalanceValue);
+    response = CreateBlankCanMakePaymentResponse(
+        CanMakePaymentEventResponseType::INVALID_ACCOUNT_BALANCE_VALUE);
+  }
 
   auto* dev_tools = GetDevToolsForInstanceGroup(instance_group, sw_origin);
   if (dev_tools) {
+    std::stringstream response_type;
+    response_type << response->response_type;
+    std::map<std::string, std::string> data = {
+        {"Type", response_type.str()},
+        {"Can Make Payment", response->can_make_payment ? "true" : "false"}};
+    if (base::FeatureList::IsEnabled(features::kWebPaymentsMinimalUI)) {
+      data["Ready for Minimal UI"] =
+          response->ready_for_minimal_ui ? "true" : "false";
+      data["Account Balance"] =
+          response->account_balance ? *response->account_balance : "";
+    }
     dev_tools->LogBackgroundServiceEvent(
         registration_id, sw_origin, DevToolsBackgroundService::kPaymentHandler,
         "Can make payment response",
-        /*instance_id=*/payment_request_id,
-        {{"Can Make Payment", response->can_make_payment ? "true" : "false"}});
+        /*instance_id=*/payment_request_id, data);
   }
 
   std::move(callback).Run(std::move(response));

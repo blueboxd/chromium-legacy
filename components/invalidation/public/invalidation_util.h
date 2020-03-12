@@ -58,13 +58,6 @@ using Topics = std::map<std::string, TopicMetadata>;
 
 HandlerOwnerType OwnerNameToHandlerType(const std::string& owner_name);
 
-// Returns a |Topic| contained within both |lhs| and |rhs| or null if |lhs| and
-// |rhs| are disjoint.
-const Topic* FindMatchingTopic(const Topics& lhs, const Topics& rhs);
-
-// Returns a vector of Topics in |lhs| but not |rhs|.
-std::vector<Topic> FindRemovedTopics(const Topics& lhs, const Topics& rhs);
-
 }  // namespace syncer
 
 #endif  // COMPONENTS_INVALIDATION_PUBLIC_INVALIDATION_UTIL_H_

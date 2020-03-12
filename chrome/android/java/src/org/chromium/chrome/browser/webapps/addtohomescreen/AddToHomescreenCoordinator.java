@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.webapps.addtohomescreen;
 
 import android.app.Activity;
 import android.content.Context;
-import android.support.annotation.StringRes;
 import android.text.TextUtils;
 
+import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.CalledByNative;

@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.feed.library.api.host.config;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.support.annotation.IntDef;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 

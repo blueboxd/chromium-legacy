@@ -660,7 +660,7 @@ bundle_data("navigation_resources") {
 grit("resources") {
   source = "ios_web_resources.grd"
 
-  # The .grd contains references to generated files.
+  # Required due to flattenhtml="true" on a generated file.
   source_is_generated = true
 
   outputs = [

@@ -605,6 +605,39 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerNotShownInLauncherTest,
 #endif  // defined(OS_CHROMEOS)
 }
 
+class SystemWebAppManagerNotShownInSearchTest
+    : public SystemWebAppManagerBrowserTest {
+ public:
+  SystemWebAppManagerNotShownInSearchTest()
+      : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
+    maybe_installation_ =
+        TestSystemWebAppInstallation::SetUpAppNotShownInSearch();
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerNotShownInSearchTest,
+                       NotShownInSearch) {
+  const web_app::ProviderType provider = provider_type();
+
+  WaitForSystemAppInstallAndLaunch(GetMockAppType());
+  AppId app_id = GetManager().GetAppIdForSystemApp(GetMockAppType()).value();
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+  proxy->AppRegistryCache().ForOneApp(
+      app_id, [provider](const apps::AppUpdate& update) {
+        if (provider == ProviderType::kWebApps) {
+          // TODO(crbug.com/877898): |mock_app| should be hidden but web_apps.cc
+          // does not currently read from system_web_app_manager.cc. When
+          // DesktopPWAsWithoutExtensions launches remove the special case for
+          // kWebApps, ShowInSearch() should return false.
+          EXPECT_EQ(apps::mojom::OptionalBool::kTrue, update.ShowInSearch());
+        } else {
+          EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInSearch());
+        }
+      });
+}
+
 class SystemWebAppManagerAdditionalSearchTermsTest
     : public SystemWebAppManagerBrowserTest {
  public:
@@ -854,6 +887,12 @@ INSTANTIATE_TEST_SUITE_P(
 
 INSTANTIATE_TEST_SUITE_P(All,
                          SystemWebAppManagerNotShownInLauncherTest,
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
+                         ProviderTypeParamToString);
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SystemWebAppManagerNotShownInSearchTest,
                          ::testing::Values(ProviderType::kBookmarkApps,
                                            ProviderType::kWebApps),
                          ProviderTypeParamToString);

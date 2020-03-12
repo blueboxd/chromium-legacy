@@ -5,6 +5,7 @@
 #include "ui/views/widget/native_widget_aura.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -435,10 +436,6 @@ TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
   EXPECT_TRUE(view->got_gesture_event());
   EXPECT_FALSE(child->got_gesture_event());
   view->clear_got_gesture_event();
-
-  // Work around for bug in NativeWidgetAura.
-  // TODO: fix bug and remove this.
-  widget->Close();
 }
 
 // Verifies views with layers are targeted for events properly.
@@ -496,10 +493,6 @@ TEST_F(NativeWidgetAuraTest, PreferViewLayersToChildWindows) {
   EXPECT_EQ(
       child->GetNativeWindow(),
       parent->GetNativeWindow()->GetEventHandlerForPoint(gfx::Point(20, 20)));
-
-  // Work around for bug in NativeWidgetAura.
-  // TODO: fix bug and remove this.
-  parent->Close();
 }
 
 // Verifies views with layers are targeted for events properly.

@@ -4484,7 +4484,8 @@ void RenderFrameHostImpl::CreateNewWindow(
   network::mojom::CrossOriginOpenerPolicy popup_coop =
       network::mojom::CrossOriginOpenerPolicy::kUnsafeNone;
   network::CrossOriginEmbedderPolicy popup_coep;
-  if (base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation)) {
+  if (base::FeatureList::IsEnabled(
+          network::features::kCrossOriginOpenerPolicy)) {
     // On popup creation, if the opener and the openers's top-level document
     // are same origin, then the popup's initial empty document inherits its
     // COOP policy from the opener's top-level document. See
@@ -4501,6 +4502,10 @@ void RenderFrameHostImpl::CreateNewWindow(
       if (top_level_opener->cross_origin_opener_policy() ==
           network::mojom::CrossOriginOpenerPolicy::kSameOrigin) {
         params->opener_suppressed = true;
+        // The frame name should not be forwarded to a noopener popup.
+        // TODO(https://crbug.com/1060691) This should be applied to all
+        // popups opened with noopener.
+        params->frame_name.clear();
       }
     }
   }
@@ -5509,9 +5514,9 @@ void RenderFrameHostImpl::CommitNavigation(
       DCHECK(web_bundle_handle_->navigation_info());
       commit_params->web_bundle_physical_url =
           web_bundle_handle_->navigation_info()->source().url();
-      if (web_bundle_handle_->base_url_override().is_valid()) {
-        commit_params->base_url_override_for_web_bundle =
-            web_bundle_handle_->base_url_override();
+      if (web_bundle_handle_->claimed_url().is_valid()) {
+        commit_params->web_bundle_claimed_url =
+            web_bundle_handle_->claimed_url();
       }
     }
 

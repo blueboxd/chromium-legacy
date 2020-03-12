@@ -12,8 +12,6 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 grit("resources") {
   source = "chromeos_resources.grd"
 
-  source_is_generated = true
-
   outputs = [
     "grit/chromeos_resources.h",
     "grit/chromeos_resources_map.cc",
@@ -47,8 +45,6 @@ grit("resources") {
 grit("help_app_resources") {
   source = "../components/help_app_ui/resources/help_app_resources.grd"
 
-  source_is_generated = true
-
   outputs = [
     "grit/chromeos_help_app_resources.h",
     "grit/chromeos_help_app_resources_map.cc",
@@ -75,7 +71,6 @@ grit("help_app_bundle_resources") {
     source = "../components/help_app_ui/resources/mock/help_app_bundle_mock_resources.grd"
   }
 
-  source_is_generated = true
   use_brotli = true
 
   outputs = [
@@ -91,8 +86,6 @@ grit("help_app_bundle_resources") {
 grit("sample_system_web_app_resources") {
   source = "../components/sample_system_web_app_ui/resources/sample_system_web_app_resources.grd"
 
-  source_is_generated = true
-
   outputs = [
     "grit/chromeos_sample_system_web_app_resources.h",
     "grit/chromeos_sample_system_web_app_resources_map.cc",
@@ -106,8 +99,6 @@ grit("sample_system_web_app_resources") {
 # that do not come from the app bundle (below).
 grit("media_app_resources") {
   source = "../components/media_app_ui/resources/media_app_resources.grd"
-
-  source_is_generated = true
 
   outputs = [
     "grit/chromeos_media_app_resources.h",
@@ -132,7 +123,6 @@ grit("media_app_bundle_resources") {
     source = "../components/media_app_ui/resources/mock/media_app_bundle_mock_resources.grd"
   }
 
-  source_is_generated = true
   use_brotli = true
 
   outputs = [

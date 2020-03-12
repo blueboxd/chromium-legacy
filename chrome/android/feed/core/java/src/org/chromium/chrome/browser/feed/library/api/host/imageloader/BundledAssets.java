@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.host.imageloader;
 
-import android.support.annotation.StringDef;
+import androidx.annotation.StringDef;
 
 /** Enumerates the set of bundled assets which could be requested via the {@link ImageLoaderApi}. */
 @StringDef({BundledAssets.OFFLINE_INDICATOR_BADGE, BundledAssets.OFFLINE_INDICATOR_BADGE_DARK_BG,

@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.tab;
 
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
-import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
+import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 
 /**

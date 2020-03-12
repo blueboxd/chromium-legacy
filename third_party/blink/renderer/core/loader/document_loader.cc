@@ -287,7 +287,7 @@ DocumentLoader::DocumentLoader(
   }
 
   web_bundle_physical_url_ = params_->web_bundle_physical_url;
-  base_url_override_for_web_bundle_ = params_->base_url_override_for_web_bundle;
+  web_bundle_claimed_url_ = params_->web_bundle_claimed_url;
 
   force_enabled_origin_trials_.ReserveInitialCapacity(
       SafeCast<wtf_size_t>(params_->force_enabled_origin_trials.size()));
@@ -780,10 +780,10 @@ void DocumentLoader::HandleRedirect(const KURL& current_request_url) {
   // (eg: file:///tmp/a.wbn), Chrome internally redirects the navigation to the
   // page (eg: https://example.com/page.html) inside the Web Bundle file
   // to the file's URL (file:///tmp/a.wbn?https://example.com/page.html). In
-  // this case, CanDisplay() returns false, and
-  // base_url_override_for_web_bundle must not be null.
+  // this case, CanDisplay() returns false, and web_bundle_claimed_url must not
+  // be null.
   CHECK(SecurityOrigin::Create(current_request_url)->CanDisplay(url_) ||
-        !params_->base_url_override_for_web_bundle.IsNull());
+        !params_->web_bundle_claimed_url.IsNull());
 
   DCHECK(!GetTiming().FetchStart().is_null());
   redirect_chain_.push_back(url_);
@@ -883,10 +883,6 @@ void DocumentLoader::HandleResponse() {
 void DocumentLoader::CommitNavigation() {
   CHECK_GE(state_, kCommitted);
 
-  KURL overriding_url = base_url_override_for_web_bundle_;
-  if (loading_mhtml_archive_ && archive_)
-    overriding_url = archive_->MainResource()->Url();
-
   // Prepare a DocumentInit before clearing the frame, because it may need to
   // inherit an aliased security context.
   Document* owner_document = nullptr;
@@ -907,8 +903,7 @@ void DocumentLoader::CommitNavigation() {
   }
   DCHECK(frame_->GetPage());
 
-  InstallNewDocument(Url(), initiator_origin, owner_document, MimeType(),
-                     overriding_url);
+  InstallNewDocument(Url(), initiator_origin, owner_document, MimeType());
 }
 
 void DocumentLoader::CommitData(const char* bytes, size_t length) {
@@ -1472,8 +1467,7 @@ void DocumentLoader::InstallNewDocument(
     const KURL& url,
     const scoped_refptr<const SecurityOrigin> initiator_origin,
     Document* owner_document,
-    const AtomicString& mime_type,
-    const KURL& overriding_url) {
+    const AtomicString& mime_type) {
   DCHECK(!frame_->GetDocument() || !frame_->GetDocument()->IsActive());
   DCHECK_EQ(frame_->Tree().ChildCount(), 0u);
 
@@ -1527,7 +1521,8 @@ void DocumentLoader::InstallNewDocument(
               response_.HttpHeaderField(http_names::kDocumentPolicyReportOnly))
           .WithOriginTrialsHeader(
               response_.HttpHeaderField(http_names::kOriginTrial))
-          .WithContentSecurityPolicy(content_security_policy_.Get());
+          .WithContentSecurityPolicy(content_security_policy_.Get())
+          .WithWebBundleClaimedUrl(web_bundle_claimed_url_);
 
   // A javascript: url inherits CSP from the document in which it was
   // executed.
@@ -1610,8 +1605,11 @@ void DocumentLoader::InstallNewDocument(
     frame_->Tree().ExperimentalSetNulledName();
   }
 
-  if (!overriding_url.IsEmpty())
-    document->SetBaseURLOverride(overriding_url);
+  if (loading_mhtml_archive_ && archive_ &&
+      !archive_->MainResource()->Url().IsEmpty()) {
+    document->SetBaseURLOverride(archive_->MainResource()->Url());
+  }
+
   DidInstallNewDocument(document);
 
   // This must be called before the document is opened, otherwise HTML parser

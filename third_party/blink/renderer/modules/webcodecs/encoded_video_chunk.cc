@@ -42,6 +42,12 @@ uint64_t EncodedVideoChunk::timestamp() const {
   return metadata_.timestamp.InMicroseconds();
 }
 
+base::Optional<uint64_t> EncodedVideoChunk::duration() const {
+  if (!metadata_.duration)
+    return base::nullopt;
+  return metadata_.duration->InMicroseconds();
+}
+
 uint64_t EncodedVideoChunk::duration(bool* is_null) const {
   if (!metadata_.duration) {
     *is_null = true;

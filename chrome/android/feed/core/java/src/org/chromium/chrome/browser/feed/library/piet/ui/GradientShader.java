@@ -10,9 +10,9 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.Shader.TileMode;
 import android.graphics.drawable.ShapeDrawable;
-import android.support.annotation.VisibleForTesting;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.supplier.Supplier;
 

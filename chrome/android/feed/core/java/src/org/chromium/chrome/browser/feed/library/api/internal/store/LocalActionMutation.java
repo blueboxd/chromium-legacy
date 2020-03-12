@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.internal.store;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 import org.chromium.chrome.browser.feed.library.api.host.storage.CommitResult;
 

@@ -12,7 +12,7 @@ config("config") {
   cflags = []
   defines = []
 
-  if (is_chromeos && target_cpu == "arm") {
+  if (is_chromeos && current_cpu == "arm") {
     # HAVE_NEON and __chromeos__ are needed for enabling NEON on ChromeOS
     # devices.
     defines += [
@@ -46,7 +46,7 @@ config("config") {
 # MSAN builds are flaky with assembler. crbug.com/685168
 
 use_assembler = (is_win || is_linux) &&
-                (target_cpu == "x86" || target_cpu == "x64") && !is_msan
+                (current_cpu == "x86" || current_cpu == "x64") && !is_msan
 
 # This IF statement will make the targets visible only on specific builds,
 # which will lead to failures on other platforms if accidentally invoked.
@@ -64,7 +64,7 @@ if (use_assembler) {
     include_dirs = openh264_common_include_dirs
     sources = openh264_common_sources_asm_x86
     defines = yasm_defines
-    if (target_cpu == "x86") {
+    if (current_cpu == "x86") {
       defines += [ "X86_32" ]
     } else {  # x64
       if (is_mac) {
@@ -85,7 +85,7 @@ if (use_assembler) {
     include_dirs += [ "./src/codec/common/x86" ]
     sources = openh264_processing_sources_asm_x86
     defines = yasm_defines
-    if (target_cpu == "x86") {
+    if (current_cpu == "x86") {
       defines += [ "X86_32" ]
     } else {  # x64
       if (is_mac) {
@@ -106,7 +106,7 @@ if (use_assembler) {
     include_dirs += [ "./src/codec/common/x86" ]
     sources = openh264_encoder_sources_asm_x86
     defines = yasm_defines
-    if (target_cpu == "x86") {
+    if (current_cpu == "x86") {
       defines += [ "X86_32" ]
     } else {  # x64
       if (is_mac) {
@@ -125,7 +125,7 @@ if (use_assembler) {
 
 source_set("common") {
   sources = openh264_common_sources
-  if (is_chromeos && target_cpu == "arm") {
+  if (is_chromeos && current_cpu == "arm") {
     sources += openh264_common_sources_asm_arm
   }
   include_dirs = openh264_common_include_dirs
@@ -151,7 +151,7 @@ source_set("common") {
 
 source_set("processing") {
   sources = openh264_processing_sources
-  if (is_chromeos && target_cpu == "arm") {
+  if (is_chromeos && current_cpu == "arm") {
     sources += openh264_processing_sources_asm_arm
   }
   include_dirs = openh264_processing_include_dirs
@@ -168,7 +168,7 @@ source_set("processing") {
 
 source_set("encoder") {
   sources = openh264_encoder_sources
-  if (is_chromeos && target_cpu == "arm") {
+  if (is_chromeos && current_cpu == "arm") {
     sources += openh264_encoder_sources_asm_arm
   }
   include_dirs = openh264_encoder_include_dirs

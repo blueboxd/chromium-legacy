@@ -13,8 +13,9 @@ import android.media.AudioTimestamp;
 import android.media.AudioTrack;
 import android.os.Build;
 import android.os.SystemClock;
-import android.support.annotation.IntDef;
 import android.util.SparseIntArray;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;

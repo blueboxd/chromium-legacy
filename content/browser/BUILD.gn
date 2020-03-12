@@ -65,6 +65,8 @@ jumbo_source_set("browser") {
     "//components/offline_pages/core/request_header",
     "//components/os_crypt",
     "//components/payments/content/icon",
+    "//components/payments/core",
+    "//components/payments/core:error_strings",
     "//components/payments/mojom",
     "//components/rappor",
     "//components/services/filesystem:lib",

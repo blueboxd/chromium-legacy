@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.internal.actionparser;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 /** Possible action types. */
 @IntDef({ActionSource.UNKNOWN, ActionSource.VIEW, ActionSource.CLICK, ActionSource.LONG_CLICK,

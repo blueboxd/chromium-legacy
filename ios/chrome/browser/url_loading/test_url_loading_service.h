@@ -10,7 +10,7 @@
 
 class TestUrlLoadingService : public UrlLoadingService {
  public:
-  TestUrlLoadingService(UrlLoadingNotifier* notifier);
+  TestUrlLoadingService();
 
   // These are the last parameters passed to |OpenUrl|.
   UrlLoadParams last_params;

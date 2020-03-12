@@ -80,7 +80,10 @@ blink_core_sources("exported") {
     "web_view_impl.h",
   ]
 
-  deps = [ "//ui/base/cursor" ]
+  deps = [
+    "//ui/base/cursor",
+    "//ui/base/mojom:cursor_type_blink",
+  ]
 
   defines = [ "BLINK_IMPLEMENTATION=1" ]
 }

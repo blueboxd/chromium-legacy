@@ -20,14 +20,22 @@ class RTCError final : public DOMException {
  public:
   static RTCError* Create(const RTCErrorInit* init, String message);
   RTCError(const RTCErrorInit* init, String message);
-  RTCError(webrtc::RTCError);
+  explicit RTCError(webrtc::RTCError);
 
   const String& errorDetail() const;
-  int32_t sdpLineNumber(bool& is_null) const;
-  int32_t httpRequestStatusCode(bool& is_null) const;
-  int32_t sctpCauseCode(bool& is_null) const;
-  uint32_t receivedAlert(bool& is_null) const;
-  uint32_t sentAlert(bool& is_null) const;
+  base::Optional<int32_t> sdpLineNumber() const { return sdp_line_number_; }
+  base::Optional<int32_t> httpRequestStatusCode() const {
+    return http_request_status_code_;
+  }
+  base::Optional<int32_t> sctpCauseCode() const { return sctp_cause_code_; }
+  base::Optional<uint32_t> receivedAlert() const { return received_alert_; }
+  base::Optional<uint32_t> sentAlert() const { return sent_alert_; }
+  // TODO(crbug.com/1060971): Remove |is_null| version.
+  int32_t sdpLineNumber(bool& is_null) const;          // DEPRECATED
+  int32_t httpRequestStatusCode(bool& is_null) const;  // DEPRECATED
+  int32_t sctpCauseCode(bool& is_null) const;          // DEPRECATED
+  uint32_t receivedAlert(bool& is_null) const;         // DEPRECATED
+  uint32_t sentAlert(bool& is_null) const;             // DEPRECATED
 
  private:
   // idl enum RTCErrorDetailType.

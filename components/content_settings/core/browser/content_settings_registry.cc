@@ -231,7 +231,8 @@ void ContentSettingsRegistry::Init() {
 
   Register(ContentSettingsType::NOTIFICATIONS, "notifications",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
-           WhitelistedSchemes(), ForceAllowedOrigins(),
+           WhitelistedSchemes(),
+           ForceAllowedOrigins(kChromeUIUntrustedTerminalAppURL),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK),
            WebsiteSettingsInfo::SINGLE_ORIGIN_ONLY_SCOPE,

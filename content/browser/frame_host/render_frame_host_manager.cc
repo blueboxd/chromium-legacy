@@ -214,7 +214,8 @@ bool ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
   using network::mojom::CrossOriginEmbedderPolicyValue;
   using network::mojom::CrossOriginOpenerPolicy;
 
-  if (!base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation))
+  if (!base::FeatureList::IsEnabled(
+          network::features::kCrossOriginOpenerPolicy))
     return false;
 
   // If policies match there is no reason to switch BrowsingInstances.

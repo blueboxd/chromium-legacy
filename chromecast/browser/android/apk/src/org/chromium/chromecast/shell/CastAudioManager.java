@@ -11,8 +11,8 @@ import android.media.AudioManager;
 import android.media.audiopolicy.AudioPolicy;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
-import android.support.annotation.Nullable;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;

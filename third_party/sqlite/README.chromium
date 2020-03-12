@@ -9,6 +9,7 @@ License: Public domain
 2) Making changes to Chromium SQLite.
 3) Import new release of SQLite.
 4) Running SQLite's test suite within the Chromium checkout.
+5) Two versions of SQLite library.
 
 ---
 
@@ -332,3 +333,12 @@ mkdir $TMPFS
 
 This is faster, but it is plausible that different things are being tested than
 real-world use.
+
+--------------------------------------------
+
+5) Two versions of SQLite library.
+
+There are two targets defined in the BUILD.gn file: sqlite and sqlite_full.
+scripts/generate_amalgamation.sh generates two separate source files with
+different set of build flags for them. The full version is intended for use
+in developer tools only, for all other uses please depend on sqlite target.

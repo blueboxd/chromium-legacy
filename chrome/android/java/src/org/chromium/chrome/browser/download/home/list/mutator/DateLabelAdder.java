@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.download.home.list.mutator;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.JustNowProvider;

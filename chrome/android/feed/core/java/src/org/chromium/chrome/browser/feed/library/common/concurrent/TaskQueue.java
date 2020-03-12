@@ -4,10 +4,9 @@
 
 package org.chromium.chrome.browser.feed.library.common.concurrent;
 
-import android.support.annotation.IntDef;
-import android.support.annotation.VisibleForTesting;
-
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.api.host.logging.InternalFeedError;

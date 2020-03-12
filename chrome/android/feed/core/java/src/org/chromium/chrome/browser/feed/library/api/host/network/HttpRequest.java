@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.feed.library.api.host.network;
 
 import android.net.Uri;
-import android.support.annotation.StringDef;
+
+import androidx.annotation.StringDef;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;

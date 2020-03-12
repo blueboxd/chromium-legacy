@@ -7,13 +7,13 @@ package org.chromium.chrome.browser.feed.library.basicstream.internal.viewholder
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkNotNull;
 
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.RecyclerView.LayoutParams;
 
 import org.chromium.chrome.browser.feed.library.api.host.action.StreamActionApi;

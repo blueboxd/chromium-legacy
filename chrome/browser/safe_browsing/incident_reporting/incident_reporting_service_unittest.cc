@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_report_uploader.h"
@@ -212,6 +213,10 @@ class IncidentReportingServiceTest : public testing::Test {
         registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
 #endif
     ASSERT_TRUE(profile_manager_.SetUp());
+    // Disable profile metrics reporting, otherwise the calls to
+    // FastForwardUntilNoTasksRemain() never return.
+    profile_manager_.profile_attributes_storage()
+        ->DisableProfileMetricsForTesting();
   }
 
   void CreateIncidentReportingService() {

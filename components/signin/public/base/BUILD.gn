@@ -27,6 +27,8 @@ static_library("base") {
     "device_id_helper.h",
     "multilogin_parameters.cc",
     "multilogin_parameters.h",
+    "persistent_repeating_timer.cc",
+    "persistent_repeating_timer.h",
     "signin_client.cc",
     "signin_client.h",
     "signin_metrics.cc",
@@ -87,6 +89,7 @@ source_set("unit_tests") {
   sources = [
     "avatar_icon_util_unittest.cc",
     "device_id_helper_unittest.cc",
+    "persistent_repeating_timer_unittest.cc",
     "signin_metrics_unittest.cc",
   ]
 
@@ -94,6 +97,7 @@ source_set("unit_tests") {
     ":base",
     "//base",
     "//base/test:test_support",
+    "//components/prefs:test_support",
     "//components/sync_preferences:test_support",
     "//testing/gtest",
     "//url",

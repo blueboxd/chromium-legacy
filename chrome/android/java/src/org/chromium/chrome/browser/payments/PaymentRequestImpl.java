@@ -1099,8 +1099,7 @@ public class PaymentRequestImpl
         }
 
         PaymentApp app = (PaymentApp) mPaymentMethodsSection.getSelectedItem();
-        if (app == null || !app.isReadyForMicrotransaction()
-                || TextUtils.isEmpty(app.accountBalance())) {
+        if (app == null || !app.isReadyForMinimalUI() || TextUtils.isEmpty(app.accountBalance())) {
             return false;
         }
 
@@ -1131,7 +1130,7 @@ public class PaymentRequestImpl
     private void onMicrotransactionUiConfirmed(PaymentApp app) {
         mJourneyLogger.recordTransactionAmount(
                 mRawTotal.amount.currency, mRawTotal.amount.value, false /*completed*/);
-        app.setMicrontransactionMode();
+        app.disableShowingOwnUI();
         onPayClicked(null /* selectedShippingAddress */, null /* selectedShippingOption */, app);
     }
 

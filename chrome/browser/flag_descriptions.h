@@ -370,12 +370,6 @@ extern const char kEnableCSSOMViewScrollCoordinatesDescription[];
 extern const char kEnableLitePageServerPreviewsName[];
 extern const char kEnableLitePageServerPreviewsDescription[];
 
-extern const char kBuiltInModuleAllName[];
-extern const char kBuiltInModuleAllDescription[];
-
-extern const char kBuiltInModuleInfraName[];
-extern const char kBuiltInModuleInfraDescription[];
-
 extern const char kEnableLayoutNGName[];
 extern const char kEnableLayoutNGDescription[];
 
@@ -400,8 +394,8 @@ extern const char kEnableNetworkServiceInProcessDescription[];
 extern const char kCorsForContentScriptsName[];
 extern const char kCorsForContentScriptsDescription[];
 
-extern const char kCrossOriginIsolationName[];
-extern const char kCrossOriginIsolationDescription[];
+extern const char kCrossOriginOpenerPolicyName[];
+extern const char kCrossOriginOpenerPolicyDescription[];
 
 extern const char kDisableKeepaliveFetchName[];
 extern const char kDisableKeepaliveFetchDescription[];

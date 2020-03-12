@@ -118,9 +118,6 @@ if (is_component_build) {
 grit("content_resources") {
   source = "content_resources.grd"
 
-  # The .grd contains references to generated files.
-  source_is_generated = true
-
   outputs = [
     "grit/content_resources.h",
     "grit/content_resources_map.cc",
@@ -139,9 +136,6 @@ grit("content_resources") {
 
 grit("dev_ui_content_resources") {
   source = "dev_ui_content_resources.grd"
-
-  # The .grd contains references to generated files.
-  source_is_generated = true
 
   outputs = [
     "grit/dev_ui_content_resources.h",

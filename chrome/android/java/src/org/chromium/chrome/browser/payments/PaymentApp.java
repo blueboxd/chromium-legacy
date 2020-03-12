@@ -303,21 +303,28 @@ public abstract class PaymentApp extends EditableOption {
     /** Cleans up any resources held by the payment app. For example, closes server connections. */
     public abstract void dismissInstrument();
 
-    /** @return Whether the payment app is ready for a microtransaction (no UI flow.) */
-    public boolean isReadyForMicrotransaction() {
+    /** @param readyForMnimalUI Whether the payment app is ready for minimal UI flow. */
+    public void setIsReadyForMinimalUI(boolean isReadyForMinimalUI) {}
+
+    /** @return Whether the payment app is ready for a minimal UI flow. */
+    public boolean isReadyForMinimalUI() {
         return false;
     }
 
-    /** @return Account balance for microtransaction flow. */
+    /**
+     * @param accountBalance The account balance of the payment handler that is ready for a minimal
+     * UI flow.
+     */
+    public void setAccountBalance(@Nullable String accountBalance) {}
+
+    /** @return Account balance for minimal UI flow. */
     @Nullable
     public String accountBalance() {
         return null;
     }
 
-    /** Switch the app into the microtransaction mode. */
-    public void setMicrontransactionMode() {
-        mIsMicrotransaction = true;
-    }
+    /** Disable opening a window for this payment app. */
+    public void disableShowingOwnUI() {}
 
     /**
      * @return The identifier for another payment app that should be hidden when this payment app is

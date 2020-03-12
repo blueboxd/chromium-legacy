@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.basicstream.internal;
 
-import android.support.annotation.VisibleForTesting;
-
+import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.RecyclerView;
 

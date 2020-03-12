@@ -9,9 +9,9 @@ import static org.chromium.chrome.browser.feed.library.api.host.storage.JournalO
 import static org.chromium.chrome.browser.feed.library.api.host.storage.JournalOperation.Type.DELETE;
 
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.host.storage.CommitResult;

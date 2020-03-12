@@ -1297,7 +1297,7 @@ void WebBundleHandle::OnWebBundleFileLoaded(
     std::unique_ptr<WebBundleURLLoaderFactory> url_loader_factory) {
   auto source = url_loader_factory->reader()->source().Clone();
   if (source->is_file())
-    base_url_override_ = target_inner_url;
+    claimed_url_ = target_inner_url;
   navigation_info_ = std::make_unique<WebBundleNavigationInfo>(
       std::move(source), target_inner_url,
       url_loader_factory->reader()->GetWeakPtr());

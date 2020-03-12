@@ -28,7 +28,6 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.provider.Settings;
-import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingRootException;
 import android.support.test.espresso.NoMatchingViewException;
@@ -44,6 +43,7 @@ import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.view.View;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.hamcrest.Description;

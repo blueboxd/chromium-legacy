@@ -9,13 +9,13 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
-import android.support.annotation.VisibleForTesting;
 import android.text.Layout;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.core.widget.TextViewCompat;
 
 import org.chromium.base.Consumer;

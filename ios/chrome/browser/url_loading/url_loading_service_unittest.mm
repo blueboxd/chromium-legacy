@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/test_app_url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
@@ -81,13 +82,15 @@ class URLLoadingServiceTest : public BlockCleanupTest {
         WebUsageEnablerBrowserAgent::FromBrowser(otr_browser_.get());
     otr_enabler->SetWebUsageEnabled(false);
 
-    // Create insertion agents and configure services.
+    // Create insertion and notifier agents and configure services.
     TabInsertionBrowserAgent::CreateForBrowser(browser_.get());
+    UrlLoadingNotifierBrowserAgent::CreateForBrowser(browser_.get());
     service_->SetDelegate(url_loading_delegate_);
     service_->SetBrowser(browser_.get());
     service_->SetAppService(app_service_.get());
 
     TabInsertionBrowserAgent::CreateForBrowser(otr_browser_.get());
+    UrlLoadingNotifierBrowserAgent::CreateForBrowser(otr_browser_.get());
     otr_service_->SetDelegate(url_loading_delegate_);
     otr_service_->SetBrowser(otr_browser_.get());
     otr_service_->SetAppService(app_service_.get());

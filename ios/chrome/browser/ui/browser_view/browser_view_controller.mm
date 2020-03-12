@@ -150,8 +150,7 @@
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
 #import "ios/chrome/browser/url_loading/image_search_param_generator.h"
-#import "ios/chrome/browser/url_loading/url_loading_notifier.h"
-#import "ios/chrome/browser/url_loading/url_loading_notifier_factory.h"
+#import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_observer_bridge.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
@@ -1357,10 +1356,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     if (controller)
       controller->SetWebStateList(nullptr);
 
-    UrlLoadingNotifier* urlLoadingNotifier =
-        UrlLoadingNotifierFactory::GetForBrowserState(self.browserState);
-    if (urlLoadingNotifier)
-      urlLoadingNotifier->RemoveObserver(_URLLoadingObserverBridge.get());
+    UrlLoadingNotifierBrowserAgent* notifier =
+        UrlLoadingNotifierBrowserAgent::FromBrowser(self.browser);
+    if (notifier)
+      notifier->RemoveObserver(_URLLoadingObserverBridge.get());
   }
 
   // Uninstall delegates so that any delegate callbacks triggered by subsequent
@@ -1870,9 +1869,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
   self.browser->GetWebStateList()->AddObserver(_webStateListObserver.get());
   _URLLoadingObserverBridge = std::make_unique<UrlLoadingObserverBridge>(self);
-  UrlLoadingNotifier* urlLoadingNotifier =
-      UrlLoadingNotifierFactory::GetForBrowserState(self.browserState);
-  urlLoadingNotifier->AddObserver(_URLLoadingObserverBridge.get());
+  UrlLoadingNotifierBrowserAgent::FromBrowser(self.browser)
+      ->AddObserver(_URLLoadingObserverBridge.get());
 
   WebStateList* webStateList = self.browser->GetWebStateList();
   for (int index = 0; index < webStateList->count(); ++index)

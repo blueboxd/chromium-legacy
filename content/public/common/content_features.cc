@@ -638,7 +638,7 @@ const base::Feature kTouchpadOverscrollHistoryNavigation {
 
 // Controls whether the Trusted Types API is available.
 const base::Feature kTrustedDOMTypes{"TrustedDOMTypes",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the RenderProcessHost uses its frames' priorities for
 // determining if it should be backgrounded. When all frames associated with a

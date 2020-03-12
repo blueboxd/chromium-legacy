@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.feed.library.piet;
 import static org.chromium.chrome.browser.feed.library.piet.StyleProvider.DIMENSION_NOT_SET;
 
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.piet.AdapterFactory.SingletonKeySupplier;
 import org.chromium.chrome.browser.feed.library.piet.DebugLogger.MessageType;

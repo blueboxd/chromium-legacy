@@ -659,19 +659,6 @@ crbug.com/983642 [ Mac ] fast/canvas/color-space/canvas-createImageBitmap-e_srgb
 crbug.com/983642 [ Win ] virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Slow ]
 crbug.com/983642 [ Win ] virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-rec2020.html [ Slow ]
 
-# These tests work fine but are slow in all Debug builds and for some
-# reason Win7 is timing out occasionally crbug.com/985231.
-crbug.com/984003 http/tests/virtual-scroller/find-element-62-0px.html [ Slow ]
-crbug.com/984003 http/tests/virtual-scroller/find-element-62-10px.html [ Slow ]
-crbug.com/984003 http/tests/virtual-scroller/find-element-63-0px.html [ Slow ]
-crbug.com/984003 http/tests/virtual-scroller/find-element-63-10px.html [ Slow ]
-crbug.com/984003 http/tests/virtual-scroller/find-element-64-0px.html [ Slow ]
-crbug.com/984003 http/tests/virtual-scroller/find-element-64-10px.html [ Slow ]
-crbug.com/984003 http/tests/virtual-scroller/find-element-65-0px.html [ Slow ]
-crbug.com/984003 http/tests/virtual-scroller/find-element-65-10px.html [ Slow ]
-crbug.com/984003 http/tests/virtual-scroller/find-element-66-0px.html [ Slow ]
-crbug.com/984003 http/tests/virtual-scroller/find-element-66-10px.html [ Slow ]
-
 # Slow when using Vulkan.
 crbug.com/994331 compositing/lots-of-img-layers.html [ Slow ]
 

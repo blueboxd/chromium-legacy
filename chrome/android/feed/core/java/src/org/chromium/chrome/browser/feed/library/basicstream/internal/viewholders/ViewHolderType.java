@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 /**
  * Constants to specify the type of ViewHolder to create in the {@link StreamRecyclerViewAdapter}.

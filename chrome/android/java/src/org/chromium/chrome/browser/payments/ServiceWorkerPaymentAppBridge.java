@@ -142,7 +142,8 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
             if (sCanMakePaymentForTesting || activity.getCurrentTabModel().isIncognito()
                     || mStandardizedPaymentMethods.containsAll(Arrays.asList(methodNameArray))
                     || !explicitlyVerified) {
-                onCanMakePaymentEventResponse(app, true);
+                onCanMakePaymentEventResponse(app, /*errorMessage=*/null, /*canMakePayment=*/true,
+                        /*readyForMinimalUI=*/false, /*accountBalance=*/null);
                 return;
             }
 
@@ -229,13 +230,21 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
 
         /**
          * Called when a service worker responds to the "canmakepayment" event.
-         * @param app      The service worker that has responded to the "canmakepayment" event.
-         * @param response The response from the service worker.
+         * @param app The service worker that has responded to the "canmakepayment" event.
+         * @param errorMessage An optional error message about any problems encountered while firing
+         * the "canmakepayment" event.
+         * @param canMakePayment Whether payments can be made.
+         * @param readyForMinimalUI Whether minimal UI should be used.
+         * @param accountBalance The account balance to display in the minimal UI.
          */
         @CalledByNative("PaymentHandlerFinder")
-        private void onCanMakePaymentEventResponse(
-                ServiceWorkerPaymentApp app, boolean canMakePaymentEventResponse) {
-            if (canMakePaymentEventResponse) mDelegate.onPaymentAppCreated(app);
+        private void onCanMakePaymentEventResponse(ServiceWorkerPaymentApp app, String errorMessage,
+                boolean canMakePayment, boolean readyForMinimalUI,
+                @Nullable String accountBalance) {
+            if (canMakePayment) mDelegate.onPaymentAppCreated(app);
+            if (!TextUtils.isEmpty(errorMessage)) mDelegate.onPaymentAppCreationError(errorMessage);
+            app.setIsReadyForMinimalUI(readyForMinimalUI);
+            app.setAccountBalance(accountBalance);
 
             if (--mNumberOfPendingCanMakePaymentEvents == 0 && mAreAllPaymentAppsCreated) {
                 notifyFinished();

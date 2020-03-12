@@ -7,6 +7,7 @@
 // clang-format off
 // #import {PasswordManagerImpl} from 'chrome://settings/settings.js';
 // #import {makeCompromisedCredential,  makePasswordCheckStatus} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
+// #import {getSyncAllPrefs,simulateSyncStatus} from 'chrome://test/settings/sync_test_util.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // #import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.m.js';
@@ -154,14 +155,62 @@ cr.define('settings_passwords_check', function() {
 
     // Test verifies that 'Try again' is not visible if users have too many
     // passwords. Instead, there should be a link to their Google Account.
-    test('testNoRetryForTooManyPasswords', function() {
+    test('testRetryInAccountForTooManyPasswordsWhenSyncing', function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.TOO_MANY_PASSWORDS);
+
       const section = createCheckPasswordSection();
+      cr.webUIListenerCallback(
+          'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
+      sync_test_util.simulateSyncStatus({signedIn: true});
+
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
         expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
         expectTrue(isElementVisible(section.$.linkToGoogleAccount));
+      });
+    });
+
+    test('testNoRetryInAccountForTooManyPasswordsWhenSignedOut', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              PasswordCheckState.TOO_MANY_PASSWORDS);
+
+      const section = createCheckPasswordSection();
+      cr.webUIListenerCallback(
+          'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
+      sync_test_util.simulateSyncStatus({signedIn: false});
+
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        assertTrue(isElementVisible(section.$.title));
+        expectEquals(
+            section.i18n('checkPasswordsErrorInterruptedTooManyPasswords'),
+            section.$.title.innerText);
+        expectFalse(isElementVisible(section.$.linkToGoogleAccount));
+        expectTrue(isElementVisible(section.$.subtitle));
+      });
+    });
+
+    test('testNoRetryInAccountForTooManyPasswordsForEncryption', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              PasswordCheckState.TOO_MANY_PASSWORDS);
+
+      const section = createCheckPasswordSection();
+      const syncPrefs = sync_test_util.getSyncAllPrefs();
+      syncPrefs.encryptAllData = true;
+      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
+      sync_test_util.simulateSyncStatus({signedIn: true});
+
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        assertTrue(isElementVisible(section.$.title));
+        expectEquals(
+            section.i18n('checkPasswordsErrorInterruptedTooManyPasswords'),
+            section.$.title.innerText);
+        expectFalse(isElementVisible(section.$.linkToGoogleAccount));
+        expectTrue(isElementVisible(section.$.subtitle));
       });
     });
 
@@ -587,11 +636,14 @@ cr.define('settings_passwords_check', function() {
               PasswordCheckState.TOO_MANY_PASSWORDS);
 
       const section = createCheckPasswordSection();
+      cr.webUIListenerCallback(
+          'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
+      sync_test_util.simulateSyncStatus({signedIn: true});
+
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
         Polymer.dom.flush();
         const title = section.$.title;
         assertTrue(isElementVisible(title));
-        // TODO(crbug.com/1047726): Check for account redirection.
         expectEquals(
             section.i18n('checkPasswordsErrorTooManyPasswords') + ' ' +
                 section.i18n('checkPasswordsAgainInAccount'),

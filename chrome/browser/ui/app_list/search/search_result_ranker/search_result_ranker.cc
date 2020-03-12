@@ -526,6 +526,8 @@ void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
               << base::JoinString(weights, ", ") << "]";
     }
   }
+
+  LogChipUsageMetrics(app_launch_data);
 }
 
 void SearchResultRanker::LogSearchResults(

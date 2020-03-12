@@ -307,7 +307,8 @@ void FetchRespondWithObserver::OnResponseFulfilled(
   // If Cross-Origin-Embedder-Policy is set to require-corp,
   // Cross-Origin-Resource-Policy verification should happen before passing the
   // response to the client.
-  if (base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation)) {
+  if (base::FeatureList::IsEnabled(
+          network::features::kCrossOriginEmbedderPolicy)) {
     // The service worker script must be in the same origin with the requestor,
     // which is a client of the service worker.
     //

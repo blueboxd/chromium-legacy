@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.tail;
 
-import android.support.annotation.ColorRes;
+import androidx.annotation.ColorRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;

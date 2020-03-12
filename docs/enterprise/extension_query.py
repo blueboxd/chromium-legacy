@@ -159,7 +159,7 @@ def main(args):
   service_credentials = Credentials.from_service_account_file(
       args.service_account_key_path,
       scopes=[
-          'https://www.googleapis.com/auth/admin.directory.device.chromebrowsers'
+          'https://www.googleapis.com/auth/admin.directory.device.chromebrowsers.readonly'
       ],
       subject=args.admin_email)
 

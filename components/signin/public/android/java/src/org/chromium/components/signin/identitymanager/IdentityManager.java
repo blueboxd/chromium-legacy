@@ -5,9 +5,9 @@
 package org.chromium.components.signin.identitymanager;
 
 import android.accounts.Account;
-import android.support.annotation.MainThread;
-import android.support.annotation.Nullable;
 
+import androidx.annotation.MainThread;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ObserverList;

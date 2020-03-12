@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_HEAP_MOJO_RECEIVER_SET_H_
 
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/renderer/platform/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
@@ -25,16 +26,28 @@ class HeapMojoReceiverSet {
   using ImplPointerType = typename mojo::Receiver<Interface>::ImplPointerType;
 
   explicit HeapMojoReceiverSet(ContextLifecycleNotifier* context)
-      : wrapper_(MakeGarbageCollected<Wrapper>(context)) {}
+      : wrapper_(MakeGarbageCollected<Wrapper>(context)) {
+    DCHECK(context);
+  }
 
   // Methods to redirect to mojo::ReceiverSet:
   mojo::ReceiverId Add(ImplPointerType impl,
                        mojo::PendingReceiver<Interface> receiver,
                        scoped_refptr<base::SequencedTaskRunner> task_runner) {
     DCHECK(task_runner);
-    return wrapper_->receiver_set().Add(std::move(impl), std::move(receiver));
+    return wrapper_->receiver_set().Add(std::move(impl), std::move(receiver),
+                                        task_runner);
   }
+
+  bool Remove(mojo::ReceiverId id) {
+    return wrapper_->receiver_set().Remove(id);
+  }
+
   void Clear() { wrapper_->receiver_set().Clear(); }
+
+  bool HasReceiver(mojo::ReceiverId id) {
+    return wrapper_->receiver_set().HasReceiver(id);
+  }
 
   void Trace(Visitor* visitor) { visitor->Trace(wrapper_); }
 
@@ -62,7 +75,7 @@ class HeapMojoReceiverSet {
     void ContextDestroyed() override { receiver_set_.Clear(); }
 
    private:
-    mojo::ReceiverSet<Interface> receiver_set_;
+    ::mojo::ReceiverSet<Interface> receiver_set_;
   };
 
   Member<Wrapper> wrapper_;

@@ -219,19 +219,11 @@ java_cpp_template("vr_build_config") {
   }
 }
 
-# This prevents a cyclic dependency for features depending on the compositor.
-# TODO(crbug.com/846440): Move this to features/compositor when ready.
-android_library("chrome_public_java") {
-  sources = [ "//chrome/android/java/src/org/chromium/chrome/browser/compositor/CompositorViewResizer.java" ]
-  deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]
-}
-
 android_library("chrome_java") {
   deps = [
     ":chrome_app_java_resources",
     ":chrome_public_android_manifest",
     ":chrome_public_apk_template_resources",
-    ":chrome_public_java",
     ":chrome_version_constants",
     ":partner_location_descriptor_proto_java",
     ":update_proto_java",
@@ -339,6 +331,7 @@ android_library("chrome_java") {
     "//components/signin/core/browser/android:java",
     "//components/signin/public/android:java",
     "//components/spellcheck/browser/android:java",
+    "//components/subresource_filter/android:java",
     "//components/sync/android:sync_java",
     "//components/sync/protocol:protocol_java",
     "//components/url_formatter/android:url_formatter_java",
@@ -2811,6 +2804,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/prerender/ExternalPrerenderHandler.java",
     "java/src/org/chromium/chrome/browser/previews/PreviewsAndroidBridge.java",
     "java/src/org/chromium/chrome/browser/printing/TabPrinter.java",
+    "java/src/org/chromium/chrome/browser/privacy/settings/PrivacyPreferencesManager.java",
     "java/src/org/chromium/chrome/browser/provider/ChromeBrowserProvider.java",
     "java/src/org/chromium/chrome/browser/push_messaging/PushMessagingServiceObserver.java",
     "java/src/org/chromium/chrome/browser/rappor/RapporServiceBridge.java",
@@ -2828,7 +2822,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/send_tab_to_self/TargetDeviceInfo.java",
     "java/src/org/chromium/chrome/browser/settings/password/PasswordEditingBridge.java",
     "java/src/org/chromium/chrome/browser/settings/password/PasswordUIView.java",
-    "java/src/org/chromium/chrome/browser/settings/privacy/PrivacyPreferencesManager.java",
     "java/src/org/chromium/chrome/browser/sharing/SharingJNIBridge.java",
     "java/src/org/chromium/chrome/browser/sharing/SharingServiceProxy.java",
     "java/src/org/chromium/chrome/browser/sharing/click_to_call/ClickToCallMessageHandler.java",

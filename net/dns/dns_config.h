@@ -46,7 +46,9 @@ struct NET_EXPORT DnsConfig {
   // Value only contains the number of hosts rather than the full list.
   std::unique_ptr<base::Value> ToValue() const;
 
-  bool IsValid() const { return !nameservers.empty(); }
+  bool IsValid() const {
+    return !nameservers.empty() || !dns_over_https_servers.empty();
+  }
 
   struct NET_EXPORT DnsOverHttpsServerConfig {
     DnsOverHttpsServerConfig(const std::string& server_template, bool use_post);

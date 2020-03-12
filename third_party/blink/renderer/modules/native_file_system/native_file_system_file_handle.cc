@@ -71,8 +71,6 @@ ScriptPromise NativeFileSystemFileHandle::createWritable(
     ScriptState* script_state,
     const FileSystemCreateWriterOptions* options,
     ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::WritableFileStreamEnabled());
-
   if (!mojo_ptr_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError, "");
     return ScriptPromise();

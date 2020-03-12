@@ -125,7 +125,7 @@ class SuspendObserverDelegate;
 @interface CrAVFoundationDeviceObserver : NSObject {
  @private
   // Callback for device changed, has to run on Device Thread.
-  base::Closure _onDeviceChangedCallback;
+  base::RepeatingClosure _onDeviceChangedCallback;
 
   // Member to keep track of the devices we are already monitoring.
   std::set<base::scoped_nsobject<AVCaptureDevice>> _monitoredDevices;
@@ -134,7 +134,7 @@ class SuspendObserverDelegate;
   base::ThreadChecker _mainThreadChecker;
 }
 
-- (id)initWithOnChangedCallback:(const base::Closure&)callback;
+- (id)initWithOnChangedCallback:(const base::RepeatingClosure&)callback;
 - (void)startObserving:(base::scoped_nsobject<AVCaptureDevice>)device;
 - (void)stopObserving:(AVCaptureDevice*)device;
 - (void)clearOnDeviceChangedCallback;
@@ -196,7 +196,7 @@ void SuspendObserverDelegate::StartObserver(
     const scoped_refptr<base::SingleThreadTaskRunner>& device_thread) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
-  base::Closure on_device_changed_callback = base::Bind(
+  base::RepeatingClosure on_device_changed_callback = base::BindRepeating(
       &SuspendObserverDelegate::OnDeviceChanged, this, device_thread);
   suspend_observer_.reset([[CrAVFoundationDeviceObserver alloc]
       initWithOnChangedCallback:on_device_changed_callback]);
@@ -348,7 +348,7 @@ void AVFoundationMonitorImpl::OnDeviceChanged() {
 
 @implementation CrAVFoundationDeviceObserver
 
-- (id)initWithOnChangedCallback:(const base::Closure&)callback {
+- (id)initWithOnChangedCallback:(const base::RepeatingClosure&)callback {
   DCHECK(_mainThreadChecker.CalledOnValidThread());
   if ((self = [super init])) {
     DCHECK(!callback.is_null());

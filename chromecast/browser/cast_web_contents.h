@@ -389,6 +389,10 @@ class CastWebContents {
   // Returns true if mixer audio is enabled.
   virtual bool is_mixer_audio_enabled() = 0;
 
+  // Returns whether or not CastWebContents binder_registry() is valid for
+  // binding interfaces.
+  virtual bool can_bind_interfaces() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CastWebContents);
 };

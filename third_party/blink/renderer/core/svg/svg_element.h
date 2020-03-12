@@ -132,10 +132,10 @@ class CORE_EXPORT SVGElement : public Element {
   virtual AffineTransform* AnimateMotionTransform() { return nullptr; }
 
   void InvalidateSVGAttributes() {
-    EnsureUniqueElementData().animated_svg_attributes_are_dirty_ = true;
+    EnsureUniqueElementData().SetAnimatedSvgAttributesAreDirty(true);
   }
   void InvalidateSVGPresentationAttributeStyle() {
-    EnsureUniqueElementData().presentation_attribute_style_is_dirty_ = true;
+    EnsureUniqueElementData().SetPresentationAttributeStyleIsDirty(true);
   }
 
   const HeapHashSet<WeakMember<SVGElement>>& InstancesForElement() const;

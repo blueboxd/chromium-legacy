@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/layers/surface_layer.h"
-#include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "media/base/media_log.h"
 #include "media/base/media_observer.h"
 #include "media/base/media_switches.h"
@@ -79,7 +79,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       bool embedded_media_experience_enabled,
       mojo::PendingRemote<mojom::MediaMetricsProvider> metrics_provider,
       CreateSurfaceLayerBridgeCB bridge_callback,
-      scoped_refptr<viz::ContextProvider> context_provider,
+      scoped_refptr<viz::RasterContextProvider> raster_context_provider,
       blink::WebMediaPlayer::SurfaceLayerMode use_surface_layer_for_video,
       bool is_background_suspend_enabled,
       bool is_background_video_play_enabled,
@@ -148,8 +148,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return std::move(create_bridge_callback_);
   }
 
-  scoped_refptr<viz::ContextProvider> context_provider() {
-    return context_provider_;
+  scoped_refptr<viz::RasterContextProvider> raster_context_provider() {
+    return raster_context_provider_;
   }
 
   blink::WebMediaPlayer::SurfaceLayerMode use_surface_layer_for_video() const {
@@ -194,7 +194,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   const bool embedded_media_experience_enabled_;
   mojo::PendingRemote<mojom::MediaMetricsProvider> metrics_provider_;
   CreateSurfaceLayerBridgeCB create_bridge_callback_;
-  scoped_refptr<viz::ContextProvider> context_provider_;
+  scoped_refptr<viz::RasterContextProvider> raster_context_provider_;
   blink::WebMediaPlayer::SurfaceLayerMode use_surface_layer_for_video_;
 
   // Whether the renderer should automatically suspend media playback in

@@ -180,7 +180,7 @@ void SVGElement::SetInstanceUpdatesBlocked(bool value) {
 void SVGElement::SetWebAnimationsPending() {
   GetDocument().AccessSVGExtensions().AddWebAnimationsPendingSVGElement(*this);
   EnsureSVGRareData()->SetWebAnimatedAttributesDirty(true);
-  EnsureUniqueElementData().animated_svg_attributes_are_dirty_ = true;
+  EnsureUniqueElementData().SetAnimatedSvgAttributesAreDirty(true);
 }
 
 static bool IsSVGAttributeHandle(const PropertyHandle& property_handle) {
@@ -900,7 +900,7 @@ void SVGElement::SvgAttributeBaseValChanged(const QualifiedName& attribute) {
   // TODO(alancutter): Only mark attributes as dirty if their animation depends
   // on the underlying value.
   SvgRareData()->SetWebAnimatedAttributesDirty(true);
-  GetElementData()->animated_svg_attributes_are_dirty_ = true;
+  GetElementData()->SetAnimatedSvgAttributesAreDirty(true);
 }
 
 void SVGElement::EnsureAttributeAnimValUpdated() {
@@ -918,7 +918,7 @@ void SVGElement::EnsureAttributeAnimValUpdated() {
 void SVGElement::SynchronizeAnimatedSVGAttribute(
     const QualifiedName& name) const {
   if (!GetElementData() ||
-      !GetElementData()->animated_svg_attributes_are_dirty_)
+      !GetElementData()->animated_svg_attributes_are_dirty())
     return;
 
   // We const_cast here because we have deferred baseVal mutation animation
@@ -935,7 +935,7 @@ void SVGElement::SynchronizeAnimatedSVGAttribute(
         (*it)->SynchronizeAttribute();
     }
 
-    GetElementData()->animated_svg_attributes_are_dirty_ = false;
+    GetElementData()->SetAnimatedSvgAttributesAreDirty(false);
   } else {
     SVGAnimatedPropertyBase* property = attribute_to_property_map_.at(name);
     if (property && property->NeedsSynchronizeAttribute())

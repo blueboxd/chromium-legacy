@@ -1004,14 +1004,6 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
     kTexStorageType2D,
     kTexStorageType3D,
   };
-  bool ValidateTexStorage(const char*,
-                          GLenum,
-                          GLsizei,
-                          GLenum,
-                          GLsizei,
-                          GLsizei,
-                          GLsizei,
-                          TexStorageType);
 
   bool ValidateUniformBlockIndex(const char*, WebGLProgram*, GLuint);
 
@@ -1121,7 +1113,6 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   Member<WebGLTransformFeedback> default_transform_feedback_;
 
   GLenumHashSet supported_internal_formats_storage_;
-  GLenumHashSet compressed_texture_formats_etc2eac_;
 
   Member<WebGLBuffer> bound_copy_read_buffer_;
   Member<WebGLBuffer> bound_copy_write_buffer_;

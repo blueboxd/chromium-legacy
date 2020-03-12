@@ -4,6 +4,10 @@
 
 /** @fileoverview Handles metrics for the settings pages. */
 
+// clang-format off
+// #import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 cr.define('settings', function() {
   /**
    * Contains all possible recorded interactions across privacy settings pages.
@@ -15,7 +19,7 @@ cr.define('settings', function() {
    * histograms/enums.xml
    * @enum {number}
    */
-  const PrivacyElementInteractions = {
+  /* #export */ const PrivacyElementInteractions = {
     SYNC_AND_GOOGLE_SERVICES: 0,
     CHROME_SIGN_IN: 1,
     DO_NOT_TRACK: 2,
@@ -43,7 +47,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.MetricsBrowserProxy}
    */
-  class MetricsBrowserProxyImpl {
+  /* #export */ class MetricsBrowserProxyImpl {
     /** @override*/
     recordSettingsPageHistogram(interaction) {
       chrome.send('metricsHandler:recordInHistogram', [

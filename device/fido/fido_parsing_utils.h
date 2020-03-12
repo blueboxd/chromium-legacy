@@ -18,6 +18,7 @@
 #include "base/containers/span.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
+#include "components/cbor/values.h"
 #include "crypto/sha2.h"
 
 namespace device {
@@ -122,6 +123,21 @@ base::StringPiece ConvertToStringPiece(base::span<const uint8_t> data);
 // https://tools.ietf.org/html/rfc4122
 COMPONENT_EXPORT(DEVICE_FIDO)
 std::string ConvertBytesToUuid(base::span<const uint8_t, 16> bytes);
+
+// Copies the contents of the bytestring, keyed by |key|, from |map| into |out|.
+// Returns true on success or false if the key if not found, the value is not a
+// bytestring, or the value has the wrong length.
+template <size_t N>
+bool CopyCBORBytestring(std::array<uint8_t, N>* out,
+                        const cbor::Value::MapValue& map,
+                        int key) {
+  const auto it = map.find(cbor::Value(key));
+  if (it == map.end() || !it->second.is_bytestring()) {
+    return false;
+  }
+  const std::vector<uint8_t> bytestring = it->second.GetBytestring();
+  return ExtractArray(bytestring, /*pos=*/0, out);
+}
 
 }  // namespace fido_parsing_utils
 }  // namespace device

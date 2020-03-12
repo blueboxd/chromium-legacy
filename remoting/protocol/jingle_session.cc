@@ -279,9 +279,10 @@ void JingleSession::AcceptIncomingConnection(
 
   DCHECK_EQ(authenticator_->state(), Authenticator::WAITING_MESSAGE);
   // |authenticator_| is owned, so Unretained() is safe here.
-  authenticator_->ProcessMessage(first_auth_message, base::Bind(
-      &JingleSession::ContinueAcceptIncomingConnection,
-      base::Unretained(this)));
+  authenticator_->ProcessMessage(
+      first_auth_message,
+      base::BindOnce(&JingleSession::ContinueAcceptIncomingConnection,
+                     base::Unretained(this)));
 }
 
 void JingleSession::ContinueAcceptIncomingConnection() {
@@ -587,8 +588,8 @@ void JingleSession::OnAccept(std::unique_ptr<JingleMessage> message,
 
   DCHECK(authenticator_->state() == Authenticator::WAITING_MESSAGE);
   authenticator_->ProcessMessage(
-      auth_message, base::Bind(&JingleSession::ProcessAuthenticationStep,
-                               base::Unretained(this)));
+      auth_message, base::BindOnce(&JingleSession::ProcessAuthenticationStep,
+                                   base::Unretained(this)));
 }
 
 void JingleSession::OnSessionInfo(std::unique_ptr<JingleMessage> message,
@@ -611,8 +612,9 @@ void JingleSession::OnSessionInfo(std::unique_ptr<JingleMessage> message,
   reply_callback.Run(JingleMessageReply::NONE);
 
   authenticator_->ProcessMessage(
-      message->info.get(), base::Bind(&JingleSession::ProcessAuthenticationStep,
-                                      base::Unretained(this)));
+      message->info.get(),
+      base::BindOnce(&JingleSession::ProcessAuthenticationStep,
+                     base::Unretained(this)));
 }
 
 void JingleSession::OnTransportInfo(std::unique_ptr<JingleMessage> message,

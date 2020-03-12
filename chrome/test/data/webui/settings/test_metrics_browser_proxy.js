@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @implements {settings.PrivacyPageBrowserProxy} */
-class TestMetricsBrowserProxy extends TestBrowserProxy {
+// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+
+/** @implements {settings.MetricsBrowserProxy} */
+/* #export */ class TestMetricsBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'recordSettingsPageHistogram',

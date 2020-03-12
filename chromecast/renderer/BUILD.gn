@@ -65,6 +65,7 @@ cast_source_set("renderer") {
     "//chromecast/common:queryable_data",
     "//chromecast/common/media",
     "//chromecast/common/mojom",
+    "//chromecast/crash",
     "//chromecast/media",
     "//chromecast/media/base:media_codec_support",
     "//components/network_hints/renderer",
@@ -78,11 +79,6 @@ cast_source_set("renderer") {
     "//services/service_manager/public/cpp",
     "//v8",
   ]
-
-  if (!is_fuchsia) {
-    # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
-    deps += [ "//chromecast/crash" ]
-  }
 
   if (!is_android) {
     sources += [

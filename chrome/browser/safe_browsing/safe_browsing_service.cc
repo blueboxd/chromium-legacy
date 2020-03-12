@@ -223,7 +223,7 @@ TriggerManager* SafeBrowsingService::trigger_manager() const {
 
 PasswordProtectionService* SafeBrowsingService::GetPasswordProtectionService(
     Profile* profile) const {
-  if (profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled))
+  if (IsSafeBrowsingEnabled(*profile->GetPrefs()))
     return services_delegate_->GetPasswordProtectionService(profile);
   return nullptr;
 }
@@ -364,9 +364,14 @@ void SafeBrowsingService::OnProfileAdded(Profile* profile) {
   prefs_map_[pref_service] = std::move(registrar);
   RefreshState();
 
-  // Record the current pref state.
+  // Record the current pref state for standard protection.
   UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.Pref.General",
                         pref_service->GetBoolean(prefs::kSafeBrowsingEnabled));
+  // Record the current pref state for enhanced protection. Enhanced protection
+  // is a subset of the standard protection. Thus, |kSafeBrowsingEnabled| count
+  // should always be more than the count of enhanced protection.
+  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.Pref.Enhanced",
+                        pref_service->GetBoolean(prefs::kSafeBrowsingEnhanced));
   // Extended Reporting metrics are handled together elsewhere.
   RecordExtendedReportingMetrics(*pref_service);
 
@@ -407,7 +412,7 @@ void SafeBrowsingService::RefreshState() {
   enabled_by_prefs_ = false;
   estimated_extended_reporting_by_prefs_ = SBER_LEVEL_OFF;
   for (const auto& pref : prefs_map_) {
-    if (pref.first->GetBoolean(prefs::kSafeBrowsingEnabled)) {
+    if (IsSafeBrowsingEnabled(*pref.first)) {
       enabled_by_prefs_ = true;
 
       ExtendedReportingLevel erl =

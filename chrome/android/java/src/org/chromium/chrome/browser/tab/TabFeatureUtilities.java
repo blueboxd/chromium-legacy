@@ -11,13 +11,29 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 
 /**
  * Contains logic that decides whether to enable features related to tabs.
  */
 public class TabFeatureUtilities {
     private static final String TAG = "TabFeatureUtilities";
+    private static final int DEFAULT_MIN_SDK = Build.VERSION_CODES.O;
+    private static final int DEFAULT_MIN_MEMORY_MB = 2048;
+
+    // Field trial parameter for the minimum Android SDK version to enable zooming animation.
+    public static final String MIN_SDK_PARAM = "zooming-min-sdk-version";
+    public static final IntCachedFieldTrialParameter ZOOMING_MIN_SDK =
+            new IntCachedFieldTrialParameter(
+                    ChromeFeatureList.TAB_TO_GTS_ANIMATION, MIN_SDK_PARAM, DEFAULT_MIN_SDK);
+
+    // Field trial parameter for the minimum physical memory size to enable zooming animation.
+    public static final String MIN_MEMORY_MB_PARAM = "zooming-min-memory-mb";
+    public static final IntCachedFieldTrialParameter ZOOMING_MIN_MEMORY =
+            new IntCachedFieldTrialParameter(ChromeFeatureList.TAB_TO_GTS_ANIMATION,
+                    MIN_MEMORY_MB_PARAM, DEFAULT_MIN_MEMORY_MB);
 
     private static Boolean sIsTabToGtsAnimationEnabled;
 
@@ -40,39 +56,19 @@ public class TabFeatureUtilities {
         }
         Log.d(TAG, "GTS.MinSdkVersion = " + GridTabSwitcherUtil.getMinSdkVersion());
         Log.d(TAG, "GTS.MinMemoryMB = " + GridTabSwitcherUtil.getMinMemoryMB());
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+        return CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
                 && Build.VERSION.SDK_INT >= GridTabSwitcherUtil.getMinSdkVersion()
                 && SysUtils.amountOfPhysicalMemoryKB() / 1024
                 >= GridTabSwitcherUtil.getMinMemoryMB();
     }
 
     private static class GridTabSwitcherUtil {
-        // Field trial parameter for the minimum Android SDK version to enable zooming animation.
-        private static final String MIN_SDK_PARAM = "zooming-min-sdk-version";
-        private static final int DEFAULT_MIN_SDK = Build.VERSION_CODES.O;
-
-        // Field trial parameter for the minimum physical memory size to enable zooming animation.
-        private static final String MIN_MEMORY_MB_PARAM = "zooming-min-memory-mb";
-        private static final int DEFAULT_MIN_MEMORY_MB = 2048;
-
         private static int getMinSdkVersion() {
-            String sdkVersion = ChromeFeatureList.getFieldTrialParamByFeature(
-                    ChromeFeatureList.TAB_TO_GTS_ANIMATION, MIN_SDK_PARAM);
-            try {
-                return Integer.valueOf(sdkVersion);
-            } catch (NumberFormatException e) {
-                return DEFAULT_MIN_SDK;
-            }
+            return CachedFeatureFlags.getValue(TabFeatureUtilities.ZOOMING_MIN_SDK);
         }
 
         private static int getMinMemoryMB() {
-            String sdkVersion = ChromeFeatureList.getFieldTrialParamByFeature(
-                    ChromeFeatureList.TAB_TO_GTS_ANIMATION, MIN_MEMORY_MB_PARAM);
-            try {
-                return Integer.valueOf(sdkVersion);
-            } catch (NumberFormatException e) {
-                return DEFAULT_MIN_MEMORY_MB;
-            }
+            return CachedFeatureFlags.getValue(TabFeatureUtilities.ZOOMING_MIN_MEMORY);
         }
     }
 }

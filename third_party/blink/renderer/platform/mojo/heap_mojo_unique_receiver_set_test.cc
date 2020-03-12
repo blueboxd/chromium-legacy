@@ -14,6 +14,7 @@
 
 namespace blink {
 
+namespace {
 class FakeContextNotifier final : public GarbageCollected<FakeContextNotifier>,
                                   public ContextLifecycleNotifier {
   USING_GARBAGE_COLLECTED_MIXIN(FakeContextNotifier);
@@ -58,6 +59,7 @@ class GCOwner : public GarbageCollected<GCOwner> {
   HeapMojoUniqueReceiverSet<sample::blink::Service> receiver_set_;
 };
 
+}  // namespace
 class HeapMojoUniqueReceiverSetTest : public TestSupportingGC {
  public:
   FakeContextNotifier* context() { return context_; }
@@ -84,6 +86,8 @@ class HeapMojoUniqueReceiverSetTest : public TestSupportingGC {
   bool service_deleted_ = false;
 };
 
+namespace {
+
 class MockService : public sample::blink::Service {
  public:
   explicit MockService(HeapMojoUniqueReceiverSetTest* test) : test_(test) {}
@@ -99,6 +103,8 @@ class MockService : public sample::blink::Service {
  private:
   HeapMojoUniqueReceiverSetTest* test_;
 };
+
+}  // namespace
 
 // GC the HeapMojoUniqueReceiverSet and verify that the receiver is no longer
 // part of the set, and that the service was deleted.

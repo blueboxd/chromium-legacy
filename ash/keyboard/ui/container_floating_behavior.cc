@@ -304,6 +304,12 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
   return false;
 }
 
+bool ContainerFloatingBehavior::HandleGestureEvent(
+    const ui::GestureEvent& event,
+    const gfx::Rect& bounds_in_screen) {
+  return false;
+}
+
 void ContainerFloatingBehavior::SetCanonicalBounds(
     aura::Window* container,
     const gfx::Rect& display_bounds) {

@@ -36,6 +36,8 @@ GENERIC_CONDITIONS = OS_CONDITIONS + GPU_CONDITIONS
 _map_specific_to_generic = {sos:'win' for sos in WIN_CONDITIONS}
 _map_specific_to_generic.update({sos:'mac' for sos in MAC_CONDITIONS})
 _map_specific_to_generic.update({sos:'android' for sos in ANDROID_CONDITIONS})
+_map_specific_to_generic['debug-x64'] = 'debug'
+_map_specific_to_generic['release-x64'] = 'release'
 
 _get_generic = lambda tags: set(
     [_map_specific_to_generic.get(tag, tag) for tag in tags])

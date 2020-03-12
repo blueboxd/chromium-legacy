@@ -406,11 +406,9 @@ ExtensionFunction::ResponseAction ManagementLaunchAppFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-ManagementSetEnabledFunction::ManagementSetEnabledFunction() {
-}
+ManagementSetEnabledFunction::ManagementSetEnabledFunction() = default;
 
-ManagementSetEnabledFunction::~ManagementSetEnabledFunction() {
-}
+ManagementSetEnabledFunction::~ManagementSetEnabledFunction() = default;
 
 ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
   std::unique_ptr<management::SetEnabled::Params> params(
@@ -432,12 +430,41 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
     return RespondNow(Error(keys::kNoExtensionError, extension_id_));
 
   bool enabled = params->enabled;
+
+  const SupervisedUserServiceDelegate* supervised_user_service_delegate =
+      ManagementAPI::GetFactoryInstance()
+          ->Get(browser_context())
+          ->GetSupervisedUserServiceDelegate();
+
+  const bool is_supervised_child_who_may_install_extensions =
+      supervised_user_service_delegate
+          ? supervised_user_service_delegate
+                ->IsSupervisedChildWhoMayInstallExtensions(browser_context())
+          : false;
+
   const ManagementPolicy* policy =
       ExtensionSystem::Get(browser_context())->management_policy();
+
   if (!policy->ExtensionMayModifySettings(extension(), target_extension,
-                                          nullptr) ||
-      (enabled &&
-       policy->MustRemainDisabled(target_extension, nullptr, nullptr))) {
+                                          nullptr)) {
+    return RespondNow(Error(keys::kUserCantModifyError, extension_id_));
+  }
+
+  disable_reason::DisableReason reason;
+  bool disallow_enable =
+      enabled && policy->MustRemainDisabled(target_extension, &reason, nullptr);
+
+  // Figure out if we should prompt for parental approval.
+  bool prompt_parent_for_approval =
+      disallow_enable && is_supervised_child_who_may_install_extensions &&
+      reason ==
+          disable_reason::DisableReason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED;
+
+  // If the extension can't be enabled, only continue if we plan to prompt for
+  // parental approval.
+  if (disallow_enable && !prompt_parent_for_approval) {
+    LOG(ERROR) << "ManagementSetEnabledFunction::Run: extension may not be "
+                  "enabled, and we're not prompting for parent approval";
     return RespondNow(Error(keys::kUserCantModifyError, extension_id_));
   }
 
@@ -467,6 +494,18 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
                      this));  // This bind creates a reference.
       return RespondLater();
     }
+    // Handle parental approval for child accounts that have the
+    // ability to install extensions.
+    if (prompt_parent_for_approval &&
+        // Don't re-prompt the parent for extensions that have already been
+        // approved for a child.
+        !supervised_user_service_delegate->IsExtensionAllowedByParent(
+            *target_extension, browser_context())) {
+      LOG(ERROR) << "ManagementSetEnabledFunction::Run:  prompting for parent "
+                    "approval";
+      return RequestParentPermission(target_extension);
+    }
+
     delegate->EnableExtension(browser_context(), extension_id_);
   } else if (currently_enabled && !params->enabled) {
     delegate->DisableExtension(
@@ -503,6 +542,54 @@ void ManagementSetEnabledFunction::OnRequirementsChecked(
     // TODO(devlin): Should we really be noisy here all the time?
     Respond(Error(keys::kMissingRequirementsError,
                   base::UTF16ToUTF8(requirements_checker_->GetErrorMessage())));
+  }
+}
+
+ExtensionFunction::ResponseAction
+ManagementSetEnabledFunction::RequestParentPermission(
+    const Extension* extension) {
+  content::WebContents* web_contents = GetSenderWebContents();
+  if (!web_contents)
+    return RespondNow(Error(keys::kWebContentsDisappearedError));
+
+  // Show parental approval prompt.
+  auto callback = base::BindOnce(
+      &ManagementSetEnabledFunction::OnParentPermissionDone, this);
+  SupervisedUserServiceDelegate* supervised_user_service_delegate =
+      ManagementAPI::GetFactoryInstance()
+          ->Get(browser_context())
+          ->GetSupervisedUserServiceDelegate();
+  DCHECK(supervised_user_service_delegate);
+  supervised_user_service_delegate->ShowParentPermissionDialogForExtension(
+      *extension, browser_context(), web_contents, std::move(callback));
+  return RespondLater();
+}
+
+void ManagementSetEnabledFunction::OnParentPermissionDone(
+    SupervisedUserServiceDelegate::ParentPermissionDialogResult result) {
+  switch (result) {
+    case SupervisedUserServiceDelegate::ParentPermissionDialogResult::
+        kParentPermissionReceived: {
+      const ManagementAPIDelegate* delegate =
+          ManagementAPI::GetFactoryInstance()
+              ->Get(browser_context())
+              ->GetDelegate();
+      delegate->EnableExtension(browser_context(), extension_id_);
+      Respond(OneArgument(std::make_unique<base::Value>(true)));
+      break;
+    }
+
+    case SupervisedUserServiceDelegate::ParentPermissionDialogResult::
+        kParentPermissionCanceled: {
+      Respond(Error(keys::kUserDidNotReEnableError));
+      break;
+    }
+
+    case SupervisedUserServiceDelegate::ParentPermissionDialogResult::
+        kParentPermissionFailed: {
+      Respond(Error(keys::kParentPermissionFailedError));
+      break;
+    }
   }
 }
 
@@ -1043,7 +1130,9 @@ void ManagementEventRouter::BroadcastEvent(
 
 ManagementAPI::ManagementAPI(content::BrowserContext* context)
     : browser_context_(context),
-      delegate_(ExtensionsAPIClient::Get()->CreateManagementAPIDelegate()) {
+      delegate_(ExtensionsAPIClient::Get()->CreateManagementAPIDelegate()),
+      supervised_user_service_delegate_(
+          ExtensionsAPIClient::Get()->CreateSupervisedUserServiceDelegate()) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   event_router->RegisterObserver(this, management::OnInstalled::kEventName);
   event_router->RegisterObserver(this, management::OnUninstalled::kEventName);

@@ -6,6 +6,7 @@ package org.chromium.weblayer_private;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
@@ -26,6 +27,7 @@ import org.chromium.base.BundleUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.StrictModeContext;
@@ -78,6 +80,9 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     // signature requirements on the implementation, nor does it use the production code path to
     // load the code. Do not set this in production APKs!
     private static final String PACKAGE_MANIFEST_KEY = "org.chromium.weblayer.WebLayerPackage";
+    // SharedPreferences key storing the versionCode of the most recently loaded WebLayer library.
+    public static final String PREF_LAST_VERSION_CODE =
+            "org.chromium.weblayer.last_version_code_used";
 
     private final ProfileManager mProfileManager = new ProfileManager();
 
@@ -233,11 +238,10 @@ public final class WebLayerImpl extends IWebLayer.Stub {
             }
         }
 
-        // Creating the Android shared preferences object causes I/O. Prewarm during
-        // initialization to avoid this occurring randomly later.
-        // TODO: Do this on a background thread.
+        // Creating the Android shared preferences object causes I/O.
         try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
-            ContextUtils.getAppSharedPreferences();
+            SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+            deleteDataIfPackageDowngrade(prefs, packageInfo);
         }
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch();
@@ -454,6 +458,49 @@ public final class WebLayerImpl extends IWebLayer.Stub {
             // This would indicate the client app doesn't exist;
             // just return true as there's nothing sensible to do here.
             return true;
+        }
+    }
+
+    private static void deleteDataIfPackageDowngrade(
+            SharedPreferences prefs, PackageInfo packageInfo) {
+        int previousVersion = prefs.getInt(PREF_LAST_VERSION_CODE, 0);
+        int currentVersion = packageInfo.versionCode;
+        if (getBranchFromVersionCode(currentVersion) < getBranchFromVersionCode(previousVersion)) {
+            // WebLayer was downgraded since the last run. Delete the data and cache directories.
+            File dataDir = new File(PathUtils.getDataDirectory());
+            Log.i(TAG,
+                    "WebLayer package downgraded from " + previousVersion + " to " + currentVersion
+                            + "; deleting contents of " + dataDir);
+            deleteDirectoryContents(dataDir);
+        }
+        if (previousVersion != currentVersion) {
+            prefs.edit().putInt(PREF_LAST_VERSION_CODE, currentVersion).apply();
+        }
+    }
+
+    /**
+     * Chromium versionCodes follow the scheme "BBBBPPPAX":
+     * BBBB: 4 digit branch number. It monotonically increases over time.
+     * PPP:  Patch number in the branch. It is padded with zeroes to the left. These three digits
+     *       may change their meaning in the future.
+     * A:    Architecture digit.
+     * X:    A digit to differentiate APKs for other reasons.
+     *
+     * @return The branch number of versionCode.
+     */
+    private static int getBranchFromVersionCode(int versionCode) {
+        return versionCode / 1_000_00;
+    }
+
+    private static void deleteDirectoryContents(File directory) {
+        File[] files = directory.listFiles();
+        if (files == null) {
+            return;
+        }
+        for (File file : files) {
+            if (!FileUtils.recursivelyDeleteFile(file, FileUtils.DELETE_ALL)) {
+                Log.w(TAG, "Failed to delete " + file);
+            }
         }
     }
 

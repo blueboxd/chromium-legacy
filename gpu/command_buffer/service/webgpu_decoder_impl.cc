@@ -485,6 +485,16 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     NOTREACHED();
     return false;
   }
+  bool ClearCompressedTextureLevel3D(gles2::Texture* texture,
+                                     unsigned target,
+                                     int level,
+                                     unsigned format,
+                                     int width,
+                                     int height,
+                                     int depth) override {
+    NOTREACHED();
+    return false;
+  }
   bool ClearLevel3D(gles2::Texture* texture,
                     unsigned target,
                     int level,

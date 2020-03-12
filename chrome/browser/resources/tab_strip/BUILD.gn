@@ -79,6 +79,7 @@ js_library("tab_group") {
     ":custom_element",
     ":tab_strip_embedder_proxy",
     ":tabs_api_proxy",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
 }
 

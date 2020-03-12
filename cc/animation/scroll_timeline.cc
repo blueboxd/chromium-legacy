@@ -5,6 +5,7 @@
 #include "cc/animation/scroll_timeline.h"
 
 #include "cc/animation/animation_id_provider.h"
+#include "cc/animation/worklet_animation.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/scroll_node.h"
 #include "ui/gfx/geometry/scroll_offset.h"
@@ -31,8 +32,9 @@ ScrollTimeline::ScrollTimeline(base::Optional<ElementId> scroller_id,
                                base::Optional<double> start_scroll_offset,
                                base::Optional<double> end_scroll_offset,
                                double time_range,
-                               KeyframeModel::FillMode fill)
-    : AnimationTimeline(AnimationIdProvider::NextTimelineId()),
+                               KeyframeModel::FillMode fill,
+                               int animation_timeline_id)
+    : AnimationTimeline(animation_timeline_id),
       pending_id_(scroller_id),
       direction_(direction),
       start_scroll_offset_(start_scroll_offset),
@@ -49,15 +51,15 @@ scoped_refptr<ScrollTimeline> ScrollTimeline::Create(
     base::Optional<double> end_scroll_offset,
     double time_range,
     KeyframeModel::FillMode fill) {
-  return base::WrapRefCounted(
-      new ScrollTimeline(scroller_id, direction, start_scroll_offset,
-                         end_scroll_offset, time_range, fill));
+  return base::WrapRefCounted(new ScrollTimeline(
+      scroller_id, direction, start_scroll_offset, end_scroll_offset,
+      time_range, fill, AnimationIdProvider::NextTimelineId()));
 }
 
-scoped_refptr<ScrollTimeline> ScrollTimeline::CreateImplInstance() const {
+scoped_refptr<AnimationTimeline> ScrollTimeline::CreateImplInstance() const {
   return base::WrapRefCounted(
       new ScrollTimeline(pending_id_, direction_, start_scroll_offset_,
-                         end_scroll_offset_, time_range_, fill_));
+                         end_scroll_offset_, time_range_, fill_, id()));
 }
 
 bool ScrollTimeline::IsActive(const ScrollTree& scroll_tree,
@@ -153,6 +155,7 @@ base::Optional<base::TimeTicks> ScrollTimeline::CurrentTime(
 }
 
 void ScrollTimeline::PushPropertiesTo(AnimationTimeline* impl_timeline) {
+  AnimationTimeline::PushPropertiesTo(impl_timeline);
   DCHECK(impl_timeline);
   ScrollTimeline* scroll_timeline = ToScrollTimeline(impl_timeline);
   scroll_timeline->pending_id_ = pending_id_;
@@ -166,12 +169,23 @@ void ScrollTimeline::PushPropertiesTo(AnimationTimeline* impl_timeline) {
 
 void ScrollTimeline::ActivateTimeline() {
   active_id_ = pending_id_;
+  for (auto& kv : id_to_animation_map_) {
+    auto& animation = kv.second;
+    if (animation->IsWorkletAnimation())
+      ToWorkletAnimation(animation.get())->ReleasePendingTreeLock();
+  }
 }
 
 void ScrollTimeline::UpdateScrollerIdAndScrollOffsets(
     base::Optional<ElementId> pending_id,
     base::Optional<double> start_scroll_offset,
     base::Optional<double> end_scroll_offset) {
+  if (pending_id_ == pending_id &&
+      start_scroll_offset_ == start_scroll_offset &&
+      end_scroll_offset_ == end_scroll_offset) {
+    return;
+  }
+
   // When the scroller id changes it will first be modified in the pending tree.
   // Then later (when the pending tree is promoted to active)
   // |ActivateTimeline| will be called and will set the |active_id_|.

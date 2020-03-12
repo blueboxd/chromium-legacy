@@ -13,8 +13,6 @@ class TestFontsBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'fetchFontsData',
-      'observeAdvancedFontExtensionAvailable',
-      'openAdvancedFontSettings',
     ]);
 
     /** @private {!FontsData} */
@@ -28,16 +26,6 @@ class TestFontsBrowserProxy extends TestBrowserProxy {
   fetchFontsData() {
     this.methodCalled('fetchFontsData');
     return Promise.resolve(this.fontsData_);
-  }
-
-  /** @override */
-  observeAdvancedFontExtensionAvailable() {
-    this.methodCalled('observeAdvancedFontExtensionAvailable');
-  }
-
-  /** @override */
-  openAdvancedFontSettings() {
-    this.methodCalled('openAdvancedFontSettings');
   }
 }
 
@@ -63,15 +51,6 @@ suite('AppearanceFontHandler', function() {
 
   test('fetchFontsData', function() {
     return fontsBrowserProxy.whenCalled('fetchFontsData');
-  });
-
-  test('openAdvancedFontSettings', function() {
-    cr.webUIListenerCallback('advanced-font-settings-installed', [true]);
-    Polymer.dom.flush();
-    const button = fontsPage.$$('#advancedButton');
-    assertTrue(!!button);
-    button.click();
-    return fontsBrowserProxy.whenCalled('openAdvancedFontSettings');
   });
 
   test('minimum font size sample', async () => {

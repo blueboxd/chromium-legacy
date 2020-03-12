@@ -4,6 +4,7 @@
 
 import("//build/buildflag_header.gni")
 import("//build/compiled_action.gni")
+import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
@@ -1613,6 +1614,11 @@ jumbo_component("platform") {
     deps += [ "//third_party/pffft" ]
   }
 
+  if (!is_debug && !optimize_for_size) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
+
   configs -= [ "//build/config/compiler:default_symbols" ]
   configs += blink_symbols_config
 }
@@ -1871,6 +1877,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "mediastream/webrtc_uma_histograms_test.cc",
     "mhtml/mhtml_parser_test.cc",
     "mojo/big_string_mojom_traits_test.cc",
+    "mojo/heap_mojo_receiver_set_test.cc",
     "mojo/heap_mojo_receiver_test.cc",
     "mojo/heap_mojo_remote_test.cc",
     "mojo/heap_mojo_unique_receiver_set_test.cc",

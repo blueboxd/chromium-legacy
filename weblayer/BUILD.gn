@@ -194,31 +194,6 @@ static_library("weblayer_lib") {
     "utility/content_utility_client_impl.h",
   ]
 
-  if (is_android) {
-    sources += [
-      "browser/android/exception_filter.cc",
-      "browser/android/exception_filter.h",
-      "browser/android/metrics/uma_utils.cc",
-      "browser/android/metrics/uma_utils.h",
-      "browser/android/metrics/weblayer_metrics_service_client.cc",
-      "browser/android/metrics/weblayer_metrics_service_client.h",
-      "browser/devtools_manager_delegate_android.cc",
-      "browser/devtools_manager_delegate_android.h",
-      "browser/devtools_server_android.cc",
-      "browser/devtools_server_android.h",
-      "browser/weblayer_impl_android.cc",
-      "renderer/url_loader_throttle_provider.cc",
-      "renderer/url_loader_throttle_provider.h",
-    ]
-  }
-
-  if (enable_captive_portal_detection) {
-    sources += [
-      "browser/captive_portal_service_factory.cc",
-      "browser/captive_portal_service_factory.h",
-    ]
-  }
-
   configs += [
     "//build/config:precompiled_headers",
 
@@ -306,6 +281,10 @@ static_library("weblayer_lib") {
   ]
 
   if (enable_captive_portal_detection) {
+    sources += [
+      "browser/captive_portal_service_factory.cc",
+      "browser/captive_portal_service_factory.h",
+    ]
     deps += [ "//components/captive_portal/content" ]
   }
 
@@ -318,10 +297,39 @@ static_library("weblayer_lib") {
 
   if (is_android) {
     sources += [
+      "app/jni_onload.cc",
+      "app/jni_onload.h",
+      "browser/android/exception_filter.cc",
+      "browser/android/exception_filter.h",
+      "browser/android/metrics/uma_utils.cc",
+      "browser/android/metrics/uma_utils.h",
+      "browser/android/metrics/weblayer_metrics_service_client.cc",
+      "browser/android/metrics/weblayer_metrics_service_client.h",
+      "browser/content_view_render_view.cc",
+      "browser/content_view_render_view.h",
+      "browser/devtools_manager_delegate_android.cc",
+      "browser/devtools_manager_delegate_android.h",
+      "browser/devtools_server_android.cc",
+      "browser/devtools_server_android.h",
+      "browser/download_callback_proxy.cc",
+      "browser/download_callback_proxy.h",
+      "browser/error_page_callback_proxy.cc",
+      "browser/error_page_callback_proxy.h",
+      "browser/fullscreen_callback_proxy.cc",
+      "browser/fullscreen_callback_proxy.h",
+      "browser/new_tab_callback_proxy.cc",
+      "browser/new_tab_callback_proxy.h",
+      "browser/tab_callback_proxy.cc",
+      "browser/tab_callback_proxy.h",
+      "browser/top_controls_container_view.cc",
+      "browser/top_controls_container_view.h",
+      "browser/weblayer_impl_android.cc",
       "common/crash_reporter/crash_keys.cc",
       "common/crash_reporter/crash_keys.h",
       "common/crash_reporter/crash_reporter_client.cc",
       "common/crash_reporter/crash_reporter_client.h",
+      "renderer/url_loader_throttle_provider.cc",
+      "renderer/url_loader_throttle_provider.h",
     ]
     deps += [
       "//android_webview:generate_aw_resources",
@@ -330,6 +338,7 @@ static_library("weblayer_lib") {
       "//components/autofill/android:provider",
       "//components/crash/android:crashpad_main",
       "//components/embedder_support/android:context_menu",
+      "//components/embedder_support/android:web_contents_delegate",
       "//components/embedder_support/android/metrics",
       "//components/javascript_dialogs",
       "//components/metrics",
@@ -338,8 +347,13 @@ static_library("weblayer_lib") {
       "//components/safe_browsing/content/renderer:throttles",
       "//components/safe_browsing/core/common",
       "//components/version_info/android:channel_getter",
+      "//services/resource_coordinator/public/cpp/memory_instrumentation:browser",
+      "//ui/android",
+      "//weblayer/browser/java:jni",
       "//weblayer/browser/safe_browsing:safe_browsing",
     ]
+  } else {
+    deps += [ "//ui/views/controls/webview" ]
   }
 
   if (enable_vulkan) {
@@ -361,36 +375,6 @@ static_library("weblayer_lib") {
       "//build/config/freetype",
       "//third_party/fontconfig",
     ]
-  }
-
-  if (is_android) {
-    deps += [
-      "//components/embedder_support/android:web_contents_delegate",
-      "//services/resource_coordinator/public/cpp/memory_instrumentation:browser",
-      "//ui/android",
-      "//weblayer/browser/java:jni",
-    ]
-    sources += [
-      "app/jni_onload.cc",
-      "app/jni_onload.h",
-      "browser/content_view_render_view.cc",
-      "browser/content_view_render_view.h",
-      "browser/download_callback_proxy.cc",
-      "browser/download_callback_proxy.h",
-      "browser/error_page_callback_proxy.cc",
-      "browser/error_page_callback_proxy.h",
-      "browser/fullscreen_callback_proxy.cc",
-      "browser/fullscreen_callback_proxy.h",
-      "browser/new_tab_callback_proxy.cc",
-      "browser/new_tab_callback_proxy.h",
-      "browser/tab_callback_proxy.cc",
-      "browser/tab_callback_proxy.h",
-      "browser/top_controls_container_view.cc",
-      "browser/top_controls_container_view.h",
-    ]
-  }
-  if (!is_android) {
-    deps += [ "//ui/views/controls/webview" ]
   }
 
   if (toolkit_views) {

@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <meta charset="utf-8">
 <!-- Generate token with the command:
-generate_token.py http://127.0.0.1:8000 NativeFileSystem --expire-timestamp=2000000000
+generate_token.py http://127.0.0.1:8000 NativeFileSystem2 --expire-timestamp=2000000000
 -- -->
-<meta http-equiv="origin-trial" content="AonTJaP9wZXkdR+DdBwuBMICov7GjWH/biHmn3yiSHBYZttDKA7ZMlB+rfnf7ImSFpYeePoQsT3Fg6i5yxNRNQoAAABYeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiTmF0aXZlRmlsZVN5c3RlbSIsICJleHBpcnkiOiAyMDAwMDAwMDAwfQ==">
+<meta http-equiv="origin-trial" content="AmmBxJTKsdbb26LLpdAVmIKBvVxU6fKf6UZDoMXiD+b9bULkOHzUTtZ4dNwHMhI7tZzO+tNgmWCzNK2MLoZsvAEAAABZeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiTmF0aXZlRmlsZVN5c3RlbTIiLCAiZXhwaXJ5IjogMjAwMDAwMDAwMH0=">
 <title>Native File System API - interfaces exposed by origin trial</title>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
@@ -12,7 +12,7 @@ generate_token.py http://127.0.0.1:8000 NativeFileSystem --expire-timestamp=2000
 test(t => {
   OriginTrialsHelper.check_properties_exist(this, {
     'FileSystemHandle': ['isFile', 'isDirectory', 'name', 'queryPermission', 'requestPermission'],
-    'FileSystemFileHandle': ['getFile', 'createWriter'],
+    'FileSystemFileHandle': ['getFile', 'createWritable'],
     'FileSystemDirectoryHandle': ['getFile', 'getDirectory', 'getEntries', 'removeEntry'],
     'FileSystemWriter': ['write', 'truncate', 'close'],
     'global': ['chooseFileSystemEntries'],

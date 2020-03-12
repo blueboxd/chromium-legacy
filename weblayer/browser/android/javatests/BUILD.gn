@@ -13,6 +13,7 @@ android_library("weblayer_java_tests") {
     "src/org/chromium/weblayer/test/CloseTabNewTabCallbackImpl.java",
     "src/org/chromium/weblayer/test/CrashReporterTest.java",
     "src/org/chromium/weblayer/test/DataClearingTest.java",
+    "src/org/chromium/weblayer/test/DowngradeTest.java",
     "src/org/chromium/weblayer/test/DownloadCallbackTest.java",
     "src/org/chromium/weblayer/test/ErrorPageCallbackTest.java",
     "src/org/chromium/weblayer/test/EventUtils.java",

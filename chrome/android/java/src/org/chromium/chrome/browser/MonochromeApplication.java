@@ -49,8 +49,7 @@ public class MonochromeApplication extends ChromeApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-        // TODO(https://crbug.com/1002589): remove beta channel check when approved
-        if (!ChromeVersionInfo.isStableBuild() && !ChromeVersionInfo.isBetaBuild()) {
+        if (!ChromeVersionInfo.isStableBuild()) {
             // Performing Monochrome WebView DevTools Launcher icon showing/hiding logic in onCreate
             // rather than in attachBaseContext() because it depends on application context being
             // initiatied.
@@ -63,7 +62,7 @@ public class MonochromeApplication extends ChromeApplication {
                 // accordingly by listening to Monochrome browser Activities status (whenever a
                 // browser activity comes to the foreground).
                 ApplicationStatus.registerStateListenerForAllActivities((activity, state) -> {
-                    if (state == ActivityState.RESUMED) {
+                    if (state == ActivityState.STARTED) {
                         WebViewApkApplication.postDeveloperUiLauncherIconTask();
                     }
                 });

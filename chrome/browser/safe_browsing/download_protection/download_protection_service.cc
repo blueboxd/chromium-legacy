@@ -199,7 +199,7 @@ bool DownloadProtectionService::MaybeCheckClientDownload(
   Profile* profile = Profile::FromBrowserContext(
       content::DownloadItemUtils::GetBrowserContext(item));
   bool safe_browsing_enabled =
-      profile && profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled);
+      profile && IsSafeBrowsingEnabled(*profile->GetPrefs());
   bool deep_scanning_enabled =
       DeepScanningRequest::ShouldUploadItemByPolicy(item);
 
@@ -246,7 +246,7 @@ bool DownloadProtectionService::MaybeCheckDownloadUrl(
     CheckDownloadCallback callback) {
   Profile* profile = Profile::FromBrowserContext(
       content::DownloadItemUtils::GetBrowserContext(item));
-  if (profile && profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
+  if (profile && IsSafeBrowsingEnabled(*profile->GetPrefs())) {
     CheckDownloadUrl(item, std::move(callback));
     return true;
   }
@@ -412,7 +412,7 @@ void DownloadProtectionService::MaybeSendDangerousDownloadOpenedReport(
   content::BrowserContext* browser_context =
       content::DownloadItemUtils::GetBrowserContext(item);
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  if (!profile || !profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled))
+  if (!profile || !IsSafeBrowsingEnabled(*profile->GetPrefs()))
     return;
 
   // When users are in incognito mode, no report will be sent and no

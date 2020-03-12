@@ -192,8 +192,8 @@ struct NetworkConfiguration {
   // IP configuration for the network service inside ARC.
   array<IPConfiguration>? ip_configs;
 
-  // MAC address of the network interface inside the ARC.
-  string? mac_address;
+  // Deprecated field unused from ARC P and later.
+  string? deprecated_mac_address;
 
   // The type of the underlying physical network.
   NetworkType type;
@@ -336,7 +336,7 @@ struct AndroidVpnConfiguration {
 };
 
 // Next Method ID: 14
-// ID 3 is missing as it belonged to a deprecated method.
+// IDs 3 and 9 are missing as they belonged to deprecated methods.
 interface NetHost {
   // Sends a request to get enabled / disabled status of WiFi.
   GetWifiEnabledState@1() => (bool is_enabled);
@@ -363,11 +363,6 @@ interface NetHost {
 
   // Disconnects from network |guid|.
   [MinVersion=4] StartDisconnect@8(string guid) => (NetworkResult status);
-
-  // Retrieve details (IP, SSID, etc.) about the current network connection.
-  [MinVersion=5] GetDefaultNetwork@9() => (
-      NetworkConfiguration? logical_default,
-      NetworkConfiguration? physical_default);
 
   // Sends a request to get the subset of network services existing on Chrome OS
   // that match the kind specified with GetNetworksRequestType. This call
@@ -401,6 +396,7 @@ interface NetHost {
 };
 
 // Next Method ID: 8
+// ID 2 is missing as it belonged to deprecated method.
 interface NetInstance {
   // DEPRECATED: Please use Init@6 instead.
   InitDeprecated@0(NetHost host_ptr);
@@ -410,11 +406,6 @@ interface NetInstance {
 
   // Notifies the instance of a WiFI AP scan being completed.
   [MinVersion=1] ScanCompleted@1();
-
-  // Notifies the instance of a change in the host default network service.
-  [MinVersion=2] DefaultNetworkChanged@2(
-      NetworkConfiguration? logical_default,
-      NetworkConfiguration? physical_default);
 
   // Notifies the instance of a change in the state of WiFi on the host.
   [MinVersion=3] WifiEnabledStateChanged@3(bool is_enabled);

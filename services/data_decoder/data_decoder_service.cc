@@ -16,6 +16,7 @@
 #include "services/data_decoder/json_parser_impl.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
 #include "services/data_decoder/web_bundle_parser_factory.h"
+#include "services/data_decoder/web_bundler.h"
 #include "services/data_decoder/xml_parser.h"
 
 #if defined(OS_CHROMEOS)
@@ -74,6 +75,16 @@ void DataDecoderService::BindWebBundleParserFactory(
     web_bundle_parser_factory_binder_.Run(std::move(receiver));
   } else {
     mojo::MakeSelfOwnedReceiver(std::make_unique<WebBundleParserFactory>(),
+                                std::move(receiver));
+  }
+}
+
+void DataDecoderService::BindWebBundler(
+    mojo::PendingReceiver<mojom::WebBundler> receiver) {
+  if (web_bundler_binder_) {
+    web_bundler_binder_.Run(std::move(receiver));
+  } else {
+    mojo::MakeSelfOwnedReceiver(std::make_unique<WebBundler>(),
                                 std::move(receiver));
   }
 }

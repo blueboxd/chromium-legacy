@@ -298,14 +298,21 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // and still has a connection.  This is valid for all frames.
   virtual bool IsRenderFrameLive() = 0;
 
-  // Returns true if this is the currently-visible RenderFrameHost for our frame
-  // tree node. During process transfer, a RenderFrameHost may be created that
-  // is not current. After process transfer, the old RenderFrameHost becomes
-  // non-current until it is deleted (which may not happen until its unload
-  // handler runs).
+  // Returns true if this RenderFrameHost is currently in the frame tree for its
+  // page. Specifically, this is when the RenderFrameHost and all of its
+  // ancestors are the current RenderFrameHost in their respective
+  // FrameTreeNodes.
   //
-  // Changes to the IsCurrent() state of a RenderFrameHost may be observed via
-  // WebContentsObserver::RenderFrameHostChanged().
+  // For instance, during a navigation, if a new RenderFrameHost replaces this
+  // RenderFrameHost, IsCurrent() becomes false for this frame and its
+  // children even if the children haven't been replaced.
+  //
+  // After a RenderFrameHost has been replaced in its frame, it will either:
+  //  1) Enter the BackForwardCache.
+  //  2) Start running unload handlers and will be deleted after this ("pending
+  //  deletion").
+  // In both cases, IsCurrent() becomes false for this frame and all its
+  // children.
   virtual bool IsCurrent() = 0;
 
   // Get the number of proxies to this frame, in all processes. Exposed for

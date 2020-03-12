@@ -331,7 +331,11 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
     // This ensures that the edited text will be read out appropriately.
     if (!text.empty()) {
       if (out_data->role == ax::mojom::Role::kTextField) {
-        out_data->SetValue(text);
+        // When the edited text is empty, Android framework shows |hint_text| in
+        // the text field and |text| is also populated with |hint_text|.
+        // Prevent the duplicated output of |hint_text|.
+        if (!GetProperty(AXBooleanProperty::SHOWING_HINT_TEXT))
+          out_data->SetValue(text);
       } else {
         names.push_back(text);
       }

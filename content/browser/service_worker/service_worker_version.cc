@@ -419,17 +419,16 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
   }
 
   info.script_response_time = script_response_time_for_devtools_;
-  if (!main_script_http_info_)
+  if (!main_script_response_)
     return info;
-  // If the service worker hasn't started, then |main_script_http_info_| is not
+
+  // If the service worker hasn't started, then |main_script_response_| is not
   // set, so we use |script_response_time_for_devtools_| to populate |info|. If
   // the worker has started, this value should match with the timestamp stored
-  // in |main_script_http_info_|.
-  DCHECK_EQ(info.script_response_time, main_script_http_info_->response_time);
+  // in |main_script_response_|.
+  DCHECK_EQ(info.script_response_time, main_script_response_->response_time);
+  info.script_last_modified = main_script_response_->last_modified;
 
-  if (main_script_http_info_->headers)
-    main_script_http_info_->headers->GetLastModifiedValue(
-        &info.script_last_modified);
   return info;
 }
 
@@ -1090,7 +1089,13 @@ void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
 void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
     const net::HttpResponseInfo& http_info) {
   script_response_time_for_devtools_ = http_info.response_time;
-  main_script_http_info_.reset(new net::HttpResponseInfo(http_info));
+  auto response = std::make_unique<MainScriptResponse>();
+  response->response_time = http_info.response_time;
+  if (http_info.headers) {
+    http_info.headers->GetLastModifiedValue(&response->last_modified);
+  }
+  response->ssl_info = http_info.ssl_info;
+  main_script_response_ = std::move(response);
 
   // Updates |origin_trial_tokens_| if it is not set yet. This happens when:
   //  1) The worker is a new one.
@@ -1103,8 +1108,9 @@ void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
         url::Origin::Create(scope()), http_info.headers.get(), clock_->Now());
   }
 
-  for (auto& observer : observers_)
-    observer.OnMainScriptHttpResponseInfoSet(this);
+  if (context_) {
+    context_->OnMainScriptResponseSet(version_id(), *main_script_response_);
+  }
 }
 
 void ServiceWorkerVersion::SimulatePingTimeoutForTesting() {
@@ -1124,9 +1130,9 @@ bool ServiceWorkerVersion::HasNoWork() const {
   return !HasWorkInBrowser() && worker_is_idle_on_renderer_;
 }
 
-const net::HttpResponseInfo*
-ServiceWorkerVersion::GetMainScriptHttpResponseInfo() {
-  return main_script_http_info_.get();
+const ServiceWorkerVersion::MainScriptResponse*
+ServiceWorkerVersion::GetMainScriptResponse() {
+  return main_script_response_.get();
 }
 
 ServiceWorkerVersion::InflightRequestTimeoutInfo::InflightRequestTimeoutInfo(

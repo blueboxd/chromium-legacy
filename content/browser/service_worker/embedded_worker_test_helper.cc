@@ -171,7 +171,7 @@ void EmbeddedWorkerTestHelper::PopulateScriptCacheMap(
     std::move(callback).Run();
     return;
   }
-  if (!version->GetMainScriptHttpResponseInfo())
+  if (!version->GetMainScriptResponse())
     version->SetMainScriptHttpResponseInfo(CreateHttpResponseInfo());
   if (!version->script_cache_map()->size()) {
     // Add a dummy ResourceRecord for the main script to the script cache map of

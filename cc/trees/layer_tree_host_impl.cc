@@ -138,6 +138,20 @@ const float kMobileViewportWidthEpsilon = 0.15f;
 // kHitTestAsk after the threshold is reached.
 const size_t kAssumeOverlapThreshold = 100;
 
+FrameSequenceTrackerType GetTrackerTypeForScroll(ScrollInputType input_type) {
+  switch (input_type) {
+    case ScrollInputType::kWheel:
+      return FrameSequenceTrackerType::kWheelScroll;
+    case ScrollInputType::kTouchscreen:
+      return FrameSequenceTrackerType::kTouchScroll;
+    case ScrollInputType::kScrollbar:
+      return FrameSequenceTrackerType::kScrollbarScroll;
+    case ScrollInputType::kAutoscroll:
+    case ScrollInputType::kUnknown:
+      return FrameSequenceTrackerType::kMaxType;
+  }
+}
+
 bool HasFixedPageScale(LayerTreeImpl* active_tree) {
   return active_tree->min_page_scale_factor() ==
          active_tree->max_page_scale_factor();
@@ -4537,9 +4551,6 @@ void LayerTreeHostImpl::DidLatchToScroller(const ScrollState& scroll_state,
   last_latched_scroller_ = CurrentlyScrollingNode()->element_id;
   latched_scroll_type_ = type;
 
-  frame_trackers_.StartSequence(latched_scroll_type_ == ScrollInputType::kWheel
-                                    ? FrameSequenceTrackerType::kWheelScroll
-                                    : FrameSequenceTrackerType::kTouchScroll);
   client_->RenewTreePriority();
   RecordCompositorSlowScrollMetric(type, CC_THREAD);
 
@@ -4937,14 +4948,44 @@ void LayerTreeHostImpl::ScrollEnd(bool should_snap) {
   DCHECK(latched_scroll_type_.has_value());
 
   browser_controls_offset_manager_->ScrollEnd();
-  frame_trackers_.StopSequence(latched_scroll_type_ == ScrollInputType::kWheel
-                                   ? FrameSequenceTrackerType::kWheelScroll
-                                   : FrameSequenceTrackerType::kTouchScroll);
 
   ClearCurrentlyScrollingNode();
   deferred_scroll_end_ = false;
   scroll_gesture_did_end_ = true;
   client_->SetNeedsCommitOnImplThread();
+}
+
+void LayerTreeHostImpl::RecordScrollBegin(
+    ScrollInputType input_type,
+    ScrollBeginThreadState scroll_start_state) {
+  auto tracker_type = GetTrackerTypeForScroll(input_type);
+  DCHECK_NE(tracker_type, FrameSequenceTrackerType::kMaxType);
+  auto* metrics = frame_trackers_.StartSequence(tracker_type);
+  if (!metrics)
+    return;
+
+  // The main-thread is the 'scrolling thread' if:
+  //   (1) the scroll is driven by the main thread, or
+  //   (2) the scroll is driven by the compositor, but blocked on the main
+  //       thread.
+  // Otherwise, the compositor-thread is the 'scrolling thread'.
+  // TODO(crbug.com/1060712): We should also count 'main thread' as the
+  // 'scrolling thread' if the layer being scrolled has scroll-event handlers.
+  FrameSequenceMetrics::ThreadType scrolling_thread;
+  switch (scroll_start_state) {
+    case ScrollBeginThreadState::kScrollingOnCompositor:
+      scrolling_thread = FrameSequenceMetrics::ThreadType::kCompositor;
+      break;
+    case ScrollBeginThreadState::kScrollingOnMain:
+    case ScrollBeginThreadState::kScrollingOnCompositorBlockedOnMain:
+      scrolling_thread = FrameSequenceMetrics::ThreadType::kMain;
+      break;
+  }
+  metrics->SetScrollingThread(scrolling_thread);
+}
+
+void LayerTreeHostImpl::RecordScrollEnd(ScrollInputType input_type) {
+  frame_trackers_.StopSequence(GetTrackerTypeForScroll(input_type));
 }
 
 InputHandlerPointerResult LayerTreeHostImpl::MouseDown(

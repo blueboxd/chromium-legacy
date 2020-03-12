@@ -28,6 +28,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
@@ -39,6 +40,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/ozone/public/input_controller.h"
@@ -300,6 +302,10 @@ void KeyboardUIController::DeactivateKeyboard() {
 
 aura::Window* KeyboardUIController::GetKeyboardWindow() const {
   return ui_ ? ui_->GetKeyboardWindow() : nullptr;
+}
+
+ui::GestureConsumer* KeyboardUIController::GetGestureConsumer() const {
+  return ui_ ? ui_->GetGestureConsumer() : nullptr;
 }
 
 aura::Window* KeyboardUIController::GetRootWindow() const {
@@ -747,6 +753,11 @@ void KeyboardUIController::MoveKeyboardWindowToDisplay(
   HideKeyboardTemporarilyForTransition();
 }
 
+void KeyboardUIController::TransferGestureEventToShelf(
+    const ui::GestureEvent& e) {
+  layout_delegate_->TransferGestureEventToShelf(e);
+}
+
 // aura::WindowObserver overrides
 
 void KeyboardUIController::OnWindowAddedToRootWindow(aura::Window* window) {
@@ -1024,6 +1035,10 @@ bool KeyboardUIController::HandlePointerEvent(const ui::LocatedEvent& event) {
   const display::Display& current_display =
       display_util_.GetNearestDisplayToWindow(GetRootWindow());
   return container_behavior_->HandlePointerEvent(event, current_display);
+}
+
+bool KeyboardUIController::HandleGestureEvent(const ui::GestureEvent& event) {
+  return container_behavior_->HandleGestureEvent(event, GetBoundsInScreen());
 }
 
 void KeyboardUIController::SetContainerType(

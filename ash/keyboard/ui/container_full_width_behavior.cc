@@ -14,6 +14,11 @@ namespace keyboard {
 // The virtual keyboard show/hide animation duration.
 constexpr int kFullWidthKeyboardAnimationDurationMs = 100;
 
+// The height of the area from the bottom of the keyboard where the user can
+// swipe up to access the shelf. Manually calculated to be slightly below
+// the virtual keyboard's space bar.
+constexpr int kSwipeUpGestureAreaHeight = 25;
+
 ContainerFullWidthBehavior::ContainerFullWidthBehavior(Delegate* delegate)
     : ContainerBehavior(delegate) {}
 
@@ -89,6 +94,23 @@ bool ContainerFullWidthBehavior::HandlePointerEvent(
     const ui::LocatedEvent& event,
     const display::Display& current_display) {
   // No-op. Nothing special to do for pointer events.
+  return false;
+}
+
+bool ContainerFullWidthBehavior::HandleGestureEvent(
+    const ui::GestureEvent& event,
+    const gfx::Rect& bounds_in_screen) {
+  if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
+    // Check that the user is swiping upwards near the bottom of the keyboard.
+    // The coordinates of the |event| is relative to the window.
+    const auto details = event.details();
+    if (std::abs(details.scroll_y_hint()) > std::abs(details.scroll_x_hint()) &&
+        details.scroll_y_hint() < 0 &&
+        event.y() > bounds_in_screen.height() - kSwipeUpGestureAreaHeight) {
+      delegate_->TransferGestureEventToShelf(event);
+      return true;
+    }
+  }
   return false;
 }
 

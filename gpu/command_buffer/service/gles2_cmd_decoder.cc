@@ -1500,6 +1500,13 @@ class GLES2DecoderImpl : public GLES2Decoder,
                                    unsigned format,
                                    int width,
                                    int height) override;
+  bool ClearCompressedTextureLevel3D(Texture* texture,
+                                     unsigned target,
+                                     int level,
+                                     unsigned format,
+                                     int width,
+                                     int height,
+                                     int depth) override;
   bool IsCompressedTextureFormat(unsigned format) override;
 
   // overridden from GLES2Decoder
@@ -14491,6 +14498,53 @@ bool GLES2DecoderImpl::ClearCompressedTextureLevel(Texture* texture,
   return true;
 }
 
+bool GLES2DecoderImpl::ClearCompressedTextureLevel3D(Texture* texture,
+                                                     unsigned target,
+                                                     int level,
+                                                     unsigned format,
+                                                     int width,
+                                                     int height,
+                                                     int depth) {
+  DCHECK(target == GL_TEXTURE_3D || target == GL_TEXTURE_2D_ARRAY);
+  // This code path can only be called if the texture was originally
+  // allocated via TexStorage3D. Note that TexStorage3D is exposed
+  // internally for ES 2.0 contexts, but compressed texture support is
+  // not part of that exposure.
+  DCHECK(feature_info_->IsWebGL2OrES3Context());
+
+  GLsizei bytes_required = 0;
+  if (!GetCompressedTexSizeInBytes("ClearCompressedTextureLevel3D", width,
+                                   height, 1, format, &bytes_required,
+                                   error_state_.get())) {
+    return false;
+  }
+
+  TRACE_EVENT1("gpu", "GLES2DecoderImpl::ClearCompressedTextureLevel3D",
+               "bytes_required", bytes_required);
+
+  api()->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, 0);
+  {
+    // Add extra scope to destroy zero and the object it owns right
+    // after its usage.
+    std::unique_ptr<char[]> zero(new char[bytes_required]);
+    memset(zero.get(), 0, bytes_required);
+    api()->glBindTextureFn(texture->target(), texture->service_id());
+    api()->glCompressedTexSubImage3DFn(target, level, 0, 0, 0, width, height,
+                                       depth, format, bytes_required,
+                                       zero.get());
+  }
+  TextureRef* bound_texture =
+      texture_manager()->GetTextureInfoForTarget(&state_, texture->target());
+  api()->glBindTextureFn(texture->target(),
+                         bound_texture ? bound_texture->service_id() : 0);
+  Buffer* bound_buffer =
+      buffer_manager()->GetBufferInfoForTarget(&state_, GL_PIXEL_UNPACK_BUFFER);
+  if (bound_buffer) {
+    api()->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, bound_buffer->service_id());
+  }
+  return true;
+}
+
 bool GLES2DecoderImpl::IsCompressedTextureFormat(unsigned format) {
   return feature_info_->validators()->compressed_texture_format.IsValid(
       format);
@@ -18560,6 +18614,13 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
   }
   bool is_compressed_format = IsCompressedTextureFormat(internal_format);
   if (is_compressed_format) {
+    if (target == GL_TEXTURE_3D &&
+        !feature_info_->feature_flags().ext_texture_format_astc_hdr &&
+        ::gpu::gles2::IsASTCFormat(internal_format)) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                         "target invalid for format");
+      return;
+    }
     if (!::gpu::gles2::ValidateCompressedFormatTarget(target,
                                                       internal_format)) {
       LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
@@ -18572,11 +18633,14 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
   // ValidForTarget) do not. So we have to add an extra check here.
   bool is_invalid_texstorage_size = width < 1 || height < 1 || depth < 1;
   if (!texture_manager()->ValidForTarget(target, 0, width, height, depth) ||
-      is_invalid_texstorage_size ||
-      TextureManager::ComputeMipMapCount(target, width, height, depth) <
-          levels) {
+      is_invalid_texstorage_size) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, function_name, "dimensions out of range");
+    return;
+  }
+  if (TextureManager::ComputeMipMapCount(target, width, height, depth) <
+      levels) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name, "too many levels");
     return;
   }
   TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(

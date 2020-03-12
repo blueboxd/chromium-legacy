@@ -4081,13 +4081,13 @@
     Restart Linux?
   </message>
   <message name="IDS_CROSTINI_RECOVERY_MESSAGE" desc="Message displayed in the dialog when a Linux will be restarted after a Chrome crash.">
-    Your device didn't shut down properly. To use Linux (Beta) it must be restarted.
+    Your device didn't shut down properly. Restart Linux to use Linux apps.
   </message>
   <message name="IDS_CROSTINI_RECOVERY_TERMINAL_BUTTON" desc="Label for the dialog button when Linux will not be restarted after a Chrome crash, and instead a Terminal will be shown.">
-    Open Recovery Terminal
+    Open recovery terminal
   </message>
   <message name="IDS_CROSTINI_RECOVERY_RESTART_BUTTON" desc="Label for the dialog button when Linux will be restarted after a Chrome crash.">
-    Restart
+    Restart Linux
   </message>
   <!-- Time limit notification -->
   <message name="IDS_SCREEN_TIME_NOTIFICATION_TITLE" desc="The title of the notification when screen usage limit reaches before locking the device.">
@@ -4292,8 +4292,8 @@
   <message name="IDS_OOBE_GESTURE_NAVIGATION_BACK_TITLE" desc="The title in the gesture navigation education back OOBE screen shown on the first user login.">
     Go Back
   </message>
-  <message name="IDS_OOBE_GESTURE_NAVIGATION_BACK_DESCRIPTION" desc="The description for the gesture navigation education back OOBE screen shown on the first user login.">
-    To return to the previous screen, swipe from the side.
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_BACK_DESCRIPTION" desc="The description for the gesture navigation education back OOBE screen shown on the first user login. This string should say to swipe from the right side in RTL languages.">
+    To return to the previous screen, swipe from the left side.
   </message>
   <message name="IDS_OOBE_GESTURE_NAVIGATION_OVERVIEW_TITLE" desc="The title in the gesture navigation education overview OOBE screen shown on the first user login.">
     Switch to open apps
@@ -4497,6 +4497,12 @@
   </message>
   <message name="IDS_EDU_LOGIN_NEXT" desc="The name of the button that goes to the next step in EDU login flow.">
     Next
+  </message>
+  <message name="IDS_EDU_LOGIN_WELCOME_TITLE" desc="Title for the welcome screen in EDU account addition flow.">
+    Get started with a school account
+  </message>
+  <message name="IDS_EDU_LOGIN_WELCOME_BODY" desc="Text on the welcome screen in EDU account addition flow informing user to ask their parent for permission to add the account.">
+    To add an account for access to educational resources, ask a parent to give you permission
   </message>
 
   <!-- TPM firmware auto-update notifications -->

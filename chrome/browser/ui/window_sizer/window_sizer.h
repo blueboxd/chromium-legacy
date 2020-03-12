@@ -72,12 +72,11 @@ class WindowSizer {
       ui::WindowShowState* show_state) const;
 
   // Determines the size, position and maximized state for the browser window.
-  // See documentation for DetermineWindowBounds above. Normally,
+  // See documentation for DetermineWindowBoundsAndShowState above. Normally,
   // |window_bounds| is calculated by calling GetLastActiveWindowState(). To
   // explicitly specify a particular window to base the bounds on, pass in a
   // non-NULL value for |browser|.
   static void GetBrowserWindowBoundsAndShowState(
-      const std::string& app_name,
       const gfx::Rect& specified_bounds,
       const Browser* browser,
       gfx::Rect* window_bounds,

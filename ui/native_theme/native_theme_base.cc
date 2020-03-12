@@ -1568,7 +1568,7 @@ SkColor NativeThemeBase::ControlsBackgroundColorForState(
 SkColor NativeThemeBase::GetControlColor(ControlColorId color_id,
                                          ColorScheme color_scheme) const {
 #if defined(OS_WIN)
-  if (UsesHighContrastColors())
+  if (UsesHighContrastColors() && features::IsForcedColorsEnabled())
     return GetHighContrastControlColor(color_id, color_scheme);
 #endif
 

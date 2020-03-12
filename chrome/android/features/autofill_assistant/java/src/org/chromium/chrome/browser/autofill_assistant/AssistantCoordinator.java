@@ -49,16 +49,11 @@ class AssistantCoordinator {
         mKeyboardCoordinator =
                 new AssistantKeyboardCoordinator(activity, mModel, keyboardCoordinatorDelegate);
 
-        activity.getCompositorViewHolder().addCompositorViewResizer(mBottomBarCoordinator);
         mModel.setVisible(true);
     }
 
     /** Detaches and destroys the view. */
     public void destroy() {
-        if (mActivity.getCompositorViewHolder() != null) {
-            mActivity.getCompositorViewHolder().removeCompositorViewResizer(mBottomBarCoordinator);
-        }
-
         mModel.setVisible(false);
         mOverlayCoordinator.destroy();
         mBottomBarCoordinator.destroy();

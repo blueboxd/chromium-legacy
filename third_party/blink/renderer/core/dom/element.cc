@@ -931,11 +931,11 @@ void Element::SynchronizeAllAttributes() const {
   // NOTE: AnyAttributeMatches in selector_checker.cc currently assumes that all
   // lazy attributes have a null namespace.  If that ever changes we'll need to
   // fix that code.
-  if (GetElementData()->style_attribute_is_dirty_) {
+  if (GetElementData()->style_attribute_is_dirty()) {
     DCHECK(IsStyledElement());
     SynchronizeStyleAttributeInternal();
   }
-  if (GetElementData()->animated_svg_attributes_are_dirty_)
+  if (GetElementData()->animated_svg_attributes_are_dirty())
     To<SVGElement>(this)->SynchronizeAnimatedSVGAttribute(AnyQName());
 }
 
@@ -943,12 +943,12 @@ inline void Element::SynchronizeAttribute(const QualifiedName& name) const {
   if (!GetElementData())
     return;
   if (UNLIKELY(name == html_names::kStyleAttr &&
-               GetElementData()->style_attribute_is_dirty_)) {
+               GetElementData()->style_attribute_is_dirty())) {
     DCHECK(IsStyledElement());
     SynchronizeStyleAttributeInternal();
     return;
   }
-  if (UNLIKELY(GetElementData()->animated_svg_attributes_are_dirty_)) {
+  if (UNLIKELY(GetElementData()->animated_svg_attributes_are_dirty())) {
     // See comment in the AtomicString version of SynchronizeAttribute()
     // also.
     To<SVGElement>(this)->SynchronizeAnimatedSVGAttribute(name);
@@ -960,13 +960,13 @@ void Element::SynchronizeAttribute(const AtomicString& local_name) const {
   // you don't have a full QualifiedName, e.g when called from DOM API.
   if (!GetElementData())
     return;
-  if (GetElementData()->style_attribute_is_dirty_ &&
+  if (GetElementData()->style_attribute_is_dirty() &&
       LowercaseIfNecessary(local_name) == html_names::kStyleAttr.LocalName()) {
     DCHECK(IsStyledElement());
     SynchronizeStyleAttributeInternal();
     return;
   }
-  if (GetElementData()->animated_svg_attributes_are_dirty_) {
+  if (GetElementData()->animated_svg_attributes_are_dirty()) {
     // We're not passing a namespace argument on purpose. SVGNames::*Attr are
     // defined w/o namespaces as well.
 
@@ -2444,7 +2444,7 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
     if (name == html_names::kStyleAttr) {
       StyleAttributeChanged(params.new_value, params.reason);
     } else if (IsPresentationAttribute(name)) {
-      GetElementData()->presentation_attribute_style_is_dirty_ = true;
+      GetElementData()->SetPresentationAttributeStyleIsDirty(true);
       SetNeedsStyleRecalc(kLocalStyleChange,
                           StyleChangeReasonForTracing::FromAttribute(name));
     } else if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
@@ -4071,7 +4071,7 @@ void Element::removeAttribute(const AtomicString& name) {
   wtf_size_t index = GetElementData()->Attributes().FindIndex(local_name);
   if (index == kNotFound) {
     if (UNLIKELY(local_name == html_names::kStyleAttr) &&
-        GetElementData()->style_attribute_is_dirty_ && IsStyledElement())
+        GetElementData()->style_attribute_is_dirty() && IsStyledElement())
       RemoveAllInlineStyleProperties();
     return;
   }
@@ -6059,8 +6059,8 @@ void Element::CreateUniqueElementData() {
 void Element::SynchronizeStyleAttributeInternal() const {
   DCHECK(IsStyledElement());
   DCHECK(GetElementData());
-  DCHECK(GetElementData()->style_attribute_is_dirty_);
-  GetElementData()->style_attribute_is_dirty_ = false;
+  DCHECK(GetElementData()->style_attribute_is_dirty());
+  GetElementData()->SetStyleAttributeIsDirty(false);
   const CSSPropertyValueSet* inline_style = InlineStyle();
   const_cast<Element*>(this)->SetSynchronizedLazyAttribute(
       html_names::kStyleAttr,
@@ -6153,7 +6153,7 @@ void Element::StyleAttributeChanged(
     SetInlineStyleFromString(new_style_string);
   }
 
-  GetElementData()->style_attribute_is_dirty_ = false;
+  GetElementData()->SetStyleAttributeIsDirty(false);
 
   SetNeedsStyleRecalc(kLocalStyleChange,
                       StyleChangeReasonForTracing::Create(
@@ -6253,7 +6253,7 @@ void Element::UpdatePresentationAttributeStyle() {
   // ShareableElementData doesn't store presentation attribute style, so make
   // sure we have a UniqueElementData.
   UniqueElementData& element_data = EnsureUniqueElementData();
-  element_data.presentation_attribute_style_is_dirty_ = false;
+  element_data.SetPresentationAttributeStyleIsDirty(false);
   element_data.presentation_attribute_style_ =
       ComputePresentationAttributeStyle(*this);
 }
@@ -6463,7 +6463,7 @@ void Element::SetActive(bool active) {
 
 void Element::InvalidateStyleAttribute() {
   DCHECK(GetElementData());
-  GetElementData()->style_attribute_is_dirty_ = true;
+  GetElementData()->SetStyleAttributeIsDirty(true);
   SetNeedsStyleRecalc(kLocalStyleChange,
                       StyleChangeReasonForTracing::Create(
                           style_change_reason::kInlineCSSStyleMutated));

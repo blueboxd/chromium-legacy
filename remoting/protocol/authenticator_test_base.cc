@@ -111,10 +111,11 @@ void AuthenticatorTestBase::ContinueAuthExchangeWith(Authenticator* sender,
   ASSERT_NE(Authenticator::MESSAGE_READY, sender->state());
 
   ASSERT_EQ(Authenticator::WAITING_MESSAGE, receiver->state());
-  receiver->ProcessMessage(message.get(), base::Bind(
-      &AuthenticatorTestBase::ContinueAuthExchangeWith,
-      base::Unretained(receiver), base::Unretained(sender),
-      receiver->started(), sender->started()));
+  receiver->ProcessMessage(
+      message.get(),
+      base::BindOnce(&AuthenticatorTestBase::ContinueAuthExchangeWith,
+                     base::Unretained(receiver), base::Unretained(sender),
+                     receiver->started(), sender->started()));
 }
 
 void AuthenticatorTestBase::RunChannelAuth(bool expected_fail) {

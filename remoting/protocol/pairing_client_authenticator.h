@@ -28,7 +28,7 @@ class PairingClientAuthenticator : public PairingAuthenticatorBase {
   // initialize the authenticator synchronously in
   // NegotiatingClientAuthentitcator, while Start() may be executed
   // asynchronously to fetch the PIN.
-  void Start(State initial_state, const base::Closure& resume_callback);
+  void Start(State initial_state, base::OnceClosure resume_callback);
   void StartPaired(State initial_state);
 
   // Authenticator interface.
@@ -38,10 +38,10 @@ class PairingClientAuthenticator : public PairingAuthenticatorBase {
   // PairingAuthenticatorBase overrides.
   void CreateSpakeAuthenticatorWithPin(
       State initial_state,
-      const base::Closure& resume_callback) override;
+      base::OnceClosure resume_callback) override;
 
   void OnPinFetched(State initial_state,
-                    const base::Closure& resume_callback,
+                    base::OnceClosure resume_callback,
                     const std::string& pin);
 
   ClientAuthenticationConfig client_auth_config_;

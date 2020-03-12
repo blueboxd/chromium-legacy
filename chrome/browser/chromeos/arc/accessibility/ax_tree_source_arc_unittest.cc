@@ -540,60 +540,85 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputationTextField) {
   root_window->root_node_id = 1;
 
   std::unique_ptr<ui::AXNodeData> data;
-  SetProperty(root, AXStringProperty::CLASS_NAME, "");
+  SetProperty(root, AXBooleanProperty::EDITABLE, true);
 
   // Populate the tree source with the data.
   CallNotifyAccessibilityEvent(event.get());
 
-  // Case for when both text property and content_description is non-empty.
-  SetProperty(root, AXBooleanProperty::EDITABLE, true);
-  SetProperty(root, AXStringProperty::TEXT, "foo@example.com");
-  SetProperty(root, AXStringProperty::CONTENT_DESCRIPTION,
-              "Type your email here.");
+  struct AndroidState {
+    std::string content_description, text, hint_text;
+    bool showingHint = false;
+  };
+  struct ChromeState {
+    std::string name, value;
+  };
 
-  CallSerializeNode(root, &data);
+  std::vector<std::pair<AndroidState, ChromeState>> test_cases = {
+      {
+          {"email", "editing_text", "", false},
+          {"email", "editing_text"},
+      },
+      {
+          {"email", "", "", false},
+          {"email", ""},
+      },
+      {
+          {"", "editing_text", "", false},
+          {"", "editing_text"},
+      },
+      {
+          // User input and hint text.
+          {"", "editing_text", "hint@example.com", false},
+          {"hint@example.com", "editing_text"},
+      },
+      {
+          // No user input. Hint text is non-empty.
+          {"", "hint@example.com", "hint@example.com", true},
+          {"hint@example.com", ""},
+      },
+      {
+          // User input is the same as hint text.
+          {"", "example@example.com", "example@example.com", false},
+          {"example@example.com", "example@example.com"},
+      },
+      {
+          // No user input. Content description and hint tex are non-empty.
+          {"email", "hint@example.com", "hint@example.com", true},
+          {"email hint@example.com", ""},
+      },
+      {
+          {"email", "editing_text", "hint@example.com", false},
+          {"email hint@example.com", "editing_text"},
+      },
+      {
+          {"", "", "", false},
+          {"", ""},
+      },
+  };
 
-  std::string prop;
-  ASSERT_TRUE(
-      data->GetStringAttribute(ax::mojom::StringAttribute::kName, &prop));
-  EXPECT_EQ("Type your email here.", prop);
+  for (const auto& test_case : test_cases) {
+    SetProperty(root, AXStringProperty::CONTENT_DESCRIPTION,
+                test_case.first.content_description);
+    SetProperty(root, AXStringProperty::TEXT, test_case.first.text);
+    SetProperty(root, AXStringProperty::HINT_TEXT, test_case.first.hint_text);
+    SetProperty(root, AXBooleanProperty::SHOWING_HINT_TEXT,
+                test_case.first.showingHint);
 
-  ASSERT_TRUE(
-      data->GetStringAttribute(ax::mojom::StringAttribute::kValue, &prop));
-  EXPECT_EQ("foo@example.com", prop);
+    CallSerializeNode(root, &data);
 
-  // Case for when text property is empty.
-  SetProperty(root, AXStringProperty::TEXT, "");
-  SetProperty(root, AXStringProperty::CONTENT_DESCRIPTION,
-              "Type your email here.");
+    std::string prop;
+    ASSERT_EQ(
+        !test_case.second.name.empty(),
+        data->GetStringAttribute(ax::mojom::StringAttribute::kName, &prop));
+    if (!test_case.second.name.empty())
+      EXPECT_EQ(test_case.second.name, prop);
 
-  CallSerializeNode(root, &data);
-
-  ASSERT_TRUE(
-      data->GetStringAttribute(ax::mojom::StringAttribute::kName, &prop));
-  EXPECT_EQ("Type your email here.", prop);
-  ASSERT_FALSE(
-      data->GetStringAttribute(ax::mojom::StringAttribute::kValue, &prop));
-
-  // Case for when only text property is non-empty.
-  SetProperty(root, AXStringProperty::TEXT, "foo@example.com");
-  SetProperty(root, AXStringProperty::CONTENT_DESCRIPTION, "");
-
-  CallSerializeNode(root, &data);
-
-  ASSERT_FALSE(
-      data->GetStringAttribute(ax::mojom::StringAttribute::kName, &prop));
-  ASSERT_TRUE(
-      data->GetStringAttribute(ax::mojom::StringAttribute::kValue, &prop));
-  EXPECT_EQ("foo@example.com", prop);
-
-  // Clearing string properties, the name and the value should not be populated.
-  root->string_properties->clear();
-  CallSerializeNode(root, &data);
-  ASSERT_FALSE(
-      data->GetStringAttribute(ax::mojom::StringAttribute::kName, &prop));
-  ASSERT_FALSE(
-      data->GetStringAttribute(ax::mojom::StringAttribute::kValue, &prop));
+    ASSERT_EQ(
+        !test_case.second.value.empty(),
+        data->GetStringAttribute(ax::mojom::StringAttribute::kValue, &prop));
+    if (!test_case.second.value.empty())
+      EXPECT_EQ(test_case.second.value, prop);
+  }
 }
 
 TEST_F(AXTreeSourceArcTest, AccessibleNameComputationWindow) {

@@ -2,21 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/data_decoder/public/mojom/resource_snapshot_for_web_bundle.mojom.h"
 
 namespace content {
 namespace {
+
+const char kOnePageSimplePath[] =
+    "/web_bundle/save_page_as_web_bundle/one_page_simple.html";
+const char kOnePageWithImgPath[] =
+    "/web_bundle/save_page_as_web_bundle/one_page_with_img.html";
+const char kImgPngPath[] = "/web_bundle/save_page_as_web_bundle/img.png";
 
 uint64_t GetResourceCount(
     mojo::Remote<data_decoder::mojom::ResourceSnapshotForWebBundle>& snapshot) {
@@ -63,6 +75,58 @@ base::Optional<mojo_base::BigBuffer> GetResourceBody(
   return data_out;
 }
 
+class MockWebBundler : public data_decoder::mojom::WebBundler {
+ public:
+  MockWebBundler() = default;
+  ~MockWebBundler() override {
+    if (file_.IsValid()) {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      file_.Close();
+    }
+  }
+
+  MockWebBundler(const MockWebBundler&) = delete;
+  MockWebBundler& operator=(const MockWebBundler&) = delete;
+
+  void Bind(mojo::PendingReceiver<data_decoder::mojom::WebBundler> receiver) {
+    receiver_.Bind(std::move(receiver));
+  }
+
+  void WaitUntilGenerateCalled() {
+    if (callback_)
+      return;
+    base::RunLoop loop;
+    generate_called_callback_ = loop.QuitClosure();
+    loop.Run();
+  }
+
+  void ResetReceiver() { receiver_.reset(); }
+
+ private:
+  // mojom::WebBundleParserFactory implementation.
+  void Generate(
+      std::vector<mojo::PendingRemote<
+          data_decoder::mojom::ResourceSnapshotForWebBundle>> snapshots,
+      base::File file,
+      GenerateCallback callback) override {
+    DCHECK(!callback_);
+    snapshots_ = std::move(snapshots);
+    file_ = std::move(file);
+    callback_ = std::move(callback);
+    if (generate_called_callback_)
+      std::move(generate_called_callback_).Run();
+  }
+
+  std::vector<
+      mojo::PendingRemote<data_decoder::mojom::ResourceSnapshotForWebBundle>>
+      snapshots_;
+  base::File file_;
+  GenerateCallback callback_;
+  base::OnceClosure generate_called_callback_;
+
+  mojo::Receiver<data_decoder::mojom::WebBundler> receiver_{this};
+};
+
 }  // namespace
 
 class SavePageAsWebBundleBrowserTest : public ContentBrowserTest {
@@ -82,11 +146,36 @@ class SavePageAsWebBundleBrowserTest : public ContentBrowserTest {
             snapshot.BindNewPipeAndPassReceiver());
     return snapshot;
   }
+
+  bool CreateSaveDir() {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    return save_dir_.CreateUniqueTempDir();
+  }
+
+  std::tuple<uint64_t, data_decoder::mojom::WebBundlerError> GenerateWebBundle(
+      const base::FilePath& file_path) {
+    uint64_t ret_file_size = 0;
+    data_decoder::mojom::WebBundlerError ret_error =
+        data_decoder::mojom::WebBundlerError::kOK;
+    base::RunLoop run_loop;
+    shell()->web_contents()->GenerateWebBundle(
+        file_path, base::BindLambdaForTesting(
+                       [&run_loop, &ret_file_size, &ret_error](
+                           uint64_t file_size,
+                           data_decoder::mojom::WebBundlerError error) {
+                         ret_file_size = file_size;
+                         ret_error = error;
+                         run_loop.Quit();
+                       }));
+    run_loop.Run();
+    return std::make_tuple(ret_file_size, ret_error);
+  }
+
+  base::ScopedTempDir save_dir_;
 };
 
-IN_PROC_BROWSER_TEST_F(SavePageAsWebBundleBrowserTest, OnePageSimple) {
-  const auto page_url = embedded_test_server()->GetURL(
-      "/web_bundle/save_page_as_web_bundle/one_page_simple.html");
+IN_PROC_BROWSER_TEST_F(SavePageAsWebBundleBrowserTest, SnapshotOnePageSimple) {
+  const auto page_url = embedded_test_server()->GetURL(kOnePageSimplePath);
   auto snapshot = NavigateAndGetSnapshot(page_url);
   ASSERT_EQ(1u, GetResourceCount(snapshot));
 
@@ -116,11 +205,9 @@ IN_PROC_BROWSER_TEST_F(SavePageAsWebBundleBrowserTest, OnePageSimple) {
   EXPECT_FALSE(GetResourceBody(snapshot, 1).has_value());
 }
 
-IN_PROC_BROWSER_TEST_F(SavePageAsWebBundleBrowserTest, OnePageWithImg) {
-  const auto page_url = embedded_test_server()->GetURL(
-      "/web_bundle/save_page_as_web_bundle/one_page_with_img.html");
-  const auto img_url = embedded_test_server()->GetURL(
-      "/web_bundle/save_page_as_web_bundle/img.png");
+IN_PROC_BROWSER_TEST_F(SavePageAsWebBundleBrowserTest, SnapshotOnePageWithImg) {
+  const auto page_url = embedded_test_server()->GetURL(kOnePageWithImgPath);
+  const auto img_url = embedded_test_server()->GetURL(kImgPngPath);
   auto snapshot = NavigateAndGetSnapshot(page_url);
   ASSERT_EQ(2u, GetResourceCount(snapshot));
 
@@ -175,5 +262,70 @@ IN_PROC_BROWSER_TEST_F(SavePageAsWebBundleBrowserTest, OnePageWithImg) {
 
 // TODO(crbug.com/1040752): Implement sub frames support and add tests.
 // TODO(crbug.com/1040752): Implement style sheet support and add tests.
+
+IN_PROC_BROWSER_TEST_F(SavePageAsWebBundleBrowserTest,
+                       GenerateOnePageSimpleWebBundle) {
+  const auto page_url = embedded_test_server()->GetURL(kOnePageSimplePath);
+  NavigateToURLBlockUntilNavigationsComplete(shell(), page_url, 1);
+  ASSERT_TRUE(CreateSaveDir());
+  const auto file_path =
+      save_dir_.GetPath().Append(FILE_PATH_LITERAL("test.wbn"));
+  // Currently WebBundler in the data decoder service is not implemented yet,
+  // and just returns kNotImplemented.
+  // TODO(crbug.com/1040752): Implement WebBundler and update test.
+  EXPECT_EQ(
+      std::make_tuple(0, data_decoder::mojom::WebBundlerError::kNotImplemented),
+      GenerateWebBundle(file_path));
+}
+
+IN_PROC_BROWSER_TEST_F(SavePageAsWebBundleBrowserTest,
+                       GenerateWebBundleInvalidFilePath) {
+  const auto page_url = embedded_test_server()->GetURL(kOnePageSimplePath);
+  NavigateToURLBlockUntilNavigationsComplete(shell(), page_url, 1);
+  ASSERT_TRUE(CreateSaveDir());
+  const auto file_path = save_dir_.GetPath();
+  // Generating Web Bundle file using the existing directory path name must
+  // fail with kFileOpenFailed error.
+  EXPECT_EQ(
+      std::make_tuple(0, data_decoder::mojom::WebBundlerError::kFileOpenFailed),
+      GenerateWebBundle(file_path));
+}
+
+IN_PROC_BROWSER_TEST_F(SavePageAsWebBundleBrowserTest,
+                       GenerateWebBundleConnectionError) {
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder;
+  MockWebBundler mock_web_bundler;
+  in_process_data_decoder.service().SetWebBundlerBinderForTesting(
+      base::BindRepeating(&MockWebBundler::Bind,
+                          base::Unretained(&mock_web_bundler)));
+
+  const auto page_url = embedded_test_server()->GetURL(kOnePageSimplePath);
+  NavigateToURLBlockUntilNavigationsComplete(shell(), page_url, 1);
+  ASSERT_TRUE(CreateSaveDir());
+  const auto file_path =
+      save_dir_.GetPath().Append(FILE_PATH_LITERAL("test.wbn"));
+  uint64_t result_file_size = 0ul;
+  data_decoder::mojom::WebBundlerError result_error =
+      data_decoder::mojom::WebBundlerError::kOK;
+
+  base::RunLoop run_loop;
+  shell()->web_contents()->GenerateWebBundle(
+      file_path,
+      base::BindLambdaForTesting(
+          [&run_loop, &result_file_size, &result_error](
+              uint64_t file_size, data_decoder::mojom::WebBundlerError error) {
+            result_file_size = file_size;
+            result_error = error;
+            run_loop.Quit();
+          }));
+  mock_web_bundler.WaitUntilGenerateCalled();
+  mock_web_bundler.ResetReceiver();
+  run_loop.Run();
+  // When the connection to the WebBundler in the data decoder service is
+  // disconnected, the result must be kWebBundlerConnectionError.
+  EXPECT_EQ(0ULL, result_file_size);
+  EXPECT_EQ(data_decoder::mojom::WebBundlerError::kWebBundlerConnectionError,
+            result_error);
+}
 
 }  // namespace content

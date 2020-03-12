@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/api/management/management_api_delegate.h"
+#include "extensions/browser/api/management/supervised_user_service_delegate.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_event_histogram_value.h"
@@ -115,6 +116,15 @@ class ManagementSetEnabledFunction : public ExtensionFunction {
   void OnInstallPromptDone(bool did_accept);
 
   void OnRequirementsChecked(const PreloadCheck::Errors& errors);
+
+  ExtensionFunction::ResponseAction RequestParentPermission(
+      const Extension* extension);
+
+  void OnParentPermissionDone(
+      SupervisedUserServiceDelegate::ParentPermissionDialogResult result);
+
+  std::unique_ptr<SupervisedUserServiceDelegate::ParentPermissionDialogResult>
+      parental_permission_dialog_;
 
   std::string extension_id_;
 
@@ -315,6 +325,12 @@ class ManagementAPI : public BrowserContextKeyedAPI,
   // Returns the ManagementAPI delegate.
   const ManagementAPIDelegate* GetDelegate() const { return delegate_.get(); }
 
+  // Returns the SupervisedUserService delegate, which might be null depending
+  // on the extensions embedder.
+  SupervisedUserServiceDelegate* GetSupervisedUserServiceDelegate() const {
+    return supervised_user_service_delegate_.get();
+  }
+
  private:
   friend class BrowserContextKeyedAPIFactory<ManagementAPI>;
 
@@ -329,6 +345,8 @@ class ManagementAPI : public BrowserContextKeyedAPI,
   std::unique_ptr<ManagementEventRouter> management_event_router_;
 
   std::unique_ptr<ManagementAPIDelegate> delegate_;
+  std::unique_ptr<SupervisedUserServiceDelegate>
+      supervised_user_service_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagementAPI);
 };

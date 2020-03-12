@@ -43,10 +43,11 @@ bool IsEqual(const base::Optional<DnsConfig>& c1, const DnsConfig* c2) {
 }
 
 void UpdateConfigForDohUpgrade(DnsConfig* config) {
-  // TODO(crbug.com/878582): Reconsider whether the hardcoded mapping should
-  // also be applied in SECURE mode.
   bool has_doh_servers = !config->dns_over_https_servers.empty();
-  if (config->allow_dns_over_https_upgrade && !has_doh_servers &&
+  // Do not attempt upgrade when there are already DoH servers specified or
+  // when there are aspects of the system DNS config that are unhandled.
+  if (!config->unhandled_options && config->allow_dns_over_https_upgrade &&
+      !has_doh_servers &&
       config->secure_dns_mode == DnsConfig::SecureDnsMode::AUTOMATIC) {
     // If we're in strict mode on Android, only attempt to upgrade the
     // specified DoT hostname.
@@ -76,6 +77,8 @@ void UpdateConfigForDohUpgrade(DnsConfig* config) {
   } else {
     UMA_HISTOGRAM_BOOLEAN("Net.DNS.UpgradeConfig.Ineligible.DohSpecified",
                           has_doh_servers);
+    UMA_HISTOGRAM_BOOLEAN("Net.DNS.UpgradeConfig.Ineligible.UnhandledOptions",
+                          config->unhandled_options);
   }
 }
 
@@ -96,8 +99,9 @@ class DnsClientImpl : public DnsClient {
   }
 
   bool CanUseInsecureDnsTransactions() const override {
-    return session_ != nullptr && insecure_enabled_ &&
-           !GetEffectiveConfig()->dns_over_tls_active;
+    const DnsConfig* config = GetEffectiveConfig();
+    return config && config->nameservers.size() > 0 && insecure_enabled_ &&
+           !config->unhandled_options && !config->dns_over_tls_active;
   }
 
   void SetInsecureEnabled(bool enabled) override {
@@ -195,7 +199,15 @@ class DnsClientImpl : public DnsClient {
 
     UpdateConfigForDohUpgrade(&config);
 
-    if (!config.IsValid() || config.unhandled_options)
+    // TODO(ericorth): Consider keeping a separate DnsConfig for pure Chrome-
+    // produced configs to allow respecting all fields like |unhandled_options|
+    // while still being able to fallback to system config for DoH.
+    // For now, clear the nameservers for extra security if parts of the system
+    // config are unhandled.
+    if (config.unhandled_options)
+      config.nameservers.clear();
+
+    if (!config.IsValid())
       return base::nullopt;
 
     return config;
@@ -225,7 +237,6 @@ class DnsClientImpl : public DnsClient {
 
     if (new_effective_config) {
       DCHECK(new_effective_config.value().IsValid());
-      DCHECK(!new_effective_config.value().unhandled_options);
 
       std::unique_ptr<DnsSocketPool> socket_pool(
           new_effective_config.value().randomize_ports

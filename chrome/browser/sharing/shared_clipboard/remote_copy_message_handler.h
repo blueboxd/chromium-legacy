@@ -10,6 +10,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
@@ -51,6 +52,7 @@ class RemoteCopyMessageHandler : public SharingMessageHandler,
   void OnImageDownloadProgress(uint64_t current);
   void UpdateProgressNotification(const base::string16& context);
   void CancelProgressNotification();
+  void OnProgressNotificationAction(base::Optional<int> button, bool closed);
   void OnURLLoadComplete(std::unique_ptr<std::string> content);
   void WriteImageAndShowNotification(const SkBitmap& original_image,
                                      const SkBitmap& resized_image);
@@ -61,6 +63,7 @@ class RemoteCopyMessageHandler : public SharingMessageHandler,
                    base::TimeTicks start_ticks,
                    bool is_image);
   void Finish(RemoteCopyHandleMessageResult result);
+  void CancelAsyncTasks();
 
   Profile* profile_ = nullptr;
   std::unique_ptr<network::SimpleURLLoader> url_loader_;

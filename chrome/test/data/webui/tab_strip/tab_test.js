@@ -22,6 +22,7 @@ suite('Tab', function() {
     alertStates: [],
     id: 1001,
     networkState: TabNetworkState.NONE,
+    pinned: false,
     title: 'My title',
   };
 
@@ -38,6 +39,7 @@ suite('Tab', function() {
     document.body.innerHTML = '';
 
     // Set CSS variable for animations
+    document.body.style.setProperty('--tabstrip-tab-height', '100px');
     document.body.style.setProperty('--tabstrip-tab-width', '280px');
     document.body.style.setProperty('--tabstrip-tab-spacing', '20px');
 
@@ -60,7 +62,7 @@ suite('Tab', function() {
     const animationPromise = tabElement.slideIn();
     // Before animation completes.
     assertEquals('20px', tabElementStyle.paddingRight);
-    assertEquals('none', tabElementStyle.maxWidth);
+    assertEquals('280px', tabElementStyle.maxWidth);
     assertEquals('matrix(0, 0, 0, 0, 0, 0)', tabElementStyle.transform);
     await animationPromise;
     // After animation completes.
@@ -431,5 +433,20 @@ suite('Tab', function() {
     innerTabElement.dispatchEvent(new KeyboardEvent('keydown', {key: ' '}));
     assertEquals(await testTabsApiProxy.whenCalled('activateTab'), tab.id);
     testTabsApiProxy.reset();
+  });
+
+  test('DragImagePreservesAspectRatio', () => {
+    const originalBoundingBox = tabElement.$('#tab').getBoundingClientRect();
+    const originalAspectRatio =
+        originalBoundingBox.width / originalBoundingBox.height;
+    tabElement.setDragging(true);
+    const dragImageBoundingBox =
+        tabElement.getDragImage().querySelector('#tab').getBoundingClientRect();
+    const dragImageAspectRatio =
+        dragImageBoundingBox.width / dragImageBoundingBox.height;
+    // Check the Math.floor values of these values to prevent possible
+    // flakiness caused by comparing float values.
+    assertEquals(
+        Math.floor(originalAspectRatio), Math.floor(dragImageAspectRatio));
   });
 });

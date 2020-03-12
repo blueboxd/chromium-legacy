@@ -12,7 +12,6 @@
  *       0: string,
  *       1: (string|undefined),
  *       2: (string|undefined)}>,
- *   extensionUrl: string
  * }}
  */
 /* #export */ let FontsData;
@@ -21,14 +20,9 @@ cr.define('settings', function() {
   /** @interface */
   /* #export */ class FontsBrowserProxy {
     /**
-     * @return {!Promise<!FontsData>} Fonts and the advanced font settings
-     *     extension URL.
+     * @return {!Promise<!FontsData>} Fonts
      */
     fetchFontsData() {}
-
-    observeAdvancedFontExtensionAvailable() {}
-
-    openAdvancedFontSettings() {}
   }
 
   /**
@@ -38,16 +32,6 @@ cr.define('settings', function() {
     /** @override */
     fetchFontsData() {
       return cr.sendWithPromise('fetchFontsData');
-    }
-
-    /** @override */
-    observeAdvancedFontExtensionAvailable() {
-      chrome.send('observeAdvancedFontExtensionAvailable');
-    }
-
-    /** @override */
-    openAdvancedFontSettings() {
-      chrome.send('openAdvancedFontSettings');
     }
   }
 

@@ -51,9 +51,18 @@ SkBitmap SharedClipboardTestBase::GetClipboardImage() {
       ui::ClipboardBuffer::kCopyPaste);
 }
 
+bool SharedClipboardTestBase::HasImageNotification() {
+  auto notifications = notification_tester_->GetDisplayedNotificationsForType(
+      NotificationHandler::Type::SHARING);
+  if (notifications.size() != 1u)
+    return false;
+
+  return notifications[0].type() == message_center::NOTIFICATION_TYPE_IMAGE;
+}
+
 bool SharedClipboardTestBase::HasProgressNotification() {
   auto notifications = notification_tester_->GetDisplayedNotificationsForType(
-      NotificationHandler::Type::TRANSIENT);
+      NotificationHandler::Type::SHARING);
   if (notifications.size() != 1u)
     return false;
 
@@ -74,7 +83,7 @@ message_center::Notification SharedClipboardTestBase::GetNotification() {
 message_center::Notification
 SharedClipboardTestBase::GetProgressNotification() {
   auto notifications = notification_tester_->GetDisplayedNotificationsForType(
-      NotificationHandler::Type::TRANSIENT);
+      NotificationHandler::Type::SHARING);
   EXPECT_EQ(notifications.size(), 1u);
 
   const message_center::Notification& notification = notifications[0];

@@ -98,11 +98,11 @@ cr.define('settings', function() {
    * This should only be called once.
    * @param {HTMLElement} scrollTarget
    */
-  function setGlobalScrollTarget(scrollTarget) {
+  /* #export */ function setGlobalScrollTarget(scrollTarget) {
     scrollTargetResolver.resolve(scrollTarget);
   }
 
-  function resetGlobalScrollTargetForTesting() {
+  /* #export */ function resetGlobalScrollTargetForTesting() {
     scrollTargetResolver = new PromiseResolver();
   }
 

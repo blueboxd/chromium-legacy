@@ -28,6 +28,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.subresource_filter.SubresourceFilterFeatureList;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
@@ -274,7 +275,8 @@ public class SiteSettingsCategory {
      * Returns whether the Ads category is enabled via an experiment flag.
      */
     public static boolean adsCategoryEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.SUBRESOURCE_FILTER);
+        return SubresourceFilterFeatureList.isEnabled(
+                SubresourceFilterFeatureList.SUBRESOURCE_FILTER);
     }
 
     /**

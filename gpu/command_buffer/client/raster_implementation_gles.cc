@@ -294,8 +294,9 @@ void RasterImplementationGLES::OnReleaseMailbox(
 
 GLuint RasterImplementationGLES::CreateAndConsumeForGpuRaster(
     const gpu::Mailbox& mailbox) {
-  DCHECK(mailbox.IsSharedImage());
-  return gl_->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
+  return mailbox.IsSharedImage()
+             ? gl_->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name)
+             : gl_->CreateAndConsumeTextureCHROMIUM(mailbox.name);
 }
 
 void RasterImplementationGLES::DeleteGpuRasterTexture(GLuint texture) {

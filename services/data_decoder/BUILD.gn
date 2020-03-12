@@ -14,6 +14,8 @@ source_set("lib") {
     "web_bundle_parser.h",
     "web_bundle_parser_factory.cc",
     "web_bundle_parser_factory.h",
+    "web_bundler.cc",
+    "web_bundler.h",
     "xml_parser.cc",
     "xml_parser.h",
   ]

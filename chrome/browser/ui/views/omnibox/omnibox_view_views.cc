@@ -641,31 +641,25 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
   if (!views::FocusManager::IsTabTraversalKeyEvent(event))
     return false;
 
-  if (model()->is_keyword_hint() && !event.IsShiftDown())
-    return model()->AcceptKeyword(OmniboxEventProto::TAB);
-
   if (!model()->popup_model()->IsOpen())
     return false;
 
-  if (event.IsShiftDown() && (model()->popup_model()->selected_line_state() ==
-                              OmniboxPopupModel::KEYWORD)) {
+  // This block steps the popup model, with special consideration
+  // for existing keyword logic. AcceptKeyword and ClearKeyword
+  // have side effects which include updating the popup model
+  // selection. If those don't change selection, it is done here.
+  const auto old_selection = model()->popup_model()->selection();
+  const auto new_selection = model()->popup_model()->GetNextSelection(
+      event.IsShiftDown() ? OmniboxPopupModel::kBackward
+                          : OmniboxPopupModel::kForward,
+      OmniboxPopupModel::kStateOrLine);
+  if (new_selection.IsChangeToKeyword(old_selection)) {
+    return model()->AcceptKeyword(OmniboxEventProto::TAB);
+  } else if (old_selection.IsChangeToKeyword(new_selection)) {
     model()->ClearKeyword();
     return true;
-  }
-
-  // If tabbing forwards (shift is not pressed) and suggestion button is not
-  // selected, select it.
-  if (!event.IsShiftDown()) {
-    if (MaybeFocusSecondaryButton())
-      return true;
-  }
-
-  // If tabbing backwards (shift is pressed), handle cases involving selecting
-  // the tab switch button.
-  if (event.IsShiftDown()) {
-    // If tab switch button is focused, unfocus it.
-    if (MaybeUnfocusSecondaryButton())
-      return true;
+  } else {
+    model()->popup_model()->SetSelection(new_selection);
   }
 
   if (base::FeatureList::IsEnabled(omnibox::kTabKeyCanEscapeOmniboxPopup)) {
@@ -684,15 +678,6 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
       // Return false so the focus manager will go to the next element.
       return false;
     }
-  }
-
-  // Translate tab and shift-tab into down and up respectively.
-  model()->OnUpOrDownKeyPressed(event.IsShiftDown() ? -1 : 1);
-  // If we shift-tabbed (and actually moved) to a suggestion with a tab
-  // switch button, select it.
-  if (event.IsShiftDown() && GetSecondaryButtonForSelectedLine()) {
-    model()->popup_model()->SetSelectedLineState(
-        OmniboxPopupModel::BUTTON_FOCUSED);
   }
 
   return true;
@@ -739,27 +724,6 @@ bool OmniboxViewViews::DirectionAwareSelectionAtEnd() const {
   // When text and UI direction match, 'end' is as expected,
   // otherwise we use beginning.
   return TextAndUIDirectionMatch() ? SelectionAtEnd() : SelectionAtBeginning();
-}
-
-bool OmniboxViewViews::MaybeFocusSecondaryButton() {
-  if (GetSecondaryButtonForSelectedLine() &&
-      model()->popup_model()->selected_line_state() ==
-          OmniboxPopupModel::NORMAL) {
-    model()->popup_model()->SetSelectedLineState(
-        OmniboxPopupModel::BUTTON_FOCUSED);
-    return true;
-  }
-  return false;
-}
-
-bool OmniboxViewViews::MaybeUnfocusSecondaryButton() {
-  if (GetSecondaryButtonForSelectedLine() &&
-      model()->popup_model()->selected_line_state() ==
-          OmniboxPopupModel::BUTTON_FOCUSED) {
-    model()->popup_model()->SetSelectedLineState(OmniboxPopupModel::NORMAL);
-    return true;
-  }
-  return false;
 }
 
 bool OmniboxViewViews::MaybeTriggerSecondaryButton(const ui::KeyEvent& event) {
@@ -1143,10 +1107,8 @@ const char* OmniboxViewViews::GetClassName() const {
 }
 
 bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
-  if (model()->popup_model() &&  // Can be null in tests.
-      model()->popup_model()->selected_line_state() ==
-          OmniboxPopupModel::BUTTON_FOCUSED) {
-    model()->popup_model()->SetSelectedLineState(OmniboxPopupModel::NORMAL);
+  if (model()->popup_model()) {  // Can be null in tests.
+    model()->popup_model()->ClearSelectionState();
   }
   is_mouse_pressed_ = true;
 
@@ -1678,42 +1640,49 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
     case ui::VKEY_PRIOR:
       if (control || alt || shift || GetReadOnly())
         return false;
-      model()->OnUpOrDownKeyPressed(
-          -static_cast<int>(model()->popup_model()->selected_line()));
+      if (!model()->MaybeStartQueryForPopup()) {
+        model()->popup_model()->StepSelection(OmniboxPopupModel::kBackward,
+                                              OmniboxPopupModel::kAllLines);
+      }
       return true;
 
     case ui::VKEY_NEXT:
       if (control || alt || shift || GetReadOnly())
         return false;
-      model()->OnUpOrDownKeyPressed(model()->result().size() -
-                                    model()->popup_model()->selected_line() -
-                                    1);
+      if (!model()->MaybeStartQueryForPopup()) {
+        model()->popup_model()->StepSelection(OmniboxPopupModel::kForward,
+                                              OmniboxPopupModel::kAllLines);
+      }
       return true;
 
     case ui::VKEY_RIGHT:
-    case ui::VKEY_LEFT:
+    case ui::VKEY_LEFT: {
       if (control || alt || shift)
         return false;
+
+      const auto step = [=](auto direction) {
+        if (!model()->popup_model()) {
+          return false;
+        }
+        auto old_selection = model()->popup_model()->selection();
+        return model()->popup_model()->StepSelection(
+                   direction, OmniboxPopupModel::kStateOrNothing) !=
+               old_selection;
+      };
 
       // If advancing cursor (accounting for UI direction)
       if (base::i18n::IsRTL() == (event.key_code() == ui::VKEY_LEFT)) {
         if (!DirectionAwareSelectionAtEnd())
           return false;
 
-        if (OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() &&
-            model()->is_keyword_hint()) {
-          OnBeforePossibleChange();
-          model()->AcceptKeyword(OmniboxEventProto::SELECT_SUGGESTION);
-          OnAfterPossibleChange(true);
-          return true;
-        } else if (MaybeFocusSecondaryButton()) {
+        if (step(OmniboxPopupModel::kForward)) {
           return true;
         }
-      } else if (MaybeUnfocusSecondaryButton()) {
+      } else if (step(OmniboxPopupModel::kBackward)) {
         return true;
       }
       break;
-
+    }
     case ui::VKEY_V:
       if (control && !alt &&
           IsTextEditCommandEnabled(ui::TextEditCommand::PASTE)) {

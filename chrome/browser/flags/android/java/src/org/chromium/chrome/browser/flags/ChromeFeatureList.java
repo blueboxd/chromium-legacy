@@ -310,6 +310,7 @@ public abstract class ChromeFeatureList {
             "ImprovedCookieControlsForThirdPartyCookieBlocking";
     public static final String INLINE_UPDATE_FLOW = "InlineUpdateFlow";
     public static final String INSTALLABLE_AMBIENT_BADGE_INFOBAR = "InstallableAmbientBadgeInfoBar";
+    public static final String INSTANT_START = "InstantStart";
     public static final String INTEREST_FEED_CONTENT_SUGGESTIONS = "InterestFeedContentSuggestions";
     public static final String INTEREST_FEED_FEEDBACK = "InterestFeedFeedback";
     public static final String KITKAT_SUPPORTED = "KitKatSupported";
@@ -389,7 +390,6 @@ public abstract class ChromeFeatureList {
     public static final String START_SURFACE_ANDROID = "StartSurfaceAndroid";
     public static final String STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT =
             "StrictHasEnrolledAutofillInstrument";
-    public static final String SUBRESOURCE_FILTER = "SubresourceFilter";
     public static final String SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT =
             "SwapPixelFormatToFixConvertFromTranslucent";
     public static final String SYNC_USE_SESSIONS_UNREGISTER_DELAY =

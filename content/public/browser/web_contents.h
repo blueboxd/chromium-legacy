@@ -33,6 +33,7 @@
 #include "content/public/browser/visibility.h"
 #include "content/public/common/stop_find_action.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/data_decoder/public/mojom/web_bundler.mojom.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-forward.h"
@@ -819,10 +820,17 @@ class WebContents : public PageNavigator,
   // the file size and more.
   virtual void GenerateMHTML(
       const MHTMLGenerationParams& params,
-      base::OnceCallback<void(int64_t /* size of the file */)> callback) = 0;
+      base::OnceCallback<void(int64_t /* file_size */)> callback) = 0;
   virtual void GenerateMHTMLWithResult(
       const MHTMLGenerationParams& params,
       MHTMLGenerationResult::GenerateMHTMLCallback callback) = 0;
+
+  // Generates a Web Bundle representation of the current page.
+  virtual void GenerateWebBundle(
+      const base::FilePath& file_path,
+      base::OnceCallback<void(uint64_t /* file_size */,
+                              data_decoder::mojom::WebBundlerError)>
+          callback) = 0;
 
   // Returns the contents MIME type after a navigation.
   virtual const std::string& GetContentsMimeType() = 0;

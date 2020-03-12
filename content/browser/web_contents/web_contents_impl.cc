@@ -86,6 +86,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/javascript_dialog_navigation_deferrer.h"
 #include "content/browser/web_contents/web_contents_view_child_frame.h"
+#include "content/browser/web_package/save_as_web_bundle_job.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
@@ -4043,6 +4044,13 @@ void WebContentsImpl::GenerateMHTMLWithResult(
     MHTMLGenerationResult::GenerateMHTMLCallback callback) {
   MHTMLGenerationManager::GetInstance()->SaveMHTML(this, params,
                                                    std::move(callback));
+}
+
+void WebContentsImpl::GenerateWebBundle(
+    const base::FilePath& file_path,
+    base::OnceCallback<void(uint64_t /* file_size */,
+                            data_decoder::mojom::WebBundlerError)> callback) {
+  SaveAsWebBundleJob::Start(this, file_path, std::move(callback));
 }
 
 const std::string& WebContentsImpl::GetContentsMimeType() {

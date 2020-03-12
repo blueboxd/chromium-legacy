@@ -55,7 +55,6 @@ CONTENT_EXPORT extern const base::Feature
 CONTENT_EXPORT extern const base::Feature kFeaturePolicyForClientHints;
 CONTENT_EXPORT extern const base::Feature kFeaturePolicyForSandbox;
 CONTENT_EXPORT extern const base::Feature kFontSrcLocalMatching;
-CONTENT_EXPORT extern const base::Feature kForcedColors;
 #if !defined(OS_ANDROID)
 CONTENT_EXPORT extern const base::Feature
     kForwardMemoryPressureEventsToGpuProcess;

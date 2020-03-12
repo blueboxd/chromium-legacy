@@ -124,6 +124,16 @@ const base::Feature kDirectManipulationStylus = {
 };
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
+// Enables forced colors mode for web content.
+const base::Feature kForcedColors{"ForcedColors",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsForcedColorsEnabled() {
+  static const bool forced_colors_enabled =
+      base::FeatureList::IsEnabled(features::kForcedColors);
+  return forced_colors_enabled;
+}
+
 // Enable the FormControlsRefresh feature for Windows, ChromeOS, Linux, and Mac.
 // This feature will be released for Android in later milestones. See
 // crbug.com/1012106 for the Windows launch bug, and crbug.com/1012108 for the

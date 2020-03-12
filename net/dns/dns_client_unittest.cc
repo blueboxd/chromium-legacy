@@ -55,8 +55,11 @@ class DnsClientTest : public TestWithTaskEnvironment {
     return config;
   }
 
-  DnsConfig ValidConfigWithDoh() {
-    DnsConfig config = BasicValidConfig();
+  DnsConfig ValidConfigWithDoh(bool doh_only) {
+    DnsConfig config;
+    if (!doh_only) {
+      config = BasicValidConfig();
+    }
     config.dns_over_https_servers = {DnsConfig::DnsOverHttpsServerConfig(
         "www.doh.com", true /* use_post */)};
     return config;
@@ -125,7 +128,7 @@ TEST_F(DnsClientTest, CanUseSecureDnsTransactions_NoDohServers) {
 
 TEST_F(DnsClientTest, InsecureNotEnabled) {
   client_->SetInsecureEnabled(false);
-  client_->SetSystemConfig(ValidConfigWithDoh());
+  client_->SetSystemConfig(ValidConfigWithDoh(false /* doh_only */));
 
   EXPECT_TRUE(client_->CanUseSecureDnsTransactions());
   EXPECT_TRUE(
@@ -134,14 +137,35 @@ TEST_F(DnsClientTest, InsecureNotEnabled) {
   EXPECT_TRUE(client_->FallbackFromInsecureTransactionPreferred());
 
   EXPECT_THAT(client_->GetEffectiveConfig(),
-              testing::Pointee(ValidConfigWithDoh()));
+              testing::Pointee(ValidConfigWithDoh(false /* doh_only */)));
   EXPECT_TRUE(client_->GetHosts());
   EXPECT_TRUE(client_->GetTransactionFactory());
-  EXPECT_EQ(client_->GetCurrentSession()->config(), ValidConfigWithDoh());
+  EXPECT_EQ(client_->GetCurrentSession()->config(),
+            ValidConfigWithDoh(false /* doh_only */));
+}
+
+TEST_F(DnsClientTest, UnhandledOptions) {
+  client_->SetInsecureEnabled(true);
+  DnsConfig config = ValidConfigWithDoh(false /* doh_only */);
+  config.unhandled_options = true;
+  client_->SetSystemConfig(config);
+
+  EXPECT_TRUE(client_->CanUseSecureDnsTransactions());
+  EXPECT_TRUE(
+      client_->FallbackFromSecureTransactionPreferred(&resolve_context_));
+  EXPECT_FALSE(client_->CanUseInsecureDnsTransactions());
+  EXPECT_TRUE(client_->FallbackFromInsecureTransactionPreferred());
+
+  DnsConfig expected_config = config;
+  expected_config.nameservers.clear();
+  EXPECT_THAT(client_->GetEffectiveConfig(), testing::Pointee(expected_config));
+  EXPECT_TRUE(client_->GetHosts());
+  EXPECT_TRUE(client_->GetTransactionFactory());
+  EXPECT_EQ(client_->GetCurrentSession()->config(), expected_config);
 }
 
 TEST_F(DnsClientTest, CanUseSecureDnsTransactions_ProbeSuccess) {
-  client_->SetSystemConfig(ValidConfigWithDoh());
+  client_->SetSystemConfig(ValidConfigWithDoh(true /* doh_only */));
   resolve_context_.InvalidateCaches(client_->GetCurrentSession());
 
   EXPECT_TRUE(client_->CanUseSecureDnsTransactions());
@@ -158,7 +182,7 @@ TEST_F(DnsClientTest, CanUseSecureDnsTransactions_ProbeSuccess) {
 
 TEST_F(DnsClientTest, DnsOverTlsActive) {
   client_->SetInsecureEnabled(true);
-  DnsConfig config = ValidConfigWithDoh();
+  DnsConfig config = ValidConfigWithDoh(false /* doh_only */);
   config.dns_over_tls_active = true;
   client_->SetSystemConfig(config);
 
@@ -176,7 +200,7 @@ TEST_F(DnsClientTest, DnsOverTlsActive) {
 
 TEST_F(DnsClientTest, AllAllowed) {
   client_->SetInsecureEnabled(true);
-  client_->SetSystemConfig(ValidConfigWithDoh());
+  client_->SetSystemConfig(ValidConfigWithDoh(false /* doh_only */));
   resolve_context_.InvalidateCaches(client_->GetCurrentSession());
   resolve_context_.RecordServerSuccess(0u /* server_index */,
                                        true /* is_doh_server */,
@@ -189,15 +213,16 @@ TEST_F(DnsClientTest, AllAllowed) {
   EXPECT_FALSE(client_->FallbackFromInsecureTransactionPreferred());
 
   EXPECT_THAT(client_->GetEffectiveConfig(),
-              testing::Pointee(ValidConfigWithDoh()));
+              testing::Pointee(ValidConfigWithDoh(false /* doh_only */)));
   EXPECT_TRUE(client_->GetHosts());
   EXPECT_TRUE(client_->GetTransactionFactory());
-  EXPECT_EQ(client_->GetCurrentSession()->config(), ValidConfigWithDoh());
+  EXPECT_EQ(client_->GetCurrentSession()->config(),
+            ValidConfigWithDoh(false /* doh_only */));
 }
 
 TEST_F(DnsClientTest, FallbackFromInsecureTransactionPreferred_Failures) {
   client_->SetInsecureEnabled(true);
-  client_->SetSystemConfig(ValidConfigWithDoh());
+  client_->SetSystemConfig(ValidConfigWithDoh(false /* doh_only */));
 
   for (int i = 0; i < DnsClient::kMaxInsecureFallbackFailures; ++i) {
     EXPECT_TRUE(client_->CanUseSecureDnsTransactions());

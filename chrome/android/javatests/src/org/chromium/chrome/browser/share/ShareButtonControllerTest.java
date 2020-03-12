@@ -22,7 +22,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -36,7 +35,8 @@ import org.chromium.ui.test.util.UiRestriction;
 /** Tests {@link ShareButtonController}. */
 
 @RunWith(ChromeJUnit4ClassRunner.class)
-@EnableFeatures({ChromeFeatureList.SHARE_BUTTON_IN_TOP_TOOLBAR})
+@EnableFeatures(
+        {ChromeFeatureList.SHARE_BUTTON_IN_TOP_TOOLBAR, ChromeFeatureList.START_SURFACE_ANDROID})
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "enable-features=" + ChromeFeatureList.START_SURFACE_ANDROID + "<Study",
         "force-fieldtrials=Study/Group"})
@@ -46,8 +46,6 @@ public final class ShareButtonControllerTest {
 
     @Before
     public void setUp() {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, true);
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.SHARE_BUTTON_IN_TOP_TOOLBAR, true);
         SigninTestUtil.setUpAuthForTest();
         mActivityTestRule.startMainActivityOnBlankPage();
     }

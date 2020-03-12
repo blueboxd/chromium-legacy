@@ -9,6 +9,7 @@
 #include "chromeos/components/sync_wifi/network_type_conversions.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_metadata_store.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/device_event_log/device_event_log.h"
@@ -35,8 +36,10 @@ dbus::ObjectPath GetServicePathForGuid(const std::string& guid) {
 }  // namespace
 
 LocalNetworkCollectorImpl::LocalNetworkCollectorImpl(
-    network_config::mojom::CrosNetworkConfig* cros_network_config)
-    : cros_network_config_(cros_network_config) {
+    network_config::mojom::CrosNetworkConfig* cros_network_config,
+    NetworkMetadataStore* network_metadata_store)
+    : cros_network_config_(cros_network_config),
+      network_metadata_store_(network_metadata_store) {
   cros_network_config_->AddObserver(
       cros_network_config_observer_receiver_.BindNewPipeAndPassRemote());
 
@@ -127,6 +130,12 @@ bool LocalNetworkCollectorImpl::IsEligible(
           network_config::mojom::SecurityType::kWepPsk &&
       wifi_properties->security !=
           network_config::mojom::SecurityType::kWpaPsk) {
+    return false;
+  }
+
+  base::TimeDelta timestamp =
+      network_metadata_store_->GetLastConnectedTimestamp(network->guid);
+  if (timestamp.is_zero()) {
     return false;
   }
 

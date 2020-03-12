@@ -1,5 +1,22 @@
 <template>
   <style include="cr-shared-style cros-color-overrides">
+    h1 {
+      font-size: 2em;
+      font-weight: normal;
+      margin-bottom: 16px;
+      margin-top: 28px;
+    }
+
+    p {
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+
+    a {
+      color: var(--cr-link-color);
+      text-decoration: none;
+    }
+
     .main-padding {
       padding-inline-end: 64px;
       padding-inline-start: 64px;
@@ -14,7 +31,13 @@
       @apply --cr-secondary-text;
     }
 
-    #google-full-logo {
+    .google-logo {
+      height: 32px;
+      margin-top: 10px;
+      width: 32px;
+    }
+
+    .google-full-logo {
       width: 74px;
     }
   </style>

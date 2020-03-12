@@ -75,6 +75,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool use_arb_occlusion_query_for_occlusion_query_boolean = false;
     bool native_vertex_array_object = false;
     bool ext_texture_format_astc = false;
+    bool ext_texture_format_astc_hdr = false;
     bool ext_texture_format_atc = false;
     bool ext_texture_format_bgra8888 = false;
     bool ext_texture_format_dxt1 = false;

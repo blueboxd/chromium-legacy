@@ -9,7 +9,6 @@ import android.support.test.filters.SmallTest;
 
 import androidx.annotation.Nullable;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,7 +21,6 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.HomepagePolicyManager.HomepagePolicyStateListener;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -73,8 +71,6 @@ public class HomepagePolicyManagerTest {
 
         ChromeBrowserInitializer.setForTesting(mChromeBrowserInitializer);
 
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, true);
-
         // Disable the policy during setup
         PrefServiceBridge.setInstanceForTesting(mMockServiceBridge);
         setupNewHomepagePolicyManagerForTests(false, "", null);
@@ -82,12 +78,6 @@ public class HomepagePolicyManagerTest {
         // Verify setup
         Assert.assertFalse("#isHomepageManagedByPolicy == true without homepage pref setup",
                 mHomepagePolicyManager.isHomepageLocationPolicyEnabled());
-    }
-
-    @After
-    public void tearDown() {
-        // Empty cache inside the {@link CachedFeatureFlags}.
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, null);
     }
 
     /**
@@ -272,7 +262,6 @@ public class HomepagePolicyManagerTest {
     public void testFeatureFlagDisabled() {
         Mockito.reset(mMockRegistrar);
         Mockito.reset(mMockServiceBridge);
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, false);
 
         // 1. Test initialization early finishing
         setupNewHomepagePolicyManagerForTests(true, TEST_URL, null);
@@ -299,7 +288,6 @@ public class HomepagePolicyManagerTest {
     @SmallTest
     @DisableFeatures(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY)
     public void testIllegal_Refresh() {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, false);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mHomepagePolicyManager.onPreferenceChange(); });
     }

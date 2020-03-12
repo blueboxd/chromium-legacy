@@ -146,24 +146,19 @@ cc::SnapFlingController::GestureScrollUpdateInfo GetGestureScrollUpdateInfo(
   return info;
 }
 
-enum ScrollingThreadStatus {
-  kScrollingOnCompositor = 0,
-  kScrollingOnCompositorBlockedOnMain = 1,
-  kScrollingOnMain = 2,
-  kMaxValue = kScrollingOnMain,
-};
-
-void RecordScrollingThread(bool scrolling_on_compositor_thread,
-                           bool blocked_on_main_thread_event_handler,
-                           blink::WebGestureDevice device) {
+cc::ScrollBeginThreadState RecordScrollingThread(
+    bool scrolling_on_compositor_thread,
+    bool blocked_on_main_thread_event_handler,
+    blink::WebGestureDevice device) {
   const char* kWheelHistogramName = "Renderer4.ScrollingThread.Wheel";
   const char* kTouchHistogramName = "Renderer4.ScrollingThread.Touch";
 
-  ScrollingThreadStatus status = kScrollingOnMain;
+  auto status = cc::ScrollBeginThreadState::kScrollingOnMain;
   if (scrolling_on_compositor_thread) {
-    status = blocked_on_main_thread_event_handler
-                 ? kScrollingOnCompositorBlockedOnMain
-                 : kScrollingOnCompositor;
+    status =
+        blocked_on_main_thread_event_handler
+            ? cc::ScrollBeginThreadState::kScrollingOnCompositorBlockedOnMain
+            : cc::ScrollBeginThreadState::kScrollingOnCompositor;
   }
 
   if (device == blink::WebGestureDevice::kTouchscreen) {
@@ -173,6 +168,7 @@ void RecordScrollingThread(bool scrolling_on_compositor_thread,
   } else {
     NOTREACHED();
   }
+  return status;
 }
 
 }  // namespace
@@ -567,13 +563,16 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
           // Since a kScrollbarScroll is about to commence, ensure that any
           // existing ongoing scroll is ended.
           if (currently_active_gesture_device_.has_value()) {
-            DCHECK(currently_active_gesture_device_ !=
-                   blink::WebGestureDevice::kUninitialized);
+            DCHECK_NE(*currently_active_gesture_device_,
+                      blink::WebGestureDevice::kUninitialized);
             if (gesture_pinch_in_progress_)
               input_handler_->PinchGestureEnd(
                   gfx::ToFlooredPoint(mouse_event.PositionInWidget()), true);
-            if (handling_gesture_on_impl_thread_)
+            if (handling_gesture_on_impl_thread_) {
+              input_handler_->RecordScrollEnd(
+                  GestureScrollInputType(*currently_active_gesture_device_));
               InputHandlerScrollEnd();
+            }
           }
 
           // Generate GSB and GSU events and add them to the
@@ -709,8 +708,10 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
   // wheel/touch events (i.e. were they preventDefaulted?).
   bool blocked_on_main_thread_handler = disposition == DID_NOT_HANDLE;
 
-  RecordScrollingThread(is_compositor_scroll, blocked_on_main_thread_handler,
-                        device);
+  auto scroll_start_state = RecordScrollingThread(
+      is_compositor_scroll, blocked_on_main_thread_handler, device);
+  input_handler_->RecordScrollBegin(GestureScrollInputType(device),
+                                    scroll_start_state);
 
   if (blocked_on_main_thread_handler) {
     // We should also collect main thread scrolling reasons if a scroll event
@@ -948,6 +949,8 @@ InputHandlerProxy::HandleGestureScrollUpdate(
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "InputHandlerProxy::HandleGestureScrollEnd");
+  input_handler_->RecordScrollEnd(
+      GestureScrollInputType(gesture_event.SourceDevice()));
 
   if (scroll_sequence_ignored_) {
     DCHECK(!currently_active_gesture_device_.has_value());

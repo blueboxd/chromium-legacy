@@ -85,10 +85,9 @@ void MaybeCreateSafeBrowsingForRenderer(
   if (!render_process_host)
     return;
 
-  bool safe_browsing_enabled =
-      Profile::FromBrowserContext(render_process_host->GetBrowserContext())
-          ->GetPrefs()
-          ->GetBoolean(prefs::kSafeBrowsingEnabled);
+  bool safe_browsing_enabled = safe_browsing::IsSafeBrowsingEnabled(
+      *Profile::FromBrowserContext(render_process_host->GetBrowserContext())
+           ->GetPrefs());
   base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
       ->PostTask(
           FROM_HERE,

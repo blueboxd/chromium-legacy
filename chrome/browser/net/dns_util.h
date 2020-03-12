@@ -34,6 +34,31 @@ enum class SecureDnsUiManagementMode {
   kDisabledParentalControls,
 };
 
+// Detailed descriptions of the secure DNS mode. These values are logged to UMA.
+// Entries should not be renumbered and numeric values should never be reused.
+// Please keep in sync with "SecureDnsModeDetails" in
+// src/tools/metrics/histograms/enums.xml.
+enum class SecureDnsModeDetailsForHistogram {
+  // The mode is controlled by the user and is set to 'off'.
+  kOffByUser = 0,
+  // The mode is controlled via enterprise policy and is set to 'off'.
+  kOffByEnterprisePolicy = 1,
+  // Chrome detected a managed environment and forced the mode to 'off'.
+  kOffByDetectedManagedEnvironment = 2,
+  // Chrome detected parental controls and forced the mode to 'off'.
+  kOffByDetectedParentalControls = 3,
+  // The mode is controlled by the user and is set to 'automatic' (the default
+  // mode).
+  kAutomaticByUser = 4,
+  // The mode is controlled via enterprise policy and is set to 'automatic'.
+  kAutomaticByEnterprisePolicy = 5,
+  // The mode is controlled by the user and is set to 'secure'.
+  kSecureByUser = 6,
+  // The mode is controlled via enterprise policy and is set to 'secure'.
+  kSecureByEnterprisePolicy = 7,
+  kMaxValue = kSecureByEnterprisePolicy,
+};
+
 }  // namespace chrome_browser_net
 
 #endif  // CHROME_BROWSER_NET_DNS_UTIL_H_

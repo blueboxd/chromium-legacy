@@ -51,6 +51,10 @@ namespace network {
 class SharedURLLoaderFactory;
 }
 
+namespace viz {
+class RasterContextProvider;
+}
+
 namespace content {
 class ChildURLLoaderFactoryBundle;
 class ThreadSafeSender;
@@ -123,7 +127,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   scoped_refptr<media::AudioCapturerSource> NewAudioCapturerSource(
       blink::WebLocalFrame* web_frame,
       const media::AudioSourceParameters& params) override;
-  viz::ContextProvider* SharedMainThreadContextProvider() override;
+  viz::RasterContextProvider* SharedMainThreadContextProvider() override;
   bool RTCSmoothnessAlgorithmEnabled() override;
   base::Optional<double> GetWebRtcMaxCaptureFrameRate() override;
   scoped_refptr<media::AudioRendererSink> NewAudioRendererSink(

@@ -35,9 +35,7 @@ const int kMinVisibleWidth = 30;
 // and persistent state from the browser window and the user's profile.
 class DefaultStateProvider : public WindowSizer::StateProvider {
  public:
-  DefaultStateProvider(const std::string& app_name, const Browser* browser)
-      : app_name_(app_name), browser_(browser) {
-  }
+  explicit DefaultStateProvider(const Browser* browser) : browser_(browser) {}
 
   // Overridden from WindowSizer::StateProvider:
   bool GetPersistentState(gfx::Rect* bounds,
@@ -87,7 +85,7 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
       ui::WindowShowState* show_state) const override {
     DCHECK(show_state);
     // Applications are always restored with the same position.
-    if (!app_name_.empty())
+    if (browser_ && browser_->deprecated_is_app())
       return false;
 
     // If a reference browser is set, use its window. Otherwise find last
@@ -146,13 +144,11 @@ WindowSizer::~WindowSizer() = default;
 
 // static
 void WindowSizer::GetBrowserWindowBoundsAndShowState(
-    const std::string& app_name,
     const gfx::Rect& specified_bounds,
     const Browser* browser,
     gfx::Rect* window_bounds,
     ui::WindowShowState* show_state) {
-  std::unique_ptr<StateProvider> state_provider(
-      new DefaultStateProvider(app_name, browser));
+  auto state_provider = std::make_unique<DefaultStateProvider>(browser);
   const WindowSizer sizer(std::move(state_provider), browser);
   sizer.DetermineWindowBoundsAndShowState(specified_bounds,
                                           window_bounds,

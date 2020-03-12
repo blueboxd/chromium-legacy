@@ -31,7 +31,6 @@ android_library("public_java") {
     # TODO(crbug.com/1004415): Remove dependency on chrome_java and depend on
     # bottomsheet directly. Add public_java to chrome_java target instead.
     "//chrome/android:chrome_java",
-    "//chrome/android:chrome_public_java",
     "//ui/android:ui_java",
   ]
 

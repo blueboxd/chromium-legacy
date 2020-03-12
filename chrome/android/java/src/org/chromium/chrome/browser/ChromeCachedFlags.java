@@ -9,6 +9,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.CachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
@@ -40,24 +41,42 @@ public class ChromeCachedFlags {
         if (mIsFinishedCachingNativeFlags) return;
         FirstRunUtils.cacheFirstRunPrefs();
 
-        List<String> featuresToCache = Arrays.asList(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY,
-                ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED, ChromeFeatureList.CHROME_DUET,
-                ChromeFeatureList.CHROME_DUET_ADAPTIVE, ChromeFeatureList.CHROME_DUET_LABELED,
+        // clang-format off
+        List<String> featuresToCache = Arrays.asList(
+
+                ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED,
+                ChromeFeatureList.CHROME_DUET,
+                ChromeFeatureList.CHROME_DUET_ADAPTIVE,
+                ChromeFeatureList.CHROME_DUET_LABELED,
+                ChromeFeatureList.CLOSE_TAB_SUGGESTIONS,
                 ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE,
-                ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS,
+                ChromeFeatureList.HOMEPAGE_LOCATION_POLICY,
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
                 ChromeFeatureList.IMMERSIVE_UI_MODE,
+                ChromeFeatureList.PAINT_PREVIEW_TEST,
+                ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS,
+                ChromeFeatureList.INSTANT_START,
+                ChromeFeatureList.SHARE_BUTTON_IN_TOP_TOOLBAR,
+                ChromeFeatureList.START_SURFACE_ANDROID,
                 ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
-                ChromeFeatureList.START_SURFACE_ANDROID, ChromeFeatureList.PAINT_PREVIEW_TEST,
-                ChromeFeatureList.SHARE_BUTTON_IN_TOP_TOOLBAR);
+                ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
+                ChromeFeatureList.TAB_TO_GTS_ANIMATION);
+        // clang-format on
         CachedFeatureFlags.cacheNativeFlags(featuresToCache);
         CachedFeatureFlags.cacheNativeFlags(TabUiFeatureUtilities.getFeaturesToCache());
         CachedFeatureFlags.cacheAdditionalNativeFlags();
 
-        List<CachedFieldTrialParameter> fieldTrialsToCache =
-                Arrays.asList(BottomToolbarVariationManager.BOTTOM_TOOLBAR_VARIATION,
-                        StartSurfaceConfiguration.START_SURFACE_VARIATION,
-                        TabContentManager.ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION);
+        // clang-format off
+        List<CachedFieldTrialParameter> fieldTrialsToCache = Arrays.asList(
+                BottomToolbarVariationManager.BOTTOM_TOOLBAR_VARIATION,
+                StartSurfaceConfiguration.START_SURFACE_VARIATION,
+                TabContentManager.ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION,
+                TabFeatureUtilities.ZOOMING_MIN_MEMORY,
+                TabFeatureUtilities.ZOOMING_MIN_SDK,
+                TabUiFeatureUtilities.SKIP_SLOW_ZOOMING,
+                TabUiFeatureUtilities.TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE,
+                TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO);
+        // clang-format on
         CachedFeatureFlags.cacheFieldTrialParameters(fieldTrialsToCache);
 
         mIsFinishedCachingNativeFlags = true;

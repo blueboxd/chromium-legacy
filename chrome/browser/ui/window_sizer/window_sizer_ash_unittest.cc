@@ -698,7 +698,7 @@ TEST_F(WindowSizerAshTest, DefaultStateBecomesMaximized) {
   ui::WindowShowState show_state = ui::SHOW_STATE_DEFAULT;
   gfx::Rect bounds;
   WindowSizer::GetBrowserWindowBoundsAndShowState(
-      std::string(), specified_bounds, browser.get(), &bounds, &show_state);
+      specified_bounds, browser.get(), &bounds, &show_state);
   // The window should start maximized with its restore bounds shrunken.
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, show_state);
   EXPECT_NE(display_bounds.ToString(), bounds.ToString());
@@ -708,7 +708,7 @@ TEST_F(WindowSizerAshTest, DefaultStateBecomesMaximized) {
   specified_bounds.Inset(100, 100);
   show_state = ui::SHOW_STATE_DEFAULT;
   WindowSizer::GetBrowserWindowBoundsAndShowState(
-      std::string(), specified_bounds, browser.get(), &bounds, &show_state);
+      specified_bounds, browser.get(), &bounds, &show_state);
   // The window should start in default state.
   EXPECT_EQ(ui::SHOW_STATE_DEFAULT, show_state);
   EXPECT_EQ(specified_bounds.ToString(), bounds.ToString());
@@ -726,8 +726,8 @@ TEST_F(WindowSizerAshTest, DefaultBoundsInTargetDisplay) {
   EXPECT_EQ(first_root, ash::Shell::GetRootWindowForNewWindows());
   gfx::Rect bounds;
   ui::WindowShowState show_state;
-  WindowSizer::GetBrowserWindowBoundsAndShowState(std::string(), gfx::Rect(),
-                                                  NULL, &bounds, &show_state);
+  WindowSizer::GetBrowserWindowBoundsAndShowState(gfx::Rect(), nullptr, &bounds,
+                                                  &show_state);
   EXPECT_TRUE(first_root->GetBoundsInScreen().Contains(bounds));
 
   {
@@ -741,7 +741,6 @@ TEST_F(WindowSizerAshTest, DefaultBoundsInTargetDisplay) {
     gfx::Rect bounds;
     ui::WindowShowState show_state;
     WindowSizer::GetBrowserWindowBoundsAndShowState(
-        std::string(),
         gfx::Rect(),
         NULL,
         &bounds,

@@ -186,6 +186,11 @@ static EGLBoolean GL_BINDING_CALL Mock_eglQueryContext(EGLDisplay dpy,
                                                        EGLint* value);
 static EGLBoolean GL_BINDING_CALL Mock_eglQueryDebugKHR(EGLint attribute,
                                                         EGLAttrib* value);
+static const char* GL_BINDING_CALL
+Mock_eglQueryDeviceStringEXT(EGLDeviceEXT device, EGLint name);
+static EGLBoolean GL_BINDING_CALL Mock_eglQueryDevicesEXT(EGLint max_devices,
+                                                          EGLDeviceEXT* devices,
+                                                          EGLint* num_devices);
 static EGLBoolean GL_BINDING_CALL
 Mock_eglQueryDisplayAttribANGLE(EGLDisplay dpy,
                                 EGLint attribute,

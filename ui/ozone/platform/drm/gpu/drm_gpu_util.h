@@ -36,6 +36,9 @@ std::vector<display::GammaRampRGBEntry> ResampleLut(
     const std::vector<display::GammaRampRGBEntry>& lut_in,
     size_t desired_size);
 
+// Check DRM driver name match.
+bool IsDriverName(const char* device_file_name, const char* driver);
+
 }  // namespace ui
 
 #endif  // UI_OZONE_PLATFORM_DRM_GPU_DRM_GPU_UTIL_H_

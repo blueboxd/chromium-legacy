@@ -29,8 +29,8 @@ grid > * {
   display: inline-block;
 }
 
-html[class*='col-resize'] list,
-html[class*='col-resize'] grid {
+html.col-resize list,
+html.col-resize grid {
   overflow-y: hidden !important;
 }
 

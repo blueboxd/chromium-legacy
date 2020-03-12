@@ -4,13 +4,18 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import android.text.TextUtils;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.DoubleCachedFieldTrialParameter;
+import org.chromium.chrome.browser.flags.StringCachedFieldTrialParameter;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -22,6 +27,23 @@ import java.util.List;
  * A class to handle the state of flags for tab_management.
  */
 public class TabUiFeatureUtilities {
+    // Field trial parameters:
+    public static final String SKIP_SLOW_ZOOMING_PARAM = "skip-slow-zooming";
+    public static final BooleanCachedFieldTrialParameter SKIP_SLOW_ZOOMING =
+            new BooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.TAB_TO_GTS_ANIMATION, SKIP_SLOW_ZOOMING_PARAM, true);
+
+    public static final String TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE_PARAM =
+            "tab_grid_layout_android_new_tab_tile";
+    public static final StringCachedFieldTrialParameter TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE =
+            new StringCachedFieldTrialParameter(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+                    TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE_PARAM, "");
+
+    public static final String THUMBNAIL_ASPECT_RATIO_PARAM = "thumbnail_aspect_ratio";
+    public static final DoubleCachedFieldTrialParameter THUMBNAIL_ASPECT_RATIO =
+            new DoubleCachedFieldTrialParameter(
+                    ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, THUMBNAIL_ASPECT_RATIO_PARAM, 1.0);
+
     private static Boolean sSearchTermChipEnabledForTesting;
     private static Boolean sTabManagementModuleSupportedForTesting;
     private static Double sTabThumbnailAspectRatioForTesting;
@@ -123,11 +145,15 @@ public class TabUiFeatureUtilities {
         if (sTabThumbnailAspectRatioForTesting != null) {
             aspectRatio = sTabThumbnailAspectRatioForTesting;
         } else {
-            aspectRatio = ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
-                    ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "thumbnail_aspect_ratio", 1.0);
+            aspectRatio = CachedFeatureFlags.getValue(THUMBNAIL_ASPECT_RATIO);
         }
 
         return Double.compare(1.0, aspectRatio) != 0;
+    }
+
+    public static boolean isTabGridLayoutAndroidNewTabTileEnabled() {
+        return TextUtils.equals(
+                CachedFeatureFlags.getValue(TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE), "NewTabTile");
     }
 
     @VisibleForTesting

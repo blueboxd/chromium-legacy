@@ -142,7 +142,7 @@ bool AndroidTelemetryService::CanSendPing(download::DownloadItem* item) {
     return false;
   }
 
-  if (!IsSafeBrowsingEnabled()) {
+  if (!IsSafeBrowsingEnabled(*GetPrefs())) {
     RecordApkDownloadTelemetryOutcome(
         ApkDownloadTelemetryOutcome::NOT_SENT_SAFE_BROWSING_NOT_ENABLED);
     return false;
@@ -167,10 +167,6 @@ bool AndroidTelemetryService::CanSendPing(download::DownloadItem* item) {
 
 const PrefService* AndroidTelemetryService::GetPrefs() {
   return profile_->GetPrefs();
-}
-
-bool AndroidTelemetryService::IsSafeBrowsingEnabled() {
-  return GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled);
 }
 
 void AndroidTelemetryService::FillReferrerChain(

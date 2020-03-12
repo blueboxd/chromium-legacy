@@ -74,7 +74,7 @@ scoped_refptr<media::VideoFrame> CopyFrame(
         frame->visible_rect().width(), frame->visible_rect().height()));
     cc::SkiaPaintCanvas paint_canvas(bitmap);
 
-    DCHECK(provider->ContextGL());
+    DCHECK(provider->RasterInterface());
     video_renderer->Copy(frame.get(), &paint_canvas, provider);
 
     SkPixmap pixmap;

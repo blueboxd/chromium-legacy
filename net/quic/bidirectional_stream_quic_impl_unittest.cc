@@ -2516,6 +2516,12 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
 // QuicChromiumClientSession::Handle::ReleaseStream() is called, there is no
 // crash. Regression test for crbug.com/754823.
 TEST_P(BidirectionalStreamQuicImplTest, ReleaseStreamFails) {
+  if (VersionHasIetfQuicFrames(version_.transport_version)) {
+    // Re-enable after crbug.com/1060765 is fixed.
+    // Session should be configured before creating streams.
+    return;
+  }
+
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   Initialize();
 

@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/dom/attribute_collection.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/bit_field.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -78,23 +79,55 @@ class ElementData : public GarbageCollected<ElementData> {
 
   bool IsEquivalent(const ElementData* other) const;
 
-  bool IsUnique() const { return is_unique_; }
+  bool IsUnique() const { return bit_field_.get<IsUniqueFlag>(); }
 
   void TraceAfterDispatch(blink::Visitor*) const;
   void Trace(Visitor*);
 
  protected:
+  using BitField = WTF::ConcurrentlyReadBitField<uint32_t>;
+  using IsUniqueFlag =
+      BitField::DefineFirstValue<bool, 1, WTF::BitFieldValueConstness::kConst>;
+  using ArraySize = IsUniqueFlag::
+      DefineNextValue<uint32_t, 28, WTF::BitFieldValueConstness::kConst>;
+  using PresentationAttributeStyleIsDirty = ArraySize::DefineNextValue<bool, 1>;
+  using StyleAttributeIsDirty =
+      PresentationAttributeStyleIsDirty::DefineNextValue<bool, 1>;
+  using AnimatedSvgAttributesAreDirty =
+      StyleAttributeIsDirty::DefineNextValue<bool, 1>;
+
   ElementData();
   explicit ElementData(unsigned array_size);
   ElementData(const ElementData&, bool is_unique);
 
-  // Keep the type in a bitfield instead of using virtual destructors to avoid
-  // adding a vtable.
-  const unsigned is_unique_ : 1;
-  unsigned array_size_ : 28;
-  mutable unsigned presentation_attribute_style_is_dirty_ : 1;
-  mutable unsigned style_attribute_is_dirty_ : 1;
-  mutable unsigned animated_svg_attributes_are_dirty_ : 1;
+  bool presentation_attribute_style_is_dirty() const {
+    return bit_field_.get<PresentationAttributeStyleIsDirty>();
+  }
+  bool style_attribute_is_dirty() const {
+    return bit_field_.get<StyleAttributeIsDirty>();
+  }
+  bool animated_svg_attributes_are_dirty() const {
+    return bit_field_.get<AnimatedSvgAttributesAreDirty>();
+  }
+
+  // Following 3 fields are meant to be mutable and can change even when const.
+  void SetPresentationAttributeStyleIsDirty(
+      bool presentation_attribute_style_is_dirty) const {
+    const_cast<BitField*>(&bit_field_)
+        ->set<PresentationAttributeStyleIsDirty>(
+            presentation_attribute_style_is_dirty);
+  }
+  void SetStyleAttributeIsDirty(bool style_attribute_is_dirty) const {
+    const_cast<BitField*>(&bit_field_)
+        ->set<StyleAttributeIsDirty>(style_attribute_is_dirty);
+  }
+  void SetAnimatedSvgAttributesAreDirty(
+      bool animated_svg_attributes_are_dirty) const {
+    const_cast<BitField*>(&bit_field_)
+        ->set<AnimatedSvgAttributesAreDirty>(animated_svg_attributes_are_dirty);
+  }
+
+  BitField bit_field_;
 
   mutable Member<CSSPropertyValueSet> inline_style_;
   mutable SpaceSplitString class_names_;
@@ -105,6 +138,8 @@ class ElementData : public GarbageCollected<ElementData> {
   friend class ShareableElementData;
   friend class UniqueElementData;
   friend class SVGElement;
+  friend struct DowncastTraits<UniqueElementData>;
+  friend struct DowncastTraits<ShareableElementData>;
 
   UniqueElementData* MakeUniqueCopy() const;
 };
@@ -138,7 +173,9 @@ class ShareableElementData final : public ElementData {
 
 template <>
 struct DowncastTraits<ShareableElementData> {
-  static bool AllowFrom(const ElementData& data) { return !data.IsUnique(); }
+  static bool AllowFrom(const ElementData& data) {
+    return !data.bit_field_.get<ElementData::IsUniqueFlag>();
+  }
 };
 
 #if defined(COMPILER_MSVC)
@@ -174,12 +211,14 @@ class UniqueElementData final : public ElementData {
 
 template <>
 struct DowncastTraits<UniqueElementData> {
-  static bool AllowFrom(const ElementData& data) { return data.IsUnique(); }
+  static bool AllowFrom(const ElementData& data) {
+    return data.bit_field_.get<ElementData::IsUniqueFlag>();
+  }
 };
 
 inline const CSSPropertyValueSet* ElementData::PresentationAttributeStyle()
     const {
-  if (!is_unique_)
+  if (!bit_field_.get<IsUniqueFlag>())
     return nullptr;
   return To<UniqueElementData>(this)->presentation_attribute_style_.Get();
 }
@@ -191,7 +230,7 @@ inline AttributeCollection ElementData::Attributes() const {
 }
 
 inline AttributeCollection ShareableElementData::Attributes() const {
-  return AttributeCollection(attribute_array_, array_size_);
+  return AttributeCollection(attribute_array_, bit_field_.get<ArraySize>());
 }
 
 inline AttributeCollection UniqueElementData::Attributes() const {

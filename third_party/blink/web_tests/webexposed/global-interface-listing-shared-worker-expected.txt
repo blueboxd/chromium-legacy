@@ -470,7 +470,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker]     method createWritable
-[Worker]     method createWriter
 [Worker]     method getFile
 [Worker] interface FileSystemHandle
 [Worker]     attribute @@toStringTag

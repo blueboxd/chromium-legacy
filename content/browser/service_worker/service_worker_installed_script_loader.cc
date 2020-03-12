@@ -40,8 +40,7 @@ ServiceWorkerInstalledScriptLoader::ServiceWorkerInstalledScriptLoader(
   // In this case, the main script info would not yet have been set, so set it
   // here.
   if (request_url == version_for_main_script_http_response_info->script_url() &&
-      !version_for_main_script_http_response_info
-           ->GetMainScriptHttpResponseInfo()) {
+      !version_for_main_script_http_response_info->GetMainScriptResponse()) {
     version_for_main_script_http_response_info_ =
         std::move(version_for_main_script_http_response_info);
   }

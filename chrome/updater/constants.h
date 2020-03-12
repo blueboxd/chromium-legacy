@@ -81,6 +81,11 @@ extern const char kEnableLoggingSwitch[];
 // Specifies the logging module filter.
 extern const char kLoggingModuleSwitch[];
 
+// Specifies that the program uses a single process execution mode, meaning
+// out of process RPC is not being used. This mode is for debugging purposes
+// only and it may be removed at any time.
+extern const char kSingleProcessSwitch[];
+
 // URLs.
 //
 // Omaha server end point.

@@ -196,6 +196,13 @@ typedef EGLBoolean(GL_BINDING_CALL* eglQueryContextProc)(EGLDisplay dpy,
                                                          EGLint* value);
 typedef EGLBoolean(GL_BINDING_CALL* eglQueryDebugKHRProc)(EGLint attribute,
                                                           EGLAttrib* value);
+typedef EGLBoolean(GL_BINDING_CALL* eglQueryDevicesEXTProc)(
+    EGLint max_devices,
+    EGLDeviceEXT* devices,
+    EGLint* num_devices);
+typedef const char*(GL_BINDING_CALL* eglQueryDeviceStringEXTProc)(
+    EGLDeviceEXT device,
+    EGLint name);
 typedef EGLBoolean(GL_BINDING_CALL* eglQueryDisplayAttribANGLEProc)(
     EGLDisplay dpy,
     EGLint attribute,
@@ -277,6 +284,9 @@ typedef EGLint(GL_BINDING_CALL* eglWaitSyncKHRProc)(EGLDisplay dpy,
 
 struct ExtensionsEGL {
   bool b_EGL_ANGLE_feature_control;
+  bool b_EGL_EXT_device_base;
+  bool b_EGL_EXT_device_enumeration;
+  bool b_EGL_EXT_device_query;
   bool b_EGL_KHR_debug;
   bool b_EGL_ANDROID_blob_cache;
   bool b_EGL_ANDROID_get_frame_timestamps;
@@ -356,6 +366,8 @@ struct ProcsEGL {
   eglQueryAPIProc eglQueryAPIFn;
   eglQueryContextProc eglQueryContextFn;
   eglQueryDebugKHRProc eglQueryDebugKHRFn;
+  eglQueryDevicesEXTProc eglQueryDevicesEXTFn;
+  eglQueryDeviceStringEXTProc eglQueryDeviceStringEXTFn;
   eglQueryDisplayAttribANGLEProc eglQueryDisplayAttribANGLEFn;
   eglQueryStreamKHRProc eglQueryStreamKHRFn;
   eglQueryStreamu64KHRProc eglQueryStreamu64KHRFn;
@@ -550,6 +562,11 @@ class GL_EXPORT EGLApi {
                                        EGLint attribute,
                                        EGLint* value) = 0;
   virtual EGLBoolean eglQueryDebugKHRFn(EGLint attribute, EGLAttrib* value) = 0;
+  virtual EGLBoolean eglQueryDevicesEXTFn(EGLint max_devices,
+                                          EGLDeviceEXT* devices,
+                                          EGLint* num_devices) = 0;
+  virtual const char* eglQueryDeviceStringEXTFn(EGLDeviceEXT device,
+                                                EGLint name) = 0;
   virtual EGLBoolean eglQueryDisplayAttribANGLEFn(EGLDisplay dpy,
                                                   EGLint attribute,
                                                   EGLAttrib* value) = 0;
@@ -689,6 +706,9 @@ class GL_EXPORT EGLApi {
 #define eglQueryAPI ::gl::g_current_egl_context->eglQueryAPIFn
 #define eglQueryContext ::gl::g_current_egl_context->eglQueryContextFn
 #define eglQueryDebugKHR ::gl::g_current_egl_context->eglQueryDebugKHRFn
+#define eglQueryDevicesEXT ::gl::g_current_egl_context->eglQueryDevicesEXTFn
+#define eglQueryDeviceStringEXT \
+  ::gl::g_current_egl_context->eglQueryDeviceStringEXTFn
 #define eglQueryDisplayAttribANGLE \
   ::gl::g_current_egl_context->eglQueryDisplayAttribANGLEFn
 #define eglQueryStreamKHR ::gl::g_current_egl_context->eglQueryStreamKHRFn

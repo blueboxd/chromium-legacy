@@ -187,8 +187,6 @@ Polymer({
 
   /** @override */
   ready() {
-    this.browserProxy_.observeAdvancedFontExtensionAvailable();
-
     this.browserProxy_.fetchFontsData().then(this.setFontsData_.bind(this));
   },
 

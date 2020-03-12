@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 #ifndef NDEBUG
@@ -656,11 +657,9 @@ unsigned CSSPropertyValueSet::AverageSizeInBytes() {
 // See the function above if you need to update this.
 struct SameSizeAsCSSPropertyValueSet final
     : public GarbageCollected<SameSizeAsCSSPropertyValueSet> {
-  unsigned bitfield;
+  uint32_t bitfield;
 };
-static_assert(sizeof(CSSPropertyValueSet) ==
-                  sizeof(SameSizeAsCSSPropertyValueSet),
-              "CSSPropertyValueSet should stay small");
+ASSERT_SIZE(CSSPropertyValueSet, SameSizeAsCSSPropertyValueSet);
 
 #ifndef NDEBUG
 void CSSPropertyValueSet::ShowStyle() {

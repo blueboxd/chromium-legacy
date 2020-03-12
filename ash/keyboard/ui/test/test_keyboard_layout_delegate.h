@@ -25,6 +25,7 @@ class TestKeyboardLayoutDelegate : public KeyboardLayoutDelegate {
   aura::Window* GetContainerForDefaultDisplay() override;
   aura::Window* GetContainerForDisplay(
       const display::Display& display) override;
+  void TransferGestureEventToShelf(const ui::GestureEvent& e) override;
 
  private:
   aura::Window* root_window_;

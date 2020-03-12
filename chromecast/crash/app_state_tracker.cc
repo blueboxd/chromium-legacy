@@ -5,8 +5,7 @@
 #include "chromecast/crash/app_state_tracker.h"
 
 #include "base/no_destructor.h"
-#include "chromecast/crash/cast_crash_keys.h"
-#include "components/crash/core/common/crash_key.h"
+#include "chromecast/crash/cast_crash_storage.h"
 
 namespace {
 
@@ -49,8 +48,7 @@ std::string AppStateTracker::GetStadiaSessionId() {
 // static
 void AppStateTracker::SetLastLaunchedApp(const std::string& app_id) {
   GetAppState()->last_launched_app = app_id;
-
-  crash_keys::last_app.Set(app_id);
+  CastCrashStorage::GetInstance()->SetLastLaunchedApp(app_id);
 }
 
 // static
@@ -59,20 +57,24 @@ void AppStateTracker::SetCurrentApp(const std::string& app_id) {
   app_state->previous_app = app_state->current_app;
   app_state->current_app = app_id;
 
-  static crash_reporter::CrashKeyString<64> current_app("current_app");
-  current_app.Set(app_id);
+  CastCrashStorage::GetInstance()->SetCurrentApp(app_id);
+  CastCrashStorage::GetInstance()->SetPreviousApp(app_state->previous_app);
+}
 
-  crash_keys::previous_app.Set(app_state->previous_app);
+// static
+void AppStateTracker::SetPreviousApp(const std::string& app_id) {
+  GetAppState()->previous_app = app_id;
+  CastCrashStorage::GetInstance()->SetPreviousApp(app_id);
 }
 
 // static
 void AppStateTracker::SetStadiaSessionId(const std::string& stadia_session_id) {
   if (!stadia_session_id.empty()) {
     GetAppState()->stadia_session_id = stadia_session_id;
-    crash_keys::stadia_session_id.Set(stadia_session_id);
+    CastCrashStorage::GetInstance()->SetStadiaSessionId(stadia_session_id);
   } else {
     GetAppState()->stadia_session_id.clear();
-    crash_keys::stadia_session_id.Clear();
+    CastCrashStorage::GetInstance()->ClearStadiaSessionId();
   }
 }
 

@@ -42,7 +42,7 @@ const base::Feature kUseDefaultUserAgentInWebClient{
     "UseDefaultUserAgentInWebClient", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPreserveScrollViewProperties{
-    "PreserveScrollViewProperties", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PreserveScrollViewProperties", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace web

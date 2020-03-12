@@ -5550,4 +5550,28 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, PageshowMetrics) {
               ElementsAre(base::Bucket(0, 1), base::Bucket(1, 1)));
 }
 
+// Navigate from A(B) to C and check IsCurrent status for RenderFrameHost A
+// and B before and after entering back-forward cache.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CheckIsCurrent) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
+
+  // 1) Navigate to A(B).
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
+
+  EXPECT_TRUE(rfh_a->IsCurrent());
+  EXPECT_TRUE(rfh_b->IsCurrent());
+
+  // 2) Navigate to C.
+  EXPECT_TRUE(NavigateToURL(shell(), url_c));
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
+
+  EXPECT_FALSE(rfh_a->IsCurrent());
+  EXPECT_FALSE(rfh_b->IsCurrent());
+}
 }  // namespace content

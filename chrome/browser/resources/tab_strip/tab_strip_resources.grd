@@ -38,7 +38,8 @@
           file="${root_gen_dir}/chrome/browser/resources/tab_strip/tab_list.js"
           use_base_dir="false"
           type="chrome_html"
-          compress="gzip"/>
+          compress="gzip"
+          preprocess="true"/>
       <structure
           name="IDR_TAB_STRIP_TAB_JS"
           file="${root_gen_dir}/chrome/browser/resources/tab_strip/tab.js"
@@ -76,7 +77,8 @@
           name="IDR_TAB_STRIP_DRAG_MANAGER_JS"
           file="drag_manager.js"
           type="chrome_html"
-          compress="gzip"/>
+          compress="gzip"
+          preprocess="true"/>
     </structures>
 
     <includes>

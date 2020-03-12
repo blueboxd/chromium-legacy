@@ -15,6 +15,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_split.h"
@@ -91,6 +92,9 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/constants.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+using chrome_browser_net::SecureDnsModeDetailsForHistogram;
+using chrome_browser_net::SecureDnsUiManagementMode;
 
 namespace {
 
@@ -528,39 +532,71 @@ void SystemNetworkContextManager::GetStubResolverConfig(
     net::DnsConfig::SecureDnsMode* secure_dns_mode,
     base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
         dns_over_https_servers,
-    chrome_browser_net::SecureDnsUiManagementMode* forced_management_mode) {
+    bool record_metrics,
+    SecureDnsUiManagementMode* forced_management_mode) {
   DCHECK(!dns_over_https_servers->has_value());
 
   *insecure_stub_resolver_enabled =
       local_state->GetBoolean(prefs::kBuiltInDnsClientEnabled);
 
   std::string doh_mode;
-  if (!local_state->FindPreference(prefs::kDnsOverHttpsMode)->IsManaged() &&
-      chrome_browser_net::ShouldDisableDohForManaged()) {
+  SecureDnsModeDetailsForHistogram mode_details;
+  SecureDnsUiManagementMode forced_management_mode_internal =
+      SecureDnsUiManagementMode::kNoOverride;
+  bool is_managed =
+      local_state->FindPreference(prefs::kDnsOverHttpsMode)->IsManaged();
+  if (!is_managed && chrome_browser_net::ShouldDisableDohForManaged()) {
     doh_mode = chrome_browser_net::kDnsOverHttpsModeOff;
-    if (forced_management_mode)
-      *forced_management_mode =
-          chrome_browser_net::SecureDnsUiManagementMode::kDisabledManaged;
-  } else if (!local_state->FindPreference(prefs::kDnsOverHttpsMode)
-                  ->IsManaged() &&
+    forced_management_mode_internal =
+        SecureDnsUiManagementMode::kDisabledManaged;
+  } else if (!is_managed &&
              chrome_browser_net::ShouldDisableDohForParentalControls()) {
     doh_mode = chrome_browser_net::kDnsOverHttpsModeOff;
-    if (forced_management_mode)
-      *forced_management_mode = chrome_browser_net::SecureDnsUiManagementMode::
-          kDisabledParentalControls;
+    forced_management_mode_internal =
+        SecureDnsUiManagementMode::kDisabledParentalControls;
   } else {
     doh_mode = local_state->GetString(prefs::kDnsOverHttpsMode);
-    if (forced_management_mode)
-      *forced_management_mode =
-          chrome_browser_net::SecureDnsUiManagementMode::kNoOverride;
   }
 
-  if (doh_mode == chrome_browser_net::kDnsOverHttpsModeSecure)
+  if (doh_mode == chrome_browser_net::kDnsOverHttpsModeSecure) {
     *secure_dns_mode = net::DnsConfig::SecureDnsMode::SECURE;
-  else if (doh_mode == chrome_browser_net::kDnsOverHttpsModeAutomatic)
+    mode_details =
+        is_managed ? SecureDnsModeDetailsForHistogram::kSecureByEnterprisePolicy
+                   : SecureDnsModeDetailsForHistogram::kSecureByUser;
+  } else if (doh_mode == chrome_browser_net::kDnsOverHttpsModeAutomatic) {
     *secure_dns_mode = net::DnsConfig::SecureDnsMode::AUTOMATIC;
-  else
+    mode_details =
+        is_managed
+            ? SecureDnsModeDetailsForHistogram::kAutomaticByEnterprisePolicy
+            : SecureDnsModeDetailsForHistogram::kAutomaticByUser;
+  } else {
     *secure_dns_mode = net::DnsConfig::SecureDnsMode::OFF;
+    switch (forced_management_mode_internal) {
+      case SecureDnsUiManagementMode::kNoOverride:
+        mode_details =
+            is_managed
+                ? SecureDnsModeDetailsForHistogram::kOffByEnterprisePolicy
+                : SecureDnsModeDetailsForHistogram::kOffByUser;
+        break;
+      case SecureDnsUiManagementMode::kDisabledManaged:
+        mode_details =
+            SecureDnsModeDetailsForHistogram::kOffByDetectedManagedEnvironment;
+        break;
+      case SecureDnsUiManagementMode::kDisabledParentalControls:
+        mode_details =
+            SecureDnsModeDetailsForHistogram::kOffByDetectedParentalControls;
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  if (forced_management_mode)
+    *forced_management_mode = forced_management_mode_internal;
+
+  if (record_metrics) {
+    UMA_HISTOGRAM_ENUMERATION("Net.DNS.DnsConfig.SecureDnsMode", mode_details);
+  }
 
   std::string doh_templates =
       local_state->GetString(prefs::kDnsOverHttpsTemplates);
@@ -638,7 +674,8 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
       dns_over_https_servers;
   GetStubResolverConfig(local_state_, &insecure_stub_resolver_enabled,
-                        &secure_dns_mode, &dns_over_https_servers);
+                        &secure_dns_mode, &dns_over_https_servers,
+                        true /* record_metrics */);
   content::GetNetworkService()->ConfigureStubHostResolver(
       insecure_stub_resolver_enabled, secure_dns_mode,
       std::move(dns_over_https_servers));

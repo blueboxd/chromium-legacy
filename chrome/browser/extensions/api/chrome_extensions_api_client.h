@@ -67,6 +67,9 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
   std::unique_ptr<VirtualKeyboardDelegate> CreateVirtualKeyboardDelegate(
       content::BrowserContext* browser_context) const override;
   ManagementAPIDelegate* CreateManagementAPIDelegate() const override;
+  std::unique_ptr<SupervisedUserServiceDelegate>
+  CreateSupervisedUserServiceDelegate() const override;
+
   std::unique_ptr<DisplayInfoProvider> CreateDisplayInfoProvider()
       const override;
   MetricsPrivateDelegate* GetMetricsPrivateDelegate() override;

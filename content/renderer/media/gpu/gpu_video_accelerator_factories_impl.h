@@ -116,7 +116,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   base::Optional<media::VideoEncodeAccelerator::SupportedProfiles>
   GetVideoEncodeAcceleratorSupportedProfiles() override;
 
-  scoped_refptr<viz::ContextProvider> GetMediaContextProvider() override;
+  viz::RasterContextProvider* GetMediaContextProvider() override;
 
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space) override;
 

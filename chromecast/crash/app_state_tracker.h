@@ -17,6 +17,9 @@ class AppStateTracker {
   // The current app becomes the previous app, |app_id| becomes the current app.
   static void SetCurrentApp(const std::string& app_id);
 
+  // Record |app_id| as the previous app.
+  static void SetPreviousApp(const std::string& app_id);
+
   // Set the Stadia session ID, when a Stadia session starts running.
   // Clear the Stadia session ID by passing in an empty string
   static void SetStadiaSessionId(const std::string& stadia_session_id);

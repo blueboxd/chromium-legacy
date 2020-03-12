@@ -297,9 +297,28 @@ class DragSession {
     event.dataTransfer.effectAllowed = 'move';
     const draggedItemRect = this.element_.getBoundingClientRect();
     this.element_.setDragging(true);
+
+    const dragImage = this.element_.getDragImage();
+    const dragImageRect = dragImage.getBoundingClientRect();
+
+    let scaleFactor = 1;
+    let verticalOffset = 0;
+
+    // <if expr="chromeos">
+    // Touch on ChromeOS automatically scales drag images by 1.2 and adds a
+    // vertical offset of 25px. See //ash/drag_drop/drag_drop_controller.cc.
+    scaleFactor = 1.2;
+    verticalOffset = 25;
+    // </if>
+
+    const xDiffFromCenter =
+        event.clientX - draggedItemRect.left - (draggedItemRect.width / 2);
+    const yDiffFromCenter = event.clientY - draggedItemRect.top -
+        verticalOffset - (draggedItemRect.height / 2);
+
     event.dataTransfer.setDragImage(
-        this.element_.getDragImage(), event.clientX - draggedItemRect.left,
-        event.clientY - draggedItemRect.top);
+        dragImage, (dragImageRect.width / 2 + xDiffFromCenter / scaleFactor),
+        (dragImageRect.height / 2 + yDiffFromCenter / scaleFactor));
 
     if (isTabElement(this.element_)) {
       event.dataTransfer.setData(

@@ -73,8 +73,10 @@ template("chrome_public_common_apk_or_module_tmpl") {
   _is_trichrome = defined(invoker.is_trichrome) && invoker.is_trichrome
   _is_64_bit_browser =
       defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser
-  assert(_is_modern || !_is_modern)  # Mark as used.
-  assert(_is_64_bit_browser || !_is_64_bit_browser)  # Mark as used.
+  not_needed([
+               "_is_modern",
+               "_is_64_bit_browser",
+             ])
   assert(!(_is_monochrome && _is_trichrome),
          "Cannot be both trichrome and monochrome!")
   assert(_is_trichrome == defined(invoker.static_library_provider),

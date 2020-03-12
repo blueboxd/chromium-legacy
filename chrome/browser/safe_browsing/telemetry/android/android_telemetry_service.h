@@ -111,9 +111,6 @@ class AndroidTelemetryService
   // Helper method to get prefs from |profile_|.
   const PrefService* GetPrefs();
 
-  // Helper method to check if Safe Browsing is enabled.
-  bool IsSafeBrowsingEnabled();
-
   // Profile associated with this instance. Unowned.
   Profile* profile_;
 

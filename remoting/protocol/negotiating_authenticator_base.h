@@ -102,7 +102,7 @@ class NegotiatingAuthenticatorBase : public Authenticator {
   // Calls |current_authenticator_| to process |message|, passing the supplied
   // |resume_callback|.
   void ProcessMessageInternal(const jingle_xmpp::XmlElement* message,
-                              const base::Closure& resume_callback);
+                              base::OnceClosure resume_callback);
 
  protected:
   friend class NegotiatingAuthenticatorTest;
@@ -127,7 +127,7 @@ class NegotiatingAuthenticatorBase : public Authenticator {
 
   // Updates |state_| to reflect the current underlying authenticator state.
   // |resume_callback| is called after the state is updated.
-  void UpdateState(const base::Closure& resume_callback);
+  void UpdateState(base::OnceClosure resume_callback);
 
   // Gets the next message from |current_authenticator_|, if any, and fills in
   // the 'method' tag with |current_method_|.

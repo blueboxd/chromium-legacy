@@ -1778,6 +1778,17 @@ bool GLES2DecoderPassthroughImpl::ClearCompressedTextureLevel(Texture* texture,
   return true;
 }
 
+bool GLES2DecoderPassthroughImpl::ClearCompressedTextureLevel3D(
+    Texture* texture,
+    unsigned target,
+    int level,
+    unsigned format,
+    int width,
+    int height,
+    int depth) {
+  return true;
+}
+
 bool GLES2DecoderPassthroughImpl::IsCompressedTextureFormat(unsigned format) {
   return false;
 }

@@ -32,7 +32,7 @@ void BindApplicationMediaCapabilities(
   if (!web_contents)
     return;
   auto* cast_web_contents = CastWebContents::FromWebContents(web_contents);
-  if (!cast_web_contents)
+  if (!cast_web_contents || !cast_web_contents->can_bind_interfaces())
     return;
   auto interface_pipe = receiver.PassPipe();
   cast_web_contents->binder_registry()->TryBindInterface(

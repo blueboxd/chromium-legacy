@@ -53,6 +53,7 @@ void PrintHelp(const std::string& command) {
   LOG(INFO) << "  -i input .wav file";
   LOG(INFO) << "  -o output .wav file";
   LOG(INFO) << "  -r output samples per second";
+  LOG(INFO) << "  -s saturate output";
   LOG(INFO) << " [-c cast_audio.json path]";
   LOG(INFO) << " [-v cast volume as fraction of 1 (0.0-1.0)]";
   LOG(INFO) << " [-d max duration (s)]";
@@ -62,6 +63,7 @@ struct Parameters {
   double cast_volume = 1.0;
   double duration_s = std::numeric_limits<double>::infinity();
   int output_samples_per_second = -1;
+  bool saturate_output = false;
   std::string device_id = "default";
   base::FilePath input_file_path;
   base::FilePath output_file_path;
@@ -149,7 +151,7 @@ class WavMixerInputSource : public MixerInput::Source {
 class OutputHandler {
  public:
   virtual ~OutputHandler() = default;
-  virtual void WriteData(float* data, int num_frames) = 0;
+  virtual void WriteData(float* data, int num_frames, bool saturate_output) = 0;
 };
 
 class WavOutputHandler : public OutputHandler {
@@ -179,12 +181,14 @@ class WavOutputHandler : public OutputHandler {
                     sizeof(header_));
   }
 
-  void WriteData(float* data, int num_frames) override {
+  void WriteData(float* data, int num_frames, bool saturate_output) override {
     std::vector<float> clipped_data(num_frames * num_channels_);
     std::memcpy(clipped_data.data(), data,
                 clipped_data.size() * sizeof(clipped_data[0]));
-    for (size_t i = 0; i < clipped_data.size(); ++i) {
-      clipped_data[i] = base::ClampToRange(clipped_data[i], -1.0f, 1.0f);
+    if (saturate_output) {
+      for (size_t i = 0; i < clipped_data.size(); ++i) {
+        clipped_data[i] = base::ClampToRange(clipped_data[i], -1.0f, 1.0f);
+      }
     }
     wav_file_.WriteAtCurrentPos(reinterpret_cast<char*>(clipped_data.data()),
                                 sizeof(clipped_data[0]) * clipped_data.size());
@@ -260,6 +264,9 @@ Parameters ReadArgs(int argc, char* argv[]) {
         break;
       case 'r':
         params.output_samples_per_second = strtod(optarg, nullptr);
+        break;
+      case 's':
+        params.saturate_output = true;
         break;
       default:
         PrintHelp(argv[0]);
@@ -337,7 +344,8 @@ int CplayMain(int argc, char* argv[]) {
              params.duration_s) {
     pipeline->MixAndFilter(kReadSize, MixerInput::RenderingDelay());
     audio_metrics.ProcessFrames(pipeline->GetOutput(), kReadSize);
-    output_handler_->WriteData(pipeline->GetOutput(), kReadSize);
+    output_handler_->WriteData(pipeline->GetOutput(), kReadSize,
+                               params.saturate_output);
     frames_written += kReadSize;
   }
 

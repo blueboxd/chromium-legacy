@@ -9,8 +9,8 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.base.Log;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.metrics.UmaRecorderHolder;
 
 /**
  * {@link TestRule} to disable native access for testing.
@@ -26,7 +26,7 @@ public final class DisableNativeTestRule implements TestRule {
                 LoadNative loadNative = description.getAnnotation(LoadNative.class);
                 if (loadNative == null) {
                     Log.i(TAG, "Disable RecordHistogram and RecordUserAction for testing");
-                    RecordHistogram.setDisabledForTests(true);
+                    UmaRecorderHolder.setDisabledForTests(true);
                     RecordUserAction.setDisabledForTests(true);
                 } else {
                     Log.i(TAG, "Test will run with native libraries");
@@ -36,7 +36,7 @@ public final class DisableNativeTestRule implements TestRule {
                 } finally {
                     if (loadNative == null) {
                         Log.i(TAG, "Re-enable RecordHistogram and RecordUserAction after test");
-                        RecordHistogram.setDisabledForTests(false);
+                        UmaRecorderHolder.setDisabledForTests(false);
                         RecordUserAction.setDisabledForTests(false);
                     }
                 }

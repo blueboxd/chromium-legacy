@@ -18,6 +18,7 @@
 #include "chromeos/components/sync_wifi/network_type_conversions.h"
 #include "chromeos/components/sync_wifi/test_data_generator.h"
 #include "chromeos/dbus/shill/fake_shill_simulated_result.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/services/network_config/cros_network_config.h"
 #include "chromeos/services/network_config/in_process_instance.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
@@ -40,6 +41,7 @@ const char kFredSsid[] = "Fred";
 const char kMangoSsid[] = "Mango";
 const char kAnnieSsid[] = "Annie";
 const char kOzzySsid[] = "Ozzy";
+const char kHopperSsid[] = "Hopper";
 
 }  // namespace
 
@@ -56,7 +58,8 @@ class LocalNetworkCollectorImplTest : public testing::Test {
     testing::Test::SetUp();
     helper()->SetUp();
     local_network_collector_ = std::make_unique<LocalNetworkCollectorImpl>(
-        remote_cros_network_config_.get());
+        remote_cros_network_config_.get(),
+        NetworkHandler::Get()->network_metadata_store());
   }
 
   void TearDown() override {
@@ -102,7 +105,7 @@ class LocalNetworkCollectorImplTest : public testing::Test {
 
 TEST_F(LocalNetworkCollectorImplTest, TestGetAllSyncableNetworks) {
   helper()->ConfigureWiFiNetwork(kFredSsid, /*is_secured=*/true,
-                                 /*in_profile=*/true);
+                                 /*in_profile=*/true, /*has_connected=*/true);
 
   std::vector<std::string> expected;
   expected.push_back(kFredSsid);
@@ -117,13 +120,15 @@ TEST_F(LocalNetworkCollectorImplTest, TestGetAllSyncableNetworks) {
 TEST_F(LocalNetworkCollectorImplTest,
        TestGetAllSyncableNetworks_WithFiltering) {
   helper()->ConfigureWiFiNetwork(kFredSsid, /*is_secured=*/true,
-                                 /*in_profile=*/true);
+                                 /*in_profile=*/true, /*has_connected=*/true);
   helper()->ConfigureWiFiNetwork(kMangoSsid, /*is_secured=*/true,
-                                 /*in_profile=*/false);
+                                 /*in_profile=*/false, /*has_connected=*/true);
   helper()->ConfigureWiFiNetwork(kAnnieSsid, /*is_secured=*/false,
-                                 /*in_profile=*/true);
+                                 /*in_profile=*/true, /*has_connected=*/true);
   helper()->ConfigureWiFiNetwork(kOzzySsid, /*is_secured=*/true,
-                                 /*in_profile=*/true);
+                                 /*in_profile=*/true, /*has_connected=*/true);
+  helper()->ConfigureWiFiNetwork(kHopperSsid, /*is_secured=*/true,
+                                 /*in_profile=*/true, /*has_connected=*/false);
 
   std::vector<std::string> expected;
   expected.push_back(kFredSsid);
@@ -138,7 +143,7 @@ TEST_F(LocalNetworkCollectorImplTest,
 
 TEST_F(LocalNetworkCollectorImplTest, TestGetSyncableNetwork) {
   helper()->ConfigureWiFiNetwork(kFredSsid, /*is_secured=*/true,
-                                 /*in_profile=*/true);
+                                 /*in_profile=*/true, /*has_connected=*/true);
 
   NetworkIdentifier id = GeneratePskNetworkId(kFredSsid);
   local_network_collector()->GetSyncableNetwork(
@@ -147,6 +152,16 @@ TEST_F(LocalNetworkCollectorImplTest, TestGetSyncableNetwork) {
 }
 
 TEST_F(LocalNetworkCollectorImplTest, TestGetSyncableNetwork_DoesntExist) {
+  NetworkIdentifier id = GeneratePskNetworkId(kFredSsid);
+  local_network_collector()->GetSyncableNetwork(
+      id, base::BindOnce(&LocalNetworkCollectorImplTest::OnGetSyncableNetwork,
+                         base::Unretained(this), std::string()));
+}
+
+TEST_F(LocalNetworkCollectorImplTest, TestGetSyncableNetwork_NeverConnected) {
+  helper()->ConfigureWiFiNetwork(kFredSsid, /*is_secured=*/true,
+                                 /*in_profile=*/true, /*has_connected=*/false);
+
   NetworkIdentifier id = GeneratePskNetworkId(kFredSsid);
   local_network_collector()->GetSyncableNetwork(
       id, base::BindOnce(&LocalNetworkCollectorImplTest::OnGetSyncableNetwork,

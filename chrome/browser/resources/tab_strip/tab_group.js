@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+
 import {CustomElement} from './custom_element.js';
 import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
 import {TabGroupVisualData} from './tabs_api_proxy.js';
@@ -17,9 +19,10 @@ export class TabGroupElement extends CustomElement {
     /** @private @const {!TabStripEmbedderProxy} */
     this.embedderApi_ = TabStripEmbedderProxy.getInstance();
 
-    const chip = this.$('#chip');
-    chip.addEventListener('click', () => this.onClickChip_());
-    chip.addEventListener(
+    /** @private @const {!HTMLElement} */
+    this.chip_ = /** @type {!HTMLElement} */ (this.$('#chip'));
+    this.chip_.addEventListener('click', () => this.onClickChip_());
+    this.chip_.addEventListener(
         'keydown', e => this.onKeydownChip_(/** @type {!KeyboardEvent} */ (e)));
   }
 
@@ -73,6 +76,17 @@ export class TabGroupElement extends CustomElement {
     this.style.setProperty('--tabstrip-tab-group-color-rgb', visualData.color);
     this.style.setProperty(
         '--tabstrip-tab-group-text-color-rgb', visualData.textColor);
+
+    // Content strings are empty for the label and are instead replaced by
+    // the aria-describedby attribute on the chip.
+    if (visualData.title) {
+      this.chip_.setAttribute(
+          'aria-label',
+          loadTimeData.getStringF('namedGroupLabel', visualData.title, ''));
+    } else {
+      this.chip_.setAttribute(
+          'aria-label', loadTimeData.getStringF('unnamedGroupLabel', ''));
+    }
   }
 }
 

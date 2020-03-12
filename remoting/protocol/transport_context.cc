@@ -33,13 +33,13 @@ constexpr base::TimeDelta kMinimumIceConfigLifetime =
     base::TimeDelta::FromHours(1);
 
 void PrintIceConfig(const IceConfig& ice_config) {
-  HOST_LOG << "Received IceConfig:";
-  HOST_LOG << "  STUN: [";
+  HOST_LOG << "IceConfig: {";
+  HOST_LOG << "  stun: [";
   for (auto& stun_server : ice_config.stun_servers) {
     HOST_LOG << "    " << stun_server.ToString() << ",";
   }
   HOST_LOG << "  ]";
-  HOST_LOG << "  TURN: [";
+  HOST_LOG << "  turn: [";
   for (auto& turn_server : ice_config.turn_servers) {
     HOST_LOG << "    {";
     HOST_LOG << "      username: " << turn_server.credentials.username;
@@ -52,6 +52,7 @@ void PrintIceConfig(const IceConfig& ice_config) {
   HOST_LOG << "  ]";
   HOST_LOG << "  expiration time: " << ice_config.expiration_time;
   HOST_LOG << "  max_bitrate_kbps: " << ice_config.max_bitrate_kbps;
+  HOST_LOG << "}";
 }
 
 }  // namespace
@@ -92,14 +93,18 @@ void TransportContext::GetIceConfig(const GetIceConfigCallback& callback) {
   if (ice_config_request_[relay_mode_]) {
     pending_ice_config_callbacks_[relay_mode_].push_back(callback);
   } else {
+    HOST_LOG << "Using cached ICE Config.";
+    PrintIceConfig(ice_config_[relay_mode_]);
     callback.Run(ice_config_[relay_mode_]);
   }
 }
 
 void TransportContext::EnsureFreshIceConfig() {
   // Check if request is already pending.
-  if (ice_config_request_[relay_mode_])
+  if (ice_config_request_[relay_mode_]) {
+    HOST_LOG << "ICE Config request is already pending.";
     return;
+  }
 
   // Don't need to make ICE config request if both STUN and Relay are disabled.
   if ((network_settings_.flags & (NetworkSettings::NAT_TRAVERSAL_STUN |
@@ -132,6 +137,7 @@ void TransportContext::OnIceConfig(RelayMode relay_mode,
   ice_config_[relay_mode] = ice_config;
   ice_config_request_[relay_mode].reset();
 
+  HOST_LOG << "Using newly requested ICE Config:";
   PrintIceConfig(ice_config);
 
   auto& callback_list = pending_ice_config_callbacks_[relay_mode];

@@ -52,8 +52,8 @@ class GLOzoneEGLScenic : public GLOzoneEGL {
         base::MakeRefCounted<gl::PbufferGLSurfaceEGL>(size));
   }
 
-  EGLNativeDisplayType GetNativeDisplay() override {
-    return EGL_DEFAULT_DISPLAY;
+  gl::EGLDisplayPlatform GetNativeDisplay() override {
+    return gl::EGLDisplayPlatform(EGL_DEFAULT_DISPLAY);
   }
 
  protected:

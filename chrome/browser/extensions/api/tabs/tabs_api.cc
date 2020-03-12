@@ -547,9 +547,8 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
 
     // Initialize default window bounds according to window type.
     ui::WindowShowState ignored_show_state = ui::SHOW_STATE_DEFAULT;
-    WindowSizer::GetBrowserWindowBoundsAndShowState(std::string(), gfx::Rect(),
-                                                    nullptr, &window_bounds,
-                                                    &ignored_show_state);
+    WindowSizer::GetBrowserWindowBoundsAndShowState(
+        gfx::Rect(), nullptr, &window_bounds, &ignored_show_state);
 
     // Any part of the bounds can optionally be set by the caller.
     if (create_data->left)

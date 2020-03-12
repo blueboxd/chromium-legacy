@@ -4217,7 +4217,7 @@ TEST_P(GLES2DecoderManualInitTest, TexStorageInvalidLevels) {
   cmds::TexStorage2DEXT cmd;
   cmd.Init(GL_TEXTURE_RECTANGLE_ARB, 2, GL_RGBA8, 4, 4);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
 TEST_P(GLES2DecoderManualInitTest, TexStorageInvalidSize) {

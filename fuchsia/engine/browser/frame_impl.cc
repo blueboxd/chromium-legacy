@@ -201,6 +201,38 @@ FrameImplMap& WebContentsToFrameImplMap() {
   return *frame_impl_map;
 }
 
+content::PermissionType FidlPermissionTypeToContentPermissionType(
+    fuchsia::web::PermissionType fidl_type) {
+  switch (fidl_type) {
+    case fuchsia::web::PermissionType::MICROPHONE:
+      return content::PermissionType::AUDIO_CAPTURE;
+    case fuchsia::web::PermissionType::CAMERA:
+      return content::PermissionType::VIDEO_CAPTURE;
+    case fuchsia::web::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+      return content::PermissionType::PROTECTED_MEDIA_IDENTIFIER;
+    case fuchsia::web::PermissionType::PERSISTENT_STORAGE:
+      return content::PermissionType::DURABLE_STORAGE;
+  }
+}
+
+base::Optional<url::Origin> ParseAndValidateWebOrigin(
+    const std::string& origin_str) {
+  GURL origin_url(origin_str);
+  if (!origin_url.username().empty() || !origin_url.password().empty() ||
+      !origin_url.query().empty() || !origin_url.ref().empty()) {
+    return base::nullopt;
+  }
+
+  if (!origin_url.path().empty() && origin_url.path() != "/")
+    return base::nullopt;
+
+  auto origin = url::Origin::Create(origin_url);
+  if (origin.opaque())
+    return base::nullopt;
+
+  return origin;
+}
+
 }  // namespace
 
 // static
@@ -780,6 +812,36 @@ void FrameImpl::ForceContentDimensions(
     layout_manager_->ForceContentDimensions(web_dips_converted);
 }
 
+void FrameImpl::SetPermissionState(
+    fuchsia::web::PermissionDescriptor fidl_permission,
+    std::string web_origin_string,
+    fuchsia::web::PermissionState fidl_state) {
+  if (!fidl_permission.has_type()) {
+    LOG(ERROR) << "PermissionDescriptor.type is not specified in "
+                  "SetPermissionState().";
+    CloseAndDestroyFrame(ZX_ERR_INVALID_ARGS);
+    return;
+  }
+
+  auto web_origin = ParseAndValidateWebOrigin(web_origin_string);
+  if (!web_origin) {
+    LOG(ERROR) << "SetPermissionState() called with invalid web_origin: "
+               << web_origin_string;
+    CloseAndDestroyFrame(ZX_ERR_INVALID_ARGS);
+    return;
+  }
+
+  content::PermissionType type =
+      FidlPermissionTypeToContentPermissionType(fidl_permission.type());
+
+  blink::mojom::PermissionStatus state =
+      (fidl_state == fuchsia::web::PermissionState::GRANTED)
+          ? blink::mojom::PermissionStatus::GRANTED
+          : blink::mojom::PermissionStatus::DENIED;
+
+  permission_controller_.SetPermissionState(type, web_origin.value(), state);
+}
+
 void FrameImpl::CloseContents(content::WebContents* source) {
   DCHECK_EQ(source, web_contents_.get());
   context_->DestroyFrame(this);
@@ -830,8 +892,9 @@ void FrameImpl::ReadyToCommitNavigation(
     return;
 
   if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage())
+      navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage()) {
     return;
+  }
 
   mojo::AssociatedRemote<mojom::OnLoadScriptInjector>
       before_load_script_injector;

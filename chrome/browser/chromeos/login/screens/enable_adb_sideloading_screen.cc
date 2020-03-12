@@ -156,8 +156,7 @@ void EnableAdbSideloadingScreen::OnEnableAdbSideload(
 }
 
 void EnableAdbSideloadingScreen::OnLearnMore() {
-  // TODO(victorhsieh): replace the help center link
-  HelpAppLauncher::HelpTopic topic = HelpAppLauncher::HELP_POWERWASH;
+  HelpAppLauncher::HelpTopic topic = HelpAppLauncher::HELP_ADB_SIDELOADING;
   VLOG(1) << "Trying to view help article " << topic;
   if (!help_app_.get()) {
     help_app_ = new HelpAppLauncher(

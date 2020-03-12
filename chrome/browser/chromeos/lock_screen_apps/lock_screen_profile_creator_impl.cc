@@ -93,6 +93,7 @@ void LockScreenProfileCreatorImpl::OnProfileReady(
     // similar to http://crbug.com/461493).
     // TODO(tbarzic): Revisit this if webviews get enabled for lock screen apps.
     profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, false);
+    profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnhanced, false);
     return;
   }
 

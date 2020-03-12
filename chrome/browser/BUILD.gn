@@ -3014,6 +3014,7 @@ jumbo_static_library("browser") {
       "//components/security_state/content/android",
       "//components/send_tab_to_self",
       "//components/signin/internal/identity_manager",  # cf android/signin/DEPS
+      "//components/subresource_filter/android",
       "//components/viz/common",
       "//media/mojo/clients",
       "//rlz:rlz_utils",
@@ -5370,6 +5371,8 @@ jumbo_static_library("browser") {
       "supervised_user/mature_extension_checker.h",
       "supervised_user/supervised_user_extensions_metrics_recorder.cc",
       "supervised_user/supervised_user_extensions_metrics_recorder.h",
+      "supervised_user/supervised_user_service_management_api_delegate.cc",
+      "supervised_user/supervised_user_service_management_api_delegate.h",
     ]
   }
 

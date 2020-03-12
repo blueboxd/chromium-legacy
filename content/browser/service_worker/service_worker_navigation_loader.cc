@@ -345,8 +345,8 @@ void ServiceWorkerNavigationLoader::StartResponse(
   // browser. See https://crbug.com/392409 for details about this design.
   // TODO(horo): When we support mixed-content (HTTP) no-cors requests from a
   // ServiceWorker, we have to check the security level of the responses.
-  DCHECK(version->GetMainScriptHttpResponseInfo());
-  response_head_->ssl_info = version->GetMainScriptHttpResponseInfo()->ssl_info;
+  DCHECK(version->GetMainScriptResponse());
+  response_head_->ssl_info = version->GetMainScriptResponse()->ssl_info;
 
   // Handle a redirect response. ComputeRedirectInfo returns non-null redirect
   // info if the given response is a redirect.

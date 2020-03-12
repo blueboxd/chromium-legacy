@@ -335,6 +335,11 @@ body.hide-fakebox #fakebox {
   width: 24px;
 }
 
+#realbox-matches a:-webkit-any(:focus-within, .selected)
+    :-webkit-any(.clock-icon, .search-icon) {
+  background-color: var(--search-box-icon-selected, rgb(117, 117, 117));
+}
+
 .clock-icon {
   -webkit-mask-image: url(icons/clock.svg);
 }
@@ -380,6 +385,7 @@ html[dir=rtl] .image-container {
 
 #realbox-matches a:-webkit-any(:focus-within, .selected) {
   background-color: var(--search-box-results-bg-selected, rgb(219, 219, 220));
+  color: var(--search-box-results-text-selected, rgb(var(--GG900-rgb)));
 }
 
 #realbox-matches .match {
@@ -390,8 +396,16 @@ html[dir=rtl] .image-container {
   color: var(--search-box-results-dim, rgb(var(--GG600-rgb)));
 }
 
+#realbox-matches a:-webkit-any(:focus-within, .selected) .dim {
+  color: var(--search-box-results-dim-selected, rgb(var(--GG600-rgb)));
+}
+
 #realbox-matches .url {
   color: var(--search-box-results-url, rgb(var(--GB600-rgb)));
+}
+
+#realbox-matches  a:-webkit-any(:focus-within, .selected) .url {
+  color: var(--search-box-results-url-selected, rgb(var(--GB600-rgb)));
 }
 
 #realbox-matches .remove-match {
@@ -409,11 +423,17 @@ html[dir=rtl] .image-container {
 }
 
 #realbox-matches .remove-match:hover {
-  background-color: var(--remove-match-hovered, rgba(var(--GG900-rgb), .08));
+  background-color: var(--remove-match-hovered, rgba(var(--GG900-rgb), .16));
 }
 
-#realbox-matches .remove-match:focus-within {
-  background-color: var(--remove-match-focused, rgba(var(--GG900-rgb), .16));
+#realbox-matches a:-webkit-any(:focus-within, .selected) .remove-match:hover {
+  background-color:
+      var(--remove-match-selected-hovered, rgba(var(--GG900-rgb), .16));
+}
+
+#realbox-matches a:-webkit-any(:focus-within, .selected)
+    .remove-match:focus-within {
+  background-color: var(--remove-match-focused, rgba(var(--GG900-rgb), .32));
 }
 
 #realbox-matches .remove-icon {
@@ -421,12 +441,19 @@ html[dir=rtl] .image-container {
   width: 100%;
 }
 
-#realbox-matches a:-webkit-any(:hover, :focus-within, .selected) .remove-icon {
+#realbox-matches .remove-icon {
   -webkit-mask-image: url(../../../../ui/webui/resources/images/icon_clear.svg);
   -webkit-mask-position: center;
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 16px;
+}
+
+#realbox-matches a:-webkit-any(:hover) .remove-icon {
   background-color: var(--search-box-icon, rgb(var(--GG900-rgb)));
+}
+
+#realbox-matches a:-webkit-any(:focus-within, .selected) .remove-icon {
+  background-color: var(--search-box-icon-selected, rgb(var(--GG900-rgb)));
 }
 
 #fakebox > input {

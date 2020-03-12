@@ -116,7 +116,9 @@ Polymer({
   onTap_(e) {
     if (this.disabled) {
       e.stopPropagation();
+      return;
     }
+    this.fire(this.buttonType === ButtonTypes.BACK ? 'go-back' : 'go-next');
   }
 
 });

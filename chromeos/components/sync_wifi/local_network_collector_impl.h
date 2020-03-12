@@ -23,6 +23,8 @@ class WifiConfigurationSpecifics;
 
 namespace chromeos {
 
+class NetworkMetadataStore;
+
 namespace sync_wifi {
 
 // Handles the retrieval, filtering, and conversion of local network
@@ -35,9 +37,10 @@ class LocalNetworkCollectorImpl
  public:
   // LocalNetworkCollector:
 
-  // |cros_network_config| must outlive this class.
+  // |cros_network_config| and |network_metadata_store| must outlive this class.
   LocalNetworkCollectorImpl(
-      network_config::mojom::CrosNetworkConfig* cros_network_config);
+      network_config::mojom::CrosNetworkConfig* cros_network_config,
+      NetworkMetadataStore* network_metadata_store);
   ~LocalNetworkCollectorImpl() override;
 
   // Can only execute one request at a time.
@@ -97,6 +100,7 @@ class LocalNetworkCollectorImpl
   mojo::Receiver<chromeos::network_config::mojom::CrosNetworkConfigObserver>
       cros_network_config_observer_receiver_{this};
   std::vector<network_config::mojom::NetworkStatePropertiesPtr> mojo_networks_;
+  NetworkMetadataStore* network_metadata_store_;
 
   base::flat_map<std::string, std::vector<sync_pb::WifiConfigurationSpecifics>>
       request_guid_to_complete_protos_;

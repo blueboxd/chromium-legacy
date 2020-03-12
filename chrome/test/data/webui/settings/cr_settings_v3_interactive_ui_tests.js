@@ -36,3 +36,15 @@ var CrSettingsAnimatedPagesV3Test =
 TEST_F('CrSettingsAnimatedPagesV3Test', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var SettingsUIV3InteractiveTest = class extends CrSettingsV3InteractiveUITest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/settings_ui_tests.m.js';
+  }
+};
+
+TEST_F('SettingsUIV3InteractiveTest', 'All', function() {
+  mocha.run();
+});

@@ -1316,7 +1316,7 @@ template("assert_valid_out_dir") {
                                   "*\bposix/*",
                                   "*\bwin/*",
                                 ])
-  assert(target_name != "")  # Mark as used.
+  not_needed([ "target_name" ])
   sources = invoker.actual_sources
   assert(
       sources == invoker.actual_sources,

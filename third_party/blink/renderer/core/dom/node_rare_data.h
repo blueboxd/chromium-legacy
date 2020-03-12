@@ -25,6 +25,7 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/wtf/bit_field.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
@@ -72,9 +73,9 @@ class GC_PLUGIN_IGNORE(
   NodeData(bool is_rare_data, bool is_element_rare_data)
       : connected_frame_count_(0),
         element_flags_(0),
-        restyle_flags_(0),
-        is_element_rare_data_(is_element_rare_data),
-        is_rare_data_(is_rare_data) {
+        bit_field_(RestyleFlags::encode(0) |
+                   IsElementRareData::encode(is_element_rare_data) |
+                   IsRareData::encode(is_rare_data)) {
     DCHECK(!is_element_rare_data || is_rare_data);
   }
   void Trace(Visitor*);
@@ -87,15 +88,17 @@ class GC_PLUGIN_IGNORE(
   };
 
  protected:
-  // The top 4 fields belong to NodeRareData. They are located here to conserve
-  // space and avoid increase in size of NodeRareData (without locating the
-  // fields here, is_rare_data_ will be padded thus increasing the size of
-  // NodeRareData by 8 bytes).
-  unsigned connected_frame_count_ : kConnectedFrameCountBits;
-  unsigned element_flags_ : kNumberOfElementFlags;
-  unsigned restyle_flags_ : kNumberOfDynamicRestyleFlags;
-  const unsigned is_element_rare_data_ : 1;
-  const unsigned is_rare_data_ : 1;
+  using BitField = WTF::ConcurrentlyReadBitField<uint16_t>;
+  using RestyleFlags =
+      BitField::DefineFirstValue<uint16_t, kNumberOfDynamicRestyleFlags>;
+  using IsElementRareData = RestyleFlags::
+      DefineNextValue<bool, 1, WTF::BitFieldValueConstness::kConst>;
+  using IsRareData = IsElementRareData::
+      DefineNextValue<bool, 1, WTF::BitFieldValueConstness::kConst>;
+
+  uint16_t connected_frame_count_ : kConnectedFrameCountBits;
+  uint16_t element_flags_ : kNumberOfElementFlags;
+  BitField bit_field_;
 };
 
 class GC_PLUGIN_IGNORE("Manual dispatch implemented in NodeData.")
@@ -165,7 +168,7 @@ class GC_PLUGIN_IGNORE("Manual dispatch implemented in NodeData.") NodeRareData
     return *mutation_observer_data_;
   }
 
-  unsigned ConnectedSubframeCount() const { return connected_frame_count_; }
+  uint16_t ConnectedSubframeCount() const { return connected_frame_count_; }
   void IncrementConnectedSubframeCount();
   void DecrementConnectedSubframeCount() {
     DCHECK(connected_frame_count_);
@@ -173,25 +176,27 @@ class GC_PLUGIN_IGNORE("Manual dispatch implemented in NodeData.") NodeRareData
   }
 
   bool HasElementFlag(ElementFlags mask) const {
-    return element_flags_ & static_cast<unsigned>(mask);
+    return element_flags_ & static_cast<uint16_t>(mask);
   }
   void SetElementFlag(ElementFlags mask, bool value) {
-    element_flags_ = (element_flags_ & ~static_cast<unsigned>(mask)) |
-                     (-(int32_t)value & static_cast<unsigned>(mask));
+    element_flags_ =
+        (element_flags_ & ~static_cast<uint16_t>(mask)) |
+        (-static_cast<uint16_t>(value) & static_cast<uint16_t>(mask));
   }
   void ClearElementFlag(ElementFlags mask) {
-    element_flags_ &= ~static_cast<unsigned>(mask);
+    element_flags_ &= ~static_cast<uint16_t>(mask);
   }
 
   bool HasRestyleFlag(DynamicRestyleFlags mask) const {
-    return restyle_flags_ & static_cast<unsigned>(mask);
+    return bit_field_.get<RestyleFlags>() & static_cast<uint16_t>(mask);
   }
   void SetRestyleFlag(DynamicRestyleFlags mask) {
-    restyle_flags_ |= static_cast<unsigned>(mask);
-    CHECK(restyle_flags_);
+    bit_field_.set<RestyleFlags>(bit_field_.get<RestyleFlags>() |
+                                 static_cast<uint16_t>(mask));
+    CHECK(bit_field_.get<RestyleFlags>());
   }
-  bool HasRestyleFlags() const { return restyle_flags_; }
-  void ClearRestyleFlags() { restyle_flags_ = 0; }
+  bool HasRestyleFlags() const { return bit_field_.get<RestyleFlags>(); }
+  void ClearRestyleFlags() { bit_field_.set<RestyleFlags>(0); }
 
   void TraceAfterDispatch(blink::Visitor*) const;
   void FinalizeGarbageCollectedObject();

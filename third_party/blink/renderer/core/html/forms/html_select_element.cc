@@ -554,46 +554,6 @@ void HTMLSelectElement::SetActiveSelectionEnd(HTMLOptionElement* option) {
   active_selection_end_ = option;
 }
 
-void HTMLSelectElement::UpdateListBoxSelection(bool deselect_other_options,
-                                               bool scroll) {
-  DCHECK(GetLayoutObject());
-  DCHECK(!UsesMenuList() || is_multiple_);
-
-  int active_selection_anchor_index =
-      active_selection_anchor_ ? active_selection_anchor_->index() : -1;
-  int active_selection_end_index =
-      active_selection_end_ ? active_selection_end_->index() : -1;
-  int start =
-      std::min(active_selection_anchor_index, active_selection_end_index);
-  int end = std::max(active_selection_anchor_index, active_selection_end_index);
-
-  int i = 0;
-  for (auto* const option : GetOptionList()) {
-    if (option->IsDisabledFormControl() || !option->GetLayoutObject()) {
-      ++i;
-      continue;
-    }
-    if (i >= start && i <= end) {
-      option->SetSelectedState(active_selection_state_);
-      option->SetDirty(true);
-    } else if (deselect_other_options ||
-               i >= static_cast<int>(
-                        cached_state_for_active_selection_.size())) {
-      option->SetSelectedState(false);
-      option->SetDirty(true);
-    } else {
-      option->SetSelectedState(cached_state_for_active_selection_[i]);
-    }
-    ++i;
-  }
-
-  select_type_->UpdateMultiSelectFocus();
-  SetNeedsValidityCheck();
-  if (scroll)
-    ScrollToSelection();
-  NotifyFormStateChanged();
-}
-
 void HTMLSelectElement::ListBoxOnChange() {
   DCHECK(!UsesMenuList());
 

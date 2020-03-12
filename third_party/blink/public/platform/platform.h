@@ -88,7 +88,7 @@ class Local;
 }
 
 namespace viz {
-class ContextProvider;
+class RasterContextProvider;
 }
 
 namespace blink {
@@ -526,7 +526,7 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
-  virtual viz::ContextProvider* SharedMainThreadContextProvider() {
+  virtual viz::RasterContextProvider* SharedMainThreadContextProvider() {
     return nullptr;
   }
 

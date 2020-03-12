@@ -9,6 +9,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/events/gestures/gesture_types.h"
 
 namespace aura {
 class Window;
@@ -40,6 +41,10 @@ class KEYBOARD_EXPORT KeyboardUI {
   // keyboard extensions are loaded. Returns null if the window has not started
   // loading.
   virtual aura::Window* GetKeyboardWindow() const = 0;
+
+  // Get the gesture consumer for the keyboard, which may be different to the
+  // window itself if there are nested windows.
+  virtual ui::GestureConsumer* GetGestureConsumer() const = 0;
 
   // Gets the InputMethod that will provide notifications about changes in the
   // text input context.

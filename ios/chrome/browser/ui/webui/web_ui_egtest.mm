@@ -127,7 +127,8 @@ bool WaitForOmniboxURLString(std::string URL, bool exact_match = true) {
 
 // Tests that back navigation functions properly after navigation via anchor
 // click.
-- (void)testChromeURLBackNavigationFromAnchorClick {
+// TODO(crbug.com/1058028): This test is flaky.
+- (void)FLAKY_testChromeURLBackNavigationFromAnchorClick {
   [ChromeEarlGrey loadURL:GURL(kChromeUIChromeURLsURL)];
 
   // Tap on chrome://version link on the page.
@@ -218,7 +219,8 @@ bool WaitForOmniboxURLString(std::string URL, bool exact_match = true) {
 }
 
 // Tests that repeated back/forward navigation from web URL is allowed.
-- (void)testBackForwardFromWebURL {
+// TODO(crbug.com/1058028): This test is flaky.
+- (void)FLAKY_testBackForwardFromWebURL {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 
   std::string chromeVersionWebText =

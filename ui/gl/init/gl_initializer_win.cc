@@ -192,7 +192,7 @@ bool InitializeGLOneOffPlatform() {
       break;
     case kGLImplementationSwiftShaderGL:
     case kGLImplementationEGLANGLE:
-      if (!GLSurfaceEGL::InitializeOneOff(GetDC(nullptr))) {
+      if (!GLSurfaceEGL::InitializeOneOff(EGLDisplayPlatform(GetDC(nullptr)))) {
         LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
         return false;
       }

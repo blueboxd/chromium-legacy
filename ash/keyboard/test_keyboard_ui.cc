@@ -40,6 +40,10 @@ aura::Window* TestKeyboardUI::GetKeyboardWindow() const {
   return keyboard_window_.get();
 }
 
+ui::GestureConsumer* TestKeyboardUI::GetGestureConsumer() const {
+  return GetKeyboardWindow();
+}
+
 ui::InputMethod* TestKeyboardUI::GetInputMethod() {
   aura::Window* active_window = window_util::GetActiveWindow();
   aura::Window* root_window = active_window ? active_window->GetRootWindow()

@@ -506,7 +506,7 @@ void It2MeHost::DisconnectOnNetworkThread() {
 
 void It2MeHost::ValidateConnectionDetails(
     const std::string& original_remote_jid,
-    const ValidationResultCallback& result_callback) {
+    ValidationResultCallback result_callback) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   // First ensure the JID we received is valid.
@@ -515,8 +515,8 @@ void It2MeHost::ValidateConnectionDetails(
                                 /*resource=*/nullptr)) {
     LOG(ERROR) << "Rejecting incoming connection from " << original_remote_jid
                << ": Invalid JID.";
-    result_callback.Run(
-        protocol::ValidatingAuthenticator::Result::ERROR_INVALID_ACCOUNT);
+    std::move(result_callback)
+        .Run(protocol::ValidatingAuthenticator::Result::ERROR_INVALID_ACCOUNT);
     DisconnectOnNetworkThread();
     return;
   }
@@ -524,8 +524,8 @@ void It2MeHost::ValidateConnectionDetails(
 
   if (client_username.empty()) {
     LOG(ERROR) << "Invalid user name passed in: " << remote_jid;
-    result_callback.Run(
-        protocol::ValidatingAuthenticator::Result::ERROR_INVALID_ACCOUNT);
+    std::move(result_callback)
+        .Run(protocol::ValidatingAuthenticator::Result::ERROR_INVALID_ACCOUNT);
     DisconnectOnNetworkThread();
     return;
   }
@@ -543,7 +543,7 @@ void It2MeHost::ValidateConnectionDetails(
     if (!matched) {
       LOG(ERROR) << "Rejecting incoming connection from " << remote_jid
                  << ": Domain not allowed.";
-      result_callback.Run(ValidationResult::ERROR_INVALID_ACCOUNT);
+      std::move(result_callback).Run(ValidationResult::ERROR_INVALID_ACCOUNT);
       DisconnectOnNetworkThread();
       return;
     }
@@ -554,7 +554,8 @@ void It2MeHost::ValidateConnectionDetails(
   if (state_ != kReceivedAccessCode) {
     DCHECK_EQ(kConnecting, state_);
     LOG(ERROR) << "Received too many connection requests.";
-    result_callback.Run(ValidationResult::ERROR_TOO_MANY_CONNECTIONS);
+    std::move(result_callback)
+        .Run(ValidationResult::ERROR_TOO_MANY_CONNECTIONS);
     DisconnectOnNetworkThread();
     return;
   }
@@ -570,28 +571,28 @@ void It2MeHost::ValidateConnectionDetails(
         host_context_->ui_task_runner(),
         confirmation_dialog_factory_->Create()));
     confirmation_dialog_proxy_->Show(
-        client_username, base::Bind(&It2MeHost::OnConfirmationResult,
-                                    base::Unretained(this), result_callback));
+        client_username,
+        base::Bind(&It2MeHost::OnConfirmationResult, base::Unretained(this),
+                   base::Passed(std::move(result_callback))));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(result_callback, ValidationResult::SUCCESS));
+        base::BindOnce(std::move(result_callback), ValidationResult::SUCCESS));
   }
 }
 
-void It2MeHost::OnConfirmationResult(
-    const ValidationResultCallback& result_callback,
-    It2MeConfirmationDialog::Result result) {
+void It2MeHost::OnConfirmationResult(ValidationResultCallback result_callback,
+                                     It2MeConfirmationDialog::Result result) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   connecting_jid_.clear();
   switch (result) {
     case It2MeConfirmationDialog::Result::OK:
-      result_callback.Run(ValidationResult::SUCCESS);
+      std::move(result_callback).Run(ValidationResult::SUCCESS);
       break;
 
     case It2MeConfirmationDialog::Result::CANCEL:
-      result_callback.Run(ValidationResult::ERROR_REJECTED_BY_USER);
+      std::move(result_callback).Run(ValidationResult::ERROR_REJECTED_BY_USER);
       DisconnectOnNetworkThread();
       break;
   }

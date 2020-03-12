@@ -13,11 +13,16 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "ui/aura/env.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -250,6 +255,19 @@ aura::Window* KeyboardControllerImpl::GetContainerForDefaultDisplay() {
   // Return the first touch display, or the primary display if there are none.
   return GetContainerForDisplay(
       has_touch_display ? *first_touch_display : screen->GetPrimaryDisplay());
+}
+
+void KeyboardControllerImpl::TransferGestureEventToShelf(
+    const ui::GestureEvent& e) {
+  ash::Shelf* shelf =
+      ash::Shelf::ForWindow(keyboard_ui_controller_->GetKeyboardWindow());
+  if (shelf) {
+    shelf->ProcessGestureEvent(e);
+    aura::Env::GetInstance()->gesture_recognizer()->TransferEventsTo(
+        keyboard_ui_controller_->GetGestureConsumer(), shelf->GetWindow(),
+        ui::TransferTouchesBehavior::kCancel);
+    HideKeyboard(HideReason::kUser);
+  }
 }
 
 void KeyboardControllerImpl::OnKeyboardConfigChanged(

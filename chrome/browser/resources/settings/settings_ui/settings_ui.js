@@ -14,9 +14,10 @@ cr.define('settings', function() {
   /** Defined when the main Settings script runs. */
   let defaultResourceLoaded = true;  // eslint-disable-line prefer-const
 
-  assert(
-      !window.settings || !window.settings.defaultResourceLoaded,
-      'settings_ui.js run twice. You probably have an invalid import.');
+  /* #ignore */ assert(
+      /* #ignore */ !window.settings || !window.settings.defaultResourceLoaded,
+      /* #ignore */ 'settings_ui.js run twice. ' +
+          /* #ignore */ 'You probably have an invalid import.');
 
   Polymer({
     is: 'settings-ui',
@@ -97,7 +98,7 @@ cr.define('settings', function() {
         this.$.drawer.cancel();
       });
 
-      CrPolicyStrings = {
+      window.CrPolicyStrings = {
         controlledSettingExtension:
             loadTimeData.getString('controlledSettingExtension'),
         controlledSettingExtensionWithoutName:
@@ -143,7 +144,8 @@ cr.define('settings', function() {
 
       // Preload bold Roboto so it doesn't load and flicker the first time used.
       document.fonts.load('bold 12px Roboto');
-      settings.setGlobalScrollTarget(this.$.container);
+      settings.setGlobalScrollTarget(
+          /** @type {HTMLElement} */ (this.$.container));
 
       const scrollToTop = top => new Promise(resolve => {
         if (this.$.container.scrollTop === top) {

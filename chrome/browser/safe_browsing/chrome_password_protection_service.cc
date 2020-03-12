@@ -1387,7 +1387,7 @@ PrefService* ChromePasswordProtectionService::GetPrefs() {
 }
 
 bool ChromePasswordProtectionService::IsSafeBrowsingEnabled() {
-  return GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled);
+  return ::safe_browsing::IsSafeBrowsingEnabled(*GetPrefs());
 }
 
 bool ChromePasswordProtectionService::IsExtendedReporting() {

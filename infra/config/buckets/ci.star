@@ -1116,13 +1116,13 @@ ci.fyi_coverage_builder(
 
 ci.fyi_coverage_builder(
     name = 'ios-simulator-code-coverage',
-    caches = [xcode_cache.x11m382q],
+    caches = [xcode_cache.x11c29],
     cores = None,
     goma_backend = None,  # TODO(crbug.com/950413): Use goma.backend.RBE_PROD
     os = os.MAC_ANY,
     use_clang_coverage = True,
     properties = {
-        'xcode_build_version': '11m382q',
+        'xcode_build_version': '11c29',
     },
 )
 

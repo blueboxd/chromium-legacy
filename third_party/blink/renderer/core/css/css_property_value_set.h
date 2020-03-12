@@ -144,23 +144,22 @@ class CORE_EXPORT CSSPropertyValueSet
  protected:
   enum { kMaxArraySize = (1 << 28) - 1 };
 
-  CSSPropertyValueSet(CSSParserMode css_parser_mode)
-      : css_parser_mode_(css_parser_mode), is_mutable_(true), array_size_(0) {}
+  explicit CSSPropertyValueSet(CSSParserMode css_parser_mode)
+      : array_size_(0), css_parser_mode_(css_parser_mode), is_mutable_(true) {}
 
   CSSPropertyValueSet(CSSParserMode css_parser_mode,
                       unsigned immutable_array_size)
-      : css_parser_mode_(css_parser_mode), is_mutable_(false) {
-    // Avoid min()/max() from std here in the header, because that would require
-    // inclusion of <algorithm>, which is slow to compile.
-    if (immutable_array_size < unsigned(kMaxArraySize))
-      array_size_ = immutable_array_size;
-    else
-      array_size_ = unsigned(kMaxArraySize);
-  }
+      // Avoid min()/max() from std here in the header, because that would
+      // require inclusion of <algorithm>, which is slow to compile.
+      : array_size_((immutable_array_size < unsigned(kMaxArraySize))
+                        ? immutable_array_size
+                        : unsigned(kMaxArraySize)),
+        css_parser_mode_(css_parser_mode),
+        is_mutable_(false) {}
 
-  unsigned css_parser_mode_ : 3;
-  const unsigned is_mutable_ : 1;
-  unsigned array_size_ : 28;
+  const uint32_t array_size_ : 28;
+  const uint32_t css_parser_mode_ : 3;
+  const uint32_t is_mutable_ : 1;
 
   friend class PropertySetCSSStyleDeclaration;
   DISALLOW_COPY_AND_ASSIGN(CSSPropertyValueSet);

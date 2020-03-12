@@ -36,6 +36,7 @@ import './settings_main/settings_main.m.js';
 import './settings_menu/settings_menu.m.js';
 import './settings_page/settings_subpage.m.js';
 import './settings_page/settings_animated_pages.m.js';
+import './settings_ui/settings_ui.m.js';
 
 // <if expr="_google_chrome and is_win">
 import './incompatible_applications_page/incompatible_applications_page.m.js';
@@ -81,6 +82,7 @@ export {getSearchManager, SearchRequest, setSearchManagerForTesting} from './sea
 export {kMenuCloseDelay} from './languages_page/languages_page.m.js';
 export {LanguagesBrowserProxyImpl} from './languages_page/languages_browser_proxy.m.js';
 export {LifetimeBrowserProxyImpl} from './lifetime_browser_proxy.m.js';
+export {MetricsBrowserProxyImpl, PrivacyElementInteractions} from './metrics_browser_proxy.m.js';
 export {OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from './on_startup_page/on_startup_browser_proxy.m.js';
 export {EDIT_STARTUP_URL_EVENT} from './on_startup_page/startup_url_entry.m.js';
 export {StartupUrlsPageBrowserProxy, StartupUrlsPageBrowserProxyImpl} from './on_startup_page/startup_urls_page_browser_proxy.m.js';

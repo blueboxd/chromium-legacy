@@ -11,12 +11,17 @@ SearchBoxTheme::SearchBoxTheme(const SearchBoxTheme& other) = default;
 SearchBoxTheme::~SearchBoxTheme() = default;
 
 bool SearchBoxTheme::operator==(const SearchBoxTheme& rhs) const {
-  return bg == rhs.bg && icon == rhs.icon && placeholder == rhs.placeholder &&
+  return bg == rhs.bg && icon == rhs.icon &&
+         icon_selected == rhs.icon_selected && placeholder == rhs.placeholder &&
          results_bg == rhs.results_bg &&
          results_bg_hovered == rhs.results_bg_hovered &&
          results_bg_selected == rhs.results_bg_selected &&
-         results_dim == rhs.results_dim && results_text == rhs.results_text &&
-         results_url == rhs.results_url && text == rhs.text;
+         results_dim == rhs.results_dim &&
+         results_dim_selected == rhs.results_dim_selected &&
+         results_text == rhs.results_text &&
+         results_text_selected == rhs.results_text_selected &&
+         results_url == rhs.results_url &&
+         results_url_selected == rhs.results_url_selected && text == rhs.text;
 }
 
 NtpTheme::NtpTheme() = default;

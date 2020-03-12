@@ -251,6 +251,36 @@ double PriorityToDouble(const WTF::String& priority) {
   return result;
 }
 
+std::string PriorityFromEnum(webrtc::Priority priority) {
+  switch (priority) {
+    case webrtc::Priority::kVeryLow:
+      return "very-low";
+    case webrtc::Priority::kLow:
+      return "low";
+    case webrtc::Priority::kMedium:
+      return "medium";
+    case webrtc::Priority::kHigh:
+      return "high";
+  }
+}
+
+webrtc::Priority PriorityToEnum(const WTF::String& priority) {
+  webrtc::Priority result = webrtc::Priority::kLow;
+
+  if (priority == "very-low") {
+    result = webrtc::Priority::kVeryLow;
+  } else if (priority == "low") {
+    result = webrtc::Priority::kLow;
+  } else if (priority == "medium") {
+    result = webrtc::Priority::kMedium;
+  } else if (priority == "high") {
+    result = webrtc::Priority::kHigh;
+  } else {
+    NOTREACHED();
+  }
+  return result;
+}
+
 std::tuple<Vector<webrtc::RtpEncodingParameters>, webrtc::DegradationPreference>
 ToRtpParameters(const RTCRtpSendParameters* parameters) {
   Vector<webrtc::RtpEncodingParameters> encodings;
@@ -277,19 +307,8 @@ webrtc::RtpEncodingParameters ToRtpEncodingParameters(
   }
   webrtc_encoding.active = encoding->active();
   webrtc_encoding.bitrate_priority = PriorityToDouble(encoding->priority());
-  // TODO(deadbeef): Make helper function once network_priority changes from a
-  // double to an enum.
-  if (encoding->networkPriority() == "very-low") {
-    webrtc_encoding.network_priority = webrtc::Priority::kVeryLow;
-  } else if (encoding->networkPriority() == "low") {
-    webrtc_encoding.network_priority = webrtc::Priority::kLow;
-  } else if (encoding->networkPriority() == "medium") {
-    webrtc_encoding.network_priority = webrtc::Priority::kMedium;
-  } else if (encoding->networkPriority() == "high") {
-    webrtc_encoding.network_priority = webrtc::Priority::kHigh;
-  } else {
-    NOTREACHED();
-  }
+  webrtc_encoding.network_priority =
+      PriorityToEnum(encoding->networkPriority());
   if (encoding->hasMaxBitrate()) {
     webrtc_encoding.max_bitrate_bps = clampTo<int>(encoding->maxBitrate());
   }
@@ -430,21 +449,8 @@ RTCRtpSendParameters* RTCRtpSender::getParameters() {
     }
     encoding->setPriority(
         PriorityFromDouble(webrtc_encoding.bitrate_priority).c_str());
-    // TODO(deadbeef): Make helper function and use switch statement once
-    // network_priority changes from a double to an enum.
-    std::string network_priority;
-    if (webrtc_encoding.network_priority == webrtc::Priority::kVeryLow) {
-      network_priority = "very-low";
-    } else if (webrtc_encoding.network_priority == webrtc::Priority::kLow) {
-      network_priority = "low";
-    } else if (webrtc_encoding.network_priority == webrtc::Priority::kMedium) {
-      network_priority = "medium";
-    } else if (webrtc_encoding.network_priority == webrtc::Priority::kHigh) {
-      network_priority = "high";
-    } else {
-      NOTREACHED();
-    }
-    encoding->setNetworkPriority(network_priority.c_str());
+    encoding->setNetworkPriority(
+        PriorityFromEnum(webrtc_encoding.network_priority).c_str());
     if (webrtc_encoding.num_temporal_layers) {
       if (*webrtc_encoding.num_temporal_layers == 2) {
         encoding->setScalabilityMode("L1T2");

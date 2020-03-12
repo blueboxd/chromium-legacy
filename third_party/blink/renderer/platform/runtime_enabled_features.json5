@@ -318,6 +318,8 @@
       // NativeFileSystem is in Origin Trial, which doesn't support having
       // non-origin-trial-enabled features depend on it. https://crbug.com/1000486
       // depends_on: ["NativeFileSystem"]
+      origin_trial_feature_name: "NativeFileSystem2",
+      origin_trial_os: ["win", "macosx", "linux", "chromeos"],
     },
     {
       name: "CompositeAfterPaint",
@@ -1109,7 +1111,7 @@
       // on the command line (or via chrome://flags).
       name: "NativeFileSystem",
       status: {"Android": "test", "default": "experimental"},
-      origin_trial_feature_name: "NativeFileSystem",
+      origin_trial_feature_name: "NativeFileSystem2",
       origin_trial_os: ["win", "macosx", "linux", "chromeos"],
     },
     {
@@ -1928,6 +1930,8 @@
       // NativeFileSystem is in Origin Trial, which doesn't support having
       // non-origin-trial-enabled features depend on it. https://crbug.com/1000486
       // depends_on: ["NativeFileSystem"]
+      origin_trial_feature_name: "NativeFileSystem2",
+      origin_trial_os: ["win", "macosx", "linux", "chromeos"],
     },
     {
       name: "XSLT",

@@ -247,7 +247,7 @@ void ThumbnailMediaParser::OnVideoFrameDecoded(
 
 void ThumbnailMediaParser::RenderVideoFrame(
     scoped_refptr<media::VideoFrame> video_frame) {
-  auto context_provider =
+  auto* context_provider =
       gpu_factories_ ? gpu_factories_->GetMediaContextProvider() : nullptr;
 
   media::PaintCanvasVideoRenderer renderer;
@@ -257,7 +257,7 @@ void ThumbnailMediaParser::RenderVideoFrame(
 
   // Draw the video frame to |bitmap|.
   cc::SkiaPaintCanvas canvas(bitmap);
-  renderer.Copy(video_frame, &canvas, context_provider.get());
+  renderer.Copy(video_frame, &canvas, context_provider);
 
   RecordVideoThumbnailEvent(VideoThumbnailEvent::kVideoThumbnailComplete);
   NotifyComplete(std::move(bitmap));

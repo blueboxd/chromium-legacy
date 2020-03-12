@@ -124,3 +124,38 @@ class OffScreenMainSixtyJank(ThroughputMetricStory):
   SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
   URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
          'main-animations-throughput.html?jank&offscreen#60')
+
+
+class ThroughputScrolling(ThroughputMetricStory):
+  ABSTRACT_STORY = True
+  URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
+         'throughput_scroll.html')
+  SPEED_IN_PIXELS_PER_SECOND = 5000
+  SELECTOR = 'undefined'
+
+  def RunPageInteractions(self, action_runner):
+    selector = self.SELECTOR
+    action_runner.WaitForElement(selector=selector)
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollElement(selector=selector, direction='down')
+      action_runner.ScrollElement(selector=selector, direction='up')
+
+
+class ThroughputScrollingUncomposited(ThroughputScrolling):
+  BASE_NAME = 'throughput_scrolling_uncomposited'
+  SELECTOR = '.uncomposited'
+
+
+class ThroughputScrollingComposited(ThroughputScrolling):
+  BASE_NAME = 'throughput_scrolling_composited'
+  SELECTOR = '#composited'
+
+
+class ThroughputScrollingPassiveHandler(ThroughputScrolling):
+  BASE_NAME = 'throughput_scrolling_passive_handler'
+  SELECTOR = '#handler_passive'
+
+
+class ThroughputScrollingActiveHandler(ThroughputScrolling):
+  BASE_NAME = 'throughput_scrolling_active_handler'
+  SELECTOR = '#handler_active'

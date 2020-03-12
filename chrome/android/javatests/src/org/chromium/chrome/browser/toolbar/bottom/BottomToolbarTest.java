@@ -17,9 +17,7 @@ import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,13 +25,13 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager.Variations;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -43,22 +41,16 @@ import java.util.concurrent.ExecutionException;
  * Integration tests for the bottom toolbar.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+// clang-format off
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+@Features.EnableFeatures({ChromeFeatureList.CHROME_DUET})
 public class BottomToolbarTest {
+    //clang-format on
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
-    @Before
-    public void setUp() throws InterruptedException {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, true);
-    }
-
-    @After
-    public void tearDown() {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, null);
-    }
 
     @Test
     @MediumTest

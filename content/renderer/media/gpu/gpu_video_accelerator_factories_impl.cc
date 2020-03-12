@@ -425,9 +425,9 @@ GpuVideoAcceleratorFactoriesImpl::GetVideoEncodeAcceleratorSupportedProfiles() {
   return supported_vea_profiles_;
 }
 
-scoped_refptr<viz::ContextProvider>
+viz::RasterContextProvider*
 GpuVideoAcceleratorFactoriesImpl::GetMediaContextProvider() {
-  return CheckContextLost() ? nullptr : context_provider_;
+  return CheckContextLost() ? nullptr : context_provider_.get();
 }
 
 void GpuVideoAcceleratorFactoriesImpl::SetRenderingColorSpace(

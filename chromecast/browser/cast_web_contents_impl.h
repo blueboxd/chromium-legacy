@@ -85,6 +85,7 @@ class CastWebContentsImpl : public CastWebContents,
   void RemoveObserver(Observer* observer) override;
   bool is_websql_enabled() override;
   bool is_mixer_audio_enabled() override;
+  bool can_bind_interfaces() override;
 
   // content::RenderProcessHostObserver implementation:
   void RenderProcessReady(content::RenderProcessHost* host) override;

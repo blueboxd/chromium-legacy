@@ -190,7 +190,6 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
   ~CSSValue() = default;
 
  protected:
-  static const size_t kClassTypeBits = 6;
   enum ClassType {
     kNumericLiteralClass,
     kMathFunctionClass,
@@ -272,8 +271,8 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
 
   explicit CSSValue(ClassType class_type)
       : numeric_literal_unit_type_(0),
-        value_list_separator_(kSpaceSeparator),
         is_non_negative_math_function_(false),
+        value_list_separator_(kSpaceSeparator),
         allows_negative_percentage_reference_(false),
         class_type_(class_type) {}
 
@@ -283,18 +282,30 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
  protected:
   // The bits in this section are only used by specific subclasses but kept here
   // to maximize struct packing.
+  // The bits are ordered and split into groups to such that from the
+  // perspective of each subclass, each field is a separate memory location.
+  // Using NOLINT here allows to use uint8_t as bitfield type which reduces
+  // size of CSSValue from 4 bytes to 3 bytes.
 
   // CSSNumericLiteralValue bits:
-  unsigned numeric_literal_unit_type_ : 7;  // CSSPrimitiveValue::UnitType
+  // This field hold CSSPrimitiveValue::UnitType.
+  uint8_t numeric_literal_unit_type_ : 7;  // NOLINT
 
-  unsigned value_list_separator_ : kValueListSeparatorBits;
+  // CSSMathFunctionValue:
+  uint8_t is_non_negative_math_function_ : 1;  // NOLINT
 
-  // CSSMathFunctionValue
-  unsigned is_non_negative_math_function_ : 1;
-  unsigned allows_negative_percentage_reference_ : 1;
+  // Force a new memory location. This will make TSAN treat the 2 fields above
+  // this line as a separate memory location than the 2 fields below it.
+  char : 0;
+
+  // CSSNumericLiteralValue bits:
+  uint8_t value_list_separator_ : kValueListSeparatorBits;  // NOLINT
+
+  // CSSMathFunctionValue:
+  uint8_t allows_negative_percentage_reference_ : 1;  // NOLINT
 
  private:
-  const unsigned class_type_ : kClassTypeBits;  // ClassType
+  const uint8_t class_type_;  // ClassType
 };
 
 template <typename CSSValueType, wtf_size_t inlineCapacity>

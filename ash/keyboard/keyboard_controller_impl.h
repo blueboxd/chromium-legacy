@@ -84,6 +84,7 @@ class ASH_EXPORT KeyboardControllerImpl
   aura::Window* GetContainerForDefaultDisplay() override;
   aura::Window* GetContainerForDisplay(
       const display::Display& display) override;
+  void TransferGestureEventToShelf(const ui::GestureEvent& e) override;
 
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;

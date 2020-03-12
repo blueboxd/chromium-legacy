@@ -69,6 +69,12 @@ aura::Window* ChromeKeyboardUI::GetKeyboardWindow() const {
              : nullptr;
 }
 
+ui::GestureConsumer* ChromeKeyboardUI::GetGestureConsumer() const {
+  return keyboard_contents_
+             ? keyboard_contents_->web_contents()->GetContentNativeView()
+             : nullptr;
+}
+
 ui::InputMethod* ChromeKeyboardUI::GetInputMethod() {
   ui::IMEBridge* bridge = ui::IMEBridge::Get();
   if (!bridge || !bridge->GetInputContextHandler()) {

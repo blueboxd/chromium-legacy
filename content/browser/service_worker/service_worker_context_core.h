@@ -122,11 +122,14 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   void OnStorageWiped();
 
+  void OnMainScriptResponseSet(
+      int64_t version_id,
+      const ServiceWorkerVersion::MainScriptResponse& response);
+
   // ServiceWorkerVersion::Observer overrides.
   void OnRunningStateChanged(ServiceWorkerVersion* version) override;
   void OnVersionStateChanged(ServiceWorkerVersion* version) override;
   void OnDevToolsRoutingIdChanged(ServiceWorkerVersion* version) override;
-  void OnMainScriptHttpResponseInfoSet(ServiceWorkerVersion* version) override;
   void OnErrorReported(ServiceWorkerVersion* version,
                        const base::string16& error_message,
                        int line_number,

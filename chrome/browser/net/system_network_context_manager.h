@@ -89,6 +89,7 @@ class SystemNetworkContextManager {
       net::DnsConfig::SecureDnsMode* secure_dns_mode,
       base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
           dns_over_https_servers,
+      bool record_metrics = false,
       chrome_browser_net::SecureDnsUiManagementMode* forced_management_mode =
           nullptr);
 

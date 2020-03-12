@@ -79,7 +79,7 @@ void GLOzoneEglCast::TerminateDisplay() {
   DCHECK(get_display);
   DCHECK(terminate);
 
-  EGLDisplay display = get_display(GetNativeDisplay());
+  EGLDisplay display = get_display(GetNativeDisplay().GetDisplay());
   DCHECK_NE(display, EGL_NO_DISPLAY);
 
   EGLBoolean terminate_result = terminate(display);
@@ -100,9 +100,10 @@ scoped_refptr<gl::GLSurface> GLOzoneEglCast::CreateOffscreenGLSurface(
   return gl::InitializeGLSurface(new gl::PbufferGLSurfaceEGL(size));
 }
 
-intptr_t GLOzoneEglCast::GetNativeDisplay() {
+gl::EGLDisplayPlatform GLOzoneEglCast::GetNativeDisplay() {
   CreateDisplayTypeAndWindowIfNeeded();
-  return reinterpret_cast<intptr_t>(display_type_);
+  return gl::EGLDisplayPlatform(
+      reinterpret_cast<EGLNativeDisplayType>(display_type_));
 }
 
 void GLOzoneEglCast::CreateDisplayTypeAndWindowIfNeeded() {

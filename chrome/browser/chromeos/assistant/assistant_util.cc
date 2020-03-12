@@ -6,32 +6,127 @@
 
 #include <string>
 
-#include "base/strings/string_util.h"
-#include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/constants/devicetype.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/public/identity_manager/account_info.h"
-#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/icu/source/common/unicode/locid.h"
-#include "ui/chromeos/events/keyboard_layout_util.h"
 
 namespace {
 
-bool IsActiveDirectoryUser(const Profile* profile) {
-  const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-  return user->IsActiveDirectoryUser();
+using ash::mojom::AssistantAllowedState;
+
+bool g_override_is_google_device = false;
+
+bool HasPrimaryAccount(const Profile* profile) {
+  auto* identity_manager =
+      IdentityManagerFactory::GetForProfileIfExists(profile);
+  if (!identity_manager)
+    return false;
+
+  return identity_manager->HasPrimaryAccount(
+      signin::ConsentLevel::kNotRequired);
+}
+
+bool IsGoogleDevice() {
+  return g_override_is_google_device || chromeos::IsGoogleBrandedDevice();
+}
+
+const user_manager::User* GetUser(const Profile* profile) {
+  return chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+}
+
+bool IsAssistantAllowedForUserType(const Profile* profile) {
+  return GetUser(profile)->HasGaiaAccount();
+}
+
+// Get the actual reason why the user type is not allowed.
+AssistantAllowedState GetErrorForUserType(const Profile* profile) {
+  DCHECK(!IsAssistantAllowedForUserType(profile));
+  switch (GetUser(profile)->GetType()) {
+    case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
+      return AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION;
+
+    case user_manager::USER_TYPE_SUPERVISED:
+      return AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER;
+
+    case user_manager::USER_TYPE_KIOSK_APP:
+    case user_manager::USER_TYPE_ARC_KIOSK_APP:
+    case user_manager::USER_TYPE_WEB_KIOSK_APP:
+      return AssistantAllowedState::DISALLOWED_BY_KIOSK_MODE;
+
+    case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
+      return AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE;
+
+    case user_manager::USER_TYPE_GUEST:
+      return AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE;
+
+    case user_manager::USER_TYPE_REGULAR:
+    case user_manager::USER_TYPE_CHILD:
+      // This method should only be called for disallowed user types.
+      NOTREACHED();
+      return AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE;
+
+    case user_manager::NUM_USER_TYPES:
+      NOTREACHED();
+      return AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE;
+  }
+}
+
+bool IsAssistantAllowedForLocale(const Profile* profile) {
+  // String literals used in some cases in the array because their
+  // constant equivalents don't exist in:
+  // third_party/icu/source/common/unicode/uloc.h
+  const std::string kAllowedLocales[] = {ULOC_CANADA,  ULOC_CANADA_FRENCH,
+                                         ULOC_FRANCE,  ULOC_FRENCH,
+                                         ULOC_GERMANY, ULOC_ITALY,
+                                         ULOC_JAPAN,   ULOC_JAPANESE,
+                                         ULOC_UK,      ULOC_US,
+                                         "da",         "en_AU",
+                                         "en_IN",      "en_NZ",
+                                         "es_CO",      "es_ES",
+                                         "es_MX",      "fr_BE",
+                                         "it",         "nb",
+                                         "nl",         "nn",
+                                         "no",         "sv"};
+
+  const PrefService* prefs = profile->GetPrefs();
+  std::string pref_locale =
+      prefs->GetString(language::prefs::kApplicationLocale);
+  // Also accept runtime locale which maybe an approximation of user's pref
+  // locale.
+  const std::string kRuntimeLocale = icu::Locale::getDefault().getName();
+
+  base::ReplaceChars(pref_locale, "-", "_", &pref_locale);
+  bool allowed = base::Contains(kAllowedLocales, pref_locale) ||
+                 base::Contains(kAllowedLocales, kRuntimeLocale);
+
+  return allowed;
+}
+
+bool IsAssistantDisabledByPolicy(const Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(
+      chromeos::assistant::prefs::kAssistantDisabledByPolicy);
+}
+
+bool IsEmailDomainSupported(const Profile* profile) {
+  const std::string email = GetUser(profile)->GetAccountId().GetUserEmail();
+  DCHECK(!email.empty());
+
+  return (gaia::ExtractDomainName(email) == "gmail.com" ||
+          gaia::ExtractDomainName(email) == "googlemail.com" ||
+          gaia::IsGoogleInternalAccountEmail(email));
+}
+
+bool HasDedicatedAssistantKey() {
+  return IsGoogleDevice();
 }
 
 }  // namespace
@@ -40,105 +135,38 @@ namespace assistant {
 
 ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
     const Profile* profile) {
+  // Primary account might be missing during unittests.
+  if (!HasPrimaryAccount(profile))
+    return AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER;
+
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile))
-    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER;
+    return AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER;
 
   if (profile->IsOffTheRecord())
-    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_INCOGNITO;
-
-  if (profile->IsLegacySupervised())
-    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER;
+    return AssistantAllowedState::DISALLOWED_BY_INCOGNITO;
 
   if (chromeos::DemoSession::IsDeviceInDemoMode())
-    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_DEMO_MODE;
+    return AssistantAllowedState::DISALLOWED_BY_DEMO_MODE;
 
-  if (user_manager::UserManager::Get()->IsLoggedInAsPublicAccount())
-    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION;
+  if (!IsAssistantAllowedForUserType(profile))
+    return GetErrorForUserType(profile);
 
-  if (IsActiveDirectoryUser(profile))
-    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE;
+  if (!IsAssistantAllowedForLocale(profile))
+    return AssistantAllowedState::DISALLOWED_BY_LOCALE;
 
-  if (user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp()) {
-    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_KIOSK_MODE;
-  }
+  if (IsAssistantDisabledByPolicy(profile))
+    return AssistantAllowedState::DISALLOWED_BY_POLICY;
 
-  // String literals used in some cases in the array because their
-  // constant equivalents don't exist in:
-  // third_party/icu/source/common/unicode/uloc.h
-  const std::string kAllowedLocales[] = {ULOC_CANADA,
-                                         ULOC_CANADA_FRENCH,
-                                         ULOC_FRANCE,
-                                         ULOC_FRENCH,
-                                         ULOC_GERMANY,
-                                         ULOC_ITALY,
-                                         ULOC_JAPAN,
-                                         ULOC_JAPANESE,
-                                         ULOC_UK,
-                                         ULOC_US,
-                                         "da",
-                                         "en_AU",
-                                         "en_IN",
-                                         "en_NZ",
-                                         "es_CO",
-                                         "es_ES",
-                                         "es_MX",
-                                         "fr_BE",
-                                         "it",
-                                         "nb",
-                                         "nl",
-                                         "nn",
-                                         "no",
-                                         "sv"};
+  // Bypass the email domain check when the account is logged in a device with
+  // dedicated Assistant key.
+  if (!HasDedicatedAssistantKey() && !IsEmailDomainSupported(profile))
+    return AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE;
 
-  const PrefService* prefs = profile->GetPrefs();
-  std::string pref_locale =
-      prefs->GetString(language::prefs::kApplicationLocale);
-  // Also accept runtime locale which maybe an approximation of user's pref
-  // locale.
-  const std::string kRuntimeLocale = icu::Locale::getDefault().getName();
-  // Bypass locale check when using fake gaia login. There is no need to enforce
-  // in these test environments.
-  if (!chromeos::switches::IsGaiaServicesDisabled() && !pref_locale.empty()) {
-    base::ReplaceChars(pref_locale, "-", "_", &pref_locale);
-    bool disallowed = !base::Contains(kAllowedLocales, pref_locale) &&
-                      !base::Contains(kAllowedLocales, kRuntimeLocale);
+  return AssistantAllowedState::ALLOWED;
+}
 
-    if (disallowed)
-      return ash::mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE;
-  }
-
-  if (prefs->GetBoolean(chromeos::assistant::prefs::kAssistantDisabledByPolicy))
-    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_POLICY;
-
-  // Bypass the account type check when using fake gaia login, e.g. in Tast
-  // tests, or the account is logged in a device with dedicated Assistant key.
-  if (!chromeos::switches::IsGaiaServicesDisabled() &&
-      !chromeos::IsGoogleBrandedDevice()) {
-    // Only enable non-dasher accounts for devices without physical key.
-    bool account_supported = false;
-    auto* identity_manager =
-        IdentityManagerFactory::GetForProfileIfExists(profile);
-
-    if (identity_manager) {
-      // This function doesn't care about browser sync consent. We don't
-      // DCHECK that an account exists because some tests don't have one.
-      const std::string email =
-          identity_manager
-              ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
-              .email;
-      if (!email.empty() &&
-          (gaia::ExtractDomainName(email) == "gmail.com" ||
-           gaia::ExtractDomainName(email) == "googlemail.com" ||
-           gaia::IsGoogleInternalAccountEmail(email))) {
-        account_supported = true;
-      }
-    }
-
-    if (!account_supported)
-      return ash::mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE;
-  }
-
-  return ash::mojom::AssistantAllowedState::ALLOWED;
+void OverrideIsGoogleDeviceForTesting(bool is_google_device) {
+  g_override_is_google_device = is_google_device;
 }
 
 }  // namespace assistant

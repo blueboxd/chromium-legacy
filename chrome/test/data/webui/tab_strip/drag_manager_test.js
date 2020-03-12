@@ -1,6 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {DragManager, PLACEHOLDER_GROUP_ID, PLACEHOLDER_TAB_ID} from 'chrome://tab-strip/drag_manager.js';
 import {TabElement} from 'chrome://tab-strip/tab.js';
@@ -128,26 +129,56 @@ suite('DragManager', () => {
     });
     dragManager = new DragManager(delegate);
     dragManager.startObserving();
+
+    document.body.style.margin = 0;
+    document.body.appendChild(delegate);
   });
 
   test('DragStartSetsDragImage', () => {
-    const draggedTab = delegate.children[0];
+    const draggedElement = delegate.children[0];
+    const dragImage = draggedElement.getDragImage();
+
+    // Mock the dimensions and position of the element and the drag image.
+    const draggedElementRect = {top: 20, left: 30, width: 200, height: 150};
+    draggedElement.getBoundingClientRect = () => draggedElementRect;
+    const dragImageRect = {top: 20, left: 30, width: 200, height: 150};
+    dragImage.getBoundingClientRect = () => dragImageRect;
+
+    const eventClientX = 100;
+    const eventClientY = 50;
     const mockDataTransfer = new MockDataTransfer();
     const dragStartEvent = new DragEvent('dragstart', {
       bubbles: true,
       composed: true,
-      clientX: 100,
-      clientY: 150,
+      clientX: eventClientX,
+      clientY: eventClientY,
       dataTransfer: mockDataTransfer,
     });
-    draggedTab.dispatchEvent(dragStartEvent);
+    draggedElement.dispatchEvent(dragStartEvent);
     assertEquals(dragStartEvent.dataTransfer.effectAllowed, 'move');
     assertEquals(
-        mockDataTransfer.dragImageData.image, draggedTab.getDragImage());
-    assertEquals(
-        mockDataTransfer.dragImageData.offsetX, 100 - draggedTab.offsetLeft);
-    assertEquals(
-        mockDataTransfer.dragImageData.offsetY, 150 - draggedTab.offsetTop);
+        mockDataTransfer.dragImageData.image, draggedElement.getDragImage());
+
+    const xDiffFromCenter =
+        eventClientX - draggedElementRect.left - draggedElementRect.width / 2;
+    const yDiffFromCenter =
+        eventClientY - draggedElementRect.top - draggedElementRect.height / 2;
+
+    if (isChromeOS) {
+      assertEquals(
+          dragImageRect.width / 2 + xDiffFromCenter / 1.2,
+          mockDataTransfer.dragImageData.offsetX);
+      assertEquals(
+          dragImageRect.height / 2 + (yDiffFromCenter - 25) / 1.2,
+          mockDataTransfer.dragImageData.offsetY);
+    } else {
+      assertEquals(
+          dragImageRect.width / 2 + xDiffFromCenter,
+          mockDataTransfer.dragImageData.offsetX);
+      assertEquals(
+          dragImageRect.height / 2 + yDiffFromCenter,
+          mockDataTransfer.dragImageData.offsetY);
+    }
   });
 
   test('DragOverMovesTabs', async () => {

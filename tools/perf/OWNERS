@@ -1,10 +1,13 @@
 # Overall OWNERS
 crouleau@chromium.org
-#wenbinzhang@google.com  Uncomment when wenbinzhang@ becomes a committer.
+wenbinzhang@google.com
 johnchen@chromium.org  # Backup reviewer for when overall OWNERS are OOO.
 
-# Sharding, triggering, and builder configurations.
-#hypan@google.com  Uncomment when hypan@ becomes a committer.
+# For gtest perf tests, perf data upload, and functional tests
+bsheedy@chromium.org
+
+# Scheduling and builders.
+hypan@google.com
 
 # For changes related to ChromeOS.
 achuith@chromium.org
@@ -12,11 +15,7 @@ achuith@chromium.org
 # For expectations.config file format infrastructure changes.
 rmhasan@google.com
 
-# For gtest perf tests
-bsheedy@chromium.org
-
 # For system health stories.
-charliea@chromium.org
 eyaich@chromium.org
 sullivan@chromium.org
 

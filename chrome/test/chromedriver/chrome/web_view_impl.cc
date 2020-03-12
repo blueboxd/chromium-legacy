@@ -1200,16 +1200,32 @@ std::unique_ptr<base::Value> WebViewImpl::GetCastIssueMessage() {
   return std::unique_ptr<base::Value>(cast_tracker_->issue().DeepCopy());
 }
 
-WebViewImplHolder::WebViewImplHolder(WebViewImpl* web_view)
-    : web_view_(web_view), was_locked_(web_view && web_view->Lock()) {}
+WebViewImplHolder::WebViewImplHolder(WebViewImpl* web_view) {
+  // Lock input web view and all its parents, to prevent them from being
+  // deleted while still in use. Inside |items_|, each web view must appear
+  // before its parent. This ensures the destructor unlocks the web views in
+  // the right order.
+  while (web_view != nullptr) {
+    Item item;
+    item.web_view = web_view;
+    item.was_locked = web_view->Lock();
+    items_.push_back(item);
+    web_view = const_cast<WebViewImpl*>(web_view->GetParent());
+  }
+}
 
 WebViewImplHolder::~WebViewImplHolder() {
-  if (web_view_ != nullptr && !was_locked_) {
-    if (!web_view_->IsDetached())
-      web_view_->Unlock();
-    else if (web_view_->GetParent() != nullptr)
-      web_view_->GetParent()->GetFrameTracker()->DeleteTargetForFrame(
-          web_view_->GetId());
+  for (Item& item : items_) {
+    // Once we find a web view that is still locked, then all its parents must
+    // also be locked.
+    if (item.was_locked)
+      break;
+    WebViewImpl* web_view = item.web_view;
+    if (!web_view->IsDetached())
+      web_view->Unlock();
+    else if (web_view->GetParent() != nullptr)
+      web_view->GetParent()->GetFrameTracker()->DeleteTargetForFrame(
+          web_view->GetId());
   }
 }
 

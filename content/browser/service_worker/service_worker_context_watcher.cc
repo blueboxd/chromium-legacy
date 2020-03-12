@@ -289,7 +289,7 @@ void ServiceWorkerContextWatcher::OnVersionDevToolsRoutingIdChanged(
     version_info_map_.erase(version_id);
 }
 
-void ServiceWorkerContextWatcher::OnMainScriptHttpResponseInfoSet(
+void ServiceWorkerContextWatcher::OnMainScriptResponseSet(
     int64_t version_id,
     base::Time script_response_time,
     base::Time script_last_modified) {

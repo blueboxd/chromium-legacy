@@ -7425,6 +7425,26 @@ TEST_F(HostResolverManagerDnsTest, DohMappingModeIneligibleForUpgrade) {
   EXPECT_EQ(expected_doh_servers, fetched_config->dns_over_https_servers);
 }
 
+TEST_F(HostResolverManagerDnsTest,
+       DohMappingUnhandledOptionsIneligibleForUpgrade) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client =
+      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
+                                        base::BindRepeating(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
+  // Create a DnsConfig containing IP addresses associated with Cloudflare,
+  // SafeBrowsing family filter, SafeBrowsing security filter, and other IPs
+  // not associated with hardcoded DoH services.
+  DnsConfig original_config = CreateUpgradableDnsConfig();
+  original_config.unhandled_options = true;
+  ChangeDnsConfig(original_config);
+
+  EXPECT_FALSE(client_ptr->GetEffectiveConfig());
+}
+
 TEST_F(HostResolverManagerDnsTest, DohMappingWithExclusion) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
@@ -7478,6 +7498,38 @@ TEST_F(HostResolverManagerDnsTest, DohMappingIgnoredIfTemplateSpecified) {
   EXPECT_EQ(original_config.nameservers, fetched_config->nameservers);
   EXPECT_EQ(dns_over_https_servers_overrides,
             fetched_config->dns_over_https_servers);
+}
+
+TEST_F(HostResolverManagerDnsTest,
+       DohMappingUnhandledOptionsAndTemplateSpecified) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client =
+      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
+                                        base::BindRepeating(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
+  // Create a DnsConfig containing IP addresses associated with Cloudflare,
+  // SafeBrowsing family filter, SafeBrowsing security filter, and other IPs
+  // not associated with hardcoded DoH services.
+  DnsConfig original_config = CreateUpgradableDnsConfig();
+  original_config.unhandled_options = true;
+  ChangeDnsConfig(original_config);
+
+  // If the overrides contains DoH servers, no DoH upgrade should be attempted.
+  DnsConfigOverrides overrides;
+  const std::vector<DnsConfig::DnsOverHttpsServerConfig>
+      dns_over_https_servers_overrides = {
+          DnsConfig::DnsOverHttpsServerConfig("doh.server.override.com", true)};
+  overrides.dns_over_https_servers = dns_over_https_servers_overrides;
+  resolver_->SetDnsConfigOverrides(overrides);
+  const DnsConfig* fetched_config = client_ptr->GetEffectiveConfig();
+  EXPECT_TRUE(fetched_config->nameservers.empty());
+  EXPECT_FALSE(client_ptr->CanUseInsecureDnsTransactions());
+  EXPECT_EQ(dns_over_https_servers_overrides,
+            fetched_config->dns_over_https_servers);
+  EXPECT_TRUE(client_ptr->CanUseSecureDnsTransactions());
 }
 
 TEST_F(HostResolverManagerDnsTest, DohMappingWithAutomaticDot) {

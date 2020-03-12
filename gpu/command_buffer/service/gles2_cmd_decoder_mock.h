@@ -129,6 +129,14 @@ class MockGLES2Decoder : public GLES2Decoder {
                     unsigned format,
                     int width,
                     int height));
+  MOCK_METHOD7(ClearCompressedTextureLevel3D,
+               bool(Texture* texture,
+                    unsigned target,
+                    int level,
+                    unsigned format,
+                    int width,
+                    int height,
+                    int depth));
   MOCK_METHOD1(IsCompressedTextureFormat,
                bool(unsigned format));
   MOCK_METHOD8(ClearLevel3D,

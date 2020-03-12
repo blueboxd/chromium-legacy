@@ -33,6 +33,25 @@
 
 namespace gl {
 
+class EGLDisplayPlatform {
+ public:
+  constexpr EGLDisplayPlatform()
+      : display_(EGL_DEFAULT_DISPLAY), platform_(0), valid_(false) {}
+  explicit constexpr EGLDisplayPlatform(EGLNativeDisplayType display,
+                                        int platform = 0)
+      : display_(display), platform_(platform), valid_(true) {}
+
+  bool Valid() const { return valid_; }
+  int GetPlatform() const { return platform_; }
+  EGLNativeDisplayType GetDisplay() const { return display_; }
+
+ private:
+  EGLNativeDisplayType display_;
+  // 0 for default, or EGL_PLATFORM_* enum.
+  int platform_;
+  bool valid_;
+};
+
 class GLSurfacePresentationHelper;
 
 // If adding a new type, also add it to EGLDisplayType in
@@ -74,12 +93,12 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   EGLConfig GetConfig() override;
   GLSurfaceFormat GetFormat() override;
 
-  static bool InitializeOneOff(EGLNativeDisplayType native_display);
+  static bool InitializeOneOff(EGLDisplayPlatform native_display);
   static bool InitializeOneOffForTesting();
   static bool InitializeExtensionSettingsOneOff();
   static void ShutdownOneOff();
   static EGLDisplay GetHardwareDisplay();
-  static EGLDisplay InitializeDisplay(EGLNativeDisplayType native_display);
+  static EGLDisplay InitializeDisplay(EGLDisplayPlatform native_display);
   static EGLNativeDisplayType GetNativeDisplay();
 
   // These aren't particularly tied to surfaces, but since we already

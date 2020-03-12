@@ -166,7 +166,7 @@ bool GLSurfaceEGL::initialized_ = false;
 namespace {
 
 EGLDisplay g_egl_display = EGL_NO_DISPLAY;
-EGLNativeDisplayType g_native_display = EGL_DEFAULT_DISPLAY;
+EGLDisplayPlatform g_native_display(EGL_DEFAULT_DISPLAY);
 
 const char* g_egl_extensions = nullptr;
 bool g_egl_create_context_robustness_supported = false;
@@ -297,7 +297,7 @@ std::vector<std::string> GetStringVectorFromCommandLine(
 }
 
 EGLDisplay GetPlatformANGLEDisplay(
-    EGLNativeDisplayType native_display,
+    EGLDisplayPlatform native_display,
     EGLenum platform_type,
     const std::vector<std::string>& enabled_features,
     const std::vector<std::string>& disabled_features,
@@ -336,18 +336,20 @@ EGLDisplay GetPlatformANGLEDisplay(
           reinterpret_cast<EGLAttrib>(disabled_features_attribs.data()));
     }
   }
+  // TODO(dbehr) Add an attrib to Angle to pass EGL platform.
 
   display_attribs.push_back(EGL_NONE);
   // This is an EGL 1.5 function that we know ANGLE supports. It's used to pass
   // EGLAttribs (pointers) instead of EGLints into the display
-  return eglGetPlatformDisplay(EGL_PLATFORM_ANGLE_ANGLE,
-                               reinterpret_cast<void*>(native_display),
-                               &display_attribs[0]);
+  return eglGetPlatformDisplay(
+      EGL_PLATFORM_ANGLE_ANGLE,
+      reinterpret_cast<void*>(native_display.GetDisplay()),
+      &display_attribs[0]);
 }
 
 EGLDisplay GetDisplayFromType(
     DisplayType display_type,
-    EGLNativeDisplayType native_display,
+    EGLDisplayPlatform native_display,
     const std::vector<std::string>& enabled_angle_features,
     const std::vector<std::string>& disabled_angle_features,
     bool disable_all_angle_features) {
@@ -359,7 +361,13 @@ EGLDisplay GetDisplayFromType(
   switch (display_type) {
     case DEFAULT:
     case SWIFT_SHADER:
-      return eglGetDisplay(native_display);
+      if (native_display.GetPlatform() != 0) {
+        return eglGetPlatformDisplay(
+            native_display.GetPlatform(),
+            reinterpret_cast<void*>(native_display.GetDisplay()), nullptr);
+      } else {
+        return eglGetDisplay(native_display.GetDisplay());
+      }
     case ANGLE_D3D9:
       return GetPlatformANGLEDisplay(
           native_display, EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE,
@@ -545,7 +553,7 @@ EGLConfig ChooseConfig(GLSurfaceFormat format, bool surfaceless) {
 #if defined(USE_X11)
   // If we're using ANGLE_NULL, we may not have a display, in which case we
   // can't use XVisualManager.
-  if (g_native_display) {
+  if (g_native_display.GetDisplay() != EGL_DEFAULT_DISPLAY) {
     ui::XVisualManager::GetInstance()->ChooseVisualForWindow(
         true, nullptr, &buffer_size, nullptr, nullptr);
     alpha_size = buffer_size == 32 ? 8 : 0;
@@ -845,7 +853,7 @@ EGLConfig GLSurfaceEGL::GetConfig() {
 }
 
 // static
-bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType native_display) {
+bool GLSurfaceEGL::InitializeOneOff(EGLDisplayPlatform native_display) {
   if (initialized_)
     return true;
 
@@ -1011,7 +1019,7 @@ EGLDisplay GLSurfaceEGL::GetHardwareDisplay() {
 
 // static
 EGLNativeDisplayType GLSurfaceEGL::GetNativeDisplay() {
-  return g_native_display;
+  return g_native_display.GetDisplay();
 }
 
 // static
@@ -1081,8 +1089,7 @@ GLSurfaceEGL::~GLSurfaceEGL() {}
 // InitializeDisplay is necessary because the static binding code
 // needs a full Display init before it can query the Display extensions.
 // static
-EGLDisplay GLSurfaceEGL::InitializeDisplay(
-    EGLNativeDisplayType native_display) {
+EGLDisplay GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display) {
   if (g_egl_display != EGL_NO_DISPLAY) {
     return g_egl_display;
   }
@@ -1501,8 +1508,8 @@ gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffers(
   // views::DesktopWindowTreeHostX11::InitX11Window back to None for the
   // XWindow associated to this surface after the first SwapBuffers has
   // happened, to avoid showing a weird white background while resizing.
-  if (g_native_display && !has_swapped_buffers_) {
-    XSetWindowBackgroundPixmap(g_native_display, window_, 0);
+  if (GetNativeDisplay() && !has_swapped_buffers_) {
+    XSetWindowBackgroundPixmap(GetNativeDisplay(), window_, 0);
     has_swapped_buffers_ = true;
   }
 #endif

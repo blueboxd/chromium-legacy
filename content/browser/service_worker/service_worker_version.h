@@ -154,13 +154,21 @@ class CONTENT_EXPORT ServiceWorkerVersion
                          // timed out.
   };
 
+  // Contains a subset of the main script's response information.
+  struct MainScriptResponse {
+    base::Time response_time;
+    base::Time last_modified;
+    // This is used for all responses sent back from a service worker, as
+    // effective security of these responses is equivalent to that of the
+    // service worker.
+    net::SSLInfo ssl_info;
+  };
+
   class Observer {
    public:
     virtual void OnRunningStateChanged(ServiceWorkerVersion* version) {}
     virtual void OnVersionStateChanged(ServiceWorkerVersion* version) {}
     virtual void OnDevToolsRoutingIdChanged(ServiceWorkerVersion* version) {}
-    virtual void OnMainScriptHttpResponseInfoSet(
-        ServiceWorkerVersion* version) {}
     virtual void OnErrorReported(ServiceWorkerVersion* version,
                                  const base::string16& error_message,
                                  int line_number,
@@ -482,11 +490,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void SetDevToolsAttached(bool attached);
 
   // Sets the HttpResponseInfo used to load the main script.
-  // This HttpResponseInfo will be used for all responses sent back from the
-  // service worker, as the effective security of these responses is equivalent
-  // to that of the ServiceWorker.
+  // TODO(bashi): Make this method take MainScriptResponse.
   void SetMainScriptHttpResponseInfo(const net::HttpResponseInfo& http_info);
-  const net::HttpResponseInfo* GetMainScriptHttpResponseInfo();
+  const MainScriptResponse* GetMainScriptResponse();
 
   // Simulate ping timeout. Should be used for tests-only.
   void SimulatePingTimeoutForTesting();
@@ -1022,7 +1028,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // the subresource loader factories are updated.
   bool initialize_global_scope_after_main_script_loaded_ = false;
 
-  std::unique_ptr<net::HttpResponseInfo> main_script_http_info_;
+  // Populated via net::HttpResponseInfo of the main script.
+  std::unique_ptr<MainScriptResponse> main_script_response_;
 
   // DevTools requires each service worker's script receive time, even for
   // the ones that haven't started. However, a ServiceWorkerVersion's field

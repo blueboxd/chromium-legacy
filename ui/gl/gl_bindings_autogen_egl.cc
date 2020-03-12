@@ -119,6 +119,12 @@ void DriverEGL::InitializeClientExtensionBindings() {
 
   ext.b_EGL_ANGLE_feature_control =
       gfx::HasExtension(extensions, "EGL_ANGLE_feature_control");
+  ext.b_EGL_EXT_device_base =
+      gfx::HasExtension(extensions, "EGL_EXT_device_base");
+  ext.b_EGL_EXT_device_enumeration =
+      gfx::HasExtension(extensions, "EGL_EXT_device_enumeration");
+  ext.b_EGL_EXT_device_query =
+      gfx::HasExtension(extensions, "EGL_EXT_device_query");
   ext.b_EGL_KHR_debug = gfx::HasExtension(extensions, "EGL_KHR_debug");
 
   if (ext.b_EGL_KHR_debug) {
@@ -135,6 +141,17 @@ void DriverEGL::InitializeClientExtensionBindings() {
   if (ext.b_EGL_KHR_debug) {
     fn.eglQueryDebugKHRFn = reinterpret_cast<eglQueryDebugKHRProc>(
         GetGLProcAddress("eglQueryDebugKHR"));
+  }
+
+  if (ext.b_EGL_EXT_device_base || ext.b_EGL_EXT_device_enumeration) {
+    fn.eglQueryDevicesEXTFn = reinterpret_cast<eglQueryDevicesEXTProc>(
+        GetGLProcAddress("eglQueryDevicesEXT"));
+  }
+
+  if (ext.b_EGL_EXT_device_base || ext.b_EGL_EXT_device_query) {
+    fn.eglQueryDeviceStringEXTFn =
+        reinterpret_cast<eglQueryDeviceStringEXTProc>(
+            GetGLProcAddress("eglQueryDeviceStringEXT"));
   }
 
   if (ext.b_EGL_ANGLE_feature_control) {
@@ -682,6 +699,17 @@ EGLBoolean EGLApiBase::eglQueryDebugKHRFn(EGLint attribute, EGLAttrib* value) {
   return driver_->fn.eglQueryDebugKHRFn(attribute, value);
 }
 
+EGLBoolean EGLApiBase::eglQueryDevicesEXTFn(EGLint max_devices,
+                                            EGLDeviceEXT* devices,
+                                            EGLint* num_devices) {
+  return driver_->fn.eglQueryDevicesEXTFn(max_devices, devices, num_devices);
+}
+
+const char* EGLApiBase::eglQueryDeviceStringEXTFn(EGLDeviceEXT device,
+                                                  EGLint name) {
+  return driver_->fn.eglQueryDeviceStringEXTFn(device, name);
+}
+
 EGLBoolean EGLApiBase::eglQueryDisplayAttribANGLEFn(EGLDisplay dpy,
                                                     EGLint attribute,
                                                     EGLAttrib* value) {
@@ -1200,6 +1228,19 @@ EGLBoolean TraceEGLApi::eglQueryContextFn(EGLDisplay dpy,
 EGLBoolean TraceEGLApi::eglQueryDebugKHRFn(EGLint attribute, EGLAttrib* value) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceEGLAPI::eglQueryDebugKHR")
   return egl_api_->eglQueryDebugKHRFn(attribute, value);
+}
+
+EGLBoolean TraceEGLApi::eglQueryDevicesEXTFn(EGLint max_devices,
+                                             EGLDeviceEXT* devices,
+                                             EGLint* num_devices) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceEGLAPI::eglQueryDevicesEXT")
+  return egl_api_->eglQueryDevicesEXTFn(max_devices, devices, num_devices);
+}
+
+const char* TraceEGLApi::eglQueryDeviceStringEXTFn(EGLDeviceEXT device,
+                                                   EGLint name) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceEGLAPI::eglQueryDeviceStringEXT")
+  return egl_api_->eglQueryDeviceStringEXTFn(device, name);
 }
 
 EGLBoolean TraceEGLApi::eglQueryDisplayAttribANGLEFn(EGLDisplay dpy,
@@ -1949,6 +1990,28 @@ EGLBoolean LogEGLApi::eglQueryDebugKHRFn(EGLint attribute, EGLAttrib* value) {
                  << "(" << attribute << ", " << static_cast<const void*>(value)
                  << ")");
   EGLBoolean result = egl_api_->eglQueryDebugKHRFn(attribute, value);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+EGLBoolean LogEGLApi::eglQueryDevicesEXTFn(EGLint max_devices,
+                                           EGLDeviceEXT* devices,
+                                           EGLint* num_devices) {
+  GL_SERVICE_LOG("eglQueryDevicesEXT"
+                 << "(" << max_devices << ", "
+                 << static_cast<const void*>(devices) << ", "
+                 << static_cast<const void*>(num_devices) << ")");
+  EGLBoolean result =
+      egl_api_->eglQueryDevicesEXTFn(max_devices, devices, num_devices);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+const char* LogEGLApi::eglQueryDeviceStringEXTFn(EGLDeviceEXT device,
+                                                 EGLint name) {
+  GL_SERVICE_LOG("eglQueryDeviceStringEXT"
+                 << "(" << device << ", " << name << ")");
+  const char* result = egl_api_->eglQueryDeviceStringEXTFn(device, name);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
 }

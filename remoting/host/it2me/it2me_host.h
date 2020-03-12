@@ -142,7 +142,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
 
   // Processes the result of the confirmation dialog.
   void OnConfirmationResult(
-      const protocol::ValidatingAuthenticator::ResultCallback& result_callback,
+      protocol::ValidatingAuthenticator::ResultCallback result_callback,
       It2MeConfirmationDialog::Result result);
 
   // Task posted to the network thread from Connect().
@@ -169,7 +169,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // connection should be accepted or rejected.
   void ValidateConnectionDetails(
       const std::string& remote_jid,
-      const protocol::ValidatingAuthenticator::ResultCallback& result_callback);
+      protocol::ValidatingAuthenticator::ResultCallback result_callback);
 
   // Caller supplied fields.
   std::unique_ptr<ChromotingHostContext> host_context_;

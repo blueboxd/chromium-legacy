@@ -96,6 +96,8 @@ source_set("lib") {
     "setup/setup_util.h",
     "setup/uninstall.cc",
     "setup/uninstall.h",
+    "update_service_out_of_process.cc",
+    "update_service_out_of_process.h",
   ]
 
   libs = [ "winhttp.lib" ]

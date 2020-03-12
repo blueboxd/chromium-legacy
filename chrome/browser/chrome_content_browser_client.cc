@@ -2087,7 +2087,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
       // Disable client-side phishing detection in the renderer if it is
       // disabled in the Profile preferences or the browser process.
-      if (!prefs->GetBoolean(prefs::kSafeBrowsingEnabled) ||
+      if (!safe_browsing::IsSafeBrowsingEnabled(*prefs) ||
           !g_browser_process->safe_browsing_detection_service()) {
         command_line->AppendSwitch(
             switches::kDisableClientSidePhishingDetection);
@@ -4248,7 +4248,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
         base::BindOnce(
             &ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
             base::Unretained(this),
-            profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)),
+            safe_browsing::IsSafeBrowsingEnabled(*profile->GetPrefs())),
         wc_getter, frame_tree_node_id,
         url_lookup_service ? url_lookup_service->GetWeakPtr() : nullptr));
   }

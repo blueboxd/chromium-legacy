@@ -36,7 +36,7 @@ class CompositorFrameReportingController;
 class ThroughputUkmReporter;
 class UkmManager;
 
-enum FrameSequenceTrackerType {
+enum class FrameSequenceTrackerType {
   // Used as an enum for metrics. DO NOT reorder or delete values. Rather,
   // add them at the end and increment kMaxType.
   kCompositorAnimation = 0,
@@ -47,6 +47,7 @@ enum FrameSequenceTrackerType {
   kUniversal = 5,
   kVideo = 6,
   kWheelScroll = 7,
+  kScrollbarScroll = 8,
   kMaxType
 };
 
@@ -61,11 +62,7 @@ class CC_EXPORT FrameSequenceMetrics {
   FrameSequenceMetrics(const FrameSequenceMetrics&) = delete;
   FrameSequenceMetrics& operator=(const FrameSequenceMetrics&) = delete;
 
-  enum class ThreadType {
-    kMain,
-    kCompositor,
-    kSlower,
-  };
+  enum class ThreadType { kMain, kCompositor, kSlower, kUnknown };
 
   struct ThroughputData {
     static std::unique_ptr<base::trace_event::TracedValue> ToTracedValue(
@@ -108,6 +105,8 @@ class CC_EXPORT FrameSequenceMetrics {
 #endif
   };
 
+  void SetScrollingThread(ThreadType thread);
+
   void Merge(std::unique_ptr<FrameSequenceMetrics> metrics);
   bool HasEnoughDataForReporting() const;
   bool HasDataLeftForReporting() const;
@@ -130,6 +129,8 @@ class CC_EXPORT FrameSequenceMetrics {
   ThroughputData impl_throughput_;
   ThroughputData main_throughput_;
 
+  ThreadType scrolling_thread_ = ThreadType::kUnknown;
+
   // Tracks the number of produced frames that had some amount of
   // checkerboarding, and how many frames showed such checkerboarded frames.
   uint32_t frames_checkerboarded_ = 0;
@@ -150,7 +151,7 @@ class CC_EXPORT FrameSequenceTrackerCollection {
       const FrameSequenceTrackerCollection&) = delete;
 
   // Creates a tracker for the specified sequence-type.
-  void StartSequence(FrameSequenceTrackerType type);
+  FrameSequenceMetrics* StartSequence(FrameSequenceTrackerType type);
 
   // Schedules |tracker| for destruction. This is preferred instead of outright
   // desrtruction of the tracker, since this ensures that the actual tracker

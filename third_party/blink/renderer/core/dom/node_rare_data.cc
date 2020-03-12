@@ -78,8 +78,8 @@ void NodeMutationObserverData::RemoveRegistration(
 }
 
 void NodeData::Trace(Visitor* visitor) {
-  if (is_rare_data_) {
-    if (is_element_rare_data_)
+  if (bit_field_.get_concurrently<IsRareData>()) {
+    if (bit_field_.get_concurrently<IsElementRareData>())
       static_cast<ElementRareData*>(this)->TraceAfterDispatch(visitor);
     else
       static_cast<NodeRareData*>(this)->TraceAfterDispatch(visitor);
@@ -117,7 +117,7 @@ void NodeRareData::TraceAfterDispatch(blink::Visitor* visitor) const {
 }
 
 void NodeRareData::FinalizeGarbageCollectedObject() {
-  if (is_element_rare_data_)
+  if (bit_field_.get<IsElementRareData>())
     static_cast<ElementRareData*>(this)->~ElementRareData();
   else
     this->~NodeRareData();

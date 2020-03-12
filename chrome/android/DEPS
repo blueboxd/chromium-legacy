@@ -24,6 +24,7 @@ include_rules = [
   "+components/signin/core/browser/android",
   "+components/signin/public/android",
   "+components/spellcheck/browser",
+  "+components/subresource_filter/android",
   "+components/viz/common/java",
   "+jni",
   "+media/base/android/java",

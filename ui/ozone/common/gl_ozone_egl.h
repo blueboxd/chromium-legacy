@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "third_party/khronos/EGL/eglplatform.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/public/gl_ozone.h"
 
 namespace ui {
@@ -41,9 +42,10 @@ class GLOzoneEGL : public GLOzone {
       const gfx::Size& size) override = 0;
 
  protected:
-  // Returns native platform display handle. This is used to obtain the EGL
-  // display connection for the native display.
-  virtual EGLNativeDisplayType GetNativeDisplay() = 0;
+  // Returns native platform display handle and platform type as per
+  // EGL platform extensions.
+  // This is used to obtain the EGL display connection for the native display.
+  virtual gl::EGLDisplayPlatform GetNativeDisplay() = 0;
 
   // Sets up GL bindings for the native surface.
   virtual bool LoadGLES2Bindings(gl::GLImplementation implementation) = 0;

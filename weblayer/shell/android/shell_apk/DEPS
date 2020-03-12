@@ -1,4 +1,5 @@
 noparent = True
 include_rules = [
+  "+base/android/java",
   "+weblayer/public/java",
 ]

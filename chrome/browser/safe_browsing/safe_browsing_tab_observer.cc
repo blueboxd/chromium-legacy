@@ -48,7 +48,7 @@ SafeBrowsingTabObserver::SafeBrowsingTabObserver(
         base::Bind(&SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost,
                    base::Unretained(this)));
 
-    if (prefs->GetBoolean(prefs::kSafeBrowsingEnabled) &&
+    if (IsSafeBrowsingEnabled(*prefs) &&
         g_browser_process->safe_browsing_detection_service()) {
       safebrowsing_detection_host_ =
           ClientSideDetectionHost::Create(web_contents);
@@ -68,7 +68,7 @@ void SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
-  bool safe_browsing = prefs->GetBoolean(prefs::kSafeBrowsingEnabled);
+  bool safe_browsing = IsSafeBrowsingEnabled(*prefs);
   if (safe_browsing &&
       g_browser_process->safe_browsing_detection_service()) {
     if (!safebrowsing_detection_host_.get()) {

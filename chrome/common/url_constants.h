@@ -244,6 +244,9 @@ extern const char kAccountManagerLearnMoreURL[];
 // The URL for the "learn more" link for Google Play Store (ARC) settings.
 extern const char kAndroidAppsLearnMoreURL[];
 
+// Help center URL for ARC ADB sideloading.
+extern const char kArcAdbSideloadingLearnMoreURL[];
+
 // The URL for the "Learn more" link in the External storage preferences
 // settings.
 extern const char kArcExternalStorageLearnMoreURL[];

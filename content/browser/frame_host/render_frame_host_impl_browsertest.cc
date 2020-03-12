@@ -4,6 +4,7 @@
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -189,6 +190,10 @@ class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
   }
   net::EmbeddedTestServer* https_server() { return &https_server_; }
+
+  WebContentsImpl* web_contents() const {
+    return static_cast<WebContentsImpl*>(shell()->web_contents());
+  }
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -3565,6 +3570,55 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, WebUiReloadAfterCrash) {
   EXPECT_EQ(main_frame_url, main_document->GetLastCommittedURL());
   EXPECT_EQ("Graphics Feature Status",
             EvalJs(main_document, "document.querySelector('h3').textContent"));
+}
+
+// Start with A(B), navigate A to C. By emulating a slow unload handler B, check
+// the status of IsCurrent for subframes of A i.e., B before and after
+// navigating to C.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       CheckIsCurrentBeforeAndAfterUnload) {
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+  std::string onunload_script = "window.onunload = function(){}";
+  GURL url_ab(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
+
+  // 1) Navigate to a page with an iframe.
+  EXPECT_TRUE(NavigateToURL(shell(), url_ab));
+  RenderFrameHostImpl* rfh_a = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_b(rfh_b);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_b->unload_state_);
+
+  // 2) Set an arbitrarily long timeout to ensure the subframe unload timer
+  // doesn't fire before we call OnDetach(). Act as if there was a slow unload
+  // handler on rfh_b. The non navigating frames are waiting for
+  // FrameHostMsg_Detach.
+  rfh_b->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
+  auto detach_filter = base::MakeRefCounted<DropMessageFilter>(
+      FrameMsgStart, FrameHostMsg_Detach::ID);
+  rfh_b->GetProcess()->AddFilter(detach_filter.get());
+  EXPECT_TRUE(ExecuteScript(rfh_b->frame_tree_node(), onunload_script));
+
+  // 3) Check the IsCurrent state of rfh_a, rfh_b before navigating to C.
+  EXPECT_TRUE(rfh_a->IsCurrent());
+  EXPECT_TRUE(rfh_b->IsCurrent());
+
+  // 4) Navigate rfh_a to C.
+  EXPECT_TRUE(NavigateToURL(shell(), url_c));
+  RenderFrameHostImpl* rfh_c = web_contents()->GetMainFrame();
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, rfh_b->unload_state_);
+
+  // 5) Check the IsCurrent state of rfh_a, rfh_b and rfh_c after navigating to
+  // C.
+  EXPECT_FALSE(rfh_a->IsCurrent());
+  EXPECT_FALSE(rfh_b->IsCurrent());
+  EXPECT_TRUE(rfh_c->IsCurrent());
+
+  // 6) Run detach on rfh_b to delete its frame.
+  EXPECT_FALSE(delete_rfh_b.deleted());
+  rfh_b->OnDetach();
+  EXPECT_TRUE(delete_rfh_b.deleted());
 }
 
 namespace {

@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "components/cbor/reader.h"
+#include "components/cbor/writer.h"
 #include "components/device_event_log/device_event_log.h"
 #include "crypto/aead.h"
 #include "device/fido/authenticator_get_info_response.h"
@@ -16,6 +17,7 @@
 #include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/cable/v2_handshake.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_parsing_utils.h"
 #include "third_party/boringssl/src/include/openssl/aes.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
@@ -29,6 +31,8 @@
 // This "header" is actually contains several function definitions and thus can
 // only be included once across Chromium.
 #include "chrome/android/features/cablev2_authenticator/internal/jni_headers/BLEHandler_jni.h"
+
+using device::fido_parsing_utils::CopyCBORBytestring;
 
 namespace {
 
@@ -119,9 +123,12 @@ class Defragmenter {
 
 // AuthenticatorState contains the keys for a caBLE v2 authenticator.
 struct AuthenticatorState {
-  // TODO: authenticator-global state isn't yet implemented.
-  base::Optional<std::pair<std::array<uint8_t, device::kCableNonceSize>,
-                           std::array<uint8_t, device::kCableEphemeralIdSize>>>
+  device::CableEidGeneratorKey eid_gen_key;
+  device::CablePskGeneratorKey psk_gen_key;
+  bssl::UniquePtr<EC_KEY> identity_key;
+
+  std::pair<std::array<uint8_t, device::kCableNonceSize>,
+            std::array<uint8_t, device::kCableEphemeralIdSize>>
       pairing_nonce_and_eid;
   base::Optional<std::pair<std::array<uint8_t, device::kCableNonceSize>,
                            std::array<uint8_t, device::kCableEphemeralIdSize>>>
@@ -343,9 +350,14 @@ class CableInterface {
   }
 
   void Start(JNIEnv* env,
-             const base::android::JavaParamRef<jobject>& ble_handler) {
+             const base::android::JavaParamRef<jobject>& ble_handler,
+             const base::android::JavaParamRef<jbyteArray>& state_bytes) {
     ble_handler_.Reset(ble_handler);
     env_ = env;
+
+    if (!ParseState(state_bytes)) {
+      GenerateFreshStateAndStore();
+    }
   }
 
   void Stop() {
@@ -353,7 +365,6 @@ class CableInterface {
     clients_.clear();
     known_mtus_.clear();
     auth_state_.qr_nonce_and_eid.reset();
-    auth_state_.pairing_nonce_and_eid.reset();
     auth_state_.qr_discovery_data.reset();
     env_ = nullptr;
   }
@@ -460,6 +471,63 @@ class CableInterface {
   friend struct base::DefaultSingletonTraits<CableInterface>;
   CableInterface() = default;
 
+  bssl::UniquePtr<EC_KEY> P256KeyFromSeed(base::span<const uint8_t, 32> seed) {
+    bssl::UniquePtr<EC_GROUP> p256(
+        EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1));
+    return bssl::UniquePtr<EC_KEY>(
+        EC_KEY_derive_from_secret(p256.get(), seed.data(), seed.size()));
+  }
+
+  bool ParseState(const base::android::JavaParamRef<jbyteArray>& state_bytes) {
+    if (!state_bytes) {
+      return false;
+    }
+
+    base::span<const uint8_t> state_bytes_span(
+        reinterpret_cast<uint8_t*>(
+            env_->GetByteArrayElements(state_bytes, nullptr)),
+        env_->GetArrayLength(state_bytes));
+    base::Optional<cbor::Value> state = cbor::Reader::Read(state_bytes_span);
+    if (!state || !state->is_map()) {
+      return false;
+    }
+
+    const cbor::Value::MapValue& state_map(state->GetMap());
+    std::array<uint8_t, 32> identity_key_seed;
+    if (!CopyCBORBytestring(&auth_state_.eid_gen_key, state_map, 1) ||
+        !CopyCBORBytestring(&auth_state_.psk_gen_key, state_map, 2) ||
+        !CopyCBORBytestring(&identity_key_seed, state_map, 3)) {
+      return false;
+    }
+
+    auth_state_.identity_key = P256KeyFromSeed(identity_key_seed);
+    return true;
+  }
+
+  void GenerateFreshStateAndStore() {
+    RAND_bytes(auth_state_.eid_gen_key.data(), auth_state_.eid_gen_key.size());
+    RAND_bytes(auth_state_.psk_gen_key.data(), auth_state_.psk_gen_key.size());
+
+    std::array<uint8_t, 32> identity_key_seed;
+    RAND_bytes(identity_key_seed.data(), identity_key_seed.size());
+    auth_state_.identity_key = P256KeyFromSeed(identity_key_seed);
+
+    cbor::Value::MapValue map;
+    map.emplace(1, cbor::Value(auth_state_.eid_gen_key));
+    map.emplace(2, cbor::Value(auth_state_.psk_gen_key));
+    map.emplace(3, cbor::Value(identity_key_seed));
+
+    base::Optional<std::vector<uint8_t>> bytes =
+        cbor::Writer::Write(cbor::Value(std::move(map)));
+    CHECK(bytes.has_value());
+
+    base::android::ScopedJavaLocalRef<jbyteArray> jbytes(
+        env_, env_->NewByteArray(bytes->size()));
+    env_->SetByteArrayRegion(jbytes.obj(), 0, bytes->size(),
+                             (jbyte*)bytes->data());
+    Java_BLEHandler_setState(env_, ble_handler_, jbytes);
+  }
+
   JNIEnv* env_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> ble_handler_;
   AuthenticatorState auth_state_;
@@ -473,8 +541,9 @@ class CableInterface {
 
 static void JNI_BLEHandler_Start(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& ble_handler) {
-  CableInterface::GetInstance()->Start(env, ble_handler);
+    const base::android::JavaParamRef<jobject>& ble_handler,
+    const base::android::JavaParamRef<jbyteArray>& state_bytes) {
+  CableInterface::GetInstance()->Start(env, ble_handler, state_bytes);
 }
 
 static void JNI_BLEHandler_Stop(JNIEnv* env) {

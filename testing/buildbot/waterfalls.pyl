@@ -1776,6 +1776,13 @@
         },
       },
       'ios-simulator-code-coverage': {
+        'mixins': [
+          'ios_swarming_account',
+          'mac_10.14',
+          'mac_toolchain',
+          'out_dir_arg',
+          'xcode_11c29'
+        ],
         'test_suites': {
           'gtest_tests': 'ios_code_coverage_gtests',
         },

@@ -24,6 +24,7 @@ const char kInitDoneNotifierSwitch[] = "init-done-notifier";
 const char kNoRateLimitSwitch[] = "no-rate-limit";
 const char kEnableLoggingSwitch[] = "enable-logging";
 const char kLoggingModuleSwitch[] = "vmodule";
+const char kSingleProcessSwitch[] = "single-process";
 
 // URLs.
 const char kUpdaterJSONDefaultUrl[] =

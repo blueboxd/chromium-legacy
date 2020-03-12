@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
-import org.chromium.base.ObserverList;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -30,7 +29,6 @@ import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderMode
 import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel;
-import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -41,8 +39,7 @@ import org.chromium.ui.base.ApplicationViewportInsetSupplier;
 /**
  * Coordinator responsible for the Autofill Assistant bottom bar.
  */
-class AssistantBottomBarCoordinator
-        implements CompositorViewResizer, AssistantPeekHeightCoordinator.Delegate {
+class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.Delegate {
     private static final int FADE_OUT_TRANSITION_TIME_MS = 150;
     private static final int FADE_IN_TRANSITION_TIME_MS = 150;
     private static final int CHANGE_BOUNDS_TRANSITION_TIME_MS = 250;
@@ -75,12 +72,8 @@ class AssistantBottomBarCoordinator
                     .addTransition(new ChangeBounds().setDuration(CHANGE_BOUNDS_TRANSITION_TIME_MS))
                     .addTransition(new Fade(Fade.IN).setDuration(FADE_IN_TRANSITION_TIME_MS));
 
-    private final ObserverList<CompositorViewResizer.Observer> mLayoutViewportSizeObservers =
-            new ObserverList<>();
     @AssistantViewportMode
     private int mViewportMode = AssistantViewportMode.NO_RESIZE;
-    private int mLastLayoutViewportResizing;
-    private int mLastVisualViewportResizing;
 
     AssistantBottomBarCoordinator(ChromeActivity activity, AssistantModel model,
             BottomSheetController controller, TabObscuringHandler tabObscuringHandler) {
@@ -178,7 +171,6 @@ class AssistantBottomBarCoordinator
             public void onSheetContentChanged(@Nullable BottomSheetContent newContent) {
                 // TODO(crbug.com/806868): Make sure this works and does not interfere with Duet
                 // once we are in ChromeTabbedActivity.
-                updateLayoutViewportHeight();
                 updateVisualViewportHeight();
             }
 
@@ -295,7 +287,6 @@ class AssistantBottomBarCoordinator
 
         mViewportMode = mode;
         updateVisualViewportHeight();
-        updateLayoutViewportHeight();
     }
 
     /** Set the peek mode. */
@@ -321,7 +312,7 @@ class AssistantBottomBarCoordinator
 
     @Override
     public void onPeekHeightChanged() {
-        updateLayoutViewportHeight();
+        updateVisualViewportHeight();
     }
 
     private void setChildMarginTop(View child, int marginTop) {
@@ -360,25 +351,8 @@ class AssistantBottomBarCoordinator
         view.setLayoutParams(layoutParams);
     }
 
-    private void updateLayoutViewportHeight() {
-        setLayoutViewportResizing(getHeight());
-    }
-
-    /**
-     * Shrink the layout viewport by {@code resizing} pixels. This is an expensive operation that
-     * should be used with care.
-     */
-    private void setLayoutViewportResizing(int resizing) {
-        if (resizing == mLastLayoutViewportResizing) return;
-        mLastLayoutViewportResizing = resizing;
-
-        for (Observer observer : mLayoutViewportSizeObservers) {
-            observer.onHeightChanged(resizing);
-        }
-    }
-
     private void updateVisualViewportHeight() {
-        if (mViewportMode != AssistantViewportMode.RESIZE_VISUAL_VIEWPORT
+        if (mViewportMode == AssistantViewportMode.NO_RESIZE
                 || mBottomSheetController.getCurrentSheetContent() != mContent) {
             resetVisualViewportHeight();
             return;
@@ -393,39 +367,24 @@ class AssistantBottomBarCoordinator
     }
 
     /**
-     * Shrink the visual viewport by {@code resizing} pixels. This operation is cheaper than calling
-     * {@link #setLayoutViewportResizing} and can therefore be often called (e.g. during
-     * animations).
+     * Shrink the visual viewport by {@code resizing} pixels.
      */
     private void setVisualViewportResizing(int resizing) {
-        if (resizing == mLastVisualViewportResizing || mWebContents == null
+        int currentInset = mInsetSupplier.get() != null ? mInsetSupplier.get() : 0;
+        if (resizing == currentInset || mWebContents == null
                 || mWebContents.getRenderWidgetHostView() == null) {
             return;
         }
 
-        mLastVisualViewportResizing = resizing;
         mInsetSupplier.set(resizing);
     }
 
-    // Implementation of methods from AutofillAssistantSizeManager.
-
-    @Override
-    public int getHeight() {
-        if (mViewportMode == AssistantViewportMode.RESIZE_LAYOUT_VIEWPORT
-                && mBottomSheetController.getCurrentSheetContent() == mContent) {
+    /** @return The peeking height of the bottom sheet if our content is showing, otherwise 0. */
+    private int getHeight() {
+        if (mBottomSheetController.getCurrentSheetContent() == mContent) {
             return mPeekHeightCoordinator.getPeekHeight();
         }
 
         return 0;
-    }
-
-    @Override
-    public void addObserver(Observer observer) {
-        mLayoutViewportSizeObservers.addObserver(observer);
-    }
-
-    @Override
-    public void removeObserver(Observer observer) {
-        mLayoutViewportSizeObservers.removeObserver(observer);
     }
 }

@@ -2440,7 +2440,6 @@ interface FileSystemFileHandle : FileSystemHandle
     attribute @@toStringTag
     method constructor
     method createWritable
-    method createWriter
     method getFile
 interface FileSystemHandle
     attribute @@toStringTag

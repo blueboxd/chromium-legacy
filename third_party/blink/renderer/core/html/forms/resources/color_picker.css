@@ -67,7 +67,7 @@ color-well > canvas {
 
 hue-slider > canvas {
   border-radius: 2px;
-  height: 11px;
+  height: 12px;
   margin-top: 7%;
   width: 100%;
 }
@@ -78,6 +78,15 @@ color-selection-ring {
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.4);
   box-sizing: border-box;
   position: absolute;
+}
+
+color-selection-ring:focus {
+  /* Simulate the outline using box-shadow because it follows the border radius
+   * (unlike outline).
+   */
+  box-shadow: 0px 0px 0px 2px;
+  color: -webkit-focus-ring-color;
+  outline: none;
 }
 
 color-well > color-selection-ring {
@@ -123,7 +132,7 @@ input {
 }
 
 color-value-container > input:not(:first-child) {
-  margin-left: 1%;
+  margin-left: 4%;
 }
 
 format-toggler {

@@ -2483,3 +2483,20 @@ TEST_F('ChromeVoxBackgroundTest', 'ReadWindowTitle', function() {
             .replay();
       });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'OutputEmptyQueueMode', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree('<p>unused</p>', function(root) {
+    const output = new Output();
+    Output.forceModeForNextSpeechUtterance(QueueMode.CATEGORY_FLUSH);
+    output.append_(
+        output.speechBuffer_, new Spannable(''),
+        {annotation: [new Output.Action()]});
+    output.withString('test');
+    mockFeedback.clearPendingOutput()
+        .call(output.go.bind(output))
+        .expectSpeechWithQueueMode('', QueueMode.CATEGORY_FLUSH)
+        .expectSpeechWithQueueMode('test', QueueMode.CATEGORY_FLUSH)
+        .replay();
+  });
+});

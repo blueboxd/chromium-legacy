@@ -493,7 +493,7 @@ RendererBlinkPlatformImpl::NewAudioCapturerSource(
       RenderFrame::GetRoutingIdForWebFrame(web_frame), params);
 }
 
-viz::ContextProvider*
+viz::RasterContextProvider*
 RendererBlinkPlatformImpl::SharedMainThreadContextProvider() {
   return RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
 }

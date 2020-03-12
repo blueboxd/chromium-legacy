@@ -3040,17 +3040,8 @@
   <message name="IDS_SETTINGS_HUGE_FONT_SIZE" desc="The large end of the minimum font size slider in settings.">
     Huge
   </message>
-  <message name="IDS_SETTINGS_ADVANCED_FONT_SETTINGS" desc="Label for advanced font settings.">
-    Advanced font settings
-  </message>
-  <message name="IDS_SETTINGS_OPEN_ADVANCED_FONT_SETTINGS" desc="Sub-label for opening advanced font extension options.">
-   Open extension options
-  </message>
   <message name="IDS_SETTINGS_QUICK_BROWN_FOX" desc="Example text to see a font style and size sample.  The quick brown fox sentence is a playful way to show all 26 English letters.  Any example text will do.  There is no need to translate this exactly.">
     The quick brown fox jumps over the lazy dog
-  </message>
-  <message name="IDS_SETTINGS_REQUIRES_WEB_STORE_EXTENSION" desc="Sub-label for advanced font settings explaining that an extension from the Web Store is required.">
-    Requires extension from the Chrome Web Store
   </message>
 
   <!-- System Page -->

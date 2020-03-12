@@ -49,7 +49,7 @@ NegotiatingClientAuthenticator::~NegotiatingClientAuthenticator() = default;
 
 void NegotiatingClientAuthenticator::ProcessMessage(
     const jingle_xmpp::XmlElement* message,
-    const base::Closure& resume_callback) {
+    base::OnceClosure resume_callback) {
   DCHECK_EQ(state(), WAITING_MESSAGE);
   state_ = PROCESSING_MESSAGE;
 
@@ -64,7 +64,7 @@ void NegotiatingClientAuthenticator::ProcessMessage(
         std::find(methods_.begin(), methods_.end(), method) == methods_.end()) {
       state_ = REJECTED;
       rejection_reason_ = PROTOCOL_ERROR;
-      resume_callback.Run();
+      std::move(resume_callback).Run();
       return;
     }
 
@@ -72,14 +72,15 @@ void NegotiatingClientAuthenticator::ProcessMessage(
     method_set_by_host_ = true;
 
     // Copy the message since the authenticator may process it asynchronously.
-    base::Closure callback = base::Bind(
-        &NegotiatingAuthenticatorBase::ProcessMessageInternal,
-        base::Unretained(this), base::Owned(new jingle_xmpp::XmlElement(*message)),
-        resume_callback);
-    CreateAuthenticatorForCurrentMethod(WAITING_MESSAGE, callback);
+    CreateAuthenticatorForCurrentMethod(
+        WAITING_MESSAGE,
+        base::BindOnce(&NegotiatingAuthenticatorBase::ProcessMessageInternal,
+                       base::Unretained(this),
+                       base::Owned(new jingle_xmpp::XmlElement(*message)),
+                       base::Passed(std::move(resume_callback))));
     return;
   }
-  ProcessMessageInternal(message, resume_callback);
+  ProcessMessageInternal(message, std::move(resume_callback));
 }
 
 std::unique_ptr<jingle_xmpp::XmlElement>
@@ -123,7 +124,7 @@ NegotiatingClientAuthenticator::GetNextMessage() {
 
 void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
     Authenticator::State preferred_initial_state,
-    const base::Closure& resume_callback) {
+    base::OnceClosure resume_callback) {
   DCHECK_EQ(state(), PROCESSING_MESSAGE);
   DCHECK(current_method_ != Method::INVALID);
   switch (current_method_) {
@@ -135,7 +136,7 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
       current_authenticator_.reset(new ThirdPartyClientAuthenticator(
           base::Bind(&V2Authenticator::CreateForClient),
           config_.fetch_third_party_token_callback));
-      resume_callback.Run();
+      std::move(resume_callback).Run();
       break;
 
     case Method::THIRD_PARTY_SPAKE2_CURVE25519:
@@ -143,7 +144,7 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
           base::Bind(&Spake2Authenticator::CreateForClient, local_id_,
                      remote_id_),
           config_.fetch_third_party_token_callback));
-      resume_callback.Run();
+      std::move(resume_callback).Run();
       break;
 
     case Method::PAIRED_SPAKE2_P224: {
@@ -151,7 +152,8 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
           new PairingClientAuthenticator(
               config_, base::Bind(&V2Authenticator::CreateForClient));
       current_authenticator_ = base::WrapUnique(pairing_authenticator);
-      pairing_authenticator->Start(preferred_initial_state, resume_callback);
+      pairing_authenticator->Start(preferred_initial_state,
+                                   std::move(resume_callback));
       break;
     }
 
@@ -161,7 +163,8 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
               config_, base::Bind(&Spake2Authenticator::CreateForClient,
                                   local_id_, remote_id_));
       current_authenticator_ = base::WrapUnique(pairing_authenticator);
-      pairing_authenticator->Start(preferred_initial_state, resume_callback);
+      pairing_authenticator->Start(preferred_initial_state,
+                                   std::move(resume_callback));
       break;
     }
 
@@ -173,7 +176,7 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
           base::Bind(
               &NegotiatingClientAuthenticator::CreateSharedSecretAuthenticator,
               weak_factory_.GetWeakPtr(), preferred_initial_state,
-              resume_callback));
+              base::Passed(std::move(resume_callback))));
       break;
   }
 }
@@ -193,7 +196,7 @@ void NegotiatingClientAuthenticator::CreatePreferredAuthenticator() {
 
 void NegotiatingClientAuthenticator::CreateSharedSecretAuthenticator(
     Authenticator::State initial_state,
-    const base::Closure& resume_callback,
+    base::OnceClosure resume_callback,
     const std::string& shared_secret) {
   std::string shared_secret_hash =
       (current_method_ == Method::SHARED_SECRET_PLAIN_SPAKE2_P224)
@@ -207,7 +210,7 @@ void NegotiatingClientAuthenticator::CreateSharedSecretAuthenticator(
     current_authenticator_ =
         V2Authenticator::CreateForClient(shared_secret_hash, initial_state);
   }
-  resume_callback.Run();
+  std::move(resume_callback).Run();
 }
 
 bool NegotiatingClientAuthenticator::is_paired() {

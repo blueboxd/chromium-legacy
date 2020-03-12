@@ -43,6 +43,7 @@
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
@@ -54,6 +55,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/api/management/supervised_user_service_delegate.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
@@ -76,9 +78,15 @@
 #include "chrome/browser/printing/printing_init.h"
 #endif
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+// TODO(https://crbug.com/1060801): Here and elsewhere, possibly switch build
+// flag to #if defined(OS_CHROMEOS)
+#include "chrome/browser/supervised_user/supervised_user_service_management_api_delegate.h"
+#endif
+
 namespace extensions {
 
-ChromeExtensionsAPIClient::ChromeExtensionsAPIClient() {}
+ChromeExtensionsAPIClient::ChromeExtensionsAPIClient() = default;
 
 ChromeExtensionsAPIClient::~ChromeExtensionsAPIClient() {}
 
@@ -333,6 +341,15 @@ ChromeExtensionsAPIClient::CreateVirtualKeyboardDelegate(
 ManagementAPIDelegate* ChromeExtensionsAPIClient::CreateManagementAPIDelegate()
     const {
   return new ChromeManagementAPIDelegate;
+}
+
+std::unique_ptr<SupervisedUserServiceDelegate>
+ChromeExtensionsAPIClient::CreateSupervisedUserServiceDelegate() const {
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  return std::make_unique<SupervisedUserServiceManagementAPIDelegate>();
+#else
+  return nullptr;
+#endif
 }
 
 std::unique_ptr<DisplayInfoProvider>

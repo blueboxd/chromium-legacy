@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -41,6 +42,9 @@ void AddEduStrings(content::WebUIDataSource* source) {
   source->AddLocalizedString("okButton", IDS_APP_OK);
   source->AddLocalizedString("backButton", IDS_EDU_LOGIN_BACK);
   source->AddLocalizedString("nextButton", IDS_EDU_LOGIN_NEXT);
+
+  source->AddLocalizedString("welcomeTitle", IDS_EDU_LOGIN_WELCOME_TITLE);
+  source->AddLocalizedString("welcomeBody", IDS_EDU_LOGIN_WELCOME_BODY);
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -69,8 +73,8 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   source->OverrideContentSecurityPolicyScriptSrc(
       "script-src chrome://resources chrome://test 'self';");
 
-  source->AddResourcePath("edu", IDU_EDU_LOGIN_EDU_LOGIN_HTML);
-  source->AddResourcePath("app.js", IDU_EDU_LOGIN_EDU_LOGIN_JS);
+  source->AddResourcePath("edu", IDR_EDU_LOGIN_EDU_LOGIN_HTML);
+  source->AddResourcePath("app.js", IDR_EDU_LOGIN_EDU_LOGIN_JS);
   source->AddResourcePath("edu_login_button.js",
                           IDR_EDU_LOGIN_EDU_LOGIN_BUTTON_JS);
   source->AddResourcePath("edu_login_template.js",
@@ -78,12 +82,20 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   source->AddResourcePath("edu_login_css.js", IDR_EDU_LOGIN_EDU_LOGIN_CSS_JS);
   source->AddResourcePath("browser_proxy.js", IDR_EDU_LOGIN_BROWSER_PROXY_JS);
   source->AddResourcePath("edu_login_util.js", IDR_EDU_LOGIN_EDU_LOGIN_UTIL_JS);
+  source->AddResourcePath("edu_login_welcome.js",
+                          IDR_EDU_LOGIN_EDU_LOGIN_WELCOME_JS);
 
   source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
   source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
 
-  AddEduStrings(source);
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  source->AddResourcePath("googleg.svg",
+                          IDR_ACCOUNT_MANAGER_WELCOME_GOOGLE_LOGO_SVG);
 #endif
+
+  source->EnableReplaceI18nInJS();
+  AddEduStrings(source);
+#endif  // defined(OS_CHROMEOS)
 
   source->AddLocalizedString("title", IDS_CHROME_SIGNIN_TITLE);
   source->AddLocalizedString(

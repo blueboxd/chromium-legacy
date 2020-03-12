@@ -40,6 +40,15 @@ class ScrollElasticityHelper;
 
 enum PointerResultType { kUnhandled = 0, kScrollbarScroll };
 
+// These enum values are reported in UMA. So these values should never be
+// removed or changed.
+enum class ScrollBeginThreadState {
+  kScrollingOnCompositor = 0,
+  kScrollingOnCompositorBlockedOnMain = 1,
+  kScrollingOnMain = 2,
+  kMaxValue = kScrollingOnMain,
+};
+
 struct CC_EXPORT InputHandlerPointerResult {
   InputHandlerPointerResult();
   // Tells what type of processing occurred in the input handler as a result of
@@ -191,6 +200,12 @@ class CC_EXPORT InputHandler {
   // result in a successful scroll latch. Snap to a snap position if
   // |should_snap| is true.
   virtual void ScrollEnd(bool should_snap) = 0;
+
+  // Called to notify every time scroll-begin/end is attempted by an input
+  // event.
+  virtual void RecordScrollBegin(ScrollInputType input_type,
+                                 ScrollBeginThreadState scroll_start_state) = 0;
+  virtual void RecordScrollEnd(ScrollInputType input_type) = 0;
 
   virtual InputHandlerPointerResult MouseMoveAt(
       const gfx::Point& mouse_position) = 0;

@@ -98,7 +98,7 @@ class FakeAuthenticator : public Authenticator {
   bool started() const override;
   RejectionReason rejection_reason() const override;
   void ProcessMessage(const jingle_xmpp::XmlElement* message,
-                      const base::Closure& resume_callback) override;
+                      base::OnceClosure resume_callback) override;
   std::unique_ptr<jingle_xmpp::XmlElement> GetNextMessage() override;
   const std::string& GetAuthKey() const override;
   std::unique_ptr<ChannelAuthenticator> CreateChannelAuthenticator()
@@ -117,7 +117,7 @@ class FakeAuthenticator : public Authenticator {
   int messages_till_started_ = 0;
 
   int pause_message_index_ = -1;
-  base::Closure resume_closure_;
+  base::OnceClosure resume_closure_;
 
   std::string auth_key_;
 

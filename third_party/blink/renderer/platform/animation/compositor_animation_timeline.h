@@ -24,6 +24,7 @@ class PLATFORM_EXPORT CompositorAnimationTimeline {
 
  public:
   CompositorAnimationTimeline();
+  explicit CompositorAnimationTimeline(scoped_refptr<cc::AnimationTimeline>);
   ~CompositorAnimationTimeline();
 
   cc::AnimationTimeline* GetAnimationTimeline() const;

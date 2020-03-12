@@ -156,8 +156,8 @@ void GetSavedWindowBoundsAndShowState(const Browser* browser,
   DCHECK(bounds);
   DCHECK(show_state);
   *bounds = browser->override_bounds();
-  WindowSizer::GetBrowserWindowBoundsAndShowState(browser->app_name(), *bounds,
-                                                  browser, bounds, show_state);
+  WindowSizer::GetBrowserWindowBoundsAndShowState(*bounds, browser, bounds,
+                                                  show_state);
 
   const base::CommandLine& parsed_command_line =
       *base::CommandLine::ForCurrentProcess();

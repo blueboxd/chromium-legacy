@@ -58369,6 +58369,17 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
              'Secure' directive (app targets &gt;= Android R)"/>
 </enum>
 
+<enum name="SecureDnsModeDetails">
+  <int value="0" label="Off, by user choice"/>
+  <int value="1" label="Off, by enterprise policy"/>
+  <int value="2" label="Off, due to managed environment"/>
+  <int value="3" label="Off, due to parental controls"/>
+  <int value="4" label="Automatic, by user choice"/>
+  <int value="5" label="Automatic, by enterprise policy"/>
+  <int value="6" label="Secure, by user choice"/>
+  <int value="7" label="Secure, by enterprise policy"/>
+</enum>
+
 <enum name="SecurityInterstitialDecision">
   <int value="0" label="SHOW"/>
   <int value="1" label="PROCEED"/>

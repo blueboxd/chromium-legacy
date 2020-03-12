@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
@@ -752,6 +753,10 @@ void AppInstall::SetupDone(int result) {
 }
 
 scoped_refptr<App> MakeAppInstall(const std::string& app_id) {
+  // TODO(sorin) "--install" must be run with "--single-process" until
+  // crbug.com/1053729 is resolved.
+  DCHECK(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessSwitch));
   return base::MakeRefCounted<AppInstall>(app_id);
 }
 

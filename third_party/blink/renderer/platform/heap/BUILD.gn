@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
+import("//build/config/compiler/compiler.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//testing/test.gni")
@@ -108,6 +109,11 @@ blink_platform_sources("heap") {
     "//third_party/icu",
     "//v8",
   ]
+
+  if (!is_debug && !optimize_for_size) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
 }
 
 jumbo_source_set("test_support") {

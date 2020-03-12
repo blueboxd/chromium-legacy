@@ -608,12 +608,13 @@ class ListBoxSelectType final : public SelectType {
   explicit ListBoxSelectType(HTMLSelectElement& select) : SelectType(select) {}
   bool DefaultEventHandler(const Event& event) override;
   void DidSetSuggestedOption(HTMLOptionElement* option) override;
-  void UpdateMultiSelectFocus() override;
   void SelectAll() override;
 
  private:
   HTMLOptionElement* NextSelectableOptionPageAway(HTMLOptionElement*,
                                                   SkipDirection) const;
+  // Update :-internal-multi-select-focus state of selected OPTIONs.
+  void UpdateMultiSelectFocus();
   void ToggleSelection(HTMLOptionElement& option);
   enum class SelectionMode {
     kDeselectOthers,
@@ -622,6 +623,7 @@ class ListBoxSelectType final : public SelectType {
   };
   void UpdateSelectedState(HTMLOptionElement* clicked_option,
                            SelectionMode mode);
+  void UpdateListBoxSelection(bool deselect_other_options, bool scroll = true);
 
   bool is_in_non_contiguous_selection_ = false;
 };
@@ -708,11 +710,11 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
             return false;
 
           select_->SetActiveSelectionEnd(option);
-          select_->UpdateListBoxSelection(false);
+          UpdateListBoxSelection(false);
         } else {
           select_->SetActiveSelectionAnchor(option);
           select_->SetActiveSelectionEnd(option);
-          select_->UpdateListBoxSelection(true);
+          UpdateListBoxSelection(true);
         }
       }
     }
@@ -838,7 +840,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
       select_->ScrollToOption(end_option);
       if (select_new_item || is_in_non_contiguous_selection_) {
         if (select_new_item) {
-          select_->UpdateListBoxSelection(deselect_others);
+          UpdateListBoxSelection(deselect_others);
           select_->ListBoxOnChange();
         }
         UpdateMultiSelectFocus();
@@ -911,7 +913,7 @@ void ListBoxSelectType::SelectAll() {
   select_->SetActiveSelectionAnchor(NextSelectableOption(nullptr));
   select_->SetActiveSelectionEnd(PreviousSelectableOption(nullptr));
 
-  select_->UpdateListBoxSelection(false, false);
+  UpdateListBoxSelection(false, false);
   select_->ListBoxOnChange();
   select_->SetNeedsValidityCheck();
 }
@@ -988,7 +990,44 @@ void ListBoxSelectType::UpdateSelectedState(HTMLOptionElement* clicked_option,
     select_->SetActiveSelectionAnchor(clicked_option);
 
   select_->SetActiveSelectionEnd(clicked_option);
-  select_->UpdateListBoxSelection(mode != SelectionMode::kNotChangeOthers);
+  UpdateListBoxSelection(mode != SelectionMode::kNotChangeOthers);
+}
+
+void ListBoxSelectType::UpdateListBoxSelection(bool deselect_other_options,
+                                               bool scroll) {
+  DCHECK(select_->GetLayoutObject());
+  HTMLOptionElement* const anchor_option = select_->active_selection_anchor_;
+  HTMLOptionElement* const end_option = select_->active_selection_end_;
+  const int anchor_index = anchor_option ? anchor_option->index() : -1;
+  const int end_index = end_option ? end_option->index() : -1;
+  const int start = std::min(anchor_index, end_index);
+  const int end = std::max(anchor_index, end_index);
+
+  int i = 0;
+  for (auto* const option : select_->GetOptionList()) {
+    if (option->IsDisabledFormControl() || !option->GetLayoutObject()) {
+      ++i;
+      continue;
+    }
+    if (i >= start && i <= end) {
+      option->SetSelectedState(select_->active_selection_state_);
+      option->SetDirty(true);
+    } else if (deselect_other_options ||
+               i >= static_cast<int>(
+                        select_->cached_state_for_active_selection_.size())) {
+      option->SetSelectedState(false);
+      option->SetDirty(true);
+    } else {
+      option->SetSelectedState(select_->cached_state_for_active_selection_[i]);
+    }
+    ++i;
+  }
+
+  UpdateMultiSelectFocus();
+  select_->SetNeedsValidityCheck();
+  if (scroll)
+    select_->ScrollToSelection();
+  select_->NotifyFormStateChanged();
 }
 
 // ============================================================================
@@ -1040,8 +1079,6 @@ const ComputedStyle* SelectType::OptionStyle() const {
 }
 
 void SelectType::MaximumOptionWidthMightBeChanged() const {}
-
-void SelectType::UpdateMultiSelectFocus() {}
 
 void SelectType::SelectAll() {
   NOTREACHED();

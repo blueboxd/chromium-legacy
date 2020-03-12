@@ -44,6 +44,8 @@ enum class SharingDeviceRegistrationResult;
 class SharingService : public KeyedService, public syncer::SyncServiceObserver {
  public:
   using SharingDeviceList = std::vector<std::unique_ptr<syncer::DeviceInfo>>;
+  using NotificationActionCallback =
+      base::RepeatingCallback<void(base::Optional<int> button, bool closed)>;
 
   enum class State {
     // Device is unregistered with FCM and Sharing is unavailable.
@@ -100,6 +102,18 @@ class SharingService : public KeyedService, public syncer::SyncServiceObserver {
   void UnregisterSharingHandler(
       chrome_browser_sharing::SharingMessage::PayloadCase payload_case);
 
+  // Sets a notification action handler for |notification_id|. Replaces any
+  // previously set handlers for |notification_id|. |callback| may be a null
+  // callback which clears the handler for |notification_id|.
+  void SetNotificationActionHandler(const std::string& notification_id,
+                                    NotificationActionCallback callback);
+
+  // Returns the notification action handler for |notification_id| set by
+  // SetNotificationActionHandler(). The returned callback may be null if no
+  // handler has been set before for |notification_id|.
+  NotificationActionCallback GetNotificationActionHandler(
+      const std::string& notification_id) const;
+
   // Used to register devices with required capabilities in tests.
   void RegisterDeviceInTesting(
       std::set<sync_pb::SharingSpecificFields_EnabledFeatures> enabled_features,
@@ -148,6 +162,10 @@ class SharingService : public KeyedService, public syncer::SyncServiceObserver {
 #if defined(OS_ANDROID)
   SharingServiceProxyAndroid sharing_service_proxy_android_{this};
 #endif  // defined(OS_ANDROID)
+
+  // Map of notification id to notification handler callback.
+  std::map<std::string, NotificationActionCallback>
+      notification_action_handlers_;
 
   base::WeakPtrFactory<SharingService> weak_ptr_factory_{this};
 };

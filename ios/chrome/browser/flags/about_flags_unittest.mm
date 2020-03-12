@@ -16,9 +16,7 @@ using AboutFlagsTest = PlatformTest;
 
 // Makes sure that every flag has an owner and an expiry entry in
 // flag-metadata.json.
-// TODO(crbug.com/1058614): Enable once iOS flags are added to
-// flag-metadata.json.
-TEST_F(AboutFlagsTest, DISABLED_EveryFlagHasMetadata) {
+TEST_F(AboutFlagsTest, EveryFlagHasMetadata) {
   size_t count;
   const flags_ui::FeatureEntry* entries = testing::GetFeatureEntries(&count);
   flags_ui::testing::EnsureEveryFlagHasMetadata(entries, count);

@@ -119,7 +119,7 @@ class Authenticator {
   // finished. The implementation must guarantee that |resume_callback| is not
   // called after the Authenticator is destroyed.
   virtual void ProcessMessage(const jingle_xmpp::XmlElement* message,
-                              const base::Closure& resume_callback) = 0;
+                              base::OnceClosure resume_callback) = 0;
 
   // Must be called when in MESSAGE_READY state. Returns next
   // authentication message that needs to be sent to the peer.

@@ -152,9 +152,15 @@ def CheckDuplicateConfigs(errs, config_pool, mixin_pool, grouping,
       elif config.startswith('//'):
         args = config
       else:
-        args = flatten_config(config_pool, mixin_pool, config)['gn_args']
+        flattened_config = flatten_config(config_pool, mixin_pool, config)
+        args = flattened_config['gn_args']
         if 'error' in args:
           continue
+        # Force the args_file into consideration when testing for duplicate
+        # configs.
+        args_file = flattened_config['args_file']
+        if args_file:
+          args += ' args_file=%s' % args_file
 
       evaled_to_source[args].add(config)
 

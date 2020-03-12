@@ -25,7 +25,10 @@
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
+#include "chrome/browser/sharing/sharing_service.h"
+#include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/load_flags.h"
@@ -154,10 +157,7 @@ void RemoteCopyMessageHandler::OnMessage(
 
   // First cancel any pending async tasks that might otherwise overwrite the
   // results of the more recent message.
-  url_loader_.reset();
-  ImageDecoder::Cancel(this);
-  resize_callback_.Cancel();
-  write_detection_timer_.AbandonAndStop();
+  CancelAsyncTasks();
 
   device_name_ = message.sender_device_name();
 
@@ -291,8 +291,17 @@ void RemoteCopyMessageHandler::OnImageDownloadProgress(uint64_t current) {
 void RemoteCopyMessageHandler::UpdateProgressNotification(
     const base::string16& context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (image_notification_id_.empty())
+  if (image_notification_id_.empty()) {
     image_notification_id_ = base::GenerateGUID();
+    // base::Unretained is safe as the SharingService owns |this| via the
+    // SharingHandlerRegistry and also the passed callback.
+    SharingServiceFactory::GetForBrowserContext(profile_)
+        ->SetNotificationActionHandler(
+            image_notification_id_,
+            base::BindRepeating(
+                &RemoteCopyMessageHandler::OnProgressNotificationAction,
+                base::Unretained(this)));
+  }
 
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.vector_small_image = &kSendTabToSelfIcon;
@@ -307,7 +316,13 @@ void RemoteCopyMessageHandler::UpdateProgressNotification(
       /*display_source=*/base::string16(),
       /*origin_url=*/GURL(), message_center::NotifierId(),
       rich_notification_data,
-      base::MakeRefCounted<message_center::NotificationDelegate>());
+      /*delegate=*/nullptr);
+
+  std::vector<message_center::ButtonInfo> notification_actions;
+  message_center::ButtonInfo button_info =
+      message_center::ButtonInfo(l10n_util::GetStringUTF16(IDS_CANCEL));
+  notification_actions.push_back(button_info);
+  notification.set_buttons(notification_actions);
 
   if (image_content_length_ <= 0) {
     // TODO(knollr): Show transfer status if |image_content_progress_| is != 0.
@@ -323,7 +338,7 @@ void RemoteCopyMessageHandler::UpdateProgressNotification(
   }
 
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, notification, /*metadata=*/nullptr);
+      NotificationHandler::Type::SHARING, notification, /*metadata=*/nullptr);
 
   // Unretained(this) is safe here because |this| owns
   // |image_download_update_progress_timer_|.
@@ -341,10 +356,39 @@ void RemoteCopyMessageHandler::CancelProgressNotification() {
   if (image_notification_id_.empty())
     return;
 
+  SharingServiceFactory::GetForBrowserContext(profile_)
+      ->SetNotificationActionHandler(image_notification_id_,
+                                     base::NullCallback());
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Close(
       NotificationHandler::Type::SHARING, image_notification_id_);
 
   image_notification_id_.clear();
+}
+
+void RemoteCopyMessageHandler::OnProgressNotificationAction(
+    base::Optional<int> button,
+    bool closed) {
+  // Clicks on the progress notification body are ignored.
+  if (!closed && !button)
+    return;
+
+  // Stop updating the progress notification.
+  image_download_update_progress_timer_.AbandonAndStop();
+
+  // Let the download continue if the notification was dismissed.
+  if (closed) {
+    // Remove the handler as this notification is now closed.
+    SharingServiceFactory::GetForBrowserContext(profile_)
+        ->SetNotificationActionHandler(image_notification_id_,
+                                       base::NullCallback());
+    // The notification will be closed by the framework after this.
+    image_notification_id_.clear();
+    return;
+  }
+
+  // Cancel the download if the cancel button was pressed.
+  DCHECK_EQ(0, *button);
+  CancelAsyncTasks();
 }
 
 void RemoteCopyMessageHandler::OnURLLoadComplete(
@@ -451,9 +495,14 @@ void RemoteCopyMessageHandler::WriteImageAndShowNotification(
                      base::TimeTicks::Now(), /*is_image=*/true));
 
   std::string notification_id = image_notification_id_;
-  if (notification_id.empty())
+  if (notification_id.empty()) {
     notification_id = base::GenerateGUID();
-  image_notification_id_.clear();
+  } else {
+    SharingServiceFactory::GetForBrowserContext(profile_)
+        ->SetNotificationActionHandler(image_notification_id_,
+                                       base::NullCallback());
+    image_notification_id_.clear();
+  }
 
   ShowNotification(GetImageNotificationTitle(device_name_), resized_image,
                    notification_id);
@@ -523,4 +572,13 @@ void RemoteCopyMessageHandler::Finish(RemoteCopyHandleMessageResult result) {
 
   LogRemoteCopyHandleMessageResult(result);
   device_name_.clear();
+}
+
+void RemoteCopyMessageHandler::CancelAsyncTasks() {
+  url_loader_.reset();
+  ImageDecoder::Cancel(this);
+  resize_callback_.Cancel();
+  write_detection_timer_.AbandonAndStop();
+  image_download_update_progress_timer_.AbandonAndStop();
+  CancelProgressNotification();
 }

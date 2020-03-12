@@ -32,6 +32,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.c
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.closeFirstTabInDialog;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabs;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.enterTabSwitcher;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.getSwipeToDismissAction;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.isShowingPopupTabList;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.mergeAllNormalTabsToAGroup;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyShowingPopupTabList;
@@ -41,6 +42,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.v
 import android.content.Intent;
 import android.graphics.Rect;
 import android.support.test.espresso.Espresso;
+import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.espresso.intent.Intents;
 import android.support.test.espresso.intent.rule.IntentsTestRule;
 import android.support.test.filters.MediumTest;
@@ -423,6 +425,31 @@ public class TabGridDialogTest {
         waitForDialogHidingAnimationInTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 3);
         assertEquals(3, filter.getCount());
+    }
+
+    @Test
+    @MediumTest
+    public void testSwipeToDismiss_Dialog() throws InterruptedException {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        // Create 2 tabs and merge them into one group.
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+        openDialogFromTabSwitcherAndVerify(cta, 2);
+
+        // Swipe to dismiss two tabs in dialog.
+        onView((withId(R.id.tab_list_view)))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(
+                        1, getSwipeToDismissAction(true)));
+        verifyShowingDialog(cta, 1);
+        onView((withId(R.id.tab_list_view)))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(
+                        0, getSwipeToDismissAction(false)));
+        waitForDialogHidingAnimation(cta);
+        verifyTabSwitcherCardCount(cta, 0);
     }
 
     private void openDialogFromTabSwitcherAndVerify(ChromeTabbedActivity cta, int tabCount) {

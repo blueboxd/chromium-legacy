@@ -38,11 +38,11 @@ class ThirdPartyClientAuthenticator : public ThirdPartyAuthenticatorBase {
  protected:
   // ThirdPartyAuthenticator implementation.
   void ProcessTokenMessage(const jingle_xmpp::XmlElement* message,
-                           const base::Closure& resume_callback) override;
+                           base::OnceClosure resume_callback) override;
   void AddTokenElements(jingle_xmpp::XmlElement* message) override;
 
  private:
-  void OnThirdPartyTokenFetched(const base::Closure& resume_callback,
+  void OnThirdPartyTokenFetched(base::OnceClosure resume_callback,
                                 const std::string& third_party_token,
                                 const std::string& shared_secret);
 

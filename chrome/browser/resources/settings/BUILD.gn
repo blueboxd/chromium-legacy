@@ -239,6 +239,7 @@ group("closure_compile_module") {
     "settings_main:closure_compile_module",
     "settings_menu:closure_compile_module",
     "settings_page:closure_compile_module",
+    "settings_ui:closure_compile_module",
   ]
   if (!is_chromeos) {
     deps += [
@@ -259,15 +260,13 @@ js_type_check("closure_compile_local_module") {
   is_polymer3 = true
   deps = [
     ":extension_control_browser_proxy.m",
+    ":global_scroll_target_behavior.m",
     ":i18n_setup.m",
 
     # TODO(crbug.com/1026426): Fix and enable.
-    ":global_scroll_target_behavior.m",
-
     #":icons.m",
     ":lifetime_browser_proxy.m",
-
-    #":metrics_browser_proxy.m",
+    ":metrics_browser_proxy.m",
     ":open_window_proxy.m",
     ":page_visibility.m",
     ":plural_string_proxy.m",
@@ -315,9 +314,7 @@ js_library("lifetime_browser_proxy.m") {
 
 js_library("metrics_browser_proxy.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/metrics_browser_proxy.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
   extra_deps = [ ":modulize" ]
 }
 

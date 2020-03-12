@@ -17,6 +17,7 @@ luci.list_view(
         'try/gpu-try-mac-amd-retina-dbg',
         'try/gpu-try-mac-intel-dbg',
         'try/ios-device',
+        'try/ios-simulator-code-coverage',
         'try/ios-simulator-cr-recipe',
         'try/ios-simulator-cronet',
         'try/ios-simulator-full-configs',

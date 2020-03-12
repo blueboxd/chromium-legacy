@@ -41,6 +41,7 @@ class SharedClipboardTestBase : public testing::Test {
   std::string GetClipboardText();
   SkBitmap GetClipboardImage();
 
+  bool HasImageNotification();
   bool HasProgressNotification();
 
   message_center::Notification GetNotification();

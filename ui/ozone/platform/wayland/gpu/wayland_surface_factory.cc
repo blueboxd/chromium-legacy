@@ -46,7 +46,7 @@ class GLOzoneEGLWayland : public GLOzoneEGL {
       const gfx::Size& size) override;
 
  protected:
-  intptr_t GetNativeDisplay() override;
+  gl::EGLDisplayPlatform GetNativeDisplay() override;
   bool LoadGLES2Bindings(gl::GLImplementation impl) override;
 
  private:
@@ -105,10 +105,11 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateOffscreenGLSurface(
   }
 }
 
-intptr_t GLOzoneEGLWayland::GetNativeDisplay() {
+gl::EGLDisplayPlatform GLOzoneEGLWayland::GetNativeDisplay() {
   if (connection_)
-    return reinterpret_cast<intptr_t>(connection_->display());
-  return EGL_DEFAULT_DISPLAY;
+    return gl::EGLDisplayPlatform(
+        reinterpret_cast<EGLNativeDisplayType>(connection_->display()));
+  return gl::EGLDisplayPlatform(EGL_DEFAULT_DISPLAY);
 }
 
 bool GLOzoneEGLWayland::LoadGLES2Bindings(gl::GLImplementation impl) {

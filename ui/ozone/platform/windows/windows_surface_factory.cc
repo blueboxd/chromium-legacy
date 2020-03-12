@@ -46,8 +46,8 @@ class GLOzoneEGLWindows : public GLOzoneEGL {
 
  protected:
   // GLOzoneEGL:
-  HDC GetNativeDisplay() override {
-    return GetWindowDC(nullptr);
+  gl::EGLDisplayPlatform GetNativeDisplay() override {
+    return gl::EGLDisplayPlatform(GetWindowDC(nullptr));
   }
 
   bool LoadGLES2Bindings(gl::GLImplementation implementation) override {

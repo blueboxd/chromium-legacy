@@ -38,6 +38,7 @@ import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.base.compat.ApiHelperForM;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.UmaRecorderHolder;
 
 import java.io.File;
 import java.io.IOException;
@@ -661,7 +662,7 @@ public class LibraryLoader {
             Log.i(TAG, "Loaded native library version number \"%s\"",
                     NativeLibraries.sVersionNumber);
         }
-        RecordHistogram.onLibraryLoaded();
+        UmaRecorderHolder.onLibraryLoaded();
 
         // From now on, keep tracing in sync with native.
         TraceEvent.registerNativeEnabledObserver();

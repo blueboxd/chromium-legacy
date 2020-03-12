@@ -130,6 +130,24 @@ void SharingService::UnregisterSharingHandler(
   handler_registry_->UnregisterSharingHandler(payload_case);
 }
 
+void SharingService::SetNotificationActionHandler(
+    const std::string& notification_id,
+    NotificationActionCallback callback) {
+  if (callback)
+    notification_action_handlers_[notification_id] = callback;
+  else
+    notification_action_handlers_.erase(notification_id);
+}
+
+SharingService::NotificationActionCallback
+SharingService::GetNotificationActionHandler(
+    const std::string& notification_id) const {
+  auto iter = notification_action_handlers_.find(notification_id);
+  return iter == notification_action_handlers_.end()
+             ? NotificationActionCallback()
+             : iter->second;
+}
+
 SharingDeviceSource* SharingService::GetDeviceSource() const {
   return device_source_.get();
 }

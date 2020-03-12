@@ -127,12 +127,12 @@ TokenValidatorBase::~TokenValidatorBase() = default;
 // TokenValidator interface.
 void TokenValidatorBase::ValidateThirdPartyToken(
     const std::string& token,
-    const base::Callback<void(
-        const std::string& shared_secret)>& on_token_validated) {
+    base::OnceCallback<void(const std::string& shared_secret)>
+        on_token_validated) {
   DCHECK(!request_);
   DCHECK(!on_token_validated.is_null());
 
-  on_token_validated_ = on_token_validated;
+  on_token_validated_ = std::move(on_token_validated);
   token_ = token;
   StartValidateRequest(token);
 }
@@ -178,7 +178,7 @@ void TokenValidatorBase::OnReadCompleted(net::URLRequest* source,
   retrying_request_ = false;
   std::string shared_token = ProcessResponse(net_result);
   request_.reset();
-  on_token_validated_.Run(shared_token);
+  std::move(on_token_validated_).Run(shared_token);
 }
 
 void TokenValidatorBase::OnReceivedRedirect(

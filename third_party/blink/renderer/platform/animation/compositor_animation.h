@@ -12,7 +12,6 @@
 #include "base/optional.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_delegate.h"
-#include "cc/animation/scroll_timeline.h"
 #include "cc/animation/worklet_animation.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -23,8 +22,6 @@ class AnimationCurve;
 }
 
 namespace blink {
-
-using CompositorScrollTimeline = cc::ScrollTimeline;
 
 class CompositorAnimationDelegate;
 class CompositorKeyframeModel;
@@ -37,7 +34,6 @@ class PLATFORM_EXPORT CompositorAnimation : public cc::AnimationDelegate {
       cc::WorkletAnimationId,
       const String& name,
       double playback_rate,
-      scoped_refptr<CompositorScrollTimeline>,
       std::unique_ptr<cc::AnimationOptions>,
       std::unique_ptr<cc::AnimationEffectTimings> effect_timings);
 

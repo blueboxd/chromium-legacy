@@ -25,10 +25,10 @@ class TokenValidator {
   // authentication finishes. |shared_secret| should be used by the host to
   // create a V2Authenticator. In case of failure, the callback is called with
   // an empty |shared_secret|.
-  typedef base::Callback<void(
-      const std::string& shared_secret)> TokenValidatedCallback;
+  typedef base::OnceCallback<void(const std::string& shared_secret)>
+      TokenValidatedCallback;
 
-  virtual ~TokenValidator() {}
+  virtual ~TokenValidator() = default;
 
   // Validates |token| with the server and exchanges it for a |shared_secret|.
   // |token_validated_callback| is called when the host authentication ends,
@@ -36,7 +36,7 @@ class TokenValidator {
   // The request is canceled if this object is destroyed.
   virtual void ValidateThirdPartyToken(
       const std::string& token,
-      const TokenValidatedCallback& token_validated_callback) = 0;
+      TokenValidatedCallback token_validated_callback) = 0;
 
   // URL sent to the client, to be used by its |TokenFetcher| to get a token.
   virtual const GURL& token_url() const = 0;

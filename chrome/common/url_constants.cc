@@ -300,6 +300,9 @@ const char kAccountManagerLearnMoreURL[] =
 const char kAndroidAppsLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=playapps";
 
+const char kArcAdbSideloadingLearnMoreURL[] =
+    "https://support.google.com/chromebook/?p=develop_android_apps";
+
 const char kArcExternalStorageLearnMoreURL[] =
     "https://support.google.com/chromebook?p=open_files";
 

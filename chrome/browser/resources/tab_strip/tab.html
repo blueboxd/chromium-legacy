@@ -2,6 +2,7 @@
   :host {
     --tabstrip-tab-transition-duration: 250ms;
 
+    display: block;
     height: var(--tabstrip-tab-height);
     padding-inline-end: var(--tabstrip-tab-spacing);
     position: relative;
@@ -288,12 +289,17 @@
   /* When being dragged, the contents of the drag image needs to be off-screen
    * with nothing else on top or below obscuring it. */
   :host([dragging_]) #dragImage {
+    /* Enough padding to not crop the box shadow set on #tab below. */
+    --drag-image-padding: 25px;
     align-items: center;
     display: flex;
     height: 100%;
     justify-content: center;
-    /* Enough padding to not crop the box shadow set on #tab below. */
-    padding: 25px;
+    padding-block-end: var(--drag-image-padding);
+    padding-block-start: var(--drag-image-padding);
+    padding-inline-end: calc(
+        var(--tabstrip-tab-spacing) + var(--drag-image-padding));
+    padding-inline-start: var(--drag-image-padding);
     position: absolute;
     top: 100vh;
     width: 100%;
@@ -301,6 +307,7 @@
 
   :host([dragging_]) #tab {
     box-shadow: var(--tabstrip-tab-dragging-shadow);
+    transform: scale(var(--tabstrip-tab-drag-image-scale));
   }
 </style>
 

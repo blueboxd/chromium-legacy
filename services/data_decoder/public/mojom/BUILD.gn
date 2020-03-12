@@ -10,10 +10,12 @@ mojom("mojom") {
     "image_decoder.mojom",
     "json_parser.mojom",
     "web_bundle_parser.mojom",
+    "web_bundler.mojom",
     "xml_parser.mojom",
   ]
 
   public_deps = [
+    ":mojom_resource_snapshot_for_web_bundle",
     "//mojo/public/mojom/base",
     "//skia/public/mojom",
     "//ui/gfx/geometry/mojom",

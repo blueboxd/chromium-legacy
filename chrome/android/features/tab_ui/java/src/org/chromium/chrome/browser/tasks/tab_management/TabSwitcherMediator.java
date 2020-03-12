@@ -16,6 +16,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.text.TextUtils;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
@@ -30,6 +31,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -614,9 +616,9 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
      *  @return whether tabs should show in MRU order
      */
     static boolean isShowingTabsInMRUOrder() {
-        String feature = ChromeFeatureList.getFieldTrialParamByFeature(
-                ChromeFeatureList.START_SURFACE_ANDROID, "start_surface_variation");
-        return feature.equals("twopanes");
+        String feature =
+                CachedFeatureFlags.getValue(StartSurfaceConfiguration.START_SURFACE_VARIATION);
+        return TextUtils.equals(feature, "twopanes");
     }
 
     /**

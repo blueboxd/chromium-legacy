@@ -44,7 +44,8 @@ std::unique_ptr<base::DictionaryValue> CreateSecureDnsSettingDict() {
   SecureDnsUiManagementMode management_mode;
   SystemNetworkContextManager::GetStubResolverConfig(
       g_browser_process->local_state(), &insecure_stub_resolver_enabled,
-      &secure_dns_mode, &dns_over_https_servers, &management_mode);
+      &secure_dns_mode, &dns_over_https_servers, false /* record_metrics */,
+      &management_mode);
 
   std::string secure_dns_mode_str;
   switch (secure_dns_mode) {

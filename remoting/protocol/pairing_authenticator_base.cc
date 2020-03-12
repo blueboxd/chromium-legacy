@@ -45,7 +45,7 @@ PairingAuthenticatorBase::rejection_reason() const {
 
 void PairingAuthenticatorBase::ProcessMessage(
     const jingle_xmpp::XmlElement* message,
-    const base::Closure& resume_callback) {
+    base::OnceClosure resume_callback) {
   DCHECK_EQ(state(), WAITING_MESSAGE);
 
   // The client authenticator creates the underlying authenticator in the ctor
@@ -58,10 +58,11 @@ void PairingAuthenticatorBase::ProcessMessage(
     using_paired_secret_ = false;
     spake2_authenticator_.reset();
     CreateSpakeAuthenticatorWithPin(
-        WAITING_MESSAGE, base::Bind(&PairingAuthenticatorBase::ProcessMessage,
-                                    weak_factory_.GetWeakPtr(),
-                                    base::Owned(new jingle_xmpp::XmlElement(*message)),
-                                    resume_callback));
+        WAITING_MESSAGE,
+        base::Bind(&PairingAuthenticatorBase::ProcessMessage,
+                   weak_factory_.GetWeakPtr(),
+                   base::Owned(new jingle_xmpp::XmlElement(*message)),
+                   base::Passed(std::move(resume_callback))));
     return;
   }
 
@@ -72,7 +73,8 @@ void PairingAuthenticatorBase::ProcessMessage(
   spake2_authenticator_->ProcessMessage(
       message,
       base::Bind(&PairingAuthenticatorBase::CheckForFailedSpakeExchange,
-                 weak_factory_.GetWeakPtr(), resume_callback));
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(std::move(resume_callback))));
 }
 
 std::unique_ptr<jingle_xmpp::XmlElement> PairingAuthenticatorBase::GetNextMessage() {
@@ -114,7 +116,7 @@ bool PairingAuthenticatorBase::HasErrorMessage(
 }
 
 void PairingAuthenticatorBase::CheckForFailedSpakeExchange(
-    const base::Closure& resume_callback) {
+    base::OnceClosure resume_callback) {
   // If the SPAKE exchange failed due to invalid credentials, and those
   // credentials were the paired secret, then notify the peer that the
   // PIN-less connection failed and retry using the PIN.
@@ -124,11 +126,11 @@ void PairingAuthenticatorBase::CheckForFailedSpakeExchange(
     using_paired_secret_ = false;
     error_message_ = "invalid-shared-secret";
     spake2_authenticator_.reset();
-    CreateSpakeAuthenticatorWithPin(MESSAGE_READY, resume_callback);
+    CreateSpakeAuthenticatorWithPin(MESSAGE_READY, std::move(resume_callback));
     return;
   }
 
-  resume_callback.Run();
+  std::move(resume_callback).Run();
 }
 
 }  // namespace protocol

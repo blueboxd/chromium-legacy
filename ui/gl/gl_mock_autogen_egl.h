@@ -179,6 +179,12 @@ MOCK_METHOD4(QueryContext,
                         EGLint attribute,
                         EGLint* value));
 MOCK_METHOD2(QueryDebugKHR, EGLBoolean(EGLint attribute, EGLAttrib* value));
+MOCK_METHOD3(QueryDevicesEXT,
+             EGLBoolean(EGLint max_devices,
+                        EGLDeviceEXT* devices,
+                        EGLint* num_devices));
+MOCK_METHOD2(QueryDeviceStringEXT,
+             const char*(EGLDeviceEXT device, EGLint name));
 MOCK_METHOD3(QueryDisplayAttribANGLE,
              EGLBoolean(EGLDisplay dpy, EGLint attribute, EGLAttrib* value));
 MOCK_METHOD4(QueryStreamKHR,

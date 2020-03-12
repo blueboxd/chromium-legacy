@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "fuchsia/engine/browser/accessibility_bridge.h"
 #include "fuchsia/engine/browser/discarding_event_filter.h"
+#include "fuchsia/engine/browser/frame_permission_controller.h"
 #include "fuchsia/engine/browser/navigation_controller_impl.h"
 #include "fuchsia/engine/browser/url_request_rewrite_rules_manager.h"
 #include "fuchsia/engine/on_load_script_injector.mojom.h"
@@ -56,6 +57,10 @@ class FrameImpl : public fuchsia::web::Frame,
   ~FrameImpl() override;
 
   uint64_t media_session_id() const { return media_session_id_; }
+
+  FramePermissionController* permission_controller() {
+    return &permission_controller_;
+  }
 
   zx::unowned_channel GetBindingChannelForTest() const;
   content::WebContents* web_contents_for_test() const {
@@ -167,6 +172,9 @@ class FrameImpl : public fuchsia::web::Frame,
   void SetMediaSessionId(uint64_t session_id) override;
   void ForceContentDimensions(
       std::unique_ptr<fuchsia::ui::gfx::vec2> web_dips) override;
+  void SetPermissionState(fuchsia::web::PermissionDescriptor permission,
+                          std::string web_origin,
+                          fuchsia::web::PermissionState state) override;
 
   // content::WebContentsDelegate implementation.
   void CloseContents(content::WebContents* source) override;
@@ -221,6 +229,7 @@ class FrameImpl : public fuchsia::web::Frame,
   std::vector<uint64_t> before_load_scripts_order_;
   base::RepeatingCallback<void(base::StringPiece)> console_log_message_hook_;
   UrlRequestRewriteRulesManager url_request_rewrite_rules_manager_;
+  FramePermissionController permission_controller_;
 
   // Session ID to use for fuchsia.media.AudioConsumer. Set with
   // SetMediaSessionId().

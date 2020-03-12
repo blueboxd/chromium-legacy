@@ -63,6 +63,10 @@ COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kDirectManipulationStylus;
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
+// Used to enable forced colors mode for web content.
+COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kForcedColors;
+COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsForcedColorsEnabled();
+
 // Used to enable the new controls UI.
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kFormControlsRefresh;

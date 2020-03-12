@@ -2,10 +2,68 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './edu_login_welcome.js';
+import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
+
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+/** @enum {string} */
+const Steps = {
+  WELCOME: 'welcome',
+  PARENTS: 'parents',
+  PARENT_SIGNIN: 'parent-signin',
+  PARENT_INFO: 'parent-info',
+  EDU_LOGIN: 'edu-login'
+};
+
+/** @type {!Array<Steps>} */
+const stepsArray = Object.values(Steps);
 
 Polymer({
   is: 'edu-login-app',
 
   _template: html`{__html_template__}`,
+
+  properties: {
+    /** Mirroring the enum so that it can be used from HTML bindings. */
+    Steps: {
+      type: Object,
+      value: Steps,
+    },
+
+    /**
+     * Index of the current step displayed.
+     * @private {number}
+     */
+    stepIndex_: {
+      type: Number,
+      value: 0,
+    },
+  },
+
+  listeners: {
+    'go-next': 'onGoNext_',
+  },
+
+  /** @override */
+  ready() {
+    this.switchViewAtIndex_(this.stepIndex_);
+  },
+
+  /** Switches to the next view. */
+  onGoNext_() {
+    if (this.stepIndex_ < stepsArray.length - 1) {
+      ++this.stepIndex_;
+    }
+    this.switchViewAtIndex_(this.stepIndex_);
+  },
+
+  /**
+   * Switches to the specified step.
+   * @param {number} index of the step to be shown.
+   */
+  switchViewAtIndex_(index) {
+    /** @type {CrViewManagerElement} */ (this.$.viewManager)
+        .switchView(stepsArray[index]);
+  },
 });

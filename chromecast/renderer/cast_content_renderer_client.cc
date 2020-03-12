@@ -12,6 +12,7 @@
 #include "chromecast/base/bitstream_audio_codecs.h"
 #include "chromecast/base/cast_features.h"
 #include "chromecast/base/chromecast_switches.h"
+#include "chromecast/crash/app_state_tracker.h"
 #include "chromecast/media/base/media_codec_support.h"
 #include "chromecast/media/base/supported_codec_profile_levels_memo.h"
 #include "chromecast/public/media/media_capabilities_shlib.h"
@@ -47,10 +48,6 @@
 #else
 #include "chromecast/renderer/memory_pressure_observer_impl.h"
 #endif  // OS_ANDROID
-
-#if !defined(OS_FUCHSIA)
-#include "chromecast/crash/cast_crash_keys.h"
-#endif  // !defined(OS_FUCHSIA)
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
 #include "chromecast/common/cast_extensions_client.h"
@@ -132,20 +129,17 @@ void CastContentRendererClient::RenderThreadStarted() {
   memory_pressure_controller->AddObserver(std::move(memory_pressure_proxy));
 #endif
 
-#if !defined(OS_FUCHSIA)
-  // TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   std::string last_launched_app =
       command_line->GetSwitchValueNative(switches::kLastLaunchedApp);
   if (!last_launched_app.empty())
-    crash_keys::last_app.Set(last_launched_app);
+    AppStateTracker::SetLastLaunchedApp(last_launched_app);
 
   std::string previous_app =
       command_line->GetSwitchValueNative(switches::kPreviousApp);
   if (!previous_app.empty())
-    crash_keys::previous_app.Set(previous_app);
-#endif  // !defined(OS_FUCHSIA)
+    AppStateTracker::SetPreviousApp(previous_app);
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   extensions_client_ = std::make_unique<extensions::CastExtensionsClient>();

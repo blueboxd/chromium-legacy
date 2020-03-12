@@ -57,7 +57,8 @@ public class QRScanDialog extends DialogFragment implements Camera.PreviewCallba
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mCameraView = new CameraView(getContext(), this);
+        mCameraView = new CameraView(
+                getContext(), getActivity().getWindowManager().getDefaultDisplay(), this);
         return mCameraView;
     }
 

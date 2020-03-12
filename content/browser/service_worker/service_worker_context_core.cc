@@ -817,6 +817,14 @@ void ServiceWorkerContextCore::OnStorageWiped() {
                          &ServiceWorkerContextCoreObserver::OnStorageWiped);
 }
 
+void ServiceWorkerContextCore::OnMainScriptResponseSet(
+    int64_t version_id,
+    const ServiceWorkerVersion::MainScriptResponse& response) {
+  observer_list_->Notify(
+      FROM_HERE, &ServiceWorkerContextCoreObserver::OnMainScriptResponseSet,
+      version_id, response.response_time, response.last_modified);
+}
+
 void ServiceWorkerContextCore::OnRunningStateChanged(
     ServiceWorkerVersion* version) {
   if (!version->context())
@@ -863,19 +871,6 @@ void ServiceWorkerContextCore::OnDevToolsRoutingIdChanged(
       &ServiceWorkerContextCoreObserver::OnVersionDevToolsRoutingIdChanged,
       version->version_id(), version->embedded_worker()->process_id(),
       version->embedded_worker()->worker_devtools_agent_route_id());
-}
-
-void ServiceWorkerContextCore::OnMainScriptHttpResponseInfoSet(
-    ServiceWorkerVersion* version) {
-  const net::HttpResponseInfo* info = version->GetMainScriptHttpResponseInfo();
-  DCHECK(info);
-  base::Time lastModified;
-  if (info->headers)
-    info->headers->GetLastModifiedValue(&lastModified);
-  observer_list_->Notify(
-      FROM_HERE,
-      &ServiceWorkerContextCoreObserver::OnMainScriptHttpResponseInfoSet,
-      version->version_id(), info->response_time, lastModified);
 }
 
 void ServiceWorkerContextCore::OnErrorReported(

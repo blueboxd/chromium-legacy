@@ -32,19 +32,8 @@ Polymer({
   behaviors: [I18nBehavior, WebUIListenerBehavior],
 
   properties: {
-    /** @private */
-    advancedExtensionSublabel_: String,
-
     /** @private {!DropdownMenuOptionList} */
     fontOptions_: Object,
-
-    /** @private */
-    isGuest_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('isGuest');
-      }
-    },
 
     /**
      * Common font sizes.
@@ -82,12 +71,6 @@ Polymer({
   /** @private {?settings.FontsBrowserProxy} */
   browserProxy_: null,
 
-  /** @private {boolean} */
-  advancedExtensionInstalled_: false,
-
-  /** @private {?string} */
-  advancedExtensionUrl_: null,
-
   /** @override */
   created() {
     this.browserProxy_ = settings.FontsBrowserProxyImpl.getInstance();
@@ -95,37 +78,11 @@ Polymer({
 
   /** @override */
   ready() {
-    this.addWebUIListener(
-        'advanced-font-settings-installed',
-        this.setAdvancedExtensionInstalled_.bind(this));
-    this.browserProxy_.observeAdvancedFontExtensionAvailable();
-
     this.browserProxy_.fetchFontsData().then(this.setFontsData_.bind(this));
   },
 
-  /** @private */
-  openAdvancedExtension_() {
-    if (this.advancedExtensionInstalled_) {
-      this.browserProxy_.openAdvancedFontSettings();
-    } else {
-      window.open(this.advancedExtensionUrl_);
-    }
-  },
-
   /**
-   * @param {boolean} isInstalled Whether the advanced font settings
-   *     extension is installed.
-   * @private
-   */
-  setAdvancedExtensionInstalled_(isInstalled) {
-    this.advancedExtensionInstalled_ = isInstalled;
-    this.advancedExtensionSublabel_ = this.i18n(
-        isInstalled ? 'openAdvancedFontSettings' : 'requiresWebStoreExtension');
-  },
-
-  /**
-   * @param {!FontsData} response A list of fonts and the advanced
-   *     font settings extension URL.
+   * @param {!FontsData} response A list of fonts.
    * @private
    */
   setFontsData_(response) {
@@ -134,7 +91,6 @@ Polymer({
       fontMenuOptions.push({value: fontData[0], name: fontData[1]});
     }
     this.fontOptions_ = fontMenuOptions;
-    this.advancedExtensionUrl_ = response.extensionUrl;
   },
 
   /**

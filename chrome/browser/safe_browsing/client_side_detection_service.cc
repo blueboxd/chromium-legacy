@@ -182,7 +182,7 @@ void ClientSideDetectionService::SendModelToProcess(
   // and we select the model based on the extended reporting setting.
   Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
   std::string model;
-  if (profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
+  if (IsSafeBrowsingEnabled(*profile->GetPrefs())) {
     if (IsExtendedReportingEnabled(*profile->GetPrefs()) ||
         IsEnhancedProtectionEnabled(*profile->GetPrefs())) {
       DVLOG(2) << "Sending phishing model " << model_loader_extended_->name()

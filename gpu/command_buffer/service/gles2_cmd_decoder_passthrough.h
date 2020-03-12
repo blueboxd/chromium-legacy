@@ -294,6 +294,16 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
                                    int width,
                                    int height) override;
 
+  // Clears a level sub area of a compressed 3D texture.
+  // Returns false if a GL error should be generated.
+  bool ClearCompressedTextureLevel3D(Texture* texture,
+                                     unsigned target,
+                                     int level,
+                                     unsigned format,
+                                     int width,
+                                     int height,
+                                     int depth) override;
+
   // Indicates whether a given internal format is one for a compressed
   // texture.
   bool IsCompressedTextureFormat(unsigned format) override;

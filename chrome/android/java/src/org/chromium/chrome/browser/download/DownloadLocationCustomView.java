@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.download;
 
-import static org.chromium.chrome.browser.settings.download.DownloadDirectoryAdapter.NO_SELECTED_ITEM_ID;
+import static org.chromium.chrome.browser.download.settings.DownloadDirectoryAdapter.NO_SELECTED_ITEM_ID;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -18,7 +18,7 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.browser.settings.download.DownloadDirectoryAdapter;
+import org.chromium.chrome.browser.download.settings.DownloadDirectoryAdapter;
 import org.chromium.chrome.download.R;
 import org.chromium.components.browser_ui.widget.text.AlertDialogEditText;
 

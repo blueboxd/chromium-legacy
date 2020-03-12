@@ -1951,10 +1951,14 @@ function renderTheme() {
   if (configData.realboxMatchOmniboxTheme) {
     // TODO(dbeam): actually get these from theme service.
     const removeMatchHovered = assert(theme.searchBox.icon).slice();
-    removeMatchHovered[3] = .08 * 255;
+    removeMatchHovered[3] = .16 * 255;
 
-    const removeMatchFocused = theme.searchBox.icon.slice();
-    removeMatchFocused[3] = .16 * 255;
+    const removeMatchSelectedHovered =
+        assert(theme.searchBox.iconSelected).slice();
+    removeMatchSelectedHovered[3] = .16 * 255;
+
+    const removeMatchFocused = theme.searchBox.iconSelected.slice();
+    removeMatchFocused[3] = .32 * 255;
 
     /**
      * @param {string} varName
@@ -1967,6 +1971,7 @@ function renderTheme() {
 
     setCssVar('search-box-bg', theme.searchBox.bg);
     setCssVar('search-box-icon', theme.searchBox.icon);
+    setCssVar('search-box-icon-selected', theme.searchBox.iconSelected);
     setCssVar('search-box-placeholder', theme.searchBox.placeholder);
     setCssVar('search-box-results-bg', theme.searchBox.resultsBg);
     setCssVar(
@@ -1974,10 +1979,18 @@ function renderTheme() {
     setCssVar(
         'search-box-results-bg-selected', theme.searchBox.resultsBgSelected);
     setCssVar('search-box-results-dim', theme.searchBox.resultsDim);
+    setCssVar(
+        'search-box-results-dim-selected', theme.searchBox.resultsDimSelected);
     setCssVar('search-box-results-text', theme.searchBox.resultsText);
+    setCssVar(
+        'search-box-results-text-selected',
+        theme.searchBox.resultsTextSelected);
     setCssVar('search-box-results-url', theme.searchBox.resultsUrl);
+    setCssVar(
+        'search-box-results-url-selected', theme.searchBox.resultsUrlSelected);
     setCssVar('search-box-text', theme.searchBox.text);
     setCssVar('remove-match-hovered', removeMatchHovered);
+    setCssVar('remove-match-selected-hovered', removeMatchSelectedHovered);
     setCssVar('remove-match-focused', removeMatchFocused);
   }
 }

@@ -15,6 +15,8 @@ namespace assistant {
 ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
     const Profile* profile);
 
+void OverrideIsGoogleDeviceForTesting(bool is_google_device);
+
 }  // namespace assistant
 
 #endif  // CHROME_BROWSER_CHROMEOS_ASSISTANT_ASSISTANT_UTIL_H_

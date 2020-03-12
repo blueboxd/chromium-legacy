@@ -31,7 +31,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/layers/video_layer.h"
-#include "components/viz/common/gpu/context_provider.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
@@ -316,7 +315,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       adjust_allocated_memory_cb_(params->adjust_allocated_memory_cb()),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       url_index_(url_index),
-      context_provider_(params->context_provider()),
+      raster_context_provider_(params->raster_context_provider()),
       vfc_task_runner_(params->video_frame_compositor_task_runner()),
       compositor_(std::move(compositor)),
       renderer_factory_selector_(std::move(renderer_factory_selector)),
@@ -1264,9 +1263,9 @@ void WebMediaPlayerImpl::Paint(cc::PaintCanvas* canvas,
 
   gfx::Rect gfx_rect(rect);
   if (video_frame.get() && video_frame->HasTextures()) {
-    if (!context_provider_)
+    if (!raster_context_provider_)
       return;  // Unable to get/create a shared main thread context.
-    if (!context_provider_->GrContext())
+    if (!raster_context_provider_->GrContext())
       return;  // The context has been lost since and can't setup a GrContext.
   }
   if (out_metadata && video_frame) {
@@ -1281,7 +1280,7 @@ void WebMediaPlayerImpl::Paint(cc::PaintCanvas* canvas,
   video_renderer_.Paint(
       video_frame, canvas, gfx::RectF(gfx_rect), flags,
       pipeline_metadata_.video_decoder_config.video_transformation(),
-      context_provider_.get());
+      raster_context_provider_.get());
 }
 
 bool WebMediaPlayerImpl::WouldTaintOrigin() const {
@@ -1368,7 +1367,7 @@ bool WebMediaPlayerImpl::CopyVideoTextureToPlatformTexture(
   }
 
   return video_renderer_.CopyVideoFrameTexturesToGLTexture(
-      context_provider_.get(), gl, video_frame.get(), target, texture,
+      raster_context_provider_.get(), gl, video_frame.get(), target, texture,
       internal_format, format, type, level, premultiply_alpha, flip_y);
 }
 
@@ -1397,7 +1396,7 @@ bool WebMediaPlayerImpl::PrepareVideoFrameForWebGL(
   }
 
   return video_renderer_.PrepareVideoFrameForWebGL(
-      context_provider_.get(), gl, video_frame.get(), target, texture);
+      raster_context_provider_.get(), gl, video_frame.get(), target, texture);
 }
 
 // static

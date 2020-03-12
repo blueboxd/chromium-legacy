@@ -350,6 +350,10 @@ const struct QuicErrorMapping {
     {quic::QUIC_HPACK_FRAGMENT_TOO_LONG, "quic.hpack.fragment_too_long"},
     {quic::QUIC_HPACK_COMPRESSED_HEADER_SIZE_EXCEEDS_LIMIT,
      "quic.hpack.compressed_header_size_exceeds_limit"},
+    {quic::QUIC_HTTP_INVALID_FRAME_SEQUENCE_ON_SPDY_STREAM,
+     "quic.http_invalid_frame_sequence_on_spdy_stream"},
+    {quic::QUIC_HTTP_INVALID_FRAME_SEQUENCE_ON_CONTROL_STREAM,
+     "quic.http_invalid_frame_sequence_on_control_stream"},
 
     // QUIC_INVALID_APPLICATION_CLOSE_DATA was code 101. The code has been
     // deprecated, but to keep the assert below happy, there needs to be

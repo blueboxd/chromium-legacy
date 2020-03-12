@@ -2174,7 +2174,7 @@ if (enable_java_templates) {
           process_file_template([ _final_apk_path ],
                                 "{{source_dir}}/{{source_name_part}}")
       _final_apk_path_no_ext = _final_apk_path_no_ext_list[0]
-      assert(_final_apk_path_no_ext != "")  # Mark as used.
+      not_needed([ "_final_apk_path_no_ext" ])
     }
 
     # Non-base bundle modules create only proto resources.
@@ -2255,8 +2255,10 @@ if (enable_java_templates) {
     _load_library_from_apk =
         defined(invoker.load_library_from_apk) && invoker.load_library_from_apk
 
-    assert(_use_chromium_linker || true)  # Mark as used.
-    assert(_use_modern_linker || true)  # Mark as used.
+    not_needed([
+                 "_use_chromium_linker",
+                 "_use_modern_linker",
+               ])
     assert(!_load_library_from_apk || _use_chromium_linker,
            "load_library_from_apk requires use_chromium_linker")
 
@@ -2295,7 +2297,6 @@ if (enable_java_templates) {
     }
 
     _secondary_abi_native_libs_deps = []
-    assert(_secondary_abi_native_libs_deps == [])  # mark as used.
 
     if (defined(invoker.secondary_abi_shared_libraries) &&
         invoker.secondary_abi_shared_libraries != []) {

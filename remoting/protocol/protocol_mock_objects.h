@@ -53,7 +53,7 @@ class MockAuthenticator : public Authenticator {
   MOCK_CONST_METHOD0(CreateChannelAuthenticatorPtr, ChannelAuthenticator*());
   MOCK_METHOD2(ProcessMessage,
                void(const jingle_xmpp::XmlElement* message,
-                    const base::Closure& resume_callback));
+                    base::OnceClosure resume_callback));
   MOCK_METHOD0(GetNextMessagePtr, jingle_xmpp::XmlElement*());
 
   std::unique_ptr<ChannelAuthenticator> CreateChannelAuthenticator()

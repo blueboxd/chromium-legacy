@@ -515,7 +515,13 @@ Output = class {
       }
 
       ChromeVox.tts.speak(buff.toString(), queueMode, speechProps);
-      queueMode = QueueMode.QUEUE;
+
+      // Skip resetting |queueMode| if the |text| is empty. If we don't do this,
+      // and the tts engine doesn't generate a callback, we might not properly
+      // flush.
+      if (text !== '') {
+        queueMode = QueueMode.QUEUE;
+      }
     }
     if (this.speechRulesStr_.str) {
       LogStore.getInstance().writeTextLog(

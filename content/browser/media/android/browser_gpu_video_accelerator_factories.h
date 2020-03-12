@@ -52,7 +52,7 @@ class BrowserGpuVideoAcceleratorFactories
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
   base::Optional<media::VideoEncodeAccelerator::SupportedProfiles>
   GetVideoEncodeAcceleratorSupportedProfiles() override;
-  scoped_refptr<viz::ContextProvider> GetMediaContextProvider() override;
+  viz::RasterContextProvider* GetMediaContextProvider() override;
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space) override;
 
   scoped_refptr<viz::ContextProviderCommandBuffer> context_provider_;

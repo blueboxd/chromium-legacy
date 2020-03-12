@@ -6,6 +6,7 @@ include_rules = [
   "+components/scheduler",  # Only allowed in tests.
   "+components/viz/common/frame_sinks/begin_frame_args.h",
   "+components/viz/common/gpu/context_provider.h",
+  "+components/viz/common/gpu/raster_context_provider.h",
   "+components/viz/common/surfaces/frame_sink_id.h",
   "+gin",
   "+media",

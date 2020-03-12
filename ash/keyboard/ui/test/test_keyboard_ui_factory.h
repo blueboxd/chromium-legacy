@@ -31,6 +31,7 @@ class TestKeyboardUIFactory : public KeyboardUIFactory {
     // Overridden from KeyboardUI:
     aura::Window* LoadKeyboardWindow(LoadCallback callback) override;
     aura::Window* GetKeyboardWindow() const override;
+    ui::GestureConsumer* GetGestureConsumer() const override;
     ui::InputMethod* GetInputMethod() override;
     void ReloadKeyboardIfNeeded() override {}
 

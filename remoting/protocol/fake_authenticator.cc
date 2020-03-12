@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// const  Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -160,7 +160,7 @@ Authenticator::RejectionReason FakeAuthenticator::rejection_reason() const {
 }
 
 void FakeAuthenticator::ProcessMessage(const jingle_xmpp::XmlElement* message,
-                                       const base::Closure& resume_callback) {
+                                       base::OnceClosure resume_callback) {
   EXPECT_EQ(WAITING_MESSAGE, state());
   std::string id =
       message->TextNamed(jingle_xmpp::QName(kChromotingXmlNamespace, "id"));
@@ -181,10 +181,10 @@ void FakeAuthenticator::ProcessMessage(const jingle_xmpp::XmlElement* message,
 
   ++messages_;
   if (messages_ == pause_message_index_) {
-    resume_closure_ = resume_callback;
+    resume_closure_ = std::move(resume_callback);
     return;
   }
-  resume_callback.Run();
+  std::move(resume_callback).Run();
 }
 
 std::unique_ptr<jingle_xmpp::XmlElement> FakeAuthenticator::GetNextMessage() {

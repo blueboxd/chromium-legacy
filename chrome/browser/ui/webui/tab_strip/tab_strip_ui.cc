@@ -87,6 +87,8 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
       {"pipPlaying", IDS_TAB_AX_LABEL_PIP_PLAYING_FORMAT},
       {"desktopCapturing", IDS_TAB_AX_LABEL_DESKTOP_CAPTURING_FORMAT},
       {"vrPresenting", IDS_TAB_AX_LABEL_VR_PRESENTING},
+      {"unnamedGroupLabel", IDS_GROUP_AX_LABEL_UNNAMED_GROUP_FORMAT},
+      {"namedGroupLabel", IDS_GROUP_AX_LABEL_NAMED_GROUP_FORMAT},
   };
   AddLocalizedStringsBulk(html_source, kStrings);
   content::WebUIDataSource::Add(profile, html_source);

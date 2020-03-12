@@ -12,7 +12,6 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -33,6 +32,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -59,10 +59,6 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
     // Duration of the transition animation
     public static final long ZOOMING_DURATION = 300;
     private static final int BACKGROUND_FADING_DURATION_MS = 150;
-
-    // Field trial parameter for whether skipping slow zooming animation.
-    private static final String SKIP_SLOW_ZOOMING_PARAM = "skip-slow-zooming";
-    private static final boolean DEFAULT_SKIP_SLOW_ZOOMING = true;
 
     // The transition animation from a tab to the tab switcher.
     private AnimatorSet mTabToSwitcherAnimation;
@@ -176,8 +172,10 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         boolean showShrinkingAnimation = animate && TabFeatureUtilities.isTabToGtsAnimationEnabled()
                 && !isCurrentTabModelEmpty;
         boolean quick = mTabListDelegate.prepareOverview();
-        Log.d(TAG, "SkipSlowZooming = " + getSkipSlowZooming());
-        if (getSkipSlowZooming()) {
+        boolean skipSlowZooming =
+                CachedFeatureFlags.getValue(TabUiFeatureUtilities.SKIP_SLOW_ZOOMING);
+        Log.d(TAG, "SkipSlowZooming = " + skipSlowZooming);
+        if (skipSlowZooming) {
             showShrinkingAnimation &= quick;
         }
 
@@ -446,13 +444,6 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
             mPerfListenerForTesting.onAnimationDone(
                     frameRendered, elapsedMs, mMaxFrameInterval, dirtySpan);
         }
-    }
-
-    private boolean getSkipSlowZooming() {
-        String skip = ChromeFeatureList.getFieldTrialParamByFeature(
-                ChromeFeatureList.TAB_TO_GTS_ANIMATION, SKIP_SLOW_ZOOMING_PARAM);
-        if (TextUtils.equals(skip, "")) return DEFAULT_SKIP_SLOW_ZOOMING;
-        return Boolean.valueOf(skip);
     }
 
     @Override

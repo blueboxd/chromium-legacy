@@ -822,6 +822,12 @@ try_.chromium_mac_ios_builder(
 )
 
 try_.chromium_mac_ios_builder(
+    name = 'ios-simulator-code-coverage',
+    executable = 'recipe:chromium_trybot',
+    use_clang_coverage = True,
+)
+
+try_.chromium_mac_ios_builder(
     name = 'ios-simulator-cr-recipe',
     executable = 'recipe:chromium_trybot',
     properties = {

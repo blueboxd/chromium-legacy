@@ -11,6 +11,8 @@
 
 namespace cc {
 
+// A solid color scrollbar that can be fully drawn on the impl thread. In
+// practice, this is used for overlay scrollbars on Android.
 class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerBase {
  public:
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;

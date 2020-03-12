@@ -26,8 +26,10 @@ import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.areAnimatorsEnabled;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.closeFirstTabInTabSwitcher;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabGroup;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabs;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.enterTabSwitcher;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.getSwipeToDismissAction;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabModelTabCount;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
@@ -113,6 +115,8 @@ import org.chromium.ui.widget.ViewLookupCachingFrameLayout;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -1399,6 +1403,39 @@ public class StartSurfaceLayoutTest {
 
         onView(allOf(withId(R.id.action_button), withParent(withId(R.id.content_view))))
                 .perform(click());
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS})
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    public void testSwipeToDismiss_GTS() throws Exception {
+        // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        // Create 3 tabs and merge the first two tabs into one group.
+        createTabs(cta, false, 3);
+        enterTabSwitcher(cta);
+        TabModel normalTabModel = cta.getTabModelSelector().getModel(false);
+        List<Tab> tabGroup = new ArrayList<>(
+                Arrays.asList(normalTabModel.getTabAt(0), normalTabModel.getTabAt(1)));
+        createTabGroup(cta, false, tabGroup);
+        verifyTabSwitcherCardCount(cta, 2);
+        verifyTabModelTabCount(cta, 3, 0);
+
+        // Swipe to dismiss a single tab card.
+        onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(
+                        1, getSwipeToDismissAction(false)));
+        verifyTabSwitcherCardCount(cta, 1);
+        verifyTabModelTabCount(cta, 2, 0);
+
+        // Swipe to dismiss a tab group card.
+        onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(
+                        0, getSwipeToDismissAction(true)));
+        verifyTabSwitcherCardCount(cta, 0);
+        verifyTabModelTabCount(cta, 0, 0);
     }
 
     private static class TabCountAssertion implements ViewAssertion {

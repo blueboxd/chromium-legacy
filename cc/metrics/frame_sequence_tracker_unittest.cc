@@ -113,7 +113,7 @@ class FrameSequenceTrackerTest : public testing::Test {
     collection_.StartSequence(FrameSequenceTrackerType::kUniversal);
     EXPECT_EQ(collection_.frame_trackers_.size(), 4u);
 
-    collection_.StopSequence(kCompositorAnimation);
+    collection_.StopSequence(FrameSequenceTrackerType::kCompositorAnimation);
     EXPECT_EQ(collection_.frame_trackers_.size(), 3u);
     EXPECT_TRUE(collection_.frame_trackers_.contains(
         FrameSequenceTrackerType::kMainThreadAnimation));
@@ -635,6 +635,48 @@ TEST_F(FrameSequenceTrackerTest, BeginMainFrameSubmit) {
   histogram_tester.ExpectTotalCount(metric, 1u);
   EXPECT_THAT(histogram_tester.GetAllSamples(metric),
               testing::ElementsAre(base::Bucket(1, 1)));
+}
+
+TEST_F(FrameSequenceTrackerTest, ScrollingThreadMetricCompositorThread) {
+  tracker_->metrics()->SetScrollingThread(
+      FrameSequenceMetrics::ThreadType::kCompositor);
+
+  // Start with a bunch of frames so that the metric does get reported at the
+  // end of the test.
+  ImplThroughput().frames_expected = 100u;
+  ImplThroughput().frames_produced = 100u;
+  MainThroughput().frames_expected = 100u;
+  MainThroughput().frames_produced = 90u;
+
+  base::HistogramTester histogram_tester;
+  ReportMetrics();
+
+  const char metric[] =
+      "Graphics.Smoothness.PercentDroppedFrames.ScrollingThread.TouchScroll";
+  histogram_tester.ExpectTotalCount(metric, 1u);
+  EXPECT_THAT(histogram_tester.GetAllSamples(metric),
+              testing::ElementsAre(base::Bucket(0, 1)));
+}
+
+TEST_F(FrameSequenceTrackerTest, ScrollingThreadMetricMainThread) {
+  tracker_->metrics()->SetScrollingThread(
+      FrameSequenceMetrics::ThreadType::kMain);
+
+  // Start with a bunch of frames so that the metric does get reported at the
+  // end of the test.
+  ImplThroughput().frames_expected = 100u;
+  ImplThroughput().frames_produced = 100u;
+  MainThroughput().frames_expected = 100u;
+  MainThroughput().frames_produced = 90u;
+
+  base::HistogramTester histogram_tester;
+  ReportMetrics();
+
+  const char metric[] =
+      "Graphics.Smoothness.PercentDroppedFrames.ScrollingThread.TouchScroll";
+  histogram_tester.ExpectTotalCount(metric, 1u);
+  EXPECT_THAT(histogram_tester.GetAllSamples(metric),
+              testing::ElementsAre(base::Bucket(10, 1)));
 }
 
 TEST_F(FrameSequenceTrackerTest, SimpleSequenceOneFrame) {

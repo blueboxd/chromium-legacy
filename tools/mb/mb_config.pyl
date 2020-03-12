@@ -14,13 +14,13 @@
   # below). MB uses this dict to look up which config to use for a given bot.
   'masters': {
     'chrome': {
-      'chromeos-arm-generic-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
-      'chromeos-betty-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
-      'chromeos-betty-chrome': 'cros_chrome_sdk_include_unwind_tables',
-      'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
-      'chromeos-betty-pi-arc-chrome': 'cros_chrome_sdk_include_unwind_tables',
-      'chromeos-eve-chrome': 'cros_chrome_sdk_include_unwind_tables',
-      'chromeos-kevin-chrome': 'cros_chrome_sdk_include_unwind_tables',
+      'chromeos-arm-generic-cfi-thin-lto-chrome': 'chromeos_arm-generic_cfi_thin_lto',
+      'chromeos-betty-cfi-thin-lto-chrome': 'chromeos_betty_cfi_thin_lto',
+      'chromeos-betty-chrome': 'chromeos_betty_include_unwind_tables',
+      'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'chromeos_betty-pi-arc_cfi_thin_lto',
+      'chromeos-betty-pi-arc-chrome': 'chromeos_betty-pi-arc_include_unwind_tables',
+      'chromeos-eve-chrome': 'chromeos_eve_include_unwind_tables',
+      'chromeos-kevin-chrome': 'chromeos_kevin_include_unwind_tables',
       # Don't include unwind tables for the remaining three builders since
       # they monitor binary size growth, which may be affected by the tables.
       'linux-chrome': 'official_goma',
@@ -96,13 +96,13 @@
     'chromium.chromiumos': {
       'Linux ChromiumOS Full': 'chromeos_with_codecs_release_bot',
 
-      'chromeos-amd64-generic-asan-rel': 'cros_chrome_sdk_asan',
-      'chromeos-amd64-generic-cfi-thin-lto-rel': 'cros_chrome_sdk_cfi_thin_lto',
-      'chromeos-amd64-generic-dbg': 'cros_chrome_sdk_dbg',
+      'chromeos-amd64-generic-asan-rel': 'chromeos_amd64-generic_asan',
+      'chromeos-amd64-generic-cfi-thin-lto-rel': 'chromeos_amd64-generic_cfi_thin_lto',
+      'chromeos-amd64-generic-dbg': 'chromeos_amd64-generic_dbg',
       'chromeos-amd64-generic-rel': 'chromeos_amd64-generic',
-      'chromeos-arm-generic-dbg': 'cros_chrome_sdk_dbg',
-      'chromeos-arm-generic-rel': 'cros_chrome_sdk',
-      'chromeos-kevin-rel': 'cros_chrome_sdk',
+      'chromeos-arm-generic-dbg': 'chromeos_arm-generic_dbg',
+      'chromeos-arm-generic-rel': 'chromeos_arm-generic',
+      'chromeos-kevin-rel': 'chromeos_kevin',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_bot',
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
     },
@@ -231,8 +231,8 @@
       'android-code-coverage': 'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild_java_coverage',
       'android-code-coverage-native': 'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild_native_coverage',
       'android-mojo-webview-rel': 'android_release_bot_minimal_symbols_arm64',
-      'chromeos-amd64-generic-rel-vm-tests': 'cros_chrome_sdk_dcheck_always_on',
-      'chromeos-kevin-rel-hw-tests': 'cros_chrome_sdk',
+      'chromeos-amd64-generic-rel-vm-tests': 'chromeos_amd64-generic_dcheck_always_on',
+      'chromeos-kevin-rel-hw-tests': 'chromeos_kevin',
       'fuchsia-fyi-arm64-rel': 'release_bot_fuchsia_arm64',
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
@@ -304,10 +304,10 @@
       'mac-archive-rel-goma-canary-localoutputcache': 'release_bot_mac_strip_minimal_symbols',
       'mac-archive-rel-goma-latest-localoutputcache': 'release_bot_mac_strip_minimal_symbols',
 
-      'chromeos-amd64-generic-rel-goma-canary': 'cros_chrome_sdk',
-      'chromeos-amd64-generic-rel-goma-latest': 'cros_chrome_sdk',
-      'chromeos-amd64-generic-rel-goma-rbe-canary': 'cros_chrome_sdk',
-      'chromeos-amd64-generic-rel-goma-rbe-latest': 'cros_chrome_sdk',
+      'chromeos-amd64-generic-rel-goma-canary': 'chromeos_amd64-generic',
+      'chromeos-amd64-generic-rel-goma-latest': 'chromeos_amd64-generic',
+      'chromeos-amd64-generic-rel-goma-rbe-canary': 'chromeos_amd64-generic',
+      'chromeos-amd64-generic-rel-goma-rbe-latest': 'chromeos_amd64-generic',
       'android-archive-dbg-goma-canary': 'android_without_codecs_debug_bot',
       'android-archive-dbg-goma-latest': 'android_without_codecs_debug_bot',
       'android-archive-dbg-goma-rbe-ats-canary': 'android_without_codecs_debug_bot',
@@ -499,7 +499,7 @@
     'chromium.perf.fyi': {
       'android-cfi-builder-perf-fyi': 'official_goma_minimal_symbols_android_thin_lto_opt',
       'android_arm64-cfi-builder-perf-fyi': 'official_goma_minimal_symbols_android_thin_lto_opt_arm64',
-      'chromeos-kevin-builder-perf-fyi': 'cros_chrome_sdk',
+      'chromeos-kevin-builder-perf-fyi': 'chromeos_kevin',
     },
 
     'chromium.swangle': {
@@ -738,14 +738,15 @@
     },
 
     'tryserver.chrome': {
-      'chromeos-arm-generic-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
-      'chromeos-betty-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
-      'chromeos-betty-chrome': 'cros_chrome_sdk_include_unwind_tables',
-      'chromeos-betty-pi-arc-chrome': 'cros_chrome_sdk_include_unwind_tables',
-      'chromeos-eve-chrome': 'cros_chrome_sdk_include_unwind_tables',
-      'chromeos-eve-compile-chrome': 'cros_chrome_sdk_include_unwind_tables',
-      'chromeos-kevin-chrome': 'cros_chrome_sdk_include_unwind_tables',
-      'chromeos-kevin-compile-chrome': 'cros_chrome_sdk_include_unwind_tables',
+      'chromeos-arm-generic-cfi-thin-lto-chrome': 'chromeos_arm-generic_cfi_thin_lto',
+      'chromeos-betty-cfi-thin-lto-chrome': 'chromeos_betty_cfi_thin_lto',
+      'chromeos-betty-chrome': 'chromeos_betty_include_unwind_tables',
+      'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'chromeos_betty-pi-arc_cfi_thin_lto',
+      'chromeos-betty-pi-arc-chrome': 'chromeos_betty-pi-arc_include_unwind_tables',
+      'chromeos-eve-chrome': 'chromeos_eve_include_unwind_tables',
+      'chromeos-eve-compile-chrome': 'chromeos_eve_include_unwind_tables',
+      'chromeos-kevin-chrome': 'chromeos_kevin_include_unwind_tables',
+      'chromeos-kevin-compile-chrome': 'chromeos_kevin_include_unwind_tables',
       'linux-chrome': 'official_goma',
       'linux-chromeos-chrome': 'official_goma_chromeos_include_unwind_tables',
       'win_chrome_official': 'official_goma_x86',
@@ -755,13 +756,13 @@
     'tryserver.chromium.chromiumos': {
       # TODO(crbug.com/913750): Enable DCHECKS on the two amd64-generic bots
       # and two kevin bots when the PFQ has it enabled.
-      'chromeos-amd64-generic-cfi-thin-lto-rel': 'cros_chrome_sdk_cfi_thin_lto',
-      'chromeos-amd64-generic-dbg': 'cros_chrome_sdk_dbg',
+      'chromeos-amd64-generic-cfi-thin-lto-rel': 'chromeos_amd64-generic_cfi_thin_lto',
+      'chromeos-amd64-generic-dbg': 'chromeos_amd64-generic_dbg',
       'chromeos-amd64-generic-rel': 'chromeos_amd64-generic',
-      'chromeos-arm-generic-dbg': 'cros_chrome_sdk_dbg',
-      'chromeos-arm-generic-rel': 'cros_chrome_sdk_dcheck_always_on',
-      'chromeos-kevin-compile-rel': 'cros_chrome_sdk',
-      'chromeos-kevin-rel': 'cros_chrome_sdk',
+      'chromeos-arm-generic-dbg': 'chromeos_arm-generic_dbg',
+      'chromeos-arm-generic-rel': 'chromeos_arm-generic_dcheck_always_on',
+      'chromeos-kevin-compile-rel': 'chromeos_kevin',
+      'chromeos-kevin-rel': 'chromeos_kevin',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot_code_coverage',
       'linux-chromeos-compile-dbg': 'chromeos_with_codecs_debug_bot',
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
@@ -1348,8 +1349,68 @@
       'chromeos_device', 'amd64-generic',
     ],
 
+    'chromeos_amd64-generic_asan': [
+      'chromeos_device', 'amd64-generic', 'asan',
+    ],
+
+    'chromeos_amd64-generic_cfi_thin_lto': [
+      'chromeos_device', 'amd64-generic', 'cfi_full', 'thin_lto',
+    ],
+
+    'chromeos_amd64-generic_dcheck_always_on': [
+      'chromeos_device', 'amd64-generic', 'dcheck_always_on',
+    ],
+
+    'chromeos_amd64-generic_dbg': [
+      'chromeos_device', 'amd64-generic', 'debug',
+    ],
+
+    'chromeos_arm-generic': [
+      'chromeos_device', 'arm-generic',
+    ],
+
+    'chromeos_arm-generic_cfi_thin_lto': [
+      'chromeos_device', 'arm-generic', 'cfi_full', 'thin_lto',
+    ],
+
+    'chromeos_arm-generic_dcheck_always_on': [
+      'chromeos_device', 'arm-generic', 'dcheck_always_on',
+    ],
+
+    'chromeos_arm-generic_dbg': [
+      'chromeos_device', 'arm-generic', 'debug',
+    ],
+
     'chromeos_asan_lsan_fuzzer_v8_heap_release_bot': [
       'chromeos', 'asan', 'lsan', 'fuzzer', 'v8_heap', 'release_bot',
+    ],
+
+    'chromeos_betty_cfi_thin_lto': [
+      'chromeos_device', 'betty', 'cfi_full', 'thin_lto',
+    ],
+
+    'chromeos_betty_include_unwind_tables': [
+      'chromeos_device', 'betty', 'include_unwind_tables',
+    ],
+
+    'chromeos_betty-pi-arc_cfi_thin_lto': [
+      'chromeos_device', 'betty-pi-arc', 'cfi_full', 'thin_lto',
+    ],
+
+    'chromeos_betty-pi-arc_include_unwind_tables': [
+      'chromeos_device', 'betty-pi-arc', 'include_unwind_tables',
+    ],
+
+    'chromeos_eve_include_unwind_tables': [
+      'chromeos_device', 'eve', 'include_unwind_tables',
+    ],
+
+    'chromeos_kevin': [
+      'chromeos_device', 'kevin',
+    ],
+
+    'chromeos_kevin_include_unwind_tables': [
+      'chromeos_device', 'kevin', 'include_unwind_tables',
     ],
 
     'chromeos_msan_release_bot': [
@@ -1493,33 +1554,6 @@
 
     'codesearch_gen_chromium_bot': [
       'codesearch',
-    ],
-
-    # The 'cros_chrome_sdk_* configs are placeholders that indicate
-    # that the GN args are set by the `cros chrome-sdk`
-    # wrapper and need to be looked at specially.
-    'cros_chrome_sdk': [
-      'cros_chrome_sdk',
-    ],
-
-    'cros_chrome_sdk_asan': [
-      'cros_chrome_sdk', 'asan',
-    ],
-
-    'cros_chrome_sdk_dbg': [
-      'cros_chrome_sdk', 'debug',
-    ],
-
-    'cros_chrome_sdk_dcheck_always_on': [
-      'cros_chrome_sdk', 'dcheck_always_on',
-    ],
-
-    'cros_chrome_sdk_cfi_thin_lto': [
-      'cros_chrome_sdk', 'cfi_full', 'thin_lto',
-    ],
-
-    'cros_chrome_sdk_include_unwind_tables': [
-      'cros_chrome_sdk', 'include_unwind_tables',
     ],
 
     'dawn_tests_release_trybot': [
@@ -2105,6 +2139,10 @@
       'gn_args': 'target_cpu="arm"',
     },
 
+    'arm-generic': {
+      'args_file': '//build/args/chromeos/arm-generic.gni',
+    },
+
     'arm64': {
       'gn_args': 'target_cpu="arm64"',
     },
@@ -2116,6 +2154,14 @@
 
     'asan': {
       'gn_args': 'is_asan=true',
+    },
+
+    'betty': {
+      'args_file': '//build/args/chromeos/betty.gni',
+    },
+
+    'betty-pi-arc': {
+      'args_file': '//build/args/chromeos/betty-pi-arc.gni',
     },
 
     'cast': {
@@ -2201,18 +2247,6 @@
                   'enable_resource_whitelist_generation=false'),
     },
 
-    'cros_chrome_sdk': {
-      # This is used so that the cros chrome_sdk (simplechrome) builders
-      # can manage the list of GN args in their .ebuild
-      # files and just pass through the desired arguments, hence not
-      # really using MB. If a bot uses this mixin, we expect that
-      # both GYP_DEFINES and GN_ARGS are set in the environment,
-      # and that GYP_DEFINES has chromeos=1 and GN_ARGS has
-      # target_os="chromeos" in it.
-      'cros_passthrough': True,
-      'gn_args': 'ozone_platform_headless=true',
-    },
-
     'dawn_tests': {
       'gn_args': 'use_dawn=true',
     },
@@ -2267,6 +2301,10 @@
     # times.
     'enable_archive_compression': {
       'gn_args': 'skip_archive_compression=false',
+    },
+
+    'eve': {
+      'args_file': '//build/args/chromeos/eve.gni',
     },
 
     'java_warnings_as_errors': {
@@ -2353,6 +2391,10 @@
 
     'ios_use_goma_rbe': {
       'gn_args': 'ios_use_goma_rbe=true'
+    },
+
+    'kevin': {
+      'args_file': '//build/args/chromeos/kevin.gni',
     },
 
     'libfuzzer': { 'gn_args': 'use_libfuzzer=true' },

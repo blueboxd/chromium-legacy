@@ -55,8 +55,9 @@ class GLOzoneEGLX11 : public GLOzoneEGL {
 
  protected:
   // GLOzoneEGL:
-  intptr_t GetNativeDisplay() override {
-    return reinterpret_cast<intptr_t>(gfx::GetXDisplay());
+  gl::EGLDisplayPlatform GetNativeDisplay() override {
+    return gl::EGLDisplayPlatform(
+        reinterpret_cast<EGLNativeDisplayType>(gfx::GetXDisplay()));
   }
 
   bool LoadGLES2Bindings(gl::GLImplementation implementation) override {

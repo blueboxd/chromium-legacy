@@ -91,7 +91,7 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
   CSSRule* CreateCSSOMWrapper(CSSStyleSheet* parent_sheet,
                               CSSRule* parent_rule) const;
 
-  const unsigned type_ : 5;
+  const uint8_t type_;
 };
 
 // A single rule from a stylesheet. Contains a selector list (one or more

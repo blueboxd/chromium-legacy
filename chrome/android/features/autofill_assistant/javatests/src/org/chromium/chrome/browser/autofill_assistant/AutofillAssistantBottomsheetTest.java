@@ -196,7 +196,9 @@ public class AutofillAssistantBottomsheetTest {
 
         waitUntilViewMatchesCondition(withText("Focus element"), isCompletelyDisplayed());
         onView(withText("Focus element")).perform(click());
-        checkElementIsCoveredByBottomsheet("bottom", true);
+        // The viewport should be resized so that the bottom element is not covered by the bottom
+        // sheet.
+        checkElementIsCoveredByBottomsheet("bottom", false);
         onView(withId(R.id.swipe_indicator)).perform(swipeDownToMinimize());
         // Minimizing the bottomsheet should completely uncover the bottom element.
         waitUntilViewMatchesCondition(withText("Hello world!"), not(isDisplayed()));

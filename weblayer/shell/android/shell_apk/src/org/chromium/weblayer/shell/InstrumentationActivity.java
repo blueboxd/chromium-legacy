@@ -21,6 +21,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.weblayer.Browser;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.Tab;
@@ -149,7 +150,8 @@ public class InstrumentationActivity extends FragmentActivity {
 
     private void createWebLayerAsync() {
         try {
-            WebLayer.loadAsync(getApplicationContext(), webLayer -> onWebLayerReady());
+            // Get the Context from ContextUtils so tests get the wrapped version.
+            WebLayer.loadAsync(ContextUtils.getApplicationContext(), webLayer -> onWebLayerReady());
         } catch (UnsupportedVersionException e) {
             throw new RuntimeException("Failed to initialize WebLayer", e);
         }

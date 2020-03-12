@@ -21,6 +21,8 @@
 #include "third_party/boringssl/src/include/openssl/obj.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
+using device::fido_parsing_utils::CopyCBORBytestring;
+
 namespace {
 
 // Maximum value of a sequence number. Exceeding this causes all operations to
@@ -40,18 +42,6 @@ bool ConstructNonce(uint32_t counter, base::span<uint8_t, 12> out_nonce) {
       std::copy(counter_bytes.begin(), counter_bytes.end(), out_nonce.begin());
   std::fill(remaining, out_nonce.end(), 0);
   return true;
-}
-
-template <size_t N>
-bool CopyBytestring(std::array<uint8_t, N>* out,
-                    const cbor::Value::MapValue& map,
-                    int key) {
-  const auto it = map.find(cbor::Value(key));
-  if (it == map.end() || !it->second.is_bytestring()) {
-    return false;
-  }
-  const std::vector<uint8_t> bytestring = it->second.GetBytestring();
-  return device::fido_parsing_utils::ExtractArray(bytestring, /*pos=*/0, out);
 }
 
 CBS CBSFromSpan(base::span<const uint8_t> in) {
@@ -302,10 +292,12 @@ HandshakeInitiator::ProcessResponse(base::span<const uint8_t> response) {
 
       const cbor::Value::MapValue& pairing_map(pairing->GetMap());
       const auto name_it = pairing_map.find(cbor::Value(4));
-      if (!CopyBytestring(&future_discovery->v2->eid_gen_key, pairing_map, 1) ||
-          !CopyBytestring(&future_discovery->v2->psk_gen_key, pairing_map, 2) ||
-          !CopyBytestring(&future_discovery->v2->peer_identity.value(),
-                          pairing_map, 3) ||
+      if (!CopyCBORBytestring(&future_discovery->v2->eid_gen_key, pairing_map,
+                              1) ||
+          !CopyCBORBytestring(&future_discovery->v2->psk_gen_key, pairing_map,
+                              2) ||
+          !CopyCBORBytestring(&future_discovery->v2->peer_identity.value(),
+                              pairing_map, 3) ||
           name_it == pairing_map.end() || !name_it->second.is_string() ||
           !EC_POINT_oct2point(group, peer_point.get(),
                               future_discovery->v2->peer_identity->data(),

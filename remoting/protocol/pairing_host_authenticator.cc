@@ -24,7 +24,7 @@ PairingHostAuthenticator::PairingHostAuthenticator(
 void PairingHostAuthenticator::Initialize(
     const std::string& client_id,
     Authenticator::State preferred_initial_state,
-    const base::Closure& resume_callback) {
+    base::OnceClosure resume_callback) {
   DCHECK(!spake2_authenticator_);
 
   if (client_id.empty()) {
@@ -32,7 +32,7 @@ void PairingHostAuthenticator::Initialize(
     error_message_ = "client-id-unknown";
     spake2_authenticator_ =
         create_base_authenticator_callback_.Run(pin_, MESSAGE_READY);
-    resume_callback.Run();
+    std::move(resume_callback).Run();
     return;
   }
 
@@ -41,7 +41,7 @@ void PairingHostAuthenticator::Initialize(
   pairing_registry_->GetPairing(
       client_id, base::Bind(&PairingHostAuthenticator::InitializeWithPairing,
                             weak_factory_.GetWeakPtr(), preferred_initial_state,
-                            resume_callback));
+                            base::Passed(std::move(resume_callback))));
 }
 
 PairingHostAuthenticator::~PairingHostAuthenticator() = default;
@@ -65,15 +65,15 @@ PairingHostAuthenticator::rejection_reason() const {
 
 void PairingHostAuthenticator::CreateSpakeAuthenticatorWithPin(
     State initial_state,
-    const base::Closure& resume_callback) {
+    base::OnceClosure resume_callback) {
   spake2_authenticator_ =
       create_base_authenticator_callback_.Run(pin_, initial_state);
-  resume_callback.Run();
+  std::move(resume_callback).Run();
 }
 
 void PairingHostAuthenticator::InitializeWithPairing(
     Authenticator::State preferred_initial_state,
-    const base::Closure& resume_callback,
+    base::OnceClosure resume_callback,
     PairingRegistry::Pairing pairing) {
   DCHECK(waiting_for_paired_secret_);
   waiting_for_paired_secret_ = false;
@@ -90,7 +90,7 @@ void PairingHostAuthenticator::InitializeWithPairing(
     spake2_authenticator_ = create_base_authenticator_callback_.Run(
         pairing_secret, preferred_initial_state);
   }
-  resume_callback.Run();
+  std::move(resume_callback).Run();
 }
 
 }  // namespace protocol

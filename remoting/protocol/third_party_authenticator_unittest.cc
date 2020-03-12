@@ -76,9 +76,9 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
 
     void ValidateThirdPartyToken(
         const std::string& token,
-        const TokenValidatedCallback& token_validated_callback) override {
+        TokenValidatedCallback token_validated_callback) override {
       ASSERT_FALSE(token_validated_callback.is_null());
-      on_token_validated_ = token_validated_callback;
+      on_token_validated_ = std::move(token_validated_callback);
     }
 
     void OnTokenValidated(const std::string& shared_secret) {
@@ -93,7 +93,8 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
    private:
     GURL token_url_;
     std::string token_scope_;
-    base::Callback<void(const std::string& shared_secret)> on_token_validated_;
+    base::OnceCallback<void(const std::string& shared_secret)>
+        on_token_validated_;
   };
 
  public:

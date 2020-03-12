@@ -13,7 +13,7 @@
 #include "content/public/browser/browser_context.h"
 
 class WebEngineNetLogObserver;
-class WebEnginePermissionManager;
+class WebEnginePermissionDelegate;
 
 class WebEngineBrowserContext : public content::BrowserContext {
  public:
@@ -52,7 +52,7 @@ class WebEngineBrowserContext : public content::BrowserContext {
   std::unique_ptr<WebEngineNetLogObserver> net_log_observer_;
   std::unique_ptr<SimpleFactoryKey> simple_factory_key_;
   std::unique_ptr<ResourceContext> resource_context_;
-  std::unique_ptr<WebEnginePermissionManager> permission_manager_;
+  std::unique_ptr<WebEnginePermissionDelegate> permission_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebEngineBrowserContext);
 };

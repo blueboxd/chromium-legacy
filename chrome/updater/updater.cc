@@ -84,6 +84,11 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
     CHECK(false) << "--crash-me was used.";
   }
 
+#if defined(OS_MACOSX)
+  // TODO(crbug.com/1060800) Consider implementing --single-process on macOS.
+  CHECK(!command_line->HasSwitch(kSingleProcessSwitch));
+#endif
+
   if (command_line->HasSwitch(kServerSwitch)) {
     return MakeAppServer()->Run();
   }
@@ -94,7 +99,7 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
 
   if (command_line->HasSwitch(kInstallSwitch))
     return MakeAppInstall({kChromeAppId})->Run();
-#endif
+#endif  // OS_WIN
 
   if (command_line->HasSwitch(kUninstallSwitch))
     return MakeAppUninstall()->Run();
@@ -118,6 +123,7 @@ int UpdaterMain(int argc, const char* const* argv) {
 
   InitLogging(*command_line);
 
+  VLOG(1) << "Command line: " << command_line->GetCommandLineString();
   if (command_line->HasSwitch(kCrashHandlerSwitch))
     return CrashReporterMain();
 

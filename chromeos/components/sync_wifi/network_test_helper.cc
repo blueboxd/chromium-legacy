@@ -71,13 +71,16 @@ void NetworkTestHelper::SetUp() {
   NetworkHandler::Initialize();
   NetworkHandler::Get()->InitializePrefServices(&user_prefs_, &local_state_);
   network_state_helper_->ResetDevicesAndServices();
+  network_state_helper_->profile_test()->AddProfile(
+      network_state_helper_->UserHash(), std::string());
 
   base::RunLoop().RunUntilIdle();
 }
 
 void NetworkTestHelper::ConfigureWiFiNetwork(const std::string& ssid,
                                              bool is_secured,
-                                             bool in_profile) {
+                                             bool in_profile,
+                                             bool has_connected) {
   std::string security_entry =
       is_secured ? R"("SecurityClass": "psk", "Passphrase": "secretsauce", )"
                  : R"("SecurityClass": "none", )";
@@ -85,13 +88,20 @@ void NetworkTestHelper::ConfigureWiFiNetwork(const std::string& ssid,
       in_profile ? base::StringPrintf(R"("Profile": "%s", )",
                                       network_state_helper_->UserHash())
                  : std::string();
-  network_state_helper_->ConfigureService(base::StringPrintf(
-      R"({"GUID": "%s_guid", "Type": "wifi", "SSID": "%s",
+  std::string service_path =
+      network_state_helper_->ConfigureService(base::StringPrintf(
+          R"({"GUID": "%s_guid", "Type": "wifi", "SSID": "%s",
             %s "State": "ready", "Strength": 100,
             %s "AutoConnect": true, "Connectable": true})",
-      ssid.c_str(), ssid.c_str(), security_entry.c_str(),
-      profile_entry.c_str()));
+          ssid.c_str(), ssid.c_str(), security_entry.c_str(),
+          profile_entry.c_str()));
+
   base::RunLoop().RunUntilIdle();
+
+  if (has_connected) {
+    NetworkHandler::Get()->network_metadata_store()->ConnectSucceeded(
+        service_path);
+  }
 }
 
 NetworkStateTestHelper* NetworkTestHelper::network_state_test_helper() {

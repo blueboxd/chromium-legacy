@@ -211,7 +211,7 @@ void DesktopWindowTreeHostPlatform::Close() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&DesktopWindowTreeHostPlatform::CloseNow,
                                 close_widget_factory_.GetWeakPtr()));
-}  // namespace views
+}
 
 void DesktopWindowTreeHostPlatform::CloseNow() {
   if (!platform_window())

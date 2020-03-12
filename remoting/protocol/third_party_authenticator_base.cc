@@ -54,16 +54,16 @@ ThirdPartyAuthenticatorBase::rejection_reason() const {
 
 void ThirdPartyAuthenticatorBase::ProcessMessage(
     const jingle_xmpp::XmlElement* message,
-    const base::Closure& resume_callback) {
+    base::OnceClosure resume_callback) {
   DCHECK_EQ(state(), WAITING_MESSAGE);
 
   if (token_state_ == WAITING_MESSAGE) {
-    ProcessTokenMessage(message, resume_callback);
+    ProcessTokenMessage(message, std::move(resume_callback));
   } else {
     DCHECK_EQ(token_state_, ACCEPTED);
     DCHECK(underlying_);
     DCHECK_EQ(underlying_->state(), WAITING_MESSAGE);
-    underlying_->ProcessMessage(message, resume_callback);
+    underlying_->ProcessMessage(message, std::move(resume_callback));
   }
 }
 

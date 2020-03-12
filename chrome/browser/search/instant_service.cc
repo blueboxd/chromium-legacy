@@ -685,6 +685,8 @@ void InstantService::BuildNtpTheme() {
         GetOmniboxColor(&theme_provider, OmniboxPart::LOCATION_BAR_BACKGROUND);
     theme_->search_box.icon =
         GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_ICON);
+    theme_->search_box.icon_selected = GetOmniboxColor(
+        &theme_provider, OmniboxPart::RESULTS_ICON, OmniboxPartState::SELECTED);
     theme_->search_box.placeholder =
         GetOmniboxColor(&theme_provider, OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
     theme_->search_box.results_bg =
@@ -697,10 +699,19 @@ void InstantService::BuildNtpTheme() {
                         OmniboxPartState::SELECTED);
     theme_->search_box.results_dim =
         GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_TEXT_DIMMED);
+    theme_->search_box.results_dim_selected =
+        GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_TEXT_DIMMED,
+                        OmniboxPartState::SELECTED);
     theme_->search_box.results_text =
         GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_TEXT_DEFAULT);
+    theme_->search_box.results_text_selected =
+        GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_TEXT_DEFAULT,
+                        OmniboxPartState::SELECTED);
     theme_->search_box.results_url =
         GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_TEXT_URL);
+    theme_->search_box.results_url_selected =
+        GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_TEXT_URL,
+                        OmniboxPartState::SELECTED);
     theme_->search_box.text = GetOmniboxColor(
         &theme_provider, OmniboxPart::LOCATION_BAR_TEXT_DEFAULT);
   }

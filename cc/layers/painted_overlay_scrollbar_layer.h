@@ -14,7 +14,9 @@
 namespace cc {
 
 // For composited overlay scrollbars with nine-patch thumb. For overlay
-// scrollbars whose thumb is not nine-patch, use PaintedScrollbarLayer.
+// scrollbars whose thumb is not nine-patch, use PaintedScrollbarLayer or
+// SolidColorScrollbarLayer. In practice, this is used for non-custom
+// overlay scrollbars on Win/Linux.
 class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerBase {
  public:
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "extensions/browser/api/device_permissions_prompt.h"
+#include "extensions/browser/api/management/supervised_user_service_delegate.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
@@ -117,6 +118,11 @@ ExtensionsAPIClient::CreateVirtualKeyboardDelegate(
 
 ManagementAPIDelegate* ExtensionsAPIClient::CreateManagementAPIDelegate()
     const {
+  return nullptr;
+}
+
+std::unique_ptr<SupervisedUserServiceDelegate>
+ExtensionsAPIClient::CreateSupervisedUserServiceDelegate() const {
   return nullptr;
 }
 

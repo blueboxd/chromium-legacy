@@ -637,6 +637,7 @@ void FeatureInfo::InitializeFeatures() {
     bool have_astc_hdr =
         gfx::HasExtension(extensions, "GL_KHR_texture_compression_astc_hdr");
     if (have_astc_hdr) {
+      feature_flags_.ext_texture_format_astc_hdr = true;
       AddExtensionString("GL_KHR_texture_compression_astc_hdr");
     }
 

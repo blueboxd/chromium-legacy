@@ -322,6 +322,13 @@ class RasterDecoderImpl final : public RasterDecoder,
                                    unsigned format,
                                    int width,
                                    int height) override;
+  bool ClearCompressedTextureLevel3D(gles2::Texture* texture,
+                                     unsigned target,
+                                     int level,
+                                     unsigned format,
+                                     int width,
+                                     int height,
+                                     int depth) override;
   bool ClearLevel3D(gles2::Texture* texture,
                     unsigned target,
                     int level,
@@ -1419,6 +1426,17 @@ bool RasterDecoderImpl::ClearCompressedTextureLevel(gles2::Texture* texture,
                                                     unsigned format,
                                                     int width,
                                                     int height) {
+  NOTREACHED();
+  return false;
+}
+
+bool RasterDecoderImpl::ClearCompressedTextureLevel3D(gles2::Texture* texture,
+                                                      unsigned target,
+                                                      int level,
+                                                      unsigned format,
+                                                      int width,
+                                                      int height,
+                                                      int depth) {
   NOTREACHED();
   return false;
 }

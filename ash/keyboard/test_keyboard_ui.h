@@ -27,6 +27,7 @@ class TestKeyboardUI : public keyboard::KeyboardUI {
   // Overridden from KeyboardUI:
   aura::Window* LoadKeyboardWindow(LoadCallback callback) override;
   aura::Window* GetKeyboardWindow() const override;
+  ui::GestureConsumer* GetGestureConsumer() const override;
 
  private:
   // Overridden from keyboard::KeyboardUI:

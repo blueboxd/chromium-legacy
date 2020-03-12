@@ -2,6 +2,9 @@
     /* force a transparent background */
     background: rgba(0,0,0,0) !important;
 
+    /* act as containing block for descendants */
+    contain: paint !important;
+
     /* the following styling is identical to :fullscreen */
     position: fixed !important;
     top: 0 !important;

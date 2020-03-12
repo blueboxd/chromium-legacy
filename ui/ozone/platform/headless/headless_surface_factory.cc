@@ -192,7 +192,9 @@ class GLOzoneEGLHeadless : public GLOzoneEGL {
 
  protected:
   // GLOzoneEGL:
-  intptr_t GetNativeDisplay() override { return EGL_DEFAULT_DISPLAY; }
+  gl::EGLDisplayPlatform GetNativeDisplay() override {
+    return gl::EGLDisplayPlatform(EGL_DEFAULT_DISPLAY);
+  }
 
   bool LoadGLES2Bindings(gl::GLImplementation implementation) override {
     return LoadDefaultEGLGLES2Bindings(implementation);

@@ -36,6 +36,10 @@ import android.support.test.espresso.Root;
 import android.support.test.espresso.UiController;
 import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.ViewAssertion;
+import android.support.test.espresso.action.GeneralLocation;
+import android.support.test.espresso.action.GeneralSwipeAction;
+import android.support.test.espresso.action.Press;
+import android.support.test.espresso.action.Swipe;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.view.View;
 
@@ -308,7 +312,8 @@ public class TabUiTestHelper {
      * @param isIncognito     Whether the group is in normal model or incognito model.
      * @param tabs            A list of {@link Tab} to create group.
      */
-    static void createTabGroup(ChromeTabbedActivity cta, boolean isIncognito, List<Tab> tabs) {
+    public static void createTabGroup(
+            ChromeTabbedActivity cta, boolean isIncognito, List<Tab> tabs) {
         if (tabs.size() == 0) return;
         assert cta.getTabModelSelector().getTabModelFilterProvider().getCurrentTabModelFilter()
                         instanceof TabGroupModelFilter;
@@ -556,6 +561,22 @@ public class TabUiTestHelper {
             assert false : "error when verifying undo snack bar.";
         }
         return hasClicked;
+    }
+
+    /**
+     * Get the {@link GeneralSwipeAction} used to perform a swipe-to-dismiss action in tab grid
+     * layout.
+     * @param isLeftToRight  decides whether the swipe is from left to right or from right to left.
+     * @return {@link GeneralSwipeAction} to perform swipe-to-dismiss.
+     */
+    public static GeneralSwipeAction getSwipeToDismissAction(boolean isLeftToRight) {
+        if (isLeftToRight) {
+            return new GeneralSwipeAction(Swipe.FAST, GeneralLocation.CENTER_LEFT,
+                    GeneralLocation.CENTER_RIGHT, Press.FINGER);
+        } else {
+            return new GeneralSwipeAction(Swipe.FAST, GeneralLocation.CENTER_RIGHT,
+                    GeneralLocation.CENTER_LEFT, Press.FINGER);
+        }
     }
 
     /**

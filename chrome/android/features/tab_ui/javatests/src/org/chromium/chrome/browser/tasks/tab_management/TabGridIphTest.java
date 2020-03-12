@@ -22,13 +22,16 @@ import static org.junit.Assert.assertTrue;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickScrimToExitDialog;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.closeFirstTabInTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.enterTabSwitcher;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.getSwipeToDismissAction;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
 
 import android.content.res.Configuration;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingRootException;
+import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.filters.MediumTest;
+import android.support.v7.widget.RecyclerView;
 import android.widget.TextView;
 
 import org.junit.After;
@@ -219,6 +222,23 @@ public class TabGridIphTest {
         verifyTabSwitcherCardCount(cta, 1);
         CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
         onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    public void testSwipeToDismiss_IPH() throws InterruptedException {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        enterTabSwitcher(cta);
+        onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
+        RecyclerView.ViewHolder viewHolder = ((RecyclerView) cta.findViewById(R.id.tab_list_view))
+                                                     .findViewHolderForAdapterPosition(1);
+        assertEquals(TabProperties.UiType.MESSAGE, viewHolder.getItemViewType());
+
+        onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(
+                        1, getSwipeToDismissAction(true)));
+
+        onView(withId(R.id.tab_grid_message_item)).check(doesNotExist());
     }
 
     private void verifyIphDialogShowing(ChromeTabbedActivity cta) {

@@ -10,6 +10,8 @@
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
+#include "ash/public/cpp/overview_test_api.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -57,14 +59,14 @@ class TestOverviewObserver : public OverviewObserver {
   }
 
   // OverviewObserver:
+  void OnOverviewModeWillStart() override { ++observer_counts_.will_start; }
   void OnOverviewModeStarting() override {
+    ++observer_counts_.starting;
     UpdateLastAnimationStates(
         Shell::Get()->overview_controller()->overview_session());
   }
-  void OnOverviewModeEnding(OverviewSession* overview_session) override {
-    UpdateLastAnimationStates(overview_session);
-  }
   void OnOverviewModeStartingAnimationComplete(bool canceled) override {
+    ++observer_counts_.starting_animation_complete;
     if (!should_monitor_animation_state_)
       return;
 
@@ -73,7 +75,13 @@ class TestOverviewObserver : public OverviewObserver {
     if (run_loop_)
       run_loop_->Quit();
   }
+  void OnOverviewModeEnding(OverviewSession* overview_session) override {
+    ++observer_counts_.ending;
+    UpdateLastAnimationStates(overview_session);
+  }
+  void OnOverviewModeEnded() override { ++observer_counts_.ended; }
   void OnOverviewModeEndingAnimationComplete(bool canceled) override {
+    ++observer_counts_.ending_animation_complete;
     if (!should_monitor_animation_state_)
       return;
 
@@ -100,6 +108,23 @@ class TestOverviewObserver : public OverviewObserver {
       run_loop_ = std::make_unique<base::RunLoop>();
       run_loop_->RunUntilIdle();
     }
+  }
+
+  // Checks if all the observed methods have fired the same amount of times.
+  bool ObserverCountsEqual() {
+    const int expected_count = observer_counts_.will_start;
+    DCHECK_GT(expected_count, 0);
+    if (observer_counts_.starting != expected_count)
+      return false;
+    if (observer_counts_.starting_animation_complete != expected_count)
+      return false;
+    if (observer_counts_.ending != expected_count)
+      return false;
+    if (observer_counts_.ended != expected_count)
+      return false;
+    if (observer_counts_.ending_animation_complete != expected_count)
+      return false;
+    return true;
   }
 
   bool is_ended() const { return ending_animation_state_ != UNKNOWN; }
@@ -130,6 +155,17 @@ class TestOverviewObserver : public OverviewObserver {
             OverviewSession::EnterExitOverviewType::kFadeInEnter ||
         enter_exit_type == OverviewSession::EnterExitOverviewType::kFadeOutExit;
   }
+
+  // Struct which keeps track of the counts a OverviewObserver method has fired.
+  // These are used to verify that certain methods have a one to one ratio.
+  struct ObserverCounts {
+    int will_start;
+    int starting;
+    int starting_animation_complete;
+    int ending;
+    int ended;
+    int ending_animation_complete;
+  } observer_counts_ = {0};
 
   AnimationState starting_animation_state_ = UNKNOWN;
   AnimationState ending_animation_state_ = UNKNOWN;
@@ -343,6 +379,79 @@ TEST_F(OverviewControllerTest, SelectingHidesAppList) {
   Shell::Get()->overview_controller()->StartOverview();
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
+}
+
+// Some ash codes are reliant on some OverviewObserver calls matching (i.e. the
+// amount of starts should match the amount of ends). This test verifies that
+// behavior. Tests for both tablet and clamshell mode.
+TEST_F(OverviewControllerTest, ObserverCallsMatch) {
+  ui::ScopedAnimationDurationScaleMode non_zero(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  TestOverviewObserver observer(/*should_monitor_animation_state=*/false);
+
+  // Helper which waits for an overview animation to finish.
+  auto wait_for_animation = [](bool enter) {
+    ShellTestApi().WaitForOverviewAnimationState(
+        enter ? OverviewAnimationState::kEnterAnimationComplete
+              : OverviewAnimationState::kExitAnimationComplete);
+  };
+
+  auto set_tablet_mode_enabled = [](bool enabled) {
+    TabletMode::Waiter waiter(enabled);
+    if (enabled)
+      TabletModeControllerTestApi().EnterTabletMode();
+    else
+      TabletModeControllerTestApi().LeaveTabletMode();
+    waiter.Wait();
+  };
+
+  // Tests the case where we enter without windows and do regular enter/exit
+  // (wait for enter animation to finish before exiting).
+  auto* overview_controller = Shell::Get()->overview_controller();
+
+  for (bool is_tablet_mode : {false, true}) {
+    SCOPED_TRACE(is_tablet_mode ? "Tablet Mode" : "Clamshell Mode");
+    set_tablet_mode_enabled(is_tablet_mode);
+
+    overview_controller->StartOverview();
+    wait_for_animation(/*enter=*/true);
+    overview_controller->EndOverview();
+    wait_for_animation(/*enter=*/false);
+    EXPECT_TRUE(observer.ObserverCountsEqual());
+  }
+
+  // Create one window for the next set of tests.
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
+
+  for (bool is_tablet_mode : {false, true}) {
+    SCOPED_TRACE(is_tablet_mode ? "Tablet Mode" : "Clamshell Mode");
+    set_tablet_mode_enabled(is_tablet_mode);
+
+    // Tests the case where we enter with windows and do regular enter/exit
+    // (wait for enter animation to finish before exiting).
+    overview_controller->StartOverview();
+    wait_for_animation(/*enter=*/true);
+    overview_controller->EndOverview();
+    wait_for_animation(/*enter=*/false);
+    EXPECT_TRUE(observer.ObserverCountsEqual());
+
+    // Tests the case where we exit overview before the start animation has
+    // completed.
+    overview_controller->StartOverview();
+    overview_controller->EndOverview();
+    wait_for_animation(/*enter=*/false);
+    EXPECT_TRUE(observer.ObserverCountsEqual());
+
+    // Tests the case where we enter overview before the exit animation has
+    // completed.
+    overview_controller->StartOverview();
+    wait_for_animation(/*enter=*/true);
+    overview_controller->EndOverview();
+    overview_controller->StartOverview();
+    overview_controller->EndOverview();
+    wait_for_animation(/*enter=*/false);
+    EXPECT_TRUE(observer.ObserverCountsEqual());
+  }
 }
 
 // Parameterized test depending on whether kDragFromShelfToHomeOrOverview is

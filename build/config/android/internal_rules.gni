@@ -652,7 +652,7 @@ template("test_runner_script") {
           get_label_info(invoker.apk_target, "target_gen_dir") + "/" +
           get_label_info(invoker.apk_target, "name") + ".build_config"
       _rebased_apk_build_config = rebase_path(_apk_build_config, root_build_dir)
-      assert(_rebased_apk_build_config != "")  # Mark as used.
+      not_needed([ "_rebased_apk_build_config" ])
     } else if (_test_type == "gtest") {
       assert(
           defined(invoker.executable_dist_dir),
@@ -2797,6 +2797,7 @@ if (enable_java_templates) {
         # Override the default action_pool when goma is enabled.
         pool = "//build/config/android:goma_javac_pool"
       }
+
       # Flag enable_kythe_annotations requires
       # checkout_android_prebuilts_build_tools=True in .gclient.
       if (enable_kythe_annotations && !invoker.enable_errorprone) {
@@ -3388,7 +3389,7 @@ if (enable_java_templates) {
       }
       if (defined(invoker.android_manifest_for_lint)) {
         _android_manifest_for_lint = invoker.android_manifest_for_lint
-        assert(_android_manifest_for_lint != "")  # Mark as used.
+        not_needed([ "_android_manifest_for_lint" ])
       }
       if (_lint_enabled) {
         _android_lint_target = "${_main_target_name}__lint"

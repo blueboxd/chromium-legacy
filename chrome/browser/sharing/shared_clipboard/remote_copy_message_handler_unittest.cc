@@ -13,11 +13,13 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/browser/sharing/mock_sharing_service.h"
 #include "chrome/browser/sharing/proto/remote_copy_message.pb.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/shared_clipboard/remote_copy_handle_message_result.h"
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_test_base.h"
+#include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync/protocol/sync_enums.pb.h"
@@ -48,6 +50,11 @@ class RemoteCopyMessageHandlerTest : public SharedClipboardTestBase {
 
   void SetUp() override {
     SharedClipboardTestBase::SetUp();
+    SharingServiceFactory::GetInstance()->SetTestingFactory(
+        &profile_, base::BindRepeating([](content::BrowserContext* context)
+                                           -> std::unique_ptr<KeyedService> {
+          return std::make_unique<testing::NiceMock<MockSharingService>>();
+        }));
     message_handler_ = std::make_unique<RemoteCopyMessageHandler>(&profile_);
   }
 
@@ -243,6 +250,9 @@ TEST_F(RemoteCopyMessageHandlerTest, ImageNotificationWithProgressFlag) {
   // download.
   task_environment_.RunUntilIdle();
 
+  // After finishing the transfer there should be no progress notification.
+  EXPECT_FALSE(HasProgressNotification());
+
   // Expect the image to be in the clipboard now.
   SkBitmap image = GetClipboardImage();
   EXPECT_TRUE(gfx::BitmapsAreEqual(*image_, image));
@@ -250,4 +260,55 @@ TEST_F(RemoteCopyMessageHandlerTest, ImageNotificationWithProgressFlag) {
   // Expect an image notification showing the image.
   auto notification = GetImageNotification();
   EXPECT_FALSE(notification.image().IsEmpty());
+}
+
+TEST_F(RemoteCopyMessageHandlerTest, CancelProgressNotification) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{kRemoteCopyReceiver, {{kRemoteCopyAllowedOrigins.name, kTestImageUrl}}},
+       {kRemoteCopyProgressNotification, {}}},
+      {});
+
+  message_handler_->OnMessage(CreateMessageWithImage(kTestImageUrl),
+                              base::DoNothing());
+  auto notification = GetProgressNotification();
+
+  // Simulate a click on the cancel button at index 0.
+  notification_tester_->SimulateClick(NotificationHandler::Type::SHARING,
+                                      notification.id(), /*action_index=*/0,
+                                      /*reply=*/base::nullopt);
+
+  // The progress notification should now be closed.
+  EXPECT_FALSE(HasProgressNotification());
+
+  // Run remaining tasks to ensure no notification is shown at the end.
+  task_environment_.RunUntilIdle();
+
+  EXPECT_FALSE(HasProgressNotification());
+  EXPECT_FALSE(HasImageNotification());
+}
+
+TEST_F(RemoteCopyMessageHandlerTest, DismissProgressNotification) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{kRemoteCopyReceiver, {{kRemoteCopyAllowedOrigins.name, kTestImageUrl}}},
+       {kRemoteCopyProgressNotification, {}}},
+      {});
+
+  message_handler_->OnMessage(CreateMessageWithImage(kTestImageUrl),
+                              base::DoNothing());
+  auto notification = GetProgressNotification();
+
+  // Simulate closing the notification by the user.
+  notification_tester_->RemoveNotification(NotificationHandler::Type::SHARING,
+                                           notification.id(), /*by_user=*/true,
+                                           /*silent=*/false);
+
+  // The progress notification should now be closed.
+  EXPECT_FALSE(HasProgressNotification());
+
+  // Let tasks run until the image is decoded and written to the clipboard.
+  task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(HasImageNotification());
 }

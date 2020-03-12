@@ -25,7 +25,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "cc/layers/surface_layer.h"
-#include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "media/base/cdm_config.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/media_observer.h"
@@ -788,7 +788,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   std::unique_ptr<BufferedDataSourceHostImpl> buffered_data_source_host_;
   UrlIndex* const url_index_;
-  scoped_refptr<viz::ContextProvider> context_provider_;
+  scoped_refptr<viz::RasterContextProvider> raster_context_provider_;
 
   // Video rendering members.
   // The |compositor_| runs on the compositor thread, or if

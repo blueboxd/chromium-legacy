@@ -2639,10 +2639,6 @@
       },
     },
 
-    'ios_code_coverage_gtests': {
-      'ios_components_unittests': {},
-    },
-
     'ios_common_tests': {
       'boringssl_crypto_tests': {
         'merge': {
@@ -4734,7 +4730,6 @@
   ##############################################################################
 
   'matrix_compound_suites': {
-
     'ios13_beta_simulator_gtests': {
       'ios_common_tests': {
         'variants': [
@@ -4777,6 +4772,13 @@
           'SIM_IPAD_AIR_2_12_4',
         ],
       },
-    }
+    },
+    'ios_code_coverage_gtests': {
+      'ios_common_tests': {
+        'variants': [
+          'SIM_IPHONE_X_13_3',
+        ],
+      },
+     },
   }
 }

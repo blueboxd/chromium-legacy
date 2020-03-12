@@ -33,10 +33,10 @@ RejectingAuthenticator::rejection_reason() const {
 
 void RejectingAuthenticator::ProcessMessage(
     const jingle_xmpp::XmlElement* message,
-    const base::Closure& resume_callback) {
+    base::OnceClosure resume_callback) {
   DCHECK_EQ(state_, WAITING_MESSAGE);
   state_ = REJECTED;
-  resume_callback.Run();
+  std::move(resume_callback).Run();
 }
 
 std::unique_ptr<jingle_xmpp::XmlElement> RejectingAuthenticator::GetNextMessage() {

@@ -20,11 +20,11 @@ It2MeHostAuthenticatorFactory::It2MeHostAuthenticatorFactory(
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
     const std::string& access_code_hash,
-    const ValidatingAuthenticator::ValidationCallback& callback)
+    ValidatingAuthenticator::ValidationCallback callback)
     : local_cert_(local_cert),
       key_pair_(key_pair),
       access_code_hash_(access_code_hash),
-      validation_callback_(callback) {}
+      validation_callback_(std::move(callback)) {}
 
 It2MeHostAuthenticatorFactory::~It2MeHostAuthenticatorFactory() = default;
 
@@ -38,7 +38,7 @@ It2MeHostAuthenticatorFactory::CreateAuthenticator(
           nullptr));
 
   return std::make_unique<ValidatingAuthenticator>(
-      remote_jid, validation_callback_, std::move(authenticator));
+      remote_jid, std::move(validation_callback_), std::move(authenticator));
 }
 
 }  // namespace protocol

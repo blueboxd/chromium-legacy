@@ -5,71 +5,105 @@
 import("//chromecast/chromecast.gni")
 import("//testing/test.gni")
 
-# Crash reporting is not support on Fuchsia yet
-# TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
-assert(!is_fuchsia)
+cast_source_set("crash_storage") {
+  sources = [
+    "cast_crash_keys.cc",
+    "cast_crash_keys.h",
+    "cast_crash_storage.h",
+  ]
+
+  if (is_fuchsia) {
+    sources += [
+      "cast_crash_storage_fuchsia.cc",
+      "fuchsia/cast_crash_storage_impl_fuchsia.cc",
+      "fuchsia/cast_crash_storage_impl_fuchsia.h",
+    ]
+
+    deps = [ "//base" ]
+  } else {
+    sources += [
+      "cast_crash_storage.cc",
+      "cast_crash_storage_impl.cc",
+      "cast_crash_storage_impl.h",
+    ]
+
+    deps = [
+      "//base",
+      "//components/crash/core/common",
+    ]
+  }
+}
 
 cast_source_set("crash") {
   sources = [
     "app_state_tracker.cc",
     "app_state_tracker.h",
-    "cast_crash_keys.cc",
-    "cast_crash_keys.h",
-    "cast_crashdump_uploader.cc",
-    "cast_crashdump_uploader.h",
-    "linux/crash_util.cc",
-    "linux/crash_util.h",
-    "linux/dummy_minidump_generator.cc",
-    "linux/dummy_minidump_generator.h",
-    "linux/dump_info.cc",
-    "linux/dump_info.h",
-    "linux/minidump_generator.h",
-    "linux/minidump_params.cc",
-    "linux/minidump_params.h",
-    "linux/minidump_uploader.cc",
-    "linux/minidump_uploader.h",
-    "linux/minidump_writer.cc",
-    "linux/minidump_writer.h",
-    "linux/synchronized_minidump_manager.cc",
-    "linux/synchronized_minidump_manager.h",
   ]
 
   deps = [
+    ":crash_storage",
     "//base",
-    "//chromecast/base",
-    "//chromecast/base:cast_sys_info_util",
-    "//chromecast/base:cast_version",
-    "//components/crash/core/common",
-    "//components/metrics",
-    "//components/prefs",
-    "//third_party/breakpad:client",
   ]
+
+  if (!is_fuchsia) {
+    sources += [
+      "cast_crashdump_uploader.cc",
+      "cast_crashdump_uploader.h",
+      "linux/crash_util.cc",
+      "linux/crash_util.h",
+      "linux/dummy_minidump_generator.cc",
+      "linux/dummy_minidump_generator.h",
+      "linux/dump_info.cc",
+      "linux/dump_info.h",
+      "linux/minidump_generator.h",
+      "linux/minidump_params.cc",
+      "linux/minidump_params.h",
+      "linux/minidump_uploader.cc",
+      "linux/minidump_uploader.h",
+      "linux/minidump_writer.cc",
+      "linux/minidump_writer.h",
+      "linux/synchronized_minidump_manager.cc",
+      "linux/synchronized_minidump_manager.h",
+    ]
+
+    deps += [
+      "//chromecast/base",
+      "//chromecast/base:cast_sys_info_util",
+      "//chromecast/base:cast_version",
+      "//components/crash/core/common",
+      "//components/metrics",
+      "//components/prefs",
+      "//third_party/breakpad:client",
+    ]
+  }
 }
 
-cast_executable("crash_uploader") {
-  sources = [ "linux/crash_uploader.cc" ]
+if (!is_fuchsia) {
+  cast_executable("crash_uploader") {
+    sources = [ "linux/crash_uploader.cc" ]
 
-  deps = [
-    ":crash",
-    "//base",
-    "//chromecast/base",
-    "//chromecast/base:default_create_sys_info",
-    "//chromecast/public",
-    "//chromecast/system/reboot:reboot_util",
-  ]
-}
+    deps = [
+      ":crash",
+      "//base",
+      "//chromecast/base",
+      "//chromecast/base:default_create_sys_info",
+      "//chromecast/public",
+      "//chromecast/system/reboot:reboot_util",
+    ]
+  }
 
-cast_source_set("test_support") {
-  sources = [
-    "linux/crash_testing_utils.cc",
-    "linux/crash_testing_utils.h",
-  ]
+  cast_source_set("test_support") {
+    sources = [
+      "linux/crash_testing_utils.cc",
+      "linux/crash_testing_utils.h",
+    ]
 
-  deps = [
-    ":crash",
-    "//base",
-    "//chromecast/base",
-  ]
+    deps = [
+      ":crash",
+      "//base",
+      "//chromecast/base",
+    ]
+  }
 }
 
 if (is_linux) {

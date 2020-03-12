@@ -821,7 +821,7 @@ void WebMediaPlayerMS::Paint(cc::PaintCanvas* canvas,
 
   const scoped_refptr<media::VideoFrame> frame = compositor_->GetCurrentFrame();
 
-  viz::ContextProvider* provider = nullptr;
+  viz::RasterContextProvider* provider = nullptr;
   if (frame && frame->HasTextures()) {
     provider = Platform::Current()->SharedMainThreadContextProvider();
     // GPU Process crashed.

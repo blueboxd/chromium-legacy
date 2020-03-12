@@ -27,6 +27,7 @@ android_library("weblayer_shell_java") {
 
   deps = [
     ":weblayer_shell_resources",
+    "//base:base_java",
     "//third_party/android_deps:android_support_v4_java",
     "//weblayer/public/java",
   ]

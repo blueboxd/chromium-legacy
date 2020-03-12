@@ -127,9 +127,6 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_quic_bbr_no_bytes_acked_in_startup_recovery,
     false)
 
-// If true, QuicEpollClock::Now() will monotonically increase.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_monotonic_epoll_clock, true)
-
 // If true, enables the BBS4 and BBS5 connection options, which reduce BBR's
 // pacing rate in STARTUP as more losses occur as a fraction of CWND.
 QUIC_FLAG(bool,
@@ -276,10 +273,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_ack_delay_alarm_granularity,
           false)
 
-// If true, enable the 1ACK connection option to only send 1 immediate ACK after
-// reordering.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_immediate_ack, true)
-
 // If true, QuicSentPacketManager::SetSendAlgorithm(CongestionControlType) will
 // become a no-op if the current and the requested cc_type are the same.
 QUIC_FLAG(
@@ -316,7 +309,7 @@ QUIC_FLAG(bool,
 // is bundled with ACKs sent after the PTO fires.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bundle_retransmittable_with_pto_ack,
-          false)
+          true)
 // If true, use QuicClock::Now() as the source of packet receive time instead of
 // WallNow().
 QUIC_FLAG(bool,
@@ -351,7 +344,7 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_minimum_validation_of_coalesced_packets,
-    false)
+    true)
 
 // If true, do not send WINDOW_UPDATE if connection has been disconnected.
 QUIC_FLAG(bool,
@@ -361,21 +354,21 @@ QUIC_FLAG(bool,
 // If true, arm the 1st PTO with earliest in flight sent time.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_arm_pto_with_earliest_sent_time,
-          false)
+          true)
 
 // If true, QuicSession::WritevData() will support writing data at a specified
 // encryption level.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_writevdata_at_level, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_writevdata_at_level, true)
 
 // If true, use standard deviation when calculating PTO timeout.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_standard_deviation_for_pto,
-          false)
+          true)
 
 // If true, QUIC BBRv2 to avoid unnecessary PROBE_RTTs after quiescence.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr2_avoid_unnecessary_probe_rtt,
-          false)
+          true)
 
 // If true, use passed in ack_frame to calculate minimum size of the serialized
 // ACK frame.
@@ -395,3 +388,9 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_bbr2_add_ack_height_to_queueing_threshold,
     false)
+
+// If true, send PING when PTO skips packet number and there is no data to send.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_send_ping_when_pto_skips_packet_number,
+    true)

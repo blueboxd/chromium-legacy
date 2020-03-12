@@ -19,7 +19,9 @@ import android.bluetooth.le.AdvertiseData;
 import android.bluetooth.le.AdvertiseSettings;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.ParcelUuid;
+import android.util.Base64;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -43,7 +45,7 @@ import java.util.UUID;
 class BLEHandler extends BluetoothGattServerCallback implements Closeable {
     // TODO: remove @TargetApi once 21 is the minimum, Clank-wide.
 
-    private static final String TAG = "AuthenticatorBLEHandler";
+    private static final String TAG = "CableBLEHandler";
     // These UUIDs are taken from the FIDO spec[1], save for the caBLE UUID
     // which is allocated to Google. See
     // https://fidoalliance.org/specs/fido-v2.0-ps-20190130/fido-client-to-authenticator-protocol-v2.0-ps-20190130.html#ble
@@ -63,6 +65,11 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
     // TODO: delete, along with the helper function that uses it, once we no longer
     // need to dump debugging information from this code.
     private static final char[] HEX_CHARS = "0123456789ABCDEF".toCharArray();
+
+    // The filename and key name of the SharedPreferences value that contains
+    // the base64-encoded state from the native code.
+    private static final String STATE_FILE_NAME = "cablev2_authenticator";
+    private static final String STATE_VALUE_NAME = "keys";
 
     /**
      * The pending fragments to send to each client. If present, the value is
@@ -95,6 +102,19 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
      * @return true if successful and false on error.
      */
     public boolean start() {
+        Context context = ContextUtils.getApplicationContext();
+        SharedPreferences prefs =
+                context.getSharedPreferences(STATE_FILE_NAME, Context.MODE_PRIVATE);
+        byte[] stateBytes = null;
+        try {
+            stateBytes = Base64.decode(prefs.getString(STATE_VALUE_NAME, ""), Base64.DEFAULT);
+            if (stateBytes.length == 0) {
+                stateBytes = null;
+            }
+        } catch (IllegalArgumentException e) {
+            Log.w(TAG, "Ignoring corrupt state");
+        }
+
         BluetoothGattService cableService = new BluetoothGattService(
                 UUID.fromString(CABLE_UUID), BluetoothGattService.SERVICE_TYPE_PRIMARY);
         cableService.addCharacteristic(new BluetoothGattCharacteristic(
@@ -119,7 +139,6 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
                         BluetoothGattCharacteristic.PERMISSION_READ
                                 | BluetoothGattCharacteristic.PERMISSION_WRITE));
 
-        Context context = ContextUtils.getApplicationContext();
         BluetoothManager manager =
                 (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         mServer = manager.openGattServer(context, this);
@@ -136,8 +155,12 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
         // worrying about JNIEnv objects and references being incorrectly used
         // across threads.
         assert mTaskRunner == null;
+        // TODO: in practice, this sadly appears to return the UI thread,
+        // despite requesting |BEST_EFFORT|.
         mTaskRunner = PostTask.createSingleThreadTaskRunner(TaskTraits.BEST_EFFORT);
-        mTaskRunner.postTask(() -> BLEHandlerJni.get().start(this));
+        // Local variables passed into a lambda must be final.
+        final byte[] state = stateBytes;
+        mTaskRunner.postTask(() -> BLEHandlerJni.get().start(this, state));
 
         return true;
     }
@@ -275,6 +298,10 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
     }
 
     private static String hex(byte[] bytes) {
+        if (bytes == null) {
+            return "(null)";
+        }
+
         char[] ret = new char[bytes.length * 2];
         for (int j = 0; j < bytes.length; j++) {
             int v = bytes[j] & 0xFF;
@@ -370,6 +397,7 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
      */
     @CalledByNative
     public void sendBLEAdvert(byte[] dataUuidBytes) {
+        assert mTaskRunner.belongsToCurrentThread();
         Log.i(TAG, "sendBLEAdvert " + dataUuidBytes.length);
 
         maybeStopAdvertising();
@@ -411,13 +439,30 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
         advertiser.startAdvertising(settings, data, mCallback);
     }
 
+    /**
+     * Called by native code to store a new state blob.
+     */
+    @CalledByNative
+    public void setState(byte[] newState) {
+        assert mTaskRunner.belongsToCurrentThread();
+
+        Context context = ContextUtils.getApplicationContext();
+        SharedPreferences prefs =
+                context.getSharedPreferences(STATE_FILE_NAME, Context.MODE_PRIVATE);
+        Log.i(TAG, "Writing updated state");
+        prefs.edit()
+                .putString(STATE_VALUE_NAME,
+                        Base64.encodeToString(newState, Base64.NO_WRAP | Base64.NO_PADDING))
+                .apply();
+    }
+
     @NativeMethods
     interface Natives {
         /**
          * Called to alert the C++ code to a new instance. The C++ code calls back into this object
          * to send data.
          */
-        void start(BLEHandler bleHandler);
+        void start(BLEHandler bleHandler, byte[] stateBytes);
         void stop();
         /**
          * Called when a QR code has been scanned.

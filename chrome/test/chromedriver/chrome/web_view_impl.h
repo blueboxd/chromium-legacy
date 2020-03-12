@@ -226,8 +226,11 @@ class WebViewImplHolder {
   ~WebViewImplHolder();
 
  private:
-  WebViewImpl* web_view_;
-  bool was_locked_;
+  struct Item {
+    WebViewImpl* web_view;
+    bool was_locked;
+  };
+  std::vector<Item> items_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewImplHolder);
 };

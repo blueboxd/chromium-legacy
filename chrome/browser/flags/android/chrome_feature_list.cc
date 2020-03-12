@@ -157,6 +157,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kHorizontalTabSwitcherAndroid,
     &kImmersiveUiMode,
     &kInlineUpdateFlow,
+    &kInstantStart,
     &kKitKatSupported,
     &kNewPhotoPicker,
     &kNotificationSuspender,
@@ -456,6 +457,9 @@ const base::Feature kImmersiveUiMode{"ImmersiveUiMode",
 
 const base::Feature kInlineUpdateFlow{"InlineUpdateFlow",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kInstantStart{"InstantStart",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kKitKatSupported{"KitKatSupported",
                                      base::FEATURE_DISABLED_BY_DEFAULT};

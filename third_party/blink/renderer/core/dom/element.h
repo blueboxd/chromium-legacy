@@ -1330,7 +1330,7 @@ inline UniqueElementData& Element::EnsureUniqueElementData() {
 inline const CSSPropertyValueSet* Element::PresentationAttributeStyle() {
   if (!GetElementData())
     return nullptr;
-  if (GetElementData()->presentation_attribute_style_is_dirty_)
+  if (GetElementData()->presentation_attribute_style_is_dirty())
     UpdatePresentationAttributeStyle();
   // Need to call elementData() again since updatePresentationAttributeStyle()
   // might swap it with a UniqueElementData.

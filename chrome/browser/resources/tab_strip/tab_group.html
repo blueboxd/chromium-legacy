@@ -15,10 +15,16 @@
   padding: var(--tabstrip-tab-spacing);
 }
 
+#chipContainer {
+  min-width: 100%;
+  width: 0;
+}
+
 #chip {
   display: inline-block;
   height: var(--tabstrip-tab-group-title-height);
   margin-bottom: var(--tabstrip-tab-group-title-margin);
+  max-width: 100%;
 }
 
 #chip:focus {
@@ -33,7 +39,11 @@
   display: inline-block;
   height: var(--tabstrip-tab-group-title-height);
   line-height: var(--tabstrip-tab-group-title-height);
+  max-width: 100%;
+  overflow: hidden;
   padding: 0 6px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #title:empty {
@@ -95,6 +105,7 @@
   box-shadow: var(--tabstrip-tab-dragging-shadow);
   height: var(--tabstrip-tab-height);
   overflow: hidden;
+  transform: scale(var(--tabstrip-tab-drag-image-scale));
 }
 
 :host([getting-drag-image_]) ::slotted(tabstrip-tab) {
@@ -157,8 +168,11 @@
 
 <div id="dragImage">
   <div id="tabGroup">
-    <div id="chip" draggable="true" tabindex="0" role="button">
-      <div id="title"></div>
+    <div id="chipContainer">
+      <div id="chip" draggable="true" tabindex="0" role="button"
+         aria-describedby="tabs">
+        <div id="title"></div>
+      </div>
     </div>
     <div id="tabs">
       <slot></slot>

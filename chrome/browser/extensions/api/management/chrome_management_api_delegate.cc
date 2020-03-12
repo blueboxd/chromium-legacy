@@ -64,6 +64,13 @@
 #include "components/arc/session/arc_bridge_service.h"
 #endif  // OS_CHROMEOS
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+// TODO(https://crbug.com/1060801): Here and elsewhere, possibly switch build
+// flag to #if defined(OS_CHROMEOS)
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#endif
+
 namespace {
 
 #if defined(OS_CHROMEOS)
@@ -524,6 +531,16 @@ void ChromeManagementAPIDelegate::EnableExtension(
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(context)->GetExtensionById(
           extension_id, extensions::ExtensionRegistry::EVERYTHING);
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  // We add approval for the extension here under the assumption that prior
+  // to this point, the supervised child user has already been prompted
+  // for, and received parent permission to install the extension.
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForBrowserContext(context);
+  supervised_user_service->AddExtensionApproval(*extension);
+#endif
+
   // If the extension was disabled for a permissions increase, the Management
   // API will have displayed a re-enable prompt to the user, so we know it's
   // safe to grant permissions here.

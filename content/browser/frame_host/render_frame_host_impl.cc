@@ -6189,7 +6189,19 @@ bool RenderFrameHostImpl::IsRenderFrameLive() {
 }
 
 bool RenderFrameHostImpl::IsCurrent() {
-  return this == frame_tree_node_->current_frame_host();
+  RenderFrameHostImpl* rfh = this;
+  // Check this RenderFrameHost and all its ancestors to see if they are the
+  // current ones in their respective FrameTreeNodes.
+  // It is important to check for all ancestors as when navigation commits a new
+  // RenderFrameHost may replace one of the parents, swapping out the old with
+  // its entire subtree but |this| will still be a current one in its
+  // FrameTreeNode.
+  while (rfh) {
+    if (rfh->frame_tree_node()->current_frame_host() != rfh)
+      return false;
+    rfh = rfh->GetParent();
+  }
+  return true;
 }
 
 size_t RenderFrameHostImpl::GetProxyCount() {

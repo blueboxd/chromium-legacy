@@ -32,45 +32,42 @@ public class BrowserFragmentLifecycleTest {
     public InstrumentationActivityTestRule mActivityTestRule =
             new InstrumentationActivityTestRule();
 
+    private Tab getTab() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> mActivityTestRule.getActivity().getTab());
+    }
+
     @Test
     @SmallTest
     public void successfullyLoadsUrlAfterRecreation() {
-        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
-        Tab tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> activity.getTab());
+        mActivityTestRule.launchShellWithUrl("about:blank");
         String url = "data:text,foo";
-        mActivityTestRule.navigateAndWait(tab, url, false);
+        mActivityTestRule.navigateAndWait(getTab(), url, false);
 
         mActivityTestRule.recreateActivity();
 
-        InstrumentationActivity newActivity = mActivityTestRule.getActivity();
-        tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> newActivity.getTab());
         url = "data:text,bar";
-        mActivityTestRule.navigateAndWait(tab, url, false);
+        mActivityTestRule.navigateAndWait(getTab(), url, false);
     }
 
     @Test
     @SmallTest
     public void restoreAfterRecreate() throws Throwable {
-        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
-        Tab tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> activity.getTab());
+        mActivityTestRule.launchShellWithUrl("about:blank");
         String url = "data:text,foo";
-        mActivityTestRule.navigateAndWait(tab, url, false);
+        mActivityTestRule.navigateAndWait(getTab(), url, false);
 
         mActivityTestRule.recreateActivity();
 
-        InstrumentationActivity newActivity = mActivityTestRule.getActivity();
-        waitForTabToFinishRestore(TestThreadUtils.runOnUiThreadBlocking(() -> {
-            return mActivityTestRule.getActivity().getTab();
-        }),
-                url);
+        waitForTabToFinishRestore(getTab(), url);
     }
 
     // https://crbug.com/1021041
     @Test
     @SmallTest
     public void handlesFragmentDestroyWhileNavigating() {
-        BoundedCountDownLatch latch = new BoundedCountDownLatch(1);
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
+        BoundedCountDownLatch latch = new BoundedCountDownLatch(1);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             NavigationController navigationController = activity.getTab().getNavigationController();
             navigationController.registerNavigationCallback(new NavigationCallback() {
@@ -118,11 +115,10 @@ public class BrowserFragmentLifecycleTest {
         extras.putString(InstrumentationActivity.EXTRA_PERSISTENCE_ID, "x");
         final String url = mActivityTestRule.getTestDataURL("simple_page.html");
         mActivityTestRule.launchShellWithUrl(url, extras);
+
         mActivityTestRule.recreateActivity();
 
-        InstrumentationActivity newActivity = mActivityTestRule.getActivity();
-        Assert.assertNotNull(newActivity);
-        Tab tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> newActivity.getTab());
+        Tab tab = getTab();
         Assert.assertNotNull(tab);
         waitForTabToFinishRestore(tab, url);
     }
@@ -148,7 +144,7 @@ public class BrowserFragmentLifecycleTest {
         Bundle extras = new Bundle();
         extras.putString(InstrumentationActivity.EXTRA_PERSISTENCE_ID, "x");
         final String url = mActivityTestRule.getTestDataURL("simple_page.html");
-        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url, extras);
+        mActivityTestRule.launchShellWithUrl(url, extras);
         final String initialTabId = TestThreadUtils.runOnUiThreadBlocking(
                 () -> { return mActivityTestRule.getActivity().getTab().getGuid(); });
         Assert.assertNotNull(initialTabId);
@@ -156,8 +152,7 @@ public class BrowserFragmentLifecycleTest {
 
         mActivityTestRule.recreateActivity();
 
-        InstrumentationActivity newActivity = mActivityTestRule.getActivity();
-        Tab tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> newActivity.getTab());
+        Tab tab = getTab();
         Assert.assertNotNull(tab);
         waitForTabToFinishRestore(tab, url);
         final String restoredTabId =
@@ -169,17 +164,16 @@ public class BrowserFragmentLifecycleTest {
     @SmallTest
     public void restoreTabGuidAfterRecreate() throws Throwable {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
-        final Tab tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> activity.getTab());
-        final String initialTabId = TestThreadUtils.runOnUiThreadBlocking(
-                () -> { return mActivityTestRule.getActivity().getTab().getGuid(); });
+        final Tab tab = getTab();
+        final String initialTabId =
+                TestThreadUtils.runOnUiThreadBlocking(() -> { return tab.getGuid(); });
         String url = "data:text,foo";
         mActivityTestRule.navigateAndWait(tab, url, false);
 
         mActivityTestRule.recreateActivity();
 
-        InstrumentationActivity newActivity = mActivityTestRule.getActivity();
-        final Tab restoredTab =
-                TestThreadUtils.runOnUiThreadBlockingNoException(() -> newActivity.getTab());
+        final Tab restoredTab = getTab();
+        Assert.assertNotEquals(tab, restoredTab);
         waitForTabToFinishRestore(restoredTab, url);
         final String restoredTabId = TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> { return restoredTab.getGuid(); });

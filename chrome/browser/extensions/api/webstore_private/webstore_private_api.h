@@ -14,10 +14,17 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "chrome/browser/extensions/webstore_installer.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/extensions/api/webstore_private.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "extensions/browser/extension_function.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+// TODO(https://crbug.com/1060801): Here and elsewhere, possibly switch build
+// flag to #if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/supervised_user/parent_permission_dialog.h"
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 namespace content {
 class GpuFeatureChecker;
@@ -68,6 +75,16 @@ class WebstorePrivateBeginInstallWithManifest3Function
                               InstallHelperResultCode result,
                               const std::string& error_message) override;
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  void OnParentPermissionDone(std::unique_ptr<ParentPermissionDialog> dialog,
+                              ParentPermissionDialog::Result result);
+  void OnParentPermissionReceived();
+  void OnParentPermissionCanceled();
+  void OnParentPermissionFailed();
+  // Returns true if the parental approval prompt was shown, false if there was
+  // an error showing it.
+  bool PromptForParentApproval();
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
   void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
   void OnRequestPromptDone(ExtensionInstallPrompt::Result result);
 

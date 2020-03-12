@@ -447,6 +447,13 @@ bool CastWebContentsImpl::is_mixer_audio_enabled() {
   return is_mixer_audio_enabled_;
 }
 
+bool CastWebContentsImpl::can_bind_interfaces() {
+  // We assume that the interface binders are owned by the delegate. This is a
+  // cheap trick so that all of the interfaces don't have to provide binder
+  // callbacks with WeakPtr.
+  return delegate_ != nullptr;
+}
+
 void CastWebContentsImpl::OnClosePageTimeout() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!closing_ || stopped_) {
@@ -529,10 +536,7 @@ void CastWebContentsImpl::OnInterfaceRequestFromFrame(
     mojo::ScopedMessagePipeHandle* interface_pipe) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!delegate_) {
-    // Don't let the page bind any more interfaces at this point, since the
-    // owning client has been torn down. This is a cheap trick so that all of
-    // the interfaces don't have to provide binder callbacks with WeakPtr.
+  if (!can_bind_interfaces()) {
     return;
   }
   if (binder_registry_.TryBindInterface(interface_name, interface_pipe)) {

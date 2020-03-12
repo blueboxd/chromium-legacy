@@ -6567,6 +6567,9 @@ crbug.com/1049454 external/wpt/service-workers/service-worker/windowclient-navig
 
 # Crashes with DCHECK enabled, but not on normal Release builds.
 crbug.com/944449 external/wpt/scroll-animations/scroll-animation.html [ Pass Crash ]
+crbug.com/944449 virtual/threaded/external/wpt/scroll-animations/scroll-animation.html [ Pass Crash ]
+crbug.com/944449 external/wpt/scroll-animations/animation-with-display-none.html [ Pass Crash Timeout ]
+crbug.com/944449 virtual/threaded/external/wpt/scroll-animations/animation-with-display-none.html [ Pass Crash Timeout ]
 
 # Sheriff 2020-02-10
 crbug.com/1050306 [ Fuchsia ] virtual/gpu/fast/canvas/canvas-filter-frameless-document.html [ Crash Pass Timeout ]

@@ -230,6 +230,10 @@ int Setup(bool is_machine) {
 
   base::CommandLine run_updater_ua_command(product_dir.Append(kUpdaterExe));
   run_updater_ua_command.AppendSwitch(kUpdateAppsSwitch);
+
+  // TODO(sorin) remove "single-process" when the updater COM client works.
+  // crbug.com/1053729.
+  run_updater_ua_command.AppendSwitch(kSingleProcessSwitch);
 #if !defined(NDEBUG)
   run_updater_ua_command.AppendSwitch(kEnableLoggingSwitch);
   run_updater_ua_command.AppendSwitchASCII(kLoggingModuleSwitch,

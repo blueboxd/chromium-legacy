@@ -13,6 +13,10 @@
 
 namespace cc {
 
+// Generic scrollbar layer for cases not covered by PaintedOverlayScrollbarLayer
+// or SolidColorScrollbarLayer. This is not used for CSS-styled scrollbars. In
+// practice, this is used for overlay and non-overlay scrollbars on MacOS, as
+// well as non-overlay scrollbars on Win/Linux.
 class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerBase {
  public:
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;

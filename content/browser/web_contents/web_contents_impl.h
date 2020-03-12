@@ -461,6 +461,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void GenerateMHTMLWithResult(
       const MHTMLGenerationParams& params,
       MHTMLGenerationResult::GenerateMHTMLCallback callback) override;
+  void GenerateWebBundle(
+      const base::FilePath& file_path,
+      base::OnceCallback<void(uint64_t, data_decoder::mojom::WebBundlerError)>
+          callback) override;
   const std::string& GetContentsMimeType() override;
   bool WillNotifyDisconnection() override;
   blink::mojom::RendererPreferences* GetMutableRendererPrefs() override;

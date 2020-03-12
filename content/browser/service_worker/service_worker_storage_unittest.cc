@@ -2004,7 +2004,7 @@ TEST_F(ServiceWorkerStorageDiskTest, ScriptResponseTime) {
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
   http_info.response_time = base::Time::FromJsTime(19940123);
   version->SetMainScriptHttpResponseInfo(http_info);
-  EXPECT_TRUE(version->main_script_http_info_);
+  EXPECT_TRUE(version->main_script_response_);
   EXPECT_EQ(http_info.response_time,
             version->script_response_time_for_devtools_);
   EXPECT_EQ(http_info.response_time, version->GetInfo().script_response_time);
@@ -2026,7 +2026,7 @@ TEST_F(ServiceWorkerStorageDiskTest, ScriptResponseTime) {
   ASSERT_TRUE(found_registration);
   auto* waiting_version = found_registration->waiting_version();
   ASSERT_TRUE(waiting_version);
-  EXPECT_FALSE(waiting_version->main_script_http_info_);
+  EXPECT_FALSE(waiting_version->main_script_response_);
   EXPECT_EQ(http_info.response_time,
             waiting_version->script_response_time_for_devtools_);
   EXPECT_EQ(http_info.response_time,

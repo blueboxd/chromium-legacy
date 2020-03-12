@@ -27,7 +27,7 @@ class PairingHostAuthenticator : public PairingAuthenticatorBase {
   // |preferred_initial_state|.
   void Initialize(const std::string& client_id,
                   Authenticator::State preferred_initial_state,
-                  const base::Closure& resume_callback);
+                  base::OnceClosure resume_callback);
 
   // Authenticator interface.
   State state() const override;
@@ -37,12 +37,12 @@ class PairingHostAuthenticator : public PairingAuthenticatorBase {
   // PairingAuthenticatorBase overrides.
   void CreateSpakeAuthenticatorWithPin(
       State initial_state,
-      const base::Closure& resume_callback) override;
+      base::OnceClosure resume_callback) override;
 
   // Continue initializing once the pairing information for the client id has
   // been received.
   void InitializeWithPairing(Authenticator::State preferred_initial_state,
-                             const base::Closure& resume_callback,
+                             base::OnceClosure resume_callback,
                              PairingRegistry::Pairing pairing);
 
   // Protocol state.

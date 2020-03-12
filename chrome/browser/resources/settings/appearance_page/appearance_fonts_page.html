@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_slider/cr_slider.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
@@ -138,11 +137,6 @@
         $i18n{quickBrownFox}
       </div>
     </div>
-    <template is="dom-if" if="[[!isGuest_]]">
-      <cr-link-row id="advancedButton" class="hr"
-          on-click="openAdvancedExtension_" label="$i18n{advancedFontSettings}"
-          sub-label="[[advancedExtensionSublabel_]]" external></cr-link-row>
-    </template>
   </template>
   <script src="appearance_fonts_page.js"></script>
 </dom-module>

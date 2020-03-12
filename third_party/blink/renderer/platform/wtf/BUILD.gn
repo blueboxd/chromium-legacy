@@ -4,6 +4,7 @@
 
 assert(!is_ios)
 
+import("//build/config/compiler/compiler.gni")
 import("//build/config/jumbo.gni")
 import("//testing/test.gni")
 import("//third_party/blink/renderer/config.gni")
@@ -42,6 +43,7 @@ jumbo_component("wtf") {
     "allocator/partitions.h",
     "assertions.cc",
     "assertions.h",
+    "bit_field.h",
     "bloom_filter.h",
     "casting.h",
     "conditional_destructor.h",
@@ -237,6 +239,11 @@ jumbo_component("wtf") {
     sources -= [ "text/atomic_string_cf.cc" ]
   }
 
+  if (!is_debug && !optimize_for_size) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
+
   configs -= [ "//build/config/compiler:default_symbols" ]
   configs += blink_symbols_config
 }
@@ -255,6 +262,7 @@ jumbo_source_set("wtf_unittests_sources") {
     "allocator/partitions_test.cc",
     "ascii_ctype_test.cc",
     "assertions_test.cc",
+    "bit_field_test.cc",
     "cross_thread_functional_test.cc",
     "decimal_test.cc",
     "deque_test.cc",

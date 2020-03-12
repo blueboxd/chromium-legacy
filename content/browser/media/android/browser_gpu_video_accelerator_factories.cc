@@ -170,9 +170,9 @@ BrowserGpuVideoAcceleratorFactories::
   return media::VideoEncodeAccelerator::SupportedProfiles();
 }
 
-scoped_refptr<viz::ContextProvider>
+viz::RasterContextProvider*
 BrowserGpuVideoAcceleratorFactories::GetMediaContextProvider() {
-  return context_provider_;
+  return context_provider_.get();
 }
 
 void BrowserGpuVideoAcceleratorFactories::SetRenderingColorSpace(

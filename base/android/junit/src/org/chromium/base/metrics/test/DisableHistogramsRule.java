@@ -6,7 +6,7 @@ package org.chromium.base.metrics.test;
 
 import org.junit.rules.ExternalResource;
 
-import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.UmaRecorderHolder;
 
 /**
  * Disables histogram recording for the duration of the tests.
@@ -14,11 +14,11 @@ import org.chromium.base.metrics.RecordHistogram;
 public class DisableHistogramsRule extends ExternalResource {
     @Override
     protected void before() {
-        RecordHistogram.setDisabledForTests(true);
+        UmaRecorderHolder.setDisabledForTests(true);
     }
 
     @Override
     protected void after() {
-        RecordHistogram.setDisabledForTests(false);
+        UmaRecorderHolder.setDisabledForTests(false);
     }
 }

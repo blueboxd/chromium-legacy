@@ -665,8 +665,8 @@ class ChunkDemuxerTest : public ::testing::Test {
   PipelineStatusCallback CreateInitDoneCallback(
       PipelineStatus expected_status) {
     EXPECT_CALL(*this, DemuxerInitialized(expected_status));
-    return base::Bind(&ChunkDemuxerTest::DemuxerInitialized,
-                      base::Unretained(this));
+    return base::BindOnce(&ChunkDemuxerTest::DemuxerInitialized,
+                          base::Unretained(this));
   }
 
   enum StreamFlags {
@@ -1417,8 +1417,9 @@ TEST_F(ChunkDemuxerTest, InitSegmentSetsNeedRandomAccessPointFlag) {
 
 TEST_F(ChunkDemuxerTest, Shutdown_BeforeAllInitSegmentsAppended) {
   EXPECT_CALL(*this, DemuxerOpened());
-  demuxer_->Initialize(&host_, base::Bind(&ChunkDemuxerTest::DemuxerInitialized,
-                                          base::Unretained(this)));
+  demuxer_->Initialize(&host_,
+                       base::BindOnce(&ChunkDemuxerTest::DemuxerInitialized,
+                                      base::Unretained(this)));
 
   EXPECT_EQ(AddId("audio", HAS_AUDIO), ChunkDemuxer::kOk);
   EXPECT_EQ(AddId("video", HAS_VIDEO), ChunkDemuxer::kOk);
@@ -2269,9 +2270,9 @@ TEST_F(ChunkDemuxerTest, RemoveId) {
 // Test that removing an ID immediately after adding it does not interfere with
 // quota for new IDs in the future.
 TEST_F(ChunkDemuxerTest, RemoveAndAddId) {
-  demuxer_->Initialize(
-      &host_, base::BindRepeating(&ChunkDemuxerTest::DemuxerInitialized,
-                                  base::Unretained(this)));
+  demuxer_->Initialize(&host_,
+                       base::BindOnce(&ChunkDemuxerTest::DemuxerInitialized,
+                                      base::Unretained(this)));
 
   std::string audio_id_1 = "audio1";
   ASSERT_TRUE(AddId(audio_id_1, HAS_AUDIO) == ChunkDemuxer::kOk);
@@ -2408,7 +2409,7 @@ TEST_F(ChunkDemuxerTest, EndOfStreamAfterPastEosSeek) {
   base::TimeDelta seek_time = base::TimeDelta::FromMilliseconds(110);
   demuxer_->StartWaitingForSeek(seek_time);
   demuxer_->Seek(seek_time,
-                 base::Bind(OnSeekDone_OKExpected, &seek_cb_was_called));
+                 base::BindOnce(OnSeekDone_OKExpected, &seek_cb_was_called));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(seek_cb_was_called);
@@ -2442,7 +2443,7 @@ TEST_F(ChunkDemuxerTest, EndOfStreamDuringPendingSeek) {
   base::TimeDelta seek_time = base::TimeDelta::FromMilliseconds(160);
   demuxer_->StartWaitingForSeek(seek_time);
   demuxer_->Seek(seek_time,
-                 base::Bind(OnSeekDone_OKExpected, &seek_cb_was_called));
+                 base::BindOnce(OnSeekDone_OKExpected, &seek_cb_was_called));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(seek_cb_was_called);
@@ -2802,9 +2803,9 @@ TEST_F(ChunkDemuxerTest, DifferentStreamTimecodesOutOfRange) {
 }
 
 TEST_F(ChunkDemuxerTest, CodecPrefixMatching) {
-  demuxer_->Initialize(
-      &host_, base::BindRepeating(&ChunkDemuxerTest::DemuxerInitialized,
-                                  base::Unretained(this)));
+  demuxer_->Initialize(&host_,
+                       base::BindOnce(&ChunkDemuxerTest::DemuxerInitialized,
+                                      base::Unretained(this)));
   ChunkDemuxer::Status expected = ChunkDemuxer::kNotSupported;
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -2834,9 +2835,9 @@ TEST_F(ChunkDemuxerTest, CodecIDsThatAreNotRFC6381Compliant) {
     "mp4a.40.05"
   };
 
-  demuxer_->Initialize(
-      &host_, base::BindRepeating(&ChunkDemuxerTest::DemuxerInitialized,
-                                  base::Unretained(this)));
+  demuxer_->Initialize(&host_,
+                       base::BindOnce(&ChunkDemuxerTest::DemuxerInitialized,
+                                      base::Unretained(this)));
 
   for (size_t i = 0; i < base::size(codec_ids); ++i) {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -2894,8 +2895,9 @@ TEST_F(ChunkDemuxerTest, EndOfStreamStillSetAfterSeek) {
 
 TEST_F(ChunkDemuxerTest, GetBufferedRangesBeforeInitSegment) {
   EXPECT_CALL(*this, DemuxerOpened());
-  demuxer_->Initialize(&host_, base::Bind(&ChunkDemuxerTest::DemuxerInitialized,
-                                          base::Unretained(this)));
+  demuxer_->Initialize(&host_,
+                       base::BindOnce(&ChunkDemuxerTest::DemuxerInitialized,
+                                      base::Unretained(this)));
   ASSERT_EQ(AddId("audio", HAS_AUDIO), ChunkDemuxer::kOk);
   ASSERT_EQ(AddId("video", HAS_VIDEO), ChunkDemuxer::kOk);
 
@@ -4030,7 +4032,7 @@ TEST_F(ChunkDemuxerTest, SeekCompletesWithoutTextCues) {
   bool seek_cb_was_called = false;
   demuxer_->StartWaitingForSeek(seek_time);
   demuxer_->Seek(seek_time,
-                 base::Bind(OnSeekDone_OKExpected, &seek_cb_was_called));
+                 base::BindOnce(OnSeekDone_OKExpected, &seek_cb_was_called));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(seek_cb_was_called);
@@ -4556,9 +4558,9 @@ TEST_F(ChunkDemuxerTest, SequenceModeSingleTrackNoWarning) {
 }
 
 TEST_F(ChunkDemuxerTest, Mp4Vp9CodecSupport) {
-  demuxer_->Initialize(
-      &host_, base::BindRepeating(&ChunkDemuxerTest::DemuxerInitialized,
-                                  base::Unretained(this)));
+  demuxer_->Initialize(&host_,
+                       base::BindOnce(&ChunkDemuxerTest::DemuxerInitialized,
+                                      base::Unretained(this)));
   ChunkDemuxer::Status expected = ChunkDemuxer::kOk;
   EXPECT_EQ(AddId("source_id", "video/mp4", "vp09.00.10.08"), expected);
 }

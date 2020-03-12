@@ -80,9 +80,7 @@ void SiteDetails::CollectSiteInfo(content::WebContents* contents,
 }
 
 void SiteDetails::UpdateHistograms(
-    const BrowserContextSiteDataMap& site_data_map,
-    int all_renderer_process_count,
-    int non_renderer_process_count) {
+    const BrowserContextSiteDataMap& site_data_map) {
   // Sum the number of sites and SiteInstances in each BrowserContext and
   // the total number of out-of-process iframes.
   int num_browsing_instances = 0;
@@ -102,9 +100,6 @@ void SiteDetails::UpdateHistograms(
     num_oopifs += site_data.out_of_process_frames;
   }
 
-  // Just renderer process count:
-  UMA_HISTOGRAM_COUNTS_100("SiteIsolation.CurrentRendererProcessCount",
-                           all_renderer_process_count);
   UMA_HISTOGRAM_COUNTS_100("SiteIsolation.BrowsingInstanceCount",
                            num_browsing_instances);
   UMA_HISTOGRAM_COUNTS_10000("SiteIsolation.ProxyCount", num_proxies);

@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -48,6 +49,9 @@ ThirdPartyMetricsObserver::AccessedTypes::AccessedTypes(
       break;
     case AccessType::kSessionStorage:
       session_storage = true;
+      break;
+    case AccessType::kUnknown:
+      NOTREACHED();
       break;
   }
 }
@@ -101,14 +105,13 @@ void ThirdPartyMetricsObserver::OnCookieChange(
                           AccessType::kCookieWrite);
 }
 
-void ThirdPartyMetricsObserver::OnDomStorageAccessed(
+void ThirdPartyMetricsObserver::OnStorageAccessed(
     const GURL& url,
     const GURL& first_party_url,
-    bool local,
-    bool blocked_by_policy) {
-  OnCookieOrStorageAccess(
-      url, first_party_url, blocked_by_policy,
-      local ? AccessType::kLocalStorage : AccessType::kSessionStorage);
+    bool blocked_by_policy,
+    page_load_metrics::StorageType storage_type) {
+  OnCookieOrStorageAccess(url, first_party_url, blocked_by_policy,
+                          StorageTypeToAccessType(storage_type));
 }
 
 void ThirdPartyMetricsObserver::OnDidFinishSubFrameNavigation(
@@ -228,6 +231,9 @@ void ThirdPartyMetricsObserver::OnCookieOrStorageAccess(
       case AccessType::kSessionStorage:
         it->second.session_storage = true;
         break;
+      case AccessType::kUnknown:
+        NOTREACHED();
+        break;
     }
     return;
   }
@@ -279,5 +285,19 @@ void ThirdPartyMetricsObserver::RecordMetrics(
         "PageLoad.Clients.ThirdParty.PaintTiming."
         "NavigationToLargestContentfulPaint.HasThirdPartyFont",
         all_frames_largest_contentful_paint.Time().value());
+  }
+}
+
+ThirdPartyMetricsObserver::AccessType
+ThirdPartyMetricsObserver::StorageTypeToAccessType(
+    page_load_metrics::StorageType storage_type) {
+  switch (storage_type) {
+    case page_load_metrics::StorageType::kLocalStorage:
+      return AccessType::kLocalStorage;
+    case page_load_metrics::StorageType::kSessionStorage:
+      return AccessType::kSessionStorage;
+    default:
+      NOTREACHED();
+      return AccessType::kUnknown;
   }
 }

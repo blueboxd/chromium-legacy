@@ -512,7 +512,7 @@ public class ContextualSearchSelectionController {
         if (basePageWebContents != null) {
             mDidExpandSelection = true;
             basePageWebContents.adjustSelectionByCharacterOffset(
-                    selectionStartAdjust, selectionEndAdjust, /* show_selection_menu = */ false);
+                    selectionStartAdjust, selectionEndAdjust, /* showSelectionMenu= */ false);
         }
     }
 

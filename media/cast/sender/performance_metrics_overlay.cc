@@ -272,7 +272,7 @@ scoped_refptr<VideoFrame> MaybeRenderPerformanceMetricsOverlay(
   // for the |frame| holds a ref-counted reference to the source frame to ensure
   // the source frame has the right metadata before its destruction observers
   // are invoked.
-  frame->AddDestructionObserver(base::Bind(
+  frame->AddDestructionObserver(base::BindOnce(
       [](const VideoFrameMetadata* sent_frame_metadata,
          scoped_refptr<VideoFrame> source_frame) {
         source_frame->metadata()->Clear();

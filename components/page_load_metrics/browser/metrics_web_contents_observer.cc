@@ -383,14 +383,13 @@ void MetricsWebContentsObserver::OnCookieChange(
                                     blocked_by_policy);
 }
 
-void MetricsWebContentsObserver::OnDomStorageAccessed(
-    const GURL& url,
-    const GURL& first_party_url,
-    bool local,
-    bool blocked_by_policy) {
+void MetricsWebContentsObserver::OnStorageAccessed(const GURL& url,
+                                                   const GURL& first_party_url,
+                                                   bool blocked_by_policy,
+                                                   StorageType storage_type) {
   if (committed_load_)
-    committed_load_->OnDomStorageAccessed(url, first_party_url, local,
-                                          blocked_by_policy);
+    committed_load_->OnStorageAccessed(url, first_party_url, blocked_by_policy,
+                                       storage_type);
 }
 
 const PageLoadMetricsObserverDelegate&

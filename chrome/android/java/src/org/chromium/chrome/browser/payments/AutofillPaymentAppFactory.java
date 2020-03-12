@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.payments.MethodStrings;
+import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodData;
 
@@ -129,6 +130,12 @@ public class AutofillPaymentAppFactory implements PaymentAppFactoryInterface {
             @Override
             public WebContents getWebContents() {
                 return webContents;
+            }
+
+            @Override
+            public RenderFrameHost getRenderFrameHost() {
+                // AutofillPaymentAppFactory.Creator doesn't need RenderFrameHost.
+                return null;
             }
 
             @Override

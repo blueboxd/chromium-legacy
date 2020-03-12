@@ -17,9 +17,11 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/hats/hats_survey_status_checker.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/hats/hats_bubble_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -29,6 +31,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 
 namespace {
@@ -431,6 +434,102 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne,
   GetHatsService()->LaunchSurvey(kHatsSurveyTriggerSatisfaction);
   WaitForSurveyStatusCallback();
   EXPECT_TRUE(HatsBubbleShown());
+}
+
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, LaunchDelayedSurvey) {
+  SetMetricsConsent(true);
+  EXPECT_TRUE(
+      GetHatsService()->LaunchDelayedSurvey(kHatsSurveyTriggerSatisfaction, 0));
+  WaitForSurveyStatusCallback();
+  EXPECT_TRUE(HatsBubbleShown());
+}
+
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne,
+                       LaunchDelayedSurveyForWebContents) {
+  SetMetricsConsent(true);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(GetHatsService()->LaunchDelayedSurveyForWebContents(
+      kHatsSurveyTriggerSatisfaction, web_contents, 0));
+  WaitForSurveyStatusCallback();
+  EXPECT_TRUE(HatsBubbleShown());
+}
+
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, DisallowsEmptyWebContents) {
+  SetMetricsConsent(true);
+  EXPECT_FALSE(GetHatsService()->LaunchDelayedSurveyForWebContents(
+      kHatsSurveyTriggerSatisfaction, nullptr, 0));
+  EXPECT_FALSE(HatsBubbleShown());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    HatsServiceProbabilityOne,
+    AllowsMultipleDelayedSurveyRequestsDifferentWebContents) {
+  SetMetricsConsent(true);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(GetHatsService()->LaunchDelayedSurveyForWebContents(
+      kHatsSurveyTriggerSatisfaction, web_contents, 0));
+  chrome::AddTabAt(browser(), GURL(), -1, true);
+  EXPECT_TRUE(GetHatsService()->LaunchDelayedSurveyForWebContents(
+      kHatsSurveyTriggerSatisfaction,
+      browser()->tab_strip_model()->GetActiveWebContents(), 0));
+  WaitForSurveyStatusCallback();
+}
+
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne,
+                       DisallowsSameDelayedSurveyForWebContentsRequests) {
+  SetMetricsConsent(true);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(GetHatsService()->LaunchDelayedSurveyForWebContents(
+      kHatsSurveyTriggerSatisfaction, web_contents, 0));
+  EXPECT_FALSE(GetHatsService()->LaunchDelayedSurveyForWebContents(
+      kHatsSurveyTriggerSatisfaction, web_contents, 0));
+  WaitForSurveyStatusCallback();
+}
+
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne,
+                       ReleasesPendingTaskAfterFulfilling) {
+  SetMetricsConsent(true);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(GetHatsService()->LaunchDelayedSurveyForWebContents(
+      kHatsSurveyTriggerSatisfaction, web_contents, 0));
+  WaitForSurveyStatusCallback();
+  EXPECT_FALSE(GetHatsService()->HasPendingTasks());
+}
+
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne,
+                       ReleasesPendingTaskAfterNoShow) {
+  SetMetricsConsent(true);
+  SetTestSurveyChecker(HatsSurveyStatusChecker::Status::kUnreachable);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(GetHatsService()->LaunchDelayedSurveyForWebContents(
+      kHatsSurveyTriggerSatisfaction, web_contents, 0));
+  WaitForSurveyStatusCallback();
+  EXPECT_FALSE(GetHatsService()->HasPendingTasks());
+}
+
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, VisibleWebContentsShow) {
+  SetMetricsConsent(true);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GetHatsService()->LaunchDelayedSurveyForWebContents(
+      kHatsSurveyTriggerSatisfaction, web_contents, 0);
+  WaitForSurveyStatusCallback();
+  EXPECT_TRUE(HatsBubbleShown());
+}
+
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, InvisibleWebContentsNoShow) {
+  SetMetricsConsent(true);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GetHatsService()->LaunchDelayedSurveyForWebContents(
+      kHatsSurveyTriggerSatisfaction, web_contents, 0);
+  chrome::AddTabAt(browser(), GURL(), -1, true);
+  EXPECT_FALSE(HatsBubbleShown());
 }
 
 IN_PROC_BROWSER_TEST_F(HatsServiceImprovedCookieControlsEnabled,

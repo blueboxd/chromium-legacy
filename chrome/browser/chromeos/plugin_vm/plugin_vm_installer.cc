@@ -40,6 +40,26 @@ chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
 }
 
+constexpr char kIsoSignature[] = "CD001";
+constexpr int64_t kIsoOffsets[] = {0x8001, 0x8801, 0x9001};
+
+bool IsIsoImage(const base::FilePath& image) {
+  base::File file(image, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid()) {
+    LOG(ERROR) << "Failed to open " << image.value();
+    return false;
+  }
+
+  std::vector<uint8_t> data(strlen(kIsoSignature));
+  for (auto offset : kIsoOffsets) {
+    if (file.ReadAndCheck(offset, data) &&
+        std::string(data.begin(), data.end()) == kIsoSignature) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 namespace plugin_vm {
@@ -244,8 +264,8 @@ void PluginVmInstaller::OnDownloadProgressUpdated(uint64_t bytes_downloaded,
 
 void PluginVmInstaller::OnDownloadCompleted(
     const download::CompletionInfo& info) {
-  downloaded_plugin_vm_image_archive_ = info.path;
-  downloaded_plugin_vm_image_size_ = info.bytes_downloaded;
+  downloaded_image_ = info.path;
+  downloaded_image_size_ = info.bytes_downloaded;
   current_download_guid_.clear();
 
   if (!VerifyDownload(info.hash256)) {
@@ -264,7 +284,7 @@ void PluginVmInstaller::OnDownloadCompleted(
 void PluginVmInstaller::OnDownloadCancelled() {
   DCHECK_EQ(state_, State::DOWNLOAD_CANCELLED);
 
-  RemoveTemporaryPluginVmImageArchiveIfExists();
+  RemoveTemporaryImageIfExists();
   current_download_guid_.clear();
   if (using_drive_download_service_) {
     drive_download_service_->ResetState();
@@ -278,7 +298,7 @@ void PluginVmInstaller::OnDownloadCancelled() {
 
 void PluginVmInstaller::OnDownloadFailed(FailureReason reason) {
   state_ = State::DOWNLOAD_FAILED;
-  RemoveTemporaryPluginVmImageArchiveIfExists();
+  RemoveTemporaryImageIfExists();
   current_download_guid_.clear();
 
   if (using_drive_download_service_) {
@@ -294,6 +314,20 @@ void PluginVmInstaller::StartImport() {
   DCHECK_EQ(state_, State::DOWNLOADING);
   state_ = State::IMPORTING;
 
+  base::PostTaskAndReply(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+      base::BindOnce(&PluginVmInstaller::DetectImageType,
+                     base::Unretained(this)),
+      base::BindOnce(&PluginVmInstaller::OnImageTypeDetected,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PluginVmInstaller::DetectImageType() {
+  creating_new_vm_ = IsIsoImage(downloaded_image_);
+}
+
+void PluginVmInstaller::OnImageTypeDetected() {
   VLOG(1) << "Starting PluginVm dispatcher service";
   chromeos::DBusThreadManager::Get()
       ->GetDebugDaemonClient()
@@ -341,15 +375,14 @@ base::Optional<base::ScopedFD> PluginVmInstaller::PrepareFD() {
   if (state_ == State::IMPORT_CANCELLED || state_ == State::NOT_STARTED)
     return base::nullopt;
 
-  base::File file(downloaded_plugin_vm_image_archive_,
+  base::File file(downloaded_image_,
                   base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid()) {
-    LOG(ERROR) << "Failed to open "
-               << downloaded_plugin_vm_image_archive_.value();
+    LOG(ERROR) << "Failed to open " << downloaded_image_.value();
     return base::nullopt;
   }
-  base::ScopedFD fd(file.TakePlatformFile());
-  return fd;
+
+  return base::ScopedFD(file.TakePlatformFile());
 }
 
 void PluginVmInstaller::OnFDPrepared(base::Optional<base::ScopedFD> maybeFd) {
@@ -358,37 +391,58 @@ void PluginVmInstaller::OnFDPrepared(base::Optional<base::ScopedFD> maybeFd) {
     return;
 
   if (!maybeFd.has_value()) {
-    LOG(ERROR) << "Could not open downloaded image archive";
+    LOG(ERROR) << "Could not open downloaded image";
     OnImported(FailureReason::COULD_NOT_OPEN_IMAGE);
     return;
   }
 
-  vm_tools::concierge::ImportDiskImageRequest request;
-  request.set_cryptohome_id(
-      chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_));
-  request.set_disk_path(kPluginVmName);
-  request.set_storage_location(
-      vm_tools::concierge::STORAGE_CRYPTOHOME_PLUGINVM);
-  request.set_source_size(downloaded_plugin_vm_image_size_);
+  base::ScopedFD fd(std::move(maybeFd.value()));
 
-  VLOG(1) << "Making call to concierge to import disk image";
+  if (creating_new_vm_) {
+    vm_tools::concierge::CreateDiskImageRequest request;
+    request.set_cryptohome_id(
+        chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_));
+    request.set_disk_path(kPluginVmName);
+    request.set_storage_location(
+        vm_tools::concierge::STORAGE_CRYPTOHOME_PLUGINVM);
+    request.set_source_size(downloaded_image_size_);
 
-  GetConciergeClient()->ImportDiskImage(
-      std::move(maybeFd.value()), request,
-      base::BindOnce(&PluginVmInstaller::OnImportDiskImage,
-                     weak_ptr_factory_.GetWeakPtr()));
+    VLOG(1) << "Making call to concierge to set up VM from an ISO";
+
+    GetConciergeClient()->CreateDiskImageWithFd(
+        std::move(fd), request,
+        base::BindOnce(&PluginVmInstaller::OnImportDiskImage<
+                           vm_tools::concierge::CreateDiskImageResponse>,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    vm_tools::concierge::ImportDiskImageRequest request;
+    request.set_cryptohome_id(
+        chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_));
+    request.set_disk_path(kPluginVmName);
+    request.set_storage_location(
+        vm_tools::concierge::STORAGE_CRYPTOHOME_PLUGINVM);
+    request.set_source_size(downloaded_image_size_);
+
+    VLOG(1) << "Making call to concierge to import disk image";
+
+    GetConciergeClient()->ImportDiskImage(
+        std::move(fd), request,
+        base::BindOnce(&PluginVmInstaller::OnImportDiskImage<
+                           vm_tools::concierge::ImportDiskImageResponse>,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
-void PluginVmInstaller::OnImportDiskImage(
-    base::Optional<vm_tools::concierge::ImportDiskImageResponse> reply) {
+template <typename ReplyType>
+void PluginVmInstaller::OnImportDiskImage(base::Optional<ReplyType> reply) {
   if (!reply.has_value()) {
-    LOG(ERROR) << "Could not retrieve response from ImportDiskImage call to "
-               << "concierge";
+    LOG(ERROR) << "Could not retrieve response from Create/ImportDiskImage "
+               << "call to concierge";
     OnImported(FailureReason::INVALID_IMPORT_RESPONSE);
     return;
   }
 
-  vm_tools::concierge::ImportDiskImageResponse response = reply.value();
+  ReplyType response = reply.value();
 
   // TODO(https://crbug.com/966397): handle cases where this jumps straight to
   // completed?
@@ -402,7 +456,7 @@ void PluginVmInstaller::OnImportDiskImage(
     return;
   }
 
-  VLOG(1) << "Disk image import is now in progress";
+  VLOG(1) << "Disk image creation/import is now in progress";
   import_start_tick_ = base::TimeTicks::Now();
   current_import_command_uuid_ = response.command_uuid();
   // Image in progress. Waiting for progress signals...
@@ -474,11 +528,14 @@ void PluginVmInstaller::OnFinalDiskImageStatus(
 void PluginVmInstaller::OnImported(
     base::Optional<FailureReason> failure_reason) {
   GetConciergeClient()->RemoveDiskImageObserver(this);
-  RemoveTemporaryPluginVmImageArchiveIfExists();
+  RemoveTemporaryImageIfExists();
   current_import_command_uuid_.clear();
 
   if (failure_reason) {
-    LOG(ERROR) << "Image import failed";
+    if (creating_new_vm_)
+      LOG(ERROR) << "New VM creation failed";
+    else
+      LOG(ERROR) << "Image import failed";
     state_ = State::IMPORT_FAILED;
     if (observer_) {
       observer_->OnImportFailed(*failure_reason);
@@ -489,8 +546,12 @@ void PluginVmInstaller::OnImported(
 
   profile_->GetPrefs()->SetBoolean(plugin_vm::prefs::kPluginVmImageExists,
                                    true);
-  if (observer_)
-    observer_->OnImported();
+  if (observer_) {
+    if (creating_new_vm_)
+      observer_->OnCreated();
+    else
+      observer_->OnImported();
+  }
 
   state_ = State::CONFIGURED;
 }
@@ -511,7 +572,7 @@ void PluginVmInstaller::OnImportDiskImageCancelled(
     base::Optional<vm_tools::concierge::CancelDiskImageResponse> reply) {
   DCHECK_EQ(state_, State::IMPORT_CANCELLED);
 
-  RemoveTemporaryPluginVmImageArchiveIfExists();
+  RemoveTemporaryImageIfExists();
 
   // TODO(https://crbug.com/966392): Handle unsuccessful PluginVm image
   // importing cancellation.
@@ -547,9 +608,9 @@ void PluginVmInstaller::SetDownloadServiceForTesting(
   download_service_ = download_service;
 }
 
-void PluginVmInstaller::SetDownloadedPluginVmImageArchiveForTesting(
-    const base::FilePath& downloaded_plugin_vm_image_archive) {
-  downloaded_plugin_vm_image_archive_ = downloaded_plugin_vm_image_archive;
+void PluginVmInstaller::SetDownloadedImageForTesting(
+    const base::FilePath& downloaded_image) {
+  downloaded_image_ = downloaded_image;
 }
 
 std::string PluginVmInstaller::GetCurrentDownloadGuidForTesting() {
@@ -662,33 +723,32 @@ bool PluginVmInstaller::VerifyDownload(
                                           downloaded_archive_hash);
 }
 
-void PluginVmInstaller::RemoveTemporaryPluginVmImageArchiveIfExists() {
+void PluginVmInstaller::RemoveTemporaryImageIfExists() {
   if (using_drive_download_service_) {
-    drive_download_service_->RemoveTemporaryArchive(base::BindOnce(
-        &PluginVmInstaller::OnTemporaryPluginVmImageArchiveRemoved,
-        weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    if (!downloaded_plugin_vm_image_archive_.empty()) {
-      base::ThreadPool::PostTaskAndReplyWithResult(
-          FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-          base::BindOnce(&base::DeleteFile, downloaded_plugin_vm_image_archive_,
-                         false /* recursive */),
-          base::BindOnce(
-              &PluginVmInstaller::OnTemporaryPluginVmImageArchiveRemoved,
-              weak_ptr_factory_.GetWeakPtr()));
-    }
+    drive_download_service_->RemoveTemporaryArchive(
+        base::BindOnce(&PluginVmInstaller::OnTemporaryImageRemoved,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else if (!downloaded_image_.empty()) {
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+         base::MayBlock()},
+        base::BindOnce(&base::DeleteFile, downloaded_image_,
+                       false /* recursive */),
+        base::BindOnce(&PluginVmInstaller::OnTemporaryImageRemoved,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
-void PluginVmInstaller::OnTemporaryPluginVmImageArchiveRemoved(bool success) {
+void PluginVmInstaller::OnTemporaryImageRemoved(bool success) {
   if (!success) {
-    LOG(ERROR) << "Downloaded PluginVm image archive located in "
-               << downloaded_plugin_vm_image_archive_.value()
-               << " failed to be deleted";
+    LOG(ERROR) << "Downloaded PluginVm image located in "
+               << downloaded_image_.value() << " failed to be deleted";
     return;
   }
-  downloaded_plugin_vm_image_size_ = -1;
-  downloaded_plugin_vm_image_archive_.clear();
+  downloaded_image_size_ = -1;
+  downloaded_image_.clear();
+  creating_new_vm_ = false;
 }
 
 }  // namespace plugin_vm

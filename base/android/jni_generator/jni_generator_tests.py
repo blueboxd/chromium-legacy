@@ -818,7 +818,30 @@ scooby doo
           always_mangle=False)
       self.fail('Expected a ParseError')
     except jni_generator.ParseError as e:
-      self.assertEqual(('@CalledByNative', 'scooby doo'), e.context_lines)
+      self.assertEqual(('', '@CalledByNative', 'scooby doo'), e.context_lines)
+
+  def testCalledByNativeJavaTestImportErrors(self):
+    # Using banned imports
+    try:
+      jni_params = jni_generator.JniParams('')
+      jni_generator.ExtractCalledByNatives(
+          jni_params,
+          """
+import org.junit.Rule;
+
+class MyClass {
+    @Rule
+    public JniMocker mocker = new JniMocker();
+
+    @CalledByNativeJavaTest
+    public void testStuff() {}
+}
+""",
+          always_mangle=False,
+          feature_list_file=_FeatureListFile())
+      self.fail('Expected a ParseError')
+    except jni_generator.ParseError as e:
+      self.assertEqual(('', 'import org.junit.Rule'), e.context_lines)
 
   def testCalledByNativeJavaTestFeatureParseErrors(self):
     # Using banned Features.Enable/Disable
@@ -838,7 +861,7 @@ class MyClass {
       self.fail('Expected a ParseError')
     except jni_generator.ParseError as e:
       self.assertEqual(
-          ('Features.Disable({ChromeFeatureList.SOME_FEATURE})\n    ', ),
+          ('', 'Features.Disable({ChromeFeatureList.SOME_FEATURE})\n    '),
           e.context_lines)
 
     # Using NativeJavaTestFeatures outside of a test.
@@ -856,8 +879,11 @@ public void testNotActuallyATest() {}
           feature_list_file=_FeatureListFile())
       self.fail('Expected a ParseError')
     except jni_generator.ParseError as e:
-      self.assertEqual(('@CalledByNative @NativeJavaTestFeatures.Enable('
-                        'TestFeatureList.MY_FEATURE) ', ), e.context_lines)
+      self.assertEqual((
+          '',
+          '@CalledByNative @NativeJavaTestFeatures.Enable('
+          'TestFeatureList.MY_FEATURE) ',
+      ), e.context_lines)
 
     # Not specifying a feature_list_file.
     try:

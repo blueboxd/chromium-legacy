@@ -727,13 +727,10 @@ class UDPProxyImpl : public UDPProxy {
       result = net::ERR_INVALID_ARGUMENT;
     } else {
       VLOG(1) << "Destination:" << destination.ToString();
-      result = socket_->SendTo(buf.get(),
-                               static_cast<int>(buf_size),
-                               destination,
-                               base::Bind(&UDPProxyImpl::AllowWrite,
-                                          weak_factory_.GetWeakPtr(),
-                                          buf,
-                                          base::Passed(&packet)));
+      result = socket_->SendTo(
+          buf.get(), static_cast<int>(buf_size), destination,
+          base::BindOnce(&UDPProxyImpl::AllowWrite, weak_factory_.GetWeakPtr(),
+                         buf, base::Passed(&packet)));
     }
     if (result == net::ERR_IO_PENDING) {
       blocked_ = true;
@@ -804,12 +801,10 @@ class UDPProxyImpl : public UDPProxy {
       packet_.reset(new Packet(kMaxPacketSize));
       auto recv_buf = base::MakeRefCounted<net::WrappedIOBuffer>(
           reinterpret_cast<char*>(&packet_->front()));
-      int len = socket_->RecvFrom(
-          recv_buf.get(),
-          kMaxPacketSize,
-          &recv_address_,
-          base::Bind(
-              &UDPProxyImpl::ReadCallback, base::Unretained(this), recv_buf));
+      int len =
+          socket_->RecvFrom(recv_buf.get(), kMaxPacketSize, &recv_address_,
+                            base::BindOnce(&UDPProxyImpl::ReadCallback,
+                                           base::Unretained(this), recv_buf));
       if (len == net::ERR_IO_PENDING)
         break;
       ProcessPacket(recv_buf, len);

@@ -250,6 +250,7 @@ enum class SubmittedFormFrame {
 enum AccessPasswordInSettingsEvent {
   ACCESS_PASSWORD_VIEWED = 0,
   ACCESS_PASSWORD_COPIED = 1,
+  ACCESS_PASSWORD_EDITED = 2,
   ACCESS_PASSWORD_COUNT
 };
 

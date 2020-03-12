@@ -71,9 +71,9 @@ class DualBufferFrameConsumerTest : public testing::Test {
 
 void DualBufferFrameConsumerTest::SetUp() {
   consumer_.reset(new DualBufferFrameConsumer(
-      base::Bind(&DualBufferFrameConsumerTest::OnFrameReceived,
-                 base::Unretained(this)), nullptr,
-                 protocol::FrameConsumer::FORMAT_RGBA));
+      base::BindRepeating(&DualBufferFrameConsumerTest::OnFrameReceived,
+                          base::Unretained(this)),
+      nullptr, protocol::FrameConsumer::FORMAT_RGBA));
 }
 
 void DualBufferFrameConsumerTest::OnFrameReceived(

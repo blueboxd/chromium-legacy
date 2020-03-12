@@ -36,6 +36,8 @@
 #include "components/google/core/common/google_util.h"
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/form_parsing/form_parser.h"
+#include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -72,6 +74,8 @@
 #include "url/url_util.h"
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #endif
 
@@ -352,6 +356,7 @@ bool ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
   bool enable_warning_for_non_sync_users = base::FeatureList::IsEnabled(
       safe_browsing::kPasswordProtectionForSignedInUsers);
   DCHECK(password_type == PasswordType::PRIMARY_ACCOUNT_PASSWORD ||
+         password_type == PasswordType::SAVED_PASSWORD ||
          (enable_warning_for_non_sync_users &&
           password_type == PasswordType::OTHER_GAIA_PASSWORD));
   // Otherwise, checks if there's any unhandled sync password reuses matches
@@ -912,37 +917,11 @@ void ChromePasswordProtectionService::HandleUserActionOnModalWarning(
   const Origin origin = Origin::Create(web_contents->GetLastCommittedURL());
   int64_t navigation_id =
       GetNavigationIDFromPrefsByOrigin(profile_->GetPrefs(), origin);
+
   if (action == WarningAction::CHANGE_PASSWORD) {
-    if (password_type.is_account_syncing()) {
-      MaybeLogPasswordReuseDialogInteraction(
-          navigation_id, PasswordReuseDialogInteraction::WARNING_ACTION_TAKEN);
-    } else {
-      // |outcome| is only recorded as succeeded or response_already_cached.
-      MaybeLogPasswordReuseLookupResultWithVerdict(
-          web_contents,
-          password_type.account_type() ==
-                  ReusedPasswordAccountType::SAVED_PASSWORD
-              ? PasswordType::SAVED_PASSWORD
-              : PasswordType::OTHER_GAIA_PASSWORD,
-          outcome == RequestOutcome::SUCCEEDED
-              ? PasswordReuseLookup::REQUEST_SUCCESS
-              : PasswordReuseLookup::CACHE_HIT,
-          GetVerdictToLogFromResponse(verdict_type), verdict_token);
-    }
-    // Directly open enterprise change password page for enterprise password
-    // reuses.
-    if (password_type.account_type() ==
-        ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
-      OpenUrl(web_contents, GetEnterpriseChangePasswordURL(),
-              content::Referrer(),
-              /*in_new_tab=*/true);
-      web_contents_with_unhandled_enterprise_reuses_.erase(web_contents);
-    } else if (password_type.account_type() !=
-               ReusedPasswordAccountType::SAVED_PASSWORD) {
-      // Opens accounts.google.com in a new tab.
-      OpenUrl(web_contents, GetDefaultChangePasswordURL(), content::Referrer(),
-              /*in_new_tab=*/true);
-    }
+    LogDialogMetricsOnChangePassword(web_contents, password_type, navigation_id,
+                                     outcome, verdict_type, verdict_token);
+    OpenChangePasswordUrl(web_contents, password_type);
   } else if (action == WarningAction::IGNORE_WARNING &&
              password_type.is_account_syncing()) {
     // No need to change state.
@@ -960,6 +939,53 @@ void ChromePasswordProtectionService::HandleUserActionOnModalWarning(
       /*did_proceed=*/action == WarningAction::CHANGE_PASSWORD);
 }
 
+void ChromePasswordProtectionService::LogDialogMetricsOnChangePassword(
+    content::WebContents* web_contents,
+    ReusedPasswordAccountType password_type,
+    int64_t navigation_id,
+    RequestOutcome outcome,
+    LoginReputationClientResponse::VerdictType verdict_type,
+    const std::string& verdict_token) {
+  if (password_type.is_account_syncing() ||
+      password_type.account_type() ==
+          ReusedPasswordAccountType::SAVED_PASSWORD) {
+    MaybeLogPasswordReuseDialogInteraction(
+        navigation_id, PasswordReuseDialogInteraction::WARNING_ACTION_TAKEN);
+  } else {
+    // |outcome| is only recorded as succeeded or response_already_cached.
+    MaybeLogPasswordReuseLookupResultWithVerdict(
+        web_contents, PasswordType::OTHER_GAIA_PASSWORD,
+        outcome == RequestOutcome::SUCCEEDED
+            ? PasswordReuseLookup::REQUEST_SUCCESS
+            : PasswordReuseLookup::CACHE_HIT,
+        GetVerdictToLogFromResponse(verdict_type), verdict_token);
+  }
+}
+
+void ChromePasswordProtectionService::OpenChangePasswordUrl(
+    content::WebContents* web_contents,
+    ReusedPasswordAccountType password_type) {
+  if (password_type.account_type() ==
+      ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
+    // Directly open enterprise change password page for enterprise password
+    // reuses.
+    OpenUrl(web_contents, GetEnterpriseChangePasswordURL(), content::Referrer(),
+            /*in_new_tab=*/true);
+    web_contents_with_unhandled_enterprise_reuses_.erase(web_contents);
+  } else if (password_type.account_type() !=
+             ReusedPasswordAccountType::SAVED_PASSWORD) {
+    // Opens accounts.google.com in a new tab.
+    OpenUrl(web_contents, GetDefaultChangePasswordURL(), content::Referrer(),
+            /*in_new_tab=*/true);
+  } else if (base::FeatureList::IsEnabled(
+                 password_manager::features::kPasswordCheck)) {
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+    // Opens chrome://settings/passwords/check in a new tab.
+    chrome::ShowPasswordCheck(chrome::FindBrowserWithWebContents(web_contents));
+#endif
+  }
+}
+
 void ChromePasswordProtectionService::HandleUserActionOnPageInfo(
     content::WebContents* web_contents,
     ReusedPasswordAccountType password_type,
@@ -968,8 +994,8 @@ void ChromePasswordProtectionService::HandleUserActionOnPageInfo(
   const Origin origin = Origin::Create(url);
 
   if (action == WarningAction::CHANGE_PASSWORD) {
-    // Directly open enterprise change password page in a new tab for enterprise
-    // reuses.
+    // Directly open enterprise change password page in a new tab for
+    // enterprise reuses.
     if (password_type.account_type() ==
         ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
       OpenUrl(web_contents, GetEnterpriseChangePasswordURL(),
@@ -1014,10 +1040,10 @@ void ChromePasswordProtectionService::HandleUserActionOnSettings(
 
   if (password_type.is_account_syncing()) {
     // Gets the first navigation_id from
-    // |kSafeBrowsingUnhandledGaiaPasswordReuses|. If there's only one unhandled
-    // reuse, getting the first is correct. If there are more than one, we have
-    // no way to figure out which event the user is responding to, so just pick
-    // the first one.
+    // |kSafeBrowsingUnhandledGaiaPasswordReuses|. If there's only one
+    // unhandled reuse, getting the first is correct. If there are more than
+    // one, we have no way to figure out which event the user is responding
+    // to, so just pick the first one.
     MaybeLogPasswordReuseDialogInteraction(
         GetFirstNavIdOrZero(profile_->GetPrefs()),
         PasswordReuseDialogInteraction::WARNING_ACTION_TAKEN_ON_SETTINGS);
@@ -1104,8 +1130,8 @@ ChromePasswordProtectionService::GetPlaceholdersForSavedPasswordWarningText()
   }
 
   // If there are less than 3 saved default domains, check the saved
-  //  password domains to see if there are more that can be added to the warning
-  //  text.
+  //  password domains to see if there are more that can be added to the
+  //  warning text.
   int domains_idx = placeholders.size();
   for (size_t idx = 0; idx < matching_domains.size() && domains_idx < 3;
        idx++) {
@@ -1133,7 +1159,14 @@ ChromePasswordProtectionService::GetWarningDetailTextForSavedPasswords(
       placeholders.size() == 0) {
     return l10n_util::GetStringUTF16(
         IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED);
-  } else if (placeholders.size() == 1) {
+  }
+
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordCheck)) {
+    return GetWarningDetailTextToCheckSavedPasswords(placeholder_offsets);
+  }
+
+  if (placeholders.size() == 1) {
     return l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_1_DOMAIN, placeholders,
         placeholder_offsets);
@@ -1144,6 +1177,26 @@ ChromePasswordProtectionService::GetWarningDetailTextForSavedPasswords(
   } else {
     return l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_3_DOMAINS, placeholders,
+        placeholder_offsets);
+  }
+}
+
+base::string16
+ChromePasswordProtectionService::GetWarningDetailTextToCheckSavedPasswords(
+    std::vector<size_t>* placeholder_offsets) const {
+  std::vector<base::string16> placeholders =
+      GetPlaceholdersForSavedPasswordWarningText();
+  if (placeholders.size() == 1) {
+    return l10n_util::GetStringFUTF16(
+        IDS_PAGE_INFO_CHECK_PASSWORD_DETAILS_SAVED_1_DOMAIN, placeholders,
+        placeholder_offsets);
+  } else if (placeholders.size() == 2) {
+    return l10n_util::GetStringFUTF16(
+        IDS_PAGE_INFO_CHECK_PASSWORD_DETAILS_SAVED_2_DOMAIN, placeholders,
+        placeholder_offsets);
+  } else {
+    return l10n_util::GetStringFUTF16(
+        IDS_PAGE_INFO_CHECK_PASSWORD_DETAILS_SAVED_3_DOMAIN, placeholders,
         placeholder_offsets);
   }
 }

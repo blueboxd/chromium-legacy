@@ -223,6 +223,35 @@ bool Compare(UserModel* user_model,
   return true;
 }
 
+bool IntegerSum(UserModel* user_model,
+                const std::string& result_model_identifier,
+                const IntegerSumProto& proto) {
+  auto value_a = user_model->GetValue(proto.model_identifier_a());
+  if (!value_a.has_value()) {
+    DVLOG(2) << "Error evaluating " << __func__ << ": "
+             << proto.model_identifier_a() << " not found in model";
+    return false;
+  }
+  auto value_b = user_model->GetValue(proto.model_identifier_b());
+  if (!value_b.has_value()) {
+    DVLOG(2) << "Error evaluating " << __func__ << ": "
+             << proto.model_identifier_b() << " not found in model";
+    return false;
+  }
+
+  if (!AreAllValuesOfSize({*value_a, *value_b}, 1) ||
+      !AreAllValuesOfType({*value_a, *value_b}, ValueProto::kInts)) {
+    DVLOG(2) << "Error evaluating " << __func__ << ": "
+             << "all input values must be single integers";
+    return false;
+  }
+
+  user_model->SetValue(
+      result_model_identifier,
+      SimpleValue(value_a->ints().values(0) + value_b->ints().values(0)));
+  return true;
+}
+
 }  // namespace
 
 base::WeakPtr<BasicInteractions> BasicInteractions::GetWeakPtr() {
@@ -285,6 +314,15 @@ bool BasicInteractions::ComputeValue(const ComputeValueProto& proto) {
     case ComputeValueProto::kComparison:
       return Compare(delegate_->GetUserModel(), proto.result_model_identifier(),
                      proto.comparison());
+    case ComputeValueProto::kIntegerSum:
+      if (proto.integer_sum().model_identifier_a().empty() ||
+          proto.integer_sum().model_identifier_b().empty()) {
+        DVLOG(2) << "Error computing ComputeValue::IntegerSum: "
+                    "model_identifier_a or model_identifier_b not specified";
+        return false;
+      }
+      return IntegerSum(delegate_->GetUserModel(),
+                        proto.result_model_identifier(), proto.integer_sum());
     case ComputeValueProto::KIND_NOT_SET:
       DVLOG(2) << "Error computing value: kind not set";
       return false;

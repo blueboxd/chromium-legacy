@@ -122,7 +122,7 @@ TEST_F(NGPhysicalBoxFragmentTest, DISABLED_NormalLegacyLayoutRoot) {
   EXPECT_TRUE(fragment->IsBox());
   EXPECT_EQ(NGPhysicalFragment::kNormalBox, fragment->BoxType());
   EXPECT_TRUE(fragment->IsLegacyLayoutRoot());
-  EXPECT_TRUE(fragment->IsBlockFormattingContextRoot());
+  EXPECT_TRUE(fragment->IsFormattingContextRoot());
 }
 
 // TODO(editing-dev): Once LayoutNG supports editing, we should change this
@@ -136,7 +136,7 @@ TEST_F(NGPhysicalBoxFragmentTest, DISABLED_FloatLegacyLayoutRoot) {
   EXPECT_TRUE(fragment->IsBox());
   EXPECT_EQ(NGPhysicalFragment::kFloating, fragment->BoxType());
   EXPECT_TRUE(fragment->IsLegacyLayoutRoot());
-  EXPECT_TRUE(fragment->IsBlockFormattingContextRoot());
+  EXPECT_TRUE(fragment->IsFormattingContextRoot());
 }
 
 // TODO(editing-dev): Once LayoutNG supports editing, we should change this
@@ -152,7 +152,7 @@ TEST_F(NGPhysicalBoxFragmentTest, DISABLED_InlineBlockLegacyLayoutRoot) {
   EXPECT_TRUE(fragment->IsBox());
   EXPECT_EQ(NGPhysicalFragment::kAtomicInline, fragment->BoxType());
   EXPECT_TRUE(fragment->IsLegacyLayoutRoot());
-  EXPECT_TRUE(fragment->IsBlockFormattingContextRoot());
+  EXPECT_TRUE(fragment->IsFormattingContextRoot());
 }
 
 // TODO(editing-dev): Once LayoutNG supports editing, we should change this
@@ -170,7 +170,7 @@ TEST_F(NGPhysicalBoxFragmentTest,
   EXPECT_TRUE(fragment->IsBox());
   EXPECT_EQ(NGPhysicalFragment::kOutOfFlowPositioned, fragment->BoxType());
   EXPECT_TRUE(fragment->IsLegacyLayoutRoot());
-  EXPECT_TRUE(fragment->IsBlockFormattingContextRoot());
+  EXPECT_TRUE(fragment->IsFormattingContextRoot());
 }
 
 TEST_F(NGPhysicalBoxFragmentTest, ReplacedBlock) {

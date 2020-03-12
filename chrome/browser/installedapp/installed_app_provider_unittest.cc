@@ -4,22 +4,22 @@
 
 #include "base/android/jni_android.h"
 #include "chrome/android/native_j_unittests_jni_headers/InstalledAppProviderTest_jni.h"
-#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::android::AttachCurrentThread;
 
-// TODO(crbug.com/1058790): Reduce the test suite flakiness and re-enable the
-// tests.
-class DISABLED_InstalledAppProviderTest : public ::testing::Test {
+class InstalledAppProviderTest : public ::testing::Test {
  public:
-  DISABLED_InstalledAppProviderTest()
-      : task_environment_(content::BrowserTaskEnvironment::MainThreadType::UI),
-        j_test_(
+  InstalledAppProviderTest()
+      : j_test_(
             Java_InstalledAppProviderTest_Constructor(AttachCurrentThread())) {}
 
   void SetUp() override {
     Java_InstalledAppProviderTest_setUp(AttachCurrentThread(), j_test_);
+  }
+
+  void TearDown() override {
+    Java_InstalledAppProviderTest_tearDown(AttachCurrentThread(), j_test_);
   }
 
   const base::android::ScopedJavaGlobalRef<jobject>& j_test() {
@@ -27,8 +27,7 @@ class DISABLED_InstalledAppProviderTest : public ::testing::Test {
   }
 
  private:
-  content::BrowserTaskEnvironment task_environment_;
   base::android::ScopedJavaGlobalRef<jobject> j_test_;
 };
 
-JAVA_TESTS(DISABLED_InstalledAppProviderTest, j_test())
+JAVA_TESTS(InstalledAppProviderTest, j_test())

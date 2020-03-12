@@ -149,6 +149,9 @@ void LocalNetworkCollectorImpl::StartGetNetworkDetails(
   proto.set_hex_ssid(network->type_state->get_wifi()->hex_ssid);
   proto.set_security_type(
       SecurityTypeProtoFromMojo(network->type_state->get_wifi()->security));
+  base::TimeDelta timestamp =
+      network_metadata_store_->GetLastConnectedTimestamp(network->guid);
+  proto.set_last_update_timestamp(timestamp.InMilliseconds());
   cros_network_config_->GetManagedProperties(
       network->guid,
       base::BindOnce(&LocalNetworkCollectorImpl::OnGetManagedPropertiesResult,

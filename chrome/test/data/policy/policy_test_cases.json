@@ -4847,18 +4847,6 @@
     ]
   },
 
-  "DeviceChromeVariations": {
-    "os": ["chromeos"],
-    "policy_pref_mapping_test": [
-      {
-        "policies": {
-          "DeviceChromeVariations": 1
-        },
-        "prefs": { "variations_restrictions_by_policy": { "local_state": true } }
-      }
-    ]
-  },
-
   "DeviceDisplayResolution": {
     "os": ["chromeos"],
     "can_be_recommended": false,
@@ -5068,7 +5056,7 @@
   "DeviceLoginScreenInputMethods": {},
 
   "DeviceLoginScreenSystemInfoEnforced": {},
-	
+
   "DeviceChromeVariations": {},
 
   "DeviceShowNumericKeyboardForPassword": {},
@@ -6986,15 +6974,15 @@
     ]
   },
   "AdvancedProtectionDeepScanningEnabled": {
-    "note": "This policy was replaced with AdvancedProtectionExtraSecurityAllowed in M82"
+    "note": "This policy was replaced with AdvancedProtectionAllowed in M82"
   },
-  "AdvancedProtectionExtraSecurityAllowed": {
+  "AdvancedProtectionAllowed": {
     "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
       {
-        "policies": { "AdvancedProtectionExtraSecurityAllowed": true },
+        "policies": { "AdvancedProtectionAllowed": true },
         "prefs": {
-          "safebrowsing.advanced_protection_extra_security_allowed": {}
+          "safebrowsing.advanced_protection_allowed": {}
         }
       }
     ]

@@ -80,7 +80,7 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
   // and the callback won't be dispatched if |remote_decoder_| is destroyed.
   remote_decoder_->Initialize(
       config, cdm_id,
-      base::Bind(&MojoAudioDecoder::OnInitialized, base::Unretained(this)));
+      base::BindOnce(&MojoAudioDecoder::OnInitialized, base::Unretained(this)));
 }
 
 void MojoAudioDecoder::Decode(scoped_refptr<DecoderBuffer> media_buffer,
@@ -105,9 +105,9 @@ void MojoAudioDecoder::Decode(scoped_refptr<DecoderBuffer> media_buffer,
   DCHECK(!decode_cb_);
   decode_cb_ = decode_cb;
 
-  remote_decoder_->Decode(
-      std::move(buffer),
-      base::Bind(&MojoAudioDecoder::OnDecodeStatus, base::Unretained(this)));
+  remote_decoder_->Decode(std::move(buffer),
+                          base::BindOnce(&MojoAudioDecoder::OnDecodeStatus,
+                                         base::Unretained(this)));
 }
 
 void MojoAudioDecoder::Reset(base::OnceClosure closure) {
@@ -128,7 +128,7 @@ void MojoAudioDecoder::Reset(base::OnceClosure closure) {
   DCHECK(!reset_cb_);
   reset_cb_ = std::move(closure);
   remote_decoder_->Reset(
-      base::Bind(&MojoAudioDecoder::OnResetDone, base::Unretained(this)));
+      base::BindOnce(&MojoAudioDecoder::OnResetDone, base::Unretained(this)));
 }
 
 bool MojoAudioDecoder::NeedsBitstreamConversion() const {
@@ -146,8 +146,8 @@ void MojoAudioDecoder::BindRemoteDecoder() {
 
   // Using base::Unretained(this) is safe because |this| owns |remote_decoder_|,
   // and the error handler can't be invoked once |remote_decoder_| is destroyed.
-  remote_decoder_.set_disconnect_handler(
-      base::Bind(&MojoAudioDecoder::OnConnectionError, base::Unretained(this)));
+  remote_decoder_.set_disconnect_handler(base::BindOnce(
+      &MojoAudioDecoder::OnConnectionError, base::Unretained(this)));
 
   remote_decoder_->Construct(client_receiver_.BindNewEndpointAndPassRemote());
 }

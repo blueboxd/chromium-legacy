@@ -119,7 +119,8 @@ id<GREYMatcher> SkipSigninButton() {
 }
 
 // Dismisses the first run screens.
-- (void)testDismissFirstRun {
+// TODO(crbug.com/1061085): This test is flaky and has timeout.
+- (void)FLAKY_testDismissFirstRun {
   [FirstRunAppInterface showFirstRunUI];
 
   [[EarlGrey selectElementWithMatcher:FirstRunOptInAcceptButton()]

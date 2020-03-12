@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/infobars/core/infobar_feature.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/common/translate_constants.h"
@@ -245,16 +246,18 @@ void TestResponseProvider::GetLanguageResponse(
 @interface TranslateInfobarTestCase : ChromeTestCase
 @end
 
-@implementation TranslateInfobarTestCase
+@implementation TranslateInfobarTestCase {
+#if defined(CHROME_EARL_GREY_1)
+  base::test::ScopedFeatureList _featureList;
+#endif
+}
 
 - (void)setUp {
   [super setUp];
 
-  [[AppLaunchManager sharedManager]
-      ensureAppLaunchedWithFeaturesEnabled:{kIOSInfobarUIReboot,
-                                            kTranslateInfobarMessagesUI}
-                                  disabled:{}
-                            relaunchPolicy:NoForceRelaunchAndResetState];
+#if defined(CHROME_EARL_GREY_1)
+  _featureList.InitAndEnableFeature(kIOSInfobarUIReboot);
+#endif
 
   // Set up the fake URL for the translate script to hit the mock HTTP server.
   GURL translateScriptURL = web::test::HttpServer::MakeUrl(
@@ -267,6 +270,12 @@ void TestResponseProvider::GetLanguageResponse(
 - (void)tearDown {
   [TranslateAppInterface tearDown];
   [super tearDown];
+}
+
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+  config.features_enabled.push_back(kIOSInfobarUIReboot);
+  return config;
 }
 
 #pragma mark - Test Cases

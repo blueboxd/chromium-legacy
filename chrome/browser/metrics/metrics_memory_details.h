@@ -29,8 +29,7 @@ class MetricsMemoryDetails : public MemoryDetails {
   // Updates the global histograms for tracking memory usage.
   void UpdateHistograms();
 
-  void UpdateSiteIsolationMetrics(int all_renderer_count,
-                                  int non_renderer_count);
+  void UpdateSiteIsolationMetrics();
 
   base::OnceClosure callback_;
 

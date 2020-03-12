@@ -193,6 +193,7 @@ class CORE_EXPORT SecurityContext {
     DCHECK_EQ(context_type_, kLocal);
     return secure_context_mode_;
   }
+
   void SetSecureContextModeForTesting(SecureContextMode mode) {
     secure_context_mode_ = mode;
   }

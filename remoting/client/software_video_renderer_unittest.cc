@@ -166,7 +166,7 @@ TEST_F(SoftwareVideoRendererTest, DecodeFrame) {
 
     renderer_->ProcessVideoPacket(
         encoder_.Encode(*test_frames[frame_index]),
-        base::Bind(&SetTrue, &(callback_called[frame_index])));
+        base::BindOnce(&SetTrue, &(callback_called[frame_index])));
   }
 
   for (int frame_index = 0; frame_index < kFrameCount; frame_index++) {

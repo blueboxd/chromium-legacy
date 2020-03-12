@@ -36,7 +36,8 @@ interface ITab {
   boolean setFindInPageCallbackClient(IFindInPageCallbackClient client) = 8;
   void findInPage(in String searchText, boolean forward) = 9;
 
-  void dismissTabModalOverlay() = 10;
+  // And and removed in 82; superseded by dismissTransientUi().
+  // void dismissTabModalOverlay() = 10;
   void dispatchBeforeUnloadAndClose() = 11;
 
   boolean dismissTransientUi() = 12;

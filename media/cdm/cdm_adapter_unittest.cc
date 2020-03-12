@@ -293,10 +293,10 @@ class CdmAdapterTestWithClearKeyCdm : public CdmAdapterTestBase {
     }
 
     std::unique_ptr<SimpleCdmPromise> promise(new CdmCallbackPromise<>(
-        base::Bind(&CdmAdapterTestWithClearKeyCdm::OnResolve,
-                   base::Unretained(this)),
-        base::Bind(&CdmAdapterTestWithClearKeyCdm::OnReject,
-                   base::Unretained(this))));
+        base::BindOnce(&CdmAdapterTestWithClearKeyCdm::OnResolve,
+                       base::Unretained(this)),
+        base::BindOnce(&CdmAdapterTestWithClearKeyCdm::OnReject,
+                       base::Unretained(this))));
     return promise;
   }
 
@@ -313,10 +313,10 @@ class CdmAdapterTestWithClearKeyCdm : public CdmAdapterTestBase {
 
     std::unique_ptr<NewSessionCdmPromise> promise(
         new CdmCallbackPromise<std::string>(
-            base::Bind(&CdmAdapterTestWithClearKeyCdm::OnResolveWithSession,
-                       base::Unretained(this)),
-            base::Bind(&CdmAdapterTestWithClearKeyCdm::OnReject,
-                       base::Unretained(this))));
+            base::BindOnce(&CdmAdapterTestWithClearKeyCdm::OnResolveWithSession,
+                           base::Unretained(this)),
+            base::BindOnce(&CdmAdapterTestWithClearKeyCdm::OnReject,
+                           base::Unretained(this))));
     return promise;
   }
 

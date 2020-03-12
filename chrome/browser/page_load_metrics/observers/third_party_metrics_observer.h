@@ -36,10 +36,10 @@ class ThirdPartyMetricsObserver
                       const GURL& first_party_url,
                       const net::CanonicalCookie& cookie,
                       bool blocked_by_policy) override;
-  void OnDomStorageAccessed(const GURL& url,
-                            const GURL& first_party_url,
-                            bool local,
-                            bool blocked_by_policy) override;
+  void OnStorageAccessed(const GURL& url,
+                         const GURL& first_party_url,
+                         bool blocked_by_policy,
+                         page_load_metrics::StorageType storage_type) override;
   void OnDidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle) override;
   void OnFrameDeleted(content::RenderFrameHost* render_frame_host) override;
@@ -52,7 +52,8 @@ class ThirdPartyMetricsObserver
     kCookieRead,
     kCookieWrite,
     kLocalStorage,
-    kSessionStorage
+    kSessionStorage,
+    kUnknown,
   };
 
   struct AccessedTypes {
@@ -69,6 +70,9 @@ class ThirdPartyMetricsObserver
                                AccessType access_type);
   void RecordMetrics(
       const page_load_metrics::mojom::PageLoadTiming& main_frame_timing);
+
+  AccessType StorageTypeToAccessType(
+      page_load_metrics::StorageType storage_type);
 
   // A map of third parties that have read or written cookies, or have
   // accessed local storage or session storage on this page.

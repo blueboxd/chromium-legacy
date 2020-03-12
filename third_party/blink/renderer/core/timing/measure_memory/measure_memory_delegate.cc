@@ -76,7 +76,7 @@ bool MeasureMemoryDelegate::ShouldMeasure(v8::Local<v8::Context> context) {
 namespace {
 // Helper functions for constructing a memory measurement result.
 
-const Frame* GetFrame(v8::Local<v8::Context> context) {
+const LocalFrame* GetFrame(v8::Local<v8::Context> context) {
   ExecutionContext* execution_context = ExecutionContext::From(context);
   if (!execution_context) {
     // The context was detached. Ignore it.
@@ -86,18 +86,17 @@ const Frame* GetFrame(v8::Local<v8::Context> context) {
   return Document::From(execution_context)->GetFrame();
 }
 
-String GetUrl(const Frame* frame) {
-  // TODO(ulan): Refactor the rest of the code to make the parameter LocalFrame.
-  const LocalFrame* local_frame = To<LocalFrame>(frame);
-  if (local_frame->IsCrossOriginToParentFrame()) {
+String GetUrl(const LocalFrame* frame) {
+  if (frame->IsCrossOriginToParentFrame()) {
     // The function must be called only for the first cross-origin iframe on
     // the path down from the main frame. Thus the parent frame is guaranteed
     // to be the same origin as the main frame.
-    DCHECK(!local_frame->Tree().Parent()->IsCrossOriginToMainFrame());
-    base::Optional<String> url = local_frame->FirstUrlCrossOriginToParent();
+    DCHECK(!frame->Tree().Parent() ||
+           !frame->Tree().Parent()->IsCrossOriginToMainFrame());
+    base::Optional<String> url = frame->FirstUrlCrossOriginToParent();
     return url ? url.value() : "";
   }
-  return local_frame->GetDocument()->Url().GetString();
+  return frame->GetDocument()->Url().GetString();
 }
 
 // To avoid information leaks cross-origin iframes are considered opaque for
@@ -111,9 +110,9 @@ String GetUrl(const Frame* frame) {
 // so the frame corresponding to the current context is returned.
 //
 // The function returns nullptr if the context was detached.
-const Frame* GetAttributionFrame(const Frame* main_frame,
-                                 v8::Local<v8::Context> context) {
-  const Frame* frame = GetFrame(context);
+const LocalFrame* GetAttributionFrame(const LocalFrame* main_frame,
+                                      v8::Local<v8::Context> context) {
+  const LocalFrame* frame = GetFrame(context);
   if (!frame) {
     // The context was detached. Ignore it.
     return nullptr;
@@ -124,12 +123,14 @@ const Frame* GetAttributionFrame(const Frame* main_frame,
     return nullptr;
   }
   // Walk up the tree and find the topmost cross-origin ancestor frame.
-  const Frame* result = frame;
-  frame = frame->Tree().Parent();
+  const LocalFrame* result = frame;
+  // The parent is guaranteed to be LocalFrame because |frame| and
+  // |main_frame| belong to the same JS agent.
+  frame = To<LocalFrame>(frame->Tree().Parent());
   while (frame) {
     if (frame->IsCrossOriginToMainFrame())
       result = frame;
-    frame = frame->Tree().Parent();
+    frame = To<LocalFrame>(frame->Tree().Parent());
   }
   return result;
 }
@@ -137,13 +138,14 @@ const Frame* GetAttributionFrame(const Frame* main_frame,
 // Return per-frame sizes based on the given per-context size.
 // TODO(ulan): Revisit this after Origin Trial and see if the results
 // are precise enough or if we need to additionally group by JS agent.
-HeapHashMap<Member<const Frame>, size_t> GroupByFrame(
-    const Frame* main_frame,
+HeapHashMap<Member<const LocalFrame>, size_t> GroupByFrame(
+    const LocalFrame* main_frame,
     const std::vector<std::pair<v8::Local<v8::Context>, size_t>>&
         context_sizes) {
-  HeapHashMap<Member<const Frame>, size_t> per_frame;
+  HeapHashMap<Member<const LocalFrame>, size_t> per_frame;
   for (const auto& context_size : context_sizes) {
-    const Frame* frame = GetAttributionFrame(main_frame, context_size.first);
+    const LocalFrame* frame =
+        GetAttributionFrame(main_frame, context_size.first);
     if (!frame) {
       // The context was detached. Ignore it.
       continue;
@@ -181,7 +183,7 @@ void MeasureMemoryDelegate::MeasurementComplete(
     return;
   }
   v8::Local<v8::Context> context = context_.NewLocal(isolate_);
-  const Frame* frame = GetFrame(context);
+  const LocalFrame* frame = GetFrame(context);
   if (!frame) {
     // The context was detached in the meantime.
     return;
@@ -195,7 +197,7 @@ void MeasureMemoryDelegate::MeasurementComplete(
   MeasureMemory* result = MeasureMemory::Create();
   result->setBytes(total_size + unattributed_size);
   HeapVector<Member<MeasureMemoryBreakdown>> breakdown;
-  HeapHashMap<Member<const Frame>, size_t> per_frame(
+  HeapHashMap<Member<const LocalFrame>, size_t> per_frame(
       GroupByFrame(frame, context_sizes));
   size_t attributed_size = 0;
   const String kWindow("Window");

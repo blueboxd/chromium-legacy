@@ -80,8 +80,8 @@ class OffloadingVideoDecoderTest : public testing::Test {
   VideoDecoder::InitCB ExpectInitCB(bool success) {
     EXPECT_CALL(*this, InitDone(success))
         .WillOnce(VerifyOn(task_env_.GetMainThreadTaskRunner()));
-    return base::Bind(&OffloadingVideoDecoderTest::InitDone,
-                      base::Unretained(this));
+    return base::BindOnce(&OffloadingVideoDecoderTest::InitDone,
+                          base::Unretained(this));
   }
 
   VideoDecoder::OutputCB ExpectOutputCB() {
@@ -94,8 +94,8 @@ class OffloadingVideoDecoderTest : public testing::Test {
   VideoDecoder::DecodeCB ExpectDecodeCB(DecodeStatus status) {
     EXPECT_CALL(*this, DecodeDone(status))
         .WillOnce(VerifyOn(task_env_.GetMainThreadTaskRunner()));
-    return base::Bind(&OffloadingVideoDecoderTest::DecodeDone,
-                      base::Unretained(this));
+    return base::BindOnce(&OffloadingVideoDecoderTest::DecodeDone,
+                          base::Unretained(this));
   }
 
   base::OnceClosure ExpectResetCB() {

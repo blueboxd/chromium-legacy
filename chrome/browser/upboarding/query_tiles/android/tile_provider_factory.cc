@@ -7,6 +7,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_key.h"
+#include "chrome/browser/upboarding/query_tiles/android/tile_provider_bridge.h"
+#include "chrome/browser/upboarding/query_tiles/tile_service_factory.h"
 
 // Takes a Java Profile and returns a Java TileProvider.
 static base::android::ScopedJavaLocalRef<jobject>
@@ -21,7 +23,7 @@ JNI_TileProviderFactory_GetForProfile(
   if (profile_key == nullptr)
     return base::android::ScopedJavaLocalRef<jobject>();
 
-  // TODO(shaktisahu): Get TileProviderBridge.
-
-  return base::android::ScopedJavaLocalRef<jobject>();
+  upboarding::TileService* tile_service =
+      upboarding::TileServiceFactory::GetInstance()->GetForKey(profile_key);
+  return upboarding::TileProviderBridge::GetBridgeForTileService(tile_service);
 }

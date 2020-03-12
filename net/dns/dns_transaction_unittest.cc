@@ -621,7 +621,8 @@ class DnsTransactionTestBase : public testing::Test {
                                   base::Bind(base::RandInt)),
         base::Bind(&DnsTransactionTestBase::GetNextId, base::Unretained(this)),
         nullptr /* NetLog */);
-    resolve_context_->InvalidateCaches(session_.get());
+    resolve_context_->InvalidateCachesAndPerSessionData(
+        session_.get(), false /* network_change */);
     transaction_factory_ = DnsTransactionFactory::CreateFactory(session_.get());
   }
 
@@ -2514,7 +2515,7 @@ TEST_F(DnsTransactionTestWithMockTime, ProbeUntilSuccess) {
 
   std::unique_ptr<DnsProbeRunner> runner =
       transaction_factory_->CreateDohProbeRunner(resolve_context_.get());
-  runner->Start();
+  runner->Start(false /* network_change */);
 
   // The first probe happens without any delay.
   RunUntilIdle();
@@ -2535,6 +2536,105 @@ TEST_F(DnsTransactionTestWithMockTime, ProbeUntilSuccess) {
               testing::Optional(0u));
 }
 
+// Test that if a probe attempt hangs, additional probes will still run on
+// schedule
+TEST_F(DnsTransactionTestWithMockTime, HungProbe) {
+  ConfigureDohServers(true /* use_post */, 1 /* num_doh_servers */,
+                      false /* make_available */);
+
+  // Create a socket data to first return ERR_IO_PENDING. This will pause the
+  // probe and not return the error until SequencedSocketData::Resume() is
+  // called.
+  auto data = std::make_unique<DnsSocketData>(
+      4, kT4HostName, kT4Qtype, ASYNC, Transport::HTTPS,
+      nullptr /* opt_rdata */, DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+  data->AddReadError(ERR_IO_PENDING, ASYNC);
+  data->AddReadError(ERR_CONNECTION_REFUSED, ASYNC);
+  data->AddResponseData(kT4ResponseDatagram, base::size(kT4ResponseDatagram),
+                        ASYNC);
+  SequencedSocketData* sequenced_socket_data = data->GetProvider();
+  AddSocketData(std::move(data));
+
+  // Add success for second probe.
+  AddQueryAndResponse(4, kT4HostName, kT4Qtype, kT4ResponseDatagram,
+                      base::size(kT4ResponseDatagram), ASYNC, Transport::HTTPS,
+                      nullptr /* opt_rdata */,
+                      DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+
+  std::unique_ptr<DnsProbeRunner> runner =
+      transaction_factory_->CreateDohProbeRunner(resolve_context_.get());
+  runner->Start(false /* network_change */);
+
+  // The first probe starts without any delay, but doesn't finish.
+  RunUntilIdle();
+  EXPECT_FALSE(resolve_context_->GetDohServerAvailability(
+      0u /* doh_server_index */, session_.get()));
+
+  // Second probe succeeds.
+  FastForwardBy(runner->GetDelayUntilNextProbeForTest(0));
+  EXPECT_TRUE(resolve_context_->GetDohServerAvailability(
+      0u /* doh_server_index */, session_.get()));
+
+  // Probe runner self-cancels on next cycle.
+  FastForwardBy(runner->GetDelayUntilNextProbeForTest(0));
+  EXPECT_EQ(runner->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
+
+  // Expect no effect when the hung probe wakes up and fails.
+  sequenced_socket_data->Resume();
+  RunUntilIdle();
+  EXPECT_TRUE(resolve_context_->GetDohServerAvailability(
+      0u /* doh_server_index */, session_.get()));
+  EXPECT_EQ(runner->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
+}
+
+TEST_F(DnsTransactionTestWithMockTime, ProbeMultipleServers) {
+  ConfigureDohServers(true /* use_post */, 2 /* num_doh_servers */,
+                      false /* make_available */);
+  AddQueryAndResponse(4, kT4HostName, kT4Qtype, kT4ResponseDatagram,
+                      base::size(kT4ResponseDatagram), ASYNC, Transport::HTTPS,
+                      nullptr /* opt_rdata */,
+                      DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+  AddQueryAndErrorResponse(4, kT4HostName, kT4Qtype, ERR_CONNECTION_REFUSED,
+                           SYNCHRONOUS, Transport::HTTPS,
+                           nullptr /* opt_rdata */,
+                           DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+  AddQueryAndResponse(4, kT4HostName, kT4Qtype, kT4ResponseDatagram,
+                      base::size(kT4ResponseDatagram), ASYNC, Transport::HTTPS,
+                      nullptr /* opt_rdata */,
+                      DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+
+  ASSERT_FALSE(resolve_context_->GetDohServerAvailability(
+      0u /* doh_server_index */, session_.get()));
+  ASSERT_FALSE(resolve_context_->GetDohServerAvailability(
+      1u /* doh_server_index */, session_.get()));
+
+  std::unique_ptr<DnsProbeRunner> runner =
+      transaction_factory_->CreateDohProbeRunner(resolve_context_.get());
+  runner->Start(true /* network_change */);
+
+  // The first probes happens without any delay and succeeds for only one server
+  RunUntilIdle();
+  EXPECT_TRUE(resolve_context_->GetDohServerAvailability(
+      0u /* doh_server_index */, session_.get()));
+  EXPECT_FALSE(resolve_context_->GetDohServerAvailability(
+      1u /* doh_server_index */, session_.get()));
+
+  // On second round of probing, probes for first server should self-cancel and
+  // second server should become available.
+  FastForwardBy(
+      runner->GetDelayUntilNextProbeForTest(0u /* doh_server_index */));
+  EXPECT_EQ(runner->GetDelayUntilNextProbeForTest(0u /* doh_server_index */),
+            base::TimeDelta());
+  FastForwardBy(
+      runner->GetDelayUntilNextProbeForTest(1u /* doh_server_index */));
+  EXPECT_TRUE(resolve_context_->GetDohServerAvailability(
+      1u /* doh_server_index */, session_.get()));
+
+  // Expect server 2 probes to self-cancel on next cycle.
+  FastForwardBy(runner->GetDelayUntilNextProbeForTest(1u));
+  EXPECT_EQ(runner->GetDelayUntilNextProbeForTest(1u), base::TimeDelta());
+}
+
 TEST_F(DnsTransactionTestWithMockTime, MultipleProbeRunners) {
   ConfigureDohServers(true /* use_post */, 1 /* num_doh_servers */,
                       false /* make_available */);
@@ -2551,8 +2651,8 @@ TEST_F(DnsTransactionTestWithMockTime, MultipleProbeRunners) {
       transaction_factory_->CreateDohProbeRunner(resolve_context_.get());
   std::unique_ptr<DnsProbeRunner> runner2 =
       transaction_factory_->CreateDohProbeRunner(resolve_context_.get());
-  runner1->Start();
-  runner2->Start();
+  runner1->Start(true /* network_change */);
+  runner2->Start(true /* network_change */);
 
   // The first two probes (one for each runner) happen without any delay
   // and mark the first server good.
@@ -2561,7 +2661,9 @@ TEST_F(DnsTransactionTestWithMockTime, MultipleProbeRunners) {
                   0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
               testing::Optional(0u));
 
-  // Both probes expected to be complete and no longer running.
+  // Both probes expected to self-cancel on next scheduled run.
+  FastForwardBy(runner1->GetDelayUntilNextProbeForTest(0));
+  FastForwardBy(runner2->GetDelayUntilNextProbeForTest(0));
   EXPECT_EQ(runner1->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
   EXPECT_EQ(runner2->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
 }
@@ -2584,14 +2686,15 @@ TEST_F(DnsTransactionTestWithMockTime, MultipleProbeRunners_SeparateContexts) {
 
   TestURLRequestContext request_context2;
   ResolveContext context2(&request_context2, false /* enable_caching */);
-  context2.InvalidateCaches(session_.get());
+  context2.InvalidateCachesAndPerSessionData(session_.get(),
+                                             false /* network_change */);
 
   std::unique_ptr<DnsProbeRunner> runner1 =
       transaction_factory_->CreateDohProbeRunner(resolve_context_.get());
   std::unique_ptr<DnsProbeRunner> runner2 =
       transaction_factory_->CreateDohProbeRunner(&context2);
-  runner1->Start();
-  runner2->Start();
+  runner1->Start(false /* network_change */);
+  runner2->Start(false /* network_change */);
 
   // The first two probes (one for each runner) happen without any delay.
   // Probe for first context succeeds and second fails.
@@ -2603,15 +2706,16 @@ TEST_F(DnsTransactionTestWithMockTime, MultipleProbeRunners_SeparateContexts) {
                 0u, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
             base::nullopt);
 
-  // First probes expected to be complete and no longer running.
+  // First probe runner expected to be compete and self-cancel on next run.
+  FastForwardBy(runner1->GetDelayUntilNextProbeForTest(0));
   EXPECT_EQ(runner1->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
-  EXPECT_GT(runner2->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
 
   // Expect second runner to succeed on its second probe.
   FastForwardBy(runner2->GetDelayUntilNextProbeForTest(0));
   EXPECT_THAT(context2.DohServerIndexToUse(
                   0u, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
               testing::Optional(0u));
+  FastForwardBy(runner2->GetDelayUntilNextProbeForTest(0));
   EXPECT_EQ(runner2->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
 }
 
@@ -2629,7 +2733,7 @@ TEST_F(DnsTransactionTestWithMockTime, CancelDohProbe) {
 
   std::unique_ptr<DnsProbeRunner> runner =
       transaction_factory_->CreateDohProbeRunner(resolve_context_.get());
-  runner->Start();
+  runner->Start(false /* network_change */);
 
   // The first probe happens without any delay.
   RunUntilIdle();
@@ -2675,8 +2779,8 @@ TEST_F(DnsTransactionTestWithMockTime, CancelOneOfMultipleProbeRunners) {
       transaction_factory_->CreateDohProbeRunner(resolve_context_.get());
   std::unique_ptr<DnsProbeRunner> runner2 =
       transaction_factory_->CreateDohProbeRunner(resolve_context_.get());
-  runner1->Start();
-  runner2->Start();
+  runner1->Start(true /* network_change */);
+  runner2->Start(true /* network_change */);
 
   // The first two probes (one for each runner) happen without any delay.
   RunUntilIdle();
@@ -2694,6 +2798,7 @@ TEST_F(DnsTransactionTestWithMockTime, CancelOneOfMultipleProbeRunners) {
   EXPECT_THAT(resolve_context_->DohServerIndexToUse(
                   0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
               testing::Optional(0u));
+  FastForwardBy(runner2->GetDelayUntilNextProbeForTest(0));
   EXPECT_EQ(runner2->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
 }
 
@@ -2713,8 +2818,8 @@ TEST_F(DnsTransactionTestWithMockTime, CancelAllOfMultipleProbeRunners) {
       transaction_factory_->CreateDohProbeRunner(resolve_context_.get());
   std::unique_ptr<DnsProbeRunner> runner2 =
       transaction_factory_->CreateDohProbeRunner(resolve_context_.get());
-  runner1->Start();
-  runner2->Start();
+  runner1->Start(false /* network_change */);
+  runner2->Start(false /* network_change */);
 
   // The first two probes (one for each runner) happen without any delay.
   RunUntilIdle();
@@ -2747,7 +2852,7 @@ TEST_F(DnsTransactionTestWithMockTime, CancelDohProbe_AfterSuccess) {
 
   std::unique_ptr<DnsProbeRunner> runner =
       transaction_factory_->CreateDohProbeRunner(resolve_context_.get());
-  runner->Start();
+  runner->Start(true /* network_change */);
 
   // The first probe happens without any delay, and immediately succeeds.
   RunUntilIdle();
@@ -2774,7 +2879,7 @@ TEST_F(DnsTransactionTestWithMockTime, DestroyFactoryAfterStartingDohProbe) {
 
   std::unique_ptr<DnsProbeRunner> runner =
       transaction_factory_->CreateDohProbeRunner(resolve_context_.get());
-  runner->Start();
+  runner->Start(false /* network_change */);
 
   // The first probe happens without any delay.
   RunUntilIdle();
@@ -2790,6 +2895,133 @@ TEST_F(DnsTransactionTestWithMockTime, DestroyFactoryAfterStartingDohProbe) {
   // Probe should not encounter issues and should stop running.
   FastForwardBy(runner->GetDelayUntilNextProbeForTest(0));
   EXPECT_EQ(runner->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
+}
+
+TEST_F(DnsTransactionTestWithMockTime, StartWhileRunning) {
+  ConfigureDohServers(true /* use_post */, 1 /* num_doh_servers */,
+                      false /* make_available */);
+  AddQueryAndErrorResponse(4, kT4HostName, kT4Qtype, ERR_CONNECTION_REFUSED,
+                           SYNCHRONOUS, Transport::HTTPS,
+                           nullptr /* opt_rdata */,
+                           DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+  AddQueryAndResponse(4, kT4HostName, kT4Qtype, kT4ResponseDatagram,
+                      base::size(kT4ResponseDatagram), ASYNC, Transport::HTTPS,
+                      nullptr /* opt_rdata */,
+                      DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+
+  std::unique_ptr<DnsProbeRunner> runner =
+      transaction_factory_->CreateDohProbeRunner(resolve_context_.get());
+  runner->Start(false /* network_change */);
+
+  // The first probe happens without any delay.
+  RunUntilIdle();
+  EXPECT_FALSE(resolve_context_->GetDohServerAvailability(
+      0u /* doh_server_index */, session_.get()));
+
+  // Extra Start() call should have no effect because runner is already running.
+  runner->Start(true /* network_change */);
+  RunUntilIdle();
+  EXPECT_FALSE(resolve_context_->GetDohServerAvailability(
+      0u /* doh_server_index */, session_.get()));
+
+  // Expect the server to be available after the successful second probe.
+  FastForwardBy(runner->GetDelayUntilNextProbeForTest(0));
+  EXPECT_TRUE(resolve_context_->GetDohServerAvailability(
+      0u /* doh_server_index */, session_.get()));
+}
+
+TEST_F(DnsTransactionTestWithMockTime, RestartFinishedProbe) {
+  ConfigureDohServers(true /* use_post */, 1 /* num_doh_servers */,
+                      false /* make_available */);
+  AddQueryAndResponse(4, kT4HostName, kT4Qtype, kT4ResponseDatagram,
+                      base::size(kT4ResponseDatagram), ASYNC, Transport::HTTPS,
+                      nullptr /* opt_rdata */,
+                      DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+  AddQueryAndResponse(4, kT4HostName, kT4Qtype, kT4ResponseDatagram,
+                      base::size(kT4ResponseDatagram), ASYNC, Transport::HTTPS,
+                      nullptr /* opt_rdata */,
+                      DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+
+  std::unique_ptr<DnsProbeRunner> runner =
+      transaction_factory_->CreateDohProbeRunner(resolve_context_.get());
+  runner->Start(true /* network_change */);
+
+  // The first probe happens without any delay and succeeds.
+  RunUntilIdle();
+  EXPECT_TRUE(resolve_context_->GetDohServerAvailability(
+      0u /* doh_server_index */, session_.get()));
+
+  // Expect runner to self-cancel on next cycle.
+  FastForwardBy(runner->GetDelayUntilNextProbeForTest(0u));
+  EXPECT_EQ(runner->GetDelayUntilNextProbeForTest(0u), base::TimeDelta());
+
+  // Mark server unavailabe and restart runner.
+  for (int i = 0; i < ResolveContext::kAutomaticModeFailureLimit; ++i) {
+    resolve_context_->RecordServerFailure(
+        0u /* server_index */, true /* is_doh_server */, session_.get());
+  }
+  ASSERT_FALSE(resolve_context_->GetDohServerAvailability(
+      0u /* doh_server_index */, session_.get()));
+  runner->Start(false /* network_change */);
+
+  // Expect the server to be available again after a successful immediately-run
+  // probe.
+  RunUntilIdle();
+  EXPECT_TRUE(resolve_context_->GetDohServerAvailability(
+      0u /* doh_server_index */, session_.get()));
+
+  // Expect self-cancel again.
+  FastForwardBy(runner->GetDelayUntilNextProbeForTest(0u));
+  EXPECT_EQ(runner->GetDelayUntilNextProbeForTest(0u), base::TimeDelta());
+}
+
+// Test that a probe runner keeps running on the same schedule if it completes
+// but the server is marked unavailable again before the next scheduled probe.
+TEST_F(DnsTransactionTestWithMockTime, FastProbeRestart) {
+  ConfigureDohServers(true /* use_post */, 1 /* num_doh_servers */,
+                      false /* make_available */);
+  AddQueryAndResponse(4, kT4HostName, kT4Qtype, kT4ResponseDatagram,
+                      base::size(kT4ResponseDatagram), ASYNC, Transport::HTTPS,
+                      nullptr /* opt_rdata */,
+                      DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+  AddQueryAndResponse(4, kT4HostName, kT4Qtype, kT4ResponseDatagram,
+                      base::size(kT4ResponseDatagram), ASYNC, Transport::HTTPS,
+                      nullptr /* opt_rdata */,
+                      DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+
+  std::unique_ptr<DnsProbeRunner> runner =
+      transaction_factory_->CreateDohProbeRunner(resolve_context_.get());
+  runner->Start(true /* network_change */);
+
+  // The first probe happens without any delay and succeeds.
+  RunUntilIdle();
+  EXPECT_TRUE(resolve_context_->GetDohServerAvailability(
+      0u /* doh_server_index */, session_.get()));
+
+  base::TimeDelta scheduled_delay = runner->GetDelayUntilNextProbeForTest(0);
+  EXPECT_GT(scheduled_delay, base::TimeDelta());
+
+  // Mark server unavailabe and restart runner. Note that restarting the runner
+  // is unnecessary, but a Start() call should always happen on a server
+  // becoming unavailable and might as well replecate real behavior for the
+  // test.
+  for (int i = 0; i < ResolveContext::kAutomaticModeFailureLimit; ++i) {
+    resolve_context_->RecordServerFailure(
+        0u /* server_index */, true /* is_doh_server */, session_.get());
+  }
+  ASSERT_FALSE(resolve_context_->GetDohServerAvailability(
+      0u /* doh_server_index */, session_.get()));
+  runner->Start(false /* network_change */);
+
+  // Probe should not run until scheduled delay.
+  RunUntilIdle();
+  EXPECT_FALSE(resolve_context_->GetDohServerAvailability(
+      0u /* doh_server_index */, session_.get()));
+
+  // Expect the probe to run again and succeed after scheduled delay.
+  FastForwardBy(scheduled_delay);
+  EXPECT_TRUE(resolve_context_->GetDohServerAvailability(
+      0u /* doh_server_index */, session_.get()));
 }
 
 }  // namespace

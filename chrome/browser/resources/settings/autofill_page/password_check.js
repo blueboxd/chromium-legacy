@@ -157,12 +157,14 @@ Polymer({
       case CheckState.SIGNED_OUT:
       case CheckState.NO_PASSWORDS:
       case CheckState.OTHER_ERROR:
+      case CheckState.TOO_MANY_PASSWORDS:
         this.passwordManager_.startBulkPasswordCheck();
         return;
-      case CheckState.TOO_MANY_PASSWORDS:
+      case CheckState.TOO_MANY_PASSWORDS_AND_QUOTA_LIMIT:
       case CheckState.QUOTA_LIMIT:
     }
-    throw 'Can\'t trigger an action for state: ' + this.status_.state;
+    assertNotReached(
+        'Can\'t trigger an action for state: ' + this.status_.state);
   },
 
   /**
@@ -183,13 +185,6 @@ Polymer({
     const target = event.detail.moreActionsButton;
     this.$.moreActionsMenu.showAt(target);
     this.activeDialogAnchor_ = target;
-  },
-
-  /** @private */
-  onMenuShowPasswordClick_() {
-    this.$.moreActionsMenu.close();
-
-    // TODO(crbug.com/1047726) Implement dialog.
   },
 
   /** @private */
@@ -263,10 +258,10 @@ Polymer({
         return this.i18n('checkPasswordsErrorSignedOut');
       case CheckState.NO_PASSWORDS:
         return this.i18n('checkPasswordsErrorNoPasswords');
+      case CheckState.TOO_MANY_PASSWORDS_AND_QUOTA_LIMIT:
+        return this.i18n('checkPasswordsErrorInterruptedTooManyPasswords');
       case CheckState.TOO_MANY_PASSWORDS:
-        return this.suppressesCheckupLink_() ?
-            this.i18n('checkPasswordsErrorInterruptedTooManyPasswords') :
-            this.i18n('checkPasswordsErrorTooManyPasswords');
+        return this.i18n('checkPasswordsErrorTooManyPasswords');
       case CheckState.QUOTA_LIMIT:
         return this.i18n('checkPasswordsErrorQuota');
       case CheckState.OTHER_ERROR:
@@ -306,6 +301,7 @@ Polymer({
     switch (status.state) {
       case CheckState.IDLE:
       case CheckState.CANCELED:
+      case CheckState.TOO_MANY_PASSWORDS:
         return this.i18n('checkPasswordsAgain');
       case CheckState.RUNNING:
         return this.i18n('checkPasswordsStop');
@@ -315,10 +311,10 @@ Polymer({
       case CheckState.OTHER_ERROR:
         return this.i18n('checkPasswordsAgainAfterError');
       case CheckState.QUOTA_LIMIT:
-      case CheckState.TOO_MANY_PASSWORDS:
+      case CheckState.TOO_MANY_PASSWORDS_AND_QUOTA_LIMIT:
         return '';  // Undefined behavior. Don't show any misleading text.
     }
-    throw 'Can\'t find a button text for state: ' + status.state;
+    assertNotReached('Can\'t find a button text for state: ' + status.state);
   },
 
   /**
@@ -338,10 +334,13 @@ Polymer({
       case CheckState.OTHER_ERROR:
         return false;
       case CheckState.TOO_MANY_PASSWORDS:
+        return !this.suppressesCheckupLink_();
+      case CheckState.TOO_MANY_PASSWORDS_AND_QUOTA_LIMIT:
       case CheckState.QUOTA_LIMIT:
         return true;
     }
-    throw 'Can\'t determine button visibility for state: ' + status.state;
+    assertNotReached(
+        'Can\'t determine button visibility for state: ' + status.state);
   },
 
   /**
@@ -391,6 +390,7 @@ Polymer({
       case CheckState.SIGNED_OUT:
       case CheckState.NO_PASSWORDS:
       case CheckState.TOO_MANY_PASSWORDS:
+      case CheckState.TOO_MANY_PASSWORDS_AND_QUOTA_LIMIT:
       case CheckState.QUOTA_LIMIT:
       case CheckState.OTHER_ERROR:
         return true;
@@ -418,9 +418,10 @@ Polymer({
       case CheckState.NO_PASSWORDS:
       case CheckState.QUOTA_LIMIT:
       case CheckState.OTHER_ERROR:
-        return false;
       case CheckState.TOO_MANY_PASSWORDS:
-        return this.suppressesCheckupLink_();
+        return false;
+      case CheckState.TOO_MANY_PASSWORDS_AND_QUOTA_LIMIT:
+        return true;
     }
     assertNotReached(
         'Not specified whether to show passwords for state: ' +
@@ -434,10 +435,8 @@ Polymer({
    * @private
    */
   suppressesCheckupLink_() {
-    if (!this.isButtonHidden_(this.status_)) {
-      return true;  // Never show the retry link alongside a button.
-    }
-    if (this.status_.state != CheckState.TOO_MANY_PASSWORDS) {
+    if (this.status_.state != CheckState.TOO_MANY_PASSWORDS &&
+        this.status_.state != CheckState.TOO_MANY_PASSWORDS_AND_QUOTA_LIMIT) {
       return true;  // Never show the retry link for other states.
     }
     if (!this.syncStatus_ || !this.syncStatus_.signedIn) {

@@ -231,7 +231,10 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
   ShelfTooltipManager* tooltip() { return tooltip_.get(); }
 
-  ui::AnimationMetricsReporter* GetHotseatTransitionMetricsReporter();
+  // |target_state| is the hotseat state after hotseat transition animation.
+  ui::AnimationMetricsReporter* GetHotseatTransitionMetricsReporter(
+      HotseatState target_state);
+
   ui::AnimationMetricsReporter* GetNavigationWidgetAnimationMetricsReporter();
 
  protected:

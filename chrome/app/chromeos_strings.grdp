@@ -303,7 +303,7 @@
       other {Update within # seconds}}
   </message>
   <message name="IDS_RELAUNCH_REQUIRED_BODY" desc="The body text of a dialog that tells users the device must be restarted.">
-    <ph name="organization_name">$1<ex>google.com</ex></ph> requires an update to this device
+    <ph name="organization_name">$1<ex>google.com</ex></ph> requires you to update this device before the deadline.
   </message>
 
   <message name="IDS_RELAUNCH_RECOMMENDED_TITLE" desc="The title of a dialog that tells users that a device restart is recommended for an update.">
@@ -313,10 +313,10 @@
     Update overdue
   </message>
   <message name="IDS_RELAUNCH_RECOMMENDED_BODY" desc="The body text of a dialog that tells users the device must be restarted.">
-    <ph name="organization_name">$1<ex>google.com</ex></ph> asks that you update this device
+    <ph name="organization_name">$1<ex>google.com</ex></ph> recommends that you update this device.
   </message>
   <message name="IDS_RELAUNCH_RECOMMENDED_OVERDUE_BODY" desc="The body text of a dialog that tells users the device must be restarted right now.">
-    <ph name="organization_name">$1<ex>google.com</ex></ph> requires an update to this device right away
+    <ph name="organization_name">$1<ex>google.com</ex></ph> requires you to update this device immediately.
   </message>
 
   <!-- Chrome OS Strings -->
@@ -4388,8 +4388,11 @@
   <message name="IDS_PLUGIN_VM_INSTALLER_IMPORTING_MESSAGE" desc="Text of the Plugin VM installer while configuring the VM.">
     Configuring the virtual machine. This may take a few minutes.
   </message>
-  <message name="IDS_PLUGIN_VM_INSTALLER_FINISHED_MESSAGE" desc="Text of the Plugin VM installer after successful installation.">
-    Plugin VM is ready to use
+  <message name="IDS_PLUGIN_VM_INSTALLER_IMPORTED_MESSAGE" desc="Text of the Plugin VM installer after successful installation.">
+    Plugin VM is ready to use.
+  </message>
+  <message name="IDS_PLUGIN_VM_INSTALLER_CREATED_MESSAGE" desc="Text of the Plugin VM installer after new VM creation.">
+    Please launch Plugin VM to install the Guest Operating System.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_LOGIC_ERROR" desc="Text of the Plugin VM installer if the installation failed due to an internal error.">
     Couldn't install Plugin VM. Please try again, or contact your organization's device administrator. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.

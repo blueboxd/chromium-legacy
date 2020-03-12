@@ -180,17 +180,30 @@ source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [ "infobar_egtest.mm" ]
+  sources = [
+    "infobar_egtest.mm",
+    "translate_infobar_egtest.mm",
+  ]
   deps = [
     ":eg_test_support",
     "//base",
     "//base/test:test_support",
     "//components/infobars/core:feature_flags",
+    "//components/translate/core/browser:translate_pref_names",
+    "//components/translate/core/common",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser:chrome_url_constants",
+    "//ios/chrome/browser/translate:test_support",
+    "//ios/chrome/browser/ui/badges:public",
     "//ios/chrome/browser/ui/infobars:constants",
+    "//ios/chrome/browser/ui/infobars:feature_flags",
     "//ios/chrome/browser/ui/infobars/banners:public",
+    "//ios/chrome/browser/ui/infobars/modals:public",
+    "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/web/public/test/http_server",
+    "//ui/base",
     "//url",
   ]
   libs = [ "XCTest.framework" ]

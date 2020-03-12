@@ -3,12 +3,14 @@
 # found in the LICENSE file.
 
 # pylint: disable=import-error,print-statement,relative-import,protected-access
-
 """Unit tests for overload_set_algorithm.py."""
 
 import unittest
 from overload_set_algorithm import effective_overload_set
 
+# disabling yapf formating for complex data, see
+# https://github.com/google/yapf#why-does-yapf-destroy-my-awesome-formatting
+# yapf: disable
 
 class EffectiveOverloadSetTest(unittest.TestCase):
     def test_example_in_comments(self):
@@ -334,3 +336,4 @@ class EffectiveOverloadSetTest(unittest.TestCase):
              ())]
 
         self.assertEqual(effective_overload_set(operation_list), overload_set)
+# yapf: enable

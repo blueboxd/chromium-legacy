@@ -86,9 +86,56 @@ void RemoveURLFromMemoryCacheInternal(const KURL& url) {
 }
 
 scoped_refptr<SecurityOrigin> CreateSecurityOrigin(
-    GlobalScopeCreationParams* creation_params) {
-  scoped_refptr<SecurityOrigin> security_origin =
-      SecurityOrigin::Create(creation_params->script_url);
+    GlobalScopeCreationParams* creation_params,
+    ExecutionContext* execution_context) {
+  // A worker environment settings object's origin must be set as follows:
+  //
+  // - DedicatedWorkers and SharedWorkers
+  // https://html.spec.whatwg.org/C/#set-up-a-worker-environment-settings-object
+  // Step 2: Let inherited origin be outside settings's origin.
+  // Step 6: Let settings object be a new environment settings object whose
+  // algorithms are defined as follows:
+  // The origin -> Return a unique opaque origin if worker global scope's url's
+  // scheme is "data", and inherited origin otherwise. [spec text]
+  //
+  // - ServiceWorkers
+  // https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm
+  // Step 7.4: Let settingsObject be a new environment settings object whose
+  // algorithms are defined as follows:
+  // The origin -> Return its registering service worker client's origin.
+  // [spec text]
+  //
+  // The algorithm in ServiceWorkers differ from DedicatedWorkers and
+  // SharedWorkers when worker global scope's url's scheme is "data", but
+  // "data" url script is not allowed for ServiceWorkers, so all workers' origin
+  // can be calculated in the same way.
+  // https://w3c.github.io/ServiceWorker/#start-register
+  // Step 3: If scriptURL’s scheme is not one of "http" and "https", reject
+  // promise with a TypeError and abort these steps. [spec text]
+  DCHECK(!execution_context->IsServiceWorkerGlobalScope() ||
+         !KURL(creation_params->script_url).ProtocolIsData());
+
+  // TODO(https://crbug.com/1058305) Inherit |agent_cluster_id_| for dedicated
+  // workers. DO NOT inherit for shared workers and service workers.
+  //
+  // Create a new SecurityOrigin via CreateFromUrlOrigin() so that worker's
+  // origin can avoid inheriting unnecessary capabilities from the starter
+  // origin, while the worker's origin inherits url:Origin's internal nonce.
+  scoped_refptr<SecurityOrigin> security_origin;
+  if (KURL(creation_params->script_url).ProtocolIsData()) {
+    security_origin = SecurityOrigin::CreateUniqueOpaque();
+  } else if (creation_params->starter_origin->Protocol() ==
+             "chrome-extension") {
+    // TODO(https://crbug.com/1059218) Whether the origin should be inherited
+    // for chrome-extension frame is under discussion. For now, the worker
+    // doesn't inherit the parent origin in this case to keep the previous
+    // behavior.
+    security_origin = SecurityOrigin::Create(creation_params->script_url);
+  } else {
+    security_origin = SecurityOrigin::CreateFromUrlOrigin(
+        creation_params->starter_origin->ToUrlOrigin());
+  }
+
   if (creation_params->starter_origin) {
     security_origin->TransferPrivilegesFrom(
         creation_params->starter_origin->CreatePrivilegeData());
@@ -426,7 +473,7 @@ WorkerGlobalScope::WorkerGlobalScope(
     base::TimeTicks time_origin)
     : WorkerOrWorkletGlobalScope(
           thread->GetIsolate(),
-          CreateSecurityOrigin(creation_params.get()),
+          CreateSecurityOrigin(creation_params.get(), GetExecutionContext()),
           MakeGarbageCollected<Agent>(
               thread->GetIsolate(),
               (creation_params->agent_cluster_id.is_empty()
@@ -496,8 +543,7 @@ NOINLINE void WorkerGlobalScope::InitializeURL(const KURL& url) {
   if (GetSecurityOrigin()->IsOpaque()) {
     DCHECK(SecurityOrigin::Create(url)->IsOpaque());
   } else {
-    DCHECK(GetSecurityOrigin()->IsSameOriginWith(
-        SecurityOrigin::Create(url).get()));
+    DCHECK(GetSecurityOrigin()->CanReadContent(url));
   }
   url_ = url;
 }

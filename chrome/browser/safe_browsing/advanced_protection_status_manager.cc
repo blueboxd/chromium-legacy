@@ -227,8 +227,7 @@ void AdvancedProtectionStatusManager::UpdateLastRefreshTime() {
 }
 
 bool AdvancedProtectionStatusManager::IsUnderAdvancedProtection() const {
-  if (!pref_service_->GetBoolean(
-          prefs::kAdvancedProtectionExtraSecurityAllowed))
+  if (!pref_service_->GetBoolean(prefs::kAdvancedProtectionAllowed))
     return false;
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

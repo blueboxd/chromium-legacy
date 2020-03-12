@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/fuchsia/service_directory.h"
 #include "base/fuchsia/startup_context.h"
 #include "base/gtest_prod_util.h"
 #include "base/message_loop/message_pump_for_io.h"

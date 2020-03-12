@@ -101,7 +101,7 @@ void NGContainerFragmentBuilder::PropagateChildData(
   //    have a child positioned above our block-start edge.
   if ((child_offset.block_offset < LayoutUnit() &&
        !child.IsOutOfFlowPositioned()) ||
-      (!child.IsBlockFormattingContextRoot() && !child.IsLineBox() &&
+      (!child.IsFormattingContextRoot() && !child.IsLineBox() &&
        child.MayHaveDescendantAboveBlockStart()))
     may_have_descendant_above_block_start_ = true;
 
@@ -120,7 +120,7 @@ void NGContainerFragmentBuilder::PropagateChildData(
   // If a fragment doesn't have any adjoining object descendants, and is
   // self-collapsing, it can be "shifted" anywhere.
   if (!has_adjoining_object_descendants_) {
-    if (!child.IsBlockFormattingContextRoot() &&
+    if (!child.IsFormattingContextRoot() &&
         child.HasAdjoiningObjectDescendants())
       has_adjoining_object_descendants_ = true;
   }

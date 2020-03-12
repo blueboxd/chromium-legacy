@@ -2,12 +2,7 @@
 Always use x86 emulators (or x86\_64 for testing 64-bit APKs). Although arm
 emulators exist, they are so slow that they are not worth your time.
 
-*** note
-**Note:** apps with native code must be compiled specifically for the device
-architecture, so make sure your copy of the app supports x86. Also, be aware the
-Play Store may not display ARM-only applications for an x86 emulator. The steps
-below show how to locally compile chromium-based apps for x86.
-***
+[TOC]
 
 ## Building for Emulation
 You need to target the correct architecture via GN args:
@@ -109,3 +104,27 @@ $ ~/Android/Sdk/emulator/emulator -writable-system @EMULATOR_ID
  * Emulators show up just like devices via `adb devices`
    * Device serials will look like "emulator-5554", "emulator-5556", etc.
 
+## Emulator pros and cons
+
+### Pros
+ * **Compiles are faster.** Many physical devices are arm64, whereas emulators
+   are typically x86 (32-bit). 64-bit builds may require 2 copies of the native
+   library (32-bit and 64-bit), so compiling for an arm64 phone is ~twice as
+   much work as for an emulator (for targets which support WebView).
+ * **APKs install faster.** Since emulators run on your workstation, adb can
+   push the APK onto the emulator without being [bandwidth-constrained by
+   USB](https://youtu.be/Mzop8bXZI3E).
+ * Emulators can be nice for working remotely. Physical devices usually require
+   `scp` or ssh port forwarding to copy the APK from your workstation and
+   install on a local device. Emulators run on your workstation, so there's **no
+   ssh slow-down**.
+
+### Cons
+ * If you're investigating a hardware-specific bug report, you'll need a
+   physical device with the actual hardware to repro that issue.
+ * x86 emulators need a separate out directory, so building for both physical
+   devices and emulators takes up more disk space (not a problem if you build
+   exclusively for the emulator).
+ * `userdebug`/`eng` emulators don't come with the Play Store installed, so you
+   can't install third party applications. Sideloading is tricky, as not all
+   third-party apps support x86.

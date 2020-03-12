@@ -986,8 +986,8 @@ void KeySystemConfigSelector::SelectConfigInternal(
         DVLOG(3) << "Request permission.";
         media_permission_->RequestPermission(
             MediaPermission::PROTECTED_MEDIA_IDENTIFIER,
-            base::Bind(&KeySystemConfigSelector::OnPermissionResult,
-                       weak_factory_.GetWeakPtr(), base::Passed(&request)));
+            base::BindOnce(&KeySystemConfigSelector::OnPermissionResult,
+                           weak_factory_.GetWeakPtr(), base::Passed(&request)));
         return;
       case CONFIGURATION_SUPPORTED:
         cdm_config.allow_distinctive_identifier =

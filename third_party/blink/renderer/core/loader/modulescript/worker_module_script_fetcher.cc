@@ -10,7 +10,9 @@
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
@@ -30,6 +32,8 @@ void WorkerModuleScriptFetcher::Fetch(
     ModuleGraphLevel level,
     ModuleScriptFetcher::Client* client) {
   DCHECK(global_scope_->IsContextThread());
+  DCHECK(!fetch_client_settings_object_fetcher_);
+  fetch_client_settings_object_fetcher_ = fetch_client_settings_object_fetcher;
   client_ = client;
   level_ = level;
 
@@ -51,6 +55,7 @@ void WorkerModuleScriptFetcher::Trace(Visitor* visitor) {
   ModuleScriptFetcher::Trace(visitor);
   visitor->Trace(client_);
   visitor->Trace(global_scope_);
+  visitor->Trace(fetch_client_settings_object_fetcher_);
 }
 
 // https://html.spec.whatwg.org/C/#worker-processing-model
@@ -71,16 +76,34 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
     // TODO(nhiroki, hiroshige): Access to WorkerGlobalScope in module loaders
     // is a layering violation. Also, updating WorkerGlobalScope ('module map
     // settigns object') in flight can be dangerous because module loaders may
-    // refers to it. We should move these steps out of core/loader/modulescript/
+    // refer to it. We should move these steps out of core/loader/modulescript/
     // and run them after module loading. This may require the spec change.
     // (https://crbug.com/845285)
 
     // Ensure redirects don't affect SecurityOrigin.
     const KURL request_url = resource->Url();
     const KURL response_url = resource->GetResponse().CurrentRequestUrl();
-    if (request_url != response_url &&
-        !global_scope_->GetSecurityOrigin()->IsSameOriginWith(
-            SecurityOrigin::Create(response_url).get())) {
+    DCHECK(fetch_client_settings_object_fetcher_->GetProperties()
+               .GetFetchClientSettingsObject()
+               .GetSecurityOrigin()
+               ->CanReadContent(request_url))
+        << "Top-level worker script request url must be same-origin with "
+           "outside settings constructor origin or permitted by the parent "
+           "chrome-extension.";
+
+    // |response_url| must be same-origin with request origin or its url's
+    // scheme must be "data".
+    //
+    // https://fetch.spec.whatwg.org/#concept-main-fetch
+    // Step 5:
+    // - request’s current URL’s origin is same origin with request’s
+    // origin (request's current URL indicates |response_url|)
+    // - request’s current URL’s scheme is "data"
+    // ---> Return the result of performing a scheme fetch using request.
+    // - request’s mode is "same-origin"
+    // ---> Return a network error. [spec text]
+    if (!SecurityOrigin::AreSameOrigin(request_url, response_url) &&
+        !response_url.ProtocolIsData()) {
       error_messages.push_back(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kSecurity,
           mojom::ConsoleMessageLevel::kError,

@@ -23,6 +23,16 @@ class MockHatsService : public HatsService {
   ~MockHatsService() override;
 
   MOCK_METHOD(void, LaunchSurvey, (const std::string& trigger), (override));
+  MOCK_METHOD(bool,
+              LaunchDelayedSurvey,
+              (const std::string& trigger, int timeout_ms),
+              (override));
+  MOCK_METHOD(bool,
+              LaunchDelayedSurveyForWebContents,
+              (const std::string& trigger,
+               content::WebContents* web_contents,
+               int timeout_ms),
+              (override));
 };
 
 std::unique_ptr<KeyedService> BuildMockHatsService(

@@ -108,6 +108,7 @@ INSTANTIATE_TEST_SUITE_P(,
                          PasswordAccessAuthenticatorTest,
                          Values(ReauthPurpose::VIEW_PASSWORD,
                                 ReauthPurpose::COPY_PASSWORD,
+                                ReauthPurpose::EDIT_PASSWORD,
                                 ReauthPurpose::EXPORT));
 
 }  // namespace password_manager

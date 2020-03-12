@@ -16,6 +16,7 @@ include_rules = [
   "+components/keyed_service/content",
   "+components/metrics",
   "+components/network_time",
+  "+components/permissions",
   "+components/pref_registry",
   "+components/prefs",
   "+components/user_prefs",

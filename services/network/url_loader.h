@@ -177,10 +177,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
     return custom_proxy_post_cache_headers_;
   }
 
-  bool custom_proxy_use_alternate_proxy_list() const {
-    return custom_proxy_use_alternate_proxy_list_;
-  }
-
   const base::Optional<GURL>& new_redirect_url() const {
     return new_redirect_url_;
   }
@@ -411,7 +407,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   net::HttpRequestHeaders custom_proxy_pre_cache_headers_;
   net::HttpRequestHeaders custom_proxy_post_cache_headers_;
-  bool custom_proxy_use_alternate_proxy_list_ = false;
 
   // Indicates the originating frame of the request, see
   // network::ResourceRequest::fetch_window_id for details.

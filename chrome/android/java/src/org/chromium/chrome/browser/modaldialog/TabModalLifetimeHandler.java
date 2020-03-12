@@ -41,6 +41,13 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
                 mActiveTab = null;
             }
         }
+
+        @Override
+        public void onPageLoadStarted(Tab tab, String url) {
+            if (mActiveTab == tab) {
+                mManager.dismissDialogsOfType(ModalDialogType.TAB, DialogDismissalCause.NAVIGATE);
+            }
+        }
     };
 
     private final ChromeActivity mActivity;

@@ -101,30 +101,22 @@ public class NativePostTaskTest {
         startNativeScheduler();
         TaskRunner taskQueue = PostTask.createTaskRunner(TaskTraits.USER_BLOCKING);
         // This should not time out.
-        try {
-            SchedulerTestHelpers.postDelayedTaskAndBlockUntilRun(taskQueue, 1);
-        } finally {
-            taskQueue.destroy();
-        }
+        SchedulerTestHelpers.postDelayedTaskAndBlockUntilRun(taskQueue, 1);
     }
 
     private void testRunningTasksInSequence(TaskRunner taskQueue) {
-        try {
-            List<Integer> orderListImmediate = new ArrayList<>();
-            List<Integer> orderListDelayed = new ArrayList<>();
+        List<Integer> orderListImmediate = new ArrayList<>();
+        List<Integer> orderListDelayed = new ArrayList<>();
 
-            SchedulerTestHelpers.postThreeTasksInOrder(taskQueue, orderListImmediate);
-            SchedulerTestHelpers.postTaskAndBlockUntilRun(taskQueue);
+        SchedulerTestHelpers.postThreeTasksInOrder(taskQueue, orderListImmediate);
+        SchedulerTestHelpers.postTaskAndBlockUntilRun(taskQueue);
 
-            assertThat(orderListImmediate, contains(1, 2, 3));
+        assertThat(orderListImmediate, contains(1, 2, 3));
 
-            SchedulerTestHelpers.postThreeDelayedTasksInOrder(taskQueue, orderListDelayed);
-            SchedulerTestHelpers.postDelayedTaskAndBlockUntilRun(taskQueue, 1);
+        SchedulerTestHelpers.postThreeDelayedTasksInOrder(taskQueue, orderListDelayed);
+        SchedulerTestHelpers.postDelayedTaskAndBlockUntilRun(taskQueue, 1);
 
-            assertThat(orderListDelayed, contains(1, 2, 3));
-        } finally {
-            taskQueue.destroy();
-        }
+        assertThat(orderListDelayed, contains(1, 2, 3));
     }
 
     @Test
@@ -176,16 +168,12 @@ public class NativePostTaskTest {
             }
         });
 
-        try {
-            // The task should run at some point after the migration, so the test shouldn't
-            // time out.
-            synchronized (lock) {
-                while (!taskExecuted.get()) {
-                    lock.wait();
-                }
+        // The task should run at some point after the migration, so the test shouldn't
+        // time out.
+        synchronized (lock) {
+            while (!taskExecuted.get()) {
+                lock.wait();
             }
-        } finally {
-            taskQueue.destroy();
         }
     }
 
@@ -195,11 +183,7 @@ public class NativePostTaskTest {
         List<Integer> orderListImmediate = new ArrayList<>();
         List<Integer> orderListDelayed = new ArrayList<>();
         TaskRunner taskQueue = PostTask.createSequencedTaskRunner(TaskTraits.USER_BLOCKING);
-        try {
-            performSequencedTestSchedulerMigration(taskQueue, orderListImmediate, orderListDelayed);
-        } finally {
-            taskQueue.destroy();
-        }
+        performSequencedTestSchedulerMigration(taskQueue, orderListImmediate, orderListDelayed);
 
         assertThat(orderListImmediate, contains(1, 2, 3, 4));
         assertThat(orderListDelayed, contains(1, 2, 3));
@@ -211,11 +195,7 @@ public class NativePostTaskTest {
         List<Integer> orderListImmediate = new ArrayList<>();
         List<Integer> orderListDelayed = new ArrayList<>();
         TaskRunner taskQueue = PostTask.createSingleThreadTaskRunner(TaskTraits.USER_BLOCKING);
-        try {
-            performSequencedTestSchedulerMigration(taskQueue, orderListImmediate, orderListDelayed);
-        } finally {
-            taskQueue.destroy();
-        }
+        performSequencedTestSchedulerMigration(taskQueue, orderListImmediate, orderListDelayed);
 
         assertThat(orderListImmediate, contains(1, 2, 3, 4));
         assertThat(orderListDelayed, contains(1, 2, 3));

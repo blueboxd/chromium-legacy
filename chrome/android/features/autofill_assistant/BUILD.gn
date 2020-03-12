@@ -33,7 +33,7 @@ android_library("java") {
     "//base:base_java",
     "//base:jni_java",
     "//chrome/android:chrome_java",
-    "//chrome/browser/android/profiles:java",
+    "//chrome/android/public/profiles:java",
     "//chrome/browser/image_fetcher:java",
     "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/util:java",

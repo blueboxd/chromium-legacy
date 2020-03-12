@@ -241,11 +241,6 @@ public class TabPersistentStore extends TabPersister {
                 mPrefetchTabListToMergeTasks.add(Pair.create(task, mergedFileName));
             }
         }
-
-        if (!needsInitialization) {
-            // If a non-sequenced task runner was created above, destroy it now.
-            taskRunner.destroy();
-        }
     }
 
     @Override

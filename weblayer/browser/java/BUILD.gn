@@ -131,7 +131,6 @@ generate_jni("jni") {
     "org/chromium/weblayer_private/DownloadCallbackProxy.java",
     "org/chromium/weblayer_private/DownloadImpl.java",
     "org/chromium/weblayer_private/ErrorPageCallbackProxy.java",
-    "org/chromium/weblayer_private/ExternalNavigationHandler.java",
     "org/chromium/weblayer_private/FullscreenCallbackProxy.java",
     "org/chromium/weblayer_private/LocaleChangedBroadcastReceiver.java",
     "org/chromium/weblayer_private/NavigationControllerImpl.java",

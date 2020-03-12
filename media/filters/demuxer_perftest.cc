@@ -191,8 +191,8 @@ static void RunDemuxerBenchmark(const std::string& filename) {
 
     {
       base::RunLoop run_loop;
-      demuxer.Initialize(&demuxer_host, base::Bind(&QuitLoopWithStatus,
-                                                   run_loop.QuitClosure()));
+      demuxer.Initialize(&demuxer_host, base::BindOnce(&QuitLoopWithStatus,
+                                                       run_loop.QuitClosure()));
       run_loop.Run();
     }
 

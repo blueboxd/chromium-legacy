@@ -314,6 +314,102 @@ TEST(NetworkIsolationKeyTest, UseRegistrableDomain) {
   // NetworkIsolationKeyWithFrameOriginTest.UseRegistrableDomain.
 }
 
+class OpaqueNonTransientNetworkIsolationKeyTest : public testing::Test {
+ public:
+  OpaqueNonTransientNetworkIsolationKeyTest() = default;
+  ~OpaqueNonTransientNetworkIsolationKeyTest() override = default;
+
+  std::string GetOriginNonceToString(const net::NetworkIsolationKey& key) {
+    return key.GetTopFrameOrigin().value().nonce_->token().ToString();
+  }
+};
+
+TEST_F(OpaqueNonTransientNetworkIsolationKeyTest,
+       OpaqueNonTransient_DisableAppendFrameOrigin) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kAppendFrameOriginToNetworkIsolationKey);
+
+  NetworkIsolationKey key = NetworkIsolationKey::CreateOpaqueAndNonTransient();
+  EXPECT_TRUE(key.IsFullyPopulated());
+  EXPECT_FALSE(key.IsTransient());
+  EXPECT_FALSE(key.IsEmpty());
+  EXPECT_EQ("opaque non-transient " + GetOriginNonceToString(key),
+            key.ToString());
+  EXPECT_EQ(key.GetTopFrameOrigin()->GetDebugString() + " non-transient",
+            key.ToDebugString());
+
+  // |opaque_and_non_transient_| is kept when a new frame origin is opaque.
+  url::Origin opaque_origin;
+  NetworkIsolationKey new_frame_origin =
+      key.CreateWithNewFrameOrigin(opaque_origin);
+  EXPECT_TRUE(new_frame_origin.IsFullyPopulated());
+  EXPECT_FALSE(new_frame_origin.IsTransient());
+  EXPECT_FALSE(new_frame_origin.IsEmpty());
+  EXPECT_EQ("opaque non-transient " + GetOriginNonceToString(new_frame_origin),
+            new_frame_origin.ToString());
+  EXPECT_EQ(
+      new_frame_origin.GetTopFrameOrigin()->GetDebugString() + " non-transient",
+      new_frame_origin.ToDebugString());
+
+  // Should not be equal to a similar NetworkIsolationKey derived from it.
+  EXPECT_NE(key, NetworkIsolationKey(*key.GetTopFrameOrigin(),
+                                     *key.GetTopFrameOrigin()));
+
+  // To and back from a Value should yield the same key.
+  base::Value value;
+  ASSERT_TRUE(key.ToValue(&value));
+  NetworkIsolationKey from_value;
+  ASSERT_TRUE(NetworkIsolationKey::FromValue(value, &from_value));
+  EXPECT_EQ(key, from_value);
+  EXPECT_EQ(key.ToString(), from_value.ToString());
+  EXPECT_EQ(key.ToDebugString(), from_value.ToDebugString());
+}
+
+TEST_F(OpaqueNonTransientNetworkIsolationKeyTest,
+       OpaqueNonTransient_EnableAppendFrameOrigin) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kAppendFrameOriginToNetworkIsolationKey);
+
+  NetworkIsolationKey key = NetworkIsolationKey::CreateOpaqueAndNonTransient();
+  EXPECT_TRUE(key.IsFullyPopulated());
+  EXPECT_FALSE(key.IsTransient());
+  EXPECT_FALSE(key.IsEmpty());
+  EXPECT_EQ("opaque non-transient " + GetOriginNonceToString(key),
+            key.ToString());
+  EXPECT_EQ(key.GetTopFrameOrigin()->GetDebugString() + " " +
+                key.GetFrameOrigin()->GetDebugString() + " non-transient",
+            key.ToDebugString());
+
+  // |opaque_and_non_transient_| is kept when a new frame origin is opaque.
+  url::Origin opaque_origin;
+  NetworkIsolationKey new_frame_origin =
+      key.CreateWithNewFrameOrigin(opaque_origin);
+  EXPECT_TRUE(new_frame_origin.IsFullyPopulated());
+  EXPECT_FALSE(new_frame_origin.IsTransient());
+  EXPECT_FALSE(new_frame_origin.IsEmpty());
+  EXPECT_EQ("opaque non-transient " + GetOriginNonceToString(new_frame_origin),
+            new_frame_origin.ToString());
+  EXPECT_EQ(new_frame_origin.GetTopFrameOrigin()->GetDebugString() + " " +
+                new_frame_origin.GetFrameOrigin()->GetDebugString() +
+                " non-transient",
+            new_frame_origin.ToDebugString());
+
+  // Should not be equal to a similar NetworkIsolationKey derived from it.
+  EXPECT_NE(key, NetworkIsolationKey(*key.GetTopFrameOrigin(),
+                                     *key.GetFrameOrigin()));
+
+  // To and back from a Value should yield the same key.
+  base::Value value;
+  ASSERT_TRUE(key.ToValue(&value));
+  NetworkIsolationKey from_value;
+  ASSERT_TRUE(NetworkIsolationKey::FromValue(value, &from_value));
+  EXPECT_EQ(key, from_value);
+  EXPECT_EQ(key.ToString(), from_value.ToString());
+  EXPECT_EQ(key.ToDebugString(), from_value.ToDebugString());
+}
+
 class NetworkIsolationKeyWithFrameOriginTest : public testing::Test {
  public:
   NetworkIsolationKeyWithFrameOriginTest() {

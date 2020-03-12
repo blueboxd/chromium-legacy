@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/time/time.h"
 #include "media/audio/simple_sources.h"
 #include "media/base/audio_bus.h"
@@ -29,6 +30,7 @@
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
+using base::test::RunOnceClosure;
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::Ge;
@@ -42,10 +44,6 @@ using ::testing::TestWithParam;
 using ::testing::ValuesIn;
 
 namespace blink {
-
-ACTION_P(RunClosure, closure) {
-  closure.Run();
-}
 
 static const std::string kTestVideoTrackId = "video_track_id";
 static const std::string kTestAudioTrackId = "audio_track_id";
@@ -300,7 +298,7 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
         .Times(AtLeast(1));
     EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure(run_loop.QuitClosure()));
+        .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
 
     OnVideoFrameForTesting(video_frame);
     run_loop.Run();
@@ -316,7 +314,7 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
         .Times(AtLeast(1));
     EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure(run_loop.QuitClosure()));
+        .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
 
     OnVideoFrameForTesting(video_frame);
     run_loop.Run();
@@ -335,13 +333,13 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
         .Times(AtLeast(1));
     EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure(run_loop.QuitClosure()));
+        .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
     if (GetParam().encoder_supports_alpha) {
       EXPECT_CALL(*recorder, WriteData(_, Lt(kEncodedSizeThreshold), _, _))
           .Times(AtLeast(1));
       EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
           .Times(1)
-          .WillOnce(RunClosure(run_loop.QuitClosure()));
+          .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
     }
 
     OnVideoFrameForTesting(alpha_frame);
@@ -396,7 +394,7 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
         .Times(AtLeast(1));
     EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure(run_loop.QuitClosure()));
+        .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
 
     for (int i = 0; i < kRatioOpusToTestAudioBuffers; ++i)
       OnAudioBusForTesting(*audio_bus1);
@@ -412,7 +410,7 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
         .Times(AtLeast(1));
     EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure(run_loop.QuitClosure()));
+        .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
 
     for (int i = 0; i < kRatioOpusToTestAudioBuffers; ++i)
       OnAudioBusForTesting(*audio_bus2);
@@ -453,7 +451,7 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
     EXPECT_CALL(*recorder, WriteData(_, _, _, _)).Times(AtLeast(1));
     EXPECT_CALL(*recorder, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure(run_loop.QuitClosure()));
+        .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
 
     OnVideoFrameForTesting(video_frame);
     run_loop.Run();
@@ -466,7 +464,7 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
     EXPECT_CALL(*recorder, WriteData(_, _, _, _)).Times(0);
     EXPECT_CALL(*recorder, OnError(_))
         .Times(1)
-        .WillOnce(RunClosure(run_loop.QuitClosure()));
+        .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
 
     OnVideoFrameForTesting(video_frame);
     run_loop.Run();
@@ -575,7 +573,7 @@ TEST_P(MediaRecorderHandlerPassthroughTest, PassesThrough) {
     EXPECT_CALL(*recorder, WriteData(_, _, _, _)).Times(AtLeast(1));
     EXPECT_CALL(*recorder, WriteData(_, Ge(kFrameSize), _, _))
         .Times(1)
-        .WillOnce(RunClosure(run_loop.QuitClosure()));
+        .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
     OnVideoFrameForTesting(frame);
     run_loop.Run();
   }

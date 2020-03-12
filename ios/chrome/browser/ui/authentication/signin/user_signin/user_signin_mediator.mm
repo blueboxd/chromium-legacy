@@ -87,10 +87,7 @@
   if (!self.isAuthenticationInProgress) {
     return;
   }
-  // TODO(crbug.com/971989): Remove this metric following the architecture
-  // migration in the case that the flow has been dismissed by the user and
-  // rename in the case sign-in has been interrupted.
-  base::RecordAction(base::UserMetricsAction("Signin_Undo_Signin"));
+
   // TODO(crbug.com/1056634): Support cancelAndDismiss with animation parameter.
   [self.authenticationFlow cancelAndDismiss];
   self.authenticationService->SignOut(signin_metrics::ABORT_SIGNIN,

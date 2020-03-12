@@ -162,17 +162,25 @@ class WebUITabStripContainerView::DragToOpenHandler : public ui::EventHandler {
                     views::View* drag_handle)
       : container_(container), drag_handle_(drag_handle) {
     DCHECK(container_);
-    drag_handle_->AddPostTargetHandler(this);
+    drag_handle_->AddPreTargetHandler(this);
   }
 
-  ~DragToOpenHandler() override { drag_handle_->RemovePostTargetHandler(this); }
+  ~DragToOpenHandler() override { drag_handle_->RemovePreTargetHandler(this); }
 
   void OnGestureEvent(ui::GestureEvent* event) override {
     switch (event->type()) {
       case ui::ET_GESTURE_SCROLL_BEGIN:
-        drag_in_progress_ = true;
-        container_->UpdateHeightForDragToOpen(event->details().scroll_y_hint());
-        event->SetHandled();
+        // Only treat this scroll as drag-to-open if the y component is
+        // larger. Otherwise, leave the event unhandled. Horizontal
+        // scrolls are used in the toolbar, e.g. for text scrolling in
+        // the Omnibox.
+        if (event->details().scroll_y_hint() >
+            event->details().scroll_x_hint()) {
+          drag_in_progress_ = true;
+          container_->UpdateHeightForDragToOpen(
+              event->details().scroll_y_hint());
+          event->SetHandled();
+        }
         break;
       case ui::ET_GESTURE_SCROLL_UPDATE:
         if (drag_in_progress_) {
@@ -217,9 +225,6 @@ class WebUITabStripContainerView::DragToOpenHandler : public ui::EventHandler {
   WebUITabStripContainerView* const container_;
   views::View* const drag_handle_;
 
-  // True between ET_GESTURE_SCROLL_BEGIN event received and gesture
-  // end. Used to track when an unsupported gesture ends to reset the
-  // container to a good state.
   bool drag_in_progress_ = false;
 };
 

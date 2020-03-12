@@ -557,7 +557,7 @@ bool FakeMediaSource::OnNewVideoFrame(AVFrame* frame) {
     return false;
   video_frame_queue_.push(video_frame);
   video_frame_queue_.back()->AddDestructionObserver(
-      base::Bind(&AVFreeFrame, shallow_copy));
+      base::BindOnce(&AVFreeFrame, shallow_copy));
   last_video_frame_timestamp_ = timestamp;
   return true;
 }

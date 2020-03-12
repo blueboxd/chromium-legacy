@@ -61,6 +61,11 @@ class NET_EXPORT DnsClient {
   virtual bool SetSystemConfig(base::Optional<DnsConfig> system_config) = 0;
   virtual bool SetConfigOverrides(DnsConfigOverrides config_overrides) = 0;
 
+  // If there is a current session, forces replacement with a new current
+  // session with the same effective config, and creates a new
+  // DnsTransactionFactory for the new session.
+  virtual void ReplaceCurrentSession() = 0;
+
   // Used for tracking per-context-per-session data.
   // TODO(crbug.com/1022059): Once more per-context-per-session data has been
   // moved to ResolveContext and it doesn't need to call back into DnsSession,

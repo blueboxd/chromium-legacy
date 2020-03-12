@@ -56,6 +56,8 @@ CONTENT_EXPORT void CreateDedicatedWorkerHostFactory(
     GlobalFrameRoutingId ancestor_render_frame_host_id,
     const url::Origin& creator_origin,
     const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+        coep_reporter,
     mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver);
 
 // A host for a single dedicated worker. It deletes itself upon Mojo
@@ -72,6 +74,8 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
       GlobalFrameRoutingId ancestor_render_frame_host_id,
       const url::Origin& creator_origin,
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+      mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+          coep_reporter,
       mojo::PendingReceiver<blink::mojom::DedicatedWorkerHost> host);
   ~DedicatedWorkerHost() final;
 
@@ -234,7 +238,14 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
   mojo::Remote<blink::mojom::SubresourceLoaderUpdater>
       subresource_loader_updater_;
 
-  std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter_;
+  // The endpoint of this mojo interface is the RenderFrameHostImpl's COEP
+  // reporter. The COEP endpoint is correct, but the context_url is the
+  // Document's URL.
+  // TODO(arthursonzogni): After landing PlzDedicatedWorker, make the
+  // DedicatedWorkerHost to have its own COEP reporter using the right
+  // context_url.
+  mojo::Remote<network::mojom::CrossOriginEmbedderPolicyReporter>
+      coep_reporter_;  // Never null.
 
   base::WeakPtrFactory<DedicatedWorkerHost> weak_factory_{this};
 

@@ -14,6 +14,17 @@
 #include "net/base/net_export.h"
 #include "url/origin.h"
 
+namespace network {
+namespace mojom {
+class NetworkIsolationKeyDataView;
+}  // namespace mojom
+}  // namespace network
+
+namespace mojo {
+template <typename DataViewType, typename T>
+struct StructTraits;
+}  // namespace mojo
+
 namespace net {
 
 // Key used to isolate shared network stack resources used by requests based on
@@ -42,6 +53,11 @@ class NET_EXPORT NetworkIsolationKey {
   // persisted to disk.
   static NetworkIsolationKey CreateTransient();
 
+  // Creates a non-empty NetworkIsolationKey with an opaque origin that is not
+  // considered transient. The returned NetworkIsolationKey will be cross-origin
+  // with all other keys and associated data is able to be persisted to disk.
+  static NetworkIsolationKey CreateOpaqueAndNonTransient();
+
   // Creates a new key using |top_frame_origin_| and |new_frame_origin|.
   NetworkIsolationKey CreateWithNewFrameOrigin(
       const url::Origin& new_frame_origin) const;
@@ -55,21 +71,23 @@ class NET_EXPORT NetworkIsolationKey {
 
   // Compare keys for equality, true if all enabled fields are equal.
   bool operator==(const NetworkIsolationKey& other) const {
-    return top_frame_origin_ == other.top_frame_origin_ &&
-           frame_origin_ == other.frame_origin_;
+    return std::tie(top_frame_origin_, frame_origin_,
+                    opaque_and_non_transient_) ==
+           std::tie(other.top_frame_origin_, other.frame_origin_,
+                    other.opaque_and_non_transient_);
   }
 
   // Compare keys for inequality, true if any enabled field varies.
   bool operator!=(const NetworkIsolationKey& other) const {
-    return (top_frame_origin_ != other.top_frame_origin_) ||
-           (frame_origin_ != other.frame_origin_);
+    return !(*this == other);
   }
 
   // Provide an ordering for keys based on all enabled fields.
   bool operator<(const NetworkIsolationKey& other) const {
-    return top_frame_origin_ < other.top_frame_origin_ ||
-           (top_frame_origin_ == other.top_frame_origin_ &&
-            frame_origin_ < other.frame_origin_);
+    return std::tie(top_frame_origin_, frame_origin_,
+                    opaque_and_non_transient_) <
+           std::tie(other.top_frame_origin_, other.frame_origin_,
+                    other.opaque_and_non_transient_);
   }
 
   // Returns the string representation of the key, which is the string
@@ -121,10 +139,18 @@ class NET_EXPORT NetworkIsolationKey {
       WARN_UNUSED_RESULT;
 
  private:
+  friend struct mojo::StructTraits<network::mojom::NetworkIsolationKeyDataView,
+                                   net::NetworkIsolationKey>;
   FRIEND_TEST_ALL_PREFIXES(NetworkIsolationKeyWithFrameOriginTest,
                            UseRegistrableDomain);
 
   void ReplaceOriginsWithRegistrableDomains();
+
+  bool IsOpaque() const;
+
+  // Whether opaque origins cause the key to be transient. Always false, unless
+  // created with |CreateOpaqueAndNonTransient|.
+  bool opaque_and_non_transient_ = false;
 
   // Whether or not to use the |frame_origin_| as part of the key.
   bool use_frame_origin_;

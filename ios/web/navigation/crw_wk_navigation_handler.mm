@@ -533,11 +533,9 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
                     forNavigation:navigation];
 
   if (webViewURL.is_empty()) {
-    // May happen on iOS9, however in didCommitNavigation: callback the URL
-    // will be "about:blank".
+    // URL starts empty for window.open(""), by didCommitNavigation: callback
+    // the URL will be "about:blank".
     webViewURL = GURL(url::kAboutBlankURL);
-    UMA_HISTOGRAM_BOOLEAN("IOS.WKWebViewStartProvisionalNavigationWithEmptyURL",
-                          true);
   }
 
   web::NavigationContextImpl* context =

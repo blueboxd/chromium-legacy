@@ -59,18 +59,13 @@ namespace ash {
 
 // Records smoothness of bounds animations for the HotseatWidget.
 class HotseatWidgetAnimationMetricsReporter
-    : public HotseatTransitionAnimator::Observer,
-      public ui::AnimationMetricsReporter {
+    : public ui::AnimationMetricsReporter {
  public:
-  explicit HotseatWidgetAnimationMetricsReporter(HotseatState state,
-                                                 Shelf* shelf)
-      : target_state_(state) {}
+  HotseatWidgetAnimationMetricsReporter() = default;
+  ~HotseatWidgetAnimationMetricsReporter() override = default;
 
-  ~HotseatWidgetAnimationMetricsReporter() override {}
-
-  void OnHotseatTransitionAnimationWillStart(HotseatState from_state,
-                                             HotseatState to_state) override {
-    target_state_ = to_state;
+  void SetTargetHotseatState(HotseatState target_state) {
+    target_state_ = target_state;
   }
 
   // ui::AnimationMetricsReporter:
@@ -102,7 +97,7 @@ class HotseatWidgetAnimationMetricsReporter
 
  private:
   // The state to which the animation is transitioning.
-  HotseatState target_state_;
+  HotseatState target_state_ = HotseatState::kHidden;
 };
 
 // An animation metrics reporter for the shelf navigation widget.
@@ -329,10 +324,7 @@ void Shelf::CreateHotseatWidget(aura::Window* container) {
   hotseat_widget_->Initialize(container, this);
   shelf_widget_->RegisterHotseatWidget(hotseat_widget());
   hotseat_transition_metrics_reporter_ =
-      std::make_unique<HotseatWidgetAnimationMetricsReporter>(
-          hotseat_widget()->state(), this);
-  shelf_widget_->hotseat_transition_animator()->AddObserver(
-      hotseat_transition_metrics_reporter_.get());
+      std::make_unique<HotseatWidgetAnimationMetricsReporter>();
 }
 
 void Shelf::CreateStatusAreaWidget(aura::Window* status_container) {
@@ -370,8 +362,6 @@ void Shelf::CreateShelfWidget(aura::Window* root) {
 }
 
 void Shelf::ShutdownShelfWidget() {
-  shelf_widget_->hotseat_transition_animator()->RemoveObserver(
-      hotseat_transition_metrics_reporter_.get());
   // The contents view of the hotseat widget may rely on the status area widget.
   // So do explicit destruction here.
   hotseat_widget_.reset();
@@ -598,7 +588,9 @@ ShelfView* Shelf::GetShelfViewForTesting() {
   return shelf_widget_->shelf_view_for_testing();
 }
 
-ui::AnimationMetricsReporter* Shelf::GetHotseatTransitionMetricsReporter() {
+ui::AnimationMetricsReporter* Shelf::GetHotseatTransitionMetricsReporter(
+    HotseatState target_state) {
+  hotseat_transition_metrics_reporter_->SetTargetHotseatState(target_state);
   return hotseat_transition_metrics_reporter_.get();
 }
 

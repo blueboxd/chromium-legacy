@@ -55,9 +55,7 @@ class SiteDetails {
                               SiteData* site_data);
 
   // Updates the global histograms for tracking memory usage.
-  static void UpdateHistograms(const BrowserContextSiteDataMap& site_data_map,
-                               int all_renderer_process_count,
-                               int non_renderer_process_count);
+  static void UpdateHistograms(const BrowserContextSiteDataMap& site_data_map);
 
  private:
   // Only static methods - never needs to be constructed.

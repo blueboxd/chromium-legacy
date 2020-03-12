@@ -445,8 +445,14 @@
         <include name="IDR_OS_SETTINGS_SEARCH_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\settings\chromeos\search\search.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
       </if>
       <if expr="chromeos">
+        <!-- OOBE / Login resources -->
         <include name="IDR_ASSISTANT_LOGO_PNG" file="resources\chromeos\assistant_optin\assistant_logo.png" type="BINDATA" />
         <include name="IDR_SUPERVISION_ICON_PNG" file="resources\chromeos\supervision\supervision_icon.png" type="BINDATA" />
+
+        <if expr="_google_chrome">
+          <!-- ARC Apps dowloading animation. -->
+          <include name="IDR_OOBE_ARC_APPS_DOWNLOADING_VIDEO" file="internal\resources\arc_support\videos\app_downloading.mp4" type="BINDATA" />
+        </if>
       </if>
       <if expr="safe_browsing_mode == 1">
         <include name="IDR_RESET_PASSWORD_HTML" file="resources\reset_password\reset_password.html" type="BINDATA" compress="gzip" />

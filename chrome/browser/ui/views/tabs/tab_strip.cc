@@ -1910,9 +1910,10 @@ SkColor TabStrip::GetTabBackgroundColor(
   const bool is_active_frame =
       (active_state == State::kActive) ||
       ((active_state == State::kUseCurrent) && ShouldPaintAsActiveFrame());
-  return tp->GetColor(is_active_frame
-                          ? ThemeProperties::COLOR_BACKGROUND_TAB
-                          : ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE);
+  return tp->GetColor(
+      is_active_frame
+          ? ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE
+          : ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE);
 }
 
 SkColor TabStrip::GetTabForegroundColor(TabActive active,
@@ -1921,27 +1922,31 @@ SkColor TabStrip::GetTabForegroundColor(TabActive active,
   if (!tp)
     return SK_ColorBLACK;
 
-  const bool is_active_frame = ShouldPaintAsActiveFrame();
+  constexpr int kColorIds[2][2] = {
+      {ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE,
+       ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE},
+      {ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_INACTIVE,
+       ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE}};
 
-  // This color varies based on the tab and frame active states.
-  int color_id = ThemeProperties::COLOR_TAB_TEXT;
-  if (active != TabActive::kActive) {
-    color_id = is_active_frame
-                   ? ThemeProperties::COLOR_BACKGROUND_TAB_TEXT
-                   : ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE;
-  }
+  const bool tab_active = active == TabActive::kActive;
+  const bool frame_active = ShouldPaintAsActiveFrame();
+  const int color_id = kColorIds[tab_active][frame_active];
+
   SkColor color = tp->GetColor(color_id);
   if (tp->HasCustomColor(color_id))
     return color;
-  if ((color_id == ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE) &&
-      tp->HasCustomColor(ThemeProperties::COLOR_BACKGROUND_TAB_TEXT)) {
+  if ((color_id ==
+       ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE) &&
+      tp->HasCustomColor(
+          ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE)) {
     // If a custom theme sets a background tab text color for active but not
     // inactive windows, generate the inactive color by blending the active one
     // at 75% as we do in the default theme.
-    color = tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
+    color = tp->GetColor(
+        ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE);
   }
 
-  if (!is_active_frame)
+  if (!frame_active)
     color = color_utils::AlphaBlend(color, background_color, 0.75f);
 
   // To minimize any readability cost of custom system frame colors, try to make
@@ -1951,12 +1956,11 @@ SkColor TabStrip::GetTabForegroundColor(TabActive active,
   // colors when no system colors are involved, except for the inactive tab/
   // inactive frame case, which has been raised from 4.48 to 4.5 to meet
   // accessibility guidelines.
-  constexpr float kContrast[2][2] = {{5.0f,     // Active tab, inactive frame
-                                      10.46f},  // Active tab, active frame
-                                     {4.5f,     // Inactive tab, inactive frame
-                                      7.98f}};  // Inactive tab, active frame
-  const float contrast =
-      kContrast[active == TabActive::kActive ? 0 : 1][is_active_frame];
+  constexpr float kContrast[2][2] = {{4.5f,      // Inactive tab, inactive frame
+                                      7.98f},    // Inactive tab, active frame
+                                     {5.0f,      // Active tab, inactive frame
+                                      10.46f}};  // Active tab, active frame
+  const float contrast = kContrast[tab_active][frame_active];
   return color_utils::BlendForMinContrast(color, background_color, target,
                                           contrast)
       .color;

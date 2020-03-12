@@ -1,0 +1,70 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/views/apps/app_dialog/app_pause_dialog_view.h"
+
+#include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/views/window/dialog_delegate.h"
+
+namespace {
+
+AppPauseDialogView* g_app_pause_dialog_view = nullptr;
+
+}  // namespace
+
+// static
+void apps::AppServiceProxy::CreatePauseDialog(
+    const std::string& app_name,
+    const gfx::ImageSkia& image,
+    const apps::PauseData& pause_data,
+    apps::AppServiceProxy::OnPauseDialogClosedCallback closed_callback) {
+  views::DialogDelegate::CreateDialogWidget(
+      new AppPauseDialogView(app_name, image, pause_data,
+                             std::move(closed_callback)),
+      nullptr, nullptr)
+      ->Show();
+}
+
+AppPauseDialogView::AppPauseDialogView(
+    const std::string& app_name,
+    const gfx::ImageSkia& image,
+    const apps::PauseData& pause_data,
+    apps::AppServiceProxy::OnPauseDialogClosedCallback closed_callback)
+    : closed_callback_(std::move(closed_callback)) {
+  const int cutoff = pause_data.minutes == 0 || pause_data.hours == 0 ? 0 : -1;
+  base::string16 heading_text = l10n_util::GetStringFUTF16(
+      IDS_APP_PAUSE_HEADING, base::UTF8ToUTF16(app_name),
+      ui::TimeFormat::Detailed(
+          ui::TimeFormat::Format::FORMAT_DURATION,
+          ui::TimeFormat::Length::LENGTH_LONG, cutoff,
+          base::TimeDelta::FromHours(pause_data.hours) +
+              base::TimeDelta::FromMinutes(pause_data.minutes)));
+
+  InitializeView(image, heading_text);
+
+  g_app_pause_dialog_view = this;
+}
+
+AppPauseDialogView::~AppPauseDialogView() {
+  g_app_pause_dialog_view = nullptr;
+}
+
+// static
+AppPauseDialogView* AppPauseDialogView::GetActiveViewForTesting() {
+  return g_app_pause_dialog_view;
+}
+
+bool AppPauseDialogView::Accept() {
+  std::move(closed_callback_).Run();
+  return true;
+}
+
+base::string16 AppPauseDialogView::GetWindowTitle() const {
+  return l10n_util::GetStringUTF16(IDS_APP_PAUSE_PROMPT_TITLE);
+}

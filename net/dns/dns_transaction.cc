@@ -864,13 +864,19 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
 
   ~DnsOverHttpsProbeRunner() override = default;
 
-  void Start() override {
-    DCHECK(!started_);
-    StartProbes(false /* network_change */);
-  }
+  void Start(bool network_change) override {
+    DCHECK(session_);
 
-  void RestartForNetworkChange() override {
-    StartProbes(true /* network_change */);
+    // Start probe sequences for any servers where it is not currently running.
+    for (size_t i = 0; i < session_->config().dns_over_https_servers.size();
+         i++) {
+      if (!probe_stats_list_[i]) {
+        probe_stats_list_[i] = std::make_unique<ProbeStats>();
+        ContinueProbe(i, probe_stats_list_[i]->weak_factory.GetWeakPtr(),
+                      network_change,
+                      base::TimeTicks::Now() /* sequence_start_time */);
+      }
+    }
   }
 
   base::TimeDelta GetDelayUntilNextProbeForTest(
@@ -894,21 +900,6 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
     base::WeakPtrFactory<ProbeStats> weak_factory{this};
   };
 
-  void StartProbes(bool network_change) {
-    DCHECK(session_);
-
-    started_ = true;
-
-    for (size_t i = 0; i < session_->config().dns_over_https_servers.size();
-         i++) {
-      // Clear the existing probe stats.
-      probe_stats_list_[i] = std::make_unique<ProbeStats>();
-      ContinueProbe(i, probe_stats_list_[i]->weak_factory.GetWeakPtr(),
-                    network_change,
-                    base::TimeTicks::Now() /* sequence_start_time */);
-    }
-  }
-
   void ContinueProbe(int doh_server_index,
                      base::WeakPtr<ProbeStats> probe_stats,
                      bool network_change,
@@ -923,6 +914,13 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
     // don't continue to send probes.
     if (!probe_stats)
       return;
+
+    // Cancel the probe sequence for this server if the server is already
+    // available.
+    if (context_->GetDohServerAvailability(doh_server_index, session_.get())) {
+      probe_stats_list_[doh_server_index] = nullptr;
+      return;
+    }
 
     // Schedule a new probe assuming this one will fail. The newly scheduled
     // probe will not run if an earlier probe has already succeeded. Probes may
@@ -980,8 +978,13 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
         context_->RecordRtt(doh_server_index, true /* is_doh_server */,
                             base::TimeTicks::Now() - query_start_time, rv,
                             session_.get());
-        probe_stats_list_[doh_server_index] = nullptr;
         success = true;
+
+        // Do not delete the ProbeStats and cancel the probe sequence. It will
+        // cancel itself on the next scheduled ContinueProbe() call if the
+        // server is still available. This way, the backoff schedule will be
+        // maintained if a server quickly becomes unavailable again before that
+        // scheduled call.
       }
     }
 
@@ -992,7 +995,6 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
         base::TimeTicks::Now() - sequence_start_time);
   }
 
-  bool started_ = false;
   base::WeakPtr<DnsSession> session_;
   // TODO(ericorth@chromium.org): Use base::UnownedPtr once available.
   ResolveContext* const context_;

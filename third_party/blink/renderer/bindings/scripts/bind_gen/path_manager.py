@@ -181,6 +181,7 @@ class PathManager(object):
             filename = posixpath.extsep.join([filename, ext])
         return posixpath.join(dirpath, filename)
 
+
 # A hack to make the filepaths to generated IDL unions compatible with the old
 # bindings generator.
 #

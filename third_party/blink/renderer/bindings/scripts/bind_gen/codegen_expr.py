@@ -4,7 +4,6 @@
 
 import web_idl
 
-
 _CODE_GEN_EXPR_PASS_KEY = object()
 
 

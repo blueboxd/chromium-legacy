@@ -14,14 +14,23 @@ cr.define('settings', function() {
    * @param {!SettingsRoutes} r
    */
   function addPrivacyChildRoutes(r) {
-    r.CERTIFICATES = r.PRIVACY.createChild('/certificates');
     r.SITE_SETTINGS = r.PRIVACY.createChild('/content');
-    if (loadTimeData.getBoolean('enableSecurityKeysSubpage')) {
-      r.SECURITY_KEYS = r.PRIVACY.createChild('/securityKeys');
-    }
     if (loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
       r.SECURITY = r.PRIVACY.createChild('/security');
       r.COOKIES = r.PRIVACY.createChild('/cookies');
+    }
+
+    // <if expr="use_nss_certs">
+    r.CERTIFICATES = loadTimeData.getBoolean('privacySettingsRedesignEnabled') ?
+        r.SECURITY.createChild('/certificates') :
+        r.PRIVACY.createChild('/certificates');
+    // </if>
+
+    if (loadTimeData.getBoolean('enableSecurityKeysSubpage')) {
+      r.SECURITY_KEYS =
+          loadTimeData.getBoolean('privacySettingsRedesignEnabled') ?
+          r.SECURITY.createChild('/securityKeys') :
+          r.PRIVACY.createChild('/securityKeys');
     }
 
     r.SITE_SETTINGS_ALL = r.SITE_SETTINGS.createChild('all');

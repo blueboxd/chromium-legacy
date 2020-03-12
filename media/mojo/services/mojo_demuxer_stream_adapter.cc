@@ -24,7 +24,7 @@ MojoDemuxerStreamAdapter::MojoDemuxerStreamAdapter(
       stream_ready_cb_(stream_ready_cb),
       type_(UNKNOWN) {
   DVLOG(1) << __func__;
-  demuxer_stream_->Initialize(base::Bind(
+  demuxer_stream_->Initialize(base::BindOnce(
       &MojoDemuxerStreamAdapter::OnStreamReady, weak_factory_.GetWeakPtr()));
 }
 
@@ -38,8 +38,8 @@ void MojoDemuxerStreamAdapter::Read(ReadCB read_cb) {
   DCHECK(!read_cb_);
 
   read_cb_ = std::move(read_cb);
-  demuxer_stream_->Read(base::Bind(&MojoDemuxerStreamAdapter::OnBufferReady,
-                                   weak_factory_.GetWeakPtr()));
+  demuxer_stream_->Read(base::BindOnce(&MojoDemuxerStreamAdapter::OnBufferReady,
+                                       weak_factory_.GetWeakPtr()));
 }
 
 bool MojoDemuxerStreamAdapter::IsReadPending() const {

@@ -77,6 +77,19 @@ class OutsideSettingsCSPDelegate final
     return outside_settings_object_->GetSecurityOrigin();
   }
 
+  SecureContextMode GetSecureContextMode() override {
+    DCHECK(global_scope_for_logging_->IsContextThread());
+    // TODO(mkwst): This doesn't handle nested workers correctly; we ought to
+    // be reading the SecureContextMode from the relevant SecurityContext, but
+    // we don't have it here. This code simply checks the worker's origin, which
+    // generally works, but would incorrectly consider a secure worker nested in
+    // a non-secure worker as a "secure context".
+    return outside_settings_object_->GetSecurityOrigin()
+                   ->IsPotentiallyTrustworthy()
+               ? SecureContextMode::kSecureContext
+               : SecureContextMode::kInsecureContext;
+  }
+
   // We don't have to do anything here, as we don't want to update
   // SecurityContext of either parent context or WorkerOrWorkletGlobalScope.
   // TODO(hiroshige): Revisit the relationship of ContentSecurityPolicy,

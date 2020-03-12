@@ -261,7 +261,7 @@ bool NGInlineCursor::IsPartOfCulledInlineBox(
     return false;
   DCHECK(!layout_object->IsFloatingOrOutOfFlowPositioned());
   DCHECK(!Current().BoxFragment() ||
-         !Current().BoxFragment()->IsBlockFormattingContextRoot());
+         !Current().BoxFragment()->IsFormattingContextRoot());
   return layout_object->IsDescendantOf(&layout_inline);
 }
 

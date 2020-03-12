@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_CLIENT_CERT_USAGE_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_CLIENT_CERT_USAGE_OBSERVER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -28,21 +29,25 @@ class LoginClientCertUsageObserver final
   // Returns whether exactly one unique certificate was used, and, if so,
   // writes this certificate to |cert| and appends the signature algorithms
   // supported by its provider into |signature_algorithms|.
+  // The certificate was signed by the extension |extension_id|.
   bool GetOnlyUsedClientCert(
       scoped_refptr<net::X509Certificate>* cert,
       std::vector<ChallengeResponseKey::SignatureAlgorithm>*
-          signature_algorithms) const;
+          signature_algorithms,
+      std::string* extension_id) const;
 
  private:
   // CertificateProviderService::Observer:
-  void OnSignCompleted(
-      const scoped_refptr<net::X509Certificate>& certificate) override;
+  void OnSignCompleted(const scoped_refptr<net::X509Certificate>& certificate,
+                       const std::string& extension_id) override;
 
   // How many times the client certificate, used on the login screen, has
   // changed.
   int used_cert_count_ = 0;
   // One of the client certificates that was used on the login screen.
   scoped_refptr<net::X509Certificate> used_cert_;
+  // The extension that signed |used_cert_|.
+  std::string used_extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginClientCertUsageObserver);
 };

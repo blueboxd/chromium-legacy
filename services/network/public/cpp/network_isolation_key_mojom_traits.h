@@ -27,6 +27,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
     return input.GetFrameOrigin();
   }
 
+  static bool opaque_and_non_transient(const net::NetworkIsolationKey& input) {
+    return input.opaque_and_non_transient_;
+  }
+
   static bool Read(network::mojom::NetworkIsolationKeyDataView data,
                    net::NetworkIsolationKey* out);
 };

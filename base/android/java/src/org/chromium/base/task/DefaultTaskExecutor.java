@@ -44,16 +44,12 @@ class DefaultTaskExecutor implements TaskExecutor {
     @Override
     public synchronized void postDelayedTask(TaskTraits taskTraits, Runnable task, long delay) {
         if (taskTraits.hasExtension()) {
-            TaskRunner runner = createTaskRunner(taskTraits);
-            runner.postDelayedTask(task, delay);
-            runner.destroy();
+            createTaskRunner(taskTraits).postDelayedTask(task, delay);
         } else {
             // Caching TaskRunners only for common TaskTraits.
             TaskRunner runner = mTraitsToRunnerMap.get(taskTraits);
             if (runner == null) {
                 runner = createTaskRunner(taskTraits);
-                // Disable destroy() check since object will live forever.
-                runner.disableLifetimeCheck();
                 mTraitsToRunnerMap.put(taskTraits, runner);
             }
             runner.postDelayedTask(task, delay);

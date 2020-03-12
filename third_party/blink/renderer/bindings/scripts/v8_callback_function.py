@@ -1,7 +1,6 @@
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Generate template values for a callback function.
 
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
@@ -43,15 +42,24 @@ def callback_function_context(callback_function):
         # the moment, the two are being defined because their values may change
         # in the future (e.g. if we support [ImplementedAs=] in callback
         # functions).
-        'callback_function_name': callback_function.name,
-        'cpp_class': 'V8%s' % callback_function.name,
-        'cpp_includes': sorted(includes),
-        'forward_declarations': sorted(forward_declarations(callback_function)),
-        'header_includes': sorted(CALLBACK_FUNCTION_H_INCLUDES),
-        'idl_type': idl_type_str,
-        'is_treat_non_object_as_null': 'TreatNonObjectAsNull' in callback_function.extended_attributes,
-        'native_value_traits_tag': v8_types.idl_type_to_native_value_traits_tag(idl_type),
-        'return_cpp_type': idl_type.cpp_type,
+        'callback_function_name':
+        callback_function.name,
+        'cpp_class':
+        'V8%s' % callback_function.name,
+        'cpp_includes':
+        sorted(includes),
+        'forward_declarations':
+        sorted(forward_declarations(callback_function)),
+        'header_includes':
+        sorted(CALLBACK_FUNCTION_H_INCLUDES),
+        'idl_type':
+        idl_type_str,
+        'is_treat_non_object_as_null':
+        'TreatNonObjectAsNull' in callback_function.extended_attributes,
+        'native_value_traits_tag':
+        v8_types.idl_type_to_native_value_traits_tag(idl_type),
+        'return_cpp_type':
+        idl_type.cpp_type,
     }
 
     context.update(arguments_context(callback_function.arguments))
@@ -78,14 +86,21 @@ def arguments_context(arguments):
     def argument_context(argument):
         idl_type = argument.idl_type
         return {
-            'cpp_value_to_v8_value': idl_type.cpp_value_to_v8_value(
-                argument.name, isolate='GetIsolate()',
+            'cpp_value_to_v8_value':
+            idl_type.cpp_value_to_v8_value(
+                argument.name,
+                isolate='GetIsolate()',
                 creation_context='argument_creation_context'),
-            'enum_type': idl_type.enum_type,
-            'enum_values': idl_type.enum_values,
-            'is_variadic': argument.is_variadic,
-            'name': argument.name,
-            'v8_name': 'v8_%s' % argument.name,
+            'enum_type':
+            idl_type.enum_type,
+            'enum_values':
+            idl_type.enum_values,
+            'is_variadic':
+            argument.is_variadic,
+            'name':
+            argument.name,
+            'v8_name':
+            'v8_%s' % argument.name,
         }
 
     def argument_cpp_type(argument):
@@ -98,7 +113,9 @@ def arguments_context(arguments):
         else:
             return cpp_type
 
-    argument_declarations = ['bindings::V8ValueOrScriptWrappableAdapter callback_this_value']
+    argument_declarations = [
+        'bindings::V8ValueOrScriptWrappableAdapter callback_this_value'
+    ]
     argument_declarations.extend(
         '%s %s' % (argument_cpp_type(argument), argument.name)
         for argument in arguments)

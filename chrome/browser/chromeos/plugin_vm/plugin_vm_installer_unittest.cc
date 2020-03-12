@@ -89,6 +89,7 @@ class MockObserver : public PluginVmInstaller::Observer {
                void(plugin_vm::PluginVmInstaller::FailureReason));
   MOCK_METHOD2(OnImportProgressUpdated,
                void(int percent_completed, base::TimeDelta elapsed_time));
+  MOCK_METHOD0(OnCreated, void());
   MOCK_METHOD0(OnImported, void());
   MOCK_METHOD0(OnImportCancelled, void());
   MOCK_METHOD1(OnImportFailed,
@@ -273,7 +274,7 @@ class PluginVmInstallerTestBase : public testing::Test {
   }
 
   void OnDownloadCompleted() {
-    installer_->SetDownloadedPluginVmImageArchiveForTesting(
+    installer_->SetDownloadedImageForTesting(
         fake_downloaded_plugin_vm_image_archive_);
     if (download_completed_closure_)
       std::move(download_completed_closure_).Run();
@@ -523,6 +524,9 @@ TEST_F(PluginVmInstallerDownloadServiceTest, CancelledImportTest) {
 
   EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_, OnDownloadCompleted());
+  EXPECT_CALL(*observer_, OnImported()).Times(0);
+  EXPECT_CALL(*observer_, OnCreated()).Times(0);
+  EXPECT_CALL(*observer_, OnImportFailed(_)).Times(0);
   EXPECT_CALL(*observer_, OnImportCancelled());
 
   StartAndRunUntilImporting();

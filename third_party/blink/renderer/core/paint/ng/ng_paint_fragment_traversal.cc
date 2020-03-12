@@ -272,7 +272,7 @@ bool NGPaintFragmentTraversal::InlineDescendantsRange::Iterator::
 bool NGPaintFragmentTraversal::InlineDescendantsRange::Iterator::ShouldTraverse(
     const NGPaintFragment& fragment) {
   return fragment.PhysicalFragment().IsContainer() &&
-         !fragment.PhysicalFragment().IsBlockFormattingContextRoot();
+         !fragment.PhysicalFragment().IsFormattingContextRoot();
 }
 
 }  // namespace blink

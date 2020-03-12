@@ -58,8 +58,8 @@ void MojoAudioDecoderService::Initialize(const AudioDecoderConfig& config,
 
   decoder_->Initialize(
       config, cdm_context,
-      base::Bind(&MojoAudioDecoderService::OnInitialized, weak_this_,
-                 base::Passed(&callback)),
+      base::BindOnce(&MojoAudioDecoderService::OnInitialized, weak_this_,
+                     base::Passed(&callback)),
       base::Bind(&MojoAudioDecoderService::OnAudioBufferReady, weak_this_),
       base::Bind(&MojoAudioDecoderService::OnWaiting, weak_this_));
 }
@@ -85,8 +85,8 @@ void MojoAudioDecoderService::Reset(ResetCallback callback) {
 
   // Reset the reader so that pending decodes will be dispatches first.
   mojo_decoder_buffer_reader_->Flush(
-      base::Bind(&MojoAudioDecoderService::OnReaderFlushDone, weak_this_,
-                 base::Passed(&callback)));
+      base::BindOnce(&MojoAudioDecoderService::OnReaderFlushDone, weak_this_,
+                     base::Passed(&callback)));
 }
 
 void MojoAudioDecoderService::OnInitialized(InitializeCallback callback,
@@ -121,8 +121,8 @@ void MojoAudioDecoderService::OnReadDone(DecodeCallback callback,
 }
 
 void MojoAudioDecoderService::OnReaderFlushDone(ResetCallback callback) {
-  decoder_->Reset(base::Bind(&MojoAudioDecoderService::OnResetDone, weak_this_,
-                             base::Passed(&callback)));
+  decoder_->Reset(base::BindOnce(&MojoAudioDecoderService::OnResetDone,
+                                 weak_this_, base::Passed(&callback)));
 }
 
 void MojoAudioDecoderService::OnDecodeStatus(DecodeCallback callback,

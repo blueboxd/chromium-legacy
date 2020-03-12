@@ -69,9 +69,8 @@ void DecryptingMediaResource::Initialize(InitCB init_cb, WaitingCB waiting_cb) {
     // trampolined to the |task_runner_|."
     decrypting_demuxer_stream->Initialize(
         stream, cdm_context_,
-        base::BindRepeating(
-            &DecryptingMediaResource::OnDecryptingDemuxerInitialized,
-            weak_factory_.GetWeakPtr()));
+        base::BindOnce(&DecryptingMediaResource::OnDecryptingDemuxerInitialized,
+                       weak_factory_.GetWeakPtr()));
 
     streams_.push_back(decrypting_demuxer_stream.get());
     owned_streams_.push_back(std::move(decrypting_demuxer_stream));

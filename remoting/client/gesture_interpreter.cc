@@ -21,13 +21,14 @@ const float kScrollFlingTimeConstant = 250.f;
 namespace remoting {
 GestureInterpreter::GestureInterpreter()
     // TODO(yuweih): These animations are better to take GetWeakPtr().
-    : pan_animation_(kOneFingerFlingTimeConstant,
-                     base::Bind(&GestureInterpreter::PanWithoutAbortAnimations,
-                                base::Unretained(this))),
+    : pan_animation_(
+          kOneFingerFlingTimeConstant,
+          base::BindRepeating(&GestureInterpreter::PanWithoutAbortAnimations,
+                              base::Unretained(this))),
       scroll_animation_(
           kScrollFlingTimeConstant,
-          base::Bind(&GestureInterpreter::ScrollWithoutAbortAnimations,
-                     base::Unretained(this))) {}
+          base::BindRepeating(&GestureInterpreter::ScrollWithoutAbortAnimations,
+                              base::Unretained(this))) {}
 
 GestureInterpreter::~GestureInterpreter() = default;
 

@@ -52,7 +52,8 @@ template("nacl_toolchain") {
       use_allocator = "none"
       use_allocator_shim = false
 
-      # We do not support clang code coverage in the NaCl toolchains.
+      # We do not support clang profiling in the NaCl toolchains.
+      use_clang_profiling = false
       use_clang_coverage = false
       coverage_instrumentation_input_file = ""
     }

@@ -85,7 +85,7 @@ class PaymentRequestStateTest : public testing::Test,
         GURL("https://example.com/pay"),
         url::Origin::Create(GURL("https://example.com")), spec_.get(), this,
         "en-US", &test_personal_data_manager_, &test_payment_request_delegate_,
-        base::Bind(
+        base::BindRepeating(
             [](const url::Origin& origin,
                int64_t registration_id) { /* Intentionally left blank. */ }),
         &journey_logger_);

@@ -313,8 +313,8 @@ class RendererImplTest : public ::testing::Test {
     EXPECT_CALL(callbacks_, OnCdmAttached(expected_result))
         .WillOnce(SaveArg<0>(&is_cdm_set_));
     renderer_impl_->SetCdm(cdm_context_.get(),
-                           base::BindRepeating(&CallbackHelper::OnCdmAttached,
-                                               base::Unretained(&callbacks_)));
+                           base::BindOnce(&CallbackHelper::OnCdmAttached,
+                                          base::Unretained(&callbacks_)));
     base::RunLoop().RunUntilIdle();
   }
 

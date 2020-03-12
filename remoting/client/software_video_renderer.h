@@ -64,10 +64,10 @@ class SoftwareVideoRenderer : public protocol::VideoRenderer,
 
  private:
   void RenderFrame(std::unique_ptr<protocol::FrameStats> stats,
-                   const base::Closure& done,
+                   base::OnceClosure done,
                    std::unique_ptr<webrtc::DesktopFrame> frame);
   void OnFrameRendered(std::unique_ptr<protocol::FrameStats> stats,
-                       const base::Closure& done);
+                       base::OnceClosure done);
 
   scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner_;
 

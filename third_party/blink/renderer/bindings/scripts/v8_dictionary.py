@@ -1,7 +1,6 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Generate template contexts of dictionaries for both v8 bindings and
 implementation classes that are used by blink's core/modules.
 """
@@ -14,7 +13,6 @@ from v8_utilities import has_extended_attribute_value
 import operator
 import v8_types
 import v8_utilities
-
 
 DICTIONARY_H_INCLUDES = frozenset([
     'base/containers/span.h',
@@ -60,6 +58,7 @@ def unwrap_nullable_if_needed(idl_type):
 
 # Context for V8 bindings
 
+
 def dictionary_context(dictionary, interfaces_info, component_info):
     includes.clear()
     includes.update(DICTIONARY_CPP_INCLUDES)
@@ -68,9 +67,11 @@ def dictionary_context(dictionary, interfaces_info, component_info):
         raise Exception(
             'Dictionary cannot be RuntimeEnabled: %s' % dictionary.name)
 
-    members = [member_context(dictionary, member, component_info)
-               for member in sorted(dictionary.members,
-                                    key=operator.attrgetter('name'))]
+    members = [
+        member_context(dictionary, member, component_info)
+        for member in sorted(
+            dictionary.members, key=operator.attrgetter('name'))
+    ]
 
     for member in members:
         if member['runtime_enabled_feature_name']:
@@ -87,15 +88,22 @@ def dictionary_context(dictionary, interfaces_info, component_info):
 
     cpp_class = v8_utilities.cpp_name(dictionary)
     context = {
-        'cpp_class': cpp_class,
-        'has_origin_trial_members': has_origin_trial_members,
-        'header_includes': set(DICTIONARY_H_INCLUDES),
-        'members': members,
-        'required_member_names': sorted([member.name
-                                         for member in dictionary.members
-                                         if member.is_required]),
-        'use_permissive_dictionary_conversion': 'PermissiveDictionaryConversion' in dictionary.extended_attributes,
-        'v8_class': v8_types.v8_type(cpp_class),
+        'cpp_class':
+        cpp_class,
+        'has_origin_trial_members':
+        has_origin_trial_members,
+        'header_includes':
+        set(DICTIONARY_H_INCLUDES),
+        'members':
+        members,
+        'required_member_names':
+        sorted([
+            member.name for member in dictionary.members if member.is_required
+        ]),
+        'use_permissive_dictionary_conversion':
+        'PermissiveDictionaryConversion' in dictionary.extended_attributes,
+        'v8_class':
+        v8_types.v8_type(cpp_class),
     }
     if dictionary.parent:
         IdlType(dictionary.parent).add_includes_for_type()
@@ -128,8 +136,8 @@ def member_context(_, member, component_info):
     # states for some types for memory usage and performance.
     # For types whose |has_explicit_presence| is True, we provide explicit
     # states of presence.
-    has_explicit_presence = (
-        idl_type.is_nullable and idl_type.inner_type.is_interface_type)
+    has_explicit_presence = (idl_type.is_nullable
+                             and idl_type.inner_type.is_interface_type)
 
     def default_values():
         if not member.default_value:
@@ -140,7 +148,8 @@ def member_context(_, member, component_info):
         cpp_default_value = unwrapped_idl_type.literal_cpp_value(
             member.default_value)
         v8_default_value = unwrapped_idl_type.cpp_value_to_v8_value(
-            cpp_value=cpp_default_value, isolate='isolate',
+            cpp_value=cpp_default_value,
+            isolate='isolate',
             creation_context='creationContext')
         return cpp_default_value, v8_default_value
 
@@ -196,10 +205,12 @@ def member_context(_, member, component_info):
         member.is_required,
         'name':
         member.name,
+        # [RuntimeEnabled] for origin trial
         'origin_trial_feature_name':
-        v8_utilities.origin_trial_feature_name(member, runtime_features),  # [RuntimeEnabled] for origin trial
+        v8_utilities.origin_trial_feature_name(member, runtime_features),
+        # [RuntimeEnabled] if not in origin trial
         'runtime_enabled_feature_name':
-        v8_utilities.runtime_enabled_feature_name(member, runtime_features),  # [RuntimeEnabled] if not in origin trial
+        v8_utilities.runtime_enabled_feature_name(member, runtime_features),
         'setter_name':
         setter_name_for_dictionary_member(member),
         'has_value_or_default':
@@ -211,11 +222,17 @@ def member_context(_, member, component_info):
         'v8_value':
         v8_value,
         'v8_value_to_local_cpp_value':
-        idl_type.v8_value_to_local_cpp_value(extended_attributes, v8_value, cpp_value, isolate='isolate', use_exception_state=True),
+        idl_type.v8_value_to_local_cpp_value(
+            extended_attributes,
+            v8_value,
+            cpp_value,
+            isolate='isolate',
+            use_exception_state=True),
     }
 
 
 # Context for implementation classes
+
 
 def dictionary_impl_context(dictionary, interfaces_info):
     def remove_duplicate_members(members):
@@ -229,14 +246,17 @@ def dictionary_impl_context(dictionary, interfaces_info):
             if duplicated_member and duplicated_member != member:
                 raise Exception('Member name conflict: %s' % cpp_name)
             members_dict[cpp_name] = member
-        return sorted(members_dict.values(), key=lambda member: member['cpp_name'])
+        return sorted(
+            members_dict.values(), key=lambda member: member['cpp_name'])
 
     includes.clear()
     header_forward_decls = set()
     header_includes = set(['platform/heap/handle.h'])
-    members = [member_impl_context(member, interfaces_info,
-                                   header_includes, header_forward_decls)
-               for member in dictionary.members]
+    members = [
+        member_impl_context(member, interfaces_info, header_includes,
+                            header_forward_decls)
+        for member in dictionary.members
+    ]
     members = remove_duplicate_members(members)
     context = {
         'header_forward_decls': header_forward_decls,
@@ -245,8 +265,9 @@ def dictionary_impl_context(dictionary, interfaces_info):
         'members': members,
     }
     if dictionary.parent:
-        context['parent_cpp_class'] = v8_utilities.cpp_name_from_interfaces_info(
-            dictionary.parent, interfaces_info)
+        context['parent_cpp_class'] = \
+            v8_utilities.cpp_name_from_interfaces_info(dictionary.parent,
+                                                       interfaces_info)
         parent_interface_info = interfaces_info.get(dictionary.parent)
         if parent_interface_info:
             context['header_includes'].add(
@@ -268,8 +289,8 @@ def member_impl_context(member, interfaces_info, header_includes,
     # states for some types for memory usage and performance.
     # For types whose |has_explicit_presence| is True, we provide explicit
     # states of presence.
-    has_explicit_presence = (
-        member.idl_type.is_nullable and member.idl_type.inner_type.is_interface_type)
+    has_explicit_presence = (member.idl_type.is_nullable
+                             and member.idl_type.inner_type.is_interface_type)
 
     nullable_indicator_name = None
     if not idl_type.cpp_type_has_null_value or has_explicit_presence:
@@ -283,7 +304,8 @@ def member_impl_context(member, interfaces_info, header_includes,
         if idl_type.name == 'Any':
             return '!({0}_.IsEmpty() || {0}_.IsUndefined())'.format(cpp_name)
         if idl_type.name == 'Object':
-            return '!({0}_.IsEmpty() || {0}_.IsNull() || {0}_.IsUndefined())'.format(cpp_name)
+            return '!({0}_.IsEmpty() || {0}_.IsNull() || {0}_.IsUndefined())'.format(
+                cpp_name)
         if idl_type.name == 'Dictionary':
             return '!%s_.IsUndefinedOrNull()' % cpp_name
         return '%s_' % cpp_name
@@ -291,42 +313,62 @@ def member_impl_context(member, interfaces_info, header_includes,
     cpp_default_value = None
     if member.default_value:
         if not member.default_value.is_null or has_explicit_presence:
-            cpp_default_value = idl_type.literal_cpp_value(member.default_value)
+            cpp_default_value = idl_type.literal_cpp_value(
+                member.default_value)
 
     forward_decl_name = idl_type.impl_forward_declaration_name
     if forward_decl_name:
         includes.update(idl_type.impl_includes_for_type(interfaces_info))
         header_forward_decls.add(forward_decl_name)
     else:
-        header_includes.update(idl_type.impl_includes_for_type(interfaces_info))
+        header_includes.update(
+            idl_type.impl_includes_for_type(interfaces_info))
 
     setter_value = 'value'
     if idl_type.is_array_buffer_view_or_typed_array:
         setter_value += '.View()'
 
     non_null_type = idl_type.inner_type if idl_type.is_nullable else idl_type
-    setter_inline = 'inline ' if (
-        non_null_type.is_basic_type or
-        non_null_type.is_enum or
-        non_null_type.is_wrapper_type) else ''
+    setter_inline = 'inline ' if (non_null_type.is_basic_type
+                                  or non_null_type.is_enum
+                                  or non_null_type.is_wrapper_type) else ''
 
     extended_attributes = member.extended_attributes
 
     return {
-        'cpp_default_value': cpp_default_value,
-        'cpp_name': cpp_name,
-        'has_explicit_presence': has_explicit_presence,
-        'getter_expression': cpp_name + '_',
-        'getter_name': getter_name_for_dictionary_member(member),
-        'has_method_expression': has_method_expression(),
-        'has_method_name': has_method_name_for_dictionary_member(member),
-        'is_nullable': idl_type.is_nullable,
-        'is_traceable': idl_type.is_traceable,
-        'member_cpp_type': idl_type.cpp_type_args(used_in_cpp_sequence=True, extended_attributes=extended_attributes),
-        'null_setter_name': null_setter_name_for_dictionary_member(member),
-        'nullable_indicator_name': nullable_indicator_name,
-        'rvalue_cpp_type': idl_type.cpp_type_args(used_as_rvalue_type=True, extended_attributes=extended_attributes),
-        'setter_inline': setter_inline,
-        'setter_name': setter_name_for_dictionary_member(member),
-        'setter_value': setter_value,
+        'cpp_default_value':
+        cpp_default_value,
+        'cpp_name':
+        cpp_name,
+        'has_explicit_presence':
+        has_explicit_presence,
+        'getter_expression':
+        cpp_name + '_',
+        'getter_name':
+        getter_name_for_dictionary_member(member),
+        'has_method_expression':
+        has_method_expression(),
+        'has_method_name':
+        has_method_name_for_dictionary_member(member),
+        'is_nullable':
+        idl_type.is_nullable,
+        'is_traceable':
+        idl_type.is_traceable,
+        'member_cpp_type':
+        idl_type.cpp_type_args(
+            used_in_cpp_sequence=True,
+            extended_attributes=extended_attributes),
+        'null_setter_name':
+        null_setter_name_for_dictionary_member(member),
+        'nullable_indicator_name':
+        nullable_indicator_name,
+        'rvalue_cpp_type':
+        idl_type.cpp_type_args(
+            used_as_rvalue_type=True, extended_attributes=extended_attributes),
+        'setter_inline':
+        setter_inline,
+        'setter_name':
+        setter_name_for_dictionary_member(member),
+        'setter_value':
+        setter_value,
     }

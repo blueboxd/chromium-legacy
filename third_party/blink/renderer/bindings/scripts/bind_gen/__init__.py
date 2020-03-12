@@ -33,7 +33,6 @@ def _setup_sys_path():
 
 _setup_sys_path()
 
-
 from . import style_format
 from .dictionary import generate_dictionaries
 from .enumeration import generate_enumerations

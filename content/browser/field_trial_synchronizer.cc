@@ -110,7 +110,7 @@ void FieldTrialSynchronizer::UpdateRendererVariationsHeader(
       host->GetBrowserContext()->GetVariationsClient();
 
   // |client| might be null in tests.
-  if (!client)
+  if (!client || client->IsIncognito())
     return;
 
   mojo::AssociatedRemote<mojom::RendererVariationsConfiguration>

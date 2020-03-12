@@ -51,8 +51,8 @@ class ServiceWorkerPaymentAppCreator {
           delegate_->GetTopOrigin(), delegate_->GetFrameOrigin(),
           delegate_->GetSpec(), std::move(installed_app.second),
           delegate_->GetPaymentRequestDelegate(),
-          base::Bind(&PaymentAppFactory::Delegate::OnPaymentAppInstalled,
-                     delegate_));
+          base::BindRepeating(
+              &PaymentAppFactory::Delegate::OnPaymentAppInstalled, delegate_));
       app->ValidateCanMakePayment(base::BindOnce(
           &ServiceWorkerPaymentAppCreator::OnSWPaymentAppValidated,
           weak_ptr_factory_.GetWeakPtr()));
@@ -66,8 +66,8 @@ class ServiceWorkerPaymentAppCreator {
           delegate_->GetFrameOrigin(), delegate_->GetSpec(),
           std::move(installable_app.second), installable_app.first.spec(),
           delegate_->GetPaymentRequestDelegate(),
-          base::Bind(&PaymentAppFactory::Delegate::OnPaymentAppInstalled,
-                     delegate_));
+          base::BindRepeating(
+              &PaymentAppFactory::Delegate::OnPaymentAppInstalled, delegate_));
       app->ValidateCanMakePayment(base::BindOnce(
           &ServiceWorkerPaymentAppCreator::OnSWPaymentAppValidated,
           weak_ptr_factory_.GetWeakPtr()));
@@ -131,8 +131,8 @@ void ServiceWorkerPaymentAppFactory::Create(base::WeakPtr<Delegate> delegate) {
       delegate->GetPaymentRequestDelegate()->GetPaymentManifestWebDataService(),
       delegate->GetSpec()->method_data(),
       delegate->MayCrawlForInstallablePaymentApps(),
-      base::Bind(&ServiceWorkerPaymentAppCreator::CreatePaymentApps,
-                 creator_raw_pointer->GetWeakPtr()),
+      base::BindOnce(&ServiceWorkerPaymentAppCreator::CreatePaymentApps,
+                     creator_raw_pointer->GetWeakPtr()),
       base::BindOnce([]() {
         // Nothing needs to be done after writing cache. This callback is used
         // only in tests.

@@ -42,14 +42,14 @@ int GetIncognitoId(int id) {
       return TP::COLOR_FRAME_INCOGNITO;
     case TP::COLOR_FRAME_INACTIVE:
       return TP::COLOR_FRAME_INCOGNITO_INACTIVE;
-    case TP::COLOR_BACKGROUND_TAB:
-      return TP::COLOR_BACKGROUND_TAB_INCOGNITO;
-    case TP::COLOR_BACKGROUND_TAB_INACTIVE:
-      return TP::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE;
-    case TP::COLOR_BACKGROUND_TAB_TEXT:
-      return TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO;
-    case TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
-      return TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE;
+    case TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE:
+      return TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO;
+    case TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE:
+      return TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE_INCOGNITO;
+    case TP::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE:
+      return TP::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO;
+    case TP::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE:
+      return TP::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE_INCOGNITO;
     case TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE:
       return TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE;
     case TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE:
@@ -249,11 +249,11 @@ SkColor ThemeHelper::GetDefaultColor(
                           incognito, theme_supplier);
   };
   switch (id) {
-    case TP::COLOR_BACKGROUND_TAB:
+    case TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE:
       return color_utils::HSLShift(get_frame_color(/*active=*/true),
                                    GetTint(ThemeProperties::TINT_BACKGROUND_TAB,
                                            incognito, theme_supplier));
-    case TP::COLOR_BACKGROUND_TAB_INACTIVE:
+    case TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE:
       return color_utils::HSLShift(get_frame_color(/*active=*/false),
                                    GetTint(ThemeProperties::TINT_BACKGROUND_TAB,
                                            incognito, theme_supplier));

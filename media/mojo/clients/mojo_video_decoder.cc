@@ -313,7 +313,7 @@ void MojoVideoDecoder::Reset(base::OnceClosure reset_cb) {
 
   reset_cb_ = std::move(reset_cb);
   remote_decoder_->Reset(
-      base::Bind(&MojoVideoDecoder::OnResetDone, base::Unretained(this)));
+      base::BindOnce(&MojoVideoDecoder::OnResetDone, base::Unretained(this)));
 }
 
 void MojoVideoDecoder::OnResetDone() {

@@ -350,6 +350,11 @@ class Runner():
         metavar='testcase',
     )
     parser.add_argument(
+        '--use-clang-coverage',
+        help='Enable code coverage related steps in test runner scripts.',
+        action='store_true',
+    )
+    parser.add_argument(
         '--use-trusted-cert',
         action='store_true',
         help=('Whether to install a cert to the simulator to allow for local '
@@ -405,7 +410,6 @@ class Runner():
       args.restart = args_json.get('restart', args.restart)
       args.test_cases = args.test_cases or []
       args.test_cases.extend(args_json.get('test_cases', []))
-      args.use_clang_coverage = args_json.get('use_clang_coverage', False)
       args.xctest = args_json.get('xctest', args.xctest)
       args.xcode_parallelization = args_json.get('xcode_parallelization',
                                                  args.xcode_parallelization)

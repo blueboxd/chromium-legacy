@@ -13,6 +13,8 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/common/password_manager_features.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/password_protection/metrics_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
@@ -105,6 +107,10 @@ base::string16 GetOkButtonLabel(
     case safe_browsing::ReusedPasswordAccountType::NON_GAIA_ENTERPRISE:
       return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON);
     case safe_browsing::ReusedPasswordAccountType::SAVED_PASSWORD:
+      if (base::FeatureList::IsEnabled(
+              password_manager::features::kPasswordCheck)) {
+        return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHECK_PASSWORDS_BUTTON);
+      }
       return l10n_util::GetStringUTF16(IDS_CLOSE);
     default:
       return l10n_util::GetStringUTF16(IDS_PAGE_INFO_PROTECT_ACCOUNT_BUTTON);
@@ -139,10 +145,21 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
       service_(service),
       url_(web_contents->GetLastCommittedURL()),
       password_type_(password_type) {
-  DialogDelegate::set_buttons(
-      password_type_.account_type() == ReusedPasswordAccountType::SAVED_PASSWORD
-          ? ui::DIALOG_BUTTON_OK
-          : ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
+  bool show_check_passwords = false;
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+  show_check_passwords = base::FeatureList::IsEnabled(
+                             password_manager::features::kPasswordCheck) &&
+                         password_type_.account_type() ==
+                             ReusedPasswordAccountType::SAVED_PASSWORD;
+#endif
+  if (password_type.account_type() !=
+          ReusedPasswordAccountType::SAVED_PASSWORD ||
+      show_check_passwords) {
+    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK |
+                                ui::DIALOG_BUTTON_CANCEL);
+  } else {
+    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
+  }
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
                                    GetOkButtonLabel(password_type_));
   DialogDelegate::set_button_label(
@@ -161,7 +178,10 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
         base::Unretained(&done_callback_), value);
   };
   DialogDelegate::set_accept_callback(
-      password_type_.account_type() != ReusedPasswordAccountType::SAVED_PASSWORD
+      (password_type_.account_type() !=
+           ReusedPasswordAccountType::SAVED_PASSWORD ||
+       show_check_passwords)
+
           ? make_done_callback(WarningAction::CHANGE_PASSWORD)
           : base::DoNothing());
   DialogDelegate::set_cancel_callback(

@@ -163,7 +163,7 @@ NGLayoutResult::NGLayoutResult(
 #if DCHECK_IS_ON()
   if (bitfields_.is_self_collapsing && physical_fragment_) {
     // A new formatting-context shouldn't be self-collapsing.
-    DCHECK(!physical_fragment_->IsBlockFormattingContextRoot());
+    DCHECK(!physical_fragment_->IsFormattingContextRoot());
 
     // Self-collapsing children must have a block-size of zero.
     NGFragment fragment(physical_fragment_->Style().GetWritingMode(),

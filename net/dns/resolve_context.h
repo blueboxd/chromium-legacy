@@ -9,11 +9,11 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
-#include "net/base/network_change_notifier.h"
 #include "net/dns/dns_config.h"
 
 namespace net {
@@ -25,9 +25,7 @@ class URLRequestContext;
 // Per-URLRequestContext data used by HostResolver. Expected to be owned by the
 // ContextHostResolver, and all usage/references are expected to be cleaned up
 // or cancelled before the URLRequestContext goes out of service.
-class NET_EXPORT_PRIVATE ResolveContext
-    : public base::CheckedObserver,
-      public NetworkChangeNotifier::NetworkChangeObserver {
+class NET_EXPORT_PRIVATE ResolveContext : public base::CheckedObserver {
  public:
   // Number of failures allowed before a DoH server is designated 'unavailable'.
   // In AUTOMATIC mode, non-probe DoH queries should not be sent to DoH servers
@@ -37,6 +35,24 @@ class NET_EXPORT_PRIVATE ResolveContext
   // resolver bypass in multiple ways: NXDOMAIN responses are never counted as
   // failures, and the outcome of fallback queries is not taken into account.
   static const int kAutomaticModeFailureLimit = 10;
+
+  class DohStatusObserver : public base::CheckedObserver {
+   public:
+    // Notification indicating that the current session for which DoH servers
+    // are being tracked has changed.
+    virtual void OnSessionChanged() = 0;
+
+    // Notification indicating that a DoH server has been marked unavailable,
+    // but is ready for usage such as availability probes.
+    //
+    // |network_change| true if the invalidation was triggered by a network
+    // connection change.
+    virtual void OnDohServerUnavailable(bool network_change) = 0;
+
+   protected:
+    DohStatusObserver() = default;
+    ~DohStatusObserver() override = default;
+  };
 
   ResolveContext(URLRequestContext* url_request_context, bool enable_caching);
 
@@ -123,6 +139,9 @@ class NET_EXPORT_PRIVATE ResolveContext
   base::TimeDelta NextDohTimeout(size_t doh_server_index,
                                  const DnsSession* session);
 
+  void RegisterDohStatusObserver(DohStatusObserver* observer);
+  void UnregisterDohStatusObserver(const DohStatusObserver* observer);
+
   URLRequestContext* url_request_context() { return url_request_context_; }
   void set_url_request_context(URLRequestContext* url_request_context) {
     DCHECK(!url_request_context_);
@@ -136,7 +155,8 @@ class NET_EXPORT_PRIVATE ResolveContext
   // stay valid between connections or sessions (eg the HostCache and DNS server
   // stats). |new_session|, if non-null, will be the new "current" session for
   // which per-session data will be kept.
-  void InvalidateCaches(const DnsSession* new_session);
+  void InvalidateCachesAndPerSessionData(const DnsSession* new_session,
+                                         bool network_change);
 
   const DnsSession* current_session_for_testing() const {
     return current_session_.get();
@@ -161,8 +181,8 @@ class NET_EXPORT_PRIVATE ResolveContext
                        int rv,
                        const DnsSession* session);
 
-  // NetworkChangeNotifier::NetworkChangeObserver:
-  void OnNetworkChanged(NetworkChangeNotifier::ConnectionType type) override;
+  void NotifyDohStatusObserversOfSessionChanged();
+  void NotifyDohStatusObserversOfUnavailable(bool network_change);
 
   static bool ServerStatsToDohAvailability(const ServerStats& stats);
 
@@ -172,6 +192,11 @@ class NET_EXPORT_PRIVATE ResolveContext
 
   // Current maximum server timeout. Updated on connection change.
   base::TimeDelta max_timeout_;
+
+  base::ObserverList<DohStatusObserver,
+                     true /* check_empty */,
+                     false /* allow_reentrancy */>
+      doh_status_observers_;
 
   // Per-session data is only stored and valid for the latest session. Before
   // accessing, should check that |current_session_| is valid and matches a

@@ -75,6 +75,16 @@ void FakeConciergeClient::CreateDiskImage(
       base::BindOnce(std::move(callback), create_disk_image_response_));
 }
 
+void FakeConciergeClient::CreateDiskImageWithFd(
+    base::ScopedFD fd,
+    const vm_tools::concierge::CreateDiskImageRequest& request,
+    DBusMethodCallback<vm_tools::concierge::CreateDiskImageResponse> callback) {
+  create_disk_image_called_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), create_disk_image_response_));
+}
+
 void FakeConciergeClient::DestroyDiskImage(
     const vm_tools::concierge::DestroyDiskImageRequest& request,
     DBusMethodCallback<vm_tools::concierge::DestroyDiskImageResponse>
@@ -240,7 +250,8 @@ void FakeConciergeClient::GetContainerSshKeys(
       base::BindOnce(std::move(callback), container_ssh_keys_response_));
 }
 
-void FakeConciergeClient::AttachUsbDevice(base::ScopedFD fd,
+void FakeConciergeClient::AttachUsbDevice(
+    base::ScopedFD fd,
     const vm_tools::concierge::AttachUsbDeviceRequest& request,
     DBusMethodCallback<vm_tools::concierge::AttachUsbDeviceResponse> callback) {
   attach_usb_device_called_ = true;

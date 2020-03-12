@@ -140,6 +140,13 @@ class DnsClientImpl : public DnsClient {
     return UpdateDnsConfig();
   }
 
+  void ReplaceCurrentSession() override {
+    if (!session_)
+      return;
+
+    UpdateSession(session_->config());
+  }
+
   DnsSession* GetCurrentSession() override { return session_.get(); }
 
   const DnsConfig* GetEffectiveConfig() const override {

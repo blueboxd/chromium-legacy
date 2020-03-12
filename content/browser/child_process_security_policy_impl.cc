@@ -1641,14 +1641,6 @@ void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
   // BrowsingInstance IDs.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (IsolatedOriginSource::COMMAND_LINE == source) {
-    size_t number_of_origins = std::count_if(
-        patterns.cbegin(), patterns.cend(),
-        [](const IsolatedOriginPattern& p) { return p.is_valid(); });
-    UMA_HISTOGRAM_COUNTS_1000("SiteIsolation.IsolateOrigins.Size",
-                              number_of_origins);
-  }
-
   base::AutoLock isolated_origins_lock(isolated_origins_lock_);
 
   for (const IsolatedOriginPattern& pattern : patterns) {

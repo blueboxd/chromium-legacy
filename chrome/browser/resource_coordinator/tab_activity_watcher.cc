@@ -540,12 +540,15 @@ WEB_CONTENTS_USER_DATA_KEY_IMPL(TabActivityWatcher::WebContentsData)
 
 TabActivityWatcher::TabActivityWatcher()
     : tab_metrics_logger_(std::make_unique<TabMetricsLogger>()),
-      browser_tab_strip_tracker_(this, this, this),
+      browser_tab_strip_tracker_(this, this),
       predictor_(std::make_unique<tab_ranker::TabScorePredictor>()) {
+  BrowserList::AddObserver(this);
   browser_tab_strip_tracker_.Init();
 }
 
-TabActivityWatcher::~TabActivityWatcher() = default;
+TabActivityWatcher::~TabActivityWatcher() {
+  BrowserList::RemoveObserver(this);
+}
 
 base::Optional<float> TabActivityWatcher::CalculateReactivationScore(
     content::WebContents* web_contents) {

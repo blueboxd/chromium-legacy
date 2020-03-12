@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/component_export.h"
@@ -53,6 +54,11 @@ template <typename DataViewType, typename T>
 struct StructTraits;
 struct UrlOriginAdapter;
 }  // namespace mojo
+
+namespace net {
+class NetworkIsolationKey;
+class OpaqueNonTransientNetworkIsolationKeyTest;
+}  // namespace net
 
 namespace url {
 
@@ -292,6 +298,8 @@ class COMPONENT_EXPORT(URL) Origin {
 
  private:
   friend class blink::SecurityOrigin;
+  friend class net::NetworkIsolationKey;
+  friend class net::OpaqueNonTransientNetworkIsolationKeyTest;
   friend class OriginTest;
   friend struct mojo::UrlOriginAdapter;
   friend struct ipc_fuzzer::FuzzTraits<Origin>;
@@ -385,6 +393,16 @@ class COMPONENT_EXPORT(URL) Origin {
   // Get the nonce associated with this origin, if it is opaque. This should be
   // used only when trying to send an Origin across an IPC pipe.
   base::Optional<base::UnguessableToken> GetNonceForSerialization() const;
+
+  // Serializes this Origin, including its nonce if it is opaque. If an opaque
+  // origin's |tuple_| is invalid or the nonce isn't initialized, nullopt is
+  // returned. Use of this method should be limited as an opaque origin will
+  // never be matchable in future browser sessions.
+  base::Optional<std::string> SerializeWithNonce() const;
+
+  // Deserializes an origin from |ToValueWithNonce|. Returns nullopt if the
+  // value was invalid in any way.
+  static base::Optional<Origin> Deserialize(const std::string& value);
 
   // The tuple is used for both tuple origins (e.g. https://example.com:80), as
   // well as for opaque origins, where it tracks the tuple origin from which

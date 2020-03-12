@@ -24,8 +24,9 @@ void PaymentManifestWebDataService::AddPaymentWebAppManifest(
     std::vector<WebAppManifestSection> manifest) {
   wdbs_->ScheduleDBTask(
       FROM_HERE,
-      base::Bind(&PaymentManifestWebDataService::AddPaymentWebAppManifestImpl,
-                 this, std::move(manifest)));
+      base::BindOnce(
+          &PaymentManifestWebDataService::AddPaymentWebAppManifestImpl, this,
+          std::move(manifest)));
 }
 
 WebDatabase::State PaymentManifestWebDataService::AddPaymentWebAppManifestImpl(
@@ -44,8 +45,9 @@ void PaymentManifestWebDataService::AddPaymentMethodManifest(
     std::vector<std::string> app_package_names) {
   wdbs_->ScheduleDBTask(
       FROM_HERE,
-      base::Bind(&PaymentManifestWebDataService::AddPaymentMethodManifestImpl,
-                 this, payment_method, std::move(app_package_names)));
+      base::BindOnce(
+          &PaymentManifestWebDataService::AddPaymentMethodManifestImpl, this,
+          payment_method, std::move(app_package_names)));
 }
 
 WebDatabase::State PaymentManifestWebDataService::AddPaymentMethodManifestImpl(
@@ -66,8 +68,9 @@ PaymentManifestWebDataService::GetPaymentWebAppManifest(
     WebDataServiceConsumer* consumer) {
   return wdbs_->ScheduleDBTaskWithResult(
       FROM_HERE,
-      base::Bind(&PaymentManifestWebDataService::GetPaymentWebAppManifestImpl,
-                 this, web_app),
+      base::BindOnce(
+          &PaymentManifestWebDataService::GetPaymentWebAppManifestImpl, this,
+          web_app),
       consumer);
 }
 
@@ -88,8 +91,9 @@ PaymentManifestWebDataService::GetPaymentMethodManifest(
     WebDataServiceConsumer* consumer) {
   return wdbs_->ScheduleDBTaskWithResult(
       FROM_HERE,
-      base::Bind(&PaymentManifestWebDataService::GetPaymentMethodManifestImpl,
-                 this, payment_method),
+      base::BindOnce(
+          &PaymentManifestWebDataService::GetPaymentMethodManifestImpl, this,
+          payment_method),
       consumer);
 }
 

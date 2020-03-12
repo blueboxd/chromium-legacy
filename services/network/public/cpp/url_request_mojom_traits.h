@@ -227,10 +227,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest& request) {
     return request.custom_proxy_post_cache_headers;
   }
-  static bool custom_proxy_use_alternate_proxy_list(
-      const network::ResourceRequest& request) {
-    return request.custom_proxy_use_alternate_proxy_list;
-  }
   static const base::Optional<base::UnguessableToken>& fetch_window_id(
       const network::ResourceRequest& request) {
     return request.fetch_window_id;

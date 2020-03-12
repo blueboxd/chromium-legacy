@@ -87,6 +87,40 @@ extensions::api::passwords_private::ExportProgressStatus ConvertStatus(
       EXPORT_PROGRESS_STATUS_NONE;
 }
 
+password_manager::ReauthPurpose GetReauthPurpose(
+    extensions::api::passwords_private::PlaintextReason reason) {
+  switch (reason) {
+    case extensions::api::passwords_private::PLAINTEXT_REASON_VIEW:
+      return password_manager::ReauthPurpose::VIEW_PASSWORD;
+    case extensions::api::passwords_private::PLAINTEXT_REASON_COPY:
+      return password_manager::ReauthPurpose::COPY_PASSWORD;
+    case extensions::api::passwords_private::PLAINTEXT_REASON_EDIT:
+      return password_manager::ReauthPurpose::EDIT_PASSWORD;
+    case extensions::api::passwords_private::PLAINTEXT_REASON_NONE:
+      break;
+  }
+
+  NOTREACHED();
+  return password_manager::ReauthPurpose::VIEW_PASSWORD;
+}
+
+password_manager::PlaintextReason ConvertPlaintextReason(
+    extensions::api::passwords_private::PlaintextReason reason) {
+  switch (reason) {
+    case extensions::api::passwords_private::PLAINTEXT_REASON_VIEW:
+      return password_manager::PlaintextReason::kView;
+    case extensions::api::passwords_private::PLAINTEXT_REASON_COPY:
+      return password_manager::PlaintextReason::kCopy;
+    case extensions::api::passwords_private::PLAINTEXT_REASON_EDIT:
+      return password_manager::PlaintextReason::kEdit;
+    case extensions::api::passwords_private::PLAINTEXT_REASON_NONE:
+      break;
+  }
+
+  NOTREACHED();
+  return password_manager::PlaintextReason::kView;
+}
+
 }  // namespace
 
 namespace extensions {
@@ -207,13 +241,9 @@ void PasswordsPrivateDelegateImpl::RequestPlaintextPassword(
   // exiting this method.
   // TODO(crbug.com/495290): Pass the native window directly to the
   // reauth-handling code.
-  // TODO(crbug.com/1047726): Handle Edit case.
   web_contents_ = web_contents;
-  auto reauth_purpose = reason == api::passwords_private::PLAINTEXT_REASON_COPY
-                            ? password_manager::ReauthPurpose::COPY_PASSWORD
-                            : password_manager::ReauthPurpose::VIEW_PASSWORD;
   if (!password_access_authenticator_.EnsureUserIsAuthenticated(
-          reauth_purpose)) {
+          GetReauthPurpose(reason))) {
     std::move(callback).Run(base::nullopt);
     return;
   }
@@ -225,39 +255,26 @@ void PasswordsPrivateDelegateImpl::RequestPlaintextPassword(
     return;
   }
 
-  password_manager::PlaintextReason presenter_reason =
-      password_manager::PlaintextReason::kView;
-
-  switch (reason) {
-    case api::passwords_private::PLAINTEXT_REASON_VIEW:
-      break;
-    case api::passwords_private::PLAINTEXT_REASON_COPY:
-      presenter_reason = password_manager::PlaintextReason::kCopy;
-      // In case of copy we don't need to give password back to UI. callback
-      // will receive either empty string in case of success or null otherwise.
-      // Copying occurs here so javascript doesn't need plaintext password.
-      callback = base::BindOnce(
-          [](PlaintextPasswordCallback callback,
-             base::Optional<base::string16> password) {
-            if (!password) {
-              std::move(callback).Run(base::nullopt);
-              return;
-            }
-            ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
-                .WriteText(*password);
-            std::move(callback).Run(base::string16());
-          },
-          std::move(callback));
-      break;
-    case api::passwords_private::PLAINTEXT_REASON_EDIT:
-      presenter_reason = password_manager::PlaintextReason::kEdit;
-      break;
-    case api::passwords_private::PLAINTEXT_REASON_NONE:
-      NOTREACHED();
-      break;
+  if (reason == api::passwords_private::PLAINTEXT_REASON_COPY) {
+    // In case of copy we don't need to give password back to UI. callback
+    // will receive either empty string in case of success or null otherwise.
+    // Copying occurs here so javascript doesn't need plaintext password.
+    callback = base::BindOnce(
+        [](PlaintextPasswordCallback callback,
+           base::Optional<base::string16> password) {
+          if (!password) {
+            std::move(callback).Run(base::nullopt);
+            return;
+          }
+          ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
+              .WriteText(*password);
+          std::move(callback).Run(base::string16());
+        },
+        std::move(callback));
   }
+
   password_manager_presenter_->RequestPlaintextPassword(
-      *sort_key, presenter_reason, std::move(callback));
+      *sort_key, ConvertPlaintextReason(reason), std::move(callback));
 }
 
 bool PasswordsPrivateDelegateImpl::OsReauthCall(
@@ -414,9 +431,8 @@ void PasswordsPrivateDelegateImpl::GetPlaintextCompromisedPassword(
   // TODO(crbug.com/495290): Pass the native window directly to the
   // reauth-handling code.
   web_contents_ = web_contents;
-  // TODO(https://crbug.com/1047726): Add Support for Editing.
   if (!password_access_authenticator_.EnsureUserIsAuthenticated(
-          password_manager::ReauthPurpose::VIEW_PASSWORD)) {
+          GetReauthPurpose(reason))) {
     std::move(callback).Run(base::nullopt);
     return;
   }

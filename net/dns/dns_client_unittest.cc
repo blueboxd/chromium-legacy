@@ -166,7 +166,8 @@ TEST_F(DnsClientTest, UnhandledOptions) {
 
 TEST_F(DnsClientTest, CanUseSecureDnsTransactions_ProbeSuccess) {
   client_->SetSystemConfig(ValidConfigWithDoh(true /* doh_only */));
-  resolve_context_.InvalidateCaches(client_->GetCurrentSession());
+  resolve_context_.InvalidateCachesAndPerSessionData(
+      client_->GetCurrentSession(), true /* network_change */);
 
   EXPECT_TRUE(client_->CanUseSecureDnsTransactions());
   EXPECT_TRUE(
@@ -201,7 +202,8 @@ TEST_F(DnsClientTest, DnsOverTlsActive) {
 TEST_F(DnsClientTest, AllAllowed) {
   client_->SetInsecureEnabled(true);
   client_->SetSystemConfig(ValidConfigWithDoh(false /* doh_only */));
-  resolve_context_.InvalidateCaches(client_->GetCurrentSession());
+  resolve_context_.InvalidateCachesAndPerSessionData(
+      client_->GetCurrentSession(), false /* network_change */);
   resolve_context_.RecordServerSuccess(0u /* server_index */,
                                        true /* is_doh_server */,
                                        client_->GetCurrentSession());
@@ -311,6 +313,27 @@ TEST_F(DnsClientTest, OverrideToInvalid) {
   client_->SetConfigOverrides(std::move(overrides));
 
   EXPECT_FALSE(client_->GetEffectiveConfig());
+  EXPECT_FALSE(client_->GetCurrentSession());
+}
+
+TEST_F(DnsClientTest, ReplaceCurrentSession) {
+  client_->SetSystemConfig(BasicValidConfig());
+
+  base::WeakPtr<DnsSession> session_before =
+      client_->GetCurrentSession()->GetWeakPtr();
+  ASSERT_TRUE(session_before);
+
+  client_->ReplaceCurrentSession();
+
+  EXPECT_FALSE(session_before);
+  EXPECT_TRUE(client_->GetCurrentSession());
+}
+
+TEST_F(DnsClientTest, ReplaceCurrentSession_NoSession) {
+  ASSERT_FALSE(client_->GetCurrentSession());
+
+  client_->ReplaceCurrentSession();
+
   EXPECT_FALSE(client_->GetCurrentSession());
 }
 

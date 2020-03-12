@@ -33,7 +33,6 @@ namespace ash {
 class ArrowButtonView;
 class LoginButton;
 class LoginPinView;
-class NonAccessibleView;
 
 // State of the PinRequestView.
 enum class PinRequestViewState {
@@ -190,8 +189,7 @@ class ASH_EXPORT PinRequestView : public views::DialogDelegateView,
   // Returns if the pin keyboard should be visible.
   bool PinKeyboardVisible() const;
 
-  // Sizes that depend on the pin keyboards visibility.
-  gfx::Size GetPinKeyboardToFooterSpacerSize() const;
+  // Size that depends on the pin keyboards visibility.
   gfx::Size GetPinRequestViewSize() const;
 
   PinRequestViewState state_ = PinRequestViewState::kNormal;
@@ -220,7 +218,6 @@ class ASH_EXPORT PinRequestView : public views::DialogDelegateView,
   LoginButton* back_button_ = nullptr;
   FocusableLabelButton* help_button_ = nullptr;
   ArrowButtonView* submit_button_ = nullptr;
-  NonAccessibleView* pin_keyboard_to_footer_spacer_ = nullptr;
 
   ScopedObserver<TabletModeController, TabletModeObserver>
       tablet_mode_observer_{this};

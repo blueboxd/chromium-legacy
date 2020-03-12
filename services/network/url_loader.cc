@@ -521,8 +521,6 @@ URLLoader::URLLoader(
       first_auth_attempt_(true),
       custom_proxy_pre_cache_headers_(request.custom_proxy_pre_cache_headers),
       custom_proxy_post_cache_headers_(request.custom_proxy_post_cache_headers),
-      custom_proxy_use_alternate_proxy_list_(
-          request.custom_proxy_use_alternate_proxy_list),
       fetch_window_id_(request.fetch_window_id),
       update_network_isolation_key_on_redirect_(
           request.trusted_params

@@ -52,7 +52,6 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PackageManagerUtils;
@@ -744,9 +743,11 @@ public class WebViewBrowserActivity extends AppCompatActivity {
     }
 
     private void setUrlFail(boolean fail) {
-        mUrlBar.setTextColor(fail ?
-            ApiCompatibilityUtils.getColor(getResources(), R.color.url_error_color) :
-            ApiCompatibilityUtils.getColor(getResources(), R.color.url_color));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mUrlBar.setTextAppearance(fail ? R.style.UrlTextError : R.style.UrlText);
+        } else {
+            mUrlBar.setTextAppearance(this, fail ? R.style.UrlTextError : R.style.UrlText);
+        }
     }
 
     /**

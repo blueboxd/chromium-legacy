@@ -19,7 +19,7 @@ class FlingAnimation {
  public:
   // arguments are delta_x and delta_y with respect to the positions at previous
   // tick.
-  using FlingCallback = base::Callback<void(float, float)>;
+  using FlingCallback = base::RepeatingCallback<void(float, float)>;
 
   FlingAnimation(float time_constant, const FlingCallback& fling_callback);
   ~FlingAnimation();

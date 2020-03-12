@@ -17,11 +17,13 @@ namespace mojo {
 
 TEST(NetworkIsolationKeyMojomTraitsTest, SerializeAndDeserialize) {
   std::vector<net::NetworkIsolationKey> keys = {
-      net::NetworkIsolationKey(),
+      net::NetworkIsolationKey(), net::NetworkIsolationKey::CreateTransient(),
+      net::NetworkIsolationKey::CreateOpaqueAndNonTransient(),
       net::NetworkIsolationKey(url::Origin::Create(GURL("http://a.test/")),
                                url::Origin::Create(GURL("http://b.test/")))};
 
   for (auto original : keys) {
+    SCOPED_TRACE(original.ToDebugString());
     net::NetworkIsolationKey copied;
     EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
                 network::mojom::NetworkIsolationKey>(&original, &copied));
@@ -43,17 +45,20 @@ class NetworkIsolationKeyMojomTraitsWithFrameOriginTest : public testing::Test {
 TEST_F(NetworkIsolationKeyMojomTraitsWithFrameOriginTest,
        SerializeAndDeserialize) {
   std::vector<net::NetworkIsolationKey> keys = {
-      net::NetworkIsolationKey(),
+      net::NetworkIsolationKey(), net::NetworkIsolationKey::CreateTransient(),
+      net::NetworkIsolationKey::CreateOpaqueAndNonTransient(),
       net::NetworkIsolationKey(url::Origin::Create(GURL("http://a.test/")),
                                url::Origin::Create(GURL("http://b.test/")))};
 
   for (auto original : keys) {
+    SCOPED_TRACE(original.ToDebugString());
     net::NetworkIsolationKey copied;
     EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
                 network::mojom::NetworkIsolationKey>(&original, &copied));
     EXPECT_EQ(original, copied);
     EXPECT_EQ(original.GetTopFrameOrigin(), copied.GetTopFrameOrigin());
     EXPECT_EQ(original.GetFrameOrigin(), copied.GetFrameOrigin());
+    EXPECT_EQ(original.IsTransient(), copied.IsTransient());
   }
 }
 

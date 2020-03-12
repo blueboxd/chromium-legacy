@@ -104,7 +104,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     bool success = false;
     decoder.Initialize(
         config, true /* low_delay */, nullptr /* cdm_context */,
-        base::Bind(&OnInitDone, run_loop.QuitClosure(), &success),
+        base::BindOnce(&OnInitDone, run_loop.QuitClosure(), &success),
         base::Bind(&OnOutputComplete), base::NullCallback());
     run_loop.Run();
     if (!success)
@@ -115,7 +115,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     base::RunLoop run_loop;
     auto buffer = media::DecoderBuffer::CopyFrom(data, size);
     decoder.Decode(buffer,
-                   base::Bind(&OnDecodeComplete, run_loop.QuitClosure()));
+                   base::BindOnce(&OnDecodeComplete, run_loop.QuitClosure()));
     run_loop.Run();
   }
 

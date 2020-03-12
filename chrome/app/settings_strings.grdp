@@ -407,6 +407,9 @@
   <message name="IDS_SETTINGS_COMPROMISED_PASSWORD_SHOW" desc="Action menu item for a row which displays a compromised password. The password value, which is initialy obfuscated, will be show in plain text.">
     Show password
   </message>
+  <message name="IDS_SETTINGS_COMPROMISED_PASSWORD_HIDE" desc="Action menu item for a row which displays a compromised password. The password value, which is shown in plain text, will be hidden again.">
+    Hide password
+  </message>
   <message name="IDS_SETTINGS_COMPROMISED_PASSWORD_EDIT" desc="Action menu item for a row which displays a compromised password. It will open a modal dialog which will allow the user to edit the password and other metadata (username, website).">
     Edit password
   </message>
@@ -418,6 +421,18 @@
   </message>
   <message name="IDS_SETTINGS_REMOVE_COMPROMISED_PASSWORD_CONFIRMATION_DESCRIPTION" desc="Compromised password remove dialog conformation description">
     Removing this password will not delete your account on <ph name="DOMAIN">$1<ex>airbnb.com</ex></ph>. Change your password or delete your account on <ph name="DOMAIN">$1<ex>airbnb.com</ex></ph> to keep it safe from others.
+  </message>
+  <message name="IDS_SETTINGS_COMPROMISED_EDIT_PASSWORD_TITLE" desc="The title for a dialog, which allows a user to edit a password, which have been found to be compromised. This dialog includes other details, such as username and website.">
+    Edit password
+  </message>
+  <message name="IDS_SETTINGS_COMPROMISED_EDIT_PASSWORD_FOOTNOTE" desc="A footnote for the dialog which allows the user to edit a password, which has been found to have been compromised.">
+    Make sure the password you are saving matches your password for <ph name="WEBSITE">$1<ex>airbnb.com</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_COMPROMISED_EDIT_PASSWORD_SITE" desc="A label for the field, which displays the site for which the password was saved. The field is part of a dialog, which allows the user to edit the password.">
+    Site
+  </message>
+  <message name="IDS_SETTINGS_COMPROMISED_EDIT_PASSWORD_APP" desc="A label for the field, which displays the app for which the password was saved. The field is part of a dialog, which allows the user to edit the password.">
+    App
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_SAVE_PASSWORDS_TOGGLE_LABEL" desc="Label for a toggle that allows users to be prompted if they want to save their passwords when logging into webpages.">
     Offer to save passwords
@@ -1729,16 +1744,16 @@
     Faster, proactive protection against dangerous websites, downloads, and extensions. Warns you about password breaches. Requires browsing data to be sent to Google.
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_ONE" desc="First bullet point under the safe browsing enhanced protection mode">
-    Predicts and warns you about dangerous events before they happen.
+    Predicts and warns you about dangerous events before they happen
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_TWO" desc="Second bullet point under the safe browsing enhanced protection mode">
-    Keeps you safe on Chrome and other Google apps when you’re signed in.
+    Keeps you safe on Chrome and other Google apps when you’re signed in
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_THREE" desc="Third bullet point under the safe browsing enhanced protection mode">
-    Improves security for you and everyone on the web.
+    Improves security for you and everyone on the web
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_FOUR" desc="Fourth bullet point under the safe browsing enhanced protection mode">
-    Warns you if passwords are exposed in a data breach.
+    Warns you if passwords are exposed in a data breach
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_FIVE" desc="Fourth bullet point under the safe browsing enhanced protection mode">
     Sends URLs to Safe Browsing to check them. Also sends a small sample of pages, downloads, extension activity, and system information to help discover new threats. Temporarily links this data to your Google Account when you're signed in, to protect you across Google apps.
@@ -1755,11 +1770,14 @@
   <message name="IDS_SETTINGS_SAFEBROWSING_STANDARD_BULLET_TWO" desc="First bullet point under the safe browsing standard protection mode">
     Checks URLs with a list of unsafe sites stored in Chrome. If a site tries to steal your password, or when you download a harmful file, Chrome may also send URLs, including bits of page content, to Safe Browsing.
   </message>
+  <message name="IDS_SETTINGS_SAFEBROWSING_STANDARD_HELP_IMPROVE" desc="The name of the toggle to enable reporting to help improve safe browsing">
+    Help improve security on the web for everyone
+  </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_NONE" desc="Label for safe browsing no protection mode">
     No Protection (not recommended)
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_NONE_DESC" desc="Description for safe browsing no protection mode">
-    Does not protect you against dangerous websites, downloads, or extensions.
+    Does not protect you against dangerous websites, downloads, or extensions. Chrome does not recommend this setting.
   </message>
   <message name="IDS_SETTINGS_ENABLE_DO_NOT_TRACK" desc="The label of the checkbox to enable/disable sending the 'Do Not track' header">
     Send a "Do Not Track" request with your browsing traffic
@@ -1780,14 +1798,14 @@
     Permissions and content settings
   </message>
   <message name="IDS_SETTINGS_PERMISSIONS_DESCRIPTION" desc="Description of the controls available on the permisisons and site content settings page">
-    Control what information websites can use and what content they can show you
+    Controls what information sites can use and show (location, camera, pop-ups, and more)
   </message>
   <message name="IDS_SETTINGS_SECURITY" desc="Name of the settings page which allows
   users to manage security settings">
     Security
   </message>
   <message name="IDS_SETTINGS_SECURITY_DESCRIPTION" desc="Description of the controls available on the security settings page">
-    Safe Browsing and advanced security settings
+    Safe Browsing (protection from dangerous sites) and other security settings
   </message>
   <message name="IDS_SETTINGS_SECURITY_ADVANCED_SECTION_LABEL" desc="Name of the section in the
     security settings page which groups advanced security settings">
@@ -2072,10 +2090,10 @@
     Do not allow sites to see text and images copied to the clipboard
   </message>
   <message name="IDS_SETTINGS_COOKIES_PAGE" desc="Title of the cookies settings page">
-    Cookies
+    Cookies and other site data
   </message>
   <message name="IDS_SETTINGS_COOKIES_CONTROLS" desc="Title of the general cookies control section.">
-    General Settings
+    General settings
   </message>
   <message name="IDS_SETTINGS_COOKIES_ALLOW_ALL" desc="Label for allow all cookies radio toggle">
     Allow all cookies
@@ -2084,13 +2102,13 @@
     Sites can use cookies to improve your browsing experience, for example, to keep you signed in or remembering items in your shopping cart.
   </message>
   <message name="IDS_SETTINGS_COOKIES_ALLOW_ALL_BULLET_TWO" desc="Description for the first bullet of allow all cookies radio toggle">
-    Sites can use cookies to see your browsing activity across different sites, for example, to personalize ads.
+    Sites can use cookies to see your browsing activity across different sites, for example, to personalize ads
   </message>
   <message name="IDS_SETTINGS_COOKIES_BLOCK_THIRD_PARTY_INCOGNITO" desc="Label for block third party cookies in incognito radio toggle">
     Block third-party cookies in Incognito
   </message>
   <message name="IDS_SETTINGS_COOKIES_BLOCK_THIRD_PARTY_INCOGNITO_BULLET_ONE" desc="Description for the first bullet of block third party cookies in incognito radio toggle">
-    Sites can use cookies to improve your browsing experience, for example, to keep you signed in or remembering items in your shopping cart.
+    Sites can use cookies to improve your browsing experience, for example, to keep you signed in or remembering items in your shopping cart
   </message>
   <message name="IDS_SETTINGS_COOKIES_BLOCK_THIRD_PARTY_INCOGNITO_BULLET_TWO" desc="Description for the first bullet of block third party cookies in incognito radio toggle">
     While in incognito, sites can't use your cookies to see your browsing activity across different sites, for example, to personalize ads. Some sites may not work properly.
@@ -2108,13 +2126,28 @@
     Block all cookies (not recommended)
   </message>
   <message name="IDS_SETTINGS_COOKIES_BLOCK_ALL_BULLET_ONE" desc="Description for the first bullet of block all cookies radio toggle">
-    Sites can't use cookies to improve your browsing experience, for example, to keep you signed in or remembering items in your shopping cart. Many sites may not work properly.
+    Sites can't use cookies to improve your browsing experience, for example, to keep you signed in or remembering items in your shopping cart
   </message>
   <message name="IDS_SETTINGS_COOKIES_BLOCK_ALL_BULLET_TWO" desc="Description for the first bullet of block all cookies radio toggle">
-    Sites can't use your cookies to see your browsing activity across different sites, for example, to personalize ads.  Many sites may not work properly.
+    Sites can't use your cookies to see your browsing activity across different sites, for example, to personalize ads
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_BLOCK_ALL_BULLET_THREE" desc="Description for the third bullet of block all cookies radio toggle">
+    Many sites may not work properly
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_CLEAR_ON_EXIT" desc="Label for the toggle that allows the user to automatically delete their cookies and site data when they close all browser windows.">
+    Clear cookies and site data when you close all windows
   </message>
   <message name="IDS_SETTINGS_COOKIES_SITE_SPECIFIC_EXCEPTIONS" desc="Title of cookies page section for managing site specific cookie settings">
     Manage site specific exceptions
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_ALLOW_EXCEPTIONS" desc="Title of the list containing site exceptions always allowing them to use cookies">
+    Sites that can always use cookies
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_SESSION_ONLY_EXCEPTIONS" desc="Title of the list containing site exceptions so that cookies for those site are always cleared when closing the browser">
+    Always clear cookies when windows are closed
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_BLOCK_EXCEPTIONS" desc="Title of the list containing site exceptions always blocking them from using cookies">
+    Sites that can never use cookies
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES" desc="Label for the cookies and site data site settings.">
     Cookies and site data

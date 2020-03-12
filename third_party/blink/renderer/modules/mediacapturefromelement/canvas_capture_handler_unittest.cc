@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/gmock_callback_support.h"
 #include "media/base/limits.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,6 +21,7 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
+using base::test::RunOnceClosure;
 using ::testing::_;
 using ::testing::InSequence;
 using ::testing::Mock;
@@ -39,10 +41,6 @@ static const int kTestCanvasCaptureFrameEvenSize = 2;
 static const int kTestCanvasCaptureFrameOddSize = 3;
 static const int kTestCanvasCaptureFrameColorErrorTolerance = 2;
 static const int kTestAlphaValue = 175;
-
-ACTION_P(RunClosure, closure) {
-  closure.Run();
-}
 
 }  // namespace
 
@@ -182,7 +180,7 @@ TEST_P(CanvasCaptureHandlerTest, GetFormatsStartAndStop) {
   EXPECT_CALL(*this, DoOnRunning(true)).Times(1);
   EXPECT_CALL(*this, DoOnDeliverFrame(_, _))
       .Times(1)
-      .WillOnce(RunClosure(std::move(quit_closure)));
+      .WillOnce(RunOnceClosure(std::move(quit_closure)));
   source->StartCapture(
       params,
       base::BindRepeating(&CanvasCaptureHandlerTest::OnDeliverFrame,

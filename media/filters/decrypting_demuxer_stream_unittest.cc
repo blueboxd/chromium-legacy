@@ -108,8 +108,8 @@ class DecryptingDemuxerStreamTest : public testing::Test {
     input_audio_stream_->set_audio_decoder_config(config);
     demuxer_stream_->Initialize(
         input_audio_stream_.get(), cdm_context_.get(),
-        base::Bind(&DecryptingDemuxerStreamTest::OnInitialized,
-                   base::Unretained(this), expected_status));
+        base::BindOnce(&DecryptingDemuxerStreamTest::OnInitialized,
+                       base::Unretained(this), expected_status));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -118,8 +118,8 @@ class DecryptingDemuxerStreamTest : public testing::Test {
     input_video_stream_->set_video_decoder_config(config);
     demuxer_stream_->Initialize(
         input_video_stream_.get(), cdm_context_.get(),
-        base::Bind(&DecryptingDemuxerStreamTest::OnInitialized,
-                   base::Unretained(this), expected_status));
+        base::BindOnce(&DecryptingDemuxerStreamTest::OnInitialized,
+                       base::Unretained(this), expected_status));
     base::RunLoop().RunUntilIdle();
   }
 

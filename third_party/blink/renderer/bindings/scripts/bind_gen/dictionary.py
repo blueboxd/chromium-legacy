@@ -39,7 +39,6 @@ from .codegen_utils import write_code_node_to_file
 from .mako_renderer import MakoRenderer
 from .path_manager import PathManager
 
-
 _DICT_MEMBER_PRESENCE_PREDICATES = {
     "ScriptValue": "{}.IsEmpty()",
     "ScriptPromise": "{}.IsEmpty()",

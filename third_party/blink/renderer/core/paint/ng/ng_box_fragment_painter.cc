@@ -157,7 +157,7 @@ bool FragmentRequiresLegacyFallback(const NGPhysicalFragment& fragment) {
   // Fallback to LayoutObject if this is a root of NG block layout.
   // If this box is for this painter, LayoutNGBlockFlow will call this back.
   // Otherwise it calls legacy painters.
-  return fragment.IsBlockFormattingContextRoot();
+  return fragment.IsFormattingContextRoot();
 }
 
 // Returns a vector of backplates that surround the paragraphs of text within
@@ -680,6 +680,12 @@ void NGBoxFragmentPainter::PaintFloatingChildren(
         continue;
       }
     }
+
+    // The selection paint traversal is special. We will visit all fragments
+    // (including floats) in the normal paint traversal. There isn't any point
+    // performing the special float traversal here.
+    if (paint_info.phase == PaintPhase::kSelection)
+      continue;
 
     const auto* child_container =
         DynamicTo<NGPhysicalContainerFragment>(&child_fragment);

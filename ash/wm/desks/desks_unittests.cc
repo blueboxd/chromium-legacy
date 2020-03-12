@@ -1304,6 +1304,26 @@ TEST_P(DesksTest, DragMinimizedWindowToDesk) {
   EXPECT_EQ(1.f, window->layer()->GetTargetOpacity());
 }
 
+TEST_P(DesksTest, DragAllOverviewWindowsToOtherDesksNotEndOverview) {
+  NewDesk();
+  ASSERT_EQ(2u, DesksController::Get()->desks().size());
+  auto win = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto* overview_controller = Shell::Get()->overview_controller();
+  ASSERT_TRUE(overview_controller->StartOverview());
+  auto* overview_session = overview_controller->overview_session();
+  DragItemToPoint(overview_session->GetOverviewItemForWindow(win.get()),
+                  GetOverviewGridForRoot(Shell::GetPrimaryRootWindow())
+                      ->desks_bar_view()
+                      ->mini_views()[1]
+                      ->GetBoundsInScreen()
+                      .CenterPoint(),
+                  GetEventGenerator(),
+                  /*by_touch_gestures=*/GetParam());
+  EXPECT_FALSE(DoesActiveDeskContainWindow(win.get()));
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(overview_session->IsEmpty());
+}
+
 TEST_P(DesksTest, DragWindowToNonMiniViewPoints) {
   auto* controller = DesksController::Get();
   NewDesk();
@@ -2472,6 +2492,40 @@ TEST_F(DesksWithSplitViewTest, SuccessfulDragToDeskRemovesSplitViewIndicators) {
             overview_session->grid_list()[0]
                 ->split_view_drag_indicators()
                 ->current_window_dragging_state());
+}
+
+TEST_F(DesksWithSplitViewTest,
+       DragAllOverviewWindowsToOtherDesksNotEndClamshellSplitView) {
+  // Two virtual desks.
+  NewDesk();
+  ASSERT_EQ(2u, DesksController::Get()->desks().size());
+
+  // Two windows: |win0| (in clamshell split view) and |win1| (in overview).
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
+  auto* overview_controller = Shell::Get()->overview_controller();
+  ASSERT_TRUE(overview_controller->StartOverview());
+  auto* overview_session = overview_controller->overview_session();
+  auto* generator = GetEventGenerator();
+  DragItemToPoint(overview_session->GetOverviewItemForWindow(win0.get()),
+                  gfx::Point(0, 0), generator);
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+
+  // Drag |win1| to the other desk.
+  DragItemToPoint(overview_session->GetOverviewItemForWindow(win1.get()),
+                  GetOverviewGridForRoot(Shell::GetPrimaryRootWindow())
+                      ->desks_bar_view()
+                      ->mini_views()[1]
+                      ->GetBoundsInScreen()
+                      .CenterPoint(),
+                  generator);
+  EXPECT_FALSE(DoesActiveDeskContainWindow(win1.get()));
+
+  // Overview should now be empty, but split view should still be active.
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(overview_session->IsEmpty());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 }
 
 namespace {

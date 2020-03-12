@@ -196,6 +196,40 @@ TEST_F(BasicInteractionsTest, ComputeValueToString) {
   EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
 }
 
+TEST_F(BasicInteractionsTest, ComputeValueIntegerSum) {
+  ComputeValueProto proto;
+  proto.mutable_integer_sum();
+  user_model_.SetValue("value_a", SimpleValue(1));
+  user_model_.SetValue("value_b", SimpleValue(2));
+
+  // Missing fields.
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+  proto.mutable_integer_sum()->set_model_identifier_a("value_a");
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+  proto.mutable_integer_sum()->set_model_identifier_b("value_b");
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+  proto.set_result_model_identifier("result");
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+
+  // Size != 1.
+  ValueProto value;
+  value.mutable_ints()->add_values(1);
+  value.mutable_ints()->add_values(2);
+  user_model_.SetValue("value_a", value);
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+
+  // Check results.
+  user_model_.SetValue("value_a", SimpleValue(1));
+  user_model_.SetValue("value_b", SimpleValue(2));
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  EXPECT_EQ(user_model_.GetValue("result"), SimpleValue(3));
+
+  user_model_.SetValue("value_a", SimpleValue(-1));
+  user_model_.SetValue("value_b", SimpleValue(5));
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  EXPECT_EQ(user_model_.GetValue("result"), SimpleValue(4));
+}
+
 TEST_F(BasicInteractionsTest, EndActionWithoutCallbackFails) {
   EndActionProto proto;
   ASSERT_DEATH(basic_interactions_.EndAction(proto),

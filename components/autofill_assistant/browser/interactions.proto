@@ -86,6 +86,8 @@ message ComputeValueProto {
     ToStringProto to_string = 5;
     // Compares two values.
     ValueComparisonProto comparison = 6;
+    // Computes the sum of two single integers.
+    IntegerSumProto integer_sum = 7;
   }
 
   // The model identifier to write the result to.
@@ -146,6 +148,14 @@ message ValueComparisonProto {
   optional string model_identifier_b = 2;
   // The comparison mode.
   optional Mode mode = 3;
+}
+
+// Computes the sum of two single integers.
+message IntegerSumProto {
+  // The first model identifier. Must point to an integer value.
+  optional string model_identifier_a = 1;
+  // The second model identifier. Must point to an integer value.
+  optional string model_identifier_b = 2;
 }
 
 // Displays a standard info popup.

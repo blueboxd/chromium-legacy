@@ -2158,10 +2158,6 @@ bool AXLayoutObject::ShouldUseDOMTraversal() const {
   if (!node)
     return false;
 
-  // <map>: Handled in AddImageMapChildren (img).
-  if (IsA<HTMLMapElement>(*node))
-    return false;
-
   // <ruby>: special layout handling
   if (IsA<HTMLRubyElement>(*node))
     return false;

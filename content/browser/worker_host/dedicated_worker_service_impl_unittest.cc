@@ -29,10 +29,16 @@ class MockDedicatedWorker
  public:
   MockDedicatedWorker(int worker_process_id,
                       GlobalFrameRoutingId render_frame_host_id) {
-    CreateDedicatedWorkerHostFactory(worker_process_id, render_frame_host_id,
-                                     render_frame_host_id, url::Origin(),
-                                     network::CrossOriginEmbedderPolicy(),
-                                     factory_.BindNewPipeAndPassReceiver());
+    // The COEP reporter is replaced by a dummy connection. Reports are ignored.
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+        coep_reporter_remote;
+    auto dummy_coep_reporter =
+        coep_reporter_remote.InitWithNewPipeAndPassReceiver();
+
+    CreateDedicatedWorkerHostFactory(
+        worker_process_id, render_frame_host_id, render_frame_host_id,
+        url::Origin(), network::CrossOriginEmbedderPolicy(),
+        std::move(coep_reporter_remote), factory_.BindNewPipeAndPassReceiver());
 
     if (base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker)) {
       factory_->CreateWorkerHostAndStartScriptLoad(

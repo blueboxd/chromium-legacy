@@ -38,6 +38,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
+#include "components/password_manager/core/browser/ui/plaintext_reason.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
@@ -99,6 +100,20 @@ FormVector GetEntryList(const std::map<std::string, FormVector>& map) {
 
   return result;
 }
+
+#if !defined(OS_ANDROID)
+password_manager::metrics_util::AccessPasswordInSettingsEvent
+ConvertPlaintextReason(password_manager::PlaintextReason reason) {
+  switch (reason) {
+    case password_manager::PlaintextReason::kCopy:
+      return password_manager::metrics_util::ACCESS_PASSWORD_COPIED;
+    case password_manager::PlaintextReason::kView:
+      return password_manager::metrics_util::ACCESS_PASSWORD_VIEWED;
+    case password_manager::PlaintextReason::kEdit:
+      return password_manager::metrics_util::ACCESS_PASSWORD_EDITED;
+  }
+}
+#endif
 
 class RemovePasswordOperation : public UndoOperation {
  public:
@@ -370,12 +385,9 @@ void PasswordManagerPresenter::RequestPlaintextPassword(
 
   // Call back the front end to reveal the password.
   std::move(callback).Run(form.password_value);
-  auto metric_type =
-      reason == password_manager::PlaintextReason::kCopy
-          ? password_manager::metrics_util::ACCESS_PASSWORD_COPIED
-          : password_manager::metrics_util::ACCESS_PASSWORD_VIEWED;
   UMA_HISTOGRAM_ENUMERATION(
-      "PasswordManager.AccessPasswordInSettings", metric_type,
+      "PasswordManager.AccessPasswordInSettings",
+      ConvertPlaintextReason(reason),
       password_manager::metrics_util::ACCESS_PASSWORD_COUNT);
 }
 #endif

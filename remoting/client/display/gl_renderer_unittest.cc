@@ -40,7 +40,7 @@ class FakeGlRendererDelegate : public GlRendererDelegate {
     on_size_changed_call_count_++;
   }
 
-  void SetOnFrameRenderedCallback(const base::Closure& callback) {
+  void SetOnFrameRenderedCallback(const base::RepeatingClosure& callback) {
     on_frame_rendered_callback_ = callback;
   }
 
@@ -68,7 +68,7 @@ class FakeGlRendererDelegate : public GlRendererDelegate {
   int canvas_width_ = 0;
   int canvas_height_ = 0;
 
-  base::Closure on_frame_rendered_callback_;
+  base::RepeatingClosure on_frame_rendered_callback_;
   base::WeakPtrFactory<FakeGlRendererDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeGlRendererDelegate);

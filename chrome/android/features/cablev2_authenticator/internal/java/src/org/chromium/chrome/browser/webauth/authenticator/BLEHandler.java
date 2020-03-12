@@ -387,7 +387,6 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
         mTaskRunner.postTask(() -> {
             maybeStopAdvertising();
             BLEHandlerJni.get().stop();
-            mTaskRunner.destroy();
         });
     }
 

@@ -277,10 +277,10 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
                       const net::CanonicalCookie& cookie,
                       bool blocked_by_policy);
 
-  void OnDomStorageAccessed(const GURL& url,
-                            const GURL& first_party_url,
-                            bool local,
-                            bool blocked_by_policy);
+  void OnStorageAccessed(const GURL& url,
+                         const GURL& first_party_url,
+                         bool blocked_by_policy,
+                         StorageType access_type);
 
   // Signals that we should stop tracking metrics for the associated page load.
   // We may stop tracking a page load if it doesn't meet the criteria for

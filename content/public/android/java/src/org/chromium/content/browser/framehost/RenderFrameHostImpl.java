@@ -54,6 +54,11 @@ public class RenderFrameHostImpl implements RenderFrameHost {
         mDelegate.renderFrameDeleted(this);
     }
 
+    @CalledByNative
+    private long getNativePointer() {
+        return mNativeRenderFrameHostAndroid;
+    }
+
     /**
      * Get the delegate associated with this RenderFrameHost.
      *

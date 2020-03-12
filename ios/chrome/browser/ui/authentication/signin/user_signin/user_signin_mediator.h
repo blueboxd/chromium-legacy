@@ -69,6 +69,9 @@ class UnifiedConsentService;
 // The delegate.
 @property(nonatomic, weak) id<UserSigninMediatorDelegate> delegate;
 
+// Whether the authentication operation is in progress.
+@property(nonatomic, assign, readonly) BOOL isAuthenticationInProgress;
+
 // Enters the authentication state following identity selection. If there is an
 // error transitions to the identity selection state, otherwise enters the final
 // authentication completed state.

@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -29,6 +30,7 @@
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -82,6 +84,15 @@ blink::mojom::FetchAPIResponsePtr RedirectResponse(
   return response;
 }
 
+blink::mojom::FetchAPIResponsePtr HeadersResponse(
+    const base::flat_map<std::string, std::string>& headers) {
+  auto response = blink::mojom::FetchAPIResponse::New();
+  response->status_code = 200;
+  response->status_text = "OK";
+  response->headers.insert(headers.begin(), headers.end());
+  return response;
+}
+
 // Simulates a service worker handling fetch events. The response can be
 // customized via RespondWith* functions.
 class FetchEventServiceWorker : public FakeServiceWorker {
@@ -118,6 +129,14 @@ class FetchEventServiceWorker : public FakeServiceWorker {
 
   // Tells this worker to respond to fetch events with an error response.
   void RespondWithError() { response_mode_ = ResponseMode::kErrorResponse; }
+
+  // Tells this worker to respond to fetch events with a response containing
+  // specific headers.
+  void RespondWithHeaders(
+      const base::flat_map<std::string, std::string>& headers) {
+    response_mode_ = ResponseMode::kHeaders;
+    headers_ = headers;
+  }
 
   // Tells this worker to respond to fetch events with the redirect response.
   void RespondWithRedirectResponse(const GURL& new_url) {
@@ -260,6 +279,13 @@ class FetchEventServiceWorker : public FakeServiceWorker {
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
+      case ResponseMode::kHeaders:
+        response_callback->OnResponse(
+            HeadersResponse(headers_),
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
+        std::move(finish_callback)
+            .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
+        break;
     }
 
     if (quit_closure_for_fetch_event_)
@@ -276,7 +302,8 @@ class FetchEventServiceWorker : public FakeServiceWorker {
     kFailFetchEventDispatch,
     kDeferredResponse,
     kEarlyResponse,
-    kRedirect
+    kRedirect,
+    kHeaders
   };
 
   ResponseMode response_mode_ = ResponseMode::kDefault;
@@ -296,6 +323,9 @@ class FetchEventServiceWorker : public FakeServiceWorker {
 
   // For ResponseMode::kRedirect.
   GURL redirected_url_;
+
+  // For ResponseMode::kHeaders
+  base::flat_map<std::string, std::string> headers_;
 
   bool has_received_fetch_event_ = false;
   base::OnceClosure quit_closure_for_fetch_event_;
@@ -957,6 +987,20 @@ TEST_F(ServiceWorkerNavigationLoaderTest, CancelNavigationDuringFetchEvent) {
 
   client_.RunUntilComplete();
   EXPECT_EQ(net::ERR_ABORTED, client_.completion_status().error_code);
+}
+
+TEST_F(ServiceWorkerNavigationLoaderTest, ResponseWithCoop) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({network::features::kCrossOriginOpenerPolicy},
+                                {});
+  service_worker_->RespondWithHeaders(
+      {{"Cross-Origin-Opener-Policy", "same-origin"}});
+
+  // Perform the request.
+  StartRequest(CreateRequest());
+  client_.RunUntilComplete();
+  EXPECT_EQ(network::mojom::CrossOriginOpenerPolicy::kSameOrigin,
+            client_.response_head()->cross_origin_opener_policy);
 }
 
 }  // namespace service_worker_navigation_loader_unittest

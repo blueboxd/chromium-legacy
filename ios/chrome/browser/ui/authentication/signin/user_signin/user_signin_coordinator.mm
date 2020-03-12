@@ -6,7 +6,6 @@
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_coordinator.h"
 
 #import "base/mac/foundation_util.h"
-#import "base/metrics/user_metrics.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
@@ -14,6 +13,7 @@
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator+protected.h"
+#import "ios/chrome/browser/ui/authentication/signin/user_signin/logging/user_signin_logger.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_mediator.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_view_controller.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_coordinator.h"
@@ -49,11 +49,9 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 // Mediator that handles the sign-in authentication state.
 @property(nonatomic, strong) UserSigninMediator* mediator;
 // Suggested identity shown at sign-in.
-@property(nonatomic, strong) ChromeIdentity* defaultIdentity;
-// View where the sign-in button was displayed.
-@property(nonatomic, assign) AccessPoint accessPoint;
-// Promo button used to trigger the sign-in.
-@property(nonatomic, assign) PromoAction promoAction;
+@property(nonatomic, strong, readonly) ChromeIdentity* defaultIdentity;
+// Logger for sign-in operations.
+@property(nonatomic, strong, readonly) UserSigninLogger* logger;
 // Sign-in intent.
 @property(nonatomic, assign, readonly) UserSigninIntent signinIntent;
 
@@ -66,15 +64,14 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser
                                   identity:(ChromeIdentity*)identity
-                               accessPoint:(AccessPoint)accessPoint
-                               promoAction:(PromoAction)promoAction
-                              signinIntent:(UserSigninIntent)signinIntent {
+                              signinIntent:(UserSigninIntent)signinIntent
+                                    logger:(UserSigninLogger*)logger {
   self = [super initWithBaseViewController:viewController browser:browser];
   if (self) {
     _defaultIdentity = identity;
-    _accessPoint = accessPoint;
-    _promoAction = promoAction;
     _signinIntent = signinIntent;
+    DCHECK(logger);
+    _logger = logger;
   }
   return self;
 }
@@ -109,7 +106,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   // Set UnifiedConsentCoordinator properties.
   self.unifiedConsentCoordinator.selectedIdentity = self.defaultIdentity;
   self.unifiedConsentCoordinator.autoOpenIdentityPicker =
-      self.promoAction == PromoAction::PROMO_ACTION_NOT_DEFAULT;
+      self.logger.promoAction == PromoAction::PROMO_ACTION_NOT_DEFAULT;
 
   [self.unifiedConsentCoordinator start];
 
@@ -130,6 +127,8 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
       break;
     }
   }
+
+  [self.logger logSigninStarted];
 }
 
 - (void)interruptWithAction:(SigninCoordinatorInterruptAction)action
@@ -137,6 +136,12 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   // Chrome should never start before the first run is fully finished. Therefore
   // we do not expect the sign-in to be interrupted for first run.
   DCHECK(self.signinIntent != UserSigninIntentFirstRun);
+
+  if (self.mediator.isAuthenticationInProgress) {
+    // TODO(crbug.com/971989): Rename this metric after the architecture
+    // migration.
+    [self.logger logUndoSignin];
+  }
 
   __weak UserSigninCoordinator* weakSelf = self;
   if (self.addAccountSigninCoordinator) {
@@ -210,12 +215,13 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 }
 
 - (void)userSigninViewControllerDidTapOnAddAccount {
+  DCHECK(!self.addAccountSigninCoordinator);
   [self notifyUserSigninAttempted];
 
   self.addAccountSigninCoordinator = [SigninCoordinator
       addAccountCoordinatorWithBaseViewController:self.viewController
                                           browser:self.browser
-                                      accessPoint:self.accessPoint];
+                                      accessPoint:self.logger.accessPoint];
 
   __weak UserSigninCoordinator* weakSelf = self;
   self.addAccountSigninCoordinator.signinCompletion =
@@ -235,6 +241,9 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 
 - (void)userSigninViewControllerDidTapOnSkipSignin {
   [self.mediator cancelSignin];
+  // TODO(crbug.com/971989): Remove this metric after the architecture
+  // migration.
+  [self.logger logUndoSignin];
 }
 
 - (void)userSigninViewControllerDidTapOnSignin {
@@ -254,14 +263,9 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 
 - (int)userSigninMediatorGetConsentConfirmationId {
   if (self.userSigninMediatorGetSettingsLinkWasTapped) {
-    base::RecordAction(
-        base::UserMetricsAction("Signin_Signin_WithAdvancedSyncSettings"));
     return self.unifiedConsentCoordinator.openSettingsStringId;
-  } else {
-    base::RecordAction(
-        base::UserMetricsAction("Signin_Signin_WithDefaultSyncSettings"));
-    return self.viewController.acceptSigninButtonStringId;
   }
+  return self.viewController.acceptSigninButtonStringId;
 }
 
 - (const std::vector<int>&)userSigninMediatorGetConsentStringIds {
@@ -270,9 +274,12 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 
 - (void)userSigninMediatorSigninFinishedWithResult:
     (SigninCoordinatorResult)signinResult {
+  [self.logger logSigninCompletedWithResult:signinResult
+                      advancedSettingsShown:self.unifiedConsentCoordinator
+                                                .settingsLinkWasTapped];
+
   BOOL settingsWasTapped = self.unifiedConsentCoordinator.settingsLinkWasTapped;
   ChromeIdentity* identity = self.unifiedConsentCoordinator.selectedIdentity;
-  [self recordSigninMetricsWithResult:signinResult];
   __weak UserSigninCoordinator* weakSelf = self;
   ProceduralBlock completion = ^void() {
     [weakSelf viewControllerDismissedWithResult:signinResult
@@ -334,26 +341,6 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
                                                        advancedSigninIdentity];
   };
   [self.advancedSettingsSigninCoordinator start];
-}
-
-// Records the metrics when the sign-in is finished.
-- (void)recordSigninMetricsWithResult:(SigninCoordinatorResult)signinResult {
-  switch (signinResult) {
-    case SigninCoordinatorResultSuccess: {
-      signin_metrics::LogSigninAccessPointCompleted(self.accessPoint,
-                                                    self.promoAction);
-      break;
-    }
-    case SigninCoordinatorResultCanceledByUser: {
-      base::RecordAction(base::UserMetricsAction("Signin_Undo_Signin"));
-      break;
-    }
-    case SigninCoordinatorResultInterrupted: {
-      // TODO(crbug.com/951145): Add metric when the sign-in has been
-      // interrupted.
-      break;
-    }
-  }
 }
 
 // Displays the sign-in screen with transitions specific to first-run.

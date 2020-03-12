@@ -7,10 +7,10 @@
 
 #include <lib/fidl/cpp/binding.h>
 #include <lib/fidl/cpp/binding_set.h>
+#include <lib/zx/channel.h>
 
 #include "base/base_export.h"
 #include "base/callback.h"
-#include "base/fuchsia/service_directory.h"
 
 namespace sys {
 class OutgoingDirectory;
@@ -67,11 +67,6 @@ class ScopedServiceBinding : public internal::ScopedServiceBindingBase {
                     fit::bind_member(this, &ScopedServiceBinding::BindClient));
   }
 
-  // TODO(crbug.com/974072): Remove this constructor once all code has been
-  // migrated from base::fuchsia::ServiceDirectory to sys::OutgoingDirectory.
-  ScopedServiceBinding(ServiceDirectory* service_directory, Interface* impl)
-      : ScopedServiceBinding(service_directory->outgoing_directory(), impl) {}
-
   ~ScopedServiceBinding() { UnregisterService(Interface::Name_); }
 
   void SetOnLastClientCallback(base::OnceClosure on_last_client_callback) {
@@ -121,14 +116,6 @@ class ScopedSingleClientServiceBinding
         Interface::Name_,
         fit::bind_member(this, &ScopedSingleClientServiceBinding::BindClient));
   }
-
-  // TODO(crbug.com/974072): Remove this constructor once all code has been
-  // migrated from base::fuchsia::ServiceDirectory to sys::OutgoingDirectory.
-  ScopedSingleClientServiceBinding(ServiceDirectory* service_directory,
-                                   Interface* impl)
-      : ScopedSingleClientServiceBinding(
-            service_directory->outgoing_directory(),
-            impl) {}
 
   ~ScopedSingleClientServiceBinding() { UnregisterService(Interface::Name_); }
 

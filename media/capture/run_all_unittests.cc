@@ -44,6 +44,5 @@ int main(int argc, char* argv[]) {
   testing::AddGlobalTestEnvironment(new MojoEnabledTestEnvironment());
   return base::LaunchUnitTests(
       argc, argv,
-      base::BindRepeating(&base::TestSuite::Run,
-                          base::Unretained(&test_suite)));
+      base::BindOnce(&base::TestSuite::Run, base::Unretained(&test_suite)));
 }

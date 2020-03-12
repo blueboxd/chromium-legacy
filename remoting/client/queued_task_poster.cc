@@ -21,12 +21,12 @@ QueuedTaskPoster::~QueuedTaskPoster() {
   }
 }
 
-void QueuedTaskPoster::AddTask(const base::Closure& closure) {
+void QueuedTaskPoster::AddTask(base::OnceClosure closure) {
   if (!source_task_runner_) {
     source_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   }
   DCHECK(source_task_runner_->BelongsToCurrentThread());
-  task_queue_.push(closure);
+  task_queue_.emplace(std::move(closure));
   if (!transfer_task_scheduled_) {
     source_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&QueuedTaskPoster::TransferTaskQueue,
@@ -35,9 +35,9 @@ void QueuedTaskPoster::AddTask(const base::Closure& closure) {
   }
 }
 
-static void ConsumeTaskQueue(base::queue<base::Closure>* queue) {
+static void ConsumeTaskQueue(base::queue<base::OnceClosure>* queue) {
   while (!queue->empty()) {
-    queue->front().Run();
+    std::move(queue->front()).Run();
     queue->pop();
   }
 }
@@ -45,8 +45,8 @@ static void ConsumeTaskQueue(base::queue<base::Closure>* queue) {
 void QueuedTaskPoster::TransferTaskQueue() {
   DCHECK(transfer_task_scheduled_);
   transfer_task_scheduled_ = false;
-  base::queue<base::Closure>* queue_to_transfer =
-      new base::queue<base::Closure>();
+  base::queue<base::OnceClosure>* queue_to_transfer =
+      new base::queue<base::OnceClosure>();
   queue_to_transfer->swap(task_queue_);
   target_task_runner_->PostTask(
       FROM_HERE,

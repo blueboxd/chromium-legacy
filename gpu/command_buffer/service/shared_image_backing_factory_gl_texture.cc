@@ -1140,14 +1140,23 @@ SharedImageBackingFactoryGLTexture::CreateSharedImageInternal(
       }
     } else {
       uint32_t bytes_required;
+      uint32_t unpadded_row_size = 0u;
+      uint32_t padded_row_size = 0u;
       if (!gles2::GLES2Util::ComputeImageDataSizes(
               size.width(), size.height(), 1 /* depth */, format_info.gl_format,
-              format_info.gl_type, 4 /* alignment */, &bytes_required, nullptr,
-              nullptr)) {
+              format_info.gl_type, 4 /* alignment */, &bytes_required,
+              &unpadded_row_size, &padded_row_size)) {
         LOG(ERROR) << "CreateSharedImage: Unable to compute required size for "
                       "initial texture upload.";
         return nullptr;
       }
+
+      // The GL spec, used in the computation for required bytes in the function
+      // above, assumes no padding is required for the last row in the image.
+      // But the client data does include this padding, so we add it for the
+      // data validation check here.
+      uint32_t padding = padded_row_size - unpadded_row_size;
+      bytes_required += padding;
       if (pixel_data.size() != bytes_required) {
         LOG(ERROR) << "CreateSharedImage: Initial data does not have expected "
                       "size.";

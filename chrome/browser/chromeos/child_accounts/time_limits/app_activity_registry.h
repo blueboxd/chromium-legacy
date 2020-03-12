@@ -98,6 +98,9 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   void OnAppInactive(const AppId& app_id,
                      aura::Window* window,
                      base::Time timestamp) override;
+  void OnAppDestroyed(const AppId& app_id,
+                      aura::Window* window,
+                      base::Time timestamp) override;
 
   bool IsAppInstalled(const AppId& app_id) const;
   bool IsAppAvailable(const AppId& app_id) const;
@@ -185,6 +188,10 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
 
     // Contains the set of active windows for the application.
     std::set<aura::Window*> active_windows;
+
+    // The set of widows AppActivityRegistry has requested to be paused, but
+    // which have not been paused yet.
+    std::set<aura::Window*> paused_windows;
 
     // Contains information about restriction set for the app.
     base::Optional<AppLimit> limit;

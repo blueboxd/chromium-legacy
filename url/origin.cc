@@ -7,8 +7,12 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <vector>
 
+#include "base/base64.h"
+#include "base/containers/span.h"
 #include "base/logging.h"
+#include "base/pickle.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -277,6 +281,82 @@ Origin::Origin(const Nonce& nonce, SchemeHostPort precursor)
   DCHECK_EQ("", scheme());
   DCHECK_EQ("", host());
   DCHECK_EQ(0U, port());
+}
+
+// The pickle is saved in the following format, in order:
+// string - tuple_.GetURL().spec().
+// uint64_t (if opaque) - high bits of nonce if opaque. 0 if not initialized.
+// uint64_t (if opaque) - low bits of nonce if opaque. 0 if not initialized.
+base::Optional<std::string> Origin::SerializeWithNonce() const {
+  if (!opaque() && !tuple_.IsValid())
+    return base::nullopt;
+
+  base::Pickle pickle;
+  pickle.WriteString(tuple_.Serialize());
+  if (opaque() && !nonce_->raw_token().is_empty()) {
+    pickle.WriteUInt64(nonce_->token().GetHighForSerialization());
+    pickle.WriteUInt64(nonce_->token().GetLowForSerialization());
+  } else if (opaque()) {
+    // Nonce hasn't been initialized.
+    pickle.WriteUInt64(0);
+    pickle.WriteUInt64(0);
+  }
+
+  base::span<const uint8_t> data(
+      static_cast<const uint8_t*>(pickle.data()),
+      static_cast<const uint8_t*>(pickle.data()) + pickle.size());
+  // Base64 encode the data to make it nicer to play with.
+  return base::Base64Encode(data);
+}
+
+// static
+base::Optional<Origin> Origin::Deserialize(const std::string& value) {
+  std::string data;
+  if (!base::Base64Decode(value, &data))
+    return base::nullopt;
+  base::Pickle pickle(reinterpret_cast<char*>(&data[0]), data.size());
+  base::PickleIterator reader(pickle);
+
+  std::string pickled_url;
+  if (!reader.ReadString(&pickled_url))
+    return base::nullopt;
+  GURL url(pickled_url);
+
+  // If only a tuple was serialized, then this origin is not opaque. For opaque
+  // origins, we expect two uint64's to be left in the pickle.
+  bool is_opaque = !reader.ReachedEnd();
+
+  // Opaque origins without a tuple are ok.
+  if (!is_opaque && !url.is_valid())
+    return base::nullopt;
+  SchemeHostPort tuple(url);
+
+  // Possible successful early return if the pickled Origin was not opaque.
+  if (!is_opaque) {
+    Origin origin(tuple);
+    if (origin.opaque())
+      return base::nullopt;  // Something went horribly wrong.
+    return origin;
+  }
+
+  uint64_t nonce_high = 0;
+  if (!reader.ReadUInt64(&nonce_high))
+    return base::nullopt;
+
+  uint64_t nonce_low = 0;
+  if (!reader.ReadUInt64(&nonce_low))
+    return base::nullopt;
+
+  Origin::Nonce nonce;
+  if (nonce_high != 0 && nonce_low != 0) {
+    // The serialized nonce wasn't empty, so copy it here.
+    nonce = Origin::Nonce(
+        base::UnguessableToken::Deserialize(nonce_high, nonce_low));
+  }
+  Origin origin;
+  origin.nonce_ = std::move(nonce);
+  origin.tuple_ = tuple;
+  return origin;
 }
 
 std::ostream& operator<<(std::ostream& out, const url::Origin& origin) {

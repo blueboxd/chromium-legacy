@@ -8,12 +8,13 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.FutureTask;
+
+import javax.annotation.concurrent.GuardedBy;
 
 /**
  * Java interface to the native chromium scheduler.  Note tasks can be posted before native
@@ -23,11 +24,10 @@ import java.util.concurrent.FutureTask;
 @JNINamespace("base")
 public class PostTask {
     private static final Object sLock = new Object();
-    private static Set<TaskRunner> sPreNativeTaskRunners =
-            Collections.newSetFromMap(new WeakHashMap<TaskRunner, Boolean>());
+    private static List<TaskRunnerImpl> sPreNativeTaskRunners = new ArrayList<>();
     private static final Executor sPrenativeThreadPoolExecutor = new ChromeThreadPoolExecutor();
     private static Executor sPrenativeThreadPoolExecutorOverride;
-    private static final TaskExecutor sTaskExecutors[] = getInitialTaskExecutors();
+    private static TaskExecutor sTaskExecutors[] = getInitialTaskExecutors();
 
     private static TaskExecutor[] getInitialTaskExecutors() {
         TaskExecutor taskExecutors[] = new TaskExecutor[TaskTraits.MAX_EXTENSION_ID + 1];
@@ -108,7 +108,11 @@ public class PostTask {
      * @param task The task to be run with the specified traits.
      */
     public static void runOrPostTask(TaskTraits taskTraits, Runnable task) {
-        if (getTaskExecutorForTraits(taskTraits).canRunTaskImmediately(taskTraits)) {
+        TaskExecutor taskExecutor;
+        synchronized (sLock) {
+            taskExecutor = getTaskExecutorForTraits(taskTraits);
+        }
+        if (taskExecutor.canRunTaskImmediately(taskTraits)) {
             task.run();
         } else {
             postTask(taskTraits, task);
@@ -219,22 +223,24 @@ public class PostTask {
     }
 
     /**
-     * Called by every TaskRunner on its creation, attempts to register this
-     * TaskRunner as pre-native, unless the native scheduler has been
-     * initialised already, and informs the caller about the outcome. Called
-     * only when sLock has already been acquired.
+     * Called by every TaskRunnerImpl on its creation, attempts to register this TaskRunner as
+     * pre-native, unless the native scheduler has been initialized already, and informs the caller
+     * about the outcome.
      *
-     * @param taskRunner The TaskRunner to be registered.
+     * @param taskRunner The TaskRunnerImpl to be registered.
      * @return If the taskRunner got registered as pre-native.
      */
-    static boolean registerPreNativeTaskRunnerLocked(TaskRunner taskRunner) {
-        if (sPreNativeTaskRunners != null) {
-            sPreNativeTaskRunners.add(taskRunner);
-            return true;
+    static boolean registerPreNativeTaskRunner(TaskRunnerImpl taskRunner) {
+        synchronized (sLock) {
+            if (sPreNativeTaskRunners != null) {
+                sPreNativeTaskRunners.add(taskRunner);
+                return true;
+            }
         }
         return false;
     }
 
+    @GuardedBy("sLock")
     private static TaskExecutor getTaskExecutorForTraits(TaskTraits traits) {
         return sTaskExecutors[traits.mExtensionId];
     }
@@ -242,9 +248,9 @@ public class PostTask {
     @CalledByNative
     private static void onNativeSchedulerReady() {
         synchronized (sLock) {
-            Set<TaskRunner> preNativeTaskRunners = sPreNativeTaskRunners;
+            List<TaskRunnerImpl> preNativeTaskRunners = sPreNativeTaskRunners;
             sPreNativeTaskRunners = null;
-            for (TaskRunner taskRunner : preNativeTaskRunners) {
+            for (TaskRunnerImpl taskRunner : preNativeTaskRunners) {
                 taskRunner.initNativeTaskRunner();
             }
         }
@@ -254,8 +260,8 @@ public class PostTask {
     @CalledByNative
     private static void onNativeSchedulerShutdown() {
         synchronized (sLock) {
-            sPreNativeTaskRunners =
-                    Collections.newSetFromMap(new WeakHashMap<TaskRunner, Boolean>());
+            sPreNativeTaskRunners = new ArrayList<>();
+            sTaskExecutors = getInitialTaskExecutors();
         }
     }
 

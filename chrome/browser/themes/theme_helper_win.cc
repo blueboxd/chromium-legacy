@@ -121,10 +121,11 @@ bool ThemeHelperWin::GetPlatformHighContrastColor(int id,
     case ThemeProperties::COLOR_FRAME_INCOGNITO:
     case ThemeProperties::COLOR_FRAME_INACTIVE:
     case ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE:
-    case ThemeProperties::COLOR_BACKGROUND_TAB:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE:
+    case ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE:
+    case ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO:
+    case ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE:
+    case ThemeProperties::
+        COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE_INCOGNITO:
     case ThemeProperties::COLOR_DOWNLOAD_SHELF:
     case ThemeProperties::COLOR_INFOBAR:
     case ThemeProperties::COLOR_TOOLBAR:
@@ -150,10 +151,11 @@ bool ThemeHelperWin::GetPlatformHighContrastColor(int id,
     // Button Text Foreground
     case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
     case ThemeProperties::COLOR_BOOKMARK_TEXT:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE:
+    case ThemeProperties::
+        COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE_INCOGNITO:
     case ThemeProperties::COLOR_OMNIBOX_TEXT:
     case ThemeProperties::COLOR_OMNIBOX_SELECTED_KEYWORD:
     case ThemeProperties::COLOR_OMNIBOX_BUBBLE_OUTLINE:
@@ -187,7 +189,8 @@ bool ThemeHelperWin::GetPlatformHighContrastColor(int id,
             ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON, color);
       }
       FALLTHROUGH;
-    case ThemeProperties::COLOR_TAB_TEXT:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_INACTIVE:
     case ThemeProperties::COLOR_OMNIBOX_RESULTS_TEXT_SELECTED:
     case ThemeProperties::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED_SELECTED:
     case ThemeProperties::COLOR_OMNIBOX_RESULTS_ICON_SELECTED:

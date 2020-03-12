@@ -321,6 +321,7 @@ class MockDnsTransactionFactory : public DnsTransactionFactory {
       WARN_UNUSED_RESULT;
 
   bool doh_probes_running() { return !running_doh_probe_runners_.empty(); }
+  void CompleteDohProbeRuners() { running_doh_probe_runners_.clear(); }
 
   void set_force_doh_server_available(bool available) {
     force_doh_server_available_ = available;
@@ -355,6 +356,7 @@ class MockDnsClient : public DnsClient {
   bool FallbackFromInsecureTransactionPreferred() const override;
   bool SetSystemConfig(base::Optional<DnsConfig> system_config) override;
   bool SetConfigOverrides(DnsConfigOverrides config_overrides) override;
+  void ReplaceCurrentSession() override;
   DnsSession* GetCurrentSession() override;
   const DnsConfig* GetEffectiveConfig() const override;
   const DnsHosts* GetHosts() const override;

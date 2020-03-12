@@ -1594,6 +1594,21 @@
             ]
         }
     ],
+    "CrostiniWebUIUpgrader": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CrostiniWebUIUpgrader"
+                    ]
+                }
+            ]
+        }
+    ],
     "CryptAuthV2Enrollment": [
         {
             "platforms": [
@@ -2925,6 +2940,26 @@
                     "name": "Enabled",
                     "enable_features": [
                         "LegacyTLSEnforced"
+                    ]
+                }
+            ]
+        }
+    ],
+    "LimitReferrerGranularity": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ReducedReferrerGranularity"
                     ]
                 }
             ]
@@ -4309,26 +4344,6 @@
                 },
                 {
                     "name": "Disabled"
-                }
-            ]
-        }
-    ],
-    "ReducedReferrerGranularity": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ReducedReferrerGranularity"
-                    ]
                 }
             ]
         }

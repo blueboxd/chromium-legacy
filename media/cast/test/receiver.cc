@@ -413,10 +413,9 @@ class NaivePlayer : public InProcessReceiver,
       video_playout_timer_.Stop();
     } else {
       video_playout_timer_.Start(
-          FROM_HERE,
-          video_playout_queue_.front().first - now,
-          base::Bind(&NaivePlayer::PlayNextVideoFrame,
-                     base::Unretained(this)));
+          FROM_HERE, video_playout_queue_.front().first - now,
+          base::BindOnce(&NaivePlayer::PlayNextVideoFrame,
+                         base::Unretained(this)));
     }
   }
 

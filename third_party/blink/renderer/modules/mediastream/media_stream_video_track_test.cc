@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,6 +29,7 @@ namespace blink {
 // To avoid symbol collisions in jumbo builds.
 namespace media_stream_video_track_test {
 
+using base::test::RunOnceClosure;
 using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::Mock;
@@ -40,10 +42,6 @@ const uint8_t kBlackValue = 0x00;
 const uint8_t kColorValue = 0xAB;
 const int kMockSourceWidth = 640;
 const int kMockSourceHeight = 480;
-
-ACTION_P(RunClosure, closure) {
-  closure.Run();
-}
 
 class MediaStreamVideoTrackTest
     : public testing::TestWithParam<ContentHintType> {
@@ -63,7 +61,7 @@ class MediaStreamVideoTrackTest
     base::RunLoop run_loop;
     base::RepeatingClosure quit_closure = run_loop.QuitClosure();
     EXPECT_CALL(*sink, OnVideoFrame)
-        .WillOnce(RunClosure(std::move(quit_closure)));
+        .WillOnce(RunOnceClosure(std::move(quit_closure)));
     mock_source()->DeliverVideoFrame(std::move(frame));
     run_loop.Run();
   }
@@ -325,7 +323,8 @@ TEST_F(MediaStreamVideoTrackTest, CheckTrackRequestsFrame) {
   MockMediaStreamVideoSink sink;
   base::RunLoop run_loop;
   base::RepeatingClosure quit_closure = run_loop.QuitClosure();
-  EXPECT_CALL(sink, OnVideoFrame).WillOnce(RunClosure(std::move(quit_closure)));
+  EXPECT_CALL(sink, OnVideoFrame)
+      .WillOnce(RunOnceClosure(std::move(quit_closure)));
   sink.ConnectToTrack(track);
   run_loop.Run();
   EXPECT_EQ(1, sink.number_of_frames());

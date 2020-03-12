@@ -139,8 +139,9 @@ class TestDelegate : public CertificateProviderService::Delegate {
 
 class MockObserver : public CertificateProviderService::Observer {
  public:
-  MOCK_METHOD1(OnSignCompleted,
-               void(const scoped_refptr<net::X509Certificate>& certificate));
+  MOCK_METHOD2(OnSignCompleted,
+               void(const scoped_refptr<net::X509Certificate>& certificate,
+                    const std::string& extension_id));
 };
 
 }  // namespace
@@ -505,7 +506,7 @@ TEST_F(CertificateProviderServiceTest, SignRequest) {
   // No signature received until the extension replied to the service.
   EXPECT_TRUE(received_signature.empty());
 
-  EXPECT_CALL(observer_, OnSignCompleted(cert_info1_.certificate));
+  EXPECT_CALL(observer_, OnSignCompleted(cert_info1_.certificate, kExtension1));
 
   std::vector<uint8_t> signature_reply;
   signature_reply.push_back(5);
@@ -560,10 +561,12 @@ TEST_F(CertificateProviderServiceTest, SignUsingSpkiAsIdentification) {
   ASSERT_TRUE(cert);
 
   std::vector<uint16_t> supported_algorithms;
+  std::string extension_id;
   // If this fails, try to regenerate kClient1SpkiBase64 using the command shown
   // above.
-  EXPECT_TRUE(service_->GetSupportedAlgorithmsBySpki(client1_spki,
-                                                     &supported_algorithms));
+  EXPECT_TRUE(
+      service_->LookUpSpki(client1_spki, &supported_algorithms, &extension_id));
+  EXPECT_EQ(extension_id, kExtension1);
   EXPECT_THAT(supported_algorithms,
               testing::UnorderedElementsAre(SSL_SIGN_RSA_PKCS1_SHA256));
 
@@ -586,7 +589,7 @@ TEST_F(CertificateProviderServiceTest, SignUsingSpkiAsIdentification) {
   // No signature received until the extension replied to the service.
   EXPECT_TRUE(received_signature.empty());
 
-  EXPECT_CALL(observer_, OnSignCompleted(cert_info1_.certificate));
+  EXPECT_CALL(observer_, OnSignCompleted(cert_info1_.certificate, kExtension1));
 
   std::vector<uint8_t> signature_reply;
   signature_reply.push_back(5);

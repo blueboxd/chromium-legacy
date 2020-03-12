@@ -10,20 +10,16 @@ import android.content.Intent;
 import android.provider.Browser;
 
 import org.chromium.base.Log;
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNINamespace;
 
 /**
  * A class that handles navigations that should be transformed to intents. Logic taken primarly from
  * //android_webview's AwContentsClient.java:sendBrowsingIntent(), with some additional logic
  * from //android_webview's WebViewBrowserActivity.java:startBrowsingIntent().
  */
-@JNINamespace("weblayer")
 public class ExternalNavigationHandler {
     private static final String TAG = "ExternalNavHandler";
 
-    @CalledByNative
-    private static boolean shouldOverrideUrlLoading(TabImpl tab, String url, boolean hasUserGesture,
+    static boolean shouldOverrideUrlLoading(TabImpl tab, String url, boolean hasUserGesture,
             boolean isRedirect, boolean isMainFrame) {
         // TODO(blundell): Port over WebViewBrowserActivity's
         // isSpecializedHandlerAvailable() check that checks whether there's an app for handling

@@ -285,6 +285,9 @@ std::string WebUIDataSourceImpl::GetMimeType(const std::string& path) const {
   if (base::EndsWith(file_path, ".png", base::CompareCase::INSENSITIVE_ASCII))
     return "image/png";
 
+  if (base::EndsWith(file_path, ".mp4", base::CompareCase::INSENSITIVE_ASCII))
+    return "video/mp4";
+
   return "text/html";
 }
 

@@ -230,7 +230,7 @@ HRESULT LookupLocalizedNameForWellKnownSid(WELL_KNOWN_SID_TYPE sid_type,
 // Handles the writing and deletion of a startup sentinel file used to ensure
 // that the GCPW does not crash continuously on startup and render the
 // winlogon process unusable.
-bool VerifyStartupSentinel();
+bool WriteToStartupSentinel();
 void DeleteStartupSentinel();
 void DeleteStartupSentinelForVersion(const base::string16& version);
 

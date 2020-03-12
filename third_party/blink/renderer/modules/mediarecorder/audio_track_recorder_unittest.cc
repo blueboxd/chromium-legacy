@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/gmock_callback_support.h"
 #include "media/audio/simple_sources.h"
 #include "media/base/audio_sample_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,6 +25,7 @@
 #include "third_party/opus/src/include/opus.h"
 
 using base::TimeTicks;
+using base::test::RunOnceClosure;
 using ::testing::_;
 
 namespace {
@@ -44,12 +46,6 @@ const int kFramesPerBuffer = kOpusBufferDurationMs * kDefaultSampleRate / 1000;
 }  // namespace
 
 namespace blink {
-
-// Using RunClosure3 instead of RunClosure to avoid symbol collisions in jumbo
-// builds.
-ACTION_P(RunClosure3, closure) {
-  closure.Run();
-}
 
 struct ATRTestParams {
   const media::AudioParameters::Format input_format;
@@ -276,9 +272,9 @@ TEST_P(AudioTrackRecorderTest, OnDataOpus) {
   EXPECT_CALL(*this, DoOnEncodedAudio(_, _, _))
       .Times(1)
       // Only reset the decoder once we've heard back:
-      .WillOnce(RunClosure3(
-          WTF::BindRepeating(&AudioTrackRecorderTest::ResetDecoder,
-                             WTF::Unretained(this), second_params_)));
+      .WillOnce(
+          RunOnceClosure(WTF::Bind(&AudioTrackRecorderTest::ResetDecoder,
+                                   WTF::Unretained(this), second_params_)));
   audio_track_recorder_->OnData(*GetFirstSourceAudioBus(),
                                 base::TimeTicks::Now());
   for (int i = 0; i < kRatioInputToOutputFrames - 1; ++i) {
@@ -299,7 +295,7 @@ TEST_P(AudioTrackRecorderTest, OnDataOpus) {
   // Send audio with different params.
   EXPECT_CALL(*this, DoOnEncodedAudio(_, _, _))
       .Times(1)
-      .WillOnce(RunClosure3(std::move(quit_closure)));
+      .WillOnce(RunOnceClosure(std::move(quit_closure)));
   audio_track_recorder_->OnData(*GetSecondSourceAudioBus(),
                                 base::TimeTicks::Now());
   for (int i = 0; i < kRatioInputToOutputFrames - 1; ++i) {
@@ -323,7 +319,7 @@ TEST_P(AudioTrackRecorderTest, OnDataPcm) {
 
   EXPECT_CALL(*this, DoOnEncodedAudio(_, _, _)).Times(5);
   EXPECT_CALL(*this, DoOnEncodedAudio(_, _, _))
-      .WillOnce(RunClosure3(std::move(quit_closure)));
+      .WillOnce(RunOnceClosure(std::move(quit_closure)));
 
   audio_track_recorder_->OnData(*GetFirstSourceAudioBus(),
                                 base::TimeTicks::Now());
@@ -359,7 +355,7 @@ TEST_P(AudioTrackRecorderTest, PauseResume) {
   audio_track_recorder_->Resume();
   EXPECT_CALL(*this, DoOnEncodedAudio(_, _, _))
       .Times(1)
-      .WillOnce(RunClosure3(std::move(quit_closure)));
+      .WillOnce(RunOnceClosure(std::move(quit_closure)));
   audio_track_recorder_->OnData(*GetFirstSourceAudioBus(),
                                 base::TimeTicks::Now());
   for (int i = 0; i < kRatioInputToOutputFrames - 1; ++i) {

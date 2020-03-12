@@ -120,6 +120,8 @@ EXTERN_C const IID IID_IUpdater;
         virtual HRESULT STDMETHODCALLTYPE Update( 
             /* [string][in] */ const WCHAR *app_id) = 0;
         
+        virtual HRESULT STDMETHODCALLTYPE UpdateAll( void) = 0;
+        
     };
     
     
@@ -157,6 +159,9 @@ EXTERN_C const IID IID_IUpdater;
             IUpdater * This,
             /* [string][in] */ const WCHAR *app_id);
         
+        HRESULT ( STDMETHODCALLTYPE *UpdateAll )( 
+            IUpdater * This);
+        
         END_INTERFACE
     } IUpdaterVtbl;
 
@@ -188,6 +193,9 @@ EXTERN_C const IID IID_IUpdater;
 
 #define IUpdater_Update(This,app_id)	\
     ( (This)->lpVtbl -> Update(This,app_id) ) 
+
+#define IUpdater_UpdateAll(This)	\
+    ( (This)->lpVtbl -> UpdateAll(This) ) 
 
 #endif /* COBJMACROS */
 

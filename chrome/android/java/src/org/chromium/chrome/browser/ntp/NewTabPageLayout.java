@@ -989,8 +989,8 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
             Drawable drawable = mAssistantVoiceSearchService.getCurrentMicDrawable();
             mVoiceSearchButton.setImageDrawable(drawable);
 
-            final @ColorRes int primaryColor =
-                    ChromeColors.getDefaultThemeColor(getResources(), /* isIncognito= */ false);
+            final @ColorRes int primaryColor = ChromeColors.getDefaultThemeColor(
+                    getResources(), /* forceDarkBgColor= */ false);
             ColorStateList colorStateList = mAssistantVoiceSearchService.getMicButtonColorStateList(
                     primaryColor, getContext());
             ApiCompatibilityUtils.setImageTintList(mVoiceSearchButton, colorStateList);

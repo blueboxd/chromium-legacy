@@ -19,6 +19,7 @@
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "net/base/network_change_notifier.h"
 #include "net/dns/dns_session.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/host_cache.h"
@@ -107,13 +108,9 @@ ResolveContext::ResolveContext(URLRequestContext* url_request_context,
     : url_request_context_(url_request_context),
       host_cache_(enable_caching ? HostCache::CreateDefaultCache() : nullptr) {
   max_timeout_ = GetMaxTimeout();
-
-  NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
-ResolveContext::~ResolveContext() {
-  NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
-}
+ResolveContext::~ResolveContext() = default;
 
 size_t ResolveContext::FirstServerIndex(bool doh_server,
                                         const DnsSession* session) {
@@ -236,17 +233,21 @@ void ResolveContext::RecordServerFailure(size_t server_index,
   if (!IsCurrentSession(session))
     return;
 
-  bool doh_available_before = NumAvailableDohServers(session) > 0;
+  size_t num_available_doh_servers_before = NumAvailableDohServers(session);
 
   ServerStats* stats = GetServerStats(server_index, is_doh_server);
   ++(stats->last_failure_count);
   stats->last_failure = base::TimeTicks::Now();
 
-  // TODO(crbug.com/1022059): Consider figuring out some way to only for the
-  // first context enabling DoH or the last context disabling DoH.
-  bool doh_available_now = NumAvailableDohServers(session) > 0;
-  if (doh_available_before != doh_available_now)
-    NetworkChangeNotifier::TriggerNonSystemDnsChange();
+  size_t num_available_doh_servers_now = NumAvailableDohServers(session);
+  if (num_available_doh_servers_now < num_available_doh_servers_before) {
+    NotifyDohStatusObserversOfUnavailable(false /* network_change */);
+
+    // TODO(crbug.com/1022059): Consider figuring out some way to only for the
+    // first context enabling DoH or the last context disabling DoH.
+    if (num_available_doh_servers_now == 0)
+      NetworkChangeNotifier::TriggerNonSystemDnsChange();
+  }
 }
 
 void ResolveContext::RecordServerSuccess(size_t server_index,
@@ -314,7 +315,20 @@ base::TimeDelta ResolveContext::NextDohTimeout(size_t doh_server_index,
       0 /* num_backoffs */);
 }
 
-void ResolveContext::InvalidateCaches(const DnsSession* new_session) {
+void ResolveContext::RegisterDohStatusObserver(DohStatusObserver* observer) {
+  DCHECK(observer);
+  doh_status_observers_.AddObserver(observer);
+}
+
+void ResolveContext::UnregisterDohStatusObserver(
+    const DohStatusObserver* observer) {
+  DCHECK(observer);
+  doh_status_observers_.RemoveObserver(observer);
+}
+
+void ResolveContext::InvalidateCachesAndPerSessionData(
+    const DnsSession* new_session,
+    bool network_change) {
   if (host_cache_)
     host_cache_->Invalidate();
 
@@ -328,9 +342,12 @@ void ResolveContext::InvalidateCaches(const DnsSession* new_session) {
   classic_server_stats_.clear();
   doh_server_stats_.clear();
   initial_timeout_ = base::TimeDelta();
+  max_timeout_ = GetMaxTimeout();
 
-  if (!new_session)
+  if (!new_session) {
+    NotifyDohStatusObserversOfSessionChanged();
     return;
+  }
 
   current_session_ = new_session->GetWeakPtr();
 
@@ -348,6 +365,11 @@ void ResolveContext::InvalidateCaches(const DnsSession* new_session) {
            classic_server_stats_.size());
   CHECK_EQ(new_session->config().dns_over_https_servers.size(),
            doh_server_stats_.size());
+
+  NotifyDohStatusObserversOfSessionChanged();
+
+  if (!doh_server_stats_.empty())
+    NotifyDohStatusObserversOfUnavailable(network_change);
 }
 
 bool ResolveContext::IsCurrentSession(const DnsSession* session) const {
@@ -444,26 +466,15 @@ void ResolveContext::RecordRttForUma(size_t server_index,
   }
 }
 
-void ResolveContext::OnNetworkChanged(
-    NetworkChangeNotifier::ConnectionType type) {
-  // Reset per-connection state on CONNECTION_NONE notifications (which are
-  // always sent before the new connection type on changes). Resetting this
-  // state is a "destructive" activity (see
-  // NetworkChangeObserver::OnNetworkChanged()), and it's also important that
-  // this reset occurs before probes are restarted on non-CONNECTION_NONE
-  // notifications.
-  if (type != NetworkChangeNotifier::CONNECTION_NONE)
-    return;
+void ResolveContext::NotifyDohStatusObserversOfSessionChanged() {
+  for (auto& observer : doh_status_observers_)
+    observer.OnSessionChanged();
+}
 
-  if (current_session_) {
-    initial_timeout_ = GetDefaultTimeout(current_session_->config());
-    for (ServerStats& classic_server_stat : classic_server_stats_)
-      classic_server_stat.current_connection_success = false;
-    for (ServerStats& doh_server_stat : doh_server_stats_)
-      doh_server_stat.current_connection_success = false;
-  }
-
-  max_timeout_ = GetMaxTimeout();
+void ResolveContext::NotifyDohStatusObserversOfUnavailable(
+    bool network_change) {
+  for (auto& observer : doh_status_observers_)
+    observer.OnDohServerUnavailable(network_change);
 }
 
 // static

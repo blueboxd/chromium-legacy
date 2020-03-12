@@ -493,7 +493,7 @@ void FrameRendererThumbnail::ValidateThumbnailTask(bool* success,
   *success = base::Contains(thumbnail_checksums_, md5_string);
 
   // If validation failed, write the thumbnail image to disk.
-  if (!success)
+  if (!(*success))
     SaveThumbnailTask();
 
   done->Signal();

@@ -196,9 +196,8 @@ TEST_F(FrameReceiverTest, ReceivesOneFrame) {
   task_runner_->RunTasks();
 
   // Enqueue a request for a frame.
-  receiver_->RequestEncodedFrame(
-      base::Bind(&FakeFrameClient::DeliverEncodedFrame,
-                 base::Unretained(&frame_client_)));
+  receiver_->RequestEncodedFrame(base::BindOnce(
+      &FakeFrameClient::DeliverEncodedFrame, base::Unretained(&frame_client_)));
 
   // The request should not be satisfied since no packets have been received.
   task_runner_->RunTasks();

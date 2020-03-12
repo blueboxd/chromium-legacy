@@ -214,16 +214,22 @@ void AppActivityRegistry::OnAppActive(const AppId& app_id,
   if (!base::Contains(activity_registry_, app_id))
     return;
 
-  // We are notified that a paused app is active. Notify observers to pause it.
-  if (GetAppState(app_id) == AppState::kLimitReached) {
-    NotifyLimitReached(app_id, /* was_active */ true);
-    return;
-  }
-
   if (app_id == GetChromeAppId())
     return;
 
   AppDetails& app_details = activity_registry_[app_id];
+
+  // We are notified that a paused app is active. Notify observers to pause it.
+  if (GetAppState(app_id) == AppState::kLimitReached) {
+    // If the window is in |app_details.paused_windows| then AppActivityRegistry
+    // has already notified its observers to pause it. Return.
+    if (base::Contains(app_details.paused_windows, window))
+      return;
+
+    app_details.paused_windows.insert(window);
+    NotifyLimitReached(app_id, /* was_active */ true);
+    return;
+  }
 
   DCHECK(IsAppAvailable(app_id));
 
@@ -262,6 +268,20 @@ void AppActivityRegistry::OnAppInactive(const AppId& app_id,
     return;
 
   SetAppInactive(app_id, timestamp);
+}
+
+void AppActivityRegistry::OnAppDestroyed(const AppId& app_id,
+                                         aura::Window* window,
+                                         base::Time timestamp) {
+  if (!base::Contains(activity_registry_, app_id))
+    return;
+
+  if (app_id == GetChromeAppId())
+    return;
+
+  AppDetails& app_details = activity_registry_.at(app_id);
+  if (base::Contains(app_details.paused_windows, window))
+    app_details.paused_windows.erase(window);
 }
 
 bool AppActivityRegistry::IsAppInstalled(const AppId& app_id) const {
@@ -654,7 +674,7 @@ void AppActivityRegistry::SetAppState(const AppId& app_id, AppState app_state) {
     bool was_active = false;
     if (app_activity.is_active()) {
       was_active = true;
-      app_details.active_windows.clear();
+      app_details.paused_windows = std::move(app_details.active_windows);
       SetAppInactive(app_id, base::Time::Now());
     }
 

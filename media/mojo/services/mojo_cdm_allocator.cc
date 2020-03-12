@@ -190,8 +190,8 @@ cdm::Buffer* MojoCdmAllocator::CreateCdmBuffer(size_t capacity) {
   // memory available for another MojoCdmBuffer.
   return MojoCdmBuffer::Create(
       std::move(buffer), capacity,
-      base::Bind(&MojoCdmAllocator::AddBufferToAvailableMap,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&MojoCdmAllocator::AddBufferToAvailableMap,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 // Creates a new MojoCdmVideoFrame on every request.

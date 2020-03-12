@@ -77,13 +77,15 @@ class LocalNetworkCollectorImplTest : public testing::Test {
   }
 
   void OnGetSyncableNetwork(
-      std::string expected,
+      std::string expected_ssid,
       base::Optional<sync_pb::WifiConfigurationSpecifics> result) {
-    if (expected.empty()) {
+    if (expected_ssid.empty()) {
       ASSERT_EQ(base::nullopt, result);
       return;
     }
-    EXPECT_EQ(expected, DecodeHexString(result->hex_ssid()));
+    EXPECT_EQ(expected_ssid, DecodeHexString(result->hex_ssid()));
+    EXPECT_TRUE(result->has_last_update_timestamp());
+    EXPECT_NE(0, result->last_update_timestamp());
   }
 
   LocalNetworkCollector* local_network_collector() {

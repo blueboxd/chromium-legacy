@@ -13,17 +13,13 @@ import android.os.Bundle;
 import android.util.Pair;
 
 import org.junit.Assert;
-import org.junit.Rule;
 
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
-import org.chromium.base.annotations.DisabledCalledByNativeJavaTest;
-import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.UnitTestUtils;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.installedapp.mojom.RelatedApplication;
 import org.chromium.url.URI;
@@ -76,9 +72,7 @@ public class InstalledAppProviderTest {
     private FakeFrameUrlDelegate mFrameUrlDelegate;
     private InstalledAppProviderTestImpl mInstalledAppProvider;
     private FakeInstantAppsHandler mFakeInstantAppsHandler;
-
-    @Rule
-    public JniMocker mocker = new JniMocker();
+    private TestInstalledAppProviderImplJni mTestInstalledAppProviderImplJni;
 
     private static class FakePackageManager extends PackageManagerDelegate {
         private Map<String, PackageInfo> mPackageInfo = new HashMap<>();
@@ -140,7 +134,7 @@ public class InstalledAppProviderTest {
         @Override
         protected void delayThenRun(Runnable r, long delayMillis) {
             mLastDelayMillis = delayMillis;
-            r.run();
+            super.delayThenRun(r, 0);
         }
 
         @Override
@@ -156,17 +150,17 @@ public class InstalledAppProviderTest {
 
     private static class TestInstalledAppProviderImplJni
             implements InstalledAppProviderImpl.Natives {
-        private static final Map<String, String> RELATION_MAP = new HashMap<>();
+        private final Map<String, String> mRelationMap = new HashMap<>();
 
-        public static void addVerfication(String webDomain, String manifestUrl) {
-            RELATION_MAP.put(webDomain, manifestUrl);
+        public void addVerfication(String webDomain, String manifestUrl) {
+            mRelationMap.put(webDomain, manifestUrl);
         }
 
         @Override
         public void checkDigitalAssetLinksRelationshipForWebApk(
                 Profile profile, String webDomain, String manifestUrl, Callback<Boolean> callback) {
-            callback.onResult(RELATION_MAP.containsKey(webDomain)
-                    && RELATION_MAP.get(webDomain).equals(manifestUrl));
+            callback.onResult(mRelationMap.containsKey(webDomain)
+                    && mRelationMap.get(webDomain).equals(manifestUrl));
         }
     }
 
@@ -386,15 +380,20 @@ public class InstalledAppProviderTest {
 
     @CalledByNative
     public void setUp() throws Exception {
-        TestThreadUtils.setThreadAssertsDisabled(true);
-
-        mocker.mock(InstalledAppProviderImplJni.TEST_HOOKS, new TestInstalledAppProviderImplJni());
+        mTestInstalledAppProviderImplJni = new TestInstalledAppProviderImplJni();
+        InstalledAppProviderImplJni.TEST_HOOKS.setInstanceForTesting(
+                mTestInstalledAppProviderImplJni);
 
         mFakePackageManager = new FakePackageManager();
         mFrameUrlDelegate = new FakeFrameUrlDelegate(URL_ON_ORIGIN);
         mFakeInstantAppsHandler = new FakeInstantAppsHandler();
         mInstalledAppProvider = new InstalledAppProviderTestImpl(
                 mFrameUrlDelegate, mFakePackageManager, mFakeInstantAppsHandler);
+    }
+
+    @CalledByNative
+    public void tearDown() throws Exception {
+        InstalledAppProviderImplJni.TEST_HOOKS.setInstanceForTesting(null);
     }
 
     /** Origin of the page using the API is missing certain parts of the URI. */
@@ -865,7 +864,7 @@ public class InstalledAppProviderTest {
     }
 
     /** Tests the pseudo-random artificial delay to counter a timing attack. */
-    @DisabledCalledByNativeJavaTest  // crbug.com/1058857
+    @CalledByNativeJavaTest
     public void testArtificialDelay() throws Exception {
         byte[] salt = {0x64, 0x09, -0x68, -0x25, 0x70, 0x11, 0x25, 0x24, 0x68, -0x1a, 0x08, 0x79,
                 -0x12, -0x50, 0x3b, -0x57, -0x17, -0x4d, 0x46, 0x02};
@@ -974,7 +973,7 @@ public class InstalledAppProviderTest {
 
         verifyInstalledApps(manifestRelatedApps, new RelatedApplication[] {});
 
-        TestInstalledAppProviderImplJni.addVerfication(OTHER_MANIFEST_URL, MANIFEST_URL);
+        mTestInstalledAppProviderImplJni.addVerfication(OTHER_MANIFEST_URL, MANIFEST_URL);
         verifyInstalledApps(manifestRelatedApps, new RelatedApplication[] {webApk});
     }
 
@@ -987,7 +986,7 @@ public class InstalledAppProviderTest {
                 createRelatedApplication(PLATFORM_WEBAPP, null, OTHER_MANIFEST_URL);
         RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {webApk};
 
-        TestInstalledAppProviderImplJni.addVerfication(MANIFEST_URL, OTHER_MANIFEST_URL);
+        mTestInstalledAppProviderImplJni.addVerfication(MANIFEST_URL, OTHER_MANIFEST_URL);
         verifyInstalledApps(manifestRelatedApps, new RelatedApplication[] {});
     }
 }

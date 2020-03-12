@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_SETTINGS_UI_H_
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/webui_load_timer.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -41,14 +40,13 @@ class SettingsUI : public content::WebUIController {
   void AddSettingsPageUIHandler(
       std::unique_ptr<content::WebUIMessageHandler> handler);
 
-  void LaunchSettingsSurveyIfAppropriate();
+  // Makes a request to show a HaTS survey.
+  void TryShowHatsSurveyWithTimeout();
 
-  // Timeout before requesting a HaTS survey.
+  // Timeout (in milliseconds) used in TryShowHatsSurveyWithTimeout.
   static int hats_timeout_ms_;
 
   WebuiLoadTimer webui_load_timer_;
-
-  base::WeakPtrFactory<SettingsUI> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SettingsUI);
 };

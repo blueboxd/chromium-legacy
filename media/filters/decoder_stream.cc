@@ -245,7 +245,7 @@ void DecoderStream<StreamType>::Reset(base::OnceClosure closure) {
   // it resets. |reset_cb_| will be fired in OnDecoderReset(), after the
   // decrypting demuxer stream finishes its reset.
   if (decrypting_demuxer_stream_) {
-    decrypting_demuxer_stream_->Reset(base::BindRepeating(
+    decrypting_demuxer_stream_->Reset(base::BindOnce(
         &DecoderStream<StreamType>::ResetDecoder, weak_factory_.GetWeakPtr()));
     return;
   }
@@ -318,8 +318,8 @@ void DecoderStream<StreamType>::SkipPrepareUntil(
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::SelectDecoder() {
   decoder_selector_.SelectDecoder(
-      base::BindRepeating(&DecoderStream<StreamType>::OnDecoderSelected,
-                          weak_factory_.GetWeakPtr()),
+      base::BindOnce(&DecoderStream<StreamType>::OnDecoderSelected,
+                     weak_factory_.GetWeakPtr()),
       base::BindRepeating(&DecoderStream<StreamType>::OnDecodeOutputReady,
                           fallback_weak_factory_.GetWeakPtr()));
 }
@@ -827,8 +827,8 @@ void DecoderStream<StreamType>::ReinitializeDecoder() {
   traits_->InitializeDecoder(
       decoder_.get(), traits_->GetDecoderConfig(stream_),
       stream_->liveness() == DemuxerStream::LIVENESS_LIVE, cdm_context_,
-      base::BindRepeating(&DecoderStream<StreamType>::OnDecoderReinitialized,
-                          weak_factory_.GetWeakPtr()),
+      base::BindOnce(&DecoderStream<StreamType>::OnDecoderReinitialized,
+                     weak_factory_.GetWeakPtr()),
       base::BindRepeating(&DecoderStream<StreamType>::OnDecodeOutputReady,
                           fallback_weak_factory_.GetWeakPtr()),
       waiting_cb_);

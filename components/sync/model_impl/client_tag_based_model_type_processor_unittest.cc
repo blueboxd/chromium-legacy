@@ -2305,6 +2305,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EXPECT_NE(nullptr, worker());
   // Upon a mismatch, metadata should have been cleared.
   EXPECT_EQ(0U, db()->metadata_count());
+  EXPECT_FALSE(type_processor()->IsTrackingMetadata());
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,

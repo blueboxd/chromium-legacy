@@ -153,9 +153,9 @@ cr.define('settings_passwords_check', function() {
       });
     });
 
-    // Test verifies that 'Try again' is not visible if users have too many
-    // passwords. Instead, there should be a link to their Google Account.
-    test('testRetryInAccountForTooManyPasswordsWhenSyncing', function() {
+    // Test verifies that sync users see only the link to account checkup and no
+    // button to start the local leak check.
+    test('testOnlyCheckupLinkForTooManyPasswordsWhenSyncing', function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.TOO_MANY_PASSWORDS);
@@ -166,12 +166,15 @@ cr.define('settings_passwords_check', function() {
       sync_test_util.simulateSyncStatus({signedIn: true});
 
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
-        expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
         expectTrue(isElementVisible(section.$.linkToGoogleAccount));
+        expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
       });
     });
 
-    test('testNoRetryInAccountForTooManyPasswordsWhenSignedOut', function() {
+    // Test verifies that too many passwords don't prevent the user from
+    // starting the check. The link to the password checkup is not displayed if
+    // the user has too many passwords but is not signed in.
+    test('testNoCheckupLinkForTooManyPasswordsWhenSignedOut', function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               PasswordCheckState.TOO_MANY_PASSWORDS);
@@ -183,16 +186,18 @@ cr.define('settings_passwords_check', function() {
 
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
         Polymer.dom.flush();
-        assertTrue(isElementVisible(section.$.title));
-        expectEquals(
-            section.i18n('checkPasswordsErrorInterruptedTooManyPasswords'),
-            section.$.title.innerText);
         expectFalse(isElementVisible(section.$.linkToGoogleAccount));
-        expectTrue(isElementVisible(section.$.subtitle));
+        assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
+        expectEquals(
+            section.i18n('checkPasswordsAgain'),
+            section.$.controlPasswordCheckButton.innerText);
       });
     });
 
-    test('testNoRetryInAccountForTooManyPasswordsForEncryption', function() {
+    // Test verifies that too many passwords don't prevent the user from
+    // starting the check. The link to the password checkup is not displayed if
+    // a sync-user encrypted their passwords with a custom passphrase.
+    test('testNoCheckupLinkForTooManyPasswordsForEncryption', function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               PasswordCheckState.TOO_MANY_PASSWORDS);
@@ -205,12 +210,69 @@ cr.define('settings_passwords_check', function() {
 
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
         Polymer.dom.flush();
-        assertTrue(isElementVisible(section.$.title));
-        expectEquals(
-            section.i18n('checkPasswordsErrorInterruptedTooManyPasswords'),
-            section.$.title.innerText);
         expectFalse(isElementVisible(section.$.linkToGoogleAccount));
-        expectTrue(isElementVisible(section.$.subtitle));
+        assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
+        expectEquals(
+            section.i18n('checkPasswordsAgain'),
+            section.$.controlPasswordCheckButton.innerText);
+      });
+    });
+
+    // Test verifies that 'Try again' is not visible if users have too many
+    // passwords and are out of quota. Instead, there should be a link to their
+    // the checkup in their Google Account.
+    test('testCheckupForTooManyPasswordsQuotaLimitWithSync', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              PasswordCheckState.TOO_MANY_PASSWORDS_AND_QUOTA_LIMIT);
+
+      const section = createCheckPasswordSection();
+      cr.webUIListenerCallback(
+          'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
+      sync_test_util.simulateSyncStatus({signedIn: true});
+
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
+        expectTrue(isElementVisible(section.$.linkToGoogleAccount));
+      });
+    });
+
+    // There should be neither a Retry button nor a link to the password checkup
+    // if the user has too many passwords, is out of quota, and is signed out.
+    test('testNoCheckupForTooManyPasswordsQuotaLimitWhenSignedOut', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              PasswordCheckState.TOO_MANY_PASSWORDS_AND_QUOTA_LIMIT);
+
+      const section = createCheckPasswordSection();
+      cr.webUIListenerCallback(
+          'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
+      sync_test_util.simulateSyncStatus({signedIn: false});
+
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
+        expectFalse(isElementVisible(section.$.linkToGoogleAccount));
+      });
+    });
+
+    // There should be neither a Retry button nor a link to the password checkup
+    // if a sync-user encrypted their passwords with a custom passphrase.
+    test('testNoCheckupForTooManyPasswordsQuotaLimitForEncryption', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              PasswordCheckState.TOO_MANY_PASSWORDS_AND_QUOTA_LIMIT);
+
+      const section = createCheckPasswordSection();
+      const syncPrefs = sync_test_util.getSyncAllPrefs();
+      syncPrefs.encryptAllData = true;
+      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
+      sync_test_util.simulateSyncStatus({signedIn: true});
+
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
+        expectFalse(isElementVisible(section.$.linkToGoogleAccount));
       });
     });
 
@@ -636,19 +698,31 @@ cr.define('settings_passwords_check', function() {
               PasswordCheckState.TOO_MANY_PASSWORDS);
 
       const section = createCheckPasswordSection();
-      cr.webUIListenerCallback(
-          'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
-      sync_test_util.simulateSyncStatus({signedIn: true});
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        const title = section.$.title;
+        assertTrue(isElementVisible(title));
+        expectEquals(section.i18n('checkPasswordsErrorTooManyPasswords'),
+                     title.innerText);
+        expectFalse(isElementVisible(section.$.subtitle));
+      });
+    });
 
+    // When too many passwords were saved to check them, only show an error.
+    test('testShowyErrorAndSubtitleWhenTooManyPasswordsAndOutOfQuota', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              PasswordCheckState.TOO_MANY_PASSWORDS_AND_QUOTA_LIMIT);
+
+      const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
         Polymer.dom.flush();
         const title = section.$.title;
         assertTrue(isElementVisible(title));
         expectEquals(
-            section.i18n('checkPasswordsErrorTooManyPasswords') + ' ' +
-                section.i18n('checkPasswordsAgainInAccount'),
+            section.i18n('checkPasswordsErrorInterruptedTooManyPasswords'),
             title.innerText);
-        expectFalse(isElementVisible(section.$.subtitle));
+        expectTrue(isElementVisible(section.$.subtitle));
       });
     });
 

@@ -20,6 +20,7 @@ interface IUpdater : IUnknown {
                    [in, string] const WCHAR* version,
                    [in, string] const WCHAR* existence_checker_path);
   HRESULT Update([in, string] const WCHAR* app_id);
+  HRESULT UpdateAll();
 };
 
 [

@@ -595,8 +595,8 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDNSInterceptionChecksEnabled,
     prefs::kDNSInterceptionChecksEnabled,
     base::Value::Type::BOOLEAN },
-  { key::kAdvancedProtectionExtraSecurityAllowed,
-    prefs::kAdvancedProtectionExtraSecurityAllowed,
+  { key::kAdvancedProtectionAllowed,
+    prefs::kAdvancedProtectionAllowed,
     base::Value::Type::BOOLEAN },
 
 #if defined(OS_ANDROID)

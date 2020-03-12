@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.payments.PaymentApp.PaymentRequestUpdateEventCallback;
+import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentMethodData;
@@ -18,6 +19,9 @@ import java.util.Map;
 public interface PaymentAppFactoryParams {
     /** @return The web contents where the payment is being requested. */
     WebContents getWebContents();
+
+    /** @return The RenderFrameHost for the frame that initiates the payment request. */
+    RenderFrameHost getRenderFrameHost();
 
     /**
      * @return The unmodifiable mapping of payment method identifier to the method-specific data in

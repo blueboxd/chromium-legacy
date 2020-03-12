@@ -96,7 +96,7 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
         SwipeRefreshHandler handler = SwipeRefreshHandler.get(mTab);
         if (handler != null) handler.reset();
 
-        new RepostFormWarningHelper().show();
+        showRepostFormWarningTabModalDialog();
     }
 
     @Override
@@ -364,69 +364,61 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
         return mActivity != null && mActivity.isCustomTab();
     }
 
-    private class RepostFormWarningHelper extends EmptyTabObserver {
-        private ModalDialogManager mModalDialogManager;
-        private PropertyModel mDialogModel;
-
-        void show() {
-            if (mActivity == null) return;
-            mTab.addObserver(this);
-            mModalDialogManager = mActivity.getModalDialogManager();
-
-            ModalDialogProperties
-                    .Controller dialogController = new ModalDialogProperties.Controller() {
-                @Override
-                public void onClick(PropertyModel model, int buttonType) {
-                    if (buttonType == ModalDialogProperties.ButtonType.POSITIVE) {
-                        mModalDialogManager.dismissDialog(
-                                model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
-                    } else if (buttonType == ModalDialogProperties.ButtonType.NEGATIVE) {
-                        mModalDialogManager.dismissDialog(
-                                model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
-                    }
-                }
-
-                @Override
-                public void onDismiss(PropertyModel model, int dismissalCause) {
-                    mTab.removeObserver(RepostFormWarningHelper.this);
-                    if (!mTab.isInitialized()) return;
-                    switch (dismissalCause) {
-                        case DialogDismissalCause.POSITIVE_BUTTON_CLICKED:
-                            mTab.getWebContents().getNavigationController().continuePendingReload();
-                            break;
-                        case DialogDismissalCause.ACTIVITY_DESTROYED:
-                        case DialogDismissalCause.TAB_DESTROYED:
-                            // Intentionally ignored as the tab object is gone.
-                            break;
-                        default:
-                            mTab.getWebContents().getNavigationController().cancelPendingReload();
-                            break;
-                    }
-                }
-            };
-
-            Resources resources = mActivity.getResources();
-            mDialogModel = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
-                                   .with(ModalDialogProperties.CONTROLLER, dialogController)
-                                   .with(ModalDialogProperties.TITLE, resources,
-                                           R.string.http_post_warning_title)
-                                   .with(ModalDialogProperties.MESSAGE, resources,
-                                           R.string.http_post_warning)
-                                   .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
-                                           R.string.http_post_warning_resend)
-                                   .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
-                                           R.string.cancel)
-                                   .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
-                                   .build();
-
-            mModalDialogManager.showDialog(
-                    mDialogModel, ModalDialogManager.ModalDialogType.TAB, true);
+    private void showRepostFormWarningTabModalDialog() {
+        // As a rule, showRepostFormWarningDialog should only be called on active tabs, as it's
+        // called right after WebContents::Activate. But in various corner cases, that
+        // activation may fail.
+        if (mActivity == null || !mTab.isUserInteractable()) {
+            mTab.getWebContents().getNavigationController().cancelPendingReload();
+            return;
         }
 
-        @Override
-        public void onDestroyed(Tab tab) {
-            super.onDestroyed(tab);
-            mModalDialogManager.dismissDialog(mDialogModel, DialogDismissalCause.TAB_DESTROYED);
-        }
+        ModalDialogManager modalDialogManager = mActivity.getModalDialogManager();
+
+        ModalDialogProperties.Controller dialogController = new ModalDialogProperties.Controller() {
+            @Override
+            public void onClick(PropertyModel model, int buttonType) {
+                if (buttonType == ModalDialogProperties.ButtonType.POSITIVE) {
+                    modalDialogManager.dismissDialog(
+                            model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
+                } else if (buttonType == ModalDialogProperties.ButtonType.NEGATIVE) {
+                    modalDialogManager.dismissDialog(
+                            model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
+                }
+            }
+
+            @Override
+            public void onDismiss(PropertyModel model, int dismissalCause) {
+                if (!mTab.isInitialized()) return;
+                switch (dismissalCause) {
+                    case DialogDismissalCause.POSITIVE_BUTTON_CLICKED:
+                        mTab.getWebContents().getNavigationController().continuePendingReload();
+                        break;
+                    case DialogDismissalCause.ACTIVITY_DESTROYED:
+                    case DialogDismissalCause.TAB_DESTROYED:
+                        // Intentionally ignored as the tab object is gone.
+                        break;
+                    default:
+                        mTab.getWebContents().getNavigationController().cancelPendingReload();
+                        break;
+                }
+            }
+        };
+
+        Resources resources = mActivity.getResources();
+        PropertyModel dialogModel =
+                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                        .with(ModalDialogProperties.CONTROLLER, dialogController)
+                        .with(ModalDialogProperties.TITLE, resources,
+                                R.string.http_post_warning_title)
+                        .with(ModalDialogProperties.MESSAGE, resources, R.string.http_post_warning)
+                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
+                                R.string.http_post_warning_resend)
+                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
+                                R.string.cancel)
+                        .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
+                        .build();
+
+        modalDialogManager.showDialog(dialogModel, ModalDialogManager.ModalDialogType.TAB, true);
     }
 }

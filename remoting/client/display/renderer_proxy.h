@@ -39,7 +39,7 @@ class RendererProxy {
   // Runs the |task| on the thread of |task_runner_|. All tasks run with
   // |needs_synchronization| set to true inside the same tick will be run on
   // |task_runner_| within the same tick.
-  void RunTaskOnProperThread(const base::Closure& task,
+  void RunTaskOnProperThread(base::OnceClosure task,
                              bool needs_synchronization);
 
   base::WeakPtr<GlRenderer> renderer_;

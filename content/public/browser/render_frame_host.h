@@ -108,6 +108,12 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   static RenderFrameHost* FromPlaceholderId(int render_process_id,
                                             int placeholder_routing_id);
 
+#if defined(OS_ANDROID)
+  // Returns the RenderFrameHost object associated with a Java native pointer.
+  static RenderFrameHost* FromJavaRenderFrameHost(
+      const base::android::JavaRef<jobject>& jrender_frame_host_android);
+#endif
+
   ~RenderFrameHost() override {}
 
   // Returns the route id for this frame.

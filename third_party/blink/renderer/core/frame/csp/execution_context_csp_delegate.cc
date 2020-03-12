@@ -41,6 +41,10 @@ const SecurityOrigin* ExecutionContextCSPDelegate::GetSecurityOrigin() {
   return execution_context_->GetSecurityOrigin();
 }
 
+SecureContextMode ExecutionContextCSPDelegate::GetSecureContextMode() {
+  return GetSecurityContext().GetSecureContextMode();
+}
+
 const KURL& ExecutionContextCSPDelegate::Url() const {
   return execution_context_->Url();
 }

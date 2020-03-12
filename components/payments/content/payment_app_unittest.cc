@@ -90,8 +90,8 @@ class PaymentAppTest : public testing::TestWithParam<RequiredPaymentOptions>,
         GURL("https://testmerchant.com/bobpay"), spec_.get(),
         std::move(stored_app), &delegate_,
         /*identity_callback=*/
-        base::Bind([](const url::Origin&,
-                      int64_t) { /* Intentionally left blank. */ }));
+        base::BindRepeating([](const url::Origin&,
+                               int64_t) { /* Intentionally left blank. */ }));
   }
 
   std::unique_ptr<ServiceWorkerPaymentApp>
@@ -121,8 +121,8 @@ class PaymentAppTest : public testing::TestWithParam<RequiredPaymentOptions>,
         GURL("https://merchant.example/iframe"), spec_.get(),
         std::move(installable_app), "https://pay.example", &delegate_,
         /*identity_callback=*/
-        base::Bind([](const url::Origin&,
-                      int64_t) { /* Intentionally left blank. */ }));
+        base::BindRepeating([](const url::Origin&,
+                               int64_t) { /* Intentionally left blank. */ }));
   }
 
   static void PopulateIcon(SkBitmap* icon) {

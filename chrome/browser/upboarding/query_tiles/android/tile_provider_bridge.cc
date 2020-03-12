@@ -8,7 +8,28 @@
 
 namespace upboarding {
 
-TileProviderBridge::TileProviderBridge() {
+namespace {
+const char kTileProviderBridgeKey[] = "tile_provider_bridge";
+}
+
+// static
+ScopedJavaLocalRef<jobject> TileProviderBridge::GetBridgeForTileService(
+    TileService* tile_service) {
+  if (!tile_service->GetUserData(kTileProviderBridgeKey)) {
+    tile_service->SetUserData(
+        kTileProviderBridgeKey,
+        std::make_unique<TileProviderBridge>(tile_service));
+  }
+
+  TileProviderBridge* bridge = static_cast<TileProviderBridge*>(
+      tile_service->GetUserData(kTileProviderBridgeKey));
+
+  return ScopedJavaLocalRef<jobject>(bridge->java_obj_);
+}
+
+TileProviderBridge::TileProviderBridge(TileService* tile_service)
+    : tile_service_(tile_service) {
+  DCHECK(tile_service_);
   JNIEnv* env = base::android::AttachCurrentThread();
   java_obj_.Reset(
       env, Java_TileProviderBridge_create(env, reinterpret_cast<int64_t>(this))

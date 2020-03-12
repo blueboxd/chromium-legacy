@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/authentication/signin/add_account_signin/add_account_signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/advanced_settings_signin/advanced_settings_signin_coordinator.h"
+#import "ios/chrome/browser/ui/authentication/signin/user_signin/logging/first_run_signin_logger.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_coordinator.h"
 
@@ -25,38 +26,44 @@ using signin_metrics::PromoAction;
                                        identity:(ChromeIdentity*)identity
                                     accessPoint:(AccessPoint)accessPoint
                                     promoAction:(PromoAction)promoAction {
+  UserSigninLogger* logger =
+      [[UserSigninLogger alloc] initWithAccessPoint:accessPoint
+                                        promoAction:promoAction];
   return [[UserSigninCoordinator alloc]
       initWithBaseViewController:viewController
                          browser:browser
                         identity:identity
-                     accessPoint:accessPoint
-                     promoAction:promoAction
-                    signinIntent:UserSigninIntentSignin];
+                    signinIntent:UserSigninIntentSignin
+                          logger:logger];
 }
 
 + (instancetype)firstRunCoordinatorWithBaseViewController:
                     (UINavigationController*)viewController
                                                   browser:(Browser*)browser {
+  UserSigninLogger* logger = [[FirstRunSigninLogger alloc]
+      initWithAccessPoint:AccessPoint::ACCESS_POINT_START_PAGE
+              promoAction:PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO];
   return [[UserSigninCoordinator alloc]
       initWithBaseViewController:viewController
                          browser:browser
                         identity:nil
-                     accessPoint:AccessPoint::ACCESS_POINT_START_PAGE
-                     promoAction:PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO
-                    signinIntent:UserSigninIntentFirstRun];
+                    signinIntent:UserSigninIntentFirstRun
+                          logger:logger];
 }
 
 + (instancetype)
     upgradeSigninPromoCoordinatorWithBaseViewController:
         (UIViewController*)viewController
                                                 browser:(Browser*)browser {
+  UserSigninLogger* logger = [[UserSigninLogger alloc]
+      initWithAccessPoint:AccessPoint::ACCESS_POINT_SIGNIN_PROMO
+              promoAction:PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO];
   return [[UserSigninCoordinator alloc]
       initWithBaseViewController:viewController
                          browser:browser
                         identity:nil
-                     accessPoint:AccessPoint::ACCESS_POINT_SIGNIN_PROMO
-                     promoAction:PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO
-                    signinIntent:UserSigninIntentUpgrade];
+                    signinIntent:UserSigninIntentUpgrade
+                          logger:logger];
 }
 
 + (instancetype)

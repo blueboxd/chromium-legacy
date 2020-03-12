@@ -20,6 +20,7 @@
 
 typedef InProcessBrowserTest SettingsUITest;
 
+using ::testing::_;
 using ui_test_utils::NavigateToURL;
 
 IN_PROC_BROWSER_TEST_F(SettingsUITest, ViewSourceDoesntCrash) {
@@ -52,7 +53,8 @@ IN_PROC_BROWSER_TEST_F(SettingsUITest, TriggerHappinessTrackingSurveys) {
       HatsServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           browser()->profile(), base::BindRepeating(&BuildMockHatsService)));
   settings::SettingsUI::SetHatsTimeoutForTesting(0);
-  EXPECT_CALL(*mock_hats_service_, LaunchSurvey(kHatsSurveyTriggerSettings));
+  EXPECT_CALL(*mock_hats_service_, LaunchDelayedSurveyForWebContents(
+                                       kHatsSurveyTriggerSettings, _, _));
   NavigateToURL(browser(), GURL(chrome::kChromeUISettingsURL));
   base::RunLoop().RunUntilIdle();
 }

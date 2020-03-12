@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "base/numerics/checked_math.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
@@ -48,6 +49,8 @@ void UIResourceBitmap::Create(sk_sp<SkPixelRef> pixel_ref,
 }
 
 void UIResourceBitmap::DrawToCanvas(SkCanvas* canvas, SkPaint* paint) {
+  DCHECK_NE(info_.colorType(), kUnknown_SkColorType);
+
   SkBitmap bitmap;
   bitmap.setInfo(info_, pixel_ref_.get()->rowBytes());
   bitmap.setPixelRef(pixel_ref_, 0, 0);
@@ -55,8 +58,15 @@ void UIResourceBitmap::DrawToCanvas(SkCanvas* canvas, SkPaint* paint) {
   canvas->flush();
 }
 
+size_t UIResourceBitmap::SizeInBytes() const {
+  if (!pixel_ref_)
+    return 0u;
+  base::CheckedNumeric<size_t> size_in_bytes = pixel_ref_->rowBytes();
+  size_in_bytes *= info_.height();
+  return size_in_bytes.ValueOrDie();
+}
+
 UIResourceBitmap::UIResourceBitmap(const SkBitmap& skbitmap) {
-  DCHECK_EQ(skbitmap.width(), skbitmap.rowBytesAsPixels());
   DCHECK(skbitmap.isImmutable());
 
   sk_sp<SkPixelRef> pixel_ref = sk_ref_sp(skbitmap.pixelRef());
@@ -76,8 +86,10 @@ UIResourceBitmap::UIResourceBitmap(const gfx::Size& size, bool is_opaque) {
 
 UIResourceBitmap::UIResourceBitmap(sk_sp<SkPixelRef> pixel_ref,
                                    const gfx::Size& size) {
-  SkImageInfo info =
-      SkImageInfo::MakeN32(size.width(), size.height(), kOpaque_SkAlphaType);
+  // TODO(khushalsagar): It doesn't make sense to SkPixelRef to pass around
+  // encoded data.
+  SkImageInfo info = SkImageInfo::Make(
+      size.width(), size.height(), kUnknown_SkColorType, kOpaque_SkAlphaType);
   Create(std::move(pixel_ref), info, UIResourceBitmap::ETC1);
 }
 

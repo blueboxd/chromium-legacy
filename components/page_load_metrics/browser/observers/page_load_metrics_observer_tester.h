@@ -141,10 +141,10 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
                             bool blocked_by_policy);
 
   // Simulate accessing the local storage or session storage.
-  void SimulateDomStorageAccess(const GURL& url,
-                                const GURL& first_party_url,
-                                bool local,
-                                bool blocked_by_policy);
+  void SimulateStorageAccess(const GURL& url,
+                             const GURL& first_party_url,
+                             bool blocked_by_policy,
+                             StorageType storage_type);
 
   MetricsWebContentsObserver* metrics_web_contents_observer() {
     return metrics_web_contents_observer_;

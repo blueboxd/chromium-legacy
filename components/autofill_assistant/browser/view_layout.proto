@@ -86,6 +86,12 @@ message ViewAttributesProto {
   optional int32 padding_bottom = 4;
 
   optional DrawableProto background = 5;
+  // The content description for this view. There are three possible states:
+  // - unset: content description is auto-inferred by android a11y.
+  // - set to empty string: this view is not important for a11y.
+  // - set to non-empty string: the view will have the specified content
+  // description.
+  optional string content_description = 6;
 }
 
 // Parameters configuring how views attach to their parents.

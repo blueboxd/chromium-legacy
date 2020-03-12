@@ -6735,6 +6735,12 @@ void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
   // Allocate the worker in the same process as the creator.
   int worker_process_id = process_->GetID();
 
+  mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+      coep_reporter;
+  auto coep_reporter_endpoint = coep_reporter.InitWithNewPipeAndPassReceiver();
+  if (coep_reporter_)
+    coep_reporter_->Clone(std::move(coep_reporter_endpoint));
+
   // When a dedicated worker is created from the frame script, the frame is both
   // the creator and the ancestor.
   content::CreateDedicatedWorkerHostFactory(
@@ -6742,7 +6748,7 @@ void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
       /*creator_render_frame_host_id=*/GetGlobalFrameRoutingId(),
       /*ancestor_render_frame_host_id=*/GetGlobalFrameRoutingId(),
       last_committed_origin_, cross_origin_embedder_policy_,
-      std::move(receiver));
+      std::move(coep_reporter), std::move(receiver));
 }
 
 void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {

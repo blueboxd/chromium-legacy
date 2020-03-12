@@ -51,6 +51,10 @@ class IsolatedWorldCSPDelegate final
     return security_origin_.get();
   }
 
+  SecureContextMode GetSecureContextMode() override {
+    return SecureContextMode::kSecureContext;
+  }
+
   const KURL& Url() const override {
     // This is used to populate violation data's violation url. See
     // https://w3c.github.io/webappsec-csp/#violation-url.

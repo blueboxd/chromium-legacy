@@ -24,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
 import android.support.test.filters.MediumTest;
+import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.IdRes;
@@ -176,11 +177,36 @@ public class AssistantOnboardingCoordinatorTest {
         coordinator.disableAnimationForTesting();
         showOnboardingAndWait(coordinator, mCallback);
 
-        TextView view = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
+        TextView termsView = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
                 R.id.onboarding_subtitle);
+        assertEquals(View.GONE, termsView.getVisibility());
+        TextView titleView = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
+                R.id.onboarding_try_assistant);
         assertEquals(
                 mActivity.getResources().getText(R.string.autofill_assistant_init_message_rent_car),
-                view.getText());
+                titleView.getText());
+    }
+
+    @Test
+    @MediumTest
+    public void testShowExperimentalInformationalText() throws Exception {
+        AutofillAssistantPreferencesUtil.setInitialPreferences(true);
+
+        HashMap<String, String> parameters = new HashMap();
+        parameters.put("INTENT", "BUY_MOVIE_TICKET");
+        AssistantOnboardingCoordinator coordinator = new AssistantOnboardingCoordinator(
+                "4363482", parameters, mActivity, mBottomSheetController, mTab);
+        coordinator.disableAnimationForTesting();
+        showOnboardingAndWait(coordinator, mCallback);
+
+        TextView termsView = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
+                R.id.onboarding_subtitle);
+        assertEquals(View.GONE, termsView.getVisibility());
+        TextView titleView = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
+                R.id.onboarding_try_assistant);
+        assertEquals(mActivity.getResources().getText(
+                             R.string.autofill_assistant_init_message_buy_movie_tickets),
+                titleView.getText());
     }
 
     @Test
@@ -194,10 +220,15 @@ public class AssistantOnboardingCoordinatorTest {
         coordinator.disableAnimationForTesting();
         showOnboardingAndWait(coordinator, mCallback);
 
-        TextView view = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
+        TextView termsView = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
                 R.id.onboarding_subtitle);
+        assertEquals(View.VISIBLE, termsView.getVisibility());
         assertEquals(mActivity.getResources().getText(R.string.autofill_assistant_init_message),
-                view.getText());
+                termsView.getText());
+        TextView titleView = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
+                R.id.onboarding_try_assistant);
+        assertEquals(mActivity.getResources().getText(R.string.autofill_assistant_init_title),
+                titleView.getText());
     }
 
     /** Trigger onboarding and wait until it is fully displayed. */

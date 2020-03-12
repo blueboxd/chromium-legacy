@@ -251,42 +251,66 @@ class BrowserToPageConnector {
 // Throttle is owned externally by the navigation subsystem.
 class TargetHandler::Throttle : public content::NavigationThrottle {
  public:
-  Throttle(base::WeakPtr<protocol::TargetHandler> target_handler,
-           content::NavigationHandle* navigation_handle);
   ~Throttle() override;
   void Clear();
   // content::NavigationThrottle implementation:
-  NavigationThrottle::ThrottleCheckResult WillProcessResponse() override;
-  NavigationThrottle::ThrottleCheckResult WillFailRequest() override;
   const char* GetNameForLogging() override;
 
  protected:
+  Throttle(base::WeakPtr<protocol::TargetHandler> target_handler,
+           content::NavigationHandle* navigation_handle);
   void SetThrottledAgentHost(DevToolsAgentHost* agent_host);
 
- private:
-  virtual void ComputeThrottledAgentHost();
-  void CleanupPointers();
-
-  base::WeakPtr<protocol::TargetHandler> target_handler_;
-  scoped_refptr<DevToolsAgentHost> agent_host_;
   bool is_deferring_ = false;
+  scoped_refptr<DevToolsAgentHost> agent_host_;
+  base::WeakPtr<protocol::TargetHandler> target_handler_;
+
+ private:
+  void CleanupPointers();
 
   DISALLOW_COPY_AND_ASSIGN(Throttle);
 };
 
-class TargetHandler::MainFrameThrottle : public TargetHandler::Throttle {
+class TargetHandler::ResponseThrottle : public TargetHandler::Throttle {
  public:
-  MainFrameThrottle(base::WeakPtr<protocol::TargetHandler> target_handler,
-                    content::NavigationHandle* navigation_handle,
-                    DevToolsAgentHost* throttled_agent_host)
+  ResponseThrottle(base::WeakPtr<protocol::TargetHandler> target_handler,
+                   content::NavigationHandle* navigation_handle)
+      : Throttle(target_handler, navigation_handle) {}
+  ~ResponseThrottle() override = default;
+
+ private:
+  // content::NavigationThrottle implementation:
+  ThrottleCheckResult WillProcessResponse() override { return MaybeThrottle(); }
+
+  ThrottleCheckResult WillFailRequest() override { return MaybeThrottle(); }
+
+  ThrottleCheckResult MaybeThrottle() {
+    if (target_handler_) {
+      NavigationRequest* request = NavigationRequest::From(navigation_handle());
+      SetThrottledAgentHost(
+          target_handler_->auto_attacher_.AutoAttachToFrame(request));
+    }
+    is_deferring_ = !!agent_host_;
+    return is_deferring_ ? DEFER : PROCEED;
+  }
+};
+
+class TargetHandler::RequestThrottle : public TargetHandler::Throttle {
+ public:
+  RequestThrottle(base::WeakPtr<protocol::TargetHandler> target_handler,
+                  content::NavigationHandle* navigation_handle,
+                  DevToolsAgentHost* throttled_agent_host)
       : Throttle(target_handler, navigation_handle) {
     SetThrottledAgentHost(throttled_agent_host);
   }
-  ~MainFrameThrottle() override = default;
+  ~RequestThrottle() override = default;
 
  private:
-  // For top frames agent host is always set in the constructor.
-  void ComputeThrottledAgentHost() override {}
+  // content::NavigationThrottle implementation:
+  ThrottleCheckResult WillStartRequest() override {
+    is_deferring_ = !!agent_host_;
+    return is_deferring_ ? DEFER : PROCEED;
+  }
 };
 
 class TargetHandler::Session : public DevToolsAgentHostClient {
@@ -347,6 +371,11 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
   bool IsWaitingForDebuggerOnStart() const {
     return devtools_session_ &&
            devtools_session_->IsWaitingForDebuggerOnStart();
+  }
+
+  void ResumeSendingMessagesToAgent() const {
+    if (devtools_session_)
+      devtools_session_->ResumeSendingMessagesToAgent();
   }
 
   void SetThrottle(Throttle* throttle) { throttle_ = throttle; }
@@ -459,20 +488,6 @@ void TargetHandler::Throttle::CleanupPointers() {
   }
 }
 
-NavigationThrottle::ThrottleCheckResult
-TargetHandler::Throttle::WillProcessResponse() {
-  ComputeThrottledAgentHost();
-  is_deferring_ = !!agent_host_;
-  return is_deferring_ ? DEFER : PROCEED;
-}
-
-NavigationThrottle::ThrottleCheckResult
-TargetHandler::Throttle::WillFailRequest() {
-  ComputeThrottledAgentHost();
-  is_deferring_ = !!agent_host_;
-  return is_deferring_ ? DEFER : PROCEED;
-}
-
 void TargetHandler::Throttle::SetThrottledAgentHost(
     DevToolsAgentHost* agent_host) {
   agent_host_ = agent_host;
@@ -480,14 +495,6 @@ void TargetHandler::Throttle::SetThrottledAgentHost(
     target_handler_->auto_attached_sessions_[agent_host_.get()]->SetThrottle(
         this);
   }
-}
-
-void TargetHandler::Throttle::ComputeThrottledAgentHost() {
-  if (!target_handler_)
-    return;
-  NavigationRequest* request = NavigationRequest::From(navigation_handle());
-  SetThrottledAgentHost(
-      target_handler_->auto_attacher_.AutoAttachToFrame(request));
 }
 
 const char* TargetHandler::Throttle::GetNameForLogging() {
@@ -580,11 +587,25 @@ std::unique_ptr<NavigationThrottle> TargetHandler::CreateThrottleForNavigation(
       return nullptr;
     if (!it->second->IsWaitingForDebuggerOnStart())
       return nullptr;
-    return std::make_unique<MainFrameThrottle>(weak_factory_.GetWeakPtr(),
-                                               navigation_handle, host);
+    // The target already exists and we attached to it, resume message
+    // sending without waiting for the navigation to commit.
+    it->second->ResumeSendingMessagesToAgent();
+
+    // window.open() navigations are throttled on the renderer side and the main
+    // request will not be sent until runIfWaitingForDebugger is received from
+    // the client, so there is no need to throttle the navigation in the
+    // browser.
+    //
+    // New window navigations (such as ctrl+click) should be throttled before
+    // the main request is sent to apply user agent and other overrides.
+    FrameTreeNode* opener = frame_tree_node->opener();
+    if (opener)
+      return nullptr;
+    return std::make_unique<RequestThrottle>(weak_factory_.GetWeakPtr(),
+                                             navigation_handle, host);
   }
-  return std::make_unique<Throttle>(weak_factory_.GetWeakPtr(),
-                                    navigation_handle);
+  return std::make_unique<ResponseThrottle>(weak_factory_.GetWeakPtr(),
+                                            navigation_handle);
 }
 
 void TargetHandler::UpdatePortals() {

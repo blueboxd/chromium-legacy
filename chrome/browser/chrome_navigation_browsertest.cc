@@ -34,7 +34,6 @@
 #include "components/url_formatter/url_formatter.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/hashing.h"
-#include "components/version_info/channel.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/navigation_entry.h"
@@ -55,7 +54,6 @@
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
-#include "extensions/common/features/feature_channel.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_extension_dir.h"
 #include "google_apis/gaia/gaia_switches.h"
@@ -695,33 +693,25 @@ IN_PROC_BROWSER_TEST_F(
         "background": {
           "scripts": ["background.js"]
         },
-        "permissions": [
-          "declarativeWebRequest", "<all_urls>"
-        ]
+        "permissions": ["webRequest", "webRequestBlocking", "<all_urls>"]
       }
   )";
   const char kRulesScript[] = R"(
-      var condition = new chrome.declarativeWebRequest.RequestMatcher({
-          url: {
-              hostSuffix: 'redirected.com'
-          }
-      });
-      var action = new chrome.declarativeWebRequest.RedirectRequest({
-          redirectUrl: 'about:blank'
-      });
-      var rule = { conditions: [ condition ], actions: [ action ]}
-      chrome.declarativeWebRequest.onRequest.addRules([rule]);
+      chrome.webRequest.onBeforeRequest.addListener(function(d) {
+          console.log("onBeforeRequest: ", d);
+          return {redirectUrl: "about:blank"};
+        }, {urls: ["*://redirected.com/*"]}, ["blocking"]);
+      chrome.test.sendMessage('ready');
   )";
   extensions::TestExtensionDir ext_dir;
   ext_dir.WriteManifest(kManifest);
   ext_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kRulesScript);
-  // |declarativeWebRequest| API is not available on the STABLE channel yet
-  // (see https://crbug.com/1057599).
-  extensions::ScopedCurrentChannel release_channel(version_info::Channel::BETA);
+  ExtensionTestMessageListener ready_listener("ready", false /* will_reply */);
   extensions::ChromeTestExtensionLoader extension_loader(browser()->profile());
   scoped_refptr<const extensions::Extension> extension =
       extension_loader.LoadExtension(ext_dir.UnpackedPath());
   ASSERT_TRUE(extension);
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
   content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
       ->FlushNetworkInterfaceForTesting();
 
@@ -840,35 +830,27 @@ IN_PROC_BROWSER_TEST_F(
         "background": {
           "scripts": ["background.js"]
         },
-        "permissions": [
-          "declarativeWebRequest", "<all_urls>"
-        ]
+        "permissions": ["webRequest", "webRequestBlocking", "<all_urls>"]
       }
   )";
   const char kRulesScriptTemplate[] = R"(
-      var condition = new chrome.declarativeWebRequest.RequestMatcher({
-          url: {
-              hostSuffix: 'redirected.com'
-          }
-      });
-      var action = new chrome.declarativeWebRequest.RedirectRequest({
-          redirectUrl: $1
-      });
-      var rule = { conditions: [ condition ], actions: [ action ]}
-      chrome.declarativeWebRequest.onRequest.addRules([rule]);
+      chrome.webRequest.onBeforeRequest.addListener(function(d) {
+          console.log("onBeforeRequest: ", d);
+          return {redirectUrl: $1};
+        }, {urls: ["*://redirected.com/*"]}, ["blocking"]);
+      chrome.test.sendMessage('ready');
   )";
   extensions::TestExtensionDir ext_dir;
   ext_dir.WriteManifest(kManifest);
   ext_dir.WriteFile(
       FILE_PATH_LITERAL("background.js"),
       content::JsReplace(kRulesScriptTemplate, kRedirectTargetUrl));
-  // |declarativeWebRequest| API is not available on the STABLE channel yet
-  // (see https://crbug.com/1057599).
-  extensions::ScopedCurrentChannel release_channel(version_info::Channel::BETA);
+  ExtensionTestMessageListener ready_listener("ready", false /* will_reply */);
   extensions::ChromeTestExtensionLoader extension_loader(browser()->profile());
   scoped_refptr<const extensions::Extension> extension =
       extension_loader.LoadExtension(ext_dir.UnpackedPath());
   ASSERT_TRUE(extension);
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
   content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
       ->FlushNetworkInterfaceForTesting();
 

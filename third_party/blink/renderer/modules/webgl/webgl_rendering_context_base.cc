@@ -771,16 +771,21 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
   // Since we are grabbing a snapshot that is not for compositing, we use a
   // custom resource provider. This avoids consuming compositing-specific
   // resources (e.g. GpuMemoryBuffer)
+  auto color_params = ColorParams();
   std::unique_ptr<CanvasResourceProvider> resource_provider =
-      CanvasResourceProvider::Create(
-          size,
-          CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
-          SharedGpuContext::ContextProviderWrapper(), 0,
-          GetDrawingBuffer()->FilterQuality(), ColorParams(),
-          CanvasResourceProvider::kDefaultPresentationMode,
-          nullptr /* canvas_resource_dispatcher */, is_origin_top_left_);
+      CanvasResourceProvider::CreateSharedImageProvider(
+          size, SharedGpuContext::ContextProviderWrapper(),
+          GetDrawingBuffer()->FilterQuality(), color_params,
+          is_origin_top_left_, /*shared_image_usage_flags = */ 0u);
+  // todo(bug 1035589) Check if this cpu fallback is really needed here
+  if (!resource_provider || !resource_provider->IsValid()) {
+    resource_provider = CanvasResourceProvider::CreateBitmapProvider(
+        size, GetDrawingBuffer()->FilterQuality(), color_params);
+  }
+
   if (!resource_provider || !resource_provider->IsValid())
     return nullptr;
+
   if (!CopyRenderingResultsFromDrawingBuffer(resource_provider.get(),
                                              kBackBuffer)) {
     // copyRenderingResultsFromDrawingBuffer is expected to always succeed

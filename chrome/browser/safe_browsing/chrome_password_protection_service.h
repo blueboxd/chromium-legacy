@@ -493,6 +493,13 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   base::string16 GetWarningDetailTextForSavedPasswords(
       std::vector<size_t>* placeholder_offsets) const;
 
+  // Gets the warning text of the saved password reuse warnings that tells the
+  // user to check their saved passwords. |placeholder_offsets| are the start
+  // points/indices of the placeholders that are passed into the resource
+  // string.
+  base::string16 GetWarningDetailTextToCheckSavedPasswords(
+      std::vector<size_t>* placeholder_offsets) const;
+
   // Informs PasswordReuseDetector that enterprise password URLs (login URL or
   // change password URL) have been changed.
   void OnEnterprisePasswordUrlChanged();
@@ -501,6 +508,22 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // This also sets the reoccuring timer.
   void MaybeLogPasswordCapture(bool did_log_in);
   void SetLogPasswordCaptureTimer(const base::TimeDelta& delay);
+
+  // Open the page where the user can checks their saved passwords
+  // or change their phished url depending on the the |password_type|.
+  void OpenChangePasswordUrl(content::WebContents* web_contents,
+                             ReusedPasswordAccountType password_type);
+
+  // Log user dialog interaction when the user clicks on the "Change Password"
+  // or "Check Passwords" button.
+  void LogDialogMetricsOnChangePassword(
+      content::WebContents* web_contents,
+      ReusedPasswordAccountType password_type,
+      int64_t navigation_id,
+      RequestOutcome outcome,
+      LoginReputationClientResponse::VerdictType verdict_type,
+      const std::string& verdict_token);
+
 #endif
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)

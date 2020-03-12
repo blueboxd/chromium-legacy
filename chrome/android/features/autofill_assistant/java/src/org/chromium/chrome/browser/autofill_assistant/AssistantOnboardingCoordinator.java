@@ -8,6 +8,7 @@ import android.content.Context;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -28,6 +29,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -36,7 +38,9 @@ import java.util.Map;
  */
 class AssistantOnboardingCoordinator {
     private static final String INTENT_IDENTFIER = "INTENT";
+    private static final String BUY_MOVIE_TICKETS_INTENT = "BUY_MOVIE_TICKET";
     private static final String RENT_CAR_INTENT = "RENT_CAR";
+    private static final String BUY_MOVIE_TICKETS_EXPERIMENT_ID = "4363482";
 
     private final String mExperimentIds;
     private final Map<String, String> mParameters;
@@ -194,10 +198,21 @@ class AssistantOnboardingCoordinator {
             return;
         }
 
+        TextView titleTextView = initView.findViewById(R.id.onboarding_try_assistant);
         TextView termsTextView = initView.findViewById(R.id.onboarding_subtitle);
         switch (mParameters.get(INTENT_IDENTFIER)) {
             case RENT_CAR_INTENT:
-                termsTextView.setText(R.string.autofill_assistant_init_message_rent_car);
+                termsTextView.setVisibility(View.GONE);
+                titleTextView.setText(R.string.autofill_assistant_init_message_rent_car);
+                break;
+            case BUY_MOVIE_TICKETS_INTENT:
+                if (Arrays.asList(mExperimentIds.split(","))
+                                .contains(BUY_MOVIE_TICKETS_EXPERIMENT_ID)) {
+                    termsTextView.setVisibility(View.GONE);
+                    titleTextView.setText(
+                            R.string.autofill_assistant_init_message_buy_movie_tickets);
+                }
+
                 break;
         }
     }

@@ -1073,7 +1073,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
       // LayoutBlockFlow. If |child| establishes a new block formatting context,
       // it also creates another inline formatting context. Do not copy to its
       // descendants in this case.
-      if (!child->IsBlockFormattingContextRoot()) {
+      if (!child->IsFormattingContextRoot()) {
         CopyFragmentDataToLayoutBoxForInlineChildren(
             To<NGPhysicalContainerFragment>(*child), initial_container_width,
             initial_container_is_flipped, child_offset);

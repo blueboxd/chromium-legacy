@@ -86,7 +86,8 @@ TEST_F(ResolveContextTest, ReusedSessionPointer) {
 
   URLRequestContext request_context;
   ResolveContext context(&request_context, true /* enable_caching */);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
 
   // Mark probe success for the "original" (pre-invalidation) session.
   context.RecordServerSuccess(1u /* server_index */, true /* is_doh_server */,
@@ -114,7 +115,8 @@ TEST_F(ResolveContextTest, DohServerAvailability_InitialAvailability) {
 
   URLRequestContext request_context;
   ResolveContext context(&request_context, true /* enable_caching */);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
 
   EXPECT_EQ(context.NumAvailableDohServers(session.get()), 0u);
   EXPECT_EQ(base::nullopt,
@@ -129,7 +131,8 @@ TEST_F(ResolveContextTest, DohServerAvailability_RecordedSuccess) {
 
   URLRequestContext request_context;
   ResolveContext context(&request_context, true /* enable_caching */);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
 
   ASSERT_EQ(context.NumAvailableDohServers(session.get()), 0u);
 
@@ -139,52 +142,6 @@ TEST_F(ResolveContextTest, DohServerAvailability_RecordedSuccess) {
   EXPECT_THAT(context.DohServerIndexToUse(
                   0u, DnsConfig::SecureDnsMode::AUTOMATIC, session.get()),
               testing::Optional(1u));
-}
-
-TEST_F(ResolveContextTest, DohServerAvailability_ConnectionChange) {
-  DnsConfig config =
-      CreateDnsConfig(2 /* num_servers */, 2 /* num_doh_servers */);
-  scoped_refptr<DnsSession> session = CreateDnsSession(config);
-
-  URLRequestContext request_context;
-  ResolveContext context(&request_context, true /* enable_caching */);
-  context.InvalidateCaches(session.get());
-
-  context.RecordServerSuccess(1u /* server_index */, true /* is_doh_server */,
-                              session.get());
-  ASSERT_EQ(context.NumAvailableDohServers(session.get()), 1u);
-
-  mock_notifier_.mock_network_change_notifier()
-      ->SetConnectionTypeAndNotifyObservers(
-          NetworkChangeNotifier::CONNECTION_WIFI);
-
-  EXPECT_EQ(context.NumAvailableDohServers(session.get()), 0u);
-  EXPECT_EQ(base::nullopt,
-            context.DohServerIndexToUse(0u, DnsConfig::SecureDnsMode::AUTOMATIC,
-                                        session.get()));
-}
-
-TEST_F(ResolveContextTest, DohServerAvailability_Disconnected) {
-  DnsConfig config =
-      CreateDnsConfig(2 /* num_servers */, 2 /* num_doh_servers */);
-  scoped_refptr<DnsSession> session = CreateDnsSession(config);
-
-  URLRequestContext request_context;
-  ResolveContext context(&request_context, true /* enable_caching */);
-  context.InvalidateCaches(session.get());
-
-  context.RecordServerSuccess(1u /* server_index */, true /* is_doh_server */,
-                              session.get());
-  ASSERT_EQ(context.NumAvailableDohServers(session.get()), 1u);
-
-  mock_notifier_.mock_network_change_notifier()
-      ->SetConnectionTypeAndNotifyObservers(
-          NetworkChangeNotifier::CONNECTION_NONE);
-
-  EXPECT_EQ(context.NumAvailableDohServers(session.get()), 0u);
-  EXPECT_EQ(base::nullopt,
-            context.DohServerIndexToUse(0u, DnsConfig::SecureDnsMode::AUTOMATIC,
-                                        session.get()));
 }
 
 TEST_F(ResolveContextTest, DohServerAvailability_NoCurrentSession) {
@@ -216,7 +173,8 @@ TEST_F(ResolveContextTest, DohServerAvailability_DifferentSession) {
 
   URLRequestContext request_context;
   ResolveContext context(&request_context, true /* enable_caching */);
-  context.InvalidateCaches(session2.get());
+  context.InvalidateCachesAndPerSessionData(session2.get(),
+                                            true /* network_change */);
 
   // Use current session to set a probe result.
   context.RecordServerSuccess(1u /* server_index */, true /* is_doh_server */,
@@ -244,7 +202,8 @@ TEST_F(ResolveContextTest, DohServerIndexToUse) {
 
   URLRequestContext request_context;
   ResolveContext context(&request_context, true /* enable_caching */);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
 
   context.RecordServerSuccess(0u /* server_index */, true /* is_doh_server */,
                               session.get());
@@ -263,7 +222,8 @@ TEST_F(ResolveContextTest, DohServerIndexToUse_NoneEligible) {
 
   URLRequestContext request_context;
   ResolveContext context(&request_context, true /* enable_caching */);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
 
   EXPECT_EQ(base::nullopt,
             context.DohServerIndexToUse(0u, DnsConfig::SecureDnsMode::AUTOMATIC,
@@ -280,7 +240,8 @@ TEST_F(ResolveContextTest, DohServerIndexToUse_SecureMode) {
 
   URLRequestContext request_context;
   ResolveContext context(&request_context, true /* enable_caching */);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
 
   EXPECT_THAT(context.DohServerIndexToUse(0u, DnsConfig::SecureDnsMode::SECURE,
                                           session.get()),
@@ -310,7 +271,8 @@ TEST_F(ResolveContextTest, DohServerAvailabilityNotification) {
 
   URLRequestContext request_context;
   ResolveContext context(&request_context, true /* enable_caching */);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
 
   base::RunLoop().RunUntilIdle();  // Notifications are async.
   EXPECT_EQ(0, config_observer.dns_changed_calls());
@@ -369,7 +331,8 @@ TEST_F(ResolveContextTest, HostCacheInvalidation) {
   DnsConfig config =
       CreateDnsConfig(2 /* num_servers */, 2 /* num_doh_servers */);
   scoped_refptr<DnsSession> session = CreateDnsSession(config);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
 
   EXPECT_FALSE(context.host_cache()->Lookup(key, now));
 
@@ -387,7 +350,8 @@ TEST_F(ResolveContextTest, HostCacheInvalidation) {
   DnsConfig config2 =
       CreateDnsConfig(2 /* num_servers */, 2 /* num_doh_servers */);
   scoped_refptr<DnsSession> session2 = CreateDnsSession(config2);
-  context.InvalidateCaches(session2.get());
+  context.InvalidateCachesAndPerSessionData(session2.get(),
+                                            true /* network_change */);
 
   EXPECT_FALSE(context.host_cache()->Lookup(key, now));
   EXPECT_FALSE(context.GetDohServerAvailability(0u, session.get()));
@@ -402,7 +366,8 @@ TEST_F(ResolveContextTest, HostCacheInvalidation_SameSession) {
   scoped_refptr<DnsSession> session = CreateDnsSession(config);
 
   // Initial invalidation just to set the session.
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
 
   // Add to the host cache and add some DoH server status.
   base::TimeTicks now;
@@ -418,7 +383,8 @@ TEST_F(ResolveContextTest, HostCacheInvalidation_SameSession) {
   ASSERT_TRUE(context.GetDohServerAvailability(0u, session.get()));
 
   // Invalidate again with the same session.
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
 
   // Expect host cache to be invalidated but not the per-session data.
   EXPECT_FALSE(context.host_cache()->Lookup(key, now));
@@ -431,7 +397,8 @@ TEST_F(ResolveContextTest, Failures_Consecutive) {
   DnsConfig config =
       CreateDnsConfig(2 /* num_servers */, 2 /* num_doh_servers */);
   scoped_refptr<DnsSession> session = CreateDnsSession(config);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
 
   // Expect server preference to change after |config.attempts| failures.
   for (int i = 0; i < config.attempts; i++) {
@@ -468,7 +435,8 @@ TEST_F(ResolveContextTest, Failures_NonConsecutive) {
   DnsConfig config =
       CreateDnsConfig(2 /* num_servers */, 2 /* num_doh_servers */);
   scoped_refptr<DnsSession> session = CreateDnsSession(config);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
 
   for (int i = 0; i < config.attempts - 1; i++) {
     EXPECT_EQ(context.ClassicServerIndexToUse(1u /* starting_server */,
@@ -526,7 +494,8 @@ TEST_F(ResolveContextTest, Failures_DifferentSession) {
 
   ResolveContext context(nullptr /* url_request_context */,
                          false /* enable_caching */);
-  context.InvalidateCaches(session2.get());
+  context.InvalidateCachesAndPerSessionData(session2.get(),
+                                            true /* network_change */);
 
   // No change from recording failures to wrong session.
   for (int i = 0; i < config1.attempts; i++) {
@@ -548,7 +517,8 @@ TEST_F(ResolveContextTest, TwoFailures) {
   DnsConfig config =
       CreateDnsConfig(3 /* num_servers */, 2 /* num_doh_servers */);
   scoped_refptr<DnsSession> session = CreateDnsSession(config);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
 
   // Expect server preference to change after |config.attempts| failures.
   for (int i = 0; i < config.attempts; i++) {
@@ -592,13 +562,34 @@ TEST_F(ResolveContextTest, TwoFailures) {
       2u);
 }
 
+class TestDohStatusObserver : public ResolveContext::DohStatusObserver {
+ public:
+  void OnSessionChanged() override { ++session_changes_; }
+  void OnDohServerUnavailable(bool network_change) override {
+    ++server_unavailable_notifications_;
+  }
+
+  int session_changes() const { return session_changes_; }
+  int server_unavailable_notifications() const {
+    return server_unavailable_notifications_;
+  }
+
+ private:
+  int session_changes_ = 0;
+  int server_unavailable_notifications_ = 0;
+};
+
 TEST_F(ResolveContextTest, DohFailures_Consecutive) {
   ResolveContext context(nullptr /* url_request_context */,
                          false /* enable_caching */);
   DnsConfig config =
       CreateDnsConfig(2 /* num_servers */, 2 /* num_doh_servers */);
   scoped_refptr<DnsSession> session = CreateDnsSession(config);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
+
+  TestDohStatusObserver observer;
+  context.RegisterDohStatusObserver(&observer);
 
   context.RecordServerSuccess(1u /* server_index */, true /* is_doh_server */,
                               session.get());
@@ -609,6 +600,7 @@ TEST_F(ResolveContextTest, DohFailures_Consecutive) {
                                             session.get()),
                 testing::Optional(1u));
     EXPECT_EQ(1u, context.NumAvailableDohServers(session.get()));
+    EXPECT_EQ(0, observer.server_unavailable_notifications());
     context.RecordServerFailure(1u /* server_index */, true /* is_doh_server */,
                                 session.get());
   }
@@ -617,6 +609,9 @@ TEST_F(ResolveContextTest, DohFailures_Consecutive) {
                                         session.get()),
             base::nullopt);
   EXPECT_EQ(0u, context.NumAvailableDohServers(session.get()));
+  EXPECT_EQ(1, observer.server_unavailable_notifications());
+
+  context.UnregisterDohStatusObserver(&observer);
 }
 
 TEST_F(ResolveContextTest, DohFailures_NonConsecutive) {
@@ -625,7 +620,11 @@ TEST_F(ResolveContextTest, DohFailures_NonConsecutive) {
   DnsConfig config =
       CreateDnsConfig(2 /* num_servers */, 2 /* num_doh_servers */);
   scoped_refptr<DnsSession> session = CreateDnsSession(config);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
+
+  TestDohStatusObserver observer;
+  context.RegisterDohStatusObserver(&observer);
 
   context.RecordServerSuccess(1u /* server_index */, true /* is_doh_server */,
                               session.get());
@@ -662,6 +661,9 @@ TEST_F(ResolveContextTest, DohFailures_NonConsecutive) {
                                           session.get()),
               testing::Optional(1u));
   EXPECT_EQ(1u, context.NumAvailableDohServers(session.get()));
+
+  EXPECT_EQ(0, observer.server_unavailable_notifications());
+  context.UnregisterDohStatusObserver(&observer);
 }
 
 TEST_F(ResolveContextTest, DohFailures_SuccessAfterFailures) {
@@ -670,7 +672,11 @@ TEST_F(ResolveContextTest, DohFailures_SuccessAfterFailures) {
   DnsConfig config =
       CreateDnsConfig(2 /* num_servers */, 2 /* num_doh_servers */);
   scoped_refptr<DnsSession> session = CreateDnsSession(config);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
+
+  TestDohStatusObserver observer;
+  context.RegisterDohStatusObserver(&observer);
 
   context.RecordServerSuccess(1u /* server_index */, true /* is_doh_server */,
                               session.get());
@@ -680,6 +686,7 @@ TEST_F(ResolveContextTest, DohFailures_SuccessAfterFailures) {
                                 session.get());
   }
   ASSERT_EQ(0u, context.NumAvailableDohServers(session.get()));
+  EXPECT_EQ(1, observer.server_unavailable_notifications());
 
   // Expect a single success to make an unavailable DoH server available again.
   context.RecordServerSuccess(1u /* server_index */, true /* is_doh_server */,
@@ -689,6 +696,9 @@ TEST_F(ResolveContextTest, DohFailures_SuccessAfterFailures) {
                                           session.get()),
               testing::Optional(1u));
   EXPECT_EQ(1u, context.NumAvailableDohServers(session.get()));
+
+  EXPECT_EQ(1, observer.server_unavailable_notifications());
+  context.UnregisterDohStatusObserver(&observer);
 }
 
 TEST_F(ResolveContextTest, DohFailures_NoSession) {
@@ -721,7 +731,8 @@ TEST_F(ResolveContextTest, DohFailures_DifferentSession) {
 
   ResolveContext context(nullptr /* url_request_context */,
                          false /* enable_caching */);
-  context.InvalidateCaches(session2.get());
+  context.InvalidateCachesAndPerSessionData(session2.get(),
+                                            true /* network_change */);
 
   context.RecordServerSuccess(1u /* server_index */, true /* is_doh_server */,
                               session2.get());
@@ -743,7 +754,8 @@ TEST_F(ResolveContextTest, TwoDohFailures) {
   DnsConfig config =
       CreateDnsConfig(2 /* num_servers */, 3 /* num_doh_servers */);
   scoped_refptr<DnsSession> session = CreateDnsSession(config);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
 
   context.RecordServerSuccess(0u /* server_index */, true /* is_doh_server */,
                               session.get());
@@ -792,7 +804,8 @@ TEST_F(ResolveContextTest, Timeout_Default) {
   DnsConfig config =
       CreateDnsConfig(2 /* num_servers */, 2 /* num_doh_servers */);
   scoped_refptr<DnsSession> session = CreateDnsSession(config);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
 
   base::TimeDelta delta =
       context.NextClassicTimeout(0 /* server_index */, 0 /* attempt */,
@@ -812,7 +825,8 @@ TEST_F(ResolveContextTest, Timeout_ShortConfigured) {
       CreateDnsConfig(2 /* num_servers */, 2 /* num_doh_servers */);
   config.timeout = base::TimeDelta::FromMilliseconds(15);
   scoped_refptr<DnsSession> session = CreateDnsSession(config);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
 
   base::TimeDelta delta =
       context.NextClassicTimeout(0 /* server_index */, 0 /* attempt */,
@@ -834,7 +848,8 @@ TEST_F(ResolveContextTest, Timeout_LongConfigured) {
       CreateDnsConfig(2 /* num_servers */, 2 /* num_doh_servers */);
   config.timeout = base::TimeDelta::FromSeconds(15);
   scoped_refptr<DnsSession> session = CreateDnsSession(config);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
 
   EXPECT_EQ(context.NextClassicTimeout(0 /* server_index */, 0 /* attempt */,
                                        session.get()),
@@ -850,7 +865,8 @@ TEST_F(ResolveContextTest, Timeout_LongRtt) {
   DnsConfig config =
       CreateDnsConfig(2 /* num_servers */, 2 /* num_doh_servers */);
   scoped_refptr<DnsSession> session = CreateDnsSession(config);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
 
   for (int i = 0; i < 50; ++i) {
     context.RecordRtt(0u /* server_index */, false /* is_doh_server */,
@@ -917,7 +933,8 @@ TEST_F(ResolveContextTest, Timeout_DifferentSession) {
 
   ResolveContext context(nullptr /* url_request_context */,
                          false /* enable_caching */);
-  context.InvalidateCaches(session2.get());
+  context.InvalidateCachesAndPerSessionData(session2.get(),
+                                            true /* network_change */);
 
   // Record RTT's to increase timeouts for current session.
   for (int i = 0; i < 50; ++i) {
@@ -958,7 +975,8 @@ TEST_F(ResolveContextTest, NegativeRtt) {
   DnsConfig config =
       CreateDnsConfig(2 /* num_servers */, 2 /* num_doh_servers */);
   scoped_refptr<DnsSession> session = CreateDnsSession(config);
-  context.InvalidateCaches(session.get());
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
 
   context.RecordRtt(0 /* server_index */, false /* is_doh_server */,
                     base::TimeDelta::FromMilliseconds(-1), OK /* rv */,
@@ -966,6 +984,62 @@ TEST_F(ResolveContextTest, NegativeRtt) {
   context.RecordRtt(0 /* server_index */, true /* is_doh_server */,
                     base::TimeDelta::FromMilliseconds(-1), OK /* rv */,
                     session.get());
+}
+
+TEST_F(ResolveContextTest, SessionChange) {
+  ResolveContext context(nullptr /* url_request_context */,
+                         false /* enable_caching */);
+
+  TestDohStatusObserver observer;
+  context.RegisterDohStatusObserver(&observer);
+
+  DnsConfig config =
+      CreateDnsConfig(2 /* num_servers */, 3 /* num_doh_servers */);
+  scoped_refptr<DnsSession> session = CreateDnsSession(config);
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
+
+  EXPECT_EQ(observer.session_changes(), 1);
+  // Should get a server unavailable notification because there is >0 DoH
+  // servers that are reset on cache invalidation.
+  EXPECT_EQ(observer.server_unavailable_notifications(), 1);
+
+  context.UnregisterDohStatusObserver(&observer);
+}
+
+TEST_F(ResolveContextTest, SessionChange_NoSession) {
+  ResolveContext context(nullptr /* url_request_context */,
+                         false /* enable_caching */);
+
+  TestDohStatusObserver observer;
+  context.RegisterDohStatusObserver(&observer);
+
+  context.InvalidateCachesAndPerSessionData(nullptr /* new_session */,
+                                            false /* network_change */);
+
+  EXPECT_EQ(observer.session_changes(), 1);
+  EXPECT_EQ(observer.server_unavailable_notifications(), 0);
+
+  context.UnregisterDohStatusObserver(&observer);
+}
+
+TEST_F(ResolveContextTest, SessionChange_NoDohServers) {
+  ResolveContext context(nullptr /* url_request_context */,
+                         false /* enable_caching */);
+
+  TestDohStatusObserver observer;
+  context.RegisterDohStatusObserver(&observer);
+
+  DnsConfig config =
+      CreateDnsConfig(2 /* num_servers */, 0 /* num_doh_servers */);
+  scoped_refptr<DnsSession> session = CreateDnsSession(config);
+  context.InvalidateCachesAndPerSessionData(session.get(),
+                                            false /* network_change */);
+
+  EXPECT_EQ(observer.session_changes(), 1);
+  EXPECT_EQ(observer.server_unavailable_notifications(), 0);
+
+  context.UnregisterDohStatusObserver(&observer);
 }
 
 }  // namespace

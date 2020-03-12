@@ -16,15 +16,6 @@ namespace {
 // The global instance of the SystemNetworkContextmanager.
 SystemNetworkContextManager* g_system_network_context_manager = nullptr;
 
-network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams(
-    const std::string& user_agent) {
-  network::mojom::NetworkContextParamsPtr network_context_params =
-      network::mojom::NetworkContextParams::New();
-  network_context_params->user_agent = user_agent;
-  variations::UpdateCorsExemptHeaderForVariations(network_context_params.get());
-  return network_context_params;
-}
-
 }  // namespace
 
 // static
@@ -52,6 +43,20 @@ void SystemNetworkContextManager::DeleteInstance() {
   DCHECK(g_system_network_context_manager);
   delete g_system_network_context_manager;
   g_system_network_context_manager = nullptr;
+}
+
+// static
+network::mojom::NetworkContextParamsPtr
+SystemNetworkContextManager::CreateDefaultNetworkContextParams(
+    const std::string& user_agent) {
+  network::mojom::NetworkContextParamsPtr network_context_params =
+      network::mojom::NetworkContextParams::New();
+  network_context_params->user_agent = user_agent;
+#if defined(OS_LINUX) || defined(OS_WIN)
+  // We're not configuring the cookie encryption on these platforms yet.
+  network_context_params->enable_encrypted_cookies = false;
+#endif
+  return network_context_params;
 }
 
 SystemNetworkContextManager::SystemNetworkContextManager(
@@ -94,10 +99,6 @@ SystemNetworkContextManager::CreateSystemNetworkContextManagerParams() {
 
   network_context_params->context_name = std::string("system");
   network_context_params->primary_network_context = true;
-#if defined(OS_LINUX) || defined(OS_WIN)
-  // We're not configuring the cookie encryption on these platforms yet.
-  network_context_params->enable_encrypted_cookies = false;
-#endif
 
   return network_context_params;
 }

@@ -207,6 +207,10 @@
 #include "components/session_manager/core/session_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 using content::InterstitialPageDelegate;
 using content::WebContents;
 namespace AuthState = ssl_test_util::AuthState;
@@ -1717,9 +1721,19 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, SHA1IsDefaultDisabled) {
   ui_test_utils::NavigateToURL(browser(),
                                https_server_sha1_.GetURL("/ssl/google.html"));
 
+  int expected_error = net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM;
+
+#if defined(OS_MACOSX)
+  // On macOS 10.15 (and presumably later) SHA1 certs are considered prima
+  // facie invalid by the system verifier.
+  // TODO(https://crbug.com/977767): Reconsider this when the built-in verifier
+  // is used on Mac.
+  if (base::mac::IsAtLeastOS10_15())
+    expected_error |= net::CERT_STATUS_INVALID;
+#endif
+
   ssl_test_util::CheckAuthenticationBrokenState(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM,
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_error,
       AuthState::SHOWING_INTERSTITIAL);
 }
 

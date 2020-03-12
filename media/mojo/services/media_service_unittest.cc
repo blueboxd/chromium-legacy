@@ -166,7 +166,7 @@ class MediaServiceTest : public testing::Test {
     base::RunLoop run_loop;
     interface_factory_->CreateCdm(key_system,
                                   cdm_.BindNewPipeAndPassReceiver());
-    cdm_.set_disconnect_handler(base::BindRepeating(
+    cdm_.set_disconnect_handler(base::BindOnce(
         &MediaServiceTest::OnCdmConnectionError, base::Unretained(this)));
 
     int cdm_id = CdmContext::kInvalidCdmId;
@@ -230,9 +230,9 @@ class MediaServiceTest : public testing::Test {
 
     EXPECT_CALL(*this, OnDecrypted(expected_status, _))
         .WillOnce(QuitLoop(&run_loop));
-    mojo_decryptor.Decrypt(Decryptor::kVideo, CreateEncryptedBuffer(),
-                           base::BindRepeating(&MediaServiceTest::OnDecrypted,
-                                               base::Unretained(this)));
+    mojo_decryptor.Decrypt(
+        Decryptor::kVideo, CreateEncryptedBuffer(),
+        base::BindOnce(&MediaServiceTest::OnDecrypted, base::Unretained(this)));
     run_loop.Run();
   }
 

@@ -5644,12 +5644,9 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
       viz::ContextProvider* context_provider =
           layer_tree_frame_sink_->context_provider();
       auto* sii = context_provider->SharedImageInterface();
-      size_t size_to_send =
-          viz::ResourceSizes::CheckedSizeInBytes<unsigned int>(upload_size,
-                                                               format);
       mailbox = sii->CreateSharedImage(
           format, upload_size, color_space, shared_image_usage,
-          base::span<const uint8_t>(bitmap.GetPixels(), size_to_send));
+          base::span<const uint8_t>(bitmap.GetPixels(), bitmap.SizeInBytes()));
     } else {
       DCHECK_EQ(bitmap.GetFormat(), UIResourceBitmap::RGBA8);
       SkImageInfo src_info =
@@ -5661,7 +5658,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
           dst_info, shm.mapping.memory(), dst_info.minRowBytes());
       surface->getCanvas()->writePixels(
           src_info, const_cast<uint8_t*>(bitmap.GetPixels()),
-          src_info.minRowBytes(), 0, 0);
+          bitmap.row_bytes(), 0, 0);
     }
   } else {
     // Only support auto-resizing for N32 textures (since this is primarily for
@@ -5679,7 +5676,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
         SkImageInfo::MakeN32Premul(gfx::SizeToSkISize(source_size));
 
     SkBitmap source_bitmap;
-    source_bitmap.setInfo(info);
+    source_bitmap.setInfo(info, bitmap.row_bytes());
     source_bitmap.setPixels(const_cast<uint8_t*>(bitmap.GetPixels()));
 
     // This applies the scale to draw the |bitmap| into |scaled_surface|. For

@@ -76,8 +76,8 @@ MojoDecryptor::MojoDecryptor(
       GetDefaultDecoderBufferConverterCapacity(DemuxerStream::VIDEO),
       &decrypted_producer_handle);
 
-  remote_decryptor_.set_disconnect_with_reason_handler(
-      base::Bind(&MojoDecryptor::OnConnectionError, base::Unretained(this)));
+  remote_decryptor_.set_disconnect_with_reason_handler(base::BindOnce(
+      &MojoDecryptor::OnConnectionError, base::Unretained(this)));
 
   // Pass the other end of each pipe to |remote_decryptor_|.
   remote_decryptor_->Initialize(
@@ -276,7 +276,7 @@ void MojoDecryptor::OnVideoDecoded(
   // |frame| is destroyed.
   if (video_frame && releaser) {
     video_frame->AddDestructionObserver(
-        base::Bind(&ReleaseFrameResource, base::Passed(&releaser)));
+        base::BindOnce(&ReleaseFrameResource, base::Passed(&releaser)));
   }
 
   std::move(video_decode_cb).Run(status, video_frame);

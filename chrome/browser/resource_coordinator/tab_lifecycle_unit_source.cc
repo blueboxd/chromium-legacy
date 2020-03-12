@@ -18,6 +18,7 @@
 #include "chrome/browser/resource_coordinator/tracing_lifecycle_unit_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -175,7 +176,7 @@ class TabLifecycleStateObserver
 TabLifecycleUnitSource::TabLifecycleUnitSource(
     InterventionPolicyDatabase* intervention_policy_database,
     UsageClock* usage_clock)
-    : browser_tab_strip_tracker_(this, nullptr, this),
+    : browser_tab_strip_tracker_(this, nullptr),
       intervention_policy_database_(intervention_policy_database),
       usage_clock_(usage_clock) {
   // In unit tests, tabs might already exist when TabLifecycleUnitSource is
@@ -183,10 +184,13 @@ TabLifecycleUnitSource::TabLifecycleUnitSource(
 
   DCHECK(intervention_policy_database_);
 
+  BrowserList::AddObserver(this);
   browser_tab_strip_tracker_.Init();
 }
 
-TabLifecycleUnitSource::~TabLifecycleUnitSource() = default;
+TabLifecycleUnitSource::~TabLifecycleUnitSource() {
+  BrowserList::RemoveObserver(this);
+}
 
 void TabLifecycleUnitSource::Start() {
   // TODO(sebmarchand): Remove the "IsAvailable" check, or merge the TM into the

@@ -9,14 +9,17 @@ import android.util.Pair;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.LifetimeAssert;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.concurrent.GuardedBy;
 
@@ -26,27 +29,79 @@ import javax.annotation.concurrent.GuardedBy;
  */
 @JNINamespace("base")
 public class TaskRunnerImpl implements TaskRunner {
+    // TaskRunnerCleaners are enqueued to this queue when their WeakReference to a TaskRunnerIml is
+    // cleared.
+    private static final ReferenceQueue<Object> sQueue = new ReferenceQueue<>();
+    // Holds a strong reference to the pending TaskRunnerCleaners so they don't get GC'd before the
+    // TaskRunnerImpl they're weakly referencing does.
+    @GuardedBy("sCleaners")
+    private static final Set<TaskRunnerCleaner> sCleaners = new HashSet<>();
+
     private final TaskTraits mTaskTraits;
     private final String mTraceEvent;
     private final @TaskRunnerType int mTaskRunnerType;
-    protected final Object mLock = new Object();
+    private final Object mLock = new Object();
     @GuardedBy("mLock")
-    protected long mNativeTaskRunnerAndroid;
+    private long mNativeTaskRunnerAndroid;
+    @GuardedBy("mLock")
+    private boolean mDidOneTimeInitialization;
     protected final Runnable mRunPreNativeTaskClosure = this::runPreNativeTask;
-    @GuardedBy("mLock")
-    private boolean mIsDestroying;
-    private final LifetimeAssert mLifetimeAssert = LifetimeAssert.create(this);
 
     @Nullable
-    protected LinkedList<Runnable> mPreNativeTasks = new LinkedList<>();
+    private LinkedList<Runnable> mPreNativeTasks;
     @Nullable
-    protected List<Pair<Runnable, Long>> mPreNativeDelayedTasks = new ArrayList<>();
+    private List<Pair<Runnable, Long>> mPreNativeDelayedTasks;
+
+    private static class TaskRunnerCleaner extends WeakReference<TaskRunnerImpl> {
+        final long mNativePtr;
+
+        TaskRunnerCleaner(TaskRunnerImpl runner) {
+            super(runner, sQueue);
+            mNativePtr = runner.mNativeTaskRunnerAndroid;
+        }
+
+        void destroy() {
+            TaskRunnerImplJni.get().destroy(mNativePtr);
+        }
+    }
+
+    /**
+     * The lifecycle for a TaskRunner is very complicated. Some task runners are static and never
+     * destroyed, some have a task posted to them and are immediately allowed to be GC'd by the
+     * creator, but if native isn't initialized the task would be lost if this were to be GC'd.
+     * This makes an explicit destroy impractical as it can't be enforced on static runners, and
+     * wouldn't actually destroy the runner before native initialization as that would cause tasks
+     * to be lost. A finalizer could give us the correct behaviour here, but finalizers are banned
+     * due to the performance cost they impose, and all of the many correctness gotchas around
+     * implementing a finalizer.
+     *
+     * The strategy we've gone with here is to use a ReferenceQueue to keep track of which
+     * TaskRunners are no longer reachable (and may have been GC'd), and to delete the native
+     * counterpart for those TaskRunners by polling the queue when doing non-performance-critical
+     * operations on TaskRunners, like creating a new one. In order to prevent this TaskRunner from
+     * being GC'd before its tasks can be posted to the native runner, PostTask holds a strong
+     * reference to each TaskRunner with a task posted to it before native initialization.
+     */
+    private static void destroyGarbageCollectedTaskRunners() {
+        while (true) {
+            // ReferenceQueue#poll immediately removes and returns an element from the queue,
+            // returning null if the queue is empty.
+            @SuppressWarnings("unchecked")
+            TaskRunnerCleaner cleaner = (TaskRunnerCleaner) sQueue.poll();
+            if (cleaner == null) return;
+            cleaner.destroy();
+            synchronized (sCleaners) {
+                sCleaners.remove(cleaner);
+            }
+        }
+    }
 
     /**
      * @param traits The TaskTraits associated with this TaskRunnerImpl.
      */
     TaskRunnerImpl(TaskTraits traits) {
         this(traits, "TaskRunnerImpl", TaskRunnerType.BASE);
+        destroyGarbageCollectedTaskRunners();
     }
 
     /**
@@ -60,29 +115,6 @@ public class TaskRunnerImpl implements TaskRunner {
         mTaskTraits = traits.withExplicitDestination();
         mTraceEvent = traceCategory + ".PreNativeTask.run";
         mTaskRunnerType = taskRunnerType;
-        if (!PostTask.registerPreNativeTaskRunnerLocked(this)) initNativeTaskRunner();
-    }
-
-    @Override
-    public void destroy() {
-        synchronized (mLock) {
-            LifetimeAssert.setSafeToGc(mLifetimeAssert, true);
-            mIsDestroying = true;
-            destroyInternal();
-        }
-    }
-
-    @GuardedBy("mLock")
-    protected void destroyInternal() {
-        if (mNativeTaskRunnerAndroid != 0) {
-            TaskRunnerImplJni.get().destroy(mNativeTaskRunnerAndroid);
-        }
-        mNativeTaskRunnerAndroid = 0;
-    }
-
-    @Override
-    public void disableLifetimeCheck() {
-        LifetimeAssert.setSafeToGc(mLifetimeAssert, true);
     }
 
     @Override
@@ -93,9 +125,9 @@ public class TaskRunnerImpl implements TaskRunner {
     @Override
     public void postDelayedTask(Runnable task, long delay) {
         synchronized (mLock) {
-            assert !mIsDestroying;
+            oneTimeInitialization();
             if (mPreNativeTasks == null) {
-                postDelayedTaskToNative(task, delay);
+                TaskRunnerImplJni.get().postDelayedTask(mNativeTaskRunnerAndroid, task, delay);
                 return;
             }
             // We don't expect a whole lot of these, if that changes consider pooling them.
@@ -109,6 +141,30 @@ public class TaskRunnerImpl implements TaskRunner {
                 Pair<Runnable, Long> preNativeDelayedTask = new Pair<>(task, delay);
                 mPreNativeDelayedTasks.add(preNativeDelayedTask);
             }
+        }
+    }
+
+    protected Boolean belongsToCurrentThreadInternal() {
+        // TODO(https://crbug.com/1026641): This function shouldn't be here, and should only be used
+        // by derived classes (eg. SingleThreadTaskRunner) until it is moved there, as TaskRunner
+        // has no notion of belonging to a thread.
+        assert !getClass().equals(TaskRunnerImpl.class);
+        synchronized (mLock) {
+            oneTimeInitialization();
+            if (mNativeTaskRunnerAndroid == 0) return null;
+            return TaskRunnerImplJni.get().belongsToCurrentThread(mNativeTaskRunnerAndroid);
+        }
+    }
+
+    @GuardedBy("mLock")
+    private void oneTimeInitialization() {
+        if (mDidOneTimeInitialization) return;
+        mDidOneTimeInitialization = true;
+        if (!PostTask.registerPreNativeTaskRunner(this)) {
+            initNativeTaskRunner();
+        } else {
+            mPreNativeTasks = new LinkedList<>();
+            mPreNativeDelayedTasks = new ArrayList<>();
         }
     }
 
@@ -151,40 +207,38 @@ public class TaskRunnerImpl implements TaskRunner {
      * Instructs the TaskRunner to initialize the native TaskRunner and migrate any tasks over to
      * it.
      */
-    @Override
-    public void initNativeTaskRunner() {
+    /* package */ void initNativeTaskRunner() {
         synchronized (mLock) {
-            initNativeTaskRunnerInternal();
-            migratePreNativeTasksToNative();
-        }
-    }
-
-    @GuardedBy("mLock")
-    protected void initNativeTaskRunnerInternal() {
-        if (mNativeTaskRunnerAndroid == 0) {
+            assert mNativeTaskRunnerAndroid == 0;
             mNativeTaskRunnerAndroid = TaskRunnerImplJni.get().init(mTaskRunnerType,
                     mTaskTraits.mPriority, mTaskTraits.mMayBlock, mTaskTraits.mUseThreadPool,
                     mTaskTraits.mExtensionId, mTaskTraits.mExtensionData);
+            synchronized (sCleaners) {
+                sCleaners.add(new TaskRunnerCleaner(this));
+            }
+            migratePreNativeTasksToNative();
         }
+        // Destroying GC'd task runners here isn't strictly necessary, but the performance of
+        // initNativeTaskRunner() isn't critical, and calling the function more often will help
+        // prevent any potential build-up of orphaned native task runners.
+        destroyGarbageCollectedTaskRunners();
     }
 
     @GuardedBy("mLock")
-    protected void migratePreNativeTasksToNative() {
+    private void migratePreNativeTasksToNative() {
         if (mPreNativeTasks != null) {
             for (Runnable task : mPreNativeTasks) {
-                postDelayedTaskToNative(task, 0);
-            }
-            for (Pair<Runnable, Long> task : mPreNativeDelayedTasks) {
-                postDelayedTaskToNative(task.first, task.second);
+                TaskRunnerImplJni.get().postDelayedTask(mNativeTaskRunnerAndroid, task, 0);
             }
             mPreNativeTasks = null;
+        }
+        if (mPreNativeDelayedTasks != null) {
+            for (Pair<Runnable, Long> task : mPreNativeDelayedTasks) {
+                TaskRunnerImplJni.get().postDelayedTask(
+                        mNativeTaskRunnerAndroid, task.first, task.second);
+            }
             mPreNativeDelayedTasks = null;
         }
-    }
-
-    @GuardedBy("mLock")
-    protected void postDelayedTaskToNative(Runnable r, long delay) {
-        TaskRunnerImplJni.get().postDelayedTask(mNativeTaskRunnerAndroid, r, delay);
     }
 
     @NativeMethods

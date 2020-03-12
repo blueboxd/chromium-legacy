@@ -909,7 +909,10 @@ void GtkUi::UpdateColors() {
   colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON] = tab_text_color;
   colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_HOVERED] = tab_text_color;
   colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_PRESSED] = tab_text_color;
-  colors_[ThemeProperties::COLOR_TAB_TEXT] = tab_text_color;
+  colors_[ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE] =
+      tab_text_color;
+  colors_[ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_INACTIVE] =
+      tab_text_color;
   colors_[ThemeProperties::COLOR_BOOKMARK_TEXT] = tab_text_color;
 
   colors_[ThemeProperties::COLOR_NTP_LINK] = native_theme_->GetSystemColor(
@@ -971,17 +974,19 @@ void GtkUi::UpdateColors() {
     const SkColor background_tab_text_color_inactive =
         GetFgColor(header_selector_inactive + " GtkLabel.title");
 
-    color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
+    color_map[ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE] =
         background_tab_text_color;
-    color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO] =
+    color_map[ThemeProperties::
+                  COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO] =
         color_utils::BlendForMinContrast(
             color_utils::HSLShift(background_tab_text_color,
                                   kDefaultTintFrameIncognito),
             frame_color_incognito)
             .color;
-    color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE] =
+    color_map[ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE] =
         background_tab_text_color_inactive;
-    color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE] =
+    color_map[ThemeProperties::
+                  COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE_INCOGNITO] =
         color_utils::BlendForMinContrast(
             color_utils::HSLShift(background_tab_text_color_inactive,
                                   kDefaultTintFrameIncognito),

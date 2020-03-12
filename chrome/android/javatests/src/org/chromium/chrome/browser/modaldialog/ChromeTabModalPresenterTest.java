@@ -57,6 +57,7 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.BrowserControlsState;
+import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
@@ -505,6 +506,26 @@ public class ChromeTabModalPresenterTest {
         mTestObserver.onDialogDismissedCallback.waitForCallback(callCount);
 
         mExpectedDismissalCause = null;
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ModalDialog"})
+    public void testDismiss_DismissalCause_TabNavigated() throws Exception {
+        PropertyModel dialog1 =
+                createDialog(mActivity, mActivity.getModalDialogManager(), "1", mTestObserver);
+        mExpectedDismissalCause = DialogDismissalCause.NAVIGATE;
+        int callCount = mTestObserver.onDialogDismissedCallback.getCallCount();
+
+        // Show a tab modal dialog and then navigate to a different page.
+        showDialog(mManager, dialog1, ModalDialogType.TAB);
+        EmbeddedTestServer server =
+                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+        mActivityTestRule.loadUrl(server.getURL("/chrome/test/data/android/simple.html"));
+        mTestObserver.onDialogDismissedCallback.waitForCallback(callCount);
+
+        mExpectedDismissalCause = null;
+        server.stopAndDestroyServer();
     }
 
     @Test

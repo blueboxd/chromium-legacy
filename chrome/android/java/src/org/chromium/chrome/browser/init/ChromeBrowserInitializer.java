@@ -153,6 +153,7 @@ public class ChromeBrowserInitializer {
      */
     public void handlePreNativeStartup(final BrowserParts parts) {
         ThreadUtils.checkUiThread();
+        if (parts.isActivityFinishingOrDestroyed()) return;
         ProcessInitializationHandler.getInstance().initializePreNative();
         try (TraceEvent e = TraceEvent.scoped("ChromeBrowserInitializer.preInflationStartup")) {
             preInflationStartup();

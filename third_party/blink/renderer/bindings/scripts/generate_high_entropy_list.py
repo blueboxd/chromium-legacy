@@ -30,8 +30,12 @@ import web_idl
 
 def parse_options():
     parser = optparse.OptionParser(usage="%prog [options]")
-    parser.add_option("--web_idl_database", type="string", help="filepath of the input database")
-    parser.add_option("--output", type="string", help="filepath of output file")
+    parser.add_option(
+        "--web_idl_database",
+        type="string",
+        help="filepath of the input database")
+    parser.add_option(
+        "--output", type="string", help="filepath of output file")
     options, args = parser.parse_args()
 
     required_option_names = ("web_idl_database", "output")
@@ -64,7 +68,8 @@ def record(csv_writer, entity):
     if 'Measure' in entity.extended_attributes:
         use_counter = capitalize(entity.identifier)
         if not isinstance(entity, web_idl.Interface):
-            use_counter = (capitalize(entity.owner.identifier) + '_' + use_counter)
+            use_counter = (
+                capitalize(entity.owner.identifier) + '_' + use_counter)
     elif 'MeasureAs' in entity.extended_attributes:
         use_counter = entity.extended_attributes.value_of('MeasureAs')
 
@@ -105,14 +110,18 @@ def main():
         csv_writer = DictWriter(
             out_buffer,
             fieldnames=[
-                'interface', 'name', 'entity_type', 'idl_type', 'syntactic_form', 'use_counter', 'secure_context', 'high_entropy'
+                'interface', 'name', 'entity_type', 'idl_type',
+                'syntactic_form', 'use_counter', 'secure_context',
+                'high_entropy'
             ])
         csv_writer.writeheader()
 
-        web_idl_database = web_idl.Database.read_from_file(options.web_idl_database)
+        web_idl_database = web_idl.Database.read_from_file(
+            options.web_idl_database)
         for interface in web_idl_database.interfaces:
             record(csv_writer, interface)
-            for entity in (interface.attributes + interface.operations + interface.constants):
+            for entity in (interface.attributes + interface.operations +
+                           interface.constants):
                 record(csv_writer, entity)
         write_file(out_buffer.getvalue(), options.output)
 

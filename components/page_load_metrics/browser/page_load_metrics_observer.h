@@ -29,6 +29,10 @@ class RenderFrameHost;
 
 namespace page_load_metrics {
 
+// Storage types reported to page load metrics observers on storage
+// accesses.
+enum class StorageType { kLocalStorage, kSessionStorage };
+
 // Information related to failed provisional loads.
 struct FailedProvisionalLoadInfo {
   FailedProvisionalLoadInfo(base::TimeDelta interval, net::Error error);
@@ -426,12 +430,13 @@ class PageLoadMetricsObserver {
                               const net::CanonicalCookie& cookie,
                               bool blocked_by_policy) {}
 
-  // Called when a DOM storage is accessed via Window.localStorage or
-  // Window.sessionStorage.
-  virtual void OnDomStorageAccessed(const GURL& url,
-                                    const GURL& first_party_url,
-                                    bool local,
-                                    bool blocked_by_policy) {}
+  // Called when a storage access attempt by the origin |url| to |storage_type|
+  // is checked by the content settings manager. |blocked_by_policy| is false
+  // when cookie access is not allowed for |url|.
+  virtual void OnStorageAccessed(const GURL& url,
+                                 const GURL& first_party_url,
+                                 bool blocked_by_policy,
+                                 StorageType access_type) {}
 
   // Called when the event corresponding to |event_key| occurs in this page
   // load.

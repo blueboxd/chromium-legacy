@@ -107,7 +107,8 @@ class TargetHandler : public DevToolsDomainHandler,
  private:
   class Session;
   class Throttle;
-  class MainFrameThrottle;
+  class RequestThrottle;
+  class ResponseThrottle;
 
   // TargetAutoAttacher::Delegate implementation.
   void AutoAttach(DevToolsAgentHost* host, bool waiting_for_debugger) override;

@@ -491,7 +491,7 @@ void HotseatWidget::UpdateLayout(bool animate) {
     animation_setter.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     animation_setter.SetAnimationMetricsReporter(
-        shelf_->GetHotseatTransitionMetricsReporter());
+        shelf_->GetHotseatTransitionMetricsReporter(state_));
 
     layer->SetOpacity(new_layout_inputs.opacity);
     SetBounds(new_layout_inputs.bounds);

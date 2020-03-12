@@ -198,7 +198,7 @@ void MojoVideoDecoderService::Initialize(const VideoDecoderConfig& config,
   using Self = MojoVideoDecoderService;
   decoder_->Initialize(
       config, low_delay, cdm_context,
-      base::BindRepeating(&Self::OnDecoderInitialized, weak_this_),
+      base::BindOnce(&Self::OnDecoderInitialized, weak_this_),
       base::BindRepeating(&Self::OnDecoderOutput, weak_this_),
       base::BindRepeating(&Self::OnDecoderWaiting, weak_this_));
 }
@@ -250,8 +250,8 @@ void MojoVideoDecoderService::Reset(ResetCallback callback) {
   }
 
   // Flush the reader so that pending decodes will be dispatched first.
-  mojo_decoder_buffer_reader_->Flush(base::BindRepeating(
-      &MojoVideoDecoderService::OnReaderFlushed, weak_this_));
+  mojo_decoder_buffer_reader_->Flush(
+      base::BindOnce(&MojoVideoDecoderService::OnReaderFlushed, weak_this_));
 }
 
 void MojoVideoDecoderService::OnDecoderInitialized(bool success) {
@@ -287,9 +287,9 @@ void MojoVideoDecoderService::OnReaderRead(
   }
 
   decoder_->Decode(
-      buffer, base::BindRepeating(&MojoVideoDecoderService::OnDecoderDecoded,
-                                  weak_this_, base::Passed(&callback),
-                                  base::Passed(&trace_event)));
+      buffer,
+      base::BindOnce(&MojoVideoDecoderService::OnDecoderDecoded, weak_this_,
+                     base::Passed(&callback), base::Passed(&trace_event)));
 }
 
 void MojoVideoDecoderService::OnReaderFlushed() {

@@ -409,8 +409,8 @@ void StatusBubbleViews::StatusView::SetTextLabelColors(views::Label* text) {
       theme_provider->GetColor(ThemeProperties::COLOR_STATUS_BUBBLE);
   text->SetBackgroundColor(bubble_color);
   // Text color is the background tab text color, adjusted if required.
-  text->SetEnabledColor(
-      theme_provider->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB_TEXT));
+  text->SetEnabledColor(theme_provider->GetColor(
+      ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE));
 }
 
 const char* StatusBubbleViews::StatusView::GetClassName() const {

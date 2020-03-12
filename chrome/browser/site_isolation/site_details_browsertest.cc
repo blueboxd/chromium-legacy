@@ -257,6 +257,20 @@ class SiteDetailsBrowserTest : public extensions::ExtensionBrowserTest {
     return extension;
   }
 
+  int GetRenderProcessCountFromUma(base::HistogramTester* uma) {
+    auto buckets = uma->GetAllSamples("Memory.RenderProcessHost.Count.All");
+    EXPECT_EQ(buckets.size(), 1u);
+    int rph_count = buckets[0].min;
+
+    // Memory.RenderProcessHost.Count.All includes the spare process. If a
+    // spare is present, subtract it from total count since the tests below
+    // assume no spare.
+    if (content::RenderProcessHost::GetSpareRenderProcessHostForTesting())
+      rph_count--;
+
+    return rph_count;
+  }
+
   int GetRenderProcessCount() {
     return content::RenderProcessHost::GetCurrentRenderProcessCountForTesting();
   }
@@ -287,9 +301,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_ManyIframes) {
   EXPECT_THAT(
       details->uma()->GetAllSamples("SiteIsolation.BrowsingInstanceCount"),
       HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 1, 9));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 14));
@@ -312,9 +325,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_ManyIframes) {
   EXPECT_THAT(
       details->uma()->GetAllSamples("SiteIsolation.BrowsingInstanceCount"),
       HasOneSample(1));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 1, 7));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 11));
@@ -336,9 +348,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_ManyIframes) {
   EXPECT_THAT(
       details->uma()->GetAllSamples("SiteIsolation.BrowsingInstanceCount"),
       HasOneSample(2));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(2, 2, 11));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 14));
@@ -359,9 +370,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_ManyIframes) {
   EXPECT_THAT(
       details->uma()->GetAllSamples("SiteIsolation.BrowsingInstanceCount"),
       HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
 
   // For --site-per-process, the total process count will be 12 instead of 15,
   // because the third tab's subframes (b, c, d) will reuse matching subframe
@@ -403,9 +413,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_ManyIframes) {
   EXPECT_THAT(
       details->uma()->GetAllSamples("SiteIsolation.BrowsingInstanceCount"),
       HasOneSample(3));
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 3, 13));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 21));
@@ -424,9 +433,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
   // case.
   scoped_refptr<TestMemoryDetails> details = new TestMemoryDetails();
   details->StartFetchAndWait();
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
   EXPECT_THAT(GetRenderProcessCount(), 1);
   EXPECT_EQ(0, details->GetOutOfProcessIframeCount());
 
@@ -449,9 +457,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
 
   details = new TestMemoryDetails();
   details->StartFetchAndWait();
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 3, 7));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 4));
@@ -466,9 +473,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
       tab1, "child-0", extension1->GetResourceURL("/blank_iframe.html"));
   details = new TestMemoryDetails();
   details->StartFetchAndWait();
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 3, 6));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 1, 4));
@@ -480,9 +486,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
       tab2, "child-0", extension1->GetResourceURL("/blank_iframe.html"));
   details = new TestMemoryDetails();
   details->StartFetchAndWait();
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 3, 5));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 2, 4));
@@ -493,9 +498,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
       tab1, "child-1", extension2->GetResourceURL("/blank_iframe.html"));
   details = new TestMemoryDetails();
   details->StartFetchAndWait();
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 4, 5));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 3, 4));
@@ -506,9 +510,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
       tab2, "child-1", extension2->GetResourceURL("/blank_iframe.html"));
   details = new TestMemoryDetails();
   details->StartFetchAndWait();
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 4, 4));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 4, 4));
@@ -524,9 +527,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
                                extension3->GetResourceURL("blank_iframe.html"));
   details = new TestMemoryDetails();
   details->StartFetchAndWait();
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 4, 4));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 2, 2));
@@ -538,9 +540,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
                                extension3->GetResourceURL("http_iframe.html"));
   details = new TestMemoryDetails();
   details->StartFetchAndWait();
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 5, 5));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 3, 3));
@@ -554,9 +555,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
                                extension3->GetResourceURL("blank_iframe.html"));
   details = new TestMemoryDetails();
   details->StartFetchAndWait();
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(2, 3, 3));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 1, 1));
@@ -568,9 +568,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_IsolateExtensions) {
                                extension3->GetResourceURL("http_iframe.html"));
   details = new TestMemoryDetails();
   details->StartFetchAndWait();
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
 
   // There should be four total renderer processes: one for each of the two web
   // iframes, one for extension3, and one for extension 1's background page.
@@ -598,9 +597,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ExtensionWithTwoWebIframes) {
 
   details = new TestMemoryDetails();
   details->StartFetchAndWait();
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
   // TODO(nick): https://crbug.com/512560 Make the number below agree with the
   // estimates above, which assume consolidation of subframe processes.
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 3, 3));
@@ -622,9 +620,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest,
   ui_test_utils::NavigateToURL(browser(), app_with_web_iframe_url);
   scoped_refptr<TestMemoryDetails> details = new TestMemoryDetails();
   details->StartFetchAndWait();
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 1, 2));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 1));
@@ -632,9 +629,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest,
   ui_test_utils::NavigateToURL(browser(), app_in_web_iframe_url);
   details = new TestMemoryDetails();
   details->StartFetchAndWait();
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 1, 2));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 1));
@@ -647,9 +643,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest,
   ui_test_utils::NavigateToURL(browser(), app_with_web_iframe_url);
   details = new TestMemoryDetails();
   details->StartFetchAndWait();
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 1, 2));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 1));
@@ -657,9 +652,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest,
   ui_test_utils::NavigateToURL(browser(), app_in_web_iframe_url);
   details = new TestMemoryDetails();
   details->StartFetchAndWait();
-  EXPECT_THAT(details->uma()->GetAllSamples(
-                  "SiteIsolation.CurrentRendererProcessCount"),
-              HasOneSample(GetRenderProcessCount()));
+  EXPECT_EQ(GetRenderProcessCountFromUma(details->uma()),
+            GetRenderProcessCount());
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 1, 2));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 1));

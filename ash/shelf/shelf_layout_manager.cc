@@ -1256,6 +1256,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
     MaybeUpdateShelfBackground(change_type);
 
   CalculateTargetBoundsAndUpdateWorkArea();
+  shelf_->hotseat_widget()->SetState(new_hotseat_state);
   UpdateBoundsAndOpacity(true /* animate */);
 
   // OnAutoHideStateChanged Should be emitted when:
@@ -1268,9 +1269,6 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
       observer.OnAutoHideStateChanged(state_.auto_hide_state);
   }
 
-  // Do not set the hotseat state until after bounds have been set because
-  // observers rely on final bounds.
-  shelf_->hotseat_widget()->SetState(new_hotseat_state);
   if (previous_hotseat_state != hotseat_state()) {
     if (hotseat_state() == HotseatState::kExtended)
       hotseat_event_handler_ = std::make_unique<HotseatEventHandler>(this);

@@ -60,7 +60,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
   // Reports a set of memory metrics to UMA.
 
   const ProcessData& browser = *ChromeBrowser();
-  int chrome_count = 0;
   int extension_count = 0;
   int renderer_count = 0;
   for (size_t index = 0; index < browser.processes.size(); index++) {
@@ -94,7 +93,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
           case ProcessMemoryInformation::RENDERER_CHROME:
             if (num_open_fds != -1)
               UMA_HISTOGRAM_COUNTS_10000("Memory.Chrome.OpenFDs", num_open_fds);
-            chrome_count++;
             continue;
           case ProcessMemoryInformation::RENDERER_UNKNOWN:
             NOTREACHED() << "Unknown renderer process type.";
@@ -170,12 +168,7 @@ void MetricsMemoryDetails::UpdateHistograms() {
     UMA_HISTOGRAM_MEMORY_MB("Memory.Graphics", meminfo.gem_size / 1024 / 1024);
 #endif
 
-  // Predict the number of processes needed when isolating all sites and when
-  // isolating only HTTPS sites.
-  int all_renderer_count = renderer_count + chrome_count + extension_count;
-  int non_renderer_count = browser.processes.size() - all_renderer_count;
-  DCHECK_GE(non_renderer_count, 1);
-  UpdateSiteIsolationMetrics(all_renderer_count, non_renderer_count);
+  UpdateSiteIsolationMetrics();
 
   UMA_HISTOGRAM_COUNTS_100("Memory.ProcessCount",
                            static_cast<int>(browser.processes.size()));
@@ -192,8 +185,7 @@ void MetricsMemoryDetails::UpdateHistograms() {
   leveldb_chrome::UpdateHistograms();
 }
 
-void MetricsMemoryDetails::UpdateSiteIsolationMetrics(int all_renderer_count,
-                                                      int non_renderer_count) {
+void MetricsMemoryDetails::UpdateSiteIsolationMetrics() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Track site data for predicting process counts with out-of-process iframes.
@@ -227,6 +219,5 @@ void MetricsMemoryDetails::UpdateSiteIsolationMetrics(int all_renderer_count,
     SiteData& site_data = site_data_map[contents->GetBrowserContext()];
     SiteDetails::CollectSiteInfo(contents, &site_data);
   }
-  SiteDetails::UpdateHistograms(site_data_map, all_renderer_count,
-                                non_renderer_count);
+  SiteDetails::UpdateHistograms(site_data_map);
 }

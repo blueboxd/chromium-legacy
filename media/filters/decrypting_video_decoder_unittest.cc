@@ -113,8 +113,9 @@ class DecryptingVideoDecoderTest : public testing::Test {
   void DecodeAndExpect(scoped_refptr<DecoderBuffer> buffer,
                        DecodeStatus status) {
     EXPECT_CALL(*this, DecodeDone(status));
-    decoder_->Decode(buffer, base::Bind(&DecryptingVideoDecoderTest::DecodeDone,
-                                        base::Unretained(this)));
+    decoder_->Decode(buffer,
+                     base::BindOnce(&DecryptingVideoDecoderTest::DecodeDone,
+                                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -165,8 +166,8 @@ class DecryptingVideoDecoderTest : public testing::Test {
         .WillOnce(SaveArg<1>(&pending_video_decode_cb_));
 
     decoder_->Decode(encrypted_buffer_,
-                     base::Bind(&DecryptingVideoDecoderTest::DecodeDone,
-                                base::Unretained(this)));
+                     base::BindOnce(&DecryptingVideoDecoderTest::DecodeDone,
+                                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
     // Make sure the Decode() on the decoder triggers a DecryptAndDecode() on
     // the decryptor.
@@ -178,8 +179,8 @@ class DecryptingVideoDecoderTest : public testing::Test {
         .WillRepeatedly(RunCallback<1>(Decryptor::kNoKey, null_video_frame_));
     EXPECT_CALL(*this, OnWaiting(WaitingReason::kNoDecryptionKey));
     decoder_->Decode(encrypted_buffer_,
-                     base::Bind(&DecryptingVideoDecoderTest::DecodeDone,
-                                base::Unretained(this)));
+                     base::BindOnce(&DecryptingVideoDecoderTest::DecodeDone,
+                                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 

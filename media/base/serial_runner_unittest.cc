@@ -100,10 +100,9 @@ class SerialRunnerTest : public ::testing::Test {
 
   void StartRunnerInternal(SerialRunner::Queue bound_fns) {
     inside_start_ = true;
-    runner_ =
-        SerialRunner::Run(std::move(bound_fns),
-                          base::BindRepeating(&SerialRunnerTest::DoneCallback,
-                                              base::Unretained(this)));
+    runner_ = SerialRunner::Run(std::move(bound_fns),
+                                base::BindOnce(&SerialRunnerTest::DoneCallback,
+                                               base::Unretained(this)));
     inside_start_ = false;
   }
 

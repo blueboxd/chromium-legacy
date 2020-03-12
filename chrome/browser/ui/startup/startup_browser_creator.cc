@@ -656,6 +656,15 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     silent_launch = true;
   }
 
+  // If we are in the recoverable ARC/PWA app mode state (we do not have kAppId
+  // set), we should terminate the session instead of just showing black screen.
+  // TODO(crbug.com/1054382): Add a way of restarting PWA and Arc kiosks.
+  if (chrome::IsRunningInForcedAppMode() &&
+      !command_line.HasSwitch(switches::kAppId)) {
+    chrome::AttemptUserExit();
+    return false;
+  }
+
   // If we are a demo app session and we crashed, there is no safe recovery
   // possible. We should instead cleanly exit and go back to the OOBE screen,
   // where we will launch again after the timeout has expired.

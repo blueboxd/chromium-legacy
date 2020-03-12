@@ -25,7 +25,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """Read an IDL file or complete IDL interface, producing an IdlDefinitions object.
 
 Design doc:
@@ -56,27 +55,28 @@ def validate_blink_idl_definitions(idl_filename, idl_file_basename,
          definitions. There is no filename convention in this case.
        - Otherwise, an IDL file is invalid.
     """
-    targets = (definitions.interfaces.values() +
-               definitions.dictionaries.values())
+    targets = (
+        definitions.interfaces.values() + definitions.dictionaries.values())
     number_of_targets = len(targets)
     if number_of_targets > 1:
         raise Exception(
-            'Expected exactly 1 definition in file {0}, but found {1}'
-            .format(idl_filename, number_of_targets))
+            'Expected exactly 1 definition in file {0}, but found {1}'.format(
+                idl_filename, number_of_targets))
     if number_of_targets == 0:
-        number_of_definitions = (
-            len(definitions.enumerations) + len(definitions.typedefs) +
-            len(definitions.callback_functions))
+        number_of_definitions = (len(definitions.enumerations) + len(
+            definitions.typedefs) + len(definitions.callback_functions))
         if number_of_definitions == 0:
-            raise Exception('No definition found in %s. (Missing semicolon?)' % idl_filename)
+            raise Exception('No definition found in %s. (Missing semicolon?)' %
+                            idl_filename)
         return
     target = targets[0]
     if target.is_partial:
         return
-    if target.name != idl_file_basename and to_snake_case(target.name) != idl_file_basename:
+    if (target.name != idl_file_basename
+            and to_snake_case(target.name) != idl_file_basename):
         raise Exception(
-            'Definition name "{0}" disagrees with IDL file basename "{1}".'
-            .format(target.name, idl_file_basename))
+            'Definition name "{0}" disagrees with IDL file basename "{1}".'.
+            format(target.name, idl_file_basename))
 
 
 class IdlReader(object):
@@ -85,7 +85,8 @@ class IdlReader(object):
         self.interfaces_info = interfaces_info
 
         if interfaces_info:
-            self.interface_dependency_resolver = InterfaceDependencyResolver(interfaces_info, self)
+            self.interface_dependency_resolver = InterfaceDependencyResolver(
+                interfaces_info, self)
         else:
             self.interface_dependency_resolver = None
 
@@ -104,7 +105,8 @@ class IdlReader(object):
         if not definitions.interfaces:
             return {component: definitions}
 
-        return self.interface_dependency_resolver.resolve_dependencies(definitions, component)
+        return self.interface_dependency_resolver.resolve_dependencies(
+            definitions, component)
 
     def read_idl_file(self, idl_filename):
         """Returns an IdlDefinitions object for an IDL file, without any dependencies.
@@ -118,15 +120,16 @@ class IdlReader(object):
         idl_file_basename, _ = os.path.splitext(os.path.basename(idl_filename))
         definitions = IdlDefinitions(ast)
 
-        validate_blink_idl_definitions(
-            idl_filename, idl_file_basename, definitions)
+        validate_blink_idl_definitions(idl_filename, idl_file_basename,
+                                       definitions)
 
         # Validate extended attributes
         if not self.extended_attribute_validator:
             return definitions
 
         try:
-            self.extended_attribute_validator.validate_extended_attributes(definitions)
+            self.extended_attribute_validator.validate_extended_attributes(
+                definitions)
         except IDLInvalidExtendedAttributeError as error:
             raise IDLInvalidExtendedAttributeError("""
 IDL ATTRIBUTE ERROR in file:

@@ -384,7 +384,7 @@ TEST_F(PasswordManagerPresenterTest, BlacklistDoesNotPreventExporting) {
 
 #if !defined(OS_ANDROID)
 TEST_F(PasswordManagerPresenterTest, TestRequestPlaintextPassword) {
-  base::HistogramTester histogram_tester_;
+  base::HistogramTester histogram_tester;
   autofill::PasswordForm form =
       AddPasswordEntry(GURL(kExampleCom), kUsername, kPassword);
 
@@ -400,8 +400,30 @@ TEST_F(PasswordManagerPresenterTest, TestRequestPlaintextPassword) {
       sort_key, password_manager::PlaintextReason::kView,
       password_callback.Get());
 
-  histogram_tester_.ExpectUniqueSample(
+  histogram_tester.ExpectUniqueSample(
       kHistogramName, password_manager::metrics_util::ACCESS_PASSWORD_VIEWED,
+      1);
+}
+
+TEST_F(PasswordManagerPresenterTest, TestRequestPlaintextPasswordEdit) {
+  base::HistogramTester histogram_tester;
+  autofill::PasswordForm form =
+      AddPasswordEntry(GURL(kExampleCom), kUsername, kPassword);
+
+  EXPECT_CALL(GetUIController(), SetPasswordList(SizeIs(1)));
+  EXPECT_CALL(GetUIController(), SetPasswordExceptionList(IsEmpty()));
+  UpdatePasswordLists();
+  base::MockOnceCallback<void(base::Optional<base::string16>)>
+      password_callback;
+  EXPECT_CALL(password_callback,
+              Run(testing::Eq(base::ASCIIToUTF16(kPassword))));
+  std::string sort_key = password_manager::CreateSortKey(form);
+  GetUIController().GetPasswordManagerPresenter()->RequestPlaintextPassword(
+      sort_key, password_manager::PlaintextReason::kEdit,
+      password_callback.Get());
+
+  histogram_tester.ExpectUniqueSample(
+      kHistogramName, password_manager::metrics_util::ACCESS_PASSWORD_EDITED,
       1);
 }
 #endif

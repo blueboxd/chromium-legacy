@@ -527,13 +527,16 @@ void TabStripUIHandler::HandleGetThemeColors(const base::ListValue* args) {
   colors.SetString("--tabstrip-tab-background-color",
                    color_utils::SkColorToRgbaString(
                        embedder_->GetColor(ThemeProperties::COLOR_TOOLBAR)));
-  colors.SetString("--tabstrip-tab-text-color",
-                   color_utils::SkColorToRgbaString(
-                       embedder_->GetColor(ThemeProperties::COLOR_TAB_TEXT)));
-  colors.SetString("--tabstrip-tab-separator-color",
-                   color_utils::SkColorToRgbaString(SkColorSetA(
-                       embedder_->GetColor(ThemeProperties::COLOR_TAB_TEXT),
-                       /* 16% opacity */ 0.16 * 255)));
+  colors.SetString(
+      "--tabstrip-tab-text-color",
+      color_utils::SkColorToRgbaString(embedder_->GetColor(
+          ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE)));
+  colors.SetString(
+      "--tabstrip-tab-separator-color",
+      color_utils::SkColorToRgbaString(SkColorSetA(
+          embedder_->GetColor(
+              ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE),
+          /* 16% opacity */ 0.16 * 255)));
 
   colors.SetString("--tabstrip-tab-loading-spinning-color",
                    color_utils::SkColorToRgbaString(embedder_->GetColor(

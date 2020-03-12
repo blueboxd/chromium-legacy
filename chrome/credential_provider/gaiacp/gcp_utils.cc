@@ -709,11 +709,17 @@ HRESULT LookupLocalizedNameForWellKnownSid(WELL_KNOWN_SID_TYPE sid_type,
   return LookupLocalizedNameBySid(well_known_sid, localized_name);
 }
 
-bool VerifyStartupSentinel() {
+bool WriteToStartupSentinel() {
   // Always try to write to the startup sentinel file. If writing or opening
   // fails for any reason (file locked, no access etc) consider this a failure.
   // If no sentinel file path can be found this probably means that we are
   // running in a unit test so just let the verification pass in this case.
+  // Each process will only write once to startup sentinel file.
+
+  static volatile long sentinel_initialized = 0;
+  if (::InterlockedCompareExchange(&sentinel_initialized, 1, 0))
+    return true;
+
   base::FilePath startup_sentinel_path =
       GetStartupSentinelLocation(TEXT(CHROME_VERSION_STRING));
   if (!startup_sentinel_path.empty()) {

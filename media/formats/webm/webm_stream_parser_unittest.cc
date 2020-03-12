@@ -32,8 +32,8 @@ class WebMStreamParserTest : public testing::Test {
     scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile(filename);
     parser_.reset(new WebMStreamParser());
     Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb =
-        base::Bind(&WebMStreamParserTest::OnEncryptedMediaInitData,
-                   base::Unretained(this));
+        base::BindRepeating(&WebMStreamParserTest::OnEncryptedMediaInitData,
+                            base::Unretained(this));
 
     EXPECT_CALL(*this, InitCB(_));
     EXPECT_CALL(*this, NewMediaSegmentCB()).Times(testing::AnyNumber());

@@ -421,20 +421,19 @@ PaymentRequestEventDataPtr ConvertPaymentRequestEventDataFromJavaToNative(
 static void JNI_ServiceWorkerPaymentAppBridge_GetAllPaymentApps(
     JNIEnv* env,
     const JavaParamRef<jobject>& jorigin,
-    const JavaParamRef<jobject>& jweb_contents,
+    const JavaParamRef<jobject>& jrender_frame_host,
     const JavaParamRef<jobjectArray>& jmethod_data,
     jboolean jmay_crawl_for_installable_payment_apps,
     const JavaParamRef<jobject>& jcallback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromJavaRenderFrameHost(jrender_frame_host);
   content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(jweb_contents);
+      content::WebContents::FromRenderFrameHost(render_frame_host);
 
   payments::ServiceWorkerPaymentAppFinder::GetInstance()->GetAllPaymentApps(
-      url::Origin::FromJavaObject(jorigin),
-      // TODO(crbug.com/1055360): plumb the RenderFrameHost from Java side.
-      nullptr, /* initiator_render_frame_host */
-      web_contents,
+      url::Origin::FromJavaObject(jorigin), render_frame_host, web_contents,
       WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()),
           ServiceAccessType::EXPLICIT_ACCESS),

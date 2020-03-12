@@ -227,11 +227,6 @@ class PasswordStore : protected PasswordStoreSync,
   // The request will be cancelled if the consumer is destroyed.
   virtual void GetAutofillableLogins(PasswordStoreConsumer* consumer);
 
-  // Gets the complete list of PasswordForms that are blacklist entries and
-  // notifies |consumer| on completion. The request will be cancelled if the
-  // consumer is destroyed.
-  virtual void GetBlacklistLogins(PasswordStoreConsumer* consumer);
-
   // Gets the complete list of PasswordForms (regardless of their blacklist
   // status) and notify |consumer| on completion. The request will be cancelled
   // if the consumer is destroyed.

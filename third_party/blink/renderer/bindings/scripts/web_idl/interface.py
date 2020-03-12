@@ -497,10 +497,7 @@ class Stringifier(WithOwner, WithDebugInfo):
 class Iterable(WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-iterable"""
 
-    def __init__(self,
-                 key_type=None,
-                 value_type=None,
-                 debug_info=None):
+    def __init__(self, key_type=None, value_type=None, debug_info=None):
         assert key_type is None or isinstance(key_type, IdlType)
         # iterable is declared in either form of
         #     iterable<value_type>
@@ -571,10 +568,7 @@ class Maplike(WithDebugInfo):
 class Setlike(WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-setlike"""
 
-    def __init__(self,
-                 value_type,
-                 is_readonly=False,
-                 debug_info=None):
+    def __init__(self, value_type, is_readonly=False, debug_info=None):
         assert isinstance(value_type, IdlType)
         assert isinstance(is_readonly, bool)
 

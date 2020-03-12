@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 typemaps = [
-  "//media/capture/mojom/video_capture_types_for_blink.typemap",
+  "//media/capture/mojom/video_capture_types.typemap",
   "//media/mojo/mojom/audio_parameters.typemap",
   "//services/network/public/cpp/http_request_headers.typemap",
   "//services/network/public/cpp/ip_address.typemap",

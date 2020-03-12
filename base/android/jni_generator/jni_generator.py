@@ -705,6 +705,14 @@ RE_DISABLED_FEATURES = re.compile(
 
 RE_BANNED_FEATURES = re.compile(r'^Features\.')
 
+RE_BANNED_IMPORTS = re.compile(r'(import (?:'
+                               r'org\.junit\.Rule|'
+                               r'org\.junit\.Test|'
+                               r'org\.junit\.runner|'
+                               r'org\.junit\.Before|'
+                               r'org\.junit\.After|'
+                               r'org\.robolectric))')
+
 RE_FEATURE_STRING = r'[^"]*"(.*)";'
 
 # Removes empty lines that are indented (i.e. start with 2x spaces).
@@ -748,7 +756,8 @@ def _GetFeaturesString(features_match, feature_list_file):
 def ExtractCalledByNatives(jni_params,
                            contents,
                            always_mangle,
-                           feature_list_file=None):
+                           feature_list_file=None,
+                           fully_qualified_class=""):
   """Parses all methods annotated with @CalledByNative.
 
   Args:
@@ -766,6 +775,7 @@ def ExtractCalledByNatives(jni_params,
     ParseError: if unable to parse.
   """
   called_by_natives = []
+  checked_banned_imports = False
   for match in re.finditer(RE_CALLED_BY_NATIVE, contents):
     cbn = None
     enabled_features = None
@@ -780,10 +790,20 @@ def ExtractCalledByNatives(jni_params,
       if re.match(RE_BANNED_FEATURES, value):
         raise ParseError(
             '@Features.EnableFeatures will not work, please use '
-            '@NativeJavaTestFeatures.Enable("MyFeature") instead.', value)
+            '@NativeJavaTestFeatures.Enable("MyFeature") instead.',
+            fully_qualified_class, value)
     if not cbn:
       continue
     java_test = 'JavaTest' in cbn.group('JavaTest')
+    if java_test and not checked_banned_imports:
+      checked_banned_imports = True
+      imports = re.search(RE_BANNED_IMPORTS, contents)
+      if imports:
+        raise ParseError(
+            'Most junit and robolectric features do not work for native java '
+            'unittests (asserts are okay).', fully_qualified_class,
+            imports.group(1))
+
 
     enabled_string = _GetFeaturesString(enabled_features, feature_list_file)
     disabled_string = _GetFeaturesString(disabled_features, feature_list_file)
@@ -791,7 +811,7 @@ def ExtractCalledByNatives(jni_params,
     if not java_test and (enabled_string or disabled_string):
       raise ParseError(
           '@NativeJavaTestFeatures requires @CalledByNativeJavaTest to work.',
-          match.group('annotations'))
+          fully_qualified_class, match.group('annotations'))
 
     return_type = match.group('return_type')
     name = match.group('name')
@@ -822,7 +842,7 @@ def ExtractCalledByNatives(jni_params,
   for line1, line2 in zip(unmatched_lines, unmatched_lines[1:]):
     if '@CalledByNative' in line1:
       raise ParseError('could not parse @CalledByNative method signature',
-                       line1, line2)
+                       fully_qualified_class, line1, line2)
   return MangleCalledByNatives(jni_params, called_by_natives, always_mangle)
 
 
@@ -1039,9 +1059,9 @@ class JNIFromJavaSource(object):
     self.jni_params.ExtractImportsAndInnerClasses(contents)
     jni_namespace = ExtractJNINamespace(contents) or options.namespace
     natives = ExtractNatives(contents, options.ptr_type)
-    called_by_natives = ExtractCalledByNatives(self.jni_params, contents,
-                                               options.always_mangle,
-                                               options.feature_list_file)
+    called_by_natives = ExtractCalledByNatives(
+        self.jni_params, contents, options.always_mangle,
+        options.feature_list_file, fully_qualified_class)
 
     natives += ProxyHelpers.ExtractStaticProxyNatives(
         fully_qualified_class, contents, options.ptr_type,

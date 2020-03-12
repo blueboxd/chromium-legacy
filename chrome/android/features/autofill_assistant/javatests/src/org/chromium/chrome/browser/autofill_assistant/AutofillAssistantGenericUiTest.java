@@ -18,6 +18,8 @@ import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withTagValue;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO;
+import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -26,6 +28,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.iterableWithSize;
 
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.isImportantForAccessibility;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
@@ -1132,5 +1135,66 @@ public class AutofillAssistantGenericUiTest {
                                                                                 .setMonth(7)
                                                                                 .setDay(13))))
                                 .build()));
+    }
+
+    /**
+     * Tests custom content descriptions for views.
+     */
+    @Test
+    @MediumTest
+    public void testContentDescription() {
+        GenericUserInterfaceProto genericUserInterface =
+                (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
+                        .setRootView(ViewProto.newBuilder().setViewContainer(
+                                ViewContainerProto.newBuilder()
+                                        .setLinearLayout(
+                                                LinearLayoutProto.newBuilder().setOrientation(
+                                                        LinearLayoutProto.Orientation.VERTICAL))
+                                        .addViews(ViewProto.newBuilder().setTextView(
+                                                TextViewProto.newBuilder().setText(
+                                                        "auto-generated-desc")))
+                                        .addViews(
+                                                ViewProto.newBuilder()
+                                                        .setTextView(
+                                                                TextViewProto.newBuilder().setText(
+                                                                        "no-desc"))
+                                                        .setAttributes(
+                                                                ViewAttributesProto.newBuilder()
+                                                                        .setContentDescription("")))
+                                        .addViews(
+                                                ViewProto.newBuilder()
+                                                        .setTextView(
+                                                                TextViewProto.newBuilder().setText(
+                                                                        "custom-desc"))
+                                                        .setAttributes(
+                                                                ViewAttributesProto.newBuilder()
+                                                                        .setContentDescription(
+                                                                                "custom")))))
+                        .build();
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowGenericUi(ShowGenericUiProto.newBuilder().setGenericUserInterface(
+                                 genericUserInterface))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("auto-generated-desc"), isCompletelyDisplayed());
+
+        onView(withText("auto-generated-desc"))
+                .check(matches(isImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_YES)));
+        onView(withText("no-desc"))
+                .check(matches(isImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO)));
+        onView(withText("custom-desc")).check(matches(withContentDescription("custom")));
     }
 }

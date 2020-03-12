@@ -908,5 +908,37 @@ TEST_F(AppActivityRegistryTest, AvoidReduntantNotifications) {
   registry().UpdateAppLimits(app_limits);
 }
 
+TEST_F(AppActivityRegistryTest, AvoidRedundantCallsToPauseApp) {
+  AppStateObserverMock state_observer_mock;
+  registry().AddAppStateObserver(&state_observer_mock);
+
+  const base::TimeDelta kOneHour = base::TimeDelta::FromHours(1);
+  registry().SetAppLimit(
+      kApp1, AppLimit(AppRestriction::kTimeLimit, kOneHour, base::Time::Now()));
+
+  EXPECT_CALL(state_observer_mock,
+              OnAppLimitReached(kApp1, base::TimeDelta::FromHours(1),
+                                /* was_active */ true))
+      .Times(1);
+  CreateAppActivityForApp(kApp1, kOneHour);
+  EXPECT_TRUE(registry().IsAppTimeLimitReached(kApp1));
+
+  aura::Window* app1_window = GetWindowForApp(kApp1);
+  EXPECT_CALL(state_observer_mock,
+              OnAppLimitReached(kApp1, base::TimeDelta::FromHours(1),
+                                /* was_active */ true))
+      .Times(0);
+  registry().OnAppActive(kApp1, app1_window, base::Time::Now());
+
+  aura::Window* new_app1_window = CreateWindowForApp(kApp1);
+  EXPECT_CALL(state_observer_mock,
+              OnAppLimitReached(kApp1, base::TimeDelta::FromHours(1),
+                                /* was_active */ true))
+      .Times(1);
+  registry().OnAppActive(kApp1, new_app1_window, base::Time::Now());
+
+  registry().OnAppDestroyed(kApp1, new_app1_window, base::Time::Now());
+}
+
 }  // namespace app_time
 }  // namespace chromeos

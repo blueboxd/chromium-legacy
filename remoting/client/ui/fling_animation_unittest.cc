@@ -32,7 +32,8 @@ class FlingAnimationTest : public testing::Test {
 
   FlingAnimation fling_animation_{
       kFlingTimeConstant,
-      base::Bind(&FlingAnimationTest::OnDeltaChanged, base::Unretained(this))};
+      base::BindRepeating(&FlingAnimationTest::OnDeltaChanged,
+                          base::Unretained(this))};
 
   float received_dx_ = 0.f;
   float received_dy_ = 0.f;

@@ -11,6 +11,7 @@ namespace password_manager {
 enum class ReauthPurpose {
   VIEW_PASSWORD,  // A password value will be made visible on the UI
   COPY_PASSWORD,  // A password value will be copied into the clipboard
+  EDIT_PASSWORD,  // A password value will be edited in the UI
   EXPORT,         // Password values will be written to the filesystem without
                   // protection
 };

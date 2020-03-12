@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill_assistant.generic_ui;
 
+import static org.chromium.chrome.browser.autofill_assistant.AssistantAccessibilityUtils.setAccessibility;
+
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,7 +33,7 @@ public class AssistantViewFactory {
     @CalledByNative
     public static void setViewAttributes(View view, Context context, int paddingStart,
             int paddingTop, int paddingEnd, int paddingBottom,
-            @Nullable AssistantDrawable background) {
+            @Nullable AssistantDrawable background, @Nullable String contentDescription) {
         view.setPaddingRelative(AssistantDimension.getPixelSizeDp(context, paddingStart),
                 AssistantDimension.getPixelSizeDp(context, paddingTop),
                 AssistantDimension.getPixelSizeDp(context, paddingEnd),
@@ -43,6 +45,7 @@ public class AssistantViewFactory {
                 }
             });
         }
+        setAccessibility(view, contentDescription);
     }
 
     /**

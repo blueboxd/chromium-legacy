@@ -593,12 +593,10 @@ class MockDnsTransactionFactory::MockDohProbeRunner : public DnsProbeRunner {
       factory_->running_doh_probe_runners_.erase(this);
   }
 
-  void Start() override {
+  void Start(bool network_change) override {
     DCHECK(factory_);
     factory_->running_doh_probe_runners_.insert(this);
   }
-
-  void RestartForNetworkChange() override { Start(); }
 
   base::TimeDelta GetDelayUntilNextProbeForTest(
       size_t doh_server_index) const override {
@@ -721,6 +719,11 @@ bool MockDnsClient::SetConfigOverrides(DnsConfigOverrides config_overrides) {
   effective_config_ = BuildEffectiveConfig();
   session_ = BuildSession();
   return before != effective_config_;
+}
+
+void MockDnsClient::ReplaceCurrentSession() {
+  // Noop if no current effective config.
+  session_ = BuildSession();
 }
 
 DnsSession* MockDnsClient::GetCurrentSession() {

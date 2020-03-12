@@ -144,8 +144,8 @@ void MojoRendererService::SetCdm(int32_t cdm_id, SetCdmCallback callback) {
   DCHECK(cdm_context);
 
   renderer_->SetCdm(cdm_context,
-                    base::Bind(&MojoRendererService::OnCdmAttached, weak_this_,
-                               base::Passed(&callback)));
+                    base::BindOnce(&MojoRendererService::OnCdmAttached,
+                                   weak_this_, base::Passed(&callback)));
 }
 
 void MojoRendererService::OnError(PipelineStatus error) {

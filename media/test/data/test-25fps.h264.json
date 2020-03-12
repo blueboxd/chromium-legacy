@@ -265,6 +265,8 @@
     "# Intel - VA decode to NV12, EGLImage CSC",
     "82a05426b6ef227e5147eb7b710423fb",
     "d1ba5f08cdbcc39ee24d99acaf9477ea",
+    "# Intel - Broadwell - guado and rikku",
+    "e67adcfcb6985b47b0faf29168a56766",
     "# TODO(hiroh): Update X11 value",
     "# Intel - Haswell - X11",
     "# Intel - Ivy Bridge - X11",

@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "base/time/time_override.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -95,7 +96,9 @@ class ChromiumFileLock : public FileLock {
 class Retrier {
  public:
   Retrier(MethodID method, RetrierProvider* provider)
-      : start_(base::TimeTicks::Now()),
+      // TODO(crbug.com/1059965): figure out a better way to handle time for
+      // tests.
+      : start_(base::subtle::TimeTicksNowIgnoringOverride()),
         limit_(start_ + base::TimeDelta::FromMilliseconds(
                             provider->MaxRetryTimeMillis())),
         last_(start_),
@@ -118,7 +121,9 @@ class Retrier {
     last_error_ = last_error;
     if (last_ < limit_) {
       base::PlatformThread::Sleep(time_to_sleep_);
-      last_ = base::TimeTicks::Now();
+      // TODO(crbug.com/1059965): figure out a better way to handle time for
+      // tests.
+      last_ = base::subtle::TimeTicksNowIgnoringOverride();
       return true;
     }
     success_ = false;

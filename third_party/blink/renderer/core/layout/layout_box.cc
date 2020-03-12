@@ -2698,8 +2698,7 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   bool is_exclusion_space_equal =
       new_space.ExclusionSpace() == old_space.ExclusionSpace();
 
-  bool is_new_formatting_context =
-      physical_fragment.IsBlockFormattingContextRoot();
+  bool is_new_formatting_context = physical_fragment.IsFormattingContextRoot();
 
   // If a node *doesn't* establish a new formatting context it may be affected
   // by floats, or clearance.

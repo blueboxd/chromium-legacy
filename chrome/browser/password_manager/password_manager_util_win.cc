@@ -369,6 +369,10 @@ bool AuthenticateUserOld(gfx::NativeWindow window,
       password_prompt = l10n_util::GetStringUTF16(
           IDS_PASSWORDS_PAGE_COPY_AUTHENTICATION_PROMPT);
       break;
+    case password_manager::ReauthPurpose::EDIT_PASSWORD:
+      password_prompt = l10n_util::GetStringUTF16(
+          IDS_PASSWORDS_PAGE_EDIT_AUTHENTICATION_PROMPT);
+      break;
     case password_manager::ReauthPurpose::EXPORT:
       password_prompt = l10n_util::GetStringUTF16(
           IDS_PASSWORDS_PAGE_EXPORT_AUTHENTICATION_PROMPT);
@@ -492,6 +496,10 @@ bool AuthenticateUserNew(gfx::NativeWindow window,
     case password_manager::ReauthPurpose::COPY_PASSWORD:
       password_prompt = l10n_util::GetStringUTF16(
           IDS_PASSWORDS_PAGE_COPY_AUTHENTICATION_PROMPT);
+      break;
+    case password_manager::ReauthPurpose::EDIT_PASSWORD:
+      password_prompt = l10n_util::GetStringUTF16(
+          IDS_PASSWORDS_PAGE_EDIT_AUTHENTICATION_PROMPT);
       break;
     case password_manager::ReauthPurpose::EXPORT:
       password_prompt = l10n_util::GetStringUTF16(

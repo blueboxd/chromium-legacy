@@ -147,12 +147,15 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
                                 ModelTypeHistogramValue(type_));
     }
     ClearMetadataAndResetState();
+    model_type_state = entity_tracker_->model_type_state();
 
     // The model is still ready to sync (with the same |bridge_|) - replay
     // the initialization.
     model_ready_to_sync_ = true;
     // Notify the bridge sync is starting to simulate an enable event.
     bridge_->OnSyncStarting(activation_request_);
+
+    DCHECK(!model_type_state.initial_sync_done());
   }
 
   // Cache GUID verification earlier above guarantees the user is the same.

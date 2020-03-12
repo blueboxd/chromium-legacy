@@ -25,12 +25,10 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """Validate extended attributes.
 
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler#TOC-Extended-attribute-validation
 """
-
 
 import os.path
 import re
@@ -41,6 +39,7 @@ EXTENDED_ATTRIBUTES_RELATIVE_PATH = os.path.join('bindings',
                                                  'IDLExtendedAttributes.txt')
 EXTENDED_ATTRIBUTES_FILENAME = os.path.join(source_path,
                                             EXTENDED_ATTRIBUTES_RELATIVE_PATH)
+
 
 class IDLInvalidExtendedAttributeError(Exception):
     pass
@@ -68,7 +67,6 @@ class IDLExtendedAttributeValidator(object):
             self.validate_extended_attributes_node(callback_function)
             for argument in callback_function.arguments:
                 self.validate_extended_attributes_node(argument)
-
 
     def validate_extended_attributes_node(self, node):
         for name, values_string in node.extended_attributes.iteritems():
@@ -106,7 +104,9 @@ def read_extended_attributes_file():
                 if not line or line.startswith('#'):
                     continue
                 name, _, values_string = map(str.strip, line.partition('='))
-                value_list = [value.strip() for value in values_string.split('|')]
+                value_list = [
+                    value.strip() for value in values_string.split('|')
+                ]
                 yield name, value_list
 
     valid_extended_attributes = {}
@@ -114,6 +114,6 @@ def read_extended_attributes_file():
         if not value_list:
             valid_extended_attributes[name] = set([None])
             continue
-        valid_extended_attributes[name] = set([value if value else None
-                                               for value in value_list])
+        valid_extended_attributes[name] = set(
+            [value if value else None for value in value_list])
     return valid_extended_attributes

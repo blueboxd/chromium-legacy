@@ -141,7 +141,7 @@ TabManager::TabManager(TabLoadTracker* tab_load_tracker)
     : state_transitions_callback_(
           base::BindRepeating(&TabManager::PerformStateTransitions,
                               base::Unretained(this))),
-      browser_tab_strip_tracker_(this, nullptr, nullptr),
+      browser_tab_strip_tracker_(this, nullptr),
       is_session_restore_loading_tabs_(false),
       restored_tab_count_(0u),
       background_tab_loading_mode_(BackgroundTabLoadingMode::kStaggered),

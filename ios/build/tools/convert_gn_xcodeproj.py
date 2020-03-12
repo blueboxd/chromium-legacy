@@ -114,20 +114,69 @@ def UpdateProductsProject(file_input, file_output, configurations, root_dir):
   for object_id in objects_to_remove:
     del project.objects[object_id]
 
-  AddMarkdownToProject(project, root_dir, json_data['rootObject'])
+  source = GetOrCreateRootGroup(project, json_data['rootObject'], 'Source')
+  AddMarkdownToProject(project, root_dir, source)
+  SortFileReferencesByName(project, source)
 
   objects = collections.OrderedDict(sorted(project.objects.iteritems()))
   WriteXcodeProject(file_output, json.dumps(json_data))
 
 
-def AddMarkdownToProject(project, root_dir, root_object):
+def CreateGroup(project, parent_group, group_name, path=None):
+  group_object = {
+    'children': [],
+    'isa': 'PBXGroup',
+    'name': group_name,
+    'sourceTree': '<group>',
+  }
+  if path is not None:
+    group_object['path'] = path
+  parent_group_name = parent_group.get('name', '')
+  group_object_key = project.AddObject(parent_group_name, group_object)
+  parent_group['children'].append(group_object_key)
+  return group_object
+
+
+def GetOrCreateRootGroup(project, root_object, group_name):
+  main_group = project.objects[project.objects[root_object]['mainGroup']]
+  for child_key in main_group['children']:
+    child = project.objects[child_key]
+    if child['name'] == group_name:
+      return child
+  return CreateGroup(project, main_group, group_name, path='../..')
+
+
+def ObjectComparatorFactory(objects):
+  def CompareObjects(ref1, ref2):
+    object1 = objects[ref1]
+    object2 = objects[ref2]
+    if object1['isa'] != object2['isa']:
+      return -cmp(object1['isa'], object2['isa'])
+    return cmp(object1['name'], object2['name'])
+  return CompareObjects
+
+
+def SortFileReferencesByName(project, group_object):
+  comparator = ObjectComparatorFactory(project.objects)
+  SortFileReferencesByNameWithComparator(project, group_object, comparator)
+
+
+def SortFileReferencesByNameWithComparator(project, group_object, comparator):
+  group_object['children'].sort(comparator)
+  for key in group_object['children']:
+    child = project.objects[key]
+    if child['isa'] == 'PBXGroup':
+      SortFileReferencesByNameWithComparator(project, child, comparator)
+
+
+def AddMarkdownToProject(project, root_dir, group_object):
   list_files_cmd = ['git', '-C', root_dir, 'ls-files', '*.md']
   paths = subprocess.check_output(list_files_cmd).splitlines()
   ios_internal_dir = os.path.join(root_dir, 'ios_internal')
   if os.path.exists(ios_internal_dir):
     list_files_cmd = ['git', '-C', ios_internal_dir, 'ls-files', '*.md']
     ios_paths = subprocess.check_output(list_files_cmd).splitlines()
-    paths.extend(["ios_internal/" + path for path in ios_paths])
+    paths.extend([os.path.join("ios_internal", path) for path in ios_paths])
   for path in paths:
     new_markdown_entry = {
       "fileEncoding": "4",
@@ -138,19 +187,16 @@ def AddMarkdownToProject(project, root_dir, root_object):
       "sourceTree": "<group>"
     }
     new_markdown_entry_id = project.AddObject('sources', new_markdown_entry)
-    folder = GetFolderForPath(project, root_object, os.path.dirname(path))
+    folder = GetFolderForPath(project, group_object, os.path.dirname(path))
     folder['children'].append(new_markdown_entry_id)
 
 
-def GetFolderForPath(project, rootObject, path):
+def GetFolderForPath(project, group_object, path):
   objects = project.objects
-  # 'Sources' is always the first child of
-  # project->rootObject->mainGroup->children.
-  root = objects[objects[objects[rootObject]['mainGroup']]['children'][0]]
   if not path:
-    return root
+    return group_object
   for folder in path.split('/'):
-    children = root['children']
+    children = group_object['children']
     new_root = None
     for child in children:
       if objects[child]['isa'] == 'PBXGroup' and \
@@ -160,18 +206,9 @@ def GetFolderForPath(project, rootObject, path):
     if not new_root:
       # If the folder isn't found we could just cram it into the leaf existing
       # folder, but that leads to folders with tons of README.md inside.
-      new_group =  {
-        "children": [
-        ],
-        "isa": "PBXGroup",
-        "name": folder,
-        "sourceTree": "<group>"
-      }
-      new_group_id = project.AddObject('sources', new_group)
-      children.append(new_group_id)
-      new_root = objects[new_group_id]
-    root = new_root
-  return root
+      new_root = CreateGroup(project, group_object, folder)
+    group_object = new_root
+  return group_object
 
 
 def DisableNewBuildSystem(output_dir):

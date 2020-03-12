@@ -491,8 +491,8 @@ TEST_F(PinRequestWidgetTest, WidgetResizingInTabletMode) {
   ASSERT_TRUE(widget);
   PinRequestView* view = PinRequestWidget::TestApi(widget).pin_request_view();
 
-  constexpr auto kClamshellModeSize = gfx::Size(340, 340);
-  constexpr auto kTabletModeSize = gfx::Size(340, 580);
+  constexpr auto kClamshellModeSize = gfx::Size(340, 308);
+  constexpr auto kTabletModeSize = gfx::Size(340, 532);
 
   const auto widget_size = [&view]() -> gfx::Size {
     return view->GetWidget()->GetWindowBoundsInScreen().size();

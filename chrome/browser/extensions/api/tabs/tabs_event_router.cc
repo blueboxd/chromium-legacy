@@ -163,15 +163,17 @@ void TabsEventRouter::TabEntry::WebContentsDestroyed() {
 }
 
 TabsEventRouter::TabsEventRouter(Profile* profile)
-    : profile_(profile), browser_tab_strip_tracker_(this, this, this) {
+    : profile_(profile), browser_tab_strip_tracker_(this, this) {
   DCHECK(!profile->IsOffTheRecord());
 
+  BrowserList::AddObserver(this);
   browser_tab_strip_tracker_.Init();
 
   tab_manager_scoped_observer_.Add(g_browser_process->GetTabManager());
 }
 
 TabsEventRouter::~TabsEventRouter() {
+  BrowserList::RemoveObserver(this);
 }
 
 bool TabsEventRouter::ShouldTrackBrowser(Browser* browser) {

@@ -89,6 +89,10 @@ class CORE_EXPORT ContentSecurityPolicyDelegate : public GarbageCollectedMixin {
   // See https://w3c.github.io/webappsec-csp/#policy-self-origin.
   virtual const SecurityOrigin* GetSecurityOrigin() = 0;
 
+  // Returns the SecureContextMode for the context to which the delegate is
+  // bound.
+  virtual SecureContextMode GetSecureContextMode() = 0;
+
   // Returns the URL this content security policy is bound to.
   // Used for https://w3c.github.io/webappsec-csp/#violation-url and so.
   // Note: Url() is used for several purposes that are specced slightly
@@ -386,6 +390,7 @@ class CORE_EXPORT ContentSecurityPolicy final
   void ReportMetaOutsideHead(const String&);
   void ReportValueForEmptyDirective(const String& directive_name,
                                     const String& value);
+  void ReportNonsecureTrustedTypes();
 
   // If a frame is passed in, the report will be sent using it as a context. If
   // no frame is passed in, the report will be sent via this object's

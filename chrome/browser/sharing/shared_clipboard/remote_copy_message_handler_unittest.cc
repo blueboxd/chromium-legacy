@@ -170,8 +170,9 @@ TEST_F(RemoteCopyMessageHandlerTest, IsImageSourceAllowed) {
       IsImageSourceAllowed(image_url, "https://bar.com,https://foo.com"));
 }
 
+// Times out on all platforms. https://crbug.com/1060869
 TEST_F(RemoteCopyMessageHandlerTest,
-       NoProgressNotificationWithoutProgressFlag) {
+       DISABLED_NoProgressNotificationWithoutProgressFlag) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeaturesAndParameters(
       {{kRemoteCopyReceiver,
@@ -184,7 +185,9 @@ TEST_F(RemoteCopyMessageHandlerTest,
   EXPECT_FALSE(HasProgressNotification());
 }
 
-TEST_F(RemoteCopyMessageHandlerTest, ProgressNotificationWithProgressFlag) {
+// Times out on all platforms. https://crbug.com/1060869
+TEST_F(RemoteCopyMessageHandlerTest,
+       DISABLED_ProgressNotificationWithProgressFlag) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeaturesAndParameters(
       {{kRemoteCopyReceiver, {{kRemoteCopyAllowedOrigins.name, kTestImageUrl}}},
@@ -207,7 +210,9 @@ TEST_F(RemoteCopyMessageHandlerTest, ProgressNotificationWithProgressFlag) {
   EXPECT_EQ(-1, notification.progress());
 }
 
-TEST_F(RemoteCopyMessageHandlerTest, ImageNotificationWithoutProgressFlag) {
+// Times out on all platforms. https://crbug.com/1060869
+TEST_F(RemoteCopyMessageHandlerTest,
+       DISABLED_ImageNotificationWithoutProgressFlag) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeaturesAndParameters(
       {{kRemoteCopyReceiver,
@@ -232,7 +237,9 @@ TEST_F(RemoteCopyMessageHandlerTest, ImageNotificationWithoutProgressFlag) {
   EXPECT_FALSE(notification.image().IsEmpty());
 }
 
-TEST_F(RemoteCopyMessageHandlerTest, ImageNotificationWithProgressFlag) {
+// Times out on all platforms. https://crbug.com/1060869
+TEST_F(RemoteCopyMessageHandlerTest,
+       DISABLED_ImageNotificationWithProgressFlag) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeaturesAndParameters(
       {{kRemoteCopyReceiver, {{kRemoteCopyAllowedOrigins.name, kTestImageUrl}}},
@@ -262,7 +269,8 @@ TEST_F(RemoteCopyMessageHandlerTest, ImageNotificationWithProgressFlag) {
   EXPECT_FALSE(notification.image().IsEmpty());
 }
 
-TEST_F(RemoteCopyMessageHandlerTest, CancelProgressNotification) {
+// Times out on all platforms. https://crbug.com/1060869
+TEST_F(RemoteCopyMessageHandlerTest, DISABLED_CancelProgressNotification) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeaturesAndParameters(
       {{kRemoteCopyReceiver, {{kRemoteCopyAllowedOrigins.name, kTestImageUrl}}},
@@ -288,7 +296,8 @@ TEST_F(RemoteCopyMessageHandlerTest, CancelProgressNotification) {
   EXPECT_FALSE(HasImageNotification());
 }
 
-TEST_F(RemoteCopyMessageHandlerTest, DismissProgressNotification) {
+// Times out on all platforms. https://crbug.com/1060869
+TEST_F(RemoteCopyMessageHandlerTest, DISABLED_DismissProgressNotification) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeaturesAndParameters(
       {{kRemoteCopyReceiver, {{kRemoteCopyAllowedOrigins.name, kTestImageUrl}}},

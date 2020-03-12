@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "net/cert/x509_certificate.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 
@@ -24,10 +25,6 @@ class Value;
 
 namespace content {
 class BrowserContext;
-}
-
-namespace net {
-class X509Certificate;
 }
 
 // This class provides the C++ side of the test certificate provider extension's
@@ -42,13 +39,12 @@ class X509Certificate;
 class TestCertificateProviderExtension final
     : public content::NotificationObserver {
  public:
+  // Returns the Spki of the certificate provided by the extension.
+  static std::string GetCertificateSpki();
+
   TestCertificateProviderExtension(content::BrowserContext* browser_context,
                                    const std::string& extension_id);
   ~TestCertificateProviderExtension() override;
-
-  const scoped_refptr<net::X509Certificate>& certificate() const {
-    return certificate_;
-  }
 
   // Sets the PIN that will be required when doing every signature request.
   // (By default, no PIN is requested.)

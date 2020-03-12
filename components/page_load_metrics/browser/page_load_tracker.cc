@@ -14,6 +14,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "components/page_load_metrics/browser/page_load_metrics_embedder_interface.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/browser/navigation_details.h"
@@ -479,13 +480,13 @@ void PageLoadTracker::OnCookieChange(const GURL& url,
   }
 }
 
-void PageLoadTracker::OnDomStorageAccessed(const GURL& url,
-                                           const GURL& first_party_url,
-                                           bool local,
-                                           bool blocked_by_policy) {
+void PageLoadTracker::OnStorageAccessed(const GURL& url,
+                                        const GURL& first_party_url,
+                                        bool blocked_by_policy,
+                                        StorageType access_type) {
   for (const auto& observer : observers_) {
-    observer->OnDomStorageAccessed(url, first_party_url, local,
-                                   blocked_by_policy);
+    observer->OnStorageAccessed(url, first_party_url, blocked_by_policy,
+                                access_type);
   }
 }
 

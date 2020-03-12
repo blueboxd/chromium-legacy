@@ -14,14 +14,23 @@ if (is_android) {
 }
 
 group("query_tiles") {
-  public_deps = [ ":public" ]
+  public_deps = [
+    ":factory",
+    ":public",
+  ]
 
   deps = [ "internal" ]
 }
 
 source_set("public") {
-  sources = []
+  sources = [ "tile_service.h" ]
+
   deps = []
+
+  public_deps = [
+    "//base",
+    "//components/keyed_service/core",
+  ]
 
   if (is_android) {
     sources += [
@@ -33,13 +42,27 @@ source_set("public") {
   }
 }
 
+source_set("factory") {
+  sources = [
+    "tile_service_factory.cc",
+    "tile_service_factory.h",
+  ]
+
+  deps = [
+    ":public",
+    "internal:internal",
+  ]
+}
+
 if (is_android) {
   android_library("public_java") {
     sources = [
+      "android/java/src/org/chromium/chrome/browser/query_tiles/QueryTileCoordinator.java",
+      "android/java/src/org/chromium/chrome/browser/query_tiles/QueryTileCoordinatorFactory.java",
       "android/java/src/org/chromium/chrome/browser/query_tiles/Tile.java",
       "android/java/src/org/chromium/chrome/browser/query_tiles/TileProvider.java",
       "android/java/src/org/chromium/chrome/browser/query_tiles/bridges/TileProviderBridge.java",
-      "android/java/src/org/chromium/chrome/browser/query_tiles/list/QueryTileCoordinator.java",
+      "android/java/src/org/chromium/chrome/browser/query_tiles/list/QueryTileCoordinatorImpl.java",
       "android/java/src/org/chromium/chrome/browser/query_tiles/list/TileListModel.java",
       "android/java/src/org/chromium/chrome/browser/query_tiles/list/TileListProperties.java",
       "android/java/src/org/chromium/chrome/browser/query_tiles/list/TileListPropertyViewBinder.java",

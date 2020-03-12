@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/hats/hats_service.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/feature_list.h"
@@ -25,6 +26,8 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/network_change_notifier.h"
 
 constexpr char kHatsSurveyTriggerSatisfaction[] = "satisfaction";
@@ -105,7 +108,32 @@ enum class ShouldShowSurveyReasons {
 }  // namespace
 
 HatsService::SurveyMetadata::SurveyMetadata() = default;
+
 HatsService::SurveyMetadata::~SurveyMetadata() = default;
+
+HatsService::DelayedSurveyTask::DelayedSurveyTask(
+    HatsService* hats_service,
+    const std::string& trigger,
+    content::WebContents* web_contents)
+    : hats_service_(hats_service), trigger_(trigger) {
+  Observe(web_contents);
+}
+
+HatsService::DelayedSurveyTask::~DelayedSurveyTask() = default;
+
+base::WeakPtr<HatsService::DelayedSurveyTask>
+HatsService::DelayedSurveyTask::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
+void HatsService::DelayedSurveyTask::Launch() {
+  hats_service_->LaunchSurveyForWebContents(trigger_, web_contents());
+  hats_service_->RemoveTask(*this);
+}
+
+void HatsService::DelayedSurveyTask::WebContentsDestroyed() {
+  hats_service_->RemoveTask(*this);
+}
 
 HatsService::HatsService(Profile* profile) : profile_(profile) {
   for (auto* survey_feature : survey_features) {
@@ -140,29 +168,41 @@ void HatsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 }
 
 void HatsService::LaunchSurvey(const std::string& trigger) {
-  if (ShouldShowSurvey(trigger)) {
-    Browser* browser = chrome::FindLastActive();
-    // Never show HaTS bubble for Incognito mode.
-    if (browser && browser->is_type_normal() &&
-        profiles::IsRegularOrGuestSession(browser)) {
-      // Incognito mode needs to be enabled to create an off-the-record profile
-      // for HaTS dialog.
-      if (IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) ==
-          IncognitoModePrefs::DISABLED) {
-        UMA_HISTOGRAM_ENUMERATION(
-            kHatsShouldShowSurveyReasonHistogram,
-            ShouldShowSurveyReasons::kNoIncognitoDisabled);
-        return;
-      }
+  if (!ShouldShowSurvey(trigger))
+    return;
+  LaunchSurveyForBrowser(trigger, chrome::FindLastActiveWithProfile(profile_));
+}
 
-      // Checking survey's status could be costly due to a network request, so
-      // we check it at the last.
-      CheckSurveyStatusAndMaybeShow(browser, trigger);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION(kHatsShouldShowSurveyReasonHistogram,
-                                ShouldShowSurveyReasons::kNoNotRegularBrowser);
-    }
+bool HatsService::LaunchDelayedSurvey(const std::string& trigger,
+                                      int timeout_ms) {
+  return base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&HatsService::LaunchSurvey, weak_ptr_factory_.GetWeakPtr(),
+                     trigger),
+      base::TimeDelta::FromMilliseconds(timeout_ms));
+}
+
+bool HatsService::LaunchDelayedSurveyForWebContents(
+    const std::string& trigger,
+    content::WebContents* web_contents,
+    int timeout_ms) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!web_contents)
+    return false;
+  auto result = pending_tasks_.emplace(this, trigger, web_contents);
+  if (!result.second)
+    return false;
+  auto success = base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          &HatsService::DelayedSurveyTask::Launch,
+          const_cast<HatsService::DelayedSurveyTask&>(*(result.first))
+              .GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(timeout_ms));
+  if (!success) {
+    pending_tasks_.erase(result.first);
   }
+  return success;
 }
 
 void HatsService::SetSurveyMetadataForTesting(
@@ -235,6 +275,46 @@ void HatsService::GetSurveyMetadataForTesting(
 void HatsService::SetSurveyCheckerForTesting(
     std::unique_ptr<HatsSurveyStatusChecker> checker) {
   checker_ = std::move(checker);
+}
+
+void HatsService::RemoveTask(const DelayedSurveyTask& task) {
+  pending_tasks_.erase(task);
+}
+
+bool HatsService::HasPendingTasks() {
+  return !pending_tasks_.empty();
+}
+
+void HatsService::LaunchSurveyForWebContents(
+    const std::string& trigger,
+    content::WebContents* web_contents) {
+  if (ShouldShowSurvey(trigger) && web_contents &&
+      web_contents->GetVisibility() == content::Visibility::VISIBLE) {
+    LaunchSurveyForBrowser(trigger,
+                           chrome::FindBrowserWithWebContents(web_contents));
+  }
+}
+
+void HatsService::LaunchSurveyForBrowser(const std::string& trigger,
+                                         Browser* browser) {
+  if (!browser || !browser->is_type_normal() ||
+      !profiles::IsRegularOrGuestSession(browser)) {
+    // Never show HaTS bubble for Incognito mode.
+    UMA_HISTOGRAM_ENUMERATION(kHatsShouldShowSurveyReasonHistogram,
+                              ShouldShowSurveyReasons::kNoNotRegularBrowser);
+    return;
+  }
+  if (IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) ==
+      IncognitoModePrefs::DISABLED) {
+    // Incognito mode needs to be enabled to create an off-the-record profile
+    // for HaTS dialog.
+    UMA_HISTOGRAM_ENUMERATION(kHatsShouldShowSurveyReasonHistogram,
+                              ShouldShowSurveyReasons::kNoIncognitoDisabled);
+    return;
+  }
+  // Checking survey's status could be costly due to a network request, so
+  // we check it at the last.
+  CheckSurveyStatusAndMaybeShow(browser, trigger);
 }
 
 bool HatsService::ShouldShowSurvey(const std::string& trigger) const {

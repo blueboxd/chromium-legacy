@@ -80,30 +80,39 @@ Polymer({
       },
     },
 
-    /** @private {!Map<string, string>} */
-    focusConfig_: {
+    /** @type {!Map<string, (string|Function)>} */
+    focusConfig: {
       type: Object,
-      value() {
-        const map = new Map();
-        // <if expr="use_nss_certs">
-        if (settings.routes.CERTIFICATES) {
-          map.set(settings.routes.CERTIFICATES.path, '#manageCertificates');
-        }
-        // </if>
-
-        if (settings.routes.SECURITY_KEYS) {
-          map.set(
-              settings.routes.SECURITY_KEYS.path,
-              '#security-keys-subpage-trigger');
-        }
-        return map;
-      },
+      observer: 'focusConfigChanged_',
     },
   },
 
   observers: [
     'onSafeBrowsingReportingPrefChange_(prefs.safebrowsing.*)',
   ],
+
+  /*
+   * @param {!Map<string, string>} newConfig
+   * @param {?Map<string, string>} oldConfig
+   * @private
+   */
+  focusConfigChanged_(newConfig, oldConfig) {
+    assert(!oldConfig);
+    // <if expr="use_nss_certs">
+    if (settings.routes.CERTIFICATES) {
+      this.focusConfig.set(settings.routes.CERTIFICATES.path, () => {
+        cr.ui.focusWithoutInk(assert(this.$$('#manageCertificates')));
+      });
+    }
+    // </if>
+
+    if (settings.routes.SECURITY_KEYS) {
+      this.focusConfig.set(settings.routes.SECURITY_KEYS.path, () => {
+        cr.ui.focusWithoutInk(
+            assert(this.$$('#security-keys-subpage-trigger')));
+      });
+    }
+  },
 
   /**
    * @return {string}

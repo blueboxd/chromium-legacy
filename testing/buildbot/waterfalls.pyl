@@ -10,6 +10,8 @@
 
 [
   {
+    'project': 'chrome',
+    'bucket': 'ci',
     'name': 'chrome',
     'machines': {
       'chromeos-arm-generic-cfi-thin-lto-chrome': {
@@ -68,6 +70,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromeos_device_gtests',
+          'isolated_scripts': 'chromeos_remote_device_isolated_tests',
         },
         'swarming': {
           'dimension_sets': [
@@ -161,6 +164,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium',
     'machines': {
       'android-archive-dbg': {
@@ -232,6 +237,8 @@
     }
   },
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.android',
     'machines': {
       'Android ASAN (dbg)': {
@@ -711,6 +718,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.android.fyi',
     'machines': {
       'Android WebLayer P FYI (rel)': {
@@ -787,6 +796,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.chromiumos',
     'machines': {
       'chromeos-amd64-generic-asan-rel': {
@@ -879,6 +890,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.clang',
     'machines': {
       'CFI Linux ToT': {
@@ -1171,6 +1184,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.dawn',
     'machines': {
       'Dawn Linux x64 Builder' : {},
@@ -1360,6 +1375,8 @@
     }
   },
   {
+    'project': 'chrome',
+    'bucket': 'ci',
     'name': 'chromium.dev',
     'machines': {
       'android-kitkat-arm-rel-swarming': {
@@ -1423,6 +1440,8 @@
     },
   },
   {
+    'project': 'devtools-frontend',
+    'bucket': 'ci',
     'name': 'chromium.devtools-frontend',
     'machines': {
       'DevTools Linux (chromium)': {
@@ -1437,6 +1456,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.fuzz',
     'machines': {
       'ASAN Debug': {
@@ -1527,6 +1548,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.fyi',
     'machines': {
       'Linux Viz': {
@@ -2096,6 +2119,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'goma',
     'name': 'chromium.goma',
     'machines': {
       'Chromium Android ARM 32-bit Goma RBE ToT': {
@@ -2216,6 +2241,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'goma',
     'name': 'chromium.goma.fyi',
     'machines': {
       'Linux Builder Goma Canary': {
@@ -2369,6 +2396,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.gpu',
     'forbid_script_tests': True,
     'mixins': [
@@ -2535,6 +2564,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.gpu.fyi',
     'forbid_script_tests': True,
     'mixins': [
@@ -3587,6 +3618,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.linux',
     'machines': {
       'Cast Audio Linux': {
@@ -3763,6 +3796,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.lkgr',
     'machines': {
       'ASAN Debug': {
@@ -3853,6 +3888,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.mac',
     'machines': {
       'Mac Builder': {
@@ -3964,6 +4001,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.memory',
     'machines': {
       'Android CFI': {
@@ -4114,6 +4153,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.swangle',
     'machines': {
       'linux-swangle-tot-angle-x64' : {
@@ -4239,6 +4280,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'webrtc',
     'name': 'chromium.webrtc',
     'machines': {
       'WebRTC Chromium Android Builder': {},
@@ -4297,6 +4340,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'webrtc.fyi',
     'name': 'chromium.webrtc.fyi',
     'machines': {
       # For builders, specify targets if the builder has no associated
@@ -4409,6 +4454,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.win',
     'machines': {
       'WebKit Win10': {
@@ -4519,6 +4566,8 @@
     },
   },
   {
+    'project': 'devtools-frontend',
+    'bucket': 'ci',
     'name': 'client.devtools-frontend.integration',
     'machines': {
       'DevTools Linux': {
@@ -4533,14 +4582,20 @@
     },
   },
   {
+    'project': 'openscreen',
+    'bucket': 'ci',
     'name': 'client.openscreen.chromium',
     'machines': {},
   },
   {
+    'project': 'v8',
+    'bucket': 'ci',
     'name': 'client.v8.branches',
     'machines': {},
   },
   {
+    'project': 'v8',
+    'bucket': 'ci',
     'name': 'client.v8.chromium',
     'machines': {
       'Linux - Future': {
@@ -4564,6 +4619,8 @@
     },
   },
   {
+    'project': 'v8',
+    'bucket': 'ci',
     'name': 'client.v8.fyi',
     'machines': {
       'Android V8 FYI Release (Nexus 5X)': {
@@ -4738,6 +4795,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'try',
     'name': 'tryserver.chromium.android',
     'machines': {
       'android-opus-kitkat-arm-rel': {
@@ -4764,6 +4823,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'try',
     'name': 'tryserver.chromium.linux',
     'machines': {
       'linux-layout-tests-fragment-item': {
@@ -4791,6 +4852,8 @@
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'try',
     'name': 'tryserver.chromium.mac',
     'machines': {
       'mac-rel': {
@@ -4807,6 +4870,8 @@
     },
   },
   {
+    'project': 'devtools-frontend',
+    'bucket': 'try',
     'name': 'tryserver.devtools-frontend',
     'machines': {
       'devtools_frontend_linux_blink_light_rel': {
@@ -4828,6 +4893,8 @@
     }
   },
   {
+    'project': 'webrtc',
+    'bucket': 'try',
     'name': 'tryserver.webrtc',
     'machines': {
       'android_chromium_compile': {

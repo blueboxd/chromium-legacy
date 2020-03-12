@@ -116,7 +116,7 @@ class ServiceWorkerPaymentAppTest : public testing::Test,
         &browser_context_, GURL("https://testmerchant.com"),
         GURL("https://testmerchant.com/bobpay"), spec_.get(),
         std::move(stored_app), &delegate_,
-        base::Bind(
+        base::BindRepeating(
             [](const url::Origin& origin,
                int64_t registration_id) { /* Intentionally left blank. */ }));
   }

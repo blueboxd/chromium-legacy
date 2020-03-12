@@ -211,8 +211,8 @@ class PictureBufferManagerImpl : public PictureBufferManager {
     // Create and return a VideoFrame for the picture buffer.
     scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
         picture_buffer_data.pixel_format, picture_buffer_data.mailbox_holders,
-        base::BindRepeating(&PictureBufferManagerImpl::OnVideoFrameDestroyed,
-                            this, picture_buffer_id),
+        base::BindOnce(&PictureBufferManagerImpl::OnVideoFrameDestroyed, this,
+                       picture_buffer_id),
         picture_buffer_data.texture_size, visible_rect, natural_size,
         timestamp);
 

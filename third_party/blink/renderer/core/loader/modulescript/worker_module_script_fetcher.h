@@ -40,6 +40,7 @@ class CORE_EXPORT WorkerModuleScriptFetcher final
 
   const Member<WorkerGlobalScope> global_scope_;
 
+  Member<ResourceFetcher> fetch_client_settings_object_fetcher_;
   Member<Client> client_;
   ModuleGraphLevel level_;
 };

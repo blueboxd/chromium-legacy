@@ -751,7 +751,9 @@ class HostResolverManager::RequestImpl
   DISALLOW_COPY_AND_ASSIGN(RequestImpl);
 };
 
-class HostResolverManager::ProbeRequestImpl : public CancellableProbeRequest {
+class HostResolverManager::ProbeRequestImpl
+    : public CancellableProbeRequest,
+      public ResolveContext::DohStatusObserver {
  public:
   ProbeRequestImpl(ResolveContext* context,
                    base::WeakPtr<HostResolverManager> resolver)
@@ -764,40 +766,42 @@ class HostResolverManager::ProbeRequestImpl : public CancellableProbeRequest {
 
   void Cancel() override {
     runner_.reset();
-    context_ = nullptr;
 
-    if (resolver_)
-      resolver_->started_doh_probe_requests_.erase(this);
+    if (context_)
+      context_->UnregisterDohStatusObserver(this);
+    context_ = nullptr;
   }
 
   int Start() override {
     DCHECK(resolver_);
-    DCHECK_EQ(0u, resolver_->started_doh_probe_requests_.count(this));
+    DCHECK(context_);
+    DCHECK(!runner_);
 
-    resolver_->started_doh_probe_requests_.insert(this);
+    context_->RegisterDohStatusObserver(this);
 
-    RestartRunner(false /* network_change */);
+    StartRunner(false /* network_change */);
     return ERR_IO_PENDING;
   }
 
-  void RestartRunner(bool network_change) {
+  // ResolveContext::DohStatusObserver
+  void OnSessionChanged() override { CancelRunner(); }
+
+  void OnDohServerUnavailable(bool network_change) override {
+    StartRunner(network_change);
+  }
+
+ private:
+  void StartRunner(bool network_change) {
     DCHECK(resolver_);
 
-    // If network change, the current runner can be reused if there is one.
-    if (!runner_ || !network_change)
+    if (!runner_)
       runner_ = resolver_->CreateDohProbeRunner(context_);
-
-    if (runner_) {
-      if (network_change)
-        runner_->RestartForNetworkChange();
-      else
-        runner_->Start();
-    }
+    if (runner_)
+      runner_->Start(network_change);
   }
 
   void CancelRunner() { runner_.reset(); }
 
- private:
   // TODO(ericorth@chromium.org): Use base::UnownedPtr once available.
   ResolveContext* context_;
   std::unique_ptr<DnsProbeRunner> runner_;
@@ -2853,18 +2857,14 @@ void HostResolverManager::SetDnsConfigOverrides(DnsConfigOverrides overrides) {
     if (transactions_allowed_before) {
       UpdateJobsForChangedConfig();
     }
-
-    // Restart DoH probes for the new configuration.
-    for (auto* probe_request : started_doh_probe_requests_) {
-      probe_request->RestartRunner(false /* network_change */);
-    }
   }
 }
 
 void HostResolverManager::RegisterResolveContext(ResolveContext* context) {
   registered_contexts_.AddObserver(context);
-  context->InvalidateCaches(dns_client_ ? dns_client_->GetCurrentSession()
-                                        : nullptr);
+  context->InvalidateCachesAndPerSessionData(
+      dns_client_ ? dns_client_->GetCurrentSession() : nullptr,
+      false /* network_change */);
 }
 
 void HostResolverManager::DeregisterResolveContext(
@@ -3699,12 +3699,13 @@ void HostResolverManager::OnConnectionTypeChanged(
           "DnsUnresponsiveDelayMsByConnectionType",
           ProcTaskParams::kDnsDefaultUnresponsiveDelay, type);
 
-  // Restart all DoH probe requests.
-  for (auto* probe_request : started_doh_probe_requests_) {
-    if (type == NetworkChangeNotifier::CONNECTION_NONE)
-      probe_request->CancelRunner();
-    else
-      probe_request->RestartRunner(true /* network_change */);
+  // Note that NetworkChangeNotifier always sends a CONNECTION_NONE notification
+  // before non-NONE notifications. This check therefore just ensures each
+  // connection change notification is handled once and has nothing to do with
+  // whether the change is to offline or online.
+  if (type == NetworkChangeNotifier::CONNECTION_NONE && dns_client_) {
+    dns_client_->ReplaceCurrentSession();
+    InvalidateCaches(true /* network_change */);
   }
 }
 
@@ -3726,11 +3727,6 @@ void HostResolverManager::OnSystemDnsConfigChanged(
     // in-progress jobs may be running using a now-invalid configuration.
     if (transactions_allowed_before)
       UpdateJobsForChangedConfig();
-
-    // Restart DoH probes for the new configuration.
-    for (auto* probe_request : started_doh_probe_requests_) {
-      probe_request->RestartRunner(false /* network_change */);
-    }
   }
 }
 
@@ -3787,7 +3783,7 @@ int HostResolverManager::GetOrCreateMdnsClient(MDnsClient** out_client) {
 #endif
 }
 
-void HostResolverManager::InvalidateCaches() {
+void HostResolverManager::InvalidateCaches(bool network_change) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!invalidation_in_progress_);
 
@@ -3798,8 +3794,9 @@ void HostResolverManager::InvalidateCaches() {
 
   invalidation_in_progress_ = true;
   for (auto& context : registered_contexts_) {
-    context.InvalidateCaches(dns_client_ ? dns_client_->GetCurrentSession()
-                                         : nullptr);
+    context.InvalidateCachesAndPerSessionData(
+        dns_client_ ? dns_client_->GetCurrentSession() : nullptr,
+        network_change);
   }
   invalidation_in_progress_ = false;
 
@@ -3812,11 +3809,8 @@ void HostResolverManager::InvalidateCaches() {
 
 std::unique_ptr<DnsProbeRunner> HostResolverManager::CreateDohProbeRunner(
     ResolveContext* resolve_context) {
-  if (!dns_client_->CanUseSecureDnsTransactions() ||
-      NetworkChangeNotifier::GetConnectionType() ==
-          NetworkChangeNotifier::CONNECTION_NONE) {
+  if (!dns_client_->CanUseSecureDnsTransactions())
     return nullptr;
-  }
 
   return dns_client_->GetTransactionFactory()->CreateDohProbeRunner(
       resolve_context);

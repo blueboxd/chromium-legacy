@@ -515,14 +515,18 @@ SkColor BrowserThemePackTest::GetDefaultColor(int id) {
       return TP::GetDefaultColor(TP::COLOR_FRAME, true);
     case TP::COLOR_FRAME_INCOGNITO_INACTIVE:
       return TP::GetDefaultColor(TP::COLOR_FRAME_INACTIVE, true);
-    case TP::COLOR_BACKGROUND_TAB_INCOGNITO:
-      return TP::GetDefaultColor(TP::COLOR_BACKGROUND_TAB, true);
-    case TP::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE:
-      return TP::GetDefaultColor(TP::COLOR_BACKGROUND_TAB_INACTIVE, true);
-    case TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO:
-      return TP::GetDefaultColor(TP::COLOR_BACKGROUND_TAB_TEXT, true);
-    case TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE:
-      return TP::GetDefaultColor(TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE, true);
+    case TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO:
+      return TP::GetDefaultColor(TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE,
+                                 true);
+    case TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE_INCOGNITO:
+      return TP::GetDefaultColor(
+          TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE, true);
+    case TP::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO:
+      return TP::GetDefaultColor(TP::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE,
+                                 true);
+    case TP::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE_INCOGNITO:
+      return TP::GetDefaultColor(
+          TP::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE, true);
     default:
       return TP::GetDefaultColor(id, false);
   }
@@ -577,8 +581,10 @@ TEST_F(BrowserThemePackTest, SupportsAlpha) {
   // Verify that valid alpha values are parsed correctly.
   // The toolbar color's alpha value is intentionally ignored by theme provider.
   colors[TP::COLOR_TOOLBAR] = SkColorSetARGB(255, 0, 20, 40);
-  colors[TP::COLOR_TAB_TEXT] = SkColorSetARGB(255, 60, 80, 100);
-  colors[TP::COLOR_BACKGROUND_TAB_TEXT] = SkColorSetARGB(0, 120, 140, 160);
+  colors[TP::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE] =
+      SkColorSetARGB(255, 60, 80, 100);
+  colors[TP::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE] =
+      SkColorSetARGB(0, 120, 140, 160);
   colors[TP::COLOR_BOOKMARK_TEXT] = SkColorSetARGB(255, 180, 200, 220);
   colors[TP::COLOR_NTP_TEXT] = SkColorSetARGB(128, 240, 255, 0);
   VerifyColorMap(colors);
@@ -951,13 +957,21 @@ TEST_F(BrowserThemePackTest, TestFrameAndToolbarColorPropagation) {
   // Toolbar colors.
   SkColor infobar_color;
   SkColor download_shelf_color;
+  SkColor tab_background_color;
+  SkColor tab_background_color_inactive;
 
   EXPECT_TRUE(pack->GetColor(TP::COLOR_INFOBAR, &infobar_color));
   EXPECT_TRUE(pack->GetColor(TP::COLOR_DOWNLOAD_SHELF, &download_shelf_color));
+  EXPECT_TRUE(pack->GetColor(TP::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE,
+                             &tab_background_color));
+  EXPECT_TRUE(pack->GetColor(TP::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_INACTIVE,
+                             &tab_background_color_inactive));
 
   constexpr SkColor kExpectedToolbarColor = SkColorSetRGB(0, 255, 0);
   EXPECT_EQ(infobar_color, kExpectedToolbarColor);
   EXPECT_EQ(download_shelf_color, kExpectedToolbarColor);
+  EXPECT_EQ(tab_background_color, kExpectedToolbarColor);
+  EXPECT_EQ(tab_background_color_inactive, kExpectedToolbarColor);
 
   // Toolbar button icon colors.
   SkColor toolbar_button_icon_hovered_color;
@@ -971,6 +985,15 @@ TEST_F(BrowserThemePackTest, TestFrameAndToolbarColorPropagation) {
   constexpr SkColor kExpectedToolbarButtonIconColor = SkColorSetRGB(0, 0, 255);
   EXPECT_EQ(toolbar_button_icon_hovered_color, kExpectedToolbarButtonIconColor);
   EXPECT_EQ(toolbar_button_icon_pressed_color, kExpectedToolbarButtonIconColor);
+
+  // Active tab active frame foreground colors.
+  SkColor tab_foreground_color;
+
+  EXPECT_TRUE(pack->GetColor(TP::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_INACTIVE,
+                             &tab_foreground_color));
+
+  constexpr SkColor kExpectedTabForegroundColor = SkColorSetRGB(255, 0, 0);
+  EXPECT_EQ(tab_foreground_color, kExpectedTabForegroundColor);
 }
 
 // Ensure that, given an explicit toolbar color and a toolbar image, the output
@@ -1042,9 +1065,10 @@ TEST_F(BrowserThemePackTest, BuildFromColor_BasicTestColors) {
 
     SkColor frame_color, background_tab, background_tab_text;
     EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME, &frame_color));
-    EXPECT_TRUE(pack->GetColor(TP::COLOR_BACKGROUND_TAB, &background_tab));
-    EXPECT_TRUE(
-        pack->GetColor(TP::COLOR_BACKGROUND_TAB_TEXT, &background_tab_text));
+    EXPECT_TRUE(pack->GetColor(TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE,
+                               &background_tab));
+    EXPECT_TRUE(pack->GetColor(TP::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE,
+                               &background_tab_text));
     EXPECT_EQ(frame_color, background_tab);
     EXPECT_TRUE(has_readable_contrast(background_tab_text, background_tab));
 
@@ -1052,7 +1076,8 @@ TEST_F(BrowserThemePackTest, BuildFromColor_BasicTestColors) {
         toolbar_button_icon;
     EXPECT_TRUE(pack->GetColor(TP::COLOR_TOOLBAR, &toolbar_color));
     EXPECT_TRUE(pack->GetColor(TP::COLOR_NTP_BACKGROUND, &ntp_background));
-    EXPECT_TRUE(pack->GetColor(TP::COLOR_TAB_TEXT, &tab_text));
+    EXPECT_TRUE(pack->GetColor(TP::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE,
+                               &tab_text));
     EXPECT_TRUE(
         pack->GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, &toolbar_button_icon));
     EXPECT_TRUE(pack->GetColor(TP::COLOR_BOOKMARK_TEXT, &bookmark_text));

@@ -55,7 +55,6 @@ class BadgeView : public ::views::ImageView {
  public:
   explicit BadgeView(BadgedProfilePhoto::BadgeType badge_type)
       : badge_type_(badge_type) {
-    SizeToPreferredSize();
     SetPosition(gfx::Point(kBadgedProfilePhotoWidth - kBadgeIconSize,
                            kBadgedProfilePhotoHeight - kBadgeIconSize));
   }
@@ -106,6 +105,7 @@ class BadgeView : public ::views::ImageView {
         NOTREACHED();
         break;
     }
+    SizeToPreferredSize();
   }
 
  private:

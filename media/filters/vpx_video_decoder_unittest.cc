@@ -147,9 +147,9 @@ class VpxVideoDecoderTest : public testing::Test {
     DecodeStatus status;
     EXPECT_CALL(*this, DecodeDone(_)).WillOnce(testing::SaveArg<0>(&status));
 
-    decoder_->Decode(
-        std::move(buffer),
-        base::Bind(&VpxVideoDecoderTest::DecodeDone, base::Unretained(this)));
+    decoder_->Decode(std::move(buffer),
+                     base::BindOnce(&VpxVideoDecoderTest::DecodeDone,
+                                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
 
     return status;

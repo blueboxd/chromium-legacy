@@ -283,7 +283,7 @@ void JniGlDisplayHandler::OnPixelTransformationChanged(
   std::array<float, 9> matrix;
   env->GetFloatArrayRegion(jmatrix.obj(), 0, 9, matrix.data());
   ui_task_poster_.AddTask(
-      base::Bind(&Core::SetTransformation, core_->GetWeakPtr(), matrix));
+      base::BindOnce(&Core::SetTransformation, core_->GetWeakPtr(), matrix));
 }
 
 void JniGlDisplayHandler::OnCursorPixelPositionChanged(
@@ -293,7 +293,7 @@ void JniGlDisplayHandler::OnCursorPixelPositionChanged(
     float y) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
   ui_task_poster_.AddTask(
-      base::Bind(&Core::MoveCursor, core_->GetWeakPtr(), x, y));
+      base::BindOnce(&Core::MoveCursor, core_->GetWeakPtr(), x, y));
 }
 
 void JniGlDisplayHandler::OnCursorVisibilityChanged(
@@ -302,7 +302,7 @@ void JniGlDisplayHandler::OnCursorVisibilityChanged(
     bool visible) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
   ui_task_poster_.AddTask(
-      base::Bind(&Core::SetCursorVisibility, core_->GetWeakPtr(), visible));
+      base::BindOnce(&Core::SetCursorVisibility, core_->GetWeakPtr(), visible));
 }
 
 void JniGlDisplayHandler::OnCursorInputFeedback(
@@ -312,8 +312,8 @@ void JniGlDisplayHandler::OnCursorInputFeedback(
     float y,
     float diameter) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
-  ui_task_poster_.AddTask(base::Bind(&Core::StartInputFeedback,
-                                     core_->GetWeakPtr(), x, y, diameter));
+  ui_task_poster_.AddTask(base::BindOnce(&Core::StartInputFeedback,
+                                         core_->GetWeakPtr(), x, y, diameter));
 }
 
 void JniGlDisplayHandler::OnRenderDone() {

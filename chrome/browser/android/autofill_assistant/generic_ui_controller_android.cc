@@ -160,7 +160,11 @@ base::android::ScopedJavaGlobalRef<jobject> CreateJavaView(
         env, jview, jcontext, proto.attributes().padding_start(),
         proto.attributes().padding_top(), proto.attributes().padding_end(),
         proto.attributes().padding_bottom(),
-        CreateJavaDrawable(env, jcontext, proto.attributes().background()));
+        CreateJavaDrawable(env, jcontext, proto.attributes().background()),
+        proto.attributes().has_content_description()
+            ? base::android::ConvertUTF8ToJavaString(
+                  env, proto.attributes().content_description())
+            : nullptr);
   }
   if (proto.has_layout_params()) {
     Java_AssistantViewFactory_setViewLayoutParams(

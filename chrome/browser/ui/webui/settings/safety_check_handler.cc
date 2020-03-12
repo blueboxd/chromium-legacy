@@ -161,9 +161,7 @@ void SafetyCheckHandler::CheckPasswords() {
   // browser should not crash.
   observed_leak_check_.RemoveAll();
   observed_leak_check_.Add(leak_service_);
-  // TODO(crbug.com/1015841): Implement starting a leak check if one is not
-  // running already once the API for it becomes available (see
-  // crrev.com/c/2072742 and follow up CLs).
+  passwords_delegate_->StartPasswordCheck();
 }
 
 void SafetyCheckHandler::CheckExtensions() {

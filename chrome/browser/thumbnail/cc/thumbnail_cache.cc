@@ -126,6 +126,14 @@ bool WriteBigEndianFloatToFile(base::File& file, float val) {
   return file.WriteAtCurrentPos(buffer, sizeof(buffer)) == sizeof(buffer);
 }
 
+// TODO(khushalsagar): This is a hack to ensure correct byte size computation
+// for SkPixelRefs wrapping encoded data for ETC1 compressed bitmaps. We ideally
+// shouldn't be using SkPixelRefs to wrap encoded data.
+size_t ETC1RowBytes(int width) {
+  DCHECK_EQ(width & 1, 0);
+  return width / 2;
+}
+
 }  // anonymous namespace
 
 ThumbnailCache::ThumbnailCache(size_t default_cache_size,
@@ -684,8 +692,8 @@ void ThumbnailCache::CompressionTask(
         SkImageInfo::Make(encoded_size.width(), encoded_size.height(),
                           kUnknown_SkColorType, kUnpremul_SkAlphaType);
     sk_sp<SkData> etc1_pixel_data(SkData::MakeUninitialized(encoded_bytes));
-    sk_sp<SkPixelRef> etc1_pixel_ref(
-        SkMallocPixelRef::MakeWithData(info, 0, std::move(etc1_pixel_data)));
+    sk_sp<SkPixelRef> etc1_pixel_ref(SkMallocPixelRef::MakeWithData(
+        info, ETC1RowBytes(encoded_size.width()), std::move(etc1_pixel_data)));
 
     bool success = etc1_encode_image(
         reinterpret_cast<unsigned char*>(raw_data.getPixels()),
@@ -834,8 +842,8 @@ bool ReadFromFile(base::File& file,
   SkImageInfo info = SkImageInfo::Make(
       raw_width, raw_height, kUnknown_SkColorType, kUnpremul_SkAlphaType);
 
-  *out_pixels =
-      SkMallocPixelRef::MakeWithData(info, 0, std::move(etc1_pixel_data));
+  *out_pixels = SkMallocPixelRef::MakeWithData(info, ETC1RowBytes(raw_width),
+                                               std::move(etc1_pixel_data));
 
   int extra_data_version = 0;
   if (!ReadBigEndianFromFile(file, &extra_data_version))

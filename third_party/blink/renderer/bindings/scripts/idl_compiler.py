@@ -26,7 +26,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """Compile an .idl file to Blink V8 bindings (.h and .cpp files).
 
 Design doc: https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/bindings/IDLCompiler.md
@@ -49,22 +48,23 @@ from utilities import write_file
 
 def parse_options():
     parser = OptionParser()
-    parser.add_option('--cache-directory',
-                      help='cache directory, defaults to output directory')
-    parser.add_option('--generate-impl',
-                      action='store_true', default=False)
-    parser.add_option('--read-idl-list-from-file',
-                      action='store_true', default=False)
+    parser.add_option(
+        '--cache-directory',
+        help='cache directory, defaults to output directory')
+    parser.add_option('--generate-impl', action='store_true', default=False)
+    parser.add_option(
+        '--read-idl-list-from-file', action='store_true', default=False)
     parser.add_option('--output-directory')
     parser.add_option('--impl-output-directory')
     parser.add_option('--info-dir')
     # FIXME: We should always explicitly specify --target-component and
     # remove the default behavior.
-    parser.add_option('--target-component',
-                      type='choice',
-                      choices=['core', 'modules'],
-                      help='target component to generate code, defaults to '
-                      'component of input idl file')
+    parser.add_option(
+        '--target-component',
+        type='choice',
+        choices=['core', 'modules'],
+        help='target component to generate code, defaults to '
+        'component of input idl file')
     # ensure output comes last, so command line easy to parse via regexes
     parser.disable_interspersed_args()
 
@@ -72,7 +72,9 @@ def parse_options():
     if options.output_directory is None:
         parser.error('Must specify output directory using --output-directory.')
     if len(args) != 1:
-        parser.error('Must specify exactly 1 input file as argument, but %d given.' % len(args))
+        parser.error(
+            'Must specify exactly 1 input file as argument, but %d given.' %
+            len(args))
     idl_filename = os.path.realpath(args[0])
     return options, idl_filename
 
@@ -83,8 +85,11 @@ class IdlCompiler(object):
     """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, output_directory, cache_directory=None,
-                 code_generator_class=None, info_provider=None,
+    def __init__(self,
+                 output_directory,
+                 cache_directory=None,
+                 code_generator_class=None,
+                 info_provider=None,
                  target_component=None):
         """
         Args:
@@ -99,9 +104,8 @@ class IdlCompiler(object):
         self.output_directory = output_directory
         self.target_component = target_component
         self.reader = IdlReader(info_provider.interfaces_info, cache_directory)
-        self.code_generator = code_generator_class(self.info_provider,
-                                                   self.cache_directory,
-                                                   self.output_directory)
+        self.code_generator = code_generator_class(
+            self.info_provider, self.cache_directory, self.output_directory)
 
     def compile_and_write(self, idl_filename):
         definitions = self.reader.read_idl_definitions(idl_filename)
@@ -149,11 +153,9 @@ def generate_dictionary_impl(code_generator_class, info_provider, options,
 
 def generate_union_type_containers(code_generator_class, info_provider,
                                    options):
-    generator = code_generator_class(
-        info_provider,
-        options.cache_directory,
-        options.output_directory,
-        options.target_component)
+    generator = code_generator_class(info_provider, options.cache_directory,
+                                     options.output_directory,
+                                     options.target_component)
     output_code_list = generator.generate_code()
     for output_path, output_code in output_code_list:
         write_file(output_code, output_path)
@@ -161,11 +163,9 @@ def generate_union_type_containers(code_generator_class, info_provider,
 
 def generate_callback_function_impl(code_generator_class, info_provider,
                                     options):
-    generator = code_generator_class(
-        info_provider,
-        options.cache_directory,
-        options.output_directory,
-        options.target_component)
+    generator = code_generator_class(info_provider, options.cache_directory,
+                                     options.output_directory,
+                                     options.target_component)
     output_code_list = generator.generate_code()
     for output_path, output_code in output_code_list:
         write_file(output_code, output_path)
@@ -173,8 +173,8 @@ def generate_callback_function_impl(code_generator_class, info_provider,
 
 def main():
     options, input_filename = parse_options()
-    info_provider = create_component_info_provider(
-        options.info_dir, options.target_component)
+    info_provider = create_component_info_provider(options.info_dir,
+                                                   options.target_component)
     if options.generate_impl or options.read_idl_list_from_file:
         # |input_filename| should be a file which contains a list of IDL
         # dictionary paths.

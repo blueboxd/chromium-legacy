@@ -65,7 +65,7 @@ android_library("java") {
     ]
 
     deps += [
-      "//chrome/browser/android/profiles:java",
+      "//chrome/android/public/profiles:java",
       "//content/public/android:content_java",
       "//third_party/android_sdk/androidx_browser:androidx_browser_java",
       "//ui/android:ui_utils_java",

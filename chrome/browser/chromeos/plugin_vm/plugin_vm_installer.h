@@ -87,6 +87,7 @@ class PluginVmInstaller : public KeyedService,
     virtual void OnDownloadFailed(FailureReason reason) = 0;
     virtual void OnImportProgressUpdated(int percent_completed,
                                          base::TimeDelta elapsed_time) = 0;
+    virtual void OnCreated() = 0;
     virtual void OnImported() = 0;
     virtual void OnImportCancelled() = 0;
     virtual void OnImportFailed(FailureReason reason) = 0;
@@ -130,8 +131,7 @@ class PluginVmInstaller : public KeyedService,
 
   void SetDownloadServiceForTesting(
       download::DownloadService* download_service);
-  void SetDownloadedPluginVmImageArchiveForTesting(
-      const base::FilePath& downloaded_plugin_vm_image_archive);
+  void SetDownloadedImageForTesting(const base::FilePath& downloaded_image);
   void SetDriveDownloadServiceForTesting(
       std::unique_ptr<PluginVmDriveImageDownloadService>
           drive_download_service);
@@ -141,6 +141,7 @@ class PluginVmInstaller : public KeyedService,
   void OnUpdateVmState(bool default_vm_exists);
   void StartDlcDownload();
   void StartDownload();
+  void DetectImageType();
   void StartImport();
 
   // DLC(s) cannot be currently cancelled when initiated, so this will cause
@@ -174,11 +175,12 @@ class PluginVmInstaller : public KeyedService,
   download::DownloadService* download_service_ = nullptr;
   State state_ = State::NOT_STARTED;
   std::string current_download_guid_;
-  base::FilePath downloaded_plugin_vm_image_archive_;
+  base::FilePath downloaded_image_;
   // Used to identify our running import with concierge:
   std::string current_import_command_uuid_;
   // -1 when is not yet determined.
-  int64_t downloaded_plugin_vm_image_size_ = -1;
+  int64_t downloaded_image_size_ = -1;
+  bool creating_new_vm_ = false;
   base::TimeTicks dlc_download_start_tick_;
   base::TimeTicks download_start_tick_;
   base::TimeTicks import_start_tick_;
@@ -196,6 +198,10 @@ class PluginVmInstaller : public KeyedService,
   void OnStartDownload(const std::string& download_guid,
                        download::DownloadParams::StartResult start_result);
 
+  // Callback when image type has been detected. This will make call to
+  // start PluginVm dispatcher.
+  void OnImageTypeDetected();
+
   // Callback when PluginVm dispatcher is started (together with supporting
   // services such as concierge). This will then make the call to concierge's
   // ImportDiskImage.
@@ -207,12 +213,14 @@ class PluginVmInstaller : public KeyedService,
   // Ran as a blocking task preparing the FD for the ImportDiskImage call.
   base::Optional<base::ScopedFD> PrepareFD();
 
-  // Callback when the FD is prepared. Makes the call to ImportDiskImage.
+  // Callback when the FD is prepared. Makes the call to CreateDiskImage or
+  // ImportDiskImage, depending on whether we are trying to create a new VM
+  // from an ISO, or import prepared VM image.
   void OnFDPrepared(base::Optional<base::ScopedFD> maybeFd);
 
-  // Callback for the concierge DiskImageImport call.
-  void OnImportDiskImage(
-      base::Optional<vm_tools::concierge::ImportDiskImageResponse> reply);
+  // Callback for the concierge CreateDiskImage/ImportDiskImage calls.
+  template <typename ReplyType>
+  void OnImportDiskImage(base::Optional<ReplyType> reply);
 
   // After we get a signal that the import is finished successfully, we
   // make one final call to concierge's DiskImageStatus method to get a
@@ -235,8 +243,8 @@ class PluginVmInstaller : public KeyedService,
   void OnImportDiskImageCancelled(
       base::Optional<vm_tools::concierge::CancelDiskImageResponse> reply);
 
-  void RemoveTemporaryPluginVmImageArchiveIfExists();
-  void OnTemporaryPluginVmImageArchiveRemoved(bool success);
+  void RemoveTemporaryImageIfExists();
+  void OnTemporaryImageRemoved(bool success);
 
   base::WeakPtrFactory<PluginVmInstaller> weak_ptr_factory_{this};
 

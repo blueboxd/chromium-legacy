@@ -8,7 +8,6 @@ import mako.runtime
 import mako.template
 import mako.util
 
-
 _MAKO_TEMPLATE_PASS_KEY = object()
 
 

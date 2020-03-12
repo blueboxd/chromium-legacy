@@ -179,8 +179,8 @@ void UdpTransportImpl::ReceiveNextPacket(int length_or_status) {
           reinterpret_cast<char*>(&next_packet_->front()));
       length_or_status = udp_socket_->RecvFrom(
           recv_buf_.get(), media::cast::kMaxIpPacketSize, &recv_addr_,
-          base::BindRepeating(&UdpTransportImpl::ReceiveNextPacket,
-                              weak_factory_.GetWeakPtr()));
+          base::BindOnce(&UdpTransportImpl::ReceiveNextPacket,
+                         weak_factory_.GetWeakPtr()));
       if (length_or_status == net::ERR_IO_PENDING) {
         receive_pending_ = true;
         return;

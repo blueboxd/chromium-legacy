@@ -20039,7 +20039,7 @@
       'id': 667,
       'caption': '''Enable sending downloads to Google for deep scanning for users enrolled in the Advanced Protection program''',
       'tags': [],
-      'desc': '''This policy is deprecated, and has been replaced with AdvancedProtectionExtraSecurityAllowed.
+      'desc': '''This policy is deprecated, and has been replaced with AdvancedProtectionAllowed.
 
       This policy controls whether users enrolled in the Advanced Protection program are allowed to send their downloads to Google for malware scanning. If set to True or not set, enrolled users will be be prompted to send their files to Google for deep scanning. If the user selects 'Scan', their download will be sent to Google. If set to False, users will not be prompted and their downloads will not be sent to Google.''',
     },
@@ -20245,7 +20245,7 @@ If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not 
       'desc': '''Specifies device-wide client certificates that should be enrolled using the device management protocol.''',
     },
     {
-      'name': 'AdvancedProtectionExtraSecurityAllowed',
+      'name': 'AdvancedProtectionAllowed',
       'owners': ['file://chrome/browser/safe_browsing/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -20258,7 +20258,7 @@ If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not 
       'id': 685,
       'caption': '''Enable additional protections for users enrolled in the Advanced Protection program''',
       'tags': [],
-      'desc': '''This policy controls whether users enrolled in the Advanced Protection program receive extra security features. Some of these features may involve the sharing of data with Google (for example, Advanced Protection users will be able to send their downloads to Google for malware scanning). If set to True or not set, enrolled users will receive extra security features. If set to False, Advanced Protection users will receive only the consumer security features.''',
+      'desc': '''This policy controls whether users enrolled in the Advanced Protection program receive extra features. Some of these features may involve the sharing of data with Google (for example, Advanced Protection users will be able to send their downloads to Google for malware scanning). If set to True or not set, enrolled users will receive extra features. If set to False, Advanced Protection users will receive only the standard consumer features.''',
     },
     {
       'name': 'ScrollToTextFragmentEnabled',

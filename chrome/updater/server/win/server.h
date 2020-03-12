@@ -24,6 +24,7 @@ class UpdaterImpl
   UpdaterImpl(const UpdaterImpl&) = delete;
   UpdaterImpl& operator=(const UpdaterImpl&) = delete;
 
+  // Overrides for IUpdater.
   IFACEMETHODIMP CheckForUpdate(const base::char16* app_id) override;
   IFACEMETHODIMP Register(const base::char16* app_id,
                           const base::char16* brand_code,
@@ -31,6 +32,7 @@ class UpdaterImpl
                           const base::char16* version,
                           const base::char16* existence_checker_path) override;
   IFACEMETHODIMP Update(const base::char16* app_id) override;
+  IFACEMETHODIMP UpdateAll() override;
 
  private:
   ~UpdaterImpl() override = default;

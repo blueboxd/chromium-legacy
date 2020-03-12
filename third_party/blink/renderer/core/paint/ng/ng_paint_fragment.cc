@@ -445,7 +445,7 @@ void NGPaintFragment::PopulateDescendants(CreateContext* parent_context) {
 
     child_context.populate_children =
         child_fragment->IsContainer() &&
-        !child_fragment->IsBlockFormattingContextRoot();
+        !child_fragment->IsFormattingContextRoot();
     scoped_refptr<NGPaintFragment> child = CreateOrReuse(
         child_fragment.get(), child_fragment.Offset(), &child_context);
 
@@ -541,7 +541,7 @@ void NGPaintFragment::ClearAssociationWithLayoutObject() {
         fragment.IsColumnBox()) {
       child->ClearAssociationWithLayoutObject();
     } else {
-      DCHECK(fragment.IsText() || fragment.IsBlockFormattingContextRoot());
+      DCHECK(fragment.IsText() || fragment.IsFormattingContextRoot());
       DCHECK(child->Children().IsEmpty());
     }
   }
@@ -644,7 +644,7 @@ PhysicalRect NGPaintFragment::RecalcContentsInkOverflow() const {
 
     // A BFC root establishes a separate NGPaintFragment tree. Re-compute the
     // child tree using its LayoutObject, because it may not be NG.
-    if (child_fragment.IsBlockFormattingContextRoot()) {
+    if (child_fragment.IsFormattingContextRoot()) {
       LayoutBox* layout_box =
           ToLayoutBox(child_fragment.GetMutableLayoutObject());
       layout_box->RecalcVisualOverflow();
@@ -665,7 +665,7 @@ PhysicalRect NGPaintFragment::RecalcContentsInkOverflow() const {
 PhysicalRect NGPaintFragment::RecalcInkOverflow() {
   const NGPhysicalFragment& fragment = PhysicalFragment();
   fragment.CheckCanUpdateInkOverflow();
-  DCHECK(!fragment.IsBlockFormattingContextRoot());
+  DCHECK(!fragment.IsFormattingContextRoot());
 
   // NGPhysicalTextFragment caches ink overflow in layout. No need to recalc nor
   // to store in NGPaintFragment.

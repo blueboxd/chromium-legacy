@@ -90,13 +90,7 @@ template("system_webview_apk_or_module_tmpl") {
     _include_secondary_support = false
 
     if (!_use_trichrome_library) {
-      if (_is_bundle_module) {
-        # TODO(b/146491000): aapt2 currently doesn't support the --shared-lib
-        # flag for bundles, so this will only work on M+.
-        app_as_shared_lib = true
-      } else {
-        shared_resources = true
-      }
+      shared_resources = true
 
       if (!android_64bit_target_cpu || !_pure_32_bit) {
         shared_libraries = [ "//android_webview:libwebviewchromium" ]

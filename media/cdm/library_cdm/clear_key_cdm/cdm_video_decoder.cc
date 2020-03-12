@@ -188,8 +188,8 @@ class VideoDecoderAdapter : public CdmVideoDecoder {
         clear_config,
         /* low_delay = */ false,
         /* cdm_context = */ nullptr,
-        base::BindRepeating(&VideoDecoderAdapter::OnInitialized,
-                            weak_factory_.GetWeakPtr(), run_loop.QuitClosure()),
+        base::BindOnce(&VideoDecoderAdapter::OnInitialized,
+                       weak_factory_.GetWeakPtr(), run_loop.QuitClosure()),
         base::BindRepeating(&VideoDecoderAdapter::OnVideoFrameReady,
                             weak_factory_.GetWeakPtr()),
         /* waiting_cb = */ base::DoNothing());
@@ -224,10 +224,10 @@ class VideoDecoderAdapter : public CdmVideoDecoder {
 
     // Call |video_decoder_| Decode() and wait for completion.
     base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-    video_decoder_->Decode(std::move(buffer),
-                           base::BindRepeating(&VideoDecoderAdapter::OnDecoded,
-                                               weak_factory_.GetWeakPtr(),
-                                               run_loop.QuitClosure()));
+    video_decoder_->Decode(
+        std::move(buffer),
+        base::BindOnce(&VideoDecoderAdapter::OnDecoded,
+                       weak_factory_.GetWeakPtr(), run_loop.QuitClosure()));
     run_loop.Run();
 
     auto decode_status = last_decode_status_.value();

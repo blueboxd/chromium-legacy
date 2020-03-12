@@ -17,14 +17,14 @@ import v8_interface
 import v8_types
 import v8_utilities
 
-
 INCLUDES = frozenset([
     'third_party/blink/renderer/bindings/core/v8/generated_code_helper.h',
     'third_party/blink/renderer/bindings/core/v8/v8_html_document.h',
     'third_party/blink/renderer/bindings/core/v8/v8_initializer.h',
     'third_party/blink/renderer/bindings/core/v8/v8_window.h',
     'third_party/blink/renderer/platform/bindings/v8_object_constructor.h',
-    'v8/include/v8.h'])
+    'v8/include/v8.h'
+])
 
 TEMPLATE_FILE = 'external_reference_table.cc.tmpl'
 
@@ -39,22 +39,27 @@ SNAPSHOTTED_INTERFACES = frozenset([
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--idl-files-list', type=str, required=True,
-                        help='file listing IDL files')
-    parser.add_argument('--output', type=str, required=True,
-                        help='output file path')
-    parser.add_argument('--info-dir', type=str, required=True,
-                        help='directory contains component info')
-    parser.add_argument('--cache-dir', type=str, required=True,
-                        help='cache directory')
-    parser.add_argument('--target-component', type=str, required=True,
-                        help='target component')
+    parser.add_argument(
+        '--idl-files-list',
+        type=str,
+        required=True,
+        help='file listing IDL files')
+    parser.add_argument(
+        '--output', type=str, required=True, help='output file path')
+    parser.add_argument(
+        '--info-dir',
+        type=str,
+        required=True,
+        help='directory contains component info')
+    parser.add_argument(
+        '--cache-dir', type=str, required=True, help='cache directory')
+    parser.add_argument(
+        '--target-component', type=str, required=True, help='target component')
     return parser.parse_known_args()
 
 
 # This class creates a Jinja template context about an interface.
 class InterfaceTemplateContextBuilder(object):
-
     def __init__(self, opts, info_provider):
         self._opts = opts
         self._info_provider = info_provider
@@ -64,12 +69,14 @@ class InterfaceTemplateContextBuilder(object):
 
         assert component in ['core', 'modules']
 
-        name = '%s%s' % (v8_utilities.cpp_name(interface), 'Partial' if interface.is_partial else '')
+        name = '%s%s' % (v8_utilities.cpp_name(interface),
+                         'Partial' if interface.is_partial else '')
 
         # Constructors
         has_constructor_callback = False
         if not interface.is_partial:
-            constructors = any(constructor.name == 'Constructor' for constructor in interface.constructors)
+            constructors = any(constructor.name == 'Constructor'
+                               for constructor in interface.constructors)
             custom_constructors = interface.custom_constructors
             html_constructor = 'HTMLConstructor' in interface.extended_attributes
             has_constructor_callback = constructors or custom_constructors or html_constructor
@@ -86,9 +93,13 @@ class InterfaceTemplateContextBuilder(object):
         named_property_getter = None
         component_info = self._info_provider.component_info
         if interface.name in SNAPSHOTTED_INTERFACES:
-            attributes = [v8_attributes.attribute_context(interface, attribute, interfaces, component_info)
-                          for attribute in interface.attributes]
-            methods = v8_interface.methods_context(interface, component_info)['methods']
+            attributes = [
+                v8_attributes.attribute_context(interface, attribute,
+                                                interfaces, component_info)
+                for attribute in interface.attributes
+            ]
+            methods = v8_interface.methods_context(interface,
+                                                   component_info)['methods']
             is_global = 'Global' in interface.extended_attributes
 
             named_property_getter = v8_interface.property_getter(
@@ -97,37 +108,68 @@ class InterfaceTemplateContextBuilder(object):
                 interface.indexed_property_getter, ['index'])
 
             if not interface.is_partial:
-                has_security_check = ('CheckSecurity' in interface.extended_attributes and
-                                      interface.name != 'EventTarget')
-                has_cross_origin_named_getter = (any(method['is_cross_origin'] for method in methods) or
-                                                 any(attribute['has_cross_origin_getter'] for attribute in attributes))
-                has_cross_origin_named_setter = any(attribute['has_cross_origin_setter'] for attribute in attributes)
-                has_cross_origin_indexed_getter = indexed_property_getter and indexed_property_getter['is_cross_origin']
-                has_cross_origin_named_enum = has_cross_origin_named_getter or has_cross_origin_named_setter
-                if named_property_getter and named_property_getter['is_cross_origin']:
+                has_security_check = (
+                    'CheckSecurity' in interface.extended_attributes
+                    and interface.name != 'EventTarget')
+                has_cross_origin_named_getter = (
+                    any(method['is_cross_origin'] for method in methods)
+                    or any(attribute['has_cross_origin_getter']
+                           for attribute in attributes))
+                has_cross_origin_named_setter = any(
+                    attribute['has_cross_origin_setter']
+                    for attribute in attributes)
+                has_cross_origin_indexed_getter = (
+                    indexed_property_getter
+                    and indexed_property_getter['is_cross_origin'])
+                has_cross_origin_named_enum = has_cross_origin_named_getter \
+                    or has_cross_origin_named_setter
+                if (named_property_getter
+                        and named_property_getter['is_cross_origin']):
                     has_cross_origin_named_getter = True
 
         return {
-            'attributes': attributes,
-            'component': component,
-            'has_constructor_callback': has_constructor_callback,
-            'has_cross_origin_named_getter': has_cross_origin_named_getter,
-            'has_cross_origin_named_setter': has_cross_origin_named_setter,
-            'has_cross_origin_named_enumerator': has_cross_origin_named_enum,
-            'has_cross_origin_indexed_getter': has_cross_origin_indexed_getter,
-            'has_security_check': has_security_check,
-            'indexed_property_getter': indexed_property_getter,
-            'indexed_property_setter': v8_interface.property_setter(interface.indexed_property_setter, interface),
-            'indexed_property_deleter': v8_interface.property_deleter(interface.indexed_property_deleter),
-            'internal_namespace': v8_interface.internal_namespace(interface),
-            'is_partial': interface.is_partial,
-            'methods': methods,
-            'name': name,
-            'named_constructor': v8_interface.named_constructor_context(interface),
-            'named_property_getter': named_property_getter,
-            'named_property_setter': v8_interface.property_setter(interface.named_property_setter, interface),
-            'named_property_deleter': v8_interface.property_deleter(interface.named_property_deleter),
-            'v8_class': v8_utilities.v8_class_name_or_partial(interface),
+            'attributes':
+            attributes,
+            'component':
+            component,
+            'has_constructor_callback':
+            has_constructor_callback,
+            'has_cross_origin_named_getter':
+            has_cross_origin_named_getter,
+            'has_cross_origin_named_setter':
+            has_cross_origin_named_setter,
+            'has_cross_origin_named_enumerator':
+            has_cross_origin_named_enum,
+            'has_cross_origin_indexed_getter':
+            has_cross_origin_indexed_getter,
+            'has_security_check':
+            has_security_check,
+            'indexed_property_getter':
+            indexed_property_getter,
+            'indexed_property_setter':
+            v8_interface.property_setter(interface.indexed_property_setter,
+                                         interface),
+            'indexed_property_deleter':
+            v8_interface.property_deleter(interface.indexed_property_deleter),
+            'internal_namespace':
+            v8_interface.internal_namespace(interface),
+            'is_partial':
+            interface.is_partial,
+            'methods':
+            methods,
+            'name':
+            name,
+            'named_constructor':
+            v8_interface.named_constructor_context(interface),
+            'named_property_getter':
+            named_property_getter,
+            'named_property_setter':
+            v8_interface.property_setter(interface.named_property_setter,
+                                         interface),
+            'named_property_deleter':
+            v8_interface.property_deleter(interface.named_property_deleter),
+            'v8_class':
+            v8_utilities.v8_class_name_or_partial(interface),
         }
 
 
@@ -136,11 +178,11 @@ class ExternalReferenceTableGenerator(object):
     def __init__(self, opts, info_provider):
         self._opts = opts
         self._info_provider = info_provider
-        self._reader = IdlReader(
-            info_provider.interfaces_info, opts.cache_dir)
+        self._reader = IdlReader(info_provider.interfaces_info, opts.cache_dir)
         self._interface_contexts = {}
         self._include_files = set(INCLUDES)
-        v8_types.set_component_dirs(info_provider.interfaces_info['component_dirs'])
+        v8_types.set_component_dirs(
+            info_provider.interfaces_info['component_dirs'])
 
     # Creates a Jinja context from an IDL file.
     def process_idl_file(self, idl_filename):
@@ -162,19 +204,25 @@ class ExternalReferenceTableGenerator(object):
             # Non legacy callback interface does not provide V8 callbacks.
             if interface.is_callback:
                 return len(interface.constants) > 0
-            if v8_utilities.runtime_enabled_feature_name(interface, runtime_features):
+            if v8_utilities.runtime_enabled_feature_name(
+                    interface, runtime_features):
                 return False
             if 'Exposed' not in interface.extended_attributes:
                 return True
-            return any(exposure.exposed == 'Window' and exposure.runtime_enabled is None
-                       for exposure in interface.extended_attributes['Exposed'])
+            return any(
+                exposure.exposed == 'Window'
+                and exposure.runtime_enabled is None
+                for exposure in interface.extended_attributes['Exposed'])
 
         if not has_impl(interface):
             return
 
-        context_builder = InterfaceTemplateContextBuilder(self._opts, self._info_provider)
-        context = context_builder.create_interface_context(interface, component, interfaces)
-        name = '%s%s' % (interface.name, 'Partial' if interface.is_partial else '')
+        context_builder = InterfaceTemplateContextBuilder(
+            self._opts, self._info_provider)
+        context = context_builder.create_interface_context(
+            interface, component, interfaces)
+        name = '%s%s' % (interface.name,
+                         'Partial' if interface.is_partial else '')
         self._interface_contexts[name] = context
 
         # Do not include unnecessary header files.
@@ -213,8 +261,8 @@ class ExternalReferenceTableGenerator(object):
 def main():
     opts, _ = parse_args()
     # TODO(peria): get rid of |info_provider|
-    info_provider = create_component_info_provider(
-        opts.info_dir, opts.target_component)
+    info_provider = create_component_info_provider(opts.info_dir,
+                                                   opts.target_component)
     generator = ExternalReferenceTableGenerator(opts, info_provider)
 
     idl_files = utilities.read_idl_files_list_from_file(opts.idl_files_list)

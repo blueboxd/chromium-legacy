@@ -42,7 +42,7 @@ VideoDecodeStatsReporter::VideoDecodeStatsReporter(
   DCHECK_NE(VIDEO_CODEC_PROFILE_UNKNOWN, codec_profile_);
   DCHECK(!cdm_config || !key_system_.empty());
 
-  recorder_remote_.set_disconnect_handler(base::BindRepeating(
+  recorder_remote_.set_disconnect_handler(base::BindOnce(
       &VideoDecodeStatsReporter::OnIpcConnectionError, base::Unretained(this)));
   stats_cb_timer_.SetTaskRunner(task_runner);
 }

@@ -301,12 +301,6 @@ void PasswordStore::GetAutofillableLogins(PasswordStoreConsumer* consumer) {
       base::BindOnce(&PasswordStore::GetAutofillableLoginsImpl, this));
 }
 
-void PasswordStore::GetBlacklistLogins(PasswordStoreConsumer* consumer) {
-  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  PostLoginsTaskAndReplyToConsumerWithResult(
-      consumer, base::BindOnce(&PasswordStore::GetBlacklistLoginsImpl, this));
-}
-
 void PasswordStore::GetAllLogins(PasswordStoreConsumer* consumer) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   PostLoginsTaskAndReplyToConsumerWithResult(
@@ -1031,16 +1025,6 @@ PasswordStore::GetAutofillableLoginsImpl() {
   TRACE_EVENT0("passwords", "PasswordStore::GetAutofillableLoginsImpl");
   std::vector<std::unique_ptr<PasswordForm>> obtained_forms;
   if (!FillAutofillableLogins(&obtained_forms))
-    obtained_forms.clear();
-  return obtained_forms;
-}
-
-std::vector<std::unique_ptr<PasswordForm>>
-PasswordStore::GetBlacklistLoginsImpl() {
-  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  TRACE_EVENT0("passwords", "PasswordStore::GetBlacklistLoginsImpl");
-  std::vector<std::unique_ptr<PasswordForm>> obtained_forms;
-  if (!FillBlacklistLogins(&obtained_forms))
     obtained_forms.clear();
   return obtained_forms;
 }

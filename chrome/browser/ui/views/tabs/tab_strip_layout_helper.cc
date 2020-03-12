@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout_types.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
-#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/views/view_model.h"
 
 namespace {

@@ -113,7 +113,16 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
       DBusMethodCallback<vm_tools::concierge::CreateDiskImageResponse>
           callback) = 0;
 
-  // Destroys a Termina VM and removes its disk image.
+  // Creates a disk image for a VM.
+  // |fd| references the source media (ISO).
+  // |callback| is called after the method call finishes.
+  virtual void CreateDiskImageWithFd(
+      base::ScopedFD fd,
+      const vm_tools::concierge::CreateDiskImageRequest& request,
+      DBusMethodCallback<vm_tools::concierge::CreateDiskImageResponse>
+          callback) = 0;
+
+  // Destroys a VM and removes its disk image.
   // |callback| is called after the method call finishes.
   virtual void DestroyDiskImage(
       const vm_tools::concierge::DestroyDiskImageRequest& request,
@@ -213,7 +222,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
 
   // Attaches a USB device to a VM.
   // |callback| is called once the method call has finished.
-  virtual void AttachUsbDevice(base::ScopedFD fd,
+  virtual void AttachUsbDevice(
+      base::ScopedFD fd,
       const vm_tools::concierge::AttachUsbDeviceRequest& request,
       DBusMethodCallback<vm_tools::concierge::AttachUsbDeviceResponse>
           callback) = 0;

@@ -114,6 +114,7 @@ void AppListClientImpl::OpenSearchResult(const std::string& result_id,
       app_list::RankingItemTypeFromSearchResult(*result);
   app_launch_data.launch_type = launch_type;
   app_launch_data.launched_from = launched_from;
+  app_launch_data.suggestion_index = suggestion_index;
 
   if (launch_type == ash::AppListLaunchType::kAppSearchResult &&
       launched_from == ash::AppListLaunchedFrom::kLaunchedFromSearchBox &&

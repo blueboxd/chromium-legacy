@@ -52,11 +52,9 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-// TODO(https://crbug.com/1060801): Here and elsewhere, possibly switch build
-// flag to #if defined(OS_CHROMEOS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#endif
 
 using safe_browsing::SafeBrowsingNavigationObserverManager;
 
@@ -156,16 +154,6 @@ const char kIncognitoError[] =
     "Apps cannot be installed in guest/incognito mode";
 const char kEphemeralAppLaunchingNotSupported[] =
     "Ephemeral launching of apps is no longer supported.";
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-// Note that the following error doesn't mean an incorrect password was entered,
-// nor that the parent permisison request was canceled by the user, but rather
-// that the Parent permission request after credential entry and acceptance
-// failed due to a either network connection error or some unsatisfied invariant
-// that prevented the request from completing.
-const char kWebstoreParentPermissionFailedError[] =
-    "Parent permission request failed";
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 // The number of user gestures to trace back for the referrer chain.
 const int kExtensionReferrerUserGestureLimit = 2;
@@ -286,11 +274,12 @@ WebstorePrivateApi::PopApprovalForTesting(Profile* profile,
 }
 
 WebstorePrivateBeginInstallWithManifest3Function::
-    WebstorePrivateBeginInstallWithManifest3Function()
-    : chrome_details_(this) {}
+    WebstorePrivateBeginInstallWithManifest3Function() : chrome_details_(this) {
+}
 
 WebstorePrivateBeginInstallWithManifest3Function::
-    ~WebstorePrivateBeginInstallWithManifest3Function() = default;
+    ~WebstorePrivateBeginInstallWithManifest3Function() {
+}
 
 ExtensionFunction::ResponseAction
 WebstorePrivateBeginInstallWithManifest3Function::Run() {
@@ -433,18 +422,11 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
                 : ExtensionInstallPrompt::EXTENSION_PENDING_REQUEST_PROMPT),
         ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   } else {
-    auto prompt = std::make_unique<ExtensionInstallPrompt::Prompt>(
-        ExtensionInstallPrompt::INSTALL_PROMPT);
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-    prompt->set_user_is_child(profile->IsChild());
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
-
     install_prompt_->ShowDialog(
         base::BindRepeating(&WebstorePrivateBeginInstallWithManifest3Function::
                                 OnInstallPromptDone,
                             this),
-        dummy_extension_.get(), &icon_, std::move(prompt),
+        dummy_extension_.get(), &icon_,
         ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
   // Control flow finishes up in OnInstallPromptDone or OnRequestPromptDone.
@@ -463,120 +445,11 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseFailure(
   Release();
 }
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-
-void WebstorePrivateBeginInstallWithManifest3Function::OnParentPermissionDone(
-    std::unique_ptr<ParentPermissionDialog> dialog,
-    ParentPermissionDialog::Result result) {
-  switch (result) {
-    case ParentPermissionDialog::Result::kParentPermissionReceived:
-      OnParentPermissionReceived();
-      break;
-    case ParentPermissionDialog::Result::kParentPermissionCanceled:
-      OnParentPermissionCanceled();
-      break;
-    case ParentPermissionDialog::Result::kParentPermissionFailed:
-      OnParentPermissionFailed();
-      break;
-  }
-}
-
-void WebstorePrivateBeginInstallWithManifest3Function::
-    OnParentPermissionReceived() {
-  SupervisedUserService* service =
-      SupervisedUserServiceFactory::GetForProfile(chrome_details_.GetProfile());
-  service->AddExtensionApproval(*dummy_extension_);
-
-  HandleInstallProceed();
-  Release();  // Matches the AddRef in Run().
-}
-
-void WebstorePrivateBeginInstallWithManifest3Function::
-    OnParentPermissionCanceled() {
-  if (test_webstore_installer_delegate) {
-    test_webstore_installer_delegate->OnExtensionInstallFailure(
-        dummy_extension_->id(), kWebstoreParentPermissionFailedError,
-        WebstoreInstaller::FailureReason::FAILURE_REASON_CANCELLED);
-  }
-
-  HandleInstallAbort(true /* user_initiated */);
-  Release();  // Matches the AddRef in Run().
-}
-
-void WebstorePrivateBeginInstallWithManifest3Function::
-    OnParentPermissionFailed() {
-  if (test_webstore_installer_delegate) {
-    test_webstore_installer_delegate->OnExtensionInstallFailure(
-        dummy_extension_->id(), kWebstoreParentPermissionFailedError,
-        WebstoreInstaller::FailureReason::FAILURE_REASON_OTHER);
-  }
-
-  Respond(BuildResponse(api::webstore_private::RESULT_UNKNOWN_ERROR,
-                        kWebstoreParentPermissionFailedError));
-
-  Release();  // Matches the AddRef in Run().
-}
-
-bool WebstorePrivateBeginInstallWithManifest3Function::
-    PromptForParentApproval() {
-  Profile* profile = chrome_details_.GetProfile();
-  DCHECK(profile->IsChild());
-  content::WebContents* web_contents = GetSenderWebContents();
-  if (!web_contents) {
-    // The browser window has gone away.
-    Respond(BuildResponse(api::webstore_private::RESULT_USER_CANCELLED,
-                          kWebstoreUserCancelledError));
-    return false;
-  }
-
-  bool reprompt_after_incorrect_credential = true;
-
-  // If we are in a test, then we don't reprompt after an incorrect
-  // credential because that, combined with the auto-confirm, would
-  // result in an infinite invalid password / reprompt loop, and
-  // eventually a test timeout.
-  if (test_webstore_installer_delegate)
-    reprompt_after_incorrect_credential = false;
-
-  auto parent_permission_dialog =
-      std::make_unique<ParentPermissionDialog>(profile);
-  parent_permission_dialog->set_reprompt_after_incorrect_credential(
-      reprompt_after_incorrect_credential);
-
-  // Cache a pointer to the dialog so we can show it after we transfer
-  // ownership to the callback.
-  ParentPermissionDialog* dialog_ptr = parent_permission_dialog.get();
-
-  ParentPermissionDialog::DoneCallback done_callback = base::BindOnce(
-      &WebstorePrivateBeginInstallWithManifest3Function::OnParentPermissionDone,
-      this, std::move(parent_permission_dialog));
-
-  dialog_ptr->ShowPromptForExtensionInstallation(
-      web_contents, dummy_extension_.get(), icon_, std::move(done_callback));
-  return true;
-}
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
-
 void WebstorePrivateBeginInstallWithManifest3Function::OnInstallPromptDone(
     ExtensionInstallPrompt::Result result) {
   switch (result) {
     case ExtensionInstallPrompt::Result::ACCEPTED:
     case ExtensionInstallPrompt::Result::ACCEPTED_AND_OPTION_CHECKED: {
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-      // Handle parent permission for child accounts on ChromeOS.
-      Profile* profile = chrome_details_.GetProfile();
-      if (profile->IsChild()) {
-        if (PromptForParentApproval()) {
-          // If are showing parent permission dialog, return instead of
-          // break, so that we don't release the ref below.
-          return;
-        } else {
-          // An error occurred in the dialog setup, so release and abort.
-          HandleInstallAbort(false /* user_initiated */);
-          break;
-        }
-      }
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
       HandleInstallProceed();
       break;
     }
@@ -660,8 +533,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::HandleInstallAbort(
 
 ExtensionFunction::ResponseValue
 WebstorePrivateBeginInstallWithManifest3Function::BuildResponse(
-    api::webstore_private::Result result,
-    const std::string& error) {
+    api::webstore_private::Result result, const std::string& error) {
   if (result != api::webstore_private::RESULT_SUCCESS)
     return ErrorWithArguments(CreateResults(result), error);
 

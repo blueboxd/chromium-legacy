@@ -2347,7 +2347,7 @@ void LayoutBlockFlow::AddVisualOverflowFromFloats(
     if (const NGPhysicalContainerFragment* child_container =
             DynamicTo<NGPhysicalContainerFragment>(child.get())) {
       if (child_container->HasFloatingDescendantsForPaint() &&
-          !child_container->IsBlockFormattingContextRoot())
+          !child_container->IsFormattingContextRoot())
         AddVisualOverflowFromFloats(*child_container);
     }
   }

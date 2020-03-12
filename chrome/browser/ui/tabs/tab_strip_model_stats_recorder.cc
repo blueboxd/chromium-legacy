@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
 TabStripModelStatsRecorder::TabStripModelStatsRecorder()
-    : browser_tab_strip_tracker_(this, nullptr, nullptr) {
+    : browser_tab_strip_tracker_(this, nullptr) {
   browser_tab_strip_tracker_.Init();
 }
 

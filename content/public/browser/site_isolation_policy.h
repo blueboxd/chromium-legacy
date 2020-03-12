@@ -54,20 +54,12 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // startup.
   static void ApplyGlobalIsolatedOrigins();
 
-  // Records metrics about which site isolation command-line flags are present,
-  // and sets up a timer to keep recording them every 24 hours.  This should be
-  // called once on browser startup.
-  static void StartRecordingSiteIsolationFlagUsage();
-
  private:
   SiteIsolationPolicy();  // Not instantiable.
 
   // Gets isolated origins from cmdline and/or from field trial param.
   static std::string GetIsolatedOriginsFromCommandLine();
   static std::string GetIsolatedOriginsFromFieldTrial();
-
-  // Records metrics about which site isolation command-line flags are present.
-  static void RecordSiteIsolationFlagUsage();
 
   DISALLOW_COPY_AND_ASSIGN(SiteIsolationPolicy);
 };

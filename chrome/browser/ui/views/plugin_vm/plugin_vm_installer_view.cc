@@ -179,7 +179,7 @@ bool PluginVmInstallerView::ShouldShowWindowTitle() const {
 }
 
 bool PluginVmInstallerView::Accept() {
-  if (state_ == State::FINISHED) {
+  if (state_ == State::CREATED || state_ == State::IMPORTED) {
     // Launch button has been clicked.
     plugin_vm::PluginVmManager::GetForProfile(profile_)->LaunchPluginVm();
     return true;
@@ -226,7 +226,7 @@ void PluginVmInstallerView::OnVmExists() {
   // This case should only occur if the user manually installed a VM via vmc,
   // which is rare enough so we just re-use the regular success strings.
   DCHECK_EQ(state_, State::DOWNLOADING_DLC);
-  state_ = State::FINISHED;
+  state_ = State::IMPORTED;
   OnStateUpdated();
 
   plugin_vm::RecordPluginVmSetupResultHistogram(
@@ -333,7 +333,20 @@ void PluginVmInstallerView::OnImported() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::IMPORTING);
 
-  state_ = State::FINISHED;
+  state_ = State::IMPORTED;
+  OnStateUpdated();
+
+  plugin_vm::RecordPluginVmSetupResultHistogram(
+      plugin_vm::PluginVmSetupResult::kSuccess);
+  plugin_vm::RecordPluginVmSetupTimeHistogram(base::TimeTicks::Now() -
+                                              setup_start_tick_);
+}
+
+void PluginVmInstallerView::OnCreated() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(state_, State::IMPORTING);
+
+  state_ = State::CREATED;
   OnStateUpdated();
 
   plugin_vm::RecordPluginVmSetupResultHistogram(
@@ -350,7 +363,8 @@ base::string16 PluginVmInstallerView::GetBigMessage() const {
     case State::IMPORTING:
       return l10n_util::GetStringUTF16(
           IDS_PLUGIN_VM_INSTALLER_ENVIRONMENT_SETTING_TITLE);
-    case State::FINISHED:
+    case State::CREATED:
+    case State::IMPORTED:
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_INSTALLER_FINISHED_TITLE);
     case State::ERROR:
       DCHECK(reason_);
@@ -376,9 +390,11 @@ base::string16 PluginVmInstallerView::GetMessage() const {
     case State::IMPORTING:
       return l10n_util::GetStringUTF16(
           IDS_PLUGIN_VM_INSTALLER_IMPORTING_MESSAGE);
-    case State::FINISHED:
+    case State::IMPORTED:
       return l10n_util::GetStringUTF16(
-          IDS_PLUGIN_VM_INSTALLER_FINISHED_MESSAGE);
+          IDS_PLUGIN_VM_INSTALLER_IMPORTED_MESSAGE);
+    case State::CREATED:
+      return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_INSTALLER_CREATED_MESSAGE);
     case State::ERROR:
       using Reason = plugin_vm::PluginVmInstaller::FailureReason;
       DCHECK(reason_);
@@ -454,7 +470,8 @@ int PluginVmInstallerView::GetCurrentDialogButtons() const {
     case State::DOWNLOADING:
     case State::IMPORTING:
       return ui::DIALOG_BUTTON_CANCEL;
-    case State::FINISHED:
+    case State::IMPORTED:
+    case State::CREATED:
       return ui::DIALOG_BUTTON_OK;
     case State::ERROR:
       DCHECK(reason_);
@@ -477,7 +494,8 @@ base::string16 PluginVmInstallerView::GetCurrentDialogButtonLabel(
       DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
       return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
     }
-    case State::FINISHED: {
+    case State::CREATED:
+    case State::IMPORTED: {
       DCHECK_EQ(button, ui::DIALOG_BUTTON_OK);
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_INSTALLER_LAUNCH_BUTTON);
     }
@@ -540,9 +558,10 @@ void PluginVmInstallerView::OnStateUpdated() {
   DialogModelChanged();
   GetWidget()->GetRootView()->Layout();
 
-  if (state_ == State::FINISHED || state_ == State::ERROR) {
+  if (state_ == State::CREATED || state_ == State::IMPORTED ||
+      state_ == State::ERROR) {
     if (finished_callback_for_testing_)
-      std::move(finished_callback_for_testing_).Run(state_ == State::FINISHED);
+      std::move(finished_callback_for_testing_).Run(state_ != State::ERROR);
   }
 }
 

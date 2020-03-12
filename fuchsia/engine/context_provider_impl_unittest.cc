@@ -28,7 +28,6 @@
 #include "base/fuchsia/default_job.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/fuchsia/service_directory.h"
 #include "base/path_service.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/multiprocess_test.h"

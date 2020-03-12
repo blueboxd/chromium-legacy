@@ -53,14 +53,13 @@ class DnsProbeRunner {
   // Destruction cancels the probes.
   virtual ~DnsProbeRunner() {}
 
-  // Starts the probes. Should only be called once and not after destruction of
-  // the DnsTransactionFactory.
-  virtual void Start() = 0;
-
-  // Restarts (or initially starts if not yet started) the probes for a network
-  // change. May be called multiple times, but should not be called after
-  // destruction of the DnsTransactionFactory.
-  virtual void RestartForNetworkChange() = 0;
+  // Starts all applicable probes that are not already running. May be called
+  // multiple times, but should not be called after destruction of the
+  // DnsTransactionFactory.
+  //
+  // Set |network_change| to indicate if this start or restart was triggered by
+  // a network connection change. Only used for logging and metrics.
+  virtual void Start(bool network_change) = 0;
 
   // Gets the delay until the next scheduled probe to the specified DoH server.
   // Returns base::TimeDelta() if no probe scheduled.

@@ -242,7 +242,7 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     // If a block (within a formatting-context) changes to/from an empty-block,
     // margins may collapse through this node, requiring full layout. We
     // approximate this check by checking if the block-size is/was zero.
-    if (!physical_fragment.IsBlockFormattingContextRoot() &&
+    if (!physical_fragment.IsFormattingContextRoot() &&
         !block_size != !fragment.BlockSize())
       return NGLayoutCacheStatus::kNeedsLayout;
   }

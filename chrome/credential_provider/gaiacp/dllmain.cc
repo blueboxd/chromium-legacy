@@ -69,7 +69,7 @@ STDAPI DllCanUnloadNow(void) {
 STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
   // Check to see if the credential provider has crashed too much recently.
   // If it has then do not allow it to create any credential providers.
-  if (!credential_provider::VerifyStartupSentinel()) {
+  if (!credential_provider::WriteToStartupSentinel()) {
     LOGFN(ERROR) << "Disabled due to previous unsuccessful starts";
     return E_NOTIMPL;
   }

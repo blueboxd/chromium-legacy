@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.content_public.browser.NavigationHandle;
+import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentAddress;
@@ -89,7 +90,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
         PaymentHandlerFinder finder = new PaymentHandlerFinder(delegate);
         ServiceWorkerPaymentAppBridgeJni.get().getAllPaymentApps(
                 delegate.getParams().getPaymentRequestSecurityOrigin(),
-                delegate.getParams().getWebContents(),
+                delegate.getParams().getRenderFrameHost(),
                 delegate.getParams().getMethodData().values().toArray(
                         new PaymentMethodData[delegate.getParams().getMethodData().size()]),
                 delegate.getParams().getMayCrawl(),
@@ -653,7 +654,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
 
     @NativeMethods
     interface Natives {
-        void getAllPaymentApps(Origin merchantOrigin, WebContents webContents,
+        void getAllPaymentApps(Origin merchantOrigin, RenderFrameHost initiatorRenderFrameHost,
                 PaymentMethodData[] methodData, boolean mayCrawlForInstallablePaymentApps,
                 PaymentHandlerFinder callback);
         void hasServiceWorkerPaymentApps(HasServiceWorkerPaymentAppsCallback callback);

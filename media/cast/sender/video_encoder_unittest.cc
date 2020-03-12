@@ -255,7 +255,7 @@ TEST_P(VideoEncoderTest, MAYBE_EncodesVariedFrameSizes) {
       const base::TimeDelta timestamp = video_frame->timestamp();
       const bool accepted_request = video_encoder()->EncodeVideoFrame(
           std::move(video_frame), reference_time,
-          base::BindRepeating(
+          base::BindOnce(
               [](base::WeakPtr<EncodedFrames> encoded_frames,
                  RtpTimeTicks expected_rtp_timestamp,
                  base::TimeTicks expected_reference_time,
@@ -343,8 +343,7 @@ TEST_P(VideoEncoderTest, MAYBE_CanBeDestroyedBeforeVEAIsCreated) {
   // Send a frame to spawn creation of the ExternalVideoEncoder instance.
   video_encoder()->EncodeVideoFrame(
       CreateTestVideoFrame(gfx::Size(128, 72)), Now(),
-      base::BindRepeating(
-          [](std::unique_ptr<SenderEncodedFrame> encoded_frame) {}));
+      base::BindOnce([](std::unique_ptr<SenderEncodedFrame> encoded_frame) {}));
 
   // Destroy the encoder, and confirm the VEA Factory did not respond yet.
   DestroyEncoder();

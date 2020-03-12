@@ -31,7 +31,6 @@
 # Copyright (c) 2009 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Generates a .cpp file that includes all V8 binding .cpp files for interfaces.
 
 It is expected to preserve symbol space, and to be acceptable to make static
@@ -88,25 +87,28 @@ COPYRIGHT_TEMPLATE = """/*
  */
 """
 
+
 def parse_options():
     parser = optparse.OptionParser()
     parser.add_option('--component')
 
     options, args = parser.parse_args()
     if len(args) < 2:
-        raise Exception('Expected 2 filenames; one is for input, and the other is for output.')
+        raise Exception(
+            'Expected 2 filenames; one is for input, and the other is for output.'
+        )
 
     return options, args
 
 
 def generate_content(component, basenames):
     # Add fixed content.
-    output = [COPYRIGHT_TEMPLATE,
-              '#define NO_IMPLICIT_ATOMICSTRING\n\n']
+    output = [COPYRIGHT_TEMPLATE, '#define NO_IMPLICIT_ATOMICSTRING\n\n']
 
     basenames.sort()
-    output.extend('#include "third_party/blink/renderer/bindings/%s/v8/v8_%s.cc"\n' %
-                  (component, to_snake_case(basename)) for basename in basenames)
+    output.extend(
+        '#include "third_party/blink/renderer/bindings/%s/v8/v8_%s.cc"\n' %
+        (component, to_snake_case(basename)) for basename in basenames)
     return ''.join(output)
 
 
@@ -123,8 +125,9 @@ def main():
     options, filenames = parse_options()
     component = options.component
     idl_filenames = read_idl_files_list_from_file(filenames[0])
-    basenames = [idl_filename_to_basename(file_path)
-                 for file_path in idl_filenames]
+    basenames = [
+        idl_filename_to_basename(file_path) for file_path in idl_filenames
+    ]
     file_contents = generate_content(component, basenames)
     write_content(file_contents, filenames[1])
 

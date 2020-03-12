@@ -627,16 +627,15 @@ OverviewWindowDragController::CompleteNormalDrag(
   }
 
   // Snap a window if appropriate.
+  aura::Window* target_root = GetRootWindowBeingDraggedIn();
   if (should_allow_split_view_ && snap_position_ != SplitViewController::NONE) {
-    SnapWindow(SplitViewController::Get(GetRootWindowBeingDraggedIn()),
-               snap_position_);
+    SnapWindow(SplitViewController::Get(target_root), snap_position_);
     overview_session_->PositionWindows(/*animate=*/true);
     return DragResult::kSnap;
   }
 
   // Drop a window into overview because we have not done anything else with it.
   DCHECK(item_);
-  aura::Window* target_root = GetRootWindowBeingDraggedIn();
   if (AreMultiDisplayOverviewAndSplitViewEnabled() &&
       target_root != item_->root_window()) {
     // Get the window and bounds from |item_| before removing it from its grid.

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 # pylint: disable=import-error,print-statement,relative-import
-
 """Unit tests for idl_definitions.py."""
 
 import unittest
@@ -12,7 +11,6 @@ from idl_definitions import IdlAttribute
 
 
 class IdlAttributeTest(unittest.TestCase):
-
     def test_no_params(self):
         try:
             IdlAttribute()

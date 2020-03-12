@@ -123,6 +123,10 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
     return GetGoogleUrlWithPath("/redirect2");
   }
 
+  GURL GetGoogleSubresourceUrl() const {
+    return GetGoogleUrlWithPath("/logo.png");
+  }
+
   GURL GetExampleUrlWithPath(const std::string& path) const {
     return server()->GetURL("www.example.com", path);
   }
@@ -156,7 +160,7 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
 
   void ClearReceivedHeaders() { received_headers_.clear(); }
 
-  bool FetchResource(const GURL& url) {
+  bool FetchResource(Browser* browser, const GURL& url) {
     if (!url.is_valid())
       return false;
     std::string script(
@@ -173,11 +177,13 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
               "  window.domAutomationController.send(false);"
               "};"
               "xhr.send(null)";
-    return ExecuteScript(script);
+    return ExecuteScript(browser, script);
   }
 
-  content::WebContents* GetWebContents() {
-    return browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* GetWebContents() { return GetWebContents(browser()); }
+
+  content::WebContents* GetWebContents(Browser* browser) {
+    return browser->tab_strip_model()->GetActiveWebContents();
   }
 
   // Registers a service worker for google.com root scope.
@@ -257,11 +263,11 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  bool ExecuteScript(const std::string& script) {
+  bool ExecuteScript(Browser* browser, const std::string& script) {
     bool xhr_result = false;
     // The JS call will fail if disallowed because the process will be killed.
-    bool execute_result =
-        ExecuteScriptAndExtractBool(GetWebContents(), script, &xhr_result);
+    bool execute_result = ExecuteScriptAndExtractBool(GetWebContents(browser),
+                                                      script, &xhr_result);
     return xhr_result && execute_result;
   }
 
@@ -315,6 +321,10 @@ VariationsHttpHeadersBrowserTest::RequestHandler(
     http_response->set_code(net::HTTP_OK);
     http_response->set_content("hello");
     http_response->set_content_type("text/plain");
+  } else if (request.relative_url == GetGoogleSubresourceUrl().path()) {
+    http_response->set_code(net::HTTP_OK);
+    http_response->set_content("");
+    http_response->set_content_type("image/png");
   } else {
     return nullptr;
   }
@@ -372,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
                        TestStrippingHeadersFromSubresourceRequest) {
   GURL url = server()->GetURL("/simple_page.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_TRUE(FetchResource(GetGoogleRedirectUrl1()));
+  EXPECT_TRUE(FetchResource(browser(), GetGoogleRedirectUrl1()));
   EXPECT_TRUE(HasReceivedHeader(GetGoogleRedirectUrl1(), "X-Client-Data"));
   EXPECT_TRUE(HasReceivedHeader(GetGoogleRedirectUrl2(), "X-Client-Data"));
   EXPECT_TRUE(HasReceivedHeader(GetExampleUrl(), "Host"));
@@ -384,6 +394,9 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest, Incognito) {
   ui_test_utils::NavigateToURL(incognito, GetGoogleUrl());
 
   EXPECT_FALSE(HasReceivedHeader(GetGoogleUrl(), "X-Client-Data"));
+
+  EXPECT_TRUE(FetchResource(incognito, GetGoogleSubresourceUrl()));
+  EXPECT_FALSE(HasReceivedHeader(GetGoogleSubresourceUrl(), "X-Client-Data"));
 }
 
 IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest, UserSignedIn) {

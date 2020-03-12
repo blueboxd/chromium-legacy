@@ -77,8 +77,7 @@ void TabletModePageBehavior::SetMobileLikeBehaviorEnabled(bool enabled) {
     // On calling Init() of the |tab_strip_tracker_|, we will get a call to
     // TabInsertedAt() for all the existing webcontents, upon which we will
     // trigger a refresh of their WebKit preferences.
-    tab_strip_tracker_ =
-        std::make_unique<BrowserTabStripTracker>(this, this, nullptr);
+    tab_strip_tracker_ = std::make_unique<BrowserTabStripTracker>(this, this);
     tab_strip_tracker_->Init();
   } else {
     // Manually trigger a refresh for the existing webcontents' preferences.

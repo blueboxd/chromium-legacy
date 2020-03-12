@@ -196,9 +196,9 @@ void AudioOutputDevice::RequestDeviceAuthorizationOnIOThread() {
     auth_timeout_action_.reset(new base::OneShotTimer());
     auth_timeout_action_->Start(
         FROM_HERE, auth_timeout_,
-        base::BindRepeating(&AudioOutputDevice::OnDeviceAuthorized, this,
-                            OUTPUT_DEVICE_STATUS_ERROR_TIMED_OUT,
-                            AudioParameters(), std::string()));
+        base::BindOnce(&AudioOutputDevice::OnDeviceAuthorized, this,
+                       OUTPUT_DEVICE_STATUS_ERROR_TIMED_OUT, AudioParameters(),
+                       std::string()));
   }
 }
 

@@ -84,6 +84,10 @@ HRESULT UpdaterImpl::Update(const base::char16* app_id) {
   return E_NOTIMPL;
 }
 
+HRESULT UpdaterImpl::UpdateAll() {
+  return E_NOTIMPL;
+}
+
 ComServer::ComServer()
     : com_initializer_(base::win::ScopedCOMInitializer::kMTA) {}
 

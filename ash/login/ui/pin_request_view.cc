@@ -4,6 +4,7 @@
 
 #include "ash/login/ui/pin_request_view.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -65,8 +66,7 @@ namespace {
 constexpr int kPinRequestInputGroup = 1;
 
 constexpr int kPinRequestViewWidthDp = 340;
-constexpr int kPinRequestViewHeightDp = 340;
-constexpr int kPinRequestViewPinKeyboardModeHeightDp = 580;
+constexpr int kPinKeyboardHeightDp = 224;
 constexpr int kPinRequestViewRoundedCornerRadiusDp = 8;
 constexpr int kPinRequestViewVerticalInsetDp = 8;
 // Inset for all elements except the back button.
@@ -74,20 +74,28 @@ constexpr int kPinRequestViewMainHorizontalInsetDp = 36;
 // Minimum inset (= back button inset).
 constexpr int kPinRequestViewHorizontalInsetDp = 8;
 
+constexpr int kCrossSizeDp = 20;
+constexpr int kBackButtonSizeDp = 36;
 constexpr int kLockIconSizeDp = 24;
+constexpr int kBackButtonLockIconVerticalOverlapDp = 8;
+constexpr int kHeaderHeightDp =
+    kBackButtonSizeDp + kLockIconSizeDp - kBackButtonLockIconVerticalOverlapDp;
 
 constexpr int kIconToTitleDistanceDp = 24;
 constexpr int kTitleToDescriptionDistanceDp = 8;
 constexpr int kDescriptionToAccessCodeDistanceDp = 32;
 constexpr int kAccessCodeToPinKeyboardDistanceDp = 16;
-constexpr int kPinKeyboardToFooterDistanceDp = 57;
-constexpr int kPinKeyboardToFooterPinKeyboardModeDistanceDp = 16;
+constexpr int kPinKeyboardToFooterDistanceDp = 16;
 constexpr int kSubmitButtonBottomMarginDp = 28;
 
 constexpr int kTitleFontSizeDeltaDp = 4;
+constexpr int kTitleLineWidthDp = 268;
 constexpr int kTitleLineHeightDp = 24;
+constexpr int kTitleMaxLines = 4;
 constexpr int kDescriptionFontSizeDeltaDp = 0;
+constexpr int kDescriptionLineWidthDp = 268;
 constexpr int kDescriptionTextLineHeightDp = 18;
+constexpr int kDescriptionMaxLines = 4;
 
 constexpr int kAccessCodeFlexLengthWidthDp = 192;
 constexpr int kAccessCodeFlexUnderlineThicknessDp = 1;
@@ -95,14 +103,19 @@ constexpr int kAccessCodeFontSizeDeltaDp = 4;
 constexpr int kObscuredGlyphSpacingDp = 6;
 
 constexpr int kAccessCodeInputFieldWidthDp = 24;
-constexpr int kAccessCodeInputFieldHeightDp = 32;
 constexpr int kAccessCodeInputFieldUnderlineThicknessDp = 2;
+constexpr int kAccessCodeInputFieldHeightDp =
+    24 + kAccessCodeInputFieldUnderlineThicknessDp;
 constexpr int kAccessCodeBetweenInputFieldsGapDp = 8;
 
 constexpr int kArrowButtonSizeDp = 48;
 
-constexpr int kCrossSizeDp = 20;
-constexpr int kBackButtonSizeDp = 36;
+constexpr int kPinRequestViewMinimumHeightDp =
+    kPinRequestViewMainHorizontalInsetDp + kLockIconSizeDp +
+    kIconToTitleDistanceDp + kTitleToDescriptionDistanceDp +
+    kDescriptionToAccessCodeDistanceDp + kAccessCodeInputFieldHeightDp +
+    kAccessCodeToPinKeyboardDistanceDp + kPinKeyboardToFooterDistanceDp +
+    kArrowButtonSizeDp + kPinRequestViewMainHorizontalInsetDp;  // = 266
 
 constexpr int kAlpha70Percent = 178;
 constexpr int kAlpha74Percent = 189;
@@ -714,6 +727,8 @@ SkColor PinRequestView::GetChildUserDialogColor(bool using_blur) {
   return using_blur ? SkColorSetA(color, kAlpha74Percent) : color;
 }
 
+// TODO(crbug.com/1061008): Make dialog look good on small screens with high
+// zoom factor.
 PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
     : delegate_(delegate),
       on_pin_request_done_(std::move(request.on_pin_request_done)),
@@ -732,9 +747,8 @@ PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
-  views::BoxLayout* main_layout = SetLayoutManager(std::move(layout));
+  SetLayoutManager(std::move(layout));
 
-  SetPreferredSize(GetPinRequestViewSize());
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetRoundedCornerRadius(
@@ -744,18 +758,30 @@ PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
   const int child_view_width =
       kPinRequestViewWidthDp - 2 * kPinRequestViewMainHorizontalInsetDp;
 
-  // Header view contains back button that is aligned to its end.
-  auto header_layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), 0);
-  header_layout->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::kEnd);
+  // Header view which contains the back button that is aligned top right and
+  // the lock icon which is in the bottom center.
+  auto header_layout = std::make_unique<views::FillLayout>();
   auto* header = new NonAccessibleView();
-  header->SetPreferredSize(
-      gfx::Size(child_view_width + 2 * (kPinRequestViewMainHorizontalInsetDp -
-                                        kPinRequestViewHorizontalInsetDp),
-                0));
   header->SetLayoutManager(std::move(header_layout));
   AddChildView(header);
+  auto* header_spacer = new NonAccessibleView();
+  header_spacer->SetPreferredSize(gfx::Size(0, kHeaderHeightDp));
+  header->AddChildView(header_spacer);
+
+  // Back button.
+  auto* back_button_view = new NonAccessibleView();
+  back_button_view->SetPreferredSize(
+      gfx::Size(child_view_width + 2 * (kPinRequestViewMainHorizontalInsetDp -
+                                        kPinRequestViewHorizontalInsetDp),
+                kHeaderHeightDp));
+  auto back_button_layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), 0);
+  back_button_layout->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::kEnd);
+  back_button_layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kStart);
+  back_button_view->SetLayoutManager(std::move(back_button_layout));
+  header->AddChildView(back_button_view);
 
   back_button_ = new LoginButton(this);
   back_button_->SetPreferredSize(
@@ -770,14 +796,24 @@ PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
   back_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_BACK_BUTTON_ACCESSIBLE_NAME));
   back_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
-
-  header->AddChildView(back_button_);
+  back_button_view->AddChildView(back_button_);
 
   // Main view icon.
+  auto* icon_view = new NonAccessibleView();
+  icon_view->SetPreferredSize(gfx::Size(0, kHeaderHeightDp));
+  auto icon_layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0);
+  icon_layout->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::kEnd);
+  icon_layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kCenter);
+  icon_view->SetLayoutManager(std::move(icon_layout));
+  header->AddChildView(icon_view);
+
   views::ImageView* icon = new views::ImageView();
   icon->SetPreferredSize(gfx::Size(kLockIconSizeDp, kLockIconSizeDp));
   icon->SetImage(gfx::CreateVectorIcon(kPinRequestLockIcon, SK_ColorWHITE));
-  AddChildView(icon);
+  icon_view->AddChildView(icon);
 
   auto add_spacer = [&](int height) {
     auto* spacer = new NonAccessibleView();
@@ -798,6 +834,8 @@ PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
   title_label_ = new views::Label(default_title_, views::style::CONTEXT_LABEL,
                                   views::style::STYLE_PRIMARY);
   title_label_->SetMultiLine(true);
+  title_label_->SetMaxLines(kTitleMaxLines);
+  title_label_->SizeToFit(kTitleLineWidthDp);
   title_label_->SetLineHeight(kTitleLineHeightDp);
   title_label_->SetFontList(gfx::FontList().Derive(
       kTitleFontSizeDeltaDp, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
@@ -811,6 +849,8 @@ PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
       new views::Label(default_description_, views::style::CONTEXT_LABEL,
                        views::style::STYLE_PRIMARY);
   description_label_->SetMultiLine(true);
+  description_label_->SetMaxLines(kDescriptionMaxLines);
+  description_label_->SizeToFit(kDescriptionLineWidthDp);
   description_label_->SetLineHeight(kDescriptionTextLineHeightDp);
   description_label_->SetFontList(
       gfx::FontList().Derive(kDescriptionFontSizeDeltaDp, gfx::Font::NORMAL,
@@ -847,7 +887,7 @@ PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
   // Pin keyboard. Note that the keyboard's own submit button is disabled via
   // passing a null |on_submit| callback.
   pin_keyboard_view_ =
-      new LoginPinView(LoginPinView::Style::kNumeric,
+      new LoginPinView(LoginPinView::Style::kAlphanumeric,
                        base::BindRepeating(&AccessCodeInput::InsertDigit,
                                            base::Unretained(access_code_view_)),
                        base::BindRepeating(&AccessCodeInput::Backspace,
@@ -857,13 +897,7 @@ PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
   pin_keyboard_view_->OnPasswordTextChanged(false);
   AddChildView(pin_keyboard_view_);
 
-  // Vertical spacer to consume height remaining in the view after all children
-  // are accounted for.
-  pin_keyboard_to_footer_spacer_ = new NonAccessibleView();
-  pin_keyboard_to_footer_spacer_->SetPreferredSize(
-      GetPinKeyboardToFooterSpacerSize());
-  AddChildView(pin_keyboard_to_footer_spacer_);
-  main_layout->SetFlexForView(pin_keyboard_to_footer_spacer_, 1);
+  add_spacer(kPinKeyboardToFooterDistanceDp);
 
   // Footer view contains help text button aligned to its start, submit
   // button aligned to its end and spacer view in between.
@@ -904,6 +938,8 @@ PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
   pin_keyboard_view_->SetVisible(PinKeyboardVisible());
 
   tablet_mode_observer_.Add(Shell::Get()->tablet_mode_controller());
+
+  SetPreferredSize(GetPinRequestViewSize());
 }
 
 PinRequestView::~PinRequestView() = default;
@@ -1013,6 +1049,7 @@ void PinRequestView::UpdateState(PinRequestViewState state,
   state_ = state;
   title_label_->SetText(title);
   description_label_->SetText(description);
+  UpdatePreferredSize();
   switch (state_) {
     case PinRequestViewState::kNormal: {
       access_code_view_->SetInputColor(kTextColor);
@@ -1038,8 +1075,6 @@ void PinRequestView::SetInputEnabled(bool input_enabled) {
 }
 
 void PinRequestView::UpdatePreferredSize() {
-  pin_keyboard_to_footer_spacer_->SetPreferredSize(
-      GetPinKeyboardToFooterSpacerSize());
   SetPreferredSize(CalculatePreferredSize());
   if (GetWidget())
     GetWidget()->CenterWindow(GetPreferredSize());
@@ -1084,16 +1119,16 @@ bool PinRequestView::PinKeyboardVisible() const {
   return pin_keyboard_always_enabled_ || IsTabletMode();
 }
 
-gfx::Size PinRequestView::GetPinKeyboardToFooterSpacerSize() const {
-  return gfx::Size(0, PinKeyboardVisible()
-                          ? kPinKeyboardToFooterPinKeyboardModeDistanceDp
-                          : kPinKeyboardToFooterDistanceDp);
-}
-
 gfx::Size PinRequestView::GetPinRequestViewSize() const {
-  return gfx::Size(kPinRequestViewWidthDp,
-                   PinKeyboardVisible() ? kPinRequestViewPinKeyboardModeHeightDp
-                                        : kPinRequestViewHeightDp);
+  int height = kPinRequestViewMinimumHeightDp +
+               std::min(int{title_label_->GetRequiredLines()}, kTitleMaxLines) *
+                   kTitleLineHeightDp +
+               std::min(int{description_label_->GetRequiredLines()},
+                        kDescriptionMaxLines) *
+                   kDescriptionTextLineHeightDp;
+  if (PinKeyboardVisible())
+    height += kPinKeyboardHeightDp;
+  return gfx::Size(kPinRequestViewWidthDp, height);
 }
 
 }  // namespace ash

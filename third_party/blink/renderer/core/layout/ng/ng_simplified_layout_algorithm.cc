@@ -40,7 +40,7 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
       Node().IsInlineFormattingContextRoot());
   container_builder_.SetStyleVariant(physical_fragment.StyleVariant());
   container_builder_.SetIsNewFormattingContext(
-      physical_fragment.IsBlockFormattingContextRoot());
+      physical_fragment.IsFormattingContextRoot());
   container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
 
   NGExclusionSpace exclusion_space = result.ExclusionSpace();
@@ -172,7 +172,7 @@ scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
 
     // Only take exclusion spaces from children which don't establish their own
     // formatting context.
-    if (!fragment.IsBlockFormattingContextRoot())
+    if (!fragment.IsFormattingContextRoot())
       exclusion_space_ = result->ExclusionSpace();
     ++it;
   }

@@ -194,8 +194,8 @@ public class TabCallbackTest {
         Assert.assertEquals(true, isTabModalShowingResult[0]);
 
         callCount = callbackHelper.getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { activity.getTab().dismissTabModalOverlay(); });
+        Assert.assertTrue(TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> activity.getTab().dismissTransientUi()));
         callbackHelper.waitForCallback(callCount);
         Assert.assertEquals(false, isTabModalShowingResult[0]);
     }

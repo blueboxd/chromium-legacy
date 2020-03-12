@@ -258,11 +258,11 @@ TEST_F(ImageBitmapTest, AvoidGPUReadback) {
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
       SharedGpuContext::ContextProviderWrapper();
   CanvasColorParams color_params;
-  auto resource_provider = CanvasResourceProvider::Create(
-      IntSize(100, 100),
-      CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
-      context_provider_wrapper, 0, kLow_SkFilterQuality, color_params,
-      CanvasResourceProvider::kDefaultPresentationMode, nullptr);
+  auto resource_provider = CanvasResourceProvider::CreateSharedImageProvider(
+      IntSize(100, 100), context_provider_wrapper, kLow_SkFilterQuality,
+      color_params, /*is_origin_top_left=*/true,
+      /*shared_image_usage_flags=*/0u);
+
   scoped_refptr<StaticBitmapImage> bitmap = resource_provider->Snapshot();
   ASSERT_TRUE(bitmap->IsTextureBacked());
 

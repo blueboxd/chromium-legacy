@@ -165,9 +165,10 @@ void EsParserH264Test::GetPesTimestamps(std::vector<Packet>* pes_packets_ptr) {
 bool EsParserH264Test::Process(
     const std::vector<Packet>& pes_packets,
     bool force_timing) {
-  EsParserH264 es_parser(
-      base::Bind(&EsParserH264Test::NewVideoConfig, base::Unretained(this)),
-      base::Bind(&EsParserH264Test::EmitBuffer, base::Unretained(this)));
+  EsParserH264 es_parser(base::BindRepeating(&EsParserH264Test::NewVideoConfig,
+                                             base::Unretained(this)),
+                         base::BindRepeating(&EsParserH264Test::EmitBuffer,
+                                             base::Unretained(this)));
   return ProcessPesPackets(&es_parser, pes_packets, force_timing);
 }
 

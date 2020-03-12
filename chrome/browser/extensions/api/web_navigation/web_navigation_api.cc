@@ -73,7 +73,7 @@ void WebNavigationEventRouter::PendingWebContents::WebContentsDestroyed() {
 }
 
 WebNavigationEventRouter::WebNavigationEventRouter(Profile* profile)
-    : profile_(profile), browser_tab_strip_tracker_(this, this, nullptr) {
+    : profile_(profile), browser_tab_strip_tracker_(this, this) {
   browser_tab_strip_tracker_.Init();
 }
 

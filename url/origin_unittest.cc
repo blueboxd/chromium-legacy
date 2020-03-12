@@ -95,7 +95,8 @@ class OriginTest : public ::testing::Test {
     return origin.GetNonceForSerialization();
   }
 
-  // Wrapper around url::Origin method to expose it to tests.
+  // Wrappers around url::Origin methods to expose it to tests.
+
   base::Optional<Origin> UnsafelyCreateOpaqueOriginWithoutNormalization(
       base::StringPiece precursor_scheme,
       base::StringPiece precursor_host,
@@ -103,6 +104,14 @@ class OriginTest : public ::testing::Test {
       const Origin::Nonce& nonce) {
     return Origin::UnsafelyCreateOpaqueOriginWithoutNormalization(
         precursor_scheme, precursor_host, precursor_port, nonce);
+  }
+
+  base::Optional<std::string> SerializeWithNonce(const Origin& origin) {
+    return origin.SerializeWithNonce();
+  }
+
+  base::Optional<Origin> Deserialize(const std::string& value) {
+    return Origin::Deserialize(value);
   }
 
  private:
@@ -625,9 +634,9 @@ TEST_F(OriginTest, DomainIs) {
   };
 
   for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message() << "(url, domain): (" << test_case.url
-                                    << ", " << test_case.lower_ascii_domain
-                                    << ")");
+    SCOPED_TRACE(testing::Message()
+                 << "(url, domain): (" << test_case.url << ", "
+                 << test_case.lower_ascii_domain << ")");
     GURL url(test_case.url);
     ASSERT_TRUE(url.is_valid());
     Origin origin = Origin::Create(url);
@@ -859,6 +868,80 @@ TEST_F(OriginTest, GetDebugString) {
       Origin::Create(GURL("file://example.com/etc/passwd"));
   EXPECT_STREQ(file_server_origin.GetDebugString().c_str(),
                "file:// [internally: file://example.com]");
+}
+
+TEST_F(OriginTest, Deserialize) {
+  std::vector<GURL> valid_urls = {
+      GURL("https://a.com"),         GURL("http://a"),
+      GURL("http://a:80"),           GURL("file://a.com/etc/passwd"),
+      GURL("file:///etc/passwd"),    GURL("http://192.168.1.1"),
+      GURL("http://[2001:db8::1]/"),
+  };
+  for (const GURL& url : valid_urls) {
+    SCOPED_TRACE(url.spec());
+    Origin origin = Origin::Create(url);
+    base::Optional<std::string> serialized = SerializeWithNonce(origin);
+    ASSERT_TRUE(serialized);
+
+    base::Optional<Origin> deserialized = Deserialize(std::move(*serialized));
+    ASSERT_TRUE(deserialized.has_value());
+
+    EXPECT_TRUE(DoEqualityComparisons(origin, deserialized.value(), true));
+    EXPECT_EQ(origin.GetDebugString(), deserialized.value().GetDebugString());
+  }
+}
+
+TEST_F(OriginTest, DeserializeInvalid) {
+  EXPECT_EQ(base::nullopt, Deserialize(std::string()));
+  EXPECT_EQ(base::nullopt, Deserialize("deadbeef"));
+  EXPECT_EQ(base::nullopt, Deserialize("0123456789"));
+  EXPECT_EQ(base::nullopt, Deserialize("https://a.com"));
+  EXPECT_EQ(base::nullopt, Deserialize("https://192.168.1.1"));
+}
+
+TEST_F(OriginTest, SerializeTBDNonce) {
+  std::vector<GURL> invalid_urls = {
+      GURL("data:uniqueness"),       GURL("data:,"),
+      GURL("data:text/html,Hello!"), GURL("javascript:alert(1)"),
+      GURL("about:blank"),           GURL("google.com"),
+  };
+  for (const GURL& url : invalid_urls) {
+    SCOPED_TRACE(url.spec());
+    Origin origin = Origin::Create(url);
+    base::Optional<std::string> serialized = SerializeWithNonce(origin);
+    base::Optional<Origin> deserialized = Deserialize(std::move(*serialized));
+    ASSERT_TRUE(deserialized.has_value());
+
+    // Can't use DoEqualityComparisons here since empty nonces are never ==
+    // unless they are the same object.
+    EXPECT_EQ(origin.GetDebugString(), deserialized.value().GetDebugString());
+  }
+
+  // Same basic test as above, but without a GURL to create tuple_.
+  Origin opaque;
+  base::Optional<std::string> serialized = SerializeWithNonce(opaque);
+  ASSERT_TRUE(serialized);
+
+  base::Optional<Origin> deserialized = Deserialize(std::move(*serialized));
+  ASSERT_TRUE(deserialized.has_value());
+
+  // Can't use DoEqualityComparisons here since empty nonces are never == unless
+  // they are the same object.
+  EXPECT_EQ(opaque.GetDebugString(), deserialized.value().GetDebugString());
+}
+
+TEST_F(OriginTest, DeserializeValidNonce) {
+  Origin opaque;
+  GetNonce(opaque);
+
+  base::Optional<std::string> serialized = SerializeWithNonce(opaque);
+  ASSERT_TRUE(serialized);
+
+  base::Optional<Origin> deserialized = Deserialize(std::move(*serialized));
+  ASSERT_TRUE(deserialized.has_value());
+
+  EXPECT_TRUE(DoEqualityComparisons(opaque, deserialized.value(), true));
+  EXPECT_EQ(opaque.GetDebugString(), deserialized.value().GetDebugString());
 }
 
 }  // namespace url

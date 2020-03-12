@@ -417,12 +417,6 @@ public final class TabImpl extends ITab.Stub {
     }
 
     @Override
-    public void dismissTabModalOverlay() {
-        BrowserViewController controller = getViewController();
-        if (controller != null) controller.dismissTabModalOverlay();
-    }
-
-    @Override
     public void dispatchBeforeUnloadAndClose() {
         StrictModeWorkaround.apply();
         mWebContents.dispatchBeforeUnload(false);
@@ -505,6 +499,13 @@ public final class TabImpl extends ITab.Stub {
             mFindResultBar.setMatchRects(
                     matchRects.version, matchRects.rects, matchRects.activeRect);
         }
+    }
+
+    @CalledByNative
+    private boolean shouldOverrideUrlLoading(
+            String url, boolean hasUserGesture, boolean isRedirect, boolean isMainFrame) {
+        return ExternalNavigationHandler.shouldOverrideUrlLoading(
+                this, url, hasUserGesture, isRedirect, isMainFrame);
     }
 
     public void destroy() {

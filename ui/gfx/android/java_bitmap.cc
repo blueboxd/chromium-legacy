@@ -7,6 +7,7 @@
 #include <android/bitmap.h>
 
 #include "base/android/jni_string.h"
+#include "base/bits.h"
 #include "base/logging.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gfx_jni_headers/BitmapHelper_jni.h"
@@ -90,26 +91,36 @@ SkBitmap CreateSkBitmapFromJavaBitmap(const JavaBitmap& jbitmap) {
   gfx::Size src_size = jbitmap.size();
 
   SkBitmap skbitmap;
+  SkImageInfo image_info;
   switch (jbitmap.format()) {
     case ANDROID_BITMAP_FORMAT_RGBA_8888:
-      skbitmap.allocPixels(SkImageInfo::MakeN32Premul(src_size.width(),
-                                                      src_size.height()),
-                           jbitmap.stride());
+      image_info =
+          SkImageInfo::MakeN32Premul(src_size.width(), src_size.height());
       break;
     case ANDROID_BITMAP_FORMAT_A_8:
-      skbitmap.allocPixels(SkImageInfo::MakeA8(src_size.width(),
-                                               src_size.height()),
-                           jbitmap.stride());
+      image_info =
+          SkImageInfo::SkImageInfo::MakeA8(src_size.width(), src_size.height());
       break;
     default:
       CHECK(false) << "Invalid Java bitmap format: " << jbitmap.format();
       break;
   }
-  CHECK_EQ(jbitmap.byte_count(), static_cast<int>(skbitmap.computeByteSize()));
-  const void* src_pixels = jbitmap.pixels();
-  void* dst_pixels = skbitmap.getPixels();
-  memcpy(dst_pixels, src_pixels, skbitmap.computeByteSize());
 
+  // Ensure 4 byte stride alignment since the texture upload code in the
+  // compositor relies on this.
+  const size_t min_row_bytes = image_info.minRowBytes();
+  DCHECK_GE(jbitmap.stride(), min_row_bytes);
+
+  const size_t row_bytes = base::bits::Align(min_row_bytes, 4u);
+  skbitmap.allocPixels(image_info, row_bytes);
+
+  const char* src_pixels = static_cast<const char*>(jbitmap.pixels());
+  char* dst_pixels = static_cast<char*>(skbitmap.getPixels());
+  for (int i = 0; i < src_size.height(); ++i) {
+    memcpy(dst_pixels, src_pixels, min_row_bytes);
+    src_pixels += jbitmap.stride();
+    dst_pixels += row_bytes;
+  }
   return skbitmap;
 }
 

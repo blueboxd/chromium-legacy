@@ -153,8 +153,8 @@ void DecoderSelector<StreamType>::InitializeDecoder() {
   const bool is_live = stream_->liveness() == DemuxerStream::LIVENESS_LIVE;
   traits_->InitializeDecoder(
       decoder_.get(), config_, is_live, cdm_context_,
-      base::BindRepeating(&DecoderSelector<StreamType>::OnDecoderInitializeDone,
-                          weak_this_factory_.GetWeakPtr()),
+      base::BindOnce(&DecoderSelector<StreamType>::OnDecoderInitializeDone,
+                     weak_this_factory_.GetWeakPtr()),
       output_cb_, waiting_cb_);
 }
 

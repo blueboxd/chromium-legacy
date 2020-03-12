@@ -18,6 +18,7 @@
 #include "net/url_request/redirect_util.h"
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
+#include "services/network/public/cpp/cross_origin_opener_policy_parser.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -143,6 +144,22 @@ void ServiceWorkerLoaderHelpers::SaveResponseHeaders(
             out_head->headers.get(),
             kCrossOriginEmbedderPolicyValueReportOnlyHeader);
     out_head->cross_origin_embedder_policy = coep;
+  }
+
+  // TODO(pmeuleman): Remove the code duplication with
+  // //services/network/url_loader.cc.
+  if (base::FeatureList::IsEnabled(
+          network::features::kCrossOriginOpenerPolicy)) {
+    // Parse the Cross-Origin-Opener-Policy header.
+    constexpr char kCrossOriginOpenerPolicyHeader[] =
+        "Cross-Origin-Opener-Policy";
+    std::string raw_coop_string;
+    if (out_head->headers &&
+        out_head->headers->GetNormalizedHeader(kCrossOriginOpenerPolicyHeader,
+                                               &raw_coop_string)) {
+      out_head->cross_origin_opener_policy =
+          network::ParseCrossOriginOpenerPolicyHeader(raw_coop_string);
+    }
   }
 }
 

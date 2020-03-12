@@ -53,12 +53,12 @@ SkColor GetLightModeColor(int id) {
     // Properties stored in theme pack.  If you change these defaults, you must
     // increment the version number in browser_theme_pack.cc.
     case ThemeProperties::COLOR_FRAME:
-    case ThemeProperties::COLOR_BACKGROUND_TAB:
+    case ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE:
     case ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE:
     case ThemeProperties::COLOR_STATUS_BUBBLE:
       return SkColorSetRGB(0xDE, 0xE1, 0xE6);
     case ThemeProperties::COLOR_FRAME_INACTIVE:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE:
+    case ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE:
     case ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE:
       return color_utils::HSLShift(
           GetLightModeColor(ThemeProperties::COLOR_FRAME),
@@ -67,15 +67,18 @@ SkColor GetLightModeColor(int id) {
     case ThemeProperties::COLOR_DOWNLOAD_SHELF:
     case ThemeProperties::COLOR_INFOBAR:
     case ThemeProperties::COLOR_TOOLBAR:
+    case ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE:
+    case ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_INACTIVE:
       return SK_ColorWHITE;
     case ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND:
       return gfx::kGoogleGrey300;
     case ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND:
       return gfx::kGoogleGrey050;
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE:
     case ThemeProperties::COLOR_BOOKMARK_TEXT:
-    case ThemeProperties::COLOR_TAB_TEXT:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_INACTIVE:
       return gfx::kGoogleGrey800;
     case ThemeProperties::COLOR_NTP_BACKGROUND:
       return kDefaultColorNTPBackground;
@@ -116,10 +119,16 @@ SkColor GetLightModeColor(int id) {
 
     case ThemeProperties::COLOR_FRAME_INCOGNITO:
     case ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE:
+    case ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE_INCOGNITO:
+    case ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_INACTIVE_INCOGNITO:
+    case ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO:
+    case ThemeProperties::
+        COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE_INCOGNITO:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE_INCOGNITO:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_INACTIVE_INCOGNITO:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO:
+    case ThemeProperties::
+        COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE_INCOGNITO:
     case ThemeProperties::
         COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE:
     case ThemeProperties::
@@ -136,12 +145,12 @@ SkColor GetLightModeColor(int id) {
 base::Optional<SkColor> GetIncognitoColor(int id) {
   switch (id) {
     case ThemeProperties::COLOR_FRAME:
-    case ThemeProperties::COLOR_BACKGROUND_TAB:
+    case ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE:
       return color_utils::HSLShift(
           GetLightModeColor(ThemeProperties::COLOR_FRAME),
           ThemeProperties::GetDefaultTint(ThemeProperties::TINT_FRAME, true));
     case ThemeProperties::COLOR_FRAME_INACTIVE:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE:
+    case ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE:
       return color_utils::HSLShift(
           GetLightModeColor(ThemeProperties::COLOR_FRAME),
           ThemeProperties::GetDefaultTint(ThemeProperties::TINT_FRAME_INACTIVE,
@@ -151,6 +160,8 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
     case ThemeProperties::COLOR_INFOBAR:
     case ThemeProperties::COLOR_TOOLBAR:
     case ThemeProperties::COLOR_NTP_BACKGROUND:
+    case ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE:
+    case ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_INACTIVE:
       return SkColorSetRGB(0x35, 0x36, 0x3A);
     case ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND:
       return gfx::kGoogleGrey700;
@@ -158,12 +169,13 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
     case ThemeProperties::COLOR_NTP_SHORTCUT:
       return gfx::kGoogleGrey900;
     case ThemeProperties::COLOR_BOOKMARK_TEXT:
-    case ThemeProperties::COLOR_TAB_TEXT:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_INACTIVE:
       return SK_ColorWHITE;
     case ThemeProperties::COLOR_NTP_TEXT:
       return gfx::kGoogleGrey200;
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE:
     case ThemeProperties::COLOR_TAB_ALERT_AUDIO:
     case ThemeProperties::COLOR_TAB_ALERT_CAPTURING:
     case ThemeProperties::COLOR_TAB_PIP_PLAYING:

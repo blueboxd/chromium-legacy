@@ -22,6 +22,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
+import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -122,6 +123,12 @@ public class AndroidPaymentAppFinderTest
     @Override
     public WebContents getWebContents() {
         return mRule.getActivity().getCurrentWebContents();
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public RenderFrameHost getRenderFrameHost() {
+        return getWebContents().getMainFrame();
     }
 
     // PaymentAppFactoryParams implementation.

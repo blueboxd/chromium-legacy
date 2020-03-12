@@ -81,6 +81,5 @@ int main(int argc, char** argv) {
   MediaBlinkTestSuite test_suite(argc, argv);
   return base::LaunchUnitTests(
       argc, argv,
-      base::BindRepeating(&MediaBlinkTestSuite::Run,
-                          base::Unretained(&test_suite)));
+      base::BindOnce(&MediaBlinkTestSuite::Run, base::Unretained(&test_suite)));
 }

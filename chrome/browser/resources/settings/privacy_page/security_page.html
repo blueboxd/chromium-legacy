@@ -4,6 +4,8 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
+<link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="collapse_radio_button.html">
 <link rel="import" href="passwords_leak_detection_toggle.html">
 <link rel="import" href="privacy_page_browser_proxy.html">
@@ -105,7 +107,7 @@
             <settings-toggle-button id="safeBrowsingReportingToggle"
                 pref="[[safeBrowsingReportingPref_]]" no-set-pref
                 class="settings-box first"
-                label="$i18n{safeBrowsingEnableExtendedReporting}"
+                label="$i18n{safeBrowsingStandardReportingLabel}"
                 sub-label="$i18n{safeBrowsingEnableExtendedReportingDesc}"
                 disabled="[[
                     getDisabledExtendedSafeBrowsing_(prefs.safebrowsing.*)]]"

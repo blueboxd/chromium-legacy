@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 # pylint: disable=import-error,print-statement,relative-import
-
 """Plumbing for a Jinja-based code generator, including CodeGeneratorBase, a base class for all generators."""
 
 from __future__ import print_function
@@ -19,9 +18,10 @@ from v8_interface import constant_filters
 from v8_types import set_component_dirs
 from v8_methods import method_filters
 from v8_utilities import capitalize
-from utilities import (idl_filename_to_component, is_valid_component_dependency,
-                       format_remove_duplicates, format_blink_cpp_source_code,
-                       to_snake_case, normalize_path)
+from utilities import (idl_filename_to_component,
+                       is_valid_component_dependency, format_remove_duplicates,
+                       format_blink_cpp_source_code, to_snake_case,
+                       normalize_path)
 import v8_utilities
 
 # Path handling for libraries and templates
@@ -33,10 +33,10 @@ import v8_utilities
 # is regenerated, which causes a race condition and breaks concurrent build,
 # since some compile processes will try to read the partially written cache.
 MODULE_PATH, _ = os.path.split(os.path.realpath(__file__))
-THIRD_PARTY_DIR = os.path.normpath(os.path.join(
-    MODULE_PATH, os.pardir, os.pardir, os.pardir, os.pardir))
-TEMPLATES_DIR = os.path.normpath(os.path.join(
-    MODULE_PATH, os.pardir, 'templates'))
+THIRD_PARTY_DIR = os.path.normpath(
+    os.path.join(MODULE_PATH, os.pardir, os.pardir, os.pardir, os.pardir))
+TEMPLATES_DIR = os.path.normpath(
+    os.path.join(MODULE_PATH, os.pardir, 'templates'))
 
 # jinja2 is in chromium's third_party directory.
 # Insert at 1 so at front to override system libraries, and
@@ -49,15 +49,15 @@ def generate_indented_conditional(code, conditional):
     # Indent if statement to level of original code
     indent = re.match(' *', code).group(0)
     return ('%sif (%s) {\n' % (indent, conditional) +
-            '  %s\n' % '\n  '.join(code.splitlines()) +
-            '%s}\n' % indent)
+            '  %s\n' % '\n  '.join(code.splitlines()) + '%s}\n' % indent)
 
 
 # [Exposed]
 def exposed_if(code, exposed_test):
     if not exposed_test:
         return code
-    return generate_indented_conditional(code, 'execution_context && (%s)' % exposed_test)
+    return generate_indented_conditional(
+        code, 'execution_context && (%s)' % exposed_test)
 
 
 # [SecureContext]
@@ -68,7 +68,9 @@ def secure_context_if(code, secure_context_test):
 
 
 # [RuntimeEnabled]
-def origin_trial_enabled_if(code, origin_trial_feature_name, execution_context=None):
+def origin_trial_enabled_if(code,
+                            origin_trial_feature_name,
+                            execution_context=None):
     if not origin_trial_feature_name:
         return code
 
@@ -96,14 +98,23 @@ def initialize_jinja_env(cache_dir):
         lstrip_blocks=True,  # so can indent control flow tags
         trim_blocks=True)
     jinja_env.filters.update({
-        'blink_capitalize': capitalize,
-        'exposed': exposed_if,
-        'format_blink_cpp_source_code': format_blink_cpp_source_code,
-        'format_remove_duplicates': format_remove_duplicates,
-        'origin_trial_enabled': origin_trial_enabled_if,
-        'runtime_enabled': runtime_enabled_if,
-        'runtime_enabled_function': v8_utilities.runtime_enabled_function,
-        'secure_context': secure_context_if})
+        'blink_capitalize':
+        capitalize,
+        'exposed':
+        exposed_if,
+        'format_blink_cpp_source_code':
+        format_blink_cpp_source_code,
+        'format_remove_duplicates':
+        format_remove_duplicates,
+        'origin_trial_enabled':
+        origin_trial_enabled_if,
+        'runtime_enabled':
+        runtime_enabled_if,
+        'runtime_enabled_function':
+        v8_utilities.runtime_enabled_function,
+        'secure_context':
+        secure_context_if
+    })
     jinja_env.filters.update(constant_filters())
     jinja_env.filters.update(method_filters())
     return jinja_env
@@ -111,10 +122,12 @@ def initialize_jinja_env(cache_dir):
 
 _BLINK_RELATIVE_PATH_PREFIXES = ('bindings/', 'core/', 'modules/', 'platform/')
 
+
 def normalize_and_sort_includes(include_paths):
     normalized_include_paths = set()
     for include_path in include_paths:
-        match = re.search(r'/gen/(third_party/blink/.*)$', posixpath.abspath(include_path))
+        match = re.search(r'/gen/(third_party/blink/.*)$',
+                          posixpath.abspath(include_path))
         if match:
             include_path = match.group(1)
         elif include_path.startswith(_BLINK_RELATIVE_PATH_PREFIXES):
@@ -135,6 +148,7 @@ def render_template(template, context):
 class CodeGeneratorBase(object):
     """Base class for jinja-powered jinja template generation.
     """
+
     def __init__(self, generator_name, info_provider, cache_dir, output_dir):
         self.generator_name = generator_name
         self.info_provider = info_provider
@@ -152,13 +166,19 @@ class CodeGeneratorBase(object):
         IdlType.set_dictionaries(interfaces_info['dictionaries'])
         IdlType.set_enums(self.info_provider.enumerations)
         IdlType.set_callback_functions(self.info_provider.callback_functions)
-        IdlType.set_implemented_as_interfaces(interfaces_info['implemented_as_interfaces'])
-        IdlType.set_garbage_collected_types(interfaces_info['garbage_collected_interfaces'])
+        IdlType.set_implemented_as_interfaces(
+            interfaces_info['implemented_as_interfaces'])
+        IdlType.set_garbage_collected_types(
+            interfaces_info['garbage_collected_interfaces'])
         IdlType.set_garbage_collected_types(interfaces_info['dictionaries'])
         set_component_dirs(interfaces_info['component_dirs'])
 
-    def render_templates(self, include_paths, header_template, cpp_template,
-                         context, component=None):
+    def render_templates(self,
+                         include_paths,
+                         header_template,
+                         cpp_template,
+                         context,
+                         component=None):
         context['code_generator'] = self.generator_name
 
         # Add includes for any dependencies
@@ -169,8 +189,10 @@ class CodeGeneratorBase(object):
             includes.add(include_path)
 
         cpp_includes = set(context.get('cpp_includes', []))
-        context['cpp_includes'] = normalize_and_sort_includes(cpp_includes | includes)
-        context['header_includes'] = normalize_and_sort_includes(context['header_includes'])
+        context['cpp_includes'] = normalize_and_sort_includes(cpp_includes
+                                                              | includes)
+        context['header_includes'] = normalize_and_sort_includes(
+            context['header_includes'])
 
         header_text = render_template(header_template, context)
         cpp_text = render_template(cpp_template, context)
@@ -201,9 +223,11 @@ def main(argv):
 
     # Cache templates
     jinja_env = initialize_jinja_env(cache_dir)
-    template_filenames = [filename for filename in os.listdir(TEMPLATES_DIR)
-                          # Skip .svn, directories, etc.
-                          if filename.endswith(('.tmpl', '.txt'))]
+    template_filenames = [
+        filename for filename in os.listdir(TEMPLATES_DIR)
+        # Skip .svn, directories, etc.
+        if filename.endswith(('.tmpl', '.txt'))
+    ]
     for template_filename in template_filenames:
         jinja_env.get_template(template_filename)
 

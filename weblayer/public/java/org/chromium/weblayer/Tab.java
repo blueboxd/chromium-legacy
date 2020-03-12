@@ -195,28 +195,6 @@ public class Tab {
     }
 
     /**
-     * Dismisses the active tab modal overlay.
-     *
-     * If other tab modal dialogs are queued, they will then be shown. This has no effect if no tab
-     * modal dialog is currently displayed.
-     *
-     * See also {@link TabCallback#onTabModalStateChanged}.
-     *
-     * @since 82
-     */
-    public void dismissTabModalOverlay() {
-        ThreadCheck.ensureOnUiThread();
-        if (WebLayer.getSupportedMajorVersionInternal() < 82) {
-            throw new UnsupportedOperationException();
-        }
-        try {
-            mImpl.dismissTabModalOverlay();
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
-    }
-
-    /**
      * Runs the beforeunload handler for the main frame or any sub frame, if necessary; otherwise,
      * asynchronously closes the tab.
      *

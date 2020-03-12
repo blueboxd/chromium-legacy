@@ -176,8 +176,7 @@ struct PaymentsCustomerData;
 //   exp_month          Expiration month: 1-12
 //   exp_year           Four-digit year: 2017
 //   bank_name          Issuer bank name of the credit card.
-//   cloud_token_data   Opaque identifier for the cloud token associated with
-//                      the payment instrument.
+//   nickname           The card's nickname, if it exists. Added in version 84.
 //
 // unmasked_credit_cards
 //                      When a masked credit credit card is unmasked and the
@@ -554,6 +553,7 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion80AddIsClientValidityStatesUpdatedColumn();
   bool MigrateToVersion81CleanUpWrongModelTypeData();
   bool MigrateToVersion83RemoveServerCardTypeColumn();
+  bool MigrateToVersion84AddNicknameColumn();
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.
   // Copied to components/autofill/ios/browser/resources/autofill_controller.js.

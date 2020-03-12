@@ -1186,13 +1186,6 @@ void SelectionController::HandleGestureTwoFingerTap(
   SetCaretAtHitTestResult(targeted_event.GetHitTestResult());
 }
 
-void SelectionController::HandleGestureLongTap(
-    const GestureEventWithHitTestResults& targeted_event) {
-  TRACE_EVENT0("blink", "SelectionController::handleGestureLongTap");
-
-  SetCaretAtHitTestResult(targeted_event.GetHitTestResult());
-}
-
 static bool HitTestResultIsMisspelled(const HitTestResult& result) {
   Node* inner_node = result.InnerPossiblyPseudoNode();
   if (!inner_node || !inner_node->GetLayoutObject())
@@ -1210,7 +1203,7 @@ static bool HitTestResultIsMisspelled(const HitTestResult& result) {
                                     ToPositionInFlatTree(marker_position));
 }
 
-void SelectionController::SendContextMenuEvent(
+void SelectionController::UpdateSelectionForContextMenuEvent(
     const MouseEventWithHitTestResults& mev,
     const PhysicalOffset& position) {
   if (!Selection().IsAvailable())

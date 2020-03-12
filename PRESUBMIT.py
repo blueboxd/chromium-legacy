@@ -380,22 +380,16 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^ios/web/',
   '^ios/web_view/',
   '^ipc/',
-  '^media/audio/',
   '^media/base/',
   '^media/blink/',
-  '^media/capture/',
   '^media/cast/',
   '^media/cdm/',
   '^media/device_monitors/',
-  '^media/ffmpeg/',
   '^media/filters/',
   '^media/formats/',
   '^media/gpu/',
   '^media/mojo/',
-  '^media/muxers/',
-  '^media/remoting/',
   '^media/renderers/',
-  '^media/test/',
   '^net/',
   '^ppapi/proxy/',
   '^ppapi/shared_impl/',
@@ -1113,6 +1107,17 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       False,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    (
+      'set_owned_by_client',
+      (
+        'set_owned_by_client is deprecated.',
+        'views::View already owns the child views by default. This introduces ',
+        'a competing ownership model which makes the code difficult to reason ',
+        'about. See http://crbug.com/1044687 for more details.'
+      ),
+      False,
+      (),
     ),
 )
 

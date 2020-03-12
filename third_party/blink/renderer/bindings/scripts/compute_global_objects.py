@@ -3,7 +3,6 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Compute global objects.
 
 Global objects are defined by interfaces with [Global] on
@@ -30,13 +29,16 @@ def parse_options():
     usage = 'Usage: %prog [options]  [GlobalObjects.pickle]'
     parser = optparse.OptionParser(usage=usage)
     parser.add_option('--idl-files-list', help='file listing IDL files')
-    parser.add_option('--global-objects-component-files', action='append',
-                      help='optionally preceeded input pickle filename.')
+    parser.add_option(
+        '--global-objects-component-files',
+        action='append',
+        help='optionally preceeded input pickle filename.')
 
     options, args = parser.parse_args()
 
     if options.idl_files_list is None:
-        parser.error('Must specify a file listing IDL files using --idl-files-list.')
+        parser.error(
+            'Must specify a file listing IDL files using --idl-files-list.')
     if options.global_objects_component_files is None:
         options.global_objects_component_files = []
     if len(args) != 1:
@@ -58,22 +60,25 @@ def idl_file_to_global_names(idl_filename):
     """
     full_path = os.path.realpath(idl_filename)
     idl_file_contents = get_file_contents(full_path)
-    extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
+    extended_attributes = get_interface_extended_attributes_from_idl(
+        idl_file_contents)
     interface_name = get_first_interface_name_from_idl(idl_file_contents)
 
     if 'Global' not in extended_attributes:
         return
     global_value = extended_attributes['Global']
     if not global_value:
-        raise ValueError('[Global] must take an indentifier or an identifier list.\n' +
-                         full_path)
+        raise ValueError(
+            '[Global] must take an indentifier or an identifier list.\n' +
+            full_path)
     return map(str.strip, global_value.strip('()').split(','))
 
 
 def idl_files_to_interface_name_global_names(idl_files):
     """Yields pairs (interface_name, global_names) found in IDL files."""
     for idl_filename in idl_files:
-        interface_name = get_first_interface_name_from_idl(get_file_contents(idl_filename))
+        interface_name = get_first_interface_name_from_idl(
+            get_file_contents(idl_filename))
         global_names = idl_file_to_global_names(idl_filename)
         if global_names:
             yield interface_name, global_names
@@ -81,19 +86,20 @@ def idl_files_to_interface_name_global_names(idl_files):
 
 ################################################################################
 
+
 def main():
     options, args = parse_options()
     output_global_objects_filename = args.pop()
     interface_name_global_names = dict_union(
         existing_interface_name_global_names
-        for existing_interface_name_global_names
-        in read_pickle_files(options.global_objects_component_files))
+        for existing_interface_name_global_names in read_pickle_files(
+            options.global_objects_component_files))
 
     # File paths of input IDL files are passed in a file, which is generated at
     # GN time. It is OK because the target IDL files themselves are static.
     idl_files = read_file_to_list(options.idl_files_list)
     interface_name_global_names.update(
-            idl_files_to_interface_name_global_names(idl_files))
+        idl_files_to_interface_name_global_names(idl_files))
 
     write_pickle_file(output_global_objects_filename,
                       interface_name_global_names)

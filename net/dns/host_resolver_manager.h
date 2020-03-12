@@ -458,7 +458,9 @@ class NET_EXPORT HostResolverManager
 
   int GetOrCreateMdnsClient(MDnsClient** out_client);
 
-  void InvalidateCaches();
+  // |network_change| indicates whether or not the invalidation was triggered
+  // by a network connection change.
+  void InvalidateCaches(bool network_change = false);
 
   // Returns |nullptr| if DoH probes are currently not allowed (due to
   // configuration or current connection state).
@@ -483,8 +485,6 @@ class NET_EXPORT HostResolverManager
   ProcTaskParams proc_params_;
 
   NetLog* net_log_;
-
-  std::set<ProbeRequestImpl*> started_doh_probe_requests_;
 
   // If present, used by DnsTask and ServeFromHosts to resolve requests.
   std::unique_ptr<DnsClient> dns_client_;

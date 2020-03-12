@@ -1569,8 +1569,6 @@ jumbo_component("base") {
       "fuchsia/intl_profile_watcher.h",
       "fuchsia/scoped_service_binding.cc",
       "fuchsia/scoped_service_binding.h",
-      "fuchsia/service_directory.cc",
-      "fuchsia/service_directory.h",
       "fuchsia/service_provider_impl.cc",
       "fuchsia/service_provider_impl.h",
       "fuchsia/startup_context.cc",

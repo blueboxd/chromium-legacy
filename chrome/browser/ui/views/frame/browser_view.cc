@@ -768,7 +768,6 @@ void BrowserView::Show() {
   // OnWidgetActivationChanged() until we return to the runloop. Therefore any
   // calls to Browser::GetLastActive() will return the wrong result if we do not
   // explicitly set it here.
-  // A similar block also appears in BrowserWindowCocoa::Show().
   BrowserList::SetLastActive(browser());
 #endif
 

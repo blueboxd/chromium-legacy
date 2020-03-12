@@ -39,7 +39,7 @@ message Content {
 
   enum Type {
     UNKNOWN_CONTENT = 0;
-    XUIKIT = 1;
+    XSURFACE = 1;
   }
   optional Type type = 1;
 

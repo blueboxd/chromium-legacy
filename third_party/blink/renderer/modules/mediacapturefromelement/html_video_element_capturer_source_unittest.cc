@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/gmock_callback_support.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "media/base/limits.h"
@@ -22,6 +23,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
+using base::test::RunOnceClosure;
 using ::testing::_;
 using ::testing::InSequence;
 using ::testing::Mock;
@@ -30,12 +32,6 @@ using ::testing::SaveArg;
 namespace blink {
 
 namespace {
-
-// This is named |RunClosure2| not to collide with the same construction
-// in canvas_capture_handler_unittest.cc on jumbo builds.
-ACTION_P(RunClosure2, closure) {
-  closure.Run();
-}
 
 // An almost empty WebMediaPlayer to override paint() method.
 class MockWebMediaPlayer : public WebMediaPlayer {
@@ -171,7 +167,7 @@ TEST_P(HTMLVideoElementCapturerSourceTest, GetFormatsAndStartAndStop) {
   EXPECT_CALL(*this, DoOnDeliverFrame(_, _))
       .Times(1)
       .WillOnce(DoAll(SaveArg<0>(&second_frame),
-                      RunClosure2(std::move(quit_closure))));
+                      RunOnceClosure(std::move(quit_closure))));
 
   html_video_capturer_->StartCapture(
       params,
@@ -244,7 +240,7 @@ TEST_F(HTMLVideoElementCapturerSourceTest, AlphaAndNot) {
     EXPECT_CALL(*this, DoOnRunning(true)).Times(1);
     EXPECT_CALL(*this, DoOnDeliverFrame(_, _))
         .WillOnce(
-            DoAll(SaveArg<0>(&frame), RunClosure2(std::move(quit_closure))));
+            DoAll(SaveArg<0>(&frame), RunOnceClosure(std::move(quit_closure))));
     html_video_capturer_->StartCapture(
         params,
         WTF::BindRepeating(&HTMLVideoElementCapturerSourceTest::OnDeliverFrame,
@@ -263,7 +259,7 @@ TEST_F(HTMLVideoElementCapturerSourceTest, AlphaAndNot) {
     scoped_refptr<media::VideoFrame> frame;
     EXPECT_CALL(*this, DoOnDeliverFrame(_, _))
         .WillOnce(
-            DoAll(SaveArg<0>(&frame), RunClosure2(std::move(quit_closure))));
+            DoAll(SaveArg<0>(&frame), RunOnceClosure(std::move(quit_closure))));
     run_loop.Run();
 
     EXPECT_EQ(media::PIXEL_FORMAT_I420, frame->format());
@@ -276,7 +272,7 @@ TEST_F(HTMLVideoElementCapturerSourceTest, AlphaAndNot) {
     scoped_refptr<media::VideoFrame> frame;
     EXPECT_CALL(*this, DoOnDeliverFrame(_, _))
         .WillOnce(
-            DoAll(SaveArg<0>(&frame), RunClosure2(std::move(quit_closure))));
+            DoAll(SaveArg<0>(&frame), RunOnceClosure(std::move(quit_closure))));
     run_loop.Run();
 
     EXPECT_EQ(media::PIXEL_FORMAT_I420A, frame->format());
@@ -305,7 +301,7 @@ TEST_F(HTMLVideoElementCapturerSourceTest, SizeChange) {
     EXPECT_CALL(*this, DoOnRunning(true)).Times(1);
     EXPECT_CALL(*this, DoOnDeliverFrame(_, _))
         .WillOnce(
-            DoAll(SaveArg<0>(&frame), RunClosure2(std::move(quit_closure))));
+            DoAll(SaveArg<0>(&frame), RunOnceClosure(std::move(quit_closure))));
     html_video_capturer_->StartCapture(
         params,
         WTF::BindRepeating(&HTMLVideoElementCapturerSourceTest::OnDeliverFrame,
@@ -322,7 +318,7 @@ TEST_F(HTMLVideoElementCapturerSourceTest, SizeChange) {
     scoped_refptr<media::VideoFrame> frame;
     EXPECT_CALL(*this, DoOnDeliverFrame(_, _))
         .WillOnce(
-            DoAll(SaveArg<0>(&frame), RunClosure2(std::move(quit_closure))));
+            DoAll(SaveArg<0>(&frame), RunOnceClosure(std::move(quit_closure))));
     run_loop.Run();
   }
 

@@ -40,6 +40,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
       const vm_tools::concierge::CreateDiskImageRequest& request,
       DBusMethodCallback<vm_tools::concierge::CreateDiskImageResponse> callback)
       override;
+  void CreateDiskImageWithFd(
+      base::ScopedFD fd,
+      const vm_tools::concierge::CreateDiskImageRequest& request,
+      DBusMethodCallback<vm_tools::concierge::CreateDiskImageResponse> callback)
+      override;
   void DestroyDiskImage(
       const vm_tools::concierge::DestroyDiskImageRequest& request,
       DBusMethodCallback<vm_tools::concierge::DestroyDiskImageResponse>
@@ -94,7 +99,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
       const vm_tools::concierge::ContainerSshKeysRequest& request,
       DBusMethodCallback<vm_tools::concierge::ContainerSshKeysResponse>
           callback) override;
-  void AttachUsbDevice(base::ScopedFD fd,
+  void AttachUsbDevice(
+      base::ScopedFD fd,
       const vm_tools::concierge::AttachUsbDeviceRequest& request,
       DBusMethodCallback<vm_tools::concierge::AttachUsbDeviceResponse> callback)
       override;

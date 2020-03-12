@@ -1549,7 +1549,8 @@ void WebMediaPlayerImpl::SetCdmInternal(
   // after the pipeline is done with the |cdm_context|.
   pending_cdm_context_ref_ = std::move(cdm_context_ref);
   pipeline_controller_->SetCdm(
-      cdm_context, base::Bind(&WebMediaPlayerImpl::OnCdmAttached, weak_this_));
+      cdm_context,
+      base::BindOnce(&WebMediaPlayerImpl::OnCdmAttached, weak_this_));
 }
 
 void WebMediaPlayerImpl::OnCdmAttached(bool success) {

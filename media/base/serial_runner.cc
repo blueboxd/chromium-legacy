@@ -103,9 +103,9 @@ void SerialRunner::RunNextInSeries(PipelineStatus last_status) {
 
   BoundPipelineStatusCallback bound_fn = bound_fns_.Pop();
   std::move(bound_fn).Run(
-      base::BindRepeating(&RunOnTaskRunner, task_runner_,
-                          base::BindRepeating(&SerialRunner::RunNextInSeries,
-                                              weak_factory_.GetWeakPtr())));
+      base::BindOnce(&RunOnTaskRunner, task_runner_,
+                     base::BindRepeating(&SerialRunner::RunNextInSeries,
+                                         weak_factory_.GetWeakPtr())));
 }
 
 }  // namespace media

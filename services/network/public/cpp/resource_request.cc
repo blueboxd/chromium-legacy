@@ -70,8 +70,6 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
              request.custom_proxy_pre_cache_headers.ToString() &&
          custom_proxy_post_cache_headers.ToString() ==
              request.custom_proxy_post_cache_headers.ToString() &&
-         custom_proxy_use_alternate_proxy_list ==
-             request.custom_proxy_use_alternate_proxy_list &&
          fetch_window_id == request.fetch_window_id &&
          devtools_request_id == request.devtools_request_id &&
          is_signed_exchange_prefetch_cache_enabled ==

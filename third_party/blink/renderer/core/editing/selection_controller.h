@@ -61,15 +61,14 @@ class CORE_EXPORT SelectionController final
   bool HandlePasteGlobalSelection(const WebMouseEvent&);
   bool HandleGestureLongPress(const HitTestResult&);
   void HandleGestureTwoFingerTap(const GestureEventWithHitTestResults&);
-  void HandleGestureLongTap(const GestureEventWithHitTestResults&);
 
   void UpdateSelectionForMouseDrag(const PhysicalOffset&,
                                    const PhysicalOffset&);
   void UpdateSelectionForMouseDrag(const HitTestResult&,
                                    const PhysicalOffset&,
                                    const PhysicalOffset&);
-  void SendContextMenuEvent(const MouseEventWithHitTestResults&,
-                            const PhysicalOffset&);
+  void UpdateSelectionForContextMenuEvent(const MouseEventWithHitTestResults&,
+                                          const PhysicalOffset&);
   void PassMousePressEventToSubframe(const MouseEventWithHitTestResults&);
 
   void InitializeSelectionState();

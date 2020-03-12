@@ -68,10 +68,10 @@ class CORE_EXPORT NGPhysicalFragment
     // When adding new values, make sure the bit size of |sub_type_| is large
     // enough to store.
 
-    // Also, add after kMinimumBlockFormattingContextRoot if the box type is a
-    // block formatting context root, or before otherwise. See
-    // IsBlockFormattingContextRoot().
-    kMinimumBlockFormattingContextRoot = kAtomicInline
+    // Also, add after kMinimumFormattingContextRoot if the box type is a
+    // formatting context root, or before otherwise. See
+    // IsFormattingContextRoot().
+    kMinimumFormattingContextRoot = kAtomicInline
   };
 
   ~NGPhysicalFragment();
@@ -157,9 +157,8 @@ class CORE_EXPORT NGPhysicalFragment
   // Returns whether the fragment should be atomically painted.
   bool IsPaintedAtomically() const { return is_painted_atomically_; }
 
-  bool IsBlockFormattingContextRoot() const {
-    return (IsBox() &&
-            BoxType() >= NGBoxType::kMinimumBlockFormattingContextRoot) ||
+  bool IsFormattingContextRoot() const {
+    return (IsBox() && BoxType() >= NGBoxType::kMinimumFormattingContextRoot) ||
            IsLegacyLayoutRoot();
   }
 

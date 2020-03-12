@@ -42,7 +42,7 @@ class SimpleCdmVideoFrame : public VideoFrameImpl {
 
     // The FrameBuffer needs to remain around until |frame| is destroyed.
     frame->AddDestructionObserver(
-        base::Bind(&cdm::Buffer::Destroy, base::Unretained(buffer)));
+        base::BindOnce(&cdm::Buffer::Destroy, base::Unretained(buffer)));
 
     // Clear FrameBuffer so that SimpleCdmVideoFrame no longer has a reference
     // to it.

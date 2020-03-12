@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
@@ -102,8 +103,8 @@ class WebUsbNotificationDelegate : public TabStripModelObserver,
         landing_page_(landing_page),
         notification_id_(notification_id),
         disposition_(WEBUSB_NOTIFICATION_CLOSED),
-        browser_tab_strip_tracker_(this, nullptr, nullptr) {
-    browser_tab_strip_tracker_.Init();
+        browser_tab_strip_tracker_(base::in_place_t(), this, nullptr) {
+    browser_tab_strip_tracker_->Init();
   }
 
   void OnTabStripModelChanged(
@@ -157,7 +158,7 @@ class WebUsbNotificationDelegate : public TabStripModelObserver,
       disposition_ = WEBUSB_NOTIFICATION_CLOSED_BY_USER;
     RecordNotificationClosure(disposition_);
 
-    browser_tab_strip_tracker_.StopObservingAndSendOnBrowserRemoved();
+    browser_tab_strip_tracker_.reset();
     if (detector_)
       detector_->RemoveNotification(notification_id_);
   }
@@ -169,7 +170,7 @@ class WebUsbNotificationDelegate : public TabStripModelObserver,
   GURL landing_page_;
   std::string notification_id_;
   WebUsbNotificationClosed disposition_;
-  BrowserTabStripTracker browser_tab_strip_tracker_;
+  base::Optional<BrowserTabStripTracker> browser_tab_strip_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUsbNotificationDelegate);
 };

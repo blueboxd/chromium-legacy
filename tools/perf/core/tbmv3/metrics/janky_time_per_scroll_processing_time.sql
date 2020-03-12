@@ -243,6 +243,10 @@ CREATE TABLE ScrollJanks AS
 -- ensure our devision results in a percentage and not just integer division
 -- equal to 0.
 --
+-- We need to select MAX(currScrollDur) because the last few
+-- GestureScrollUpdates might extend past the GestureScrollEnd event so we
+-- select the number which is the last part of the scroll.
+--
 -- TODO(nuskos): We should support more types (floats and strings) in our
 --               metrics as well as support for specifying units (nanoseconds).
 
@@ -256,14 +260,13 @@ CREATE TABLE JankyNanosPerScrollNanosMaybeNull AS
       0 END) as jankyNanos,
     SUM(currUpdateDur) AS totalProcessingNanos,
     (
-      SELECT sum(currScrollDur)
+      SELECT sum(scrollDur)
       FROM (
         SELECT
-          currScrollDur
+          MAX(currScrollDur) AS scrollDur
         FROM ScrollJanks
         GROUP BY currBeginId
       )
-      LIMIT 1
     ) AS scrollNanos
   FROM ScrollJanks;
 

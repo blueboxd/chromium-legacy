@@ -63,7 +63,7 @@ class FallbackVideoDecoderUnittest : public ::testing::TestWithParam<bool> {
 
     fallback_decoder_->Initialize(
         video_decoder_config_, false, nullptr,
-        base::BindRepeating([](bool success) { EXPECT_TRUE(success); }),
+        base::BindOnce([](bool success) { EXPECT_TRUE(success); }),
         base::DoNothing(), base::DoNothing());
   }
 
@@ -132,7 +132,7 @@ TEST_P(FallbackVideoDecoderUnittest, ReinitializeWithPreferredFailing) {
 
   fallback_decoder_->Initialize(
       video_decoder_config_, false, nullptr,
-      base::BindRepeating([](bool success) { EXPECT_TRUE(success); }),
+      base::BindOnce([](bool success) { EXPECT_TRUE(success); }),
       base::DoNothing(), base::DoNothing());
 }
 

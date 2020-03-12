@@ -971,15 +971,9 @@ class FrozenArrayType(_ArrayLikeType):
 class VariadicType(_ArrayLikeType):
     """Represents a type used for variadic arguments."""
 
-    def __init__(self,
-                 element_type,
-                 debug_info=None,
-                 pass_key=None):
+    def __init__(self, element_type, debug_info=None, pass_key=None):
         _ArrayLikeType.__init__(
-            self,
-            element_type,
-            debug_info=debug_info,
-            pass_key=pass_key)
+            self, element_type, debug_info=debug_info, pass_key=pass_key)
 
     @property
     def syntactic_form(self):

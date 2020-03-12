@@ -23,18 +23,22 @@ bool IncreasedContrastThemeSupplier::GetColor(int id, SkColor* color) const {
   const SkColor foreground = is_dark_mode_ ? SK_ColorWHITE : SK_ColorBLACK;
   const SkColor background = is_dark_mode_ ? SK_ColorBLACK : SK_ColorWHITE;
   switch (id) {
-    case ThemeProperties::COLOR_TAB_TEXT:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_INACTIVE:
       *color = foreground;
       return true;
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO:
       *color = SK_ColorWHITE;
       return true;
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE:
+    case ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE:
+    case ThemeProperties::
+        COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE_INCOGNITO:
       *color = SK_ColorBLACK;
       return true;
     case ThemeProperties::COLOR_TOOLBAR:
+    case ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE:
+    case ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_INACTIVE:
       *color = background;
       return true;
     case ThemeProperties::COLOR_FRAME_INACTIVE:

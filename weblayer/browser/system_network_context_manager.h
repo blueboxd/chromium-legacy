@@ -34,6 +34,9 @@ class SystemNetworkContextManager {
   // Destroys the global SystemNetworkContextManager instance.
   static void DeleteInstance();
 
+  static network::mojom::NetworkContextParamsPtr
+  CreateDefaultNetworkContextParams(const std::string& user_agent);
+
   ~SystemNetworkContextManager();
 
   // Returns the System NetworkContext. Does any initialization of the

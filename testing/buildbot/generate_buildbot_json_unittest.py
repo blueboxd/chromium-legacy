@@ -42,6 +42,7 @@ class FakeBBGen(generate_buildbot_json.BBJSONGenerator):
       luci_milo_dev_cfg_path: '',
     }
     self.printed_lines = []
+    self.parse_args([])
 
   def print_line(self, line):
     self.printed_lines.append(line)
@@ -69,6 +70,8 @@ class FakeBBGen(generate_buildbot_json.BBJSONGenerator):
 FOO_GTESTS_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -91,6 +94,8 @@ FOO_GTESTS_WATERFALL = """\
 FOO_GTESTS_WITH_ENABLE_FEATURES_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -109,6 +114,8 @@ FOO_GTESTS_WITH_ENABLE_FEATURES_WATERFALL = """\
 FOO_GTESTS_MULTI_DIMENSION_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -139,6 +146,8 @@ FOO_GTESTS_MULTI_DIMENSION_WATERFALL = """\
 FOO_CHROMEOS_TRIGGER_SCRIPT_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -162,6 +171,8 @@ FOO_CHROMEOS_TRIGGER_SCRIPT_WATERFALL = """\
 FOO_LINUX_GTESTS_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -178,6 +189,8 @@ FOO_LINUX_GTESTS_WATERFALL = """\
 COMPOSITION_GTEST_SUITE_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -193,6 +206,8 @@ COMPOSITION_GTEST_SUITE_WATERFALL = """\
 COMPOSITION_GTEST_SUITE_WITH_ARGS_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -211,6 +226,8 @@ COMPOSITION_GTEST_SUITE_WITH_ARGS_WATERFALL = """\
 FOO_ISOLATED_SCRIPTS_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -226,6 +243,8 @@ FOO_ISOLATED_SCRIPTS_WATERFALL = """\
 FOO_SCRIPT_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -241,6 +260,8 @@ FOO_SCRIPT_WATERFALL = """\
 FOO_SCRIPT_WATERFALL_MACHINE_FORBIDS_SCRIPT_TESTS = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -257,6 +278,8 @@ FOO_SCRIPT_WATERFALL_MACHINE_FORBIDS_SCRIPT_TESTS = """\
 FOO_SCRIPT_WATERFALL_FORBID_SCRIPT_TESTS = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'forbid_script_tests': True,
     'machines': {
@@ -273,6 +296,8 @@ FOO_SCRIPT_WATERFALL_FORBID_SCRIPT_TESTS = """\
 FOO_JUNIT_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -288,6 +313,8 @@ FOO_JUNIT_WATERFALL = """\
 FOO_CTS_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -303,6 +330,8 @@ FOO_CTS_WATERFALL = """\
 FOO_ISOLATED_CTS_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -319,6 +348,8 @@ FOO_ISOLATED_CTS_WATERFALL = """\
 FOO_INSTRUMENTATION_TEST_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -334,6 +365,8 @@ FOO_INSTRUMENTATION_TEST_WATERFALL = """\
 FOO_GPU_TELEMETRY_TEST_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -358,6 +391,8 @@ FOO_GPU_TELEMETRY_TEST_WATERFALL = """\
 NVIDIA_GPU_TELEMETRY_TEST_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -382,6 +417,8 @@ NVIDIA_GPU_TELEMETRY_TEST_WATERFALL = """\
 INTEL_GPU_TELEMETRY_TEST_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -406,6 +443,8 @@ INTEL_GPU_TELEMETRY_TEST_WATERFALL = """\
 INTEL_UHD_GPU_TELEMETRY_TEST_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -430,6 +469,8 @@ INTEL_UHD_GPU_TELEMETRY_TEST_WATERFALL = """\
 UNKNOWN_TEST_SUITE_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -445,6 +486,8 @@ UNKNOWN_TEST_SUITE_WATERFALL = """\
 UNKNOWN_TEST_SUITE_TYPE_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -461,6 +504,8 @@ UNKNOWN_TEST_SUITE_TYPE_WATERFALL = """\
 ANDROID_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Android Builder': {
@@ -529,6 +574,8 @@ ANDROID_WATERFALL = """\
 UNKNOWN_BOT_GTESTS_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Unknown Bot': {
@@ -544,6 +591,8 @@ UNKNOWN_BOT_GTESTS_WATERFALL = """\
 MATRIX_GTEST_SUITE_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -559,6 +608,8 @@ MATRIX_GTEST_SUITE_WATERFALL = """\
 MATRIX_GTEST_SUITE_WATERFALL_MIXINS = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -1915,6 +1966,8 @@ consoles {
 TEST_SUITE_SORTING_WATERFALL = """
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -1931,6 +1984,8 @@ TEST_SUITE_SORTING_WATERFALL = """
 TEST_SUITE_SORTED_WATERFALL = """
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -1948,6 +2003,8 @@ TEST_SUITE_SORTED_WATERFALL = """
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.zz.test',
     'machines': {
       'Fake Tester': {
@@ -1970,6 +2027,8 @@ TEST_SUITE_SORTED_WATERFALL = """
 TEST_SUITE_UNSORTED_WATERFALL_1 = """
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.zz.test',
     'machines': {
       'Fake Tester': {
@@ -1987,6 +2046,8 @@ TEST_SUITE_UNSORTED_WATERFALL_1 = """
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -2009,6 +2070,8 @@ TEST_SUITE_UNSORTED_WATERFALL_1 = """
 TEST_SUITE_UNSORTED_WATERFALL_2 = """
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Really Fake Tester': {
@@ -2026,6 +2089,8 @@ TEST_SUITE_UNSORTED_WATERFALL_2 = """
     },
   },
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.zz.test',
     'machines': {
       'Fake Tester': {
@@ -2156,6 +2221,218 @@ GN_ISOLATE_MAP="""\
 }
 """
 
+NO_BUCKET_WATERFALL = """\
+[
+  {
+    'project': 'chrome',
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'kvm': '1',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'foo_tests',
+        },
+      },
+    },
+  },
+]
+"""
+
+NO_PROJECT_WATERFALL = """\
+[
+  {
+    'bucket': 'try',
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'kvm': '1',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'foo_tests',
+        },
+      },
+    },
+  },
+]
+"""
+
+CHROME_MISSING_WATERFALL = """\
+[
+  {
+    'bucket': 'try',
+    'project': 'chromium',
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'kvm': '1',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'foo_tests',
+        },
+      },
+    },
+  },
+]
+"""
+
+TRY_MISSING_WATERFALL = """\
+[
+  {
+    'project': 'chromium',
+    'bucket': 'ci',
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'kvm': '1',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'foo_tests',
+        },
+      },
+    },
+  },
+  {
+    'project': 'chrome',
+    'bucket': 'ci',
+    'name': 'chrome.test',
+    'machines': {
+      'Fake Tester Official': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'kvm': '1',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'foo_tests',
+        },
+      },
+    },
+  },
+]
+"""
+
+CHROME_AND_CHROMIUM_WATERFALL = """\
+[
+  {
+    'project': 'chromium',
+    'bucket': 'try',
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'kvm': '1',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'foo_tests',
+        },
+      },
+    },
+  },
+  {
+    'project': 'chrome',
+    'bucket': 'ci',
+    'name': 'chrome.test',
+    'machines': {
+      'Fake Tester Official': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'kvm': '1',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'foo_tests',
+        },
+      },
+    },
+  },
+]
+"""
+
+CHROMIUM_NORMAL_OUTPUT = """\
+{
+  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
+  "AAAAA2 See generate_buildbot_json.py to make changes": {},
+  "Fake Tester": {
+    "gtest_tests": [
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "integrity": "high",
+              "kvm": "1"
+            }
+          ],
+          "expiration": 120
+        },
+        "test": "foo_test"
+      }
+    ]
+  }
+}
+"""
+
+CHROME_NORMAL_OUTPUT = """\
+{
+  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
+  "AAAAA2 See generate_buildbot_json.py to make changes": {},
+  "Fake Tester Official": {
+    "gtest_tests": [
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "integrity": "high",
+              "kvm": "1"
+            }
+          ],
+          "expiration": 120
+        },
+        "test": "foo_test"
+      }
+    ]
+  }
+}
+"""
+
 class UnitTest(unittest.TestCase):
   def test_base_generator(self):
     # Only needed for complete code coverage.
@@ -2246,6 +2523,7 @@ class UnitTest(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = COMPOSITION_WATERFALL_OUTPUT
+    fbb.files['chromium.ci.json'] = COMPOSITION_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2255,6 +2533,7 @@ class UnitTest(unittest.TestCase):
                     LUCI_MILO_CFG,
                     gn_isolate_map=GN_ISOLATE_MAP)
     fbb.files['chromium.test.json'] = VARIATION_GTEST_OUTPUT
+    fbb.files['chromium.ci.json'] = VARIATION_GTEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2264,6 +2543,7 @@ class UnitTest(unittest.TestCase):
                     LUCI_MILO_CFG,
                     exceptions=EMPTY_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = COMPOSITION_WATERFALL_OUTPUT
+    fbb.files['chromium.ci.json'] = COMPOSITION_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2273,6 +2553,7 @@ class UnitTest(unittest.TestCase):
                     LUCI_MILO_CFG,
                     exceptions=FOO_TEST_MODIFICATIONS)
     fbb.files['chromium.test.json'] = MERGED_ARGS_OUTPUT
+    fbb.files['chromium.ci.json'] = MERGED_ARGS_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2281,6 +2562,7 @@ class UnitTest(unittest.TestCase):
                     FOO_TEST_SUITE_WITH_ENABLE_FEATURES,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = MERGED_ENABLE_FEATURES_OUTPUT
+    fbb.files['chromium.ci.json'] = MERGED_ENABLE_FEATURES_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2289,6 +2571,7 @@ class UnitTest(unittest.TestCase):
                     FOO_TEST_SUITE_WITH_LINUX_ARGS,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = LINUX_ARGS_OUTPUT
+    fbb.files['chromium.ci.json'] = LINUX_ARGS_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2298,6 +2581,7 @@ class UnitTest(unittest.TestCase):
                     LUCI_MILO_CFG,
                     exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = COMPOSITION_WATERFALL_FILTERED_OUTPUT
+    fbb.files['chromium.ci.json'] = COMPOSITION_WATERFALL_FILTERED_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2307,6 +2591,7 @@ class UnitTest(unittest.TestCase):
                     LUCI_MILO_CFG,
                     exceptions=FOO_TEST_MODIFICATIONS)
     fbb.files['chromium.test.json'] = MODIFIED_OUTPUT
+    fbb.files['chromium.ci.json'] = MODIFIED_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2317,6 +2602,7 @@ class UnitTest(unittest.TestCase):
                     exceptions=FOO_TEST_EXPLICIT_NONE_EXCEPTIONS,
                     mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = EXPLICIT_NONE_OUTPUT
+    fbb.files['chromium.ci.json'] = EXPLICIT_NONE_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2326,6 +2612,7 @@ class UnitTest(unittest.TestCase):
                     LUCI_MILO_CFG,
                     exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = ISOLATED_SCRIPT_OUTPUT
+    fbb.files['chromium.ci.json'] = ISOLATED_SCRIPT_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2335,6 +2622,7 @@ class UnitTest(unittest.TestCase):
                     LUCI_MILO_CFG,
                     exceptions=SCRIPT_WITH_ARGS_EXCEPTIONS)
     fbb.files['chromium.test.json'] = SCRIPT_WITH_ARGS_OUTPUT
+    fbb.files['chromium.ci.json'] = SCRIPT_WITH_ARGS_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2344,6 +2632,7 @@ class UnitTest(unittest.TestCase):
                     LUCI_MILO_CFG,
                     exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = SCRIPT_OUTPUT
+    fbb.files['chromium.ci.json'] = SCRIPT_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2371,6 +2660,7 @@ class UnitTest(unittest.TestCase):
                     LUCI_MILO_CFG,
                     exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = JUNIT_OUTPUT
+    fbb.files['chromium.ci.json'] = JUNIT_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2379,6 +2669,7 @@ class UnitTest(unittest.TestCase):
                     FOO_CTS_SUITE,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = CTS_OUTPUT
+    fbb.files['chromium.ci.json'] = CTS_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2387,6 +2678,7 @@ class UnitTest(unittest.TestCase):
                     FOO_ISOLATED_CTS_SUITE,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = CTS_ISOLATED_OUTPUT
+    fbb.files['chromium.ci.json'] = CTS_ISOLATED_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2396,6 +2688,7 @@ class UnitTest(unittest.TestCase):
                     LUCI_MILO_CFG,
                     exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = INSTRUMENTATION_TEST_OUTPUT
+    fbb.files['chromium.ci.json'] = INSTRUMENTATION_TEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2405,6 +2698,7 @@ class UnitTest(unittest.TestCase):
                     LUCI_MILO_CFG,
                     exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = GPU_TELEMETRY_TEST_OUTPUT
+    fbb.files['chromium.ci.json'] = GPU_TELEMETRY_TEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2414,6 +2708,7 @@ class UnitTest(unittest.TestCase):
                     LUCI_MILO_CFG,
                     exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = NVIDIA_GPU_TELEMETRY_TEST_OUTPUT
+    fbb.files['chromium.ci.json'] = NVIDIA_GPU_TELEMETRY_TEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2423,6 +2718,7 @@ class UnitTest(unittest.TestCase):
                     LUCI_MILO_CFG,
                     exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = INTEL_GPU_TELEMETRY_TEST_OUTPUT
+    fbb.files['chromium.ci.json'] = INTEL_GPU_TELEMETRY_TEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2432,6 +2728,7 @@ class UnitTest(unittest.TestCase):
                     LUCI_MILO_CFG,
                     exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = INTEL_UHD_GPU_TELEMETRY_TEST_OUTPUT
+    fbb.files['chromium.ci.json'] = INTEL_UHD_GPU_TELEMETRY_TEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2441,6 +2738,8 @@ class UnitTest(unittest.TestCase):
                     LUCI_MILO_CFG,
                     gn_isolate_map=GN_ISOLATE_MAP)
     fbb.files['chromium.test.json'] = \
+        INSTRUMENTATION_TEST_DIFFERENT_NAMES_OUTPUT
+    fbb.files['chromium.ci.json'] = \
         INSTRUMENTATION_TEST_DIFFERENT_NAMES_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -2452,11 +2751,13 @@ class UnitTest(unittest.TestCase):
                     exceptions=NO_BAR_TEST_EXCEPTIONS)
     fbb.files['chromium.test.json'] = (
       '\n' + COMPOSITION_WATERFALL_FILTERED_OUTPUT)
+    fbb.files['chromium.ci.json'] = (
+      '\n' + COMPOSITION_WATERFALL_FILTERED_OUTPUT)
     with self.assertRaises(generate_buildbot_json.BBGenErr):
       fbb.check_output_file_consistency(verbose=True, dump=False)
     joined_lines = ' '.join(fbb.printed_lines)
     self.assertRegexpMatches(
-        joined_lines, 'Waterfall chromium.test did not have the following'
+        joined_lines, 'File chromium.ci.json did not have the following'
         ' expected contents:.*')
     self.assertRegexpMatches(joined_lines, '.*--- expected.*')
     self.assertRegexpMatches(joined_lines, '.*\+\+\+ current.*')
@@ -2468,6 +2769,7 @@ class UnitTest(unittest.TestCase):
                     FOO_TEST_SUITE,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = ANDROID_WATERFALL_OUTPUT
+    fbb.files['chromium.ci.json'] = ANDROID_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2496,6 +2798,7 @@ class UnitTest(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = COMPOSITION_WATERFALL_WITH_ARGS_OUTPUT
+    fbb.files['chromium.ci.json'] = COMPOSITION_WATERFALL_WITH_ARGS_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2504,6 +2807,7 @@ class UnitTest(unittest.TestCase):
                     FOO_TEST_SUITE,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = MULTI_DIMENSION_OUTPUT
+    fbb.files['chromium.ci.json'] = MULTI_DIMENSION_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2512,6 +2816,7 @@ class UnitTest(unittest.TestCase):
                     FOO_TEST_SUITE,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = CHROMEOS_TRIGGER_SCRIPT_OUTPUT
+    fbb.files['chromium.ci.json'] = CHROMEOS_TRIGGER_SCRIPT_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2520,13 +2825,15 @@ class UnitTest(unittest.TestCase):
                     REUSING_TEST_WITH_DIFFERENT_NAME,
                     LUCI_MILO_CFG,
                     gn_isolate_map=GN_ISOLATE_MAP)
-    fbb.args = argparse.Namespace(pyl_files_dir='relative/path/')
+    fbb.args = argparse.Namespace(
+        pyl_files_dir='relative/path/', waterfall_filters=[])
     for file_name in list(fbb.files):
       if not 'luci-milo.cfg' in file_name:
         fbb.files[os.path.join('relative/path/', file_name)] = (
             fbb.files.pop(file_name))
     fbb.check_input_file_consistency(verbose=True)
     fbb.files['relative/path/chromium.test.json'] = VARIATION_GTEST_OUTPUT
+    fbb.files['relative/path/chromium.ci.json'] = VARIATION_GTEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -2664,11 +2971,85 @@ class UnitTest(unittest.TestCase):
       fbb.printed_lines = []
       self.assertFalse(fbb.printed_lines)
 
+  def test_bucket_check_ok(self):
+    fbb = FakeBBGen(CHROME_AND_CHROMIUM_WATERFALL,
+                    FOO_TEST_SUITE,
+                    LUCI_MILO_CFG)
+    fbb.files['chromium.try.json'] = CHROMIUM_NORMAL_OUTPUT
+    fbb.files['chrome.ci.json'] = CHROME_NORMAL_OUTPUT
+    fbb.files['chromium.test.json'] = CHROMIUM_NORMAL_OUTPUT
+    fbb.files['chrome.test.json'] = CHROME_NORMAL_OUTPUT
+    fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_bucket_check_no_project(self):
+    fbb = FakeBBGen(NO_PROJECT_WATERFALL,
+                    FOO_TEST_SUITE,
+                    LUCI_MILO_CFG)
+    fbb.files['chromium.try.json'] = SCRIPT_OUTPUT
+    fbb.files['chromium.test.json'] = SCRIPT_OUTPUT
+    with self.assertRaisesRegexp(
+        generate_buildbot_json.BBGenErr,
+        '.* has no project'):
+      fbb.check_output_file_consistency(verbose=True)
+
+  def test_bucket_check_no_bucket(self):
+    fbb = FakeBBGen(NO_BUCKET_WATERFALL,
+                    FOO_TEST_SUITE,
+                    LUCI_MILO_CFG)
+    fbb.files['chromium.try.json'] = SCRIPT_OUTPUT
+    fbb.files['chromium.test.json'] = SCRIPT_OUTPUT
+    with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
+        '.* has no bucket'):
+      fbb.check_output_file_consistency(verbose=True)
+
+  def test_bucket_check_missing_chrome_project(self):
+    fbb = FakeBBGen(CHROME_MISSING_WATERFALL,
+                    FOO_TEST_SUITE,
+                    LUCI_MILO_CFG)
+    fbb.files['chromium.try.json'] = SCRIPT_OUTPUT
+    fbb.files['chromium.test.json'] = SCRIPT_OUTPUT
+    with self.assertRaisesRegexp(
+        generate_buildbot_json.BBGenErr,
+        'The following files have not been properly autogenerated by '
+        'generate_buildbot_json.py: chromium.try.json, chromium.test.json'):
+      fbb.check_output_file_consistency(verbose=True)
+
+  def test_bucket_check_missing_try_bucket(self):
+    fbb = FakeBBGen(TRY_MISSING_WATERFALL,
+                    FOO_TEST_SUITE,
+                    LUCI_MILO_CFG)
+    fbb.files['chrome.ci.json'] = SCRIPT_OUTPUT
+    fbb.files['chromium.ci.json'] = SCRIPT_OUTPUT
+    fbb.files['chrome.test.json'] =  SCRIPT_OUTPUT
+    fbb.files['chromium.test.json'] =  SCRIPT_OUTPUT
+    with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
+        'The following files have not been properly autogenerated by '
+        'generate_buildbot_json.py: chrome.test.json, '
+        'chromium.test.json, chrome.ci.json, chromium.ci.json'):
+      fbb.check_output_file_consistency(verbose=True)
+
+  def test_bucket_check_output_missing(self):
+    fbb = FakeBBGen(CHROME_AND_CHROMIUM_WATERFALL,
+                    FOO_TEST_SUITE,
+                    LUCI_MILO_CFG)
+    fbb.files['chromium.try.json'] = SCRIPT_OUTPUT
+    fbb.files['chromium.ci.json'] = CHROME_NORMAL_OUTPUT
+    fbb.files['chrome.ci.json'] = CHROME_NORMAL_OUTPUT
+    fbb.files['chromium.test.json'] = CHROMIUM_NORMAL_OUTPUT
+    fbb.files['chrome.test.json'] = CHROME_NORMAL_OUTPUT
+    with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
+        'The following files have not been properly autogenerated by '
+        'generate_buildbot_json.py: chromium.try.json'):
+      fbb.check_output_file_consistency(verbose=True)
+
 
 FOO_GTESTS_WATERFALL_MIXIN_WATERFALL = """\
 [
   {
     'mixins': ['waterfall_mixin'],
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -2685,6 +3066,8 @@ FOO_GTESTS_WATERFALL_MIXIN_WATERFALL = """\
 FOO_GTESTS_BUILDER_MIXIN_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -2703,6 +3086,8 @@ FOO_GTESTS_WATERFALL_MIXIN_BUILDER_REMOVE_MIXIN_WATERFALL = """\
 [
   {
     'mixins': ['waterfall_mixin'],
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -2720,6 +3105,8 @@ FOO_GTESTS_WATERFALL_MIXIN_BUILDER_REMOVE_MIXIN_WATERFALL = """\
 FOO_GTESTS_BUILDER_MIXIN_NON_SWARMING_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -2737,6 +3124,8 @@ FOO_GTESTS_BUILDER_MIXIN_NON_SWARMING_WATERFALL = """\
 FOO_GTESTS_DIMENSIONS_MIXIN_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -2754,6 +3143,8 @@ FOO_GTESTS_DIMENSIONS_MIXIN_WATERFALL = """\
 FOO_GPU_TELEMETRY_TEST_DIMENSIONS_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -2773,6 +3164,8 @@ FOO_GPU_TELEMETRY_TEST_DIMENSIONS_WATERFALL = """\
 FOO_GTESTS_INVALID_LIST_MIXIN_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -2789,6 +3182,8 @@ FOO_GTESTS_INVALID_LIST_MIXIN_WATERFALL = """\
 FOO_GTESTS_INVALID_NOTFOUND_MIXIN_WATERFALL = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -2806,8 +3201,10 @@ FOO_GTESTS_INVALID_NOTFOUND_MIXIN_WATERFALL = """\
 FOO_GTESTS_TEST_MIXIN_WATERFALL = """\
 [
   {
-    'mixins': ['waterfall_mixin'],
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
+    'mixins': ['waterfall_mixin'],
     'machines': {
       'Fake Tester': {
         'swarming': {},
@@ -2824,6 +3221,8 @@ FOO_GTESTS_SORTING_MIXINS_WATERFALL = """\
 [
   {
     'mixins': ['a_mixin', 'b_mixin', 'c_mixin'],
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -2967,6 +3366,8 @@ SWARMING_MIXINS_SORTED = """\
 FOO_CTS_WATERFALL_MIXINS = """\
 [
   {
+    'project': 'chromium',
+    'bucket': 'ci',
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
@@ -3232,6 +3633,7 @@ class MixinTests(unittest.TestCase):
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = WATERFALL_MIXIN_WATERFALL_OUTPUT
+    fbb.files['chromium.ci.json'] = WATERFALL_MIXIN_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -3242,6 +3644,7 @@ class MixinTests(unittest.TestCase):
                     exceptions=SCRIPT_WITH_ARGS_SWARMING_EXCEPTIONS,
                     mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = WATERFALL_MIXIN_WATERFALL_EXCEPTION_OUTPUT
+    fbb.files['chromium.ci.json'] = WATERFALL_MIXIN_WATERFALL_EXCEPTION_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -3251,6 +3654,7 @@ class MixinTests(unittest.TestCase):
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = BUILDER_MIXIN_WATERFALL_OUTPUT
+    fbb.files['chromium.ci.json'] = BUILDER_MIXIN_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -3261,6 +3665,8 @@ class MixinTests(unittest.TestCase):
                     mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = (
         BUILDER_MIXIN_NON_SWARMING_WATERFALL_OUTPUT)
+    fbb.files['chromium.ci.json'] = (
+        BUILDER_MIXIN_NON_SWARMING_WATERFALL_OUTPUT)
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -3270,6 +3676,7 @@ class MixinTests(unittest.TestCase):
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = TEST_MIXIN_WATERFALL_OUTPUT
+    fbb.files['chromium.ci.json'] = TEST_MIXIN_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -3279,6 +3686,7 @@ class MixinTests(unittest.TestCase):
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = DIMENSIONS_MIXIN_WATERFALL_OUTPUT
+    fbb.files['chromium.ci.json'] = DIMENSIONS_MIXIN_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -3288,6 +3696,7 @@ class MixinTests(unittest.TestCase):
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = GPU_DIMENSIONS_WATERFALL_OUTPUT
+    fbb.files['chromium.ci.json'] = GPU_DIMENSIONS_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -3306,6 +3715,7 @@ class MixinTests(unittest.TestCase):
                     FOO_CTS_SUITE,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = CTS_OUTPUT
+    fbb.files['chromium.ci.json'] = CTS_OUTPUT
     fbb.check_input_file_consistency(verbose=True)
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -3316,6 +3726,7 @@ class MixinTests(unittest.TestCase):
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = DIMENSIONS_MIXIN_WATERFALL_OUTPUT
+    fbb.files['chromium.ci.json'] = DIMENSIONS_MIXIN_WATERFALL_OUTPUT
     with self.assertRaises(generate_buildbot_json.BBGenErr):
       fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -3326,6 +3737,7 @@ class MixinTests(unittest.TestCase):
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = DIMENSIONS_MIXIN_WATERFALL_OUTPUT
+    fbb.files['chromium.ci.json'] = DIMENSIONS_MIXIN_WATERFALL_OUTPUT
     with self.assertRaises(generate_buildbot_json.BBGenErr):
       fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -3390,6 +3802,7 @@ class MixinTests(unittest.TestCase):
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_APPEND)
     fbb.files['chromium.test.json'] = BUILDER_MIXIN_APPEND_ARGS_WATERFALL_OUTPUT
+    fbb.files['chromium.ci.json'] = BUILDER_MIXIN_APPEND_ARGS_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -3421,6 +3834,7 @@ class MixinTests(unittest.TestCase):
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = WATERFALL_MIXIN_REMOVE_WATERFALL_OUTPUT
+    fbb.files['chromium.ci.json'] = WATERFALL_MIXIN_REMOVE_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -3430,6 +3844,7 @@ class MixinTests(unittest.TestCase):
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = WATERFALL_MIXIN_REMOVE_WATERFALL_OUTPUT
+    fbb.files['chromium.ci.json'] = WATERFALL_MIXIN_REMOVE_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -3439,6 +3854,7 @@ class MixinTests(unittest.TestCase):
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = WATERFALL_MIXIN_REMOVE_WATERFALL_OUTPUT
+    fbb.files['chromium.ci.json'] = WATERFALL_MIXIN_REMOVE_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -4284,6 +4700,7 @@ class ReplacementTests(unittest.TestCase):
                     LUCI_MILO_CFG,
                     exceptions=FOO_TEST_REPLACEMENTS_REMOVE_NO_VALUE)
     fbb.files['chromium.test.json'] = REPLACEMENTS_REMOVE_OUTPUT
+    fbb.files['chromium.ci.json'] = REPLACEMENTS_REMOVE_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -4293,6 +4710,7 @@ class ReplacementTests(unittest.TestCase):
                     LUCI_MILO_CFG,
                     exceptions=FOO_TEST_REPLACEMENTS_REMOVE_VALUE)
     fbb.files['chromium.test.json'] = REPLACEMENTS_REMOVE_OUTPUT
+    fbb.files['chromium.ci.json'] = REPLACEMENTS_REMOVE_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -4302,6 +4720,7 @@ class ReplacementTests(unittest.TestCase):
                     LUCI_MILO_CFG,
                     exceptions=FOO_TEST_REPLACEMENTS_REPLACE_VALUE)
     fbb.files['chromium.test.json'] = REPLACEMENTS_VALUE_OUTPUT
+    fbb.files['chromium.ci.json'] = REPLACEMENTS_VALUE_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -4311,6 +4730,7 @@ class ReplacementTests(unittest.TestCase):
                     LUCI_MILO_CFG,
                     exceptions=FOO_TEST_REPLACEMENTS_REPLACE_VALUE)
     fbb.files['chromium.test.json'] = REPLACEMENTS_VALUE_SEPARATE_ENTRIES_OUTPUT
+    fbb.files['chromium.ci.json'] = REPLACEMENTS_VALUE_SEPARATE_ENTRIES_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -5050,6 +5470,7 @@ class MatrixCompositionTests(unittest.TestCase):
       MATRIX_COMPOUND_EMPTY,
       LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = MATRIX_COMPOUND_EMPTY_OUTPUT
+    fbb.files['chromium.ci.json'] = MATRIX_COMPOUND_EMPTY_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -5132,6 +5553,7 @@ class MatrixCompositionTests(unittest.TestCase):
       LUCI_MILO_CFG,
       mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = MATRIX_TARGET_DICT_MERGE_OUTPUT_ARGS
+    fbb.files['chromium.ci.json'] = MATRIX_TARGET_DICT_MERGE_OUTPUT_ARGS
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -5145,6 +5567,7 @@ class MatrixCompositionTests(unittest.TestCase):
       LUCI_MILO_CFG,
       mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = MATRIX_TARGET_DICT_MERGE_OUTPUT_MIXINS
+    fbb.files['chromium.ci.json'] = MATRIX_TARGET_DICT_MERGE_OUTPUT_MIXINS
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -5158,6 +5581,7 @@ class MatrixCompositionTests(unittest.TestCase):
       LUCI_MILO_CFG,
       mixins=SWARMING_MIXINS)
     fbb.files['chromium.test.json'] = MATRIX_TARGET_DICT_MERGE_OUTPUT_SWARMING
+    fbb.files['chromium.ci.json'] = MATRIX_TARGET_DICT_MERGE_OUTPUT_SWARMING
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -5169,6 +5593,7 @@ class MatrixCompositionTests(unittest.TestCase):
       LUCI_MILO_CFG,
       variants=VARIANTS_FILE)
     fbb.files['chromium.test.json'] = MATRIX_COMPOUND_VARIANTS_REF_OUTPUT
+    fbb.files['chromium.ci.json'] = MATRIX_COMPOUND_VARIANTS_REF_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 

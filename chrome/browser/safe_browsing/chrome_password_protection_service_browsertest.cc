@@ -22,9 +22,11 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/password_protection/metrics_util.h"
 #include "components/safe_browsing/content/password_protection/password_protection_request.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -61,7 +63,7 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     feature_list_.InitAndEnableFeature(
-        safe_browsing::kPasswordProtectionForSignedInUsers);
+        password_manager::features::kPasswordCheck);
   }
 
   void SetUpOnMainThread() override {
@@ -268,6 +270,56 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
           profile));
 }
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
+                       SavedPassword) {
+  SetUpPrimaryAccountWithHostedDomain(kNoHostedDomainFound);
+  ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Initialize and verify initial state.
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL(kLoginPageUrl));
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+  ASSERT_FALSE(
+      ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
+          web_contents, PasswordType::SAVED_PASSWORD));
+  ASSERT_EQ(security_state::NONE, GetSecurityLevel(web_contents));
+  ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
+            GetVisibleSecurityState(web_contents)->malicious_content_status);
+
+  ReusedPasswordAccountType account_type;
+  account_type.set_account_type(ReusedPasswordAccountType::SAVED_PASSWORD);
+  // Shows modal dialog on current web_contents.
+  service->ShowModalWarning(
+      web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(security_state::DANGEROUS, GetSecurityLevel(web_contents));
+  ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SAVED_PASSWORD_REUSE,
+            GetVisibleSecurityState(web_contents)->malicious_content_status);
+
+  // Simulates clicking "Check Passwords" button on the modal dialog.
+  service->OnUserAction(web_contents, account_type, RequestOutcome::UNKNOWN,
+                        LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+                        "unused_token", WarningUIType::MODAL_DIALOG,
+                        WarningAction::CHANGE_PASSWORD);
+  content::WebContents* new_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver observer(new_web_contents,
+                                           /*number_of_navigations=*/1);
+  observer.Wait();
+  // Verify chrome://settings/passwords/check page should be opened in a new
+  // foreground tab.
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  ASSERT_EQ(
+      "chrome://settings/passwords/check",
+      browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        MarkSiteAsLegitimate) {

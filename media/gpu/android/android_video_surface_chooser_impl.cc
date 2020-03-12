@@ -240,8 +240,8 @@ void AndroidVideoSurfaceChooserImpl::OnOverlayReady(AndroidOverlay* overlay) {
   // Notify the overlay that we'd like to know if it's destroyed, so that we can
   // update our internal state if the client drops it without being told.
   overlay_->AddOverlayDeletedCallback(
-      base::Bind(&AndroidVideoSurfaceChooserImpl::OnOverlayDeleted,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&AndroidVideoSurfaceChooserImpl::OnOverlayDeleted,
+                     weak_factory_.GetWeakPtr()));
 
   client_overlay_state_ = kUsingOverlay;
   use_overlay_cb_.Run(std::move(overlay_));

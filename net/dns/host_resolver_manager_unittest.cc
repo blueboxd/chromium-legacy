@@ -8755,31 +8755,14 @@ TEST_F(HostResolverManagerDnsTest, DohProbeRequest_RestartOnConnectionChange) {
   std::unique_ptr<HostResolverManager::CancellableProbeRequest> request =
       resolver_->CreateDohProbeRequest(resolve_context_.get());
   EXPECT_THAT(request->Start(), IsError(ERR_IO_PENDING));
-  ASSERT_FALSE(dns_client_->factory()->doh_probes_running());
-
-  notifier.mock_network_change_notifier()->SetConnectionTypeAndNotifyObservers(
-      NetworkChangeNotifier::CONNECTION_WIFI);
-
   EXPECT_TRUE(dns_client_->factory()->doh_probes_running());
-}
-
-TEST_F(HostResolverManagerDnsTest, DohProbeRequest_CancelOnConnectionLoss) {
-  DestroyResolver();
-  test::ScopedMockNetworkChangeNotifier notifier;
-  CreateSerialResolver();
-  notifier.mock_network_change_notifier()->SetConnectionType(
-      NetworkChangeNotifier::CONNECTION_4G);
-  ChangeDnsConfig(CreateValidDnsConfig());
-
-  std::unique_ptr<HostResolverManager::CancellableProbeRequest> request =
-      resolver_->CreateDohProbeRequest(resolve_context_.get());
-  EXPECT_THAT(request->Start(), IsError(ERR_IO_PENDING));
-  ASSERT_TRUE(dns_client_->factory()->doh_probes_running());
+  dns_client_->factory()->CompleteDohProbeRuners();
+  ASSERT_FALSE(dns_client_->factory()->doh_probes_running());
 
   notifier.mock_network_change_notifier()->SetConnectionTypeAndNotifyObservers(
       NetworkChangeNotifier::CONNECTION_NONE);
 
-  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
+  EXPECT_TRUE(dns_client_->factory()->doh_probes_running());
 }
 
 TEST_F(HostResolverManagerDnsTest, MultipleDohProbeRequests) {

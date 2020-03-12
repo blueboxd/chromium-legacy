@@ -14,7 +14,7 @@ import java.lang.annotation.RetentionPolicy;
         DialogDismissalCause.DISMISSED_BY_NATIVE,
         DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE, DialogDismissalCause.TAB_SWITCHED,
         DialogDismissalCause.TAB_DESTROYED, DialogDismissalCause.ACTIVITY_DESTROYED,
-        DialogDismissalCause.NOT_ATTACHED_TO_WINDOW})
+        DialogDismissalCause.NOT_ATTACHED_TO_WINDOW, DialogDismissalCause.NAVIGATE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface DialogDismissalCause {
     // Please do not remove or change the order of the existing values, and add new value at the end
@@ -41,4 +41,6 @@ public @interface DialogDismissalCause {
     int ACTIVITY_DESTROYED = 8;
     /** The content view of the activity associated with the dialog is not attached to window. */
     int NOT_ATTACHED_TO_WINDOW = 9;
+    /** User has navigated, e.g. by typing a URL in the location bar. */
+    int NAVIGATE = 10;
 }

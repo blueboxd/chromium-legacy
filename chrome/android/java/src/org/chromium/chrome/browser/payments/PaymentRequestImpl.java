@@ -2507,6 +2507,12 @@ public class PaymentRequestImpl
 
     // PaymentAppFactoryParams implementation.
     @Override
+    public RenderFrameHost getRenderFrameHost() {
+        return mRenderFrameHost;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
     public Map<String, PaymentMethodData> getMethodData() {
         return mMethodData;
     }

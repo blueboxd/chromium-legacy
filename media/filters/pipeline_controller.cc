@@ -52,11 +52,11 @@ void PipelineController::Start(Pipeline::StartType start_type,
   is_streaming_ = is_streaming;
   is_static_ = is_static;
   pipeline_->Start(start_type, demuxer, client,
-                   base::Bind(&PipelineController::OnPipelineStatus,
-                              weak_factory_.GetWeakPtr(),
-                              start_type == Pipeline::StartType::kNormal
-                                  ? State::PLAYING
-                                  : State::PLAYING_OR_SUSPENDED));
+                   base::BindOnce(&PipelineController::OnPipelineStatus,
+                                  weak_factory_.GetWeakPtr(),
+                                  start_type == Pipeline::StartType::kNormal
+                                      ? State::PLAYING
+                                      : State::PLAYING_OR_SUSPENDED));
 }
 
 void PipelineController::Seek(base::TimeDelta time, bool time_updated) {
@@ -216,9 +216,9 @@ void PipelineController::Dispatch() {
   if (pending_suspend_ && state_ == State::PLAYING) {
     pending_suspend_ = false;
     state_ = State::SUSPENDING;
-    pipeline_->Suspend(base::Bind(&PipelineController::OnPipelineStatus,
-                                  weak_factory_.GetWeakPtr(),
-                                  State::SUSPENDED));
+    pipeline_->Suspend(base::BindOnce(&PipelineController::OnPipelineStatus,
+                                      weak_factory_.GetWeakPtr(),
+                                      State::SUSPENDED));
     return;
   }
 
@@ -253,9 +253,9 @@ void PipelineController::Dispatch() {
     pending_resume_ = false;
     state_ = State::RESUMING;
     before_resume_cb_.Run();
-    pipeline_->Resume(seek_time_,
-                      base::Bind(&PipelineController::OnPipelineStatus,
-                                 weak_factory_.GetWeakPtr(), State::PLAYING));
+    pipeline_->Resume(
+        seek_time_, base::BindOnce(&PipelineController::OnPipelineStatus,
+                                   weak_factory_.GetWeakPtr(), State::PLAYING));
     return;
   }
 
@@ -316,8 +316,8 @@ void PipelineController::Dispatch() {
     pending_seek_ = false;
     state_ = State::SEEKING;
     pipeline_->Seek(seek_time_,
-                    base::Bind(&PipelineController::OnPipelineStatus,
-                               weak_factory_.GetWeakPtr(), State::PLAYING));
+                    base::BindOnce(&PipelineController::OnPipelineStatus,
+                                   weak_factory_.GetWeakPtr(), State::PLAYING));
     return;
   }
 

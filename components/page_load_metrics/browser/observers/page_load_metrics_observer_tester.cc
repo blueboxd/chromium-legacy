@@ -286,13 +286,13 @@ void PageLoadMetricsObserverTester::SimulateCookieChange(
                                                  blocked_by_policy);
 }
 
-void PageLoadMetricsObserverTester::SimulateDomStorageAccess(
+void PageLoadMetricsObserverTester::SimulateStorageAccess(
     const GURL& url,
     const GURL& first_party_url,
-    bool local,
-    bool blocked_by_policy) {
-  metrics_web_contents_observer_->OnDomStorageAccessed(
-      url, first_party_url, local, blocked_by_policy);
+    bool blocked_by_policy,
+    StorageType storage_type) {
+  metrics_web_contents_observer_->OnStorageAccessed(
+      url, first_party_url, blocked_by_policy, storage_type);
 }
 
 const PageLoadMetricsObserverDelegate&

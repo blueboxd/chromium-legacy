@@ -27,7 +27,8 @@ class KeyEventMapper : public protocol::InputFilter {
   ~KeyEventMapper() override;
 
   // Callback type for use with SetTrapCallback(), below.
-  typedef base::Callback<void(const protocol::KeyEvent&)> KeyTrapCallback;
+  typedef base::RepeatingCallback<void(const protocol::KeyEvent&)>
+      KeyTrapCallback;
 
   // Sets the callback to which trapped keys will be delivered.
   void SetTrapCallback(KeyTrapCallback callback);

@@ -34,7 +34,7 @@ NGFragmentChildIterator NGFragmentChildIterator::Descend() const {
     const NGFragmentItem* item = current_.cursor_->CurrentItem();
     // Descend using the cursor if the current item doesn't establish a new
     // formatting context.
-    if (!item->IsBlockFormattingContextRoot())
+    if (!item->IsFormattingContextRoot())
       return NGFragmentChildIterator(*current_.cursor_);
   }
   DCHECK(current_.BoxFragment());

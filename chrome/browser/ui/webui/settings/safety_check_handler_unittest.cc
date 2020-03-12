@@ -72,6 +72,11 @@ class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
     compromised_password_count_ = compromised_password_count;
   }
 
+  void SetPasswordCheckState(
+      extensions::api::passwords_private::PasswordCheckState state) {
+    state_ = state;
+  }
+
   std::vector<extensions::api::passwords_private::CompromisedCredential>
   GetCompromisedCredentials() override {
     std::vector<extensions::api::passwords_private::CompromisedCredential>
@@ -82,8 +87,17 @@ class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
     return compromised;
   }
 
+  extensions::api::passwords_private::PasswordCheckStatus
+  GetPasswordCheckStatus() override {
+    extensions::api::passwords_private::PasswordCheckStatus status;
+    status.state = state_;
+    return status;
+  }
+
  private:
   int compromised_password_count_ = 0;
+  extensions::api::passwords_private::PasswordCheckState state_ =
+      extensions::api::passwords_private::PASSWORD_CHECK_STATE_IDLE;
 };
 
 class TestSafetyCheckExtensionService : public TestExtensionService {
@@ -548,6 +562,41 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_CompromisedExist) {
   ASSERT_TRUE(event2);
   VerifyDisplayString(
       event2, base::NumberToString(kCompromised) + " compromised passwords");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckPasswords_Error) {
+  safety_check_->PerformSafetyCheck();
+  EXPECT_TRUE(test_passwords_delegate_.StartPasswordCheckTriggered());
+  static_cast<password_manager::BulkLeakCheckService::Observer*>(
+      safety_check_.get())
+      ->OnStateChanged(
+          password_manager::BulkLeakCheckService::State::kServiceError);
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kPasswords,
+          static_cast<int>(SafetyCheckHandler::PasswordsStatus::kError));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(event,
+                      "Browser can't check your passwords. Try again later.");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckPasswords_RunningOneCompromised) {
+  test_passwords_delegate_.SetPasswordCheckState(
+      extensions::api::passwords_private::PASSWORD_CHECK_STATE_RUNNING);
+  test_passwords_delegate_.SetStartPasswordCheckReturnSuccess(false);
+  test_passwords_delegate_.SetNumCompromisedCredentials(1);
+  safety_check_->PerformSafetyCheck();
+  EXPECT_TRUE(test_passwords_delegate_.StartPasswordCheckTriggered());
+  static_cast<password_manager::BulkLeakCheckService::Observer*>(
+      safety_check_.get())
+      ->OnStateChanged(password_manager::BulkLeakCheckService::State::kIdle);
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kPasswords,
+          static_cast<int>(
+              SafetyCheckHandler::PasswordsStatus::kCompromisedExist));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(event, "1 compromised password");
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckExtensions_NoExtensions) {

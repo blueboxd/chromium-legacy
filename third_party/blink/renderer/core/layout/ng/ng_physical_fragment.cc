@@ -347,7 +347,7 @@ void NGPhysicalFragment::CheckType() const {
         DCHECK(!IsFloating());
         DCHECK(!IsOutOfFlowPositioned());
         DCHECK(!IsAtomicInline());
-        DCHECK(!IsBlockFormattingContextRoot());
+        DCHECK(!IsFormattingContextRoot());
         break;
       }
       if (layout_object_->IsLayoutNGOutsideListMarker()) {

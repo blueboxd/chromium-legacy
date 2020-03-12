@@ -2,7 +2,6 @@
 # Copyright (c) 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Transform CBCM Takeout API Data (Python3)."""
 
 import argparse
@@ -171,8 +170,11 @@ def main(args):
     browsers_processed = 0
     while True:
       print('Making request to server ...')
-      data = json.loads(
-          http.request(base_request_url + '?' + request_parameters, 'GET')[1])
+      response = http.request(base_request_url + '?' + request_parameters,
+                              'GET')[1]
+      if isinstance(response, bytes):
+        response = response.decode('utf-8')
+      data = json.loads(response)
 
       browsers_in_data = len(data['browsers'])
       print('Request returned %s results, analyzing ...' % (browsers_in_data))

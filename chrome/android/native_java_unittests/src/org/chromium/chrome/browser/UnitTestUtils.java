@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.os.Handler;
 import android.os.Looper;
 
 import org.junit.Assert;
@@ -14,6 +15,7 @@ import org.chromium.content_public.browser.test.NestedSystemMessageHandler;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Utilities for use in Native Java Unit Tests.
@@ -29,10 +31,21 @@ public class UnitTestUtils {
         assert ThreadUtils.runningOnUiThread();
         boolean isSatisfied = criteria.call();
         TimeoutTimer timer = new TimeoutTimer(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+        Handler handler = new Handler(Looper.myLooper());
+        AtomicBoolean called = new AtomicBoolean(true);
+
         while (!isSatisfied && !timer.isTimedOut()) {
+            // Ensure we pump the message handler in case no new tasks arrive.
+            if (called.get()) {
+                called.set(false);
+                handler.postDelayed(
+                        () -> { called.set(true); }, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+            }
+
             NestedSystemMessageHandler.runSingleNestedLooperTask(Looper.myQueue());
             isSatisfied = criteria.call();
         }
+        Assert.assertFalse("Timed out waiting for condition", timer.isTimedOut());
         Assert.assertTrue(isSatisfied);
     }
 }

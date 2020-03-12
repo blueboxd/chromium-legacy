@@ -138,9 +138,8 @@ class FakeVideoDecoderTest
     ++num_input_buffers_;
     ++pending_decode_requests_;
 
-    decoder_->Decode(
-        buffer,
-        base::Bind(&FakeVideoDecoderTest::DecodeDone, base::Unretained(this)));
+    decoder_->Decode(buffer, base::BindOnce(&FakeVideoDecoderTest::DecodeDone,
+                                            base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 

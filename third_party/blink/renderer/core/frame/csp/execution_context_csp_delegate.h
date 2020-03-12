@@ -26,6 +26,7 @@ class ExecutionContextCSPDelegate final
 
   // ContentSecurityPolicyDelegate overrides:
   const SecurityOrigin* GetSecurityOrigin() override;
+  SecureContextMode GetSecureContextMode() override;
   const KURL& Url() const override;
   void SetSandboxFlags(SandboxFlags) override;
   void SetRequireTrustedTypes() override;

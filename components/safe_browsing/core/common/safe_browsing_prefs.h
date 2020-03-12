@@ -132,9 +132,9 @@ extern const char kURLsToNotCheckForMalwareOfDownloadedContent[];
 // files.
 extern const char kURLsToNotCheckComplianceOfUploadedContent[];
 
-// Boolean that indicates if Chrome is allowed to provide extra security
+// Boolean that indicates if Chrome is allowed to provide extra
 // features to users enrolled in the Advanced Protection Program.
-extern const char kAdvancedProtectionExtraSecurityAllowed[];
+extern const char kAdvancedProtectionAllowed[];
 
 }  // namespace prefs
 

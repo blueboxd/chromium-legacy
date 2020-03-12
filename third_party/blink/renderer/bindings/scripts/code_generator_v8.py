@@ -27,7 +27,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # pylint: disable=import-error,print-statement,relative-import
-
 """Generate Blink V8 bindings (.h and .cpp files).
 
 If run itself, caches Jinja templates (and creates dummy file for build,
@@ -61,14 +60,15 @@ import v8_union
 from v8_utilities import build_basename, cpp_name
 from utilities import idl_filename_to_component, is_testing_target, shorten_union_name, to_header_guard, to_snake_case
 
-
 # Make sure extension is .py, not .pyc or .pyo, so doesn't depend on caching
 MODULE_PYNAME = os.path.splitext(os.path.basename(__file__))[0] + '.py'
+
 
 def depending_union_type(idl_type):
     """Returns the union type name if the given idl_type depends on a
     union type.
     """
+
     def find_base_type(current_type):
         if current_type.is_array_or_sequence_type:
             return find_base_type(current_type.element_type)
@@ -79,6 +79,7 @@ def depending_union_type(idl_type):
         if current_type.is_nullable:
             return find_base_type(current_type.inner_type)
         return current_type
+
     base_type = find_base_type(idl_type)
     if base_type.is_union_type:
         return base_type
@@ -122,7 +123,8 @@ class TypedefResolver(Visitor):
             union_type = depending_union_type(resolved_idl_type)
             if union_type:
                 self.additional_header_includes.add(
-                    self.info_provider.include_path_for_union_types(union_type))
+                    self.info_provider.include_path_for_union_types(
+                        union_type))
             # Need to re-assign the attribute, not just mutate idl_type, since
             # type(idl_type) may change.
             setattr(typed_object, attribute_name, resolved_idl_type)
@@ -135,7 +137,8 @@ class CodeGeneratorV8Base(CodeGeneratorBase):
     """Base class for v8 bindings generator and IDL dictionary impl generator"""
 
     def __init__(self, info_provider, cache_dir, output_dir):
-        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider, cache_dir, output_dir)
+        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider,
+                                   cache_dir, output_dir)
         self.typedef_resolver = TypedefResolver(info_provider)
 
     def generate_code(self, definitions, definition_name):
@@ -158,13 +161,16 @@ class CodeGeneratorV8Base(CodeGeneratorBase):
 
 class CodeGeneratorV8(CodeGeneratorV8Base):
     def __init__(self, info_provider, cache_dir, output_dir):
-        CodeGeneratorV8Base.__init__(self, info_provider, cache_dir, output_dir)
+        CodeGeneratorV8Base.__init__(self, info_provider, cache_dir,
+                                     output_dir)
 
     def output_paths(self, definition_name):
-        header_path = posixpath.join(self.output_dir, self.get_output_filename(
-            definition_name, '.h', prefix='v8_'))
-        cpp_path = posixpath.join(self.output_dir, self.get_output_filename(
-            definition_name, '.cc', prefix='v8_'))
+        header_path = posixpath.join(
+            self.output_dir,
+            self.get_output_filename(definition_name, '.h', prefix='v8_'))
+        cpp_path = posixpath.join(
+            self.output_dir,
+            self.get_output_filename(definition_name, '.cc', prefix='v8_'))
         return header_path, cpp_path
 
     def generate_code_internal(self, definitions, definition_name):
@@ -196,31 +202,39 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
             interface_name += 'Partial'
             assert component == 'core'
             component = 'modules'
-            include_paths = interface_info.get('dependencies_other_component_include_paths')
+            include_paths = interface_info.get(
+                'dependencies_other_component_include_paths')
         else:
             header_template_filename = 'interface.h.tmpl'
             cpp_template_filename = 'interface.cc.tmpl'
             interface_context = v8_interface.interface_context
 
         component_info = self.info_provider.component_info
-        template_context = interface_context(interface, definitions.interfaces, component_info)
-        includes.update(interface_info.get('cpp_includes', {}).get(component, set()))
+        template_context = interface_context(interface, definitions.interfaces,
+                                             component_info)
+        includes.update(
+            interface_info.get('cpp_includes', {}).get(component, set()))
         if not interface.is_partial and not is_testing_target(full_path):
-            template_context['header_includes'].add(self.info_provider.include_path_for_export)
-            template_context['exported'] = self.info_provider.specifier_for_export
+            template_context['header_includes'].add(
+                self.info_provider.include_path_for_export)
+            template_context['exported'] = \
+                self.info_provider.specifier_for_export
         # Add the include for interface itself
         if IdlType(interface_name).is_typed_array:
-            template_context['header_includes'].add('core/typed_arrays/dom_typed_array.h')
+            template_context['header_includes'].add(
+                'core/typed_arrays/dom_typed_array.h')
         elif interface.is_callback:
             pass
         else:
-            template_context['header_includes'].add(interface_info['include_path'])
+            template_context['header_includes'].add(
+                interface_info['include_path'])
         template_context['header_includes'].update(
             interface_info.get('additional_header_includes', []))
         header_path, cpp_path = self.output_paths(interface_name)
         this_include_header_path = self.normalize_this_header_path(header_path)
         template_context['this_include_header_path'] = this_include_header_path
-        template_context['header_guard'] = to_header_guard(this_include_header_path)
+        template_context['header_guard'] = to_header_guard(
+            this_include_header_path)
         header_template = self.jinja_env.get_template(header_template_filename)
         cpp_template = self.jinja_env.get_template(cpp_template_filename)
         header_text, cpp_text = self.render_templates(
@@ -245,12 +259,15 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
         # Add the include for interface itself
         template_context['header_includes'].add(interface_info['include_path'])
         if not is_testing_target(interface_info.get('full_path')):
-            template_context['header_includes'].add(self.info_provider.include_path_for_export)
-            template_context['exported'] = self.info_provider.specifier_for_export
+            template_context['header_includes'].add(
+                self.info_provider.include_path_for_export)
+            template_context['exported'] = \
+                self.info_provider.specifier_for_export
         header_path, cpp_path = self.output_paths(dictionary_name)
         this_include_header_path = self.normalize_this_header_path(header_path)
         template_context['this_include_header_path'] = this_include_header_path
-        template_context['header_guard'] = to_header_guard(this_include_header_path)
+        template_context['header_guard'] = to_header_guard(
+            this_include_header_path)
         header_text, cpp_text = self.render_templates(
             include_paths, header_template, cpp_template, template_context)
         return (
@@ -261,15 +278,16 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
 
 class CodeGeneratorDictionaryImpl(CodeGeneratorV8Base):
     def __init__(self, info_provider, cache_dir, output_dir):
-        CodeGeneratorV8Base.__init__(self, info_provider, cache_dir, output_dir)
+        CodeGeneratorV8Base.__init__(self, info_provider, cache_dir,
+                                     output_dir)
 
     def output_paths(self, definition_name, interface_info):
         output_dir = posixpath.join(self.output_dir,
                                     interface_info['relative_dir'])
-        header_path = posixpath.join(output_dir,
-                                     self.get_output_filename(definition_name, '.h'))
-        cpp_path = posixpath.join(output_dir,
-                                  self.get_output_filename(definition_name, '.cc'))
+        header_path = posixpath.join(
+            output_dir, self.get_output_filename(definition_name, '.h'))
+        cpp_path = posixpath.join(
+            output_dir, self.get_output_filename(definition_name, '.cc'))
         return header_path, cpp_path
 
     def generate_code_internal(self, definitions, definition_name):
@@ -284,14 +302,18 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorV8Base):
             dictionary, interfaces_info)
         include_paths = interface_info.get('dependencies_include_paths')
         if not is_testing_target(interface_info.get('full_path')):
-            template_context['exported'] = self.info_provider.specifier_for_export
-            template_context['header_includes'].add(self.info_provider.include_path_for_export)
+            template_context['exported'] = \
+                self.info_provider.specifier_for_export
+            template_context['header_includes'].add(
+                self.info_provider.include_path_for_export)
         template_context['header_includes'].update(
             interface_info.get('additional_header_includes', []))
-        header_path, cpp_path = self.output_paths(definition_name, interface_info)
+        header_path, cpp_path = self.output_paths(definition_name,
+                                                  interface_info)
         this_include_header_path = self.normalize_this_header_path(header_path)
         template_context['this_include_header_path'] = this_include_header_path
-        template_context['header_guard'] = to_header_guard(this_include_header_path)
+        template_context['header_guard'] = to_header_guard(
+            this_include_header_path)
         header_text, cpp_text = self.render_templates(
             include_paths, header_template, cpp_template, template_context)
         return (
@@ -306,8 +328,10 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
     CodeGeneratorDictionaryImpl. It assumes that all union types are already
     collected. It doesn't process idl files directly.
     """
+
     def __init__(self, info_provider, cache_dir, output_dir, target_component):
-        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider, cache_dir, output_dir)
+        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider,
+                                   cache_dir, output_dir)
         self.target_component = target_component
         # The code below duplicates parts of TypedefResolver. We do not use it
         # directly because IdlUnionType is not a type defined in
@@ -322,7 +346,8 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
         union_type = union_type.resolve_typedefs(self.typedefs)
         header_template = self.jinja_env.get_template('union_container.h.tmpl')
         cpp_template = self.jinja_env.get_template('union_container.cc.tmpl')
-        template_context = v8_union.container_context(union_type, self.info_provider)
+        template_context = v8_union.container_context(union_type,
+                                                      self.info_provider)
         template_context['header_includes'].append(
             self.info_provider.include_path_for_export)
         template_context['exported'] = self.info_provider.specifier_for_export
@@ -331,7 +356,8 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
         cpp_path = posixpath.join(self.output_dir, '%s.cc' % snake_base_name)
         this_include_header_path = self.normalize_this_header_path(header_path)
         template_context['this_include_header_path'] = this_include_header_path
-        template_context['header_guard'] = to_header_guard(this_include_header_path)
+        template_context['header_guard'] = to_header_guard(
+            this_include_header_path)
         header_text, cpp_text = self.render_templates(
             [], header_template, cpp_template, template_context)
         return (
@@ -368,18 +394,22 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
 
 class CodeGeneratorCallbackFunction(CodeGeneratorBase):
     def __init__(self, info_provider, cache_dir, output_dir, target_component):
-        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider, cache_dir, output_dir)
+        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider,
+                                   cache_dir, output_dir)
         self.target_component = target_component
         self.typedef_resolver = TypedefResolver(info_provider)
 
     def generate_code_internal(self, callback_function, path):
-        self.typedef_resolver.resolve(callback_function, callback_function.name)
-        header_template = self.jinja_env.get_template('callback_function.h.tmpl')
+        self.typedef_resolver.resolve(callback_function,
+                                      callback_function.name)
+        header_template = self.jinja_env.get_template(
+            'callback_function.h.tmpl')
         cpp_template = self.jinja_env.get_template('callback_function.cc.tmpl')
         template_context = v8_callback_function.callback_function_context(
             callback_function)
         if not is_testing_target(path):
-            template_context['exported'] = self.info_provider.specifier_for_export
+            template_context['exported'] = \
+                self.info_provider.specifier_for_export
             template_context['header_includes'].append(
                 self.info_provider.include_path_for_export)
 
@@ -388,14 +418,16 @@ class CodeGeneratorCallbackFunction(CodeGeneratorBase):
         for argument in callback_function.arguments:
             if argument.idl_type.is_union_type:
                 template_context['header_includes'].append(
-                    self.info_provider.include_path_for_union_types(argument.idl_type))
+                    self.info_provider.include_path_for_union_types(
+                        argument.idl_type))
 
         snake_base_name = to_snake_case('V8%s' % callback_function.name)
         header_path = posixpath.join(self.output_dir, '%s.h' % snake_base_name)
         cpp_path = posixpath.join(self.output_dir, '%s.cc' % snake_base_name)
         this_include_header_path = self.normalize_this_header_path(header_path)
         template_context['this_include_header_path'] = this_include_header_path
-        template_context['header_guard'] = to_header_guard(this_include_header_path)
+        template_context['header_guard'] = to_header_guard(
+            this_include_header_path)
         header_text, cpp_text = self.render_templates(
             [], header_template, cpp_template, template_context)
         return (
@@ -416,5 +448,6 @@ class CodeGeneratorCallbackFunction(CodeGeneratorBase):
             if 'Custom' in callback_function.extended_attributes:
                 continue
             path = callback_function_dict['full_path']
-            outputs.update(self.generate_code_internal(callback_function, path))
+            outputs.update(
+                self.generate_code_internal(callback_function, path))
         return outputs

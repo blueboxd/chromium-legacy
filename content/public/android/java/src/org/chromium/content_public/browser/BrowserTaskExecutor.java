@@ -54,7 +54,6 @@ public class BrowserTaskExecutor implements TaskExecutor {
             SingleThreadTaskRunner taskRunner =
                     new SingleThreadTaskRunnerImpl(ThreadUtils.getUiThreadHandler(), taskTraits,
                             shouldPrioritizeTraits(taskTraits));
-            taskRunner.disableLifetimeCheck();
             mTaskRunners.put(taskTraits, new WeakReference<>(taskRunner));
             return taskRunner;
         }

@@ -29,8 +29,8 @@ void VideoThumbnailDecoder::Start(VideoFrameCallback video_frame_callback) {
   DCHECK(video_frame_callback_);
   decoder_->Initialize(
       config_, false, nullptr,
-      base::BindRepeating(&VideoThumbnailDecoder::OnVideoDecoderInitialized,
-                          weak_factory_.GetWeakPtr()),
+      base::BindOnce(&VideoThumbnailDecoder::OnVideoDecoderInitialized,
+                     weak_factory_.GetWeakPtr()),
       base::BindRepeating(&VideoThumbnailDecoder::OnVideoFrameDecoded,
                           weak_factory_.GetWeakPtr()),
       base::DoNothing());
@@ -45,8 +45,8 @@ void VideoThumbnailDecoder::OnVideoDecoderInitialized(bool success) {
   auto buffer =
       DecoderBuffer::CopyFrom(&encoded_data_[0], encoded_data_.size());
   encoded_data_.clear();
-  decoder_->Decode(
-      buffer, base::BindRepeating(&VideoThumbnailDecoder::OnVideoBufferDecoded,
+  decoder_->Decode(buffer,
+                   base::BindOnce(&VideoThumbnailDecoder::OnVideoBufferDecoded,
                                   weak_factory_.GetWeakPtr()));
 }
 
@@ -57,10 +57,9 @@ void VideoThumbnailDecoder::OnVideoBufferDecoded(DecodeStatus status) {
   }
 
   // Enqueue eos since only one video frame is needed for thumbnail.
-  decoder_->Decode(
-      DecoderBuffer::CreateEOSBuffer(),
-      base::BindRepeating(&VideoThumbnailDecoder::OnEosBufferDecoded,
-                          weak_factory_.GetWeakPtr()));
+  decoder_->Decode(DecoderBuffer::CreateEOSBuffer(),
+                   base::BindOnce(&VideoThumbnailDecoder::OnEosBufferDecoded,
+                                  weak_factory_.GetWeakPtr()));
 }
 
 void VideoThumbnailDecoder::OnEosBufferDecoded(DecodeStatus status) {

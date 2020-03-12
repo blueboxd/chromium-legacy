@@ -71,11 +71,19 @@ class AppServiceWrapper : public apps::AppRegistryCache::Observer,
     // Inactive means that the app is not in the foreground. It still can run
     // and be partially visible. |timestamp| indicates the time when the app
     // became inactive. |window| to specify which of the application's
-    // potentially multiple windows became incactive.Note: This can be called
+    // potentially multiple windows became inactive.Note: This can be called
     // for the app that is already inactive.
     virtual void OnAppInactive(const AppId& app_id,
                                aura::Window* window,
                                base::Time timestamp) {}
+
+    // Called when app with |app_id| is destroyed.
+    // |timestamp| indicates the time when the app is destroyed.
+    // |window| to specify which of the application's potentially multiple
+    // window was destroyed.
+    virtual void OnAppDestroyed(const AppId& app_id,
+                                aura::Window* window,
+                                base::Time timestamp) {}
   };
 
   explicit AppServiceWrapper(Profile* profile);

@@ -88,7 +88,8 @@ void AssistiveSuggester::Suggest(const std::string& text,
                                  int cursor_pos,
                                  int anchor_pos) {
   int len = static_cast<int>(text.length());
-  if (cursor_pos > 0 && cursor_pos <= len && cursor_pos == anchor_pos &&
+  if (cursor_pos > 0 && base::IsAsciiWhitespace(text[cursor_pos - 1]) &&
+      cursor_pos <= len && cursor_pos == anchor_pos &&
       (cursor_pos == len || base::IsAsciiWhitespace(text[cursor_pos]))) {
     // |text| could be very long, we get at most |kMaxTextBeforeCursorLength|
     // characters before cursor.

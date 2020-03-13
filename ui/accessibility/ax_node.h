@@ -394,7 +394,7 @@ class AX_EXPORT AXNode final {
   void ComputeLineStartOffsets(std::vector<int>* line_offsets,
                                int* start_offset) const;
   AXTableInfo* GetAncestorTableInfo() const;
-  void IdVectorToNodeVector(std::vector<int32_t>& ids,
+  void IdVectorToNodeVector(const std::vector<int32_t>& ids,
                             std::vector<AXNode*>* nodes) const;
 
   int UpdateUnignoredCachedValuesRecursive(int startIndex);

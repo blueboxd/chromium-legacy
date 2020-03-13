@@ -216,6 +216,7 @@ class SearchBox extends cr.EventTarget {
   updateStyles_() {
     const hasText = !!this.inputElement.value;
     this.element.classList.toggle('has-text', hasText);
+    this.searchWrapper.classList.toggle('has-text', hasText);
     const hasFocusOnInput = this.element.classList.contains('has-cursor');
 
     // Focus either the search button or the input.

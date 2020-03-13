@@ -64,6 +64,7 @@ CrSettingsAnimatedPagesTest.prototype = {
   browsePreload: 'chrome://settings/settings_page/settings_animated_pages.html',
 
   extraLibraries: CrSettingsInteractiveUITest.prototype.extraLibraries.concat([
+    '../test_util.js',
     'test_util.js',
     'settings_animated_pages_test.js',
   ]),

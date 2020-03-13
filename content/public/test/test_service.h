@@ -41,15 +41,8 @@ class TestService : public service_manager::Service, public mojom::TestService {
   void DoCrashImmediately(DoCrashImmediatelyCallback callback) override;
   void CreateFolder(CreateFolderCallback callback) override;
   void GetRequestorName(GetRequestorNameCallback callback) override;
-  void CreateReadOnlySharedMemoryRegion(
-      const std::string& message,
-      CreateReadOnlySharedMemoryRegionCallback callback) override;
-  void CreateWritableSharedMemoryRegion(
-      const std::string& message,
-      CreateWritableSharedMemoryRegionCallback callback) override;
-  void CreateUnsafeSharedMemoryRegion(
-      const std::string& message,
-      CreateUnsafeSharedMemoryRegionCallback callback) override;
+  void CreateSharedBuffer(const std::string& message,
+                          CreateSharedBufferCallback callback) override;
 
   service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;

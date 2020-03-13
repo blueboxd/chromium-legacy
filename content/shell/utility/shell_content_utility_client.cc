@@ -9,13 +9,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/containers/span.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/read_only_shared_memory_region.h"
-#include "base/memory/shared_memory_mapping.h"
-#include "base/memory/unsafe_shared_memory_region.h"
-#include "base/memory/writable_shared_memory_region.h"
 #include "base/no_destructor.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
@@ -72,39 +67,18 @@ class TestUtilityServiceImpl : public mojom::TestService {
     NOTREACHED();
   }
 
-  void CreateReadOnlySharedMemoryRegion(
-      const std::string& message,
-      CreateReadOnlySharedMemoryRegionCallback callback) override {
-    base::MappedReadOnlyRegion map_and_region =
-        base::ReadOnlySharedMemoryRegion::Create(message.size());
-    CHECK(map_and_region.IsValid());
-    std::copy(message.begin(), message.end(),
-              map_and_region.mapping.GetMemoryAsSpan<char>().begin());
-    std::move(callback).Run(std::move(map_and_region.region));
-  }
+  void CreateSharedBuffer(const std::string& message,
+                          CreateSharedBufferCallback callback) override {
+    mojo::ScopedSharedBufferHandle buffer =
+        mojo::SharedBufferHandle::Create(message.size());
+    CHECK(buffer.is_valid());
 
-  void CreateWritableSharedMemoryRegion(
-      const std::string& message,
-      CreateWritableSharedMemoryRegionCallback callback) override {
-    auto region = base::WritableSharedMemoryRegion::Create(message.size());
-    CHECK(region.IsValid());
-    base::WritableSharedMemoryMapping mapping = region.Map();
-    CHECK(mapping.IsValid());
+    mojo::ScopedSharedBufferMapping mapping = buffer->Map(message.size());
+    CHECK(mapping);
     std::copy(message.begin(), message.end(),
-              mapping.GetMemoryAsSpan<char>().begin());
-    std::move(callback).Run(std::move(region));
-  }
+              reinterpret_cast<char*>(mapping.get()));
 
-  void CreateUnsafeSharedMemoryRegion(
-      const std::string& message,
-      CreateUnsafeSharedMemoryRegionCallback callback) override {
-    auto region = base::UnsafeSharedMemoryRegion::Create(message.size());
-    CHECK(region.IsValid());
-    base::WritableSharedMemoryMapping mapping = region.Map();
-    CHECK(mapping.IsValid());
-    std::copy(message.begin(), message.end(),
-              mapping.GetMemoryAsSpan<char>().begin());
-    std::move(callback).Run(std::move(region));
+    std::move(callback).Run(std::move(buffer));
   }
 
  private:

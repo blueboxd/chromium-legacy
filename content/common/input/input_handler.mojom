@@ -231,6 +231,11 @@ interface WidgetInputHandlerHost {
                    bool unadjusted_movement)
                       => (blink.mojom.PointerLockResult result);
 
+  // A request to change the current mouse lock to have the given unadjusted
+  // movement.
+  RequestMouseLockChange(bool unadjusted_movement)
+                          => (blink.mojom.PointerLockResult result);
+
   // Unlocks the mouse back to its default behavior. This will also returns
   // mouse movement back to the platform's adjusted movement if unadjusted
   // movement was true while locking.

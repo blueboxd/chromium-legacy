@@ -84,6 +84,10 @@ class CONTENT_EXPORT InputRouterClient {
       bool unadjusted_movement,
       mojom::WidgetInputHandlerHost::RequestMouseLockCallback response) = 0;
 
+  virtual void RequestMouseLockChange(
+      bool unadjusted_movement,
+      mojom::WidgetInputHandlerHost::RequestMouseLockCallback response) = 0;
+
   virtual void UnlockMouse() = 0;
 
   virtual void FallbackCursorModeLockCursor(bool left,

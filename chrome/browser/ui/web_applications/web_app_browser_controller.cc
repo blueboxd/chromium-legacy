@@ -99,8 +99,17 @@ bool WebAppBrowserController::IsUrlInAppScope(const GURL& url) const {
   // https://w3c.github.io/manifest/#navigation-scope
   // If url is same origin as scope and url path starts with scope path, return
   // true. Otherwise, return false.
-  if (app_scope.GetOrigin() != url.GetOrigin())
-    return false;
+  if (app_scope.GetOrigin() != url.GetOrigin()) {
+    // We allow an upgrade from http |app_scope| to https |url|.
+    if (app_scope.scheme() != url::kHttpScheme)
+      return false;
+
+    GURL::Replacements rep;
+    rep.SetSchemeStr(url::kHttpsScheme);
+    GURL secure_app_scope = app_scope.ReplaceComponents(rep);
+    if (secure_app_scope.GetOrigin() != url.GetOrigin())
+      return false;
+  }
 
   std::string scope_path = app_scope.path();
   std::string url_path = url.path();

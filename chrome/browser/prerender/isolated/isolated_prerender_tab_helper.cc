@@ -27,6 +27,7 @@
 #include "content/public/common/content_constants.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -136,6 +137,11 @@ void IsolatedPrerenderTabHelper::Prefetch() {
   GURL url = page_->urls_to_prefetch[0];
   page_->urls_to_prefetch.erase(page_->urls_to_prefetch.begin());
 
+  net::NetworkIsolationKey key =
+      net::NetworkIsolationKey::CreateOpaqueAndNonTransient();
+  network::ResourceRequest::TrustedParams trusted_params;
+  trusted_params.network_isolation_key = key;
+
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
   request->url = url;
@@ -143,6 +149,7 @@ void IsolatedPrerenderTabHelper::Prefetch() {
   request->load_flags = net::LOAD_DISABLE_CACHE | net::LOAD_PREFETCH;
   request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   request->headers.SetHeader(content::kCorsExemptPurposeHeaderName, "prefetch");
+  request->trusted_params = trusted_params;
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("navigation_predictor_srp_prefetch",
@@ -181,7 +188,7 @@ void IsolatedPrerenderTabHelper::Prefetch() {
   page_->url_loader->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(&IsolatedPrerenderTabHelper::OnPrefetchComplete,
-                     base::Unretained(this), url),
+                     base::Unretained(this), url, key),
       1024 * 1024 * 5 /* 5MB */);
 }
 
@@ -203,6 +210,7 @@ void IsolatedPrerenderTabHelper::OnPrefetchRedirect(
 
 void IsolatedPrerenderTabHelper::OnPrefetchComplete(
     const GURL& url,
+    const net::NetworkIsolationKey& key,
     std::unique_ptr<std::string> body) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(PrefetchingActive());
@@ -211,13 +219,14 @@ void IsolatedPrerenderTabHelper::OnPrefetchComplete(
       page_->url_loader->ResponseInfo()) {
     network::mojom::URLResponseHeadPtr head =
         page_->url_loader->ResponseInfo()->Clone();
-    HandlePrefetchResponse(url, std::move(head), std::move(body));
+    HandlePrefetchResponse(url, key, std::move(head), std::move(body));
   }
   Prefetch();
 }
 
 void IsolatedPrerenderTabHelper::HandlePrefetchResponse(
     const GURL& url,
+    const net::NetworkIsolationKey& key,
     network::mojom::URLResponseHeadPtr head,
     std::unique_ptr<std::string> body) {
   DCHECK(!head->was_fetched_via_cache);
@@ -232,8 +241,8 @@ void IsolatedPrerenderTabHelper::HandlePrefetchResponse(
     return;
   }
   std::unique_ptr<PrefetchedMainframeResponseContainer> response =
-      std::make_unique<PrefetchedMainframeResponseContainer>(std::move(head),
-                                                             std::move(body));
+      std::make_unique<PrefetchedMainframeResponseContainer>(
+          key, std::move(head), std::move(body));
   page_->prefetched_responses.emplace(url, std::move(response));
 }
 

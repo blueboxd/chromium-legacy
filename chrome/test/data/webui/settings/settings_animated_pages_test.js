@@ -4,28 +4,39 @@
 
 // clang-format off
 // #import {Route, Router} from 'chrome://settings/settings.js';
+// #import {eventToPromise} from 'chrome://test/test_util.m.js';
 // #import {setupPopstateListener} from 'chrome://test/settings/test_util.m.js';
 // clang-format on
 
 suite('settings-animated-pages', function() {
-  test('focuses subpage trigger when exiting subpage', function(done) {
-    const testRoutes = {
+  /** @type {?SettingsRoutes}  */
+  let testRoutes = null;
+
+  setup(function() {
+    testRoutes = {
       BASIC: new settings.Route('/'),
     };
     testRoutes.SEARCH = testRoutes.BASIC.createSection('/search', 'search');
     testRoutes.SEARCH_ENGINES = testRoutes.SEARCH.createChild('/searchEngines');
+
+    testRoutes.PRIVACY = testRoutes.BASIC.createSection('/privacy', 'privacy');
+    testRoutes.SITE_SETTINGS = testRoutes.PRIVACY.createChild('/content');
+    testRoutes.SITE_SETTINGS_COOKIES =
+        testRoutes.PRIVACY.createChild('/cookies');
+
     settings.Router.resetInstanceForTesting(new settings.Router(testRoutes));
     test_util.setupPopstateListener();
+  });
 
+  // Test simple case where the |focusConfig| key captures only the previous
+  // route.
+  test('FocusSubpageTrigger_SimpleKey', async function() {
     document.body.innerHTML = `
-      <settings-animated-pages
-          section="${testRoutes.SEARCH_ENGINES.section}">
+      <settings-animated-pages section="${testRoutes.SEARCH_ENGINES.section}">
         <div route-path="default">
           <button id="subpage-trigger"></button>
         </div>
-        <div route-path="${testRoutes.SEARCH_ENGINES.path}">
-          <button id="subpage-trigger"></button>
-        </div>
+        <div route-path="${testRoutes.SEARCH_ENGINES.path}"></div>
       </settings-animated-pages>`;
 
     const animatedPages =
@@ -36,13 +47,61 @@ suite('settings-animated-pages', function() {
 
     const trigger = document.body.querySelector('#subpage-trigger');
     assertTrue(!!trigger);
-    trigger.addEventListener('focus', function() {
-      done();
-    });
+    const whenDone = test_util.eventToPromise('focus', trigger);
 
     // Trigger subpage exit navigation.
     settings.Router.getInstance().navigateTo(testRoutes.BASIC);
     settings.Router.getInstance().navigateTo(testRoutes.SEARCH_ENGINES);
     settings.Router.getInstance().navigateToPreviousRoute();
+    await whenDone;
+  });
+
+  // Test case where the |focusConfig| key captures both previous and current
+  // route, to differentiate cases where a subpage can have multiple entry
+  // points.
+  test('FocusSubpageTrigger_FromToKey', async function() {
+    document.body.innerHTML = `
+      <settings-animated-pages section="${testRoutes.PRIVACY.section}">
+        <div route-path="default">
+          <button id="subpage-trigger1"></button>
+        </div>
+        <div route-path="${testRoutes.SITE_SETTINGS.path}">
+          <button id="subpage-trigger2"></button>
+        </div>
+        <div route-path="${testRoutes.SITE_SETTINGS_COOKIES.path}"></div>
+      </settings-animated-pages>`;
+
+    const animatedPages =
+        document.body.querySelector('settings-animated-pages');
+    animatedPages.focusConfig = new Map();
+    animatedPages.focusConfig.set(
+        testRoutes.SITE_SETTINGS_COOKIES.path + '_' + testRoutes.PRIVACY.path,
+        '#subpage-trigger1');
+    animatedPages.focusConfig.set(
+        testRoutes.SITE_SETTINGS_COOKIES.path + '_' +
+            testRoutes.SITE_SETTINGS.path,
+        '#subpage-trigger2');
+
+    // Trigger subpage back navigation from entry point A, and check that the
+    // correct element #subpageTrigger1 is focused.
+    const trigger1 = document.body.querySelector('#subpage-trigger1');
+    assertTrue(!!trigger1);
+    let whenDone = test_util.eventToPromise('focus', trigger1);
+
+    settings.Router.getInstance().navigateTo(testRoutes.PRIVACY);
+    settings.Router.getInstance().navigateTo(testRoutes.SITE_SETTINGS_COOKIES);
+    settings.Router.getInstance().navigateToPreviousRoute();
+    await whenDone;
+
+    // Trigger subpage back navigation from entry point B, and check that the
+    // correct element #subpageTrigger1 is focused.
+    const trigger2 = document.body.querySelector('#subpage-trigger2');
+    assertTrue(!!trigger2);
+    whenDone = test_util.eventToPromise('focus', trigger2);
+
+    settings.Router.getInstance().navigateTo(testRoutes.SITE_SETTINGS);
+    settings.Router.getInstance().navigateTo(testRoutes.SITE_SETTINGS_COOKIES);
+    settings.Router.getInstance().navigateToPreviousRoute();
+    await whenDone;
   });
 });

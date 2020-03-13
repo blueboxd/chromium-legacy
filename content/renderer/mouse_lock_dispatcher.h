@@ -41,6 +41,10 @@ class CONTENT_EXPORT MouseLockDispatcher {
                  blink::WebLocalFrame* requester_frame,
                  blink::WebWidgetClient::PointerLockCallback callback,
                  bool request_unadjusted_movement);
+  bool ChangeMouseLock(LockTarget* target,
+                       blink::WebLocalFrame* requester_frame,
+                       blink::WebWidgetClient::PointerLockCallback callback,
+                       bool request_unadjusted_movement);
   // Request to unlock the mouse. An asynchronous response to
   // target->OnMouseLockLost() will follow.
   void UnlockMouse(LockTarget* target);
@@ -57,6 +61,7 @@ class CONTENT_EXPORT MouseLockDispatcher {
   // Subclasses or users have to call these methods to report mouse lock events
   // from the browser.
   void OnLockMouseACK(blink::mojom::PointerLockResult result);
+  void OnChangeLockAck(blink::mojom::PointerLockResult result);
   void OnMouseLockLost();
 
  protected:
@@ -64,6 +69,8 @@ class CONTENT_EXPORT MouseLockDispatcher {
   // browser.
   virtual void SendLockMouseRequest(blink::WebLocalFrame* requester_frame,
                                     bool request_unadjusted_movement) = 0;
+  virtual void SendChangeLockRequest(blink::WebLocalFrame* requester_frame,
+                                     bool request_unadjusted_movement) {}
   virtual void SendUnlockMouseRequest() = 0;
 
   base::WeakPtr<MouseLockDispatcher> AsWeakPtr() {

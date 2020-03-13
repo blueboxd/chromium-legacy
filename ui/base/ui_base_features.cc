@@ -147,15 +147,23 @@ const base::Feature kFormControlsRefresh = {"FormControlsRefresh",
 #endif
 };
 
-// Enable WebUI accessibility enhancements for review and testing.
-const base::Feature kWebUIA11yEnhancements{"WebUIA11yEnhancements",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 bool IsFormControlsRefreshEnabled() {
   static const bool form_controls_refresh_enabled =
       base::FeatureList::IsEnabled(features::kFormControlsRefresh);
   return form_controls_refresh_enabled;
 }
+
+// Enable the common select popup.
+const base::Feature kUseCommonSelectPopup = {"UseCommonSelectPopup",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsUseCommonSelectPopupEnabled() {
+  return base::FeatureList::IsEnabled(features::kUseCommonSelectPopup);
+}
+
+// Enable WebUI accessibility enhancements for review and testing.
+const base::Feature kWebUIA11yEnhancements{"WebUIA11yEnhancements",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEnableOzoneDrmMojo = {"OzoneDrmMojo",
                                            base::FEATURE_ENABLED_BY_DEFAULT};

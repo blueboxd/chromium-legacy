@@ -211,6 +211,9 @@ cr_fuchsia_package("web_engine") {
   excluded_files = [
     "lib/libswiftshader_libEGL.so",
     "lib/libswiftshader_libGLESv2.so",
+    "lib/libEGL.so",
+    "lib/libGLESv2.so",
+    "lib/libfuchsia_egl.so",
   ]
 }
 

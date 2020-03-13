@@ -398,6 +398,10 @@ class CONTENT_EXPORT RenderWidget
   bool RequestPointerLock(blink::WebLocalFrame* requester_frame,
                           blink::WebWidgetClient::PointerLockCallback callback,
                           bool request_unadjusted_movement) override;
+  bool RequestPointerLockChange(
+      blink::WebLocalFrame* requester_frame,
+      blink::WebWidgetClient::PointerLockCallback callback,
+      bool request_unadjusted_movement) override;
   void PointerLockLost();
   void RequestPointerUnlock() override;
   bool IsPointerLocked() override;

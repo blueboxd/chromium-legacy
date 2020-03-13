@@ -231,7 +231,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
       const perfetto::DataSourceConfig& data_source_config);
 
   void RegisterWithTraceLog();
-  void OnStopTracingDone();
+  void UnregisterFromTraceLog();
 
   std::unique_ptr<perfetto::TraceWriter> CreateTraceWriterLocked();
   TrackEventThreadLocalEventSink* CreateThreadLocalEventSink(

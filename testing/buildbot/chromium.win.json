@@ -1341,6 +1341,19 @@
         "test_target": "//chrome/test/mini_installer:mini_installer_tests"
       },
       {
+        "isolate_name": "mojo_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "mojo_python_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_target": "//mojo/public/tools:mojo_python_unittests"
+      },
+      {
         "experiment_percentage": 100,
         "isolate_name": "polymer_tools_python_unittests",
         "merge": {
@@ -3518,6 +3531,25 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test/mini_installer:mini_installer_tests"
+      },
+      {
+        "isolate_name": "mojo_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "mojo_python_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_target": "//mojo/public/tools:mojo_python_unittests"
       },
       {
         "experiment_percentage": 100,
@@ -7736,6 +7768,26 @@
         "test_target": "//chrome/test/mini_installer:mini_installer_tests"
       },
       {
+        "isolate_coverage_data": true,
+        "isolate_name": "mojo_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "mojo_python_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_target": "//mojo/public/tools:mojo_python_unittests"
+      },
+      {
         "experiment_percentage": 100,
         "isolate_coverage_data": true,
         "isolate_name": "polymer_tools_python_unittests",
@@ -9237,6 +9289,19 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//chrome/test/mini_installer:mini_installer_tests"
+      },
+      {
+        "isolate_name": "mojo_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "mojo_python_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_target": "//mojo/public/tools:mojo_python_unittests"
       },
       {
         "experiment_percentage": 100,

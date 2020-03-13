@@ -83,7 +83,14 @@ Polymer({
     // Ensure focus-config was correctly specified as a Polymer property.
     assert(this.focusConfig instanceof Map);
 
-    let pathConfig = this.focusConfig.get(this.previousRoute_.path);
+
+    const currentRoute = settings.Router.getInstance().getCurrentRoute();
+    const fromToKey = `${this.previousRoute_.path}_${currentRoute.path}`;
+
+    // Look for a key that captures both previous and current route first. If
+    // not found, then look for a key that only captures the previous route.
+    let pathConfig = this.focusConfig.get(fromToKey) ||
+        this.focusConfig.get(this.previousRoute_.path);
     if (pathConfig) {
       let handler;
       if (typeof pathConfig == 'function') {

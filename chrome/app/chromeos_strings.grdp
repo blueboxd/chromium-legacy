@@ -4278,7 +4278,7 @@
     Go home
   </message>
   <message name="IDS_OOBE_GESTURE_NAVIGATION_INTRO_SWITCH_APP" desc="The label for the switch app gesture item in the gesture list within the gesture navigation education intro OOBE screen shown on the first user login.">
-    Switch to another app
+    Switch to another open app
   </message>
   <message name="IDS_OOBE_GESTURE_NAVIGATION_INTRO_GO_BACK" desc="The label for the go back gesture item in the gesture list within the gesture navigation education intro OOBE screen shown on the first user login.">
     Go back
@@ -4296,7 +4296,7 @@
     To return to the previous screen, swipe from the left side.
   </message>
   <message name="IDS_OOBE_GESTURE_NAVIGATION_OVERVIEW_TITLE" desc="The title in the gesture navigation education overview OOBE screen shown on the first user login.">
-    Switch to open apps
+    Switch to another open app
   </message>
   <message name="IDS_OOBE_GESTURE_NAVIGATION_OVERVIEW_DESCRIPTION" desc="The description for the gesture navigation education overview OOBE screen shown on the first user login.">
     To see all open app windows, swipe up from the bottom and hold.

@@ -30,11 +30,10 @@ class VideoFrameMapper;
 namespace test {
 
 // VideoFrameValidator validates the pixel content of each video frame.
-// It maps a video frame by using VideoFrameMapper, and converts the mapped
-// frame to |validation_format| to resolve pixel format differences on different
-// platforms. Thereafter, it compares md5 values of the mapped and converted
-// buffer with golden md5 values. The golden values are prepared in advance and
-// must be identical on all platforms.
+// It maps a video frame by using VideoFrameMapper if needed. If the validation
+// fails, the frame is processed by |corrupt_frame_processor_|.
+// VideoFrameValidator is created by calling Create() of the child classes in
+// below.
 // Mapping and verification of a frame is a costly operation and will influence
 // performance measurements.
 class VideoFrameValidator : public VideoFrameProcessor {
@@ -42,118 +41,52 @@ class VideoFrameValidator : public VideoFrameProcessor {
   // Get the model frame from |frame_index|.
   using GetModelFrameCB =
       base::RepeatingCallback<scoped_refptr<const VideoFrame>(size_t)>;
-  static constexpr uint8_t kDefaultTolerance = 4;
-  // TODO(hiroh): Support a validation by PSNR and SSIM.
-  enum class ValidateMode {
-    MD5,  // Check if md5sum value of coded area of a given VideoFrame on
-          // ProcessVideoFrame() matches the expected md5sum.
-    RAW,  // Compare each byte of visible area of a given VideoFrame on
-          // ProcessVideoFrame() with a expected VideoFrame. An absolute
-          // difference equal to or less than |tolerance_| is allowed on
-          // comparison.
-  };
-
-  struct MismatchedFrameInfo {
-    MismatchedFrameInfo(size_t frame_index,
-                        std::string computed_md5,
-                        std::string expected_md5);
-    MismatchedFrameInfo(size_t frame_index, size_t diff_cnt);
-    ~MismatchedFrameInfo();
-
-    ValidateMode validate_mode;
-    size_t frame_index = 0;
-
-    // variables for ValidateMode::MD5 mode.
-    std::string computed_md5;
-    std::string expected_md5;
-    // variables for ValidateMode::ERRORDIFF mode.
-    size_t diff_cnt = 0;
-  };
-
-  // Create an instance of the video frame validator. The calculated checksums
-  // will be compared to the values in |expected_frame_checksums|. If no
-  // checksums are provided only checksum calculation will be done.
-  // |validation_format| specifies the pixel format used when calculating the
-  // checksum. Pixel format conversion will be performed if required. The
-  // |corrupt_frame_processor| is an optional video frame processor that will be
-  // called on each frame that fails validation. Ownership of the corrupt frame
-  // processor will be transferred to the frame validator.
-  static std::unique_ptr<VideoFrameValidator> Create(
-      const std::vector<std::string>& expected_frame_checksums,
-      const VideoPixelFormat validation_format = PIXEL_FORMAT_I420,
-      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr);
-
-  // Create an instance of the video frame validator. The VideoFrameValidator
-  // compares a given VideoFrame on ProcessVideoFrame() with the model frame got
-  // by |get_model_frame_cb|.
-  static std::unique_ptr<VideoFrameValidator> Create(
-      GetModelFrameCB get_model_frame_cb,
-      const uint8_t tolerance = kDefaultTolerance,
-      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr);
 
   ~VideoFrameValidator() override;
 
-  // Returns information of frames that don't match golden md5 values.
-  // If there is no mismatched frame, returns an empty vector. This function is
-  // thread-safe.
-  std::vector<MismatchedFrameInfo> GetMismatchedFramesInfo() const;
+  // Prints information of frames on which the validation failed. This function
+  // is thread-safe.
+  void PrintMismatchedFramesInfo() const;
 
-  // Returns the number of frames that didn't match the golden md5 values. This
-  // function is thread-safe.
+  // Returns the number of frames on which the validation failed. This function
+  // is thread-safe.
   size_t GetMismatchedFramesCount() const;
 
   // Interface VideoFrameProcessor
   void ProcessVideoFrame(scoped_refptr<const VideoFrame> video_frame,
-                         size_t frame_index) override;
+                         size_t frame_index) final;
   // Wait until all currently scheduled frame validations are done. Returns true
   // if no corrupt frames were found. This function might take a long time to
   // complete, depending on the platform.
-  bool WaitUntilDone() override;
+  bool WaitUntilDone() final;
 
- private:
-  VideoFrameValidator(
-      std::vector<std::string> expected_frame_checksums,
-      VideoPixelFormat validation_format,
-      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor);
+ protected:
+  struct MismatchedFrameInfo {
+    MismatchedFrameInfo(size_t frame_index) : frame_index(frame_index) {}
+    virtual ~MismatchedFrameInfo() = default;
+    virtual void Print() const = 0;
+    size_t frame_index;
+  };
 
   VideoFrameValidator(
-      GetModelFrameCB get_model_frame_cb,
-      const uint8_t tolerance,
       std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor);
 
   // Start the frame validation thread.
   bool Initialize();
+
+  SEQUENCE_CHECKER(validator_thread_sequence_checker_);
+
+ private:
   // Stop the frame validation thread.
   void Destroy();
 
   // Validate the |video_frame|'s content on the |frame_validator_thread_|.
-  void ProcessVideoFrameTask(const scoped_refptr<const VideoFrame> video_frame,
-                             const scoped_refptr<const VideoFrame> model_frame,
+  void ProcessVideoFrameTask(scoped_refptr<const VideoFrame> video_frame,
                              size_t frame_index);
 
-  // Returns md5 values of video frame represented by |video_frame|.
-  std::string ComputeMD5FromVideoFrame(const VideoFrame& video_frame) const;
-
-  base::Optional<MismatchedFrameInfo> ValidateMD5(
-      const VideoFrame& validated_frame,
-      size_t frame_index);
-  base::Optional<MismatchedFrameInfo> ValidateRaw(
-      const VideoFrame& validated_frame,
-      const VideoFrame& model_frame,
-      size_t frame_index);
-
-  const ValidateMode validate_mode_;
-
-  // Values used only if |validate_mode_| is MD5.
-  // The list of expected MD5 frame checksums.
-  const std::vector<std::string> expected_frame_checksums_;
-  // VideoPixelFormat the VideoFrame will be converted to for validation.
-  const VideoPixelFormat validation_format_ = PIXEL_FORMAT_UNKNOWN;
-
-  // Values used only if |validate_mode_| is RAW.
-  // The list of expected frames
-  const GetModelFrameCB get_model_frame_cb_;
-  const uint8_t tolerance_ = 0;
+  virtual std::unique_ptr<MismatchedFrameInfo> Validate(
+      scoped_refptr<const VideoFrame> frame,
+      size_t frame_index) = 0;
 
   std::unique_ptr<VideoFrameMapper> video_frame_mapper_;
 
@@ -164,7 +97,7 @@ class VideoFrameValidator : public VideoFrameProcessor {
   // The number of frames currently queued for validation.
   size_t num_frames_validating_ GUARDED_BY(frame_validator_lock_);
   // The results of invalid frame data.
-  std::vector<MismatchedFrameInfo> mismatched_frames_
+  std::vector<std::unique_ptr<MismatchedFrameInfo>> mismatched_frames_
       GUARDED_BY(frame_validator_lock_);
 
   // Thread on which video frame validation is done.
@@ -173,9 +106,130 @@ class VideoFrameValidator : public VideoFrameProcessor {
   mutable base::ConditionVariable frame_validator_cv_;
 
   SEQUENCE_CHECKER(validator_sequence_checker_);
-  SEQUENCE_CHECKER(validator_thread_sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameValidator);
+};
+
+// Validate by converting the frame to be validated to |validation_format| to
+// resolve pixel format differences on different platforms. Thereafter, it
+// compares md5 values of the mapped and converted buffer with golden md5
+// values. The golden values are prepared in advance and must be identical on
+// all platforms.
+class MD5VideoFrameValidator : public VideoFrameValidator {
+ public:
+  static std::unique_ptr<MD5VideoFrameValidator> Create(
+      const std::vector<std::string>& expected_frame_checksums,
+      VideoPixelFormat validation_format = PIXEL_FORMAT_I420,
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr);
+  ~MD5VideoFrameValidator() override;
+
+ private:
+  struct MD5MismatchedFrameInfo;
+
+  MD5VideoFrameValidator(
+      const std::vector<std::string>& expected_frame_checksums,
+      VideoPixelFormat validation_format,
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor);
+  MD5VideoFrameValidator(const MD5VideoFrameValidator&) = delete;
+  MD5VideoFrameValidator& operator=(const MD5VideoFrameValidator&) = delete;
+
+  // VideoFrameValidator implementation.
+  std::unique_ptr<MismatchedFrameInfo> Validate(
+      scoped_refptr<const VideoFrame> frame,
+      size_t frame_index) override;
+
+  // Returns md5 values of video frame represented by |video_frame|.
+  std::string ComputeMD5FromVideoFrame(const VideoFrame& video_frame) const;
+
+  const std::vector<std::string> expected_frame_checksums_;
+  const VideoPixelFormat validation_format_;
+};
+
+// Validate by comparing each byte of visible area of the frame to be validated.
+// An absolute difference equal to or less than |torelance_| is allowed on
+// the comparison.
+class RawVideoFrameValidator : public VideoFrameValidator {
+ public:
+  constexpr static uint8_t kDefaultTolerance = 4;
+
+  static std::unique_ptr<RawVideoFrameValidator> Create(
+      const GetModelFrameCB& get_model_frame_cb,
+      uint8_t tolerance = kDefaultTolerance,
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr);
+  ~RawVideoFrameValidator() override;
+
+ private:
+  struct RawMismatchedFrameInfo;
+
+  RawVideoFrameValidator(
+      const GetModelFrameCB& get_model_frame_cb,
+      uint8_t tolerance,
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor);
+
+  std::unique_ptr<MismatchedFrameInfo> Validate(
+      scoped_refptr<const VideoFrame> frame,
+      size_t frame_index) override;
+
+  const GetModelFrameCB get_model_frame_cb_;
+  const uint8_t tolerance_;
+};
+
+// Validate by computing PSNR from the frame to be validated and the model frame
+// acquired by |get_model_frame_cb_|. If the PSNR value is equal to or less than
+// |tolerance_|, the validation on the frame passes.
+class PSNRVideoFrameValidator : public VideoFrameValidator {
+ public:
+  constexpr static double kDefaultTolerance = 0.70;
+
+  static std::unique_ptr<PSNRVideoFrameValidator> Create(
+      const GetModelFrameCB& get_model_frame_cb,
+      double tolerance = kDefaultTolerance,
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr);
+  ~PSNRVideoFrameValidator() override;
+
+ private:
+  struct PSNRMismatchedFrameInfo;
+
+  PSNRVideoFrameValidator(
+      const GetModelFrameCB& get_model_frame_cb,
+      double tolerance,
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor);
+
+  std::unique_ptr<MismatchedFrameInfo> Validate(
+      scoped_refptr<const VideoFrame> frame,
+      size_t frame_index) override;
+
+  const GetModelFrameCB get_model_frame_cb_;
+  const double tolerance_;
+};
+
+// Validate by computing SSIM from the frame to be validated and the model frame
+// acquired by |get_model_frame_cb_|. If the SSIM value is equal to or less than
+// |tolerance_|, the validation on the frame passes.
+class SSIMVideoFrameValidator : public VideoFrameValidator {
+ public:
+  constexpr static double kDefaultTolerance = 45.0;
+
+  static std::unique_ptr<SSIMVideoFrameValidator> Create(
+      const GetModelFrameCB& get_model_frame_cb,
+      double tolerance = kDefaultTolerance,
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr);
+  ~SSIMVideoFrameValidator() override;
+
+ private:
+  struct SSIMMismatchedFrameInfo;
+
+  SSIMVideoFrameValidator(
+      const GetModelFrameCB& get_model_frame_cb,
+      double tolerance,
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor);
+
+  std::unique_ptr<MismatchedFrameInfo> Validate(
+      scoped_refptr<const VideoFrame> frame,
+      size_t frame_index) override;
+
+  const GetModelFrameCB get_model_frame_cb_;
+  const double tolerance_;
 };
 }  // namespace test
 }  // namespace media

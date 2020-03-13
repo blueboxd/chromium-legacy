@@ -3919,6 +3919,25 @@
         "test_target": "//chrome/test/mini_installer:mini_installer_tests"
       },
       {
+        "isolate_name": "mojo_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "mojo_python_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-17134"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_target": "//mojo/public/tools:mojo_python_unittests"
+      },
+      {
         "experiment_percentage": 100,
         "isolate_name": "polymer_tools_python_unittests",
         "merge": {
@@ -25642,6 +25661,24 @@
         "test_target": "//tools/metrics:metrics_python_tests"
       },
       {
+        "isolate_name": "mojo_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "mojo_python_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_target": "//mojo/public/tools:mojo_python_unittests"
+      },
+      {
         "args": [
           "--num-retries=3",
           "--additional-driver-flag=--disable-features=UseSkiaRenderer",
@@ -27570,6 +27607,25 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//tools/metrics:metrics_python_tests"
+      },
+      {
+        "isolate_coverage_data": true,
+        "isolate_name": "mojo_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "mojo_python_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_target": "//mojo/public/tools:mojo_python_unittests"
       },
       {
         "args": [
@@ -31129,6 +31185,26 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//tools/metrics:metrics_python_tests"
+      },
+      {
+        "isolate_name": "mojo_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "mojo_python_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.15"
+            }
+          ],
+          "expiration": 21600,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_target": "//mojo/public/tools:mojo_python_unittests"
       },
       {
         "isolate_name": "telemetry_gpu_unittests",

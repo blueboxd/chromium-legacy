@@ -28,7 +28,19 @@ void RenderWidgetMouseLockDispatcher::SendLockMouseRequest(
     host->RequestMouseLock(has_transient_user_activation, /*privileged=*/false,
                            request_unadjusted_movement,
                            base::BindOnce(&MouseLockDispatcher::OnLockMouseACK,
-                                          weak_ptr_factory_.GetWeakPtr()));
+                                          this->AsWeakPtr()));
+  }
+}
+
+void RenderWidgetMouseLockDispatcher::SendChangeLockRequest(
+    blink::WebLocalFrame* requester_frame,
+    bool request_unadjusted_movement) {
+  auto* host = render_widget_->GetInputHandlerHost();
+  if (host) {
+    host->RequestMouseLockChange(
+        request_unadjusted_movement,
+        base::BindOnce(&MouseLockDispatcher::OnChangeLockAck,
+                       this->AsWeakPtr()));
   }
 }
 

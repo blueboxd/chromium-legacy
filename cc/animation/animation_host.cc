@@ -484,9 +484,8 @@ void AnimationHost::TakeTimeUpdatedEvents(MutatorEvents* events) {
 }
 
 void AnimationHost::PromoteScrollTimelinesPendingToActive() {
-  for (auto& kv : id_to_timeline_map_) {
-    auto& timeline = kv.second;
-    timeline->ActivateTimeline();
+  for (auto& animation : ticking_animations_) {
+    animation->PromoteScrollTimelinePendingToActive();
   }
 }
 

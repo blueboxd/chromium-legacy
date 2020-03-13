@@ -53,7 +53,6 @@ polymer_modulizer("basic_page") {
   html_file = "basic_page.html"
   html_type = "dom-module"
   ignore_imports = [
-    "chrome/browser/resources/settings/autofill_page/autofill_page.html",
     "chrome/browser/resources/settings/people_page/people_page.html",
     "chrome/browser/resources/settings/privacy_page/privacy_page.html",
     "chrome/browser/resources/settings/safety_check_page/safety_check_page.html",

@@ -34,6 +34,23 @@ bool MouseLockDispatcher::LockMouse(
   return true;
 }
 
+bool MouseLockDispatcher::ChangeMouseLock(
+    LockTarget* target,
+    blink::WebLocalFrame* requester_frame,
+    blink::WebWidgetClient::PointerLockCallback callback,
+    bool request_unadjusted_movement) {
+  if (pending_lock_request_ || pending_unlock_request_)
+    return false;
+
+  pending_lock_request_ = true;
+  target_ = target;
+
+  lock_mouse_callback_ = std::move(callback);
+
+  SendChangeLockRequest(requester_frame, request_unadjusted_movement);
+  return true;
+}
+
 void MouseLockDispatcher::UnlockMouse(LockTarget* target) {
   if (target && target == target_ && !pending_unlock_request_) {
     pending_unlock_request_ = true;
@@ -62,6 +79,14 @@ bool MouseLockDispatcher::WillHandleMouseEvent(
   if (mouse_locked_ && target_)
     return target_->HandleMouseLockedInputEvent(event);
   return false;
+}
+
+void MouseLockDispatcher::OnChangeLockAck(
+    blink::mojom::PointerLockResult result) {
+  pending_lock_request_ = false;
+  if (lock_mouse_callback_) {
+    std::move(lock_mouse_callback_).Run(result);
+  }
 }
 
 void MouseLockDispatcher::OnLockMouseACK(

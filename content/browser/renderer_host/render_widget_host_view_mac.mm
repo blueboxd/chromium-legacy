@@ -1093,6 +1093,16 @@ blink::mojom::PointerLockResult RenderWidgetHostViewMac::LockMouse(
   return blink::mojom::PointerLockResult::kSuccess;
 }
 
+blink::mojom::PointerLockResult RenderWidgetHostViewMac::ChangeMouseLock(
+    bool request_unadjusted_movement) {
+  // Unadjusted movement is not supported on Mac. Which means that
+  // |mouse_locked_unadjusted_movement_| must not be set. Therefore,
+  // |request_unadjusted_movement| must be true so this request will always
+  // fail with kUnsupportedOptions.
+  NOTIMPLEMENTED();
+  return blink::mojom::PointerLockResult::kUnsupportedOptions;
+}
+
 void RenderWidgetHostViewMac::UnlockMouse() {
   if (!mouse_locked_)
     return;

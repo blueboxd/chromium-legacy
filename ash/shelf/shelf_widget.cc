@@ -577,7 +577,7 @@ void ShelfWidget::ScheduleShowDragHandleNudge() {
 }
 
 void ShelfWidget::HideDragHandleNudge() {
-  delegate_view_->drag_handle()->HideDragHandleNudge();
+  delegate_view_->drag_handle()->HideDragHandleNudge(false /*hidden_by_tap*/);
 }
 
 void ShelfWidget::SetLoginShelfButtonOpacity(float target_opacity) {
@@ -1031,6 +1031,15 @@ void ShelfWidget::OnGestureEvent(ui::GestureEvent* event) {
   if (HandleLoginShelfGestureEvent(event_in_screen)) {
     event->StopPropagation();
     return;
+  }
+
+  // Tap on in-app shelf should show a contextual nudge for in-app to home
+  // gesture.
+  if (event->type() == ui::ET_GESTURE_TAP && ShelfConfig::Get()->is_in_app()) {
+    if (delegate_view_->drag_handle()->ShowDragHandleNudge()) {
+      event->StopPropagation();
+      return;
+    }
   }
 
   shelf_layout_manager()->ProcessGestureEventFromShelfWidget(&event_in_screen);

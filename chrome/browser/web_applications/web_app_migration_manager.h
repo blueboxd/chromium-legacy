@@ -57,6 +57,7 @@ class WebAppMigrationManager {
 
   void MigrateBookmarkAppInstallSource(const AppId& app_id, WebApp* web_app);
   void MigrateBookmarkAppFileHandlers(const AppId& app_id, WebApp* web_app);
+  bool CanMigrateBookmarkApp(const AppId& app_id) const;
   std::unique_ptr<WebApp> MigrateBookmarkApp(const AppId& app_id);
   void MigrateBookmarkAppsRegistry();
 

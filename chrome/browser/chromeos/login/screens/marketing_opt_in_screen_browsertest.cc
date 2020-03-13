@@ -54,6 +54,8 @@ class MarketingOptInScreenTest : public OobeBaseTest {
         &MarketingOptInScreenTest::HandleScreenExit, base::Unretained(this)));
 
     OobeBaseTest::SetUpOnMainThread();
+    ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
+        ash::prefs::kGestureEducationNotificationShown, true);
   }
 
   // Shows the gesture navigation screen.

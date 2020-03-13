@@ -1244,6 +1244,14 @@
     "label": "//mojo/core:mojo_core_unittests",
     "type": "console_test_launcher",
   },
+  "mojo_python_unittests": {
+    "args": [
+      "../../mojo/public/tools/run_all_python_unittests.py",
+    ],
+    "label": "//mojo/public/tools:mojo_python_unittests",
+    "script": "//testing/scripts/run_isolated_script_test.py",
+    "type": "script",
+  },
   "mojo_test_apk": {
     "label": "//mojo/public/java/system:mojo_test_apk",
     "type": "console_test_launcher",

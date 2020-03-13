@@ -2956,40 +2956,14 @@ void Document::LayoutUpdated() {
     // don't have a good place that has access to its local root's FrameWidget.
     // TODO(dcheng): If we create FrameWidget before Frame then we could move
     // this to Document::Initialize().
-    AttachCompositorTimeline(Timeline().CompositorTimeline());
+    if (Platform::Current()->IsThreadedAnimationEnabled() &&
+        GetSettings()->GetAcceleratedCompositingEnabled()) {
+      GetPage()->GetChromeClient().AttachCompositorAnimationTimeline(
+          Timeline().CompositorTimeline(), GetFrame());
+    }
   }
 
   Markers().InvalidateRectsForAllTextMatchMarkers();
-}
-
-void Document::AttachCompositorTimeline(
-    CompositorAnimationTimeline* timeline) const {
-  if (!Platform::Current()->IsThreadedAnimationEnabled() ||
-      !GetSettings()->GetAcceleratedCompositingEnabled())
-    return;
-
-  if (timeline->GetAnimationTimeline()->IsScrollTimeline() &&
-      timeline->GetAnimationTimeline()->animation_host())
-    return;
-
-  GetPage()->GetChromeClient().AttachCompositorAnimationTimeline(timeline,
-                                                                 GetFrame());
-}
-
-void Document::DetachCompositorTimeline(
-    CompositorAnimationTimeline* timeline) const {
-  if (!Platform::Current()->IsThreadedAnimationEnabled() ||
-      !GetSettings()->GetAcceleratedCompositingEnabled())
-    return;
-
-  // This requires detaching all animations from timeline first before detaching
-  // timeline.
-  if (timeline->GetAnimationTimeline()->IsScrollTimeline() &&
-      timeline->GetAnimationTimeline()->HasAnimation())
-    return;
-
-  GetPage()->GetChromeClient().DetachCompositorAnimationTimeline(timeline,
-                                                                 GetFrame());
 }
 
 void Document::ClearFocusedElementSoon() {
@@ -3276,7 +3250,11 @@ void Document::Shutdown() {
   http_refresh_scheduler_->Cancel();
   CancelFormSubmissions();
 
-  DetachCompositorTimeline(Timeline().CompositorTimeline());
+  if (Platform::Current()->IsThreadedAnimationEnabled() &&
+      GetSettings()->GetAcceleratedCompositingEnabled()) {
+    GetPage()->GetChromeClient().DetachCompositorAnimationTimeline(
+        Timeline().CompositorTimeline(), GetFrame());
+  }
 
   if (frame_->IsLocalRoot())
     GetPage()->GetChromeClient().AttachRootLayer(nullptr, frame_.Get());

@@ -9,13 +9,6 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/writable_shared_memory_region.h"
 
-namespace service_manager {
-
-struct MainParams;
-int Main(const MainParams&);
-
-}  // namespace service_manager
-
 namespace base {
 
 class SharedMemoryHooks {
@@ -24,7 +17,6 @@ class SharedMemoryHooks {
 
  private:
   friend class SharedMemoryHooksTest;
-  friend int service_manager::Main(const service_manager::MainParams&);
 
   // Allows shared memory region creation to be hooked. Useful for sandboxed
   // processes that are restricted from invoking the platform APIs directly.

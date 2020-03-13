@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
@@ -87,13 +88,16 @@ void WebAppMigrationManager::OnBookmarkAppRegistryReady(
 }
 
 void WebAppMigrationManager::MigrateNextBookmarkAppIcons() {
-  if (next_app_id_iterator_ == bookmark_app_ids_.end()) {
-    MigrateBookmarkAppsRegistry();
-    return;
-  }
+  AppId app_id;
+  do {
+    if (next_app_id_iterator_ == bookmark_app_ids_.end()) {
+      MigrateBookmarkAppsRegistry();
+      return;
+    }
 
-  const AppId& app_id = *next_app_id_iterator_;
-  ++next_app_id_iterator_;
+    app_id = *next_app_id_iterator_;
+    ++next_app_id_iterator_;
+  } while (!CanMigrateBookmarkApp(app_id));
 
   bookmark_app_icon_manager_.ReadAllIcons(
       app_id, base::BindOnce(&WebAppMigrationManager::OnBookmarkAppIconsRead,
@@ -167,8 +171,18 @@ void WebAppMigrationManager::MigrateBookmarkAppFileHandlers(const AppId& app_id,
   web_app->SetFileHandlers(std::move(file_handlers));
 }
 
+bool WebAppMigrationManager::CanMigrateBookmarkApp(const AppId& app_id) const {
+  if (!bookmark_app_registrar_.IsInstalled(app_id))
+    return false;
+
+  GURL launch_url = bookmark_app_registrar_.GetAppLaunchURL(app_id);
+  return GenerateAppIdFromURL(launch_url) == app_id;
+}
+
 std::unique_ptr<WebApp> WebAppMigrationManager::MigrateBookmarkApp(
     const AppId& app_id) {
+  DCHECK(CanMigrateBookmarkApp(app_id));
+
   auto web_app = std::make_unique<WebApp>(app_id);
 
   web_app->SetName(bookmark_app_registrar_.GetAppShortName(app_id));
@@ -219,8 +233,10 @@ void WebAppMigrationManager::MigrateBookmarkAppsRegistry() {
   update_data.apps_to_create.reserve(bookmark_app_ids_.size());
 
   for (const AppId& app_id : bookmark_app_ids_) {
-    std::unique_ptr<WebApp> web_app = MigrateBookmarkApp(app_id);
-    update_data.apps_to_create.push_back(std::move(web_app));
+    if (CanMigrateBookmarkApp(app_id)) {
+      std::unique_ptr<WebApp> web_app = MigrateBookmarkApp(app_id);
+      update_data.apps_to_create.push_back(std::move(web_app));
+    }
   }
 
   database_->Write(

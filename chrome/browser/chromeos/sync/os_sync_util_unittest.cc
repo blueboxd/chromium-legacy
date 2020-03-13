@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/sync/os_sync_util.h"
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/sync/base/pref_names.h"
@@ -95,4 +96,20 @@ TEST_F(OsSyncUtilTest, Rollback) {
     EXPECT_TRUE(prefs_.GetBoolean(sp::kOsSyncPrefsMigrated));
     EXPECT_TRUE(prefs_.GetBoolean(sp::kOsSyncFeatureEnabled));
   }
+}
+
+TEST_F(OsSyncUtilTest, MigrationMetrics) {
+  base::HistogramTester histograms;
+
+  // Initial migration.
+  os_sync_util::MigrateOsSyncPreferences(&prefs_);
+
+  // Migration recorded.
+  histograms.ExpectBucketCount("ChromeOS.Sync.PreferencesMigrated", true, 1);
+
+  // Try to migrate again. This is a no-op.
+  os_sync_util::MigrateOsSyncPreferences(&prefs_);
+
+  // Non-migration recorded.
+  histograms.ExpectBucketCount("ChromeOS.Sync.PreferencesMigrated", false, 1);
 }

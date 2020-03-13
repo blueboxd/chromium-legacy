@@ -122,6 +122,10 @@ class MockWidgetInputHandlerHost : public mojom::WidgetInputHandlerHost {
                      bool,
                      mojom::WidgetInputHandlerHost::RequestMouseLockCallback)));
 
+  MOCK_METHOD2(RequestMouseLockChange,
+               void((bool,
+                     mojom::WidgetInputHandlerHost::RequestMouseLockCallback)));
+
   mojo::PendingRemote<mojom::WidgetInputHandlerHost>
   BindNewPipeAndPassRemote() {
     return receiver_.BindNewPipeAndPassRemote();

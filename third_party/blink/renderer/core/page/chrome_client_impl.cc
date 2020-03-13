@@ -1149,6 +1149,18 @@ bool ChromeClientImpl::RequestPointerLock(
                            std::move(callback), request_unadjusted_movement);
 }
 
+bool ChromeClientImpl::RequestPointerLockChange(
+    LocalFrame* frame,
+    WebWidgetClient::PointerLockCallback callback,
+    bool request_unadjusted_movement) {
+  return WebLocalFrameImpl::FromFrame(frame)
+      ->LocalRootFrameWidget()
+      ->Client()
+      ->RequestPointerLockChange(WebLocalFrameImpl::FromFrame(frame),
+                                 std::move(callback),
+                                 request_unadjusted_movement);
+}
+
 void ChromeClientImpl::RequestPointerUnlock(LocalFrame* frame) {
   return WebLocalFrameImpl::FromFrame(frame)
       ->LocalRootFrameWidget()

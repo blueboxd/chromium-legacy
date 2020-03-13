@@ -98,6 +98,8 @@ cr.define('cr.ui', () => {
      * Initializes the menu button.
      */
     decorate() {
+      this.setAttribute('aria-expanded', 'false');
+
       // Listen to the touch events on the document so that we can handle it
       // before cancelled by other UI components.
       this.ownerDocument.addEventListener('touchstart', this, {passive: true});
@@ -345,6 +347,7 @@ cr.define('cr.ui', () => {
               // focus is on another button or cr-input element.
               if (!(document.hasFocus() &&
                     (document.activeElement.tagName === 'BUTTON' ||
+                     document.activeElement.tagName === 'CR-BUTTON' ||
                      document.activeElement.tagName === 'CR-INPUT'))) {
                 e.preventDefault();
               }

@@ -694,6 +694,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       bool privileged,
       bool unadjusted_movement,
       InputRouterImpl::RequestMouseLockCallback response) override;
+  void RequestMouseLockChange(
+      bool unadjusted_movement,
+      InputRouterImpl::RequestMouseLockCallback response) override;
   void UnlockMouse() override;
   void FallbackCursorModeLockCursor(bool left,
                                     bool right,

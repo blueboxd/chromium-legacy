@@ -19,6 +19,7 @@ const breadCrumbTemplate = `
       overflow: hidden;
       user-select: none;
       white-space: nowrap;
+      align-items: center;
     }
 
     span[caret] {
@@ -48,6 +49,7 @@ const breadCrumbTemplate = `
 
       /* don't use browser's button font. */
       font: inherit;
+      height: 32px;
       margin: 0;
 
       /* text rendering debounce: fix a minimum width. */
@@ -56,15 +58,11 @@ const breadCrumbTemplate = `
       /* elide wide text */
       max-width: 200px;
       overflow: hidden;
-
-      /* pad to align text with other toolbar text */
-      padding: calc(8px - 1px);
-      padding-top: 8px;
+      padding: 0px 8px;
 
       /* text rendering debounce: center. */
       text-align: center;
       text-overflow: ellipsis;
-      vertical-align: middle;
     }
 
     button[disabled] {

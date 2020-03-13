@@ -114,6 +114,8 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
                         bool privileged,
                         bool unadjusted_movement,
                         RequestMouseLockCallback response) override;
+  void RequestMouseLockChange(bool unadjusted_movement,
+                              RequestMouseLockCallback response) override;
   void UnlockMouse() override;
   void OnHasTouchEventHandlers(bool has_handlers) override;
   void WaitForInputProcessed(base::OnceClosure callback) override;

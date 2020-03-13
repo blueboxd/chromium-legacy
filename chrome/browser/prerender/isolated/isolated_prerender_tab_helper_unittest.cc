@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/optional.h"
+#include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
@@ -31,6 +32,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_util.h"
 #include "net/http/http_status_code.h"
@@ -44,6 +46,7 @@
 #include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace {
 const char kHTMLMimeType[] = "text/html";
@@ -95,9 +98,17 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
 
   int RequestCount() { return test_url_loader_factory_.NumPending(); }
 
-  void VerifyCommonRequestState(const GURL& url) {
+  void VerifyNIK(const net::NetworkIsolationKey& key) {
+    EXPECT_FALSE(key.IsEmpty());
+    EXPECT_FALSE(key.IsTransient());
+    EXPECT_TRUE(key.IsFullyPopulated());
+    EXPECT_TRUE(base::StartsWith(key.ToString(), "opaque non-transient ",
+                                 base::CompareCase::SENSITIVE));
+  }
+
+  network::ResourceRequest VerifyCommonRequestState(const GURL& url) {
     SCOPED_TRACE(url.spec());
-    ASSERT_EQ(RequestCount(), 1);
+    EXPECT_EQ(RequestCount(), 1);
 
     network::TestURLLoaderFactory::PendingRequest* request =
         test_url_loader_factory_.GetPendingRequest(0);
@@ -108,6 +119,11 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
               net::LOAD_DISABLE_CACHE | net::LOAD_PREFETCH);
     EXPECT_EQ(request->request.credentials_mode,
               network::mojom::CredentialsMode::kOmit);
+
+    EXPECT_TRUE(request->request.trusted_params.has_value());
+    VerifyNIK(request->request.trusted_params.value().network_isolation_key);
+
+    return request->request;
   }
 
   std::string RequestHeader(const std::string& key) {
@@ -389,7 +405,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, SuccessCase) {
   GURL prediction_url("https://www.cat-food.com/");
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
-  VerifyCommonRequestState(prediction_url);
+  network::ResourceRequest request = VerifyCommonRequestState(prediction_url);
   MakeResponseAndWait(net::HTTP_OK, net::OK, kHTMLMimeType,
                       {"X-Testing: Hello World"}, kHTMLBody);
 
@@ -404,6 +420,10 @@ TEST_F(IsolatedPrerenderTabHelperTest, SuccessCase) {
 
   network::mojom::URLResponseHeadPtr head = resp->TakeHead();
   EXPECT_TRUE(head->headers->HasHeaderValue("X-Testing", "Hello World"));
+
+  EXPECT_EQ(resp->network_isolation_key(),
+            request.trusted_params.value().network_isolation_key);
+  VerifyNIK(resp->network_isolation_key());
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, LimitedNumberOfPrefetches_Zero) {

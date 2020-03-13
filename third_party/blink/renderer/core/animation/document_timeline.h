@@ -43,6 +43,7 @@ namespace blink {
 class Animation;
 class AnimationEffect;
 class DocumentTimelineOptions;
+class CompositorAnimationTimeline;
 
 // DocumentTimeline is constructed and owned by Document, and tied to its
 // lifecycle.
@@ -89,10 +90,12 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   void SetPlaybackRate(double);
   double PlaybackRate() const;
 
+  CompositorAnimationTimeline* CompositorTimeline() const {
+    return compositor_timeline_.get();
+  }
+
   void ResetForTesting();
   void SetTimingForTesting(PlatformTiming* timing);
-
-  CompositorAnimationTimeline* EnsureCompositorTimeline() override;
 
   void Trace(Visitor*) override;
 
@@ -115,6 +118,8 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   static const double kMinimumDelay;
 
   Member<PlatformTiming> timing_;
+
+  std::unique_ptr<CompositorAnimationTimeline> compositor_timeline_;
 
   class DocumentTimelineTiming final : public PlatformTiming {
    public:

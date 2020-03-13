@@ -32,8 +32,7 @@ public class WebViewCompatibilityTest {
     public void testBothLoadPage() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             WebLayer.initializeWebViewCompatibilityMode(
-                    InstrumentationRegistry.getTargetContext().getApplicationContext(),
-                    InstrumentationRegistry.getTargetContext().getCacheDir(), null);
+                    InstrumentationRegistry.getTargetContext().getApplicationContext());
         });
         mActivityTestRule.launchShellWithUrl(mActivityTestRule.getTestDataURL("simple_page.html"));
         WebView webView = TestThreadUtils.runOnUiThreadBlocking(

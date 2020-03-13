@@ -232,6 +232,9 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   bool RequestPointerLock(LocalFrame*,
                           WebWidgetClient::PointerLockCallback,
                           bool) override;
+  bool RequestPointerLockChange(LocalFrame*,
+                                WebWidgetClient::PointerLockCallback,
+                                bool) override;
   void RequestPointerUnlock(LocalFrame*) override;
 
   // AutofillClient pass throughs:

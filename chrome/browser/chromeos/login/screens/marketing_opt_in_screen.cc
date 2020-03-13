@@ -84,8 +84,7 @@ void MarketingOptInScreen::ShowImpl() {
   // user login. Also skip the screen if clamshell mode is active.
   // TODO(mmourgos): Enable this screen for clamshell mode.
   if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin() ||
-      (!ash::TabletMode::Get()->InTabletMode() &&
-       did_skip_gesture_navigation_screen)) {
+      did_skip_gesture_navigation_screen) {
     exit_callback_.Run();
     return;
   }

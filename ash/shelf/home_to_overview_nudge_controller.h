@@ -21,6 +21,10 @@ class HotseatWidget;
 
 class ASH_EXPORT HomeToOverviewNudgeController : views::WidgetObserver {
  public:
+  // Indicates the reason the nudge is being hidden. Used to determine the exact
+  // transition to use when hiding the nudge.
+  enum class HideTransition { kShelfStateChange, kUserTap, kNudgeTimeout };
+
   explicit HomeToOverviewNudgeController(HotseatWidget* hotseat_widget);
   HomeToOverviewNudgeController(const HomeToOverviewNudgeController& other) =
       delete;
@@ -54,7 +58,7 @@ class ASH_EXPORT HomeToOverviewNudgeController : views::WidgetObserver {
 
   // Sets up hotseat and nudge wdget animation for hiding the nudge, and closes
   // the nudge widget when the animation finishes.
-  void HideNudge();
+  void HideNudge(HideTransition transition);
 
   // Updates the nudge anchor bounds for the current hotseat and shelf bounds.
   void UpdateNudgeAnchorBounds();

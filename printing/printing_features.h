@@ -12,11 +12,16 @@
 namespace printing {
 namespace features {
 
+// The following features are declared alphabetically. The features should be
+// documented with descriptions of their behaviors in the .cc file.
+
 #if defined(OS_CHROMEOS)
-// All features in alphabetical order. The features should be documented
-// alongside the definition of their values in the .cc file.
 PRINTING_EXPORT extern const base::Feature kAdvancedPpdAttributes;
-#endif
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_MACOSX)
+PRINTING_EXPORT extern const base::Feature kCupsIppPrintingBackend;
+#endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
 PRINTING_EXPORT extern const base::Feature kUseXpsForPrinting;
@@ -29,7 +34,7 @@ PRINTING_EXPORT bool IsXpsPrintCapabilityRequired();
 // Helper function to determine if printing of a document from a particular
 // source should be done using XPS printing API instead of with GDI.
 PRINTING_EXPORT bool ShouldPrintUsingXps(bool source_is_pdf);
-#endif
+#endif  // defined(OS_WIN)
 
 PRINTING_EXPORT extern const base::Feature kUseFrameAssociatedLoaderFactory;
 

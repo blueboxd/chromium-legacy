@@ -39,10 +39,15 @@ constexpr base::TimeDelta kShowDelay = base::TimeDelta::FromSeconds(2);
 constexpr base::TimeDelta kNudgeFadeDuration =
     base::TimeDelta::FromMilliseconds(300);
 
+// The duration of the nudge opacity and transform animations when the nudge
+// gets hidden on user tap.
+constexpr base::TimeDelta kNudgeHideOnTapDuration =
+    base::TimeDelta::FromMilliseconds(150);
+
 // The duration of a single component of the nudge position animation - the
 // nudge is transformed vertically up and down for a preset number of
 // iterations.
-constexpr base::TimeDelta kNudgeTranformComponentDuration =
+constexpr base::TimeDelta kNudgeTransformComponentDuration =
     base::TimeDelta::FromMilliseconds(600);
 
 // The baseline vertical offset from default kShown state bounds added to
@@ -60,6 +65,40 @@ constexpr int kNudgeShowThrobAmplitude = 6;
 
 // The vertical distance between the nudge widget and the hotseat.
 constexpr int kNudgeMargins = 4;
+
+gfx::Tween::Type GetHideTransformTween(
+    HomeToOverviewNudgeController::HideTransition transition) {
+  switch (transition) {
+    case HomeToOverviewNudgeController::HideTransition::kShelfStateChange:
+    case HomeToOverviewNudgeController::HideTransition::kNudgeTimeout:
+      return gfx::Tween::EASE_OUT_2;
+    case HomeToOverviewNudgeController::HideTransition::kUserTap:
+      return gfx::Tween::FAST_OUT_LINEAR_IN;
+  }
+}
+
+base::TimeDelta GetHideTransformDuration(
+    HomeToOverviewNudgeController::HideTransition transition) {
+  switch (transition) {
+    case HomeToOverviewNudgeController::HideTransition::kShelfStateChange:
+    case HomeToOverviewNudgeController::HideTransition::kNudgeTimeout:
+      return kNudgeTransformComponentDuration;
+    case HomeToOverviewNudgeController::HideTransition::kUserTap:
+      return kNudgeHideOnTapDuration;
+  }
+}
+
+base::TimeDelta GetHideFadeDuration(
+    HomeToOverviewNudgeController::HideTransition transition) {
+  switch (transition) {
+    case HomeToOverviewNudgeController::HideTransition::kShelfStateChange:
+      return base::TimeDelta();
+    case HomeToOverviewNudgeController::HideTransition::kUserTap:
+      return kNudgeHideOnTapDuration;
+    case HomeToOverviewNudgeController::HideTransition::kNudgeTimeout:
+      return kNudgeFadeDuration;
+  }
+}
 
 class ObserverToCloseWidget : public ui::ImplicitAnimationObserver {
  public:
@@ -97,7 +136,7 @@ void HomeToOverviewNudgeController::SetNudgeAllowedForCurrentShelf(
   if (!nudge_allowed_for_shelf_state_) {
     nudge_show_timer_.Stop();
     nudge_hide_timer_.Stop();
-    HideNudge();
+    HideNudge(HideTransition::kShelfStateChange);
     return;
   }
 
@@ -188,7 +227,7 @@ void HomeToOverviewNudgeController::ShowNudge() {
   auto animate_initial_transform = [](ui::Layer* layer) -> base::TimeDelta {
     ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
     settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
-    settings.SetTransitionDuration(kNudgeTranformComponentDuration);
+    settings.SetTransitionDuration(kNudgeTransformComponentDuration);
     settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
@@ -219,7 +258,7 @@ void HomeToOverviewNudgeController::ShowNudge() {
                                    bool up) -> base::TimeDelta {
     ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
     settings.SetTweenType(gfx::Tween::EASE_IN_OUT_2);
-    settings.SetTransitionDuration(kNudgeTranformComponentDuration);
+    settings.SetTransitionDuration(kNudgeTransformComponentDuration);
     // Use enqueue preemption strategy, as the animation is expected to run
     // after other previously scheduled animations.
     settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
@@ -258,32 +297,33 @@ void HomeToOverviewNudgeController::ShowNudge() {
     nudge_hide_timer_.Start(
         FROM_HERE, nudge_duration + total_animation_duration,
         base::BindOnce(&HomeToOverviewNudgeController::HideNudge,
-                       base::Unretained(this)));
+                       base::Unretained(this), HideTransition::kNudgeTimeout));
   }
 }
 
-void HomeToOverviewNudgeController::HideNudge() {
+void HomeToOverviewNudgeController::HideNudge(HideTransition transition) {
   if (!nudge_)
     return;
 
-  auto animate_hide_transform = [](ui::Layer* layer) {
+  auto animate_hide_transform = [](HideTransition transition,
+                                   ui::Layer* layer) {
     ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
-    settings.SetTweenType(gfx::Tween::EASE_OUT_2);
-    settings.SetTransitionDuration(kNudgeTranformComponentDuration);
+    settings.SetTweenType(GetHideTransformTween(transition));
+    settings.SetTransitionDuration(GetHideTransformDuration(transition));
     settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
     layer->SetTransform(gfx::Transform());
   };
 
-  animate_hide_transform(hotseat_widget_->GetLayer());
-  animate_hide_transform(nudge_->GetWidget()->GetLayer());
+  animate_hide_transform(transition, hotseat_widget_->GetLayer());
+  animate_hide_transform(transition, nudge_->GetWidget()->GetLayer());
 
   {
     ui::ScopedLayerAnimationSettings settings(
         nudge_->label()->layer()->GetAnimator());
     settings.SetTweenType(gfx::Tween::LINEAR);
-    settings.SetTransitionDuration(kNudgeFadeDuration);
+    settings.SetTransitionDuration(GetHideFadeDuration(transition));
     settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     settings.AddObserver(new ObserverToCloseWidget(nudge_->GetWidget()));
@@ -313,7 +353,7 @@ void HomeToOverviewNudgeController::UpdateNudgeAnchorBounds() {
 }
 
 void HomeToOverviewNudgeController::HandleNudgeTap() {
-  HideNudge();
+  HideNudge(HideTransition::kUserTap);
 }
 
 }  // namespace ash

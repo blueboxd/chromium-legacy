@@ -551,10 +551,9 @@ IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest,
   SetupAppWithURL(app_url.ReplaceComponents(scheme_http));
 
   // Navigate to the https version of the site.
-  // For hosted apps, the toolbar should be hidden, as it is a more secure
-  // version of the site.
-  const bool expected_visibility = (GetParam() != AppType::HOSTED_APP);
-  NavigateAndCheckForToolbar(app_browser_, app_url, expected_visibility);
+  // The toolbar should be hidden, as it is a more secure version of the site.
+  NavigateAndCheckForToolbar(app_browser_, app_url,
+                             /*expected_visibility=*/false);
 }
 
 IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest,

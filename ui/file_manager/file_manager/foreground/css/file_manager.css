@@ -530,7 +530,8 @@ body.check-select .dialog-header:not(.files-ng) cr-button {
   --text-color: rgb(90, 90, 90);
 }
 
-.dialog-header.files-ng cr-button {
+.dialog-header.files-ng cr-button,
+.dialog-header.files-ng button {
   --hover-bg-color: rgba(0, 0, 0, 4%);
   --ink-color: rgba(0, 0, 0, 88%);
   --text-color: currentColor;
@@ -549,7 +550,12 @@ body.check-select .dialog-header:not(.files-ng) cr-button {
   width: 48px;
 }
 
-.dialog-header.files-ng cr-button:focus:not(:active) {
+.dialog-header.files-ng button[menu-shown] {
+  background-color: rgba(0, 0, 0, 12%);
+}
+
+.dialog-header.files-ng cr-button:focus:not(:active),
+.dialog-header.files-ng button:focus:not(:active) {
   border: 1px solid var(--google-blue-600);
 }
 
@@ -606,7 +612,6 @@ body.check-select .dialog-header
   background-image: none;
   background-position: center;
   background-repeat: no-repeat;
-  border: 0;
   box-shadow: none;
   outline: none;
   position: relative;
@@ -647,9 +652,12 @@ html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
 
 .dialog-header.files-ng #tasks {
   border-radius: 4px;
+  height: 32px;
+  padding: 0 12px;
 }
 
 .dialog-header.files-ng cr-button > .icon,
+.dialog-header.files-ng button > .icon,
 .dialog-header.files-ng #search-box .clear,
 .dialog-header.files-ng #read-only-icon,
 .dialog-header.files-ng .breadcrumbs .separator {
@@ -670,6 +678,7 @@ html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
 }
 
 .dialog-header.files-ng #search-wrapper.has-cursor,
+.dialog-header.files-ng #search-wrapper.has-text,
 .dialog-header.files-ng #search-wrapper.hide-pending {
   background-color: var(--google-grey-100);
   margin-inline-end: 16px;
@@ -775,6 +784,11 @@ body.check-select #view-button.thumbnail {
 
 .dialog-header.files-ng #sort-button > .icon {
   -webkit-mask-image: url(../images/files/ui/sorting_ng.svg);
+  height: 48px;
+  margin-inline-start: -7px;
+  margin-top: -7px;
+  position: absolute;
+  width: 48px;
 }
 
 body.check-select #sort-button {
@@ -789,6 +803,11 @@ body.check-select #sort-button {
 
 .dialog-header.files-ng #gear-button > .icon {
   -webkit-mask-image: url(../images/files/ui/menu_ng.svg);
+  height: 48px;
+  margin-inline-start: -7px;
+  margin-top: -7px;
+  position: absolute;
+  width: 48px;
 }
 
 body.check-select #gear-button {

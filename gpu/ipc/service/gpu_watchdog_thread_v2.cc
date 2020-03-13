@@ -624,6 +624,11 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
   crash_keys::gpu_watchdog_kill_after_power_resume.Set(
       WithinOneMinFromPowerResumed() ? "1" : "0");
 
+  // Check the arm_disarm_counter value one more time.
+  base::subtle::Atomic32 last_arm_disarm_counter =
+      base::subtle::NoBarrier_Load(&arm_disarm_counter_);
+  base::debug::Alias(&last_arm_disarm_counter);
+
   // Deliberately crash the process to create a crash dump.
   *static_cast<volatile int*>(nullptr) = 0x1337;
 }

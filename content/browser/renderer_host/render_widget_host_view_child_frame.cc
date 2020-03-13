@@ -572,6 +572,13 @@ blink::mojom::PointerLockResult RenderWidgetHostViewChildFrame::LockMouse(
   return blink::mojom::PointerLockResult::kWrongDocument;
 }
 
+blink::mojom::PointerLockResult RenderWidgetHostViewChildFrame::ChangeMouseLock(
+    bool request_unadjusted_movement) {
+  if (frame_connector_)
+    return frame_connector_->ChangeMouseLock(request_unadjusted_movement);
+  return blink::mojom::PointerLockResult::kWrongDocument;
+}
+
 void RenderWidgetHostViewChildFrame::UnlockMouse() {
   if (host()->delegate() && host()->delegate()->HasMouseLock(host()) &&
       frame_connector_)

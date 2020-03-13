@@ -13,6 +13,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "base/bind.h"
+#include "base/debug/stack_trace.h"
 #include "base/timer/timer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -41,8 +42,13 @@ constexpr base::TimeDelta kDragHandleAnimationTime =
 
 // Animation time to return drag handle to original position after hiding
 // contextual nudge.
-constexpr base::TimeDelta kDragHandleAnimationHideTime =
+constexpr base::TimeDelta kDragHandleHideAnimationDuration =
     base::TimeDelta::FromMilliseconds(600);
+
+// Animation time to return drag handle to original position after the user taps
+// to hide the contextual nudge.
+constexpr base::TimeDelta kDragHandleHideOnTapAnimationDuration =
+    base::TimeDelta::FromMilliseconds(100);
 
 // Delay between animating drag handle and tooltip opacity.
 constexpr base::TimeDelta kDragHandleNudgeOpacityDelay =
@@ -96,11 +102,11 @@ bool DragHandle::DoesIntersectRect(const views::View* target,
   return drag_handle_bounds.Intersects(rect);
 }
 
-void DragHandle::ShowDragHandleNudge() {
+bool DragHandle::ShowDragHandleNudge() {
   // Do not show drag handle nudge if it is already shown or drag handle is not
   // visible.
   if (ShowingNudge() || !GetVisible())
-    return;
+    return false;
   showing_nudge_ = true;
   PrefService* pref =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
@@ -112,11 +118,12 @@ void DragHandle::ShowDragHandleNudge() {
   if (!nudge_duration.is_zero()) {
     hide_drag_handle_nudge_timer_.Start(
         FROM_HERE, nudge_duration,
-        base::BindOnce(&DragHandle::HideDragHandleNudge,
-                       base::Unretained(this)));
+        base::BindOnce(&DragHandle::HideDragHandleNudge, base::Unretained(this),
+                       false /*hidden_by_tap*/));
   }
   contextual_tooltip::HandleNudgeShown(
       pref, contextual_tooltip::TooltipType::kDragHandle);
+  return true;
 }
 
 void DragHandle::ScheduleShowDragHandleNudge() {
@@ -124,7 +131,8 @@ void DragHandle::ScheduleShowDragHandleNudge() {
     return;
   show_drag_handle_nudge_timer_.Start(
       FROM_HERE, kShowNudgeDelay,
-      base::BindOnce(&DragHandle::ShowDragHandleNudge, base::Unretained(this)));
+      base::BindOnce(base::IgnoreResult(&DragHandle::ShowDragHandleNudge),
+                     base::Unretained(this)));
 }
 
 void DragHandle::SetColorAndOpacity(SkColor color, float opacity) {
@@ -132,21 +140,22 @@ void DragHandle::SetColorAndOpacity(SkColor color, float opacity) {
   layer()->SetOpacity(opacity);
 }
 
-void DragHandle::HideDragHandleNudge() {
+void DragHandle::HideDragHandleNudge(bool hidden_by_tap) {
   show_drag_handle_nudge_timer_.Stop();
   if (!ShowingNudge())
     return;
   hide_drag_handle_nudge_timer_.Stop();
-  HideDragHandleNudgeHelper();
+  HideDragHandleNudgeHelper(hidden_by_tap);
   showing_nudge_ = false;
 }
 
 void DragHandle::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP &&
-      features::AreContextualNudgesEnabled()) {
-    // Drag handle always shows nudge when tapped and does not affect the next
-    // time a session based nudge will be shown.
-    ShowDragHandleNudge();
+  if (!features::AreContextualNudgesEnabled())
+    return;
+
+  if (event->type() == ui::ET_GESTURE_TAP && showing_nudge_) {
+    HandleTapOnNudge();
+    event->StopPropagation();
   }
 }
 
@@ -179,7 +188,8 @@ void DragHandle::ShowDragHandleTooltip() {
       AshColorProvider::Get()->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kTextPrimary,
           AshColorProvider::AshColorMode::kDark),
-      base::RepeatingClosure());
+      base::BindRepeating(&DragHandle::HandleTapOnNudge,
+                          weak_factory_.GetWeakPtr()));
   drag_handle_nudge_->GetWidget()->Show();
   drag_handle_nudge_->label()->layer()->SetOpacity(0.0f);
 
@@ -194,7 +204,7 @@ void DragHandle::ShowDragHandleTooltip() {
     // Enqueue transform animation to start after pause.
     ui::ScopedLayerAnimationSettings transform_animation_settings(
         transform_animator);
-    transform_animation_settings.SetTweenType(gfx::Tween::EASE_IN_OUT);
+    transform_animation_settings.SetTweenType(gfx::Tween::FAST_OUT_LINEAR_IN);
     transform_animation_settings.SetTransitionDuration(
         kDragHandleAnimationTime);
     transform_animation_settings.SetPreemptionStrategy(
@@ -226,9 +236,13 @@ void DragHandle::ShowDragHandleTooltip() {
   }
 }
 
-void DragHandle::HideDragHandleNudgeHelper() {
+void DragHandle::HideDragHandleNudgeHelper(bool hidden_by_tap) {
   ScheduleDragHandleTranslationAnimation(
-      0, kDragHandleAnimationHideTime,
+      0,
+      hidden_by_tap ? kDragHandleHideOnTapAnimationDuration
+                    : kDragHandleHideAnimationDuration,
+      hidden_by_tap ? gfx::Tween::FAST_OUT_LINEAR_IN
+                    : gfx::Tween::FAST_OUT_SLOW_IN,
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
   if (drag_handle_nudge_) {
@@ -240,7 +254,8 @@ void DragHandle::HideDragHandleNudgeHelper() {
         ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
     opacity_animation_settings.SetTweenType(gfx::Tween::LINEAR);
     opacity_animation_settings.SetTransitionDuration(
-        kDragHandleNudgeOpacityAnimationDuration);
+        hidden_by_tap ? kDragHandleHideOnTapAnimationDuration
+                      : kDragHandleNudgeOpacityAnimationDuration);
 
     // Register an animation observer to close the tooltip widget once the label
     // opacity is animated to 0 as the widget will no longer be needed after
@@ -260,24 +275,33 @@ void DragHandle::AnimateDragHandleShow() {
   // after the first animation.
   ScheduleDragHandleTranslationAnimation(
       kDragHandleNudgeVerticalMarginRise, kDragHandleAnimationTime,
+      gfx::Tween::FAST_OUT_SLOW_IN,
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   ScheduleDragHandleTranslationAnimation(
       kDragHandleVerticalMarginDrop, kDragHandleAnimationTime,
-      ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+      gfx::Tween::FAST_OUT_LINEAR_IN, ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
 }
 
 void DragHandle::ScheduleDragHandleTranslationAnimation(
     int vertical_offset,
     base::TimeDelta animation_time,
+    gfx::Tween::Type tween_type,
     ui::LayerAnimator::PreemptionStrategy strategy) {
   ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
-  animation.SetTweenType(gfx::Tween::EASE_IN_OUT);
+  animation.SetTweenType(tween_type);
   animation.SetTransitionDuration(animation_time);
   animation.SetPreemptionStrategy(strategy);
 
   gfx::Transform translate;
   translate.Translate(0, vertical_offset);
   SetTransform(translate);
+}
+
+void DragHandle::HandleTapOnNudge() {
+  if (!drag_handle_nudge_)
+    return;
+
+  HideDragHandleNudge(true /*hidden_by_tap*/);
 }
 
 }  // namespace ash

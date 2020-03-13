@@ -35,6 +35,7 @@
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -1129,6 +1130,22 @@ const Display& DisplayManager::GetPrimaryDisplayCandidate() const {
   const DisplayLayout& layout =
       layout_store_->GetRegisteredDisplayLayout(GetCurrentDisplayIdList());
   return GetDisplayForId(layout.primary_id);
+}
+
+// static
+const Display& DisplayManager::GetFakePrimaryDisplay() {
+  static Display* fake_display = nullptr;
+  if (!fake_display) {
+    fake_display = new Display(Display::GetDefaultDisplay());
+    // Note that if an inappropriate gfx::BufferFormat is specified in the
+    // gfx::DisplayColorSpaces of the fake display, this can sometimes
+    // propagate to allocation code and cause errors.
+    // https://crbug.com/1057501
+    gfx::DisplayColorSpaces display_color_spaces(
+        gfx::ColorSpace::CreateSRGB(), DisplaySnapshot::PrimaryFormat());
+    fake_display->set_color_spaces(display_color_spaces);
+  }
+  return *fake_display;
 }
 
 size_t DisplayManager::GetNumDisplays() const {

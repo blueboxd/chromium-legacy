@@ -446,17 +446,10 @@ TEST_F(HomeToOverviewNudgeControllerTest, NudgeHiddenDuringShowAnimation) {
   wm::ActivateWindow(window.get());
 
   EXPECT_FALSE(GetNudgeWidget());
-  ASSERT_TRUE(nudge_widget->GetLayer()->GetAnimator()->is_animating());
-  EXPECT_TRUE(nudge_widget->IsVisible());
-  EXPECT_EQ(gfx::Transform(), nudge_widget->GetLayer()->GetTargetTransform());
+  EXPECT_FALSE(nudge_widget->IsVisible());
   EXPECT_EQ(gfx::Transform(),
             GetHotseatWidget()->GetLayer()->GetTargetTransform());
 
-  EXPECT_FALSE(widget_close_observer.WidgetClosed());
-
-  ASSERT_TRUE(nudge->label()->layer()->GetAnimator()->is_animating());
-  EXPECT_EQ(0.0f, nudge->label()->layer()->GetTargetOpacity());
-  nudge->label()->layer()->GetAnimator()->StopAnimating();
   EXPECT_TRUE(widget_close_observer.WidgetClosed());
 
   EXPECT_TRUE(GetHotseatWidget()->GetLayer()->GetAnimator()->is_animating());
@@ -493,7 +486,7 @@ TEST_F(HomeToOverviewNudgeControllerTest, NoCrashIfNudgeWidgetGetsClosed) {
 }
 
 // Tests that tapping on the nudge hides the nudge.
-TEST_F(HomeToOverviewNudgeControllerTest, TapOnTheNudgeClosedTheNudge) {
+TEST_F(HomeToOverviewNudgeControllerTest, TapOnTheNudgeClosesTheNudge) {
   TabletModeControllerTestApi().EnterTabletMode();
   CreateUserSessions(1);
   ScopedWindowList windows = CreateAndMinimizeWindows(2);
@@ -513,6 +506,52 @@ TEST_F(HomeToOverviewNudgeControllerTest, TapOnTheNudgeClosedTheNudge) {
   EXPECT_FALSE(GetNudgeController()->nudge_for_testing());
   EXPECT_TRUE(widget_close_observer.WidgetClosed());
 
+  EXPECT_EQ(gfx::Transform(),
+            GetHotseatWidget()->GetLayer()->GetTargetTransform());
+}
+
+TEST_F(HomeToOverviewNudgeControllerTest, TapOnTheNudgeDuringShowAnimation) {
+  TabletModeControllerTestApi().EnterTabletMode();
+  CreateUserSessions(1);
+  ScopedWindowList extra_windows = CreateAndMinimizeWindows(2);
+
+  ASSERT_TRUE(GetNudgeController());
+  ASSERT_TRUE(GetNudgeController()->HasShowTimerForTesting());
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  GetNudgeController()->FireShowTimerForTesting();
+  ASSERT_TRUE(GetNudgeWidget()->GetLayer()->GetAnimator()->is_animating());
+
+  // Cache the widget, as GetNudgeWidget() will start returning nullptr when the
+  // nudge starts hiding.
+  ContextualNudge* nudge = GetNudgeController()->nudge_for_testing();
+  views::Widget* nudge_widget = nudge->GetWidget();
+  WidgetCloseObserver widget_close_observer(nudge_widget);
+
+  GetEventGenerator()->GestureTapAt(
+      nudge_widget->GetWindowBoundsInScreen().CenterPoint());
+
+  ASSERT_TRUE(nudge_widget->GetLayer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(nudge_widget->IsVisible());
+  EXPECT_EQ(gfx::Transform(), nudge_widget->GetLayer()->GetTargetTransform());
+  EXPECT_EQ(gfx::Transform(),
+            GetHotseatWidget()->GetLayer()->GetTargetTransform());
+  EXPECT_FALSE(widget_close_observer.WidgetClosed());
+
+  ASSERT_TRUE(nudge->label()->layer()->GetAnimator()->is_animating());
+  EXPECT_EQ(0.0f, nudge->label()->layer()->GetTargetOpacity());
+  nudge->label()->layer()->GetAnimator()->StopAnimating();
+
+  EXPECT_FALSE(GetNudgeWidget());
+  EXPECT_FALSE(nudge_widget->IsVisible());
+  EXPECT_EQ(gfx::Transform(),
+            GetHotseatWidget()->GetLayer()->GetTargetTransform());
+
+  EXPECT_TRUE(widget_close_observer.WidgetClosed());
+
+  EXPECT_TRUE(GetHotseatWidget()->GetLayer()->GetAnimator()->is_animating());
   EXPECT_EQ(gfx::Transform(),
             GetHotseatWidget()->GetLayer()->GetTargetTransform());
 }

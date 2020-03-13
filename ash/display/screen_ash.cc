@@ -175,7 +175,7 @@ display::Display ScreenAsh::GetPrimaryDisplay() const {
     // https://crbug.com/866714.
     DCHECK(
         Shell::Get()->window_tree_host_manager()->GetAllRootWindows().empty());
-    return display::Display::GetDefaultDisplay();
+    return display::DisplayManager::GetFakePrimaryDisplay();
   }
 
   return GetDisplayManager()->GetDisplayForId(

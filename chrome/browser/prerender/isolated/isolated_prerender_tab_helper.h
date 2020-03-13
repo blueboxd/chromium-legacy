@@ -23,6 +23,10 @@
 
 class Profile;
 
+namespace net {
+class NetworkIsolationKey;
+}  // namespace net
+
 namespace network {
 class SimpleURLLoader;
 }  // namespace network
@@ -85,14 +89,22 @@ class IsolatedPrerenderTabHelper
   // Prefetches the front of |urls_to_prefetch_|.
   void Prefetch();
 
+  // Called when |url_loader_| encounters a redirect.
   void OnPrefetchRedirect(const net::RedirectInfo& redirect_info,
                           const network::mojom::URLResponseHead& response_head,
                           std::vector<std::string>* removed_headers);
 
+  // Called when |url_loader_| completes. |url| is the url that was requested
+  // and |key| is the temporary NIK used during the request.
   void OnPrefetchComplete(const GURL& url,
+                          const net::NetworkIsolationKey& key,
                           std::unique_ptr<std::string> response_body);
 
+  // Checks the response from |OnPrefetchComplete| for success or failure. On
+  // success the response is moved to a |PrefetchedMainframeResponseContainer|
+  // and cached in |prefetched_responses_|.
   void HandlePrefetchResponse(const GURL& url,
+                              const net::NetworkIsolationKey& key,
                               network::mojom::URLResponseHeadPtr head,
                               std::unique_ptr<std::string> body);
 

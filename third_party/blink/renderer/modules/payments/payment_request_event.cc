@@ -20,7 +20,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_location.h"
-#include "third_party/blink/renderer/modules/payments/payment_address_init_type_converter.h"
+#include "third_party/blink/renderer/modules/payments/address_init_type_converter.h"
 #include "third_party/blink/renderer/modules/payments/payments_validators.h"
 #include "third_party/blink/renderer/modules/service_worker/respond_with_observer.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
@@ -231,7 +231,7 @@ ScriptPromise PaymentRequestEvent::changePaymentMethod(
 
 ScriptPromise PaymentRequestEvent::changeShippingAddress(
     ScriptState* script_state,
-    PaymentAddressInit* shipping_address,
+    AddressInit* shipping_address,
     ExceptionState& exception_state) {
   if (change_payment_request_details_resolver_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,

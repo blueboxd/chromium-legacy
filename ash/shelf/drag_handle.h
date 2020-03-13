@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/shelf/contextual_nudge.h"
 #include "ash/shelf/shelf_widget.h"
+#include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/views/view.h"
@@ -32,14 +33,17 @@ class ASH_EXPORT DragHandle : public views::View,
 
   // Animates drag handle and tooltip for drag handle teaching users that
   // swiping up on will take the user back to the home screen.
-  void ShowDragHandleNudge();
+  // Returns whether the nudge has been shown.
+  bool ShowDragHandleNudge();
 
   // Schedule showing the drag handle.
   void ScheduleShowDragHandleNudge();
 
   // Immediately begins the animation to return the drag handle back to its
   // original position and hide the tooltip.
-  void HideDragHandleNudge();
+  // |hidden_by_tap| - Whether the nudge is being hidden as a result of the user
+  // tapping the nudge.
+  void HideDragHandleNudge(bool hidden_by_tap);
 
   // views::View:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -69,7 +73,7 @@ class ASH_EXPORT DragHandle : public views::View,
 
   // Helper function to hide the drag handle nudge. Called by
   // |hide_drag_handle_nudge_timer_|.
-  void HideDragHandleNudgeHelper();
+  void HideDragHandleNudgeHelper(bool hidden_by_tap);
 
   // Helper function to animate the drag handle for the drag handle gesture
   // contextual nudge.
@@ -80,7 +84,11 @@ class ASH_EXPORT DragHandle : public views::View,
   void ScheduleDragHandleTranslationAnimation(
       int vertical_offset,
       base::TimeDelta animation_time,
+      gfx::Tween::Type tween_type,
       ui::LayerAnimator::PreemptionStrategy strategy);
+
+  // Handler for tap gesture on the contextual nudge widget. It hides the nudge.
+  void HandleTapOnNudge();
 
   // Timer to hide drag handle nudge if it has a timed life.
   base::OneShotTimer hide_drag_handle_nudge_timer_;
@@ -92,6 +100,8 @@ class ASH_EXPORT DragHandle : public views::View,
 
   // A label used to educate users about swipe gestures on the drag handle.
   ContextualNudge* drag_handle_nudge_ = nullptr;
+
+  base::WeakPtrFactory<DragHandle> weak_factory_{this};
 };
 
 }  // namespace ash

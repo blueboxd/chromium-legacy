@@ -93,6 +93,7 @@ class Kind(object):
     self.parent_kind = None
 
   def Repr(self, as_ref=True):
+    # pylint: disable=unused-argument
     return '<%s spec=%r>' % (self.__class__.__name__, self.spec)
 
   def __repr__(self):
@@ -280,6 +281,7 @@ class EnumValue(NamedValue):
 class Constant(object):
   def __init__(self, mojom_name=None, kind=None, value=None, parent_kind=None):
     self.mojom_name = mojom_name
+    self.name = None
     self.kind = kind
     self.value = value
     self.parent_kind = parent_kind
@@ -298,12 +300,14 @@ class Field(object):
     if self.__class__.__name__ == 'Field':
       raise Exception()
     self.mojom_name = mojom_name
+    self.name = None
     self.kind = kind
     self.ordinal = ordinal
     self.default = default
     self.attributes = attributes
 
   def Repr(self, as_ref=True):
+    # pylint: disable=unused-argument
     # Fields are only referenced by objects which define them and thus
     # they are always displayed as non-references.
     return GenericRepr(self, {'mojom_name': False, 'kind': True})
@@ -358,6 +362,7 @@ class Struct(ReferenceKind):
       spec = None
     ReferenceKind.__init__(self, spec, False, module)
     self.mojom_name = mojom_name
+    self.name = None
     self.native_only = False
     self.custom_serializer = False
     self.fields = []
@@ -420,6 +425,7 @@ class Union(ReferenceKind):
       spec = None
     ReferenceKind.__init__(self, spec, False, module)
     self.mojom_name = mojom_name
+    self.name = None
     self.fields = []
     self.attributes = attributes
 
@@ -614,12 +620,14 @@ class Parameter(object):
                default=None,
                attributes=None):
     self.mojom_name = mojom_name
+    self.name = None
     self.ordinal = ordinal
     self.kind = kind
     self.default = default
     self.attributes = attributes
 
   def Repr(self, as_ref=True):
+    # pylint: disable=unused-argument
     return '<%s mojom_name=%r kind=%s>' % (
         self.__class__.__name__, self.mojom_name, self.kind.Repr(as_ref=True))
 
@@ -636,6 +644,7 @@ class Method(object):
   def __init__(self, interface, mojom_name, ordinal=None, attributes=None):
     self.interface = interface
     self.mojom_name = mojom_name
+    self.name = None
     self.ordinal = ordinal
     self.parameters = []
     self.param_struct = None
@@ -714,6 +723,7 @@ class Interface(ReferenceKind):
       spec = None
     ReferenceKind.__init__(self, spec, False, module)
     self.mojom_name = mojom_name
+    self.name = None
     self.methods = []
     self.enums = []
     self.constants = []
@@ -766,6 +776,7 @@ class EnumField(object):
                attributes=None,
                numeric_value=None):
     self.mojom_name = mojom_name
+    self.name = None
     self.value = value
     self.attributes = attributes
     self.numeric_value = numeric_value
@@ -782,6 +793,7 @@ class EnumField(object):
 class Enum(Kind):
   def __init__(self, mojom_name=None, module=None, attributes=None):
     self.mojom_name = mojom_name
+    self.name = None
     self.native_only = False
     if mojom_name is not None:
       spec = 'x:' + mojom_name
@@ -814,6 +826,7 @@ class Module(object):
   def __init__(self, path=None, mojom_namespace=None, attributes=None):
     self.path = path
     self.mojom_namespace = mojom_namespace
+    self.namespace = None
     self.structs = []
     self.unions = []
     self.interfaces = []

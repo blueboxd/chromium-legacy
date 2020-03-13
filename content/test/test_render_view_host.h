@@ -107,6 +107,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void SetTooltipText(const base::string16& tooltip_text) override {}
   gfx::Rect GetBoundsInRootWindow() override;
   blink::mojom::PointerLockResult LockMouse(bool) override;
+  blink::mojom::PointerLockResult ChangeMouseLock(bool) override;
   void UnlockMouse() override;
   const viz::FrameSinkId& GetFrameSinkId() const override;
   const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()

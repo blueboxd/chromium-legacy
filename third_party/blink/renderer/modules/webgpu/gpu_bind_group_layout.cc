@@ -4,15 +4,15 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group_layout.h"
 
-#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_bind_group_layout_binding.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_bind_group_layout_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_bind_group_layout_entry.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 
 namespace blink {
 
 WGPUBindGroupLayoutBinding AsDawnType(
-    const GPUBindGroupLayoutBinding* webgpu_binding) {
+    const GPUBindGroupLayoutEntry* webgpu_binding) {
   WGPUBindGroupLayoutBinding dawn_binding = {};
 
   dawn_binding.binding = webgpu_binding->binding();

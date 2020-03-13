@@ -145,6 +145,9 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
 
   // Lock/Unlock processing of future mouse events.
   blink::mojom::PointerLockResult LockMouse(bool request_unadjusted_movement);
+  // Change the current lock to have the given unadjusted_movement.
+  blink::mojom::PointerLockResult ChangeMouseLock(
+      bool request_unadjusted_movement);
   void UnlockMouse();
 
   // Start/Stop processing of future system keyboard events.

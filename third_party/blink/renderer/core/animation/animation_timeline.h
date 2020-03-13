@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
@@ -70,11 +69,6 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
     return animations_;
   }
 
-  CompositorAnimationTimeline* CompositorTimeline() const {
-    return compositor_timeline_.get();
-  }
-  virtual CompositorAnimationTimeline* EnsureCompositorTimeline() = 0;
-
   void Trace(Visitor*) override;
 
  protected:
@@ -88,8 +82,6 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
   HeapHashSet<Member<Animation>> animations_needing_update_;
   // All animations attached to this timeline.
   HeapHashSet<WeakMember<Animation>> animations_;
-
-  std::unique_ptr<CompositorAnimationTimeline> compositor_timeline_;
 
   base::Optional<base::TimeDelta> last_current_time_internal_;
 };

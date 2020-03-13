@@ -221,7 +221,14 @@ cr.define('settings', function() {
             }
 
             if (settings.routes.COOKIES) {
-              map.set(settings.routes.COOKIES.path, '#cookiesLinkRow');
+              map.set(
+                  `${settings.routes.COOKIES.path}_${
+                      settings.routes.PRIVACY.path}`,
+                  '#cookiesLinkRow');
+              map.set(
+                  `${settings.routes.COOKIES.path}_${
+                      settings.routes.BASIC.path}`,
+                  '#cookiesLinkRow');
             }
 
             if (settings.routes.SITE_SETTINGS) {

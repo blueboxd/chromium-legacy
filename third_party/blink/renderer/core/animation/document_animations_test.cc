@@ -32,7 +32,6 @@ class MockAnimationTimeline : public AnimationTimeline {
   MOCK_METHOD1(ServiceAnimations, void(TimingUpdateReason));
   MOCK_CONST_METHOD0(AnimationsNeedingUpdateCount, wtf_size_t());
   MOCK_METHOD0(ScheduleNextService, void());
-  MOCK_METHOD0(EnsureCompositorTimeline, CompositorAnimationTimeline*());
 
   void Trace(Visitor* visitor) override { AnimationTimeline::Trace(visitor); }
 

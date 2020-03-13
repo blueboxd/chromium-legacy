@@ -5,6 +5,7 @@
 #include "ui/accessibility/ax_node.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -224,11 +225,12 @@ void AXNode::SetLocation(int32_t offset_container_id,
                          gfx::Transform* transform) {
   data_.relative_bounds.offset_container_id = offset_container_id;
   data_.relative_bounds.bounds = location;
-  if (transform)
+  if (transform) {
     data_.relative_bounds.transform =
         std::make_unique<gfx::Transform>(*transform);
-  else
-    data_.relative_bounds.transform.reset(nullptr);
+  } else {
+    data_.relative_bounds.transform.reset();
+  }
 }
 
 void AXNode::SetIndexInParent(size_t index_in_parent) {
@@ -393,7 +395,7 @@ base::Optional<bool> AXNode::GetTableHasColumnOrRowHeaderNode() const {
   if (!table_info)
     return base::nullopt;
 
-  return table_info->all_headers.size() > 0;
+  return !table_info->all_headers.empty();
 }
 
 AXNode* AXNode::GetTableCellFromIndex(int index) const {
@@ -498,9 +500,9 @@ base::Optional<int> AXNode::GetTableRowRowIndex() const {
     return base::nullopt;
 
   const auto& iter = table_info->row_id_to_index.find(id());
-  if (iter != table_info->row_id_to_index.end())
-    return int{iter->second};
-  return base::nullopt;
+  if (iter == table_info->row_id_to_index.end())
+    return base::nullopt;
+  return int{iter->second};
 }
 
 std::vector<AXNode::AXID> AXNode::GetTableRowNodeIds() const {
@@ -647,13 +649,11 @@ void AXNode::GetTableCellColHeaderNodeIds(
   if (!table_info || table_info->col_count <= 0)
     return;
 
-  base::Optional<int> col_index = GetTableCellColIndex();
   // If this node is not a cell, then return the headers for the first column.
-  for (size_t i = 0; i < table_info->col_headers[col_index.value_or(0)].size();
-       i++) {
-    col_header_ids->push_back(
-        table_info->col_headers[col_index.value_or(0)][i]);
-  }
+  int col_index = GetTableCellColIndex().value_or(0);
+  const auto& col = table_info->col_headers[col_index];
+  for (int header : col)
+    col_header_ids->push_back(header);
 }
 
 void AXNode::GetTableCellColHeaders(std::vector<AXNode*>* col_headers) const {
@@ -671,13 +671,11 @@ void AXNode::GetTableCellRowHeaderNodeIds(
   if (!table_info || table_info->row_count <= 0)
     return;
 
-  base::Optional<int> row_index = GetTableCellRowIndex();
   // If this node is not a cell, then return the headers for the first row.
-  for (size_t i = 0; i < table_info->row_headers[row_index.value_or(0)].size();
-       i++) {
-    row_header_ids->push_back(
-        table_info->row_headers[row_index.value_or(0)][i]);
-  }
+  int row_index = GetTableCellRowIndex().value_or(0);
+  const auto& row = table_info->row_headers[row_index];
+  for (int header : row)
+    row_header_ids->push_back(header);
 }
 
 void AXNode::GetTableCellRowHeaders(std::vector<AXNode*>* row_headers) const {
@@ -724,7 +722,7 @@ AXTableInfo* AXNode::GetAncestorTableInfo() const {
   return nullptr;
 }
 
-void AXNode::IdVectorToNodeVector(std::vector<int32_t>& ids,
+void AXNode::IdVectorToNodeVector(const std::vector<int32_t>& ids,
                                   std::vector<AXNode*>* nodes) const {
   for (int32_t id : ids) {
     AXNode* node = tree_->GetFromId(id);
@@ -741,7 +739,7 @@ base::Optional<int> AXNode::GetHierarchicalLevel() const {
   // greater than 0.
   // https://www.w3.org/TR/wai-aria-1.1/#aria-level
   if (hierarchical_level > 0)
-    return base::Optional<int>(hierarchical_level);
+    return hierarchical_level;
 
   return base::nullopt;
 }
@@ -785,8 +783,9 @@ base::Optional<int> AXNode::GetSetSize() {
   // Only allow this to be called on nodes that can hold set_size values, which
   // are defined in the ARIA spec.
   if (!(IsOrderedSetItem() || IsOrderedSet()) ||
-      data().HasState(ax::mojom::State::kIgnored))
+      data().HasState(ax::mojom::State::kIgnored)) {
     return base::nullopt;
+  }
 
   // If node is item-like, find its outerlying ordered set. Otherwise,
   // this node is the ordered set.
@@ -858,11 +857,9 @@ bool AXNode::SetRoleMatchesItemRole(const AXNode* ordered_set) const {
 }
 
 bool AXNode::IsIgnoredContainerForOrderedSet() const {
-  if (IsIgnored() || data().role == ax::mojom::Role::kListItem ||
-      data().role == ax::mojom::Role::kGenericContainer ||
-      data().role == ax::mojom::Role::kUnknown)
-    return true;
-  return false;
+  return IsIgnored() || data().role == ax::mojom::Role::kListItem ||
+         data().role == ax::mojom::Role::kGenericContainer ||
+         data().role == ax::mojom::Role::kUnknown;
 }
 
 int AXNode::UpdateUnignoredCachedValuesRecursive(int startIndex) {

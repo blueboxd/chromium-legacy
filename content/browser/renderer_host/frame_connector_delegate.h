@@ -156,6 +156,11 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   virtual blink::mojom::PointerLockResult LockMouse(
       bool request_unadjusted_movement);
 
+  // Change the current mouse lock to match the unadjusted movement option
+  // given.
+  virtual blink::mojom::PointerLockResult ChangeMouseLock(
+      bool request_unadjusted_movement);
+
   // Unlocks the mouse if the mouse is locked.
   virtual void UnlockMouse() {}
 

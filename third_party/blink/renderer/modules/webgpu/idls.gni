@@ -37,9 +37,9 @@ modules_idl_files = [
 ]
 
 modules_dictionary_idl_files = [
-  "gpu_bind_group_binding.idl",
+  "gpu_bind_group_entry.idl",
   "gpu_bind_group_descriptor.idl",
-  "gpu_bind_group_layout_binding.idl",
+  "gpu_bind_group_layout_entry.idl",
   "gpu_bind_group_layout_descriptor.idl",
   "gpu_blend_descriptor.idl",
   "gpu_buffer_binding.idl",

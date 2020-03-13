@@ -25,7 +25,7 @@ modules_dictionary_idl_files = [
   "image_object.idl",
   "merchant_validation_event_init.idl",
   "payer_errors.idl",
-  "payment_address_init.idl",
+  "address_init.idl",
   "payment_currency_amount.idl",
   "payment_details_base.idl",
   "payment_details_init.idl",

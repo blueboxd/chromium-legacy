@@ -4,18 +4,21 @@
 
 #include "chrome/browser/chromeos/sync/os_sync_util.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/pref_names.h"
 
 namespace os_sync_util {
+namespace {
 
-void MigrateOsSyncPreferences(PrefService* prefs) {
+// Returns true if the prefs were migrated.
+bool MaybeMigratePreferences(PrefService* prefs) {
   // SplitSyncConsent has its own OOBE flow to enable OS sync, so it doesn't
   // need this migration.
   if (chromeos::features::IsSplitSyncConsentEnabled())
-    return;
+    return false;
 
   // Migration code can be removed when SplitSettingsSync has been fully
   // deployed to stable channel, likely in July 2020. When doing this, change
@@ -28,12 +31,12 @@ void MigrateOsSyncPreferences(PrefService* prefs) {
 
     // Reset the OS sync feature just to be safe.
     prefs->SetBoolean(syncer::prefs::kOsSyncFeatureEnabled, false);
-    return;
+    return false;
   }
 
   // Don't migrate more than once.
   if (prefs->GetBoolean(syncer::prefs::kOsSyncPrefsMigrated))
-    return;
+    return false;
 
   // Browser sync-the-feature is always enabled on Chrome OS, so OS sync is too.
   prefs->SetBoolean(syncer::prefs::kOsSyncFeatureEnabled, true);
@@ -49,6 +52,14 @@ void MigrateOsSyncPreferences(PrefService* prefs) {
                     prefs->GetBoolean(syncer::prefs::kSyncPreferences));
 
   prefs->SetBoolean(syncer::prefs::kOsSyncPrefsMigrated, true);
+  return true;
+}
+
+}  // namespace
+
+void MigrateOsSyncPreferences(PrefService* prefs) {
+  bool migrated = MaybeMigratePreferences(prefs);
+  base::UmaHistogramBoolean("ChromeOS.Sync.PreferencesMigrated", migrated);
 }
 
 }  // namespace os_sync_util

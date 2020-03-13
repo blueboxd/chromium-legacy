@@ -46,6 +46,10 @@
     line-height: 18px;
   }
 
+  #progress-message {
+    height: 36px;
+  }
+
   #progress-submessage {
     color: var(--google-grey-600);
     flex-grow: 1;
@@ -60,7 +64,6 @@
   paper-progress {
     --paper-progress-active-color: var(--cros-default-button-color);
     --paper-progress-container-color: rgba(var(--google-blue-600-rgb), .24);
-    --paper-progress-indeterminate-cycle-duration: 10s;
     margin-top: 36px;
     width: 100%;
   }
@@ -74,6 +77,7 @@
     justify-content: flex-end;
     margin: 32px 0;
   }
+
 </style>
 
 <div id="main">
@@ -91,6 +95,7 @@
     <!-- Progress message. -->
     <div id="progress-message" hidden="[[isState_(state_, State.PROMPT)]]">
       <span>[[getProgressMessage_(state_)]]</span>
+      <!-- Progress submessage. -->
       <div id = "progress-submessage"
           hidden="[[!isState_(state_, State.UPGRADING)]]">
         <span>[[lastProgressLine_]]</span>
@@ -127,7 +132,8 @@
     <cr-checkbox checked="{{backupCheckboxChecked_}}" >
       <p class="checkbox-text">
         $i18n{backupCheckboxMessage}
-        <a href="#" on-click="onChangeLocationButtonClick_">
+        <a href="#" on-click="onChangeLocationButtonClick_"
+            style="text-decoration: none">
         $i18n{backupChangeLocation}</a>
       </p>
     </cr-checkbox>

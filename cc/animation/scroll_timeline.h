@@ -39,8 +39,7 @@ class CC_ANIMATION_EXPORT ScrollTimeline : public AnimationTimeline {
                  base::Optional<double> start_scroll_offset,
                  base::Optional<double> end_scroll_offset,
                  double time_range,
-                 KeyframeModel::FillMode fill,
-                 int animation_timeline_id);
+                 KeyframeModel::FillMode fill);
 
   static scoped_refptr<ScrollTimeline> Create(
       base::Optional<ElementId> scroller_id,
@@ -52,7 +51,7 @@ class CC_ANIMATION_EXPORT ScrollTimeline : public AnimationTimeline {
 
   // Create a copy of this ScrollTimeline intended for the impl thread in the
   // compositor.
-  scoped_refptr<AnimationTimeline> CreateImplInstance() const override;
+  scoped_refptr<ScrollTimeline> CreateImplInstance() const;
 
   // ScrollTimeline is active if the scroll node exists in active or pending
   // scroll tree.

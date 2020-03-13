@@ -8,14 +8,11 @@
 #include <memory>
 
 #include "base/optional.h"
-#include "cc/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
 
 namespace blink {
-
-using CompositorScrollTimeline = cc::ScrollTimeline;
 
 class AnimationTimeline;
 class ComputedStyle;

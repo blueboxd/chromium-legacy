@@ -27,6 +27,7 @@ group("tests") {
     ":mojo_perftests",
     ":mojo_unittests",
     "//ipc:ipc_tests",
+    "//mojo/public/tools:mojo_python_unittests",
     "//services/service_manager/tests",
   ]
 }

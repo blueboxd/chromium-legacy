@@ -113,7 +113,11 @@ cr.define('settings', function() {
         disabledLabel: 'siteSettingsBlocked',
       },
       {
-        route: settings.routes.SITE_SETTINGS_COOKIES,
+        route: (function() {
+          return loadTimeData.getBoolean('privacySettingsRedesignEnabled') ?
+              settings.routes.COOKIES :
+              settings.routes.SITE_SETTINGS_COOKIES;
+        })(),
         id: Id.COOKIES,
         label: 'siteSettingsCookies',
         icon: 'settings:cookie',

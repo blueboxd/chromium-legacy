@@ -424,6 +424,31 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest,
   ASSERT_TRUE(app_browser->app_controller()->ShouldShowCustomTabBar());
 }
 
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, UpgradeWithoutCustomTabBar) {
+  ASSERT_TRUE(https_server()->Start());
+  const GURL secure_app_url =
+      https_server()->GetURL("app.site.com", "/empty.html");
+  GURL::Replacements rep;
+  rep.SetSchemeStr(url::kHttpScheme);
+  const GURL app_url = secure_app_url.ReplaceComponents(rep);
+
+  const AppId app_id = InstallPWA(app_url);
+  Browser* const app_browser = LaunchWebAppBrowser(app_id);
+  NavigateToURLAndWait(app_browser, secure_app_url);
+
+  // HostedAppBrowserController's IsSameHostAndPort fallback path for Extensions
+  // without URL handlers does not apply for apps created through InstallPWA.
+  const bool expected_visibility =
+      (GetParam() == ControllerType::kHostedAppController);
+  EXPECT_EQ(app_browser->app_controller()->ShouldShowCustomTabBar(),
+            expected_visibility);
+
+  const GURL off_origin_url =
+      https_server()->GetURL("example.org", "/empty.html");
+  NavigateToURLAndWait(app_browser, off_origin_url);
+  EXPECT_EQ(app_browser->app_controller()->ShouldShowCustomTabBar(), true);
+}
+
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, OverscrollEnabled) {
   ASSERT_TRUE(https_server()->Start());
 

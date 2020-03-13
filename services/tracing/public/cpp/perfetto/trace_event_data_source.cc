@@ -469,32 +469,12 @@ void TraceEventDataSource::RegisterWithTraceLog() {
   is_enabled_ = true;
 }
 
-void TraceEventDataSource::OnStopTracingDone() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(perfetto_sequence_checker_);
-
-  // WARNING: This function might never be called at the end of a tracing
-  // session. See comment in StartTracing() for more information.
-
-  // Unregister overrides.
+void TraceEventDataSource::UnregisterFromTraceLog() {
   TraceLog::GetInstance()->SetAddTraceEventOverrides(nullptr, nullptr, nullptr);
-
-  base::OnceClosure task;
-  {
-    base::AutoLock l(lock_);
-    is_enabled_ = false;
-
-    // Check for any start or stop tracing pending task.
-    task = std::move(flush_complete_task_);
-    flushing_trace_log_ = false;
-
-    IncrementSessionIdOrClearStartupFlagWhileLocked();
-  }
-  if (stop_complete_callback_) {
-    std::move(stop_complete_callback_).Run();
-  }
-  if (task) {
-    std::move(task).Run();
-  }
+  base::AutoLock l(lock_);
+  is_enabled_ = false;
+  flushing_trace_log_ = false;
+  DCHECK(!flush_complete_task_);
 }
 
 // static
@@ -695,17 +675,10 @@ void TraceEventDataSource::StartTracing(
   {
     AutoLockWithDeferredTaskPosting l(lock_);
     if (flushing_trace_log_) {
-      // Delay start tracing until flush is finished. Perfetto can call start
-      // while flushing if startup tracing (started by ourself) is cancelled, or
-      // when perfetto force aborts session without waiting for stop acks.
-      // |flush_complete_task_| will not be null here if perfetto calls start,
-      // stop and start again all while flushing trace log for a previous
-      // session, without waiting for stop complete callback for both. In all
-      // these cases it is safe to just drop the |flush_complete_callback_|,
-      // which is supposed to run OnStopTracingDone() and send stop ack to
-      // Perfetto, but Perfetto already ignored the ack and continued.
-      // Unretained is fine here because the producer will be valid till stop
-      // tracing is called and at stop this task will be cleared.
+      DCHECK(!flush_complete_task_);
+      // Delay start tracing until flush is finished.
+      // Unretained is fine here because the producer will be valid till
+      // stop tracing is called and at stop this task will be cleared.
       flush_complete_task_ = base::BindOnce(
           &TraceEventDataSource::StartTracingInternal, base::Unretained(this),
           base::Unretained(producer), data_source_config);
@@ -798,7 +771,12 @@ void TraceEventDataSource::StopTracing(
         if (has_more_events) {
           return;
         }
-        data_source->OnStopTracingDone();
+
+        data_source->UnregisterFromTraceLog();
+
+        if (data_source->stop_complete_callback_) {
+          std::move(data_source->stop_complete_callback_).Run();
+        }
       };
 
   bool was_enabled = TraceLog::GetInstance()->IsEnabled();
@@ -814,10 +792,9 @@ void TraceEventDataSource::StopTracing(
     if (flush_complete_task_) {
       DCHECK(!producer_);
       // Skip start tracing task at this point if we still have not flushed
-      // trace log. We would only replace a start tracing call here since the
-      // current StopTracing call should have a matching start call. The service
-      // never calls consecutive start or stop. It is ok to ignore the start
-      // here since the session has already ended, before we finished flushing.
+      // trace log. We wouldn't be replacing a |flush_complete_task_| that is
+      // stop tracing callback task at any point, since perfetto will wait for
+      // the callback before starting next session.
       flush_complete_task_ =
           base::BindOnce(std::move(on_tracing_stopped_callback), this,
                          scoped_refptr<base::RefCountedString>(), false);

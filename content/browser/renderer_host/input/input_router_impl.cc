@@ -344,6 +344,12 @@ void InputRouterImpl::RequestMouseLock(bool from_user_gesture,
                             std::move(response));
 }
 
+void InputRouterImpl::RequestMouseLockChange(
+    bool unadjusted_movement,
+    RequestMouseLockCallback response) {
+  client_->RequestMouseLockChange(unadjusted_movement, std::move(response));
+}
+
 void InputRouterImpl::UnlockMouse() {
   client_->UnlockMouse();
 }

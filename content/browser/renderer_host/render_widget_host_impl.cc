@@ -2500,6 +2500,22 @@ void RenderWidgetHostImpl::RequestMouseLock(
         blink::mojom::PointerLockResult::kPermissionDenied);
 }
 
+void RenderWidgetHostImpl::RequestMouseLockChange(
+    bool unadjusted_movement,
+    InputRouterImpl::RequestMouseLockCallback response) {
+  if (pending_mouse_lock_request_) {
+    std::move(response).Run(blink::mojom::PointerLockResult::kAlreadyLocked);
+    return;
+  }
+
+  if (!view_ || !view_->HasFocus()) {
+    std::move(response).Run(blink::mojom::PointerLockResult::kWrongDocument);
+    return;
+  }
+
+  std::move(response).Run(view_->ChangeMouseLock(unadjusted_movement));
+}
+
 void RenderWidgetHostImpl::UnlockMouse() {
   // Got unlock request from renderer. Will update |is_last_unlocked_by_target_|
   // for silent re-lock.

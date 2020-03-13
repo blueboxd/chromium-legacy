@@ -131,6 +131,12 @@ class WebWidgetClient {
     return false;
   }
 
+  virtual bool RequestPointerLockChange(WebLocalFrame* requester_frame,
+                                        PointerLockCallback callback,
+                                        bool request_unadjusted_movement) {
+    return false;
+  }
+
   // Cause the pointer lock to be released. This may be called at any time,
   // including when a lock is pending but not yet acquired.
   // WebWidget::didLosePointerLock() is called when unlock is complete.

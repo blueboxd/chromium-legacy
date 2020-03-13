@@ -4487,6 +4487,25 @@
         "test_target": "//tools/metrics:metrics_python_tests"
       },
       {
+        "isolate_coverage_data": true,
+        "isolate_name": "mojo_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "mojo_python_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_target": "//mojo/public/tools:mojo_python_unittests"
+      },
+      {
         "args": [
           "--num-retries=3",
           "--additional-driver-flag=--disable-features=UseSkiaRenderer",
@@ -8249,6 +8268,24 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_target": "//tools/metrics:metrics_python_tests"
+      },
+      {
+        "isolate_name": "mojo_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "mojo_python_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_target": "//mojo/public/tools:mojo_python_unittests"
       },
       {
         "args": [

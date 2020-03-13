@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_timeline_options.h"
-#include "third_party/blink/renderer/core/animation/scroll_timeline_util.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
@@ -366,15 +365,6 @@ bool ScrollTimeline::HasActiveScrollTimeline(Node* node) {
   ActiveScrollTimelineSet& set = GetActiveScrollTimelineSet();
   auto it = set.find(node);
   return it != set.end() && it->value > 0;
-}
-
-CompositorAnimationTimeline* ScrollTimeline::EnsureCompositorTimeline() {
-  if (compositor_timeline_)
-    return compositor_timeline_.get();
-
-  compositor_timeline_ = std::make_unique<CompositorAnimationTimeline>(
-      scroll_timeline_util::ToCompositorScrollTimeline(this));
-  return compositor_timeline_.get();
 }
 
 }  // namespace blink

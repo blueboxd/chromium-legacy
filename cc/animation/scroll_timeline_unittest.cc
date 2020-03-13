@@ -183,8 +183,8 @@ TEST_F(ScrollTimelineTest, ActiveTimeIsSetOnlyAfterPromotion) {
   // Now create an impl version of the ScrollTimeline. Initially this should
   // only have a pending scroller id, as the active tree may not yet have the
   // scroller in it (as in this case).
-  scoped_refptr<ScrollTimeline> impl_timeline = base::WrapRefCounted(
-      ToScrollTimeline(main_timeline->CreateImplInstance().get()));
+  scoped_refptr<ScrollTimeline> impl_timeline =
+      main_timeline->CreateImplInstance();
 
   EXPECT_TRUE(std::isnan(
       ToDouble(impl_timeline->CurrentTime(active_tree.scroll_tree, true))));

@@ -97,15 +97,7 @@ bool AnimationTimeline::NeedsAnimationTimingUpdate() {
 void AnimationTimeline::ServiceAnimations(TimingUpdateReason reason) {
   TRACE_EVENT0("blink", "AnimationTimeline::serviceAnimations");
 
-  auto current_time_internal = CurrentTimeInternal();
-  bool maybe_update_compositor_scroll_timeline = false;
-
-  if (IsScrollTimeline() &&
-      last_current_time_internal_ != current_time_internal) {
-    maybe_update_compositor_scroll_timeline = true;
-  }
-
-  last_current_time_internal_ = current_time_internal;
+  last_current_time_internal_ = CurrentTimeInternal();
 
   HeapVector<Member<Animation>> animations;
   animations.ReserveInitialCapacity(animations_needing_update_.size());
@@ -115,12 +107,8 @@ void AnimationTimeline::ServiceAnimations(TimingUpdateReason reason) {
   std::sort(animations.begin(), animations.end(), CompareAnimations);
 
   for (Animation* animation : animations) {
-    if (!animation->Update(reason)) {
+    if (!animation->Update(reason))
       animations_needing_update_.erase(animation);
-      continue;
-    }
-    if (maybe_update_compositor_scroll_timeline)
-      animation->UpdateCompositorScrollTimeline();
   }
 
   DCHECK_EQ(outdated_animation_count_, 0U);

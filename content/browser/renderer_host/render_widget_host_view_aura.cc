@@ -1162,6 +1162,11 @@ blink::mojom::PointerLockResult RenderWidgetHostViewAura::LockMouse(
   return event_handler_->LockMouse(request_unadjusted_movement);
 }
 
+blink::mojom::PointerLockResult RenderWidgetHostViewAura::ChangeMouseLock(
+    bool request_unadjusted_movement) {
+  return event_handler_->ChangeMouseLock(request_unadjusted_movement);
+}
+
 void RenderWidgetHostViewAura::UnlockMouse() {
   event_handler_->UnlockMouse();
 }

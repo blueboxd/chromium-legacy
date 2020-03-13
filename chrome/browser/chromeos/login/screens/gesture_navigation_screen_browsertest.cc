@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -17,7 +18,9 @@
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/prefs/pref_service.h"
 
 namespace chromeos {
 
@@ -201,6 +204,17 @@ IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest,
 IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest,
                        ScreenSkippedWithSwitchAccessEnabled) {
   AccessibilityManager::Get()->SetSwitchAccessEnabled(true);
+
+  ShowGestureNavigationScreen();
+
+  WaitForScreenExit();
+}
+
+// Ensure the flow is skipped when shelf navigation buttons are enabled.
+IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest,
+                       ScreenSkippedWithShelfNavButtonsInTabletModeEnabled) {
+  ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
+      ash::prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled, true);
 
   ShowGestureNavigationScreen();
 

@@ -40,6 +40,8 @@ void GestureNavigationScreen::ShowImpl() {
   AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
   if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin() ||
       !ash::features::IsHideShelfControlsInTabletModeEnabled() ||
+      ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+          ash::prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled) ||
       accessibility_manager->IsSpokenFeedbackEnabled() ||
       accessibility_manager->IsAutoclickEnabled() ||
       accessibility_manager->IsSwitchAccessEnabled()) {

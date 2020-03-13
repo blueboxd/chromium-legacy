@@ -2987,6 +2987,10 @@
       'wayland_client_perftests': {},
     },
 
+    'mojo_python_unittests_isolated_scripts': {
+      'mojo_python_unittests': {},
+    },
+
     'mojo_windows_specific_gtests': {
       'services_unittests': {},
     },
@@ -4069,6 +4073,7 @@
       'chromedriver_py_tests_isolated_scripts',
       'desktop_chromium_isolated_scripts',
       'linux_specific_chromium_isolated_scripts',
+      'mojo_python_unittests_isolated_scripts',
       'skia_renderer_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
     ],
@@ -4087,6 +4092,7 @@
       'components_perftests_isolated_scripts',
       'desktop_chromium_isolated_scripts',
       'mac_specific_isolated_scripts',
+      'mojo_python_unittests_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
     ],
 
@@ -4130,6 +4136,7 @@
       'chromedriver_py_tests_isolated_scripts',
       'components_perftests_isolated_scripts',
       'desktop_chromium_isolated_scripts',
+      'mojo_python_unittests_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
       'win_specific_isolated_scripts',
     ],

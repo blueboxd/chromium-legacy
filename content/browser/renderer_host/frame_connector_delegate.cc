@@ -82,6 +82,11 @@ blink::mojom::PointerLockResult FrameConnectorDelegate::LockMouse(
   return blink::mojom::PointerLockResult::kUnknownError;
 }
 
+blink::mojom::PointerLockResult FrameConnectorDelegate::ChangeMouseLock(
+    bool request_unadjusted_movement) {
+  return blink::mojom::PointerLockResult::kUnknownError;
+}
+
 void FrameConnectorDelegate::EnableAutoResize(const gfx::Size& min_size,
                                               const gfx::Size& max_size) {}
 

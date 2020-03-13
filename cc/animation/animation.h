@@ -66,15 +66,20 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   void SetAnimationTimeline(AnimationTimeline* timeline);
 
   // TODO(yigu): There is a reverse dependency between AnimationTimeline and
-  // Animation. ScrollTimeline update should be handled by AnimationHost instead
-  // of Animation. This could be fixed once the snapshotting in blink is
-  // implemented. https://crbug.com/1023508.
-
+  // Animation. ScrollTimeline promotion and update should be handled by
+  // AnimationHost instead of Animation. https://crbug.com/1023508.
+  //
+  // Should be called when the pending tree is promoted to active, as this may
+  // require updating the ElementId for the ScrollTimeline scroll source.
+  virtual void PromoteScrollTimelinePendingToActive();
   // Should be called when the ScrollTimeline attached to this animation has a
   // change, such as when the scroll source changes ElementId.
-  void UpdateScrollTimeline(base::Optional<ElementId> scroller_id,
-                            base::Optional<double> start_scroll_offset,
-                            base::Optional<double> end_scroll_offset);
+  // TODO(yigu): This is currently virtual because WorkletAnimation has a
+  // separate ScrollTimeline member and the update should be applied to it
+  // instead of the AnimationTimeline object in this class.
+  virtual void UpdateScrollTimeline(base::Optional<ElementId> scroller_id,
+                                    base::Optional<double> start_scroll_offset,
+                                    base::Optional<double> end_scroll_offset);
 
   scoped_refptr<ElementAnimations> element_animations() const;
 

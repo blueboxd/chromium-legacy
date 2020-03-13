@@ -47,6 +47,10 @@ class MockInputRouterClient : public InputRouterClient,
                         bool unadjusted_movement,
                         mojom::WidgetInputHandlerHost::RequestMouseLockCallback
                             response) override {}
+  void RequestMouseLockChange(
+      bool unadjusted_movement,
+      mojom::WidgetInputHandlerHost::RequestMouseLockCallback response)
+      override {}
   void UnlockMouse() override {}
   void FallbackCursorModeLockCursor(bool left,
                                     bool right,

@@ -5,9 +5,12 @@
 #include "chrome/browser/prerender/isolated/prefetched_mainframe_response_container.h"
 
 PrefetchedMainframeResponseContainer::PrefetchedMainframeResponseContainer(
+    const net::NetworkIsolationKey& nik,
     network::mojom::URLResponseHeadPtr head,
     std::unique_ptr<std::string> body)
-    : head_(std::move(head)), body_(std::move(body)) {}
+    : network_isolation_key_(nik),
+      head_(std::move(head)),
+      body_(std::move(body)) {}
 
 PrefetchedMainframeResponseContainer::~PrefetchedMainframeResponseContainer() =
     default;

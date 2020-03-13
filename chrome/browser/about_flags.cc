@@ -3372,6 +3372,13 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(ENABLE_PDF)
 
 #if BUILDFLAG(ENABLE_PRINTING)
+#if defined(OS_MACOSX)
+    {"cups-ipp-printing-backend",
+     flag_descriptions::kCupsIppPrintingBackendName,
+     flag_descriptions::kCupsIppPrintingBackendDescription, kOsMac,
+     FEATURE_VALUE_TYPE(printing::features::kCupsIppPrintingBackend)},
+#endif  // defined(OS_MACOSX)
+
 #if defined(OS_WIN)
     {"use-xps-for-printing", flag_descriptions::kUseXpsForPrintingName,
      flag_descriptions::kUseXpsForPrintingDescription, kOsWin,

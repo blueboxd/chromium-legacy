@@ -23,9 +23,7 @@
 #include "content/public/browser/background_tracing_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/tracing_controller.h"
 #include "content/public/test/test_utils.h"
-#include "services/tracing/public/cpp/tracing_features.h"
 
 namespace {
 
@@ -41,12 +39,14 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
     PrefService* local_state = g_browser_process->local_state();
     DCHECK(local_state);
     local_state->SetBoolean(metrics::prefs::kMetricsReportingEnabled, true);
-    content::TracingController::GetInstance();  // Create tracing agents.
   }
 #endif
 
   bool StartPreemptiveScenario(
+      const base::Closure& on_upload_callback,
       content::BackgroundTracingManager::DataFiltering data_filtering) {
+    on_upload_callback_ = on_upload_callback;
+
     base::DictionaryValue dict;
 
     dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
@@ -66,7 +66,6 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
         content::BackgroundTracingConfig::FromDict(&dict));
 
     DCHECK(config);
-    wait_for_upload_ = std::make_unique<base::RunLoop>();
     content::BackgroundTracingManager::ReceiveCallback receive_callback =
         base::BindRepeating(&ChromeTracingDelegateBrowserTest::OnUpload,
                             base::Unretained(this));
@@ -90,21 +89,6 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
         trigger_handle_, std::move(started_finalizing_callback));
   }
 
-  void WaitForUpload() {
-    if (base::FeatureList::IsEnabled(features::kBackgroundTracingProtoOutput)) {
-      while (!content::BackgroundTracingManager::GetInstance()
-                  ->HasTraceToUpload()) {
-        base::RunLoop().RunUntilIdle();
-      }
-      EXPECT_FALSE(content::BackgroundTracingManager::GetInstance()
-                       ->GetLatestTraceToUpload()
-                       .empty());
-      receive_count_++;
-    } else {
-      wait_for_upload_->Run();
-    }
-  }
-
   int get_receive_count() const { return receive_count_; }
   bool get_started_finalizations() const {
     return started_finalizations_count_;
@@ -122,7 +106,7 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
     base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                    base::BindOnce(std::move(done_callback), true));
     base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   wait_for_upload_->QuitClosure());
+                   on_upload_callback_);
   }
 
   void OnStartedFinalizing(bool success) {
@@ -135,7 +119,7 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
     }
   }
 
-  std::unique_ptr<base::RunLoop> wait_for_upload_;
+  base::Closure on_upload_callback_;
   base::Closure on_started_finalization_callback_;
   int receive_count_;
   int started_finalizations_count_;
@@ -145,12 +129,15 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
                        BackgroundTracingTimeThrottled) {
+  base::RunLoop wait_for_upload;
+
   EXPECT_TRUE(StartPreemptiveScenario(
+      wait_for_upload.QuitClosure(),
       content::BackgroundTracingManager::NO_DATA_FILTERING));
 
   TriggerPreemptiveScenario(base::Closure());
 
-  WaitForUpload();
+  wait_for_upload.Run();
 
   EXPECT_TRUE(get_receive_count() == 1);
 
@@ -169,17 +156,28 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
   // We should not be able to start a new reactive scenario immediately after
   // a previous one gets uploaded.
   EXPECT_FALSE(StartPreemptiveScenario(
-      content::BackgroundTracingManager::NO_DATA_FILTERING));
+      base::Closure(), content::BackgroundTracingManager::NO_DATA_FILTERING));
 }
 
+// Flaky on Linux and Windows. See https://crbug.com/723933.
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_BackgroundTracingThrottleTimeElapsed \
+  DISABLED_BackgroundTracingThrottleTimeElapsed
+#else
+#define MAYBE_BackgroundTracingThrottleTimeElapsed \
+  BackgroundTracingThrottleTimeElapsed
+#endif
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
-                       BackgroundTracingThrottleTimeElapsed) {
+                       MAYBE_BackgroundTracingThrottleTimeElapsed) {
+  base::RunLoop wait_for_upload;
+
   EXPECT_TRUE(StartPreemptiveScenario(
+      wait_for_upload.QuitClosure(),
       content::BackgroundTracingManager::NO_DATA_FILTERING));
 
   TriggerPreemptiveScenario(base::Closure());
 
-  WaitForUpload();
+  wait_for_upload.Run();
 
   EXPECT_TRUE(get_receive_count() == 1);
 
@@ -196,6 +194,7 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
   wait_for_abort.Run();
 
   EXPECT_FALSE(StartPreemptiveScenario(
+      base::RepeatingClosure(),
       content::BackgroundTracingManager::NO_DATA_FILTERING));
 
   // We move the last upload time to eight days in the past,
@@ -204,25 +203,41 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
   local_state->SetInt64(prefs::kBackgroundTracingLastUpload,
                         new_upload_time.ToInternalValue());
   EXPECT_TRUE(StartPreemptiveScenario(
-      content::BackgroundTracingManager::NO_DATA_FILTERING));
+      base::Closure(), content::BackgroundTracingManager::NO_DATA_FILTERING));
 }
 
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on ASAN on Mac. See https://crbug.com/674497.
+#define MAYBE_ExistingIncognitoSessionBlockingTraceStart \
+  DISABLED_ExistingIncognitoSessionBlockingTraceStart
+#else
+#define MAYBE_ExistingIncognitoSessionBlockingTraceStart \
+  ExistingIncognitoSessionBlockingTraceStart
+#endif
 // If we need a PII-stripped trace, any existing OTR session should block the
 // trace.
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
-                       ExistingIncognitoSessionBlockingTraceStart) {
+                       MAYBE_ExistingIncognitoSessionBlockingTraceStart) {
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_NEW_INCOGNITO_WINDOW));
   EXPECT_TRUE(BrowserList::IsIncognitoSessionActive());
   EXPECT_FALSE(StartPreemptiveScenario(
-      content::BackgroundTracingManager::ANONYMIZE_DATA));
+      base::Closure(), content::BackgroundTracingManager::ANONYMIZE_DATA));
 }
 
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on ASAN on Mac. See https://crbug.com/674497.
+#define MAYBE_NewIncognitoSessionBlockingTraceFinalization \
+  DISABLED_NewIncognitoSessionBlockingTraceFinalization
+#else
+#define MAYBE_NewIncognitoSessionBlockingTraceFinalization \
+  NewIncognitoSessionBlockingTraceFinalization
+#endif
 // If we need a PII-stripped trace, any new OTR session during tracing should
 // block the finalization of the trace.
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
-                       NewIncognitoSessionBlockingTraceFinalization) {
+                       MAYBE_NewIncognitoSessionBlockingTraceFinalization) {
   EXPECT_TRUE(StartPreemptiveScenario(
-      content::BackgroundTracingManager::ANONYMIZE_DATA));
+      base::Closure(), content::BackgroundTracingManager::ANONYMIZE_DATA));
 
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_NEW_INCOGNITO_WINDOW));
   EXPECT_TRUE(BrowserList::IsIncognitoSessionActive());
@@ -297,10 +312,9 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
                         base::Time::Now().ToInternalValue());
 }
 
-// https://crbug.com/832981: The test is reenabled to check if flakiness still
-// exists.
+// https://crbug.com/832981
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
-                       StartupTracingThrottle) {
+                       DISABLED_StartupTracingThrottle) {
   // The startup scenario should *not* be started, since not enough
   // time has elapsed since the last upload (set in the PRE_ above).
   EXPECT_FALSE(

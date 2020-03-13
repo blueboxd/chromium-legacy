@@ -3497,6 +3497,15 @@ bool RenderWidget::RequestPointerLock(
                                            request_unadjusted_movement);
 }
 
+bool RenderWidget::RequestPointerLockChange(
+    blink::WebLocalFrame* requester_frame,
+    blink::WebWidgetClient::PointerLockCallback callback,
+    bool request_unadjusted_movement) {
+  return mouse_lock_dispatcher_->ChangeMouseLock(
+      webwidget_mouse_lock_target_.get(), requester_frame, std::move(callback),
+      request_unadjusted_movement);
+}
+
 void RenderWidget::PointerLockLost() {
   mouse_lock_dispatcher_->OnMouseLockLost();
 }

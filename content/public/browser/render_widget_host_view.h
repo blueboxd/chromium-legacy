@@ -159,8 +159,13 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // GetBackgroundColor returns the current background color of the view.
   virtual base::Optional<SkColor> GetBackgroundColor() = 0;
 
-  // Return value indicates whether the mouse is locked successfully or not.
+  // Return value indicates whether the mouse is locked successfully or a
+  // reason why it failed.
   virtual blink::mojom::PointerLockResult LockMouse(
+      bool request_unadjusted_movement) = 0;
+  // Return value indicates whether the MouseLock was changed successfully
+  // or a reason why the change failed.
+  virtual blink::mojom::PointerLockResult ChangeMouseLock(
       bool request_unadjusted_movement) = 0;
   virtual void UnlockMouse() = 0;
   // Returns true if the mouse pointer is currently locked.

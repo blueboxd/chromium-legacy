@@ -89,8 +89,6 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   void AnimationAttached(Animation*) override;
   void AnimationDetached(Animation*) override;
 
-  CompositorAnimationTimeline* EnsureCompositorTimeline() override;
-
   void Trace(Visitor*) override;
 
   static bool HasActiveScrollTimeline(Node* node);

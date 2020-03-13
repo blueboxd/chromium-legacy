@@ -147,6 +147,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       bool for_root_frame) override;
   blink::mojom::PointerLockResult LockMouse(
       bool request_unadjusted_movement) override;
+  blink::mojom::PointerLockResult ChangeMouseLock(
+      bool request_unadjusted_movement) override;
   void UnlockMouse() override;
   void ResetFallbackToFirstNavigationSurface() override;
   bool RequestRepaintForTesting() override;

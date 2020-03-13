@@ -104,7 +104,8 @@ class VideoDecoderTest : public ::testing::Test {
             output_folder, g_env->GetFrameOutputFormat(),
             g_env->GetFrameOutputLimit());
       }
-      frame_processors.push_back(media::test::VideoFrameValidator::Create(
+
+      frame_processors.push_back(media::test::MD5VideoFrameValidator::Create(
           video->FrameChecksums(), PIXEL_FORMAT_I420, std::move(frame_writer)));
     }
 

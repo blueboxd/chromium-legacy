@@ -80,6 +80,9 @@ class CORE_EXPORT PointerLockController final
   void ClearElement();
   void EnqueueEvent(const AtomicString& type, Element*);
   void EnqueueEvent(const AtomicString& type, Document*);
+  void ChangeLockRequestCallback(Element* target,
+                                 ScriptPromiseResolver* resolver,
+                                 mojom::blink::PointerLockResult result);
   void LockRequestCallback(ScriptPromiseResolver* resolver,
                            mojom::blink::PointerLockResult result);
   DOMException* ConvertResultToException(
@@ -96,6 +99,8 @@ class CORE_EXPORT PointerLockController final
   // in locked states. These values only get set when entering lock states.
   FloatPoint pointer_lock_position_;
   FloatPoint pointer_lock_screen_position_;
+
+  bool current_unadjusted_movement_setting_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PointerLockController);
 };

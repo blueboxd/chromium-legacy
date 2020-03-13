@@ -1660,6 +1660,12 @@ blink::mojom::PointerLockResult RenderWidgetHostViewAndroid::LockMouse(
   return blink::mojom::PointerLockResult::kUnsupportedOptions;
 }
 
+blink::mojom::PointerLockResult RenderWidgetHostViewAndroid::ChangeMouseLock(
+    bool request_unadjusted_movement) {
+  NOTIMPLEMENTED();
+  return blink::mojom::PointerLockResult::kUnsupportedOptions;
+}
+
 void RenderWidgetHostViewAndroid::UnlockMouse() {
   NOTIMPLEMENTED();
 }

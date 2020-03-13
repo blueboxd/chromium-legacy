@@ -88,6 +88,8 @@ ScriptPromise PointerLockController::RequestPointerLock(
     return promise;
   }
 
+  bool unadjusted_movement_requested =
+      options ? options->unadjustedMovement() : false;
   if (element_) {
     if (element_->GetDocument() != target->GetDocument()) {
       EnqueueEvent(event_type_names::kPointerlockerror, target);
@@ -97,6 +99,22 @@ ScriptPromise PointerLockController::RequestPointerLock(
           "element that currently holds the lock.");
       return promise;
     }
+
+    // Attempt to change options if necessary.
+    if (unadjusted_movement_requested != current_unadjusted_movement_setting_) {
+      if (!page_->GetChromeClient().RequestPointerLockChange(
+              target->GetDocument().GetFrame(),
+              WTF::Bind(&PointerLockController::ChangeLockRequestCallback,
+                        WrapWeakPersistent(this), WrapWeakPersistent(target),
+                        WrapPersistent(resolver)),
+              unadjusted_movement_requested)) {
+        EnqueueEvent(event_type_names::kPointerlockerror, target);
+        exception_state.ThrowDOMException(
+            DOMExceptionCode::kInUseAttributeError, "Pointer lock pending.");
+      }
+      return promise;
+    }
+
     EnqueueEvent(event_type_names::kPointerlockchange, target);
     element_ = target;
     resolver->Resolve();
@@ -106,9 +124,11 @@ ScriptPromise PointerLockController::RequestPointerLock(
                  target->GetDocument().GetFrame(),
                  WTF::Bind(&PointerLockController::LockRequestCallback,
                            WrapWeakPersistent(this), WrapPersistent(resolver)),
-                 (options ? options->unadjustedMovement() : false))) {
+                 unadjusted_movement_requested)) {
     lock_pending_ = true;
     element_ = target;
+    current_unadjusted_movement_setting_ =
+        options ? options->unadjustedMovement() : false;
   } else {
     EnqueueEvent(event_type_names::kPointerlockerror, target);
     exception_state.ThrowDOMException(DOMExceptionCode::kInUseAttributeError,
@@ -116,6 +136,16 @@ ScriptPromise PointerLockController::RequestPointerLock(
   }
 
   return promise;
+}
+
+void PointerLockController::ChangeLockRequestCallback(
+    Element* target,
+    ScriptPromiseResolver* resolver,
+    mojom::blink::PointerLockResult result) {
+  if (result == mojom::blink::PointerLockResult::kSuccess)
+    element_ = target;
+
+  LockRequestCallback(resolver, result);
 }
 
 void PointerLockController::LockRequestCallback(

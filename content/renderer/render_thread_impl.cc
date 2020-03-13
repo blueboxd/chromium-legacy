@@ -146,6 +146,7 @@
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/layout.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
 
@@ -582,7 +583,12 @@ void RenderThreadImpl::Init() {
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   // On Mac and Android Java UI, the select popups are rendered by the browser.
-  blink::WebView::SetUseExternalPopupMenus(true);
+#if defined(OS_MACOSX)
+  // When UseCommonSelectPopup is enabled, the internal popup menu should be
+  // used.
+  if (!features::IsUseCommonSelectPopupEnabled())
+#endif
+    blink::WebView::SetUseExternalPopupMenus(true);
 #endif
 
   lazy_tls.Pointer()->Set(this);

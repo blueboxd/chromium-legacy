@@ -72,6 +72,11 @@ COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kFormControlsRefresh;
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsFormControlsRefreshEnabled();
 
+// Used to enable the common select popup.
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kUseCommonSelectPopup;
+COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUseCommonSelectPopupEnabled();
+
 // Use mojo communication in the drm platform instead of paramtraits. Remove
 // this switch (and associated code) when the drm platform always uses mojo
 // communication.

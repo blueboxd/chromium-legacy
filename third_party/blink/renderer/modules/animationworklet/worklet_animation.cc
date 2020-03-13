@@ -634,19 +634,16 @@ bool WorkletAnimation::StartOnCompositor() {
     // offset information.
     compositor_animation_ = CompositorAnimation::CreateWorkletAnimation(
         id_, animator_name_, playback_rate_,
+        scroll_timeline_util::ToCompositorScrollTimeline(timeline_),
         std::move(options_), std::move(effect_timings_));
     compositor_animation_->SetAnimationDelegate(this);
   }
 
   // Register ourselves on the compositor timeline. This will cause our cc-side
   // animation animation to be registered.
-  CompositorAnimationTimeline* compositor_timeline =
-      timeline_ ? timeline_->EnsureCompositorTimeline() : nullptr;
-  if (compositor_timeline) {
+  if (CompositorAnimationTimeline* compositor_timeline =
+          document_->Timeline().CompositorTimeline())
     compositor_timeline->AnimationAttached(*this);
-    if (compositor_timeline->GetAnimationTimeline()->IsScrollTimeline())
-      document_->AttachCompositorTimeline(compositor_timeline);
-  }
 
   CompositorAnimations::AttachCompositedLayers(*GetEffect()->EffectTarget(),
                                                compositor_animation_.get());
@@ -713,17 +710,11 @@ void WorkletAnimation::DestroyCompositorAnimation() {
   if (compositor_animation_ && compositor_animation_->IsElementAttached())
     compositor_animation_->DetachElement();
 
-  CompositorAnimationTimeline* compositor_timeline =
-      timeline_ ? timeline_->CompositorTimeline() : nullptr;
-  if (compositor_timeline)
+  if (CompositorAnimationTimeline* compositor_timeline =
+          document_->Timeline().CompositorTimeline())
     compositor_timeline->AnimationDestroyed(*this);
 
   if (compositor_animation_) {
-    if (compositor_timeline &&
-        compositor_timeline->GetAnimationTimeline()->IsScrollTimeline()) {
-      document_->DetachCompositorTimeline(compositor_timeline);
-    }
-
     compositor_animation_->SetAnimationDelegate(nullptr);
     compositor_animation_ = nullptr;
   }
@@ -778,6 +769,8 @@ base::Optional<base::TimeDelta> WorkletAnimation::InitialCurrentTime() const {
 }
 
 void WorkletAnimation::UpdateCurrentTimeIfNeeded() {
+  DCHECK(play_state_ != Animation::kIdle && play_state_ != Animation::kUnset);
+
   bool is_timeline_active = IsTimelineActive();
   if (is_timeline_active != was_timeline_active_) {
     if (is_timeline_active) {

@@ -177,6 +177,11 @@ blink::mojom::PointerLockResult TestRenderWidgetHostView::LockMouse(bool) {
   return blink::mojom::PointerLockResult::kUnknownError;
 }
 
+blink::mojom::PointerLockResult TestRenderWidgetHostView::ChangeMouseLock(
+    bool) {
+  return blink::mojom::PointerLockResult::kUnknownError;
+}
+
 void TestRenderWidgetHostView::UnlockMouse() {
 }
 

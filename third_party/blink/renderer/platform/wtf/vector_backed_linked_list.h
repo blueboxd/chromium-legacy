@@ -142,12 +142,27 @@ class VectorBackedLinkedList {
 
   // Removes all elements in a linked list.
   void clear() {
+    RegisterModification();
     nodes_.clear();
     // Reinserts anchor so that we can insert elements after this operation.
     nodes_.push_back(Node(anchor_index_, anchor_index_));
     free_head_index_ = anchor_index_;
     size_ = 0;
   }
+
+#if DCHECK_IS_ON()
+  int64_t Modifications() const { return modifications_; }
+  void RegisterModification() { modifications_++; }
+  void CheckModifications(int64_t mods) const {
+    // VectorBackedLinkedList iterators get invalidated when the container is
+    // modified.
+    DCHECK_EQ(mods, modifications_);
+  }
+#else
+  ALWAYS_INLINE int64_t Modifications() const { return 0; }
+  ALWAYS_INLINE void RegisterModification() {}
+  ALWAYS_INLINE void CheckModifications() const {}
+#endif
 
  private:
   bool IsFreeListEmpty() const { return free_head_index_ == anchor_index_; }
@@ -182,6 +197,9 @@ class VectorBackedLinkedList {
   // terminator.
   wtf_size_t free_head_index_ = anchor_index_;
   wtf_size_t size_ = 0;
+#if DCHECK_IS_ON()
+  int64_t modifications_ = 0;
+#endif
 
   template <typename T>
   friend class NewLinkedHashSet;
@@ -247,6 +265,7 @@ class VectorBackedLinkedListConstIterator {
   PointerType Get() const {
     DCHECK(container_->IsIndexValid(index_));
     DCHECK(!container_->IsAnchor(index_));
+    CheckModifications();
     const Node& node = container_->nodes_[index_];
     return &node.value_;
   }
@@ -258,6 +277,7 @@ class VectorBackedLinkedListConstIterator {
 
   VectorBackedLinkedListConstIterator& operator++() {
     DCHECK(container_->IsIndexValid(index_));
+    CheckModifications();
     index_ = container_->nodes_[index_].next_index_;
     DCHECK(container_->IsIndexValid(index_));
     return *this;
@@ -265,6 +285,7 @@ class VectorBackedLinkedListConstIterator {
 
   VectorBackedLinkedListConstIterator& operator--() {
     DCHECK(container_->IsIndexValid(index_));
+    CheckModifications();
     index_ = container_->nodes_[index_].prev_index_;
     DCHECK(container_->IsIndexValid(index_));
     return *this;
@@ -286,13 +307,27 @@ class VectorBackedLinkedListConstIterator {
   VectorBackedLinkedListConstIterator(
       wtf_size_t index,
       const VectorBackedLinkedListType* container)
-      : index_(index), container_(container) {
+      : index_(index),
+        container_(container)
+#if DCHECK_IS_ON()
+        ,
+        container_modifications_(container->modifications_)
+#endif
+  {
     DCHECK(container_->IsIndexValid(index_));
   }
 
  private:
   wtf_size_t index_;
   const VectorBackedLinkedListType* container_;
+#if DCHECK_IS_ON()
+  void CheckModifications() const {
+    container_->CheckModifications(container_modifications_);
+  }
+  int64_t container_modifications_;
+#else
+  void CheckModifications() const {}
+#endif
 
   template <typename T>
   friend class VectorBackedLinkedList;
@@ -404,6 +439,9 @@ inline void VectorBackedLinkedList<T>::swap(VectorBackedLinkedList& other) {
   nodes_.swap(other.nodes_);
   swap(free_head_index_, other.free_head_index_);
   swap(size_, other.size_);
+#if DCHECK_IS_ON()
+  swap(modifications_, other.modificatoins_);
+#endif
 }
 
 template <typename T>
@@ -411,6 +449,7 @@ template <typename IncomingValueType>
 typename VectorBackedLinkedList<T>::iterator VectorBackedLinkedList<T>::insert(
     const_iterator position,
     IncomingValueType&& value) {
+  RegisterModification();
   wtf_size_t position_index = position.GetIndex();
   wtf_size_t prev_index = nodes_[position_index].prev_index_;
 
@@ -436,6 +475,7 @@ template <typename T>
 void VectorBackedLinkedList<T>::MoveTo(const_iterator target,
                                        const_iterator new_position) {
   DCHECK(target != end());
+  RegisterModification();
   if (target == new_position)
     return;
 
@@ -460,6 +500,7 @@ template <typename T>
 typename VectorBackedLinkedList<T>::iterator VectorBackedLinkedList<T>::erase(
     const_iterator position) {
   DCHECK(position != end());
+  RegisterModification();
   wtf_size_t position_index = position.GetIndex();
   Node& node = nodes_[position_index];
   wtf_size_t next_index = node.next_index_;

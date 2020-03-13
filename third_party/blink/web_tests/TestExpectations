@@ -6284,7 +6284,6 @@ crbug.com/1036626 http/tests/devtools/tracing/tracing-record-input-events.js [ P
 crbug.com/1036626 virtual/threaded/http/tests/devtools/tracing/tracing-record-input-events.js [ Pass Failure ]
 crbug.com/1034789 [ Mac10.13 ] virtual/threaded/fast/scroll-snap/snap-to-area-with-fractional-offset.html [ Pass Timeout ]
 crbug.com/1034789 [ Retina ] virtual/threaded/fast/scroll-snap/snap-to-area-with-fractional-offset.html [ Pass Timeout ]
-crbug.com/1033381 synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Crash ]
 
 # Sheriff 2019-12-27
 crbug.com/1038091 virtual/gpu-rasterization/images/jpeg-yuv-image-decoding.html [ Pass Failure ]
@@ -6548,9 +6547,6 @@ crbug.com/1049454 external/wpt/service-workers/service-worker/windowclient-navig
 
 # Crashes with DCHECK enabled, but not on normal Release builds.
 crbug.com/944449 external/wpt/scroll-animations/scroll-animation.html [ Pass Crash ]
-crbug.com/944449 virtual/threaded/external/wpt/scroll-animations/scroll-animation.html [ Pass Crash ]
-crbug.com/944449 external/wpt/scroll-animations/animation-with-display-none.html [ Pass Crash Timeout ]
-crbug.com/944449 virtual/threaded/external/wpt/scroll-animations/animation-with-display-none.html [ Pass Crash Timeout ]
 
 # Sheriff 2020-02-10
 crbug.com/1050306 [ Fuchsia ] virtual/gpu/fast/canvas/canvas-filter-frameless-document.html [ Crash Pass Timeout ]

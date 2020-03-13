@@ -17,6 +17,9 @@ class NodeBase(object):
     self.lineno = lineno
 
   def __eq__(self, other):
+    # We want strict comparison of the two object's types. Disable pylint's
+    # insistence upon recommending isinstance().
+    # pylint: disable=unidiomatic-typecheck
     return type(self) == type(other)
 
   # Make != the inverse of ==. (Subclasses shouldn't have to override this.)

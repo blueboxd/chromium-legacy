@@ -80,10 +80,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void DidEnterFullscreen() override;
   void DidExitFullscreen() override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
-  void BeginFrame(base::TimeTicks last_frame_time) override;
   void DidBeginFrame() override;
-  void BeginRafAlignedInput() override;
-  void EndRafAlignedInput() override;
   void BeginUpdateLayers() override;
   void EndUpdateLayers() override;
   void BeginCommitCompositorFrame() override;
@@ -134,6 +131,9 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
   void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
 
+  // WidgetBaseClient overrides:
+  void BeginMainFrame(base::TimeTicks last_frame_time) override;
+
   void UpdateMainFrameLayoutSize();
 
   // Event related methods:
@@ -180,7 +180,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   Member<HTMLPlugInElement> mouse_capture_element_;
 
   // Metrics gathering timing information
-  base::Optional<base::TimeTicks> raf_aligned_input_start_time_;
   base::Optional<base::TimeTicks> update_layers_start_time_;
   base::Optional<base::TimeTicks> commit_compositor_frame_start_time_;
 

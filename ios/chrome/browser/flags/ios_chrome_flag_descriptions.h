@@ -185,9 +185,6 @@ extern const char kUseJSForErrorPageDescription[];
 extern const char kEnablePersistentDownloadsName[];
 extern const char kEnablePersistentDownloadsDescription[];
 
-extern const char kEnableSyncUSSPasswordsName[];
-extern const char kEnableSyncUSSPasswordsDescription[];
-
 extern const char kEnableSyncUSSNigoriName[];
 extern const char kEnableSyncUSSNigoriDescription[];
 

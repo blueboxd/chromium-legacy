@@ -1536,12 +1536,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFrameOwnerProperties,
                         OnDidChangeFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_EventBundle, OnAccessibilityEvents)
-    IPC_MESSAGE_HANDLER(AccessibilityHostMsg_LocationChanges,
-                        OnAccessibilityLocationChanges)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_ChildFrameHitTestResult,
                         OnAccessibilityChildFrameHitTestResult)
-    IPC_MESSAGE_HANDLER(AccessibilityHostMsg_SnapshotResponse,
-                        OnAccessibilitySnapshotResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SelectionChanged, OnSelectionChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameDidCallFocus, OnFrameDidCallFocus)
@@ -1707,11 +1703,6 @@ void RenderFrameHostImpl::RenderProcessExited(
   must_be_replaced_ = IsRenderDocumentEnabledForCrashedFrame();
   has_committed_any_navigation_ = false;
 
-  // Execute any pending AX tree snapshot callbacks with an empty response,
-  // since we're never going to get a response from this renderer.
-  for (auto& iter : ax_tree_snapshot_callbacks_)
-    std::move(iter.second).Run(ui::AXTreeUpdate());
-
 #if defined(OS_ANDROID)
   // Execute any pending Samsung smart clip callbacks.
   for (base::IDMap<std::unique_ptr<ExtractSmartClipDataCallback>>::iterator
@@ -1723,7 +1714,6 @@ void RenderFrameHostImpl::RenderProcessExited(
   smart_clip_callbacks_.Clear();
 #endif  // defined(OS_ANDROID)
 
-  ax_tree_snapshot_callbacks_.clear();
   visual_state_callbacks_.clear();
 
   // Ensure that future remote interface requests are associated with the new
@@ -3947,37 +3937,6 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons(
   controller->GetBackForwardCache().PostTaskToDestroyEvictedFrames();
 }
 
-void RenderFrameHostImpl::OnAccessibilityLocationChanges(
-    const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
-  if (accessibility_reset_token_ || !is_active())
-    return;
-
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      render_view_host_->GetWidget()->GetView());
-  if (view) {
-    ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-    if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
-      BrowserAccessibilityManager* manager =
-          GetOrCreateBrowserAccessibilityManager();
-      if (manager)
-        manager->OnLocationChanges(params);
-    }
-
-    // Send the updates to the automation extension API.
-    std::vector<AXLocationChangeNotificationDetails> details;
-    details.reserve(params.size());
-    for (size_t i = 0; i < params.size(); ++i) {
-      const AccessibilityHostMsg_LocationChangeParams& param = params[i];
-      AXLocationChangeNotificationDetails detail;
-      detail.id = param.id;
-      detail.ax_tree_id = GetAXTreeID();
-      detail.new_location = param.new_location;
-      details.push_back(detail);
-    }
-    delegate_->AccessibilityLocationChangesReceived(details);
-  }
-}
-
 void RenderFrameHostImpl::OnAccessibilityChildFrameHitTestResult(
     int action_request_id,
     const gfx::Point& point,
@@ -4009,29 +3968,6 @@ void RenderFrameHostImpl::OnAccessibilityChildFrameHitTestResult(
   action_data.hit_test_event_to_fire = event_to_fire;
 
   child_frame->AccessibilityPerformAction(action_data);
-}
-
-void RenderFrameHostImpl::OnAccessibilitySnapshotResponse(
-    int callback_id,
-    const AXContentTreeUpdate& snapshot) {
-  const auto& it = ax_tree_snapshot_callbacks_.find(callback_id);
-  if (it != ax_tree_snapshot_callbacks_.end()) {
-    ui::AXTreeUpdate dst_snapshot;
-    dst_snapshot.root_id = snapshot.root_id;
-    dst_snapshot.nodes.resize(snapshot.nodes.size());
-    for (size_t i = 0; i < snapshot.nodes.size(); ++i) {
-      AXContentNodeDataToAXNodeData(snapshot.nodes[i], &dst_snapshot.nodes[i]);
-    }
-    if (snapshot.has_tree_data) {
-      ax_content_tree_data_ = snapshot.tree_data;
-      AXContentTreeDataToAXTreeData(&dst_snapshot.tree_data);
-      dst_snapshot.has_tree_data = true;
-    }
-    std::move(it->second).Run(dst_snapshot);
-    ax_tree_snapshot_callbacks_.erase(it);
-  } else {
-    NOTREACHED() << "Received AX tree snapshot response for unknown id";
-  }
 }
 
 bool RenderFrameHostImpl::HasSeenRecentXrOverlaySetup() {
@@ -4796,6 +4732,36 @@ void RenderFrameHostImpl::ResourceLoadComplete(
   }
   delegate_->ResourceLoadComplete(this, global_request_id,
                                   std::move(resource_load_info));
+}
+
+void RenderFrameHostImpl::HandleAXLocationChanges(
+    std::vector<mojom::LocationChangesPtr> changes) {
+  if (accessibility_reset_token_ || !is_active())
+    return;
+
+  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+      render_view_host_->GetWidget()->GetView());
+  if (view) {
+    ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
+    if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
+      BrowserAccessibilityManager* manager =
+          GetOrCreateBrowserAccessibilityManager();
+      if (manager)
+        manager->OnLocationChanges(changes);
+    }
+
+    // Send the updates to the automation extension API.
+    std::vector<AXLocationChangeNotificationDetails> details;
+    details.reserve(changes.size());
+    for (auto& change : changes) {
+      AXLocationChangeNotificationDetails detail;
+      detail.id = change->id;
+      detail.ax_tree_id = GetAXTreeID();
+      detail.new_location = change->new_location;
+      details.push_back(detail);
+    }
+    delegate_->AccessibilityLocationChangesReceived(details);
+  }
 }
 
 void RenderFrameHostImpl::RegisterMojoInterfaces() {
@@ -5886,6 +5852,15 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
         },
         base::Unretained(this)));
   }
+
+  associated_registry_->AddInterface(base::BindRepeating(
+      [](RenderFrameHostImpl* impl,
+         mojo::PendingAssociatedReceiver<mojom::RenderAccessibilityHost>
+             receiver) {
+        impl->render_accessibility_host_receiver_.Bind(std::move(receiver));
+      },
+      base::Unretained(this)));
+
   RegisterMojoInterfaces();
   mojo::PendingRemote<mojom::FrameFactory> frame_factory;
   GetProcess()->BindReceiver(frame_factory.InitWithNewPipeAndPassReceiver());
@@ -5928,6 +5903,7 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
   geolocation_service_.reset();
   sensor_provider_proxy_.reset();
 
+  render_accessibility_host_receiver_.reset();
   local_frame_host_receiver_.reset();
   local_main_frame_host_receiver_.reset();
   associated_registry_.reset();
@@ -6113,11 +6089,10 @@ void RenderFrameHostImpl::UpdateAccessibilityMode() {
 
 void RenderFrameHostImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback,
                                                 ui::AXMode ax_mode) {
-  static int next_id = 1;
-  int callback_id = next_id++;
-  Send(new AccessibilityMsg_SnapshotTree(routing_id_, callback_id,
-                                         ax_mode.mode()));
-  ax_tree_snapshot_callbacks_.emplace(callback_id, std::move(callback));
+  frame_->SnapshotAccessibilityTree(
+      ax_mode.mode(),
+      base::BindOnce(&RenderFrameHostImpl::RequestAXTreeSnapshotCallback,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void RenderFrameHostImpl::SetAccessibilityCallbackForTesting(
@@ -6513,6 +6488,23 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(ui::AXTreeData* dst) {
   if (!focused_frame)
     return;
   dst->focused_tree_id = focused_frame->GetAXTreeID();
+}
+
+void RenderFrameHostImpl::RequestAXTreeSnapshotCallback(
+    AXTreeSnapshotCallback callback,
+    const AXContentTreeUpdate& snapshot) {
+  ui::AXTreeUpdate dst_snapshot;
+  dst_snapshot.root_id = snapshot.root_id;
+  dst_snapshot.nodes.resize(snapshot.nodes.size());
+  for (size_t i = 0; i < snapshot.nodes.size(); ++i)
+    AXContentNodeDataToAXNodeData(snapshot.nodes[i], &dst_snapshot.nodes[i]);
+
+  if (snapshot.has_tree_data) {
+    ax_content_tree_data_ = snapshot.tree_data;
+    AXContentTreeDataToAXTreeData(&dst_snapshot.tree_data);
+    dst_snapshot.has_tree_data = true;
+  }
+  std::move(callback).Run(dst_snapshot);
 }
 
 void RenderFrameHostImpl::CreatePaymentManager(

@@ -492,15 +492,12 @@ bool LevelDBScope::IsRangeEmpty(const EmptyRange& range) {
   read_options.fill_cache = false;
   const std::unique_ptr<leveldb::Iterator> it =
       base::WrapUnique(level_db_->db()->NewIterator(read_options));
-  leveldb::Status s;
   const leveldb::Comparator* const comparator = level_db_->comparator();
-  for (it->Seek(range.first);
-       (s = it->status(), s.ok()) && it->Valid() &&
-       IsKeyBeforeEndOfRange(comparator, it->key(), range.second, true);
-       it->Next()) {
-    return false;
-  }
-  return true;
+
+  it->Seek(range.first);
+  leveldb::Status s = it->status();
+  return !s.ok() || !it->Valid() ||
+         !IsKeyBeforeEndOfRange(comparator, it->key(), range.second, true);
 }
 
 bool LevelDBScope::IsInDeferredDeletionRange(const leveldb::Slice& key) {

@@ -398,6 +398,22 @@ void GetAssertionRequestHandler::HandleResponse(
          authenticator->WillNeedPINToGetAssertion(request_, observer()) !=
              PINDisposition::kUsePIN);
 
+  if ((status == CtapDeviceResponseCode::kCtap2ErrPinRequired ||
+       status == CtapDeviceResponseCode::kCtap2ErrOperationDenied) &&
+      authenticator->WillNeedPINToGetAssertion(request_, observer()) ==
+          PINDisposition::kUsePINForFallback) {
+    // Some authenticators will return this error immediately without user
+    // interaction when internal UV is locked.
+    if (AuthenticatorMayHaveReturnedImmediately(authenticator->GetId())) {
+      authenticator->GetTouch(base::BindOnce(
+          &GetAssertionRequestHandler::StartPINFallbackForInternalUv,
+          weak_factory_.GetWeakPtr(), authenticator));
+      return;
+    }
+    StartPINFallbackForInternalUv(authenticator);
+    return;
+  }
+
   const base::Optional<GetAssertionStatus> maybe_result =
       ConvertDeviceResponseCode(status);
   if (!maybe_result) {

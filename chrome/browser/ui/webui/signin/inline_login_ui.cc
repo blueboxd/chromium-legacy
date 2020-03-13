@@ -96,6 +96,7 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   source->AddResourcePath("googleg.svg",
                           IDR_ACCOUNT_MANAGER_WELCOME_GOOGLE_LOGO_SVG);
 #endif
+  source->AddResourcePath("family_link_logo.svg", IDR_FAMILY_LINK_LOGO_SVG);
 
   source->EnableReplaceI18nInJS();
   AddEduStrings(source);

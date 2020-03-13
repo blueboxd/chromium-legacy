@@ -32,11 +32,11 @@ WebauthnDialogViewImpl::WebauthnDialogViewImpl(
       AddChildView(CreateSheetViewForAutofillWebAuthn(std::move(model)));
   sheet_view_->ReInitChildViews();
 
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                    model_->GetAcceptButtonLabel());
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                                    model_->GetCancelButtonLabel());
-  DialogDelegate::set_buttons(model_->IsAcceptButtonVisible()
+  DialogDelegate::SetButtons(model_->IsAcceptButtonVisible()
                                   ? ui::DIALOG_BUTTON_OK |
                                         ui::DIALOG_BUTTON_CANCEL
                                   : ui::DIALOG_BUTTON_CANCEL);
@@ -139,12 +139,12 @@ void WebauthnDialogViewImpl::Hide() {
 void WebauthnDialogViewImpl::RefreshContent() {
   sheet_view_->ReInitChildViews();
   sheet_view_->InvalidateLayout();
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                    model_->GetAcceptButtonLabel());
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                                    model_->GetCancelButtonLabel());
   DCHECK(model_->IsCancelButtonVisible());
-  DialogDelegate::set_buttons(model_->IsAcceptButtonVisible()
+  DialogDelegate::SetButtons(model_->IsAcceptButtonVisible()
                                   ? ui::DIALOG_BUTTON_OK |
                                         ui::DIALOG_BUTTON_CANCEL
                                   : ui::DIALOG_BUTTON_CANCEL);

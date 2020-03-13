@@ -4,9 +4,11 @@
 
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
 
+#include "third_party/blink/renderer/platform/widget/widget_base_client.h"
+
 namespace blink {
 
-WidgetBase::WidgetBase() = default;
+WidgetBase::WidgetBase(WidgetBaseClient* client) : client_(client) {}
 
 WidgetBase::~WidgetBase() = default;
 
@@ -22,6 +24,11 @@ cc::LayerTreeHost* WidgetBase::LayerTreeHost() const {
 
 cc::AnimationHost* WidgetBase::AnimationHost() const {
   return animation_host_;
+}
+
+void WidgetBase::BeginMainFrame(base::TimeTicks frame_time) {
+  client_->DispatchRafAlignedInput(frame_time);
+  client_->BeginMainFrame(frame_time);
 }
 
 }  // namespace blink

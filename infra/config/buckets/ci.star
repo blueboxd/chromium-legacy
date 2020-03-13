@@ -139,41 +139,6 @@ ci.android_builder(
 )
 
 ci.android_builder(
-    name = 'Android WebView M (dbg)',
-    triggered_by = ['Android arm64 Builder (dbg)'],
-)
-
-ci.android_builder(
-    name = 'Android WebView N (dbg)',
-    triggered_by = ['Android arm64 Builder (dbg)'],
-)
-
-ci.android_builder(
-    name = 'Android WebView O (dbg)',
-    triggered_by = ['Android arm64 Builder (dbg)'],
-)
-
-ci.android_builder(
-    name = 'Android WebView P (dbg)',
-    triggered_by = ['Android arm64 Builder (dbg)'],
-)
-
-ci.android_builder(
-    name = 'Android arm64 Builder (dbg)',
-    goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
-    execution_timeout = 4 * time.hour,
-)
-
-ci.android_builder(
-    name = 'Android x64 Builder (dbg)',
-    execution_timeout = 4 * time.hour,
-)
-
-ci.android_builder(
-    name = 'Android x86 Builder (dbg)',
-)
-
-ci.android_builder(
     name = 'Deterministic Android',
     executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
@@ -223,29 +188,9 @@ ci.android_builder(
 )
 
 ci.android_builder(
-    name = 'Marshmallow 64 bit Tester',
-    triggered_by = ['Android arm64 Builder (dbg)'],
-)
-
-ci.android_builder(
-    name = 'Nougat Phone Tester',
-    triggered_by = ['Android arm64 Builder (dbg)'],
-)
-
-ci.android_builder(
-    name = 'Oreo Phone Tester',
-    triggered_by = ['Android arm64 Builder (dbg)'],
-)
-
-ci.android_builder(
     name = 'android-arm64-proguard-rel',
     goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
     execution_timeout = 6 * time.hour,
-)
-
-ci.android_builder(
-    name = 'android-cronet-arm-dbg',
-    notifies = ['cronet'],
 )
 
 ci.android_builder(
@@ -295,15 +240,6 @@ ci.android_builder(
 
 ci.android_builder(
     name = 'android-lollipop-arm-rel',
-)
-
-ci.android_builder(
-    name = 'android-pie-arm64-dbg',
-    triggered_by = ['Android arm64 Builder (dbg)'],
-)
-
-ci.android_builder(
-    name = 'android-pie-arm64-rel',
 )
 
 ci.android_builder(
@@ -411,15 +347,7 @@ ci.chromiumos_builder(
 )
 
 ci.chromiumos_builder(
-    name = 'chromeos-amd64-generic-dbg',
-)
-
-ci.chromiumos_builder(
     name = 'chromeos-arm-generic-dbg',
-)
-
-ci.chromiumos_builder(
-    name = 'chromeos-kevin-rel',
 )
 
 
@@ -583,24 +511,6 @@ ci.dawn_builder(
 )
 
 ci.dawn_builder(
-    name = 'Dawn Linux x64 DEPS Builder',
-)
-
-ci.dawn_builder(
-    name = 'Dawn Linux x64 DEPS Release (Intel HD 630)',
-    cores = 2,
-    os = os.LINUX_DEFAULT,
-    triggered_by = ['Dawn Linux x64 DEPS Builder'],
-)
-
-ci.dawn_builder(
-    name = 'Dawn Linux x64 DEPS Release (NVIDIA)',
-    cores = 2,
-    os = os.LINUX_DEFAULT,
-    triggered_by = ['Dawn Linux x64 DEPS Builder'],
-)
-
-ci.dawn_builder(
     name = 'Dawn Linux x64 Release (Intel HD 630)',
     cores = 2,
     os = os.LINUX_DEFAULT,
@@ -619,29 +529,6 @@ ci.dawn_builder(
     builderless = False,
     cores = None,
     os = os.MAC_ANY,
-)
-
-ci.dawn_builder(
-    name = 'Dawn Mac x64 DEPS Builder',
-    builderless = False,
-    cores = None,
-    os = os.MAC_ANY,
-)
-
-# Note that the Mac testers are all thin Linux VMs, triggering jobs on the
-# physical Mac hardware in the Swarming pool which is why they run on linux
-ci.dawn_builder(
-    name = 'Dawn Mac x64 DEPS Release (AMD)',
-    cores = 2,
-    os = os.LINUX_DEFAULT,
-    triggered_by = ['Dawn Mac x64 DEPS Builder'],
-)
-
-ci.dawn_builder(
-    name = 'Dawn Mac x64 DEPS Release (Intel)',
-    cores = 2,
-    os = os.LINUX_DEFAULT,
-    triggered_by = ['Dawn Mac x64 DEPS Builder'],
 )
 
 ci.dawn_builder(
@@ -696,44 +583,6 @@ ci.dawn_builder(
     cores = 2,
     os = os.LINUX_DEFAULT,
     triggered_by = ['Dawn Win10 x64 Builder'],
-)
-
-ci.dawn_builder(
-    name = 'Dawn Win10 x86 DEPS Builder',
-    os = os.WINDOWS_ANY,
-)
-
-ci.dawn_builder(
-    name = 'Dawn Win10 x64 DEPS Builder',
-    os = os.WINDOWS_ANY,
-)
-
-ci.dawn_builder(
-    name = 'Dawn Win10 x86 DEPS Release (Intel HD 630)',
-    cores = 2,
-    os = os.LINUX_DEFAULT,
-    triggered_by = ['Dawn Win10 x86 DEPS Builder'],
-)
-
-ci.dawn_builder(
-    name = 'Dawn Win10 x64 DEPS Release (Intel HD 630)',
-    cores = 2,
-    os = os.LINUX_DEFAULT,
-    triggered_by = ['Dawn Win10 x64 DEPS Builder'],
-)
-
-ci.dawn_builder(
-    name = 'Dawn Win10 x86 DEPS Release (NVIDIA)',
-    cores = 2,
-    os = os.LINUX_DEFAULT,
-    triggered_by = ['Dawn Win10 x86 DEPS Builder'],
-)
-
-ci.dawn_builder(
-    name = 'Dawn Win10 x64 DEPS Release (NVIDIA)',
-    cores = 2,
-    os = os.LINUX_DEFAULT,
-    triggered_by = ['Dawn Win10 x64 DEPS Builder'],
 )
 
 
@@ -1005,19 +854,11 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
-    name = 'VR Linux',
-)
-
-ci.fyi_builder(
     name = 'android-mojo-webview-rel',
 )
 
 ci.fyi_builder(
     name = 'chromeos-amd64-generic-rel-vm-tests',
-)
-
-ci.fyi_builder(
-    name = 'chromeos-kevin-rel-hw-tests',
 )
 
 ci.fyi_builder(
@@ -1695,35 +1536,11 @@ ci.linux_builder(
 )
 
 ci.linux_builder(
-    name = 'Linux Builder (dbg)',
-)
-
-ci.linux_builder(
     name = 'Linux Builder (dbg)(32)',
 )
 
 ci.linux_builder(
-    name = 'Linux Tests (dbg)(1)',
-    triggered_by = ['Linux Builder (dbg)'],
-)
-
-ci.linux_builder(
     name = 'Network Service Linux',
-)
-
-ci.linux_builder(
-    name = 'fuchsia-arm64-cast',
-    notifies = ['cr-fuchsia'],
-)
-
-ci.linux_builder(
-    name = 'fuchsia-x64-cast',
-    notifies = ['cr-fuchsia'],
-)
-
-ci.linux_builder(
-    name = 'fuchsia-x64-dbg',
-    notifies = ['cr-fuchsia'],
 )
 
 ci.linux_builder(

@@ -94,10 +94,6 @@ class ProfileAttributesStorage
   bool IsDefaultProfileName(const base::string16& name,
                             bool include_check_for_legacy_profile_name) const;
 
-  // Records statistics about profiles as would be visible in the profile picker
-  // (if we would display it in this moment).
-  void RecordProfilesState();
-
   // Returns an avatar icon index that can be assigned to a newly created
   // profile. Note that the icon may not be unique since there are a limited
   // set of default icons.

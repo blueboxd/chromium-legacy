@@ -61,7 +61,7 @@ bool CrostiniUninstallerView::ShouldShowCloseButton() const {
 
 bool CrostiniUninstallerView::Accept() {
   state_ = State::UNINSTALLING;
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   message_label_->SetText(
       l10n_util::GetStringUTF16(IDS_CROSTINI_UNINSTALLER_UNINSTALLING_MESSAGE));
 
@@ -101,7 +101,7 @@ CrostiniUninstallerView* CrostiniUninstallerView::GetActiveViewForTesting() {
 
 CrostiniUninstallerView::CrostiniUninstallerView(Profile* profile)
     : profile_(profile) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_CROSTINI_UNINSTALLER_UNINSTALL_BUTTON));
 
@@ -128,7 +128,7 @@ CrostiniUninstallerView::~CrostiniUninstallerView() {
 
 void CrostiniUninstallerView::HandleError(const base::string16& error_message) {
   state_ = State::ERROR;
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_CANCEL);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_CANCEL);
   message_label_->SetVisible(true);
   message_label_->SetText(error_message);
   progress_bar_->SetVisible(false);

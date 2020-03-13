@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <map>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -20,7 +19,6 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
 #include "base/values.h"
@@ -84,6 +82,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/url_loader_interceptor.h"
+#include "content/public/test/url_loader_monitor.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/blocked_action_type.h"
 #include "extensions/browser/extension_prefs.h"
@@ -285,62 +284,6 @@ bool HasSeenWebRequestInBackgroundPage(const Extension* extension,
       ExecuteScriptAndExtractBool(host->host_contents(), script, &seen));
   return seen;
 }
-
-// Class that monitors ResourceRequests sent to the network service during its
-// lifetime, and allows the caller to access information about them.
-class URLLoaderMonitor {
- public:
-  struct RequestInfo {
-    net::SiteForCookies site_for_cookies;
-    base::Optional<net::NetworkIsolationKey> network_isolation_key;
-  };
-
-  URLLoaderMonitor()
-      : interceptor_(std::make_unique<content::URLLoaderInterceptor>(
-            base::BindRepeating(&URLLoaderMonitor::OnRequest,
-                                base::Unretained(this)))) {}
-
-  URLLoaderMonitor(const URLLoaderMonitor&) = delete;
-  URLLoaderMonitor& operator=(const URLLoaderMonitor&) = delete;
-
-  ~URLLoaderMonitor() {
-    // This is needed because |interceptor_| is a cross-thread object that may
-    // invoke the callback passed to it on the IO thread at any time until it's
-    // destroyed. Therefore, it must be destroyed before |this| is.
-    interceptor_.reset();
-  }
-
-  base::Optional<RequestInfo> GetRequestInfo(const GURL& url) {
-    base::AutoLock autolock(lock_);
-    const auto request_info = request_info_map_.find(url);
-    if (request_info == request_info_map_.end())
-      return base::nullopt;
-    return request_info->second;
-  }
-
- private:
-  bool OnRequest(content::URLLoaderInterceptor::RequestParams* params) {
-    RequestInfo request_info;
-    request_info.site_for_cookies = params->url_request.site_for_cookies;
-    if (params->url_request.trusted_params) {
-      request_info.network_isolation_key =
-          params->url_request.trusted_params->network_isolation_key;
-    }
-
-    base::AutoLock autolock(lock_);
-    request_info_map_[params->url_request.url] = request_info;
-
-    // Don't override default handling of the request.
-    return false;
-  }
-
-  // This is needed to guard access to |request_info_map_|, as
-  // content::URLLoaderInterceptor can invoke its callback on the IO thread.
-  base::Lock lock_;
-  std::map<GURL, RequestInfo> GUARDED_BY(lock_) request_info_map_;
-
-  std::unique_ptr<content::URLLoaderInterceptor> interceptor_;
-};
 
 }  // namespace
 
@@ -3355,7 +3298,7 @@ IN_PROC_BROWSER_TEST_P(RedirectInfoWebRequestApiTest,
                        VerifyRedirectInfoMainFrame) {
   InstallRequestRedirectingExtension("main_frame");
 
-  URLLoaderMonitor monitor;
+  content::URLLoaderMonitor monitor;
 
   // Navigate to the URL that should be redirected, and check that the extension
   // redirects it.
@@ -3369,12 +3312,13 @@ IN_PROC_BROWSER_TEST_P(RedirectInfoWebRequestApiTest,
   EXPECT_EQ(redirected_url, web_contents->GetLastCommittedURL());
 
   // Check the parameters passed to the URLLoaderFactory.
-  base::Optional<URLLoaderMonitor::RequestInfo> request_info =
+  base::Optional<network::ResourceRequest> resource_request =
       monitor.GetRequestInfo(redirected_url);
-  ASSERT_TRUE(request_info.has_value());
-  EXPECT_TRUE(request_info->site_for_cookies.IsFirstParty(redirected_url));
+  ASSERT_TRUE(resource_request.has_value());
+  EXPECT_TRUE(resource_request->site_for_cookies.IsFirstParty(redirected_url));
+  ASSERT_TRUE(resource_request->trusted_params);
   url::Origin redirected_origin = url::Origin::Create(redirected_url);
-  EXPECT_EQ(request_info->network_isolation_key,
+  EXPECT_EQ(resource_request->trusted_params->network_isolation_key,
             net::NetworkIsolationKey(redirected_origin, redirected_origin));
 }
 
@@ -3384,7 +3328,7 @@ IN_PROC_BROWSER_TEST_P(RedirectInfoWebRequestApiTest,
                        VerifyBeforeRequestRedirectInfoSubFrame) {
   InstallRequestRedirectingExtension("sub_frame");
 
-  URLLoaderMonitor monitor;
+  content::URLLoaderMonitor monitor;
 
   // Navigate to page with an iframe that should be redirected, and check that
   // the extension redirects it.
@@ -3412,15 +3356,16 @@ IN_PROC_BROWSER_TEST_P(RedirectInfoWebRequestApiTest,
   ASSERT_EQ(redirected_url, all_frames[1]->GetLastCommittedURL());
 
   // Check the parameters passed to the URLLoaderFactory.
-  base::Optional<URLLoaderMonitor::RequestInfo> request_info =
+  base::Optional<network::ResourceRequest> resource_request =
       monitor.GetRequestInfo(redirected_url);
-  ASSERT_TRUE(request_info.has_value());
+  ASSERT_TRUE(resource_request.has_value());
   EXPECT_TRUE(
-      request_info->site_for_cookies.IsFirstParty(page_with_iframe_url));
-  EXPECT_FALSE(request_info->site_for_cookies.IsFirstParty(redirected_url));
+      resource_request->site_for_cookies.IsFirstParty(page_with_iframe_url));
+  EXPECT_FALSE(resource_request->site_for_cookies.IsFirstParty(redirected_url));
+  ASSERT_TRUE(resource_request->trusted_params);
   url::Origin top_level_origin = url::Origin::Create(page_with_iframe_url);
   url::Origin redirected_origin = url::Origin::Create(redirected_url);
-  EXPECT_EQ(request_info->network_isolation_key,
+  EXPECT_EQ(resource_request->trusted_params->network_isolation_key,
             net::NetworkIsolationKey(top_level_origin, redirected_origin));
 }
 

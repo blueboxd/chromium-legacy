@@ -1109,7 +1109,7 @@ class ModalDialogDelegate : public DialogDelegateView {
       : modal_type_(modal_type) {}
 
   void SetButtons(int buttons) {
-    DialogDelegate::set_buttons(buttons);
+    DialogDelegate::SetButtons(buttons);
     DialogModelChanged();
   }
 

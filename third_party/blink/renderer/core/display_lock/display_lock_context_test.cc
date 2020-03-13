@@ -12,7 +12,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
-#include "third_party/blink/renderer/core/display_lock/strict_yielding_display_lock_budget.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -162,12 +161,6 @@ class DisplayLockContextTest : public testing::Test,
     test::RunPendingTasks();
   }
 
-  void ResetBudget(std::unique_ptr<DisplayLockBudget> budget,
-                   DisplayLockContext* context) {
-    ASSERT_TRUE(context->update_budget_);
-    context->update_budget_ = std::move(budget);
-  }
-
   bool ReattachWasBlocked(DisplayLockContext* context) {
     return context->reattach_layout_tree_was_blocked_;
   }
@@ -223,7 +216,7 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
       MakeRGB(255, 0, 0));
   // Manually commit the lock so that we can verify which dirty bits get
   // propagated.
-  element->GetDisplayLockContext()->StartCommit();
+  element->GetDisplayLockContext()->RequestUnlock();
   element->setAttribute(html_names::kStyleAttr, "color: red;");
 
   auto* child = GetDocument().getElementById("child");
@@ -253,7 +246,7 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
       child->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()),
       MakeRGB(0, 0, 255));
 
-  child->GetDisplayLockContext()->StartCommit();
+  child->GetDisplayLockContext()->RequestUnlock();
   child->setAttribute(html_names::kStyleAttr, "color: blue;");
   EXPECT_TRUE(GetDocument().body()->ChildNeedsStyleRecalc());
   EXPECT_FALSE(element->NeedsStyleRecalc());
@@ -717,7 +710,7 @@ TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChange) {
 
   // Manually start commit, so that we can verify which dirty bits get
   // propagated.
-  element->GetDisplayLockContext()->StartCommit();
+  element->GetDisplayLockContext()->RequestUnlock();
   EXPECT_TRUE(element->ChildNeedsStyleRecalc());
   EXPECT_FALSE(element->NeedsReattachLayoutTree());
   EXPECT_FALSE(element->ChildNeedsReattachLayoutTree());
@@ -1105,15 +1098,11 @@ TEST_F(DisplayLockContextTest, ActivatableNotCountedAsBlocking) {
   EXPECT_FALSE(non_activatable->GetDisplayLockContext()->IsActivatable(
       DisplayLockActivationReason::kAny));
 
-  // Now commit the lock for |non_ctivatable|.
+  // Now commit the lock for |non_activatable|.
   CommitElement(*non_activatable);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
-  EXPECT_TRUE(activatable->GetDisplayLockContext()->IsActivatable(
-      DisplayLockActivationReason::kAny));
-  EXPECT_TRUE(non_activatable->GetDisplayLockContext()->IsActivatable(
-      DisplayLockActivationReason::kAny));
 
   // Re-acquire the lock for |activatable| again with the activatable flag.
   LockElement(*activatable, true);
@@ -1315,7 +1304,7 @@ TEST_F(DisplayLockContextTest, AncestorAllowedTouchAction) {
   // Manually commit the lock so that we can verify which dirty bits get
   // propagated.
   CommitElement(*locked_element, false);
-  locked_element->GetDisplayLockContext()->StartCommit();
+  locked_element->GetDisplayLockContext()->RequestUnlock();
 
   EXPECT_FALSE(ancestor_object->EffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(handler_object->EffectiveAllowedTouchActionChanged());
@@ -1459,7 +1448,7 @@ TEST_F(DisplayLockContextTest, DescendantAllowedTouchAction) {
   // Manually commit the lock so that we can verify which dirty bits get
   // propagated.
   CommitElement(*locked_element, false);
-  locked_element->GetDisplayLockContext()->StartCommit();
+  locked_element->GetDisplayLockContext()->RequestUnlock();
 
   EXPECT_FALSE(ancestor_object->EffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(descendant_object->EffectiveAllowedTouchActionChanged());
@@ -1613,7 +1602,7 @@ TEST_F(DisplayLockContextTest, DescendantNeedsPaintPropertyUpdateBlocked) {
   // Manually commit the lock so that we can verify which dirty bits get
   // propagated.
   CommitElement(*locked_element, false);
-  locked_element->GetDisplayLockContext()->StartCommit();
+  locked_element->GetDisplayLockContext()->RequestUnlock();
 
   EXPECT_FALSE(ancestor_object->NeedsPaintPropertyUpdate());
   EXPECT_FALSE(descendant_object->NeedsPaintPropertyUpdate());
@@ -1638,62 +1627,6 @@ TEST_F(DisplayLockContextTest, DescendantNeedsPaintPropertyUpdateBlocked) {
   EXPECT_FALSE(handler_object->DescendantNeedsPaintPropertyUpdate());
 }
 
-TEST_F(DisplayLockContextTest, DisconnectedWhileUpdating) {
-  SetHtmlInnerHTML(R"HTML(
-    <style>
-    #container {
-      contain: style layout;
-    }
-    </style>
-    <div id="container"></div>
-  )HTML");
-
-  auto* container = GetDocument().getElementById("container");
-  LockElement(*container, false);
-
-  EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
-  EXPECT_FALSE(container->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockLifecycleTarget::kChildren));
-  EXPECT_FALSE(container->GetDisplayLockContext()->ShouldLayout(
-      DisplayLockLifecycleTarget::kChildren));
-  EXPECT_FALSE(container->GetDisplayLockContext()->ShouldPrePaint(
-      DisplayLockLifecycleTarget::kChildren));
-
-  auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
-  {
-    ScriptState::Scope scope(script_state);
-    container->GetDisplayLockContext()->UpdateRendering(script_state);
-  }
-  auto budget = base::WrapUnique(
-      new StrictYieldingDisplayLockBudget(container->GetDisplayLockContext()));
-  ResetBudget(std::move(budget), container->GetDisplayLockContext());
-
-  // This should style and allow layout, but not actually do layout (thus
-  // pre-paint would be blocked). Furthermore, this should schedule a task to
-  // run DisplayLockLifecycleTarget::ScheduleAnimation (since we can't directly
-  // schedule it from within a lifecycle).
-  UpdateAllLifecyclePhasesForTest();
-
-  ASSERT_FALSE(GetDocument().View()->InLifecycleUpdate());
-  GetDocument().View()->SetInLifecycleUpdateForTest(true);
-  EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
-  EXPECT_TRUE(container->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockLifecycleTarget::kChildren));
-  EXPECT_TRUE(container->GetDisplayLockContext()->ShouldLayout(
-      DisplayLockLifecycleTarget::kChildren));
-  EXPECT_FALSE(container->GetDisplayLockContext()->ShouldPrePaint(
-      DisplayLockLifecycleTarget::kChildren));
-  GetDocument().View()->SetInLifecycleUpdateForTest(false);
-
-  // Now disconnect the element.
-  container->remove();
-
-  // Flushing the pending tasks would call ScheduleAnimation, but since we're no
-  // longer connected and can't schedule from within the element, we should
-  // gracefully exit (and not crash).
-  test::RunPendingTasks();
-}
-
 class DisplayLockContextRenderingTest : public RenderingTest,
                                         private ScopedCSSSubtreeVisibilityHiddenMatchableForTest {
  public:
@@ -1703,6 +1636,9 @@ class DisplayLockContextRenderingTest : public RenderingTest,
 
   bool IsObservingLifecycle(DisplayLockContext* context) const {
     return context->is_registered_for_lifecycle_notifications_;
+  }
+  bool IsActivated(DisplayLockContext* context) const {
+    return context->IsActivated();
   }
 };
 
@@ -1722,7 +1658,7 @@ TEST_F(DisplayLockContextRenderingTest, FrameDocumentRemovedWhileAcquire) {
   auto* target = ChildDocument().getElementById("target");
   GetDocument().getElementById("frame")->remove();
 
-  target->EnsureDisplayLockContext().StartAcquire();
+  target->EnsureDisplayLockContext().RequestLock(0);
 }
 
 TEST_F(DisplayLockContextRenderingTest,
@@ -1871,7 +1807,7 @@ TEST_F(DisplayLockContextRenderingTest,
   // Verify lock state.
   auto* inner_context = inner_element->GetDisplayLockContext();
   ASSERT_TRUE(inner_context);
-  EXPECT_TRUE(inner_context->IsActivated());
+  EXPECT_TRUE(IsActivated(inner_context));
   EXPECT_FALSE(inner_context->IsLocked());
 
   // Lock outer.
@@ -1946,7 +1882,7 @@ TEST_F(DisplayLockContextRenderingTest,
   EXPECT_FALSE(IsObservingLifecycle(inner_context));
 
   // Also we should still be activated and unlocked.
-  EXPECT_TRUE(inner_context->IsActivated());
+  EXPECT_TRUE(IsActivated(inner_context));
   EXPECT_FALSE(inner_context->IsLocked());
 
   // Everything should be layout clean.
@@ -2005,7 +1941,7 @@ TEST_F(DisplayLockContextRenderingTest, NestedLockDoesHideWhenItIsOffscreen) {
   // Verify lock state.
   auto* inner_context = inner_element->GetDisplayLockContext();
   ASSERT_TRUE(inner_context);
-  EXPECT_TRUE(inner_context->IsActivated());
+  EXPECT_TRUE(IsActivated(inner_context));
   EXPECT_FALSE(inner_context->IsLocked());
 
   // Lock outer.
@@ -2082,7 +2018,7 @@ TEST_F(DisplayLockContextRenderingTest, NestedLockDoesHideWhenItIsOffscreen) {
   EXPECT_TRUE(IsObservingLifecycle(inner_context));
 
   // We're unlocked for now.
-  EXPECT_TRUE(inner_context->IsActivated());
+  EXPECT_TRUE(IsActivated(inner_context));
   EXPECT_FALSE(inner_context->IsLocked());
 
   // Everything should be layout clean.
@@ -2100,7 +2036,7 @@ TEST_F(DisplayLockContextRenderingTest, NestedLockDoesHideWhenItIsOffscreen) {
   EXPECT_FALSE(IsObservingLifecycle(inner_context));
 
   // We're locked.
-  EXPECT_FALSE(inner_context->IsActivated());
+  EXPECT_FALSE(IsActivated(inner_context));
   EXPECT_TRUE(inner_context->IsLocked());
 }
 }  // namespace blink

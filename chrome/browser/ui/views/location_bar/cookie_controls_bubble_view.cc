@@ -103,7 +103,7 @@ CookieControlsBubbleView::CookieControlsBubbleView(
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller) {
   controller_observer_.Add(controller);
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
 }
 
 CookieControlsBubbleView::~CookieControlsBubbleView() = default;
@@ -152,17 +152,17 @@ void CookieControlsBubbleView::UpdateUi() {
       extra_view_->SetVisible(false);
   }
 
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       intermediate_step_ == IntermediateStep::kTurnOffButton
           ? l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_TURN_OFF_BUTTON)
           : l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_TURN_ON_BUTTON));
-  DialogDelegate::set_buttons(
+  DialogDelegate::SetButtons(
       (intermediate_step_ == IntermediateStep::kTurnOffButton ||
        status_ == CookieControlsStatus::kDisabledForSite)
           ? ui::DIALOG_BUTTON_OK
           : ui::DIALOG_BUTTON_NONE);
-  DialogDelegate::set_accept_callback(base::BindOnce(
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
       &CookieControlsBubbleView::OnDialogAccepted, base::Unretained(this)));
 
   DialogModelChanged();

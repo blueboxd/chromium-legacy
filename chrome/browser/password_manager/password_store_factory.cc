@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -162,8 +161,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   NOTIMPLEMENTED();
 #endif
   DCHECK(ps);
-  if (!ps->Init(sync_start_util::GetFlareForSyncableService(profile->GetPath()),
-                profile->GetPrefs())) {
+  if (!ps->Init(profile->GetPrefs())) {
     // TODO(crbug.com/479725): Remove the LOG once this error is visible in the
     // UI.
     LOG(WARNING) << "Could not initialize password store.";

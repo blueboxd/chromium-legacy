@@ -380,12 +380,12 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
   DCHECK(content_setting_bubble_model_);
   const base::string16& done_text =
       content_setting_bubble_model_->bubble_content().done_button_text;
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       done_text.empty() ? l10n_util::GetStringUTF16(IDS_DONE) : done_text);
   DialogDelegate::SetExtraView(CreateHelpAndManageView());
-  DialogDelegate::set_accept_callback(
+  DialogDelegate::SetAcceptCallback(
       base::BindOnce(&ContentSettingBubbleModel::OnDoneButtonClicked,
                      base::Unretained(content_setting_bubble_model_.get())));
 }

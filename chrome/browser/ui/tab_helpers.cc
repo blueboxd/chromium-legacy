@@ -427,7 +427,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  SupervisedUserNavigationObserver::MaybeCreateForWebContents(web_contents);
+  SupervisedUserNavigationObserver::CreateForWebContents(web_contents);
 #endif
 
   // --- Section 4: The warning ---

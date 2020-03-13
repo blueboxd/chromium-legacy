@@ -414,14 +414,20 @@ sync_pb::SessionTab LocalSessionEventHandlerImpl::GetTabSpecificsFromDelegate(
   }
 
   if (is_supervised) {
-    const std::vector<std::unique_ptr<const SerializedNavigationEntry>>&
-        blocked_navigations = *tab_delegate.GetBlockedNavigations();
-    for (size_t i = 0; i < blocked_navigations.size(); ++i) {
-      sync_pb::TabNavigation* navigation = specifics.add_navigation();
-      SessionNavigationToSyncData(*blocked_navigations[i]).Swap(navigation);
-      navigation->set_blocked_state(
-          sync_pb::TabNavigation_BlockedState_STATE_BLOCKED);
-      // TODO(bauerb): Add categories
+    const std::vector<std::unique_ptr<const SerializedNavigationEntry>>*
+        blocked_navigations = tab_delegate.GetBlockedNavigations();
+    // TODO(crbug.com/1061427): If the profile is supervised,
+    // |blocked_navigations| should always be non-null. Investigate why some
+    // users run into null pointers here and ultimately replace the condition
+    // below with a DCHECK. This is a workaround to avoid reported crashes.
+    if (blocked_navigations) {
+      for (const auto& blocked_navigation : *blocked_navigations) {
+        sync_pb::TabNavigation* navigation = specifics.add_navigation();
+        *navigation = SessionNavigationToSyncData(*blocked_navigation);
+        navigation->set_blocked_state(
+            sync_pb::TabNavigation_BlockedState_STATE_BLOCKED);
+        // TODO(bauerb): Add categories
+      }
     }
   }
 

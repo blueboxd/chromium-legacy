@@ -29,18 +29,18 @@ RemoveQueryConfirmationDialog::RemoveQueryConfirmationDialog(
     : confirm_callback_(std::move(confirm_callback)),
       event_flags_(event_flags),
       contents_view_(contents_view) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_REMOVE_SUGGESTION_BUTTON_LABEL));
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                                    l10n_util::GetStringUTF16(IDS_APP_CANCEL));
 
   auto run_callback = [](RemoveQueryConfirmationDialog* dialog, bool accept) {
     std::move(dialog->confirm_callback_).Run(accept, dialog->event_flags_);
   };
-  DialogDelegate::set_accept_callback(
+  DialogDelegate::SetAcceptCallback(
       base::BindOnce(run_callback, base::Unretained(this), true));
-  DialogDelegate::set_cancel_callback(
+  DialogDelegate::SetCancelCallback(
       base::BindOnce(run_callback, base::Unretained(this), false));
 
   const views::LayoutProvider* provider = views::LayoutProvider::Get();

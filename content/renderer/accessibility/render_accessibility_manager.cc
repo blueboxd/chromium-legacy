@@ -49,8 +49,8 @@ void RenderAccessibilityManager::SetMode(uint32_t ax_mode) {
 
   if (new_mode.has_mode(ui::AXMode::kWebContents) &&
       !old_mode.has_mode(ui::AXMode::kWebContents)) {
-    render_accessibility_ =
-        std::make_unique<RenderAccessibilityImpl>(render_frame_, new_mode);
+    render_accessibility_ = std::make_unique<RenderAccessibilityImpl>(
+        this, render_frame_, new_mode);
   } else if (!new_mode.has_mode(ui::AXMode::kWebContents) &&
              old_mode.has_mode(ui::AXMode::kWebContents)) {
     render_accessibility_.reset();
@@ -76,6 +76,21 @@ void RenderAccessibilityManager::PerformAction(const ui::AXActionData& data) {
 void RenderAccessibilityManager::Reset(int32_t reset_token) {
   DCHECK(render_accessibility_);
   render_accessibility_->Reset(reset_token);
+}
+
+void RenderAccessibilityManager::HandleLocationChanges(
+    std::vector<mojom::LocationChangesPtr> changes) {
+  GetOrCreateRemoteRenderAccessibilityHost()->HandleAXLocationChanges(
+      std::move(changes));
+}
+
+mojo::AssociatedRemote<mojom::RenderAccessibilityHost>&
+RenderAccessibilityManager::GetOrCreateRemoteRenderAccessibilityHost() {
+  if (!render_accessibility_host_) {
+    render_frame_->GetRemoteAssociatedInterfaces()->GetInterface(
+        &render_accessibility_host_);
+  }
+  return render_accessibility_host_;
 }
 
 }  // namespace content

@@ -429,6 +429,7 @@ class CONTENT_EXPORT RenderWidget
                                   bool is_pinch_gesture_active,
                                   float minimum,
                                   float maximum) override;
+  void DispatchRafAlignedInput(base::TimeTicks frame_time) override;
   void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
   void NotifySwapTime(blink::WebReportTimeCallback callback) override;

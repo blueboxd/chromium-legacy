@@ -425,6 +425,16 @@ class CC_EXPORT FrameSequenceTracker {
   // TODO(xidachen): remove this one.
   uint64_t current_begin_main_sequence_ = 0;
 
+  // Tracks some data to generate useful trace events.
+  struct TraceData {
+    explicit TraceData(const void* trace_id);
+    const void* trace_id;
+    base::TimeTicks last_timestamp = base::TimeTicks::Now();
+    int frame_count = 0;
+
+    void Advance(base::TimeTicks new_timestamp);
+  } trace_data_;
+
 #if DCHECK_IS_ON()
   bool is_inside_frame_ = false;
 

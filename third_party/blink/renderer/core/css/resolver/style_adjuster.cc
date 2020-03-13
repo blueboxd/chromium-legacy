@@ -574,57 +574,21 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
 }
 
 static void AdjustStateForSubtreeVisibility(ComputedStyle& style,
-                                        Element* element) {
+                                            Element* element) {
   if (!element)
     return;
-
-  bool should_be_visible = style.SubtreeVisibility() == ESubtreeVisibility::kVisible;
   auto* context = element->GetDisplayLockContext();
-  if (!context) {
-    // Return early if there is no context and we should be visible.
-    if (should_be_visible)
-      return;
+  // The common case for most elements is that we don't have a context and have
+  // the default (visible) subtree-visibility value.
+  if (LIKELY(!context &&
+             style.SubtreeVisibility() == ESubtreeVisibility::kVisible)) {
+    return;
+  }
+
+  if (!context)
     context = &element->EnsureDisplayLockContext();
-  }
-
-  uint16_t activation_mask =
-      static_cast<uint16_t>(DisplayLockActivationReason::kAny);
-  switch (style.SubtreeVisibility()) {
-    case ESubtreeVisibility::kVisible:
-    case ESubtreeVisibility::kAuto:
-      break;
-    case ESubtreeVisibility::kHidden:
-      activation_mask = 0;
-      break;
-    case ESubtreeVisibility::kHiddenMatchable:
-      activation_mask &=
-          ~static_cast<uint16_t>(DisplayLockActivationReason::kViewport);
-      break;
-  }
-
-  // Propagate activatable style to context.
-  context->SetActivatable(activation_mask);
-
-  if (!should_be_visible) {
-    // Add containment to style if we're invisible.
-    auto contain = style.Contain() | kContainsStyle | kContainsLayout;
-    // If we haven't activated, then we should also contain size. This means
-    // that if we are rendering the element's subtree (i.e. it is either
-    // unlocked or activated), then we do not have size containment.
-    if (!context->IsActivated())
-      contain |= kContainsSize;
-    style.SetContain(contain);
-
-    // If we're unlocked and unactivated, then we should lock the context. Note
-    // that we do this here, since locking the element means we can skip styling
-    // the subtree.
-    if (!context->IsLocked() && !context->IsActivated())
-      context->StartAcquire();
-  } else {
-    context->ClearActivated();
-    if (context->IsLocked())
-      context->StartCommit();
-  }
+  context->SetRequestedState(style.SubtreeVisibility());
+  context->AdjustElementStyle(&style);
 }
 
 void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,

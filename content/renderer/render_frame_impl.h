@@ -508,6 +508,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void UpdateBrowserControlsState(BrowserControlsState constraints,
                                   BrowserControlsState current,
                                   bool animate) override;
+  void SnapshotAccessibilityTree(
+      uint32_t ax_mode,
+      SnapshotAccessibilityTreeCallback callback) override;
 
 #if defined(OS_ANDROID)
   void ExtractSmartClipData(
@@ -1036,7 +1039,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnVisualStateRequest(uint64_t key);
   // TODO(https://crbug.com/995428): Deprecated.
   void OnReload();
-  void OnSnapshotAccessibilityTree(int callback_id, ui::AXMode ax_mode);
   void OnUpdateOpener(int opener_routing_id);
   void OnAdvanceFocus(blink::mojom::FocusType type, int32_t source_routing_id);
   void OnGetSavableResourceLinks();

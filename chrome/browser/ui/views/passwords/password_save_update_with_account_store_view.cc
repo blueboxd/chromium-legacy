@@ -392,9 +392,9 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
       (dialog->controller_.*func)();
     };
 
-    DialogDelegate::set_accept_callback(base::BindOnce(
+    DialogDelegate::SetAcceptCallback(base::BindOnce(
         button_clicked, base::Unretained(this), &Controller::OnSaveClicked));
-    DialogDelegate::set_cancel_callback(base::BindOnce(
+    DialogDelegate::SetCancelCallback(base::BindOnce(
         button_clicked, base::Unretained(this),
         is_update_bubble_ ? &Controller::OnNopeUpdateClicked
                           : &Controller::OnNeverForThisSiteClicked));
@@ -525,14 +525,14 @@ void PasswordSaveUpdateWithAccountStoreView::
 }
 
 void PasswordSaveUpdateWithAccountStoreView::UpdateDialogButtons() {
-  DialogDelegate::set_buttons(
+  DialogDelegate::SetButtons(
       (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(controller_.IsCurrentStateUpdate()
                                     ? IDS_PASSWORD_MANAGER_UPDATE_BUTTON
                                     : IDS_PASSWORD_MANAGER_SAVE_BUTTON));
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(
           is_update_bubble_ ? IDS_PASSWORD_MANAGER_CANCEL_BUTTON

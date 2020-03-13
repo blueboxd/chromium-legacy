@@ -29,11 +29,11 @@ const int kDialogBodyTextWidth = 250;
 }  // namespace
 
 ConfirmSignoutDialog::ConfirmSignoutDialog() {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(
           IDS_ADD_SUPERVISION_EXIT_DIALOG_SIGNOUT_BUTTON_LABEL));
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(
           IDS_ADD_SUPERVISION_EXIT_DIALOG_CANCEL_BUTTON_LABEL));

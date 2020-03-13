@@ -9,6 +9,7 @@ source_set("browsertests") {
     "empty_parameters_browsertest.cc",
     "has_enrolled_instrument_browsertest.cc",
     "has_enrolled_instrument_query_quota_browsertest.cc",
+    "iframe_csp_browsertest.cc",
     "journey_logger_browsertest.cc",
     "payment_handler_change_shipping_address_option_browsertest.cc",
     "payment_handler_enable_delegations_browsertest.cc",

@@ -4798,8 +4798,7 @@ DisplayLockContext* Element::GetDisplayLockContext() const {
 }
 
 DisplayLockContext& Element::EnsureDisplayLockContext() {
-  return *EnsureElementRareData().EnsureDisplayLockContext(
-      this, GetExecutionContext());
+  return *EnsureElementRareData().EnsureDisplayLockContext(this);
 }
 
 // Step 1 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()

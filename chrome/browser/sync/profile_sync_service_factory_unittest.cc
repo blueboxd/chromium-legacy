@@ -104,7 +104,8 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     }
 #endif  // OS_CHROMEOS
 
-    // Common types.
+    // Common types. This excludes PASSWORDS because the password store factory
+    // is null for testing and hence no controller gets instantiated.
     datatypes.push_back(syncer::AUTOFILL);
     datatypes.push_back(syncer::AUTOFILL_PROFILE);
     datatypes.push_back(syncer::AUTOFILL_WALLET_DATA);
@@ -112,12 +113,6 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::BOOKMARKS);
     datatypes.push_back(syncer::DEVICE_INFO);
     datatypes.push_back(syncer::HISTORY_DELETE_DIRECTIVES);
-    if (!base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
-      // Password store factory is null for testing. For directory
-      // implementation, a controller was added anyway. For USS, no controller
-      // gets added, and hence the type isn't available.
-      datatypes.push_back(syncer::PASSWORDS);
-    }
     datatypes.push_back(syncer::PREFERENCES);
     datatypes.push_back(syncer::PRIORITY_PREFERENCES);
     datatypes.push_back(syncer::SESSIONS);

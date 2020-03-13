@@ -566,7 +566,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
   std::unique_ptr<AudioTimestampHelper> next_timestamp_;
 
   // Run during DecodeDecoder() to unblock WaitForPendingRead().
-  base::Closure wait_for_pending_decode_cb_;
+  base::OnceClosure wait_for_pending_decode_cb_;
 
   AudioDecoder::InitCB init_decoder_cb_;
   bool expected_init_result_;

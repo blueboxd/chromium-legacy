@@ -30,7 +30,7 @@ namespace password_manager {
 template <class Context, class Store>
 scoped_refptr<RefcountedKeyedService> BuildPasswordStore(Context* context) {
   scoped_refptr<password_manager::PasswordStore> store(new Store);
-  if (!store->Init(syncer::SyncableService::StartSyncFlare(), nullptr))
+  if (!store->Init(nullptr))
     return nullptr;
   return store;
 }
@@ -45,7 +45,7 @@ scoped_refptr<RefcountedKeyedService> BuildPasswordStoreWithArgs(
     Context* context) {
   scoped_refptr<password_manager::PasswordStore> store(
       new Store(std::forward<Args>(args)...));
-  if (!store->Init(syncer::SyncableService::StartSyncFlare(), nullptr))
+  if (!store->Init(nullptr))
     return nullptr;
   return store;
 }

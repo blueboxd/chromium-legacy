@@ -23,11 +23,13 @@
 #include "base/test/scoped_path_override.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service_factory.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_controller.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_policy_builder.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
@@ -55,6 +57,7 @@
 #include "components/account_id/account_id.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -421,6 +424,8 @@ class ChildStatusCollectorTest : public testing::Test {
             time, &profile_pref_service_));
   }
 
+  Profile* testing_profile() { return testing_profile_.get(); }
+
   // Since this is a unit test running in browser_tests we must do additional
   // unit test setup and make a TestingBrowserProcess. Must be first member.
   TestingBrowserProcessInitializer initializer_;
@@ -757,6 +762,43 @@ TEST_F(ChildStatusCollectorTest, ReportingAppActivity) {
 
   // After successful report submission 'old' data should be cleared.
   status_collector_->OnSubmittedSuccessfully();
+  GetStatus();
+  EXPECT_EQ(0, child_status_.app_activity_size());
+}
+
+TEST_F(ChildStatusCollectorTest, ReportingAppActivityNoReport) {
+  // Nothing reported yet.
+  GetStatus();
+  EXPECT_EQ(0, child_status_.app_activity_size());
+  status_collector_->OnSubmittedSuccessfully();
+
+  const chromeos::app_time::AppId app1(apps::mojom::AppType::kWeb, "app1");
+  const chromeos::app_time::AppId app2(apps::mojom::AppType::kExtension,
+                                       "app2");
+  const base::TimeDelta app1_interval = base::TimeDelta::FromMinutes(1);
+  const base::TimeDelta app2_interval = base::TimeDelta::FromMinutes(2);
+
+  SimulateAppActivity(app1, app1_interval);
+  SimulateAppActivity(app2, app2_interval);
+  SimulateAppActivity(app1, app1_interval);
+  SimulateAppActivity(app2, app2_interval);
+  SimulateAppActivity(app1, app1_interval);
+
+  {
+    chromeos::app_time::AppTimeLimitsPolicyBuilder builder;
+    builder.SetAppActivityReportingEnabled(/* enabled */ false);
+    DictionaryPrefUpdate update(testing_profile()->GetPrefs(),
+                                prefs::kPerAppTimeLimitsPolicy);
+    base::Value* value = update.Get();
+    *value = builder.value().Clone();
+  }
+
+  SimulateAppActivity(app1, app1_interval);
+  SimulateAppActivity(app2, app2_interval);
+  SimulateAppActivity(app1, app1_interval);
+  SimulateAppActivity(app2, app2_interval);
+  SimulateAppActivity(app1, app1_interval);
+
   GetStatus();
   EXPECT_EQ(0, child_status_.app_activity_size());
 }

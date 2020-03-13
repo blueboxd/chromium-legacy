@@ -51,9 +51,6 @@ enum FeaturePolicyFeature {
   kAmbientLightSensor = 18,
   kGyroscope = 19,
   kMagnetometer = 20,
-  // Controls the layout size of intrinsically sized images and videos. When
-  // disabled, default size (300 x 150) is used to prevent relayout.
-  kUnsizedMedia = 21,
   // Controls access to Picture-in-Picture.
   kPictureInPicture = 26,
   // Controls the ability to block and interfere with vertical scrolling.

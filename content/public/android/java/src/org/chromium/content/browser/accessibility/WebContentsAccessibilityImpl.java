@@ -1066,11 +1066,11 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             return;
         }
 
-        AccessibilityEvent event = buildAccessibilityEvent(virtualViewId, eventType);
-        if (event == null) return;
-
         // Check whether this type of event is one we want to throttle, and if not then send it
         if (!mEventsToThrottle.contains(eventType)) {
+            AccessibilityEvent event = buildAccessibilityEvent(virtualViewId, eventType);
+            if (event == null) return;
+
             mView.requestSendAccessibilityEvent(mView, event);
             return;
         }
@@ -1080,6 +1080,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         // to be sent immediately and record the time and clear any lingering callbacks.
         long now = Calendar.getInstance().getTimeInMillis();
         if (now - mEventLastFiredTimes.get(eventType, 0) >= ACCESSIBILITY_EVENT_DELAY) {
+            AccessibilityEvent event = buildAccessibilityEvent(virtualViewId, eventType);
+            // If accessibility is disabled or the node is invalid, returned event will be null.
+            if (event == null) return;
+
             mView.requestSendAccessibilityEvent(mView, event);
             mView.removeCallbacks(mPendingEvents.get(eventType));
             mPendingEvents.remove(eventType);
@@ -1092,12 +1096,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
             Runnable myRunnable = () -> {
                 // We have delayed firing this event, so accessibility may not be enabled or the
-                // node may be invalid. Only fire if neither of these are the case.
-                if (isAccessibilityEnabled()
-                        && WebContentsAccessibilityImplJni.get().isNodeValid(
-                                mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId)) {
+                // node may be invalid, in which case build will return a null event.
+                AccessibilityEvent event = buildAccessibilityEvent(virtualViewId, eventType);
+                if (event != null) {
                     mView.requestSendAccessibilityEvent(mView, event);
-
                     // After sending event, record time it was sent
                     mEventLastFiredTimes.put(eventType, Calendar.getInstance().getTimeInMillis());
                 }
@@ -1114,10 +1116,12 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     }
 
     private AccessibilityEvent buildAccessibilityEvent(int virtualViewId, int eventType) {
-        // If we don't have any frame info, then the virtual hierarchy
-        // doesn't exist in the view of the Android framework, so should
-        // never send any events.
-        if (!isAccessibilityEnabled() || !isFrameInfoInitialized()) {
+        // If accessibility is disabled, node is invalid, or we don't have any frame info,
+        // then the virtual hierarchy doesn't exist in the view of the Android framework,
+        // so should never send any events.
+        if (!isAccessibilityEnabled() || !isFrameInfoInitialized()
+                || !WebContentsAccessibilityImplJni.get().isNodeValid(
+                        mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId)) {
             return null;
         }
 

@@ -35,11 +35,11 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(
     : download_count_(download_count),
       app_modal_(app_modal),
       callback_(callback) {
-  DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetDefaultButton(ui::DIALOG_BUTTON_CANCEL);
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_ABANDON_DOWNLOAD_DIALOG_EXIT_BUTTON));
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_ABANDON_DOWNLOAD_DIALOG_CONTINUE_BUTTON));
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -51,9 +51,9 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(
     // means "continue the download".
     dialog->callback_.Run(accept);
   };
-  DialogDelegate::set_accept_callback(
+  DialogDelegate::SetAcceptCallback(
       base::BindOnce(run_callback, base::Unretained(this), true));
-  DialogDelegate::set_cancel_callback(
+  DialogDelegate::SetCancelCallback(
       base::BindOnce(run_callback, base::Unretained(this), false));
 
   int message_id = 0;

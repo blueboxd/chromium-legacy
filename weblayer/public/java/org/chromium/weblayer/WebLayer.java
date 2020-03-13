@@ -14,6 +14,7 @@ import android.os.RemoteException;
 import android.support.v4.app.Fragment;
 import android.util.AndroidRuntimeException;
 import android.util.Log;
+import android.util.Pair;
 import android.webkit.ValueCallback;
 
 import androidx.annotation.NonNull;
@@ -33,7 +34,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * WebLayer is responsible for initializing state necessary to use any of the classes in web layer.
@@ -59,18 +59,12 @@ public class WebLayer {
     @NonNull
     private final IWebLayer mImpl;
 
-    private static WebViewCompatibilityHelper sWebViewCompatHelper;
+    private static ClassLoader sWebViewCompatClassLoader;
 
     /** The result of calling {@link #initializeWebViewCompatibilityMode}. */
     public enum WebViewCompatibilityResult {
-        /** Native libs were copied to data directory. */
-        SUCCESS_COPIED,
-
-        /** Correct libs have already been copied, or symlinks were used. */
-        SUCCESS_CACHED,
-
-        /** IOException was thrown, could mean there is not enough disk space. */
-        FAILURE_IO_ERROR,
+        /** Compatibility mode has been successfully set up. */
+        SUCCESS,
 
         /** This version of the WebLayer implementation does not support WebView compatibility. */
         FAILURE_UNSUPPORTED_VERSION,
@@ -100,18 +94,24 @@ public class WebLayer {
         }
     }
 
-    /**
-     * Performs initialization needed to run WebView and WebLayer in the same process. This should
-     * be called as early as possible if this functionality is needed.
-     *
-     * @param appContext The hosting application's Context.
-     * @param baseDir The directory to copy any necessary files into.
-     * @param callback Callback called on success or failure.
-     */
+    /** Deprecated. Use initializeWebViewCompatibilityMode(Context) instead. */
     public static void initializeWebViewCompatibilityMode(@NonNull Context appContext,
             @NonNull File baseDir, @NonNull Callback<WebViewCompatibilityResult> callback) {
+        WebViewCompatibilityResult result = initializeWebViewCompatibilityMode(appContext);
+        if (callback != null) {
+            callback.onResult(result);
+        }
+    }
+
+    /**
+     * Performs initialization needed to run WebView and WebLayer in the same process.
+     *
+     * @param appContext The hosting application's Context.
+     */
+    public static WebViewCompatibilityResult initializeWebViewCompatibilityMode(
+            @NonNull Context appContext) {
         ThreadCheck.ensureOnUiThread();
-        if (sWebViewCompatHelper != null) {
+        if (sWebViewCompatClassLoader != null) {
             throw new AndroidRuntimeException(
                     "initializeWebViewCompatibilityMode() has already been called.");
         }
@@ -121,13 +121,14 @@ public class WebLayer {
                     + "loaded.");
         }
         try {
-            sWebViewCompatHelper = WebViewCompatibilityHelper.initialize(
-                    appContext, getOrCreateRemoteContext(appContext), baseDir, callback);
+            Pair<ClassLoader, WebLayer.WebViewCompatibilityResult> result =
+                    WebViewCompatibilityHelper.initialize(
+                            appContext, getOrCreateRemoteContext(appContext));
+            sWebViewCompatClassLoader = result.first;
+            return result.second;
         } catch (Exception e) {
-            if (callback != null) {
-                callback.onResult(WebViewCompatibilityResult.FAILURE_OTHER);
-            }
             Log.e(TAG, "Unable to initialize WebView compatibility", e);
+            return WebViewCompatibilityResult.FAILURE_OTHER;
         }
     }
 
@@ -265,8 +266,8 @@ public class WebLayer {
             int majorVersion = -1;
             String version = "<unavailable>";
             try {
-                if (sWebViewCompatHelper != null) {
-                    remoteClassLoader = sWebViewCompatHelper.getWebLayerClassLoader();
+                if (sWebViewCompatClassLoader != null) {
+                    remoteClassLoader = sWebViewCompatClassLoader;
                 }
                 if (remoteClassLoader == null) {
                     remoteClassLoader = getOrCreateRemoteContext(appContext).getClassLoader();
@@ -285,7 +286,7 @@ public class WebLayer {
                 majorVersion = mFactory.getImplementationMajorVersion();
                 version = mFactory.getImplementationVersion();
             } catch (PackageManager.NameNotFoundException | ReflectiveOperationException
-                    | RemoteException | ExecutionException | InterruptedException e) {
+                    | RemoteException e) {
                 Log.e(TAG, "Unable to create WebLayerFactory", e);
             }
             mAvailable = available;

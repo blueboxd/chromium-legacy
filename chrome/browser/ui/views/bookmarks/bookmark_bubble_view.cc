@@ -229,15 +229,15 @@ BookmarkBubbleView::BookmarkBubbleView(
       profile_(profile),
       url_(url),
       newly_bookmarked_(newly_bookmarked) {
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                    l10n_util::GetStringUTF16(IDS_DONE));
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK));
   DialogDelegate::SetExtraView(CreateEditButton(this));
   DialogDelegate::SetFootnoteView(CreateSigninPromoView());
 
-  DialogDelegate::set_cancel_callback(base::Bind(
+  DialogDelegate::SetCancelCallback(base::Bind(
       &BookmarkBubbleView::OnDialogCancelled, base::Unretained(this)));
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::BOOKMARK);

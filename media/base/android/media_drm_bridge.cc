@@ -964,8 +964,8 @@ void MediaDrmBridge::SendProvisioningRequest(const std::string& default_url,
 
   provision_fetcher_->Retrieve(
       default_url, request_data,
-      base::Bind(&MediaDrmBridge::ProcessProvisionResponse,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&MediaDrmBridge::ProcessProvisionResponse,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void MediaDrmBridge::ProcessProvisionResponse(bool success,

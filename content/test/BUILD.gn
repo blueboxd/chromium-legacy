@@ -229,6 +229,8 @@ jumbo_static_library("test_support") {
     "../public/test/unittest_test_suite.h",
     "../public/test/url_loader_interceptor.cc",
     "../public/test/url_loader_interceptor.h",
+    "../public/test/url_loader_monitor.cc",
+    "../public/test/url_loader_monitor.h",
     "../public/test/web_contents_receiver_set_test_binder.h",
     "../public/test/web_contents_tester.cc",
     "../public/test/web_contents_tester.h",
@@ -587,9 +589,9 @@ if (is_fuchsia) {
   group("fuchsia_telemetry_gpu_integration_test") {
     testonly = true
     deps = [
+      ":telemetry_gpu_integration_test_scripts_only",
       "//fuchsia/engine:web_engine_runner",
       "//fuchsia/engine:web_engine_shell",
-      "//tools/perf/chrome_telemetry_build:telemetry_chrome_test_without_chrome",
     ]
   }
 }
@@ -600,7 +602,13 @@ group("telemetry_gpu_integration_test_scripts_only") {
     "//tools/perf/chrome_telemetry_build:telemetry_chrome_test_without_chrome",
   ]
 
-  data = [ "//content/test/gpu/" ]
+  data = [
+    "//content/test/gpu/",
+    "//testing/scripts/run_isolated_script_test.py",
+    "//testing/scripts/common.py",
+    "//testing/xvfb.py",
+    "//testing/test_env.py",
+  ]
 }
 
 # browsertest_support can be used by targets that run content_shell based

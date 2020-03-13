@@ -80,22 +80,22 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   // error_ is a WeakPtr, but it's always non-null during construction.
   DCHECK(error_);
 
-  DialogDelegate::set_default_button(error_->GetDefaultDialogButton());
-  DialogDelegate::set_buttons(
+  DialogDelegate::SetDefaultButton(error_->GetDefaultDialogButton());
+  DialogDelegate::SetButtons(
       !error_->GetBubbleViewCancelButtonLabel().empty()
           ? (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL)
           : ui::DIALOG_BUTTON_OK);
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                    error_->GetBubbleViewAcceptButtonLabel());
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                                    error_->GetBubbleViewCancelButtonLabel());
 
   // Note that error is already a WeakPtr, so these callbacks will simply do
   // nothing if they are invoked after its destruction.
-  DialogDelegate::set_accept_callback(base::BindOnce(
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
       &GlobalErrorWithStandardBubble::BubbleViewAcceptButtonPressed, error,
       base::Unretained(browser_)));
-  DialogDelegate::set_cancel_callback(base::BindOnce(
+  DialogDelegate::SetCancelCallback(base::BindOnce(
       &GlobalErrorWithStandardBubble::BubbleViewCancelButtonPressed, error,
       base::Unretained(browser_)));
 

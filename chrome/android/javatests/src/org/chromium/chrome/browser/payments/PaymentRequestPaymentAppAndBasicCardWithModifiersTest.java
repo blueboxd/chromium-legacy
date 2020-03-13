@@ -12,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.test.filters.MediumTest;
+import android.widget.Button;
 
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -62,6 +63,13 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
                 "310-310-6000", "jon.doe@gmail.com", "en-US"));
     }
 
+    protected String getPrimaryButtonLabel() {
+        Button primary = (Button) mPaymentRequestTestRule.getPaymentRequestUI()
+                                 .getDialogForTest()
+                                 .findViewById(R.id.button_primary);
+        return primary.getText().toString();
+    }
+
     /**
      * Verify modifier for Bobpay is only applied for Bobpay.
      */
@@ -81,6 +89,9 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
         assertTrue(mPaymentRequestTestRule.getSelectedPaymentAppLabel().startsWith(
                 "https://bobpay.com"));
         assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
+        assertEquals(mPaymentRequestTestRule.getActivity().getResources().getString(
+                             R.string.payments_continue_button),
+                getPrimaryButtonLabel());
 
         // select other payment method and verify modifier for bobpay is not applied
         mPaymentRequestTestRule.clickOnPaymentMethodSuggestionOptionAndWait(
@@ -88,6 +99,9 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
         assertFalse(mPaymentRequestTestRule.getSelectedPaymentAppLabel().startsWith(
                 "https://bobpay.com"));
         assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
+        assertEquals(mPaymentRequestTestRule.getActivity().getResources().getString(
+                             R.string.payments_pay_button),
+                getPrimaryButtonLabel());
     }
 
     /**

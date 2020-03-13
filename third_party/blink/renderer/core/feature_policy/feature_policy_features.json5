@@ -270,11 +270,6 @@
       depends_on: ["FeaturePolicyForSandbox"],
     },
     {
-      name: "UnsizedMedia",
-      feature_policy_name: "unsized-media",
-      depends_on: ["UnsizedMediaPolicy"],
-    },
-    {
       name: "Usb",
       feature_policy_name: "usb",
       depends_on: ["WebUSB"],

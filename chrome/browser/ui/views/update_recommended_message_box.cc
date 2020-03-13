@@ -35,9 +35,9 @@ void UpdateRecommendedMessageBox::Show(gfx::NativeWindow parent_window) {
 // UpdateRecommendedMessageBox, private:
 
 UpdateRecommendedMessageBox::UpdateRecommendedMessageBox() {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_RELAUNCH_AND_UPDATE));
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                                    l10n_util::GetStringUTF16(IDS_NOT_NOW));
   base::string16 update_message;
 #if defined(OS_CHROMEOS)

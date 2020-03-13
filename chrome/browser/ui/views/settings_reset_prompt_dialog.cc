@@ -39,16 +39,16 @@ SettingsResetPromptDialog::SettingsResetPromptDialog(
     : browser_(nullptr), controller_(controller) {
   DCHECK(controller_);
 
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_SETTINGS_RESET_PROMPT_ACCEPT_BUTTON_LABEL));
-  DialogDelegate::set_accept_callback(
+  DialogDelegate::SetAcceptCallback(
       base::BindOnce(&safe_browsing::SettingsResetPromptController::Accept,
                      base::Unretained(controller_)));
-  DialogDelegate::set_cancel_callback(
+  DialogDelegate::SetCancelCallback(
       base::BindOnce(&safe_browsing::SettingsResetPromptController::Cancel,
                      base::Unretained(controller_)));
-  DialogDelegate::set_close_callback(
+  DialogDelegate::SetCloseCallback(
       base::BindOnce(&safe_browsing::SettingsResetPromptController::Close,
                      base::Unretained(controller_)));
 

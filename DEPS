@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'c5ee8e0342d1eb08b9dea67230af016bdfaeb1a9',
+  'angle_revision': 'b1b6a171ee024e05d487e61f4200f83d1caf9224',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '7f2985f655ea12cf26967c2ed0ab368eeff93a81',
+  'devtools_frontend_revision': '4d806b9daa241aa3f21012dcfc5b11db58be3ea7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -863,7 +863,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '27402f3ffd344b31e04e3435e4ec820e1af3a276',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '8926292ad6bb0f18e892ba0635ec0d6ed3370313',
       'condition': 'checkout_linux',
   },
 
@@ -1239,7 +1239,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'c9ba12998fd210389c57fc46d63ab3ea5a3d7881',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'acd3faab763a72d710482703435e0403455a3920',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1518,7 +1518,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5a115a24bfd7743b8322b66adb8d9272f2d9b118',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ef7ec269b5b5ef9d0d507e123dba3c204f6a69b2',
     'condition': 'checkout_src_internal',
   },
 

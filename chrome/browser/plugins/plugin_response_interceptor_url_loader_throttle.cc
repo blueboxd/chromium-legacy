@@ -17,6 +17,7 @@
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -53,6 +54,8 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
 
   if (extension_id.empty())
     return;
+
+  MimeTypesHandler::ReportUsedHandler(extension_id);
 
   std::string view_id = base::GenerateGUID();
   // The string passed down to the original client with the response body.

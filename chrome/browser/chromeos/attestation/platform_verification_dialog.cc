@@ -93,9 +93,9 @@ PlatformVerificationDialog::PlatformVerificationDialog(
     : content::WebContentsObserver(web_contents),
       domain_(domain),
       callback_(std::move(callback)) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW));
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL, l10n_util::GetStringUTF16(IDS_PERMISSION_DENY));
   learn_more_button_ =
       DialogDelegate::SetExtraView(CreateLearnMoreButton(this));
@@ -109,11 +109,11 @@ PlatformVerificationDialog::PlatformVerificationDialog(
     std::move(dialog->callback_).Run(response);
   };
 
-  DialogDelegate::set_accept_callback(base::BindOnce(
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
       run_callback, base::Unretained(this), CONSENT_RESPONSE_ALLOW));
-  DialogDelegate::set_cancel_callback(base::BindOnce(
+  DialogDelegate::SetCancelCallback(base::BindOnce(
       run_callback, base::Unretained(this), CONSENT_RESPONSE_DENY));
-  DialogDelegate::set_close_callback(base::BindOnce(
+  DialogDelegate::SetCloseCallback(base::BindOnce(
       run_callback, base::Unretained(this), CONSENT_RESPONSE_NONE));
 
   // Explanation string.

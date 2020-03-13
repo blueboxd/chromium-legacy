@@ -42,7 +42,7 @@ class PasswordManagerOnboardingTest : public testing::Test {
 
   void SetUp() override {
     store_ = new TestPasswordStore;
-    store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+    store_->Init(nullptr);
 
     prefs_.reset(new TestingPrefServiceSimple());
     prefs_->registry()->RegisterIntegerPref(

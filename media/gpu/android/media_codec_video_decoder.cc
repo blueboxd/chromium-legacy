@@ -527,8 +527,8 @@ void MediaCodecVideoDecoder::OnSurfaceChosen(
 
   if (overlay) {
     overlay->AddSurfaceDestroyedCallback(
-        base::Bind(&MediaCodecVideoDecoder::OnSurfaceDestroyed,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&MediaCodecVideoDecoder::OnSurfaceDestroyed,
+                       weak_factory_.GetWeakPtr()));
     target_surface_bundle_ = new CodecSurfaceBundle(std::move(overlay));
   } else {
     target_surface_bundle_ = texture_owner_bundle_;
@@ -899,8 +899,8 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
     if (eos_decode_cb_) {
       // Schedule the EOS DecodeCB to run after all previous frames.
       video_frame_factory_->RunAfterPendingVideoFrames(
-          base::Bind(&MediaCodecVideoDecoder::RunEosDecodeCb,
-                     weak_factory_.GetWeakPtr(), reset_generation_));
+          base::BindOnce(&MediaCodecVideoDecoder::RunEosDecodeCb,
+                         weak_factory_.GetWeakPtr(), reset_generation_));
     }
     if (drain_type_)
       OnCodecDrained();

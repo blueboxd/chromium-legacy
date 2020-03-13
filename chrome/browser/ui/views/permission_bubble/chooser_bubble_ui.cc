@@ -89,9 +89,9 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
   // | Get help                         |
   // ------------------------------------
 
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                    chooser_controller->GetOkButtonLabel());
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                                    chooser_controller->GetCancelButtonLabel());
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -109,15 +109,15 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
     if (reason.has_value() && dialog->bubble_reference_)
       dialog->bubble_reference_->CloseBubble(reason.value());
   };
-  DialogDelegate::set_accept_callback(base::BindOnce(
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
       closure_callback, base::Unretained(this),
       &DeviceChooserContentView::Accept,
       base::make_optional<BubbleCloseReason>(BUBBLE_CLOSE_ACCEPTED)));
-  DialogDelegate::set_cancel_callback(base::BindOnce(
+  DialogDelegate::SetCancelCallback(base::BindOnce(
       closure_callback, base::Unretained(this),
       &DeviceChooserContentView::Cancel,
       base::make_optional<BubbleCloseReason>(BUBBLE_CLOSE_CANCELED)));
-  DialogDelegate::set_close_callback(
+  DialogDelegate::SetCloseCallback(
       base::BindOnce(closure_callback, base::Unretained(this),
                      &DeviceChooserContentView::Close, base::nullopt));
 

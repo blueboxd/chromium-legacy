@@ -220,7 +220,7 @@ PasswordItemsView::PasswordItemsView(content::WebContents* web_contents,
                              anchor_view,
                              /*easily_dismissable=*/true),
       controller_(PasswordsModelDelegateFromWebContents(web_contents)) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::SetExtraView(CreateManageButton(this));
 
   if (controller_.local_credentials().empty()) {

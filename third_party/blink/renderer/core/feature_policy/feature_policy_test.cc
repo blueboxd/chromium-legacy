@@ -563,36 +563,6 @@ TEST_F(FeaturePolicyParserTest, AllowHistogramDifferentDocument) {
       1);
 }
 
-// These declarations should each trigger the Unsized Media origin trial use
-// counter.
-const char* const kUnsizedMediaOriginTrialPolicyDeclarations[] = {
-    "unsized-media", "unsized-media; fullscreen", "fullscreen; unsized-media",
-    "unsized-media 'self'", "unsized-media 'none'"};
-
-TEST_F(FeaturePolicyParserTest, UnsizedMediaOriginTrialFeatureUseCounter) {
-  Vector<String> messages;
-
-  // Validate that features which are not in the origin trial do not trigger
-  // the use counter.
-  {
-    auto dummy = std::make_unique<DummyPageHolder>();
-    FeaturePolicyParser::ParseHeader("payment; fullscreen", origin_a_.get(),
-                                     &messages, &dummy->GetDocument());
-    EXPECT_FALSE(
-        dummy->GetDocument().IsUseCounted(WebFeature::kUnsizedMediaPolicy));
-  }
-
-  // Validate that declarations which should trigger the use counter do.
-  for (const char* declaration : kUnsizedMediaOriginTrialPolicyDeclarations) {
-    auto dummy = std::make_unique<DummyPageHolder>();
-    FeaturePolicyParser::ParseHeader(declaration, origin_a_.get(), &messages,
-                                     &dummy->GetDocument());
-    EXPECT_TRUE(
-        dummy->GetDocument().IsUseCounted(WebFeature::kUnsizedMediaPolicy))
-        << declaration << " should trigger the origin trial use counter.";
-  }
-}
-
 // Tests the use counter for comma separator in declarations.
 TEST_F(FeaturePolicyParserTest, CommaSeparatedUseCounter) {
   Vector<String> messages;

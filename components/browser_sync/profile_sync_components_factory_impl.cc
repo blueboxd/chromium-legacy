@@ -21,7 +21,6 @@
 #include "components/history/core/browser/sync/history_delete_directives_model_type_controller.h"
 #include "components/history/core/browser/sync/typed_url_model_type_controller.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/password_manager/core/browser/sync/password_data_type_controller.h"
 #include "components/password_manager/core/browser/sync/password_model_type_controller.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/features/reading_list_switches.h"
@@ -260,24 +259,17 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   // Password sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::PASSWORDS)) {
-    if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
-      if (profile_password_store_) {
-        // |profile_password_store_| can be null in tests.
-        controllers.push_back(
-            std::make_unique<password_manager::PasswordModelTypeController>(
-                profile_password_store_->CreateSyncControllerDelegate(),
-                account_password_store_
-                    ? account_password_store_->CreateSyncControllerDelegate()
-                    : nullptr,
-                sync_client_->GetPrefService(),
-                sync_client_->GetIdentityManager(), sync_service,
-                sync_client_->GetPasswordStateChangedCallback()));
-      }
-    } else {
-      controllers.push_back(std::make_unique<PasswordDataTypeController>(
-          dump_stack, sync_service, sync_client_,
-          sync_client_->GetPasswordStateChangedCallback(),
-          profile_password_store_));
+    if (profile_password_store_) {
+      // |profile_password_store_| can be null in tests.
+      controllers.push_back(
+          std::make_unique<password_manager::PasswordModelTypeController>(
+              profile_password_store_->CreateSyncControllerDelegate(),
+              account_password_store_
+                  ? account_password_store_->CreateSyncControllerDelegate()
+                  : nullptr,
+              sync_client_->GetPrefService(),
+              sync_client_->GetIdentityManager(), sync_service,
+              sync_client_->GetPasswordStateChangedCallback()));
     }
   }
 

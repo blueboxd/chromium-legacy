@@ -26,6 +26,7 @@
 #include "content/renderer/accessibility/ax_image_annotator.h"
 #include "content/renderer/accessibility/blink_ax_action_target.h"
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
+#include "content/renderer/accessibility/render_accessibility_manager.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_view_impl.h"
@@ -174,9 +175,12 @@ void RenderAccessibilityImpl::SnapshotAccessibilityTree(
   snapshotter.SnapshotContentTree(ax_mode, kMaxSnapshotNodeCount, response);
 }
 
-RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
-                                                 ui::AXMode mode)
+RenderAccessibilityImpl::RenderAccessibilityImpl(
+    RenderAccessibilityManager* const render_accessibility_manager,
+    RenderFrameImpl* const render_frame,
+    ui::AXMode mode)
     : RenderFrameObserver(render_frame),
+      render_accessibility_manager_(render_accessibility_manager),
       render_frame_(render_frame),
       tree_source_(render_frame, mode),
       serializer_(&tree_source_),
@@ -812,7 +816,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
 void RenderAccessibilityImpl::SendLocationChanges() {
   TRACE_EVENT0("accessibility", "RenderAccessibilityImpl::SendLocationChanges");
 
-  std::vector<AccessibilityHostMsg_LocationChangeParams> messages;
+  std::vector<mojom::LocationChangesPtr> changes;
 
   // Update layout on the root of the tree.
   WebAXObject root = tree_source_.GetRoot();
@@ -846,12 +850,8 @@ void RenderAccessibilityImpl::SendLocationChanges() {
     if (!container_transform.isIdentity())
       new_location.transform = base::WrapUnique(
           new gfx::Transform(container_transform));
-    if (iter->second != new_location) {
-      AccessibilityHostMsg_LocationChangeParams message;
-      message.id = id;
-      message.new_location = new_location;
-      messages.push_back(message);
-    }
+    if (iter->second != new_location)
+      changes.push_back(mojom::LocationChanges::New(id, new_location));
 
     // Save the new location.
     new_locations[id] = new_location;
@@ -864,7 +864,7 @@ void RenderAccessibilityImpl::SendLocationChanges() {
   }
   locations_.swap(new_locations);
 
-  Send(new AccessibilityHostMsg_LocationChanges(routing_id(), messages));
+  render_accessibility_manager_->HandleLocationChanges(std::move(changes));
 }
 
 void RenderAccessibilityImpl::OnEventsAck(int ack_token) {
@@ -1018,13 +1018,13 @@ void RenderAccessibilityImpl::CreateAXImageAnnotator() {
   if (!render_frame_)
     return;
   mojo::PendingRemote<image_annotation::mojom::Annotator> annotator;
-  render_frame()->GetBrowserInterfaceBroker()->GetInterface(
+  render_frame_->GetBrowserInterfaceBroker()->GetInterface(
       annotator.InitWithNewPipeAndPassReceiver());
 
   const std::string preferred_language =
-      render_frame()->render_view()
+      render_frame_->render_view()
           ? GetPreferredLanguage(
-                render_frame()->render_view()->GetAcceptLanguages())
+                render_frame_->render_view()->GetAcceptLanguages())
           : std::string();
   ax_image_annotator_ = std::make_unique<AXImageAnnotator>(
       this, preferred_language, std::move(annotator));

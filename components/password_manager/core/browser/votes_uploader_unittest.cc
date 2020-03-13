@@ -461,7 +461,7 @@ TEST_F(VotesUploaderTest, SaveSingleUsernameVote) {
 
   // Init store and expect that adding field info is called.
   scoped_refptr<MockPasswordStore> store = new MockPasswordStore;
-  store->Init(syncer::SyncableService::StartSyncFlare(), /*prefs=*/nullptr);
+  store->Init(/*prefs=*/nullptr);
 
 #if defined(OS_ANDROID)
   EXPECT_CALL(*store, AddFieldInfoImpl).Times(0);

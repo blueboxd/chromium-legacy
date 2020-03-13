@@ -49,7 +49,7 @@ ChromeCleanerRebootDialog::ChromeCleanerRebootDialog(
   DCHECK(dialog_controller_);
 
   DialogDelegate::set_draggable(true);
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(
           IDS_CHROME_CLEANUP_REBOOT_PROMPT_RESTART_BUTTON_LABEL));
@@ -65,13 +65,13 @@ ChromeCleanerRebootDialog::ChromeCleanerRebootDialog(
     (std::exchange(*controller, nullptr)->*(fn))();
   };
 
-  DialogDelegate::set_accept_callback(
+  DialogDelegate::SetAcceptCallback(
       base::BindOnce(close_callback, base::Unretained(&dialog_controller_),
                      &Controller::Accept));
-  DialogDelegate::set_cancel_callback(
+  DialogDelegate::SetCancelCallback(
       base::BindOnce(close_callback, base::Unretained(&dialog_controller_),
                      &Controller::Cancel));
-  DialogDelegate::set_close_callback(
+  DialogDelegate::SetCloseCallback(
       base::BindOnce(close_callback, base::Unretained(&dialog_controller_),
                      &Controller::Close));
 

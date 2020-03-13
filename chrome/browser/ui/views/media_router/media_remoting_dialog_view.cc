@@ -101,19 +101,19 @@ MediaRemotingDialogView::MediaRemotingDialogView(
       dialog_title_(
           l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_REMOTING_DIALOG_TITLE)) {
   DCHECK(pref_service_);
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(
           IDS_MEDIA_ROUTER_REMOTING_DIALOG_OPTIMIZE_BUTTON));
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(
           IDS_MEDIA_ROUTER_REMOTING_DIALOG_CANCEL_BUTTON));
 
-  DialogDelegate::set_accept_callback(
+  DialogDelegate::SetAcceptCallback(
       base::BindOnce(&MediaRemotingDialogView::ReportPermission,
                      base::Unretained(this), true));
-  DialogDelegate::set_cancel_callback(
+  DialogDelegate::SetCancelCallback(
       base::BindOnce(&MediaRemotingDialogView::ReportPermission,
                      base::Unretained(this), false));
 

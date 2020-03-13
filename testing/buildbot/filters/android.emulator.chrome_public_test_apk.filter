@@ -67,7 +67,7 @@
 -org.chromium.chrome.browser.offlinepages.indicator.OfflineIndicatorControllerTest.testDoNotShowOfflineIndicatorWhenTemporarilyPaused
 
 # crbug.com/1061198
--org.chromium.chrome.browser.settings.password.PasswordSettingsTest.testExportMenuDisabled
+-org.chromium.chrome.browser.password_manager.settings.PasswordSettingsTest.testExportMenuDisabled
 
 # crbug.com/1061201
 -org.chromium.chrome.browser.history.HistoryActivityTest.testOpenSelectedItems

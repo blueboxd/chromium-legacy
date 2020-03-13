@@ -78,16 +78,16 @@ DataRemovalConfirmationDialog::DataRemovalConfirmationDialog(
     Profile* profile,
     DataRemovalConfirmationCallback confirm_callback)
     : profile_(profile), confirm_callback_(std::move(confirm_callback)) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_ARC_DATA_REMOVAL_CONFIRMATION_OK_BUTTON));
 
   auto run_callback = [](DataRemovalConfirmationDialog* dialog, bool accept) {
     std::move(dialog->confirm_callback_).Run(accept);
   };
-  DialogDelegate::set_accept_callback(
+  DialogDelegate::SetAcceptCallback(
       base::BindOnce(run_callback, base::Unretained(this), true));
-  DialogDelegate::set_cancel_callback(
+  DialogDelegate::SetCancelCallback(
       base::BindOnce(run_callback, base::Unretained(this), false));
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();

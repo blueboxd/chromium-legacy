@@ -196,6 +196,11 @@ void FontPreloadManager::SetRenderDelayTimeoutForTest(base::TimeDelta timeout) {
   render_delay_timeout_ = timeout;
 }
 
+void FontPreloadManager::DisableTimeoutForTest() {
+  if (render_delay_timer_.IsActive())
+    render_delay_timer_.Stop();
+}
+
 void FontPreloadManager::Trace(Visitor* visitor) {
   visitor->Trace(finish_observers_);
   visitor->Trace(document_);

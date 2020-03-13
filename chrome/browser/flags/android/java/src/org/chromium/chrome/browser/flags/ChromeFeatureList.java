@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.flags;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.FeatureList;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
@@ -26,44 +27,34 @@ import java.util.Map;
 @JNINamespace("chrome::android")
 @MainDex
 public abstract class ChromeFeatureList {
-    /** Map that stores substitution feature flags for tests. */
-    private static Map<String, Boolean> sTestFeatures;
-
     /** Prevent instantiation. */
     private ChromeFeatureList() {}
 
-    /** Access to default values of the native chrome feature flag. */
-    private static boolean sTestCanUseDefaults;
-
     /**
-     * This is called explicitly for instrumentation tests via Features#applyForInstrumentation().
-     * Unit tests and Robolectric tests must not invoke this and should rely on the {@link Features}
-     * annotations to enable or disable any feature flags.
+     * @see FeatureList#setTestCanUseDefaultsForTesting
      */
+    // TODO(crbug.com/1060097): Migrate callers to the FeatureList equivalent function.
     @VisibleForTesting
     public static void setTestCanUseDefaultsForTesting() {
-        sTestCanUseDefaults = true;
+        FeatureList.setTestCanUseDefaultsForTesting();
     }
 
     /**
-     * We reset the value to false after the instrumentation test to avoid any unwanted
-     * persistence of the state. This is invoked by Features#reset().
+     * @see FeatureList#resetTestCanUseDefaultsForTesting
      */
+    // TODO(crbug.com/1060097): Migrate callers to the FeatureList equivalent function.
     @VisibleForTesting
     public static void resetTestCanUseDefaultsForTesting() {
-        sTestCanUseDefaults = false;
+        FeatureList.resetTestCanUseDefaultsForTesting();
     }
 
     /**
-     * Sets the feature flags to use in JUnit tests, since native calls are not available there.
-     * Do not use directly, prefer using the {@link Features} annotation.
-     *
-     * @see Features
-     * @see Features.Processor
+     * @see FeatureList#setTestFeatures
      */
+    // TODO(crbug.com/1060097): Migrate callers to the FeatureList equivalent function.
     @VisibleForTesting
     public static void setTestFeatures(Map<String, Boolean> features) {
-        sTestFeatures = features;
+        FeatureList.setTestFeatures(features);
     }
 
     /**
@@ -72,7 +63,7 @@ public abstract class ChromeFeatureList {
      *         in tests if test features have been set).
      */
     public static boolean isInitialized() {
-        if (sTestFeatures != null) return true;
+        if (FeatureList.hasTestFeatures()) return true;
         return isNativeInitialized();
     }
 
@@ -120,13 +111,9 @@ public abstract class ChromeFeatureList {
      * @return Whether the feature is enabled or not.
      */
     public static boolean isEnabled(String featureName) {
-        /** FeatureFlags set for testing override the native default value. */
-        if (sTestFeatures != null) {
-            Boolean enabled = sTestFeatures.get(featureName);
-            if (enabled != null) return enabled;
-            if (!sTestCanUseDefaults) throw new IllegalArgumentException(featureName);
-        }
-
+        // FeatureFlags set for testing override the native default value.
+        Boolean testValue = FeatureList.getTestValueForFeature(featureName);
+        if (testValue != null) return testValue;
         return isEnabledInNative(featureName);
     }
 
@@ -142,7 +129,7 @@ public abstract class ChromeFeatureList {
      *   the specified parameter does not exist.
      */
     public static String getFieldTrialParamByFeature(String featureName, String paramName) {
-        if (sTestFeatures != null) return "";
+        if (FeatureList.hasTestFeatures()) return "";
         assert isInitialized();
         return ChromeFeatureListJni.get().getFieldTrialParamByFeature(featureName, paramName);
     }
@@ -161,7 +148,7 @@ public abstract class ChromeFeatureList {
      */
     public static int getFieldTrialParamByFeatureAsInt(
             String featureName, String paramName, int defaultValue) {
-        if (sTestFeatures != null) return defaultValue;
+        if (FeatureList.hasTestFeatures()) return defaultValue;
         assert isInitialized();
         return ChromeFeatureListJni.get().getFieldTrialParamByFeatureAsInt(
                 featureName, paramName, defaultValue);
@@ -181,7 +168,7 @@ public abstract class ChromeFeatureList {
      */
     public static double getFieldTrialParamByFeatureAsDouble(
             String featureName, String paramName, double defaultValue) {
-        if (sTestFeatures != null) return defaultValue;
+        if (FeatureList.hasTestFeatures()) return defaultValue;
         assert isInitialized();
         return ChromeFeatureListJni.get().getFieldTrialParamByFeatureAsDouble(
                 featureName, paramName, defaultValue);
@@ -201,7 +188,7 @@ public abstract class ChromeFeatureList {
      */
     public static boolean getFieldTrialParamByFeatureAsBoolean(
             String featureName, String paramName, boolean defaultValue) {
-        if (sTestFeatures != null) return defaultValue;
+        if (FeatureList.hasTestFeatures()) return defaultValue;
         assert isInitialized();
         return ChromeFeatureListJni.get().getFieldTrialParamByFeatureAsBoolean(
                 featureName, paramName, defaultValue);
@@ -298,7 +285,6 @@ public abstract class ChromeFeatureList {
     public static final String EXPLORE_SITES = "ExploreSites";
     public static final String FOCUS_OMNIBOX_IN_INCOGNITO_TAB_INTENTS =
             "FocusOmniboxInIncognitoTabIntents";
-    public static final String GENERIC_SENSOR_EXTRA_CLASSES = "GenericSensorExtraClasses";
     public static final String GRANT_NOTIFICATIONS_TO_DSE = "GrantNotificationsToDSE";
     public static final String HANDLE_MEDIA_INTENTS = "HandleMediaIntents";
     public static final String HOMEPAGE_LOCATION_POLICY = "HomepageLocationPolicy";

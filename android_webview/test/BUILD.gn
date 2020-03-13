@@ -4,6 +4,7 @@
 
 import("//android_webview/variables.gni")
 import("//build/config/android/rules.gni")
+import("//build/config/python.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//testing/test.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
@@ -20,37 +21,26 @@ group("test") {
 }
 
 if (public_android_sdk) {
-  group("webview_cts_tests") {
-    _py_files =
-        read_file("//android_webview/tools/run_cts.pydeps", "list lines")
+  python_library("webview_cts_tests") {
+    pydeps_file = "//android_webview/tools/run_cts.pydeps"
     deps = [ "//android_webview:system_webview_apk" ]
-
     data_deps = [
       "//build/android:logdog_wrapper_py",
       "//build/android:test_runner_py",
       "//testing/buildbot/filters:webview_cts_tests_filters",
     ]
-
-    # Filter out comments.
-    set_sources_assignment_filter([ "#*" ])
-    sources = _py_files
-
-    data = sources
-    data += [ "//android_webview/tools/cts_config/" ]
+    data = [ "//android_webview/tools/cts_config/" ]
   }
 
-  group("system_webview_wpt") {
+  python_library("system_webview_wpt") {
     testonly = true
+    pydeps_file = "//testing/scripts/run_android_wpt.pydeps"
     data_deps = [
       "//android_webview:system_webview_apk",
       "//android_webview/tools/system_webview_shell:system_webview_shell_layout_test_apk",
       "//chrome/test/chromedriver:chromedriver($host_toolchain)",
     ]
-    set_sources_assignment_filter([ "#*" ])
-    sources =
-        read_file("//testing/scripts/run_android_wpt.pydeps", "list lines")
-    data = sources
-    data += [ "//third_party/blink/web_tests/external/" ]
+    data = [ "//third_party/blink/web_tests/external/" ]
   }
 }
 

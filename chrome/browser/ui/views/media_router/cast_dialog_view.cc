@@ -265,7 +265,7 @@ CastDialogView::CastDialogView(views::View* anchor_view,
       controller_(controller),
       profile_(profile),
       metrics_(start_time, activation_location, profile) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   sources_button_ = DialogDelegate::SetExtraView(CreateSourcesButton(this));
   ShowNoSinksView();
 }

@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/page/page_widget_delegate.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
+#include "third_party/blink/renderer/platform/widget/widget_base_client.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
@@ -56,7 +57,8 @@ class LocalDOMWindow;
 class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
                                            public PageWidgetEventHandler,
                                            public PagePopup,
-                                           public RefCounted<WebPagePopupImpl> {
+                                           public RefCounted<WebPagePopupImpl>,
+                                           public WidgetBaseClient {
   USING_FAST_MALLOC(WebPagePopupImpl);
 
  public:
@@ -107,6 +109,10 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
   // PageWidgetEventHandler implementation.
   WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
+
+  // WidgetBaseClient overrides:
+  void DispatchRafAlignedInput(base::TimeTicks frame_time) override;
+  void BeginMainFrame(base::TimeTicks last_frame_time) override;
 
  private:
   // WebWidget implementation.
@@ -170,7 +176,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
   // Base functionality all widgets have. This is a member as to avoid
   // complicated inheritance structures.
-  WidgetBase widget_base_;
+  WidgetBase widget_base_{this};
 
   friend class WebPagePopup;
   friend class PagePopupChromeClient;

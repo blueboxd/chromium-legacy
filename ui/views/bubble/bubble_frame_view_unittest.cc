@@ -907,7 +907,7 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
       : BubbleDialogDelegateView(nullptr, BubbleBorder::NONE) {
     set_shadow(BubbleBorder::NO_ASSETS);
     SetAnchorRect(gfx::Rect());
-    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
+    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
   }
   ~TestBubbleDialogDelegateView() override = default;
 
@@ -978,7 +978,7 @@ class TestAnchor {
 class TestWidthSnapDelegate : public TestBubbleDialogDelegateView {
  public:
   TestWidthSnapDelegate(TestAnchor* anchor, bool should_snap) {
-    DialogDelegate::set_buttons(should_snap ? ui::DIALOG_BUTTON_OK
+    DialogDelegate::SetButtons(should_snap ? ui::DIALOG_BUTTON_OK
                                             : ui::DIALOG_BUTTON_NONE);
     SetAnchorView(anchor->widget().GetContentsView());
     set_margins(gfx::Insets());

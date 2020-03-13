@@ -197,7 +197,7 @@ class FormFetcherImplTest : public testing::Test,
                      kTestHttpURL,
                      GURL(kTestHttpURL)) {
     mock_store_ = new MockPasswordStore;
-    mock_store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+    mock_store_->Init(nullptr);
     client_.set_store(mock_store_.get());
 
     if (!GetParam()) {

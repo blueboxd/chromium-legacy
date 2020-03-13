@@ -59,12 +59,12 @@ StoragePressureBubbleView::StoragePressureBubbleView(
     set_parent_window(
         platform_util::GetViewForWindow(browser->window()->GetNativeWindow()));
   }
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(
           IDS_SETTINGS_STORAGE_PRESSURE_BUBBLE_VIEW_BUTTON_LABEL));
-  DialogDelegate::set_accept_callback(base::BindOnce(
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
       &StoragePressureBubbleView::OnDialogAccepted, base::Unretained(this)));
 }
 

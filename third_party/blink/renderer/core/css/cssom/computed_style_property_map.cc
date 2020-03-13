@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
+#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
@@ -248,6 +249,8 @@ const CSSValue* ComputedStylePropertyMap::GetProperty(
   switch (property_id) {
     case CSSPropertyID::kTransform:
       return ComputedTransform(*style);
+    case CSSPropertyID::kLineHeight:
+      return ComputedStyleUtils::ComputedValueForLineHeight(*style);
     default:
       return CSSProperty::Get(property_id)
           .CSSValueFromComputedStyle(*style, nullptr /* layout_object */,

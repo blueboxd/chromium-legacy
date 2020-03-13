@@ -58,8 +58,7 @@ class CWVAutofillDataManagerTest : public PlatformTest {
     personal_data_manager_->SetAutofillWalletImportEnabled(true);
 
     password_store_ = new password_manager::TestPasswordStore();
-    password_store_->Init(base::RepeatingCallback<void(syncer::ModelType)>(),
-                          nullptr);
+    password_store_->Init(nullptr);
 
     autofill_data_manager_ = [[CWVAutofillDataManager alloc]
         initWithPersonalDataManager:personal_data_manager_.get()

@@ -88,8 +88,8 @@ AccountChooserDialogView::AccountChooserDialogView(
     : controller_(controller), web_contents_(web_contents) {
   DCHECK(controller);
   DCHECK(web_contents);
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_CANCEL);
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_CANCEL);
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_SIGN_IN));
   set_close_on_deactivate(false);
@@ -105,7 +105,7 @@ AccountChooserDialogView::~AccountChooserDialogView() = default;
 void AccountChooserDialogView::ShowAccountChooser() {
   // It isn't known until after the creation of this dialog whether the sign-in
   // button should be shown, so always reset the button state here.
-  DialogDelegate::set_buttons(controller_->ShouldShowSignInButton()
+  DialogDelegate::SetButtons(controller_->ShouldShowSignInButton()
                                   ? ui::DIALOG_BUTTON_OK |
                                         ui::DIALOG_BUTTON_CANCEL
                                   : ui::DIALOG_BUTTON_CANCEL);

@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.autofill.prefeditor.EditableOption;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorObserverForTest;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.payments.PaymentApp;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentUisShowStateReconciler;
 import org.chromium.chrome.browser.payments.ShippingStrings;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.LineItemBreakdownSection;
@@ -1022,6 +1023,13 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
                 && mPaymentMethodSectionInformation != null
                 && mPaymentMethodSectionInformation.getSelectedItem() != null
                 && !mIsClientCheckingSelection && !mIsEditingPaymentItem && !mIsClosing);
+
+        PaymentApp selectedApp = mPaymentMethodSectionInformation == null
+                ? null
+                : (PaymentApp) mPaymentMethodSectionInformation.getSelectedItem();
+        mPayButton.setText(selectedApp != null && !selectedApp.isAutofillInstrument()
+                        ? R.string.payments_continue_button
+                        : R.string.payments_pay_button);
         mReadyToPayNotifierForTest.run();
     }
 

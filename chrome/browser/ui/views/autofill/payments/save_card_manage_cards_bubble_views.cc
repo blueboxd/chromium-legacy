@@ -40,7 +40,7 @@ SaveCardManageCardsBubbleViews::SaveCardManageCardsBubbleViews(
     content::WebContents* web_contents,
     SaveCardBubbleController* controller)
     : SaveCardBubbleViews(anchor_view, web_contents, controller) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::SetExtraView(CreateManageCardsButton(this));
   DialogDelegate::SetFootnoteView(CreateSigninPromoView());
 }

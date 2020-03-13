@@ -15,8 +15,8 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.device.DeviceFeatureList;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -190,15 +190,15 @@ public class ContentSettingsResources {
             int sensorsBlockedDescription =
                     R.string.website_settings_category_motion_sensors_blocked;
             try {
-                if (ChromeFeatureList.isEnabled(ChromeFeatureList.GENERIC_SENSOR_EXTRA_CLASSES)) {
+                if (DeviceFeatureList.isEnabled(DeviceFeatureList.GENERIC_SENSOR_EXTRA_CLASSES)) {
                     sensorsPermissionTitle = R.string.sensors_permission_title;
                     sensorsAllowedDescription = R.string.website_settings_category_sensors_allowed;
                     sensorsBlockedDescription = R.string.website_settings_category_sensors_blocked;
                 }
             } catch (IllegalArgumentException e) {
                 // We can hit this in tests that use the @Features annotation, as it calls
-                // ChromeFeatureList.setTestFeatures() with a map that should not need to contain
-                // ChromeFeatureList.GENERIC_SENSOR_EXTRA_CLASSES.
+                // FeatureList.setTestFeatures() with a map that should not need to contain
+                // DeviceFeatureList.GENERIC_SENSOR_EXTRA_CLASSES.
             }
             localMap.put(ContentSettingsType.SENSORS,
                     new ResourceItem(R.drawable.settings_sensors, sensorsPermissionTitle,

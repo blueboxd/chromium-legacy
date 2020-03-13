@@ -7,7 +7,7 @@
 #include "base/i18n/char_iterator.h"
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/web_contents_accessibility_android.h"
-#include "content/common/accessibility_messages.h"
+#include "content/common/render_accessibility.mojom.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "ui/accessibility/ax_role_properties.h"
 
@@ -258,19 +258,19 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
 }
 
 void BrowserAccessibilityManagerAndroid::SendLocationChangeEvents(
-    const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
+    const std::vector<mojom::LocationChangesPtr>& changes) {
   // Android is not very efficient at handling notifications, and location
   // changes in particular are frequent and not time-critical. If a lot of
   // nodes changed location, just send a single notification after a short
   // delay (to batch them), rather than lots of individual notifications.
-  if (params.size() > 3) {
+  if (changes.size() > 3) {
     auto* wcax = GetWebContentsAXFromRootManager();
     if (!wcax)
       return;
     wcax->SendDelayedWindowContentChangedEvent();
     return;
   }
-  BrowserAccessibilityManager::SendLocationChangeEvents(params);
+  BrowserAccessibilityManager::SendLocationChangeEvents(changes);
 }
 
 bool BrowserAccessibilityManagerAndroid::NextAtGranularity(

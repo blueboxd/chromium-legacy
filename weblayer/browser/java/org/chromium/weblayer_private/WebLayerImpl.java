@@ -190,9 +190,9 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         mIsWebViewCompatMode = remoteContext != null
                 && !remoteContext.getClassLoader().equals(WebLayerImpl.class.getClassLoader());
         if (mIsWebViewCompatMode && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-            // We need to change the library name for Android M and below, otherwise the system will
-            // load the version loaded for WebView.
-            LibraryLoader.getInstance().setLibrarySuffix("-weblayer");
+            // Load the library with the crazy linker.
+            LibraryLoader.getInstance().setLinkerImplementation(true, false);
+            WebViewCompatibilityHelperImpl.setRequiresManualJniRegistration(true);
         }
 
         Context appContext = minimalInitForContext(appContextWrapper, remoteContextWrapper);

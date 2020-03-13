@@ -73,21 +73,21 @@ ExternalProtocolDialog::ExternalProtocolDialog(
       url_(url),
       program_name_(program_name),
       initiating_origin_(initiating_origin) {
-  DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetDefaultButton(ui::DIALOG_BUTTON_CANCEL);
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringFUTF16(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT,
                                  program_name_));
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT));
 
-  DialogDelegate::set_accept_callback(base::BindOnce(
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
       &ExternalProtocolDialog::OnDialogAccepted, base::Unretained(this)));
-  DialogDelegate::set_cancel_callback(base::BindOnce(
+  DialogDelegate::SetCancelCallback(base::BindOnce(
       &ExternalProtocolHandler::RecordHandleStateMetrics,
       false /* checkbox_selected */, ExternalProtocolHandler::BLOCK));
-  DialogDelegate::set_close_callback(base::BindOnce(
+  DialogDelegate::SetCloseCallback(base::BindOnce(
       &ExternalProtocolHandler::RecordHandleStateMetrics,
       false /* checkbox_selected */, ExternalProtocolHandler::BLOCK));
 

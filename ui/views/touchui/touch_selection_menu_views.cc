@@ -41,7 +41,7 @@ TouchSelectionMenuViews::TouchSelectionMenuViews(
   DCHECK(owner_);
   DCHECK(client_);
 
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   set_shadow(BubbleBorder::SMALL_SHADOW);
   set_parent_window(context);
   constexpr gfx::Insets kMenuMargins = gfx::Insets(1);

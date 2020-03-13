@@ -91,7 +91,7 @@ EnrollmentDialogView::EnrollmentDialogView(const std::string& network_name,
       target_uri_(target_uri),
       connect_(connect),
       added_cert_(false) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_NETWORK_ENROLLMENT_HANDLER_BUTTON));
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(

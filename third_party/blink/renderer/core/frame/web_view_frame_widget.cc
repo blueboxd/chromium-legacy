@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 namespace blink {
 
@@ -51,20 +52,13 @@ void WebViewFrameWidget::SetSuppressFrameRequestsWorkaroundFor704763Only(
   web_view_->SetSuppressFrameRequestsWorkaroundFor704763Only(
       suppress_frame_requests);
 }
-void WebViewFrameWidget::BeginFrame(base::TimeTicks last_frame_time) {
-  web_view_->BeginFrame(last_frame_time);
-}
 
 void WebViewFrameWidget::DidBeginFrame() {
   web_view_->DidBeginFrame();
 }
 
-void WebViewFrameWidget::BeginRafAlignedInput() {
-  web_view_->BeginRafAlignedInput();
-}
-
-void WebViewFrameWidget::EndRafAlignedInput() {
-  web_view_->EndRafAlignedInput();
+void WebViewFrameWidget::BeginMainFrame(base::TimeTicks last_frame_time) {
+  web_view_->BeginFrame(last_frame_time);
 }
 
 void WebViewFrameWidget::BeginUpdateLayers() {

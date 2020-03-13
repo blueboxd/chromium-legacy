@@ -73,11 +73,10 @@ WaitableMessageLoopEvent::~WaitableMessageLoopEvent() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-base::Closure WaitableMessageLoopEvent::GetClosure() {
+base::OnceClosure WaitableMessageLoopEvent::GetClosure() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return BindToCurrentLoop(
-      base::BindRepeating(&WaitableMessageLoopEvent::OnCallback,
-                          base::Unretained(this), PIPELINE_OK));
+  return BindToCurrentLoop(base::BindOnce(&WaitableMessageLoopEvent::OnCallback,
+                                          base::Unretained(this), PIPELINE_OK));
 }
 
 PipelineStatusCallback WaitableMessageLoopEvent::GetPipelineStatusCB() {

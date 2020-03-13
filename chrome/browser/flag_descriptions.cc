@@ -785,10 +785,6 @@ const char kEnableSyncUSSNigoriName[] = "Enable USS for sync encryption keys";
 const char kEnableSyncUSSNigoriDescription[] =
     "Enables the new, experimental implementation of sync encryption keys";
 
-const char kEnableSyncUSSPasswordsName[] = "Enable USS for passwords sync";
-const char kEnableSyncUSSPasswordsDescription[] =
-    "Enables the new, experimental implementation of passwords sync";
-
 const char kEnableTextFragmentAnchorName[] = "Enable Text Fragment Anchor.";
 const char kEnableTextFragmentAnchorDescription[] =
     "Enables scrolling to text specified in URL's fragment.";

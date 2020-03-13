@@ -1220,6 +1220,12 @@
       'openscreen_unittests': {}
     },
 
+    'fuchsia_gpu_telemetry_tests': {
+      'hardware_accelerated_feature': {
+        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
+      }
+    },
+
     'fuchsia_gtests': {
       'angle_unittests': {},
       'base_unittests': {},
@@ -2175,6 +2181,18 @@
       # hand in waterfalls.pyl.
       'noop_sleep': {
       }
+    },
+
+    'gpu_skia_renderer_dawn_gtests': {
+      'cc_unittests': {
+        'linux_args': ['--no-xvfb'],
+      },
+      'viz_unittests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/gpu.skiarenderer_dawn_viz_unittests.filter',
+        ],
+        'linux_args': ['--no-xvfb'],
+      },
     },
 
     'gpu_skia_renderer_egl_telemetry_tests': {

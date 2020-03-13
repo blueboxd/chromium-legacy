@@ -72,7 +72,7 @@ NativeFileSystemPermissionView::NativeFileSystemPermissionView(
     const Request& request,
     base::OnceCallback<void(permissions::PermissionAction result)> callback)
     : request_(request), callback_(std::move(callback)) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(GetButtonLabel(request_)));
 
@@ -80,13 +80,13 @@ NativeFileSystemPermissionView::NativeFileSystemPermissionView(
                          permissions::PermissionAction result) {
     std::move(dialog->callback_).Run(result);
   };
-  DialogDelegate::set_accept_callback(
+  DialogDelegate::SetAcceptCallback(
       base::BindOnce(run_callback, base::Unretained(this),
                      permissions::PermissionAction::GRANTED));
-  DialogDelegate::set_cancel_callback(
+  DialogDelegate::SetCancelCallback(
       base::BindOnce(run_callback, base::Unretained(this),
                      permissions::PermissionAction::DISMISSED));
-  DialogDelegate::set_close_callback(
+  DialogDelegate::SetCloseCallback(
       base::BindOnce(run_callback, base::Unretained(this),
                      permissions::PermissionAction::DISMISSED));
 

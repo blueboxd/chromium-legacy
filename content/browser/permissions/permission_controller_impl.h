@@ -31,13 +31,14 @@ class CONTENT_EXPORT PermissionControllerImpl : public PermissionController {
   enum class OverrideStatus { kOverrideNotSet, kOverrideSet };
 
   // For the given |origin|, grant permissions in |overrides| and reject all
-  // others.
+  // others. If no |origin| is specified, grant permissions to all origins in
+  // the browser context.
   OverrideStatus GrantOverridesForDevTools(
-      const url::Origin& origin,
+      const base::Optional<url::Origin>& origin,
       const std::vector<PermissionType>& permissions);
   OverrideStatus SetOverrideForDevTools(
-      const url::Origin& origin,
-      const PermissionType& permission,
+      const base::Optional<url::Origin>& origin,
+      PermissionType permission,
       const blink::mojom::PermissionStatus& status);
   void ResetOverridesForDevTools();
 
@@ -93,7 +94,8 @@ class CONTENT_EXPORT PermissionControllerImpl : public PermissionController {
   void NotifyChangedSubscriptions(const SubscriptionsStatusMap& old_statuses);
   void OnDelegatePermissionStatusChange(Subscription* subscription,
                                         blink::mojom::PermissionStatus status);
-  void UpdateDelegateOverridesForDevTools(const url::Origin& origin);
+  void UpdateDelegateOverridesForDevTools(
+      const base::Optional<url::Origin>& origin);
 
   DevToolsPermissionOverrides devtools_permission_overrides_;
   SubscriptionsMap subscriptions_;

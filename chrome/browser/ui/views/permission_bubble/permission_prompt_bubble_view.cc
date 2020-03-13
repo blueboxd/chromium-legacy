@@ -47,21 +47,21 @@ PermissionPromptBubbleView::PermissionPromptBubbleView(
   // To prevent permissions being accepted accidentally, and as a security
   // measure against crbug.com/619429, permission prompts should not be accepted
   // as the default action.
-  DialogDelegate::set_default_button(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::SetDefaultButton(ui::DIALOG_BUTTON_NONE);
 
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW));
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL, l10n_util::GetStringUTF16(IDS_PERMISSION_DENY));
   set_close_on_deactivate(false);
 
-  DialogDelegate::set_accept_callback(
+  DialogDelegate::SetAcceptCallback(
       base::BindOnce(&permissions::PermissionPrompt::Delegate::Accept,
                      base::Unretained(delegate)));
-  DialogDelegate::set_cancel_callback(
+  DialogDelegate::SetCancelCallback(
       base::BindOnce(&permissions::PermissionPrompt::Delegate::Deny,
                      base::Unretained(delegate)));
-  DialogDelegate::set_close_callback(
+  DialogDelegate::SetCloseCallback(
       base::BindOnce(&permissions::PermissionPrompt::Delegate::Closing,
                      base::Unretained(delegate)));
 

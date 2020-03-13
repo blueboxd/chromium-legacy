@@ -1729,8 +1729,12 @@ void Browser::AddNewContents(WebContents* source,
 }
 
 void Browser::ActivateContents(WebContents* contents) {
-  tab_strip_model_->ActivateTabAt(
-      tab_strip_model_->GetIndexOfWebContents(contents));
+  // A WebContents can ask to activate after it's been removed from the
+  // TabStripModel. See https://crbug.com/1060986
+  int index = tab_strip_model_->GetIndexOfWebContents(contents);
+  if (index == TabStripModel::kNoTab)
+    return;
+  tab_strip_model_->ActivateTabAt(index);
   window_->Activate();
 }
 

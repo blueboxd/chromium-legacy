@@ -732,7 +732,7 @@ class RootViewTestDialogDelegate : public DialogDelegateView {
  public:
   RootViewTestDialogDelegate() {
     // Ensure that buttons don't influence the layout.
-    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   }
   ~RootViewTestDialogDelegate() override = default;
 

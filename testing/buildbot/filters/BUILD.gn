@@ -190,7 +190,10 @@ source_set("unit_tests_filters") {
 source_set("viz_unittests_filters") {
   testonly = true
 
-  data = [ "//testing/buildbot/filters/android.emulator.viz_unittests.filter" ]
+  data = [
+    "//testing/buildbot/filters/android.emulator.viz_unittests.filter",
+    "//testing/buildbot/filters/gpu.skiarenderer_dawn_viz_unittests.filter",
+  ]
 }
 
 source_set("webview_cts_tests_filters") {

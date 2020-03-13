@@ -111,8 +111,9 @@ class PermissionManager : public KeyedService,
       content::PermissionType permission,
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin) override;
-  bool IsPermissionOverridableByDevTools(content::PermissionType permission,
-                                         const url::Origin& origin) override;
+  bool IsPermissionOverridableByDevTools(
+      content::PermissionType permission,
+      const base::Optional<url::Origin>& origin) override;
   int SubscribePermissionStatusChange(
       content::PermissionType permission,
       content::RenderFrameHost* render_frame_host,
@@ -129,7 +130,7 @@ class PermissionManager : public KeyedService,
   // For the given |origin|, overrides permissions that belong to |overrides|.
   // These permissions are in-sync with the PermissionController.
   void SetPermissionOverridesForDevTools(
-      const url::Origin& origin,
+      const base::Optional<url::Origin>& origin,
       const PermissionOverrides& overrides) override;
   void ResetPermissionOverridesForDevTools() override;
 
@@ -187,6 +188,7 @@ class PermissionManager : public KeyedService,
       base::flat_map<ContentSettingsType, ContentSetting>;
   std::map<url::Origin, ContentSettingsTypeOverrides>
       devtools_permission_overrides_;
+  url::Origin devtools_global_overrides_origin_;
 
   bool is_shutting_down_ = false;
 

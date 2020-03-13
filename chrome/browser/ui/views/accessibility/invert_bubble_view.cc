@@ -82,8 +82,8 @@ InvertBubbleView::InvertBubbleView(Browser* browser, views::View* anchor_view)
     : views::BubbleDialogDelegateView(anchor_view,
                                       views::BubbleBorder::TOP_RIGHT),
       browser_(browser) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                    l10n_util::GetStringUTF16(IDS_DONE));
   DialogDelegate::SetExtraView(::CreateExtraView(this));
   set_margins(gfx::Insets());

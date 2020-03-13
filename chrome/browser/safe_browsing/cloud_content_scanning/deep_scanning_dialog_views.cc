@@ -387,34 +387,34 @@ void DeepScanningDialogViews::SetupButtons() {
   // TODO(domfc): Add "Learn more" button on scan failure.
   if (is_warning()) {
     // Include the Ok and Cancel buttons if there is a bypassable warning.
-    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_CANCEL |
+    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_CANCEL |
                                 ui::DIALOG_BUTTON_OK);
-    DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
+    DialogDelegate::SetDefaultButton(ui::DIALOG_BUTTON_CANCEL);
 
-    DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+    DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                                      GetCancelButtonText());
-    DialogDelegate::set_cancel_callback(
+    DialogDelegate::SetCancelCallback(
         base::BindOnce(&DeepScanningDialogViews::CancelButtonCallback,
                        weak_ptr_factory_.GetWeakPtr()));
 
-    DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+    DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                      GetBypassWarningButtonText());
-    DialogDelegate::set_accept_callback(
+    DialogDelegate::SetAcceptCallback(
         base::BindOnce(&DeepScanningDialogViews::AcceptButtonCallback,
                        weak_ptr_factory_.GetWeakPtr()));
   } else if (is_failure() || is_pending()) {
     // Include the Cancel button when the scan is pending or failing.
-    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_CANCEL);
-    DialogDelegate::set_default_button(ui::DIALOG_BUTTON_NONE);
+    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_CANCEL);
+    DialogDelegate::SetDefaultButton(ui::DIALOG_BUTTON_NONE);
 
-    DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+    DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                                      GetCancelButtonText());
-    DialogDelegate::set_cancel_callback(
+    DialogDelegate::SetCancelCallback(
         base::BindOnce(&DeepScanningDialogViews::CancelButtonCallback,
                        weak_ptr_factory_.GetWeakPtr()));
   } else {
     // Include no buttons otherwise.
-    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   }
 }
 

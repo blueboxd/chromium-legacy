@@ -13,8 +13,7 @@ config("pgo_instrumentation_flags") {
 
   # Only add flags when chrome_pgo_phase == 1, so that variables we would use
   # are not required to be defined when we're not actually using PGO.
-  if (chrome_pgo_phase == 1 && is_clang && use_lld && !is_nacl &&
-      is_a_target_toolchain) {
+  if (chrome_pgo_phase == 1 && is_clang && !is_nacl && is_a_target_toolchain) {
     cflags = [ "-fprofile-instr-generate" ]
     if (!is_win) {
       # Windows directly calls link.exe instead of the compiler driver when

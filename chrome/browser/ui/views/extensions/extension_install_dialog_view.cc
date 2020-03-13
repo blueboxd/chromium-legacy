@@ -208,8 +208,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   int buttons = prompt_->GetDialogButtons();
   DCHECK(buttons & ui::DIALOG_BUTTON_CANCEL);
 
-  DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
-  DialogDelegate::set_buttons(buttons);
+  DialogDelegate::SetDefaultButton(ui::DIALOG_BUTTON_CANCEL);
+  DialogDelegate::SetButtons(buttons);
   DialogDelegate::set_draggable(true);
   if (prompt_->has_webstore_data()) {
     auto store_link = std::make_unique<views::Link>(
@@ -223,9 +223,9 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
             l10n_util::GetStringUTF16(IDS_EXTENSION_WITHHOLD_PERMISSIONS)));
   }
 
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                    prompt_->GetAcceptButtonLabel());
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                                    prompt_->GetAbortButtonLabel());
   set_close_on_deactivate(false);
   CreateContents();

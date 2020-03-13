@@ -113,11 +113,11 @@ class DialogTest : public ViewsTestBase {
     dialog_ = new TestDialog();
     dialog_->Init();
 
-    dialog_->set_accept_callback(
+    dialog_->SetAcceptCallback(
         base::BindLambdaForTesting([&]() { accepted_ = true; }));
-    dialog_->set_cancel_callback(
+    dialog_->SetCancelCallback(
         base::BindLambdaForTesting([&]() { cancelled_ = true; }));
-    dialog_->set_close_callback(
+    dialog_->SetCloseCallback(
         base::BindLambdaForTesting([&]() { closed_ = true; }));
   }
 
@@ -363,7 +363,7 @@ TEST_F(DialogTest, InitialFocus) {
 class InitialFocusTestDialog : public DialogDelegateView {
  public:
   InitialFocusTestDialog() {
-    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
+    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
   }
   ~InitialFocusTestDialog() override = default;
 
@@ -435,9 +435,9 @@ TEST_F(DialogDelegateCloseTest, AnyCallbackInhibitsDefaultClose) {
   bool cancelled = false;
   bool accepted = false;
 
-  dialog.set_cancel_callback(
+  dialog.SetCancelCallback(
       base::BindLambdaForTesting([&]() { cancelled = true; }));
-  dialog.set_accept_callback(
+  dialog.SetAcceptCallback(
       base::BindLambdaForTesting([&]() { accepted = true; }));
 
   // At this point DefaultClose() would invoke either Accept() or Cancel().
@@ -454,9 +454,9 @@ TEST_F(DialogDelegateCloseTest,
   bool closed = false;
   bool accepted = false;
 
-  dialog.set_close_callback(
+  dialog.SetCloseCallback(
       base::BindLambdaForTesting([&]() { closed = true; }));
-  dialog.set_accept_callback(base::BindLambdaForTesting([&]() {
+  dialog.SetAcceptCallback(base::BindLambdaForTesting([&]() {
     accepted = true;
     dialog.Close();
   }));

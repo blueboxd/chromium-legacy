@@ -19,9 +19,7 @@ SyncBackendRegistrar::SyncBackendRegistrar(
     ModelSafeWorkerFactory worker_factory)
     : name_(name) {
   DCHECK(!worker_factory.is_null());
-  MaybeAddWorker(worker_factory, GROUP_UI);
   MaybeAddWorker(worker_factory, GROUP_PASSIVE);
-  MaybeAddWorker(worker_factory, GROUP_PASSWORD);
 }
 
 void SyncBackendRegistrar::RegisterNonBlockingType(ModelType type) {
@@ -58,12 +56,6 @@ void SyncBackendRegistrar::SetInitialTypes(ModelTypeSet initial_types) {
     }
   }
 
-  if (!workers_.count(GROUP_PASSWORD)) {
-    LOG_IF(WARNING, initial_types.Has(PASSWORDS))
-        << "Password store not initialized, cannot sync passwords";
-    routing_info_.erase(PASSWORDS);
-  }
-
   // Although this can re-set NonBlocking types, this should be idempotent.
   last_configured_types_ = GetRoutingInfoTypes(routing_info_);
 }
@@ -89,15 +81,10 @@ ModelTypeSet SyncBackendRegistrar::ConfigureDataTypes(
     ModelTypeSet types_to_add,
     ModelTypeSet types_to_remove) {
   DCHECK(Intersection(types_to_add, types_to_remove).Empty());
-  ModelTypeSet filtered_types_to_add = types_to_add;
-  if (workers_.count(GROUP_PASSWORD) == 0) {
-    LOG(WARNING) << "No password worker -- removing PASSWORDS";
-    filtered_types_to_add.Remove(PASSWORDS);
-  }
 
   base::AutoLock lock(lock_);
   ModelTypeSet newly_added_types;
-  for (ModelType type : filtered_types_to_add) {
+  for (ModelType type : types_to_add) {
     // Add a newly specified data type corresponding initial group into the
     // routing_info, if it does not already exist.
     if (routing_info_.count(type) == 0) {

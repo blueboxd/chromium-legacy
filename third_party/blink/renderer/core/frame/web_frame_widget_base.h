@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
+#include "third_party/blink/renderer/platform/widget/widget_base_client.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace cc {
@@ -47,7 +48,8 @@ struct IntrinsicSizingInfo;
 
 class CORE_EXPORT WebFrameWidgetBase
     : public GarbageCollected<WebFrameWidgetBase>,
-      public WebFrameWidget {
+      public WebFrameWidget,
+      public WidgetBaseClient {
  public:
   explicit WebFrameWidgetBase(WebWidgetClient&);
   virtual ~WebFrameWidgetBase();
@@ -133,6 +135,10 @@ class CORE_EXPORT WebFrameWidgetBase
   void DidNotAcquirePointerLock() override;
   void DidLosePointerLock() override;
   void ShowContextMenu(WebMenuSourceType) override;
+  void BeginFrame(base::TimeTicks frame_time) final;
+
+  // WidgetBaseClient methods.
+  void DispatchRafAlignedInput(base::TimeTicks frame_time) override;
 
   // Image decode functionality.
   void RequestDecode(const PaintImage&, base::OnceCallback<void(bool)>);
@@ -279,7 +285,7 @@ class CORE_EXPORT WebFrameWidgetBase
 
   // Base functionality all widgets have. This is a member as to avoid
   // complicated inheritance structures.
-  WidgetBase widget_base_;
+  WidgetBase widget_base_{this};
 
  private:
   void CancelDrag();

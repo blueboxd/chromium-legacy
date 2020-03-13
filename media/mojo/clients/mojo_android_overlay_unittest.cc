@@ -115,7 +115,7 @@ class MojoAndroidOverlayTest : public ::testing::Test {
     overlay_client_.reset(
         new MojoAndroidOverlay(provider_receiver_.BindNewPipeAndPassRemote(),
                                std::move(config_), routing_token));
-    overlay_client_->AddSurfaceDestroyedCallback(base::Bind(
+    overlay_client_->AddSurfaceDestroyedCallback(base::BindOnce(
         &MockClientCallbacks::OnDestroyed, base::Unretained(&callbacks_)));
     base::RunLoop().RunUntilIdle();
   }

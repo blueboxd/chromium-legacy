@@ -20,7 +20,7 @@ CaptionBubble::CaptionBubble(views::View* anchor)
     : BubbleDialogDelegateView(anchor,
                                views::BubbleBorder::FLOAT,
                                views::BubbleBorder::Shadow::NO_SHADOW) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   DialogDelegate::set_draggable(true);
 }
 

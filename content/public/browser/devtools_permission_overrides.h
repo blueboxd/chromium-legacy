@@ -32,31 +32,34 @@ class CONTENT_EXPORT DevToolsPermissionOverrides {
       base::flat_map<PermissionType, blink::mojom::PermissionStatus>;
 
   // Set permission override for |permission| at |origin| to |status|.
-  void Set(const url::Origin& origin,
-           const PermissionType& permission,
-           const blink::mojom::PermissionStatus status);
+  // Null |origin| specifies global overrides.
+  void Set(const base::Optional<url::Origin>& origin,
+           PermissionType permission,
+           const blink::mojom::PermissionStatus& status);
 
   // Get override for |origin| set for |permission|, if specified.
   base::Optional<blink::mojom::PermissionStatus> Get(
       const url::Origin& origin,
-      const PermissionType& permission) const;
+      PermissionType permission) const;
 
-  // Get all overrides for particular |origin|, stored in |overrides| if found.
-  // Will return empty overrides if none previously existed.
-  const PermissionOverrides& GetAll(const url::Origin& origin) const;
+  // Get all overrides for particular |origin|, stored in |overrides|
+  // if found. Will return empty overrides if none previously existed. Returns
+  // global overrides when |origin| is nullptr.
+  const PermissionOverrides& GetAll(
+      const base::Optional<url::Origin>& origin) const;
 
   // Resets overrides for |origin|.
-  void Reset(const url::Origin& origin) { overrides_.erase(origin); }
+  // Null |origin| resets global overrides.
+  void Reset(const base::Optional<url::Origin>& origin);
 
-  // Sets status for |permissions| to GRANTED in |origin|, and DENIED for all
-  // others.
-  void GrantPermissions(const url::Origin& origin,
+  // Sets status for |permissions| to GRANTED in |origin|, and DENIED
+  // for all others.
+  // Null |origin| grants permissions globally for context.
+  void GrantPermissions(const base::Optional<url::Origin>& origin,
                         const std::vector<PermissionType>& permissions);
 
  private:
-  // Insert/adds every entry of |overrides| to |origin|'s overrides.
-  void SetAll(const url::Origin& origin, const PermissionOverrides& overrides);
-
+  url::Origin global_overrides_origin_;
   base::flat_map<url::Origin, PermissionOverrides> overrides_;
 };
 

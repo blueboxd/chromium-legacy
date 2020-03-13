@@ -75,7 +75,7 @@ QRCodeGeneratorBubble::QRCodeGeneratorBubble(
       controller_(controller) {
   DCHECK(controller);
 
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
 }
 
 QRCodeGeneratorBubble::~QRCodeGeneratorBubble() = default;

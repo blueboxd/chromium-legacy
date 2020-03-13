@@ -153,14 +153,14 @@ OutdatedUpgradeBubbleView::OutdatedUpgradeBubbleView(
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       auto_update_enabled_(auto_update_enabled),
       navigator_(navigator) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(auto_update_enabled_ ? IDS_REINSTALL_APP
                                                      : IDS_REENABLE_UPDATES));
-  DialogDelegate::set_accept_callback(base::BindOnce(
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
       &OutdatedUpgradeBubbleView::OnDialogAccepted, base::Unretained(this)));
-  DialogDelegate::set_close_callback(
+  DialogDelegate::SetCloseCallback(
       base::BindOnce(&base::RecordAction,
                      base::UserMetricsAction("OutdatedUpgradeBubble.Later")));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::OUTDATED_UPGRADE);

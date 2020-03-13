@@ -34,7 +34,7 @@ bool AppDialogView::ShouldShowCloseButton() const {
 
 void AppDialogView::InitializeView(const gfx::ImageSkia& image,
                                    const base::string16& heading_text) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,

@@ -62,13 +62,12 @@ interface HTMLMediaElement : HTMLElement
 
 # permissions API (crbug.com/490120), presentation API (crbug.com/521319),
 # share API (crbug.com/765923), custom scheme handlers (crbug.com/589502),
-# media session API (crbug.com/925997), sms API (crbug.com/963653), and WebXr
-# API (crbug.com/1012899) are not supported in webview.
+# media session API (crbug.com/925997), and WebXr API (crbug.com/1012899)
+# are not supported in webview.
 interface Navigator
     getter mediaSession                # crbug.com/925997
     getter permissions                 # crbug.com/490120
     getter presentation                # crbug.com/521319
-    getter sms                         # crbug.com/963653
     getter xr                          # crbug.com/1012899
     method registerProtocolHandler     # crbug.com/589502
     method unregisterProtocolHandler   # crbug.com/589502
@@ -77,10 +76,6 @@ interface Navigator
 # Media Session API is not enabled in Android WebView (crbug.com/925997)
 interface MediaMetadata
 interface MediaSession
-
-# SMS API is disabled in Android WebView, (crbug.com/963653)
-interface SMS
-interface SMSReceiver
 
 # notifications not yet supported in webview, crbug.com/551446
 interface ServiceWorkerRegistration : EventTarget

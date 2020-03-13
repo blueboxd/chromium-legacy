@@ -11,7 +11,6 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "components/sync/engine/passive_model_worker.h"
-#include "components/sync/engine/sequenced_model_worker.h"
 #include "components/sync/model/change_processor_mock.h"
 #include "components/sync/syncable/test_user_share.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -84,9 +83,6 @@ class SyncBackendRegistrarTest : public testing::Test {
   scoped_refptr<ModelSafeWorker> CreateModelWorkerForGroup(
       ModelSafeGroup group) {
     switch (group) {
-      case GROUP_UI:
-        return new SequencedModelWorker(
-            task_environment_.GetMainThreadTaskRunner(), group);
       case GROUP_PASSIVE:
         return new PassiveModelWorker();
       default:
@@ -105,16 +101,16 @@ class SyncBackendRegistrarTest : public testing::Test {
 TEST_F(SyncBackendRegistrarTest, ConstructorEmpty) {
   registrar()->SetInitialTypes(ModelTypeSet());
   EXPECT_FALSE(registrar()->IsNigoriEnabled());
-  EXPECT_EQ(2u, GetWorkersSize());
+  EXPECT_EQ(1u, GetWorkersSize());
   ExpectRoutingInfo(ModelSafeRoutingInfo());
   ExpectHasProcessorsForTypes(ModelTypeSet());
 }
 
 TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
   registrar()->RegisterNonBlockingType(BOOKMARKS);
-  registrar()->SetInitialTypes(ModelTypeSet(BOOKMARKS, NIGORI, PASSWORDS));
+  registrar()->SetInitialTypes(ModelTypeSet(BOOKMARKS, NIGORI));
   EXPECT_TRUE(registrar()->IsNigoriEnabled());
-  EXPECT_EQ(2u, GetWorkersSize());
+  EXPECT_EQ(1u, GetWorkersSize());
   EXPECT_EQ(ModelTypeSet(NIGORI), registrar()->GetLastConfiguredTypes());
   // Bookmarks dropped because it is nonblocking.
   // Passwords dropped because of no password store.
@@ -124,10 +120,10 @@ TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
 
 TEST_F(SyncBackendRegistrarTest, ConstructorNonEmptyReversedInitialization) {
   // The blocking types get to set initial types before NonBlocking types here.
-  registrar()->SetInitialTypes(ModelTypeSet(BOOKMARKS, NIGORI, PASSWORDS));
+  registrar()->SetInitialTypes(ModelTypeSet(BOOKMARKS, NIGORI));
   registrar()->RegisterNonBlockingType(BOOKMARKS);
   EXPECT_TRUE(registrar()->IsNigoriEnabled());
-  EXPECT_EQ(2u, GetWorkersSize());
+  EXPECT_EQ(1u, GetWorkersSize());
   EXPECT_EQ(ModelTypeSet(NIGORI), registrar()->GetLastConfiguredTypes());
   // Bookmarks dropped because it is nonblocking.
   // Passwords dropped because of no password store.
@@ -161,38 +157,6 @@ TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
   ExpectRoutingInfo(ModelSafeRoutingInfo());
   ExpectHasProcessorsForTypes(ModelTypeSet());
   EXPECT_EQ(ModelTypeSet(), registrar()->GetLastConfiguredTypes());
-}
-
-TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
-  InSequence in_sequence;
-  registrar()->SetInitialTypes(ModelTypeSet());
-
-  // Should do nothing.
-  TriggerChanges(BOOKMARKS);
-
-  StrictMock<ChangeProcessorMock> change_processor_mock;
-  EXPECT_CALL(change_processor_mock, StartImpl());
-  EXPECT_CALL(change_processor_mock, IsRunning()).WillRepeatedly(Return(true));
-  EXPECT_CALL(change_processor_mock, ApplyChangesFromSyncModel(nullptr, _, _));
-  EXPECT_CALL(change_processor_mock, IsRunning()).WillRepeatedly(Return(true));
-  EXPECT_CALL(change_processor_mock, CommitChangesFromSyncModel());
-  EXPECT_CALL(change_processor_mock, IsRunning()).WillRepeatedly(Return(false));
-
-  const ModelTypeSet types(BOOKMARKS);
-  EXPECT_EQ(types, registrar()->ConfigureDataTypes(types, ModelTypeSet()));
-  registrar()->ActivateDataType(BOOKMARKS, GROUP_UI, &change_processor_mock,
-                                user_share());
-  ExpectRoutingInfo({{BOOKMARKS, GROUP_UI}});
-  ExpectHasProcessorsForTypes(types);
-
-  TriggerChanges(BOOKMARKS);
-
-  registrar()->DeactivateDataType(BOOKMARKS);
-  ExpectRoutingInfo(ModelSafeRoutingInfo());
-  ExpectHasProcessorsForTypes(ModelTypeSet());
-
-  // Should do nothing.
-  TriggerChanges(BOOKMARKS);
 }
 
 // Tests that registration and configuration of non-blocking data types is

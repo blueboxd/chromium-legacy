@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
-#include "content/common/accessibility_messages.h"
 #include "content/public/common/content_client.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "ui/accessibility/ax_enums.mojom.h"

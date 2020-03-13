@@ -25,6 +25,10 @@
 #include "device/fido/fido_discovery_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
+namespace base {
+class ElapsedTimer;
+}
+
 namespace device {
 
 class BleAdapterManager;
@@ -39,8 +43,6 @@ class FidoDiscoveryFactory;
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     : public FidoDiscoveryBase::Observer {
  public:
-  using AuthenticatorMap =
-      std::map<std::string, FidoAuthenticator*, std::less<>>;
   using RequestCallback = base::RepeatingCallback<void(const std::string&)>;
   using BlePairingCallback =
       base::RepeatingCallback<void(std::string authenticator_id,
@@ -49,6 +51,17 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
                                    base::OnceClosure error_callback)>;
 
   enum class RequestType { kMakeCredential, kGetAssertion };
+
+  struct AuthenticatorState {
+    explicit AuthenticatorState(FidoAuthenticator* authenticator);
+    ~AuthenticatorState();
+
+    FidoAuthenticator* authenticator;
+    std::unique_ptr<base::ElapsedTimer> timer;
+  };
+
+  using AuthenticatorMap =
+      std::map<std::string, std::unique_ptr<AuthenticatorState>, std::less<>>;
 
   // Encapsulates data required to initiate WebAuthN UX dialog. Once all
   // components of TransportAvailabilityInfo is set,
@@ -233,6 +246,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
 
   void Start();
 
+  // Returns |true| if a short enough time has elapsed since the request was
+  // dispatched that an authenticator may be suspected to have returned a
+  // response without user interaction.
+  // Must be called after |DispatchRequest| is called.
+  bool AuthenticatorMayHaveReturnedImmediately(
+      const std::string& authenticator_id);
+
   AuthenticatorMap& active_authenticators() { return active_authenticators_; }
   std::vector<std::unique_ptr<FidoDiscoveryBase>>& discoveries() {
     return discoveries_;
@@ -273,7 +293,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   // DispatchRequest(). InitializeAuthenticator() sends a GetInfo command
   // to FidoDeviceAuthenticator instances in order to determine their protocol
   // versions before a request can be dispatched.
-  void InitializeAuthenticatorAndDispatchRequest(FidoAuthenticator*);
+  void InitializeAuthenticatorAndDispatchRequest(
+      AuthenticatorState* authenticator_state);
   void ConstructBleAdapterPowerManager();
 
   AuthenticatorMap active_authenticators_;

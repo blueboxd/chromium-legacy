@@ -54,7 +54,7 @@ NetworkProfileBubbleView::NetworkProfileBubbleView(
     : BubbleDialogDelegateView(anchor, views::BubbleBorder::TOP_RIGHT),
       navigator_(navigator),
       profile_(profile) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
   auto* learn_more = DialogDelegate::SetExtraView(
       std::make_unique<views::Link>(l10n_util::GetStringUTF16(IDS_LEARN_MORE)));
   learn_more->set_callback(base::BindRepeating(

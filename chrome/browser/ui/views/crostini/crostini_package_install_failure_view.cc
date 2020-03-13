@@ -50,7 +50,7 @@ gfx::Size CrostiniPackageInstallFailureView::CalculatePreferredSize() const {
 
 CrostiniPackageInstallFailureView::CrostiniPackageInstallFailureView(
     const std::string& error_message) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,

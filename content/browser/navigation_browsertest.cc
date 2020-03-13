@@ -53,7 +53,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/test_navigation_throttle_inserter.h"
-#include "content/public/test/url_loader_interceptor.h"
+#include "content/public/test/url_loader_monitor.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
@@ -263,49 +263,6 @@ class NetworkIsolationNavigationBrowserTest
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
     ContentBrowserTest::SetUpOnMainThread();
-  }
-
-  // Navigate to |url| and for each ResourceRequest record its
-  // trusted_network_isolation_key. Stop listening after |final_resource| has
-  // been detected. The output is recorded in |network_isolation_keys|.
-  void NavigateAndRecordNetworkIsolationKeys(
-      const GURL& url,
-      const GURL& final_resource,
-      bool from_renderer,
-      std::map<GURL, net::NetworkIsolationKey>* network_isolation_keys,
-      std::map<GURL, network::mojom::UpdateNetworkIsolationKeyOnRedirect>*
-          update_network_isolation_key_on_redirects) {
-    if (from_renderer)
-      EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
-
-    base::RunLoop run_loop;
-    base::Lock lock;
-
-    // Intercept network requests and record them.
-    URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
-        [&](URLLoaderInterceptor::RequestParams* params) -> bool {
-          base::AutoLock top_frame_origins_lock(lock);
-          if (params->url_request.trusted_params) {
-            (*network_isolation_keys)[params->url_request.url] =
-                params->url_request.trusted_params->network_isolation_key;
-            (*update_network_isolation_key_on_redirects)[params->url_request
-                                                             .url] =
-                params->url_request.trusted_params
-                    ->update_network_isolation_key_on_redirect;
-          }
-
-          if (params->url_request.url == final_resource)
-            run_loop.Quit();
-          return false;
-        }));
-
-    if (from_renderer)
-      EXPECT_TRUE(NavigateToURLFromRenderer(shell(), url));
-    else
-      EXPECT_TRUE(NavigateToURL(shell(), url));
-
-    // Wait until the last resource we care about has been requested.
-    run_loop.Run();
   }
 
   base::test::ScopedFeatureList feature_list_;
@@ -836,118 +793,86 @@ IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(NetworkIsolationNavigationBrowserTest,
                        BrowserNavigationNetworkIsolationKey) {
-  std::map<GURL, net::NetworkIsolationKey> network_isolation_keys;
-  std::map<GURL, network::mojom::UpdateNetworkIsolationKeyOnRedirect>
-      update_network_isolation_key_on_redirects;
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   url::Origin origin = url::Origin::Create(url);
+  URLLoaderMonitor monitor({url});
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  monitor.WaitForUrls();
 
-  NavigateAndRecordNetworkIsolationKeys(
-      url, url /* final_resource */, false /* from_renderer */,
-      &network_isolation_keys, &update_network_isolation_key_on_redirects);
+  base::Optional<network::ResourceRequest> request =
+      monitor.GetRequestInfo(url);
+  ASSERT_TRUE(request->trusted_params);
   EXPECT_EQ(net::NetworkIsolationKey(origin, origin),
-            network_isolation_keys[url]);
+            request->trusted_params->network_isolation_key);
   EXPECT_EQ(network::mojom::UpdateNetworkIsolationKeyOnRedirect::
                 kUpdateTopFrameAndFrameOrigin,
-            update_network_isolation_key_on_redirects[url]);
+            request->trusted_params->update_network_isolation_key_on_redirect);
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkIsolationNavigationBrowserTest,
                        RenderNavigationNetworkIsolationKey) {
-  std::map<GURL, net::NetworkIsolationKey> network_isolation_keys;
-  std::map<GURL, network::mojom::UpdateNetworkIsolationKeyOnRedirect>
-      update_network_isolation_key_on_redirects;
   GURL url(embedded_test_server()->GetURL("/title2.html"));
   url::Origin origin = url::Origin::Create(url);
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
+  URLLoaderMonitor monitor({url});
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), url));
+  monitor.WaitForUrls();
 
-  NavigateAndRecordNetworkIsolationKeys(
-      url, url /* final_resource */, true /* from_renderer */,
-      &network_isolation_keys, &update_network_isolation_key_on_redirects);
+  base::Optional<network::ResourceRequest> request =
+      monitor.GetRequestInfo(url);
+  ASSERT_TRUE(request->trusted_params);
   EXPECT_EQ(net::NetworkIsolationKey(origin, origin),
-            network_isolation_keys[url]);
+            request->trusted_params->network_isolation_key);
   EXPECT_EQ(network::mojom::UpdateNetworkIsolationKeyOnRedirect::
                 kUpdateTopFrameAndFrameOrigin,
-            update_network_isolation_key_on_redirects[url]);
+            request->trusted_params->update_network_isolation_key_on_redirect);
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkIsolationNavigationBrowserTest,
                        SubframeNetworkIsolationKey) {
-  std::map<GURL, net::NetworkIsolationKey> network_isolation_keys;
-  std::map<GURL, network::mojom::UpdateNetworkIsolationKeyOnRedirect>
-      update_network_isolation_key_on_redirects;
   GURL url(embedded_test_server()->GetURL("/page_with_iframe.html"));
   GURL iframe_document = embedded_test_server()->GetURL("/title1.html");
   url::Origin origin = url::Origin::Create(url);
   url::Origin iframe_origin = url::Origin::Create(iframe_document);
+  URLLoaderMonitor monitor({iframe_document});
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  monitor.WaitForUrls();
 
-  NavigateAndRecordNetworkIsolationKeys(
-      url, iframe_document /* final_resource */, false /* from_renderer */,
-      &network_isolation_keys, &update_network_isolation_key_on_redirects);
+  base::Optional<network::ResourceRequest> main_frame_request =
+      monitor.GetRequestInfo(url);
+  ASSERT_TRUE(main_frame_request.has_value());
+  ASSERT_TRUE(main_frame_request->trusted_params);
   EXPECT_EQ(net::NetworkIsolationKey(origin, origin),
-            network_isolation_keys[url]);
+            main_frame_request->trusted_params->network_isolation_key);
   EXPECT_EQ(network::mojom::UpdateNetworkIsolationKeyOnRedirect::
                 kUpdateTopFrameAndFrameOrigin,
-            update_network_isolation_key_on_redirects[url]);
+            main_frame_request->trusted_params
+                ->update_network_isolation_key_on_redirect);
+
+  base::Optional<network::ResourceRequest> iframe_request =
+      monitor.GetRequestInfo(iframe_document);
+  ASSERT_TRUE(iframe_request->trusted_params);
   EXPECT_EQ(net::NetworkIsolationKey(origin, iframe_origin),
-            network_isolation_keys[iframe_document]);
+            iframe_request->trusted_params->network_isolation_key);
   EXPECT_EQ(
       network::mojom::UpdateNetworkIsolationKeyOnRedirect::kUpdateFrameOrigin,
-      update_network_isolation_key_on_redirects[iframe_document]);
+      iframe_request->trusted_params->update_network_isolation_key_on_redirect);
 }
-
-// Helper class to extract the initiator values from URLLoaderFactory calls
-class InitiatorInterceptor {
- public:
-  explicit InitiatorInterceptor(const GURL& final_url) {
-    // Intercept network requests and record them.
-    interceptor_ =
-        std::make_unique<URLLoaderInterceptor>(base::BindLambdaForTesting(
-            [&final_url,
-             this](URLLoaderInterceptor::RequestParams* params) -> bool {
-              base::AutoLock initiators_lock(lock_);
-              (initiators_)[params->url_request.url] =
-                  params->url_request.request_initiator;
-
-              if (params->url_request.url == final_url)
-                run_loop_.Quit();
-              return false;
-            }));
-  }
-
-  void Run() {
-    // Wait until the last resource we care about has been requested.
-    run_loop_.Run();
-  }
-
-  // This method should be used only if the key already exists in the map.
-  const base::Optional<url::Origin>& GetInitiatorForURL(const GURL& url) const {
-    auto initiator_iterator = initiators_.find(url);
-    DCHECK(initiator_iterator != initiators_.end());
-
-    return initiator_iterator->second;
-  }
-
- private:
-  std::map<GURL, base::Optional<url::Origin>> initiators_;
-  std::unique_ptr<URLLoaderInterceptor> interceptor_;
-  base::Lock lock_;
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(InitiatorInterceptor);
-};
 
 // Tests that the initiator is not set for a browser initiated top frame
 // navigation.
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, BrowserNavigationInitiator) {
   GURL url(embedded_test_server()->GetURL("/title1.html"));
 
-  InitiatorInterceptor test_interceptor(url);
+  URLLoaderMonitor monitor;
 
   // Perform the actual navigation.
   EXPECT_TRUE(NavigateToURL(shell(), url));
-  test_interceptor.Run();
 
-  ASSERT_FALSE(test_interceptor.GetInitiatorForURL(url).has_value());
+  base::Optional<network::ResourceRequest> request =
+      monitor.GetRequestInfo(url);
+  ASSERT_TRUE(request.has_value());
+  ASSERT_FALSE(request->request_initiator.has_value());
 }
 
 // Test that the initiator is set to the starting page when a renderer initiated
@@ -961,13 +886,15 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, RendererNavigationInitiator) {
 
   GURL url(embedded_test_server()->GetURL("/title2.html"));
 
-  InitiatorInterceptor test_interceptor(url);
+  URLLoaderMonitor monitor;
 
   // Perform the actual navigation.
   EXPECT_TRUE(NavigateToURLFromRenderer(shell(), url));
-  test_interceptor.Run();
 
-  EXPECT_EQ(starting_page_origin, test_interceptor.GetInitiatorForURL(url));
+  base::Optional<network::ResourceRequest> request =
+      monitor.GetRequestInfo(url);
+  ASSERT_TRUE(request.has_value());
+  EXPECT_EQ(starting_page_origin, request->request_initiator);
 }
 
 // Test that the initiator is set to the starting page when a sub frame is
@@ -989,12 +916,11 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SubFrameJsNavigationInitiator) {
 
   GURL url(embedded_test_server()->GetURL("a.com", "/title1.html"));
 
-  InitiatorInterceptor test_interceptor(url);
+  URLLoaderMonitor monitor({url});
   std::string script = "location.href='" + url.spec() + "'";
 
   // Perform the actual navigation.
   EXPECT_TRUE(ExecJs(root->child_at(0)->current_frame_host(), script));
-  test_interceptor.Run();
 
   EXPECT_TRUE(
       root->current_frame_host()->render_view_host()->IsRenderViewLive());
@@ -1004,7 +930,10 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SubFrameJsNavigationInitiator) {
   url::Origin starting_page_origin;
   starting_page_origin = starting_page_origin.Create(starting_page);
 
-  EXPECT_EQ(starting_page_origin, test_interceptor.GetInitiatorForURL(url));
+  monitor.WaitForUrls();
+  base::Optional<network::ResourceRequest> request =
+      monitor.GetRequestInfo(url);
+  EXPECT_EQ(starting_page_origin, request->request_initiator);
 }
 
 // Test that the initiator is set to the starting page when a sub frame,
@@ -1030,11 +959,10 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
 
   GURL url(embedded_test_server()->GetURL("c.com", "/title1.html"));
 
-  InitiatorInterceptor test_interceptor(url);
+  URLLoaderMonitor monitor;
 
   // Perform the actual navigation.
   NavigateIframeToURL(shell()->web_contents(), "child-0", url);
-  test_interceptor.Run();
 
   EXPECT_TRUE(
       root->current_frame_host()->render_view_host()->IsRenderViewLive());
@@ -1044,7 +972,10 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   url::Origin starting_page_origin;
   starting_page_origin = starting_page_origin.Create(starting_page);
 
-  EXPECT_EQ(starting_page_origin, test_interceptor.GetInitiatorForURL(url));
+  base::Optional<network::ResourceRequest> request =
+      monitor.GetRequestInfo(url);
+  ASSERT_TRUE(request.has_value());
+  EXPECT_EQ(starting_page_origin, request->request_initiator);
 }
 
 // Data URLs can have a reference fragment like any other URLs. This test makes

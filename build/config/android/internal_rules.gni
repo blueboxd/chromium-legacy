@@ -114,20 +114,13 @@ template("write_build_config") {
   if (_type != "android_apk" && _type != "java_binary" && _type != "dist_jar" &&
       _type != "java_annotation_processor" && _type != "dist_aar" &&
       _type != "android_app_bundle") {
-    set_sources_assignment_filter(_java_target_whitelist)
     _parent_invoker = invoker.invoker
     _target_label =
         get_label_info(":${_parent_invoker.target_name}", "label_no_toolchain")
-    sources = [ _target_label ]
-    if (sources != []) {
-      set_sources_assignment_filter(_java_target_blacklist)
-      sources = []
-      sources = [ _target_label ]
-      if (sources != []) {
-        assert(false, "Invalid java target name: $_target_label")
-      }
+    if (filter_exclude([ _target_label ], _java_target_whitelist) != [] &&
+        filter_exclude([ _target_label ], _java_target_blacklist) != []) {
+      assert(false, "Invalid java target name: $_target_label")
     }
-    sources = []
   }
 
   action_with_pydeps(target_name) {
@@ -151,23 +144,16 @@ template("write_build_config") {
     _deps_configs = []
     if (defined(invoker.possible_config_deps)) {
       foreach(_possible_dep, invoker.possible_config_deps) {
-        set_sources_assignment_filter(_java_target_whitelist)
         _target_label = get_label_info(_possible_dep, "label_no_toolchain")
-        sources = [ _target_label ]
-        if (sources == []) {
-          set_sources_assignment_filter(_java_target_blacklist)
-          sources = []
-          sources = [ _target_label ]
-          if (sources != []) {
-            # Put the bug number in the target name so that false-positives
-            # have a hint in the error message about non-existent dependencies.
-            deps += [ "$_target_label$build_config_target_suffix" ]
-            _dep_gen_dir = get_label_info(_possible_dep, "target_gen_dir")
-            _dep_name = get_label_info(_possible_dep, "name")
-            _deps_configs += [ "$_dep_gen_dir/$_dep_name.build_config" ]
-          }
+        if (filter_exclude([ _target_label ], _java_target_whitelist) == [] &&
+            filter_exclude([ _target_label ], _java_target_blacklist) != []) {
+          # Put the bug number in the target name so that false-positives
+          # have a hint in the error message about non-existent dependencies.
+          deps += [ "$_target_label$build_config_target_suffix" ]
+          _dep_gen_dir = get_label_info(_possible_dep, "target_gen_dir")
+          _dep_name = get_label_info(_possible_dep, "name")
+          _deps_configs += [ "$_dep_gen_dir/$_dep_name.build_config" ]
         }
-        sources = []
       }
     }
     _rebased_deps_configs = rebase_path(_deps_configs, root_build_dir)
@@ -3154,17 +3140,14 @@ if (enable_java_templates) {
       _chromium_code = invoker.chromium_code
     } else {
       # Default based on whether target is in third_party.
-      set_sources_assignment_filter([ "*\bthird_party\b*" ])
-      sources = [ get_label_info(":$_main_target_name", "dir") ]
-      _chromium_code = sources != []
+      _chromium_code =
+          filter_exclude([ get_label_info(":$_main_target_name", "dir") ],
+                         [ "*\bthird_party\b*" ]) != []
       if (!_chromium_code && !_is_prebuilt && _java_files != []) {
         # Unless third_party code has an org.chromium file in it.
-        set_sources_assignment_filter([ "*\bchromium\b*" ])
-        sources = _java_files
-        _chromium_code = _java_files != sources
+        _chromium_code =
+            filter_exclude(_java_files, [ "*\bchromium\b*" ]) != _java_files
       }
-      set_sources_assignment_filter([])
-      sources = []
     }
 
     if (defined(_final_jar_path)) {

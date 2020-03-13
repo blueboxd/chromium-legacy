@@ -91,7 +91,6 @@ class MemoryHistory;
 class MutatorEvents;
 class MutatorHost;
 class PageScaleAnimation;
-class PendingTreeDurationHistogramTimer;
 class PendingTreeRasterDurationHistogramTimer;
 class RasterTilePriorityQueue;
 class RasterBufferProvider;
@@ -1248,8 +1247,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   std::unique_ptr<Viewport> viewport_;
 
-  std::unique_ptr<PendingTreeDurationHistogramTimer>
-      pending_tree_duration_timer_;
   std::unique_ptr<PendingTreeRasterDurationHistogramTimer>
       pending_tree_raster_duration_timer_;
 

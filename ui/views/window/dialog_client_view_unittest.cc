@@ -41,7 +41,7 @@ class DialogClientViewTest : public test::WidgetTest,
     WidgetTest::SetUp();
 
     DialogDelegate::set_use_custom_frame(false);
-    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
 
     // Note: not using DialogDelegate::CreateDialogWidget(..), since that can
     // alter the frame type according to the platform.
@@ -86,7 +86,7 @@ class DialogClientViewTest : public test::WidgetTest,
 
   // Sets the buttons to show in the dialog and refreshes the dialog.
   void SetDialogButtons(int dialog_buttons) {
-    DialogDelegate::set_buttons(dialog_buttons);
+    DialogDelegate::SetButtons(dialog_buttons);
     DialogModelChanged();
   }
 
@@ -119,7 +119,7 @@ class DialogClientViewTest : public test::WidgetTest,
   // exceeded. The resulting width is around 160 pixels, but depends on system
   // fonts.
   void SetLongCancelLabel() {
-    DialogDelegate::set_button_label(
+    DialogDelegate::SetButtonLabel(
         ui::DIALOG_BUTTON_CANCEL, base::ASCIIToUTF16("Cancel Cancel Cancel"));
     DialogModelChanged();
   }
@@ -336,7 +336,7 @@ TEST_F(DialogClientViewTest, LinkedWidthDoesLink) {
 
   // Ensure there is no default button since getting a bold font can throw off
   // the cached sizes.
-  set_default_button(ui::DIALOG_BUTTON_NONE);
+  SetDefaultButton(ui::DIALOG_BUTTON_NONE);
 
   SetDialogButtons(ui::DIALOG_BUTTON_OK);
   CheckContentsIsSetToPreferredSize();
@@ -383,7 +383,7 @@ TEST_F(DialogClientViewTest, LinkedWidthDoesntLink) {
 
   // Ensure there is no default button since getting a bold font can throw off
   // the cached sizes.
-  set_default_button(ui::DIALOG_BUTTON_NONE);
+  SetDefaultButton(ui::DIALOG_BUTTON_NONE);
 
   SetDialogButtons(ui::DIALOG_BUTTON_OK);
   CheckContentsIsSetToPreferredSize();

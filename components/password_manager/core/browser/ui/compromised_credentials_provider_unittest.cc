@@ -12,7 +12,6 @@
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
-#include "components/sync/model/syncable_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,9 +67,7 @@ PasswordForm MakeSavedPassword(base::StringPiece signon_realm,
 
 class CompromisedCredentialsProviderTest : public ::testing::Test {
  protected:
-  CompromisedCredentialsProviderTest() {
-    store_->Init(syncer::SyncableService::StartSyncFlare(), /*prefs=*/nullptr);
-  }
+  CompromisedCredentialsProviderTest() { store_->Init(/*prefs=*/nullptr); }
 
   ~CompromisedCredentialsProviderTest() override {
     store_->ShutdownOnUIThread();

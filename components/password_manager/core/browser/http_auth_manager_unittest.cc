@@ -100,8 +100,7 @@ class HttpAuthManagerTest : public testing::Test {
  protected:
   void SetUp() override {
     store_ = new testing::StrictMock<MockPasswordStore>;
-    ASSERT_TRUE(
-        store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
+    ASSERT_TRUE(store_->Init(nullptr));
 
     ON_CALL(client_, GetProfilePasswordStore())
         .WillByDefault(Return(store_.get()));

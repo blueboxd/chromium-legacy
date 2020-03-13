@@ -34,9 +34,9 @@ class RemoveSuggestionBubbleDialogDelegateView
     DCHECK(template_url_service);
     DCHECK(match_.SupportsDeletion());
 
-    DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+    DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                      l10n_util::GetStringUTF16(IDS_REMOVE));
-    DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+    DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                                      l10n_util::GetStringUTF16(IDS_CANCEL));
 
     auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(

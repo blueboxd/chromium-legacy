@@ -158,7 +158,7 @@ MediaDialogView::MediaDialogView(views::View* anchor_view,
       service_(service),
       active_sessions_view_(
           AddChildView(std::make_unique<MediaNotificationListView>())) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   DCHECK(service_);
 }
 

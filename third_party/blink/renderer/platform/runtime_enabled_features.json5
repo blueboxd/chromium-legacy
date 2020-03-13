@@ -246,7 +246,7 @@
     },
     {
       name: "BlockingDownloadsInSandbox",
-      status: "test",
+      status: "stable",
     },
     {
       name: "BlockingFocusWithoutUserActivation",
@@ -1738,10 +1738,6 @@
     },
     {
       name: "V8IdleTasks",
-    },
-    {
-      name: "V8OptimizeWorkersForPerformance",
-      status: "experimental",
     },
     {
       // Whether a video element should automatically play fullscreen unless

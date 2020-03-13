@@ -5,6 +5,22 @@
 module content.mojom;
 
 import "ui/accessibility/mojom/ax_action_data.mojom";
+import "ui/accessibility/mojom/ax_relative_bounds.mojom";
+
+struct LocationChanges {
+  // ID of the object whose location is changing.
+  int32 id;
+
+  // The object's new location info.
+  ax.mojom.AXRelativeBounds new_location;
+};
+
+// Interface for accessibility messages sent from the renderer to the browser,
+// implemented by RenderFrameHostImpl in the browser process.
+interface RenderAccessibilityHost {
+  // Sent to update the browser of the location of accessibility objects.
+  HandleAXLocationChanges(array<LocationChanges> changes);
+};
 
 // Interface for accessibility messages sent from RenderFrameHostImpl in the
 // browser process, implemented by the RenderAccessibilityManager object in the

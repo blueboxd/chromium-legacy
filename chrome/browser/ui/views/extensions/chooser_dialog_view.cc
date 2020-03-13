@@ -43,9 +43,9 @@ ChooserDialogView::ChooserDialogView(
 
   DCHECK(chooser_controller);
 
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                    chooser_controller->GetOkButtonLabel());
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                                    chooser_controller->GetCancelButtonLabel());
 
   device_chooser_content_view_ =
@@ -56,13 +56,13 @@ ChooserDialogView::ChooserDialogView(
 
   DialogDelegate::SetExtraView(device_chooser_content_view_->CreateExtraView());
 
-  DialogDelegate::set_accept_callback(
+  DialogDelegate::SetAcceptCallback(
       base::BindOnce(&DeviceChooserContentView::Accept,
                      base::Unretained(device_chooser_content_view_)));
-  DialogDelegate::set_cancel_callback(
+  DialogDelegate::SetCancelCallback(
       base::BindOnce(&DeviceChooserContentView::Cancel,
                      base::Unretained(device_chooser_content_view_)));
-  DialogDelegate::set_close_callback(
+  DialogDelegate::SetCloseCallback(
       base::BindOnce(&DeviceChooserContentView::Close,
                      base::Unretained(device_chooser_content_view_)));
 

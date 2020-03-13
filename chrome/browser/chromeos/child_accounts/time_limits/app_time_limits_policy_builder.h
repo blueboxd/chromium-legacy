@@ -28,6 +28,8 @@ class AppTimeLimitsPolicyBuilder {
   // Sets reset time in the policy.
   void SetResetTime(int hour, int minutes);
 
+  void SetAppActivityReportingEnabled(bool enabled);
+
   const base::Value& value() const { return value_; }
 
  private:

@@ -187,7 +187,7 @@ ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
       model_(std::move(model)),
       icon_(model_->MakeIconOfSize(kMaxIconSize)) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION_INSTALLED);
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   if (model_->show_sign_in_promo()) {
     DialogDelegate::SetFootnoteView(
         CreateSigninPromoView(browser->profile(), this));

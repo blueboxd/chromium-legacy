@@ -17,7 +17,7 @@ std::unique_ptr<UpdateService> CreateUpdateService(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessSwitch))
     return std::make_unique<UpdateServiceInProcess>(config);
   else
-    return std::make_unique<UpdateServiceOutOfProcess>();
+    return UpdateServiceOutOfProcess::CreateInstance();
 }
 
 }  // namespace updater

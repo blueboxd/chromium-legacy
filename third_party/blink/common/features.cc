@@ -159,6 +159,11 @@ const base::Feature kRTCUnifiedPlanByDefault{"RTCUnifiedPlanByDefault",
 const base::Feature kRTCOfferExtmapAllowMixed{
     "RTCOfferExtmapAllowMixed", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Prevents workers from sending IsolateInBackgroundNotification to V8
+// and thus instructs V8 to favor performance over memory on workers.
+const base::Feature kV8OptimizeWorkersForPerformance{
+    "V8OptimizeWorkersForPerformance", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables negotiation of experimental multiplex codec in SDP.
 const base::Feature kWebRtcMultiplexCodec{"WebRTC-MultiplexCodec",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

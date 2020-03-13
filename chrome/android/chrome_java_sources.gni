@@ -1420,7 +1420,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/settings/homepage/HomepageMetricsEnums.java",
   "java/src/org/chromium/chrome/browser/settings/homepage/HomepageSettings.java",
   "java/src/org/chromium/chrome/browser/settings/homepage/RadioButtonGroupHomepagePreference.java",
-  "java/src/org/chromium/chrome/browser/settings/privacy/PrivacyPreferencesManager.java",
   "java/src/org/chromium/chrome/browser/share/LensUtils.java",
   "java/src/org/chromium/chrome/browser/share/OptionalShareTargetsManager.java",
   "java/src/org/chromium/chrome/browser/share/ShareActivity.java",

@@ -48,6 +48,9 @@ class PersistedAppInfo {
 
   void RemoveActiveTimeEarlierThan(base::Time timestamp);
 
+  bool ShouldRestoreApp() const;
+  bool ShouldRemoveApp() const;
+
   const AppId& app_id() const { return app_id_; }
   AppState app_state() const { return app_state_; }
   base::TimeDelta active_running_time() const { return active_running_time_; }

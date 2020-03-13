@@ -469,10 +469,10 @@ void CardUnmaskPromptViews::UpdateButtons() {
       controller_->GetVerificationResult();
   bool has_ok = result != AutofillClient::PERMANENT_FAILURE &&
                 result != AutofillClient::NETWORK_ERROR;
-  DialogDelegate::set_buttons(has_ok ? ui::DIALOG_BUTTON_OK |
+  DialogDelegate::SetButtons(has_ok ? ui::DIALOG_BUTTON_OK |
                                            ui::DIALOG_BUTTON_CANCEL
                                      : ui::DIALOG_BUTTON_CANCEL);
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                    controller_->GetOkButtonLabel());
 }
 

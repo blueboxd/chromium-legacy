@@ -341,9 +341,11 @@ void AppTimeController::TimeLimitsPolicyUpdated(const std::string& pref_name) {
     LOG(WARNING) << "Invalid PerAppTimeLimits policy.";
     return;
   }
-
   bool updated =
       app_registry_->UpdateAppLimits(policy::AppLimitsFromDict(*policy));
+
+  app_registry_->SetReportingEnabled(
+      policy::ActivityReportingEnabledFromDict(*policy));
 
   base::Optional<base::TimeDelta> new_reset_time =
       policy::ResetTimeFromDict(*policy);
@@ -412,6 +414,16 @@ void AppTimeController::OnAppLimitRemoved(const AppId& app_id) {
 }
 
 void AppTimeController::OnAppInstalled(const AppId& app_id) {
+  const base::Value* whitelist_policy = pref_registrar_->prefs()->GetDictionary(
+      prefs::kPerAppTimeLimitsWhitelistPolicy);
+  if (whitelist_policy && whitelist_policy->is_dict()) {
+    AppTimeLimitsWhitelistPolicyWrapper wrapper(whitelist_policy);
+    if (base::Contains(wrapper.GetWhitelistAppList(), app_id))
+      app_registry_->SetAppWhitelisted(app_id);
+  } else {
+    LOG(WARNING) << " Invalid PerAppTimeLimitWhitelist policy";
+  }
+
   const base::Value* policy =
       pref_registrar_->prefs()->GetDictionary(prefs::kPerAppTimeLimitsPolicy);
 

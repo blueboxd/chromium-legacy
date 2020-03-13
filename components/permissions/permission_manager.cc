@@ -526,13 +526,15 @@ PermissionStatus PermissionManager::GetPermissionStatusForFrame(
 
 bool PermissionManager::IsPermissionOverridableByDevTools(
     content::PermissionType permission,
-    const url::Origin& origin) {
+    const base::Optional<url::Origin>& origin) {
   ContentSettingsType type = PermissionTypeToContentSettingSafe(permission);
   PermissionContextBase* context = GetPermissionContext(type);
 
-  return context && !context->IsPermissionKillSwitchOn() &&
-         context->IsPermissionAvailableToOrigins(origin.GetURL(),
-                                                 origin.GetURL());
+  if (!context || context->IsPermissionKillSwitchOn())
+    return false;
+
+  return !origin || context->IsPermissionAvailableToOrigins(origin->GetURL(),
+                                                            origin->GetURL());
 }
 
 int PermissionManager::SubscribePermissionStatusChange(
@@ -685,7 +687,7 @@ PermissionResult PermissionManager::GetPermissionStatusHelper(
 }
 
 void PermissionManager::SetPermissionOverridesForDevTools(
-    const url::Origin& origin,
+    const base::Optional<url::Origin>& optional_origin,
     const PermissionOverrides& overrides) {
   ContentSettingsTypeOverrides result;
   for (const auto& item : overrides) {
@@ -694,6 +696,8 @@ void PermissionManager::SetPermissionOverridesForDevTools(
     if (content_setting != ContentSettingsType::DEFAULT)
       result[content_setting] = PermissionStatusToContentSetting(item.second);
   }
+  const url::Origin& origin =
+      optional_origin.value_or(devtools_global_overrides_origin_);
   devtools_permission_overrides_[origin] = std::move(result);
 }
 
@@ -705,6 +709,8 @@ ContentSetting PermissionManager::GetPermissionOverrideForDevTools(
     const url::Origin& origin,
     ContentSettingsType permission) {
   auto it = devtools_permission_overrides_.find(origin);
+  if (it == devtools_permission_overrides_.end())
+    it = devtools_permission_overrides_.find(devtools_global_overrides_origin_);
   if (it == devtools_permission_overrides_.end())
     return CONTENT_SETTING_DEFAULT;
 

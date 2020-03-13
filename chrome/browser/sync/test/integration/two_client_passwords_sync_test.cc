@@ -14,13 +14,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
-#include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/engine/model_safe_worker.h"
 
@@ -42,10 +40,9 @@ using autofill::PasswordForm;
 
 static const char* kValidPassphrase = "passphrase!";
 
-class TwoClientPasswordsSyncTest : public FeatureToggler, public SyncTest {
+class TwoClientPasswordsSyncTest : public SyncTest {
  public:
-  TwoClientPasswordsSyncTest()
-      : FeatureToggler(switches::kSyncUSSPasswords), SyncTest(TWO_CLIENT) {}
+  TwoClientPasswordsSyncTest() : SyncTest(TWO_CLIENT) {}
 
   ~TwoClientPasswordsSyncTest() override {}
 
@@ -53,7 +50,7 @@ class TwoClientPasswordsSyncTest : public FeatureToggler, public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientPasswordsSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ENABLED(Add)) {
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, E2E_ENABLED(Add)) {
   ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(SamePasswordFormsChecker().Wait());
@@ -66,7 +63,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ENABLED(Add)) {
   ASSERT_EQ(1, GetPasswordCount(1));
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ENABLED(Race)) {
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, E2E_ENABLED(Race)) {
   ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
@@ -81,7 +78,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ENABLED(Race)) {
   ASSERT_TRUE(SamePasswordFormsChecker().Wait());
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, MergeWithTheMostRecent) {
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, MergeWithTheMostRecent) {
   // Setup the test to have Form 0 and Form 1 added on both clients. Form 0 is
   // more recent on Client 0, and Form 1 is more recent on Client 1. They should
   // be merged such that recent passwords are chosen.
@@ -125,7 +122,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, MergeWithTheMostRecent) {
   }
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
                        E2E_ENABLED(SetPassphraseAndAddPassword)) {
   ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -146,7 +143,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest,
   ASSERT_TRUE(SamePasswordFormsChecker().Wait());
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, Update) {
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Update) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 
@@ -167,7 +164,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, Update) {
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, AddTwice) {
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, AddTwice) {
   // Password store supports adding the same form twice, so this is testing this
   // behaviour.
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -191,7 +188,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, AddTwice) {
   ASSERT_EQ(1, GetPasswordCount(1));
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, Delete) {
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Delete) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 
@@ -214,7 +211,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, Delete) {
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
                        SetPassphraseAndThenSetupSync) {
   ASSERT_TRUE(SetupClients());
 
@@ -247,7 +244,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest,
   ASSERT_TRUE(SamePasswordFormsChecker().Wait());
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ONLY(DeleteTwo)) {
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, E2E_ONLY(DeleteTwo)) {
   ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
@@ -278,7 +275,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ONLY(DeleteTwo)) {
   ASSERT_EQ(init_password_count - 2, GetPasswordCount(0));
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, DeleteAll) {
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, DeleteAll) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 
@@ -298,7 +295,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, DeleteAll) {
   ASSERT_EQ(0, GetVerifierPasswordCount());
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ENABLED(Merge)) {
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, E2E_ENABLED(Merge)) {
   ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
@@ -314,7 +311,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ENABLED(Merge)) {
   ASSERT_EQ(3, GetPasswordCount(0));
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ONLY(TwoClientAddPass)) {
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, E2E_ONLY(TwoClientAddPass)) {
   ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) <<  "SetupSync() failed.";
   // All profiles should sync same passwords.
@@ -339,7 +336,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ONLY(TwoClientAddPass)) {
   }
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, AddImmediatelyAfterDelete) {
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, AddImmediatelyAfterDelete) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
   base::HistogramTester histogram_tester;
@@ -364,7 +361,3 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, AddImmediatelyAfterDelete) {
       1, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.PASSWORD",
                                          /*LOCAL_DELETION=*/0));
 }
-
-INSTANTIATE_TEST_SUITE_P(USS,
-                         TwoClientPasswordsSyncTest,
-                         ::testing::Values(false, true));

@@ -345,8 +345,8 @@ gfx::Size CollectedCookiesViews::GetMinimumSize() const {
 
 CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
     : web_contents_(web_contents) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                    l10n_util::GetStringUTF16(IDS_DONE));
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>());

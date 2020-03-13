@@ -3863,6 +3863,35 @@ TEST_F(InternalUVAuthenticatorImplTest, MakeCredential) {
   }
 }
 
+// Test falling back to PIN for devices that support internal user verification
+// but not uv token.
+TEST_F(InternalUVAuthenticatorImplTest, MakeCredentialFallBackToPin) {
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+
+  device::VirtualCtap2Device::Config config;
+  config.internal_uv_support = true;
+  config.pin_support = true;
+  config.user_verification_succeeds = false;
+  virtual_device_factory_->mutable_state()->pin = kTestPIN;
+  virtual_device_factory_->mutable_state()->pin_retries =
+      device::kMaxPinRetries;
+  virtual_device_factory_->mutable_state()->fingerprints_enrolled = true;
+  virtual_device_factory_->SetCtap2Config(config);
+
+  auto options =
+      make_credential_options(device::UserVerificationRequirement::kRequired);
+
+  TestMakeCredentialCallback callback_receiver;
+  authenticator->MakeCredential(std::move(options),
+                                callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  EXPECT_TRUE(HasUV(callback_receiver));
+  EXPECT_TRUE(test_client_.collected_pin());
+}
+
 TEST_F(InternalUVAuthenticatorImplTest, MakeCredentialCryptotoken) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
@@ -3926,6 +3955,38 @@ TEST_F(InternalUVAuthenticatorImplTest, GetAssertion) {
           HasUV(callback_receiver));
     }
   }
+}
+
+// Test falling back to PIN for devices that support internal user verification
+// but not uv token.
+TEST_F(InternalUVAuthenticatorImplTest, GetAssertionFallbackToPIN) {
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+
+  device::VirtualCtap2Device::Config config;
+  config.internal_uv_support = true;
+  config.pin_support = true;
+  config.user_verification_succeeds = false;
+  virtual_device_factory_->mutable_state()->pin = kTestPIN;
+  virtual_device_factory_->mutable_state()->pin_retries =
+      device::kMaxPinRetries;
+  virtual_device_factory_->mutable_state()->fingerprints_enrolled = true;
+  virtual_device_factory_->SetCtap2Config(config);
+
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+      get_credential_options()->allow_credentials[0].id(),
+      kTestRelyingPartyId));
+
+  auto options =
+      get_credential_options(device::UserVerificationRequirement::kRequired);
+
+  TestGetAssertionCallback callback_receiver;
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  EXPECT_TRUE(HasUV(callback_receiver));
+  EXPECT_TRUE(test_client_.collected_pin());
 }
 
 TEST_F(InternalUVAuthenticatorImplTest, GetAssertionCryptotoken) {

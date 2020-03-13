@@ -8,7 +8,4 @@ declare_args() {
   # Certificate transparency is not supported on iOS.
   # TODO(mmenke): It's actually not supported on Android, either.
   is_ct_supported = !is_ios
-
-  # Trust Tokens is a Web Platform feature, so it isn't supported on iOS.
-  is_trust_tokens_supported = !is_ios
 }

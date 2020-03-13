@@ -39,14 +39,14 @@ AppModalDialogViewViews::AppModalDialogViewViews(
         l10n_util::GetStringUTF16(IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION));
   }
 
-  DialogDelegate::set_buttons(
+  DialogDelegate::SetButtons(
       controller_->javascript_dialog_type() ==
               content::JAVASCRIPT_DIALOG_TYPE_ALERT
           ? ui::DIALOG_BUTTON_OK
           : (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
 
   if (controller_->is_before_unload_dialog()) {
-    DialogDelegate::set_button_label(
+    DialogDelegate::SetButtonLabel(
         ui::DIALOG_BUTTON_OK,
         l10n_util::GetStringUTF16(
             controller_->is_reload()

@@ -53,10 +53,6 @@ const base::Feature kSyncAllowWalletDataInTransportModeWithCustomPassphrase{
 const base::Feature kStopSyncInPausedState{"StopSyncInPausedState",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable USS implementation of Passwords datatype.
-const base::Feature kSyncUSSPasswords{"SyncUSSPasswords",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable USS implementation of Nigori datatype.
 const base::Feature kSyncUSSNigori{"SyncUSSNigori",
                                    base::FEATURE_ENABLED_BY_DEFAULT};

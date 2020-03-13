@@ -289,20 +289,12 @@ LayoutRectOutsets DoubleStripeInsets(const BorderEdge edges[],
           stripe));
 }
 
-float ClampOrRound(float border_width) {
-  // Make sure non-zero borders never disappear
-  if (border_width > 0.0f && border_width <= 1.0f)
-    return 1.0f;
-
-  return roundf(border_width);
-}
-
 void DrawSolidBorderRect(GraphicsContext& context,
                          const FloatRect& border_rect,
                          float border_width,
                          const Color& color) {
   FloatRect stroke_rect(border_rect);
-  border_width = ClampOrRound(border_width);
+  border_width = roundf(border_width);
   stroke_rect.Inflate(-border_width / 2);
 
   bool was_antialias = context.ShouldAntialias();
@@ -854,7 +846,7 @@ void BoxBorderPainter::PaintSide(GraphicsContext& context,
       if (use_path)
         path = &border_info.rounded_border_path;
       else
-        side_rect.SetHeight(ClampOrRound(edge.Width()));
+        side_rect.SetHeight(roundf(edge.Width()));
 
       PaintOneBorderSide(context, side_rect, BoxSide::kTop, BoxSide::kLeft,
                          BoxSide::kRight, path, border_info.anti_alias, color,
@@ -869,7 +861,7 @@ void BoxBorderPainter::PaintSide(GraphicsContext& context,
       if (use_path)
         path = &border_info.rounded_border_path;
       else
-        side_rect.ShiftYEdgeTo(side_rect.MaxY() - ClampOrRound(edge.Width()));
+        side_rect.ShiftYEdgeTo(side_rect.MaxY() - roundf(edge.Width()));
 
       PaintOneBorderSide(context, side_rect, BoxSide::kBottom, BoxSide::kLeft,
                          BoxSide::kRight, path, border_info.anti_alias, color,
@@ -884,7 +876,7 @@ void BoxBorderPainter::PaintSide(GraphicsContext& context,
       if (use_path)
         path = &border_info.rounded_border_path;
       else
-        side_rect.SetWidth(ClampOrRound(edge.Width()));
+        side_rect.SetWidth(roundf(edge.Width()));
 
       PaintOneBorderSide(context, side_rect, BoxSide::kLeft, BoxSide::kTop,
                          BoxSide::kBottom, path, border_info.anti_alias, color,
@@ -899,7 +891,7 @@ void BoxBorderPainter::PaintSide(GraphicsContext& context,
       if (use_path)
         path = &border_info.rounded_border_path;
       else
-        side_rect.ShiftXEdgeTo(side_rect.MaxX() - ClampOrRound(edge.Width()));
+        side_rect.ShiftXEdgeTo(side_rect.MaxX() - roundf(edge.Width()));
 
       PaintOneBorderSide(context, side_rect, BoxSide::kRight, BoxSide::kTop,
                          BoxSide::kBottom, path, border_info.anti_alias, color,
@@ -1017,9 +1009,8 @@ void BoxBorderPainter::PaintOneBorderSide(
     ObjectPainter::DrawLineForBoxSide(
         graphics_context, side_rect.X(), side_rect.Y(), side_rect.MaxX(),
         side_rect.MaxY(), side, color, edge_to_render.BorderStyle(),
-        miter1 != kNoMiter ? ClampOrRound(adjacent_edge1.Width()) : 0,
-        miter2 != kNoMiter ? ClampOrRound(adjacent_edge2.Width()) : 0,
-        antialias);
+        miter1 != kNoMiter ? roundf(adjacent_edge1.Width()) : 0,
+        miter2 != kNoMiter ? roundf(adjacent_edge2.Width()) : 0, antialias);
   }
 }
 

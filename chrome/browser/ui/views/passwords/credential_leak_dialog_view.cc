@@ -80,13 +80,13 @@ CredentialLeakDialogView::CredentialLeakDialogView(
   DCHECK(controller);
   DCHECK(web_contents);
 
-  DialogDelegate::set_buttons(controller->ShouldShowCancelButton()
+  DialogDelegate::SetButtons(controller->ShouldShowCancelButton()
                                   ? ui::DIALOG_BUTTON_OK |
                                         ui::DIALOG_BUTTON_CANCEL
                                   : ui::DIALOG_BUTTON_OK);
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                    controller_->GetAcceptButtonLabel());
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                                    controller_->GetCancelButtonLabel());
 
   using ControllerClosureFn = void (CredentialLeakDialogController::*)(void);
@@ -102,13 +102,13 @@ CredentialLeakDialogView::CredentialLeakDialogView(
     (std::exchange(*controller, nullptr)->*(fn))();
   };
 
-  DialogDelegate::set_accept_callback(
+  DialogDelegate::SetAcceptCallback(
       base::BindOnce(close_callback, base::Unretained(&controller_),
                      &CredentialLeakDialogController::OnAcceptDialog));
-  DialogDelegate::set_cancel_callback(
+  DialogDelegate::SetCancelCallback(
       base::BindOnce(close_callback, base::Unretained(&controller_),
                      &CredentialLeakDialogController::OnCancelDialog));
-  DialogDelegate::set_close_callback(
+  DialogDelegate::SetCloseCallback(
       base::BindOnce(close_callback, base::Unretained(&controller_),
                      &CredentialLeakDialogController::OnCloseDialog));
 }

@@ -63,6 +63,6 @@ source_set("webview_entry_point") {
 
   if (webview_includes_weblayer) {
     defines = [ "WEBVIEW_INCLUDES_WEBLAYER" ]
-    deps += [ "//weblayer:weblayer_lib" ]
+    deps += [ "//weblayer:weblayer_lib_webview" ]
   }
 }

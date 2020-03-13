@@ -35,16 +35,16 @@ DeepScanningFailureModalDialog::DeepScanningFailureModalDialog(
     base::OnceClosure cancel_callback,
     base::OnceClosure open_now_callback)
     : open_now_callback_(std::move(open_now_callback)) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(
           IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_ACCEPT_BUTTON));
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(
           IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_CANCEL_BUTTON));
-  DialogDelegate::set_accept_callback(std::move(accept_callback));
-  DialogDelegate::set_cancel_callback(std::move(cancel_callback));
+  DialogDelegate::SetAcceptCallback(std::move(accept_callback));
+  DialogDelegate::SetCancelCallback(std::move(cancel_callback));
   auto open_now_button = views::MdTextButton::CreateSecondaryUiButton(
       this,
       l10n_util::GetStringUTF16(IDS_DEEP_SCANNING_INFO_DIALOG_OPEN_NOW_BUTTON));

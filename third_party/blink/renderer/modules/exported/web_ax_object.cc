@@ -255,7 +255,7 @@ WebAXObject WebAXObject::ParentObject() const {
   if (IsDetached())
     return WebAXObject();
 
-  return WebAXObject(private_->ParentObject());
+  return WebAXObject(private_->ParentObjectIncludedInTree());
 }
 
 void WebAXObject::GetSparseAXAttributes(

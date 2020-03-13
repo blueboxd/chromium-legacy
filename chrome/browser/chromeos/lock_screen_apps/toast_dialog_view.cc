@@ -42,8 +42,8 @@ constexpr int kDialogTitleMarginEndDp = 0;
 ToastDialogView::ToastDialogView(const base::string16& app_name,
                                  base::OnceClosure dismissed_callback)
     : app_name_(app_name) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
-  DialogDelegate::set_close_callback(std::move(dismissed_callback));
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::SetCloseCallback(std::move(dismissed_callback));
 
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::LOCK_SCREEN_NOTE_APP_TOAST);

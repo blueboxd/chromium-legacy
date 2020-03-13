@@ -455,8 +455,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool);
   void BeginFrame(base::TimeTicks last_frame_time);
   void DidBeginFrame();
-  void BeginRafAlignedInput();
-  void EndRafAlignedInput();
   void BeginUpdateLayers();
   void EndUpdateLayers();
   void BeginCommitCompositorFrame();
@@ -726,7 +724,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       local_main_frame_host_remote_;
 
   // Set when a measurement begins, reset when the measurement is taken.
-  base::Optional<base::TimeTicks> raf_aligned_input_start_time_;
   base::Optional<base::TimeTicks> update_layers_start_time_;
   base::Optional<base::TimeTicks> commit_compositor_frame_start_time_;
 

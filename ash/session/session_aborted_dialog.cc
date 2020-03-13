@@ -69,12 +69,12 @@ gfx::Size SessionAbortedDialog::CalculatePreferredSize() const {
 }
 
 SessionAbortedDialog::SessionAbortedDialog() {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(
           IDS_ASH_MULTIPROFILES_SESSION_ABORT_BUTTON_LABEL));
-  DialogDelegate::set_accept_callback(base::BindOnce(
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
       []() { Shell::Get()->session_controller()->RequestSignOut(); }));
 }
 

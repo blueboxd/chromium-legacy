@@ -144,7 +144,7 @@ PasswordStoreDefaultTestDelegate::CreateInitializedStore(
     std::unique_ptr<LoginDatabase> database) {
   scoped_refptr<PasswordStoreDefault> store(
       new PasswordStoreDefault(std::move(database)));
-  store->Init(syncer::SyncableService::StartSyncFlare(), &prefs_);
+  store->Init(&prefs_);
 
   return store;
 }

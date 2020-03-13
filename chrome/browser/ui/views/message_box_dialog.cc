@@ -217,17 +217,17 @@ MessageBoxDialog::MessageBoxDialog(const base::string16& title,
       message_box_view_(new views::MessageBoxView(
           views::MessageBoxView::InitParams(message))),
       is_system_modal_(is_system_modal) {
-  DialogDelegate::set_buttons(type_ == chrome::MESSAGE_BOX_TYPE_QUESTION
+  DialogDelegate::SetButtons(type_ == chrome::MESSAGE_BOX_TYPE_QUESTION
                                   ? ui::DIALOG_BUTTON_OK |
                                         ui::DIALOG_BUTTON_CANCEL
                                   : ui::DIALOG_BUTTON_OK);
 
-  DialogDelegate::set_accept_callback(base::BindOnce(
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
       &MessageBoxDialog::OnDialogAccepted, base::Unretained(this)));
-  DialogDelegate::set_cancel_callback(
+  DialogDelegate::SetCancelCallback(
       base::BindOnce(&MessageBoxDialog::Done, base::Unretained(this),
                      chrome::MESSAGE_BOX_RESULT_NO));
-  DialogDelegate::set_close_callback(
+  DialogDelegate::SetCloseCallback(
       base::BindOnce(&MessageBoxDialog::Done, base::Unretained(this),
                      chrome::MESSAGE_BOX_RESULT_NO));
 
@@ -238,14 +238,14 @@ MessageBoxDialog::MessageBoxDialog(const base::string16& title,
             ? l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL)
             : l10n_util::GetStringUTF16(IDS_OK);
   }
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK, ok_text);
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK, ok_text);
 
   // Only MESSAGE_BOX_TYPE_QUESTION has a Cancel button.
   if (type_ == chrome::MESSAGE_BOX_TYPE_QUESTION) {
     base::string16 cancel_text = no_text;
     if (cancel_text.empty())
       cancel_text = l10n_util::GetStringUTF16(IDS_CANCEL);
-    DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL, cancel_text);
+    DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, cancel_text);
   }
 
   if (!checkbox_text.empty())

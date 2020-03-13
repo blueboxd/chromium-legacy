@@ -30,7 +30,7 @@ PasswordGenerationConfirmationView::PasswordGenerationConfirmationView(
               : PasswordBubbleControllerBase::DisplayReason::kUserAction) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
 
   auto label = std::make_unique<views::StyledLabel>(
       controller_.save_confirmation_text(), this);

@@ -613,6 +613,7 @@ void PaymentRequestState::SetDefaultProfileSelections() {
   selected_app_ = nullptr;
   if (!available_apps_.empty() && available_apps_[0]->CanPreselect()) {
     selected_app_ = available_apps_[0].get();
+    UpdateIsReadyToPayAndNotifyObservers();
   }
 
   // Record the missing required payment fields when no complete payment

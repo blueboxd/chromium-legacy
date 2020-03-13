@@ -180,18 +180,8 @@ class SingleClientCustomPassphraseSyncTestWithUssTests
       public testing::WithParamInterface<bool> {
  public:
   SingleClientCustomPassphraseSyncTestWithUssTests() {
-    if (GetParam()) {
-      // USS Nigori requires USS implementations to be enabled for all
-      // datatypes.
-      override_features_.InitWithFeatures(
-          /*enabled_features=*/{switches::kSyncUSSPasswords,
-                                switches::kSyncUSSNigori},
-          /*disabled_features=*/{});
-    } else {
-      // We test Directory Nigori with default values of USS feature flags of
-      // other datatypes.
-      override_features_.InitAndDisableFeature(switches::kSyncUSSNigori);
-    }
+    override_features_.InitWithFeatureState(switches::kSyncUSSNigori,
+                                            GetParam());
   }
   ~SingleClientCustomPassphraseSyncTestWithUssTests() override = default;
 
@@ -449,8 +439,7 @@ class SingleClientCustomPassphraseSyncTestInDirectoryMode
       // key derivation method in ShouldLoadUSSCustomPassphraseInDirectoryMode,
       // once USS implementation support it for new passphrases.
       feature_list_.InitWithFeatures(
-          /*enabled_features=*/{switches::kSyncUSSPasswords,
-                                switches::kSyncUSSNigori},
+          /*enabled_features=*/{switches::kSyncUSSNigori},
           /*disabled_features=*/{
               switches::kSyncUseScryptForNewCustomPassphrases});
     } else {
@@ -499,8 +488,7 @@ class SingleClientCustomPassphraseSyncTestInUSSMode
       // when kSyncUSSNigori was disabled, without providing it again once
       // kSyncUSSNigori is enabled.
       feature_list_.InitWithFeatures(
-          /*enabled_features=*/{switches::kSyncUSSPasswords,
-                                switches::kSyncUSSNigori},
+          /*enabled_features=*/{switches::kSyncUSSNigori},
           /*disabled_features=*/{});
     }
   }

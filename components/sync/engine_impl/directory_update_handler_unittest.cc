@@ -46,7 +46,7 @@ static const int64_t kDefaultVersion = 1000;
 class DirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
  public:
   DirectoryUpdateHandlerProcessUpdateTest()
-      : ui_worker_(new FakeModelWorker(GROUP_UI)) {}
+      : ui_worker_(new FakeModelWorker(GROUP_NON_BLOCKING)) {}
 
   ~DirectoryUpdateHandlerProcessUpdateTest() override {}
 
@@ -473,34 +473,24 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, IsInitialSyncEnded) {
 class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
  public:
   DirectoryUpdateHandlerApplyUpdateTest()
-      : ui_worker_(new FakeModelWorker(GROUP_UI)),
-        password_worker_(new FakeModelWorker(GROUP_PASSWORD)),
+      : non_blocking_worker_(new FakeModelWorker(GROUP_NON_BLOCKING)),
         passive_worker_(new FakeModelWorker(GROUP_PASSIVE)),
-        bookmarks_emitter_(BOOKMARKS, &type_observers_),
-        passwords_emitter_(PASSWORDS, &type_observers_) {}
+        bookmarks_emitter_(BOOKMARKS, &type_observers_) {}
 
   void SetUp() override {
     dir_maker_.SetUp();
     entry_factory_ = std::make_unique<TestEntryFactory>(directory());
 
     update_handler_map_.insert(std::make_pair(
-        BOOKMARKS,
-        std::make_unique<DirectoryUpdateHandler>(
-            directory(), BOOKMARKS, ui_worker_, &bookmarks_emitter_)));
-    update_handler_map_.insert(std::make_pair(
-        PASSWORDS,
-        std::make_unique<DirectoryUpdateHandler>(
-            directory(), PASSWORDS, password_worker_, &passwords_emitter_)));
+        BOOKMARKS, std::make_unique<DirectoryUpdateHandler>(
+                       directory(), BOOKMARKS, non_blocking_worker_,
+                       &bookmarks_emitter_)));
   }
 
   void TearDown() override { dir_maker_.TearDown(); }
 
   const UpdateCounters& GetBookmarksUpdateCounters() {
     return bookmarks_emitter_.GetUpdateCounters();
-  }
-
-  const UpdateCounters& GetPasswordsUpdateCounters() {
-    return passwords_emitter_.GetUpdateCounters();
   }
 
   DirectoryCryptographer* GetCryptographer(
@@ -513,10 +503,6 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
     update_handler_map_.find(BOOKMARKS)->second->ApplyUpdates(status);
   }
 
-  void ApplyPasswordUpdates(StatusController* status) {
-    update_handler_map_.find(PASSWORDS)->second->ApplyUpdates(status);
-  }
-
   TestEntryFactory* entry_factory() { return entry_factory_.get(); }
 
   syncable::Directory* directory() { return dir_maker_.directory(); }
@@ -527,13 +513,11 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
   TestDirectorySetterUpper dir_maker_;
   std::unique_ptr<TestEntryFactory> entry_factory_;
 
-  scoped_refptr<FakeModelWorker> ui_worker_;
-  scoped_refptr<FakeModelWorker> password_worker_;
+  scoped_refptr<FakeModelWorker> non_blocking_worker_;
   scoped_refptr<FakeModelWorker> passive_worker_;
 
   base::ObserverList<TypeDebugInfoObserver>::Unchecked type_observers_;
   DirectoryTypeDebugInfoEmitter bookmarks_emitter_;
-  DirectoryTypeDebugInfoEmitter passwords_emitter_;
 
   std::map<ModelType, std::unique_ptr<UpdateHandler>> update_handler_map_;
 };
@@ -916,153 +900,6 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, ItemsBothKnownAndUnknown) {
     EXPECT_FALSE(k2.GetIsUnappliedUpdate());
     EXPECT_FALSE(k3.GetIsUnappliedUpdate());
     EXPECT_FALSE(k4.GetIsUnappliedUpdate());
-  }
-}
-
-// Attempt application of password upates where the passphrase is known.
-TEST_F(DirectoryUpdateHandlerApplyUpdateTest, DecryptablePassword) {
-  // Decryptable password updates should be applied.
-  DirectoryCryptographer* cryptographer;
-  {
-    // Storing the cryptographer separately is bad, but for this test we
-    // know it's safe.
-    syncable::ReadTransaction trans(FROM_HERE, directory());
-    cryptographer = GetCryptographer(&trans);
-  }
-
-  KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
-  cryptographer->AddKey(params);
-
-  sync_pb::EntitySpecifics specifics;
-  sync_pb::PasswordSpecificsData data;
-  data.set_origin("http://example.com");
-
-  cryptographer->Encrypt(data,
-                         specifics.mutable_password()->mutable_encrypted());
-  int64_t handle =
-      entry_factory()->CreateUnappliedNewItem("item", specifics, false);
-
-  StatusController status;
-  ApplyPasswordUpdates(&status);
-
-  const UpdateCounters& counters = GetPasswordsUpdateCounters();
-  EXPECT_EQ(1, counters.num_updates_applied)
-      << "The updates that can be decrypted should be applied";
-
-  {
-    syncable::ReadTransaction trans(FROM_HERE, directory());
-    syncable::Entry e(&trans, syncable::GET_BY_HANDLE, handle);
-    ASSERT_TRUE(e.good());
-    EXPECT_FALSE(e.GetIsUnappliedUpdate());
-    EXPECT_FALSE(e.GetIsUnsynced());
-  }
-}
-
-// Attempt application of encrypted items when the passphrase is not known.
-TEST_F(DirectoryUpdateHandlerApplyUpdateTest, UndecryptableData) {
-  // Undecryptable updates should not be applied.
-  sync_pb::EntitySpecifics encrypted_bookmark;
-  encrypted_bookmark.mutable_encrypted();
-  AddDefaultFieldValue(BOOKMARKS, &encrypted_bookmark);
-  std::string root_server_id = Id::GetRoot().GetServerId();
-  int64_t folder_handle = entry_factory()->CreateUnappliedNewItemWithParent(
-      "folder", encrypted_bookmark, root_server_id);
-  int64_t bookmark_handle = entry_factory()->CreateUnappliedNewItem(
-      "item2", encrypted_bookmark, false);
-  sync_pb::EntitySpecifics encrypted_password;
-  encrypted_password.mutable_password();
-  int64_t password_handle = entry_factory()->CreateUnappliedNewItem(
-      "item3", encrypted_password, false);
-
-  StatusController status;
-  ApplyBookmarkUpdates(&status);
-  ApplyPasswordUpdates(&status);
-
-  const UpdateCounters& bm_counters = GetBookmarksUpdateCounters();
-  EXPECT_EQ(2, bm_counters.num_encryption_conflict_application_failures)
-      << "Updates that can't be decrypted should be in encryption conflict";
-  EXPECT_EQ(0, bm_counters.num_updates_applied)
-      << "No update that can't be decrypted should be applied";
-
-  const UpdateCounters& pw_counters = GetPasswordsUpdateCounters();
-  EXPECT_EQ(1, pw_counters.num_encryption_conflict_application_failures)
-      << "Updates that can't be decrypted should be in encryption conflict";
-  EXPECT_EQ(0, pw_counters.num_updates_applied)
-      << "No update that can't be decrypted should be applied";
-
-  {
-    syncable::ReadTransaction trans(FROM_HERE, directory());
-    syncable::Entry folder(&trans, syncable::GET_BY_HANDLE, folder_handle);
-    syncable::Entry bm(&trans, syncable::GET_BY_HANDLE, bookmark_handle);
-    syncable::Entry pw(&trans, syncable::GET_BY_HANDLE, password_handle);
-    ASSERT_TRUE(folder.good());
-    ASSERT_TRUE(bm.good());
-    ASSERT_TRUE(pw.good());
-    EXPECT_TRUE(folder.GetIsUnappliedUpdate());
-    EXPECT_TRUE(bm.GetIsUnappliedUpdate());
-    EXPECT_TRUE(pw.GetIsUnappliedUpdate());
-  }
-}
-
-// Test a mix of decryptable and undecryptable updates.
-TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SomeUndecryptablePassword) {
-  DirectoryCryptographer* cryptographer;
-
-  int64_t decryptable_handle = -1;
-  int64_t undecryptable_handle = -1;
-
-  // Only decryptable password updates should be applied.
-  {
-    sync_pb::EntitySpecifics specifics;
-    sync_pb::PasswordSpecificsData data;
-    data.set_origin("http://example.com/1");
-    {
-      syncable::ReadTransaction trans(FROM_HERE, directory());
-      cryptographer = GetCryptographer(&trans);
-
-      KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
-      cryptographer->AddKey(params);
-
-      cryptographer->Encrypt(data,
-                             specifics.mutable_password()->mutable_encrypted());
-    }
-    decryptable_handle =
-        entry_factory()->CreateUnappliedNewItem("item1", specifics, false);
-  }
-  {
-    // Create a new cryptographer, independent of the one in the cycle.
-    DirectoryCryptographer other_cryptographer;
-    KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "bazqux"};
-    other_cryptographer.AddKey(params);
-
-    sync_pb::EntitySpecifics specifics;
-    sync_pb::PasswordSpecificsData data;
-    data.set_origin("http://example.com/2");
-
-    other_cryptographer.Encrypt(
-        data, specifics.mutable_password()->mutable_encrypted());
-    undecryptable_handle =
-        entry_factory()->CreateUnappliedNewItem("item2", specifics, false);
-  }
-
-  StatusController status;
-  ApplyPasswordUpdates(&status);
-
-  const UpdateCounters& counters = GetPasswordsUpdateCounters();
-  EXPECT_EQ(1, counters.num_encryption_conflict_application_failures)
-      << "The updates that can't be decrypted should be in encryption "
-      << "conflict";
-  EXPECT_EQ(1, counters.num_updates_applied)
-      << "The undecryptable password update shouldn't be applied";
-
-  {
-    syncable::ReadTransaction trans(FROM_HERE, directory());
-    syncable::Entry e1(&trans, syncable::GET_BY_HANDLE, decryptable_handle);
-    syncable::Entry e2(&trans, syncable::GET_BY_HANDLE, undecryptable_handle);
-    ASSERT_TRUE(e1.good());
-    ASSERT_TRUE(e2.good());
-    EXPECT_FALSE(e1.GetIsUnappliedUpdate());
-    EXPECT_TRUE(e2.GetIsUnappliedUpdate());
   }
 }
 

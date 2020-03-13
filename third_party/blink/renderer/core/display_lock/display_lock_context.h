@@ -5,12 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DISPLAY_LOCK_DISPLAY_LOCK_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DISPLAY_LOCK_DISPLAY_LOCK_CONTEXT_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/display_lock/display_lock_budget.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -66,40 +62,10 @@ static_assert(static_cast<uint32_t>(DisplayLockActivationReason::kAny) <
 
 class CORE_EXPORT DisplayLockContext final
     : public GarbageCollected<DisplayLockContext>,
-      public ExecutionContextLifecycleObserver,
       public LocalFrameView::LifecycleNotificationObserver {
   USING_GARBAGE_COLLECTED_MIXIN(DisplayLockContext);
-  USING_PRE_FINALIZER(DisplayLockContext, Dispose);
 
  public:
-  // Determines what type of budget to use. This can be overridden via
-  // DisplayLockContext::SetBudgetType().
-  // - kDoNotYield:
-  //     This will effectively do all of the lifecycle phases when we're
-  //     committing. That is, this is the "no budget" option.
-  // - kStrictYieldBetweenLifecyclePhases:
-  //     This type always yields between each lifecycle phase, even if that
-  //     phase was quick (note that it still skips phases that don't need any
-  //     updates).
-  // - kYieldBetweenLifecyclePhases:
-  //     This type will only yield between lifecycle phases (not in the middle
-  //     of one). However, if there is sufficient time left (TODO(vmpstr):
-  //     define this), then it will continue on to the next lifecycle phase.
-  enum class BudgetType {
-    kDoNotYield,
-    kStrictYieldBetweenLifecyclePhases,
-    kYieldBetweenLifecyclePhases,
-    kDefault = kYieldBetweenLifecyclePhases
-  };
-
-  // The current state of the lock. Note that the order of these matters.
-  enum State {
-    kLocked,
-    kUpdating,
-    kCommitting,
-    kUnlocked,
-  };
-
   // The type of style that was blocked by this display lock.
   enum StyleType {
     kStyleUpdateNotRequired,
@@ -125,36 +91,26 @@ class CORE_EXPORT DisplayLockContext final
     UntracedMember<DisplayLockContext> context_ = nullptr;
   };
 
-  DisplayLockContext(Element*, ExecutionContext*);
-  ~DisplayLockContext();
+  explicit DisplayLockContext(Element*);
+  ~DisplayLockContext() = default;
 
-  // GC functions.
-  void Trace(Visitor*) override;
-  void Dispose();
-
-  // ExecutionContextLifecycleObserver overrides.
-  void ContextDestroyed() override;
-
-  // Set which reasons activate, as a mask of DisplayLockActivationReason enums.
-  void SetActivatable(uint16_t activatable_mask);
-
-  // Returns true if this lock has been activated and the activation has not yet
-  // been cleared.
-  bool IsActivated() const;
-  // Clear the activated flag.
-  void ClearActivated();
+  // Called by style to update the current state of subtree-visibility.
+  void SetRequestedState(ESubtreeVisibility state);
+  // Called by style to adjust the element's style based on the current state.
+  void AdjustElementStyle(ComputedStyle* style) const;
 
   // Is called by the intersection observer callback to inform us of the
   // intersection state.
   void NotifyIsIntersectingViewport();
   void NotifyIsNotIntersectingViewport();
 
-  // Acquire the lock, should only be called when unlocked.
-  void StartAcquire();
-  // Initiate a commit.
-  void StartCommit();
-  // Update rendering of the subtree.
-  ScriptPromise UpdateRendering(ScriptState*);
+  // Request that this context be locked. Called when style determines that the
+  // subtree rooted at this element should be skipped, unless things like
+  // viewport intersection prevent it from doing so.
+  bool RequestLock(uint16_t activation_mask);
+  // Request that this context be unlocked. Called when style determines that
+  // the subtree rooted at this element should be rendered.
+  void RequestUnlock();
 
   // Lifecycle observation / state functions.
   bool ShouldStyle(DisplayLockLifecycleTarget) const;
@@ -176,25 +132,6 @@ class CORE_EXPORT DisplayLockContext final
   // from and activatable by a specified reason. Note that passing
   // kAny will return true if the lock is activatable for any
   // reason.
-  //
-  // Important note: This returns the correct value even if the context is not
-  // currently locked. The implications of this is that the value returned here
-  // may depend on the method the context was unlocked. For example, in an
-  // attribute version activation we set the attribute to an empty string,
-  // making this value be true for all reasons. With a CSS version, however, we
-  // set |activated_| to true, but retain the style hence IsActivatable values
-  // don't change on activation. This is important since with a CSS version, we
-  // re-lock elements that have kViewport activatability and thus need to know
-  // if kViewport activatability is present even if activation has happened. To
-  // put this differently, the value returned here should always be consistent
-  // with either the current value of the attribute or the current value of the
-  // CSS property that generated this context; the UA can change the attribute
-  // value, but it cannot change the CSS property value, hence we observe the
-  // above behavior.
-  //
-  // In the common case, if the caller needs to know whether to activate the
-  // context, it should check whether the context is, in fact, locked in
-  // addition to this activatability check.
   bool IsActivatable(DisplayLockActivationReason reason) const;
 
   // Trigger commit because of activation from tab order, url fragment,
@@ -208,12 +145,10 @@ class CORE_EXPORT DisplayLockContext final
 
   bool ShouldCommitForActivation(DisplayLockActivationReason reason) const;
 
-  // Returns true if this lock is locked. Note from the outside perspective, the
-  // lock is locked any time the state is not kUnlocked or kCommitting.
-  bool IsLocked() const { return state_ != kUnlocked && state_ != kCommitting; }
+  // Returns true if this context is locked.
+  bool IsLocked() const { return is_locked_; }
 
-  // Called when the layout tree is attached. This is used to verify
-  // containment.
+  // Called when the layout tree is attached.
   void DidAttachLayoutTree();
 
   // Returns a ScopedForcedUpdate object which for the duration of its lifetime
@@ -286,34 +221,28 @@ class CORE_EXPORT DisplayLockContext final
     }
   }
 
+  // GC functions.
+  void Trace(Visitor*) override;
+
  private:
   // Test friends.
-  friend class DisplayLockBudgetTest;
   friend class DisplayLockContextRenderingTest;
   friend class DisplayLockContextTest;
 
   // Production friends.
-  friend class DisplayLockBudget;
   friend class DisplayLockSuspendedHandle;
 
-  class StateChangeHelper {
-    DISALLOW_NEW();
+  // Returns true if this lock has been activated and the activation has not yet
+  // been cleared.
+  bool IsActivated() const;
 
-   public:
-    explicit StateChangeHelper(DisplayLockContext*);
+  void UpdateActivationBlockingCount(bool was_activatable, bool is_activatable);
 
-    operator State() const { return state_; }
-    StateChangeHelper& operator=(State);
-    void UpdateActivationBlockingCount(bool old_activatable,
-                                       bool new_activatable);
+  // Set which reasons activate, as a mask of DisplayLockActivationReason enums.
+  void SetActivatable(uint16_t activatable_mask);
 
-   private:
-    State state_ = kUnlocked;
-    UntracedMember<DisplayLockContext> context_;
-  };
-
-  // Initiate an update.
-  void StartUpdateIfNeeded();
+  // Clear the activated flag.
+  void ClearActivated();
 
   // Marks ancestors of elements in |whitespace_reattach_set_| with
   // ChildNeedsReattachLayoutTree and clears the set.
@@ -337,25 +266,9 @@ class CORE_EXPORT DisplayLockContext final
   // GetScopedForcedUpdate() for more information.
   void NotifyForcedUpdateScopeEnded();
 
-  // Creates a new update budget based on the BudgetType::kDefault enum. In
-  // other words, it will create a budget of that type.
-  // TODO(vmpstr): In tests, we will probably switch the value to test other
-  // budgets. As well, this makes it easier to change the budget right in the
-  // enum definitions.
-  std::unique_ptr<DisplayLockBudget> CreateNewBudget();
-
   // Helper to schedule an animation to delay lifecycle updates for the next
   // frame.
   void ScheduleAnimation();
-
-  // Helper functions to resolve the update/commit promises.
-  enum ResolverState { kResolve, kReject, kDetach };
-  void MakeResolver(ScriptState*, Member<ScriptPromiseResolver>*);
-  bool HasResolver() const;
-  void FinishUpdateResolver(ResolverState, const char* reject_reason = nullptr);
-  void FinishResolver(Member<ScriptPromiseResolver>*,
-                      ResolverState,
-                      const char* reject_reason);
 
   // Checks whether we should force unlock the lock (due to not meeting
   // containment/display requirements), returns a string from rejection_names
@@ -373,8 +286,6 @@ class CORE_EXPORT DisplayLockContext final
   // have a view (e.g. templates) we shouldn't do style calculations etc and
   // when acquiring this lock should immediately resolve the acquire promise.
   bool ConnectedToView() const;
-
-  bool ShouldPerformUpdatePhase(DisplayLockBudget::Phase phase) const;
 
   // During an attempt to commit, clean up state and reject pending resolver
   // promises if the lock is not connected to the tree.
@@ -396,11 +307,14 @@ class CORE_EXPORT DisplayLockContext final
   // the notifications.
   void UpdateLifecycleNotificationRegistration();
 
-  std::unique_ptr<DisplayLockBudget> update_budget_;
+  // Acquire the lock, should only be called when unlocked.
+  void StartAcquire();
+  // Initiate a commit.
+  void StartCommit();
 
-  Member<ScriptPromiseResolver> update_resolver_;
   WeakMember<Element> element_;
   WeakMember<Document> document_;
+  ESubtreeVisibility state_ = ESubtreeVisibility::kVisible;
 
   // See StyleEngine's |whitespace_reattach_set_|.
   // Set of elements that had at least one rendered children removed
@@ -410,8 +324,6 @@ class CORE_EXPORT DisplayLockContext final
   // in a locked subtree for layout tree reattachment before we did
   // style recalc on them.
   HeapHashSet<Member<Element>> whitespace_reattach_set_;
-
-  StateChangeHelper state_;
 
   bool update_forced_ = false;
 
@@ -440,9 +352,8 @@ class CORE_EXPORT DisplayLockContext final
   uint16_t activatable_mask_ =
       static_cast<uint16_t>(DisplayLockActivationReason::kAny);
 
-  // State that tracks whether we've been activated. Note that this is only
-  // valid for CSS version of subtree-visibility.
-  bool css_is_activated_ = false;
+  // State that tracks whether we've been activated.
+  bool is_activated_ = false;
 
   // Is set to true if we are registered for lifecycle notifications.
   bool is_registered_for_lifecycle_notifications_ = false;
@@ -452,6 +363,10 @@ class CORE_EXPORT DisplayLockContext final
   // In that case, we register for lifecycle notifications and check every time
   // if we are still nested.
   bool needs_intersection_lock_check_ = false;
+
+  // Lock has been requested.
+  bool lock_requested_ = false;
+  bool is_locked_ = false;
 
   // TODO(vmpstr): This is only needed while we're still sending activation
   // events.

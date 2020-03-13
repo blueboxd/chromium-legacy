@@ -68,7 +68,7 @@ void FirstRunDialog::Show(Profile* profile) {
 }
 
 FirstRunDialog::FirstRunDialog(Profile* profile) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::SetExtraView(
       std::make_unique<views::Link>(l10n_util::GetStringUTF16(IDS_LEARN_MORE)))
       ->set_callback(base::BindRepeating(&platform_util::OpenExternal,

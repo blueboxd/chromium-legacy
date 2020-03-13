@@ -45,26 +45,26 @@ EchoDialogView::EchoDialogView(EchoDialogListener* listener,
   chrome::RecordDialogCreation(chrome::DialogIdentifier::ECHO);
 
   if (params.echo_enabled) {
-    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK |
+    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK |
                                 ui::DIALOG_BUTTON_CANCEL);
-    DialogDelegate::set_button_label(
+    DialogDelegate::SetButtonLabel(
         ui::DIALOG_BUTTON_OK,
         l10n_util::GetStringUTF16(IDS_OFFERS_CONSENT_INFOBAR_ENABLE_BUTTON));
-    DialogDelegate::set_button_label(
+    DialogDelegate::SetButtonLabel(
         ui::DIALOG_BUTTON_CANCEL,
         l10n_util::GetStringUTF16(IDS_OFFERS_CONSENT_INFOBAR_DISABLE_BUTTON));
     InitForEnabledEcho(params.service_name, params.origin);
   } else {
-    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_CANCEL);
-    DialogDelegate::set_button_label(
+    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_CANCEL);
+    DialogDelegate::SetButtonLabel(
         ui::DIALOG_BUTTON_CANCEL,
         l10n_util::GetStringUTF16(IDS_ECHO_CONSENT_DISMISS_BUTTON));
     InitForDisabledEcho();
   }
 
-  DialogDelegate::set_accept_callback(base::BindOnce(
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
       &EchoDialogListener::OnAccept, base::Unretained(listener_)));
-  DialogDelegate::set_cancel_callback(base::BindOnce(
+  DialogDelegate::SetCancelCallback(base::BindOnce(
       &EchoDialogListener::OnCancel, base::Unretained(listener_)));
 }
 

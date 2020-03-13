@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/ax_content_node_data.h"
 #include "content/common/content_export.h"
+#include "content/common/render_accessibility.mojom.h"
 #include "content/public/renderer/plugin_ax_tree_source.h"
 #include "content/public/renderer/render_accessibility.h"
 #include "content/public/renderer/render_frame.h"
@@ -39,6 +40,7 @@ namespace content {
 
 class AXImageAnnotator;
 class RenderFrameImpl;
+class RenderAccessibilityManager;
 
 using BlinkAXTreeSerializer = ui::
     AXTreeSerializer<blink::WebAXObject, AXContentNodeData, AXContentTreeData>;
@@ -67,27 +69,28 @@ class AXTreeSnapshotterImpl : public AXTreeSnapshotter {
   AXTreeSnapshotterImpl& operator=(const AXTreeSnapshotterImpl&) = delete;
 };
 
-// The browser process implements native accessibility APIs, allowing
-// assistive technology (e.g., screen readers, magnifiers) to access and
-// control the web contents with high-level APIs. These APIs are also used
-// by automation tools, and Windows 8 uses them to determine when the
-// on-screen keyboard should be shown.
+// The browser process implements native accessibility APIs, allowing assistive
+// technology (e.g., screen readers, magnifiers) to access and control the web
+// contents with high-level APIs. These APIs are also used by automation tools,
+// and Windows 8 uses them to determine when the on-screen keyboard should be
+// shown.
 //
-// An instance of this class belongs to RenderFrameImpl. Accessibility is
-// initialized based on the ui::AXMode of RenderFrameImpl; it lazily
-// starts as Off or EditableTextOnly depending on the operating system, and
-// switches to Complete if assistive technology is detected or a flag is set.
+// An instance of this class belongs to the RenderAccessibilityManager object.
+// Accessibility is initialized based on the ui::AXMode passed from the browser
+// process to the manager object; it lazily starts as Off or EditableTextOnly
+// depending on the operating system, and switches to Complete if assistive
+// technology is detected or a flag is set.
 //
 // A tree of accessible objects is built here and sent to the browser process;
-// the browser process maintains this as a tree of platform-native
-// accessible objects that can be used to respond to accessibility requests
-// from other processes.
+// the browser process maintains this as a tree of platform-native accessible
+// objects that can be used to respond to accessibility requests from other
+// processes.
 //
 // This class implements complete accessibility support for assistive
 // technology. It turns on Blink's accessibility code and sends a serialized
 // representation of that tree whenever it changes. It also handles requests
-// from the browser to perform accessibility actions on nodes in the tree
-// (e.g., change focus, or click on a button).
+// from the browser to perform accessibility actions on nodes in the tree (e.g.,
+// change focus, or click on a button).
 class CONTENT_EXPORT RenderAccessibilityImpl
     : public RenderAccessibility,
       public RenderFrameObserver,
@@ -99,10 +102,11 @@ class CONTENT_EXPORT RenderAccessibilityImpl
                                         AXContentTreeUpdate* response,
                                         ui::AXMode ax_mode);
 
-  RenderAccessibilityImpl(RenderFrameImpl* const render_frame, ui::AXMode mode);
+  RenderAccessibilityImpl(
+      RenderAccessibilityManager* const render_accessibility_manager,
+      RenderFrameImpl* const render_frame,
+      ui::AXMode mode);
   ~RenderAccessibilityImpl() override;
-
-  RenderFrameImpl* render_frame() { return render_frame_; }
 
   ui::AXMode GetAccessibilityMode() {
     return tree_source_.accessibility_mode();
@@ -194,7 +198,10 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   // Returns the document for the active popup if any.
   blink::WebDocument GetPopupDocument();
 
-  // The RenderFrameImpl that owns us.
+  // The RenderAccessibilityManager that owns us.
+  RenderAccessibilityManager* render_accessibility_manager_;
+
+  // The associated RenderFrameImpl by means of the RenderAccessibilityManager.
   RenderFrameImpl* render_frame_;
 
   // This keeps accessibility enabled as long as it lives.

@@ -228,7 +228,7 @@ class LocalChangeProcessor : public SyncChangeProcessor {
                                   ContextRefreshStatus refresh_status,
                                   const std::string& context) override {
     // This function is not supported and not exercised by anyone, since
-    // the USS flow doesn't use SharedChangeProcessor.
+    // the USS flow doesn't use it.
     // TODO(crbug.com/870624): Remove this function altogether when the
     // directory codebase is removed.
     NOTREACHED();

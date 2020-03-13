@@ -114,14 +114,6 @@ class WebWidget {
     return nullptr;
   }
 
-  // Methods called to mark the beginning and end of input processing work
-  // before rAF scripts are executed. Only called when gathering main frame
-  // UMA and UKM. That is, when RecordStartOfFrameMetrics has been called, and
-  // before RecordEndOfFrameMetrics has been called. Only implement if the
-  // rAF input update will be called as part of a layer tree view main frame
-  // update.
-  virtual void BeginRafAlignedInput() {}
-  virtual void EndRafAlignedInput() {}
 
   // Methods called to mark the beginning and end of the
   // LayerTreeHost::UpdateLayers method. Only called when gathering main frame

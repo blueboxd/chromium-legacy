@@ -287,19 +287,19 @@ HungRendererDialogView::HungRendererDialogView() {
       hung_pages_table_model_.get(), columns, views::ICON_AND_TEXT, true);
   hung_pages_table_ = hung_pages_table.get();
 
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetPluralStringFUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_END,
                                        hung_pages_table_model_->RowCount()));
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT));
 
-  DialogDelegate::set_accept_callback(base::BindOnce(
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
       &HungRendererDialogView::RestartHangTimer, base::Unretained(this)));
-  DialogDelegate::set_cancel_callback(base::BindOnce(
+  DialogDelegate::SetCancelCallback(base::BindOnce(
       &HungRendererDialogView::ForceCrashHungRenderer, base::Unretained(this)));
-  DialogDelegate::set_close_callback(base::BindOnce(
+  DialogDelegate::SetCloseCallback(base::BindOnce(
       &HungRendererDialogView::RestartHangTimer, base::Unretained(this)));
 
   DialogModelChanged();

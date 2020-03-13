@@ -1213,10 +1213,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method formData
 [Worker]     method json
 [Worker]     method text
-[Worker] interface SMS
-[Worker]     attribute @@toStringTag
-[Worker]     getter content
-[Worker]     method constructor
 [Worker] interface SecurityPolicyViolationEvent : Event
 [Worker]     attribute @@toStringTag
 [Worker]     getter blockedURI

@@ -162,11 +162,10 @@ const CSSValue* ComputedStyleUtils::ValueForFillSize(
     return ZoomAdjustedPixelValueForLength(fill_size.size.Width(), style);
   }
 
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*ZoomAdjustedPixelValueForLength(fill_size.size.Width(), style));
-  list->Append(
-      *ZoomAdjustedPixelValueForLength(fill_size.size.Height(), style));
-  return list;
+  return MakeGarbageCollected<CSSValuePair>(
+      ZoomAdjustedPixelValueForLength(fill_size.size.Width(), style),
+      ZoomAdjustedPixelValueForLength(fill_size.size.Height(), style),
+      CSSValuePair::kKeepIdenticalValues);
 }
 
 const CSSValue* ComputedStyleUtils::BackgroundImageOrWebkitMaskSize(
@@ -736,6 +735,22 @@ CSSValue* ComputedStyleUtils::ValueForLineHeight(const ComputedStyle& style) {
   return ZoomAdjustedPixelValue(
       FloatValueForLength(length, style.GetFontDescription().ComputedSize()),
       style);
+}
+
+CSSValue* ComputedStyleUtils::ComputedValueForLineHeight(
+    const ComputedStyle& style) {
+  const Length& length = style.LineHeight();
+  if (length.IsNegative())
+    return CSSIdentifierValue::Create(CSSValueID::kNormal);
+
+  if (length.IsPercent()) {
+    return CSSNumericLiteralValue::Create(length.GetFloatValue() / 100.0,
+                                          CSSPrimitiveValue::UnitType::kNumber);
+  } else {
+    return ZoomAdjustedPixelValue(
+        FloatValueForLength(length, style.GetFontDescription().ComputedSize()),
+        style);
+  }
 }
 
 CSSValueID IdentifierForFamily(const AtomicString& family) {
@@ -1687,13 +1702,13 @@ CSSValueList* ComputedStyleUtils::ValuesForBorderRadiusCorner(
   return list;
 }
 
-const CSSValue& ComputedStyleUtils::ValueForBorderRadiusCorner(
+CSSValue* ComputedStyleUtils::ValueForBorderRadiusCorner(
     const LengthSize& radius,
     const ComputedStyle& style) {
-  CSSValueList& list = *ValuesForBorderRadiusCorner(radius, style);
-  if (list.Item(0) == list.Item(1))
-    return list.Item(0);
-  return list;
+  return MakeGarbageCollected<CSSValuePair>(
+      ZoomAdjustedPixelValueForLength(radius.Width(), style),
+      ZoomAdjustedPixelValueForLength(radius.Height(), style),
+      CSSValuePair::kDropIdenticalValues);
 }
 
 CSSFunctionValue* ValueForMatrixTransform(

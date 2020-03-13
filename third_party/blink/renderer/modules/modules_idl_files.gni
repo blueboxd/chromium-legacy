@@ -107,7 +107,6 @@ _idl_imports = [
   "//third_party/blink/renderer/modules/sensor/idls.gni",
   "//third_party/blink/renderer/modules/service_worker/idls.gni",
   "//third_party/blink/renderer/modules/shapedetection/idls.gni",
-  "//third_party/blink/renderer/modules/sms/idls.gni",
   "//third_party/blink/renderer/modules/speech/idls.gni",
   "//third_party/blink/renderer/modules/srcobject/idls.gni",
   "//third_party/blink/renderer/modules/storage/idls.gni",

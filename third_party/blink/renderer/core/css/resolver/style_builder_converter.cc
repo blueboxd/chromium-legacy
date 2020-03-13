@@ -52,12 +52,10 @@
 #include "third_party/blink/renderer/core/css/css_uri_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/resolver/filter_operation_resolver.h"
-#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css/resolver/transform_builder.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
-#include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/style_svg_resource.h"
@@ -978,8 +976,13 @@ float StyleBuilderConverter::ConvertBorderWidth(StyleResolverState& state,
     return 0;
   }
   const auto& primitive_value = To<CSSPrimitiveValue>(value);
-  return primitive_value.ComputeLength<float>(
-      state.CssToLengthConversionData());
+  double result =
+      primitive_value.ComputeLength<float>(state.CssToLengthConversionData());
+  double zoomed_result = state.StyleRef().EffectiveZoom() * result;
+  if (zoomed_result > 0.0 && zoomed_result < 1.0)
+    return 1.0;
+  return clampTo<float>(result, defaultMinimumForClamp<float>(),
+                        defaultMaximumForClamp<float>());
 }
 
 GapLength StyleBuilderConverter::ConvertGapLength(StyleResolverState& state,

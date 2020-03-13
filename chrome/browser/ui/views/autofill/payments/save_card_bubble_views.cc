@@ -54,13 +54,13 @@ SaveCardBubbleViews::SaveCardBubbleViews(views::View* anchor_view,
                                          SaveCardBubbleController* controller)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller) {
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                    controller->GetAcceptButtonText());
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                                    controller->GetDeclineButtonText());
-  DialogDelegate::set_cancel_callback(base::BindOnce(
+  DialogDelegate::SetCancelCallback(base::BindOnce(
       &SaveCardBubbleViews::OnDialogCancelled, base::Unretained(this)));
-  DialogDelegate::set_accept_callback(base::BindOnce(
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
       &SaveCardBubbleViews::OnDialogAccepted, base::Unretained(this)));
   DCHECK(controller);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SAVE_CARD);

@@ -189,4 +189,24 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AddScreenReaderModeFlag) {
   EXPECT_EQ(original_id, textbox2->GetId());
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityModeTest,
+                       ReEnablingAccessibilityDoesNotTimeout) {
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(kMinimalPageDataURL)));
+  ASSERT_TRUE(web_contents()->GetAccessibilityMode().is_mode_off());
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents());
+  web_contents()->AddAccessibilityMode(ui::kAXModeWebContentsOnly);
+  EXPECT_TRUE(web_contents()->GetAccessibilityMode() ==
+              ui::kAXModeWebContentsOnly);
+  waiter.WaitForNotification();
+  EXPECT_EQ(nullptr, GetManager());
+
+  AccessibilityNotificationWaiter waiter2(shell()->web_contents());
+  web_contents()->SetAccessibilityMode(ui::AXMode());
+  web_contents()->AddAccessibilityMode(ui::kAXModeComplete);
+  EXPECT_TRUE(web_contents()->GetAccessibilityMode() == ui::kAXModeComplete);
+  waiter2.WaitForNotification();
+  EXPECT_NE(nullptr, GetManager());
+}
+
 }  // namespace content

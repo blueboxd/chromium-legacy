@@ -180,7 +180,7 @@ ExtensionDialog::ExtensionDialog(
     std::unique_ptr<extensions::ExtensionViewHost> host,
     ExtensionDialogObserver* observer)
     : host_(std::move(host)), observer_(observer) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   DialogDelegate::set_use_custom_frame(false);
 
   AddRef();  // Balanced in DeleteDelegate();

@@ -64,20 +64,12 @@ const base::FilePath::CharType kNigoriStorageFilename[] =
     FILE_PATH_LITERAL("Nigori.bin");
 
 bool ShouldEnableUSSNigori() {
-  // USS implementation of Nigori is not compatible with Directory
-  // implementations of Passwords and Bookmarks.
-  // |kSyncUSSNigori| should be checked last, since check itself has side
-  // effect (only clients, which have feature-flag checked participate in the
-  // study). Otherwise, we will have different amount of clients in control and
-  // experiment groups.
-  return base::FeatureList::IsEnabled(switches::kSyncUSSPasswords) &&
-         base::FeatureList::IsEnabled(switches::kSyncUSSNigori);
+  return base::FeatureList::IsEnabled(switches::kSyncUSSNigori);
 }
 
 // Checks if there is at least one experiment for USS is disabled.
 bool ShouldClearDirectoryOnEmptyBirthday() {
-  return !base::FeatureList::IsEnabled(switches::kSyncUSSPasswords) ||
-         !base::FeatureList::IsEnabled(switches::kSyncUSSNigori);
+  return !base::FeatureList::IsEnabled(switches::kSyncUSSNigori);
 }
 
 }  // namespace

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/password_feature_manager_impl.h"
 #import "components/password_manager/core/browser/password_manager_client.h"
@@ -124,7 +125,8 @@ class IOSChromePasswordManagerClient
   void NotifyStorePasswordCalled() override;
   void NotifyUserCredentialsWereLeaked(
       password_manager::CredentialLeakType leak_type,
-      const GURL& origin) override;
+      const GURL& origin,
+      const base::string16& username) override;
   bool IsSavingAndFillingEnabled(const GURL& url) const override;
   bool IsFillingEnabled(const GURL& url) const override;
   const GURL& GetLastCommittedEntryURL() const override;

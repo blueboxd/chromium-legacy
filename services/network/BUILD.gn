@@ -399,6 +399,7 @@ source_set("tests") {
     "//services/network/public/cpp:buildflags",
     "//services/network/public/mojom",
     "//services/network/trust_tokens",
+    "//services/network/trust_tokens:tests",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",
@@ -415,10 +416,6 @@ source_set("tests") {
 
   if (!is_ios) {
     deps += [ "//services/proxy_resolver:lib" ]
-  }
-
-  if (is_trust_tokens_supported) {
-    deps += [ "//services/network/trust_tokens:tests" ]
   }
 }
 

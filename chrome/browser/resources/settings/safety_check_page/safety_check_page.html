@@ -51,9 +51,8 @@
         }
       }
     </style>
-    <div id="safetyCheckParent" class="settings-box first two-line" tabindex="0"
-        aria-label="[[getParentAriaLabel_(parentStatus_)]]">
-      <iron-icon icon="[[getParentIcon_(parentStatus_)]]"
+    <div id="safetyCheckParent" class="settings-box first two-line">
+      <iron-icon icon="[[getParentIcon_(parentStatus_)]]" aria-hidden="true"
           src="[[getParentIconSrc_(parentStatus_)]]"
           class$="[[getParentIconClass_(parentStatus_)]]">
       </iron-icon>
@@ -81,9 +80,8 @@
     </div>
     <iron-collapse id="safetyCheckCollapse"
         opened="[[shouldShowChildren_(parentStatus_)]]">
-      <div class="settings-box two-line" tabindex="0"
-          aria-label="[[getUpdatesAriaLabel_(updatesDisplayString_)]]">
-        <iron-icon icon="[[getUpdatesIcon_(updatesStatus_)]]"
+      <div class="settings-box two-line">
+        <iron-icon icon="[[getUpdatesIcon_(updatesStatus_)]]" aria-hidden="true"
             src="[[getUpdatesIconSrc_(updatesStatus_)]]"
             class$="[[getUpdatesIconClass_(updatesStatus_)]]">
         </iron-icon>
@@ -104,16 +102,16 @@
         </template>
         <template is="dom-if"
             if="[[shouldShowUpdatesManagedIcon_(updatesStatus_)]]" restamp>
-          <iron-icon id="safetyCheckUpdatesManagedIcon"
-              icon="cr20:domain">
+          <iron-icon id="safetyCheckUpdatesManagedIcon" icon="cr20:domain"
+              aria-hidden="true">
           </iron-icon>
         </template>
       </div>
-      <div class="settings-box two-line" tabindex="0"
-          aria-label="[[getPasswordsAriaLabel_(passwordsDisplayString_)]]">
+      <div class="settings-box two-line">
         <iron-icon icon="[[getPasswordsIcon_(passwordsStatus_)]]"
             src="[[getPasswordsIconSrc_(passwordsStatus_)]]"
-            class$="[[getPasswordsIconClass_(passwordsStatus_)]]">
+            class$="[[getPasswordsIconClass_(passwordsStatus_)]]"
+            aria-hidden="true">
         </iron-icon>
         <div class="start settings-box-text">
           <div>$i18n{passwords}</div>
@@ -131,11 +129,11 @@
           </cr-button>
         </template>
       </div>
-      <div class="settings-box two-line" tabindex="0"
-          aria-label="[[getSafeBrowsingAriaLabel_(safeBrowsingDisplayString_)]]">
+      <div class="settings-box two-line">
         <iron-icon icon="[[getSafeBrowsingIcon_(safeBrowsingStatus_)]]"
             src="[[getSafeBrowsingIconSrc_(safeBrowsingStatus_)]]"
-            class$="[[getSafeBrowsingIconClass_(safeBrowsingStatus_)]]">
+            class$="[[getSafeBrowsingIconClass_(safeBrowsingStatus_)]]"
+            aria-hidden="true">
         </iron-icon>
         <div class="start settings-box-text">
           <div>$i18n{safeBrowsingSectionLabel}</div>
@@ -155,15 +153,16 @@
         <template is="dom-if"
             if="[[shouldShowSafeBrowsingManagedIcon_(safeBrowsingStatus_)]]"
             restamp>
-          <iron-icon id="safetyCheckSafeBrowsingManagedIcon" icon="cr20:domain">
+          <iron-icon id="safetyCheckSafeBrowsingManagedIcon" icon="cr20:domain"
+              aria-hidden="true">
           </iron-icon>
         </template>
       </div>
-      <div class="settings-box two-line" tabindex="0"
-          aria-label="[[getExtensionsAriaLabel_(extensionsDisplayString_)]]">
+      <div class="settings-box two-line">
         <iron-icon icon="[[getExtensionsIcon_(extensionsStatus_)]]"
             src="[[getExtensionsIconSrc_(extensionsStatus_)]]"
-            class$="[[getExtensionsIconClass_(extensionsStatus_)]]">
+            class$="[[getExtensionsIconClass_(extensionsStatus_)]]"
+            aria-hidden="true">
         </iron-icon>
         <div class="start settings-box-text">
           <div>$i18n{safetyCheckExtensionsPrimaryLabel}</div>
@@ -184,7 +183,8 @@
         <template is="dom-if"
             if="[[shouldShowExtensionsManagedIcon_(extensionsStatus_)]]"
             restamp>
-          <iron-icon id="safetyCheckExtensionsManagedIcon" icon="cr20:domain">
+          <iron-icon id="safetyCheckExtensionsManagedIcon" icon="cr20:domain"
+              aria-hidden="true">
           </iron-icon>
         </template>
       </div>

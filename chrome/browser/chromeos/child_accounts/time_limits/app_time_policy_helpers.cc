@@ -28,6 +28,7 @@ const char kLastUpdatedString[] = "last_updated_millis";
 const char kResetAtDict[] = "reset_at";
 const char kHourInt[] = "hour";
 const char kMinInt[] = "minute";
+const char kActivityReportingEnabled[] = "activity_reporting_enabled";
 
 apps::mojom::AppType PolicyStringToAppType(const std::string& app_type) {
   if (app_type == "ARC")
@@ -215,6 +216,12 @@ base::Value ResetTimeToDict(int hour, int minutes) {
   value.SetKey(kMinInt, base::Value(minutes));
 
   return value;
+}
+
+base::Optional<bool> ActivityReportingEnabledFromDict(const base::Value& dict) {
+  if (!dict.is_dict())
+    return base::nullopt;
+  return dict.FindBoolPath(kActivityReportingEnabled);
 }
 
 std::map<AppId, AppLimit> AppLimitsFromDict(const base::Value& dict) {

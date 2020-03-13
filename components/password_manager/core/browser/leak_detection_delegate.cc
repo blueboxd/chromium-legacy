@@ -98,7 +98,7 @@ void LeakDetectionDelegate::OnShowLeakDetectionNotification(
   CredentialLeakType leak_type = CreateLeakType(
       is_saved, is_reused,
       IsSyncing(client_->GetPasswordSyncState() == SYNCING_NORMAL_ENCRYPTION));
-  client_->NotifyUserCredentialsWereLeaked(leak_type, url);
+  client_->NotifyUserCredentialsWereLeaked(leak_type, url, username);
 }
 
 void LeakDetectionDelegate::OnError(LeakDetectionError error) {

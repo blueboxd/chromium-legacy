@@ -38,7 +38,7 @@ class FieldInfoManagerTest : public testing::Test {
     test_data_.push_back({102u, 1u, SINGLE_USERNAME, Time::FromTimeT(10)});
 
     store_ = new MockPasswordStore;
-    store_->Init(syncer::SyncableService::StartSyncFlare(), /*prefs=*/nullptr);
+    store_->Init(/*prefs=*/nullptr);
     EXPECT_CALL(*store_, GetAllFieldInfoImpl());
     field_info_manager_ = std::make_unique<FieldInfoManagerImpl>(store_);
     task_environment_.RunUntilIdle();

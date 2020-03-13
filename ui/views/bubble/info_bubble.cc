@@ -51,7 +51,7 @@ InfoBubble::InfoBubble(View* anchor, const base::string16& message)
   DCHECK(anchor_);
   SetAnchorView(anchor_);
 
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
 
   set_margins(LayoutProvider::Get()->GetInsetsMetric(
       InsetsMetric::INSETS_TOOLTIP_BUBBLE));

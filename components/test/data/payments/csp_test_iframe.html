@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'unsafe-eval' 'unsafe-inline'; img-src 'self' https://kylepay.com:*"
+    >
+    <script>
+    async function checkCanMakePayment() {
+      const methodData = [{
+        supportedMethods: "https://kylepay.com/webpay",
+      }];
+      let details = {
+        total: {
+          label: "Total",
+          amount: {
+            currency: "USD",
+            value: "1.00",
+          },
+        },
+      };
+      const request = new PaymentRequest(methodData, details);
+      const result = await request.canMakePayment();
+      document.querySelector("#output").innerText = "canMakePayment: " + result;
+      return result;
+    }
+
+    </script>
+  </head>
+  <body>
+    <p>This page is a regression test for <a href="https://crbug.com/1055360">
+      crbug/1055360</a>.</p>
+    <div id="output"></div>
+  </body>
+</html>

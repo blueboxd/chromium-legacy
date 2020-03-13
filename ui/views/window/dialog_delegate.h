@@ -56,7 +56,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 
     // Text labels for the buttons on this dialog. Any button without a label
     // here will get the default text for its type from GetDialogButtonLabel.
-    // Prefer to use this field (via set_button_label) rather than override
+    // Prefer to use this field (via SetButtonLabel) rather than override
     // GetDialogButtonLabel - see https://crbug.com/1011446
     base::string16 button_labels[ui::DIALOG_BUTTON_LAST + 1];
   };
@@ -114,7 +114,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // overridden. This function should return true if the window can be closed
   // after it returns, or false if it must remain open. By default, return true
   // without doing anything.
-  // DEPRECATED: use |set_cancel_callback| instead.
+  // DEPRECATED: use |SetCancelCallback| instead.
   virtual bool Cancel();
 
   // For Dialog boxes, this is called when the user presses the "OK" button,
@@ -122,7 +122,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // has not been overridden. This function should return true if the window
   // can be closed after it returns, or false if it must remain open. By
   // default, return true without doing anything.
-  // DEPRECATED: use |set_accept_callback| instead.
+  // DEPRECATED: use |SetAcceptCallback| instead.
   virtual bool Accept();
 
   // Overridden from WidgetDelegate:
@@ -172,27 +172,18 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // Notifies observers when the result of the DialogModel overrides changes.
   void DialogModelChanged();
 
-  void set_default_button(int button) { params_.default_button = button; }
   void set_use_round_corners(bool round) { params_.round_corners = round; }
   void set_draggable(bool draggable) { params_.draggable = draggable; }
   bool draggable() const { return params_.draggable; }
   void set_use_custom_frame(bool use) { params_.custom_frame = use; }
   bool use_custom_frame() const { return params_.custom_frame; }
-  void set_buttons(int buttons) { params_.buttons = buttons; }
 
-  void set_button_label(ui::DialogButton button, base::string16 label) {
-    params_.button_labels[button] = label;
-  }
-
-  void set_accept_callback(base::OnceClosure callback) {
-    accept_callback_ = std::move(callback);
-  }
-  void set_cancel_callback(base::OnceClosure callback) {
-    cancel_callback_ = std::move(callback);
-  }
-  void set_close_callback(base::OnceClosure callback) {
-    close_callback_ = std::move(callback);
-  }
+  void SetDefaultButton(int button);
+  void SetButtons(int buttons);
+  void SetButtonLabel(ui::DialogButton button, base::string16 label);
+  void SetAcceptCallback(base::OnceClosure callback);
+  void SetCancelCallback(base::OnceClosure callback);
+  void SetCloseCallback(base::OnceClosure callback);
 
   // Returns ownership of the extra view for this dialog, if one was provided
   // via SetExtraView(). This is only for use by DialogClientView; don't call

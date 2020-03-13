@@ -151,7 +151,7 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent,
       should_show_upper_side_(false),
       was_candidate_window_open_(false),
       window_shell_id_(window_shell_id) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   SetCanActivate(false);
   DCHECK(parent);
   set_parent_window(parent);

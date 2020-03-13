@@ -49,7 +49,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
-#include "content/common/accessibility_messages.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_navigation_policy.h"
@@ -2181,8 +2180,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_VisualStateRequest,
                         OnVisualStateRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
-    IPC_MESSAGE_HANDLER(AccessibilityMsg_SnapshotTree,
-                        OnSnapshotAccessibilityTree)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSavableResourceLinks,
@@ -2603,14 +2600,6 @@ void RenderFrameImpl::OnVisualStateRequest(uint64_t id) {
       std::make_unique<FrameHostMsg_VisualStateResponse>(routing_id_, id));
 }
 
-void RenderFrameImpl::OnSnapshotAccessibilityTree(int callback_id,
-                                                  ui::AXMode ax_mode) {
-  AXContentTreeUpdate response;
-  RenderAccessibilityImpl::SnapshotAccessibilityTree(this, &response, ax_mode);
-  Send(new AccessibilityHostMsg_SnapshotResponse(
-      routing_id_, callback_id, response));
-}
-
 void RenderFrameImpl::OnPortalActivated(
     const base::UnguessableToken& portal_token,
     mojo::PendingAssociatedRemote<blink::mojom::Portal> portal,
@@ -2663,6 +2652,15 @@ void RenderFrameImpl::UpdateBrowserControlsState(
   host->UpdateBrowserControlsState(
       static_cast<cc::BrowserControlsState>(constraints),
       static_cast<cc::BrowserControlsState>(current), animate);
+}
+
+void RenderFrameImpl::SnapshotAccessibilityTree(
+    uint32_t ax_mode,
+    SnapshotAccessibilityTreeCallback callback) {
+  AXContentTreeUpdate response;
+  RenderAccessibilityImpl::SnapshotAccessibilityTree(this, &response,
+                                                     ui::AXMode(ax_mode));
+  std::move(callback).Run(response);
 }
 
 #if defined(OS_ANDROID)

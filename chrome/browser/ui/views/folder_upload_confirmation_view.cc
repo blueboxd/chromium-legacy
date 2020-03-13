@@ -22,21 +22,21 @@ FolderUploadConfirmationView::FolderUploadConfirmationView(
     std::vector<ui::SelectedFileInfo> selected_files)
     : callback_(std::move(callback)),
       selected_files_(std::move(selected_files)) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_CONFIRM_FILE_UPLOAD_OK_BUTTON));
 
-  DialogDelegate::set_accept_callback(base::BindOnce(
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
       [](FolderUploadConfirmationView* dialog) {
         std::move(dialog->callback_).Run(dialog->selected_files_);
       },
       base::Unretained(this)));
-  DialogDelegate::set_cancel_callback(base::BindOnce(
+  DialogDelegate::SetCancelCallback(base::BindOnce(
       [](FolderUploadConfirmationView* dialog) {
         std::move(dialog->callback_).Run({});
       },
       base::Unretained(this)));
-  DialogDelegate::set_close_callback(base::BindOnce(
+  DialogDelegate::SetCloseCallback(base::BindOnce(
       [](FolderUploadConfirmationView* dialog) {
         std::move(dialog->callback_).Run({});
       },

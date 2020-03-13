@@ -94,15 +94,12 @@ class MdnsResponderManager;
 class NSSTempCertsCacheChromeOS;
 class P2PSocketManager;
 class ProxyLookupRequest;
+class QuicTransport;
 class ResourceScheduler;
 class ResourceSchedulerClient;
-class QuicTransport;
-class WebSocketFactory;
-
-#if BUILDFLAG(IS_TRUST_TOKENS_SUPPORTED)
 class SQLiteTrustTokenPersister;
 class TrustTokenStore;
-#endif  // BUILDFLAG(IS_TRUST_TOKENS_SUPPORTED)
+class WebSocketFactory;
 
 namespace cors {
 class CorsURLLoaderFactory;
@@ -479,7 +476,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     return url_loader_factories_.size();
   }
 
-#if BUILDFLAG(IS_TRUST_TOKENS_SUPPORTED)
   // Maintains Trust Tokens protocol state
   // (https://github.com/WICG/trust-token-api). Used by URLLoader to check
   // preconditions before annotating requests with protocol-related headers
@@ -487,7 +483,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   //
   // Initialized asynchronously and may be null until initialized.
   TrustTokenStore* trust_token_store() { return trust_token_store_.get(); }
-#endif  // BUILDFLAG(IS_TRUST_TOKENS_SUPPORTED)
 
  private:
   URLRequestContextOwner MakeURLRequestContext();
@@ -538,14 +533,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   void InitializeCorsParams();
 
-#if BUILDFLAG(IS_TRUST_TOKENS_SUPPORTED)
   // If |trust_token_store_| is backed by an asynchronously-constructed (e.g.,
   // SQL-based) persistence layer, |FinishConstructingTrustTokenStore|
   // constructs and populates |trust_token_store_| once the persister's
   // asynchronous initialization has finished.
   void FinishConstructingTrustTokenStore(
       std::unique_ptr<SQLiteTrustTokenPersister> persister);
-#endif  // BUILDFLAG(IS_TRUST_TOKENS_SUPPORTED)
 
   NetworkService* const network_service_;
 
@@ -582,10 +575,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   mojo::UniqueReceiverSet<mojom::ProxyResolvingSocketFactory>
       proxy_resolving_socket_factories_;
 
-#if BUILDFLAG(IS_TRUST_TOKENS_SUPPORTED)
   // See the comment for |trust_token_store()|.
   std::unique_ptr<TrustTokenStore> trust_token_store_;
-#endif  // BUILDFLAG(IS_TRUST_TOKENS_SUPPORTED)
 
 #if !defined(OS_IOS)
   std::unique_ptr<WebSocketFactory> websocket_factory_;

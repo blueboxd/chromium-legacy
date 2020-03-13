@@ -1145,7 +1145,7 @@ CrSettingsSiteSettingsPageTest.prototype = {
   ])
 };
 
-TEST_F('CrSettingsSiteSettingsPageTest', 'All', function() {
+TEST_F('CrSettingsSiteSettingsPageTest', 'DISABLED_All', function() {
   mocha.run();
 });
 

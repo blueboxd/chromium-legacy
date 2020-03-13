@@ -25,6 +25,7 @@ class AppUpdateAll : public App {
   void Initialize() override;
 
   scoped_refptr<Configurator> config_;
+  std::unique_ptr<UpdateService> update_service_;
 };
 
 void AppUpdateAll::Initialize() {
@@ -33,9 +34,12 @@ void AppUpdateAll::Initialize() {
 
 // AppUpdateAll triggers an update of all registered applications.
 void AppUpdateAll::FirstTaskRun() {
-  CreateUpdateService(config_)->UpdateAll(base::BindOnce(
+  update_service_ = CreateUpdateService(config_);
+  update_service_->UpdateAll(base::BindOnce(
       [](base::OnceCallback<void(int)> quit, update_client::Error error) {
-        VLOG(0) << "UpdateAll complete: error = " << static_cast<int>(error);
+        const int err = static_cast<int>(error);
+        VLOG(0) << "UpdateAll complete: error = " << err << "/0x" << std::hex
+                << err;
         std::move(quit).Run(static_cast<int>(error));
       },
       base::BindOnce(&AppUpdateAll::Shutdown, this)));

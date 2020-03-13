@@ -373,6 +373,11 @@ crbug.com/1042453 [ Mac ] virtual/scalefactor200/external/wpt/css/filter-effects
 crbug.com/1042783 external/wpt/css/css-backgrounds/background-size/background-size-near-zero-png.html [ Failure ]
 crbug.com/1042783 external/wpt/css/css-backgrounds/background-size/background-size-near-zero-svg.html [ Failure ]
 
+# Failures due to pointerMove building synthetic events without button information (main thread only).
+crbug.com/1056778 virtual/scroll_customization/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Failure ]
+crbug.com/1056778 fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Failure ]
+crbug.com/1056778 virtual/percent-based-scrolling/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Failure ]
+
 # Most of these fail due to subpixel differences, but a couple are real failures.
 crbug.com/1044742 [ Win ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-animation.html [ Failure ]
 crbug.com/1044742 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-animation.html [ Failure ]
@@ -1829,6 +1834,9 @@ crbug.com/995106 external/wpt/css/css-pseudo/first-letter-exclude-inline-marker.
 crbug.com/995106 external/wpt/css/css-pseudo/first-letter-exclude-inline-child-marker.html [ Failure ]
 
 crbug.com/1054509 external/wpt/css/css-transitions/non-rendered-element-004.tentative.html [ Skip ]
+
+crbug.com/1058822 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-iframe-background-mismatch-alpha.html [ Failure ]
+crbug.com/1058822 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-iframe-background-mismatch-opaque.html [ Failure ]
 
 # ====== Style team owned tests to here ======
 

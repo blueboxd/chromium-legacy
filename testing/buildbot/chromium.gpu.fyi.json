@@ -10430,23 +10430,15 @@
     ]
   },
   "Linux FYI SkiaRenderer Dawn Release (Intel HD 630)": {
-    "isolated_scripts": [
+    "gtest_tests": [
       {
         "args": [
-          "noop_sleep",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--no-xvfb"
         ],
-        "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "noop_sleep_tests",
-        "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -10457,9 +10449,34 @@
               "pool": "chromium.tests.gpu.template"
             }
           ],
-          "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test": "cc_unittests",
+        "test_target": "//cc:cc_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/gpu.skiarenderer_dawn_viz_unittests.filter",
+          "--no-xvfb"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "chromium.tests.gpu.template"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "viz_unittests",
+        "test_target": "//components/viz:viz_unittests"
       }
     ]
   },

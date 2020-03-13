@@ -363,15 +363,6 @@ Polymer({
     this.focusParent_();
   },
 
-  /**
-   * @private
-   * @return {string}
-   */
-  getParentAriaLabel_: function() {
-    return this.i18n('safetyCheckSectionTitle') + ': ' +
-        this.parentDisplayString_;
-  },
-
   /** @private */
   focusParent_() {
     const parent = /** @type {!Element} */ (this.$$('#safetyCheckParent'));
@@ -463,15 +454,6 @@ Polymer({
 
   /**
    * @private
-   * @return {string}
-   */
-  getUpdatesAriaLabel_: function() {
-    return this.i18n('safetyCheckUpdatesPrimaryLabel') + ': ' +
-        this.updatesDisplayString_;
-  },
-
-  /**
-   * @private
    * @return {boolean}
    */
   shouldShowPasswordsButton_: function() {
@@ -502,15 +484,6 @@ Polymer({
         assertNotReached();
     }
   },
-
-  /**
-   * @private
-   * @return {string}
-   */
-  getPasswordsAriaLabel_: function() {
-    return this.i18n('passwords') + ': ' + this.passwordsDisplayString_;
-  },
-
 
   /**
    * @private
@@ -618,15 +591,6 @@ Polymer({
     }
   },
 
-  /**
-   * @private
-   * @return {string}
-   */
-  getSafeBrowsingAriaLabel_: function() {
-    return this.i18n('safeBrowsingSectionLabel') + ': ' +
-        this.safeBrowsingDisplayString_;
-  },
-
   /** @private */
   onSafeBrowsingButtonClick_: function() {
     settings.Router.getInstance().navigateTo(settings.routes.SECURITY);
@@ -719,15 +683,6 @@ Polymer({
       default:
         return '';
     }
-  },
-
-  /**
-   * @private
-   * @return {string}
-   */
-  getExtensionsAriaLabel_: function() {
-    return this.i18n('safetyCheckExtensionsPrimaryLabel') + ': ' +
-        this.extensionsDisplayString_;
   },
 
   /**

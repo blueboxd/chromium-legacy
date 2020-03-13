@@ -86,7 +86,7 @@ PWAConfirmationBubbleView::PWAConfirmationBubbleView(
       web_app_info_(std::move(web_app_info)),
       callback_(std::move(callback)) {
   DCHECK(web_app_info_);
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_INSTALL_PWA_BUTTON_LABEL));
   base::TrimWhitespace(web_app_info_->title, base::TRIM_ALL,

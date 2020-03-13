@@ -81,5 +81,13 @@
       default_value: "max",
       depends_on: ["UnoptimizedImagePolicies"],
     },
+    {
+      name: "UnsizedMedia",
+      document_policy_name: "unsized-media",
+      value_name: "",
+      value_type: "Bool",
+      default_value: "true",
+      depends_on: ["UnsizedMediaPolicy"],
+    },
   ],
 }

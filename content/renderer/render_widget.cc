@@ -212,21 +212,6 @@ class WebWidgetLockTarget : public content::MouseLockDispatcher::LockTarget {
   RenderWidget* render_widget_;
 };
 
-class ScopedUkmRafAlignedInputTimer {
- public:
-  explicit ScopedUkmRafAlignedInputTimer(blink::WebWidget* webwidget)
-      : webwidget_(webwidget) {
-    webwidget_->BeginRafAlignedInput();
-  }
-
-  ~ScopedUkmRafAlignedInputTimer() { webwidget_->EndRafAlignedInput(); }
-
- private:
-  blink::WebWidget* webwidget_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedUkmRafAlignedInputTimer);
-};
-
 bool IsDateTimeInput(ui::TextInputType type) {
   return type == ui::TEXT_INPUT_TYPE_DATE ||
          type == ui::TEXT_INPUT_TYPE_DATE_TIME ||
@@ -1164,20 +1149,11 @@ void RenderWidget::SendScrollEndEventFromImplSide(
 
 void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
   DCHECK(!IsForProvisionalFrame());
-
-  // We record metrics only when running in multi-threaded mode, not
-  // single-thread mode for testing.
-  bool record_main_frame_metrics =
-      !!compositor_deps_->GetCompositorImplThreadTaskRunner();
-  {
-    base::Optional<ScopedUkmRafAlignedInputTimer> ukm_timer;
-    if (record_main_frame_metrics) {
-      ukm_timer.emplace(GetWebWidget());
-    }
-    input_event_queue_->DispatchRafAlignedInput(frame_time);
-  }
-
   GetWebWidget()->BeginFrame(frame_time);
+}
+
+void RenderWidget::DispatchRafAlignedInput(base::TimeTicks frame_time) {
+  input_event_queue_->DispatchRafAlignedInput(frame_time);
 }
 
 void RenderWidget::OnDeferMainFrameUpdatesChanged(bool deferral_state) {

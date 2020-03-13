@@ -1185,6 +1185,26 @@
             ]
         }
     ],
+    "CSSOMViewScrollCoordinates": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnableCSSOMViewScrollCoordinates",
+                    "enable_features": [
+                        "CSSOMViewScrollCoordinates"
+                    ]
+                }
+            ]
+        }
+    ],
     "CacheStorageEagerReading": [
         {
             "platforms": [
@@ -5385,26 +5405,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SyncUSSNigori"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SyncUssPasswords'": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SyncUSSPasswords"
                     ]
                 }
             ]

@@ -799,6 +799,15 @@
     "script": "//testing/scripts/run_flatbuffers_unittests.py",
     "type": "script",
   },
+  "fuchsia_telemetry_gpu_integration_test": {
+    "args": [
+      "../../content/test/gpu/run_gpu_integration_test_fuchsia.py",
+      "--output-directory=.",
+    ],
+    "label": "//content/test:fuchsia_telemetry_gpu_integration_test",
+    "script": "//testing/scripts/run_isolated_script_test.py",
+    "type": "script",
+  },
   "gcm_unit_tests": {
     "label": "//google_apis/gcm:gcm_unit_tests",
     "type": "console_test_launcher",

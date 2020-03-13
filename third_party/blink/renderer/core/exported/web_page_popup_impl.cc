@@ -378,11 +378,7 @@ void WebPagePopupImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
 }
 
 void WebPagePopupImpl::BeginFrame(base::TimeTicks last_frame_time) {
-  if (!page_)
-    return;
-  // FIXME: This should use lastFrameTimeMonotonic but doing so
-  // breaks tests.
-  PageWidgetDelegate::Animate(*page_, base::TimeTicks::Now());
+  widget_base_.BeginMainFrame(last_frame_time);
 }
 
 void WebPagePopupImpl::UpdateLifecycle(LifecycleUpdate requested_update,
@@ -429,6 +425,18 @@ WebInputEventResult WebPagePopupImpl::HandleKeyEvent(
     }
   }
   return MainFrame().GetEventHandler().KeyEvent(event);
+}
+
+void WebPagePopupImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
+  if (!page_)
+    return;
+  // FIXME: This should use lastFrameTimeMonotonic but doing so
+  // breaks tests.
+  PageWidgetDelegate::Animate(*page_, base::TimeTicks::Now());
+}
+
+void WebPagePopupImpl::DispatchRafAlignedInput(base::TimeTicks frame_time) {
+  WidgetClient()->DispatchRafAlignedInput(frame_time);
 }
 
 WebInputEventResult WebPagePopupImpl::HandleCharEvent(

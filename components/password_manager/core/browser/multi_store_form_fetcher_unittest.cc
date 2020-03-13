@@ -124,13 +124,11 @@ class MultiStoreFormFetcherTest : public testing::Test {
                      kTestHttpURL,
                      GURL(kTestHttpURL)) {
     profile_mock_store_ = new MockPasswordStore;
-    profile_mock_store_->Init(syncer::SyncableService::StartSyncFlare(),
-                              /*prefs=*/nullptr);
+    profile_mock_store_->Init(/*prefs=*/nullptr);
     client_.set_profile_store(profile_mock_store_.get());
 
     account_mock_store_ = new MockPasswordStore;
-    account_mock_store_->Init(syncer::SyncableService::StartSyncFlare(),
-                              /*prefs=*/nullptr);
+    account_mock_store_->Init(/*prefs=*/nullptr);
     client_.set_account_store(account_mock_store_.get());
 
     form_fetcher_ = std::make_unique<MultiStoreFormFetcher>(

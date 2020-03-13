@@ -73,7 +73,7 @@ AuthenticatorRequestDialogView::AuthenticatorRequestDialogView(
   DCHECK(!model_->should_dialog_be_closed());
   model_->AddObserver(this);
 
-  DialogDelegate::set_close_callback(
+  DialogDelegate::SetCloseCallback(
       base::BindOnce(&AuthenticatorRequestDialogView::OnDialogClosing,
                      base::Unretained(this)));
 
@@ -313,13 +313,13 @@ void AuthenticatorRequestDialogView::UpdateUIForCurrentSheet() {
     buttons |= ui::DIALOG_BUTTON_OK;
   if (sheet()->model()->IsCancelButtonVisible())
     buttons |= ui::DIALOG_BUTTON_CANCEL;
-  DialogDelegate::set_buttons(buttons);
-  DialogDelegate::set_default_button((buttons & ui::DIALOG_BUTTON_OK)
+  DialogDelegate::SetButtons(buttons);
+  DialogDelegate::SetDefaultButton((buttons & ui::DIALOG_BUTTON_OK)
                                          ? ui::DIALOG_BUTTON_OK
                                          : ui::DIALOG_BUTTON_NONE);
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                    sheet_->model()->GetAcceptButtonLabel());
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                                    sheet_->model()->GetCancelButtonLabel());
 
   // Whether to show the `Choose another option` button, or other dialog

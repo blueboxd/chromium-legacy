@@ -43,9 +43,7 @@ class MEDIA_EXPORT NullVideoSink : public VideoRendererSink {
   }
 
   // Sets |stop_cb_|, which will be fired when Stop() is called.
-  void set_stop_cb(const base::Closure& stop_cb) {
-    stop_cb_ = stop_cb;
-  }
+  void set_stop_cb(base::OnceClosure stop_cb) { stop_cb_ = std::move(stop_cb); }
 
   bool is_started() const { return started_; }
 
@@ -84,7 +82,7 @@ class MEDIA_EXPORT NullVideoSink : public VideoRendererSink {
   const base::TickClock* tick_clock_;
 
   // If set, called when Stop() is called.
-  base::Closure stop_cb_;
+  base::OnceClosure stop_cb_;
 
   // Value passed to RenderCallback::Render().
   bool background_render_;

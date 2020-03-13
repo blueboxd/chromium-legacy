@@ -97,8 +97,7 @@ class CWVSyncControllerTest : public TestWithLocaleAndResources {
         base::ThreadTaskRunnerHandle::Get());
 
     password_store_ = new password_manager::MockPasswordStore;
-    password_store_->Init(base::RepeatingCallback<void(syncer::ModelType)>(),
-                          nullptr);
+    password_store_->Init(nullptr);
 
     sync_controller_ = [[CWVSyncController alloc]
            initWithSyncService:mock_sync_service()

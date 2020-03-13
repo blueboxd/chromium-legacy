@@ -814,10 +814,7 @@ TEST_F(SyncEngineImplTest,
 // Regression test for crbug.com/1019956.
 TEST_F(SyncEngineImplTest, ShouldDestroyAfterInitFailure) {
   base::test::ScopedFeatureList override_features;
-  override_features.InitWithFeatures(
-      /*enable_feature=*/{switches::kSyncUSSPasswords,
-                          switches::kSyncUSSNigori},
-      /*disable_feature=*/{});
+  override_features.InitAndEnableFeature(switches::kSyncUSSNigori);
 
   fake_manager_factory_->set_should_fail_on_init(true);
   // Sync manager will report initialization failure and gets destroyed during

@@ -39,6 +39,7 @@
 
 using ::base::test::RunClosure;
 using ::base::test::RunOnceCallback;
+using ::base::test::RunOnceClosure;
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Combine;
@@ -234,7 +235,8 @@ class VideoRendererImplTest : public testing::Test {
     SCOPED_TRACE("WaitForEnded()");
 
     WaitableMessageLoopEvent event;
-    EXPECT_CALL(mock_cb_, OnEnded()).WillOnce(RunClosure(event.GetClosure()));
+    EXPECT_CALL(mock_cb_, OnEnded())
+        .WillOnce(RunOnceClosure(event.GetClosure()));
     event.RunAndWait();
   }
 
@@ -421,7 +423,7 @@ TEST_F(VideoRendererImplTest, InitializeAndEndOfStream) {
       // Buffering state changes must happen before end of stream.
       testing::InSequence in_sequence;
       EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH, _))
-          .WillOnce(RunClosure(event.GetClosure()));
+          .WillOnce(RunOnceClosure(event.GetClosure()));
       EXPECT_CALL(mock_cb_, OnEnded());
     }
     SatisfyPendingDecodeWithEndOfStream();
@@ -452,7 +454,7 @@ TEST_F(VideoRendererImplTest, InitializeAndEndOfStreamOneStaleFrame) {
       // Buffering state changes must happen before end of stream.
       testing::InSequence in_sequence;
       EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH, _))
-          .WillOnce(RunClosure(event.GetClosure()));
+          .WillOnce(RunOnceClosure(event.GetClosure()));
       EXPECT_CALL(mock_cb_, OnEnded());
     }
     SatisfyPendingDecode();
@@ -518,10 +520,10 @@ TEST_F(VideoRendererImplTest, FlushWithNothingBuffered) {
 // we should be able to call other renderer methods from the Flush callback.
 static void VideoRendererImplTest_FlushDoneCB(VideoRendererImplTest* test,
                                               VideoRenderer* renderer,
-                                              const base::Closure& success_cb) {
+                                              base::OnceClosure success_cb) {
   test->QueueFrames("0 10 20 30");
   renderer->StartPlayingFrom(base::TimeDelta::FromSeconds(0));
-  success_cb.Run();
+  std::move(success_cb).Run();
 }
 
 TEST_F(VideoRendererImplTest, FlushCallbackNoLock) {
@@ -637,7 +639,7 @@ TEST_F(VideoRendererImplTest, StartPlayingFrom_LowDelay) {
 
   WaitableMessageLoopEvent event;
   EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(20)))
-      .WillOnce(RunClosure(event.GetClosure()));
+      .WillOnce(RunOnceClosure(event.GetClosure()));
   AdvanceTimeInMs(20);
   event.RunAndWait();
 
@@ -677,7 +679,7 @@ TEST_F(VideoRendererImplTest, RenderingStopsAfterFirstFrame) {
     WaitableMessageLoopEvent event;
 
     EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(0)))
-        .WillOnce(RunClosure(event.GetClosure()));
+        .WillOnce(RunOnceClosure(event.GetClosure()));
     StartPlayingFrom(0);
 
     EXPECT_TRUE(IsReadPending());
@@ -733,7 +735,7 @@ TEST_F(VideoRendererImplTest, RenderingStartedThenStopped) {
   {
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH, _))
-        .WillOnce(RunClosure(event.GetClosure()));
+        .WillOnce(RunOnceClosure(event.GetClosure()));
     EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_))
         .Times(4)
         .WillRepeatedly(SaveArg<0>(&last_pipeline_statistics));
@@ -804,7 +806,7 @@ TEST_F(VideoRendererImplTest, UnderflowEvictionBeforeEOS) {
     SCOPED_TRACE("Waiting for BUFFERING_HAVE_ENOUGH");
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH, _))
-        .WillOnce(RunClosure(event.GetClosure()));
+        .WillOnce(RunOnceClosure(event.GetClosure()));
     EXPECT_CALL(mock_cb_, FrameReceived(_)).Times(AnyNumber());
     EXPECT_CALL(mock_cb_, OnVideoNaturalSizeChange(_)).Times(1);
     EXPECT_CALL(mock_cb_, OnVideoOpacityChange(_)).Times(1);
@@ -817,7 +819,7 @@ TEST_F(VideoRendererImplTest, UnderflowEvictionBeforeEOS) {
     SCOPED_TRACE("Waiting for BUFFERING_HAVE_NOTHING");
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING, _))
-        .WillOnce(RunClosure(event.GetClosure()));
+        .WillOnce(RunOnceClosure(event.GetClosure()));
     renderer_->OnTimeProgressing();
     time_source_.StartTicking();
     // Jump time far enough forward that no frames are valid.
@@ -846,7 +848,7 @@ TEST_F(VideoRendererImplTest, UnderflowEvictionWhileHaveEnough) {
     SCOPED_TRACE("Waiting for BUFFERING_HAVE_ENOUGH");
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH, _))
-        .WillOnce(RunClosure(event.GetClosure()));
+        .WillOnce(RunOnceClosure(event.GetClosure()));
     EXPECT_CALL(mock_cb_, FrameReceived(_)).Times(AnyNumber());
     EXPECT_CALL(mock_cb_, OnVideoNaturalSizeChange(_)).Times(1);
     EXPECT_CALL(mock_cb_, OnVideoOpacityChange(_)).Times(1);
@@ -864,7 +866,7 @@ TEST_F(VideoRendererImplTest, UnderflowEvictionWhileHaveEnough) {
     AdvanceTimeInMs(1000);
     renderer_->OnTimeProgressing();
     EXPECT_CALL(mock_cb_, FrameReceived(_))
-        .WillOnce(RunClosure(event.GetClosure()));
+        .WillOnce(RunOnceClosure(event.GetClosure()));
     event.RunAndWait();
     ASSERT_EQ(renderer_->effective_frames_queued_for_testing(), 0u);
   }
@@ -874,7 +876,7 @@ TEST_F(VideoRendererImplTest, UnderflowEvictionWhileHaveEnough) {
     SCOPED_TRACE("Waiting for BUFFERING_HAVE_NOTHING");
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING, _))
-        .WillOnce(RunClosure(event.GetClosure()));
+        .WillOnce(RunOnceClosure(event.GetClosure()));
     renderer_->OnTimeStopped();
     event.RunAndWait();
   }
@@ -889,7 +891,7 @@ TEST_F(VideoRendererImplTest, StartPlayingFromThenFlushThenEOS) {
   WaitableMessageLoopEvent event;
   EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(0)));
   EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH, _))
-      .WillOnce(RunClosure(event.GetClosure()));
+      .WillOnce(RunOnceClosure(event.GetClosure()));
   EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
   EXPECT_CALL(mock_cb_, OnVideoNaturalSizeChange(_)).Times(1);
   EXPECT_CALL(mock_cb_, OnVideoOpacityChange(_)).Times(1);
@@ -936,7 +938,7 @@ TEST_F(VideoRendererImplTest, FramesAreNotExpiredDuringPreroll) {
   WaitableMessageLoopEvent event;
   // Frame "10" should not have been expired.
   EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(10)))
-      .WillOnce(RunClosure(event.GetClosure()));
+      .WillOnce(RunOnceClosure(event.GetClosure()));
   AdvanceTimeInMs(10);
   event.RunAndWait();
 
@@ -1008,7 +1010,7 @@ TEST_F(VideoRendererImplTest, NaturalSizeChange) {
     EXPECT_CALL(mock_cb_, OnVideoNaturalSizeChange(larger_size));
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(10)))
-        .WillOnce(RunClosure(event.GetClosure()));
+        .WillOnce(RunOnceClosure(event.GetClosure()));
     AdvanceTimeInMs(10);
     event.RunAndWait();
   }
@@ -1016,7 +1018,7 @@ TEST_F(VideoRendererImplTest, NaturalSizeChange) {
     // Called is not fired because frame size does not change.
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(20)))
-        .WillOnce(RunClosure(event.GetClosure()));
+        .WillOnce(RunOnceClosure(event.GetClosure()));
     AdvanceTimeInMs(10);
     event.RunAndWait();
   }
@@ -1025,7 +1027,7 @@ TEST_F(VideoRendererImplTest, NaturalSizeChange) {
     EXPECT_CALL(mock_cb_, OnVideoNaturalSizeChange(initial_size));
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(30)))
-        .WillOnce(RunClosure(event.GetClosure()));
+        .WillOnce(RunOnceClosure(event.GetClosure()));
     AdvanceTimeInMs(10);
     event.RunAndWait();
   }
@@ -1073,7 +1075,7 @@ TEST_F(VideoRendererImplTest, OpacityChange) {
     // Callback is not fired because opacity does not change.
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(10)))
-        .WillOnce(RunClosure(event.GetClosure()));
+        .WillOnce(RunOnceClosure(event.GetClosure()));
     AdvanceTimeInMs(10);
     event.RunAndWait();
   }
@@ -1082,7 +1084,7 @@ TEST_F(VideoRendererImplTest, OpacityChange) {
     EXPECT_CALL(mock_cb_, OnVideoOpacityChange(true));
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(20)))
-        .WillOnce(RunClosure(event.GetClosure()));
+        .WillOnce(RunOnceClosure(event.GetClosure()));
     AdvanceTimeInMs(10);
     event.RunAndWait();
   }
@@ -1090,7 +1092,7 @@ TEST_F(VideoRendererImplTest, OpacityChange) {
     // Callback is not fired because opacity does not change.
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(30)))
-        .WillOnce(RunClosure(event.GetClosure()));
+        .WillOnce(RunOnceClosure(event.GetClosure()));
     AdvanceTimeInMs(10);
     event.RunAndWait();
   }
@@ -1203,7 +1205,7 @@ class UnderflowTest
       EXPECT_CALL(mock_cb_,
                   OnBufferingStateChange(BUFFERING_HAVE_ENOUGH,
                                          BUFFERING_CHANGE_REASON_UNKNOWN))
-          .WillOnce(RunClosure(event.GetClosure()));
+          .WillOnce(RunOnceClosure(event.GetClosure()));
       EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
       EXPECT_CALL(mock_cb_, OnVideoNaturalSizeChange(_)).Times(1);
       EXPECT_CALL(mock_cb_, OnVideoOpacityChange(_)).Times(1);
@@ -1229,7 +1231,7 @@ class UnderflowTest
 
       EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(60))).Times(0);
       EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(90)))
-          .WillOnce(RunClosure(event.GetClosure()));
+          .WillOnce(RunOnceClosure(event.GetClosure()));
       EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
       AdvanceTimeInMs(91);
 
@@ -1246,7 +1248,7 @@ class UnderflowTest
           .WillOnce(Return(underflow_type == DEMUXER_UNDERFLOW));
       EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING,
                                                    underflow_type))
-          .WillOnce(RunClosure(event.GetClosure()));
+          .WillOnce(RunOnceClosure(event.GetClosure()));
       AdvanceTimeInMs(30);
       event.RunAndWait();
       Mock::VerifyAndClearExpectations(&mock_cb_);
@@ -1264,7 +1266,7 @@ class UnderflowTest
       EXPECT_CALL(mock_cb_,
                   OnBufferingStateChange(BUFFERING_HAVE_ENOUGH,
                                          BUFFERING_CHANGE_REASON_UNKNOWN))
-          .WillOnce(RunClosure(event.GetClosure()));
+          .WillOnce(RunOnceClosure(event.GetClosure()));
       EXPECT_CALL(mock_cb_, OnEnded());
       SatisfyPendingDecodeWithEndOfStream();
       event.RunAndWait();
@@ -1286,7 +1288,7 @@ class UnderflowTest
       EXPECT_CALL(mock_cb_,
                   OnBufferingStateChange(BUFFERING_HAVE_ENOUGH,
                                          BUFFERING_CHANGE_REASON_UNKNOWN))
-          .WillOnce(RunClosure(event.GetClosure()));
+          .WillOnce(RunOnceClosure(event.GetClosure()));
       EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
       EXPECT_CALL(mock_cb_, OnVideoNaturalSizeChange(_)).Times(1);
       EXPECT_CALL(mock_cb_, OnVideoOpacityChange(_)).Times(1);
@@ -1306,7 +1308,7 @@ class UnderflowTest
           .WillOnce(Return(underflow_type == DEMUXER_UNDERFLOW));
       EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING,
                                                    underflow_type))
-          .WillOnce(RunClosure(event.GetClosure()));
+          .WillOnce(RunOnceClosure(event.GetClosure()));
       EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(60))).Times(1);
       EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
       AdvanceTimeInMs(79);
@@ -1330,7 +1332,7 @@ class UnderflowTest
       EXPECT_CALL(mock_cb_,
                   OnBufferingStateChange(BUFFERING_HAVE_ENOUGH,
                                          BUFFERING_CHANGE_REASON_UNKNOWN))
-          .WillOnce(RunClosure(event.GetClosure()));
+          .WillOnce(RunOnceClosure(event.GetClosure()));
       EXPECT_CALL(mock_cb_, OnVideoFrameRateChange(base::Optional<int>(50)));
 
       // Note: In the normal underflow case we queue 5 frames here instead of

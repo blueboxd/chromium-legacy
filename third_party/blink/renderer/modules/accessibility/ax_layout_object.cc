@@ -1227,25 +1227,6 @@ AXLayoutObject::TextDecorationStyleToAXTextDecorationStyle(
   return ax::mojom::TextDecorationStyle::kNone;
 }
 
-//
-// Inline text boxes.
-//
-
-void AXLayoutObject::LoadInlineTextBoxes() {
-  if (!GetLayoutObject())
-    return;
-
-  if (GetLayoutObject()->IsText()) {
-    ClearChildren();
-    AddInlineTextBoxChildren(true);
-    return;
-  }
-
-  for (const auto& child : children_) {
-    child->LoadInlineTextBoxes();
-  }
-}
-
 static bool ShouldUseLayoutNG(const LayoutObject& layout_object) {
   return (layout_object.IsInline() || layout_object.IsLayoutInline() ||
           layout_object.IsText()) &&
@@ -2143,90 +2124,6 @@ AXObject* AXLayoutObject::ComputeParentIfExists() const {
   return nullptr;
 }
 
-bool AXLayoutObject::ShouldUseDOMTraversal() const {
-  // TODO(accessibility) Look into having one method of traversal, otherwise
-  // it's possible for the same object to become a child of 2 different nodes,
-  // e.g. if it has a different layout parent and DOM parent.
-
-  bool is_continuation = layout_object_->IsElementContinuation();
-
-  // Avoid calling AXNodeObject logic for continuations.
-  if (is_continuation)
-    return false;
-
-  Node* node = GetNode();
-  if (!node)
-    return false;
-
-  // <ruby>: special layout handling
-  if (IsA<HTMLRubyElement>(*node))
-    return false;
-
-  // <table>: a thead/tfoot in the middle are bumped to the top/bottom in
-  // the layout representation.
-  if (IsA<HTMLTableElement>(*node))
-    return false;
-
-  // For now, at least the #docment node needs to use layout traversal, because
-  // of validation messages, dialog, etc.
-  // TODO(aleventhal) figure out how to avoid double <dialog> nodes.
-  Element* element = GetElement();
-  if (!element)
-    return false;
-
-  // Pseudo elements often have text children that are not
-  // visited by the LayoutTreeBuilderTraversal class used in DOM traversal.
-  // Without this condition, list bullets would not have static text children.
-  if (element->IsPseudoElement())
-    return false;
-
-  return true;
-}
-
-void AXLayoutObject::AddChildren() {
-  if (IsDetached())
-    return;
-
-  if (ShouldUseDOMTraversal()) {
-    AXNodeObject::AddChildren();
-    return;
-  }
-
-  // If the need to add more children in addition to existing children arises,
-  // childrenChanged should have been called, leaving the object with no
-  // children.
-  DCHECK(!have_children_);
-  have_children_ = true;
-
-  AXObjectVector owned_children;
-  ComputeAriaOwnsChildren(owned_children);
-
-  for (AXObject* obj = RawFirstChild(); obj; obj = obj->RawNextSibling()) {
-    if (!AXObjectCache().IsAriaOwned(obj))
-      AddChild(obj);
-  }
-
-  AddHiddenChildren();
-  AddPopupChildren();
-  AddRemoteSVGChildren();
-  AddTableChildren();
-  AddInlineTextBoxChildren(false);
-  AddValidationMessageChild();
-  AddAccessibleNodeChildren();
-
-  for (const auto& owned_child : owned_children)
-    AddChild(owned_child);
-
-  bool is_continuation = layout_object_->IsElementContinuation();
-  for (const auto& child : children_) {
-    if (!is_continuation && !child->CachedParentObject()) {
-      // Never set continuations as a parent object. The first layout object
-      // in the chain must be used instead.
-      child->SetParent(this);
-    }
-  }
-}
-
 bool AXLayoutObject::CanHaveChildren() const {
   if (!layout_object_)
     return false;
@@ -2475,44 +2372,6 @@ void AXLayoutObject::TextChanged() {
   // Do this last - AXNodeObject::textChanged posts live region announcements,
   // and we should update the inline text boxes first.
   AXNodeObject::TextChanged();
-}
-
-void AXLayoutObject::AddInlineTextBoxChildren(bool force) {
-  Document* document = GetDocument();
-  if (!document)
-    return;
-
-  Settings* settings = document->GetSettings();
-  if (!force &&
-      (!settings || !settings->GetInlineTextBoxAccessibilityEnabled()))
-    return;
-
-  if (!GetLayoutObject() || !GetLayoutObject()->IsText())
-    return;
-
-  if (GetLayoutObject()->NeedsLayout()) {
-    // If a LayoutText needs layout, its inline text boxes are either
-    // nonexistent or invalid, so defer until the layout happens and
-    // the layoutObject calls AXObjectCacheImpl::inlineTextBoxesUpdated.
-    return;
-  }
-
-  LayoutText* layout_text = ToLayoutText(GetLayoutObject());
-  for (scoped_refptr<AbstractInlineTextBox> box =
-           layout_text->FirstAbstractInlineTextBox();
-       box.get(); box = box->NextInlineTextBox()) {
-    AXObject* ax_object = AXObjectCache().GetOrCreate(box.get());
-    if (ax_object->AccessibilityIsIncludedInTree())
-      children_.push_back(ax_object);
-  }
-}
-
-void AXLayoutObject::AddValidationMessageChild() {
-  if (!IsWebArea())
-    return;
-  AXObject* ax_object = AXObjectCache().ValidationMessageObjectIfInvalid();
-  if (ax_object)
-    children_.push_back(ax_object);
 }
 
 AXObject* AXLayoutObject::ErrorMessage() const {
@@ -3059,20 +2918,9 @@ AXObject* AXLayoutObject::AccessibilityImageMapHitTest(
   return nullptr;
 }
 
-bool AXLayoutObject::IsSVGImage() const {
-  return RemoteSVGRootElement();
-}
-
 void AXLayoutObject::DetachRemoteSVGRoot() {
   if (AXSVGRoot* root = RemoteSVGRootElement())
     root->SetParent(nullptr);
-}
-
-AXSVGRoot* AXLayoutObject::RemoteSVGRootElement() const {
-  // FIXME(dmazzoni): none of this code properly handled multiple references to
-  // the same remote SVG document. I'm disabling this support until it can be
-  // fixed properly.
-  return nullptr;
 }
 
 AXObject* AXLayoutObject::RemoteSVGElementHitTest(const IntPoint& point) const {
@@ -3096,127 +2944,6 @@ void AXLayoutObject::OffsetBoundingBoxForRemoteSVGElement(
       rect.MoveBy(
           parent->ParentObject()->GetBoundsInFrameCoordinates().Location());
       break;
-    }
-  }
-}
-
-// Hidden children are those that are not laid out or visible, but are
-// specifically marked as aria-hidden=false,
-// meaning that they should be exposed to the AX hierarchy.
-void AXLayoutObject::AddHiddenChildren() {
-  Node* node = this->GetNode();
-  if (!node)
-    return;
-
-  // First do a quick run through to determine if we have any hidden nodes (most
-  // often we will not).  If we do have hidden nodes, we need to determine where
-  // to insert them so they match DOM order as close as possible.
-  bool should_insert_hidden_nodes = false;
-  for (Node& child : NodeTraversal::ChildrenOf(*node)) {
-    if (!child.GetLayoutObject() && IsNodeAriaVisible(&child)) {
-      should_insert_hidden_nodes = true;
-      break;
-    }
-  }
-
-  if (!should_insert_hidden_nodes)
-    return;
-
-  // Iterate through all of the children, including those that may have already
-  // been added, and try to insert hidden nodes in the correct place in the DOM
-  // order.
-  unsigned insertion_index = 0;
-  for (Node& child : NodeTraversal::ChildrenOf(*node)) {
-    if (child.GetLayoutObject()) {
-      // Find out where the last layout sibling is located within m_children.
-      if (AXObject* child_object =
-              AXObjectCache().Get(child.GetLayoutObject())) {
-        if (!child_object->AccessibilityIsIncludedInTree()) {
-          const auto& children = child_object->Children();
-          child_object = children.size() ? children.back().Get() : nullptr;
-        }
-        if (child_object)
-          insertion_index = children_.Find(child_object) + 1;
-        continue;
-      }
-    }
-
-    if (!IsNodeAriaVisible(&child))
-      continue;
-
-    unsigned previous_size = children_.size();
-    if (insertion_index > previous_size)
-      insertion_index = previous_size;
-
-    InsertChild(AXObjectCache().GetOrCreate(&child), insertion_index);
-    insertion_index += (children_.size() - previous_size);
-  }
-}
-
-void AXLayoutObject::AddImageMapChildren() {
-  LayoutBoxModelObject* css_box = GetLayoutBoxModelObject();
-  if (!css_box || !css_box->IsLayoutImage())
-    return;
-
-  HTMLMapElement* map = ToLayoutImage(css_box)->ImageMap();
-  if (!map)
-    return;
-
-  for (HTMLAreaElement& area :
-       Traversal<HTMLAreaElement>::DescendantsOf(*map)) {
-    // add an <area> element for this child if it has a link
-    AXObject* obj = AXObjectCache().GetOrCreate(&area);
-    if (obj) {
-      auto* area_object = To<AXImageMapLink>(obj);
-      area_object->SetParent(this);
-      DCHECK_NE(area_object->AXObjectID(), 0U);
-      if (area_object->AccessibilityIsIncludedInTree())
-        children_.push_back(area_object);
-      else
-        AXObjectCache().Remove(area_object->AXObjectID());
-    }
-  }
-}
-
-void AXLayoutObject::AddPopupChildren() {
-  auto* html_input_element = DynamicTo<HTMLInputElement>(GetNode());
-  if (!html_input_element)
-    return;
-  if (AXObject* ax_popup = html_input_element->PopupRootAXObject())
-    children_.push_back(ax_popup);
-}
-
-void AXLayoutObject::AddRemoteSVGChildren() {
-  AXSVGRoot* root = RemoteSVGRootElement();
-  if (!root)
-    return;
-
-  root->SetParent(this);
-
-  if (!root->AccessibilityIsIncludedInTree()) {
-    for (const auto& child : root->Children())
-      children_.push_back(child);
-  } else {
-    children_.push_back(root);
-  }
-}
-
-void AXLayoutObject::AddTableChildren() {
-  if (!IsTableLikeRole())
-    return;
-
-  AXObjectCacheImpl& ax_cache = AXObjectCache();
-  if (layout_object_->IsTable()) {
-    LayoutNGTableInterface* table =
-        ToInterface<LayoutNGTableInterface>(layout_object_);
-    table->RecalcSectionsIfNeeded();
-    Node* table_node = table->ToLayoutObject()->GetNode();
-    if (auto* html_table_element = DynamicTo<HTMLTableElement>(table_node)) {
-      if (HTMLTableCaptionElement* caption = html_table_element->caption()) {
-        AXObject* caption_object = ax_cache.GetOrCreate(caption);
-        if (caption_object && caption_object->AccessibilityIsIncludedInTree())
-          children_.push_front(caption_object);
-      }
     }
   }
 }

@@ -45,8 +45,8 @@ CodecSurfaceBundle::~CodecSurfaceBundle() {
   } else {
     task_runner->PostTask(
         FROM_HERE,
-        base::BindRepeating(&gpu::TextureOwner::ReleaseBackBuffers,
-                            codec_buffer_wait_coordinator_->texture_owner()));
+        base::BindOnce(&gpu::TextureOwner::ReleaseBackBuffers,
+                       codec_buffer_wait_coordinator_->texture_owner()));
   }
 }
 

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/location.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -83,7 +84,8 @@ void WorkerBackingThread::InitializeOnBackingThread(
   V8PerIsolateData::From(isolate_)->SetThreadDebugger(
       std::make_unique<WorkerThreadDebugger>(isolate_));
 
-  if (!RuntimeEnabledFeatures::V8OptimizeWorkersForPerformanceEnabled()) {
+  if (!base::FeatureList::IsEnabled(
+          features::kV8OptimizeWorkersForPerformance)) {
     // Optimize for memory usage instead of latency for the worker isolate.
     // Service Workers that have the fetch event handler run with the Isolate
     // in foreground notification regardless of this configuration.

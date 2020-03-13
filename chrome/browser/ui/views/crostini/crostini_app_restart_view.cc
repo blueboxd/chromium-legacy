@@ -67,10 +67,10 @@ gfx::Size CrostiniAppRestartView::CalculatePreferredSize() const {
 CrostiniAppRestartView::CrostiniAppRestartView(const ash::ShelfID& id,
                                                int64_t display_id)
     : id_(id), display_id_(display_id) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_CROSTINI_APP_RESTART_BUTTON));
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_CROSTINI_NOT_NOW_BUTTON));
 

@@ -97,8 +97,7 @@ WebViewPasswordStoreFactory::BuildServiceInstanceFor(
 
   scoped_refptr<password_manager::PasswordStore> store =
       new password_manager::PasswordStoreDefault(std::move(login_db));
-  if (!store->Init(base::RepeatingCallback<void(syncer::ModelType)>(),
-                   nullptr)) {
+  if (!store->Init(nullptr)) {
     // TODO(crbug.com/479725): Remove the LOG once this error is visible in the
     // UI.
     LOG(WARNING) << "Could not initialize password store.";

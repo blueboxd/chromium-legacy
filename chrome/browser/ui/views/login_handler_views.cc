@@ -86,10 +86,10 @@ class LoginHandlerViews : public LoginHandler {
            const base::string16& explanation,
            LoginHandler::LoginModelData* login_model_data)
         : handler_(handler), login_view_(nullptr), widget_(nullptr) {
-      DialogDelegate::set_button_label(
+      DialogDelegate::SetButtonLabel(
           ui::DIALOG_BUTTON_OK,
           l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_OK_BUTTON_LABEL));
-      DialogDelegate::set_accept_callback(base::BindOnce(
+      DialogDelegate::SetAcceptCallback(base::BindOnce(
           [](Dialog* dialog) {
             if (!dialog->handler_)
               return;
@@ -97,7 +97,7 @@ class LoginHandlerViews : public LoginHandler {
                                       dialog->login_view_->GetPassword());
           },
           base::Unretained(this)));
-      DialogDelegate::set_cancel_callback(base::BindOnce(
+      DialogDelegate::SetCancelCallback(base::BindOnce(
           [](Dialog* dialog) {
             if (!dialog->handler_)
               return;

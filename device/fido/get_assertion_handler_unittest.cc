@@ -845,7 +845,7 @@ TEST(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
     EXPECT_EQ(handler->AuthenticatorsForTesting().size(), 1u);
     EXPECT_EQ(handler->AuthenticatorsForTesting()
                   .begin()
-                  ->second->IsWinNativeApiAuthenticator(),
+                  ->second->authenticator->IsWinNativeApiAuthenticator(),
               enable_api);
   }
 }

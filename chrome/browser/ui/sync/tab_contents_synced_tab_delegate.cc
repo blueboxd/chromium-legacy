@@ -131,7 +131,10 @@ TabContentsSyncedTabDelegate::GetBlockedNavigations() const {
   SupervisedUserNavigationObserver* navigation_observer =
       SupervisedUserNavigationObserver::FromWebContents(web_contents_);
 
-  // TODO(1048643) The check on |navigation_observer| should be a DCHECK.
+  // TODO(crbug.com/1061427): If the profile is supervised,
+  // |navigation_observer| should always be non-null. Investigate why some users
+  // run into null pointers here and ultimately replace the condition below with
+  // a DCHECK. This is a workaround to avoid reported crashes.
   if (!navigation_observer)
     return nullptr;
 
@@ -151,9 +154,10 @@ bool TabContentsSyncedTabDelegate::ShouldSync(
   if (ProfileIsSupervised()) {
     const auto* blocked_navigations = GetBlockedNavigations();
 
-    // TODO(1048643) If profile is supervised, |blocked_navigations| should not
-    // be nullptr. This is a work around to check if the crash reported in the
-    // bug was caused by the violation of the invariant.
+    // TODO(crbug.com/1061427): If the profile is supervised,
+    // |blocked_navigations| should always be non-null. Investigate why some
+    // users run into null pointers here and ultimately replace the condition
+    // below with a DCHECK. This is a workaround to avoid reported crashes.
     if (blocked_navigations && !blocked_navigations->empty())
       return true;
   }

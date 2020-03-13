@@ -140,7 +140,7 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
                                              base::ASCIIToUTF16("pass1")};
 
   base::test::TaskEnvironment task_environment;
-  ASSERT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
+  ASSERT_TRUE(store_->Init(nullptr));
   TestCase test = GetParam();
   SCOPED_TRACE(testing::Message()
                << "is_hsts_enabled=" << test.is_hsts_enabled
@@ -252,8 +252,7 @@ TEST(HttpCredentialCleaner, StartCleanUpTest) {
 
     base::test::TaskEnvironment task_environment;
     auto password_store = base::MakeRefCounted<TestPasswordStore>();
-    ASSERT_TRUE(password_store->Init(syncer::SyncableService::StartSyncFlare(),
-                                     nullptr));
+    ASSERT_TRUE(password_store->Init(nullptr));
 
     double last_time =
         (base::Time::Now() - base::TimeDelta::FromMinutes(10)).ToDoubleT();

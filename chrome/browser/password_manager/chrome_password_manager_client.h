@@ -131,7 +131,8 @@ class ChromePasswordManagerClient
       const password_manager::PasswordFormManagerForUI* form_manager) override;
   void NotifyUserCredentialsWereLeaked(
       password_manager::CredentialLeakType leak_type,
-      const GURL& origin) override;
+      const GURL& origin,
+      const base::string16& username) override;
   void TriggerReauthForAccount(
       const CoreAccountId& account_id,
       base::OnceCallback<void(ReauthSucceeded)> reauth_callback) override;
@@ -142,6 +143,7 @@ class ChromePasswordManagerClient
   password_manager::PasswordStore* GetAccountPasswordStore() const override;
   password_manager::SyncState GetPasswordSyncState() const override;
   bool WasLastNavigationHTTPError() const override;
+  bool WasCredentialLeakDialogShown() const override;
   net::CertStatus GetMainFrameCertStatus() const override;
   void PromptUserToEnableAutosignin() override;
   bool IsIncognito() const override;
@@ -371,6 +373,11 @@ class ChromePasswordManagerClient
 
   // Whether OnPaste() was called from this ChromePasswordManagerClient
   bool was_on_paste_called_ = false;
+
+#if defined(ENABLE_PASSWORD_CHANGE)
+  // Whether a leak warning was shown.
+  bool was_leak_warning_shown_ = false;
+#endif
 
   // Helper for performing logic that is common between
   // ChromePasswordManagerClient and IOSChromePasswordManagerClient.

@@ -38,4 +38,7 @@ extern const base::Feature kTestFeature;
 // device when signing out from a non-managed account.
 extern const base::Feature kClearSyncedData;
 
+// Verify if the crash in https://crbug.com/816427 is fixed on iOS 12.
+extern const base::Feature kFirstResponderSendAction;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

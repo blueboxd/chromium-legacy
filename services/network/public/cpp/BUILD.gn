@@ -10,10 +10,7 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 
 buildflag_header("buildflags") {
   header = "network_service_buildflags.h"
-  flags = [
-    "IS_CT_SUPPORTED=$is_ct_supported",
-    "IS_TRUST_TOKENS_SUPPORTED=$is_trust_tokens_supported",
-  ]
+  flags = [ "IS_CT_SUPPORTED=$is_ct_supported" ]
 }
 
 jumbo_component("cpp") {

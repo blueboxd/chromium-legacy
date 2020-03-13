@@ -61,7 +61,7 @@ void CodecImageGroup::AddCodecImage(CodecImage* image) {
   // case, it doesn't need |surface_bundle_|, nor does it need to be notified
   // if the overlay is destroyed.
   image->AddUnusedCB(
-      base::BindRepeating(&CodecImageGroup::OnCodecImageUnused, this));
+      base::BindOnce(&CodecImageGroup::OnCodecImageUnused, this));
 }
 
 void CodecImageGroup::OnCodecImageUnused(CodecImage* image) {

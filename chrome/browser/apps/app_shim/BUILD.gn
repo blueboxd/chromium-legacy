@@ -6,6 +6,8 @@
 # communicating with app_shim processes on Mac.
 source_set("app_shim") {
   sources = [
+    "app_shim_handler_delegate_mac.cc",
+    "app_shim_handler_delegate_mac.h",
     "app_shim_host_bootstrap_mac.cc",
     "app_shim_host_bootstrap_mac.h",
     "app_shim_host_mac.cc",

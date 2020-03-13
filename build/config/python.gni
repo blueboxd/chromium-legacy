@@ -41,21 +41,19 @@ template("python_library") {
                            ])
 
     if (defined(invoker.pydeps_file)) {
-      _py_files = read_file(invoker.pydeps_file, "list lines")
-
-      # Filter out comments.
-      set_sources_assignment_filter([ "#*" ])
-      sources = _py_files
+      # Read and filter out comments.
+      _pydeps_lines = read_file(invoker.pydeps_file, "list lines")
+      _pydeps_entries = filter_exclude(_pydeps_lines, [ "#*" ])
 
       # Dependencies are listed relative to the pydeps file directory, but data
       # parameter expects paths that are relative to the current BUILD.gn
       _script_dir = get_path_info(invoker.pydeps_file, "dir")
-      _rebased_py_files = rebase_path(sources, ".", _script_dir)
+      _rebased_pydeps_entries = rebase_path(_pydeps_entries, ".", _script_dir)
 
       # Even though the .pydep file is not used at runtime, it must be added
       # so that "gn analyze" will mark the target as changed when .py files
       # are removed but none are added or modified.
-      data = _rebased_py_files + [ invoker.pydeps_file ]
+      data = _rebased_pydeps_entries + [ invoker.pydeps_file ]
     } else {
       data = []
     }
@@ -83,18 +81,6 @@ template("python_library") {
 #     args = [...]
 #   }
 template("action_with_pydeps") {
-  # Read the .pydeps file now. Note that this is done everytime this
-  # template is called, but benchmarking doesn't show any impact on overall
-  # 'gn gen' speed anyway.
-  _pydeps_file = invoker.script + "deps"
-  _pydeps_raw = read_file(_pydeps_file, "list lines")
-
-  # Filter out comments.
-  set_sources_assignment_filter([ "#*" ])
-  sources = _pydeps_raw
-  _pydeps = sources
-  sources = []
-
   action(target_name) {
     # Forward all variables. Ensure that testonly and visibility are forwarded
     # explicitly, since this performs recursive scope lookups, which is
@@ -113,6 +99,13 @@ template("action_with_pydeps") {
                              "visibility",
                            ])
 
+    # Read and filter out comments.
+    # Happens every time the template is instantiated, but benchmarking shows no
+    # perceivable impact on overall 'gn gen' speed.
+    _pydeps_file = invoker.script + "deps"
+    _pydeps_lines = read_file(_pydeps_file, "list lines")
+    _pydeps_entries = filter_exclude(_pydeps_lines, [ "#*" ])
+
     if (!defined(inputs)) {
       inputs = []
     }
@@ -120,26 +113,11 @@ template("action_with_pydeps") {
     # Dependencies are listed relative to the script directory, but inputs
     # expects paths that are relative to the current BUILD.gn
     _script_dir = get_path_info(_pydeps_file, "dir")
-    inputs += rebase_path(_pydeps, ".", _script_dir)
+    inputs += rebase_path(_pydeps_entries, ".", _script_dir)
   }
 }
 
 template("action_foreach_with_pydeps") {
-  _pydeps_file = invoker.script + "deps"
-  _pydeps_raw = read_file(_pydeps_file, "list lines")
-
-  # Filter out comments.
-  # This is a bit convoluted to preserve the value of sources if defined.
-  _old_sources = []
-  if (defined(sources)) {
-    _old_sources = sources
-  }
-  set_sources_assignment_filter([ "#*" ])
-  sources = _pydeps_raw
-  _pydeps = sources
-  set_sources_assignment_filter([])
-  sources = _old_sources
-
   action_foreach(target_name) {
     # Forward all variables. Ensure that testonly and visibility are forwarded
     # explicitly, since this performs recursive scope lookups, which is
@@ -158,6 +136,13 @@ template("action_foreach_with_pydeps") {
                              "visibility",
                            ])
 
+    # Read and filter out comments.
+    # Happens every time the template is instantiated, but benchmarking shows no
+    # perceivable impact on overall 'gn gen' speed.
+    _pydeps_file = invoker.script + "deps"
+    _pydeps_lines = read_file(_pydeps_file, "list lines")
+    _pydeps_entries = filter_exclude(_pydeps_lines, [ "#*" ])
+
     if (!defined(inputs)) {
       inputs = []
     }
@@ -165,6 +150,6 @@ template("action_foreach_with_pydeps") {
     # Dependencies are listed relative to the script directory, but inputs
     # expects paths that are relative to the current BUILD.gn
     _script_dir = get_path_info(script, "dir")
-    inputs += rebase_path(_pydeps, ".", _script_dir)
+    inputs += rebase_path(_pydeps_entries, ".", _script_dir)
   }
 }

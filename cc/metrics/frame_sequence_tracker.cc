@@ -505,9 +505,9 @@ FrameSequenceTracker::FrameSequenceTracker(
     FrameSequenceTrackerType type,
     ThroughputUkmReporter* throughput_ukm_reporter)
     : type_(type),
-      metrics_(
-          std::make_unique<FrameSequenceMetrics>(type,
-                                                 throughput_ukm_reporter)) {
+      metrics_(std::make_unique<FrameSequenceMetrics>(type,
+                                                      throughput_ukm_reporter)),
+      trace_data_(metrics_.get()) {
   DCHECK_LT(type_, FrameSequenceTrackerType::kMaxType);
 }
 
@@ -814,9 +814,8 @@ void FrameSequenceTracker::ReportFramePresented(
   if (ignored_frame_tokens_.contains(frame_token))
     return;
 
-  TRACE_EVENT_NESTABLE_ASYNC_INSTANT_WITH_TIMESTAMP0(
-      "cc,benchmark", "FramePresented", TRACE_ID_LOCAL(metrics_.get()),
-      feedback.timestamp);
+  trace_data_.Advance(feedback.timestamp);
+
   const bool was_presented = !feedback.timestamp.is_null();
   if (was_presented && last_submitted_frame_) {
     DCHECK_LT(impl_throughput().frames_produced,
@@ -1089,5 +1088,20 @@ base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(
 
 FrameSequenceTracker::CheckerboardingData::CheckerboardingData() = default;
 FrameSequenceTracker::CheckerboardingData::~CheckerboardingData() = default;
+
+FrameSequenceTracker::TraceData::TraceData(const void* id) : trace_id(id) {}
+void FrameSequenceTracker::TraceData::Advance(base::TimeTicks new_timestamp) {
+  // Use different names, because otherwise the trace-viewer shows the slices in
+  // the same color, and that makes it difficult to tell the traces apart from
+  // each other.
+  const char* trace_names[] = {"Frame", "Frame ", "Frame   "};
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+      "cc,benchmark", trace_names[++this->frame_count % 3],
+      TRACE_ID_LOCAL(this->trace_id), this->last_timestamp);
+  TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+      "cc,benchmark", trace_names[this->frame_count % 3],
+      TRACE_ID_LOCAL(this->trace_id), new_timestamp);
+  this->last_timestamp = new_timestamp;
+}
 
 }  // namespace cc

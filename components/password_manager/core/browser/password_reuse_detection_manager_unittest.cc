@@ -40,10 +40,10 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
 class PasswordReuseDetectionManagerTest : public ::testing::Test {
  public:
-  PasswordReuseDetectionManagerTest() {}
+  PasswordReuseDetectionManagerTest() = default;
   void SetUp() override {
     store_ = new testing::StrictMock<MockPasswordStore>;
-    CHECK(store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
+    CHECK(store_->Init(nullptr));
   }
   void TearDown() override {
     store_->ShutdownOnUIThread();

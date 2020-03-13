@@ -51,12 +51,8 @@ ModelSafeGroup GetGroupForModelType(const ModelType type,
 
 std::string ModelSafeGroupToString(ModelSafeGroup group) {
   switch (group) {
-    case GROUP_UI:
-      return "Group UI";
     case GROUP_PASSIVE:
       return "Group Passive";
-    case GROUP_PASSWORD:
-      return "Group Password";
     case GROUP_NON_BLOCKING:
       return "Group Non Blocking";
   }

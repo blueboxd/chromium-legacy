@@ -198,7 +198,7 @@ class CredentialManagerImplTest : public testing::Test {
 
   void SetUp() override {
     store_ = new TestPasswordStore;
-    store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+    store_->Init(nullptr);
     client_.reset(
         new testing::NiceMock<MockPasswordManagerClient>(store_.get()));
     cm_service_impl_.reset(new CredentialManagerImpl(client_.get()));

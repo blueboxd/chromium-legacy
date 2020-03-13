@@ -135,7 +135,6 @@ jumbo_component("modules") {
     "//third_party/blink/renderer/modules/sensor",
     "//third_party/blink/renderer/modules/service_worker",
     "//third_party/blink/renderer/modules/shapedetection",
-    "//third_party/blink/renderer/modules/sms",
     "//third_party/blink/renderer/modules/speech",
     "//third_party/blink/renderer/modules/srcobject",
     "//third_party/blink/renderer/modules/storage",

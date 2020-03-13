@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,12 +23,31 @@ namespace errors = extensions::manifest_errors;
 
 namespace {
 
+// This has to by in sync with MimeHandlerType enum.
 const char* const kMIMETypeHandlersWhitelist[] = {
     extension_misc::kPdfExtensionId,
     extension_misc::kQuickOfficeComponentExtensionId,
     extension_misc::kQuickOfficeInternalExtensionId,
     extension_misc::kQuickOfficeExtensionId,
     extension_misc::kMimeHandlerPrivateTestExtensionId};
+
+// Used for UMA stats. Entries should not be renumbered and numeric values
+// should never be reused. This corresponds to kMimeTypeHandlersWhitelist.
+// Don't forget to update enums.xml when updating these.
+enum class MimeHandlerType {
+  kPdfExtension = 0,
+  kQuickOfficeComponentExtension = 1,
+  kQuickOfficeInternalExtension = 2,
+  kQuickOfficeExtension = 3,
+  kTestExtension = 4,
+
+  kMaxValue = kTestExtension,
+};
+
+static_assert(
+    base::size(kMIMETypeHandlersWhitelist) ==
+        static_cast<size_t>(MimeHandlerType::kMaxValue) + 1,
+    "MimeHandlerType enum is not in sync with kMIMETypeHandlersWhitelist.");
 
 constexpr SkColor kPdfExtensionBackgroundColor = SkColorSetRGB(82, 86, 89);
 constexpr SkColor kQuickOfficeExtensionBackgroundColor =
@@ -41,11 +61,8 @@ struct MimeTypesHandlerInfo : public extensions::Extension::ManifestData {
   ~MimeTypesHandlerInfo() override;
 };
 
-MimeTypesHandlerInfo::MimeTypesHandlerInfo() {
-}
-
-MimeTypesHandlerInfo::~MimeTypesHandlerInfo() {
-}
+MimeTypesHandlerInfo::MimeTypesHandlerInfo() = default;
+MimeTypesHandlerInfo::~MimeTypesHandlerInfo() = default;
 
 }  // namespace
 
@@ -57,11 +74,20 @@ std::vector<std::string> MimeTypesHandler::GetMIMETypeWhitelist() {
   return whitelist;
 }
 
-MimeTypesHandler::MimeTypesHandler() {
+// static
+void MimeTypesHandler::ReportUsedHandler(const std::string& extension_id) {
+  auto* const* it =
+      std::find(std::begin(kMIMETypeHandlersWhitelist),
+                std::end(kMIMETypeHandlersWhitelist), extension_id);
+  if (it != std::end(kMIMETypeHandlersWhitelist)) {
+    MimeHandlerType type = static_cast<MimeHandlerType>(
+        it - std::begin(kMIMETypeHandlersWhitelist));
+    base::UmaHistogramEnumeration("Extensions.UsedMimeTypeHandler", type);
+  }
 }
 
-MimeTypesHandler::~MimeTypesHandler() {
-}
+MimeTypesHandler::MimeTypesHandler() = default;
+MimeTypesHandler::~MimeTypesHandler() = default;
 
 void MimeTypesHandler::AddMIMEType(const std::string& mime_type) {
   mime_type_set_.insert(mime_type);

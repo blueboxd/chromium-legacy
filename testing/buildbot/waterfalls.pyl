@@ -1794,6 +1794,8 @@
         'additional_compile_targets': [
           'all',
         ],
+        'browser_config': 'web-engine-shell',
+        'os_type': 'linux',
         'mixins': [
           'linux-xenial',
         ],
@@ -1807,6 +1809,7 @@
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
+          'gpu_telemetry_tests': 'fuchsia_gpu_telemetry_tests',
         },
       },
       'ios-simulator-code-coverage': {
@@ -3032,7 +3035,7 @@
           'linux_intel_hd_630',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+          'gtest_tests': 'gpu_skia_renderer_dawn_gtests',
         },
       },
       'Linux FYI SkiaRenderer Vulkan (Intel HD 630)': {

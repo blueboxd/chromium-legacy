@@ -35,10 +35,8 @@
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/browser/sync/password_sync_bridge.h"
-#include "components/password_manager/core/browser/sync/password_syncable_service.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
 
@@ -143,8 +141,7 @@ PasswordStore::PasswordStore()
       shutdown_called_(false),
       init_status_(InitStatus::kUnknown) {}
 
-bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare,
-                         PrefService* prefs,
+bool PasswordStore::Init(PrefService* prefs,
                          base::RepeatingClosure sync_enabled_or_disabled_cb) {
   main_task_runner_ = base::SequencedTaskRunnerHandle::Get();
   DCHECK(main_task_runner_);
@@ -160,7 +157,7 @@ bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare,
         "passwords", "PasswordStore::InitOnBackgroundSequence", this);
     base::PostTaskAndReplyWithResult(
         background_task_runner_.get(), FROM_HERE,
-        base::BindOnce(&PasswordStore::InitOnBackgroundSequence, this, flare),
+        base::BindOnce(&PasswordStore::InitOnBackgroundSequence, this),
         base::BindOnce(&PasswordStore::OnInitCompleted, this));
   }
 
@@ -480,13 +477,6 @@ void PasswordStore::ShutdownOnUIThread() {
 #endif
 }
 
-base::WeakPtr<syncer::SyncableService>
-PasswordStore::GetPasswordSyncableService() {
-  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(syncable_service_);
-  return syncable_service_->AsWeakPtr();
-}
-
 std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
 PasswordStore::CreateSyncControllerDelegate() {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
@@ -638,19 +628,12 @@ PasswordStore::CreateBackgroundTaskRunner() const {
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 }
 
-bool PasswordStore::InitOnBackgroundSequence(
-    const syncer::SyncableService::StartSyncFlare& flare) {
+bool PasswordStore::InitOnBackgroundSequence() {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
-    sync_bridge_.reset(new PasswordSyncBridge(
-        std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-            syncer::PASSWORDS, base::DoNothing()),
-        /*password_store_sync=*/this, sync_enabled_or_disabled_cb_));
-  } else {
-    DCHECK(!syncable_service_);
-    syncable_service_.reset(new PasswordSyncableService(this));
-    syncable_service_->InjectStartSyncFlare(flare);
-  }
+  sync_bridge_.reset(new PasswordSyncBridge(
+      std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
+          syncer::PASSWORDS, base::DoNothing()),
+      /*password_store_sync=*/this, sync_enabled_or_disabled_cb_));
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   reuse_detector_ = new PasswordReuseDetector;
@@ -703,8 +686,6 @@ void PasswordStore::NotifyLoginsChanged(
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   if (!changes.empty()) {
     observers_->Notify(FROM_HERE, &Observer::OnLoginsChanged, changes);
-    if (syncable_service_)
-      syncable_service_->ActOnPasswordStoreChanges(changes);
     if (sync_bridge_)
       sync_bridge_->ActOnPasswordStoreChanges(changes);
 
@@ -1228,7 +1209,6 @@ PasswordStore::GetSyncControllerDelegateOnBackgroundSequence() {
 
 void PasswordStore::DestroyOnBackgroundSequence() {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  syncable_service_.reset();
   sync_bridge_.reset();
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)

@@ -114,6 +114,8 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/proxy_config.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
+#include "services/network/trust_tokens/trust_token_parameterization.h"
+#include "services/network/trust_tokens/trust_token_store.h"
 #include "services/network/udp_socket_test_util.h"
 #include "test_mojo_proxy_resolver_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -143,11 +145,6 @@
 #if defined(OS_CHROMEOS)
 #include "services/network/mock_mojo_dhcp_wpad_url_client.h"
 #endif  // defined(OS_CHROMEOS)
-
-#if BUILDFLAG(IS_TRUST_TOKENS_SUPPORTED)
-#include "services/network/trust_tokens/trust_token_parameterization.h"
-#include "services/network/trust_tokens/trust_token_store.h"
-#endif  // BUILDFLAG(IS_TRUST_TOKENS_SUPPORTED)
 
 namespace network {
 
@@ -6901,7 +6898,6 @@ TEST_F(NetworkContextSplitCacheTest,
       true /* was_cached */, true /* is_navigation */);
 }
 
-#if BUILDFLAG(IS_TRUST_TOKENS_SUPPORTED)
 TEST_F(NetworkContextTest, EnableTrustTokens) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kTrustTokens);
@@ -6968,7 +6964,6 @@ TEST_F(NetworkContextTest, DisableTrustTokens) {
 
   EXPECT_FALSE(network_context->trust_token_store());
 }
-#endif  // BUILDFLAG(IS_TRUST_TOKENS_SUPPORTED)
 
 }  // namespace
 

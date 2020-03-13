@@ -92,14 +92,10 @@ def main():
   clang_svn_revision = 'n' + GetCommitCount(clang_git_revision)
   clang_sub_revision = args.clang_sub_revision
 
-  # Needs shell=True on Windows due to git.bat in depot_tools.
   os.chdir(CHROMIUM_DIR)
-  git_revision = subprocess.check_output(
-      ["git", "rev-parse", "origin/master"], shell=is_win).strip()
 
   print("Making a patch for Clang {}-{}-{}".format(
       clang_svn_revision, clang_git_revision[:8], clang_sub_revision))
-  print("Chrome revision: {}".format(git_revision))
 
   clang_old_git_revision, clang_old_svn_revision, clang_old_sub_revision = \
       PatchRevision(clang_git_revision, clang_svn_revision, clang_sub_revision)
@@ -107,7 +103,7 @@ def main():
   rev_string = "{}-{}-{}".format(clang_svn_revision,
                                  clang_git_revision[:8],
                                  clang_sub_revision)
-  Git(["checkout", "-b", "clang-{}".format(rev_string)])
+  Git(["checkout", "origin/master", "-b", "clang-{}".format(rev_string)])
   Git(["add", UPDATE_PY_PATH])
 
   old_rev_string = "{}-{}-{}".format(clang_old_svn_revision,
@@ -119,11 +115,10 @@ def main():
       old_rev_string, rev_string, commit_message)])
 
   Git(["cl", "upload", "-f", "--bypass-hooks"])
-  Git(["cl", "try", "-B", "chromium/try",
-       "-b", "linux_upload_clang",
-       "-b", "mac_upload_clang",
-       "-b", "win_upload_clang",
-       "-r", git_revision])
+  Git([
+      "cl", "try", "-B", "chromium/try", "-b", "linux_upload_clang", "-b",
+      "mac_upload_clang", "-b", "win_upload_clang"
+  ])
 
   print ("Please, wait until the try bots succeeded "
          "and then push the binaries to goma.")

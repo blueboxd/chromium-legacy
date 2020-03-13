@@ -251,7 +251,7 @@ void WebFrameWidgetImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
   GetPage()->Animator().SetSuppressFrameRequestsWorkaroundFor704763Only(
       suppress_frame_requests);
 }
-void WebFrameWidgetImpl::BeginFrame(base::TimeTicks last_frame_time) {
+void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
   TRACE_EVENT1("blink", "WebFrameWidgetImpl::beginFrame", "frameTime",
                last_frame_time);
   DCHECK(!last_frame_time.is_null());
@@ -261,7 +261,7 @@ void WebFrameWidgetImpl::BeginFrame(base::TimeTicks last_frame_time) {
 
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       LocalRootImpl()->GetFrame()->GetDocument()->Lifecycle());
-  if (WebFrameWidgetBase::ShouldRecordMainFrameMetrics()) {
+  if (ShouldRecordMainFrameMetrics()) {
     SCOPED_UMA_AND_UKM_TIMER(
         LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator(),
         LocalFrameUkmAggregator::kAnimate);
@@ -277,22 +277,6 @@ void WebFrameWidgetImpl::BeginFrame(base::TimeTicks last_frame_time) {
 void WebFrameWidgetImpl::DidBeginFrame() {
   DCHECK(LocalRootImpl()->GetFrame());
   PageWidgetDelegate::DidBeginFrame(*LocalRootImpl()->GetFrame());
-}
-
-void WebFrameWidgetImpl::BeginRafAlignedInput() {
-  if (LocalRootImpl()) {
-    raf_aligned_input_start_time_.emplace(base::TimeTicks::Now());
-  }
-}
-
-void WebFrameWidgetImpl::EndRafAlignedInput() {
-  if (LocalRootImpl()) {
-    DCHECK(raf_aligned_input_start_time_);
-    LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
-        LocalFrameUkmAggregator::kHandleInputEvents,
-        raf_aligned_input_start_time_.value(), base::TimeTicks::Now());
-  }
-  raf_aligned_input_start_time_.reset();
 }
 
 void WebFrameWidgetImpl::BeginUpdateLayers() {

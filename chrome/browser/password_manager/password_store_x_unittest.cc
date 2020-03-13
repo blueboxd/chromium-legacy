@@ -133,7 +133,7 @@ TEST_F(PasswordStoreXTest, MigrationCompleted) {
       test_login_db_file_path(), password_manager::IsAccountStore(false));
   scoped_refptr<PasswordStoreX> store =
       new PasswordStoreX(std::move(login_db), fake_pref_service());
-  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+  store->Init(nullptr);
 
   // Check the contents are still around.
   MockPasswordStoreConsumer consumer;
@@ -179,7 +179,7 @@ TEST_F(PasswordStoreXTest, MigrationNotAttemptedEmptyDB) {
 
   scoped_refptr<PasswordStoreX> store =
       new PasswordStoreX(std::move(login_db), fake_pref_service());
-  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+  store->Init(nullptr);
   WaitForPasswordStore();
 
   // Add a password to the db.
@@ -234,7 +234,7 @@ TEST_F(PasswordStoreXTest, MigrationNotAttemptedNonEmptyDB) {
 
   scoped_refptr<PasswordStoreX> store =
       new PasswordStoreX(std::move(login_db), fake_pref_service());
-  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+  store->Init(nullptr);
   WaitForPasswordStore();
 
   // Add another password to the db.

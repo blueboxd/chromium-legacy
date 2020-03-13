@@ -67,12 +67,10 @@ class PasswordSyncActiveChecker : public SingleClientStatusChangeChecker {
 class PasswordManagerSyncTest : public SyncTest {
  public:
   PasswordManagerSyncTest() : SyncTest(SINGLE_CLIENT) {
-    feature_list_.InitWithFeatures(
-        /*enabled_features=*/{switches::kSyncUSSPasswords,
-                              password_manager::features::
-                                  kEnablePasswordsAccountStorage},
-        /*disabled_features=*/{});
+    feature_list_.InitAndEnableFeature(
+        password_manager::features::kEnablePasswordsAccountStorage);
   }
+
   ~PasswordManagerSyncTest() override = default;
 
   void SetUpInProcessBrowserTestFixture() override {

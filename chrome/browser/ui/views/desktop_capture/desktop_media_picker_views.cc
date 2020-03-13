@@ -63,7 +63,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     DesktopMediaPickerViews* parent,
     std::vector<std::unique_ptr<DesktopMediaList>> source_lists)
     : parent_(parent), modality_(params.modality) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SHARE));
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();

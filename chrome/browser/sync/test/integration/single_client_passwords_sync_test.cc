@@ -7,7 +7,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
-#include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
@@ -20,7 +19,6 @@
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/base/time.h"
 #include "components/sync/driver/profile_sync_service.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/syncable/directory_cryptographer.h"
 #include "content/public/test/test_launcher.h"
 
@@ -74,17 +72,16 @@ class PasswordSyncActiveChecker : public SingleClientStatusChangeChecker {
   }
 };
 
-class SingleClientPasswordsSyncTest : public FeatureToggler, public SyncTest {
+class SingleClientPasswordsSyncTest : public SyncTest {
  public:
-  SingleClientPasswordsSyncTest()
-      : FeatureToggler(switches::kSyncUSSPasswords), SyncTest(SINGLE_CLIENT) {}
+  SingleClientPasswordsSyncTest() : SyncTest(SINGLE_CLIENT) {}
   ~SingleClientPasswordsSyncTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientPasswordsSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest, Sanity) {
+IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   PasswordForm form = CreateTestPasswordForm(0);
@@ -101,7 +98,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest, Sanity) {
 // Verifies that committed passwords contain the appropriate proto fields, and
 // in particular lack some others that could potentially contain unencrypted
 // data. In this test, custom passphrase is NOT set.
-IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
+IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest,
                        CommitWithoutCustomPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -126,7 +123,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
 
 // Same as above but with custom passphrase set, which requires to prune commit
 // data even further.
-IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
+IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest,
                        CommitWithCustomPassphrase) {
   SetEncryptionPassphraseForClient(/*index=*/0, "hunter2");
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -150,7 +147,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
 
 // Tests the scenario when a syncing user enables a custom passphrase. PASSWORDS
 // should be recommitted with the new encryption key.
-IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
+IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest,
                        ReencryptsDataWhenPassphraseIsSet) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(ServerNigoriChecker(GetSyncService(0), fake_server_.get(),
@@ -201,7 +198,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
   EXPECT_NE(new_encryption_key_name, prior_encryption_key_name);
 }
 
-IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
+IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest,
                        PRE_PersistProgressMarkerOnRestart) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   PasswordForm form = CreateTestPasswordForm(0);
@@ -218,7 +215,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
                                          /*REMOTE_NON_INITIAL_UPDATE=*/4));
 }
 
-IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
+IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest,
                        PersistProgressMarkerOnRestart) {
   base::HistogramTester histogram_tester;
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
@@ -246,80 +243,11 @@ IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
                                          /*REMOTE_NON_INITIAL_UPDATE=*/4));
 }
 
-INSTANTIATE_TEST_SUITE_P(USS,
-                         SingleClientPasswordsSyncTest,
-                         ::testing::Values(false, true));
-
-class SingleClientPasswordsSyncUssMigratorTest : public SyncTest {
- public:
-  SingleClientPasswordsSyncUssMigratorTest() : SyncTest(SINGLE_CLIENT) {}
-  ~SingleClientPasswordsSyncUssMigratorTest() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SingleClientPasswordsSyncUssMigratorTest);
-};
-
-class SingleClientPasswordsSyncUssMigratorTestWithUssTransition
-    : public SingleClientPasswordsSyncUssMigratorTest {
- public:
-  SingleClientPasswordsSyncUssMigratorTestWithUssTransition() {
-    if (content::IsPreTest())
-      feature_list_.InitAndDisableFeature(switches::kSyncUSSPasswords);
-    else
-      feature_list_.InitAndEnableFeature(switches::kSyncUSSPasswords);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Creates and syncs two passwords before USS being enabled.
-IN_PROC_BROWSER_TEST_F(
-    SingleClientPasswordsSyncUssMigratorTestWithUssTransition,
-    PRE_ExerciseUssMigrator) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  AddLogin(GetPasswordStore(0), CreateTestPasswordForm(0));
-  AddLogin(GetPasswordStore(0), CreateTestPasswordForm(1));
-  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
-  ASSERT_EQ(2, GetPasswordCount(0));
-}
-
-// Now that local passwords, the local sync directory and the sever are
-// populated with two passwords, USS is enabled for passwords.
-IN_PROC_BROWSER_TEST_F(
-    SingleClientPasswordsSyncUssMigratorTestWithUssTransition,
-    ExerciseUssMigrator) {
-  base::HistogramTester histogram_tester;
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-  ASSERT_EQ(2, GetPasswordCount(0));
-#if defined(OS_CHROMEOS)
-  // signin::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order
-  // to get a non-empty refresh token on startup.
-  GetClient(0)->SignInPrimaryAccount();
-#endif  // defined(OS_CHROMEOS)
-  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
-  ASSERT_EQ(2, GetPasswordCount(0));
-
-  EXPECT_EQ(1, histogram_tester.GetBucketCount(
-                   "Sync.USSMigrationSuccess",
-                   static_cast<int>(
-                       syncer::ModelTypeHistogramValue(syncer::PASSWORDS))));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("Sync.USSMigrationEntityCount.PASSWORD"),
-      ElementsAre(base::Bucket(/*min=*/2, /*count=*/1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples("Sync.DataTypeStartFailures2"),
-              IsEmpty());
-  EXPECT_EQ(
-      0, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.PASSWORD",
-                                         /*REMOTE_INITIAL_UPDATE=*/5));
-}
-
 class SingleClientPasswordsWithAccountStorageSyncTest : public SyncTest {
  public:
   SingleClientPasswordsWithAccountStorageSyncTest() : SyncTest(SINGLE_CLIENT) {
     feature_list_.InitWithFeatures(
-        /*enabled_features=*/{switches::kSyncUSSPasswords,
-                              password_manager::features::
+        /*enabled_features=*/{password_manager::features::
                                   kEnablePasswordsAccountStorage},
         /*disabled_features=*/{});
   }

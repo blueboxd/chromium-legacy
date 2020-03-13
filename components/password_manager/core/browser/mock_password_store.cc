@@ -18,8 +18,7 @@ MockPasswordStore::CreateBackgroundTaskRunner() const {
   return base::SequencedTaskRunnerHandle::Get();
 }
 
-bool MockPasswordStore::InitOnBackgroundSequence(
-    const syncer::SyncableService::StartSyncFlare& flare) {
+bool MockPasswordStore::InitOnBackgroundSequence() {
   return true;
 }
 

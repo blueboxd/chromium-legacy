@@ -73,7 +73,7 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
   void show_close_button() { should_show_close_button_ = true; }
   void hide_buttons() {
     should_show_close_button_ = false;
-    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   }
   void set_should_show_window_title(bool should_show_window_title) {
     should_show_window_title_ = should_show_window_title;

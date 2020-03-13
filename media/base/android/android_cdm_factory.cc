@@ -92,11 +92,11 @@ void AndroidCdmFactory::Create(
       creation_id_,
       PendingCreation(std::move(factory), std::move(bound_cdm_created_cb)));
 
-  raw_factory->Create(
-      key_system, security_origin, cdm_config, session_message_cb,
-      session_closed_cb, session_keys_change_cb, session_expiration_update_cb,
-      base::BindRepeating(&AndroidCdmFactory::OnCdmCreated,
-                          weak_factory_.GetWeakPtr(), creation_id_));
+  raw_factory->Create(key_system, security_origin, cdm_config,
+                      session_message_cb, session_closed_cb,
+                      session_keys_change_cb, session_expiration_update_cb,
+                      base::BindOnce(&AndroidCdmFactory::OnCdmCreated,
+                                     weak_factory_.GetWeakPtr(), creation_id_));
 }
 
 void AndroidCdmFactory::OnCdmCreated(

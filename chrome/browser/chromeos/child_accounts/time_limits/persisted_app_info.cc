@@ -283,5 +283,16 @@ void PersistedAppInfo::RemoveActiveTimeEarlierThan(base::Time timestamp) {
   }
 }
 
+bool PersistedAppInfo::ShouldRestoreApp() const {
+  bool is_installed = app_state() != AppState::kUninstalled;
+  bool has_active_running_time =
+      active_running_time() > base::TimeDelta::FromSeconds(0);
+  return is_installed || has_active_running_time;
+}
+
+bool PersistedAppInfo::ShouldRemoveApp() const {
+  return !ShouldRestoreApp() && active_times().empty();
+}
+
 }  // namespace app_time
 }  // namespace chromeos

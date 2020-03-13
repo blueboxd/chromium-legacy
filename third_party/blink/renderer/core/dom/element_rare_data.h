@@ -192,11 +192,9 @@ class ElementRareData : public NodeRareData {
   }
   ResizeObserverDataMap& EnsureResizeObserverData();
 
-  DisplayLockContext* EnsureDisplayLockContext(Element* element,
-                                               ExecutionContext* context) {
+  DisplayLockContext* EnsureDisplayLockContext(Element* element) {
     if (!display_lock_context_) {
-      display_lock_context_ =
-          MakeGarbageCollected<DisplayLockContext>(element, context);
+      display_lock_context_ = MakeGarbageCollected<DisplayLockContext>(element);
     }
     return display_lock_context_.Get();
   }

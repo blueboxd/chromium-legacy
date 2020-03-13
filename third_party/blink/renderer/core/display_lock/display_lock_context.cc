@@ -13,9 +13,6 @@
 #include "third_party/blink/renderer/core/css/style_recalc.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/display_lock/render_subtree_activation_event.h"
-#include "third_party/blink/renderer/core/display_lock/strict_yielding_display_lock_budget.h"
-#include "third_party/blink/renderer/core/display_lock/unyielding_display_lock_budget.h"
-#include "third_party/blink/renderer/core/display_lock/yielding_display_lock_budget.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -35,13 +32,10 @@ namespace blink {
 
 namespace {
 namespace rejection_names {
-const char* kExecutionContextDestroyed = "Execution context destroyed.";
 const char* kContainmentNotSatisfied =
     "Containment requirement is not satisfied.";
 const char* kUnsupportedDisplay =
     "Element has unsupported display type (display: contents).";
-const char* kElementIsDisconnected = "Element is disconnected.";
-const char* kElementIsNested = "Element is nested under a locked element.";
 }  // namespace rejection_names
 
 void RecordActivationReason(DisplayLockActivationReason reason) {
@@ -87,62 +81,51 @@ void RecordActivationReason(DisplayLockActivationReason reason) {
   UMA_HISTOGRAM_ENUMERATION("Blink.Render.DisplayLockActivationReason",
                             ordered_reason, number_of_reasons);
 }
-
-// Helper function that returns an immediately rejected promise.
-ScriptPromise GetRejectedPromise(ScriptState* script_state,
-                                 const char* rejection_reason) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  auto promise = resolver->Promise();
-  resolver->Reject(MakeGarbageCollected<DOMException>(
-      DOMExceptionCode::kNotAllowedError, rejection_reason));
-  return promise;
-}
-
-// Helper function that returns an immediately resolved promise.
-ScriptPromise GetResolvedPromise(ScriptState* script_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  auto promise = resolver->Promise();
-  resolver->Resolve();
-  return promise;
-}
-
 }  // namespace
 
-DisplayLockContext::DisplayLockContext(Element* element,
-                                       ExecutionContext* context)
-    : ExecutionContextLifecycleObserver(context),
-      element_(element),
-      document_(&element_->GetDocument()),
-      state_(this) {
+DisplayLockContext::DisplayLockContext(Element* element)
+    : element_(element), document_(&element_->GetDocument()) {
   document_->AddDisplayLockContext(this);
 }
 
-DisplayLockContext::~DisplayLockContext() {
-  DCHECK_EQ(state_, kUnlocked);
+void DisplayLockContext::SetRequestedState(ESubtreeVisibility state) {
+  if (state_ == state)
+    return;
+  state_ = state;
+  switch (state_) {
+    case ESubtreeVisibility::kVisible:
+      RequestUnlock();
+      break;
+    case ESubtreeVisibility::kAuto:
+      RequestLock(static_cast<uint16_t>(DisplayLockActivationReason::kAny));
+      break;
+    case ESubtreeVisibility::kHidden:
+      RequestLock(0u);
+      break;
+    case ESubtreeVisibility::kHiddenMatchable:
+      RequestLock(
+          static_cast<uint16_t>(DisplayLockActivationReason::kAny) &
+          ~static_cast<uint16_t>(DisplayLockActivationReason::kViewport));
+      break;
+  }
+}
+
+void DisplayLockContext::AdjustElementStyle(ComputedStyle* style) const {
+  if (state_ == ESubtreeVisibility::kVisible)
+    return;
+  // If not visible, element gains style and layout containment. If skipped, it
+  // also gains size containment.
+  // https://wicg.github.io/display-locking/#subtree-visibility
+  auto contain = style->Contain() | kContainsStyle | kContainsLayout;
+  if (IsLocked())
+    contain |= kContainsSize;
+  style->SetContain(contain);
 }
 
 void DisplayLockContext::Trace(Visitor* visitor) {
-  visitor->Trace(update_resolver_);
   visitor->Trace(element_);
   visitor->Trace(document_);
   visitor->Trace(whitespace_reattach_set_);
-  ExecutionContextLifecycleObserver::Trace(visitor);
-}
-
-void DisplayLockContext::Dispose() {
-  // Note that if we have any resolvers at dispose time, then it's too late to
-  // reject the promise, since we are not allowed to create new strong
-  // references to objects already set for destruction (and rejecting would do
-  // this since the rejection has to be deferred). We need to detach instead.
-  // TODO(vmpstr): See if there is another earlier time we can detect that we're
-  // going to be disposed.
-  FinishUpdateResolver(kDetach);
-  state_ = kUnlocked;
-}
-
-void DisplayLockContext::ContextDestroyed() {
-  FinishUpdateResolver(kReject, rejection_names::kExecutionContextDestroyed);
-  state_ = kUnlocked;
 }
 
 void DisplayLockContext::UpdateActivationObservationIfNeeded() {
@@ -160,7 +143,7 @@ void DisplayLockContext::UpdateActivationObservationIfNeeded() {
   // 2. We're activated (in the CSS version), which means that we need to know
   //    when we stop intersecting the viewport so that we can re-lock.
   bool should_observe =
-      (IsLocked() || IsActivated()) &&
+      lock_requested_ &&
       IsActivatable(DisplayLockActivationReason::kViewportIntersection) &&
       ConnectedToView();
   if (should_observe && !is_observed_) {
@@ -176,7 +159,7 @@ void DisplayLockContext::UpdateActivationObservationIfNeeded() {
 }
 
 bool DisplayLockContext::NeedsLifecycleNotifications() const {
-  return HasResolver() || needs_intersection_lock_check_;
+  return needs_intersection_lock_check_;
 }
 
 void DisplayLockContext::UpdateLifecycleNotificationRegistration() {
@@ -197,36 +180,52 @@ void DisplayLockContext::UpdateLifecycleNotificationRegistration() {
   }
 }
 
-void DisplayLockContext::SetActivatable(uint16_t activatable_mask) {
-  if (IsLocked()) {
-    // If we're locked, the activatable mask might change the activation
-    // blocking lock count. If we're not locked, the activation blocking lock
-    // count will be updated when we changed the state.
-    // Note that we record this only if we're blocking all activation. That is,
-    // the lock is considered activatable if any bit is set.
-    state_.UpdateActivationBlockingCount(activatable_mask_, activatable_mask);
+void DisplayLockContext::UpdateActivationBlockingCount(bool was_activatable,
+                                                       bool is_activatable) {
+  DCHECK(document_);
+  if (was_activatable != is_activatable) {
+    if (was_activatable)
+      document_->IncrementDisplayLockBlockingAllActivation();
+    else
+      document_->DecrementDisplayLockBlockingAllActivation();
   }
+}
+
+void DisplayLockContext::SetActivatable(uint16_t activatable_mask) {
+  if (activatable_mask == activatable_mask_)
+    return;
+  // If we're locked, the activatable mask might change the activation
+  // blocking lock count. If we're not locked, the activation blocking lock
+  // count will be updated when we lock.
+  // Note that we record this only if we're blocking all activation. That is,
+  // the lock is considered activatable if any bit is set.
+  if (IsLocked())
+    UpdateActivationBlockingCount(activatable_mask_, activatable_mask);
+
   activatable_mask_ = activatable_mask;
   UpdateActivationObservationIfNeeded();
 
-  // If we're no longer activatable, make sure we clear any existing activation.
-  // TODO(vmpstr): Figure out if we should clear activation on any activation
-  // changes not just "something" -> "nothing".
-  if (!IsActivatable(DisplayLockActivationReason::kAny))
-    ClearActivated();
+  ClearActivated();
 }
 
 void DisplayLockContext::StartAcquire() {
+  DCHECK(lock_requested_);
   DCHECK(!IsLocked());
-  update_budget_.reset();
-  state_ = kLocked;
+
+  is_locked_ = true;
+  document_->AddLockedDisplayLock();
+  if (!activatable_mask_)
+    document_->IncrementDisplayLockBlockingAllActivation();
+  UpdateActivationObservationIfNeeded();
 
   needs_intersection_lock_check_ = false;
   UpdateLifecycleNotificationRegistration();
 
-  // We're no longer activated, so if the signal didn't run yet, we should
-  // cancel it.
-  weak_factory_.InvalidateWeakPtrs();
+  if (RuntimeEnabledFeatures::CSSSubtreeVisibilityActivationEventEnabled()) {
+    // We're no longer activated, so if the signal didn't run yet, we should
+    // cancel it.
+    weak_factory_.InvalidateWeakPtrs();
+  }
 
   // If we're already connected then we need to ensure that we update our style
   // to check for containment later, layout size based on the options, and
@@ -251,8 +250,8 @@ void DisplayLockContext::StartAcquire() {
   // lifecycle update, this will be a no-op.
   ScheduleAnimation();
 
-  // We need to notify the AX cache (if it exists) to update the  childrens
-  // of |element_| in the AX cache.
+  // We need to notify the AX cache (if it exists) to update |element_|'s
+  // children in the AX cache.
   if (AXObjectCache* cache = element_->GetDocument().ExistingAXObjectCache())
     cache->ChildrenChanged(element_);
 
@@ -266,6 +265,7 @@ void DisplayLockContext::StartAcquire() {
       layout_invalidation_reason::kDisplayLock);
 
   is_horizontal_writing_mode_ = layout_object->IsHorizontalWritingMode();
+
   // GraphicsLayer collection would normally skip layers if paint is blocked
   // by display-locking (see: CollectDrawableLayersForLayerListRecursively
   // in LocalFrameView). However, if we don't trigger this collection, then
@@ -277,116 +277,14 @@ void DisplayLockContext::StartAcquire() {
   MarkPaintLayerNeedsRepaint();
 }
 
-ScriptPromise DisplayLockContext::UpdateRendering(ScriptState* script_state) {
-  // Immediately resolve if we're unlocked or disconnected.
-  if (state_ == kUnlocked || !ConnectedToView())
-    return GetResolvedPromise(script_state);
-
-  // If we have a resolver, then we're at least updating already, just return
-  // the same promise.
-  if (update_resolver_) {
-    DCHECK(state_ == kUpdating || state_ == kCommitting) << state_;
-    return update_resolver_->Promise();
-  }
-
-  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*element_)) {
-    return GetRejectedPromise(script_state, rejection_names::kElementIsNested);
-  }
-
-  MakeResolver(script_state, &update_resolver_);
-  StartUpdateIfNeeded();
-  return update_resolver_->Promise();
-}
-
-bool DisplayLockContext::CleanupAndRejectCommitIfNotConnected() {
-  // If we're not connected, then the process of committing is the same as just
-  // unlocking the element. Early out if this conditions *doesn't* hold.
-  if (ConnectedToView())
-    return false;
-
-  state_ = kUnlocked;
-  update_budget_.reset();
-  // Note that we reject the update, but resolve the commit.
-  FinishUpdateResolver(kReject, rejection_names::kElementIsDisconnected);
-  return true;
-}
-
-void DisplayLockContext::MakeResolver(ScriptState* script_state,
-                                      Member<ScriptPromiseResolver>* resolver) {
-  DCHECK(ConnectedToView());
-  *resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  UpdateLifecycleNotificationRegistration();
-}
-
-bool DisplayLockContext::HasResolver() const {
-  return update_resolver_;
-}
-
-void DisplayLockContext::FinishUpdateResolver(ResolverState state,
-                                              const char* rejection_reason) {
-  FinishResolver(&update_resolver_, state, rejection_reason);
-}
-
-void DisplayLockContext::FinishResolver(Member<ScriptPromiseResolver>* resolver,
-                                        ResolverState state,
-                                        const char* rejection_reason) {
-  if (!*resolver)
-    return;
-  switch (state) {
-    case kResolve:
-      // In order to avoid script doing work as a part of the lifecycle update,
-      // we delay the resolution to be in a task.
-      GetExecutionContext()
-          ->GetTaskRunner(TaskType::kMiscPlatformAPI)
-          ->PostTask(FROM_HERE, WTF::Bind(
-                                    +[](ScriptPromiseResolver* resolver) {
-                                      resolver->Resolve();
-                                    },
-                                    WrapPersistent(resolver->Get())));
-      break;
-    case kReject:
-      DCHECK(rejection_reason);
-      (*resolver)->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotAllowedError, rejection_reason));
-      break;
-    case kDetach:
-      (*resolver)->Detach();
-      break;
-  }
-  *resolver = nullptr;
-  UpdateLifecycleNotificationRegistration();
-}
-
-bool DisplayLockContext::ShouldPerformUpdatePhase(
-    DisplayLockBudget::Phase phase) const {
-  DCHECK(document_);
-  if (state_ != kUpdating)
-    return false;
-  auto* view = document_->View();
-  return view && view->InLifecycleUpdate() &&
-         update_budget_->ShouldPerformPhase(phase,
-                                            view->CurrentLifecycleData());
-}
-
 bool DisplayLockContext::ShouldStyle(DisplayLockLifecycleTarget target) const {
-  return target == DisplayLockLifecycleTarget::kSelf || update_forced_ ||
-         state_ > kUpdating ||
+  return !is_locked_ || target == DisplayLockLifecycleTarget::kSelf ||
+         update_forced_ ||
          (document_->ActivatableDisplayLocksForced() &&
-          IsActivatable(DisplayLockActivationReason::kAny)) ||
-         ShouldPerformUpdatePhase(DisplayLockBudget::Phase::kStyle);
+          IsActivatable(DisplayLockActivationReason::kAny));
 }
 
 void DisplayLockContext::DidStyle(DisplayLockLifecycleTarget target) {
-  if (state_ == kUnlocked) {
-    // If we're committing without finishing the acquire() first, it's possible
-    // for the state to be kUnlocked instead of kCommitting. We should still
-    // mark child reattachment & whitespace reattachment in that case.
-    MarkElementsForWhitespaceReattachment();
-    if (element_->ChildNeedsReattachLayoutTree())
-      element_->MarkAncestorsWithChildNeedsReattachLayoutTree();
-    return;
-  }
-
   if (target == DisplayLockLifecycleTarget::kSelf) {
     if (ForceUnlockIfNeeded())
       return;
@@ -399,29 +297,17 @@ void DisplayLockContext::DidStyle(DisplayLockLifecycleTarget target) {
     return;
   }
 
-  bool update_forced =
-      update_forced_ || (document_->ActivatableDisplayLocksForced() &&
-                         IsActivatable(DisplayLockActivationReason::kAny));
-  if (state_ != kCommitting && state_ != kUpdating && !update_forced)
-    return;
-
   if (element_->ChildNeedsReattachLayoutTree())
     element_->MarkAncestorsWithChildNeedsReattachLayoutTree();
-
   blocked_style_traversal_type_ = kStyleUpdateNotRequired;
-
   MarkElementsForWhitespaceReattachment();
-
-  if (state_ == kUpdating)
-    update_budget_->DidPerformPhase(DisplayLockBudget::Phase::kStyle);
 }
 
 bool DisplayLockContext::ShouldLayout(DisplayLockLifecycleTarget target) const {
-  return target == DisplayLockLifecycleTarget::kSelf || update_forced_ ||
-         state_ > kUpdating ||
+  return !is_locked_ || target == DisplayLockLifecycleTarget::kSelf ||
+         update_forced_ ||
          (document_->ActivatableDisplayLocksForced() &&
-          IsActivatable(DisplayLockActivationReason::kAny)) ||
-         ShouldPerformUpdatePhase(DisplayLockBudget::Phase::kLayout);
+          IsActivatable(DisplayLockActivationReason::kAny));
 }
 
 void DisplayLockContext::DidLayout(DisplayLockLifecycleTarget target) {
@@ -430,31 +316,16 @@ void DisplayLockContext::DidLayout(DisplayLockLifecycleTarget target) {
 
   // Since we did layout on children already, we'll clear this.
   child_layout_was_blocked_ = false;
-  if (state_ == kUpdating)
-    update_budget_->DidPerformPhase(DisplayLockBudget::Phase::kLayout);
 }
 
 bool DisplayLockContext::ShouldPrePaint(
     DisplayLockLifecycleTarget target) const {
-  return target == DisplayLockLifecycleTarget::kSelf || update_forced_ ||
-         state_ > kUpdating ||
-         ShouldPerformUpdatePhase(DisplayLockBudget::Phase::kPrePaint);
+  return !is_locked_ || target == DisplayLockLifecycleTarget::kSelf ||
+         update_forced_;
 }
 
 void DisplayLockContext::DidPrePaint(DisplayLockLifecycleTarget target) {
-  if (target == DisplayLockLifecycleTarget::kSelf)
-    return;
-
-  if (state_ == kUpdating)
-    update_budget_->DidPerformPhase(DisplayLockBudget::Phase::kPrePaint);
-
-#if DCHECK_IS_ON()
-  if (state_ == kUpdating || state_ == kCommitting) {
-    // Since we should be under containment, we should have a layer. If we
-    // don't, then paint might not happen and we'll never resolve.
-    DCHECK(element_->GetLayoutObject()->HasLayer());
-  }
-#endif
+  // This is here for symmetry, but could be removed if necessary.
 }
 
 bool DisplayLockContext::ShouldPaint(DisplayLockLifecycleTarget target) const {
@@ -462,8 +333,7 @@ bool DisplayLockContext::ShouldPaint(DisplayLockLifecycleTarget target) const {
   // check |update_forced_| here. In other words, although |update_forced_|
   // could be true here, we still should not paint. This also holds for
   // kUpdating state, since updates should not paint.
-  return target == DisplayLockLifecycleTarget::kSelf || state_ == kCommitting ||
-         state_ == kUnlocked;
+  return !is_locked_ || target == DisplayLockLifecycleTarget::kSelf;
 }
 
 void DisplayLockContext::DidPaint(DisplayLockLifecycleTarget) {
@@ -502,7 +372,7 @@ void DisplayLockContext::CommitForActivationWithSignal(
   if (reason_for_metrics == DisplayLockActivationReason::kFindInPage)
     document_->MarkHasFindInPageSubtreeVisibilityActiveMatch();
 
-  css_is_activated_ = true;
+  is_activated_ = true;
   // Since size containment depends on the activatability state, we should
   // invalidate the style for this element, so that the style adjuster can
   // properly remove the containment.
@@ -512,11 +382,11 @@ void DisplayLockContext::CommitForActivationWithSignal(
 }
 
 bool DisplayLockContext::IsActivated() const {
-  return css_is_activated_;
+  return is_activated_;
 }
 
 void DisplayLockContext::ClearActivated() {
-  css_is_activated_ = false;
+  is_activated_ = false;
   // If we are no longer activated, then we're either committing or acquiring a
   // lock. In either case, we don't need to rely on lifecycle observations to
   // become hidden.
@@ -570,22 +440,42 @@ void DisplayLockContext::NotifyIsNotIntersectingViewport() {
   }
 }
 
+bool DisplayLockContext::RequestLock(uint16_t activation_mask) {
+  SetActivatable(activation_mask);
+
+  if (IsLocked()) {
+    DCHECK(lock_requested_);
+    return true;
+  }
+  lock_requested_ = true;
+
+  if (IsActivated())
+    return false;
+
+  StartAcquire();
+  return true;
+}
+
+void DisplayLockContext::RequestUnlock() {
+  lock_requested_ = false;
+  ClearActivated();
+  if (IsLocked())
+    StartCommit();
+}
+
 bool DisplayLockContext::ShouldCommitForActivation(
     DisplayLockActivationReason reason) const {
   return IsActivatable(reason) && IsLocked();
 }
 
 void DisplayLockContext::DidAttachLayoutTree() {
-  if (state_ >= kUnlocked)
-    return;
-
   if (auto* layout_object = element_->GetLayoutObject())
     is_horizontal_writing_mode_ = layout_object->IsHorizontalWritingMode();
 }
 
 DisplayLockContext::ScopedForcedUpdate
 DisplayLockContext::GetScopedForcedUpdate() {
-  if (state_ >= kCommitting)
+  if (!is_locked_)
     return ScopedForcedUpdate(nullptr);
 
   DCHECK(!update_forced_);
@@ -614,25 +504,23 @@ void DisplayLockContext::NotifyForcedUpdateScopeEnded() {
 
 void DisplayLockContext::StartCommit() {
   DCHECK(IsLocked());
-  if (CleanupAndRejectCommitIfNotConnected())
+  if (!ConnectedToView()) {
+    is_locked_ = false;
+    UpdateActivationObservationIfNeeded();
     return;
+  }
 
-  if (state_ != kUpdating)
-    ScheduleAnimation();
-
-  // We might already be unlocked due to above, but we should still mark
-  // ancestor chains for updates below.
-  if (state_ < kCommitting)
-    state_ = kCommitting;
-
-  update_budget_.reset();
+  ScheduleAnimation();
+  is_locked_ = false;
+  document_->RemoveLockedDisplayLock();
+  if (!activatable_mask_)
+    document_->DecrementDisplayLockBlockingAllActivation();
+  UpdateActivationObservationIfNeeded();
 
   // We skip updating the style dirtiness if we're within style recalc. This is
   // instead handled by a call to AdjustStyleRecalcChangeForChildren().
-  if (!document_->InStyleRecalc()) {
-    // We're committing without a budget, so ensure we can reach style.
+  if (!document_->InStyleRecalc())
     MarkForStyleRecalcIfNeeded();
-  }
 
   // We also need to notify the AX cache (if it exists) to update the childrens
   // of |element_| in the AX cache.
@@ -652,35 +540,6 @@ void DisplayLockContext::StartCommit() {
 
   layout_object->SetNeedsLayoutAndPrefWidthsRecalc(
       layout_invalidation_reason::kDisplayLock);
-}
-
-void DisplayLockContext::StartUpdateIfNeeded() {
-  // We should not be calling this if we're unlocked.
-  DCHECK_NE(state_, kUnlocked);
-  // Any state other than kLocked means that we are already in the process of
-  // updating/committing, so we can piggy back on that process without kicking
-  // off any new updates.
-  if (state_ != kLocked)
-    return;
-
-  // We don't need to mark anything dirty since the budget will take care of
-  // that for us.
-  update_budget_ = CreateNewBudget();
-  state_ = kUpdating;
-  ScheduleAnimation();
-}
-
-std::unique_ptr<DisplayLockBudget> DisplayLockContext::CreateNewBudget() {
-  switch (BudgetType::kDefault) {
-    case BudgetType::kDoNotYield:
-      return base::WrapUnique(new UnyieldingDisplayLockBudget(this));
-    case BudgetType::kStrictYieldBetweenLifecyclePhases:
-      return base::WrapUnique(new StrictYieldingDisplayLockBudget(this));
-    case BudgetType::kYieldBetweenLifecyclePhases:
-      return base::WrapUnique(new YieldingDisplayLockBudget(this));
-  }
-  NOTREACHED();
-  return nullptr;
 }
 
 void DisplayLockContext::AddToWhitespaceReattachSet(Element& element) {
@@ -898,8 +757,11 @@ void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
   if (is_registered_for_lifecycle_notifications_) {
     if (old_document.View())
       old_document.View()->UnregisterFromLifecycleNotifications(this);
+
     if (document_->View())
       document_->View()->RegisterForLifecycleNotifications(this);
+    else
+      is_registered_for_lifecycle_notifications_ = false;
   }
 
   if (IsLocked()) {
@@ -914,11 +776,6 @@ void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
 
 void DisplayLockContext::WillStartLifecycleUpdate(const LocalFrameView& view) {
   DCHECK(NeedsLifecycleNotifications());
-  // If we have an update budget, then forward the call to it, so that it can
-  // prepare for the lifecycle by propagating the next phase's dirty bits.
-  if (update_budget_)
-    update_budget_->OnLifecycleChange(view.CurrentLifecycleData());
-
   // We might have delayed processing intersection observation update (signal
   // that we were not intersecting) because this context was nested in another
   // locked context. At the start of the lifecycle, we should check whether
@@ -934,43 +791,6 @@ void DisplayLockContext::WillStartLifecycleUpdate(const LocalFrameView& view) {
 }
 
 void DisplayLockContext::DidFinishLifecycleUpdate(const LocalFrameView& view) {
-  DCHECK(NeedsLifecycleNotifications());
-  if (state_ == kCommitting) {
-    FinishUpdateResolver(kResolve);
-    state_ = kUnlocked;
-    return;
-  }
-
-  if (state_ != kUpdating)
-    return;
-
-  // If we became disconnected for any reason, then we should reject the
-  // update promise and go back to the locked state.
-  if (!ConnectedToView()) {
-    FinishUpdateResolver(kReject, rejection_names::kElementIsDisconnected);
-    update_budget_.reset();
-
-    if (state_ == kCommitting) {
-      state_ = kUnlocked;
-    } else {
-      state_ = kLocked;
-    }
-    return;
-  }
-
-  if (update_budget_->NeedsLifecycleUpdates()) {
-    // Note that we post a task to schedule an animation, since rAF requests can
-    // be ignored if they happen from within a lifecycle update.
-    GetExecutionContext()
-        ->GetTaskRunner(TaskType::kMiscPlatformAPI)
-        ->PostTask(FROM_HERE, WTF::Bind(&DisplayLockContext::ScheduleAnimation,
-                                        WrapWeakPersistent(this)));
-    return;
-  }
-
-  FinishUpdateResolver(kResolve);
-  update_budget_.reset();
-  state_ = kLocked;
 }
 
 void DisplayLockContext::NotifyWillDisconnect() {
@@ -995,16 +815,8 @@ void DisplayLockContext::ElementConnected() {
 
 void DisplayLockContext::ScheduleAnimation() {
   DCHECK(element_);
-  // We could have posted a task to run ScheduleAnimation if we're updating.
-  // However, before that task runs, we could have disconnected the element
-  // already. If that's the case and we don't need to finalize update, then we
-  // can skip scheduling animation. If we do need to finalize update (ie reset
-  // update_budget_), then we should still schedule an animation just in case
-  // one was not scheduled.
-  if ((!ConnectedToView() && !update_budget_) || !document_ ||
-      !document_->GetPage()) {
+  if (!ConnectedToView() || !document_ || !document_->GetPage())
     return;
-  }
 
   // Schedule an animation to perform the lifecycle phases.
   document_->GetPage()->Animator().ScheduleVisualUpdate(document_->GetFrame());
@@ -1073,8 +885,7 @@ bool DisplayLockContext::ForceUnlockIfNeeded() {
   // commit() isn't in progress, the web author won't know that the element
   // got unlocked. Figure out how to notify the author.
   if (auto* reason = ShouldForceUnlock()) {
-    FinishUpdateResolver(kReject, reason);
-    state_ = kUnlocked;
+    is_locked_ = false;
     return true;
   }
   return false;
@@ -1086,7 +897,6 @@ bool DisplayLockContext::ConnectedToView() const {
 
 // Scoped objects implementation
 // -----------------------------------------------
-
 DisplayLockContext::ScopedForcedUpdate::ScopedForcedUpdate(
     DisplayLockContext* context)
     : context_(context) {}
@@ -1100,59 +910,6 @@ DisplayLockContext::ScopedForcedUpdate::ScopedForcedUpdate(
 DisplayLockContext::ScopedForcedUpdate::~ScopedForcedUpdate() {
   if (context_)
     context_->NotifyForcedUpdateScopeEnded();
-}
-
-// StateChangeHelper implementation
-// -----------------------------------------------
-DisplayLockContext::StateChangeHelper::StateChangeHelper(
-    DisplayLockContext* context)
-    : context_(context) {}
-
-DisplayLockContext::StateChangeHelper& DisplayLockContext::StateChangeHelper::
-operator=(State new_state) {
-  if (new_state == state_)
-    return *this;
-
-  bool was_activatable =
-      context_->IsActivatable(DisplayLockActivationReason::kAny);
-  bool was_locked = context_->IsLocked();
-
-  state_ = new_state;
-
-  if (!context_->document_)
-    return *this;
-
-  bool is_activatable =
-      context_->IsActivatable(DisplayLockActivationReason::kAny);
-  bool is_locked = context_->IsLocked();
-
-  UpdateActivationBlockingCount(!was_locked || was_activatable,
-                                !is_locked || is_activatable);
-
-  // Adjust the total number of locked display locks.
-  auto& document = *context_->document_;
-  if (is_locked != was_locked) {
-    if (was_locked)
-      document.RemoveLockedDisplayLock();
-    else
-      document.AddLockedDisplayLock();
-  }
-
-  context_->UpdateActivationObservationIfNeeded();
-  return *this;
-}
-
-void DisplayLockContext::StateChangeHelper::UpdateActivationBlockingCount(
-    bool old_activatable,
-    bool new_activatable) {
-  auto& document = *context_->document_;
-  // Adjust activation blocking lock counts.
-  if (old_activatable != new_activatable) {
-    if (old_activatable)
-      document.IncrementDisplayLockBlockingAllActivation();
-    else
-      document.DecrementDisplayLockBlockingAllActivation();
-  }
 }
 
 }  // namespace blink

@@ -369,6 +369,15 @@ class PaymentSheetRowBuilder {
   DISALLOW_COPY_AND_ASSIGN(PaymentSheetRowBuilder);
 };
 
+// The primary button should show "Continue" when the selected payment app is
+// non-autofill.
+base::string16 CalculatePrimaryButtonLabel(const PaymentRequestState* state) {
+  return state->selected_app() &&
+                 state->selected_app()->type() != PaymentApp::Type::AUTOFILL
+             ? l10n_util::GetStringUTF16(IDS_PAYMENTS_CONTINUE_BUTTON)
+             : l10n_util::GetStringUTF16(IDS_PAYMENTS_PAY_BUTTON);
+}
+
 }  // namespace
 
 PaymentSheetViewController::PaymentSheetViewController(
@@ -398,7 +407,7 @@ std::unique_ptr<views::Button>
 PaymentSheetViewController::CreatePrimaryButton() {
   std::unique_ptr<views::Button> button(
       views::MdTextButton::CreateSecondaryUiBlueButton(
-          this, l10n_util::GetStringUTF16(IDS_PAYMENTS_PAY_BUTTON)));
+          this, CalculatePrimaryButtonLabel(state())));
   button->set_tag(static_cast<int>(PaymentRequestCommonTags::PAY_BUTTON_TAG));
   button->SetID(static_cast<int>(DialogViewID::PAY_BUTTON));
   button->SetEnabled(state()->is_ready_to_pay());
@@ -575,6 +584,8 @@ void PaymentSheetViewController::StyledLabelLinkClicked(
 
 void PaymentSheetViewController::UpdatePayButtonState(bool enabled) {
   primary_button()->SetEnabled(enabled);
+  static_cast<views::MdTextButton*>(primary_button())
+      ->SetText(CalculatePrimaryButtonLabel(state()));
 }
 
 // Creates the Order Summary row, which contains an "Order Summary" label,

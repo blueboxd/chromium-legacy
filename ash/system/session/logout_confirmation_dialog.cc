@@ -37,10 +37,10 @@ LogoutConfirmationDialog::LogoutConfirmationDialog(
     LogoutConfirmationController* controller,
     base::TimeTicks logout_time)
     : controller_(controller), logout_time_(logout_time) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_ASH_LOGOUT_CONFIRMATION_BUTTON));
-  DialogDelegate::set_accept_callback(base::BindOnce(
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
       &LogoutConfirmationDialog::OnDialogAccepted, base::Unretained(this)));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());

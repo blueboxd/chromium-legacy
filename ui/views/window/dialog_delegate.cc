@@ -321,6 +321,31 @@ void DialogDelegate::DialogModelChanged() {
     observer.OnDialogChanged();
 }
 
+void DialogDelegate::SetDefaultButton(int button) {
+  params_.default_button = button;
+}
+
+void DialogDelegate::SetButtons(int buttons) {
+  params_.buttons = buttons;
+}
+
+void DialogDelegate::SetButtonLabel(ui::DialogButton button,
+    base::string16 label) {
+  params_.button_labels[button] = label;
+}
+
+void DialogDelegate::SetAcceptCallback(base::OnceClosure callback) {
+  accept_callback_ = std::move(callback);
+}
+
+void DialogDelegate::SetCancelCallback(base::OnceClosure callback) {
+  cancel_callback_ = std::move(callback);
+}
+
+void DialogDelegate::SetCloseCallback(base::OnceClosure callback) {
+  close_callback_ = std::move(callback);
+}
+
 std::unique_ptr<View> DialogDelegate::DisownExtraView() {
   return std::move(extra_view_);
 }

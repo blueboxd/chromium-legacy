@@ -787,7 +787,8 @@ class BBJSONGenerator(object):
       waterfall, tester_name, tester_config, step_name, test_config)
     if not result:
       return None
-    result['isolate_name'] = 'telemetry_gpu_integration_test'
+    result['isolate_name'] = test_config.get(
+      'isolate_name', 'telemetry_gpu_integration_test')
     args = result.get('args', [])
     test_to_run = result.pop('telemetry_test_name', test_name)
 

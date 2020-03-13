@@ -13,7 +13,8 @@ callback ResizeObserverCallback = void (sequence<ResizeObserverEntry> entries, R
     ActiveScriptWrappable
 ] interface ResizeObserver {
     [CallWith=Document, MeasureAs=ResizeObserver_Constructor] constructor(ResizeObserverCallback callback);
-    void observe(Element target, optional ResizeObserverOptions options);
+    [RuntimeEnabled=ResizeObserverUpdates] void observe(Element target, ResizeObserverOptions options);
+    void observe(Element target);
     void unobserve(Element target);
     void disconnect();
 };

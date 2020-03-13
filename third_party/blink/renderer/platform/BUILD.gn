@@ -1444,6 +1444,7 @@ jumbo_component("platform") {
     "webrtc/webrtc_video_utils.h",
     "widget/widget_base.cc",
     "widget/widget_base.h",
+    "widget/widget_base_client.h",
     "windows_keyboard_codes.h",
   ]
 

@@ -83,9 +83,9 @@ DownloadDangerPromptViews::DownloadDangerPromptViews(
       done_(done) {
   // Note that this prompt is asking whether to cancel a dangerous download, so
   // the accept path is titled "Cancel".
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                    l10n_util::GetStringUTF16(IDS_CANCEL));
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       show_context_ ? l10n_util::GetStringUTF16(IDS_CONFIRM_DOWNLOAD)
                     : l10n_util::GetStringUTF16(IDS_CONFIRM_DOWNLOAD_AGAIN));
@@ -98,9 +98,9 @@ DownloadDangerPromptViews::DownloadDangerPromptViews(
   // Note that the presentational concept of "Accept/Cancel" is inverted from
   // the model's concept of ACCEPT/CANCEL. In the UI, the safe path is "Accept"
   // and the dangerous path is "Cancel".
-  DialogDelegate::set_accept_callback(make_done_callback(CANCEL));
-  DialogDelegate::set_cancel_callback(make_done_callback(ACCEPT));
-  DialogDelegate::set_close_callback(make_done_callback(DISMISS));
+  DialogDelegate::SetAcceptCallback(make_done_callback(CANCEL));
+  DialogDelegate::SetCancelCallback(make_done_callback(ACCEPT));
+  DialogDelegate::SetCloseCallback(make_done_callback(DISMISS));
 
   download_->AddObserver(this);
 

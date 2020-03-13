@@ -100,11 +100,11 @@ PrintJobConfirmationDialogView::PrintJobConfirmationDialogView(
                     extension_misc::EXTENSION_ICON_SMALL))),
       callback_(std::move(callback)),
       dialog_is_bubble_(anchor_view != nullptr) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(
           IDS_EXTENSIONS_PRINTING_API_PRINT_REQUEST_ALLOW));
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(
           IDS_EXTENSIONS_PRINTING_API_PRINT_REQUEST_DENY));
@@ -112,9 +112,9 @@ PrintJobConfirmationDialogView::PrintJobConfirmationDialogView(
   auto run_callback = [](PrintJobConfirmationDialogView* dialog, bool accept) {
     std::move(dialog->callback_).Run(accept);
   };
-  DialogDelegate::set_accept_callback(
+  DialogDelegate::SetAcceptCallback(
       base::BindOnce(run_callback, base::Unretained(this), true));
-  DialogDelegate::set_cancel_callback(
+  DialogDelegate::SetCancelCallback(
       base::BindOnce(run_callback, base::Unretained(this), false));
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();

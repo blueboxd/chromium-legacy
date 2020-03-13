@@ -24,7 +24,6 @@
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
-#include "components/sync/model/syncable_service.h"
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 #include "components/password_manager/core/browser/hash_password_manager.h"
@@ -43,8 +42,7 @@ struct PasswordForm;
 namespace syncer {
 class ModelTypeControllerDelegate;
 class ProxyModelTypeControllerDelegate;
-class SyncableService;
-}
+}  // namespace syncer
 
 using StateSubscription =
     base::CallbackList<void(const std::string& username)>::Subscription;
@@ -60,7 +58,6 @@ class CompromisedCredentialsObserver;
 class PasswordStoreConsumer;
 class CompromisedCredentialsConsumer;
 class PasswordStoreSigninNotifier;
-class PasswordSyncableService;
 class PasswordSyncBridge;
 struct FieldInfo;
 struct InteractionsStats;
@@ -79,7 +76,7 @@ using PasswordHashDataList = base::Optional<std::vector<PasswordHashData>>;
 // this manner. If this deferred initialization fails, all subsequent method
 // calls should fail without side effects, return no data, and send no
 // notifications. PasswordStoreSync is a hidden base class because only
-// PasswordSyncableService needs to access these methods.
+// PasswordSyncBridge needs to access these methods.
 class PasswordStore : protected PasswordStoreSync,
                       public RefcountedKeyedService {
  public:
@@ -133,7 +130,6 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Always call this too on the UI thread.
   bool Init(
-      const syncer::SyncableService::StartSyncFlare& flare,
       PrefService* prefs,
       base::RepeatingClosure sync_enabled_or_disabled_cb = base::DoNothing());
 
@@ -319,8 +315,6 @@ class PasswordStore : protected PasswordStoreSync,
   // Returns true iff initialization was successful.
   virtual bool IsAbleToSavePasswords() const;
 
-  base::WeakPtr<syncer::SyncableService> GetPasswordSyncableService();
-
   // For sync codebase only: instantiates a proxy controller delegate to
   // interact with PasswordSyncBridge. Must be called from the UI thread.
   std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
@@ -443,11 +437,10 @@ class PasswordStore : protected PasswordStoreSync,
   virtual scoped_refptr<base::SequencedTaskRunner> CreateBackgroundTaskRunner()
       const;
 
-  // Creates PasswordSyncableService and PasswordReuseDetector instances on the
+  // Creates PasswordSyncBridge and PasswordReuseDetector instances on the
   // background sequence. Subclasses can add more logic. Returns true on
   // success.
-  virtual bool InitOnBackgroundSequence(
-      const syncer::SyncableService::StartSyncFlare& flare);
+  virtual bool InitOnBackgroundSequence();
 
   // Methods below will be run in PasswordStore's own sequence.
   // Synchronous implementation that reports usage metrics.
@@ -797,8 +790,6 @@ class PasswordStore : protected PasswordStoreSync,
           base::MakeRefCounted<base::ObserverListThreadSafe<
               DatabaseCompromisedCredentialsObserver>>();
 
-  // Either of two below would actually be set based on a feature flag.
-  std::unique_ptr<PasswordSyncableService> syncable_service_;
   std::unique_ptr<PasswordSyncBridge> sync_bridge_;
 
   base::RepeatingClosure sync_enabled_or_disabled_cb_;

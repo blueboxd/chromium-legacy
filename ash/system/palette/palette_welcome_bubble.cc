@@ -36,7 +36,7 @@ class PaletteWelcomeBubble::WelcomeBubbleView
  public:
   WelcomeBubbleView(views::View* anchor, views::BubbleBorder::Arrow arrow)
       : views::BubbleDialogDelegateView(anchor, arrow) {
-    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
     set_close_on_deactivate(true);
     SetCanActivate(false);
     set_accept_events(true);

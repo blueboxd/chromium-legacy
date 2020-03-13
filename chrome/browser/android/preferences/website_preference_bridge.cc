@@ -22,14 +22,10 @@
 #include "chrome/android/chrome_jni_headers/WebsitePreferenceBridge_jni.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
-#include "chrome/browser/content_settings/cookie_settings_factory.h"
-#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/content_settings/web_site_settings_uma_util.h"
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/media/android/cdm/media_drm_license_manager.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
-#include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/profiles/profile.h"
@@ -41,10 +37,12 @@
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
+#include "components/permissions/permissions_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -81,9 +79,18 @@ Profile* GetActiveUserProfile(bool is_incognito) {
   return profile;
 }
 
+Profile* GetOriginalProfile() {
+  return ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
+}
+
 HostContentSettingsMap* GetHostContentSettingsMap(bool is_incognito) {
-  return HostContentSettingsMapFactory::GetForProfile(
+  return permissions::PermissionsClient::Get()->GetSettingsMap(
       GetActiveUserProfile(is_incognito));
+}
+
+HostContentSettingsMap* GetHostContentSettingsMap() {
+  return permissions::PermissionsClient::Get()->GetSettingsMap(
+      GetOriginalProfile());
 }
 
 // Reset the give permission for the DSE if the permission and origin are
@@ -107,8 +114,7 @@ bool MaybeResetDSEPermission(ContentSettingsType type,
   return false;
 }
 
-ScopedJavaLocalRef<jstring>
-JNI_WebsitePreferenceBridge_ConvertOriginToJavaString(
+ScopedJavaLocalRef<jstring> ConvertOriginToJavaString(
     JNIEnv* env,
     const std::string& origin) {
   // The string |jorigin| is used to group permissions together in the Site
@@ -142,12 +148,11 @@ typedef void (*InfoListInsertionFunction)(
     const base::android::JavaRef<jstring>&,
     const base::android::JavaRef<jstring>&);
 
-void JNI_WebsitePreferenceBridge_GetOrigins(
-    JNIEnv* env,
-    ContentSettingsType content_type,
-    InfoListInsertionFunction insertionFunc,
-    const JavaRef<jobject>& list,
-    jboolean managedOnly) {
+void GetOrigins(JNIEnv* env,
+                ContentSettingsType content_type,
+                InfoListInsertionFunction insertionFunc,
+                const JavaRef<jobject>& list,
+                jboolean managedOnly) {
   HostContentSettingsMap* content_settings_map =
       GetHostContentSettingsMap(false);  // is_incognito
   ContentSettingsForOneType all_settings;
@@ -181,17 +186,14 @@ void JNI_WebsitePreferenceBridge_GetOrigins(
       jembedder = ConvertUTF8ToJavaString(env, embedder);
 
     seen_origins.push_back(origin);
-    insertionFunc(
-        env, list,
-        JNI_WebsitePreferenceBridge_ConvertOriginToJavaString(env, origin),
-        jembedder);
+    insertionFunc(env, list, ConvertOriginToJavaString(env, origin), jembedder);
   }
 
   // Add any origins which have a default content setting value (thus skipped
   // above), but have been automatically blocked for this permission type.
   // We use an empty embedder since embargo doesn't care about it.
   permissions::PermissionDecisionAutoBlocker* auto_blocker =
-      PermissionDecisionAutoBlockerFactory::GetForProfile(
+      permissions::PermissionsClient::Get()->GetPermissionDecisionAutoBlocker(
           GetActiveUserProfile(false /* is_incognito */));
   ScopedJavaLocalRef<jstring> jembedder;
 
@@ -205,20 +207,17 @@ void JNI_WebsitePreferenceBridge_GetOrigins(
     if (auto_blocker->GetEmbargoResult(GURL(origin), content_type)
             .content_setting == CONTENT_SETTING_BLOCK) {
       seen_origins.push_back(origin);
-      insertionFunc(
-          env, list,
-          JNI_WebsitePreferenceBridge_ConvertOriginToJavaString(env, origin),
-          jembedder);
+      insertionFunc(env, list, ConvertOriginToJavaString(env, origin),
+                    jembedder);
     }
   }
 }
 
-ContentSetting JNI_WebsitePreferenceBridge_GetSettingForOrigin(
-    JNIEnv* env,
-    ContentSettingsType content_type,
-    jstring origin,
-    jstring embedder,
-    jboolean is_incognito) {
+ContentSetting GetSettingForOrigin(JNIEnv* env,
+                                   ContentSettingsType content_type,
+                                   jstring origin,
+                                   jstring embedder,
+                                   jboolean is_incognito) {
   GURL url(ConvertJavaStringToUTF8(env, origin));
   std::string embedder_str = ConvertJavaStringToUTF8(env, embedder);
   GURL embedder_url;
@@ -235,13 +234,12 @@ ContentSetting JNI_WebsitePreferenceBridge_GetSettingForOrigin(
       .content_setting;
 }
 
-void JNI_WebsitePreferenceBridge_SetSettingForOrigin(
-    JNIEnv* env,
-    ContentSettingsType content_type,
-    jstring origin,
-    jstring embedder,
-    ContentSetting setting,
-    jboolean is_incognito) {
+void SetSettingForOrigin(JNIEnv* env,
+                         ContentSettingsType content_type,
+                         jstring origin,
+                         jstring embedder,
+                         ContentSetting setting,
+                         jboolean is_incognito) {
   GURL origin_url(ConvertJavaStringToUTF8(env, origin));
   GURL embedder_url =
       embedder ? GURL(ConvertJavaStringToUTF8(env, embedder)) : GURL();
@@ -250,7 +248,8 @@ void JNI_WebsitePreferenceBridge_SetSettingForOrigin(
   // The permission may have been blocked due to being under embargo, so if it
   // was changed away from BLOCK, clear embargo status if it exists.
   if (setting != CONTENT_SETTING_BLOCK) {
-    PermissionDecisionAutoBlockerFactory::GetForProfile(profile)
+    permissions::PermissionsClient::Get()
+        ->GetPermissionDecisionAutoBlocker(profile)
         ->RemoveEmbargoByUrl(origin_url, content_type);
   }
 
@@ -263,7 +262,7 @@ void JNI_WebsitePreferenceBridge_SetSettingForOrigin(
       scoped_revocation_reporter(
           profile, origin_url, embedder_url, content_type,
           permissions::PermissionSourceUI::SITE_SETTINGS);
-  HostContentSettingsMapFactory::GetForProfile(profile)
+  GetHostContentSettingsMap(is_incognito)
       ->SetContentSettingDefaultScope(origin_url, embedder_url, content_type,
                                       std::string(), setting);
   WebSiteSettingsUmaUtil::LogPermissionChange(content_type, setting);
@@ -296,13 +295,8 @@ bool OriginMatcher(const url::Origin& origin, const GURL& other) {
   return origin == url::Origin::Create(other);
 }
 
-Profile* GetOriginalProfile() {
-  return ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
-}
-
 bool GetBooleanForContentSetting(ContentSettingsType type) {
-  HostContentSettingsMap* content_settings =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  HostContentSettingsMap* content_settings = GetHostContentSettingsMap();
   switch (content_settings->GetDefaultContentSetting(type, nullptr)) {
     case CONTENT_SETTING_BLOCK:
       return false;
@@ -315,8 +309,7 @@ bool GetBooleanForContentSetting(ContentSettingsType type) {
 
 bool IsContentSettingManaged(ContentSettingsType content_settings_type) {
   std::string source;
-  HostContentSettingsMap* content_settings =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  HostContentSettingsMap* content_settings = GetHostContentSettingsMap();
   content_settings->GetDefaultContentSetting(content_settings_type, &source);
   HostContentSettingsMap::ProviderType provider =
       content_settings->GetProviderTypeFromSource(source);
@@ -326,8 +319,7 @@ bool IsContentSettingManaged(ContentSettingsType content_settings_type) {
 bool IsContentSettingManagedByCustodian(
     ContentSettingsType content_settings_type) {
   std::string source;
-  HostContentSettingsMap* content_settings =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  HostContentSettingsMap* content_settings = GetHostContentSettingsMap();
   content_settings->GetDefaultContentSetting(content_settings_type, &source);
   HostContentSettingsMap::ProviderType provider =
       content_settings->GetProviderTypeFromSource(source);
@@ -336,8 +328,7 @@ bool IsContentSettingManagedByCustodian(
 
 bool IsContentSettingUserModifiable(ContentSettingsType content_settings_type) {
   std::string source;
-  HostContentSettingsMap* content_settings =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  HostContentSettingsMap* content_settings = GetHostContentSettingsMap();
   content_settings->GetDefaultContentSetting(content_settings_type, &source);
   HostContentSettingsMap::ProviderType provider =
       content_settings->GetProviderTypeFromSource(source);
@@ -349,18 +340,17 @@ bool IsContentSettingUserModifiable(ContentSettingsType content_settings_type) {
 static void JNI_WebsitePreferenceBridge_GetClipboardOrigins(
     JNIEnv* env,
     const JavaParamRef<jobject>& list) {
-  JNI_WebsitePreferenceBridge_GetOrigins(
-      env, ContentSettingsType::CLIPBOARD_READ_WRITE,
-      &Java_WebsitePreferenceBridge_insertClipboardInfoIntoList, list, false);
+  GetOrigins(env, ContentSettingsType::CLIPBOARD_READ_WRITE,
+             &Java_WebsitePreferenceBridge_insertClipboardInfoIntoList, list,
+             false);
 }
 
 static jint JNI_WebsitePreferenceBridge_GetClipboardSettingForOrigin(
     JNIEnv* env,
     const JavaParamRef<jstring>& origin,
     jboolean is_incognito) {
-  return JNI_WebsitePreferenceBridge_GetSettingForOrigin(
-      env, ContentSettingsType::CLIPBOARD_READ_WRITE, origin, origin,
-      is_incognito);
+  return GetSettingForOrigin(env, ContentSettingsType::CLIPBOARD_READ_WRITE,
+                             origin, origin, is_incognito);
 }
 
 static void JNI_WebsitePreferenceBridge_SetClipboardSettingForOrigin(
@@ -368,19 +358,17 @@ static void JNI_WebsitePreferenceBridge_SetClipboardSettingForOrigin(
     const JavaParamRef<jstring>& origin,
     jint value,
     jboolean is_incognito) {
-  JNI_WebsitePreferenceBridge_SetSettingForOrigin(
-      env, ContentSettingsType::CLIPBOARD_READ_WRITE, origin, origin,
-      static_cast<ContentSetting>(value), is_incognito);
+  SetSettingForOrigin(env, ContentSettingsType::CLIPBOARD_READ_WRITE, origin,
+                      origin, static_cast<ContentSetting>(value), is_incognito);
 }
 
 static void JNI_WebsitePreferenceBridge_GetGeolocationOrigins(
     JNIEnv* env,
     const JavaParamRef<jobject>& list,
     jboolean managedOnly) {
-  JNI_WebsitePreferenceBridge_GetOrigins(
-      env, ContentSettingsType::GEOLOCATION,
-      &Java_WebsitePreferenceBridge_insertGeolocationInfoIntoList, list,
-      managedOnly);
+  GetOrigins(env, ContentSettingsType::GEOLOCATION,
+             &Java_WebsitePreferenceBridge_insertGeolocationInfoIntoList, list,
+             managedOnly);
 }
 
 static jint JNI_WebsitePreferenceBridge_GetGeolocationSettingForOrigin(
@@ -388,8 +376,8 @@ static jint JNI_WebsitePreferenceBridge_GetGeolocationSettingForOrigin(
     const JavaParamRef<jstring>& origin,
     const JavaParamRef<jstring>& embedder,
     jboolean is_incognito) {
-  return JNI_WebsitePreferenceBridge_GetSettingForOrigin(
-      env, ContentSettingsType::GEOLOCATION, origin, embedder, is_incognito);
+  return GetSettingForOrigin(env, ContentSettingsType::GEOLOCATION, origin,
+                             embedder, is_incognito);
 }
 
 static void JNI_WebsitePreferenceBridge_SetGeolocationSettingForOrigin(
@@ -398,17 +386,15 @@ static void JNI_WebsitePreferenceBridge_SetGeolocationSettingForOrigin(
     const JavaParamRef<jstring>& embedder,
     jint value,
     jboolean is_incognito) {
-  JNI_WebsitePreferenceBridge_SetSettingForOrigin(
-      env, ContentSettingsType::GEOLOCATION, origin, embedder,
-      static_cast<ContentSetting>(value), is_incognito);
+  SetSettingForOrigin(env, ContentSettingsType::GEOLOCATION, origin, embedder,
+                      static_cast<ContentSetting>(value), is_incognito);
 }
 
 static void JNI_WebsitePreferenceBridge_GetMidiOrigins(
     JNIEnv* env,
     const JavaParamRef<jobject>& list) {
-  JNI_WebsitePreferenceBridge_GetOrigins(
-      env, ContentSettingsType::MIDI_SYSEX,
-      &Java_WebsitePreferenceBridge_insertMidiInfoIntoList, list, false);
+  GetOrigins(env, ContentSettingsType::MIDI_SYSEX,
+             &Java_WebsitePreferenceBridge_insertMidiInfoIntoList, list, false);
 }
 
 static jint JNI_WebsitePreferenceBridge_GetMidiSettingForOrigin(
@@ -416,8 +402,8 @@ static jint JNI_WebsitePreferenceBridge_GetMidiSettingForOrigin(
     const JavaParamRef<jstring>& origin,
     const JavaParamRef<jstring>& embedder,
     jboolean is_incognito) {
-  return JNI_WebsitePreferenceBridge_GetSettingForOrigin(
-      env, ContentSettingsType::MIDI_SYSEX, origin, embedder, is_incognito);
+  return GetSettingForOrigin(env, ContentSettingsType::MIDI_SYSEX, origin,
+                             embedder, is_incognito);
 }
 
 static void JNI_WebsitePreferenceBridge_SetMidiSettingForOrigin(
@@ -426,15 +412,14 @@ static void JNI_WebsitePreferenceBridge_SetMidiSettingForOrigin(
     const JavaParamRef<jstring>& embedder,
     jint value,
     jboolean is_incognito) {
-  JNI_WebsitePreferenceBridge_SetSettingForOrigin(
-      env, ContentSettingsType::MIDI_SYSEX, origin, embedder,
-      static_cast<ContentSetting>(value), is_incognito);
+  SetSettingForOrigin(env, ContentSettingsType::MIDI_SYSEX, origin, embedder,
+                      static_cast<ContentSetting>(value), is_incognito);
 }
 
 static void JNI_WebsitePreferenceBridge_GetProtectedMediaIdentifierOrigins(
     JNIEnv* env,
     const JavaParamRef<jobject>& list) {
-  JNI_WebsitePreferenceBridge_GetOrigins(
+  GetOrigins(
       env, ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
       &Java_WebsitePreferenceBridge_insertProtectedMediaIdentifierInfoIntoList,
       list, false);
@@ -446,9 +431,9 @@ JNI_WebsitePreferenceBridge_GetProtectedMediaIdentifierSettingForOrigin(
     const JavaParamRef<jstring>& origin,
     const JavaParamRef<jstring>& embedder,
     jboolean is_incognito) {
-  return JNI_WebsitePreferenceBridge_GetSettingForOrigin(
-      env, ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER, origin, embedder,
-      is_incognito);
+  return GetSettingForOrigin(env,
+                             ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
+                             origin, embedder, is_incognito);
 }
 
 static void
@@ -458,25 +443,25 @@ JNI_WebsitePreferenceBridge_SetProtectedMediaIdentifierSettingForOrigin(
     const JavaParamRef<jstring>& embedder,
     jint value,
     jboolean is_incognito) {
-  JNI_WebsitePreferenceBridge_SetSettingForOrigin(
-      env, ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER, origin, embedder,
-      static_cast<ContentSetting>(value), is_incognito);
+  SetSettingForOrigin(env, ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
+                      origin, embedder, static_cast<ContentSetting>(value),
+                      is_incognito);
 }
 
 static void JNI_WebsitePreferenceBridge_GetNotificationOrigins(
     JNIEnv* env,
     const JavaParamRef<jobject>& list) {
-  JNI_WebsitePreferenceBridge_GetOrigins(
-      env, ContentSettingsType::NOTIFICATIONS,
-      &Java_WebsitePreferenceBridge_insertNotificationIntoList, list, false);
+  GetOrigins(env, ContentSettingsType::NOTIFICATIONS,
+             &Java_WebsitePreferenceBridge_insertNotificationIntoList, list,
+             false);
 }
 
 static jint JNI_WebsitePreferenceBridge_GetNotificationSettingForOrigin(
     JNIEnv* env,
     const JavaParamRef<jstring>& origin,
     jboolean is_incognito) {
-  return JNI_WebsitePreferenceBridge_GetSettingForOrigin(
-      env, ContentSettingsType::NOTIFICATIONS, origin, origin, is_incognito);
+  return GetSettingForOrigin(env, ContentSettingsType::NOTIFICATIONS, origin,
+                             origin, is_incognito);
 }
 
 static jboolean JNI_WebsitePreferenceBridge_IsNotificationEmbargoedForOrigin(
@@ -515,7 +500,8 @@ static void JNI_WebsitePreferenceBridge_SetNotificationSettingForOrigin(
   GURL url = GURL(ConvertJavaStringToUTF8(env, origin));
   ContentSetting setting = static_cast<ContentSetting>(value);
 
-  PermissionDecisionAutoBlockerFactory::GetForProfile(profile)
+  permissions::PermissionsClient::Get()
+      ->GetPermissionDecisionAutoBlocker(profile)
       ->RemoveEmbargoByUrl(url, ContentSettingsType::NOTIFICATIONS);
 
   if (MaybeResetDSEPermission(ContentSettingsType::NOTIFICATIONS, url, GURL(),
@@ -559,20 +545,18 @@ static void JNI_WebsitePreferenceBridge_GetCameraOrigins(
     JNIEnv* env,
     const JavaParamRef<jobject>& list,
     jboolean managedOnly) {
-  JNI_WebsitePreferenceBridge_GetOrigins(
-      env, ContentSettingsType::MEDIASTREAM_CAMERA,
-      &Java_WebsitePreferenceBridge_insertCameraInfoIntoList, list,
-      managedOnly);
+  GetOrigins(env, ContentSettingsType::MEDIASTREAM_CAMERA,
+             &Java_WebsitePreferenceBridge_insertCameraInfoIntoList, list,
+             managedOnly);
 }
 
 static void JNI_WebsitePreferenceBridge_GetMicrophoneOrigins(
     JNIEnv* env,
     const JavaParamRef<jobject>& list,
     jboolean managedOnly) {
-  JNI_WebsitePreferenceBridge_GetOrigins(
-      env, ContentSettingsType::MEDIASTREAM_MIC,
-      &Java_WebsitePreferenceBridge_insertMicrophoneInfoIntoList, list,
-      managedOnly);
+  GetOrigins(env, ContentSettingsType::MEDIASTREAM_MIC,
+             &Java_WebsitePreferenceBridge_insertMicrophoneInfoIntoList, list,
+             managedOnly);
 }
 
 static jint JNI_WebsitePreferenceBridge_GetMicrophoneSettingForOrigin(
@@ -580,9 +564,8 @@ static jint JNI_WebsitePreferenceBridge_GetMicrophoneSettingForOrigin(
     const JavaParamRef<jstring>& origin,
     const JavaParamRef<jstring>& embedder,
     jboolean is_incognito) {
-  return JNI_WebsitePreferenceBridge_GetSettingForOrigin(
-      env, ContentSettingsType::MEDIASTREAM_MIC, origin, embedder,
-      is_incognito);
+  return GetSettingForOrigin(env, ContentSettingsType::MEDIASTREAM_MIC, origin,
+                             embedder, is_incognito);
 }
 
 static jint JNI_WebsitePreferenceBridge_GetCameraSettingForOrigin(
@@ -590,9 +573,8 @@ static jint JNI_WebsitePreferenceBridge_GetCameraSettingForOrigin(
     const JavaParamRef<jstring>& origin,
     const JavaParamRef<jstring>& embedder,
     jboolean is_incognito) {
-  return JNI_WebsitePreferenceBridge_GetSettingForOrigin(
-      env, ContentSettingsType::MEDIASTREAM_CAMERA, origin, embedder,
-      is_incognito);
+  return GetSettingForOrigin(env, ContentSettingsType::MEDIASTREAM_CAMERA,
+                             origin, embedder, is_incognito);
 }
 
 static void JNI_WebsitePreferenceBridge_SetMicrophoneSettingForOrigin(
@@ -601,9 +583,9 @@ static void JNI_WebsitePreferenceBridge_SetMicrophoneSettingForOrigin(
     jint value,
     jboolean is_incognito) {
   // Here 'nullptr' indicates that microphone uses wildcard for embedder.
-  JNI_WebsitePreferenceBridge_SetSettingForOrigin(
-      env, ContentSettingsType::MEDIASTREAM_MIC, origin, nullptr,
-      static_cast<ContentSetting>(value), is_incognito);
+  SetSettingForOrigin(env, ContentSettingsType::MEDIASTREAM_MIC, origin,
+                      nullptr, static_cast<ContentSetting>(value),
+                      is_incognito);
 }
 
 static void JNI_WebsitePreferenceBridge_SetCameraSettingForOrigin(
@@ -612,9 +594,9 @@ static void JNI_WebsitePreferenceBridge_SetCameraSettingForOrigin(
     jint value,
     jboolean is_incognito) {
   // Here 'nullptr' indicates that camera uses wildcard for embedder.
-  JNI_WebsitePreferenceBridge_SetSettingForOrigin(
-      env, ContentSettingsType::MEDIASTREAM_CAMERA, origin, nullptr,
-      static_cast<ContentSetting>(value), is_incognito);
+  SetSettingForOrigin(env, ContentSettingsType::MEDIASTREAM_CAMERA, origin,
+                      nullptr, static_cast<ContentSetting>(value),
+                      is_incognito);
 }
 
 static jboolean JNI_WebsitePreferenceBridge_IsContentSettingsPatternValid(
@@ -907,9 +889,8 @@ static jboolean JNI_WebsitePreferenceBridge_GetAdBlockingActivated(
 static void JNI_WebsitePreferenceBridge_GetArOrigins(
     JNIEnv* env,
     const JavaParamRef<jobject>& list) {
-  JNI_WebsitePreferenceBridge_GetOrigins(
-      env, ContentSettingsType::AR,
-      &Java_WebsitePreferenceBridge_insertArInfoIntoList, list, false);
+  GetOrigins(env, ContentSettingsType::AR,
+             &Java_WebsitePreferenceBridge_insertArInfoIntoList, list, false);
 }
 
 static jint JNI_WebsitePreferenceBridge_GetArSettingForOrigin(
@@ -917,8 +898,8 @@ static jint JNI_WebsitePreferenceBridge_GetArSettingForOrigin(
     const JavaParamRef<jstring>& origin,
     const JavaParamRef<jstring>& embedder,
     jboolean is_incognito) {
-  return JNI_WebsitePreferenceBridge_GetSettingForOrigin(
-      env, ContentSettingsType::AR, origin, embedder, is_incognito);
+  return GetSettingForOrigin(env, ContentSettingsType::AR, origin, embedder,
+                             is_incognito);
 }
 
 static void JNI_WebsitePreferenceBridge_SetArSettingForOrigin(
@@ -927,17 +908,15 @@ static void JNI_WebsitePreferenceBridge_SetArSettingForOrigin(
     const JavaParamRef<jstring>& embedder,
     jint value,
     jboolean is_incognito) {
-  JNI_WebsitePreferenceBridge_SetSettingForOrigin(
-      env, ContentSettingsType::AR, origin, embedder,
-      static_cast<ContentSetting>(value), is_incognito);
+  SetSettingForOrigin(env, ContentSettingsType::AR, origin, embedder,
+                      static_cast<ContentSetting>(value), is_incognito);
 }
 
 static void JNI_WebsitePreferenceBridge_GetNfcOrigins(
     JNIEnv* env,
     const JavaParamRef<jobject>& list) {
-  JNI_WebsitePreferenceBridge_GetOrigins(
-      env, ContentSettingsType::NFC,
-      &Java_WebsitePreferenceBridge_insertNfcInfoIntoList, list, false);
+  GetOrigins(env, ContentSettingsType::NFC,
+             &Java_WebsitePreferenceBridge_insertNfcInfoIntoList, list, false);
 }
 
 static jint JNI_WebsitePreferenceBridge_GetNfcSettingForOrigin(
@@ -945,8 +924,8 @@ static jint JNI_WebsitePreferenceBridge_GetNfcSettingForOrigin(
     const JavaParamRef<jstring>& origin,
     const JavaParamRef<jstring>& embedder,
     jboolean is_incognito) {
-  return JNI_WebsitePreferenceBridge_GetSettingForOrigin(
-      env, ContentSettingsType::NFC, origin, embedder, is_incognito);
+  return GetSettingForOrigin(env, ContentSettingsType::NFC, origin, embedder,
+                             is_incognito);
 }
 
 static void JNI_WebsitePreferenceBridge_SetNfcSettingForOrigin(
@@ -955,17 +934,16 @@ static void JNI_WebsitePreferenceBridge_SetNfcSettingForOrigin(
     const JavaParamRef<jstring>& embedder,
     jint value,
     jboolean is_incognito) {
-  JNI_WebsitePreferenceBridge_SetSettingForOrigin(
-      env, ContentSettingsType::NFC, origin, embedder,
-      static_cast<ContentSetting>(value), is_incognito);
+  SetSettingForOrigin(env, ContentSettingsType::NFC, origin, embedder,
+                      static_cast<ContentSetting>(value), is_incognito);
 }
 
 static void JNI_WebsitePreferenceBridge_GetSensorsOrigins(
     JNIEnv* env,
     const JavaParamRef<jobject>& list) {
-  JNI_WebsitePreferenceBridge_GetOrigins(
-      env, ContentSettingsType::SENSORS,
-      &Java_WebsitePreferenceBridge_insertSensorsInfoIntoList, list, false);
+  GetOrigins(env, ContentSettingsType::SENSORS,
+             &Java_WebsitePreferenceBridge_insertSensorsInfoIntoList, list,
+             false);
 }
 
 static jint JNI_WebsitePreferenceBridge_GetSensorsSettingForOrigin(
@@ -973,8 +951,8 @@ static jint JNI_WebsitePreferenceBridge_GetSensorsSettingForOrigin(
     const JavaParamRef<jstring>& origin,
     const JavaParamRef<jstring>& embedder,
     jboolean is_incognito) {
-  return JNI_WebsitePreferenceBridge_GetSettingForOrigin(
-      env, ContentSettingsType::SENSORS, origin, embedder, is_incognito);
+  return GetSettingForOrigin(env, ContentSettingsType::SENSORS, origin,
+                             embedder, is_incognito);
 }
 
 static void JNI_WebsitePreferenceBridge_SetSensorsSettingForOrigin(
@@ -983,17 +961,15 @@ static void JNI_WebsitePreferenceBridge_SetSensorsSettingForOrigin(
     const JavaParamRef<jstring>& embedder,
     jint value,
     jboolean is_incognito) {
-  JNI_WebsitePreferenceBridge_SetSettingForOrigin(
-      env, ContentSettingsType::SENSORS, origin, embedder,
-      static_cast<ContentSetting>(value), is_incognito);
+  SetSettingForOrigin(env, ContentSettingsType::SENSORS, origin, embedder,
+                      static_cast<ContentSetting>(value), is_incognito);
 }
 
 static void JNI_WebsitePreferenceBridge_GetVrOrigins(
     JNIEnv* env,
     const JavaParamRef<jobject>& list) {
-  JNI_WebsitePreferenceBridge_GetOrigins(
-      env, ContentSettingsType::VR,
-      &Java_WebsitePreferenceBridge_insertVrInfoIntoList, list, false);
+  GetOrigins(env, ContentSettingsType::VR,
+             &Java_WebsitePreferenceBridge_insertVrInfoIntoList, list, false);
 }
 
 static jint JNI_WebsitePreferenceBridge_GetVrSettingForOrigin(
@@ -1001,8 +977,8 @@ static jint JNI_WebsitePreferenceBridge_GetVrSettingForOrigin(
     const JavaParamRef<jstring>& origin,
     const JavaParamRef<jstring>& embedder,
     jboolean is_incognito) {
-  return JNI_WebsitePreferenceBridge_GetSettingForOrigin(
-      env, ContentSettingsType::VR, origin, embedder, is_incognito);
+  return GetSettingForOrigin(env, ContentSettingsType::VR, origin, embedder,
+                             is_incognito);
 }
 
 static void JNI_WebsitePreferenceBridge_SetVrSettingForOrigin(
@@ -1011,9 +987,8 @@ static void JNI_WebsitePreferenceBridge_SetVrSettingForOrigin(
     const JavaParamRef<jstring>& embedder,
     jint value,
     jboolean is_incognito) {
-  JNI_WebsitePreferenceBridge_SetSettingForOrigin(
-      env, ContentSettingsType::VR, origin, embedder,
-      static_cast<ContentSetting>(value), is_incognito);
+  SetSettingForOrigin(env, ContentSettingsType::VR, origin, embedder,
+                      static_cast<ContentSetting>(value), is_incognito);
 }
 
 // On Android O+ notification channels are not stored in the Chrome profile and
@@ -1072,9 +1047,7 @@ static void JNI_WebsitePreferenceBridge_SetContentSettingEnabled(
     }
   }
 
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetDefaultContentSetting(type, value);
+  GetHostContentSettingsMap()->SetDefaultContentSetting(type, value);
 }
 
 static void JNI_WebsitePreferenceBridge_SetContentSettingForPattern(
@@ -1087,9 +1060,7 @@ static void JNI_WebsitePreferenceBridge_SetContentSettingForPattern(
       ConvertJavaStringToUTF8(env, primary_pattern);
   std::string secondary_pattern_string =
       ConvertJavaStringToUTF8(env, secondary_pattern);
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetContentSettingCustomScope(
+  GetHostContentSettingsMap()->SetContentSettingCustomScope(
       ContentSettingsPattern::FromString(primary_pattern_string),
       secondary_pattern_string.empty()
           ? ContentSettingsPattern::Wildcard()
@@ -1102,10 +1073,8 @@ static void JNI_WebsitePreferenceBridge_GetContentSettingsExceptions(
     JNIEnv* env,
     int content_settings_type,
     const JavaParamRef<jobject>& list) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   ContentSettingsForOneType entries;
-  host_content_settings_map->GetSettingsForOneType(
+  GetHostContentSettingsMap()->GetSettingsForOneType(
       static_cast<ContentSettingsType>(content_settings_type), "", &entries);
   for (size_t i = 0; i < entries.size(); ++i) {
     Java_WebsitePreferenceBridge_addContentSettingExceptionToList(
@@ -1120,9 +1089,7 @@ static void JNI_WebsitePreferenceBridge_GetContentSettingsExceptions(
 static jint JNI_WebsitePreferenceBridge_GetContentSetting(
     JNIEnv* env,
     int content_settings_type) {
-  HostContentSettingsMap* content_settings =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  return content_settings->GetDefaultContentSetting(
+  return GetHostContentSettingsMap()->GetDefaultContentSetting(
       static_cast<ContentSettingsType>(content_settings_type), nullptr);
 }
 
@@ -1130,9 +1097,7 @@ static void JNI_WebsitePreferenceBridge_SetContentSetting(
     JNIEnv* env,
     int content_settings_type,
     int setting) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetDefaultContentSetting(
+  GetHostContentSettingsMap()->SetDefaultContentSetting(
       static_cast<ContentSettingsType>(content_settings_type),
       static_cast<ContentSetting>(setting));
 }
@@ -1196,9 +1161,7 @@ static jboolean JNI_WebsitePreferenceBridge_GetLocationAllowedByPolicy(
     JNIEnv* env) {
   if (!IsContentSettingManaged(ContentSettingsType::GEOLOCATION))
     return false;
-  HostContentSettingsMap* content_settings =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  return content_settings->GetDefaultContentSetting(
+  return GetHostContentSettingsMap()->GetDefaultContentSetting(
              ContentSettingsType::GEOLOCATION, nullptr) ==
          CONTENT_SETTING_ALLOW;
 }
@@ -1215,54 +1178,42 @@ static jboolean JNI_WebsitePreferenceBridge_GetAllowLocationManagedByCustodian(
 
 static void JNI_WebsitePreferenceBridge_SetArEnabled(JNIEnv* env,
                                                      jboolean allow) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetDefaultContentSetting(
+  GetHostContentSettingsMap()->SetDefaultContentSetting(
       ContentSettingsType::AR,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
 static void JNI_WebsitePreferenceBridge_SetClipboardEnabled(JNIEnv* env,
                                                             jboolean allow) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetDefaultContentSetting(
+  GetHostContentSettingsMap()->SetDefaultContentSetting(
       ContentSettingsType::CLIPBOARD_READ_WRITE,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
 static void JNI_WebsitePreferenceBridge_SetNfcEnabled(JNIEnv* env,
                                                       jboolean allow) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetDefaultContentSetting(
+  GetHostContentSettingsMap()->SetDefaultContentSetting(
       ContentSettingsType::NFC,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
 static void JNI_WebsitePreferenceBridge_SetVrEnabled(JNIEnv* env,
                                                      jboolean allow) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetDefaultContentSetting(
+  GetHostContentSettingsMap()->SetDefaultContentSetting(
       ContentSettingsType::VR,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
 static void JNI_WebsitePreferenceBridge_SetSensorsEnabled(JNIEnv* env,
                                                           jboolean allow) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetDefaultContentSetting(
+  GetHostContentSettingsMap()->SetDefaultContentSetting(
       ContentSettingsType::SENSORS,
       allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 }
 
 static void JNI_WebsitePreferenceBridge_SetSoundEnabled(JNIEnv* env,
                                                         jboolean allow) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetDefaultContentSetting(
+  GetHostContentSettingsMap()->SetDefaultContentSetting(
       ContentSettingsType::SOUND,
       allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 
@@ -1277,9 +1228,7 @@ static void JNI_WebsitePreferenceBridge_SetSoundEnabled(JNIEnv* env,
 
 static void JNI_WebsitePreferenceBridge_SetAllowCookiesEnabled(JNIEnv* env,
                                                                jboolean allow) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetDefaultContentSetting(
+  GetHostContentSettingsMap()->SetDefaultContentSetting(
       ContentSettingsType::COOKIES,
       allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 }
@@ -1287,9 +1236,7 @@ static void JNI_WebsitePreferenceBridge_SetAllowCookiesEnabled(JNIEnv* env,
 static void JNI_WebsitePreferenceBridge_SetBackgroundSyncEnabled(
     JNIEnv* env,
     jboolean allow) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetDefaultContentSetting(
+  GetHostContentSettingsMap()->SetDefaultContentSetting(
       ContentSettingsType::BACKGROUND_SYNC,
       allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 }
@@ -1297,9 +1244,7 @@ static void JNI_WebsitePreferenceBridge_SetBackgroundSyncEnabled(
 static void JNI_WebsitePreferenceBridge_SetAutomaticDownloadsEnabled(
     JNIEnv* env,
     jboolean allow) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetDefaultContentSetting(
+  GetHostContentSettingsMap()->SetDefaultContentSetting(
       ContentSettingsType::AUTOMATIC_DOWNLOADS,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
@@ -1307,27 +1252,21 @@ static void JNI_WebsitePreferenceBridge_SetAutomaticDownloadsEnabled(
 static void JNI_WebsitePreferenceBridge_SetAllowLocationEnabled(
     JNIEnv* env,
     jboolean is_enabled) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetDefaultContentSetting(
+  GetHostContentSettingsMap()->SetDefaultContentSetting(
       ContentSettingsType::GEOLOCATION,
       is_enabled ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
 static void JNI_WebsitePreferenceBridge_SetCameraEnabled(JNIEnv* env,
                                                          jboolean allow) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetDefaultContentSetting(
+  GetHostContentSettingsMap()->SetDefaultContentSetting(
       ContentSettingsType::MEDIASTREAM_CAMERA,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
 static void JNI_WebsitePreferenceBridge_SetMicEnabled(JNIEnv* env,
                                                       jboolean allow) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetDefaultContentSetting(
+  GetHostContentSettingsMap()->SetDefaultContentSetting(
       ContentSettingsType::MEDIASTREAM_MIC,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
@@ -1335,9 +1274,7 @@ static void JNI_WebsitePreferenceBridge_SetMicEnabled(JNIEnv* env,
 static void JNI_WebsitePreferenceBridge_SetNotificationsEnabled(
     JNIEnv* env,
     jboolean allow) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetDefaultContentSetting(
+  GetHostContentSettingsMap()->SetDefaultContentSetting(
       ContentSettingsType::NOTIFICATIONS,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }

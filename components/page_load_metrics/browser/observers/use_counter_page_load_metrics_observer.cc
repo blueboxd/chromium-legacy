@@ -60,10 +60,9 @@ void PossiblyWarnFeatureDeprecation(content::RenderFrameHost* rfh,
     case WebFeature::kDownloadInSandbox:
       rfh->AddMessageToConsole(
           blink::mojom::ConsoleMessageLevel::kWarning,
-          "[Deprecation] Download in sandbox is deprecated and will be removed "
-          "in M81. You may consider adding 'allow-downloads' to the sandbox "
-          "attribute list. See "
-          "https://www.chromestatus.com/feature/5706745674465280 for more "
+          "Download is disallowed. The frame initiating or instantiating the "
+          "download is sandboxed, but the flag ‘allow-downloads’ is not set. "
+          "See https://www.chromestatus.com/feature/5706745674465280 for more "
           "details.");
       return;
     case WebFeature::kDownloadInAdFrameWithoutUserGesture:

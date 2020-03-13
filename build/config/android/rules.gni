@@ -1188,9 +1188,8 @@ if (enable_java_templates) {
 
       # This needs to get outputs from grit's internal target, not the final
       # source_set.
-      set_sources_assignment_filter([ "*.stamp" ])
-      sources = get_target_outputs(":${_grit_target_name}_grit")
-      inputs = sources
+      inputs = filter_exclude(get_target_outputs(":${_grit_target_name}_grit"),
+                              [ "*.stamp" ])
       output = _resources_zip
       deps = [ ":$_grit_target_name" ]
     }

@@ -721,10 +721,7 @@ class DownloadFramePolicyBrowserTest_UpdateIframeSandboxFlags
 
 // Test that when the iframe sandbox attribute is updated before navigation,
 // the updated flag will be controlling the navigation-instantiating frame's
-// policy for the download intervention. Given that the feature is disabled by
-// default, the download will occur, but the point of the test is to track the
-// use counter for whether or not the download would have been blocked by the
-// policy.
+// policy for the download intervention.
 IN_PROC_BROWSER_TEST_P(
     DownloadFramePolicyBrowserTest_UpdateIframeSandboxFlags,
     PendingSandboxPolicyUsedForNavigationInstantiatingFrame) {
@@ -732,6 +729,7 @@ IN_PROC_BROWSER_TEST_P(
   bool from_allow_to_disallow;
   std::tie(is_cross_origin, from_allow_to_disallow) = GetParam();
 
+  size_t number_of_downloads = from_allow_to_disallow ? 0u : 1u;
   SandboxOption initial_sandbox_option =
       from_allow_to_disallow ? SandboxOption::kAllowDownloads
                              : SandboxOption::kDisallowDownloads;
@@ -741,7 +739,7 @@ IN_PROC_BROWSER_TEST_P(
                                     : kSandboxTokensAllowDownloads;
 
   InitializeHistogramTesterAndWebFeatureWaiter();
-  SetNumDownloadsExpectation(1);
+  SetNumDownloadsExpectation(number_of_downloads);
   InitializeOneSubframeSetup(initial_sandbox_option, false /* is_ad_frame */,
                              is_cross_origin);
 
@@ -769,16 +767,14 @@ IN_PROC_BROWSER_TEST_P(
 
 // Test that when the iframe sandbox attribute is updated before navigation,
 // the updated flag will NOT be controlling the navigation-initiator frame's
-// policy for the download intervention. Given that the feature is disabled by
-// default, the download will occur, but the point of the test is to track the
-// use counter for whether or not the download would have been blocked by the
-// policy.
+// policy for the download intervention.
 IN_PROC_BROWSER_TEST_P(DownloadFramePolicyBrowserTest_UpdateIframeSandboxFlags,
                        EffectiveSandboxPolicyUsedForNavigationInitiatorFrame) {
   bool is_cross_origin;
   bool from_allow_to_disallow;
   std::tie(is_cross_origin, from_allow_to_disallow) = GetParam();
 
+  size_t number_of_downloads = from_allow_to_disallow ? 1u : 0u;
   SandboxOption initial_sandbox_option =
       from_allow_to_disallow ? SandboxOption::kAllowDownloads
                              : SandboxOption::kDisallowDownloads;
@@ -788,7 +784,7 @@ IN_PROC_BROWSER_TEST_P(DownloadFramePolicyBrowserTest_UpdateIframeSandboxFlags,
                                     : kSandboxTokensAllowDownloads;
 
   InitializeHistogramTesterAndWebFeatureWaiter();
-  SetNumDownloadsExpectation(1);
+  SetNumDownloadsExpectation(number_of_downloads);
   InitializeOneSubframeSetup(initial_sandbox_option, false /* is_ad_frame */,
                              is_cross_origin);
 

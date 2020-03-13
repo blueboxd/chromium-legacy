@@ -218,10 +218,6 @@ const char kEnablePersistentDownloadsName[] = "Enable persistent downloads";
 const char kEnablePersistentDownloadsDescription[] =
     "Enables the new, experimental implementation of persistent downloads";
 
-const char kEnableSyncUSSPasswordsName[] = "Enable USS for passwords sync";
-const char kEnableSyncUSSPasswordsDescription[] =
-    "Enables the new, experimental implementation of password sync";
-
 const char kEnableSyncUSSNigoriName[] = "Enable USS for sync encryption keys";
 const char kEnableSyncUSSNigoriDescription[] =
     "Enables the new, experimental implementation of sync encryption keys";

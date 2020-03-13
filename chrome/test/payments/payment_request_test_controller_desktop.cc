@@ -127,9 +127,9 @@ void PaymentRequestTestController::UpdateDelegateFactory() {
         PaymentRequestWebContentsManager* manager =
             PaymentRequestWebContentsManager::GetOrCreateForWebContents(
                 web_contents);
-        manager->CreatePaymentRequest(web_contents->GetMainFrame(),
-                                      web_contents, std::move(delegate),
-                                      std::move(receiver), observer_for_test);
+        manager->CreatePaymentRequest(render_frame_host, web_contents,
+                                      std::move(delegate), std::move(receiver),
+                                      observer_for_test);
       },
       observer_converter_.get(), is_incognito_, valid_ssl_, prefs_.get()));
 }

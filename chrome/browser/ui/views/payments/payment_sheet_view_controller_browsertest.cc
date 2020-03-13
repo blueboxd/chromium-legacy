@@ -14,6 +14,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace payments {
 
@@ -22,7 +23,7 @@ namespace payments {
 class PaymentSheetViewControllerNoShippingTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentSheetViewControllerNoShippingTest() {}
+  PaymentSheetViewControllerNoShippingTest() = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentSheetViewControllerNoShippingTest);
@@ -48,6 +49,11 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest,
 
   InvokePaymentRequestUI();
   EXPECT_TRUE(IsPayButtonEnabled());
+
+  // When an autofill payment app is selected the primary button should have
+  // "Pay" label.
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_PAY_BUTTON),
+            GetPrimaryButtonLabel());
 }
 
 // With only an unsupported card (Amex) in the database, the pay button should
@@ -220,6 +226,11 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
   // Payment button should be enabled with blank autofill profiles since the
   // payment handler supports shipping delegation.
   EXPECT_TRUE(IsPayButtonEnabled());
+
+  // When a 3rd party payment app is selected the primary button should have
+  // "Continue" label.
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_CONTINUE_BUTTON),
+            GetPrimaryButtonLabel());
 }
 
 // Payment sheet view skips showing contact section when the selected instrument

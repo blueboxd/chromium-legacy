@@ -353,6 +353,7 @@ android_library("chrome_java") {
     "//net/android:net_java",
     "//printing:printing_java",
     "//services/data_decoder/public/cpp/android:safe_json_java",
+    "//services/device/public/java:device_feature_list_java",
     "//services/media_session/public/cpp/android:media_session_java",
     "//services/media_session/public/mojom:mojom_java",
     "//services/network/public/mojom:mojom_java",
@@ -2331,17 +2332,15 @@ if (public_android_sdk) {
   }
 }
 
-group("chrome_public_wpt") {
+python_library("chrome_public_wpt") {
   testonly = true
+  pydeps_file = "//testing/scripts/run_android_wpt.pydeps"
+  data = [ "//third_party/blink/web_tests/external/" ]
   data_deps = [
     ":chrome_public_apk",
     "//build/android:test_runner_py",
     "//chrome/test/chromedriver:chromedriver($host_toolchain)",
   ]
-  set_sources_assignment_filter([ "#*" ])
-  sources = read_file("//testing/scripts/run_android_wpt.pydeps", "list lines")
-  data = sources
-  data += [ "//third_party/blink/web_tests/external/" ]
 }
 
 chrome_bundle("chrome_modern_public_bundle") {

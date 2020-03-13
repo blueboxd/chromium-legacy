@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "content/common/ax_content_tree_update.mojom";
 import "content/common/document_scoped_interface_bundle.mojom";
 import "content/common/frame_messages.mojom";
 import "content/common/native_types.mojom";
@@ -83,6 +84,12 @@ interface Frame {
   UpdateBrowserControlsState(BrowserControlsState constraints,
                              BrowserControlsState current,
                              bool animate);
+
+  // Requests a one-time snapshot of the accessibility tree without enabling
+  // accessibility if it wasn't already enabled.
+  // See ui/accessibility/ax_mode.h for valid values of |ax_mode|.
+  SnapshotAccessibilityTree(uint32 ax_mode)
+      => (ax.mojom.AXContentTreeUpdate snapshot);
 };
 
 // Implemented by the frame provider and currently must be associated with the

@@ -108,39 +108,42 @@ def FillSDKPathAndVersion(settings, platform, xcode_version):
     settings['sdk_build'] = settings['sdk_version']
 
 
-def CreateXcodeSymlinkUnderChromiumSource(src):
-  """Create symlink to Xcode directory under Chromium source."""
+def CreateXcodeSymlinkAt(src, dst):
+  """Create symlink to Xcode directory at target location."""
 
-  if not os.path.isdir(XCODE_LINK_DIR):
-    os.makedirs(XCODE_LINK_DIR)
+  if not os.path.isdir(dst):
+    os.makedirs(dst)
 
-  dst = os.path.join(XCODE_LINK_DIR, os.path.basename(src))
+  dst = os.path.join(dst, os.path.basename(src))
+  updated_value = '//' + os.path.relpath(dst, ROOT_SRC_DIR)
+
   # Update the symlink only if it is different from the current destination.
   if os.path.islink(dst):
-    current_dst = os.readlink(src)
-    if current_dst != dst:
-      os.unlink(src)
-      sys.stderr.write('existing symlink %s points %s; want %s. Removed.' %
-                       (src, current_dst, dst))
+    current_src = os.readlink(dst)
+    if current_src == src:
+      return updated_value
+    os.unlink(dst)
+    sys.stderr.write('existing symlink %s points %s; want %s. Removed.' %
+                     (dst, current_src, src))
   os.symlink(src, dst)
-
-  return '//' + os.path.relpath(dst, ROOT_SRC_DIR)
+  return updated_value
 
 
 if __name__ == '__main__':
   doctest.testmod()
 
   parser = argparse.ArgumentParser()
-  parser.add_argument("--developer_dir", required=False)
+  parser.add_argument("--developer_dir", dest="developer_dir", required=False)
   parser.add_argument("--get_sdk_info",
                     action="store_true", dest="get_sdk_info", default=False,
                     help="Returns SDK info in addition to xcode/machine info.")
-  parser.add_argument("--create_symlink_under_src",
-                      action="store_true", dest="create_symlink_under_src",
-                      default=False,
-                      help="Create symlink of SDK under Chromium source "
-                      "and returns the symlinked paths as SDK info instead "
-                      "of the original location.")
+  parser.add_argument(
+      "--create_symlink_at",
+      action="store",
+      dest="create_symlink_at",
+      help="Create symlink of SDK at given location and "
+      "returns the symlinked paths as SDK info instead "
+      "of the original location.")
   args, unknownargs = parser.parse_known_args()
   if args.developer_dir:
     os.environ['DEVELOPER_DIR'] = args.developer_dir
@@ -159,8 +162,8 @@ if __name__ == '__main__':
 
   for key in sorted(settings):
     value = settings[key]
-    if args.create_symlink_under_src and '_path' in key:
-      value = CreateXcodeSymlinkUnderChromiumSource(value)
+    if args.create_symlink_at and '_path' in key:
+      value = CreateXcodeSymlinkAt(value, args.create_symlink_at)
     if isinstance(value, str):
       value = '"%s"' % value
     print('%s=%s' % (key, value))

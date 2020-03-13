@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/common/render_accessibility.mojom-forward.h"
 
 namespace ui {
 class MotionEventAndroid;
@@ -75,8 +76,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   // BrowserAccessibilityManager overrides.
   BrowserAccessibility* GetFocus() const override;
   void SendLocationChangeEvents(
-      const std::vector<AccessibilityHostMsg_LocationChangeParams>& params)
-      override;
+      const std::vector<mojom::LocationChangesPtr>& changes) override;
   void FireFocusEvent(BrowserAccessibility* node) override;
   void FireBlinkEvent(ax::mojom::Event event_type,
                       BrowserAccessibility* node) override;

@@ -44,7 +44,7 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
     const extensions::Extension* app,
     const base::Callback<void(bool)>& close_callback)
     : profile_(profile), close_callback_(close_callback) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_COMMIT));
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(

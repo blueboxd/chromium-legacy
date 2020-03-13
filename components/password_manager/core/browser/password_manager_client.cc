@@ -56,7 +56,8 @@ void PasswordManagerClient::AutofillHttpAuth(
 
 void PasswordManagerClient::NotifyUserCredentialsWereLeaked(
     password_manager::CredentialLeakType leak_type,
-    const GURL& origin) {}
+    const GURL& origin,
+    const base::string16& username) {}
 
 void PasswordManagerClient::TriggerReauthForAccount(
     const CoreAccountId& account_id,
@@ -69,6 +70,10 @@ SyncState PasswordManagerClient::GetPasswordSyncState() const {
 }
 
 bool PasswordManagerClient::WasLastNavigationHTTPError() const {
+  return false;
+}
+
+bool PasswordManagerClient::WasCredentialLeakDialogShown() const {
   return false;
 }
 

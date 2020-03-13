@@ -83,7 +83,7 @@ NativeFileSystemDirectoryAccessConfirmationView::
         base::ScopedClosureRunner fullscreen_block)
     : callback_(std::move(callback)),
       fullscreen_block_(std::move(fullscreen_block)) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(
           IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_ALLOW_BUTTON));
@@ -98,13 +98,13 @@ NativeFileSystemDirectoryAccessConfirmationView::
          permissions::PermissionAction result) {
         std::move(dialog->callback_).Run(result);
       };
-  DialogDelegate::set_accept_callback(
+  DialogDelegate::SetAcceptCallback(
       base::BindOnce(run_callback, base::Unretained(this),
                      permissions::PermissionAction::GRANTED));
-  DialogDelegate::set_cancel_callback(
+  DialogDelegate::SetCancelCallback(
       base::BindOnce(run_callback, base::Unretained(this),
                      permissions::PermissionAction::DISMISSED));
-  DialogDelegate::set_close_callback(
+  DialogDelegate::SetCloseCallback(
       base::BindOnce(run_callback, base::Unretained(this),
                      permissions::PermissionAction::DISMISSED));
 

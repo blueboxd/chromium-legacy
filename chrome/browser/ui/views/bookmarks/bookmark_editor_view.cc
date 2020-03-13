@@ -71,7 +71,7 @@ BookmarkEditorView::BookmarkEditorView(
   DCHECK(profile);
   DCHECK(bb_model_);
   DCHECK(bb_model_->client()->CanBeEditedByUser(parent));
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                    l10n_util::GetStringUTF16(IDS_SAVE));
   if (show_tree_) {
     new_folder_button_ = DialogDelegate::SetExtraView(

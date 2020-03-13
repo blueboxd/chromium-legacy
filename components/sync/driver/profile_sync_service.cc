@@ -1484,10 +1484,8 @@ ModelTypeSet ProfileSyncService::GetModelTypesForTransportOnlyMode() const {
   }
 
   if (enable_passwords_account_storage_ &&
-      base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
-    if (!GetUserSettings()->IsUsingSecondaryPassphrase()) {
-      allowed_types.Put(PASSWORDS);
-    }
+      !GetUserSettings()->IsUsingSecondaryPassphrase()) {
+    allowed_types.Put(PASSWORDS);
   }
 
   if (base::FeatureList::IsEnabled(switches::kSyncDeviceInfoInTransportMode)) {

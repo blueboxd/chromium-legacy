@@ -528,14 +528,14 @@ void PluginVmInstallerView::OnStateUpdated() {
   SetBigImage();
 
   int buttons = GetCurrentDialogButtons();
-  DialogDelegate::set_buttons(buttons);
+  DialogDelegate::SetButtons(buttons);
   if (buttons & ui::DIALOG_BUTTON_OK) {
-    DialogDelegate::set_button_label(
+    DialogDelegate::SetButtonLabel(
         ui::DIALOG_BUTTON_OK,
         GetCurrentDialogButtonLabel(ui::DIALOG_BUTTON_OK));
   }
   if (buttons & ui::DIALOG_BUTTON_CANCEL) {
-    DialogDelegate::set_button_label(
+    DialogDelegate::SetButtonLabel(
         ui::DIALOG_BUTTON_CANCEL,
         GetCurrentDialogButtonLabel(ui::DIALOG_BUTTON_CANCEL));
   }

@@ -31,7 +31,7 @@ polymer_modulizer("scanning_ui") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":print_management_module",
     ":scanning_ui_module",
   ]

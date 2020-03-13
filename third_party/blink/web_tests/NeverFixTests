@@ -74,10 +74,6 @@ fast/harness/results.html [ Skip ]
 [ Mac ] fast/forms/calendar-picker/month-open-picker-with-f4-key.html [ Skip ]
 [ Mac ] fast/forms/calendar-picker/week-open-picker-with-f4-key.html [ Skip ]
 
-# These tests are specific to Windows.
-crbug.com/1012590 [ Mac ] fast/overflow/rtl-scrollbar-drag-origin.html [ Skip ]
-crbug.com/1012590 [ Linux ] fast/overflow/rtl-scrollbar-drag-origin.html [ Skip ]
-
 # Mac does not have menu key.
 [ Mac ] editing/spelling/spelling-on-context-menu-key.html [ Skip ]
 [ Mac ] fast/events/context-menu-key-shift-f10-modifiers.html [ Skip ]

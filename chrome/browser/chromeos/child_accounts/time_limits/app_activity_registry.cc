@@ -98,6 +98,18 @@ void AppActivityRegistry::TestApi::SaveAppActivity() {
   registry_->SaveAppActivity();
 }
 
+AppActivityRegistry::SystemNotification::SystemNotification(
+    base::Optional<base::TimeDelta> app_time_limit,
+    AppNotification app_notification)
+    : time_limit(app_time_limit), notification(app_notification) {}
+
+AppActivityRegistry::SystemNotification::SystemNotification(
+    const SystemNotification&) = default;
+
+AppActivityRegistry::SystemNotification&
+AppActivityRegistry::SystemNotification::operator=(const SystemNotification&) =
+    default;
+
 AppActivityRegistry::AppDetails::AppDetails() = default;
 
 AppActivityRegistry::AppDetails::AppDetails(const AppActivity& activity)
@@ -181,8 +193,17 @@ void AppActivityRegistry::OnAppInstalled(const AppId& app_id) {
   // sessions and app service does not. Make sure not to override cached state.
   if (!base::Contains(activity_registry_, app_id)) {
     Add(app_id);
-  } else if (GetAppState(app_id) == AppState::kLimitReached) {
-    NotifyLimitReached(app_id, /* was_active */ false);
+  } else {
+    activity_registry_.at(app_id).received_app_installed_ = true;
+
+    // First send the system notifications for the application.
+    SendSystemNotificationsForApp(app_id);
+
+    if (GetAppState(app_id) == AppState::kLimitReached) {
+      NotifyLimitReached(app_id, /* was_active */ false);
+    } else if (GetAppState(app_id) == AppState::kUninstalled) {
+      OnAppReinstalled(app_id);
+    }
   }
 }
 
@@ -197,8 +218,16 @@ void AppActivityRegistry::OnAppAvailable(const AppId& app_id) {
   if (!base::Contains(activity_registry_, app_id))
     return;
 
-  if (GetAppState(app_id) == AppState::kLimitReached)
+  AppState prev_state = GetAppState(app_id);
+
+  if (prev_state == AppState::kLimitReached)
     return;
+
+  // This may happen in the scenario where the application is uninstalled and
+  // reinstalled in the same session.
+  if (prev_state == AppState::kUninstalled) {
+    OnAppReinstalled(app_id);
+  }
 
   SetAppState(app_id, AppState::kAvailable);
 }
@@ -360,10 +389,26 @@ base::Optional<base::TimeDelta> AppActivityRegistry::GetTimeLimit(
   return limit->daily_limit();
 }
 
+void AppActivityRegistry::SetReportingEnabled(base::Optional<bool> value) {
+  if (value.has_value())
+    activity_reporting_enabled_ = value.value();
+}
+
 AppActivityReportInterface::ReportParams
 AppActivityRegistry::GenerateAppActivityReport(
     enterprise_management::ChildStatusReportRequest* report) {
+  // Calling SaveAppActivity is beneficial even if this method is returning
+  // early due to reporting not being enabled. This is because it helps move the
+  // ActiveTimes information from AppActivityRegistry to the stored pref data
+  // which will then be cleaned in the direct CleanRegistry() call below.
   SaveAppActivity();
+
+  // If app activity reporting is not enabled, simply return.
+  if (!activity_reporting_enabled_) {
+    base::Time timestamp = base::Time::Now();
+    CleanRegistry(timestamp);
+    return AppActivityReportInterface::ReportParams{timestamp, false};
+  }
 
   PrefService* pref_service = profile_->GetPrefs();
   const base::Value* value =
@@ -462,6 +507,12 @@ bool AppActivityRegistry::SetAppLimit(
     const AppId& app_id,
     const base::Optional<AppLimit>& app_limit) {
   DCHECK(base::Contains(activity_registry_, app_id));
+
+  // If an application is not installed but present in the registry return
+  // early.
+  if (!IsAppInstalled(app_id))
+    return false;
+
   AppDetails& details = activity_registry_.at(app_id);
 
   // Limit 'data' are considered equal if only the |last_updated_| is different.
@@ -513,6 +564,12 @@ bool AppActivityRegistry::SetAppLimit(
   }
 
   return updated;
+}
+
+void AppActivityRegistry::SetAppWhitelisted(const AppId& app_id) {
+  if (!base::Contains(activity_registry_, app_id))
+    return;
+  SetAppState(app_id, AppState::kAlwaysAvailable);
 }
 
 void AppActivityRegistry::OnChromeAppActivityChanged(
@@ -652,8 +709,7 @@ void AppActivityRegistry::CleanRegistry(base::Time timestamp) {
     info->RemoveActiveTimeEarlierThan(timestamp);
     info->UpdateAppActivityPreference(&entry, /* replace */ true);
 
-    if (info->app_state() == AppState::kUninstalled &&
-        info->active_times().size() == 0) {
+    if (info->ShouldRemoveApp()) {
       // Remove entry in |activity_registry_| if it is present.
       activity_registry_.erase(info->app_id());
 
@@ -670,8 +726,23 @@ void AppActivityRegistry::CleanRegistry(base::Time timestamp) {
   *list_value = base::ListValue(std::move(list_storage));
 }
 
+void AppActivityRegistry::OnAppReinstalled(const AppId& app_id) {
+  DCHECK(base::Contains(activity_registry_, app_id));
+  AppDetails& details = activity_registry_.at(app_id);
+  if (details.IsLimitReached()) {
+    SetAppState(app_id, AppState::kLimitReached);
+  } else {
+    SetAppState(app_id, AppState::kAvailable);
+  }
+
+  // Notify observers.
+  for (auto& observer : app_state_observers_)
+    observer.OnAppInstalled(app_id);
+}
+
 void AppActivityRegistry::Add(const AppId& app_id) {
   activity_registry_[app_id].activity = AppActivity(AppState::kAvailable);
+  activity_registry_[app_id].received_app_installed_ = true;
   newly_installed_apps_.push_back(app_id);
   for (auto& observer : app_state_observers_)
     observer.OnAppInstalled(app_id);
@@ -859,34 +930,31 @@ void AppActivityRegistry::CheckTimeLimitForApp(const AppId& app_id) {
 
   if (time_left <= kFiveMinutes && time_left > kOneMinute &&
       last_notification != AppNotification::kFiveMinutes) {
-    notification_delegate_->ShowAppTimeLimitNotification(
-        app_id, time_limit, AppNotification::kFiveMinutes);
-    details.activity.set_last_notification(AppNotification::kFiveMinutes);
+    MaybeShowSystemNotification(
+        app_id, SystemNotification(time_limit, AppNotification::kFiveMinutes));
     ScheduleTimeLimitCheckForApp(app_id);
     return;
   }
 
   if (time_left <= kOneMinute && time_left > kZeroMinutes &&
       last_notification != AppNotification::kOneMinute) {
-    notification_delegate_->ShowAppTimeLimitNotification(
-        app_id, time_limit, AppNotification::kOneMinute);
-    details.activity.set_last_notification(AppNotification::kOneMinute);
+    MaybeShowSystemNotification(
+        app_id, SystemNotification(time_limit, AppNotification::kOneMinute));
     ScheduleTimeLimitCheckForApp(app_id);
     return;
   }
 
   if (time_left == kZeroMinutes &&
       last_notification != AppNotification::kTimeLimitReached) {
-    details.activity.set_last_notification(AppNotification::kTimeLimitReached);
+    MaybeShowSystemNotification(
+        app_id,
+        SystemNotification(time_limit, AppNotification::kTimeLimitReached));
 
     if (ContributesToWebTimeLimit(app_id, GetAppState(app_id))) {
       WebTimeLimitReached(base::Time::Now());
     } else {
       SetAppState(app_id, AppState::kLimitReached);
     }
-
-    notification_delegate_->ShowAppTimeLimitNotification(
-        app_id, time_limit, AppNotification::kTimeLimitReached);
   }
 }
 
@@ -910,16 +978,18 @@ bool AppActivityRegistry::ShowLimitUpdatedNotificationIfNeeded(
 
   // Time limit was removed.
   if (!has_time_limit && had_time_limit) {
-    notification_delegate_->ShowAppTimeLimitNotification(
-        app_id, base::nullopt, AppNotification::kTimeLimitChanged);
+    MaybeShowSystemNotification(
+        app_id,
+        SystemNotification(base::nullopt, AppNotification::kTimeLimitChanged));
     return true;
   }
 
   // Time limit was set or value changed.
   if (has_time_limit && (!had_time_limit || old_limit->daily_limit() !=
                                                 new_limit->daily_limit())) {
-    notification_delegate_->ShowAppTimeLimitNotification(
-        app_id, new_limit->daily_limit(), AppNotification::kTimeLimitChanged);
+    MaybeShowSystemNotification(
+        app_id, SystemNotification(new_limit->daily_limit(),
+                                   AppNotification::kTimeLimitChanged));
     return true;
   }
 
@@ -983,8 +1053,9 @@ void AppActivityRegistry::InitializeAppActivities() {
   for (const auto& app_info : applications_info) {
     DCHECK(!base::Contains(activity_registry_, app_info.app_id()));
 
-    // Don't restore uninstalled application's data.
-    if (app_info.app_state() == AppState::kUninstalled)
+    // Don't restore uninstalled application's if its running active time is
+    // zero.
+    if (!app_info.ShouldRestoreApp())
       continue;
 
     activity_registry_[app_info.app_id()].activity =
@@ -1007,9 +1078,15 @@ PersistedAppInfo AppActivityRegistry::GetPersistedAppInfoForApp(
   // |timestamp|.
   details.activity.CaptureOngoingActivity(timestamp);
 
+  std::vector<AppActivity::ActiveTime> activity =
+      details.activity.TakeActiveTimes();
+
+  // If reporting is not enabled, don't save unnecessary data.
+  if (!activity_reporting_enabled_)
+    activity.clear();
+
   return PersistedAppInfo(app_id, details.activity.app_state(),
-                          running_active_time,
-                          details.activity.TakeActiveTimes());
+                          running_active_time, std::move(activity));
 }
 
 bool AppActivityRegistry::ShouldCleanUpStoredPref() {
@@ -1023,6 +1100,42 @@ bool AppActivityRegistry::ShouldCleanUpStoredPref() {
       base::TimeDelta::FromMicroseconds(last_time));
 
   return time < base::Time::Now() - base::TimeDelta::FromDays(30);
+}
+
+void AppActivityRegistry::SendSystemNotificationsForApp(const AppId& app_id) {
+  DCHECK(base::Contains(activity_registry_, app_id));
+
+  AppDetails& app_details = activity_registry_.at(app_id);
+  DCHECK(app_details.received_app_installed_);
+
+  // TODO(yilkal): Filter out the notifications to show. For example don't show
+  // 5 min and 1 min left notifications at the same time here. However, time
+  // limit changed and 1 min left notifications can be shown at the same time.
+  for (const auto& elem : app_details.pending_notifications_) {
+    notification_delegate_->ShowAppTimeLimitNotification(
+        app_id, elem.time_limit, elem.notification);
+  }
+  app_details.pending_notifications_.clear();
+}
+
+void AppActivityRegistry::MaybeShowSystemNotification(
+    const AppId& app_id,
+    const SystemNotification& notification) {
+  DCHECK(base::Contains(activity_registry_, app_id));
+
+  AppDetails& app_details = activity_registry_.at(app_id);
+  app_details.activity.set_last_notification(notification.notification);
+
+  // AppActivityRegistry has not yet received OnAppInstalled call from
+  // AppService. Add notification to |AppDetails::pending_notifications_|.
+  if (!app_details.received_app_installed_) {
+    app_details.pending_notifications_.push_back(notification);
+    return;
+  }
+
+  // Otherwise, just show the notification.
+  notification_delegate_->ShowAppTimeLimitNotification(
+      app_id, notification.time_limit, notification.notification);
 }
 
 }  // namespace app_time

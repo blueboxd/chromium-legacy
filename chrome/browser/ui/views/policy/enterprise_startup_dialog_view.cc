@@ -93,15 +93,15 @@ EnterpriseStartupDialogView::EnterpriseStartupDialogView(
     EnterpriseStartupDialog::DialogResultCallback callback)
     : callback_(std::move(callback)) {
   DialogDelegate::set_draggable(true);
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::SetExtraView(CreateLogoView());
-  DialogDelegate::set_accept_callback(
+  DialogDelegate::SetAcceptCallback(
       base::BindOnce(&EnterpriseStartupDialogView::RunDialogCallback,
                      base::Unretained(this), true));
-  DialogDelegate::set_cancel_callback(
+  DialogDelegate::SetCancelCallback(
       base::BindOnce(&EnterpriseStartupDialogView::RunDialogCallback,
                      base::Unretained(this), false));
-  DialogDelegate::set_close_callback(
+  DialogDelegate::SetCloseCallback(
       base::BindOnce(&EnterpriseStartupDialogView::RunDialogCallback,
                      base::Unretained(this), false));
   SetBorder(views::CreateEmptyBorder(GetDialogInsets()));
@@ -140,7 +140,7 @@ void EnterpriseStartupDialogView::DisplayErrorMessage(
                                 ui::NativeTheme::kColorId_AlertSeverityHigh)));
 
   if (accept_button) {
-    // TODO(ellyjones): This should use DialogDelegate::set_button_label()
+    // TODO(ellyjones): This should use DialogDelegate::SetButtonLabel()
     // instead of changing the button text directly - this might break the
     // dialog's layout.
     GetOkButton()->SetText(*accept_button);

@@ -38,6 +38,10 @@ class FontPreloadManagerTest : public SimTest {
   using State = FontPreloadManager::State;
   State GetState() { return GetFontPreloadManager().state_; }
 
+  void DisableFontPreloadManagerTimeout() {
+    GetFontPreloadManager().DisableTimeoutForTest();
+  }
+
   Element* GetTarget() { return GetDocument().getElementById("target"); }
 
   const Font& GetTargetFont() {
@@ -368,6 +372,10 @@ TEST_F(FontPreloadManagerTest, OptionalFontFastPreloading) {
   EXPECT_TRUE(Compositor().DeferMainFrameUpdate());
   EXPECT_TRUE(GetFontPreloadManager().HasPendingRenderBlockingFonts());
   EXPECT_EQ(State::kLoading, GetState());
+
+  // There are test flakes due to FontPreloadManager timeout firing before the
+  // ResourceFinishObserver gets notified. So we disable the timeout.
+  DisableFontPreloadManagerTimeout();
 
   font_resource.Complete(ReadAhemWoff2());
   test::RunPendingTasks();

@@ -16,6 +16,17 @@ component("device_features") {
   defines = [ "DEVICE_FEATURES_IMPLEMENTATION" ]
 }
 
+if (is_android) {
+  source_set("device_feature_list") {
+    sources = [ "device_feature_list.cc" ]
+    deps = [
+      ":device_features",
+      "//base",
+      "//services/device:device_service_jni_headers",
+    ]
+  }
+}
+
 source_set("test_support") {
   testonly = true
 

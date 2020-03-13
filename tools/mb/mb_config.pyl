@@ -877,6 +877,7 @@
       'ios-simulator': 'ios_error',
       'ios-simulator-full-configs': 'ios_error',
       'ios-simulator-cronet': 'ios_error',
+      'ios-simulator-code-coverage': 'clang_code_coverage_ios',
       'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot',
       'mac-osxbeta-rel': 'gpu_tests_release_trybot_deterministic_mac',
       'mac_chromium_10.10': 'gpu_tests_release_trybot_deterministic_mac',

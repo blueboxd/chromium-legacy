@@ -119,7 +119,7 @@ AccountPasswordStoreFactory::BuildServiceInstanceFor(
 
   scoped_refptr<PasswordStore> ps =
       new password_manager::PasswordStoreDefault(std::move(login_db));
-  if (!ps->Init(/*flare=*/base::DoNothing(), profile->GetPrefs(),
+  if (!ps->Init(profile->GetPrefs(),
                 base::BindRepeating(&SyncEnabledOrDisabled, profile))) {
     // TODO(crbug.com/479725): Remove the LOG once this error is visible in the
     // UI.

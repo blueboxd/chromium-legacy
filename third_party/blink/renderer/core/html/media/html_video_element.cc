@@ -88,7 +88,7 @@ HTMLVideoElement::HTMLVideoElement(Document& document)
       is_default_overridden_intrinsic_size_(
           !document.IsMediaDocument() &&
           !document.IsFeatureEnabled(
-              mojom::blink::FeaturePolicyFeature::kUnsizedMedia)),
+              mojom::blink::DocumentPolicyFeature::kUnsizedMedia)),
       video_has_played_(false),
       mostly_filling_viewport_(false) {
   if (document.GetSettings()) {

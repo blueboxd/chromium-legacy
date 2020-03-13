@@ -85,7 +85,8 @@ class MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest
     for (const auto& remote_device : test_devices_) {
       bool should_be_host =
           host_device != base::nullopt &&
-          host_device->GetDeviceId() == remote_device.GetDeviceId();
+          host_device->GetDeviceId() == remote_device.GetDeviceId() &&
+          host_device->instance_id() == remote_device.instance_id();
 
       GetMutableRemoteDevice(remote_device)->software_features[host_type] =
           should_be_host ? multidevice::SoftwareFeatureState::kEnabled

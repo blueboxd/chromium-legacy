@@ -66,21 +66,19 @@ public class TabContext {
         public final int id;
         public final String title;
         public final String originalUrl;
-        public final Profile profile;
         public final String visibleUrl;
 
         /**
          * Constructs a new TabInfo object
          */
         protected TabInfo(int id, String title, String url, String originalUrl, String referrerUrl,
-                long timestampMillis, Profile profile, String visibleUrl) {
+                long timestampMillis, String visibleUrl) {
             this.id = id;
             this.title = title;
             this.url = url;
             this.originalUrl = originalUrl;
             this.referrerUrl = referrerUrl;
             this.timestampMillis = timestampMillis;
-            this.profile = profile;
             this.visibleUrl = visibleUrl;
         }
 
@@ -91,11 +89,12 @@ public class TabContext {
             String referrerUrl = getReferrerUrlFromTab(tab);
             return new TabInfo(tab.getId(), tab.getTitle(), tab.getUrlString(),
                     tab.getOriginalUrl(), referrerUrl != null ? referrerUrl : "",
-                    tab.getTimestampMillis(), ((TabImpl) tab).getProfile(), tab.getUrlString());
+                    tab.getTimestampMillis(), tab.getUrlString());
         }
 
         public double getSiteEngagementScore() {
-            return SiteEngagementService.getForProfile(profile).getScore(visibleUrl);
+            return SiteEngagementService.getForProfile(Profile.getLastUsedRegularProfile())
+                    .getScore(visibleUrl);
         }
 
         private static String getReferrerUrlFromTab(Tab tab) {

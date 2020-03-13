@@ -1,9 +1,0 @@
-include_rules = [
-    "+services/metrics/public/cpp/ukm_builders.h",
-    "+services/metrics/public/cpp/ukm_source_id.h",
-    "-third_party/blink/renderer/modules",
-    "+third_party/blink/renderer/modules/event_modules.h",
-    "+third_party/blink/renderer/modules/event_target_modules.h",
-    "+third_party/blink/renderer/modules/modules_export.h",
-    "+third_party/blink/renderer/modules/sms",
-]

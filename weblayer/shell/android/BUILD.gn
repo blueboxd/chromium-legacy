@@ -5,6 +5,7 @@
 import("//android_webview/system_webview_apk_tmpl.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//build/config/python.gni")
 import("//third_party/icu/config.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//weblayer/variables.gni")
@@ -193,16 +194,15 @@ android_apk("weblayer_support_apk") {
 
   shared_libraries = [ "//weblayer:libweblayer" ]
 }
-group("weblayer_shell_wpt") {
+
+python_library("weblayer_shell_wpt") {
   testonly = true
+  pydeps_file = "//testing/scripts/run_android_wpt.pydeps"
   data_deps = [
     ":weblayer_shell_apk",
     ":weblayer_support_apk",
     "//build/android:test_runner_py",
     "//chrome/test/chromedriver:chromedriver($host_toolchain)",
   ]
-  set_sources_assignment_filter([ "#*" ])
-  sources = read_file("//testing/scripts/run_android_wpt.pydeps", "list lines")
-  data = sources
-  data += [ "//third_party/blink/web_tests/external/" ]
+  data = [ "//third_party/blink/web_tests/external/" ]
 }

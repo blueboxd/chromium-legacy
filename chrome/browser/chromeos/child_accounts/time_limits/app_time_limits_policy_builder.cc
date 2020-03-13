@@ -13,6 +13,7 @@ AppTimeLimitsPolicyBuilder::AppTimeLimitsPolicyBuilder() {
   value_.SetKey(policy::kAppLimitsArray, base::Value(base::Value::Type::LIST));
   value_.SetKey(policy::kResetAtDict,
                 base::Value(base::Value::Type::DICTIONARY));
+  value_.SetBoolKey(policy::kActivityReportingEnabled, true);
 }
 
 AppTimeLimitsPolicyBuilder::~AppTimeLimitsPolicyBuilder() = default;
@@ -31,6 +32,10 @@ void AppTimeLimitsPolicyBuilder::AddAppLimit(const AppId& app_id,
 
 void AppTimeLimitsPolicyBuilder::SetResetTime(int hour, int minutes) {
   value_.SetKey(policy::kResetAtDict, policy::ResetTimeToDict(hour, minutes));
+}
+
+void AppTimeLimitsPolicyBuilder::SetAppActivityReportingEnabled(bool enabled) {
+  value_.SetBoolKey(policy::kActivityReportingEnabled, enabled);
 }
 
 }  // namespace app_time

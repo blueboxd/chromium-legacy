@@ -35,8 +35,8 @@ LocalCardMigrationErrorDialogView::LocalCardMigrationErrorDialogView(
     LocalCardMigrationDialogController* controller,
     content::WebContents* web_contents)
     : controller_(controller), web_contents_(web_contents) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_CANCEL);
-  DialogDelegate::set_cancel_callback(
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_CANCEL);
+  DialogDelegate::SetCancelCallback(
       base::BindOnce(&LocalCardMigrationDialogController::OnDoneButtonClicked,
                      base::Unretained(controller_)));
   set_close_on_deactivate(false);

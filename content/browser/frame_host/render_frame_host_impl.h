@@ -144,7 +144,6 @@
 
 class GURL;
 struct AccessibilityHostMsg_EventBundleParams;
-struct AccessibilityHostMsg_LocationChangeParams;
 struct FrameHostMsg_OpenURL_Params;
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 struct FrameHostMsg_ShowPopup_Params;
@@ -226,6 +225,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
     : public RenderFrameHost,
       public base::SupportsUserData,
       public mojom::FrameHost,
+      public mojom::RenderAccessibilityHost,
       public BrowserAccessibilityDelegate,
       public RenderProcessHostObserver,
       public SiteInstanceImpl::Observer,
@@ -1599,16 +1599,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const AccessibilityHostMsg_EventBundleParams& params,
       int reset_token,
       int ack_token);
-  void OnAccessibilityLocationChanges(
-      const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
   void OnAccessibilityChildFrameHitTestResult(
       int action_request_id,
       const gfx::Point& point,
       int child_frame_routing_id,
       int child_frame_browser_plugin_instance_id,
       ax::mojom::Event event_to_fire);
-  void OnAccessibilitySnapshotResponse(int callback_id,
-                                       const AXContentTreeUpdate& snapshot);
   void OnDidStopLoading();
   void OnSelectionChanged(const base::string16& text,
                           uint32_t offset,
@@ -1704,6 +1700,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UpdateUserGestureCarryoverInfo() override;
 #endif
 
+  // mojom::RenderAccessibilityHost:
+  void HandleAXLocationChanges(
+      std::vector<mojom::LocationChangesPtr> changes) override;
+
   // Registers Mojo interfaces that this frame host makes available.
   void RegisterMojoInterfaces();
 
@@ -1796,6 +1796,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Convert the content-layer-specific AXContentTreeData to a general-purpose
   // AXTreeData structure.
   void AXContentTreeDataToAXTreeData(ui::AXTreeData* dst);
+
+  // Callback that will be called as a response to the call to the method
+  // content::mojom::RenderAccessibility::SnapshotAccessibilityTree(). The
+  // |callback| passed will be invoked after the renderer has responded with a
+  // standalone snapshot of the accessibility tree as |snapshot|.
+  void RequestAXTreeSnapshotCallback(AXTreeSnapshotCallback callback,
+                                     const AXContentTreeUpdate& snapshot);
 
   // Returns the RenderWidgetHostView used for accessibility. For subframes,
   // this function will return the platform view on the main frame; for main
@@ -2305,10 +2312,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The AX tree ID of the embedder, if this is a browser plugin guest.
   ui::AXTreeID browser_plugin_embedder_ax_tree_id_;
 
-  // The mapping from callback id to corresponding callback for pending
-  // accessibility tree snapshot calls created by RequestAXTreeSnapshot.
-  std::map<int, AXTreeSnapshotCallback> ax_tree_snapshot_callbacks_;
-
   // Samsung Galaxy Note-specific "smart clip" stylus text getter.
 #if defined(OS_ANDROID)
   base::IDMap<std::unique_ptr<ExtractSmartClipDataCallback>>
@@ -2555,6 +2558,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // be connected (i.e. bound) to the other endpoint in the renderer while there
   // is an accessibility mode that includes |kWebContents|.
   mojo::AssociatedRemote<mojom::RenderAccessibility> render_accessibility_;
+
+  mojo::AssociatedReceiver<mojom::RenderAccessibilityHost>
+      render_accessibility_host_receiver_{this};
 
   std::unique_ptr<KeepAliveHandleFactory> keep_alive_handle_factory_;
   base::TimeDelta keep_alive_timeout_;

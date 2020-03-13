@@ -44,7 +44,7 @@ WebAppConfirmationView::WebAppConfirmationView(
     chrome::AppInstallationAcceptanceCallback callback)
     : web_app_info_(std::move(web_app_info)), callback_(std::move(callback)) {
   DCHECK(web_app_info_);
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_BUTTON_LABEL));
   const ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();

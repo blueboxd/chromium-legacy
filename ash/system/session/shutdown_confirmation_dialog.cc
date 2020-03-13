@@ -34,14 +34,14 @@ ShutdownConfirmationDialog::ShutdownConfirmationDialog(
     base::OnceClosure on_accept_callback,
     base::OnceClosure on_cancel_callback)
     : window_title_(l10n_util::GetStringUTF16(window_title_text_id)) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_ASH_SHUTDOWN_CONFIRMATION_OK_BUTTON));
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_ASH_SHUTDOWN_CONFIRMATION_CANCEL_BUTTON));
-  DialogDelegate::set_accept_callback(std::move(on_accept_callback));
-  DialogDelegate::set_cancel_callback(std::move(on_cancel_callback));
+  DialogDelegate::SetAcceptCallback(std::move(on_accept_callback));
+  DialogDelegate::SetCancelCallback(std::move(on_cancel_callback));
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(

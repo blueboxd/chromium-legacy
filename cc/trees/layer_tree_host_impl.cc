@@ -247,8 +247,6 @@ void PopulateMetadataContentColorUsage(
 
 }  // namespace
 
-DEFINE_SCOPED_UMA_HISTOGRAM_TIMER(PendingTreeDurationHistogramTimer,
-                                  "Scheduling.%s.PendingTreeDuration")
 DEFINE_SCOPED_UMA_HISTOGRAM_TIMER(PendingTreeRasterDurationHistogramTimer,
                                   "Scheduling.%s.PendingTreeRasterDuration")
 
@@ -1728,7 +1726,6 @@ void LayerTreeHostImpl::ResetTreesForTesting() {
   if (pending_tree_)
     pending_tree_->DetachLayers();
   pending_tree_ = nullptr;
-  pending_tree_duration_timer_ = nullptr;
   if (recycle_tree_)
     recycle_tree_->DetachLayers();
   recycle_tree_ = nullptr;
@@ -3016,9 +3013,6 @@ void LayerTreeHostImpl::CreatePendingTree() {
   client_->OnCanDrawStateChanged(CanDraw());
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("cc", "PendingTree:waiting",
                                     TRACE_ID_LOCAL(pending_tree_.get()));
-
-  DCHECK(!pending_tree_duration_timer_);
-  pending_tree_duration_timer_.reset(new PendingTreeDurationHistogramTimer());
 }
 
 void LayerTreeHostImpl::PushScrollbarOpacitiesFromActiveToPending() {
@@ -3055,10 +3049,6 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     TRACE_EVENT_NESTABLE_ASYNC_END0("cc", "PendingTree:waiting",
                                     TRACE_ID_LOCAL(pending_tree_.get()));
     active_tree_->lifecycle().AdvanceTo(LayerTreeLifecycle::kBeginningSync);
-
-    DCHECK(pending_tree_duration_timer_);
-    // Reset will call the destructor and log the timer histogram.
-    pending_tree_duration_timer_.reset();
 
     // In most cases, this will be reset in NotifyReadyToActivate, since we
     // activate the pending tree only when its ready. But an activation may be

@@ -21,7 +21,8 @@ struct RegistrationResponse;
 // All functions and callbacks must be called on the same sequence.
 class UpdateService {
  public:
-  typedef update_client::Error Result;
+  using Result = update_client::Error;
+
   // Possible states for updating an app.
   enum class UpdateState {
     // This value represents the absence of a state. No update request has

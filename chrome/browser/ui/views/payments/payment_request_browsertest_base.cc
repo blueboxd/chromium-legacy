@@ -50,6 +50,7 @@
 #include "ui/gfx/animation/test_animation_delegate.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 
@@ -765,6 +766,13 @@ bool PaymentRequestBrowserTestBase::IsPayButtonEnabled() {
           static_cast<int>(DialogViewID::PAY_BUTTON)));
   DCHECK(button);
   return button->GetEnabled();
+}
+
+base::string16 PaymentRequestBrowserTestBase::GetPrimaryButtonLabel() const {
+  return static_cast<views::MdTextButton*>(
+             delegate_->dialog_view()->GetViewByID(
+                 static_cast<int>(DialogViewID::PAY_BUTTON)))
+      ->GetText();
 }
 
 void PaymentRequestBrowserTestBase::WaitForAnimation() {

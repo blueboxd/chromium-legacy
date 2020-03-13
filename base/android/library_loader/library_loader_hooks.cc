@@ -61,6 +61,7 @@ void SetNativeInitializationHook(
 
 void SetNonMainDexJniRegistrationHook(
     NonMainDexJniRegistrationHook jni_registration_hook) {
+  DCHECK(!g_jni_registration_hook);
   g_jni_registration_hook = jni_registration_hook;
 }
 

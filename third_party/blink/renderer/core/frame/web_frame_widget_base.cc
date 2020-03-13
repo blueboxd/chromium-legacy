@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/events/wheel_event.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/frame/local_frame_ukm_aggregator.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -527,6 +528,25 @@ void WebFrameWidgetBase::SetCompositorHosts(cc::LayerTreeHost* layer_tree_host,
   widget_base_.SetCompositorHosts(layer_tree_host, animation_host);
   GetPage()->AnimationHostInitialized(*AnimationHost(),
                                       GetLocalFrameViewForAnimationScrolling());
+}
+
+void WebFrameWidgetBase::BeginFrame(base::TimeTicks frame_time) {
+  widget_base_.BeginMainFrame(frame_time);
+}
+
+void WebFrameWidgetBase::DispatchRafAlignedInput(base::TimeTicks frame_time) {
+  base::TimeTicks raf_aligned_input_start_time;
+  if (LocalRootImpl() && ShouldRecordMainFrameMetrics()) {
+    raf_aligned_input_start_time = base::TimeTicks::Now();
+  }
+
+  Client()->DispatchRafAlignedInput(frame_time);
+
+  if (LocalRootImpl() && ShouldRecordMainFrameMetrics()) {
+    LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
+        LocalFrameUkmAggregator::kHandleInputEvents,
+        raf_aligned_input_start_time, base::TimeTicks::Now());
+  }
 }
 
 void WebFrameWidgetBase::ApplyViewportChangesForTesting(

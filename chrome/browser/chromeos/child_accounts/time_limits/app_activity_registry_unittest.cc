@@ -715,10 +715,26 @@ TEST_F(AppActivityRegistryTest, RemoveUninstalledApplications) {
           value,
           /* include_app_activity_array */ true);
 
-  // Two apps left. They are Chrome, and kApp2.
-  EXPECT_EQ(app_infos.size(), 2u);
-  for (const auto& entry : app_infos) {
+  EXPECT_EQ(app_infos.size(), 3u);
+  for (const auto& entry : app_infos)
     EXPECT_EQ(entry.active_times().size(), 0u);
+
+  // kApp1 will still be present since it still has activity.
+  registry().OnResetTimeReached(base::Time::Now());
+  registry().SaveAppActivity();
+  registry().OnSuccessfullyReported(base::Time::Now());
+
+  const base::Value* new_value =
+      profile().GetPrefs()->GetList(prefs::kPerAppTimeLimitsAppActivities);
+
+  const std::vector<PersistedAppInfo> final_app_infos =
+      PersistedAppInfo::PersistedAppInfosFromList(
+          new_value,
+          /* include_app_activity_array */ false);
+
+  // Two apps left. They are Chrome, and kApp2.
+  EXPECT_EQ(final_app_infos.size(), 2u);
+  for (const auto& entry : final_app_infos) {
     EXPECT_NE(entry.app_id(), kApp1);
   }
 }
@@ -874,6 +890,9 @@ TEST_F(AppActivityRegistryTest, AvoidReduntantNotifications) {
   // Reinitialized the registry. We don't expect redundant time limit updatese
   // will result in notifications.
   ReInitializeRegistry();
+  registry().OnAppInstalled(GetChromeAppId());
+  registry().OnAppInstalled(kApp1);
+  registry().OnAppInstalled(kApp2);
 
   EXPECT_CALL(notification_delegate_mock(),
               ShowAppTimeLimitNotification(
@@ -908,6 +927,38 @@ TEST_F(AppActivityRegistryTest, AvoidReduntantNotifications) {
   registry().UpdateAppLimits(app_limits);
 }
 
+TEST_F(AppActivityRegistryTest, NoNotification) {
+  AppLimit app1_limit(AppRestriction::kTimeLimit,
+                      base::TimeDelta::FromMinutes(30), base::Time::Now());
+  std::map<AppId, AppLimit> app_limits = {{kApp1, app1_limit}};
+
+  EXPECT_CALL(notification_delegate_mock(),
+              ShowAppTimeLimitNotification(
+                  kApp1, app1_limit.daily_limit(),
+                  chromeos::app_time::AppNotification::kTimeLimitChanged))
+      .Times(0);
+  registry().SaveAppActivity();
+  ReInitializeRegistry();
+  registry().UpdateAppLimits(app_limits);
+}
+
+TEST_F(AppActivityRegistryTest, NotificationAfterAppInstall) {
+  AppLimit app1_limit(AppRestriction::kTimeLimit,
+                      base::TimeDelta::FromMinutes(30), base::Time::Now());
+  std::map<AppId, AppLimit> app_limits = {{kApp1, app1_limit}};
+
+  EXPECT_CALL(notification_delegate_mock(),
+              ShowAppTimeLimitNotification(
+                  kApp1, app1_limit.daily_limit(),
+                  chromeos::app_time::AppNotification::kTimeLimitChanged))
+      .Times(1);
+
+  registry().SaveAppActivity();
+  ReInitializeRegistry();
+  registry().UpdateAppLimits(app_limits);
+  registry().OnAppInstalled(kApp1);
+}
+
 TEST_F(AppActivityRegistryTest, AvoidRedundantCallsToPauseApp) {
   AppStateObserverMock state_observer_mock;
   registry().AddAppStateObserver(&state_observer_mock);
@@ -938,6 +989,53 @@ TEST_F(AppActivityRegistryTest, AvoidRedundantCallsToPauseApp) {
   registry().OnAppActive(kApp1, new_app1_window, base::Time::Now());
 
   registry().OnAppDestroyed(kApp1, new_app1_window, base::Time::Now());
+}
+
+TEST_F(AppActivityRegistryTest, AppReinstallations) {
+  AppStateObserverMock state_observer_mock;
+  registry().AddAppStateObserver(&state_observer_mock);
+
+  AppLimit app1_limit(AppRestriction::kTimeLimit, base::TimeDelta::FromHours(1),
+                      base::Time::Now());
+
+  SetAppLimit(kApp1, app1_limit);
+
+  EXPECT_CALL(state_observer_mock,
+              OnAppLimitReached(kApp1, app1_limit.daily_limit().value(),
+                                /* was_active */ true))
+      .Times(1);
+
+  // Application will reach its time limits.
+  CreateAppActivityForApp(kApp1, base::TimeDelta::FromHours(2));
+  registry().OnAppUninstalled(kApp1);
+  registry().SaveAppActivity();
+
+  // Now let's reinstantiate the registry.
+  ReInitializeRegistry();
+  registry().AddAppStateObserver(&state_observer_mock);
+
+  EXPECT_CALL(state_observer_mock, OnAppInstalled(kApp1)).Times(1);
+
+  // The child user reinstalls the application.
+  registry().OnAppInstalled(kApp1);
+  registry().OnAppAvailable(kApp1);
+
+  // Let's set the time limit.
+  EXPECT_CALL(state_observer_mock,
+              OnAppLimitReached(kApp1, app1_limit.daily_limit().value(),
+                                /* was_active */ false))
+      .Times(1);
+  registry().SetAppLimit(kApp1, app1_limit);
+
+  // Reinstalled within the same session.
+  registry().OnAppUninstalled(kApp1);
+  EXPECT_CALL(state_observer_mock, OnAppInstalled(kApp1)).Times(1);
+  EXPECT_CALL(state_observer_mock,
+              OnAppLimitReached(kApp1, app1_limit.daily_limit().value(),
+                                /* was_active */ false))
+      .Times(1);
+
+  registry().OnAppAvailable(kApp1);
 }
 
 }  // namespace app_time

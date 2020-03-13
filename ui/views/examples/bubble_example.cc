@@ -69,7 +69,7 @@ class ExampleBubble : public BubbleDialogDelegateView {
  public:
   ExampleBubble(View* anchor, BubbleBorder::Arrow arrow)
       : BubbleDialogDelegateView(anchor, arrow) {
-    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   }
 
  protected:

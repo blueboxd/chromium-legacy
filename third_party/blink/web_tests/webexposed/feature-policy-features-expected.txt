@@ -50,7 +50,6 @@ serial
 sync-script
 sync-xhr
 top-navigation
-unsized-media
 usb
 vertical-scroll
 wake-lock

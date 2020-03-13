@@ -104,7 +104,7 @@ HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
       is_default_overridden_intrinsic_size_(
           !document.IsImageDocument() &&
           !document.IsFeatureEnabled(
-              mojom::blink::FeaturePolicyFeature::kUnsizedMedia)),
+              mojom::blink::DocumentPolicyFeature::kUnsizedMedia)),
       is_legacy_format_or_unoptimized_image_(false),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault) {
   SetHasCustomStyleCallbacks();

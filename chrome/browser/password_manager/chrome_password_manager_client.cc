@@ -549,12 +549,14 @@ void ChromePasswordManagerClient::AutofillHttpAuth(
 
 void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
     password_manager::CredentialLeakType leak_type,
-    const GURL& origin) {
+    const GURL& origin,
+    const base::string16& username) {
 #if defined(OS_ANDROID)
   HideSavePasswordInfobar(web_contents());
 #if defined(ENABLE_PASSWORD_CHANGE)
+  was_leak_warning_shown_ = true;
   (new CredentialLeakPasswordChangeControllerAndroid(
-       leak_type, origin, web_contents()->GetTopLevelNativeWindow()))
+       leak_type, origin, username, web_contents()->GetTopLevelNativeWindow()))
       ->ShowDialog();
 #else
   (new CredentialLeakControllerAndroid(
@@ -830,6 +832,15 @@ bool ChromePasswordManagerClient::WasLastNavigationHTTPError() const {
   if (http_status_code >= 400 && http_status_code < 600)
     return true;
   return false;
+}
+
+bool ChromePasswordManagerClient::WasCredentialLeakDialogShown() const {
+#if defined(ENABLE_PASSWORD_CHANGE)
+  return was_leak_warning_shown_;
+#else
+  // Don't allow a password change flow if the feature is not enabled.
+  return false;
+#endif
 }
 
 net::CertStatus ChromePasswordManagerClient::GetMainFrameCertStatus() const {

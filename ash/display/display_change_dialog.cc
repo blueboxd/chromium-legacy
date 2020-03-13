@@ -41,12 +41,12 @@ DisplayChangeDialog::DisplayChangeDialog(
           std::move(timeout_message_with_placeholder)),
       on_accept_callback_(std::move(on_accept_callback)),
       on_cancel_callback_(std::move(on_cancel_callback)) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_ASH_CONFIRM_BUTTON));
 
-  DialogDelegate::set_accept_callback(base::BindOnce(
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
       &DisplayChangeDialog::OnConfirmButtonClicked, base::Unretained(this)));
-  DialogDelegate::set_cancel_callback(base::BindOnce(
+  DialogDelegate::SetCancelCallback(base::BindOnce(
       &DisplayChangeDialog::OnCancelButtonClicked, base::Unretained(this)));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());

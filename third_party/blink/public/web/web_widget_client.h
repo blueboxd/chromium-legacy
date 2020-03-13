@@ -243,6 +243,10 @@ class WebWidgetClient {
                                           float minimum,
                                           float maximum) {}
 
+  // Dispatch any pending input. This method will called before
+  // dispatching a RequestAnimationFrame to the widget.
+  virtual void DispatchRafAlignedInput(base::TimeTicks frame_time) {}
+
   // Requests an image decode and will have the |callback| run asynchronously
   // when it completes. Forces a new main frame to occur that will trigger
   // pushing the decode through the compositor.

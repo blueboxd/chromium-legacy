@@ -72,8 +72,8 @@ MessageBox::Core::Core(const base::string16& title_label,
       message_box_view_(new views::MessageBoxView(
           views::MessageBoxView::InitParams(message_label))) {
   DCHECK(message_box_);
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK, ok_label);
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL, cancel_label);
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK, ok_label);
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, cancel_label);
 }
 
 void MessageBox::Core::Show() {

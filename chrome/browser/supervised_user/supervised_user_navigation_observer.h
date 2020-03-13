@@ -40,10 +40,6 @@ class SupervisedUserNavigationObserver
       public SupervisedUserServiceObserver,
       public supervised_user::mojom::SupervisedUserCommands {
  public:
-  // Creates SupervisedUserNavigationObserver if the profile is a child user.
-  static void MaybeCreateForWebContents(content::WebContents* web_contents);
-  static void CreateForWebContents(content::WebContents* web_contents) = delete;
-
   ~SupervisedUserNavigationObserver() override;
 
   const std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>&

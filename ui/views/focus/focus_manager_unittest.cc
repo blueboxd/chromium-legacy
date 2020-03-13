@@ -877,7 +877,7 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
  public:
   explicit TestBubbleDialogDelegateView(View* anchor)
       : BubbleDialogDelegateView(anchor, BubbleBorder::NONE) {
-    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   }
   ~TestBubbleDialogDelegateView() override = default;
 

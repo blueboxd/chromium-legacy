@@ -28,14 +28,14 @@ UninstallView::UninstallView(int* user_selection,
       browsers_combo_(NULL),
       user_selection_(*user_selection),
       quit_closure_(quit_closure) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_UNINSTALL_BUTTON_TEXT));
-  DialogDelegate::set_accept_callback(
+  DialogDelegate::SetAcceptCallback(
       base::BindOnce(&UninstallView::OnDialogAccepted, base::Unretained(this)));
-  DialogDelegate::set_cancel_callback(base::BindOnce(
+  DialogDelegate::SetCancelCallback(base::BindOnce(
       &UninstallView::OnDialogCancelled, base::Unretained(this)));
-  DialogDelegate::set_close_callback(base::BindOnce(
+  DialogDelegate::SetCloseCallback(base::BindOnce(
       &UninstallView::OnDialogCancelled, base::Unretained(this)));
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));

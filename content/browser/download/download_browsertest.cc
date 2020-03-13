@@ -20,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -57,7 +58,7 @@
 #include "content/public/test/test_file_error_injector.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
-#include "content/public/test/url_loader_interceptor.h"
+#include "content/public/test/url_loader_monitor.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
@@ -122,28 +123,20 @@ void ExpectRequestNetworkIsolationKey(
     const GURL& request_url,
     const net::NetworkIsolationKey& expected_network_isolation_key,
     base::OnceCallback<void()> function) {
-  base::RunLoop request_waiter;
-  std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_ =
-      std::make_unique<content::URLLoaderInterceptor>(
-          base::BindLambdaForTesting(
-              [&](content::URLLoaderInterceptor::RequestParams* params) {
-                const network::ResourceRequest& request = params->url_request;
-                if (request.url == request_url) {
-                  EXPECT_TRUE(request.trusted_params.has_value());
-                  EXPECT_EQ(expected_network_isolation_key,
-                            request.trusted_params->network_isolation_key);
-                  // SiteForCookies should be consistent with the NIK.
-                  EXPECT_TRUE(
-                      net::SiteForCookies::FromOrigin(
-                          *expected_network_isolation_key.GetTopFrameOrigin())
-                          .IsEquivalent(request.site_for_cookies));
-                  request_waiter.Quit();
-                }
-                return false;  // Do not intercept
-              }));
+  URLLoaderMonitor monitor({request_url});
 
   std::move(function).Run();
-  request_waiter.Run();
+  monitor.WaitForUrls();
+
+  base::Optional<network::ResourceRequest> request =
+      monitor.GetRequestInfo(request_url);
+  ASSERT_TRUE(request->trusted_params.has_value());
+  EXPECT_EQ(expected_network_isolation_key,
+            request->trusted_params->network_isolation_key);
+  // SiteForCookies should be consistent with the NIK.
+  EXPECT_TRUE(net::SiteForCookies::FromOrigin(
+                  *expected_network_isolation_key.GetTopFrameOrigin())
+                  .IsEquivalent(request->site_for_cookies));
 }
 
 // Implementation of TestContentBrowserClient that overrides

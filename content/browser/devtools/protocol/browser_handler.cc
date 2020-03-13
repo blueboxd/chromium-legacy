@@ -304,7 +304,7 @@ Response BrowserHandler::FindBrowserContext(
 }
 
 Response BrowserHandler::SetPermission(
-    const std::string& origin,
+    Maybe<std::string> origin,
     std::unique_ptr<protocol::Browser::PermissionDescriptor> permission,
     const protocol::Browser::PermissionSetting& setting,
     Maybe<std::string> browser_context_id) {
@@ -327,11 +327,14 @@ Response BrowserHandler::SetPermission(
 
   PermissionControllerImpl* permission_controller =
       PermissionControllerImpl::FromBrowserContext(browser_context);
-  url::Origin overridden_origin = url::Origin::Create(GURL(origin));
-  if (overridden_origin.opaque())
-    return Response::InvalidParams(
-        "Permission can't be granted to opaque origins.");
 
+  base::Optional<url::Origin> overridden_origin;
+  if (origin.isJust()) {
+    overridden_origin = url::Origin::Create(GURL(origin.fromJust()));
+    if (overridden_origin->opaque())
+      return Response::InvalidParams(
+          "Permission can't be granted to opaque origins.");
+  }
   PermissionControllerImpl::OverrideStatus status =
       permission_controller->SetOverrideForDevTools(overridden_origin, type,
                                                     permission_status);
@@ -345,7 +348,7 @@ Response BrowserHandler::SetPermission(
 }
 
 Response BrowserHandler::GrantPermissions(
-    const std::string& origin,
+    Maybe<std::string> origin,
     std::unique_ptr<protocol::Array<protocol::Browser::PermissionType>>
         permissions,
     Maybe<std::string> browser_context_id) {
@@ -366,14 +369,17 @@ Response BrowserHandler::GrantPermissions(
 
   PermissionControllerImpl* permission_controller =
       PermissionControllerImpl::FromBrowserContext(browser_context);
-  url::Origin overridden_origin = url::Origin::Create(GURL(origin));
-  if (overridden_origin.opaque())
-    return Response::InvalidParams(
-        "Permission can't be granted to opaque origins.");
-
+  base::Optional<url::Origin> overridden_origin;
+  if (origin.isJust()) {
+    overridden_origin = url::Origin::Create(GURL(origin.fromJust()));
+    if (overridden_origin->opaque())
+      return Response::InvalidParams(
+          "Permission can't be granted to opaque origins.");
+  }
   PermissionControllerImpl::OverrideStatus status =
       permission_controller->GrantOverridesForDevTools(overridden_origin,
                                                        internal_permissions);
+
   if (status != PermissionControllerImpl::OverrideStatus::kOverrideSet) {
     return Response::InvalidParams(
         "Permissions can't be granted in current context.");

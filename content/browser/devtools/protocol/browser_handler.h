@@ -50,13 +50,13 @@ class BrowserHandler : public DevToolsDomainHandler, public Browser::Backend {
       std::unique_ptr<protocol::Array<std::string>>* arguments) override;
 
   Response SetPermission(
-      const std::string& origin,
+      Maybe<std::string> origin,
       std::unique_ptr<protocol::Browser::PermissionDescriptor> permission,
       const protocol::Browser::PermissionSetting& setting,
       Maybe<std::string> browser_context_id) override;
 
   Response GrantPermissions(
-      const std::string& origin,
+      Maybe<std::string> origin,
       std::unique_ptr<protocol::Array<protocol::Browser::PermissionType>>
           permissions,
       Maybe<std::string> browser_context_id) override;

@@ -730,7 +730,7 @@ const CSSValue* BorderBottomLeftRadius::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return &ComputedStyleUtils::ValueForBorderRadiusCorner(
+  return ComputedStyleUtils::ValueForBorderRadiusCorner(
       style.BorderBottomLeftRadius(), style);
 }
 
@@ -746,7 +746,7 @@ const CSSValue* BorderBottomRightRadius::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return &ComputedStyleUtils::ValueForBorderRadiusCorner(
+  return ComputedStyleUtils::ValueForBorderRadiusCorner(
       style.BorderBottomRightRadius(), style);
 }
 const CSSValue* BorderBottomStyle::CSSValueFromComputedStyleInternal(
@@ -1082,7 +1082,7 @@ const CSSValue* BorderTopLeftRadius::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return &ComputedStyleUtils::ValueForBorderRadiusCorner(
+  return ComputedStyleUtils::ValueForBorderRadiusCorner(
       style.BorderTopLeftRadius(), style);
 }
 
@@ -1098,7 +1098,7 @@ const CSSValue* BorderTopRightRadius::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return &ComputedStyleUtils::ValueForBorderRadiusCorner(
+  return ComputedStyleUtils::ValueForBorderRadiusCorner(
       style.BorderTopRightRadius(), style);
 }
 

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "ui/gfx/range/range.h"
 #include "url/gurl.h"
@@ -27,6 +28,7 @@ class CredentialLeakPasswordChangeControllerAndroid {
   CredentialLeakPasswordChangeControllerAndroid(
       password_manager::CredentialLeakType leak_type,
       const GURL& origin,
+      const base::string16& username,
       ui::WindowAndroid* window_android);
   ~CredentialLeakPasswordChangeControllerAndroid();
 
@@ -71,6 +73,8 @@ class CredentialLeakPasswordChangeControllerAndroid {
   const password_manager::CredentialLeakType leak_type_;
 
   const GURL origin_;
+
+  const base::string16 username_;
 
   ui::WindowAndroid* window_android_;
 

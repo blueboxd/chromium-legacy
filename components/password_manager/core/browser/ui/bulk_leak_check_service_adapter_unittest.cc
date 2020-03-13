@@ -25,7 +25,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
-#include "components/sync/model/syncable_service.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -97,8 +96,7 @@ class BulkLeakCheckServiceAdapterTest : public ::testing::Test {
     auto factory = std::make_unique<MockLeakDetectionCheckFactory>();
     factory_ = factory.get();
     service_.set_leak_factory(std::move(factory));
-    store_->Init(syncer::SyncableService::StartSyncFlare(),
-                 /*prefs=*/nullptr);
+    store_->Init(/*prefs=*/nullptr);
     prefs_.registry()->RegisterBooleanPref(prefs::kPasswordLeakDetectionEnabled,
                                            true);
     prefs_.registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnabled, true);

@@ -21,6 +21,8 @@
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type_test_util.h"
+#include "components/sync/engine/data_type_activation_response.h"
+#include "components/sync/engine/fake_model_type_processor.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/engine_impl/backoff_delay_provider.h"
 #include "components/sync/engine_impl/cycle/test_util.h"
@@ -63,6 +65,12 @@ class MockSyncer : public Syncer {
                     SyncCycle*));
   MOCK_METHOD2(PollSyncShare, bool(ModelTypeSet, SyncCycle*));
 };
+
+std::unique_ptr<DataTypeActivationResponse> MakeFakeActivationResponse() {
+  auto response = std::make_unique<DataTypeActivationResponse>();
+  response->type_processor = std::make_unique<FakeModelTypeProcessor>();
+  return response;
+}
 
 MockSyncer::MockSyncer() : Syncer(nullptr) {}
 
@@ -119,7 +127,8 @@ class SyncSchedulerImplTest : public testing::Test {
     extensions_activity_ = new ExtensionsActivity();
 
     workers_.clear();
-    workers_.push_back(base::MakeRefCounted<FakeModelWorker>(GROUP_UI));
+    workers_.push_back(
+        base::MakeRefCounted<FakeModelWorker>(GROUP_NON_BLOCKING));
     workers_.push_back(base::MakeRefCounted<FakeModelWorker>(GROUP_PASSIVE));
 
     connection_ = std::make_unique<MockConnectionManager>(directory());
@@ -129,11 +138,13 @@ class SyncSchedulerImplTest : public testing::Test {
         workers_, test_user_share_.user_share(), &mock_nudge_handler_,
         UssMigrator(), &cancelation_signal_,
         test_user_share_.keystore_keys_handler());
-    model_type_registry_->RegisterDirectoryType(HISTORY_DELETE_DIRECTIVES,
-                                                GROUP_UI);
+    model_type_registry_->ConnectNonBlockingType(HISTORY_DELETE_DIRECTIVES,
+                                                 MakeFakeActivationResponse());
     model_type_registry_->RegisterDirectoryType(NIGORI, GROUP_PASSIVE);
-    model_type_registry_->RegisterDirectoryType(THEMES, GROUP_UI);
-    model_type_registry_->RegisterDirectoryType(TYPED_URLS, GROUP_UI);
+    model_type_registry_->ConnectNonBlockingType(THEMES,
+                                                 MakeFakeActivationResponse());
+    model_type_registry_->ConnectNonBlockingType(TYPED_URLS,
+                                                 MakeFakeActivationResponse());
 
     context_ = std::make_unique<SyncCycleContext>(
         connection_.get(), directory(), extensions_activity_.get(),
@@ -146,8 +157,8 @@ class SyncSchedulerImplTest : public testing::Test {
     RebuildScheduler();
   }
 
-  void UnregisterDataType(ModelType type) {
-    model_type_registry_->UnregisterDirectoryType(type);
+  void DisconnectDataType(ModelType type) {
+    model_type_registry_->DisconnectNonBlockingType(type);
   }
 
   void RebuildScheduler() {
@@ -405,7 +416,7 @@ TEST_F(SyncSchedulerImplTest, NudgeForDisabledType) {
 
   // The user enables a custom passphrase at this point, so
   // HISTORY_DELETE_DIRECTIVES gets disabled.
-  UnregisterDataType(HISTORY_DELETE_DIRECTIVES);
+  DisconnectDataType(HISTORY_DELETE_DIRECTIVES);
   ASSERT_FALSE(context()->GetEnabledTypes().Has(HISTORY_DELETE_DIRECTIVES));
 
   // The resulting sync cycle should ask only for the remaining types.

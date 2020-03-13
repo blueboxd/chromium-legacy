@@ -120,7 +120,7 @@ class HttpPasswordStoreMigratorTest : public testing::Test {
   HttpPasswordStoreMigratorTest()
       : mock_store_(new testing::StrictMock<MockPasswordStore>),
         client_(mock_store_.get()) {
-    mock_store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+    mock_store_->Init(nullptr);
   }
 
   ~HttpPasswordStoreMigratorTest() override {

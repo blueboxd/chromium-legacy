@@ -221,18 +221,8 @@ class SingleClientNigoriSyncTestWithUssTests
       public testing::WithParamInterface<bool> {
  public:
   SingleClientNigoriSyncTestWithUssTests() : SyncTest(SINGLE_CLIENT) {
-    if (GetParam()) {
-      // USS Nigori requires USS implementations to be enabled for all
-      // datatypes.
-      override_features_.InitWithFeatures(
-          /*enabled_features=*/{switches::kSyncUSSPasswords,
-                                switches::kSyncUSSNigori},
-          /*disabled_features=*/{});
-    } else {
-      // We test Directory Nigori with default values of USS feature flags of
-      // other datatypes.
-      override_features_.InitAndDisableFeature(switches::kSyncUSSNigori);
-    }
+    override_features_.InitWithFeatureState(switches::kSyncUSSNigori,
+                                            GetParam());
   }
 
   ~SingleClientNigoriSyncTestWithUssTests() override = default;
@@ -268,14 +258,8 @@ class SingleClientNigoriSyncTestWithNotAwaitQuiescence
 class SingleClientKeystoreKeysMigrationSyncTest : public SyncTest {
  public:
   SingleClientKeystoreKeysMigrationSyncTest() : SyncTest(SINGLE_CLIENT) {
-    if (content::IsPreTest()) {
-      override_features_.InitAndDisableFeature(switches::kSyncUSSNigori);
-    } else {
-      override_features_.InitWithFeatures(
-          /*enabled_features=*/{switches::kSyncUSSPasswords,
-                                switches::kSyncUSSNigori},
-          /*disabled_features=*/{});
-    }
+    override_features_.InitWithFeatureState(switches::kSyncUSSNigori,
+                                            !content::IsPreTest());
   }
 
   ~SingleClientKeystoreKeysMigrationSyncTest() override = default;
@@ -542,8 +526,7 @@ class SingleClientNigoriWithWebApiTest : public SyncTest {
     // USS Nigori requires USS implementations to be enabled for all
     // datatypes.
     override_features_.InitWithFeatures(
-        /*enabled_features=*/{switches::kSyncUSSPasswords,
-                              switches::kSyncUSSNigori,
+        /*enabled_features=*/{switches::kSyncUSSNigori,
                               switches::kSyncSupportTrustedVaultPassphrase,
                               features::kSyncEncryptionKeysWebApi},
         /*disabled_features=*/{});

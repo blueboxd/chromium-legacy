@@ -68,7 +68,7 @@ class LeakDetectionDelegateHelperTest : public testing::Test {
  protected:
   void SetUp() override {
     store_ = new testing::StrictMock<MockPasswordStore>;
-    CHECK(store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
+    CHECK(store_->Init(nullptr));
 
     delegate_helper_ =
         std::make_unique<LeakDetectionDelegateHelper>(store_, callback_.Get());

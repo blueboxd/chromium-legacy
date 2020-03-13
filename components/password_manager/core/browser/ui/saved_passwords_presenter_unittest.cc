@@ -10,7 +10,6 @@
 #include "base/test/task_environment.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/test_password_store.h"
-#include "components/sync/model/syncable_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,9 +36,7 @@ using StrictMockSavedPasswordsPresenterObserver =
 
 class SavedPasswordsPresenterTest : public ::testing::Test {
  protected:
-  SavedPasswordsPresenterTest() {
-    store_->Init(syncer::SyncableService::StartSyncFlare(), /*prefs=*/nullptr);
-  }
+  SavedPasswordsPresenterTest() { store_->Init(/*prefs=*/nullptr); }
 
   ~SavedPasswordsPresenterTest() override {
     store_->ShutdownOnUIThread();

@@ -58,7 +58,7 @@ ChromeCleanerDialog::ChromeCleanerDialog(
   DCHECK(dialog_controller_);
   DCHECK(cleaner_controller_);
 
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_CHROME_CLEANUP_PROMPT_REMOVE_BUTTON_LABEL));
   details_button_ =
@@ -66,13 +66,13 @@ ChromeCleanerDialog::ChromeCleanerDialog(
           this, l10n_util::GetStringUTF16(
                     IDS_CHROME_CLEANUP_PROMPT_DETAILS_BUTTON_LABEL)));
 
-  DialogDelegate::set_accept_callback(
+  DialogDelegate::SetAcceptCallback(
       base::BindOnce(&ChromeCleanerDialog::HandleDialogInteraction,
                      base::Unretained(this), DialogInteractionResult::kAccept));
-  DialogDelegate::set_cancel_callback(
+  DialogDelegate::SetCancelCallback(
       base::BindOnce(&ChromeCleanerDialog::HandleDialogInteraction,
                      base::Unretained(this), DialogInteractionResult::kCancel));
-  DialogDelegate::set_close_callback(
+  DialogDelegate::SetCloseCallback(
       base::BindOnce(&ChromeCleanerDialog::HandleDialogInteraction,
                      base::Unretained(this), DialogInteractionResult::kClose));
 

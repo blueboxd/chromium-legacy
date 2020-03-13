@@ -28,7 +28,6 @@
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/password_manager/core/browser/sync/password_model_worker.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/base/sync_base_switches.h"
@@ -37,8 +36,6 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/engine/passive_model_worker.h"
-#include "components/sync/engine/sequenced_model_worker.h"
-#include "components/sync/engine/ui_model_worker.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/session_sync_service.h"
@@ -231,10 +228,6 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return history ? history->GetDeleteDirectivesSyncableService()
                      : base::WeakPtr<syncer::SyncableService>();
     }
-    case syncer::PASSWORDS: {
-      return password_store_ ? password_store_->GetPasswordSyncableService()
-                             : base::WeakPtr<syncer::SyncableService>();
-    }
     default:
       NOTREACHED();
       return base::WeakPtr<syncer::SyncableService>();
@@ -283,16 +276,8 @@ scoped_refptr<syncer::ModelSafeWorker>
 IOSChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   switch (group) {
-    case syncer::GROUP_UI:
-      return new syncer::UIModelWorker(
-          base::CreateSingleThreadTaskRunner({web::WebThread::UI}));
     case syncer::GROUP_PASSIVE:
       return new syncer::PassiveModelWorker();
-    case syncer::GROUP_PASSWORD: {
-      if (!password_store_)
-        return nullptr;
-      return new browser_sync::PasswordModelWorker(password_store_);
-    }
     default:
       return nullptr;
   }

@@ -22,10 +22,10 @@ AutoSigninFirstRunDialogView::AutoSigninFirstRunDialogView(
     CredentialManagerDialogController* controller,
     content::WebContents* web_contents)
     : controller_(controller), web_contents_(web_contents) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_AUTO_SIGNIN_FIRST_RUN_OK));
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                                    l10n_util::GetStringUTF16(IDS_TURN_OFF));
 
   using ControllerCallbackFn = void (CredentialManagerDialogController::*)();
@@ -35,10 +35,10 @@ AutoSigninFirstRunDialogView::AutoSigninFirstRunDialogView(
       (dialog->controller_->*func)();
     }
   };
-  DialogDelegate::set_accept_callback(
+  DialogDelegate::SetAcceptCallback(
       base::BindOnce(call_controller, base::Unretained(this),
                      &CredentialManagerDialogController::OnAutoSigninOK));
-  DialogDelegate::set_cancel_callback(
+  DialogDelegate::SetCancelCallback(
       base::BindOnce(call_controller, base::Unretained(this),
                      &CredentialManagerDialogController::OnAutoSigninTurnOff));
 

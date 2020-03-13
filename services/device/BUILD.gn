@@ -349,6 +349,7 @@ if (is_android) {
   generate_jni("device_service_jni_headers") {
     sources = [
       "android/java/src/org/chromium/services/device/InterfaceRegistrar.java",
+      "public/java/src/org/chromium/device/DeviceFeatureList.java",
     ]
   }
 

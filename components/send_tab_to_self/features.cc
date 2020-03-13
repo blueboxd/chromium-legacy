@@ -16,7 +16,7 @@ const base::Feature kSendTabToSelfWhenSignedIn{
     "SendTabToSelfWhenSignedIn", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSharingRenameDevices{"SharingRenameDevices",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsReceivingEnabledByUserOnThisDevice(PrefService* prefs) {
   // TODO(crbug.com/1015322): SyncPrefs is used directly instead of methods in

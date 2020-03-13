@@ -142,11 +142,11 @@ CrostiniRecoveryView::CrostiniRecoveryView(
       display_id_(display_id),
       callback_(std::move(callback)),
       weak_ptr_factory_(this) {
-  set_buttons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
-  set_button_label(
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_CROSTINI_RECOVERY_RESTART_BUTTON));
-  set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_CROSTINI_RECOVERY_TERMINAL_BUTTON));
 

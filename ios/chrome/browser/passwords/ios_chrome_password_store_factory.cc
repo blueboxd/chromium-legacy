@@ -27,7 +27,6 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/sync/glue/sync_start_util.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/webdata_services/web_data_service_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -96,9 +95,7 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
 
   scoped_refptr<password_manager::PasswordStore> store =
       new password_manager::PasswordStoreDefault(std::move(login_db));
-  if (!store->Init(ios::sync_start_util::GetFlareForSyncableService(
-                       context->GetStatePath()),
-                   nullptr)) {
+  if (!store->Init(nullptr)) {
     // TODO(crbug.com/479725): Remove the LOG once this error is visible in the
     // UI.
     LOG(WARNING) << "Could not initialize password store.";

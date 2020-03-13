@@ -33,3 +33,6 @@ const base::Feature kTestFeature{"TestFeature",
 
 const base::Feature kClearSyncedData{"ClearSyncedData",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kFirstResponderSendAction{
+    "FirstResponderSendAction", base::FEATURE_DISABLED_BY_DEFAULT};

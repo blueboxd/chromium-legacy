@@ -69,7 +69,7 @@ NativeFileSystemRestrictedDirectoryDialogView::
         bool is_directory,
         base::OnceCallback<void(SensitiveDirectoryResult)> callback)
     : is_directory_(is_directory), callback_(std::move(callback)) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(
           is_directory_ ? IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_BUTTON
@@ -79,10 +79,10 @@ NativeFileSystemRestrictedDirectoryDialogView::
                          SensitiveDirectoryResult result) {
     std::move(dialog->callback_).Run(result);
   };
-  DialogDelegate::set_accept_callback(
+  DialogDelegate::SetAcceptCallback(
       base::BindOnce(run_callback, base::Unretained(this),
                      SensitiveDirectoryResult::kTryAgain));
-  DialogDelegate::set_cancel_callback(base::BindOnce(
+  DialogDelegate::SetCancelCallback(base::BindOnce(
       run_callback, base::Unretained(this), SensitiveDirectoryResult::kAbort));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());

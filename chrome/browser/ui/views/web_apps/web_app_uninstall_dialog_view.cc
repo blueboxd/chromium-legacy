@@ -65,7 +65,7 @@ WebAppUninstallDialogDelegateView::WebAppUninstallDialogDelegateView(
       std::make_unique<WebAppInfoImageSource>(kIconSizeInDip, icon_bitmaps),
       image_size);
 
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON));
 

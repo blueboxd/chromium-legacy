@@ -114,7 +114,7 @@ CrostiniUpdateFilesystemView::GetActiveViewForTesting() {
 CrostiniUpdateFilesystemView::CrostiniUpdateFilesystemView() {
   constexpr int kDialogSpacingVertical = 32;
 
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
 
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(

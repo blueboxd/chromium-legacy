@@ -49,8 +49,8 @@ public class StaleTabSuggestionProviderTest {
 
     private TabContext.TabInfo getMockTab(int id, String title, String url, String originalUrl,
             String referrer, long timestamp, double siteEngagementScore) {
-        TabContext.TabInfo tabInfo = spy(
-                new TabContext.TabInfo(id, title, url, originalUrl, referrer, timestamp, null, ""));
+        TabContext.TabInfo tabInfo =
+                spy(new TabContext.TabInfo(id, title, url, originalUrl, referrer, timestamp, ""));
         doReturn(siteEngagementScore).when(tabInfo).getSiteEngagementScore();
         return tabInfo;
     }

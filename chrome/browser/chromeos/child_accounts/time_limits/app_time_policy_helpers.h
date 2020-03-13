@@ -38,6 +38,7 @@ extern const char kLastUpdatedString[];
 extern const char kResetAtDict[];
 extern const char kHourInt[];
 extern const char kMinInt[];
+extern const char kActivityReportingEnabled[];
 
 // Converts between apps::mojom::AppType and string used by app time limits
 // policies.
@@ -73,6 +74,10 @@ base::Optional<base::TimeDelta> ResetTimeFromDict(const base::Value& dict);
 
 // Serializes daily limits reset to the dictionary.
 base::Value ResetTimeToDict(int hour, int minutes);
+
+// Deserializes activity reporting enabled boolean from |dict|.
+// Returns value if |dict| contains a valid entry.
+base::Optional<bool> ActivityReportingEnabledFromDict(const base::Value& dict);
 
 // Deserializes app limits data from the |dict|.
 // Will return empty map if |dict| is invalid.

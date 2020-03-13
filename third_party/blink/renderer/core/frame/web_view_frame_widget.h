@@ -51,10 +51,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void DidEnterFullscreen() override;
   void DidExitFullscreen() override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
-  void BeginFrame(base::TimeTicks last_frame_time) override;
   void DidBeginFrame() override;
-  void BeginRafAlignedInput() override;
-  void EndRafAlignedInput() override;
   void BeginUpdateLayers() override;
   void EndUpdateLayers() override;
   void BeginCommitCompositorFrame() override;
@@ -95,6 +92,9 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
   HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
   void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
+
+  // WidgetBaseClient overrides:
+  void BeginMainFrame(base::TimeTicks last_frame_time) override;
 
   void Trace(Visitor*) override;
 

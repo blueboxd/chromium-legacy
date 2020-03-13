@@ -106,7 +106,10 @@ if (ios_sdk_path == "") {
     ]
   }
   if (ios_use_goma_rbe) {
-    ios_sdk_info_args += [ "--create_symlink_under_src" ]
+    ios_sdk_info_args += [
+      "--create_symlink_at",
+      rebase_path("$root_build_dir/sdk/xcode_links", "//"),
+    ]
   }
   script_name = "//build/config/mac/sdk_info.py"
   _ios_sdk_result = exec_script(script_name, ios_sdk_info_args, "scope")

@@ -94,7 +94,7 @@ class ScopedSVGPaintState {
 
   ~ScopedSVGPaintState();
 
-  PaintInfo& GetPaintInfo() {
+  const PaintInfo& GetPaintInfo() const {
     return filter_paint_info_ ? *filter_paint_info_ : paint_info_;
   }
 

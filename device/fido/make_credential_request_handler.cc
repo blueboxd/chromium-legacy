@@ -421,6 +421,22 @@ void MakeCredentialRequestHandler::HandleResponse(
          will_need_pin == MakeCredentialPINDisposition::kNoPIN ||
          will_need_pin == MakeCredentialPINDisposition::kUsePINForFallback);
 
+  if ((status == CtapDeviceResponseCode::kCtap2ErrPinAuthInvalid ||
+       status == CtapDeviceResponseCode::kCtap2ErrPinRequired) &&
+      authenticator->WillNeedPINToMakeCredential(request_, observer()) ==
+          MakeCredentialPINDisposition::kUsePINForFallback) {
+    // Some authenticators will return this error immediately without user
+    // interaction when internal UV is locked.
+    if (AuthenticatorMayHaveReturnedImmediately(authenticator->GetId())) {
+      authenticator->GetTouch(base::BindOnce(
+          &MakeCredentialRequestHandler::StartPINFallbackForInternalUv,
+          weak_factory_.GetWeakPtr(), authenticator));
+      return;
+    }
+    StartPINFallbackForInternalUv(authenticator);
+    return;
+  }
+
   const base::Optional<MakeCredentialStatus> maybe_result =
       ConvertDeviceResponseCode(status);
   if (!maybe_result) {

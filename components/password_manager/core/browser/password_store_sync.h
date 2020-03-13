@@ -89,7 +89,7 @@ enum class UpdateLoginError {
   kMaxValue = kDbError,
 };
 
-// PasswordStore interface for PasswordSyncableService. It provides access to
+// PasswordStore interface for PasswordSyncBridge. It provides access to
 // synchronous methods of PasswordStore which shouldn't be accessible to other
 // classes. These methods are to be called on the PasswordStore background
 // thread only.

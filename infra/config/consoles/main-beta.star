@@ -5,7 +5,7 @@ luci.console_view(
     repo = 'https://chromium.googlesource.com/chromium/src',
     # TODO(gbeaty) Define the main consoles inside the respective versioned
     # directories once their contents are stablilized
-    refs = ['refs/branch-heads/4044'],
+    refs = ['refs/branch-heads/4085'],
     title = 'Chromium Beta Console',
     entries = [
         luci.console_view_entry(
@@ -34,9 +34,34 @@ luci.console_view(
             short_name = 'ozo',
         ),
         luci.console_view_entry(
+            builder = 'ci-beta/Linux Builder (dbg)',
+            category = 'chromium.linux|debug|builder',
+            short_name = '64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Linux Tests (dbg)(1)',
+            category = 'chromium.linux|debug|tester',
+            short_name = '64',
+        ),
+        luci.console_view_entry(
             builder = 'ci-beta/Cast Linux',
             category = 'chromium.linux|cast',
             short_name = 'vid',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/fuchsia-arm64-cast',
+            category = 'chromium.linux|fuchsia|cast',
+            short_name = 'a64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/fuchsia-x64-cast',
+            category = 'chromium.linux|fuchsia|cast',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/fuchsia-x64-dbg',
+            category = 'chromium.linux|fuchsia|x64',
+            short_name = 'dbg',
         ),
         luci.console_view_entry(
             builder = 'ci-beta/Fuchsia ARM64',
@@ -63,9 +88,19 @@ luci.console_view(
             short_name = 'arm',
         ),
         luci.console_view_entry(
+            builder = 'ci-beta/chromeos-amd64-generic-dbg',
+            category = 'chromium.chromiumos|simple|debug|x64',
+            short_name = 'dbg',
+        ),
+        luci.console_view_entry(
             builder = 'ci-beta/chromeos-amd64-generic-rel',
             category = 'chromium.chromiumos|simple|release|x64',
             short_name = 'rel',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/chromeos-kevin-rel',
+            category = 'chromium.chromiumos|simple|release',
+            short_name = 'kvn',
         ),
         luci.console_view_entry(
             builder = 'ci-beta/Mac Builder',
@@ -157,6 +192,7 @@ luci.console_view(
             category = 'chromium.memory|linux|asan lsan',
             short_name = 'sbx',
         ),
+
         # TODO(https://crbug.com/922150) Add the following builders to the main
         # console or don't have them be mirrored by main waterfall trybots
         luci.console_view_entry(
@@ -180,9 +216,74 @@ luci.console_view(
             short_name = '32',
         ),
         luci.console_view_entry(
+            builder = 'ci-beta/Android arm64 Builder (dbg)',
+            category = 'chromium.android|builder|arm',
+            short_name = '64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Android x86 Builder (dbg)',
+            category = 'chromium.android|builder|x86',
+            short_name = '32',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Android x64 Builder (dbg)',
+            category = 'chromium.android|builder|x86',
+            short_name = '64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Marshmallow 64 bit Tester',
+            category = 'chromium.android|tester|phone',
+            short_name = 'M',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Nougat Phone Tester',
+            category = 'chromium.android|tester|phone',
+            short_name = 'N',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Oreo Phone Tester',
+            category = 'chromium.android|tester|phone',
+            short_name = 'O',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/android-pie-arm64-dbg',
+            category = 'chromium.android|tester|phone',
+            short_name = 'P',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/android-pie-arm64-rel',
+            category = 'chromium.android|on_cq',
+            short_name = 'P',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Android WebView M (dbg)',
+            category = 'chromium.android|tester|webview',
+            short_name = 'M',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Android WebView N (dbg)',
+            category = 'chromium.android|tester|webview',
+            short_name = 'N',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Android WebView O (dbg)',
+            category = 'chromium.android|tester|webview',
+            short_name = 'O',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Android WebView P (dbg)',
+            category = 'chromium.android|tester|webview',
+            short_name = 'P',
+        ),
+        luci.console_view_entry(
             builder = 'ci-beta/android-cronet-arm-rel',
             category = 'chromium.android|cronet|arm',
             short_name = 'rel',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/android-cronet-arm-dbg',
+            category = 'cronet|arm',
+            short_name = 'dbg',
         ),
         luci.console_view_entry(
             builder = 'ci-beta/android-cronet-kitkat-arm-rel',
@@ -193,6 +294,74 @@ luci.console_view(
             builder = 'ci-beta/android-cronet-lollipop-arm-rel',
             category = 'chromium.android|cronet|test',
             short_name = 'l',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Dawn Linux x64 DEPS Builder',
+            category = 'chromium.dawn|DEPS|Linux|Builder',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Dawn Linux x64 DEPS Release (Intel HD 630)',
+            category = 'chromium.dawn|DEPS|Linux|Intel',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Dawn Linux x64 DEPS Release (NVIDIA)',
+            category = 'chromium.dawn|DEPS|Linux|Nvidia',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Dawn Mac x64 DEPS Builder',
+            category = 'chromium.dawn|DEPS|Mac|Builder',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Dawn Mac x64 DEPS Release (AMD)',
+            category = 'chromium.dawn|DEPS|Mac|AMD',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Dawn Mac x64 DEPS Release (Intel)',
+            category = 'chromium.dawn|DEPS|Mac|Intel',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Dawn Win10 x86 DEPS Builder',
+            category = 'chromium.dawn|DEPS|Windows|Builder',
+            short_name = 'x86',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Dawn Win10 x64 DEPS Builder',
+            category = 'chromium.dawn|DEPS|Windows|Builder',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Dawn Win10 x86 DEPS Release (Intel HD 630)',
+            category = 'chromium.dawn|DEPS|Windows|Intel',
+            short_name = 'x86',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Dawn Win10 x64 DEPS Release (Intel HD 630)',
+            category = 'chromium.dawn|DEPS|Windows|Intel',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Dawn Win10 x86 DEPS Release (NVIDIA)',
+            category = 'chromium.dawn|DEPS|Windows|Nvidia',
+            short_name = 'x86',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Dawn Win10 x64 DEPS Release (NVIDIA)',
+            category = 'chromium.dawn|DEPS|Windows|Nvidia',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/chromeos-kevin-rel-hw-tests',
+            category = 'chromium.fyi|chromeos',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/VR Linux',
+            category = 'chromium.fyi|linux',
         ),
         luci.console_view_entry(
             builder = 'ci-beta/mac-osxbeta-rel',

@@ -36,15 +36,15 @@ using base::UserMetricsAction;
 CriticalNotificationBubbleView::CriticalNotificationBubbleView(
     views::View* anchor_view)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT) {
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_CRITICAL_NOTIFICATION_RESTART));
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                                    l10n_util::GetStringUTF16(IDS_CANCEL));
-  DialogDelegate::set_accept_callback(
+  DialogDelegate::SetAcceptCallback(
       base::BindOnce(&CriticalNotificationBubbleView::OnDialogAccepted,
                      base::Unretained(this)));
-  DialogDelegate::set_cancel_callback(
+  DialogDelegate::SetCancelCallback(
       base::BindOnce(&CriticalNotificationBubbleView::OnDialogCancelled,
                      base::Unretained(this)));
   set_close_on_deactivate(false);

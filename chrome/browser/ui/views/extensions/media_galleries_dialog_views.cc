@@ -79,9 +79,9 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
       auxiliary_button_(nullptr),
       confirm_available_(false),
       accepted_(false) {
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                    controller_->GetAcceptButtonText());
-  DialogDelegate::set_accept_callback(base::BindOnce(
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
       [](MediaGalleriesDialogViews* dialog) { dialog->accepted_ = true; },
       base::Unretained(this)));
 

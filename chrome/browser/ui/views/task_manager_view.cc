@@ -286,15 +286,15 @@ TaskManagerView::TaskManagerView()
       tab_table_parent_(nullptr),
       is_always_on_top_(false) {
   DialogDelegate::set_use_custom_frame(false);
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL));
 
   // Avoid calling Accept() when closing the dialog, since Accept() here means
   // "kill task" (!).
   // TODO(ellyjones): Remove this once the Accept() override is removed from
   // this class.
-  DialogDelegate::set_close_callback(base::DoNothing());
+  DialogDelegate::SetCloseCallback(base::DoNothing());
 
   Init();
   chrome::RecordDialogCreation(chrome::DialogIdentifier::TASK_MANAGER);

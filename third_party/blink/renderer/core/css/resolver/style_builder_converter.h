@@ -36,6 +36,8 @@
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/grid_area.h"
 #include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
 #include "third_party/blink/renderer/core/style/named_grid_lines_map.h"
@@ -321,7 +323,8 @@ T StyleBuilderConverter::ConvertLineWidth(StyleResolverState& state,
   // Reference crbug.com/485650 and crbug.com/382483
   double result =
       primitive_value.ComputeLength<double>(CssToLengthConversionData(state));
-  if (result > 0.0 && result < 1.0)
+  double zoomed_result = state.StyleRef().EffectiveZoom() * result;
+  if (zoomed_result > 0.0 && zoomed_result < 1.0)
     return 1.0;
   return clampTo<T>(RoundForImpreciseConversion<T>(result),
                     defaultMinimumForClamp<T>(), defaultMaximumForClamp<T>());

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WIDGET_WIDGET_BASE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WIDGET_WIDGET_BASE_H_
 
+#include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace cc {
@@ -13,6 +14,7 @@ class LayerTreeHost;
 }  // namespace cc
 
 namespace blink {
+class WidgetBaseClient;
 
 // This class is the foundational class for all widgets that blink creates.
 // (WebPagePopupImpl, WebFrameWidgetBase) will contain an instance of this
@@ -21,7 +23,7 @@ namespace blink {
 // https://docs.google.com/document/d/10uBnSWBaitGsaROOYO155Wb83rjOPtrgrGTrQ_pcssY/edit?ts=5e3b26f7
 class PLATFORM_EXPORT WidgetBase {
  public:
-  WidgetBase();
+  explicit WidgetBase(WidgetBaseClient* client);
   virtual ~WidgetBase();
 
   // Set the current compositor hosts.
@@ -30,10 +32,15 @@ class PLATFORM_EXPORT WidgetBase {
   cc::AnimationHost* AnimationHost() const;
   cc::LayerTreeHost* LayerTreeHost() const;
 
+  // Called to update the document lifecycle, advance the state of animations
+  // and dispatch rAF.
+  void BeginMainFrame(base::TimeTicks frame_time);
+
  private:
   // Not owned, they are owned by the RenderWidget.
   cc::LayerTreeHost* layer_tree_host_ = nullptr;
   cc::AnimationHost* animation_host_ = nullptr;
+  WidgetBaseClient* client_;
 };
 
 }  // namespace blink

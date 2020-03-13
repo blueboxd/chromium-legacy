@@ -18,13 +18,10 @@
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/password_manager/core/browser/sync/password_model_worker.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/engine/passive_model_worker.h"
-#include "components/sync/engine/sequenced_model_worker.h"
-#include "components/sync/engine/ui_model_worker.h"
 #include "components/sync_user_events/user_event_service.h"
 #include "components/version_info/version_info.h"
 #include "components/version_info/version_string.h"
@@ -179,14 +176,8 @@ WebViewSyncClient::GetExtensionsActivity() {
 
 base::WeakPtr<syncer::SyncableService>
 WebViewSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
-  switch (type) {
-    case syncer::PASSWORDS:
-      return password_store_ ? password_store_->GetPasswordSyncableService()
-                             : base::WeakPtr<syncer::SyncableService>();
-    default:
-      NOTREACHED();
-      return base::WeakPtr<syncer::SyncableService>();
-  }
+  NOTREACHED();
+  return base::WeakPtr<syncer::SyncableService>();
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
@@ -204,15 +195,8 @@ scoped_refptr<syncer::ModelSafeWorker>
 WebViewSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   switch (group) {
-    case syncer::GROUP_UI:
-      return new syncer::UIModelWorker(
-          base::CreateSingleThreadTaskRunner({web::WebThread::UI}));
     case syncer::GROUP_PASSIVE:
       return new syncer::PassiveModelWorker();
-    case syncer::GROUP_PASSWORD:
-      if (!password_store_)
-        return nullptr;
-      return new browser_sync::PasswordModelWorker(password_store_);
     default:
       return nullptr;
   }

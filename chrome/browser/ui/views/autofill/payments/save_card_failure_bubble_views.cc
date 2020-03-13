@@ -16,7 +16,7 @@ SaveCardFailureBubbleViews::SaveCardFailureBubbleViews(
     content::WebContents* web_contents,
     SaveCardBubbleController* controller)
     : SaveCardBubbleViews(anchor_view, web_contents, controller) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
 }
 
 std::unique_ptr<views::View>

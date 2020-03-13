@@ -17,7 +17,7 @@
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility.h"
-#include "content/common/accessibility_messages.h"
+#include "content/common/render_accessibility.mojom.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "ui/accessibility/ax_language_detection.h"
 #include "ui/accessibility/ax_node_position.h"
@@ -502,23 +502,23 @@ void BrowserAccessibilityManager::BeforeAccessibilityEvents() {}
 void BrowserAccessibilityManager::FinalizeAccessibilityEvents() {}
 
 void BrowserAccessibilityManager::OnLocationChanges(
-    const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
-  for (size_t i = 0; i < params.size(); ++i) {
-    BrowserAccessibility* obj = GetFromID(params[i].id);
+    const std::vector<mojom::LocationChangesPtr>& changes) {
+  for (auto& change : changes) {
+    BrowserAccessibility* obj = GetFromID(change->id);
     if (!obj)
       continue;
     ui::AXNode* node = obj->node();
-    node->SetLocation(params[i].new_location.offset_container_id,
-                      params[i].new_location.bounds,
-                      params[i].new_location.transform.get());
+    node->SetLocation(change->new_location.offset_container_id,
+                      change->new_location.bounds,
+                      change->new_location.transform.get());
   }
-  SendLocationChangeEvents(params);
+  SendLocationChangeEvents(changes);
 }
 
 void BrowserAccessibilityManager::SendLocationChangeEvents(
-    const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
-  for (size_t i = 0; i < params.size(); ++i) {
-    BrowserAccessibility* obj = GetFromID(params[i].id);
+    const std::vector<mojom::LocationChangesPtr>& changes) {
+  for (auto& change : changes) {
+    BrowserAccessibility* obj = GetFromID(change->id);
     if (obj)
       obj->OnLocationChanged();
   }

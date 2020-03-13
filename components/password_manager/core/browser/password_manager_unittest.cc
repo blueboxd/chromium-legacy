@@ -304,7 +304,7 @@ class PasswordManagerTest : public testing::Test {
   void SetUp() override {
     store_ = new testing::StrictMock<MockPasswordStore>;
     EXPECT_CALL(*store_, ReportMetrics(_, _, _)).Times(AnyNumber());
-    CHECK(store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
+    CHECK(store_->Init(nullptr));
 
     ON_CALL(client_, GetProfilePasswordStore())
         .WillByDefault(Return(store_.get()));

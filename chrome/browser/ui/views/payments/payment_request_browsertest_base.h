@@ -241,6 +241,8 @@ class PaymentRequestBrowserTestBase
 
   bool IsPayButtonEnabled();
 
+  base::string16 GetPrimaryButtonLabel() const;
+
   // Sets proper animation delegates and waits for animation to finish.
   void WaitForAnimation();
   void WaitForAnimation(PaymentRequestDialogView* dialog_view);

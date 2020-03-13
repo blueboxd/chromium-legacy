@@ -25,6 +25,7 @@ import androidx.annotation.NonNull;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -88,7 +89,12 @@ public class DownloadCollectionBridge {
      * @param downloadDelegate The new delegate to be used.
      */
     public static void setDownloadDelegate(DownloadDelegate downloadDelegate) {
-        sDownloadDelegate = downloadDelegate;
+        // TODO(qinmin): On Android O, ClassLoader may need to access disk when
+        // setting the |sDownloadDelegate|. Move this to a background thread.
+        // See http://crbug.com/1061042.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            sDownloadDelegate = downloadDelegate;
+        }
     }
 
     /**

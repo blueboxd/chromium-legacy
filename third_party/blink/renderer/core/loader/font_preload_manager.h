@@ -49,6 +49,8 @@ class CORE_EXPORT FontPreloadManager final {
  private:
   friend class FontPreloadManagerTest;
 
+  void DisableTimeoutForTest();
+
   // State of font preloading before lifecycle updates begin
   enum class State {
     // Rendering hasn't begun. No font preloading yet.

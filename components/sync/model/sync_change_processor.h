@@ -58,8 +58,8 @@ class SyncChangeProcessor {
                                           const std::string& context);
 
   // Adds an observer of local sync changes. This observer is notified when
-  // local sync changes are applied by GenericChangeProcessor. observer is
-  // not owned by the SyncChangeProcessor.
+  // local sync changes are applied. |observer| is not owned by the
+  // SyncChangeProcessor.
   virtual void AddLocalChangeObserver(LocalChangeObserver* observer);
   virtual void RemoveLocalChangeObserver(LocalChangeObserver* observer);
 };

@@ -37,10 +37,10 @@ template <class DialogType>
 class DialogExample::Delegate : public virtual DialogType {
  public:
   explicit Delegate(DialogExample* parent) : parent_(parent) {
-    DialogDelegate::set_buttons(parent_->GetDialogButtons());
-    DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+    DialogDelegate::SetButtons(parent_->GetDialogButtons());
+    DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
                                      parent_->ok_button_label_->GetText());
-    DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+    DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                                      parent_->cancel_button_label_->GetText());
   }
 

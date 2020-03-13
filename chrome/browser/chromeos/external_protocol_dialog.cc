@@ -61,8 +61,8 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
 ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
                                                const GURL& url)
     : creation_time_(base::TimeTicks::Now()), scheme_(url.scheme()) {
-  views::DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
-  views::DialogDelegate::set_button_label(
+  views::DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
+  views::DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT));
 

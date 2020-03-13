@@ -53722,15 +53722,6 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="Profile deleted"/>
 </enum>
 
-<enum name="ProfileAvatarState">
-  <int value="0" label="Signed In: Gaia avatar"/>
-  <int value="1" label="Signed In: Modern avatar"/>
-  <int value="2" label="Signed In: Old avatar"/>
-  <int value="3" label="Signed Out: Default avatar (Grey silhouette)"/>
-  <int value="4" label="Signed Out: Modern avatar"/>
-  <int value="5" label="Signed Out: Old avatar"/>
-</enum>
-
 <enum name="ProfileCreateResult">
   <int value="0" label="Failed locally"/>
   <int value="1" label="Failed remotely"/>
@@ -53855,14 +53846,6 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="17" label="Edit profile button"/>
 </enum>
 
-<enum name="ProfileNameState">
-  <int value="0" label="Gaia name"/>
-  <int value="1" label="Gaia name and custom name"/>
-  <int value="2" label="Gaia name and default name (for unambiguity)"/>
-  <int value="3" label="Custom name only (signed-out)"/>
-  <int value="4" label="Default name only (signed-out)"/>
-</enum>
-
 <enum name="ProfileNetUserCount">
   <int value="0" label="Added new user"/>
   <int value="1" label="Deleted a profile"/>
@@ -53971,13 +53954,6 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 <enum name="ProfileType">
   <int value="0" label="Original (default) profile"/>
   <int value="1" label="Secondary (user-created) profile"/>
-</enum>
-
-<enum name="ProfileUnconsentedPrimaryAccountType">
-  <int value="0" label="Consumer account"/>
-  <int value="1" label="Enterprise account"/>
-  <int value="2" label="Child account"/>
-  <int value="3" label="No account (signed-out)"/>
 </enum>
 
 <enum name="ProfileUpgradeEnrollment">
@@ -66135,6 +66111,17 @@ Full version information for the fingerprint enum values:
   </obsolete>
   <int value="0" label="Was not used in draw"/>
   <int value="1" label="Was used in draw"/>
+</enum>
+
+<enum name="UsedMimeTypeHandler">
+  <summary>
+    Reports the default MIME type handler that is being used to display a file.
+  </summary>
+  <int value="0" label="PdfExtension"/>
+  <int value="1" label="QuickOfficeComponentExtension"/>
+  <int value="2" label="QuickOfficeInternalExtension"/>
+  <int value="3" label="QuickOfficeExtension"/>
+  <int value="4" label="TestExtension"/>
 </enum>
 
 <enum name="UsedOmnibox">

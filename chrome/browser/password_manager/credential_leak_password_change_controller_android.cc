@@ -20,8 +20,12 @@ CredentialLeakPasswordChangeControllerAndroid::
     CredentialLeakPasswordChangeControllerAndroid(
         password_manager::CredentialLeakType leak_type,
         const GURL& origin,
+        const base::string16& username,
         ui::WindowAndroid* window_android)
-    : leak_type_(leak_type), origin_(origin), window_android_(window_android) {}
+    : leak_type_(leak_type),
+      origin_(origin),
+      username_(username),
+      window_android_(window_android) {}
 
 CredentialLeakPasswordChangeControllerAndroid::
     ~CredentialLeakPasswordChangeControllerAndroid() = default;

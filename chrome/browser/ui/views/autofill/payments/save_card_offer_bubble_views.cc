@@ -65,7 +65,7 @@ SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
     content::WebContents* web_contents,
     SaveCardBubbleController* controller)
     : SaveCardBubbleViews(anchor_view, web_contents, controller) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
   legal_message_view_ = DialogDelegate::SetFootnoteView(
       CreateLegalMessageView(controller->GetLegalMessageLines(), this));
   if (legal_message_view_)

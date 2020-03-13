@@ -173,7 +173,7 @@ InfolistWindow::InfolistWindow(views::View* candidate_window,
       title_font_list_(gfx::Font(kJapaneseFontName, kFontSizeDelta + 15)),
       description_font_list_(
           gfx::Font(kJapaneseFontName, kFontSizeDelta + 11)) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   SetCanActivate(false);
   set_accept_events(false);
   set_margins(gfx::Insets());

@@ -1527,21 +1527,6 @@ void WebViewImpl::DidBeginFrame() {
   }
 }
 
-void WebViewImpl::BeginRafAlignedInput() {
-  if (MainFrameImpl() && WebFrameWidgetBase::ShouldRecordMainFrameMetrics())
-    raf_aligned_input_start_time_.emplace(base::TimeTicks::Now());
-}
-
-void WebViewImpl::EndRafAlignedInput() {
-  if (MainFrameImpl() && WebFrameWidgetBase::ShouldRecordMainFrameMetrics()) {
-    DCHECK(raf_aligned_input_start_time_);
-    MainFrameImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
-        LocalFrameUkmAggregator::kHandleInputEvents,
-        raf_aligned_input_start_time_.value(), base::TimeTicks::Now());
-  }
-  raf_aligned_input_start_time_.reset();
-}
-
 void WebViewImpl::BeginUpdateLayers() {
   if (MainFrameImpl())
     update_layers_start_time_.emplace(base::TimeTicks::Now());

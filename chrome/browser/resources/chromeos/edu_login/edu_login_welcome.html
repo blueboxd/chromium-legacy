@@ -1,4 +1,22 @@
-<style include="edu-login-css"></style>
+<style include="edu-login-css">
+  .main-padding {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .image-container {
+    align-items: center;
+    display: flex;
+    flex-grow: 1;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .welcome-image {
+    height: 256px;
+    width: 256px;
+  }
+</style>
 <edu-login-template>
   <span slot="main">
     <div class="main-padding">
@@ -8,6 +26,9 @@
       </if>
       <h1>[[getTitle_()]]</h1>
       <p>[[getBody_()]]</p>
+      <div class="image-container">
+        <img class="welcome-image" src="family_link_logo.svg" alt="">
+      </div>
     </div>
   </span>
   <span slot="buttons">

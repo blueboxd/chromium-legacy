@@ -16,7 +16,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::test::RunClosure;
+using base::test::RunOnceClosure;
 using testing::_;
 using testing::DoAll;
 using testing::Return;
@@ -84,7 +84,7 @@ TEST_F(NullVideoSinkTest, BasicFunctionality) {
         .WillOnce(Return(test_frame));
     WaitableMessageLoopEvent event;
     EXPECT_CALL(*this, FrameReceived(test_frame))
-        .WillOnce(RunClosure(event.GetClosure()));
+        .WillOnce(RunOnceClosure(event.GetClosure()));
     event.RunAndWait();
   }
 
@@ -103,7 +103,7 @@ TEST_F(NullVideoSinkTest, BasicFunctionality) {
         .WillOnce(Return(test_frame_2));
     EXPECT_CALL(*this, FrameReceived(test_frame)).Times(0);
     EXPECT_CALL(*this, FrameReceived(test_frame_2))
-        .WillOnce(RunClosure(event.GetClosure()));
+        .WillOnce(RunOnceClosure(event.GetClosure()));
     event.RunAndWait();
   }
 
@@ -147,7 +147,7 @@ TEST_F(NullVideoSinkTest, ClocklessFunctionality) {
       EXPECT_CALL(*this, Render(current_time + i * interval,
                                 current_time + (i + 1) * interval, false))
           .WillOnce(
-              DoAll(RunClosure(event.GetClosure()), Return(test_frame_2)));
+              DoAll(RunOnceClosure(event.GetClosure()), Return(test_frame_2)));
     }
   }
   event.RunAndWait();

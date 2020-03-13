@@ -145,16 +145,6 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
       bool allowlist_includes_none = false;
       bool allowlist_includes_origin = false;
 
-      // Detect usage of UnsizedMediaPolicy origin trial
-      if (feature == mojom::blink::FeaturePolicyFeature::kUnsizedMedia) {
-        if (delegate) {
-          delegate->CountFeaturePolicyUsage(
-              mojom::WebFeature::kUnsizedMediaPolicy);
-        }
-        // Don't analyze allowlists for origin trial features.
-        count_allowlist_type = false;
-      }
-
       ParsedFeaturePolicyDeclaration allowlist(feature, feature_type);
       // TODO(loonybear): fallback value should be parsed from the new syntax.
       allowlist.fallback_value = GetFallbackValueForFeature(feature);

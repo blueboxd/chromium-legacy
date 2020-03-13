@@ -65,7 +65,6 @@
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/password_manager/core/browser/sync/password_model_worker.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
@@ -79,8 +78,6 @@
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/driver/syncable_service_based_model_type_controller.h"
 #include "components/sync/engine/passive_model_worker.h"
-#include "components/sync/engine/sequenced_model_worker.h"
-#include "components/sync/engine/ui_model_worker.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
@@ -586,11 +583,6 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
           ->GetWhitelistService()
           ->AsWeakPtr();
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
-    case syncer::PASSWORDS: {
-      return profile_password_store_.get()
-                 ? profile_password_store_->GetPasswordSyncableService()
-                 : nullptr;
-    }
 #if defined(OS_CHROMEOS)
     case syncer::ARC_PACKAGE:
       return arc::ArcPackageSyncableService::Get(profile_)->AsWeakPtr();
@@ -674,19 +666,8 @@ scoped_refptr<syncer::ModelSafeWorker>
 ChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   switch (group) {
-    case syncer::GROUP_UI:
-      return new syncer::UIModelWorker(
-          base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
     case syncer::GROUP_PASSIVE:
       return new syncer::PassiveModelWorker();
-    case syncer::GROUP_PASSWORD: {
-      // Note: This is only used for the directory implementation of passwords,
-      // not for USS, but only USS supports the account password store. So we
-      // can safely ignore the account store here.
-      if (!profile_password_store_.get())
-        return nullptr;
-      return new PasswordModelWorker(profile_password_store_);
-    }
     default:
       return nullptr;
   }

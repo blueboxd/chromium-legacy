@@ -63,12 +63,12 @@ RequestFileSystemDialogView::RequestFileSystemDialogView(
     bool writable,
     const base::Callback<void(ui::DialogButton)>& callback)
     : callback_(callback) {
-  DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetDefaultButton(ui::DIALOG_BUTTON_CANCEL);
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(
           IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_ALLOW_BUTTON));
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(
           IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_DENY_BUTTON));
@@ -77,9 +77,9 @@ RequestFileSystemDialogView::RequestFileSystemDialogView(
                          ui::DialogButton button) {
     dialog->callback_.Run(button);
   };
-  DialogDelegate::set_accept_callback(base::BindOnce(
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
       run_callback, base::Unretained(this), ui::DIALOG_BUTTON_OK));
-  DialogDelegate::set_cancel_callback(base::BindOnce(
+  DialogDelegate::SetCancelCallback(base::BindOnce(
       run_callback, base::Unretained(this), ui::DIALOG_BUTTON_CANCEL));
 
   DCHECK(!callback_.is_null());

@@ -131,6 +131,9 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   // Will return nullopt if there is no limit set.
   base::Optional<base::TimeDelta> GetTimeLimit(const AppId& app_id) const;
 
+  // Reporting enablement is set if |enabled| has value.
+  void SetReportingEnabled(base::Optional<bool> enabled);
+
   // Populates |report| with collected app activity. Returns whether any data
   // were reported.
   AppActivityReportInterface::ReportParams GenerateAppActivityReport(
@@ -152,6 +155,9 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   bool SetAppLimit(const AppId& app_id,
                    const base::Optional<AppLimit>& app_limit);
 
+  // Sets the app identified with |app_id| as being always available.
+  void SetAppWhitelisted(const AppId& app_id);
+
   // Reset time has been reached at |timestamp|.
   void OnResetTimeReached(base::Time timestamp);
 
@@ -170,6 +176,15 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
       AppRestriction restriction) const;
 
  private:
+  struct SystemNotification {
+    SystemNotification(base::Optional<base::TimeDelta> app_time_limit,
+                       AppNotification app_notification);
+    SystemNotification(const SystemNotification&);
+    SystemNotification& operator=(const SystemNotification&);
+    base::Optional<base::TimeDelta> time_limit = base::nullopt;
+    AppNotification notification = AppNotification::kUnknown;
+  };
+
   // Bundles detailed data stored for a specific app.
   struct AppDetails {
     AppDetails();
@@ -204,7 +219,21 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
     // Timer set up for when the app time limit is expected to be reached and
     // preceding notifications.
     std::unique_ptr<base::OneShotTimer> app_limit_timer;
+
+    // Boolean to specify if OnAppInstalled call has been received for this
+    // particular application.
+    bool received_app_installed_ = false;
+
+    // At the beginning of a session, we may want to send system notifications
+    // for applications. This may happen if there is an update in
+    // PerAppTimeLimits policy while the user was logged out. In these
+    // scenarios, we have to wait until the application is installed.
+    std::vector<SystemNotification> pending_notifications_;
   };
+
+  // OnAppReinstalled is called when an application has been uninstalled and
+  // then installed again before being removed from app registry.
+  void OnAppReinstalled(const AppId& app_id);
 
   // Removes data older than |timestamp| from the registry.
   // Removes entries for uninstalled apps if there is no more relevant activity
@@ -261,6 +290,13 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   // from base::Time::Now();
   bool ShouldCleanUpStoredPref();
 
+  // Sends system notification for the application.
+  void SendSystemNotificationsForApp(const AppId& app_id);
+
+  // Shows notification or queues it to be shown later.
+  void MaybeShowSystemNotification(const AppId& app_id,
+                                   const SystemNotification& notification);
+
   Profile* const profile_;
 
   // Owned by AppTimeController.
@@ -283,6 +319,9 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
 
   // This records the timestamp of the latest set app limit.
   base::Time latest_app_limit_update_;
+
+  // Boolean to capture if app activity data reporting is enabled.
+  bool activity_reporting_enabled_ = true;
 };
 
 }  // namespace app_time

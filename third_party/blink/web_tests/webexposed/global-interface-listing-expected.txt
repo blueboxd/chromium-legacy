@@ -5438,7 +5438,6 @@ interface Navigator
     getter scheduling
     getter serial
     getter serviceWorker
-    getter sms
     getter storage
     getter usb
     getter userActivation
@@ -6694,14 +6693,6 @@ interface Response
     method formData
     method json
     method text
-interface SMS
-    attribute @@toStringTag
-    getter content
-    method constructor
-interface SMSReceiver
-    attribute @@toStringTag
-    method constructor
-    method receive
 interface SVGAElement : SVGGraphicsElement
     attribute @@toStringTag
     getter href

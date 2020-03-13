@@ -45,6 +45,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kRawClipboard;
 BLINK_COMMON_EXPORT extern const base::Feature kRTCGetDisplayMedia;
 BLINK_COMMON_EXPORT extern const base::Feature kRTCUnifiedPlanByDefault;
 BLINK_COMMON_EXPORT extern const base::Feature kRTCOfferExtmapAllowMixed;
+BLINK_COMMON_EXPORT extern const base::Feature kV8OptimizeWorkersForPerformance;
 BLINK_COMMON_EXPORT extern const base::Feature kWebRtcMultiplexCodec;
 BLINK_COMMON_EXPORT extern const base::Feature kWebRtcHideLocalIpsWithMdns;
 

@@ -201,7 +201,8 @@ void IOSChromePasswordManagerClient::NotifyStorePasswordCalled() {
 
 void IOSChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
     password_manager::CredentialLeakType leak_type,
-    const GURL& origin) {
+    const GURL& origin,
+    const base::string16& username) {
   [delegate_ showPasswordBreachForLeakType:leak_type URL:origin];
 }
 

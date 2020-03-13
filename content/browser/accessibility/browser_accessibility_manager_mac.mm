@@ -239,6 +239,10 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
         mac_notification = NSAccessibilityLayoutCompleteNotification;
       }
       break;
+    case ui::AXEventGenerator::Event::PORTAL_ACTIVATED:
+      DCHECK(IsRootTree());
+      mac_notification = NSAccessibilityLoadCompleteNotification;
+      break;
     case ui::AXEventGenerator::Event::INVALID_STATUS_CHANGED:
       mac_notification = NSAccessibilityInvalidStatusChangedNotification;
       break;

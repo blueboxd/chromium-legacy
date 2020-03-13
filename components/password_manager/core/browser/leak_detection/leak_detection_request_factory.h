@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/optional.h"
 
 namespace network {
 namespace mojom {
@@ -20,12 +21,14 @@ namespace password_manager {
 
 struct LookupSingleLeakPayload;
 struct SingleLookupResponse;
+enum class LeakDetectionError;
 
 // Interface for the class making the network requests for leak detection.
 class LeakDetectionRequestInterface {
  public:
   using LookupSingleLeakCallback =
-      base::OnceCallback<void(std::unique_ptr<SingleLookupResponse>)>;
+      base::OnceCallback<void(std::unique_ptr<SingleLookupResponse>,
+                              base::Optional<LeakDetectionError>)>;
 
   LeakDetectionRequestInterface() = default;
   virtual ~LeakDetectionRequestInterface() = default;

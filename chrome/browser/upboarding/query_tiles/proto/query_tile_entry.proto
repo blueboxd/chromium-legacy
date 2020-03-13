@@ -1,0 +1,41 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package upboarding.query_tiles.proto;
+
+// The QuertTileEntry is the schema to represent data in query tile entry.
+// Next tag:7
+message QueryTileEntry {
+  // Metadata about the image.
+  // Next tag:3
+  message ImageMetadata {
+    // Unique id of the query tile image.
+    string id = 1;
+
+    // Origin URL of the image.
+    string url = 2;
+  }
+
+  // Unique id of a query tile entry.
+  string id = 1;
+
+  // Text of query that send to the search engine.
+  string query_text = 2;
+
+  // Text for accessibility purposes.
+  string display_text = 3;
+
+  // Counterpart of |display_text| for accessibility purposes.
+  string accessiblity_text = 4;
+
+  // A list of image metadatas.
+  repeated ImageMetadata image_metadatas = 5;
+
+  // Sub-level QueryTiles id;
+  repeated string children = 6;
+}

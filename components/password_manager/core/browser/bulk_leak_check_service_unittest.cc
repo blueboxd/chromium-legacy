@@ -419,5 +419,31 @@ TEST_F(BulkLeakCheckServiceTest, CheckFinishedWithError) {
       LeakDetectionError::kInvalidServerResponse, 1);
 }
 
+TEST_F(BulkLeakCheckServiceTest, CheckFinishedWithQuotaLimit) {
+  auto leak_check = std::make_unique<MockBulkLeakCheck>();
+  EXPECT_CALL(*leak_check, CheckCredentials);
+  BulkLeakCheckDelegateInterface* delegate = nullptr;
+  EXPECT_CALL(factory(), TryCreateBulkLeakCheck)
+      .WillOnce(
+          DoAll(SaveArg<0>(&delegate), Return(ByMove(std::move(leak_check)))));
+  service().CheckUsernamePasswordPairs(TestCredentials());
+
+  StrictMock<MockObserver> observer;
+  service().AddObserver(&observer);
+  EXPECT_CALL(observer,
+              OnStateChanged(BulkLeakCheckService::State::kQuotaLimit));
+  delegate->OnError(LeakDetectionError::kQuotaLimit);
+
+  EXPECT_EQ(BulkLeakCheckService::State::kQuotaLimit, service().state());
+  EXPECT_EQ(0u, service().GetPendingChecksCount());
+  base::HistogramTester::CountsMap expected_counts;
+  expected_counts["PasswordManager.BulkCheck.Error"] = 1;
+  EXPECT_THAT(
+      histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
+      expected_counts);
+  histogram_tester().ExpectUniqueSample("PasswordManager.BulkCheck.Error",
+                                        LeakDetectionError::kQuotaLimit, 1);
+}
+
 }  // namespace
 }  // namespace password_manager

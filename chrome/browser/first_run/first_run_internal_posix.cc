@@ -57,8 +57,7 @@ bool ShouldShowFirstRunDialog() {
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // On non-official builds, only --force-first-run-dialog will show the dialog.
   return false;
-#endif
-
+#else
   base::FilePath local_state_path;
   base::PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   if (base::PathExists(local_state_path))
@@ -83,6 +82,7 @@ bool ShouldShowFirstRunDialog() {
       is_opt_in ? metrics::EnableMetricsDefault::OPT_IN
                 : metrics::EnableMetricsDefault::OPT_OUT);
   return true;
+#endif
 }
 #endif  // !OS_CHROMEOS
 

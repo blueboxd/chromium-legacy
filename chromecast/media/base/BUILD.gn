@@ -125,12 +125,13 @@ cast_source_set("video_plane_controller") {
 
 cast_source_set("monotonic_clock") {
   sources = [
-    "monotonic_clock.cc",
-    "monotonic_clock.h",
+    "default_monotonic_clock.cc",
+    "default_monotonic_clock.h",
   ]
   deps = [
     ":buildflags",
     "//base",
+    "//chromecast/media/api:api",
   ]
 }
 

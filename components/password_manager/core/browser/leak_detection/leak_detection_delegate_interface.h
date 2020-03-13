@@ -12,6 +12,9 @@ namespace password_manager {
 
 class LeakCheckCredential;
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Needs to stay in sync with PasswordLeakDetectionError in enums.xml.
 enum class LeakDetectionError {
   // The user isn't signed-in to Chrome.
   kNotSignIn = 0,
@@ -23,7 +26,9 @@ enum class LeakDetectionError {
   kInvalidServerResponse = 3,
   // Error related to network connection.
   kNetworkError = 4,
-  kMaxValue = kNetworkError,
+  // The user ran out of quota.
+  kQuotaLimit = 5,
+  kMaxValue = kQuotaLimit,
 };
 
 using IsLeaked = util::StrongAlias<class IsLeakedTag, bool>;

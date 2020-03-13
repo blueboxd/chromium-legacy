@@ -1248,6 +1248,7 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
           GetNativeTheme()->GetSystemColor(
               ui::NativeTheme::kColorId_DefaultIconColor));
 
+    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:

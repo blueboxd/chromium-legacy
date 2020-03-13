@@ -257,7 +257,8 @@ TEST_F(BulkLeakCheckTest, CheckCredentialsDecryptionError) {
           key_server)));
 
   EXPECT_CALL(delegate(), OnError(LeakDetectionError::kHashingFailure));
-  std::move(payload_and_callback.callback).Run(std::move(response));
+  std::move(payload_and_callback.callback)
+      .Run(std::move(response), base::nullopt);
   RunUntilIdle();
   EXPECT_EQ(0u, bulk_check().GetPendingChecksCount());
 }
@@ -289,7 +290,8 @@ TEST_F(BulkLeakCheckTest, CheckCredentialsNotLeaked) {
                               AllOf(CredentialIs(std::cref(leaked_credential)),
                                     CustomDataIs("custom")),
                               IsLeaked(false)));
-  std::move(payload_and_callback.callback).Run(std::move(response));
+  std::move(payload_and_callback.callback)
+      .Run(std::move(response), base::nullopt);
   RunUntilIdle();
   EXPECT_EQ(0u, bulk_check().GetPendingChecksCount());
 }
@@ -320,7 +322,8 @@ TEST_F(BulkLeakCheckTest, CheckCredentialsLeaked) {
                               AllOf(CredentialIs(std::cref(leaked_credential)),
                                     CustomDataIs("custom")),
                               IsLeaked(true)));
-  std::move(payload_and_callback.callback).Run(std::move(response));
+  std::move(payload_and_callback.callback)
+      .Run(std::move(response), base::nullopt);
   RunUntilIdle();
   EXPECT_EQ(0u, bulk_check().GetPendingChecksCount());
 }

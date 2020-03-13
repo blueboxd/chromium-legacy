@@ -150,6 +150,7 @@ const char kDangerPasswordProtected[] = "passwordProtected";
 const char kDangerTooLarge[] = "blockedTooLarge";
 const char kDangerSensitiveContentWarning[] = "sensitiveContentWarning";
 const char kDangerSensitiveContentBlock[] = "sensitiveContentBlock";
+const char kDangerUnsupportedFileType[] = "unsupportedFileType";
 const char kDangerDeepScannedSafe[] = "deepScannedSafe";
 const char kDangerDeepScannedOpenedDangerous[] = "deepScannedOpenedDangerous";
 const char kDangerPromptForScanning[] = "promptForScanning";
@@ -203,7 +204,8 @@ const char* const kDangerStrings[] = {kDangerSafe,
                                       kDangerSensitiveContentBlock,
                                       kDangerDeepScannedSafe,
                                       kDangerDeepScannedOpenedDangerous,
-                                      kDangerPromptForScanning};
+                                      kDangerPromptForScanning,
+                                      kDangerUnsupportedFileType};
 static_assert(base::size(kDangerStrings) == download::DOWNLOAD_DANGER_TYPE_MAX,
               "kDangerStrings should have DOWNLOAD_DANGER_TYPE_MAX elements");
 

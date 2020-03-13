@@ -1,0 +1,7 @@
+PASS if no crash.
+<script>
+if (window.testRunner)
+  testRunner.dumpAsText();
+
+new Document().createElementNS('http://www.w3.org/1999/xhtml', 'canvas').toBlob(() => {});
+</script>

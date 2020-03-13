@@ -51,7 +51,7 @@ scoped_refptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
     end_scroll_offset = resolved_end_scroll_offset;
   }
 
-  return base::MakeRefCounted<CompositorScrollTimeline>(
+  return CompositorScrollTimeline::Create(
       element_id, orientation, start_scroll_offset, end_scroll_offset,
       time_range.GetAsDouble(), scroll_timeline->GetFillMode());
 }

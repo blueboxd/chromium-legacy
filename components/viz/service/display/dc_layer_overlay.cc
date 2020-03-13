@@ -5,6 +5,7 @@
 #include "components/viz/service/display/dc_layer_overlay.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "components/viz/common/display/renderer_settings.h"
@@ -21,6 +22,8 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gl_utils.h"
+#include "ui/gl/gpu_switching_manager.h"
 
 namespace viz {
 
@@ -318,15 +321,41 @@ DCLayerOverlayProcessor::RenderPassData::RenderPassData(
 DCLayerOverlayProcessor::RenderPassData::~RenderPassData() = default;
 
 DCLayerOverlayProcessor::DCLayerOverlayProcessor(
-    const OutputSurface::Capabilities& capabilities,
     const RendererSettings& settings)
-    : has_hw_overlay_support_(capabilities.supports_dc_video_overlays),
-      show_debug_borders_(settings.show_dc_layer_debug_borders) {}
+    : show_debug_borders_(settings.show_dc_layer_debug_borders),
+      viz_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+  UpdateHasHwOverlaySupport();
+  ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
+}
 
 DCLayerOverlayProcessor::DCLayerOverlayProcessor()
     : has_hw_overlay_support_(true), show_debug_borders_(false) {}
 
-DCLayerOverlayProcessor::~DCLayerOverlayProcessor() = default;
+DCLayerOverlayProcessor::~DCLayerOverlayProcessor() {
+  ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
+}
+
+// Called on the Viz Compositor thread
+void DCLayerOverlayProcessor::UpdateHasHwOverlaySupport() {
+  DCHECK(viz_task_runner_->BelongsToCurrentThread());
+  has_hw_overlay_support_ = gl::AreOverlaysSupportedWin();
+}
+
+// Not on the Viz Compositor thread
+void DCLayerOverlayProcessor::OnDisplayAdded() {
+  viz_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DCLayerOverlayProcessor::UpdateHasHwOverlaySupport,
+                     base::Unretained(this)));
+}
+
+// Not on the Viz Compositor thread
+void DCLayerOverlayProcessor::OnDisplayRemoved() {
+  viz_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DCLayerOverlayProcessor::UpdateHasHwOverlaySupport,
+                     base::Unretained(this)));
+}
 
 void DCLayerOverlayProcessor::Process(
     DisplayResourceProvider* resource_provider,

@@ -15,11 +15,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_api.pb.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_utils.h"
 #include "components/password_manager/core/browser/leak_detection/single_lookup_response.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -132,11 +134,15 @@ void LeakDetectionRequest::OnLookupSingleLeakResponse(
     RecordLookupResponseResult(LeakLookupResponseResult::kFetchError);
     DLOG(ERROR) << "Empty Lookup Single Leak Response";
     int response_code = -1;
+    LeakDetectionError error = LeakDetectionError::kNetworkError;
     if (simple_url_loader_->ResponseInfo() &&
         simple_url_loader_->ResponseInfo()->headers) {
       response_code =
           simple_url_loader_->ResponseInfo()->headers->response_code();
       DLOG(ERROR) << "HTTP Response Code: " << response_code;
+      error = response_code == net::HTTP_TOO_MANY_REQUESTS
+                  ? LeakDetectionError::kQuotaLimit
+                  : LeakDetectionError::kInvalidServerResponse;
     }
 
     base::UmaHistogramSparse("PasswordManager.LeakDetection.HttpResponseCode",
@@ -148,7 +154,7 @@ void LeakDetectionRequest::OnLookupSingleLeakResponse(
     base::UmaHistogramSparse("PasswordManager.LeakDetection.NetErrorCode",
                              -net_error);
 
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(nullptr, error);
     return;
   }
 
@@ -160,7 +166,8 @@ void LeakDetectionRequest::OnLookupSingleLeakResponse(
     RecordLookupResponseResult(LeakLookupResponseResult::kParseError);
     DLOG(ERROR) << "Could not parse response: "
                 << base::HexEncode(response->data(), response->size());
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(nullptr,
+                            LeakDetectionError::kInvalidServerResponse);
     return;
   }
 
@@ -176,7 +183,7 @@ void LeakDetectionRequest::OnLookupSingleLeakResponse(
   base::UmaHistogramCounts100000(
       "PasswordManager.LeakDetection.SingleLeakResponsePrefixes",
       single_lookup_response->encrypted_leak_match_prefixes.size());
-  std::move(callback).Run(std::move(single_lookup_response));
+  std::move(callback).Run(std::move(single_lookup_response), base::nullopt);
 }
 
 }  // namespace password_manager

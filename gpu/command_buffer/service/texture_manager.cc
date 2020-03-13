@@ -2315,7 +2315,7 @@ scoped_refptr<TextureRef>
 
 bool TextureManager::ValidForTarget(
     GLenum target, GLint level, GLsizei width, GLsizei height, GLsizei depth) {
-  if (level < 0)
+  if (level < 0 || level >= MaxLevelsForTarget(target))
     return false;
   GLsizei max_size = MaxSizeForTarget(target) >> level;
   GLsizei max_depth =

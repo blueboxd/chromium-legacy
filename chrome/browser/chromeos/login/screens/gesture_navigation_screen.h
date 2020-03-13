@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_GESTURE_NAVIGATION_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_GESTURE_NAVIGATION_SCREEN_H_
 
+#include <map>
 #include <string>
 
 #include "base/callback.h"
@@ -28,6 +29,9 @@ class GestureNavigationScreen : public BaseScreen {
     exit_callback_ = exit_callback;
   }
 
+  // Called when the currently shown page is changed.
+  void GesturePageChange(const std::string& new_page);
+
  protected:
   // BaseScreen:
   void ShowImpl() override;
@@ -35,8 +39,21 @@ class GestureNavigationScreen : public BaseScreen {
   void OnUserAction(const std::string& action_id) override;
 
  private:
+  // Record metrics for the elapsed time that each page was shown for.
+  void RecordPageShownTimeMetrics();
+
   GestureNavigationScreenView* view_;
   base::RepeatingClosure exit_callback_;
+
+  // Used to keep track of the current elapsed time that each page has been
+  // shown for.
+  std::map<std::string, base::TimeDelta> page_times_;
+
+  // The current page that is shown on the gesture navigation screen.
+  std::string current_page_;
+
+  // The starting time for the most recently shown page.
+  base::TimeTicks start_time_;
 };
 
 }  // namespace chromeos

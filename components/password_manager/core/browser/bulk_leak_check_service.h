@@ -54,6 +54,8 @@ class BulkLeakCheckService : public KeyedService,
     kNetworkError,
     // Error related to the password leak Google service.
     kServiceError,
+    // Error related to the quota limit of the password leak Google service.
+    kQuotaLimit,
   };
 
   class Observer : public base::CheckedObserver {

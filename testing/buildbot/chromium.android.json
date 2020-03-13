@@ -1758,6 +1758,12 @@
         "test_target": "//components/background_task_scheduler:components_background_task_scheduler_junit_tests"
       },
       {
+        "name": "components_embedder_support_junit_tests",
+        "swarming": {},
+        "test": "components_embedder_support_junit_tests",
+        "test_target": "//components/embedder_support/android:components_embedder_support_junit_tests"
+      },
+      {
         "name": "components_gcm_driver_junit_tests",
         "swarming": {},
         "test": "components_gcm_driver_junit_tests",
@@ -25903,6 +25909,12 @@
         "test_target": "//components/background_task_scheduler:components_background_task_scheduler_junit_tests"
       },
       {
+        "name": "components_embedder_support_junit_tests",
+        "swarming": {},
+        "test": "components_embedder_support_junit_tests",
+        "test_target": "//components/embedder_support/android:components_embedder_support_junit_tests"
+      },
+      {
         "name": "components_gcm_driver_junit_tests",
         "swarming": {},
         "test": "components_gcm_driver_junit_tests",
@@ -30575,7 +30587,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "L",
+              "device_os": "LMY48M",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -30621,7 +30633,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "L",
+              "device_os": "LMY48M",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -30668,7 +30680,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "L",
+              "device_os": "LMY48M",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -30715,7 +30727,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "L",
+              "device_os": "LMY48M",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -30762,7 +30774,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "L",
+              "device_os": "LMY48M",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -30809,7 +30821,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "L",
+              "device_os": "LMY48M",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -30856,7 +30868,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "L",
+              "device_os": "LMY48M",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -30903,7 +30915,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "L",
+              "device_os": "LMY48M",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -34279,6 +34291,13 @@
         "swarming": {},
         "test": "components_background_task_scheduler_junit_tests",
         "test_target": "//components/background_task_scheduler:components_background_task_scheduler_junit_tests"
+      },
+      {
+        "isolate_coverage_data": true,
+        "name": "components_embedder_support_junit_tests",
+        "swarming": {},
+        "test": "components_embedder_support_junit_tests",
+        "test_target": "//components/embedder_support/android:components_embedder_support_junit_tests"
       },
       {
         "isolate_coverage_data": true,

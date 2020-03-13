@@ -511,7 +511,7 @@ int PropertyTreeManager::EnsureCompositorClipNode(
 
   cc::ClipNode& compositor_node = *GetClipTree().Node(id);
 
-  compositor_node.clip = clip_node.ClipRect().Rect();
+  compositor_node.clip = clip_node.PixelSnappedClipRect().Rect();
   compositor_node.transform_id =
       EnsureCompositorTransformNode(clip_node.LocalTransformSpace());
   compositor_node.clip_type = cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP;
@@ -797,7 +797,7 @@ bool PropertyTreeManager::CurrentEffectMayBe2dAxisMisalignedToRenderSurface() {
 PropertyTreeManager::CcEffectType PropertyTreeManager::SyntheticEffectType(
     const ClipPaintPropertyNode& clip) {
   unsigned effect_type = CcEffectType::kEffect;
-  if (clip.ClipRect().IsRounded() || clip.ClipPath())
+  if (clip.PixelSnappedClipRect().IsRounded() || clip.ClipPath())
     effect_type |= CcEffectType::kSyntheticForNonTrivialClip;
 
   // Cc requires that a rectangluar clip is 2d-axis-aligned with the render
@@ -838,7 +838,7 @@ bool PropertyTreeManager::SupportsShaderBasedRoundedCorner(
     return size.Width() == size.Height();
   };
 
-  const FloatRoundedRect::Radii& radii = clip.ClipRect().GetRadii();
+  const FloatRoundedRect::Radii& radii = clip.PixelSnappedClipRect().GetRadii();
   if (!WidthAndHeightAreTheSame(radii.TopLeft()) ||
       !WidthAndHeightAreTheSame(radii.TopRight()) ||
       !WidthAndHeightAreTheSame(radii.BottomRight()) ||
@@ -975,7 +975,7 @@ PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
       if (SupportsShaderBasedRoundedCorner(*pending_clip.clip,
                                            pending_clip.type, next_effect)) {
         synthetic_effect.rounded_corner_bounds =
-            gfx::RRectF(pending_clip.clip->ClipRect());
+            gfx::RRectF(pending_clip.clip->PixelSnappedClipRect());
         synthetic_effect.is_fast_rounded_corner = true;
 
         // Nested rounded corner clips need to force render surfaces for
@@ -993,7 +993,7 @@ PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
         }
       } else {
         synthetic_effect.render_surface_reason =
-            pending_clip.clip->ClipRect().IsRounded()
+            pending_clip.clip->PixelSnappedClipRect().IsRounded()
                 ? cc::RenderSurfaceReason::kRoundedCorner
                 : cc::RenderSurfaceReason::kClipPath;
       }

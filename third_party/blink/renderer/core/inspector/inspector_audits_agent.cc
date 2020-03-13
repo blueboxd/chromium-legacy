@@ -106,20 +106,20 @@ protocol::Response InspectorAuditsAgent::getEncodedResponse(
   bool is_base64_encoded;
   Response response =
       network_agent_->GetResponseBody(request_id, &body, &is_base64_encoded);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   Vector<char> base64_decoded_buffer;
   if (!is_base64_encoded || !Base64Decode(body, base64_decoded_buffer) ||
       base64_decoded_buffer.size() == 0) {
-    return Response::Error("Failed to decode original image");
+    return Response::ServerError("Failed to decode original image");
   }
 
   Vector<unsigned char> encoded_image;
   if (!EncodeAsImage(base64_decoded_buffer.data(), base64_decoded_buffer.size(),
                      encoding, quality.fromMaybe(kDefaultEncodeQuality),
                      &encoded_image)) {
-    return Response::Error("Could not encode image with given settings");
+    return Response::ServerError("Could not encode image with given settings");
   }
 
   *out_original_size = static_cast<int>(base64_decoded_buffer.size());
@@ -128,27 +128,27 @@ protocol::Response InspectorAuditsAgent::getEncodedResponse(
   if (!size_only.fromMaybe(false)) {
     *out_body = protocol::Binary::fromVector(std::move(encoded_image));
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorAuditsAgent::enable() {
   if (enabled_.Get()) {
-    return Response::OK();
+    return Response::Success();
   }
 
   enabled_.Set(true);
   InnerEnable();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorAuditsAgent::disable() {
   if (!enabled_.Get()) {
-    return Response::OK();
+    return Response::Success();
   }
 
   enabled_.Clear();
   instrumenting_agents_->RemoveInspectorAuditsAgent(this);
-  return Response::OK();
+  return Response::Success();
 }
 
 void InspectorAuditsAgent::Restore() {

@@ -459,6 +459,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // call to CachingAsyncHitTest().
   void CacheHitTestResult(BrowserAccessibility* hit_test_result);
 
+  // Called when |this| is an accessibility manager for a portal's main frame,
+  // and when that portal is activated.
+  void OnPortalActivated();
+
  protected:
   BrowserAccessibilityManager(BrowserAccessibilityDelegate* delegate,
                               BrowserAccessibilityFactory* factory);

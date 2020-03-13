@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "build/chromecast_buildflags.h"
 #include "components/viz/common/switches.h"
+#include "components/viz/common/viz_utils.h"
 #include "gpu/config/gpu_finch_features.h"
 
 #if defined(OS_ANDROID)
@@ -97,6 +98,8 @@ bool IsRecordingSkPicture() {
 
 #if defined(OS_ANDROID)
 bool IsDynamicColorGamutEnabled() {
+  if (viz::AlwaysUseWideColorGamut())
+    return false;
   return base::FeatureList::IsEnabled(kDynamicColorGamut);
 }
 #endif

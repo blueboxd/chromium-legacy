@@ -553,9 +553,27 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
                                                  value);
   }
 
+  void SetBlockUnsupportedFiletypePref(BlockUnsupportedFiletypesValues value) {
+    g_browser_process->local_state()->SetInteger(
+        prefs::kBlockUnsupportedFiletypes, value);
+  }
+
   void SetSendFilesForMalwareCheckPref(SendFilesForMalwareCheckValues value) {
     profile()->GetPrefs()->SetInteger(
         prefs::kSafeBrowsingSendFilesForMalwareCheck, value);
+  }
+
+  void SetCheckContentCompliancePref(CheckContentComplianceValues value) {
+    g_browser_process->local_state()->SetInteger(prefs::kCheckContentCompliance,
+                                                 value);
+  }
+
+  void SetUrlToCheckContentCompliance(const std::string& url_pattern) {
+    base::ListValue pattern_list;
+    pattern_list.Append(url_pattern);
+    g_browser_process->local_state()->Set(
+        prefs::kURLsToCheckComplianceOfDownloadedContent,
+        std::move(pattern_list));
   }
 
   // Helper function to simulate a user gesture, then a link click.
@@ -3036,6 +3054,78 @@ TEST_P(DeepScanningDownloadTest, LargeFileBlockedByPreference) {
 
   {
     SetBlockLargeFilesPref(BlockLargeFileTransferValues::BLOCK_NONE);
+    PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
+
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item,
+        base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
+                            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadCheckResult::UNKNOWN));
+    EXPECT_TRUE(HasClientDownloadRequest());
+    ClearClientDownloadRequest();
+  }
+}
+
+TEST_P(DeepScanningDownloadTest, UnsupportedFiletypeBlockedByPreference) {
+  if (!base::FeatureList::IsEnabled(kMalwareScanEnabled) &&
+      !base::FeatureList::IsEnabled(kContentComplianceEnabled))
+    return;
+
+  base::FilePath test_file;
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_file));
+  test_file = test_file.AppendASCII("safe_browsing")
+                  .AppendASCII("download_protection")
+                  .AppendASCII("signed.exe");
+
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItemWithFullPaths(
+      &item, {"http://www.evil.com/signed.exe"},  // url_chain
+      "http://www.google.com/",                   // referrer
+      test_file,                                  // tmp_path
+      temp_dir_.GetPath().Append(
+          FILE_PATH_LITERAL("signed.exe")));  // final_path
+  content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
+
+  TestBinaryUploadService* test_upload_service =
+      static_cast<TestBinaryUploadService*>(
+          sb_service_->GetBinaryUploadService(profile()));
+  test_upload_service->SetResponse(
+      BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE,
+      DeepScanningClientResponse());
+
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
+      .Times(2);
+  EXPECT_CALL(*binary_feature_extractor_.get(),
+              ExtractImageFeatures(
+                  tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
+      .Times(2);
+
+  SetCheckContentCompliancePref(CheckContentComplianceValues::CHECK_DOWNLOADS);
+  SetUrlToCheckContentCompliance("www.evil.com");
+
+  {
+    SetBlockUnsupportedFiletypePref(
+        BlockUnsupportedFiletypesValues::BLOCK_UNSUPPORTED_FILETYPES_DOWNLOADS);
+    PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
+
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item,
+        base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
+                            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadCheckResult::BLOCKED_UNSUPPORTED_FILE_TYPE));
+    EXPECT_TRUE(HasClientDownloadRequest());
+  }
+
+  {
+    SetBlockUnsupportedFiletypePref(
+        BlockUnsupportedFiletypesValues::BLOCK_UNSUPPORTED_FILETYPES_NONE);
     PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
     RunLoop run_loop;

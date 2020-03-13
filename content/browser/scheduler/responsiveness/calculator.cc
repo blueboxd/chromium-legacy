@@ -7,7 +7,9 @@
 #include <algorithm>
 #include <set>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -63,7 +65,23 @@ Calculator::Jank::Jank(base::TimeTicks start_time, base::TimeTicks end_time)
 
 Calculator::Calculator()
     : last_calculation_time_(base::TimeTicks::Now()),
-      most_recent_activity_time_(last_calculation_time_) {}
+      most_recent_activity_time_(last_calculation_time_)
+#if defined(OS_ANDROID)
+      ,
+      application_status_listener_(
+          base::android::ApplicationStatusListener::New(
+              base::BindRepeating(&Calculator::OnApplicationStateChanged,
+                                  // Listener is destroyed at destructor, and
+                                  // object will be alive for any callback.
+                                  base::Unretained(this)))) {
+  OnApplicationStateChanged(
+      base::android::ApplicationStatusListener::GetState());
+}
+#else
+{
+}
+#endif
+
 Calculator::~Calculator() = default;
 
 void Calculator::TaskOrEventFinishedOnUIThread(
@@ -138,7 +156,11 @@ void Calculator::CalculateResponsivenessIfNecessary(
   // Chrome is not suspended, there is a steady stream of tasks and events on
   // the UI thread. If there's been a significant amount of time since the last
   // calculation, then it's likely because Chrome was suspended.
-  if (current_time - last_activity_time > kSuspendInterval) {
+  bool is_suspended = current_time - last_activity_time > kSuspendInterval;
+#if defined(OS_ANDROID)
+  is_suspended |= !is_application_visible_;
+#endif
+  if (is_suspended) {
     last_calculation_time_ = current_time;
     GetExecutionJanksOnUIThread().clear();
     GetQueueAndExecutionJanksOnUIThread().clear();
@@ -258,6 +280,26 @@ Calculator::JankList Calculator::TakeJanksOlderThanTime(
   janks->erase(janks->begin(), first_jank_to_keep);
   return janks_to_return;
 }
+
+#if defined(OS_ANDROID)
+void Calculator::OnApplicationStateChanged(
+    base::android::ApplicationState state) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  switch (state) {
+    case base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES:
+    case base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES:
+      // The application is still visible and partially hidden in paused state.
+      is_application_visible_ = true;
+      break;
+    case base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES:
+    case base::android::APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES:
+      is_application_visible_ = false;
+      break;
+    case base::android::APPLICATION_STATE_UNKNOWN:
+      break;  // Keep in previous state.
+  }
+}
+#endif
 
 }  // namespace responsiveness
 }  // namespace content

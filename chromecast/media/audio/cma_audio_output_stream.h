@@ -17,7 +17,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromecast/common/mojom/multiroom.mojom.h"
-#include "chromecast/media/cma/backend/cma_backend.h"
+#include "chromecast/media/api/cma_backend.h"
 #include "media/audio/audio_io.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_timestamp_helper.h"

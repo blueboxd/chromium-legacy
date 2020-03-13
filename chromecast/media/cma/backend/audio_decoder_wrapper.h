@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "chromecast/media/api/cma_backend.h"
 #include "chromecast/media/cma/backend/audio_decoder_software_wrapper.h"
-#include "chromecast/media/cma/backend/cma_backend.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 

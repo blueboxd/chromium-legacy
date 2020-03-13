@@ -225,6 +225,17 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
   }
 
   if (!base::FeatureList::IsEnabled(security_state::features::kSafetyTipUI)) {
+    // When the feature isn't enabled, we 'ignore' the UI after the first visit
+    // to make it easier to disambiguate the control groups' first visit from
+    // subsequent navigations to the flagged page in metrics. Since the user
+    // never sees the UI, this is a no-op from their perspective.
+    if (result.safety_tip_status ==
+            security_state::SafetyTipStatus::kLookalike ||
+        result.safety_tip_status ==
+            security_state::SafetyTipStatus::kBadReputation) {
+      ReputationService::Get(profile_)->OnUIDisabledFirstVisit(result.url);
+    }
+
     FinalizeReputationCheckWhenTipNotShown(record_ukm_if_tip_not_shown, result,
                                            navigation_source_id);
     return;

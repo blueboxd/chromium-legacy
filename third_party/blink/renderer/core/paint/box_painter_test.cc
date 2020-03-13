@@ -294,7 +294,8 @@ TEST_P(BoxPainterTest, ScrollHitTestProperties) {
   EXPECT_EQ(nullptr, scroll_hit_test_transform.ScrollNode());
   EXPECT_EQ(&root_transform, scroll_hit_test_transform.Parent());
   const auto& scroll_hit_test_clip = scroll_hit_test_chunk.properties.Clip();
-  EXPECT_EQ(FloatRect(0, 0, 800, 600), scroll_hit_test_clip.ClipRect().Rect());
+  EXPECT_EQ(FloatRect(0, 0, 800, 600),
+            scroll_hit_test_clip.UnsnappedClipRect().Rect());
 
   // The scrolled contents should be scrolled and clipped.
   const auto& contents_chunk = paint_chunks[3];
@@ -303,7 +304,8 @@ TEST_P(BoxPainterTest, ScrollHitTestProperties) {
   EXPECT_EQ(IntSize(200, 300), contents_scroll->ContentsSize());
   EXPECT_EQ(IntRect(0, 0, 200, 200), contents_scroll->ContainerRect());
   const auto& contents_clip = contents_chunk.properties.Clip();
-  EXPECT_EQ(FloatRect(0, 0, 200, 200), contents_clip.ClipRect().Rect());
+  EXPECT_EQ(FloatRect(0, 0, 200, 200),
+            contents_clip.UnsnappedClipRect().Rect());
 
   // The scroll paint chunk maintains a reference to a scroll translation node
   // and the contents should be scrolled by this node.

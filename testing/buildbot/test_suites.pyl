@@ -744,6 +744,7 @@
       'chrome_java_test_pagecontroller_junit_tests': {},
       'chrome_junit_tests': {},
       'components_background_task_scheduler_junit_tests': {},
+      'components_embedder_support_junit_tests': {},
       'components_gcm_driver_junit_tests': {},
       'components_permissions_junit_tests': {},
       'components_policy_junit_tests': {},
@@ -2637,236 +2638,75 @@
     },
 
     'ios_common_tests': {
-      'boringssl_crypto_tests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'boringssl_ssl_tests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'crypto_unittests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'google_apis_unittests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'ios_components_unittests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'ios_net_unittests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'ios_remoting_unittests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'ios_testing_unittests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'net_unittests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'services_unittests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'sql_unittests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'url_unittests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
+      'boringssl_crypto_tests': {},
+      'boringssl_ssl_tests': {},
+      'crypto_unittests': {},
+      'google_apis_unittests': {},
+      'ios_components_unittests': {},
+      'ios_net_unittests': {},
+      'ios_remoting_unittests': {},
+      'ios_testing_unittests': {},
+      'net_unittests': {},
+      'services_unittests': {},
+      'sql_unittests': {},
+      'url_unittests': {},
     },
 
     'ios_eg2_tests': {
-      'ios_chrome_bookmarks_eg2tests_module': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'ios_chrome_integration_eg2tests_module': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'ios_chrome_settings_eg2tests_module': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'ios_chrome_signin_eg2tests_module': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'ios_chrome_smoke_eg2tests_module': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
+      'ios_chrome_bookmarks_eg2tests_module': {},
+      'ios_chrome_integration_eg2tests_module': {},
+      'ios_chrome_settings_eg2tests_module': {},
+      'ios_chrome_signin_eg2tests_module': {},
+      'ios_chrome_smoke_eg2tests_module': {},
       'ios_chrome_ui_eg2tests_module': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        },
         'swarming': {
           'shards': 2,
-        }
+        },
       },
-      'ios_chrome_web_eg2tests_module': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'ios_showcase_eg2tests_module': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'ios_web_shell_eg2tests_module': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
+      'ios_chrome_web_eg2tests_module': {},
+      'ios_showcase_eg2tests_module': {},
+      'ios_web_shell_eg2tests_module': {},
     },
 
     'ios_eg_cq_tests': {
       'ios_chrome_integration_egtests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        },
         'swarming': {
           'shards': 3,
         }
       },
-      'ios_chrome_signin_egtests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        },
-      },
+      'ios_chrome_signin_egtests': {},
       'ios_chrome_ui_egtests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        },
         'swarming': {
           'shards': 5,
         }
       },
-      'ios_web_shell_egtests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
+      'ios_web_shell_egtests': {},
     },
 
     'ios_eg_tests': {
-      'ios_chrome_bookmarks_egtests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'ios_chrome_reading_list_egtests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
+      'ios_chrome_bookmarks_egtests': {},
+      'ios_chrome_reading_list_egtests': {},
       'ios_chrome_settings_egtests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        },
         'swarming': {
           'shards': 3,
-        }
+        },
       },
-      'ios_chrome_translate_egtests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'ios_chrome_web_egtests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'ios_showcase_egtests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
+      'ios_chrome_translate_egtests': {},
+      'ios_chrome_web_egtests': {},
+      'ios_showcase_egtests': {},
     },
 
     'ios_screen_size_dependent_tests': {
-      'base_unittests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'components_unittests': {
-        'merge': {
-          'args': [],
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'gfx_unittests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'ios_chrome_unittests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'ios_web_inttests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'ios_web_unittests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'ios_web_view_inttests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'ios_web_view_unittests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'skia_unittests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
-      'ui_base_unittests': {
-        'merge': {
-          'script': '//testing/merge_scripts/standard_isolated_script_merge.py'
-        }
-      },
+      'base_unittests': {},
+      'components_unittests': {},
+      'gfx_unittests': {},
+      'ios_chrome_unittests': {},
+      'ios_web_inttests': {},
+      'ios_web_unittests': {},
+      'ios_web_view_inttests': {},
+      'ios_web_view_unittests': {},
+      'skia_unittests': {},
+      'ui_base_unittests': {},
     },
 
     # END tests which run on the GPU bots
@@ -3432,7 +3272,7 @@
           '--additional-driver-flag=--disable-features=UseSkiaRenderer',
           '--skipped=always',
           '--fuzzy-diff',
-	  '--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter',
+          '--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter',
         ],
         'isolate_name': 'blink_web_tests',
         'merge': {
@@ -4718,7 +4558,7 @@
   ##############################################################################
 
   'matrix_compound_suites': {
-    'ios13_beta_simulator_gtests': {
+    'ios13_beta_simulator_tests': {
       'ios_common_tests': {
         'variants': [
           'SIM_IPHONE_X_13_3',
@@ -4761,7 +4601,8 @@
         ],
       },
     },
-    'ios_code_coverage_gtests': {
+
+    'ios_code_coverage_tests': {
       'ios_common_tests': {
         'variants': [
           'SIM_IPHONE_X_13_3',

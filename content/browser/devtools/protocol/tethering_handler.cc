@@ -291,7 +291,7 @@ void TetheringHandler::TetheringImpl::Bind(
     base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&BindCallback::sendFailure, std::move(callback),
-                       Response::Error("Port already bound")));
+                       Response::ServerError("Port already bound")));
     return;
   }
 
@@ -303,7 +303,7 @@ void TetheringHandler::TetheringImpl::Bind(
     base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&BindCallback::sendFailure, std::move(callback),
-                       Response::Error("Could not bind port")));
+                       Response::ServerError("Could not bind port")));
     return;
   }
 
@@ -386,7 +386,7 @@ void TetheringHandler::Bind(
 
   if (!Activate()) {
     callback->sendFailure(
-        Response::Error("Tethering is used by another connection"));
+        Response::ServerError("Tethering is used by another connection"));
     return;
   }
 
@@ -400,7 +400,7 @@ void TetheringHandler::Unbind(
     int port, std::unique_ptr<UnbindCallback> callback) {
   if (!Activate()) {
     callback->sendFailure(
-        Response::Error("Tethering is used by another connection"));
+        Response::ServerError("Tethering is used by another connection"));
     return;
   }
 

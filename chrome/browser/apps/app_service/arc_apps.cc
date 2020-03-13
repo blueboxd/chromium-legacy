@@ -4,7 +4,7 @@
 
 #include "chrome/browser/apps/app_service/arc_apps.h"
 
-#include <memory>
+#include <algorithm>
 #include <utility>
 
 #include "ash/public/cpp/app_menu_constants.h"
@@ -647,7 +647,8 @@ void ArcApps::GetMenuModel(const std::string& app_id,
     AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, &menu_items);
   }
 
-  std::move(callback).Run(std::move(menu_items));
+  BuildMenuForShortcut(app_info->package_name, std::move(menu_items),
+                       std::move(callback));
 }
 
 void ArcApps::OpenNativeSettings(const std::string& app_id) {
@@ -1088,6 +1089,57 @@ void ArcApps::UpdateAppIntentFilters(
   for (auto& arc_intent_filter : arc_intent_filters) {
     intent_filters->push_back(ConvertArcIntentFilter(arc_intent_filter));
   }
+}
+
+void ArcApps::BuildMenuForShortcut(const std::string& package_name,
+                                   apps::mojom::MenuItemsPtr menu_items,
+                                   GetMenuModelCallback callback) {
+  // The previous request is cancelled, and start a new request if the callback
+  // of the previous request is not called.
+  arc_app_shortcuts_request_ =
+      std::make_unique<arc::ArcAppShortcutsRequest>(base::BindOnce(
+          &ArcApps::OnGetAppShortcutItems, weak_ptr_factory_.GetWeakPtr(),
+          base::TimeTicks::Now(), std::move(menu_items), std::move(callback)));
+  arc_app_shortcuts_request_->StartForPackage(package_name);
+}
+
+void ArcApps::OnGetAppShortcutItems(
+    const base::TimeTicks start_time,
+    apps::mojom::MenuItemsPtr menu_items,
+    GetMenuModelCallback callback,
+    std::unique_ptr<arc::ArcAppShortcutItems> app_shortcut_items) {
+  if (!app_shortcut_items || app_shortcut_items->empty()) {
+    // No need log time for empty requests.
+    std::move(callback).Run(std::move(menu_items));
+    arc_app_shortcuts_request_.reset();
+    return;
+  }
+
+  arc::ArcAppShortcutItems& items = *app_shortcut_items;
+  // Sort the shortcuts based on two rules: (1) Static (declared in manifest)
+  // shortcuts and then dynamic shortcuts; (2) Within each shortcut type
+  // (static and dynamic), shortcuts are sorted in order of increasing rank.
+  std::sort(items.begin(), items.end(),
+            [](const arc::ArcAppShortcutItem& item1,
+               const arc::ArcAppShortcutItem& item2) {
+              return std::tie(item1.type, item1.rank) <
+                     std::tie(item2.type, item2.rank);
+            });
+
+  AddSeparator(ui::DOUBLE_SEPARATOR, &menu_items);
+  int command_id = ash::LAUNCH_APP_SHORTCUT_FIRST;
+  for (const auto& item : items) {
+    if (command_id != ash::LAUNCH_APP_SHORTCUT_FIRST) {
+      AddSeparator(ui::PADDED_SEPARATOR, &menu_items);
+    }
+    AddArcCommandItem(command_id++, item.shortcut_id, item.short_label,
+                      item.icon, &menu_items);
+  }
+  std::move(callback).Run(std::move(menu_items));
+  arc_app_shortcuts_request_.reset();
+
+  UMA_HISTOGRAM_TIMES("Arc.AppShortcuts.BuildMenuTime",
+                      base::TimeTicks::Now() - start_time);
 }
 
 }  // namespace apps

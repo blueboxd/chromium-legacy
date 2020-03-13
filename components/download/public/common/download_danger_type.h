@@ -76,6 +76,11 @@ enum DownloadDangerType {
   // recommended this file be deep scanned.
   DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING = 17,
 
+  // The download has a file type that is unsupported for deep scanning, and
+  // should be blocked according to policy. See the BlockUnsupportedFiletypes
+  // policy for details.
+  DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE = 18,
+
   // Memory space for histograms is determined by the max.
   // ALWAYS ADD NEW VALUES BEFORE THIS ONE.
   DOWNLOAD_DANGER_TYPE_MAX

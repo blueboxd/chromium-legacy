@@ -942,8 +942,8 @@ void SynthesizedClip::UpdateLayer(bool needs_layer,
   }
 
   const RefCountedPath* path = clip.ClipPath();
-  SkRRect new_rrect = clip.ClipRect();
-  IntRect layer_bounds = EnclosingIntRect(clip.ClipRect().Rect());
+  SkRRect new_rrect = clip.PixelSnappedClipRect();
+  IntRect layer_bounds = EnclosingIntRect(clip.PixelSnappedClipRect().Rect());
   bool needs_display = false;
 
   auto new_translation_2d_or_matrix =
@@ -1226,7 +1226,7 @@ void PaintArtifactCompositor::Update(
     if (&clip.LocalTransformSpace() == &transform) {
       // Limit layer bounds to hide the areas that will be never visible
       // because of the clip.
-      pending_layer.bounds.Intersect(clip.ClipRect().Rect());
+      pending_layer.bounds.Intersect(clip.PixelSnappedClipRect().Rect());
     } else if (const auto* scroll = transform.ScrollNode()) {
       // Limit layer bounds to the scroll range to hide the areas that will
       // never be scrolled into the visible area.

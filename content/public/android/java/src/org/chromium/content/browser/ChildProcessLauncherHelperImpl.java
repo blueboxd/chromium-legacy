@@ -640,14 +640,7 @@ public final class ChildProcessLauncherHelperImpl {
 
         // Always wait for the shared RELROs in service processes.
         final boolean waitForSharedRelros = true;
-        if (LibraryLoader.getInstance().areTestsEnabled()) {
-            Linker linker = Linker.getInstance();
-            return new ChromiumLinkerParams(sLinkerLoadAddress, waitForSharedRelros,
-                    linker.getTestRunnerClassNameForTesting(),
-                    linker.getImplementationForTesting());
-        } else {
-            return new ChromiumLinkerParams(sLinkerLoadAddress, waitForSharedRelros);
-        }
+        return new ChromiumLinkerParams(sLinkerLoadAddress, waitForSharedRelros);
     }
 
     private static Bundle populateServiceBundle(Bundle bundle) {

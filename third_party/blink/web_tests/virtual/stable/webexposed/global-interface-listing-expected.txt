@@ -3685,10 +3685,8 @@ interface HTMLVideoElement : HTMLMediaElement
     getter webkitDroppedFrameCount
     getter webkitSupportsFullscreen
     getter width
-    method cancelAnimationFrame
     method constructor
     method getVideoPlaybackQuality
-    method requestAnimationFrame
     method requestPictureInPicture
     method webkitEnterFullScreen
     method webkitEnterFullscreen

@@ -471,12 +471,18 @@ public class ExternalNavigationHandlerTest {
                 + "component=package/class;end";
         String urlWithSel = "intent:wtai://wp/#Intent;SEL;action=android.settings.SETTINGS;"
                 + "component=package/class;end";
+        String urlWithNullData = "intent:#Intent;package=com.google.zxing.client.android;"
+                + "action=android.settings.SETTINGS;end";
 
         checkUrl(url).expecting(
                 OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_OTHER_ACTIVITY);
 
         // http://crbug.com/370399
         checkUrl(urlWithSel)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+
+        checkUrl(urlWithNullData)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
     }
@@ -1722,6 +1728,7 @@ public class ExternalNavigationHandlerTest {
         public List<ResolveInfo> queryIntentActivities(Intent intent) {
             List<ResolveInfo> list = new ArrayList<>();
             String dataString = intent.getDataString();
+            if (dataString == null) return list;
             if (dataString.startsWith("http://") || dataString.startsWith("https://")) {
                 list.add(newResolveInfo("chrome"));
             }

@@ -112,6 +112,7 @@ bool IsDownloadAllowedBySafeBrowsing(
     case Result::SENSITIVE_CONTENT_WARNING:
     case Result::DEEP_SCANNED_SAFE:
     case Result::PROMPT_FOR_SCANNING:
+    case Result::BLOCKED_UNSUPPORTED_FILE_TYPE:
       NOTREACHED();
       return true;
   }

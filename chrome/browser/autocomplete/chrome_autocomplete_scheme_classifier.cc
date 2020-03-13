@@ -91,7 +91,7 @@ ChromeAutocompleteSchemeClassifier::GetInputTypeForScheme(
       // between URL schemes with handers and those without. This will
       // make the default behaviour be search on Linux.
       return metrics::OmniboxInputType::EMPTY;
-#endif // defined(OS_LINUX)
+#else
       // If block state is unknown, check if there is an application registered
       // for the url scheme.
       GURL url(scheme + "://");
@@ -99,6 +99,7 @@ ChromeAutocompleteSchemeClassifier::GetInputTypeForScheme(
           shell_integration::GetApplicationNameForProtocol(url);
       return application_name.empty() ? metrics::OmniboxInputType::EMPTY
                                       : metrics::OmniboxInputType::URL;
+#endif  // defined(OS_LINUX)
     }
   }
   NOTREACHED();

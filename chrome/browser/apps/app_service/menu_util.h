@@ -9,10 +9,20 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcut_item.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "ui/base/models/menu_separator_types.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class Profile;
+
+namespace gfx {
+class ImageSkia;
+}
+
+namespace ui {
+class SimpleMenuModel;
+}  // namespace ui
 
 namespace apps {
 
@@ -29,6 +39,17 @@ void AddRadioItem(uint32_t command_id,
                   uint32_t string_id,
                   int group_id,
                   apps::mojom::MenuItemsPtr* menu_items);
+
+// Adds a separator of the specified type to |menu_items|.
+void AddSeparator(ui::MenuSeparatorType separator_type,
+                  apps::mojom::MenuItemsPtr* menu_items);
+
+// Adds an ARC shortcut command menu item to |menu_items|.
+void AddArcCommandItem(int command_id,
+                       const std::string& shortcut_id,
+                       const std::string& label,
+                       const gfx::ImageSkia& icon,
+                       apps::mojom::MenuItemsPtr* menu_items);
 
 // Adds a LAUNCH_NEW menu item to |menu_items|, and create radio items for the
 // submenu.
@@ -56,6 +77,13 @@ bool PopulateNewItemFromMojoMenuItems(
     ui::SimpleMenuModel* model,
     ui::SimpleMenuModel* submenu,
     GetVectorIconCallback get_vector_icon);
+
+// Populates the menu item to a simple menu model |model| from mojo
+// menu items |menu_items|.
+void PopulateItemFromMojoMenuItems(
+    apps::mojom::MenuItemPtr menu_item,
+    ui::SimpleMenuModel* model,
+    arc::ArcAppShortcutItems* arc_shortcut_items);
 
 }  // namespace apps
 

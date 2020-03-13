@@ -7,7 +7,11 @@
 #include <memory>
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/swap_promise.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_widget_client.h"
@@ -35,7 +39,18 @@
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+
+namespace WTF {
+template <>
+struct CrossThreadCopier<blink::WebReportTimeCallback>
+    : public CrossThreadCopierByValuePassThrough<blink::WebReportTimeCallback> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+}  // namespace WTF
 
 namespace blink {
 
@@ -606,6 +621,146 @@ WebFrameWidgetBase::EnsureCompositorPaintDispatcher(
   DCHECK(paint_task_runner_);
   *paint_task_runner = paint_task_runner_;
   return paint_dispatcher_;
+}
+
+// Enables measuring and reporting both presentation times and swap times in
+// swap promises.
+class ReportTimeSwapPromise : public cc::SwapPromise {
+ public:
+  ReportTimeSwapPromise(WebReportTimeCallback swap_time_callback,
+                        WebReportTimeCallback presentation_time_callback,
+                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                        WebFrameWidgetBase* widget)
+      : swap_time_callback_(std::move(swap_time_callback)),
+        presentation_time_callback_(std::move(presentation_time_callback)),
+        task_runner_(std::move(task_runner)),
+        widget_(widget) {}
+  ~ReportTimeSwapPromise() override = default;
+
+  void DidActivate() override {}
+
+  void WillSwap(viz::CompositorFrameMetadata* metadata) override {
+    DCHECK_GT(metadata->frame_token, 0u);
+    // The interval between the current swap and its presentation time is
+    // reported in UMA (see corresponding code in DidSwap() below).
+    frame_token_ = metadata->frame_token;
+  }
+
+  void DidSwap() override {
+    DCHECK_GT(frame_token_, 0u);
+    PostCrossThreadTask(
+        *task_runner_, FROM_HERE,
+        CrossThreadBindOnce(
+            &RunCallbackAfterSwap, widget_, base::TimeTicks::Now(),
+            std::move(swap_time_callback_),
+            std::move(presentation_time_callback_), frame_token_));
+  }
+
+  cc::SwapPromise::DidNotSwapAction DidNotSwap(
+      DidNotSwapReason reason) override {
+    WebSwapResult result;
+    switch (reason) {
+      case cc::SwapPromise::DidNotSwapReason::SWAP_FAILS:
+        result = WebSwapResult::kDidNotSwapSwapFails;
+        break;
+      case cc::SwapPromise::DidNotSwapReason::COMMIT_FAILS:
+        result = WebSwapResult::kDidNotSwapCommitFails;
+        break;
+      case cc::SwapPromise::DidNotSwapReason::COMMIT_NO_UPDATE:
+        result = WebSwapResult::kDidNotSwapCommitNoUpdate;
+        break;
+      case cc::SwapPromise::DidNotSwapReason::ACTIVATION_FAILS:
+        result = WebSwapResult::kDidNotSwapActivationFails;
+        break;
+    }
+    // During a failed swap, return the current time regardless of whether we're
+    // using presentation or swap timestamps.
+    PostCrossThreadTask(
+        *task_runner_, FROM_HERE,
+        CrossThreadBindOnce(
+            [](WebSwapResult result, base::TimeTicks swap_time,
+               WebReportTimeCallback swap_time_callback,
+               WebReportTimeCallback presentation_time_callback) {
+              ReportTime(std::move(swap_time_callback), result, swap_time);
+              ReportTime(std::move(presentation_time_callback), result,
+                         swap_time);
+            },
+            result, base::TimeTicks::Now(), std::move(swap_time_callback_),
+            std::move(presentation_time_callback_)));
+    return DidNotSwapAction::BREAK_PROMISE;
+  }
+
+  int64_t TraceId() const override { return 0; }
+
+ private:
+  static void RunCallbackAfterSwap(
+      WebFrameWidgetBase* widget,
+      base::TimeTicks swap_time,
+      WebReportTimeCallback swap_time_callback,
+      WebReportTimeCallback presentation_time_callback,
+      int frame_token) {
+    // If the widget was collected or the widget wasn't collected yet, but
+    // it was closed don't schedule a presentation callback.
+    if (widget && widget->Client()) {
+      widget->Client()->AddPresentationCallback(
+          frame_token,
+          WTF::Bind(&RunCallbackAfterPresentation,
+                    std::move(presentation_time_callback), swap_time));
+      ReportTime(std::move(swap_time_callback), WebSwapResult::kDidSwap,
+                 swap_time);
+    } else {
+      ReportTime(std::move(swap_time_callback), WebSwapResult::kDidSwap,
+                 swap_time);
+      ReportTime(std::move(presentation_time_callback), WebSwapResult::kDidSwap,
+                 swap_time);
+    }
+  }
+
+  static void RunCallbackAfterPresentation(
+      WebReportTimeCallback presentation_time_callback,
+      base::TimeTicks swap_time,
+      base::TimeTicks presentation_time) {
+    DCHECK(!swap_time.is_null());
+    bool presentation_time_is_valid =
+        !presentation_time.is_null() && (presentation_time > swap_time);
+    UMA_HISTOGRAM_BOOLEAN("PageLoad.Internal.Renderer.PresentationTime.Valid",
+                          presentation_time_is_valid);
+    if (presentation_time_is_valid) {
+      // This measures from 1ms to 10seconds.
+      UMA_HISTOGRAM_TIMES(
+          "PageLoad.Internal.Renderer.PresentationTime.DeltaFromSwapTime",
+          presentation_time - swap_time);
+    }
+    ReportTime(std::move(presentation_time_callback), WebSwapResult::kDidSwap,
+               presentation_time_is_valid ? presentation_time : swap_time);
+  }
+
+  static void ReportTime(WebReportTimeCallback callback,
+                         WebSwapResult result,
+                         base::TimeTicks time) {
+    if (callback)
+      std::move(callback).Run(result, time);
+  }
+
+  WebReportTimeCallback swap_time_callback_;
+  WebReportTimeCallback presentation_time_callback_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  CrossThreadWeakPersistent<WebFrameWidgetBase> widget_;
+  uint32_t frame_token_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(ReportTimeSwapPromise);
+};
+
+void WebFrameWidgetBase::NotifySwapAndPresentationTime(
+    WebReportTimeCallback swap_time_callback,
+    WebReportTimeCallback presentation_time_callback) {
+  widget_base_.LayerTreeHost()->QueueSwapPromise(
+      std::make_unique<ReportTimeSwapPromise>(
+          std::move(swap_time_callback), std::move(presentation_time_callback),
+          widget_base_.LayerTreeHost()
+              ->GetTaskRunnerProvider()
+              ->MainThreadTaskRunner(),
+          this));
 }
 
 }  // namespace blink

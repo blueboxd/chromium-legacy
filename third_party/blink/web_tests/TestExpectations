@@ -3230,9 +3230,6 @@ crbug.com/626703 [ Win10 ] virtual/omt-worker-fetch/external/wpt/fetch/api/reque
 crbug.com/626703 external/wpt/webauthn/idlharness-manual.https.window.js [ Skip ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-missed.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/at-property/external/wpt/css/css-properties-values-api/registered-property-cssom.html [ Timeout ]
-crbug.com/626703 [ Retina ] external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.worker.html [ Pass Timeout ]
-crbug.com/626703 [ Win ] external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.worker.html [ Pass Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.worker.html [ Pass Timeout ]
 crbug.com/626703 [ Retina ] virtual/at-property/external/wpt/css/css-properties-values-api/registered-property-computation.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/at-property/external/wpt/css/css-properties-values-api/conditional-rules.html [ Timeout ]
 crbug.com/983503 [ Mac ] virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-001.html [ Failure ]
@@ -6119,7 +6116,6 @@ crbug.com/1010483 [ Win ] fast/parser/residual-style-hang.html [ Crash Pass ]
 crbug.com/1010483 [ Win ] fast/selectors/specificity-overflow.html [ Crash Pass ]
 
 # Sheriff 2019-10-11
-crbug.com/1012599 external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.sharedworker.html [ Pass Timeout ]
 crbug.com/1013391 http/tests/devtools/a11y-axe-core/settings/shortcuts-a11y-test.js [ Pass Timeout ]
 crbug.com/1013523 [ Release ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
 crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ Failure Pass ]
@@ -6438,7 +6434,6 @@ crbug.com/1043449 [ Release ] http/tests/devtools/elements/edit/edit-dom-actions
 crbug.com/1043453 [ Release Win ] virtual/threaded/external/wpt/css/css-animations/idlharness.html [ Pass Timeout ]
 crbug.com/1043453 [ Release Mac ] virtual/threaded/external/wpt/css/css-animations/idlharness.html [ Pass Timeout ]
 crbug.com/1043454 [ Release ] http/tests/devtools/console-xhr-logging-async.js [ Pass Timeout ]
-crbug.com/1043463 [ Release ] external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.serviceworker.html [ Pass Timeout ]
 crbug.com/1043488 fast/forms/date/date-appearance-basic.html [ Pass Failure ]
 crbug.com/1043785 [ Release ] http/tests/devtools/elements/edit/switch-panels-while-editing-as-html.js [ Pass Timeout ]
 crbug.com/1043792 [ Release Win ] http/tests/devtools/template-content-inspect-crash.js [ Pass Timeout ]
@@ -6477,7 +6472,6 @@ crbug.com/1044823 [ Release ] http/tests/devtools/extensions/extensions-timeline
 crbug.com/1044825 [ Release ] http/tests/devtools/network/resource-priority.js [ Pass Timeout ]
 crbug.com/1044829 [ Release Win ] http/tests/devtools/cache-storage/cache-deletion.js [ Pass Timeout ]
 crbug.com/1044829 [ Release Mac ] http/tests/devtools/cache-storage/cache-deletion.js [ Pass Timeout ]
-crbug.com/1044830 [ Release Win ] external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.html [ Pass Timeout ]
 crbug.com/1043847 [ Release Win ] virtual/threaded/fast/scroll-snap/snaps-for-different-key-granularity.html [ Pass Timeout ]
 crbug.com/1043901 [ Release Win ] external/wpt/preload/preload-with-type.html [ Pass Timeout ]
 crbug.com/1044569 [ Release Linux ] virtual/audio-service/media/controls/doubletap-to-jump-backwards.html [ Pass Failure ]
@@ -6563,6 +6557,9 @@ crbug.com/1049454 external/wpt/service-workers/service-worker/windowclient-navig
 
 # Crashes with DCHECK enabled, but not on normal Release builds.
 crbug.com/944449 external/wpt/scroll-animations/scroll-animation.html [ Pass Crash ]
+crbug.com/944449 virtual/threaded/external/wpt/scroll-animations/scroll-animation.html [ Pass Crash ]
+crbug.com/944449 external/wpt/scroll-animations/animation-with-display-none.html [ Pass Crash Timeout ]
+crbug.com/944449 virtual/threaded/external/wpt/scroll-animations/animation-with-display-none.html [ Pass Crash Timeout ]
 
 # Sheriff 2020-02-10
 crbug.com/1050306 [ Fuchsia ] virtual/gpu/fast/canvas/canvas-filter-frameless-document.html [ Crash Pass Timeout ]
@@ -7040,7 +7037,7 @@ crbug.com/1061131 [ Linux ] virtual/threaded-no-composited-antialiasing/animatio
 crbug.com/1061131 [ Linux ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Pass Crash ]
 crbug.com/1061131 [ Linux ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Pass Crash ]
 crbug.com/1061131 [ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/middle-click-autoscroll-latching-clicked-node.html [ Pass Failure Timeout ]
-crbug.com/1061131 [ Mac ] virtual/threaded/external/wpt/scroll-animations/two-animations-attach-to-same-scroll-timeline-cancel-one.html [ Pass Failure ]
+crbug.com/1060974 [ Debug ] virtual/threaded/external/wpt/scroll-animations/two-animations-attach-to-same-scroll-timeline-cancel-one.html [ Pass Failure ]
 
 # Sheriff 2020-03-13
 crbug.com/1061159 [ Fuchsia ] fast/inspector-support/cssURLQuotes.html [ Pass Failure ]
@@ -7048,3 +7045,6 @@ crbug.com/1061118 fast/loader/subframe-removes-itself.html [ Pass Failure ]
 crbug.com/1061043 fast/plugins/keypress-event.html [ Pass Failure ]
 crbug.com/1061328 http/tests/loading/onreadystatechange-detach.html [ Pass Failure ]
 crbug.com/1061097 http/tests/security/promise-access-control-allow.htm [ Pass Failure ]
+crbug.com/1061539 [ Mac ] http/tests/images/document-policy-oversized-images-resize.html [ Pass Failure ]
+crbug.com/1061539 [ Linux ] http/tests/images/document-policy-oversized-images-resize.html [ Pass Failure ]
+crbug.com/1061131 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/middle-click-autoscroll-latching-clicked-node.html [ Pass Timeout ]

@@ -354,6 +354,14 @@ const struct QuicErrorMapping {
      "quic.http_invalid_frame_sequence_on_spdy_stream"},
     {quic::QUIC_HTTP_INVALID_FRAME_SEQUENCE_ON_CONTROL_STREAM,
      "quic.http_invalid_frame_sequence_on_control_stream"},
+    {quic::QUIC_HTTP_DUPLICATE_UNIDIRECTIONAL_STREAM,
+     "quic.http_duplicate_unidirectional_stream"},
+    {quic::QUIC_HTTP_SERVER_INITIATED_BIDIRECTIONAL_STREAM,
+     "quic.http_server_initiated_bidirectional_stream"},
+    {quic::QUIC_HTTP_STREAM_WRONG_DIRECTION,
+     "quic.http_stream_wrong_direction"},
+    {quic::QUIC_HTTP_CLOSED_CRITICAL_STREAM,
+     "quic.http_closed_critical_stream"},
 
     // QUIC_INVALID_APPLICATION_CLOSE_DATA was code 101. The code has been
     // deprecated, but to keep the assert below happy, there needs to be

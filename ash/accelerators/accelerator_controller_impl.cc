@@ -349,7 +349,7 @@ void HandleMoveActiveItem(const ui::Accelerator& accelerator) {
   }
 
   if (!desks_controller->MoveWindowFromActiveDeskTo(
-          window_to_move, target_desk,
+          window_to_move, target_desk, window_to_move->GetRootWindow(),
           DesksMoveWindowFromActiveDeskSource::kShortcut)) {
     return;
   }

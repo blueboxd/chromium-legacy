@@ -4197,6 +4197,11 @@ bool LayoutBox::LogicalHeightComputesAsNone(SizeType size_type) const {
   if (logical_height == initial_logical_height)
     return true;
 
+  if (logical_height.IsPercentOrCalc() &&
+      HasOverrideContainingBlockContentLogicalHeight() &&
+      OverrideContainingBlockContentLogicalHeight() == kIndefiniteSize)
+    return true;
+
   // CustomLayout items can resolve their percentages against an available or
   // percentage size override.
   if (IsCustomItem() && (HasOverrideContainingBlockContentLogicalHeight() ||

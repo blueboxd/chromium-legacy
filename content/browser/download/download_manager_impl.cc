@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "components/download/database/in_progress/download_entry.h"
 #include "components/download/public/common/download_create_info.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_file.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
@@ -1135,7 +1136,9 @@ int DownloadManagerImpl::NonMaliciousInProgressCount() {
         it.second->GetDangerType() !=
             download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST &&
         it.second->GetDangerType() !=
-            download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED) {
+            download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED &&
+        it.second->GetDangerType() !=
+            download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS) {
       ++count;
     }
   }

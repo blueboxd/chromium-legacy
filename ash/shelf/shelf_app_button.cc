@@ -13,6 +13,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_view.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -542,8 +543,9 @@ gfx::Rect ShelfAppButton::CalculateSmallRippleArea() const {
   const int padding = ShelfConfig::Get()->GetAppIconEndPadding();
 
   // Add padding to the ink drop for the left-most and right-most app buttons in
-  // the shelf.
-  if (padding > 0) {
+  // the shelf when there is a non-zero padding between the app icon and the
+  // end of scrollable shelf.
+  if (TabletModeController::Get()->InTabletMode() && padding > 0) {
     const int current_index = shelf_view_->view_model()->GetIndexOfView(this);
     int left_padding =
         (shelf_view_->first_visible_index() == current_index) ? padding : 0;

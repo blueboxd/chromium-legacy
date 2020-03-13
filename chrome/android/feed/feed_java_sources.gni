@@ -630,6 +630,7 @@ if (enable_feed_in_chrome) {
     "junit/src/org/chromium/chrome/browser/feed/FeedContentStorageTest.java",
     "junit/src/org/chromium/chrome/browser/feed/FeedImageLoaderTest.java",
     "junit/src/org/chromium/chrome/browser/feed/FeedJournalStorageTest.java",
+    "junit/src/org/chromium/chrome/browser/feed/FeedLoggingBridgeTest.java",
     "junit/src/org/chromium/chrome/browser/feed/FeedOfflineBridgeTest.java",
     "junit/src/org/chromium/chrome/browser/feed/FutureTaskConsumerTest.java",
     "junit/src/org/chromium/chrome/browser/feed/NtpStreamLifecycleManagerTest.java",

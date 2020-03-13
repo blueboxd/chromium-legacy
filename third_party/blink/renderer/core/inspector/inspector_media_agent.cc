@@ -72,18 +72,18 @@ void InspectorMediaAgent::RegisterAgent() {
 
 protocol::Response InspectorMediaAgent::enable() {
   if (enabled_.Get())
-    return protocol::Response::OK();
+    return protocol::Response::Success();
   enabled_.Set(true);
   RegisterAgent();
-  return protocol::Response::OK();
+  return protocol::Response::Success();
 }
 
 protocol::Response InspectorMediaAgent::disable() {
   if (!enabled_.Get())
-    return protocol::Response::OK();
+    return protocol::Response::Success();
   enabled_.Clear();
   instrumenting_agents_->RemoveInspectorMediaAgent(this);
-  return protocol::Response::OK();
+  return protocol::Response::Success();
 }
 
 void InspectorMediaAgent::PlayerPropertiesChanged(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.browserservices;
+package org.chromium.components.embedder_support.util;
 
 import android.net.Uri;
 import android.support.test.filters.SmallTest;
@@ -56,8 +56,8 @@ public class OriginTest {
         Assert.assertEquals(host, origin.uri().getHost());
         Assert.assertEquals(port, origin.uri().getPort());
 
-        Assert.assertEquals(origin.toString(),
-                scheme + "://" + host + (port == -1 ? "" : ":" + port));
+        Assert.assertEquals(
+                origin.toString(), scheme + "://" + host + (port == -1 ? "" : ":" + port));
     }
 
     @Test

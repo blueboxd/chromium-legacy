@@ -200,6 +200,15 @@ bool IsDialog(const ax::mojom::Role role) {
   }
 }
 
+bool IsForm(const ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kForm:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool IsFormatBoundary(const ax::mojom::Role role) {
   return IsControl(role) || IsHeading(role) || IsImageOrVideo(role);
 }

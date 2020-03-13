@@ -78,6 +78,8 @@ api::passwords_private::PasswordCheckState ConvertPasswordCheckState(
       return api::passwords_private::PASSWORD_CHECK_STATE_SIGNED_OUT;
     case BulkLeakCheckService::State::kNetworkError:
       return api::passwords_private::PASSWORD_CHECK_STATE_OFFLINE;
+    case BulkLeakCheckService::State::kQuotaLimit:
+      return api::passwords_private::PASSWORD_CHECK_STATE_QUOTA_LIMIT;
     case BulkLeakCheckService::State::kTokenRequestFailure:
     case BulkLeakCheckService::State::kHashingFailure:
     case BulkLeakCheckService::State::kServiceError:

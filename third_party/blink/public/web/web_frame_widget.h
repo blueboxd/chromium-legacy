@@ -35,6 +35,7 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_touch_action.h"
+#include "third_party/blink/public/web/web_swap_result.h"
 #include "third_party/blink/public/web/web_widget.h"
 
 namespace blink {
@@ -140,6 +141,13 @@ class WebFrameWidget : public WebWidget {
   // compositor. Useful for tests that don't use a compositor.
   virtual void ApplyViewportChangesForTesting(
       const cc::ApplyViewportChangesArgs& args) = 0;
+
+  // The |callback| will be fired when the corresponding renderer frame is
+  // submitted (still called "swapped") to the display compositor (either with
+  // DidSwap or DidNotSwap).
+  virtual void NotifySwapAndPresentationTime(
+      WebReportTimeCallback swap_callback,
+      WebReportTimeCallback presentation_callback) = 0;
 
  private:
   // This private constructor and the class/friend declaration ensures that

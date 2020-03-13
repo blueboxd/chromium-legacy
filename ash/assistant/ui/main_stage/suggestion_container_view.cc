@@ -27,17 +27,10 @@ namespace {
 
 using assistant::util::CreateLayerAnimationSequence;
 using assistant::util::CreateOpacityElement;
-using assistant::util::CreateTransformElement;
 using assistant::util::StartLayerAnimationSequence;
-using assistant::util::StartLayerAnimationSequencesTogether;
 
 // Animation.
-constexpr int kChipMoveUpDistanceDip = 24;
-constexpr base::TimeDelta kSelectedChipAnimateInDelay =
-    base::TimeDelta::FromMilliseconds(150);
 constexpr base::TimeDelta kChipFadeInDuration =
-    base::TimeDelta::FromMilliseconds(250);
-constexpr base::TimeDelta kChipMoveUpDuration =
     base::TimeDelta::FromMilliseconds(250);
 constexpr base::TimeDelta kChipFadeOutDuration =
     base::TimeDelta::FromMilliseconds(200);
@@ -57,17 +50,8 @@ class SuggestionChipAnimator : public ElementAnimator {
   ~SuggestionChipAnimator() override = default;
 
   void AnimateIn(ui::CallbackLayerAnimationObserver* observer) override {
-    // As part of the animation we will move up the chip from the bottom
-    // so we need to start by moving it down.
-    MoveDown();
-    layer()->SetOpacity(0.f);
-
-    StartLayerAnimationSequencesTogether(layer()->GetAnimator(),
-                                         {
-                                             CreateFadeInAnimation(),
-                                             CreateMoveUpAnimation(),
-                                         },
-                                         observer);
+    StartLayerAnimationSequence(layer()->GetAnimator(),
+                                CreateAnimateInAnimation(), observer);
   }
 
   void AnimateOut(ui::CallbackLayerAnimationObserver* observer) override {
@@ -84,28 +68,10 @@ class SuggestionChipAnimator : public ElementAnimator {
  private:
   bool IsSelectedChip() const { return view() == parent_->selected_chip(); }
 
-  void MoveDown() const {
-    gfx::Transform transform;
-    transform.Translate(0, kChipMoveUpDistanceDip);
-    layer()->SetTransform(transform);
-  }
-
-  ui::LayerAnimationSequence* CreateFadeInAnimation() const {
+  ui::LayerAnimationSequence* CreateAnimateInAnimation() const {
     return CreateLayerAnimationSequence(
-        ui::LayerAnimationElement::CreatePauseElement(
-            ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-            kSelectedChipAnimateInDelay),
         CreateOpacityElement(1.f, kChipFadeInDuration,
                              gfx::Tween::Type::FAST_OUT_SLOW_IN));
-  }
-
-  ui::LayerAnimationSequence* CreateMoveUpAnimation() const {
-    return CreateLayerAnimationSequence(
-        ui::LayerAnimationElement::CreatePauseElement(
-            ui::LayerAnimationElement::AnimatableProperty::TRANSFORM,
-            kSelectedChipAnimateInDelay),
-        CreateTransformElement(gfx::Transform(), kChipMoveUpDuration,
-                               gfx::Tween::Type::FAST_OUT_SLOW_IN));
   }
 
   ui::LayerAnimationSequence* CreateAnimateOutAnimation() const {
@@ -158,6 +124,15 @@ void SuggestionContainerView::OnContentsPreferredSizeChanged(
   content_view->SetSize(gfx::Size(width, kPreferredHeightDip));
 }
 
+void SuggestionContainerView::OnCommittedQueryChanged(
+    const AssistantQuery& query) {
+  AnimatedContainerView::OnCommittedQueryChanged(query);
+
+  // Cache the fact that a query has been committed in this Assistant session so
+  // that we know to stop handling conversation starter updates.
+  has_committed_query_ = true;
+}
+
 void SuggestionContainerView::InitLayout() {
   layout_manager_ =
       content_view()->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -174,32 +149,23 @@ void SuggestionContainerView::InitLayout() {
 
 void SuggestionContainerView::OnConversationStartersChanged(
     const std::vector<const AssistantSuggestion*>& conversation_starters) {
-  // If we've received a response we should ignore changes to the cache of
+  // If we've committed a query we should ignore changes to the cache of
   // conversation starters as we are past the state in which they should be
-  // presented. To present them now would incorrectly associate the conversation
+  // presented. To present them now could incorrectly associate the conversation
   // starters with a response.
-  if (has_received_response_)
+  if (has_committed_query_)
     return;
 
   RemoveAllViews();
-
-  std::vector<std::unique_ptr<ElementAnimator>> animators;
-  for (const auto* conversation_starter : conversation_starters) {
-    auto animator = AddSuggestionChip(conversation_starter);
-    if (animator)
-      AddElementAnimator(std::move(animator));
-  }
-
-  AnimateIn();
+  OnSuggestionsAdded(conversation_starters);
 }
 
 std::unique_ptr<ElementAnimator> SuggestionContainerView::HandleSuggestion(
     const AssistantSuggestion* suggestion) {
-  has_received_response_ = true;
-
   // When no longer showing conversation starters, we start align our content.
   layout_manager_->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::kStart);
+      has_committed_query_ ? views::BoxLayout::MainAxisAlignment::kStart
+                           : views::BoxLayout::MainAxisAlignment::kCenter);
 
   return AddSuggestionChip(suggestion);
 }
@@ -207,10 +173,6 @@ std::unique_ptr<ElementAnimator> SuggestionContainerView::HandleSuggestion(
 void SuggestionContainerView::OnAllViewsRemoved() {
   // Clear the selected button.
   selected_chip_ = nullptr;
-
-  // Note that we don't reset |has_received_response_| here because that refers
-  // to whether we've received a response during the current Assistant session,
-  // not whether we are currently displaying a response.
 }
 
 std::unique_ptr<ElementAnimator> SuggestionContainerView::AddSuggestionChip(
@@ -221,6 +183,7 @@ std::unique_ptr<ElementAnimator> SuggestionContainerView::AddSuggestionChip(
   // The chip will be animated on its own layer.
   suggestion_chip_view->SetPaintToLayer();
   suggestion_chip_view->layer()->SetFillsBoundsOpaquely(false);
+  suggestion_chip_view->layer()->SetOpacity(0.f);
 
   // Add to the view hierarchy and return the animator for the suggestion chip.
   return std::make_unique<SuggestionChipAnimator>(
@@ -251,8 +214,8 @@ void SuggestionContainerView::OnUiVisibilityChanged(
   if (!assistant::util::IsFinishingSession(new_visibility))
     return;
 
-  // When Assistant is finishing a session, we need to reset view state.
-  has_received_response_ = false;
+  // When Assistant is finishing a session, we need to reset state.
+  has_committed_query_ = false;
 
   // When we start a new session we will be showing conversation starters so
   // we need to center align our content.

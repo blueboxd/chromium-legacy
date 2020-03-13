@@ -4,7 +4,7 @@
 
 #include "chromecast/media/cma/backend/cma_backend_factory_impl.h"
 
-#include "chromecast/media/cma/backend/cma_backend.h"
+#include "chromecast/media/api/cma_backend.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 

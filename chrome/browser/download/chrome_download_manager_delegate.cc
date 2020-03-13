@@ -1182,6 +1182,10 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
         danger_type = download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING;
         is_pending_scanning = true;
         break;
+      case safe_browsing::DownloadCheckResult::BLOCKED_UNSUPPORTED_FILE_TYPE:
+        danger_type =
+            download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE;
+        break;
     }
     DCHECK_NE(danger_type,
               download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT);
@@ -1310,6 +1314,12 @@ bool ChromeDownloadManagerDelegate::ShouldBlockFile(
       download_prefs_->download_restriction();
 
   if (IsDangerTypeBlocked(danger_type))
+    return true;
+
+  // TODO(crbug/1061111): Move this into IsDangerTypeBlocked once the UX is
+  // ready.
+  if (danger_type ==
+      download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE)
     return true;
 
   switch (download_restriction) {

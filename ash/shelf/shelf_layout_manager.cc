@@ -1720,6 +1720,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     gfx::Rect hotseat_bounds = shelf_->hotseat_widget()->GetTargetBounds();
     hotseat_bounds.set_y(hotseat_y + shelf_bounds.y());
     shelf_->hotseat_widget()->set_target_bounds(hotseat_bounds);
+    shelf_->status_area_widget()->UpdateTargetBoundsForGesture();
     return;
   }
 

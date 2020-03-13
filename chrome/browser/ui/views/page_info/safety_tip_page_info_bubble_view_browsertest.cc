@@ -548,6 +548,30 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
       GURL()));
 }
 
+// If the UI is disabled, the page should be 'auto-ignored'.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       AlwaysIgnoresWhenDisabled) {
+  if (ui_status() != UIStatus::kDisabled) {
+    return;
+  }
+
+  auto kNavigatedUrl = GetURL("site1.com");
+  const char kHistogramName[] = "Security.SafetyTips.SafetyTipShown";
+  base::HistogramTester histograms;
+
+  TriggerWarningFromBlocklist(browser(), kNavigatedUrl,
+                              WindowOpenDisposition::CURRENT_TAB);
+  histograms.ExpectBucketCount(
+      kHistogramName, security_state::SafetyTipStatus::kBadReputation, 1);
+
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  histograms.ExpectBucketCount(
+      kHistogramName, security_state::SafetyTipStatus::kBadReputationIgnored,
+      1);
+
+  histograms.ExpectTotalCount(kHistogramName, 2);
+}
+
 // Non main-frame navigations should be ignored.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        IgnoreIFrameNavigations) {

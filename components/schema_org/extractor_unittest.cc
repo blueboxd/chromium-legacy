@@ -269,6 +269,45 @@ TEST_F(SchemaOrgExtractorTest, RepeatedProperty) {
   EXPECT_EQ(expected, extracted);
 }
 
+TEST_F(SchemaOrgExtractorTest, RepeatedPropertyNestedArray) {
+  EntityPtr extracted = Extract(
+      "{\"@type\": \"VideoObject\", \"name\": [[\"Movie Title\", \"The Second "
+      "One\"], [\"Different List Name\"]] }");
+  ASSERT_FALSE(extracted.is_null());
+
+  EntityPtr expected = Entity::New();
+  expected->type = "VideoObject";
+
+  PropertyPtr name = Property::New();
+  name->name = "name";
+  name->values = Values::New();
+  name->values->string_values = {"Movie Title", "The Second One",
+                                 "Different List Name"};
+
+  expected->properties.push_back(std::move(name));
+
+  EXPECT_EQ(expected, extracted);
+}
+
+TEST_F(SchemaOrgExtractorTest, RepeatedPropertyNestedArrayMaxDepth) {
+  EntityPtr extracted = Extract(
+      "{\"@type\": \"VideoObject\", \"name\": [[\"Movie Title\", \"The Second "
+      "One\"], [[\"this one is too deeply nested\"]]] }");
+  ASSERT_FALSE(extracted.is_null());
+
+  EntityPtr expected = Entity::New();
+  expected->type = "VideoObject";
+
+  PropertyPtr name = Property::New();
+  name->name = "name";
+  name->values = Values::New();
+  name->values->string_values = {"Movie Title", "The Second One"};
+
+  expected->properties.push_back(std::move(name));
+
+  EXPECT_EQ(expected, extracted);
+}
+
 TEST_F(SchemaOrgExtractorTest, MixedRepeatedProperty) {
   EntityPtr extracted =
       Extract("{\"@type\": \"VideoObject\", \"version\": [\"6.5a\", 6] }");
@@ -419,17 +458,6 @@ TEST_F(SchemaOrgExtractorTest, TruncateTooManyProperties) {
 
 TEST_F(SchemaOrgExtractorTest, IgnorePropertyWithEmptyArray) {
   EntityPtr extracted = Extract("{\"@type\": \"VideoObject\", \"name\": [] }");
-  ASSERT_FALSE(extracted.is_null());
-
-  EntityPtr expected = Entity::New();
-  expected->type = "VideoObject";
-
-  EXPECT_EQ(expected, extracted);
-}
-
-TEST_F(SchemaOrgExtractorTest, IgnorePropertyWithNestedArray) {
-  EntityPtr extracted =
-      Extract("{\"@type\": \"VideoObject\", \"name\": [[\"Name\"]] }");
   ASSERT_FALSE(extracted.is_null());
 
   EntityPtr expected = Entity::New();

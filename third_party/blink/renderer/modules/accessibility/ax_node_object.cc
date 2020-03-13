@@ -2864,17 +2864,11 @@ bool AXNodeObject::ShouldUseLayoutBuilderTraversal() const {
   if (IsA<HTMLTableElement>(*node))
     return false;
 
-  // For now, at least the #docment node needs to use layout traversal, because
-  // of validation messages, dialog, etc.
-  // TODO(aleventhal) figure out how to avoid double <dialog> nodes.
-  Element* element = GetElement();
-  if (!element)
-    return false;
-
   // Pseudo elements often have text children that are not
   // visited by the LayoutTreeBuilderTraversal class used in DOM traversal.
   // Without this condition, list bullets would not have static text children.
-  if (element->IsPseudoElement())
+  Element* element = GetElement();
+  if (element && element->IsPseudoElement())
     return false;
 
   return true;

@@ -17,8 +17,9 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/common/accessibility_messages.h"
 #include "content/common/frame_messages.h"
+#include "content/common/render_accessibility.mojom-test-utils.h"
+#include "content/common/render_accessibility.mojom.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/fake_pepper_plugin_instance.h"
 #include "content/public/test/render_view_test.h"
@@ -27,6 +28,9 @@
 #include "content/renderer/accessibility/render_accessibility_manager.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "content/test/test_render_frame.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -35,6 +39,7 @@
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_ax_object.h"
@@ -126,9 +131,105 @@ class MockAnnotationService : public image_annotation::mojom::Annotator {
   DISALLOW_COPY_AND_ASSIGN(MockAnnotationService);
 };
 
+class RenderAccessibilityHostInterceptor
+    : public content::mojom::RenderAccessibilityHostInterceptorForTesting {
+ public:
+  explicit RenderAccessibilityHostInterceptor(
+      blink::AssociatedInterfaceProvider* provider) {
+    provider->GetInterface(
+        local_frame_host_remote_.BindNewEndpointAndPassReceiver());
+    provider->OverrideBinderForTesting(
+        content::mojom::RenderAccessibilityHost::Name_,
+        base::BindRepeating(&RenderAccessibilityHostInterceptor::
+                                BindRenderAccessibilityHostReceiver,
+                            base::Unretained(this)));
+  }
+  ~RenderAccessibilityHostInterceptor() override = default;
+
+  content::mojom::RenderAccessibilityHost* GetForwardingInterface() override {
+    return local_frame_host_remote_.get();
+  }
+
+  void BindRenderAccessibilityHostReceiver(
+      mojo::ScopedInterfaceEndpointHandle handle) {
+    receiver_.Bind(mojo::PendingAssociatedReceiver<
+                   content::mojom::RenderAccessibilityHost>(std::move(handle)));
+  }
+
+  void HandleAXEvents(
+      const std::vector<::content::AXContentTreeUpdate>& updates,
+      const std::vector<::ui::AXEvent>& events,
+      int32_t reset_token,
+      HandleAXEventsCallback callback) override {
+    handled_updates_ = updates;
+    std::move(callback).Run();
+  }
+
+  AXContentTreeUpdate& last_update() {
+    CHECK_GE(handled_updates_.size(), 1U);
+    return handled_updates_.back();
+  }
+
+  void ClearHandledUpdates() { handled_updates_.clear(); }
+
+ private:
+  void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);
+
+  mojo::AssociatedReceiver<content::mojom::RenderAccessibilityHost> receiver_{
+      this};
+  mojo::AssociatedRemote<content::mojom::RenderAccessibilityHost>
+      local_frame_host_remote_;
+
+  std::vector<::content::AXContentTreeUpdate> handled_updates_;
+};
+
+class RenderAccessibilityTestRenderFrame : public TestRenderFrame {
+ public:
+  static RenderFrameImpl* CreateTestRenderFrame(
+      RenderFrameImpl::CreateParams params) {
+    return new RenderAccessibilityTestRenderFrame(std::move(params));
+  }
+
+  ~RenderAccessibilityTestRenderFrame() override = default;
+
+  blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override {
+    blink::AssociatedInterfaceProvider* associated_interface_provider =
+        RenderFrameImpl::GetRemoteAssociatedInterfaces();
+
+    // Attach our fake local frame host at the very first call to
+    // GetRemoteAssociatedInterfaces.
+    if (!render_accessibility_host_) {
+      render_accessibility_host_ =
+          std::make_unique<RenderAccessibilityHostInterceptor>(
+              associated_interface_provider);
+    }
+    return associated_interface_provider;
+  }
+
+  AXContentTreeUpdate& LastUpdate() {
+    return render_accessibility_host_->last_update();
+  }
+
+  void ClearHandledUpdates() {
+    render_accessibility_host_->ClearHandledUpdates();
+  }
+
+ private:
+  explicit RenderAccessibilityTestRenderFrame(
+      RenderFrameImpl::CreateParams params)
+      : TestRenderFrame(std::move(params)) {}
+
+  std::unique_ptr<RenderAccessibilityHostInterceptor>
+      render_accessibility_host_;
+};
+
 class RenderAccessibilityImplTest : public RenderViewTest {
  public:
-  RenderAccessibilityImplTest() = default;
+  RenderAccessibilityImplTest()
+      : RenderViewTest(/*hook_render_frame_creation=*/false) {
+    RenderFrameImpl::InstallCreateHook(
+        &RenderAccessibilityTestRenderFrame::CreateTestRenderFrame);
+  }
   ~RenderAccessibilityImplTest() override = default;
 
  protected:
@@ -154,7 +255,7 @@ class RenderAccessibilityImplTest : public RenderViewTest {
   // method.
   void LoadHTMLAndRefreshAccessibilityTree(const char* html) {
     LoadHTML(html);
-    sink()->ClearMessages();
+    ClearHandledUpdates();
     WebDocument document = GetMainFrame()->GetDocument();
     EXPECT_FALSE(document.IsNull());
     WebAXObject root_obj = WebAXObject::FromWebDocument(document);
@@ -187,21 +288,14 @@ class RenderAccessibilityImplTest : public RenderViewTest {
     frame()->GetRenderAccessibilityManager()->SetMode(mode.mode());
   }
 
-  void GetLastAccessibilityEventBundle(
-      AccessibilityHostMsg_EventBundleParams* event_bundle) {
-    const IPC::Message* message =
-        sink()->GetUniqueMessageMatching(AccessibilityHostMsg_EventBundle::ID);
-    ASSERT_TRUE(message);
-    std::tuple<AccessibilityHostMsg_EventBundleParams, int, int> param;
-    AccessibilityHostMsg_EventBundle::Read(message, &param);
-    *event_bundle = std::get<0>(param);
+  AXContentTreeUpdate GetLastAccUpdate() {
+    return static_cast<RenderAccessibilityTestRenderFrame*>(frame())
+        ->LastUpdate();
   }
 
-  AXContentTreeUpdate GetLastAccUpdate() {
-    AccessibilityHostMsg_EventBundleParams event_bundle;
-    GetLastAccessibilityEventBundle(&event_bundle);
-    CHECK_GE(event_bundle.updates.size(), 1U);
-    return event_bundle.updates[event_bundle.updates.size() - 1];
+  void ClearHandledUpdates() {
+    return static_cast<RenderAccessibilityTestRenderFrame*>(frame())
+        ->ClearHandledUpdates();
   }
 
   int CountAccessibilityNodesSentToBrowser() {
@@ -212,7 +306,12 @@ class RenderAccessibilityImplTest : public RenderViewTest {
   // RenderFrameImpl::SendPendingAccessibilityEvents() is a protected method, so
   // we wrap it here and access it from tests via this friend class for testing.
   void SendPendingAccessibilityEvents() {
+    // Ensure there are no pending events before sending accessibility events to
+    // be able to properly check later on the nodes that have been updated, and
+    // also wait for the mojo messages to be processed once they are sent.
+    task_environment_.RunUntilIdle();
     GetRenderAccessibilityImpl()->SendPendingAccessibilityEvents();
+    task_environment_.RunUntilIdle();
   }
 
  private:
@@ -242,7 +341,7 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
 
   // If we post another event but the tree doesn't change,
   // we should only send 1 node to the browser.
-  sink()->ClearMessages();
+  ClearHandledUpdates();
   WebDocument document = GetMainFrame()->GetDocument();
   WebAXObject root_obj = WebAXObject::FromWebDocument(document);
   GetRenderAccessibilityImpl()->HandleAXEvent(
@@ -261,7 +360,7 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
   LoadHTML(html);
   document = GetMainFrame()->GetDocument();
   root_obj = WebAXObject::FromWebDocument(document);
-  sink()->ClearMessages();
+  ClearHandledUpdates();
   GetRenderAccessibilityImpl()->HandleAXEvent(
       root_obj, ax::mojom::Event::kLayoutComplete);
   SendPendingAccessibilityEvents();
@@ -273,7 +372,7 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
   LoadHTML(html);
   document = GetMainFrame()->GetDocument();
   root_obj = WebAXObject::FromWebDocument(document);
-  sink()->ClearMessages();
+  ClearHandledUpdates();
   const WebAXObject& first_child = root_obj.ChildAt(0);
   GetRenderAccessibilityImpl()->HandleAXEvent(
       first_child, ax::mojom::Event::kLiveRegionChanged);
@@ -312,7 +411,7 @@ TEST_F(RenderAccessibilityImplTest, HideAccessibilityObject) {
   root_obj.UpdateLayoutAndCheckValidity();
 
   // Send a childrenChanged on "A".
-  sink()->ClearMessages();
+  ClearHandledUpdates();
   GetRenderAccessibilityImpl()->HandleAXEvent(
       node_a, ax::mojom::Event::kChildrenChanged);
   SendPendingAccessibilityEvents();
@@ -359,7 +458,7 @@ TEST_F(RenderAccessibilityImplTest, ShowAccessibilityObject) {
       "document.getElementById('B').style.visibility = 'visible';");
 
   root_obj.UpdateLayoutAndCheckValidity();
-  sink()->ClearMessages();
+  ClearHandledUpdates();
 
   GetRenderAccessibilityImpl()->HandleAXEvent(
       node_a, ax::mojom::Event::kChildrenChanged);
@@ -716,7 +815,7 @@ TEST_F(AXImageAnnotatorTest, OnImageAdded) {
   // Show node "B".
   ExecuteJavaScriptForTests(
       "document.getElementById('B').style.visibility = 'visible';");
-  sink()->ClearMessages();
+  ClearHandledUpdates();
   root_obj.UpdateLayoutAndCheckValidity();
 
   // This should update the annotations of all images on the page, including the
@@ -754,7 +853,7 @@ TEST_F(AXImageAnnotatorTest, OnImageUpdated) {
   EXPECT_TRUE(mock_annotator().image_processors_[0].is_bound());
   EXPECT_EQ(1u, mock_annotator().callbacks_.size());
 
-  sink()->ClearMessages();
+  ClearHandledUpdates();
   WebDocument document = GetMainFrame()->GetDocument();
   WebAXObject root_obj = WebAXObject::FromWebDocument(document);
   ASSERT_FALSE(root_obj.IsNull());
@@ -774,7 +873,7 @@ TEST_F(AXImageAnnotatorTest, OnImageUpdated) {
   // Update node "A".
   ExecuteJavaScriptForTests("document.querySelector('img').src = 'test2.jpg';");
 
-  sink()->ClearMessages();
+  ClearHandledUpdates();
   // This should update the annotations of all images on the page, including the
   // now updated image src.
   GetRenderAccessibilityImpl()->MarkWebAXObjectDirty(root_obj,

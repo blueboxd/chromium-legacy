@@ -111,12 +111,13 @@ AssistantResponse::~AssistantResponse() {
   processor_.reset();
 }
 
-void AssistantResponse::AddObserver(AssistantResponseObserver* observer) {
-  observers_.AddObserver(observer);
+void AssistantResponse::AddObserver(AssistantResponseObserver* observer) const {
+  const_cast<AssistantResponse*>(this)->observers_.AddObserver(observer);
 }
 
-void AssistantResponse::RemoveObserver(AssistantResponseObserver* observer) {
-  observers_.RemoveObserver(observer);
+void AssistantResponse::RemoveObserver(
+    AssistantResponseObserver* observer) const {
+  const_cast<AssistantResponse*>(this)->observers_.RemoveObserver(observer);
 }
 
 void AssistantResponse::AddUiElement(

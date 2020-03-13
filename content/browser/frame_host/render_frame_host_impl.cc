@@ -1535,7 +1535,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnDidChangeFramePolicy)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFrameOwnerProperties,
                         OnDidChangeFrameOwnerProperties)
-    IPC_MESSAGE_HANDLER(AccessibilityHostMsg_EventBundle, OnAccessibilityEvents)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_ChildFrameHitTestResult,
                         OnAccessibilityChildFrameHitTestResult)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
@@ -3756,76 +3755,6 @@ RenderWidgetHostViewBase* RenderFrameHostImpl::GetViewForAccessibility() {
           : GetMainFrame()->render_view_host_->GetWidget()->GetView());
 }
 
-void RenderFrameHostImpl::OnAccessibilityEvents(
-    const AccessibilityHostMsg_EventBundleParams& bundle,
-    int reset_token,
-    int ack_token) {
-  // Don't process this IPC if either we're waiting on a reset and this
-  // IPC doesn't have the matching token ID, or if we're not waiting on a
-  // reset but this message includes a reset token.
-  if (accessibility_reset_token_ != reset_token) {
-    Send(new AccessibilityMsg_EventBundle_ACK(routing_id_, ack_token));
-    return;
-  }
-  accessibility_reset_token_ = 0;
-
-  RenderWidgetHostViewBase* view = GetViewForAccessibility();
-  ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (!accessibility_mode.is_mode_off() && view && is_active()) {
-    if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs))
-      GetOrCreateBrowserAccessibilityManager();
-
-    AXEventNotificationDetails details;
-    details.ax_tree_id = GetAXTreeID();
-    details.events = bundle.events;
-
-    details.updates.resize(bundle.updates.size());
-    for (size_t i = 0; i < bundle.updates.size(); ++i) {
-      const AXContentTreeUpdate& src_update = bundle.updates[i];
-      ui::AXTreeUpdate* dst_update = &details.updates[i];
-      if (src_update.has_tree_data) {
-        dst_update->has_tree_data = true;
-        ax_content_tree_data_ = src_update.tree_data;
-        AXContentTreeDataToAXTreeData(&dst_update->tree_data);
-      }
-      dst_update->root_id = src_update.root_id;
-      dst_update->node_id_to_clear = src_update.node_id_to_clear;
-      dst_update->event_from = src_update.event_from;
-      dst_update->nodes.resize(src_update.nodes.size());
-      for (size_t j = 0; j < src_update.nodes.size(); ++j) {
-        AXContentNodeDataToAXNodeData(src_update.nodes[j],
-                                      &dst_update->nodes[j]);
-      }
-    }
-
-    if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs))
-      SendAccessibilityEventsToManager(details);
-
-    delegate_->AccessibilityEventReceived(details);
-
-    // For testing only.
-    if (!accessibility_testing_callback_.is_null()) {
-      if (details.events.empty()) {
-        // Objects were marked dirty but no events were provided.
-        // The callback must still run, otherwise dump event tests can hang.
-        accessibility_testing_callback_.Run(this, ax::mojom::Event::kNone, 0);
-      } else {
-        // Call testing callback functions for each event to fire.
-        for (size_t i = 0; i < details.events.size(); i++) {
-          if (static_cast<int>(details.events[i].event_type) < 0)
-            continue;
-
-          accessibility_testing_callback_.Run(
-              this, details.events[i].event_type, details.events[i].id);
-        }
-      }
-    }
-  }
-
-  // Always send an ACK or the renderer can be in a bad state.
-  Send(new AccessibilityMsg_EventBundle_ACK(routing_id_, ack_token));
-}
-
 void RenderFrameHostImpl::UpdateBrowserControlsState(
     BrowserControlsState constraints,
     BrowserControlsState current,
@@ -4732,6 +4661,78 @@ void RenderFrameHostImpl::ResourceLoadComplete(
   }
   delegate_->ResourceLoadComplete(this, global_request_id,
                                   std::move(resource_load_info));
+}
+
+void RenderFrameHostImpl::HandleAXEvents(
+    const std::vector<AXContentTreeUpdate>& updates,
+    const std::vector<ui::AXEvent>& events,
+    int32_t reset_token,
+    HandleAXEventsCallback callback) {
+  // Don't process this IPC if either we're waiting on a reset and this IPC
+  // doesn't have the matching token ID, or if we're not waiting on a reset but
+  // this message includes a reset token.
+  if (accessibility_reset_token_ != reset_token) {
+    std::move(callback).Run();
+    return;
+  }
+  accessibility_reset_token_ = 0;
+
+  RenderWidgetHostViewBase* view = GetViewForAccessibility();
+  ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
+  if (accessibility_mode.is_mode_off() || !view || !is_active()) {
+    std::move(callback).Run();
+    return;
+  }
+
+  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs))
+    GetOrCreateBrowserAccessibilityManager();
+
+  AXEventNotificationDetails details;
+  details.ax_tree_id = GetAXTreeID();
+  details.events = events;
+
+  details.updates.resize(updates.size());
+  for (size_t i = 0; i < updates.size(); ++i) {
+    const AXContentTreeUpdate& src_update = updates[i];
+    ui::AXTreeUpdate* dst_update = &details.updates[i];
+    if (src_update.has_tree_data) {
+      dst_update->has_tree_data = true;
+      ax_content_tree_data_ = src_update.tree_data;
+      AXContentTreeDataToAXTreeData(&dst_update->tree_data);
+    }
+    dst_update->root_id = src_update.root_id;
+    dst_update->node_id_to_clear = src_update.node_id_to_clear;
+    dst_update->event_from = src_update.event_from;
+    dst_update->nodes.resize(src_update.nodes.size());
+    for (size_t j = 0; j < src_update.nodes.size(); ++j) {
+      AXContentNodeDataToAXNodeData(src_update.nodes[j], &dst_update->nodes[j]);
+    }
+  }
+
+  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs))
+    SendAccessibilityEventsToManager(details);
+
+  delegate_->AccessibilityEventReceived(details);
+
+  // For testing only.
+  if (!accessibility_testing_callback_.is_null()) {
+    if (details.events.empty()) {
+      // Objects were marked dirty but no events were provided.
+      // The callback must still run, otherwise dump event tests can hang.
+      accessibility_testing_callback_.Run(this, ax::mojom::Event::kNone, 0);
+    } else {
+      // Call testing callback functions for each event to fire.
+      for (auto& event : details.events) {
+        if (static_cast<int>(event.event_type) < 0)
+          continue;
+
+        accessibility_testing_callback_.Run(this, event.event_type, event.id);
+      }
+    }
+  }
+
+  // Always send an ACK or the renderer can be in a bad state.
+  std::move(callback).Run();
 }
 
 void RenderFrameHostImpl::HandleAXLocationChanges(

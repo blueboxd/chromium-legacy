@@ -43,11 +43,11 @@ struct ApplyViewportChangesArgs {
   bool is_pinch_gesture_active;
 
   // How much the top controls have been shown or hidden. The ratio runs
-  // between 0 (hidden) and 1 (full-shown). This is additive.
+  // between a set min-height (default 0) and 1 (full-shown). This is additive.
   float top_controls_delta;
 
   // How much the bottom controls have been shown or hidden. The ratio runs
-  // between 0 (hidden) and 1 (full-shown). This is additive.
+  // between a set min-height (default 0) and 1 (full-shown). This is additive.
   float bottom_controls_delta;
 
   // Whether the browser controls have been locked to fully hidden or shown or

@@ -47,6 +47,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionContainerView
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void OnContentsPreferredSizeChanged(views::View* content_view) override;
+  void OnCommittedQueryChanged(const AssistantQuery& query) override;
 
   // AssistantSuggestionsModelObserver:
   void OnConversationStartersChanged(
@@ -79,8 +80,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionContainerView
 
   views::BoxLayout* layout_manager_;  // Owned by view hierarchy.
 
-  // Whether or not we have received a response during this Assistant session.
-  bool has_received_response_ = false;
+  // Whether or not we have committed a query during this Assistant session.
+  bool has_committed_query_ = false;
 
   // The suggestion chip that was pressed by the user. May be |nullptr|.
   const SuggestionChipView* selected_chip_ = nullptr;

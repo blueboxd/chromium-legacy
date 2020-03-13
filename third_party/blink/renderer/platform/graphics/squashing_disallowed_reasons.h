@@ -24,7 +24,6 @@ using SquashingDisallowedReasons = unsigned;
   V(SquashingLayoutEmbeddedContentIsDisallowed) \
   V(SquashingBlendingIsDisallowed)              \
   V(NearestFixedPositionMismatch)               \
-  V(ScrollChildWithCompositedDescendants)       \
   V(SquashingLayerIsAnimating)                  \
   V(RenderingContextMismatch)                   \
   V(FragmentedContent)                          \

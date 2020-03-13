@@ -163,9 +163,6 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
   if (layer->ScrollsWithRespectTo(&squashing_layer))
     return SquashingDisallowedReason::kScrollsWithRespectToSquashingLayer;
 
-  if (layer->ScrollParent() && layer->HasCompositingDescendant())
-    return SquashingDisallowedReason::kScrollChildWithCompositedDescendants;
-
   if (layer->OpacityAncestor() != squashing_layer.OpacityAncestor())
     return SquashingDisallowedReason::kOpacityAncestorMismatch;
 

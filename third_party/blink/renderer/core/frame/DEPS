@@ -11,4 +11,7 @@ specific_include_rules = {
   "remote_frame_view.cc": [
     "+components/paint_preview/common/paint_preview_tracker.h",
   ],
+  "web_frame_widget_base.cc": [
+    "+cc/trees/swap_promise.h",
+  ],
 }

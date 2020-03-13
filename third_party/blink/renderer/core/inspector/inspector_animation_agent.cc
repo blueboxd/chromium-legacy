@@ -75,7 +75,7 @@ void InspectorAnimationAgent::Restore() {
 Response InspectorAnimationAgent::enable() {
   enabled_.Set(true);
   instrumenting_agents_->AddInspectorAnimationAgent(this);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorAnimationAgent::disable() {
@@ -87,7 +87,7 @@ Response InspectorAnimationAgent::disable() {
   id_to_animation_.clear();
   id_to_animation_clone_.clear();
   cleared_animations_.clear();
-  return Response::OK();
+  return Response::Success();
 }
 
 void InspectorAnimationAgent::DidCommitLoadForLocalFrame(LocalFrame* frame) {
@@ -205,21 +205,21 @@ InspectorAnimationAgent::BuildObjectForAnimation(blink::Animation& animation) {
 
 Response InspectorAnimationAgent::getPlaybackRate(double* playback_rate) {
   *playback_rate = ReferenceTimeline().PlaybackRate();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorAnimationAgent::setPlaybackRate(double playback_rate) {
   for (LocalFrame* frame : *inspected_frames_)
     frame->GetDocument()->Timeline().SetPlaybackRate(playback_rate);
   playback_rate_.Set(playback_rate);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorAnimationAgent::getCurrentTime(const String& id,
                                                  double* current_time) {
   blink::Animation* animation = nullptr;
   Response response = AssertAnimation(id, animation);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   if (id_to_animation_clone_.at(id))
     animation = id_to_animation_clone_.at(id);
@@ -235,7 +235,7 @@ Response InspectorAnimationAgent::getCurrentTime(const String& id,
                               animation->startTime().value_or(NullValue())
                         : NullValue();
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorAnimationAgent::setPaused(
@@ -244,11 +244,11 @@ Response InspectorAnimationAgent::setPaused(
   for (const String& animation_id : *animation_ids) {
     blink::Animation* animation = nullptr;
     Response response = AssertAnimation(animation_id, animation);
-    if (!response.isSuccess())
+    if (!response.IsSuccess())
       return response;
     blink::Animation* clone = AnimationClone(animation);
     if (!clone)
-      return Response::Error("Failed to clone detached animation");
+      return Response::ServerError("Failed to clone detached animation");
     if (paused && !clone->Paused()) {
       // Ensure we restore a current time if the animation is limited.
       double current_time = 0;
@@ -268,7 +268,7 @@ Response InspectorAnimationAgent::setPaused(
       clone->Unpause();
     }
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 blink::Animation* InspectorAnimationAgent::AnimationClone(
@@ -323,16 +323,16 @@ Response InspectorAnimationAgent::seekAnimations(
   for (const String& animation_id : *animation_ids) {
     blink::Animation* animation = nullptr;
     Response response = AssertAnimation(animation_id, animation);
-    if (!response.isSuccess())
+    if (!response.IsSuccess())
       return response;
     blink::Animation* clone = AnimationClone(animation);
     if (!clone)
-      return Response::Error("Failed to clone a detached animation.");
+      return Response::ServerError("Failed to clone a detached animation.");
     if (!clone->Paused())
       clone->play();
     clone->setCurrentTime(current_time, false);
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorAnimationAgent::releaseAnimations(
@@ -348,7 +348,7 @@ Response InspectorAnimationAgent::releaseAnimations(
     id_to_animation_.erase(animation_id);
     cleared_animations_.insert(animation_id);
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorAnimationAgent::setTiming(const String& animation_id,
@@ -356,7 +356,7 @@ Response InspectorAnimationAgent::setTiming(const String& animation_id,
                                             double delay) {
   blink::Animation* animation = nullptr;
   Response response = AssertAnimation(animation_id, animation);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   animation = AnimationClone(animation);
@@ -368,7 +368,7 @@ Response InspectorAnimationAgent::setTiming(const String& animation_id,
   timing->setDuration(unrestricted_duration);
   timing->setDelay(delay);
   animation->effect()->updateTiming(timing, exception_state);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorAnimationAgent::resolveAnimation(
@@ -377,7 +377,7 @@ Response InspectorAnimationAgent::resolveAnimation(
         result) {
   blink::Animation* animation = nullptr;
   Response response = AssertAnimation(animation_id, animation);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   if (id_to_animation_clone_.at(animation_id))
     animation = id_to_animation_clone_.at(animation_id);
@@ -388,7 +388,7 @@ Response InspectorAnimationAgent::resolveAnimation(
   ScriptState* script_state =
       frame ? ToScriptStateForMainWorld(frame) : nullptr;
   if (!script_state)
-    return Response::Error("Element not associated with a document.");
+    return Response::ServerError("Element not associated with a document.");
 
   ScriptState::Scope scope(script_state);
   static const char kAnimationObjectGroup[] = "animation";
@@ -401,8 +401,8 @@ Response InspectorAnimationAgent::resolveAnimation(
       ToV8InspectorStringView(kAnimationObjectGroup),
       false /* generatePreview */);
   if (!*result)
-    return Response::Error("Element not associated with a document.");
-  return Response::OK();
+    return Response::ServerError("Element not associated with a document.");
+  return Response::Success();
 }
 
 String InspectorAnimationAgent::CreateCSSId(blink::Animation& animation) {
@@ -499,8 +499,8 @@ Response InspectorAnimationAgent::AssertAnimation(const String& id,
                                                   blink::Animation*& result) {
   result = id_to_animation_.at(id);
   if (!result)
-    return Response::Error("Could not find animation with given id");
-  return Response::OK();
+    return Response::ServerError("Could not find animation with given id");
+  return Response::Success();
 }
 
 DocumentTimeline& InspectorAnimationAgent::ReferenceTimeline() {

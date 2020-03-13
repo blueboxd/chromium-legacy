@@ -1331,8 +1331,8 @@ public class PaymentRequestImpl
             URI url, PaymentHandlerWebContentsObserver paymentHandlerWebContentsObserver) {
         assert mInvokedPaymentApp != null;
         assert mInvokedPaymentApp instanceof ServiceWorkerPaymentApp;
-        assert org.chromium.chrome.browser.browserservices.Origin.create(url.toString())
-                .equals(org.chromium.chrome.browser.browserservices.Origin.create(
+        assert org.chromium.components.embedder_support.util.Origin.create(url.toString())
+                .equals(org.chromium.components.embedder_support.util.Origin.create(
                         ((ServiceWorkerPaymentApp) mInvokedPaymentApp).getScope().toString()));
 
         if (mPaymentHandlerUi != null) return false;

@@ -10,15 +10,12 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcut_item.h"
 #include "chrome/browser/ui/ash/launcher/shelf_context_menu.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/common/constants.h"
 
 class ChromeLauncherController;
-
-namespace arc {
-class ArcAppShortcutsMenuBuilder;
-}
 
 namespace extensions {
 class ContextMenuMatcher;
@@ -50,8 +47,10 @@ class AppServiceShelfContextMenu : public ShelfContextMenu {
 
   // Build additional ARC app shortcuts menu items.
   // TODO(crbug.com/1038487): consider merging into AppService.
-  void BuildArcAppShortcutsMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
-                                GetMenuModelCallback callback);
+  void BuildArcAppShortcutsMenu(apps::mojom::MenuItemsPtr menu_items,
+                                std::unique_ptr<ui::SimpleMenuModel> menu_model,
+                                GetMenuModelCallback callback,
+                                size_t arc_shortcut_index);
 
   // Build the menu items based on the app running status for the Crostini shelf
   // id with the prefix "crostini:".
@@ -73,14 +72,17 @@ class AppServiceShelfContextMenu : public ShelfContextMenu {
 
   bool ShouldAddPinMenu();
 
+  void ExecuteArcShortcutCommand(int command_id);
+
   apps::mojom::AppType app_type_;
 
   // The SimpleMenuModel used to hold the submenu items.
   std::unique_ptr<ui::SimpleMenuModel> submenu_;
 
-  std::unique_ptr<extensions::ContextMenuMatcher> extension_menu_items_;
+  // Caches the app shortcut items.
+  std::unique_ptr<arc::ArcAppShortcutItems> app_shortcut_items_;
 
-  std::unique_ptr<arc::ArcAppShortcutsMenuBuilder> arc_shortcuts_menu_builder_;
+  std::unique_ptr<extensions::ContextMenuMatcher> extension_menu_items_;
 
   base::WeakPtrFactory<AppServiceShelfContextMenu> weak_ptr_factory_{this};
 };

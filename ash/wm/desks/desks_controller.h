@@ -123,12 +123,17 @@ class ASH_EXPORT DesksController : public DesksHelper,
   bool ActivateAdjacentDesk(bool going_left, DesksSwitchSource source);
 
   // Moves |window| (which must belong to the currently active desk) to
-  // |target_desk| (which must be a different desk). If |window| is minimized,
-  // it will be unminimized after it's moved to |target_desk|.
+  // |target_desk| (which must be a different desk).
+  // |target_root| is provided if |window| is desired to be moved to another
+  // desk on another display, otherwise, you can just provide
+  // |window->GetRootWindow()| if the window should stay on the same display.
+  // If |window| is minimized, it will be unminimized after it's moved to
+  // |target_desk|.
   // Returns true on success, false otherwise (e.g. if |window| doesn't belong
   // to the active desk).
   bool MoveWindowFromActiveDeskTo(aura::Window* window,
                                   Desk* target_desk,
+                                  aura::Window* target_root,
                                   DesksMoveWindowFromActiveDeskSource source);
 
   // Reverts the name of the given |desk| to the default value (i.e. "Desk 1",

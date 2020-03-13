@@ -97,7 +97,7 @@ void UpdateServiceOutOfProcess::UpdateAllOnSTA(
     return;
   }
 
-  hr = updater->UpdateAll();
+  hr = updater->UpdateAll(NULL);
   if (FAILED(hr)) {
     VLOG(2) << "Failed to call IUpdater::UpdateAll" << std::hex << hr;
     std::move(callback).Run(static_cast<Result>(hr));

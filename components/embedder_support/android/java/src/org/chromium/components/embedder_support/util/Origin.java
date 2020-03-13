@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.browserservices;
+package org.chromium.components.embedder_support.util;
 
 import android.net.Uri;
 
 import androidx.annotation.Nullable;
-
-import org.chromium.components.embedder_support.util.UrlConstants;
 
 /**
  * A class to canonically represent a HTTP or HTTPS web origin in Java. In comparison to
@@ -66,13 +64,13 @@ public class Origin {
 
         try {
             return new Origin(uri.normalizeScheme()
-                    .buildUpon()
-                    .opaquePart("")
-                    .fragment("")
-                    .path("")
-                    .encodedAuthority(authority)
-                    .clearQuery()
-                    .build());
+                                      .buildUpon()
+                                      .opaquePart("")
+                                      .fragment("")
+                                      .path("")
+                                      .encodedAuthority(authority)
+                                      .clearQuery()
+                                      .build());
         } catch (UnsupportedOperationException e) {
             return null;
         }

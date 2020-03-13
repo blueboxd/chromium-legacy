@@ -126,6 +126,7 @@
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_action_handler.h"
+#include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/page_transition_types.h"
@@ -143,7 +144,6 @@
 #endif
 
 class GURL;
-struct AccessibilityHostMsg_EventBundleParams;
 struct FrameHostMsg_OpenURL_Params;
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 struct FrameHostMsg_ShowPopup_Params;
@@ -1595,10 +1595,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const blink::mojom::FrameOwnerProperties& properties);
   void OnForwardResourceTimingToParent(
       const ResourceTimingInfo& resource_timing);
-  void OnAccessibilityEvents(
-      const AccessibilityHostMsg_EventBundleParams& params,
-      int reset_token,
-      int ack_token);
   void OnAccessibilityChildFrameHitTestResult(
       int action_request_id,
       const gfx::Point& point,
@@ -1701,6 +1697,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 #endif
 
   // mojom::RenderAccessibilityHost:
+  void HandleAXEvents(const std::vector<AXContentTreeUpdate>& updates,
+                      const std::vector<ui::AXEvent>& events,
+                      int32_t reset_token,
+                      HandleAXEventsCallback callback) override;
   void HandleAXLocationChanges(
       std::vector<mojom::LocationChangesPtr> changes) override;
 

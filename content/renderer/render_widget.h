@@ -432,24 +432,16 @@ class CONTENT_EXPORT RenderWidget
   void DispatchRafAlignedInput(base::TimeTicks frame_time) override;
   void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
-  void NotifySwapTime(blink::WebReportTimeCallback callback) override;
   viz::FrameSinkId GetFrameSinkId() override;
+  void AddPresentationCallback(
+      uint32_t frame_token,
+      base::OnceCallback<void(base::TimeTicks)> callback) override;
 
   // Returns the scale being applied to the document in blink by the device
   // emulator. Returns 1 if there is no emulation active. Use this to position
   // things when the coordinates did not come from blink, such as from the mouse
   // position.
   float GetEmulatorScale() const;
-
-  // Registers a SwapPromise to report presentation time and possibly swap time.
-  // If |swap_time_callback| is not a null callback, it would be called once
-  // swap happens. |presentation_time_callback| will be called some time after
-  // pixels are presented on screen. Swap time is needed only in tests and
-  // production code uses |NotifySwapTime()| above which calls this one passing
-  // a null callback as |swap_time_callback|.
-  void NotifySwapAndPresentationTime(
-      blink::WebReportTimeCallback swap_time_callback,
-      blink::WebReportTimeCallback presentation_time_callback);
 
   // Override point to obtain that the current input method state and caret
   // position.

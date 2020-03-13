@@ -17,7 +17,9 @@ NetworkIdentifier GeneratePskNetworkId(const std::string& ssid) {
 }
 
 sync_pb::WifiConfigurationSpecifics GenerateTestWifiSpecifics(
-    const NetworkIdentifier& id) {
+    const NetworkIdentifier& id,
+    const std::string& passphrase = "passphrase",
+    double timestamp = 1) {
   sync_pb::WifiConfigurationSpecifics specifics;
   specifics.set_hex_ssid(id.hex_ssid());
 
@@ -30,7 +32,8 @@ sync_pb::WifiConfigurationSpecifics GenerateTestWifiSpecifics(
   } else {
     NOTREACHED();
   }
-  specifics.set_passphrase("password");
+  specifics.set_passphrase(passphrase);
+  specifics.set_last_update_timestamp(timestamp);
   specifics.set_automatically_connect(
       sync_pb::WifiConfigurationSpecifics::AUTOMATICALLY_CONNECT_ENABLED);
   specifics.set_is_preferred(

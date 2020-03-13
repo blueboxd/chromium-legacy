@@ -216,6 +216,10 @@ bool DesksBarView::IsDeskNameBeingModified() const {
   return false;
 }
 
+float DesksBarView::GetOnHoverWindowSizeScaleFactor() const {
+  return float{height()} / overview_grid_->root_window()->bounds().height();
+}
+
 void DesksBarView::OnHoverStateMayHaveChanged() {
   for (auto& mini_view : mini_views_)
     mini_view->OnHoverStateMayHaveChanged();

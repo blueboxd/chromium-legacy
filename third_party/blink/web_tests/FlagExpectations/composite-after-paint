@@ -34,6 +34,7 @@ crbug.com/802915 css3/blending/isolation-should-include-non-local-background.htm
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested-2.html [ Pass ]
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested.html [ Pass ]
 crbug.com/1039401 virtual/scroll_customization/fast/scrolling/scrollbar-mousedown-mouseup.html [ Pass ]
+paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ Pass ]
 
 virtual/android/fullscreen/video-overlay-scroll.html [ Failure ]
 virtual/android/rootscroller/fixed-chaining-with-implicit-pointer-events-none.html [ Failure ]
@@ -41,89 +42,77 @@ virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-shown.h
 virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Crash ]
 virtual/android/url-bar/bottom-fixed-adjusted-when-showing-url-bar.html [ Crash ]
 
-# Wrong clip of nested reflection.
+# Wrong clipping of the right side of nested composited reflection with non-zero filter origin.
 compositing/reflections/deeply-nested-reflections.html [ Failure ]
 
-compositing/geometry/composited-in-columns.html [ Crash ]
+# We always paint opacity:0 which breaks LCP's expectation.
+crbug.com/957674 cexternal/wpt/largest-contentful-paint/invisible-images.html [ Failure ]
+crbug.com/957674 virtual/scalefactor200/external/wpt/largest-contentful-paint/invisible-images.html [ Skip ]
+crbug.com/957674 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/invisible-images.html [ Skip ]
+
+# A fieldset paints its background twice.
+external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-overflow.html [ Crash ]
+
+#image-rendering: pixelated doesn't work on canvas.
+fast/webgl/pixelated.html [ Failure ]
+
 compositing/masks/mask-with-removed-filters.html [ Failure ]
 crbug.com/667946 compositing/overflow/scrolls-with-respect-to-nested.html [ Failure ]
 crbug.com/667946 compositing/overflow/scrolls-with-respect-to-transform.html [ Failure ]
 crbug.com/667946 compositing/overflow/scrolls-with-respect-to.html [ Failure ]
-compositing/squashing/do-not-squash-scroll-child-with-composited-descendants.html [ Failure ]
-compositing/visibility/layer-visible-content.html [ Failure ]
 external/wpt/css/css-transforms/transform3d-backface-visibility-006.html [ Failure ]
-external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-overflow.html [ Crash ]
-external/wpt/largest-contentful-paint/invisible-images.html [ Failure ]
 external/wpt/portals/portals-rendering.html [ Failure ]
-fast/css/outline-offset-large.html [ Failure ]
-fast/webgl/pixelated.html [ Failure ]
 fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
+
 printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
 printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Failure ]
 printing/offscreencanvas-2d-printing.html [ Failure ]
 printing/webgl-repeated-printing-preservedrawingbuffer.html [ Failure ]
 printing/webgl-repeated-printing.html [ Failure ]
+
 transforms/3d/general/background-visibility-layers.html [ Failure ]
 virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/forced-colors-mode-22.html [ Crash ]
-virtual/scalefactor200/external/wpt/largest-contentful-paint/invisible-images.html [ Failure ]
-virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/invisible-images.html [ Failure ]
-virtual/threaded-prefer-compositing/fast/scrolling/keyboard-scroll-page-scale.html [ Failure Pass ]
-virtual/threaded-prefer-compositing/fast/scrolling/no-hover-during-scroll.html [ Failure Pass ]
-virtual/threaded-prefer-compositing/fast/scrolling/no-hover-during-smooth-js-scroll.html [ Crash Pass ]
 
 # Raster invalidation doesn't work for huge layers. 
 paint/invalidation/raster-under-invalidation-checking.html [ Failure ]
 
-crbug.com/907601 virtual/threaded-prefer-compositing/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
-
-# Less invalidations or different invalidations without pixel failures.
-# Some might be good. Some might be under-invalidations for which under-invalidation
-# checking failed.
-paint/invalidation/compositing/pointer-events-composited-scrolling.html [ Failure ]
-paint/invalidation/compositing/should-invoke-deferred-compositing.html [ Failure ]
+# backface-visibility:hidden doesn't trigger composited scrolling.
+compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure ]
+paint/invalidation/compositing/scrolling-neg-z-index-descendants.html [ Failure ]
 paint/invalidation/scroll/overflow-hidden-yet-scrolled-with-custom-scrollbar.html [ Failure ]
 paint/invalidation/scroll/overflow-hidden-yet-scrolled.html [ Failure ]
 
-# Extra raster invalidations.
-compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure ]
-paint/invalidation/compositing/dont-invalidate-root-layer-when-composited-layer-becomes-visible.html [ Failure ]
-paint/invalidation/compositing/should-not-repaint-move-backface-hidden.html [ Failure ]
-paint/invalidation/compositing/tricky-element-removal-crash.html [ Failure ]
+# We paint the iframe's content background in the scrolling layer, causing invalidation on scroll.
 paint/invalidation/scroll/iframe-scroll-repaint.html [ Failure ]
-paint/invalidation/position/relative-positioned-movement-repaint.html [ Failure ]
-paint/invalidation/compositing/scrolling-neg-z-index-descendants.html [ Failure ]
+# will-transform on descendant doesn't trigger compositing of iframe. 
 paint/invalidation/scroll/composited-iframe-scroll-repaint.html [ Failure ]
+
+# backface-visiblity:hidden is not a direct compositing reason.
+# Extra raster invalidation caused by offset change, etc.
+paint/invalidation/compositing/should-not-repaint-move-backface-hidden.html [ Failure ]
+paint/invalidation/position/relative-positioned-movement-repaint.html [ Failure ]
+paint/invalidation/compositing/should-not-repaint-composited-descendants.html [ Failure ]
 
 # Should not decomposite effects for composited elements.
 crbug.com/765003 paint/invalidation/compositing/should-not-repaint-composited-filter.html [ Failure ]
 crbug.com/765003 paint/invalidation/compositing/should-not-repaint-composited-opacity.html [ Failure ]
 crbug.com/765003 compositing/contents-opaque/layer-opacity.html [ Failure ]
 
-# Less layers or other different layer trees.
-paint/invalidation/compositing/overlap-test-with-filter.html [ Failure ]
-paint/invalidation/compositing/should-not-repaint-composited-descendants.html [ Failure ]
+# Should allow DecompositeEffect() to upcast to an intermediate isolation group
+# that doesn't have a paint chunk.
+external/wpt/svg/render/reftests/blending-001.svg [ Failure ]
+external/wpt/svg/render/reftests/blending-002.svg [ Failure ]
+css3/blending/svg-isolation-add-clipper-text.html [ Failure ]
+
 # Extra layers for non-fast scrolling areas.
 compositing/overflow/textarea-scroll-touch.html [ Failure ]
 
 # Subpixel or invisible color differences that look benign, but we can't rebaseline ref tests.
 compositing/overflow/ancestor-with-clip-path.html [ Failure ]
-css3/blending/svg-isolation-add-clipper-text.html [ Failure ]
 fullscreen/rendering/backdrop-object.html [ Failure ]
-external/wpt/svg/render/reftests/blending-001.svg [ Failure ]
-external/wpt/svg/render/reftests/blending-002.svg [ Failure ]
-
-# Text failures due to layerization differences
-css3/blending/mix-blend-mode-isolation-remove.html [ Failure ]
 
 # Passes on bot, timeouts locally.
 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Pass Timeout ]
-
-virtual/threaded/compositing/visibility/layer-visible-content.html [ Failure ]
-
-# See comment regarding this test in NeverFixTests. It also fails for other
-# reasons, in particular that the composited layerization algorithm provides
-# different results.
-paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ Failure ]
 
 # Outline paints incorrectly with columns
 crbug.com/1047358 paint/pagination/composited-paginated-outlined-box.html [ Failure ]
@@ -156,6 +145,8 @@ crbug.com/979380 fast/hidpi/scrollbar-appearance-increase-device-scale-factor.ht
 # Crash on non-contiguous effect on multiple columns
 fast/multicol/composited-layer-will-change.html [ Crash ]
 paint/clipath/change-mask-clip-path-multicol-crash.html [ Crash ]
+# Crash on weird clip hierarchy in multiple columns
+compositing/geometry/composited-in-columns.html [ Crash ]
 
 # Ad frame highlight size is incorrect
 crbug.com/1047359 http/tests/subresource_filter/ad-highlight-frame-resized.html [ Failure ]
@@ -169,3 +160,6 @@ crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gestu
 crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Crash ]
 crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Crash ]
 crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Crash ]
+
+compositing/gestures/gesture-tapHighlight-composited-img.html [ Pass Failure ]
+http/tests/images/image-decode-in-frame.html [ Pass Failure ]

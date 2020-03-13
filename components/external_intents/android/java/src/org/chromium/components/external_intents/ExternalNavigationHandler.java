@@ -452,6 +452,7 @@ public class ExternalNavigationHandler {
             // also call fixUpUrl on this user-provided URL as the fixed-up URL is what we would end
             // up navigating to.
             url = targetIntent.getDataString();
+            if (url == null) return false;
         } else {
             url = params.getUrl();
         }
@@ -471,6 +472,7 @@ public class ExternalNavigationHandler {
         String url;
         if (hasIntentScheme) {
             url = targetIntent.getDataString();
+            if (url == null) return false;
         } else {
             url = params.getUrl();
         }

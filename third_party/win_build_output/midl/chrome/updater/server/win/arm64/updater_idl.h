@@ -45,6 +45,13 @@
 
 /* Forward Declarations */ 
 
+#ifndef __IUpdaterObserver_FWD_DEFINED__
+#define __IUpdaterObserver_FWD_DEFINED__
+typedef interface IUpdaterObserver IUpdaterObserver;
+
+#endif 	/* __IUpdaterObserver_FWD_DEFINED__ */
+
+
 #ifndef __IUpdater_FWD_DEFINED__
 #define __IUpdater_FWD_DEFINED__
 typedef interface IUpdater IUpdater;
@@ -92,6 +99,86 @@ extern "C"{
 #endif 
 
 
+#ifndef __IUpdaterObserver_INTERFACE_DEFINED__
+#define __IUpdaterObserver_INTERFACE_DEFINED__
+
+/* interface IUpdaterObserver */
+/* [unique][helpstring][uuid][oleautomation][object] */ 
+
+
+EXTERN_C const IID IID_IUpdaterObserver;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("7B416CFD-4216-4FD6-BD83-7C586054676E")
+    IUpdaterObserver : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE OnComplete( 
+            /* [in] */ int error_code) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IUpdaterObserverVtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            IUpdaterObserver * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            IUpdaterObserver * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            IUpdaterObserver * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *OnComplete )( 
+            IUpdaterObserver * This,
+            /* [in] */ int error_code);
+        
+        END_INTERFACE
+    } IUpdaterObserverVtbl;
+
+    interface IUpdaterObserver
+    {
+        CONST_VTBL struct IUpdaterObserverVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IUpdaterObserver_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IUpdaterObserver_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IUpdaterObserver_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IUpdaterObserver_OnComplete(This,error_code)	\
+    ( (This)->lpVtbl -> OnComplete(This,error_code) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IUpdaterObserver_INTERFACE_DEFINED__ */
+
+
 #ifndef __IUpdater_INTERFACE_DEFINED__
 #define __IUpdater_INTERFACE_DEFINED__
 
@@ -120,7 +207,8 @@ EXTERN_C const IID IID_IUpdater;
         virtual HRESULT STDMETHODCALLTYPE Update( 
             /* [string][in] */ const WCHAR *app_id) = 0;
         
-        virtual HRESULT STDMETHODCALLTYPE UpdateAll( void) = 0;
+        virtual HRESULT STDMETHODCALLTYPE UpdateAll( 
+            /* [in] */ IUpdaterObserver *observer) = 0;
         
     };
     
@@ -160,7 +248,8 @@ EXTERN_C const IID IID_IUpdater;
             /* [string][in] */ const WCHAR *app_id);
         
         HRESULT ( STDMETHODCALLTYPE *UpdateAll )( 
-            IUpdater * This);
+            IUpdater * This,
+            /* [in] */ IUpdaterObserver *observer);
         
         END_INTERFACE
     } IUpdaterVtbl;
@@ -194,8 +283,8 @@ EXTERN_C const IID IID_IUpdater;
 #define IUpdater_Update(This,app_id)	\
     ( (This)->lpVtbl -> Update(This,app_id) ) 
 
-#define IUpdater_UpdateAll(This)	\
-    ( (This)->lpVtbl -> UpdateAll(This) ) 
+#define IUpdater_UpdateAll(This,observer)	\
+    ( (This)->lpVtbl -> UpdateAll(This,observer) ) 
 
 #endif /* COBJMACROS */
 

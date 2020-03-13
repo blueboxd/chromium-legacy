@@ -31,7 +31,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   // DevToolsAgentHost implementation.
   bool AttachClient(DevToolsAgentHostClient* client) override;
   bool DetachClient(DevToolsAgentHostClient* client) override;
-  bool DispatchProtocolMessage(DevToolsAgentHostClient* client,
+  void DispatchProtocolMessage(DevToolsAgentHostClient* client,
                                base::span<const uint8_t> message) override;
   bool IsAttached() override;
   void InspectElement(RenderFrameHost* frame_host, int x, int y) override;

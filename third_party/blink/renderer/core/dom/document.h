@@ -98,6 +98,7 @@ class CSSStyleSheet;
 class CanvasFontCache;
 class ChromeClient;
 class Comment;
+class CompositorAnimationTimeline;
 class ComputedAccessibleNode;
 class DisplayLockContext;
 class ElementIntersectionObserverData;
@@ -1419,6 +1420,9 @@ class CORE_EXPORT Document : public ContainerNode,
   WorkletAnimationController& GetWorkletAnimationController() {
     return *worklet_animation_controller_;
   }
+
+  void AttachCompositorTimeline(CompositorAnimationTimeline*) const;
+  void DetachCompositorTimeline(CompositorAnimationTimeline*) const;
 
   void AddToTopLayer(Element*, const Element* before = nullptr);
   void RemoveFromTopLayer(Element*);

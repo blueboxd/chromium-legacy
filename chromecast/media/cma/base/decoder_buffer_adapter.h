@@ -10,8 +10,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "chromecast/media/api/decoder_buffer_base.h"
 
 namespace media {

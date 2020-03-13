@@ -65,6 +65,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -192,6 +193,8 @@ void DragItemToPoint(OverviewItem* item,
       event_generator->ReleaseTouch();
   } else {
     event_generator->PressLeftButton();
+    Shell::Get()->cursor_manager()->SetDisplay(
+        display::Screen::GetScreen()->GetDisplayNearestPoint(screen_location));
     event_generator->MoveMouseTo(screen_location);
     if (drop)
       event_generator->ReleaseLeftButton();
@@ -543,7 +546,8 @@ TEST_F(DesksTest, TestWindowPositioningPaused) {
   // windows.
   Desk* desk_2 = controller->desks()[1].get();
   controller->MoveWindowFromActiveDeskTo(
-      win1.get(), desk_2, DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
+      win1.get(), desk_2, win1->GetRootWindow(),
+      DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
   EXPECT_EQ(win0_bounds, win0->GetBoundsInScreen());
   EXPECT_EQ(win1_bounds, win1->GetBoundsInScreen());
 
@@ -685,7 +689,8 @@ TEST_F(DesksTest, TransientModalChildren) {
   // Move only the modal child window to desk_3, and expect that its parent will
   // move along with it, and their z-order is preserved.
   controller->MoveWindowFromActiveDeskTo(
-      win1.get(), desk_3, DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
+      win1.get(), desk_3, win1->GetRootWindow(),
+      DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
   ASSERT_EQ(1u, desk_2->windows().size());
   ASSERT_EQ(2u, desk_3->windows().size());
   EXPECT_EQ(win2.get(), desk_2_container->children()[0]);
@@ -1525,6 +1530,114 @@ TEST_F(DesksTest, NewDeskButtonStateAndColor) {
   EXPECT_FALSE(new_desk_button->GetEnabled());
   EXPECT_EQ(disabled_background_color,
             new_desk_button->GetBackgroundColorForTesting());
+}
+
+class DesksWithMultiDisplayOverview : public AshTestBase {
+ public:
+  DesksWithMultiDisplayOverview() = default;
+  ~DesksWithMultiDisplayOverview() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kMultiDisplayOverviewAndSplitView);
+    AshTestBase::SetUp();
+
+    // Start the test with two displays and two desks.
+    UpdateDisplay("600x600,400x500");
+    NewDesk();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(DesksWithMultiDisplayOverview, DropOnSameDeskInOtherDisplay) {
+  auto roots = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, roots.size());
+
+  auto win = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  auto* overview_session = overview_controller->overview_session();
+  auto* overview_item = overview_session->GetOverviewItemForWindow(win.get());
+  ASSERT_TRUE(overview_item);
+
+  // The window should exist on the grid of the first display.
+  auto* grid1 = GetOverviewGridForRoot(roots[0]);
+  auto* grid2 = GetOverviewGridForRoot(roots[1]);
+  EXPECT_EQ(1u, grid1->size());
+  EXPECT_EQ(grid1, overview_item->overview_grid());
+  EXPECT_EQ(0u, grid2->size());
+
+  // Drag the item and drop it on the mini view of the same desk (i.e. desk 1)
+  // on the second display. The window should not change desks, but it should
+  // change displays (i.e. it should be removed from |grid1| and added to
+  // |grid2|).
+  const auto* desks_bar_view = grid2->desks_bar_view();
+  ASSERT_TRUE(desks_bar_view);
+  ASSERT_EQ(2u, desks_bar_view->mini_views().size());
+  auto* desk_1_mini_view = desks_bar_view->mini_views()[0].get();
+  auto* event_generator = GetEventGenerator();
+  DragItemToPoint(overview_item,
+                  desk_1_mini_view->GetBoundsInScreen().CenterPoint(),
+                  event_generator,
+                  /*by_touch_gestures=*/false);
+  // A new item should have been created for the window on the second grid.
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  overview_item = overview_session->GetOverviewItemForWindow(win.get());
+  ASSERT_TRUE(overview_item);
+  EXPECT_EQ(0u, grid1->size());
+  EXPECT_EQ(grid2, overview_item->overview_grid());
+  EXPECT_EQ(1u, grid2->size());
+  EXPECT_TRUE(DoesActiveDeskContainWindow(win.get()));
+  EXPECT_EQ(roots[1], win->GetRootWindow());
+}
+
+TEST_F(DesksWithMultiDisplayOverview, DropOnOtherDeskInOtherDisplay) {
+  auto roots = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, roots.size());
+
+  auto win = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  auto* overview_session = overview_controller->overview_session();
+  auto* overview_item = overview_session->GetOverviewItemForWindow(win.get());
+  ASSERT_TRUE(overview_item);
+
+  // The window should exist on the grid of the first display.
+  auto* grid1 = GetOverviewGridForRoot(roots[0]);
+  auto* grid2 = GetOverviewGridForRoot(roots[1]);
+  EXPECT_EQ(1u, grid1->size());
+  EXPECT_EQ(grid1, overview_item->overview_grid());
+  EXPECT_EQ(0u, grid2->size());
+
+  // Drag the item and drop it on the mini view of the second desk on the second
+  // display. The window should change desks as well as displays.
+  const auto* desks_bar_view = grid2->desks_bar_view();
+  ASSERT_TRUE(desks_bar_view);
+  ASSERT_EQ(2u, desks_bar_view->mini_views().size());
+  auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
+  auto* event_generator = GetEventGenerator();
+  DragItemToPoint(overview_item,
+                  desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
+                  event_generator,
+                  /*by_touch_gestures=*/false);
+  // The item should no longer be in any grid, since it moved to an inactive
+  // desk.
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  overview_item = overview_session->GetOverviewItemForWindow(win.get());
+  ASSERT_FALSE(overview_item);
+  EXPECT_EQ(0u, grid1->size());
+  EXPECT_EQ(0u, grid2->size());
+  EXPECT_FALSE(DoesActiveDeskContainWindow(win.get()));
+  EXPECT_EQ(roots[1], win->GetRootWindow());
+  EXPECT_FALSE(win->IsVisible());
+  auto* controller = DesksController::Get();
+  const Desk* desk_2 = controller->desks()[1].get();
+  EXPECT_TRUE(base::Contains(desk_2->windows(), win.get()));
 }
 
 namespace {
@@ -3126,7 +3239,8 @@ TEST_F(DesksAcceleratorsTest, CannotMoveAlwaysOnTopWindows) {
   EXPECT_EQ(win0.get(), window_util::GetActiveWindow());
   EXPECT_FALSE(DoesActiveDeskContainWindow(win0.get()));
   EXPECT_FALSE(controller->MoveWindowFromActiveDeskTo(
-      win0.get(), desk_2, DesksMoveWindowFromActiveDeskSource::kDragAndDrop));
+      win0.get(), desk_2, win0->GetRootWindow(),
+      DesksMoveWindowFromActiveDeskSource::kDragAndDrop));
   const int flags = ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN;
   SendAccelerator(ui::VKEY_OEM_4, flags);
   EXPECT_EQ(win0.get(), window_util::GetActiveWindow());

@@ -428,6 +428,11 @@ void Portal::Activate(blink::TransferableMessage data,
   // happening after predecessor_web_contents has been moved into a portal.
   successor_contents_raw->GetDelegate()->WebContentsBecamePortal(
       outer_contents);
+
+  BrowserAccessibilityManager* manager =
+      successor_contents_raw->GetMainFrame()->browser_accessibility_manager();
+  if (manager)
+    manager->OnPortalActivated();
 }
 
 void Portal::PostMessageToGuest(

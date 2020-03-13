@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
@@ -86,7 +85,7 @@ DocumentTimeline::DocumentTimeline(Document* document,
   else
     timing_ = timing;
   if (Platform::Current()->IsThreadedAnimationEnabled())
-    compositor_timeline_ = std::make_unique<CompositorAnimationTimeline>();
+    EnsureCompositorTimeline();
 
   DCHECK(document);
 }
@@ -228,6 +227,14 @@ double DocumentTimeline::PlaybackRate() const {
 void DocumentTimeline::InvalidateKeyframeEffects(const TreeScope& tree_scope) {
   for (const auto& animation : animations_)
     animation->InvalidateKeyframeEffect(tree_scope);
+}
+
+CompositorAnimationTimeline* DocumentTimeline::EnsureCompositorTimeline() {
+  if (compositor_timeline_)
+    return compositor_timeline_.get();
+
+  compositor_timeline_ = std::make_unique<CompositorAnimationTimeline>();
+  return compositor_timeline_.get();
 }
 
 void DocumentTimeline::Trace(Visitor* visitor) {

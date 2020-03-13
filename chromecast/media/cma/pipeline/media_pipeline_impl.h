@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "chromecast/media/cma/backend/cma_backend.h"
+#include "chromecast/media/api/cma_backend.h"
 #include "chromecast/media/cma/pipeline/load_type.h"
 #include "chromecast/media/cma/pipeline/media_pipeline_client.h"
 #include "media/base/time_delta_interpolator.h"

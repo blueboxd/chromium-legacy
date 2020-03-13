@@ -107,9 +107,12 @@ class ASH_EXPORT Desk {
   // deprioritized.
   void MoveWindowsToDesk(Desk* target_desk);
 
-  // Moves a single |window| from this desk to |target_desk|. |window| must
+  // Moves a single |window| from this desk to |target_desk|, possibly moving it
+  // to a different display, depending on |target_root|. |window| must
   // belong to this desk.
-  void MoveWindowToDesk(aura::Window* window, Desk* target_desk);
+  void MoveWindowToDesk(aura::Window* window,
+                        Desk* target_desk,
+                        aura::Window* target_root);
 
   aura::Window* GetDeskContainerForRoot(aura::Window* root) const;
 
@@ -128,7 +131,9 @@ class ASH_EXPORT Desk {
   void UpdateDeskBackdrops();
 
  private:
-  void MoveWindowToDeskInternal(aura::Window* window, Desk* target_desk);
+  void MoveWindowToDeskInternal(aura::Window* window,
+                                Desk* target_desk,
+                                aura::Window* target_root);
 
   // If `PrepareForActivationAnimation()` was called during the animation to
   // activate this desk, this function is called from `Activate()` to reset the

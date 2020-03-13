@@ -50,11 +50,11 @@ void InspectorHandler::TargetDetached(const std::string& reason) {
 Response InspectorHandler::Enable() {
   if (host_ && !host_->IsRenderFrameLive())
     frontend_->TargetCrashed();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorHandler::Disable() {
-  return Response::OK();
+  return Response::Success();
 }
 
 }  // namespace protocol

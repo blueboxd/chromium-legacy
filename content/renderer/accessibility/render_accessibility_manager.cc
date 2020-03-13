@@ -78,6 +78,15 @@ void RenderAccessibilityManager::Reset(int32_t reset_token) {
   render_accessibility_->Reset(reset_token);
 }
 
+void RenderAccessibilityManager::HandleAccessibilityEvents(
+    const std::vector<AXContentTreeUpdate>& updates,
+    const std::vector<ui::AXEvent>& events,
+    int32_t reset_token,
+    mojom::RenderAccessibilityHost::HandleAXEventsCallback callback) {
+  GetOrCreateRemoteRenderAccessibilityHost()->HandleAXEvents(
+      updates, events, reset_token, std::move(callback));
+}
+
 void RenderAccessibilityManager::HandleLocationChanges(
     std::vector<mojom::LocationChangesPtr> changes) {
   GetOrCreateRemoteRenderAccessibilityHost()->HandleAXLocationChanges(

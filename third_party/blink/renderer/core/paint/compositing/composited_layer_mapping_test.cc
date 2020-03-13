@@ -418,7 +418,7 @@ TEST_F(CompositedLayerMappingTest, 3D45DegRotatedTallInterestRect) {
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   ASSERT_TRUE(!!paint_layer->GraphicsLayerBacking());
-  EXPECT_EQ(IntRect(0, 0, 200, 6249),
+  EXPECT_EQ(IntRect(0, 0, 200, 6226),
             RecomputeInterestRect(paint_layer->GraphicsLayerBacking()));
 }
 

@@ -215,16 +215,10 @@ void StatusAreaWidget::UpdateLayout(bool animate) {
 void StatusAreaWidget::UpdateTargetBoundsForGesture() {
   const gfx::Point shelf_origin =
       shelf_->shelf_widget()->GetTargetBounds().origin();
-  if (shelf_->IsHorizontalAlignment()) {
-    const bool tablet_mode =
-        Shell::Get()->tablet_mode_controller() &&
-        Shell::Get()->tablet_mode_controller()->InTabletMode();
-    if (!tablet_mode || !chromeos::switches::ShouldShowShelfHotseat()) {
-      target_bounds_.set_y(shelf_origin.y());
-    }
-  } else {
+  if (shelf_->IsHorizontalAlignment())
+    target_bounds_.set_y(shelf_origin.y());
+  else
     target_bounds_.set_x(shelf_origin.x());
-  }
 }
 
 void StatusAreaWidget::CalculateButtonVisibilityForCollapsedState() {

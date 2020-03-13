@@ -56,9 +56,6 @@ using blink::WebSettings;
 using blink::WebView;
 
 namespace {
-// The next token to use to distinguish between ack events sent to this
-// RenderAccessibilityImpl and a previous instance.
-static int g_next_ack_token = 1;
 
 void SetAccessibilityCrashKey(ui::AXMode mode) {
   // Add a crash key with the ax_mode, to enable searching for top crashes that
@@ -188,7 +185,6 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(
       last_scroll_offset_(gfx::Size()),
       ack_pending_(false),
       reset_token_(0) {
-  ack_token_ = g_next_ack_token++;
   WebView* web_view = render_frame_->GetRenderView()->GetWebView();
   WebSettings* settings = web_view->GetSettings();
 
@@ -293,15 +289,6 @@ void RenderAccessibilityImpl::AccessibilityModeChanged(const ui::AXMode& mode) {
                                  : ax::mojom::Event::kLayoutComplete;
     HandleAXEvent(webax_object, event);
   }
-}
-
-bool RenderAccessibilityImpl::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(RenderAccessibilityImpl, message)
-    IPC_MESSAGE_HANDLER(AccessibilityMsg_EventBundle_ACK, OnEventsAck)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void RenderAccessibilityImpl::PerformAction(const ui::AXActionData& data) {
@@ -630,8 +617,9 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   std::vector<ui::AXEvent> src_events = pending_events_;
   pending_events_.clear();
 
-  // The serialized event bundle to send to the browser.
-  AccessibilityHostMsg_EventBundleParams bundle;
+  // The serialized list of updates and events to send to the browser.
+  std::vector<AXContentTreeUpdate> updates;
+  std::vector<ui::AXEvent> events;
 
   // Keep track of nodes in the tree that need to be updated.
   std::vector<DirtyObject> dirty_objects = dirty_objects_;
@@ -646,8 +634,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
 
   // Loop over each event and generate an updated event message.
-  for (size_t i = 0; i < src_events.size(); ++i) {
-    ui::AXEvent& event = src_events[i];
+  for (auto& event : src_events) {
     if (event.event_type == ax::mojom::Event::kLayoutComplete)
       had_layout_complete_messages = true;
 
@@ -705,7 +692,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     if (!tree_source_.IsInTree(obj))
       continue;
 
-    bundle.events.push_back(event);
+    events.push_back(event);
 
     // Whenever there's a change within a table, invalidate the
     // whole table so that row and cell indexes are recomputed.
@@ -782,16 +769,13 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
 
     // For each node in the update, set the location in our map from
     // ids to locations.
-    for (size_t j = 0; j < update.nodes.size(); ++j) {
-      ui::AXNodeData& src = update.nodes[j];
-      ui::AXRelativeBounds& dst = locations_[update.nodes[j].id];
-      dst = src.relative_bounds;
+    for (auto& node : update.nodes) {
+      ui::AXRelativeBounds& dst = locations_[node.id];
+      dst = node.relative_bounds;
+      already_serialized_ids.insert(node.id);
     }
 
-    for (size_t j = 0; j < update.nodes.size(); ++j)
-      already_serialized_ids.insert(update.nodes[j].id);
-
-    bundle.updates.push_back(update);
+    updates.push_back(update);
 
     if (had_load_complete_messages)
       RecordImageMetrics(&update);
@@ -799,8 +783,10 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     VLOG(1) << "Accessibility tree update:\n" << update.ToString();
   }
 
-  Send(new AccessibilityHostMsg_EventBundle(routing_id(), bundle, reset_token_,
-                                            ack_token_));
+  render_accessibility_manager_->HandleAccessibilityEvents(
+      updates, events, reset_token_,
+      base::BindOnce(&RenderAccessibilityImpl::OnAccessibilityEventsHandled,
+                     weak_factory_.GetWeakPtr()));
   reset_token_ = 0;
 
   if (had_layout_complete_messages)
@@ -810,7 +796,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     has_injected_stylesheet_ = false;
 
   if (image_annotation_debugging_)
-    AddImageAnnotationDebuggingAttributes(bundle.updates);
+    AddImageAnnotationDebuggingAttributes(updates);
 }
 
 void RenderAccessibilityImpl::SendLocationChanges() {
@@ -867,11 +853,7 @@ void RenderAccessibilityImpl::SendLocationChanges() {
   render_accessibility_manager_->HandleLocationChanges(std::move(changes));
 }
 
-void RenderAccessibilityImpl::OnEventsAck(int ack_token) {
-  // Ignore acks intended for a different or previous instance.
-  if (ack_token_ != ack_token)
-    return;
-
+void RenderAccessibilityImpl::OnAccessibilityEventsHandled() {
   DCHECK(ack_pending_);
   ack_pending_ = false;
   SendPendingAccessibilityEvents();

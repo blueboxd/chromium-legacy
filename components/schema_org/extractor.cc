@@ -28,7 +28,10 @@ namespace {
 // the max nesting depth has a property corresponding to an entity, that
 // property will be dropped. Note that we will still parse json-ld blocks deeper
 // than this, but it won't be passed to App Indexing.
-constexpr int kMaxDepth = 5;
+constexpr int kMaxDictionaryDepth = 5;
+// Maximum amount of nesting of arrays to support, where 0 is a completely flat
+// array.
+constexpr int kMaxNestedArrayDepth = 1;
 // Some strings are very long, and we don't currently use those, so limit string
 // length to something reasonable to avoid undue pressure on Icing. Note that
 // App Indexing supports strings up to length 20k.
@@ -107,9 +110,14 @@ bool ParseStringValue(const std::string& property_type,
 bool ParseRepeatedValue(const base::Value::ConstListView& arr,
                         const std::string& property_type,
                         Values* values,
-                        int recursion_level) {
+                        int recursion_level,
+                        int nested_array_level) {
   DCHECK(values);
   if (arr.empty()) {
+    return false;
+  }
+
+  if (nested_array_level > kMaxNestedArrayDepth) {
     return false;
   }
 
@@ -140,9 +148,13 @@ bool ParseRepeatedValue(const base::Value::ConstListView& arr,
           values->entity_values.push_back(std::move(entity));
         }
       } break;
-      case base::Value::Type::LIST:
-        // App Indexing doesn't support nested arrays.
-        return false;
+      case base::Value::Type::LIST: {
+        const base::Value::ConstListView list_view = list_item.GetList();
+        if (!ParseRepeatedValue(list_view, property_type, values,
+                                recursion_level, nested_array_level + 1)) {
+          continue;
+        }
+      } break;
       default:
         break;
     }
@@ -153,7 +165,7 @@ bool ParseRepeatedValue(const base::Value::ConstListView& arr,
 void ExtractEntity(const base::DictionaryValue& val,
                    Entity* entity,
                    int recursion_level) {
-  if (recursion_level >= kMaxDepth) {
+  if (recursion_level >= kMaxDictionaryDepth) {
     return;
   }
 
@@ -192,7 +204,7 @@ void ExtractEntity(const base::DictionaryValue& val,
         break;
       }
       case base::Value::Type::DICTIONARY: {
-        if (recursion_level + 1 >= kMaxDepth) {
+        if (recursion_level + 1 >= kMaxDictionaryDepth) {
           continue;
         }
 
@@ -209,7 +221,7 @@ void ExtractEntity(const base::DictionaryValue& val,
       case base::Value::Type::LIST: {
         const base::Value::ConstListView list_view = entry.second.GetList();
         if (!ParseRepeatedValue(list_view, property->name,
-                                property->values.get(), recursion_level)) {
+                                property->values.get(), recursion_level, 0)) {
           continue;
         }
         break;

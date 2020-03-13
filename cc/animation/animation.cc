@@ -261,13 +261,6 @@ void Animation::NotifyKeyframeModelFinishedForTesting(
   DispatchAndDelegateAnimationEvent(event);
 }
 
-void Animation::PromoteScrollTimelinePendingToActive() {
-  if (!animation_timeline_)
-    return;
-
-  animation_timeline_->ActivateTimeline();
-}
-
 void Animation::UpdateScrollTimeline(base::Optional<ElementId> scroller_id,
                                      base::Optional<double> start_scroll_offset,
                                      base::Optional<double> end_scroll_offset) {

@@ -397,3 +397,9 @@ QUIC_FLAG(
 
 // If true, QuicSession\'s various write methods will set transmission type.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_write_with_transmission, false)
+
+// If true, fix a bug in QUIC BBR where bandwidth estimate becomes 0 after a
+// loss only event.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_bbr_fix_zero_bw_on_loss_only_event,
+          false)

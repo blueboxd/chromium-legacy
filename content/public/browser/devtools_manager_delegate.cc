@@ -61,7 +61,6 @@ void DevToolsManagerDelegate::ClientDetached(
 
 void DevToolsManagerDelegate::HandleCommand(
     DevToolsAgentHostClientChannel* channel,
-    const std::string& method,
     base::span<const uint8_t> message,
     NotHandledCallback callback) {
   std::move(callback).Run(message);

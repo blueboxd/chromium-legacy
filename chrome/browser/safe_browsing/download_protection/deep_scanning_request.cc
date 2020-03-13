@@ -284,6 +284,16 @@ void DeepScanningRequest::OnScanComplete(BinaryUploadService::Result result,
             AllowPasswordProtectedFilesValues::ALLOW_UPLOADS) {
       download_result = DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED;
     }
+  } else if (result == BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE) {
+    int block_unsupported_policy = g_browser_process->local_state()->GetInteger(
+        prefs::kBlockUnsupportedFiletypes);
+    if (block_unsupported_policy == BlockUnsupportedFiletypesValues::
+                                        BLOCK_UNSUPPORTED_FILETYPES_DOWNLOADS ||
+        block_unsupported_policy ==
+            BlockUnsupportedFiletypesValues::
+                BLOCK_UNSUPPORTED_FILETYPES_UPLOADS_AND_DOWNLOADS) {
+      download_result = DownloadCheckResult::BLOCKED_UNSUPPORTED_FILE_TYPE;
+    }
   }
 
   FinishRequest(download_result);

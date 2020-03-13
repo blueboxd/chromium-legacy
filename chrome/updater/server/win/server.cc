@@ -84,7 +84,7 @@ HRESULT UpdaterImpl::Update(const base::char16* app_id) {
   return E_NOTIMPL;
 }
 
-HRESULT UpdaterImpl::UpdateAll() {
+HRESULT UpdaterImpl::UpdateAll(IUpdaterObserver* observer) {
   return E_NOTIMPL;
 }
 

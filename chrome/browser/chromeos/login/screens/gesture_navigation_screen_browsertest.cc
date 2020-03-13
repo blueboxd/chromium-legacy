@@ -12,6 +12,7 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
@@ -219,6 +220,39 @@ IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest,
   ShowGestureNavigationScreen();
 
   WaitForScreenExit();
+}
+
+// Ensure the page shown time metrics are being recorded during the gesture
+// navigation screen flow
+IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest, PageShownMetricsTest) {
+  base::HistogramTester histogram_tester_;
+
+  ShowGestureNavigationScreen();
+  OobeScreenWaiter(GestureNavigationScreenView::kScreenId).Wait();
+
+  CheckPageIsShown("gestureIntro");
+  test::OobeJS().TapOnPath({"gesture-navigation", "gesture-intro-next-button"});
+
+  CheckPageIsShown("gestureHome");
+  test::OobeJS().TapOnPath({"gesture-navigation", "gesture-home-next-button"});
+
+  CheckPageIsShown("gestureOverview");
+  test::OobeJS().TapOnPath(
+      {"gesture-navigation", "gesture-overview-next-button"});
+
+  CheckPageIsShown("gestureBack");
+  test::OobeJS().TapOnPath({"gesture-navigation", "gesture-back-next-button"});
+
+  WaitForScreenExit();
+
+  histogram_tester_.ExpectTotalCount(
+      "GestureNavigationOOBEScreen.PageShownTime.Intro", 1);
+  histogram_tester_.ExpectTotalCount(
+      "GestureNavigationOOBEScreen.PageShownTime.Home", 1);
+  histogram_tester_.ExpectTotalCount(
+      "GestureNavigationOOBEScreen.PageShownTime.Overview", 1);
+  histogram_tester_.ExpectTotalCount(
+      "GestureNavigationOOBEScreen.PageShownTime.Back", 1);
 }
 
 }  // namespace chromeos

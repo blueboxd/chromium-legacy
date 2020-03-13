@@ -102,6 +102,7 @@
 #include "ui/events/types/event_type.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -684,6 +685,73 @@ TEST_P(ShelfLayoutManagerTest, VisibleWhenStatusOrShelfFocused) {
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 }
 
+// Checks that the status area follows along the auto-hidden shelf when the
+// user swipes it up or down.
+TEST_P(ShelfLayoutManagerTest, StatusAreaMovesWithSwipeOnAutoHiddenShelf) {
+  Shelf* shelf = GetPrimaryShelf();
+  CreateTestWidget();
+  TabletModeControllerTestApi().EnterTabletMode();
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+  const int hidden_shelf_in_screen_portion =
+      ShelfConfig::Get()->hidden_shelf_in_screen_portion();
+
+  auto number_of_status_area_visible_pixels = []() {
+    const Shelf* shelf = GetPrimaryShelf();
+    const int display_bottom =
+        display::Screen::GetScreen()->GetPrimaryDisplay().bounds().bottom();
+
+    return display_bottom - shelf->status_area_widget()
+                                ->GetClientAreaBoundsInScreen()
+                                .top_center()
+                                .y();
+  };
+
+  // The shelf is hidden. The status area should also be off-screen.
+  EXPECT_EQ(hidden_shelf_in_screen_portion,
+            number_of_status_area_visible_pixels());
+
+  gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  const gfx::Point start(display_bounds.bottom_center());
+  const gfx::Point middle(start + gfx::Vector2d(0, -40));
+  const gfx::Point end(start + gfx::Vector2d(0, -80));
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveTouch(start);
+  generator->PressTouch();
+
+  // The drag has just started, but we haven't moved yet.
+  EXPECT_EQ(hidden_shelf_in_screen_portion,
+            number_of_status_area_visible_pixels());
+
+  generator->MoveTouch(middle);
+
+  // Now the status area should have entered the screen.
+  const int status_area_visible_px_mid_gesture =
+      number_of_status_area_visible_pixels();
+  EXPECT_LT(hidden_shelf_in_screen_portion, status_area_visible_px_mid_gesture);
+
+  // Finish the gesture, the status area should follow.
+  generator->MoveTouch(end);
+  generator->ReleaseTouch();
+  const int status_area_visible_px_end_gesture =
+      number_of_status_area_visible_pixels();
+  EXPECT_LT(status_area_visible_px_mid_gesture,
+            status_area_visible_px_end_gesture);
+
+  // Now start swiping down. The status area should follow the other way.
+  generator->MoveTouch(end);
+  generator->PressTouch();
+  EXPECT_EQ(status_area_visible_px_end_gesture,
+            number_of_status_area_visible_pixels());
+
+  // And it should be back to off-screen after the gesture ends.
+  generator->MoveTouch(start);
+  generator->ReleaseTouch();
+  EXPECT_EQ(hidden_shelf_in_screen_portion,
+            number_of_status_area_visible_pixels());
+}
+
 // Ensure a SHELF_VISIBLE shelf stays visible when the app list is shown.
 TEST_P(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
   Shelf* shelf = GetPrimaryShelf();
@@ -1048,6 +1116,41 @@ TEST_P(ShelfLayoutManagerTest, SetAlignment) {
   EXPECT_EQ(0, display.bounds().right() - display.work_area().right());
   EXPECT_EQ(stable_work_area,
             GetPrimaryWorkAreaInsets()->ComputeStableWorkArea());
+}
+
+// Verifies that the shelf looks the way it should after an alignment change.
+// See crbug/1051824 .
+TEST_P(ShelfLayoutManagerTest, ShelfWidgetLayoutUpdatedAfterAlignmentChange) {
+  Shelf* shelf = GetPrimaryShelf();
+  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
+  ShelfWidget* shelf_widget = shelf->shelf_widget();
+
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kNever);
+  shelf->SetAlignment(ShelfAlignment::kLeft);
+  layout_manager->LayoutShelf();
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  gfx::Rect opaque_background_bounds =
+      shelf->shelf_widget()->GetOpaqueBackground()->bounds();
+  ::wm::ConvertRectToScreen(shelf_widget->GetNativeWindow(),
+                            &opaque_background_bounds);
+  int cross_axis_visible_pixels =
+      opaque_background_bounds.right() - display::Screen::GetScreen()
+                                             ->GetPrimaryDisplay()
+                                             .bounds()
+                                             .left_center()
+                                             .x();
+  EXPECT_EQ(ShelfConfig::Get()->shelf_size(), cross_axis_visible_pixels);
+
+  shelf->SetAlignment(ShelfAlignment::kRight);
+  layout_manager->LayoutShelf();
+  opaque_background_bounds =
+      shelf->shelf_widget()->GetOpaqueBackground()->bounds();
+  ::wm::ConvertRectToScreen(shelf_widget->GetNativeWindow(),
+                            &opaque_background_bounds);
+  cross_axis_visible_pixels =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds().right() -
+      opaque_background_bounds.left_center().x();
+  EXPECT_EQ(ShelfConfig::Get()->shelf_size(), cross_axis_visible_pixels);
 }
 
 TEST_P(ShelfLayoutManagerTest, GestureDrag) {

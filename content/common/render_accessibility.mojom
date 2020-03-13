@@ -4,7 +4,9 @@
 
 module content.mojom;
 
+import "content/common/ax_content_tree_update.mojom";
 import "ui/accessibility/mojom/ax_action_data.mojom";
+import "ui/accessibility/mojom/ax_event.mojom";
 import "ui/accessibility/mojom/ax_relative_bounds.mojom";
 
 struct LocationChanges {
@@ -18,6 +20,19 @@ struct LocationChanges {
 // Interface for accessibility messages sent from the renderer to the browser,
 // implemented by RenderFrameHostImpl in the browser process.
 interface RenderAccessibilityHost {
+  // Sent to notify the browser about renderer accessibility events.
+  //
+  // The browser will respond by invoking the callback specified by the renderer
+  // as part of once the original call has been processed, in order to notify
+  // the renderer that it can send additional updates.
+  //
+  // |reset_token| parameter is set if this method was sent in response to a
+  // reset request from the browser. When the browser requests a reset, it
+  // ignores incoming remote calls until it sees one with the correct reset
+  // token. Any other time, it ignores further calls with a reset token.
+  HandleAXEvents(array<ax.mojom.AXContentTreeUpdate> updates,
+                 array<ax.mojom.AXEvent> events, int32 reset_token) => ();
+
   // Sent to update the browser of the location of accessibility objects.
   HandleAXLocationChanges(array<LocationChanges> changes);
 };

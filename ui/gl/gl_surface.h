@@ -262,8 +262,6 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   virtual bool SupportsDCLayers() const;
 
-  virtual bool UseOverlaysForVideo() const;
-
   virtual bool SupportsProtectedVideo() const;
 
   // Set the rectangle that will be drawn into on the surface, returning
@@ -384,7 +382,6 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   gfx::SurfaceOrigin GetOrigin() const override;
   bool BuffersFlipped() const override;
   bool SupportsDCLayers() const override;
-  bool UseOverlaysForVideo() const override;
   bool SupportsProtectedVideo() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
   gfx::Vector2d GetDrawOffset() const override;

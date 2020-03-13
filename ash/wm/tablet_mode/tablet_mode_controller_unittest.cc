@@ -1592,6 +1592,49 @@ TEST_P(TabletModeControllerTest, TabletModeTransitionHistogramsSnappedWindows) {
   histogram_tester.ExpectTotalCount(kExitHistogram, 0);
 }
 
+class TabletModeControllerOnDeviceTest : public TabletModeControllerTest {
+ public:
+  TabletModeControllerOnDeviceTest() = default;
+  TabletModeControllerOnDeviceTest(const TabletModeControllerOnDeviceTest&) =
+      delete;
+  TabletModeControllerOnDeviceTest& operator=(
+      const TabletModeControllerOnDeviceTest&) = delete;
+
+  ~TabletModeControllerOnDeviceTest() override = default;
+
+  void SetUp() override {
+    // We need to simulate the real on-device behavior for some tests.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        chromeos::switches::kForceSystemCompositorMode);
+    TabletModeControllerTest::SetUp();
+    // PowerManagerClient callback is a posted task.
+    base::RunLoop().RunUntilIdle();
+
+    // Make sure we've seen accelerometer data.
+    TriggerBaseAndLidUpdate(gfx::Vector3dF(kMeanGravityFloat, 0.0f, 0.0f),
+                            gfx::Vector3dF(kMeanGravityFloat, 0.0f, 0.0f));
+  }
+};
+
+// Tests that if there is no internal and external input device, the device
+// should stay in tablet mode.
+TEST_P(TabletModeControllerOnDeviceTest, DoNotEnterClamshellWithNoInputDevice) {
+  AttachExternalTouchpad();
+  EXPECT_FALSE(IsTabletModeStarted());
+  DetachAllTouchpads();
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  SetTabletMode(false);
+  EXPECT_TRUE(IsTabletModeStarted());
+  SetTabletMode(true);
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  OpenLidToAngle(30.f);
+  EXPECT_TRUE(IsTabletModeStarted());
+  OpenLidToAngle(300.f);
+  EXPECT_TRUE(IsTabletModeStarted());
+}
+
 class TabletModeControllerScreenshotTest : public TabletModeControllerTest {
  public:
   TabletModeControllerScreenshotTest() = default;
@@ -1756,6 +1799,9 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::Bool());
 INSTANTIATE_TEST_SUITE_P(All,
                          TabletModeControllerScreenshotTest,
+                         testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         TabletModeControllerOnDeviceTest,
                          testing::Bool());
 
 }  // namespace ash

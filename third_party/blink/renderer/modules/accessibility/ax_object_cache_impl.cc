@@ -91,12 +91,34 @@
 namespace blink {
 
 namespace {
+
 // Return a node for the current layout object or ancestor layout object.
 Node* GetClosestNodeForLayoutObject(LayoutObject* layout_object) {
   if (!layout_object)
     return nullptr;
   Node* node = layout_object->GetNode();
   return node ? node : GetClosestNodeForLayoutObject(layout_object->Parent());
+}
+
+bool IsAttributeImportantForAccessibility(const QualifiedName& attribute_name,
+                                          const Element& element) {
+  // Generally important attributes.
+  if (attribute_name == html_names::kRoleAttr ||
+      attribute_name == html_names::kTypeAttr ||
+      attribute_name == html_names::kSizeAttr ||
+      attribute_name == html_names::kAltAttr ||
+      attribute_name == html_names::kTitleAttr ||
+      attribute_name == html_names::kIdAttr ||
+      attribute_name == html_names::kTabindexAttr ||
+      attribute_name == html_names::kDisabledAttr)
+    return true;
+
+  // <label for>.
+  if (attribute_name == html_names::kForAttr && IsA<HTMLLabelElement>(element))
+    return true;
+
+  // Any ARIA attribute.
+  return attribute_name.LocalName().StartsWith("aria-");
 }
 
 }  // namespace
@@ -1332,17 +1354,8 @@ bool AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
   DeferTreeUpdate(&AXObjectCacheImpl::HandleAttributeChangedWithCleanLayout,
                   attr_name, element);
 
-  if (attr_name != html_names::kRoleAttr &&
-      attr_name != html_names::kTypeAttr &&
-      attr_name != html_names::kSizeAttr && attr_name != html_names::kAltAttr &&
-      attr_name != html_names::kTitleAttr &&
-      (attr_name != html_names::kForAttr && !IsA<HTMLLabelElement>(*element)) &&
-      attr_name != html_names::kIdAttr &&
-      attr_name != html_names::kTabindexAttr &&
-      attr_name != html_names::kDisabledAttr &&
-      !attr_name.LocalName().StartsWith("aria-")) {
+  if (!IsAttributeImportantForAccessibility(attr_name, *element))
     return false;
-  }
 
   // If this attribute is interesting for accessibility (e.g. `role` or
   // `alt`), but doesn't trigger a lifecycle update on its own

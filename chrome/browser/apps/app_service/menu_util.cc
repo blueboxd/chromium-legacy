@@ -7,11 +7,13 @@
 #include <utility>
 
 #include "ash/public/cpp/app_menu_constants.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/vector_icon_types.h"
 
 namespace {
@@ -49,6 +51,28 @@ void AddRadioItem(uint32_t command_id,
                   apps::mojom::MenuItemsPtr* menu_items) {
   (*menu_items)
       ->items.push_back(CreateRadioItem(command_id, string_id, group_id));
+}
+
+void AddSeparator(ui::MenuSeparatorType separator_type,
+                  apps::mojom::MenuItemsPtr* menu_items) {
+  apps::mojom::MenuItemPtr menu_item = apps::mojom::MenuItem::New();
+  menu_item->type = apps::mojom::MenuItemType::kSeparator;
+  menu_item->command_id = separator_type;
+  (*menu_items)->items.push_back(std::move(menu_item));
+}
+
+void AddArcCommandItem(int command_id,
+                       const std::string& shortcut_id,
+                       const std::string& label,
+                       const gfx::ImageSkia& icon,
+                       apps::mojom::MenuItemsPtr* menu_items) {
+  apps::mojom::MenuItemPtr menu_item = apps::mojom::MenuItem::New();
+  menu_item->type = apps::mojom::MenuItemType::kArcCommand;
+  menu_item->command_id = command_id;
+  menu_item->shortcut_id = shortcut_id;
+  menu_item->label = label;
+  menu_item->image = icon;
+  (*menu_items)->items.push_back(std::move(menu_item));
 }
 
 void CreateOpenNewSubmenu(apps::mojom::MenuType menu_type,
@@ -152,9 +176,6 @@ bool PopulateNewItemFromMojoMenuItems(
                                         icon);
       break;
     }
-    case apps::mojom::MenuItemType::kRadio:
-      NOTREACHED();
-      return false;
     case apps::mojom::MenuItemType::kSubmenu:
       if (!item->submenu.empty()) {
         PopulateRadioItemFromMojoMenuItems(item->submenu, submenu);
@@ -164,8 +185,37 @@ bool PopulateNewItemFromMojoMenuItems(
             item->command_id, item->string_id, submenu, icon);
       }
       break;
+    case apps::mojom::MenuItemType::kRadio:
+    case apps::mojom::MenuItemType::kSeparator:
+    case apps::mojom::MenuItemType::kArcCommand:
+      NOTREACHED();
+      return false;
   }
   return true;
+}
+
+void PopulateItemFromMojoMenuItems(
+    apps::mojom::MenuItemPtr item,
+    ui::SimpleMenuModel* model,
+    arc::ArcAppShortcutItems* arc_shortcut_items) {
+  switch (item->type) {
+    case apps::mojom::MenuItemType::kSeparator:
+      model->AddSeparator(static_cast<ui::MenuSeparatorType>(item->command_id));
+      break;
+    case apps::mojom::MenuItemType::kArcCommand: {
+      model->AddItemWithIcon(item->command_id, base::UTF8ToUTF16(item->label),
+                             item->image);
+      arc::ArcAppShortcutItem arc_shortcut_item;
+      arc_shortcut_item.shortcut_id = item->shortcut_id;
+      arc_shortcut_items->push_back(arc_shortcut_item);
+      break;
+    }
+    case apps::mojom::MenuItemType::kCommand:
+    case apps::mojom::MenuItemType::kRadio:
+    case apps::mojom::MenuItemType::kSubmenu:
+      NOTREACHED();
+      break;
+  }
 }
 
 }  // namespace apps

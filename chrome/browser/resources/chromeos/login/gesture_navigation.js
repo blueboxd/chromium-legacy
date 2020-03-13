@@ -104,6 +104,7 @@ Polymer({
   setCurrentPage_(newPage) {
     this.setPlayCurrentScreenAnimation(false);
     this.currentPage_ = newPage;
+    chrome.send('handleGesturePageChange', [newPage]);
     this.setPlayCurrentScreenAnimation(true);
 
     let screen = this.$[this.currentPage_];

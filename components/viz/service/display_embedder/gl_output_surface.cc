@@ -45,8 +45,6 @@ GLOutputSurface::GLOutputSurface(
       context_capabilities.num_surface_buffers - 1;
   capabilities_.supports_gpu_vsync = context_capabilities.gpu_vsync;
   capabilities_.supports_dc_layers = context_capabilities.dc_layers;
-  capabilities_.supports_dc_video_overlays =
-      context_capabilities.use_dc_overlays_for_video;
   capabilities_.supports_surfaceless = context_capabilities.surfaceless;
   capabilities_.android_surface_control_feature_enabled =
       context_provider->GetGpuFeatureInfo()

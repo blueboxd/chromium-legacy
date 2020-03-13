@@ -57,13 +57,13 @@ void InspectorApplicationCacheAgent::Restore() {
 Response InspectorApplicationCacheAgent::enable() {
   if (!enabled_.Get())
     InnerEnable();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorApplicationCacheAgent::disable() {
   enabled_.Clear();
   instrumenting_agents_->RemoveInspectorApplicationCacheAgent(this);
-  return Response::OK();
+  return Response::Success();
 }
 
 void InspectorApplicationCacheAgent::UpdateApplicationCacheStatus(
@@ -115,7 +115,7 @@ Response InspectorApplicationCacheAgent::getFramesWithManifests(
       (*result)->emplace_back(std::move(value));
     }
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorApplicationCacheAgent::AssertFrameWithDocumentLoader(
@@ -124,12 +124,12 @@ Response InspectorApplicationCacheAgent::AssertFrameWithDocumentLoader(
   LocalFrame* frame =
       IdentifiersFactory::FrameById(inspected_frames_, frame_id);
   if (!frame)
-    return Response::Error("No frame for given id found");
+    return Response::ServerError("No frame for given id found");
 
   result = frame->Loader().GetDocumentLoader();
   if (!result)
-    return Response::Error("No documentLoader for given frame found");
-  return Response::OK();
+    return Response::ServerError("No documentLoader for given frame found");
+  return Response::Success();
 }
 
 Response InspectorApplicationCacheAgent::getManifestForFrame(
@@ -137,13 +137,13 @@ Response InspectorApplicationCacheAgent::getManifestForFrame(
     String* manifest_url) {
   DocumentLoader* document_loader = nullptr;
   Response response = AssertFrameWithDocumentLoader(frame_id, document_loader);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   ApplicationCacheHost::CacheInfo info =
       document_loader->GetApplicationCacheHost()->ApplicationCacheInfo();
   *manifest_url = info.manifest_.GetString();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorApplicationCacheAgent::getApplicationCacheForFrame(
@@ -152,7 +152,7 @@ Response InspectorApplicationCacheAgent::getApplicationCacheForFrame(
         application_cache) {
   DocumentLoader* document_loader = nullptr;
   Response response = AssertFrameWithDocumentLoader(frame_id, document_loader);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   ApplicationCacheHostForFrame* host =
@@ -163,7 +163,7 @@ Response InspectorApplicationCacheAgent::getApplicationCacheForFrame(
   host->FillResourceList(&resources);
 
   *application_cache = BuildObjectForApplicationCache(resources, info);
-  return Response::OK();
+  return Response::Success();
 }
 
 std::unique_ptr<protocol::ApplicationCache::ApplicationCache>

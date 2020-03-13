@@ -76,20 +76,86 @@ base::Optional<syncer::ModelError> WifiConfigurationBridge::MergeSyncData(
 void WifiConfigurationBridge::OnGetAllSyncableNetworksResult(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList change_list,
-    std::vector<sync_pb::WifiConfigurationSpecifics> list) {
-  NET_LOG(DEBUG) << list.size() << " local networks eligible for sync.";
+    std::vector<sync_pb::WifiConfigurationSpecifics> local_network_list) {
+  // To merge local and synced networks we add all local networks that don't
+  // exist in sync to the server and all synced networks that don't exist
+  // locally to Shill.  For networks which exist on both lists, we compare the
+  // last connected timestamp and take the newer configuration.
 
-  for (sync_pb::WifiConfigurationSpecifics& proto : list) {
-    // TODO(jonmann) Don't override local configurations that are newer.
+  NET_LOG(DEBUG) << local_network_list.size()
+                 << " local networks eligible for sync.";
+  base::flat_map<NetworkIdentifier, sync_pb::WifiConfigurationSpecifics>
+      sync_networks;
+  base::flat_map<NetworkIdentifier, sync_pb::WifiConfigurationSpecifics>
+      local_networks;
+
+  // Iterate through incoming changes from sync and populate the sync_networks
+  // map.
+  for (std::unique_ptr<syncer::EntityChange>& change : change_list) {
+    if (change->type() == syncer::EntityChange::ACTION_DELETE) {
+      // Don't delete any local networks during the initial merge when sync is
+      // first enabled.
+      continue;
+    }
+
+    const sync_pb::WifiConfigurationSpecifics& proto =
+        change->data().specifics.wifi_configuration();
+    NetworkIdentifier id = NetworkIdentifier::FromProto(proto);
+    if (sync_networks.contains(id) &&
+        sync_networks[id].last_update_timestamp() >
+            proto.last_update_timestamp()) {
+      continue;
+    }
+    sync_networks[id] = proto;
+  }
+
+  // Iterate through local networks and add to sync where appropriate.
+  for (sync_pb::WifiConfigurationSpecifics& proto : local_network_list) {
+    NetworkIdentifier id = NetworkIdentifier::FromProto(proto);
+    if (sync_networks.contains(id) &&
+        sync_networks[id].last_update_timestamp() >
+            proto.last_update_timestamp()) {
+      continue;
+    }
+
+    local_networks[id] = proto;
     std::unique_ptr<syncer::EntityData> entity_data =
         GenerateWifiEntityData(proto);
     std::string storage_key = GetStorageKey(*entity_data);
+
+    // Upload the local network configuration to sync.  This could be a new
+    // configuration or an update to an existing one.
     change_processor()->Put(storage_key, std::move(entity_data),
                             metadata_change_list.get());
     entries_[storage_key] = proto;
   }
 
-  ApplySyncChanges(std::move(metadata_change_list), std::move(change_list));
+  std::unique_ptr<syncer::ModelTypeStore::WriteBatch> batch =
+      store_->CreateWriteBatch();
+  // Iterate through synced networks and update local stack where appropriate.
+  for (auto& kv : sync_networks) {
+    NetworkIdentifier& id = kv.first;
+    sync_pb::WifiConfigurationSpecifics& proto = kv.second;
+
+    if (local_networks.contains(id) &&
+        local_networks[id].last_update_timestamp() >
+            proto.last_update_timestamp()) {
+      continue;
+    }
+
+    // Update the local network stack to have the synced network configuration.
+    synced_network_updater_->AddOrUpdateNetwork(proto);
+
+    // Save the proto to the sync data store to keep track of all synced
+    // networks on device.  This gets loaded into |entries_| next time the
+    // bridge is initialized.
+    batch->WriteData(id.SerializeToString(), proto.SerializeAsString());
+    entries_[id.SerializeToString()] = proto;
+  }
+
+  // Mark the changes as processed.
+  batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
+  Commit(std::move(batch));
 }
 
 base::Optional<syncer::ModelError> WifiConfigurationBridge::ApplySyncChanges(

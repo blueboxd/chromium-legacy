@@ -324,8 +324,8 @@ static FloatClipRect GetClipRect(const ClipPaintPropertyNode& clip_node_arg,
   const auto& clip_node = clip_node_arg.Unalias();
   FloatClipRect clip_rect(
       UNLIKELY(clip_behavior == kExcludeOverlayScrollbarSizeForHitTesting)
-          ? clip_node.ClipRectExcludingOverlayScrollbars()
-          : FloatClipRect(clip_node.ClipRect()));
+          ? clip_node.UnsnappedClipRectExcludingOverlayScrollbars()
+          : FloatClipRect(clip_node.UnsnappedClipRect()));
   if (clip_node.ClipPath())
     clip_rect.ClearIsTight();
   return clip_rect;

@@ -65,6 +65,15 @@ Animation* AnimationTimeline::GetAnimationById(int animation_id) const {
   return f == id_to_animation_map_.end() ? nullptr : f->second.get();
 }
 
+std::vector<Animation*> AnimationTimeline::GetAnimations() const {
+  std::vector<Animation*> animations;
+  animations.reserve(id_to_animation_map_.size());
+
+  for (auto& kv : id_to_animation_map_)
+    animations.push_back(kv.second.get());
+  return animations;
+}
+
 void AnimationTimeline::ClearAnimations() {
   for (auto& kv : id_to_animation_map_)
     EraseAnimation(kv.second);

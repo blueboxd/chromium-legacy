@@ -9,7 +9,10 @@ import("//weblayer/variables.gni")
 android_resources("weblayer_resources") {
   resource_dirs = [ "res" ]
   custom_package = "org.chromium.weblayer_private"
-  deps = [ "//components/permissions/android:java_resources" ]
+  deps = [
+    "//components/browser_ui/strings/android:browser_ui_strings_grd",
+    "//components/permissions/android:java_resources",
+  ]
 }
 
 generate_product_config_srcjar("weblayer_product_config") {

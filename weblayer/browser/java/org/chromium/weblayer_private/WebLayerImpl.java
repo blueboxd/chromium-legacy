@@ -189,10 +189,13 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         // WebLayer should come from ClassLoaderContextWrapperFactory.
         mIsWebViewCompatMode = remoteContext != null
                 && !remoteContext.getClassLoader().equals(WebLayerImpl.class.getClassLoader());
-        if (mIsWebViewCompatMode && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-            // Load the library with the crazy linker.
-            LibraryLoader.getInstance().setLinkerImplementation(true, false);
-            WebViewCompatibilityHelperImpl.setRequiresManualJniRegistration(true);
+        if (mIsWebViewCompatMode) {
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+              // Load the library with the crazy linker.
+              LibraryLoader.getInstance().setLinkerImplementation(true, false);
+              WebViewCompatibilityHelperImpl.setRequiresManualJniRegistration(true);
+            }
+            notifyWebViewRunningInProcess(remoteContext.getClassLoader());
         }
 
         Context appContext = minimalInitForContext(appContextWrapper, remoteContextWrapper);
@@ -501,6 +504,19 @@ public final class WebLayerImpl extends IWebLayer.Stub {
             if (!FileUtils.recursivelyDeleteFile(file, FileUtils.DELETE_ALL)) {
                 Log.w(TAG, "Failed to delete " + file);
             }
+        }
+    }
+
+    private static void notifyWebViewRunningInProcess(ClassLoader webViewClassLoader) {
+        try {
+            Class<?> webViewChromiumFactoryProviderClass =
+                    Class.forName("com.android.webview.chromium.WebViewChromiumFactoryProvider",
+                            true, webViewClassLoader);
+            Method setter = webViewChromiumFactoryProviderClass.getDeclaredMethod(
+                    "setWebLayerRunningInSameProcess");
+            setter.invoke(null);
+        } catch (Exception e) {
+            Log.w(TAG, "Unable to notify WebView running in process", e);
         }
     }
 

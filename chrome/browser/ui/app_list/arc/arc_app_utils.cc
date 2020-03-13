@@ -31,6 +31,10 @@
 #include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
+#include "chrome/browser/ui/app_list/app_list_client_impl.h"
+#include "chrome/browser/ui/app_list/search/search_controller.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_data.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/launcher/arc_shelf_spinner_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -192,6 +196,14 @@ int64_t GetValidDisplayId(int64_t display_id) {
   if (auto* screen = display::Screen::GetScreen())
     return screen->GetPrimaryDisplay().id();
   return display::kInvalidDisplayId;
+}
+
+// Converts an app_id and a shortcut_id, eg. manifest_new_note_shortcut, into a
+// full URL for an Arc app shortcut, of the form:
+// appshortcutsearch://[app_id]/[shortcut_id].
+std::string ConstructArcAppShortcutUrl(const std::string& app_id,
+                                       const std::string& shortcut_id) {
+  return "appshortcutsearch://" + app_id + "/" + shortcut_id;
 }
 
 }  // namespace
@@ -787,6 +799,28 @@ const std::string GetAppFromAppOrGroupId(content::BrowserContext* context,
   // Shortcut with requested shelf group id was not found, use app id as
   // fallback.
   return app_shelf_id.app_id();
+}
+
+void ExecuteArcShortcutCommand(content::BrowserContext* context,
+                               const std::string& id,
+                               const std::string& shortcut_id,
+                               int64_t display_id) {
+  const arc::ArcAppShelfId arc_shelf_id = arc::ArcAppShelfId::FromString(id);
+  DCHECK(arc_shelf_id.valid());
+  arc::LaunchAppShortcutItem(context, arc_shelf_id.app_id(), shortcut_id,
+                             display_id);
+
+  // Send a training signal to the search controller.
+  AppListClientImpl* app_list_client_impl = AppListClientImpl::GetInstance();
+  if (!app_list_client_impl)
+    return;
+
+  app_list::AppLaunchData app_launch_data;
+  app_launch_data.id =
+      ConstructArcAppShortcutUrl(arc_shelf_id.app_id(), shortcut_id),
+  app_launch_data.ranking_item_type =
+      app_list::RankingItemType::kArcAppShortcut;
+  app_list_client_impl->search_controller()->Train(std::move(app_launch_data));
 }
 
 }  // namespace arc

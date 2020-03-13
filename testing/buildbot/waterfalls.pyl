@@ -661,10 +661,15 @@
       },
       'android-lollipop-arm-rel': {
         'mixins': [
-          # TODO(crbug.com/1032336): Pin to an exact L version.
-          'lollipop',
           'hammerhead',
         ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'LMY48M',
+            },
+          ],
+        },
         'additional_compile_targets': [
           'cronet_test_instrumentation_apk',
           'monochrome_static_initializers',
@@ -1037,6 +1042,7 @@
       # Used on an internal builder.
       'ToTLinuxOfficial': {
         'mixins': [
+          'chrome-tester-service-account',
           'linux-xenial',
         ],
         'test_suites': {
@@ -1091,12 +1097,16 @@
       },
       # Used on an internal builder.
       'ToTMacOfficial': {
+        'mixins': [
+          'chrome-tester-service-account',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
       },
       'ToTWin': {
+        'mixins': ['chrome-tester-service-account'],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'win_specific_isolated_scripts',
@@ -1117,8 +1127,9 @@
       },
       'ToTWin64': {
         'mixins': [
-          'x86-64',
+          'chrome-tester-service-account',
           'win10',
+          'x86-64',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
@@ -1158,12 +1169,18 @@
         },
       },
       'ToTWinOfficial': {
+        'mixins': [
+          'chrome-tester-service-account',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'win_specific_isolated_scripts',
         },
       },
       'ToTWinThinLTO64': {
+        'mixins': [
+          'chrome-tester-service-account',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'win_specific_isolated_scripts',
@@ -1822,7 +1839,7 @@
           'xcode_11c29'
         ],
         'test_suites': {
-          'gtest_tests': 'ios_code_coverage_gtests',
+          'isolated_scripts': 'ios_code_coverage_tests',
         },
       },
       'ios13-beta-simulator': {
@@ -1837,7 +1854,7 @@
           'xcode_11c29',
         ],
         'test_suites': {
-          'gtest_tests': 'ios13_beta_simulator_gtests'
+          'isolated_scripts': 'ios13_beta_simulator_tests'
         },
       },
       'linux-annotator-rel': {

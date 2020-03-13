@@ -203,9 +203,11 @@ enum PermissionValueType {
 // Please update comments below (MenuItemType -> [fields expected for usage])
 // when anything changed to MenuItemType or MenuItem.
 //
-// kCommand -> [command_id, string_id].
-// kRadio   -> [command_id, string_id, radio_group_id].
-// kSubmenu -> [command_id, string_id, submenu].
+// kCommand    -> [command_id, string_id].
+// kRadio      -> [command_id, string_id, radio_group_id].
+// kSeparator  -> [command_id].
+// kSubmenu    -> [command_id, string_id, submenu].
+// kArcCommand -> [command_id, shortcut_id, label, image].
 //
 struct MenuItems {
   array<MenuItem> items;
@@ -217,13 +219,18 @@ struct MenuItem {
   int32 string_id;                   // The id of the menu item label.
   array<MenuItem> submenu;           // The optional nested submenu item list.
   int32 radio_group_id;              // The radio group id.
+  string shortcut_id;                // The shortcut id, may be empty.
+  string label;                      // The string label, may be empty.
+  gfx.mojom.ImageSkia? image;        // The image icon, may be null.
 };
 
 // The types of menu items shown in the app list or shelf.
 enum MenuItemType {
   kCommand,    // Performs an action when selected.
   kRadio,      // Can be selected/checked among a group of choices.
+  kSeparator,  // Shows a horizontal line separator.
   kSubmenu,    // Presents a submenu within another menu.
+  kArcCommand, // Performs an ARC shortcut action when selected.
 };
 
 // Which component requests context menus, the app list or shelf.

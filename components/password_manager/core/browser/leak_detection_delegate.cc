@@ -124,6 +124,9 @@ void LeakDetectionDelegate::OnError(LeakDetectionError error) {
       case LeakDetectionError::kNetworkError:
         logger.LogMessage(Logger::STRING_LEAK_DETECTION_NETWORK_ERROR);
         break;
+      case LeakDetectionError::kQuotaLimit:
+        logger.LogMessage(Logger::STRING_LEAK_DETECTION_QUOTA_LIMIT);
+        break;
     }
   }
 }

@@ -1517,6 +1517,13 @@ void BrowserAccessibilityManager::CacheHitTestResult(
   last_hover_bounds_ = hit_test_result->GetClippedScreenBoundsRect();
 }
 
+void BrowserAccessibilityManager::OnPortalActivated() {
+  if (GetTreeData().loaded) {
+    FireGeneratedEvent(ui::AXEventGenerator::Event::PORTAL_ACTIVATED,
+                       GetRoot());
+  }
+}
+
 void BrowserAccessibilityManager::CollectChangedNodesAndParentsForAtomicUpdate(
     ui::AXTree* tree,
     const std::vector<ui::AXTreeObserver::Change>& changes,

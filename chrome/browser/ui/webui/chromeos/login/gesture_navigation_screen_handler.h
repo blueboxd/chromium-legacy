@@ -46,8 +46,13 @@ class GestureNavigationScreenHandler : public GestureNavigationScreenView,
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
+  void RegisterMessages() override;
 
  private:
+  // Called when the currently shown page for the gesture navigation screen is
+  // changed.
+  void HandleGesturePageChange(const std::string& new_page);
+
   GestureNavigationScreen* screen_ = nullptr;
 
   // If true, Initialize() will call Show().

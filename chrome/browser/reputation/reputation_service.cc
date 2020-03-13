@@ -133,6 +133,10 @@ void ReputationService::SetUserIgnore(content::WebContents* web_contents,
   warning_dismissed_origins_.insert(url::Origin::Create(url));
 }
 
+void ReputationService::OnUIDisabledFirstVisit(const GURL& url) {
+  warning_dismissed_origins_.insert(url::Origin::Create(url));
+}
+
 void ReputationService::SetSensitiveKeywordsForTesting(
     const char* const* new_keywords,
     size_t num_new_keywords) {
@@ -228,8 +232,12 @@ void ReputationService::GetReputationStatusWithEngagedSites(
       result.safety_tip_status = SafetyTipStatus::kBadReputationIgnored;
     } else if (result.safety_tip_status == SafetyTipStatus::kLookalike) {
       result.safety_tip_status = SafetyTipStatus::kLookalikeIgnored;
+    } else if (result.safety_tip_status == SafetyTipStatus::kNone) {
+      // This happens when a domain is added to the server-side allowlist
+      // after it is ignored. There's nothing to do in this case.
     } else {
-      // Only reputation or lookalikes should show bubbles.
+      // No other case should show a bubble, so nothing else should be
+      // ignorable.
       NOTREACHED();
     }
   }

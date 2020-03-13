@@ -138,18 +138,21 @@ AXNode* AXNode::GetNextUnignoredSibling() const {
 AXNode* AXNode::GetPreviousUnignoredSibling() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
   AXNode* parent_node = parent();
-  bool before_first_child = index_in_parent() <= 0;
-  size_t index = index_in_parent() - 1;
+  base::Optional<size_t> index;
+  if (index_in_parent() > 0)
+    index = index_in_parent() - 1;
   while (parent_node) {
-    if (!before_first_child) {
-      AXNode* child = parent_node->children()[index];
+    if (index.has_value()) {
+      AXNode* child = parent_node->children()[index.value()];
       if (!child->IsIgnored())
         return child;  // valid position (unignored child)
 
       // If the node is ignored, drill down to the ignored node's last child.
       parent_node = child;
-      before_first_child = parent_node->children().empty();
-      index = parent_node->children().size() - 1;
+      if (parent_node->children().empty())
+        index = base::nullopt;
+      else
+        index = parent_node->children().size() - 1;
     } else {
       // If the parent is not ignored and we are past all of its children, there
       // is no next sibling.
@@ -158,8 +161,10 @@ AXNode* AXNode::GetPreviousUnignoredSibling() const {
 
       // If the parent is ignored and we are past all of its children, continue
       // on to the parent's previous sibling.
-      before_first_child = parent_node->index_in_parent() == 0;
-      index = parent_node->index_in_parent() - 1;
+      if (parent_node->index_in_parent() == 0)
+        index = base::nullopt;
+      else
+        index = parent_node->index_in_parent() - 1;
       parent_node = parent_node->parent();
     }
   }
@@ -250,7 +255,7 @@ void AXNode::Destroy() {
   delete this;
 }
 
-bool AXNode::IsDescendantOf(AXNode* ancestor) {
+bool AXNode::IsDescendantOf(const AXNode* ancestor) const {
   if (this == ancestor)
     return true;
   if (parent())

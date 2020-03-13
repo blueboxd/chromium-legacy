@@ -62,7 +62,6 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   // content::DevToolsManagerDelegate implementation.
   void Inspect(content::DevToolsAgentHost* agent_host) override;
   void HandleCommand(content::DevToolsAgentHostClientChannel* channel,
-                     const std::string& method,
                      base::span<const uint8_t> message,
                      NotHandledCallback callback) override;
   std::string GetTargetType(content::WebContents* web_contents) override;

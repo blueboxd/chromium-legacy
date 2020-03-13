@@ -46,6 +46,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modaldialog.SimpleModalDialogController;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -374,36 +375,22 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
         }
 
         ModalDialogManager modalDialogManager = mActivity.getModalDialogManager();
-
-        ModalDialogProperties.Controller dialogController = new ModalDialogProperties.Controller() {
-            @Override
-            public void onClick(PropertyModel model, int buttonType) {
-                if (buttonType == ModalDialogProperties.ButtonType.POSITIVE) {
-                    modalDialogManager.dismissDialog(
-                            model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
-                } else if (buttonType == ModalDialogProperties.ButtonType.NEGATIVE) {
-                    modalDialogManager.dismissDialog(
-                            model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
-                }
-            }
-
-            @Override
-            public void onDismiss(PropertyModel model, int dismissalCause) {
-                if (!mTab.isInitialized()) return;
-                switch (dismissalCause) {
-                    case DialogDismissalCause.POSITIVE_BUTTON_CLICKED:
-                        mTab.getWebContents().getNavigationController().continuePendingReload();
-                        break;
-                    case DialogDismissalCause.ACTIVITY_DESTROYED:
-                    case DialogDismissalCause.TAB_DESTROYED:
-                        // Intentionally ignored as the tab object is gone.
-                        break;
-                    default:
-                        mTab.getWebContents().getNavigationController().cancelPendingReload();
-                        break;
-                }
-            }
-        };
+        ModalDialogProperties.Controller dialogController =
+                new SimpleModalDialogController(modalDialogManager, (Integer dismissalCause) -> {
+                    if (!mTab.isInitialized()) return;
+                    switch (dismissalCause) {
+                        case DialogDismissalCause.POSITIVE_BUTTON_CLICKED:
+                            mTab.getWebContents().getNavigationController().continuePendingReload();
+                            break;
+                        case DialogDismissalCause.ACTIVITY_DESTROYED:
+                        case DialogDismissalCause.TAB_DESTROYED:
+                            // Intentionally ignored as the tab object is gone.
+                            break;
+                        default:
+                            mTab.getWebContents().getNavigationController().cancelPendingReload();
+                            break;
+                    }
+                });
 
         Resources resources = mActivity.getResources();
         PropertyModel dialogModel =

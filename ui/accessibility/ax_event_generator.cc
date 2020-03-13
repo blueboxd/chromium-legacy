@@ -733,6 +733,8 @@ const char* ToString(AXEventGenerator::Event event) {
       return "OTHER_ATTRIBUTE_CHANGED";
     case AXEventGenerator::Event::PLACEHOLDER_CHANGED:
       return "PLACEHOLDER_CHANGED";
+    case AXEventGenerator::Event::PORTAL_ACTIVATED:
+      return "PORTAL_ACTIVATED";
     case AXEventGenerator::Event::POSITION_IN_SET_CHANGED:
       return "POSITION_IN_SET_CHANGED";
     case AXEventGenerator::Event::READONLY_CHANGED:

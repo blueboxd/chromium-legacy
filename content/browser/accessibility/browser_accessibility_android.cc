@@ -293,6 +293,19 @@ bool BrowserAccessibilityAndroid::IsFocused() const {
   return manager()->GetFocus() == this;
 }
 
+bool BrowserAccessibilityAndroid::IsFormDescendant() const {
+  // Iterate over parents and see if any are a form.
+  const BrowserAccessibility* parent = PlatformGetParent();
+  while (parent != nullptr) {
+    if (ui::IsForm(parent->GetRole())) {
+      return true;
+    }
+    parent = parent->PlatformGetParent();
+  }
+
+  return false;
+}
+
 bool BrowserAccessibilityAndroid::IsHeading() const {
   BrowserAccessibilityAndroid* parent =
       static_cast<BrowserAccessibilityAndroid*>(PlatformGetParent());

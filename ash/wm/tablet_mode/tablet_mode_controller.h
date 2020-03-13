@@ -184,7 +184,7 @@ class ASH_EXPORT TabletModeController
   struct TabletModeBehavior {
     bool use_sensor = true;
     bool observe_display_events = true;
-    bool observe_external_pointer_device_events = true;
+    bool observe_pointer_device_events = true;
     bool block_internal_input_device = false;
     bool always_show_overview_button = false;
     bool force_physical_tablet_state = false;
@@ -324,6 +324,11 @@ class ASH_EXPORT TabletModeController
   // present, convertible device cannot see accelerometer data.
   bool have_seen_accelerometer_data_ = false;
 
+  // True if ChromeOS EC lid angle driver is present. In this case Chrome does
+  // not calculate lid angle itself, but will reply on the tablet-mode flag that
+  // EC sends to decide if the device should in tablet mode.
+  bool ec_lid_angle_driver_present_ = false;
+
   // Whether the lid angle can be detected by browser. If it's true, the device
   // is a convertible device (both screen acclerometer and keyboard acclerometer
   // are available), and doesn't have ChromeOS EC lid angle driver, in this way
@@ -374,6 +379,11 @@ class ASH_EXPORT TabletModeController
   // Tracks if the device has an external pointing device. The device will
   // not enter tablet mode if this is true.
   bool has_external_pointing_device_ = false;
+
+  // Tracks if the device has an internal pointing device. The device will not
+  // enter clamshell mode if both |has_internal_pointing_device_| and
+  // |has_external_pointing_device_| are false only for tablet-capable devices.
+  bool has_internal_pointing_device_ = true;
 
   // Set to true temporarily when the tablet mode is enabled/disabled via the
   // developer's keyboard shortcut in order to update the visibility of the

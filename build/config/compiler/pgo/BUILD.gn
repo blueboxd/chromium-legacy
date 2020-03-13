@@ -14,7 +14,11 @@ config("pgo_instrumentation_flags") {
   # Only add flags when chrome_pgo_phase == 1, so that variables we would use
   # are not required to be defined when we're not actually using PGO.
   if (chrome_pgo_phase == 1 && is_clang && !is_nacl && is_a_target_toolchain) {
-    cflags = [ "-fprofile-instr-generate" ]
+    # TODO(sebmarchand): Add a GN flag that allows setting the PGO profile
+    # name or find a way to remove use {target_name} in the filename?
+    # This uses the "%m" specifier to allow concurrent runs of the
+    # instrumented image.
+    cflags = [ "-fprofile-instr-generate=%m.profraw" ]
     if (!is_win) {
       # Windows directly calls link.exe instead of the compiler driver when
       # linking, and embeds the path to the profile runtime library as

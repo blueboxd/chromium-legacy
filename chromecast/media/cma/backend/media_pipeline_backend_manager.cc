@@ -13,8 +13,8 @@
 #include "base/time/time.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/chromecast_buildflags.h"
+#include "chromecast/media/api/cma_backend.h"
 #include "chromecast/media/cma/backend/audio_decoder_wrapper.h"
-#include "chromecast/media/cma/backend/cma_backend.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_wrapper.h"
 #include "chromecast/public/volume_control.h"
 

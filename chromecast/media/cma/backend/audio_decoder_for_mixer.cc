@@ -20,7 +20,7 @@
 #include "chromecast/media/audio/mixer_service/conversions.h"
 #include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
 #include "chromecast/media/audio/mixer_service/mixer_socket.h"
-#include "chromecast/media/base/monotonic_clock.h"
+#include "chromecast/media/base/default_monotonic_clock.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_for_mixer.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "chromecast/media/cma/base/decoder_config_adapter.h"

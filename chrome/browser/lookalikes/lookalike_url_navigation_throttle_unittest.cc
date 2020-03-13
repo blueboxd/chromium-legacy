@@ -62,6 +62,18 @@ TEST(LookalikeUrlNavigationThrottleTest, IsSafeRedirect) {
   EXPECT_FALSE(IsSafeRedirect("example.com", {GURL("http://éxample.com"),
                                               GURL("http://intermediate.com"),
                                               GURL("http://example.com")}));
+
+  // Not safe: The redirect stays unsafe from éxample.com to éxample.com.
+  EXPECT_FALSE(IsSafeRedirect(
+      "example.com", {GURL("http://éxample.com"), GURL("http://éxample.com")}));
+  // Not safe: Same, but to a path on the bad domain
+  EXPECT_FALSE(IsSafeRedirect(
+      "example.com",
+      {GURL("http://éxample.com"), GURL("http://éxample.com/path")}));
+  // Not safe: Same, but with an intermediary domain.
+  EXPECT_FALSE(IsSafeRedirect("example.com", {GURL("http://éxample.com/path"),
+                                              GURL("http://intermediate.com/p"),
+                                              GURL("http://éxample.com/dir")}));
 }
 
 }  // namespace lookalikes

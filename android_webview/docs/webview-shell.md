@@ -20,6 +20,38 @@ at the top. This can be helpful for checking which WebView version is installed
 & selected on the device.
 ***
 
+## Setting up the build
+
+The bare minimum GN args is just `target_os = "android"`. It's simplest to just
+reuse the same out/ folder you use for WebView or Chrome for Android.
+
+If you're building for an emulator, be aware WebView shell is preinstalled with
+a different signing key. If you just need a WebView app, the preinstalled
+WebView shell may be sufficient (and you don't need to build your own).
+
+If you want a more up-to-date WebView shell or you want to use the convenience
+scripts in this guide (ex. `.../system_webview_shell_apk launch <url>`), then
+you can workaround the signature mismatch by changing your local WebView shell's
+package name. Simply add the following to your GN args (run `gn args
+out/Default`):
+
+```gn
+# Change the package name to anything that won't conflict. If you're not sure
+# what to use, here's a safe choice:
+system_webview_shell_package_name = "org.chromium.my_webview_shell"
+```
+
+This will let your local build install alongside the preinstalled WebView shell.
+If you'd like, you can disable the preinstalled shell to avoid confusing the two
+apps. In a terminal:
+
+```sh
+$ adb root
+# Make sure to specify the default package name ("org.chromium.webview_shell"),
+# not the one you used in the GN args above!
+$ adb shell pm disable org.chromium.webview_shell
+```
+
 ## Building the shell
 
 ```sh
@@ -33,18 +65,31 @@ $ autoninja -C out/Default system_webview_shell_apk
 $ out/Default/bin/system_webview_shell_apk install
 ```
 
-The WebView shell may be preinstalled on a device or emulator. If the signature
-of the locally built shell does not match the preinstalled shell then the
-install will fail &ndash; usually with this error:
+## Running the shell
 
-```
-...
-path/to/SystemWebViewShell.apk: Failure [INSTALL_FAILED_UPDATE_INCOMPATIBLE:
-Package org.chromium.webview_shell signatures do not match previously installed
-version; ignoring!]
+```sh
+# Launch a URL from the commandline, or open the app from the app launcher
+$ out/Default/bin/system_webview_shell_apk launch "https://www.google.com/"
+
+# For more commands:
+$ out/Default/bin/system_webview_shell_apk --help
 ```
 
-If this occurs then delete the preinstalled WebView shell as so:
+*** note
+**Note:** `system_webview_shell_apk` does not support modifying CLI flags. See
+https://crbug.com/959425. Instead, you should modify WebView's flags by
+following [commandline-flags.md](./commandline-flags.md).
+***
+
+## Troubleshooting
+
+### INSTALL\_FAILED\_UPDATE\_INCOMPATIBLE: Package ... signatures do not match previously installed version
+
+The easiest way to workaround this is to [change the shell's package name in a
+local build](#building-for-the-emulator).
+
+If you **need** to use the same package name (ex. you're installing an official
+build of WebView shell), then you can modify the system image.
 
 *** note
 **Note:** If using the emulator ensure it is being started with the
@@ -66,19 +111,3 @@ $ adb shell rm /system/app/Browser2/Browser2.apk
 $ adb shell stop
 $ adb shell start
 ```
-
-## Running the shell
-
-```sh
-# Launch a URL from the commandline, or open the app from the app launcher
-$ out/Default/bin/system_webview_shell_apk launch "https://www.google.com/"
-
-# For more commands:
-$ out/Default/bin/system_webview_shell_apk --help
-```
-
-*** note
-**Note:** `system_webview_shell_apk` does not support modifying CLI flags. See
-https://crbug.com/959425. Instead, you should modify WebView's flags by
-following [commandline-flags.md](./commandline-flags.md).
-***

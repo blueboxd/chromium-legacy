@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_APPS_APP_SERVICE_ARC_APPS_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -19,6 +20,8 @@
 #include "chrome/browser/apps/app_service/arc_icon_once_loader.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/browser/apps/app_service/paused_apps.h"
+#include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcut_item.h"
+#include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcuts_request.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -142,6 +145,17 @@ class ArcApps : public KeyedService,
       arc::ArcIntentHelperBridge* intent_helper_bridge,
       std::vector<apps::mojom::IntentFilterPtr>* intent_filters);
 
+  void BuildMenuForShortcut(const std::string& package_name,
+                            apps::mojom::MenuItemsPtr menu_items,
+                            GetMenuModelCallback callback);
+
+  // Bound by |arc_app_shortcuts_request_|'s OnGetAppShortcutItems method.
+  void OnGetAppShortcutItems(
+      const base::TimeTicks start_time,
+      apps::mojom::MenuItemsPtr menu_items,
+      GetMenuModelCallback callback,
+      std::unique_ptr<arc::ArcAppShortcutItems> app_shortcut_items);
+
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
@@ -154,6 +168,9 @@ class ArcApps : public KeyedService,
 
   AppIdToTaskIds app_id_to_task_ids_;
   TaskIdToAppId task_id_to_app_id_;
+
+  // Handles requesting app shortcuts from Android.
+  std::unique_ptr<arc::ArcAppShortcutsRequest> arc_app_shortcuts_request_;
 
   ScopedObserver<arc::ArcIntentHelperBridge, arc::ArcIntentHelperObserver>
       arc_intent_helper_observer_{this};

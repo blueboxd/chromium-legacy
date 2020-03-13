@@ -95,8 +95,8 @@ OverlayProcessorInterface::CreateOverlayProcessor(
   enable_dc_overlay &= !capabilities.supports_surfaceless;
   enable_dc_overlay &= capabilities.supports_dc_layers;
   return base::WrapUnique(new OverlayProcessorWin(
-      enable_dc_overlay, std::make_unique<DCLayerOverlayProcessor>(
-                             capabilities, renderer_settings)));
+      enable_dc_overlay,
+      std::make_unique<DCLayerOverlayProcessor>(renderer_settings)));
 #elif defined(USE_OZONE)
   bool overlay_enabled = surface_handle != gpu::kNullSurfaceHandle;
   overlay_enabled &= !renderer_settings.overlay_strategies.empty();

@@ -75,6 +75,7 @@ class AwBrowserContext : public content::BrowserContext,
 
   AwQuotaManagerBridge* GetQuotaManagerBridge();
   jlong GetQuotaManagerBridge(JNIEnv* env);
+  void SetWebLayerRunningInSameProcess(JNIEnv* env);
 
   AwFormDatabaseService* GetFormDatabaseService();
   autofill::AutocompleteHistoryManager* GetAutocompleteHistoryManager();

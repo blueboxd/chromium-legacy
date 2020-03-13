@@ -90,6 +90,7 @@ NOINLINE void MaybeDumpWithoutCrashing(
   user_data.SetUint("messages_enqueued", messages_enqueued);
   user_data.SetUint("messages_dequeued", messages_dequeued);
   user_data.SetUint("messages_enqueued", messages_enqueued);
+  user_data.SetUint("messages_written", messages_written);
 
   // This is happening because the user of the interface implicated on the crash
   // stack has queued up an unreasonable number of messages, namely

@@ -1100,7 +1100,6 @@ html element video
     property autoplay
     property buffered
     property canPlayType
-    property cancelAnimationFrame
     property captureStream
     property controls
     property controlsList
@@ -1135,7 +1134,6 @@ html element video
     property preload
     property readyState
     property remote
-    property requestAnimationFrame
     property requestPictureInPicture
     property seekable
     property seeking

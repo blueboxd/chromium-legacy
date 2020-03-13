@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
@@ -156,13 +157,14 @@ void BulkLeakCheckImpl::OnTokenReady(
 
 void BulkLeakCheckImpl::OnLookupLeakResponse(
     CredentialHolder* weak_holder,
-    std::unique_ptr<SingleLookupResponse> response) {
+    std::unique_ptr<SingleLookupResponse> response,
+    base::Optional<LeakDetectionError> error) {
   std::unique_ptr<CredentialHolder> holder =
       RemoveFromQueue(weak_holder, &waiting_response_);
 
   holder->network_request_.reset();
   if (!response) {
-    delegate_->OnError(LeakDetectionError::kInvalidServerResponse);
+    delegate_->OnError(*error);
     return;
   }
 

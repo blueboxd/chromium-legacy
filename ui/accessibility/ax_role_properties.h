@@ -45,6 +45,9 @@ AX_EXPORT bool IsDocument(const ax::mojom::Role role);
 // Returns true if the provided role represents a dialog.
 AX_EXPORT bool IsDialog(const ax::mojom::Role role);
 
+// Returns true if the provided role is a form.
+AX_EXPORT bool IsForm(const ax::mojom::Role role);
+
 // Returns true if crossing into or out of the provided role should count as
 // crossing a format boundary.
 AX_EXPORT bool IsFormatBoundary(const ax::mojom::Role role);

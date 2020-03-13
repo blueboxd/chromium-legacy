@@ -20,6 +20,7 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_preconnect_client.h"
@@ -1585,10 +1586,16 @@ INSTANTIATE_TEST_SUITE_P(UseLocalPrediction,
                          LoadingPredictorBrowserTestWithOptimizationGuide,
                          ::testing::Bool());
 
-// Disabled test due to consistent failure. crbug.com/1060426
-IN_PROC_BROWSER_TEST_P(
-    LoadingPredictorBrowserTestWithOptimizationGuide,
-    DISABLED_NavigationHasLocalPredictionNoOptimizationHint) {
+// https://crbug.com/1056693
+#if (defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS))
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
+#else
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
+#endif
+
+IN_PROC_BROWSER_TEST_P(LoadingPredictorBrowserTestWithOptimizationGuide,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(
+                           NavigationHasLocalPredictionNoOptimizationHint)) {
   // Navigate the first time to fill the predictor's database and the HTTP
   // cache.
   GURL url = embedded_test_server()->GetURL(
@@ -1637,12 +1644,6 @@ IN_PROC_BROWSER_TEST_P(
   }
 }
 
-// https://crbug.com/1056693
-#if (defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS))
-#define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
-#else
-#define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
-#endif
 IN_PROC_BROWSER_TEST_P(
     LoadingPredictorBrowserTestWithOptimizationGuide,
     DISABLE_ON_WIN_MAC_CHROMEOS(
@@ -1806,7 +1807,8 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     LoadingPredictorBrowserTestWithOptimizationGuide,
-    OptimizationGuidePredictionsNotAppliedForAlreadyCommittedNavigation) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(
+        OptimizationGuidePredictionsNotAppliedForAlreadyCommittedNavigation)) {
   base::HistogramTester histogram_tester;
 
   GURL url = embedded_test_server()->GetURL("hints.com", "/simple.html");
@@ -1827,7 +1829,8 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(LoadingPredictorBrowserTestWithOptimizationGuide,
-                       OptimizationGuidePredictionsNotAppliedForRedirect) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(
+                           OptimizationGuidePredictionsNotAppliedForRedirect)) {
   base::HistogramTester histogram_tester;
 
   GURL destination_url =

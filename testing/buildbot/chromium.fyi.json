@@ -7644,6 +7644,13 @@
       },
       {
         "isolate_coverage_data": true,
+        "name": "components_embedder_support_junit_tests",
+        "swarming": {},
+        "test": "components_embedder_support_junit_tests",
+        "test_target": "//components/embedder_support/android:components_embedder_support_junit_tests"
+      },
+      {
+        "isolate_coverage_data": true,
         "name": "components_gcm_driver_junit_tests",
         "swarming": {},
         "test": "components_gcm_driver_junit_tests",
@@ -12679,7 +12686,7 @@
     ]
   },
   "ios-simulator-code-coverage": {
-    "gtest_tests": [
+    "isolated_scripts": [
       {
         "args": [
           "--platform",
@@ -12690,7 +12697,9 @@
           "${ISOLATED_OUTDIR}"
         ],
         "isolate_coverage_data": true,
+        "isolate_name": "boringssl_crypto_tests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "boringssl_crypto_tests_iPhone X 13.3",
@@ -12716,7 +12725,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "boringssl_crypto_tests",
         "test_target": "//third_party/boringssl:boringssl_crypto_tests"
       },
       {
@@ -12729,7 +12737,9 @@
           "${ISOLATED_OUTDIR}"
         ],
         "isolate_coverage_data": true,
+        "isolate_name": "boringssl_ssl_tests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "boringssl_ssl_tests_iPhone X 13.3",
@@ -12755,7 +12765,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "boringssl_ssl_tests",
         "test_target": "//third_party/boringssl:boringssl_ssl_tests"
       },
       {
@@ -12768,7 +12777,9 @@
           "${ISOLATED_OUTDIR}"
         ],
         "isolate_coverage_data": true,
+        "isolate_name": "crypto_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "crypto_unittests_iPhone X 13.3",
@@ -12794,7 +12805,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "crypto_unittests",
         "test_target": "//crypto:crypto_unittests"
       },
       {
@@ -12807,7 +12817,9 @@
           "${ISOLATED_OUTDIR}"
         ],
         "isolate_coverage_data": true,
+        "isolate_name": "google_apis_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "google_apis_unittests_iPhone X 13.3",
@@ -12833,7 +12845,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "google_apis_unittests",
         "test_target": "//google_apis:google_apis_unittests"
       },
       {
@@ -12846,7 +12857,9 @@
           "${ISOLATED_OUTDIR}"
         ],
         "isolate_coverage_data": true,
+        "isolate_name": "ios_components_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_components_unittests_iPhone X 13.3",
@@ -12872,7 +12885,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_components_unittests",
         "test_target": "//ios/components:ios_components_unittests"
       },
       {
@@ -12885,7 +12897,9 @@
           "${ISOLATED_OUTDIR}"
         ],
         "isolate_coverage_data": true,
+        "isolate_name": "ios_net_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_net_unittests_iPhone X 13.3",
@@ -12911,7 +12925,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_net_unittests",
         "test_target": "//ios/net:ios_net_unittests"
       },
       {
@@ -12924,7 +12937,9 @@
           "${ISOLATED_OUTDIR}"
         ],
         "isolate_coverage_data": true,
+        "isolate_name": "ios_remoting_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_remoting_unittests_iPhone X 13.3",
@@ -12950,7 +12965,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_remoting_unittests",
         "test_target": "//remoting/ios:ios_remoting_unittests"
       },
       {
@@ -12963,7 +12977,9 @@
           "${ISOLATED_OUTDIR}"
         ],
         "isolate_coverage_data": true,
+        "isolate_name": "ios_testing_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_testing_unittests_iPhone X 13.3",
@@ -12989,7 +13005,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_testing_unittests",
         "test_target": "//ios/testing:ios_testing_unittests"
       },
       {
@@ -13002,7 +13017,9 @@
           "${ISOLATED_OUTDIR}"
         ],
         "isolate_coverage_data": true,
+        "isolate_name": "net_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "net_unittests_iPhone X 13.3",
@@ -13028,7 +13045,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "net_unittests",
         "test_target": "//net:net_unittests"
       },
       {
@@ -13041,7 +13057,9 @@
           "${ISOLATED_OUTDIR}"
         ],
         "isolate_coverage_data": true,
+        "isolate_name": "services_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "services_unittests_iPhone X 13.3",
@@ -13067,7 +13085,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "services_unittests",
         "test_target": "//services:services_unittests"
       },
       {
@@ -13080,7 +13097,9 @@
           "${ISOLATED_OUTDIR}"
         ],
         "isolate_coverage_data": true,
+        "isolate_name": "sql_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "sql_unittests_iPhone X 13.3",
@@ -13106,7 +13125,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "sql_unittests",
         "test_target": "//sql:sql_unittests"
       },
       {
@@ -13119,7 +13137,9 @@
           "${ISOLATED_OUTDIR}"
         ],
         "isolate_coverage_data": true,
+        "isolate_name": "url_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "url_unittests_iPhone X 13.3",
@@ -13145,7 +13165,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "url_unittests",
         "test_target": "//url:url_unittests"
       }
     ]
@@ -13154,7 +13173,7 @@
     "additional_compile_targets": [
       "all"
     ],
-    "gtest_tests": [
+    "isolated_scripts": [
       {
         "args": [
           "--platform",
@@ -13164,7 +13183,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "base_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "base_unittests_iPad Air 2 12.4",
@@ -13190,7 +13211,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "base_unittests",
         "test_target": "//base:base_unittests"
       },
       {
@@ -13202,7 +13222,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "base_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "base_unittests_iPad Air 2 13.3",
@@ -13228,7 +13250,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "base_unittests",
         "test_target": "//base:base_unittests"
       },
       {
@@ -13240,7 +13261,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "base_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "base_unittests_iPhone 6s Plus 12.4",
@@ -13266,7 +13289,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "base_unittests",
         "test_target": "//base:base_unittests"
       },
       {
@@ -13278,7 +13300,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "base_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "base_unittests_iPhone 6s Plus 13.3",
@@ -13304,7 +13328,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "base_unittests",
         "test_target": "//base:base_unittests"
       },
       {
@@ -13316,7 +13339,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "base_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "base_unittests_iPhone X 12.4",
@@ -13342,7 +13367,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "base_unittests",
         "test_target": "//base:base_unittests"
       },
       {
@@ -13354,7 +13378,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "base_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "base_unittests_iPhone X 13.3",
@@ -13380,7 +13406,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "base_unittests",
         "test_target": "//base:base_unittests"
       },
       {
@@ -13392,7 +13417,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "boringssl_crypto_tests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "boringssl_crypto_tests_iPhone X 12.4",
@@ -13418,7 +13445,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "boringssl_crypto_tests",
         "test_target": "//third_party/boringssl:boringssl_crypto_tests"
       },
       {
@@ -13430,7 +13456,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "boringssl_crypto_tests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "boringssl_crypto_tests_iPhone X 13.3",
@@ -13456,7 +13484,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "boringssl_crypto_tests",
         "test_target": "//third_party/boringssl:boringssl_crypto_tests"
       },
       {
@@ -13468,7 +13495,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "boringssl_ssl_tests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "boringssl_ssl_tests_iPhone X 12.4",
@@ -13494,7 +13523,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "boringssl_ssl_tests",
         "test_target": "//third_party/boringssl:boringssl_ssl_tests"
       },
       {
@@ -13506,7 +13534,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "boringssl_ssl_tests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "boringssl_ssl_tests_iPhone X 13.3",
@@ -13532,7 +13562,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "boringssl_ssl_tests",
         "test_target": "//third_party/boringssl:boringssl_ssl_tests"
       },
       {
@@ -13544,6 +13573,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "components_unittests",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -13571,7 +13601,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "components_unittests",
         "test_target": "//components:components_unittests"
       },
       {
@@ -13583,6 +13612,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "components_unittests",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -13610,7 +13640,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "components_unittests",
         "test_target": "//components:components_unittests"
       },
       {
@@ -13622,6 +13651,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "components_unittests",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -13649,7 +13679,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "components_unittests",
         "test_target": "//components:components_unittests"
       },
       {
@@ -13661,6 +13690,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "components_unittests",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -13688,7 +13718,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "components_unittests",
         "test_target": "//components:components_unittests"
       },
       {
@@ -13700,6 +13729,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "components_unittests",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -13727,7 +13757,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "components_unittests",
         "test_target": "//components:components_unittests"
       },
       {
@@ -13739,6 +13768,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "components_unittests",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -13766,7 +13796,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "components_unittests",
         "test_target": "//components:components_unittests"
       },
       {
@@ -13778,7 +13807,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "crypto_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "crypto_unittests_iPhone X 12.4",
@@ -13804,7 +13835,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "crypto_unittests",
         "test_target": "//crypto:crypto_unittests"
       },
       {
@@ -13816,7 +13846,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "crypto_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "crypto_unittests_iPhone X 13.3",
@@ -13842,7 +13874,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "crypto_unittests",
         "test_target": "//crypto:crypto_unittests"
       },
       {
@@ -13854,7 +13885,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "gfx_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "gfx_unittests_iPad Air 2 12.4",
@@ -13880,7 +13913,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "gfx_unittests",
         "test_target": "//ui/gfx:gfx_unittests"
       },
       {
@@ -13892,7 +13924,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "gfx_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "gfx_unittests_iPad Air 2 13.3",
@@ -13918,7 +13952,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "gfx_unittests",
         "test_target": "//ui/gfx:gfx_unittests"
       },
       {
@@ -13930,7 +13963,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "gfx_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "gfx_unittests_iPhone 6s Plus 12.4",
@@ -13956,7 +13991,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "gfx_unittests",
         "test_target": "//ui/gfx:gfx_unittests"
       },
       {
@@ -13968,7 +14002,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "gfx_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "gfx_unittests_iPhone 6s Plus 13.3",
@@ -13994,7 +14030,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "gfx_unittests",
         "test_target": "//ui/gfx:gfx_unittests"
       },
       {
@@ -14006,7 +14041,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "gfx_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "gfx_unittests_iPhone X 12.4",
@@ -14032,7 +14069,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "gfx_unittests",
         "test_target": "//ui/gfx:gfx_unittests"
       },
       {
@@ -14044,7 +14080,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "gfx_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "gfx_unittests_iPhone X 13.3",
@@ -14070,7 +14108,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "gfx_unittests",
         "test_target": "//ui/gfx:gfx_unittests"
       },
       {
@@ -14082,7 +14119,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "google_apis_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "google_apis_unittests_iPhone X 12.4",
@@ -14108,7 +14147,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "google_apis_unittests",
         "test_target": "//google_apis:google_apis_unittests"
       },
       {
@@ -14120,7 +14158,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "google_apis_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "google_apis_unittests_iPhone X 13.3",
@@ -14146,7 +14186,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "google_apis_unittests",
         "test_target": "//google_apis:google_apis_unittests"
       },
       {
@@ -14158,7 +14197,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_bookmarks_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_bookmarks_eg2tests_module_iPad (6th generation) 12.4",
@@ -14184,7 +14225,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_bookmarks_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module"
       },
       {
@@ -14196,7 +14236,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_bookmarks_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_bookmarks_eg2tests_module_iPad (6th generation) 13.3",
@@ -14222,7 +14264,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_bookmarks_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module"
       },
       {
@@ -14234,7 +14275,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_bookmarks_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_bookmarks_eg2tests_module_iPhone 7 13.3",
@@ -14260,7 +14303,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_bookmarks_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module"
       },
       {
@@ -14272,7 +14314,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_bookmarks_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_bookmarks_eg2tests_module_iPhone X 12.4",
@@ -14298,7 +14342,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_bookmarks_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module"
       },
       {
@@ -14310,7 +14353,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_bookmarks_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_bookmarks_eg2tests_module_iPhone X 13.3",
@@ -14336,7 +14381,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_bookmarks_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module"
       },
       {
@@ -14348,7 +14392,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_bookmarks_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_bookmarks_egtests_iPad Air (3rd generation) 12.4",
@@ -14374,7 +14420,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_bookmarks_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_bookmarks_egtests"
       },
       {
@@ -14386,7 +14431,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_bookmarks_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_bookmarks_egtests_iPad Air (3rd generation) 13.3",
@@ -14412,7 +14459,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_bookmarks_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_bookmarks_egtests"
       },
       {
@@ -14424,7 +14470,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_bookmarks_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_bookmarks_egtests_iPhone X 12.4",
@@ -14450,7 +14498,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_bookmarks_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_bookmarks_egtests"
       },
       {
@@ -14462,7 +14509,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_bookmarks_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_bookmarks_egtests_iPhone X 13.3",
@@ -14488,7 +14537,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_bookmarks_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_bookmarks_egtests"
       },
       {
@@ -14500,7 +14548,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_integration_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_integration_eg2tests_module_iPad (6th generation) 12.4",
@@ -14526,7 +14576,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_integration_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module"
       },
       {
@@ -14538,7 +14587,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_integration_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_integration_eg2tests_module_iPad (6th generation) 13.3",
@@ -14564,7 +14615,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_integration_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module"
       },
       {
@@ -14576,7 +14626,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_integration_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_integration_eg2tests_module_iPhone 7 13.3",
@@ -14602,7 +14654,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_integration_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module"
       },
       {
@@ -14614,7 +14665,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_integration_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_integration_eg2tests_module_iPhone X 12.4",
@@ -14640,7 +14693,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_integration_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module"
       },
       {
@@ -14652,7 +14704,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_integration_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_integration_eg2tests_module_iPhone X 13.3",
@@ -14678,7 +14732,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_integration_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module"
       },
       {
@@ -14690,7 +14743,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_integration_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_integration_egtests_iPad Pro (12.9-inch) 12.4",
@@ -14717,7 +14772,6 @@
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test": "ios_chrome_integration_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_integration_egtests"
       },
       {
@@ -14729,7 +14783,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_integration_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_integration_egtests_iPad Pro (12.9-inch) 13.3",
@@ -14756,7 +14812,6 @@
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test": "ios_chrome_integration_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_integration_egtests"
       },
       {
@@ -14768,7 +14823,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_integration_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_integration_egtests_iPhone X 12.4",
@@ -14795,7 +14852,6 @@
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test": "ios_chrome_integration_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_integration_egtests"
       },
       {
@@ -14807,7 +14863,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_integration_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_integration_egtests_iPhone X 13.3",
@@ -14834,7 +14892,6 @@
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test": "ios_chrome_integration_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_integration_egtests"
       },
       {
@@ -14846,7 +14903,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_reading_list_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_reading_list_egtests_iPad Air (3rd generation) 12.4",
@@ -14872,7 +14931,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_reading_list_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_reading_list_egtests"
       },
       {
@@ -14884,7 +14942,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_reading_list_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_reading_list_egtests_iPad Air (3rd generation) 13.3",
@@ -14910,7 +14970,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_reading_list_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_reading_list_egtests"
       },
       {
@@ -14922,7 +14981,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_reading_list_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_reading_list_egtests_iPhone X 12.4",
@@ -14948,7 +15009,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_reading_list_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_reading_list_egtests"
       },
       {
@@ -14960,7 +15020,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_reading_list_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_reading_list_egtests_iPhone X 13.3",
@@ -14986,7 +15048,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_reading_list_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_reading_list_egtests"
       },
       {
@@ -14998,7 +15059,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_settings_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_settings_eg2tests_module_iPad (6th generation) 12.4",
@@ -15024,7 +15087,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_settings_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module"
       },
       {
@@ -15036,7 +15098,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_settings_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_settings_eg2tests_module_iPad (6th generation) 13.3",
@@ -15062,7 +15126,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_settings_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module"
       },
       {
@@ -15074,7 +15137,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_settings_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_settings_eg2tests_module_iPhone 7 13.3",
@@ -15100,7 +15165,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_settings_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module"
       },
       {
@@ -15112,7 +15176,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_settings_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_settings_eg2tests_module_iPhone X 12.4",
@@ -15138,7 +15204,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_settings_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module"
       },
       {
@@ -15150,7 +15215,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_settings_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_settings_eg2tests_module_iPhone X 13.3",
@@ -15176,7 +15243,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_settings_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module"
       },
       {
@@ -15188,7 +15254,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_settings_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_settings_egtests_iPad Air (3rd generation) 12.4",
@@ -15215,7 +15283,6 @@
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test": "ios_chrome_settings_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_settings_egtests"
       },
       {
@@ -15227,7 +15294,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_settings_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_settings_egtests_iPad Air (3rd generation) 13.3",
@@ -15254,7 +15323,6 @@
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test": "ios_chrome_settings_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_settings_egtests"
       },
       {
@@ -15266,7 +15334,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_settings_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_settings_egtests_iPhone X 12.4",
@@ -15293,7 +15363,6 @@
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test": "ios_chrome_settings_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_settings_egtests"
       },
       {
@@ -15305,7 +15374,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_settings_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_settings_egtests_iPhone X 13.3",
@@ -15332,7 +15403,6 @@
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test": "ios_chrome_settings_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_settings_egtests"
       },
       {
@@ -15344,7 +15414,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_signin_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_signin_eg2tests_module_iPad (6th generation) 12.4",
@@ -15370,7 +15442,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_signin_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module"
       },
       {
@@ -15382,7 +15453,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_signin_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_signin_eg2tests_module_iPad (6th generation) 13.3",
@@ -15408,7 +15481,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_signin_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module"
       },
       {
@@ -15420,7 +15492,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_signin_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_signin_eg2tests_module_iPhone 7 13.3",
@@ -15446,7 +15520,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_signin_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module"
       },
       {
@@ -15458,7 +15531,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_signin_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_signin_eg2tests_module_iPhone X 12.4",
@@ -15484,7 +15559,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_signin_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module"
       },
       {
@@ -15496,7 +15570,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_signin_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_signin_eg2tests_module_iPhone X 13.3",
@@ -15522,7 +15598,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_signin_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module"
       },
       {
@@ -15534,7 +15609,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_signin_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_signin_egtests_iPad Pro (12.9-inch) 12.4",
@@ -15560,7 +15637,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_signin_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_signin_egtests"
       },
       {
@@ -15572,7 +15648,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_signin_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_signin_egtests_iPad Pro (12.9-inch) 13.3",
@@ -15598,7 +15676,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_signin_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_signin_egtests"
       },
       {
@@ -15610,7 +15687,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_signin_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_signin_egtests_iPhone X 12.4",
@@ -15636,7 +15715,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_signin_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_signin_egtests"
       },
       {
@@ -15648,7 +15726,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_signin_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_signin_egtests_iPhone X 13.3",
@@ -15674,7 +15754,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_signin_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_signin_egtests"
       },
       {
@@ -15686,7 +15765,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_smoke_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_smoke_eg2tests_module_iPad (6th generation) 12.4",
@@ -15712,7 +15793,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_smoke_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module"
       },
       {
@@ -15724,7 +15804,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_smoke_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_smoke_eg2tests_module_iPad (6th generation) 13.3",
@@ -15750,7 +15832,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_smoke_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module"
       },
       {
@@ -15762,7 +15843,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_smoke_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_smoke_eg2tests_module_iPhone 7 13.3",
@@ -15788,7 +15871,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_smoke_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module"
       },
       {
@@ -15800,7 +15882,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_smoke_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_smoke_eg2tests_module_iPhone X 12.4",
@@ -15826,7 +15910,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_smoke_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module"
       },
       {
@@ -15838,7 +15921,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_smoke_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_smoke_eg2tests_module_iPhone X 13.3",
@@ -15864,7 +15949,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_smoke_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module"
       },
       {
@@ -15876,7 +15960,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_translate_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_translate_egtests_iPad Air (3rd generation) 12.4",
@@ -15902,7 +15988,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_translate_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_translate_egtests"
       },
       {
@@ -15914,7 +15999,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_translate_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_translate_egtests_iPad Air (3rd generation) 13.3",
@@ -15940,7 +16027,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_translate_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_translate_egtests"
       },
       {
@@ -15952,7 +16038,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_translate_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_translate_egtests_iPhone X 12.4",
@@ -15978,7 +16066,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_translate_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_translate_egtests"
       },
       {
@@ -15990,7 +16077,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_translate_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_translate_egtests_iPhone X 13.3",
@@ -16016,7 +16105,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_translate_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_translate_egtests"
       },
       {
@@ -16028,7 +16116,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_ui_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_ui_eg2tests_module_iPad (6th generation) 12.4",
@@ -16055,7 +16145,6 @@
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
-        "test": "ios_chrome_ui_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module"
       },
       {
@@ -16067,7 +16156,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_ui_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_ui_eg2tests_module_iPad (6th generation) 13.3",
@@ -16094,7 +16185,6 @@
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
-        "test": "ios_chrome_ui_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module"
       },
       {
@@ -16106,7 +16196,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_ui_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_ui_eg2tests_module_iPhone 7 13.3",
@@ -16133,7 +16225,6 @@
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
-        "test": "ios_chrome_ui_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module"
       },
       {
@@ -16145,7 +16236,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_ui_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_ui_eg2tests_module_iPhone X 12.4",
@@ -16172,7 +16265,6 @@
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
-        "test": "ios_chrome_ui_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module"
       },
       {
@@ -16184,7 +16276,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_ui_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_ui_eg2tests_module_iPhone X 13.3",
@@ -16211,7 +16305,6 @@
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
-        "test": "ios_chrome_ui_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module"
       },
       {
@@ -16223,7 +16316,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_ui_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_ui_egtests_iPad Pro (12.9-inch) 12.4",
@@ -16250,7 +16345,6 @@
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
-        "test": "ios_chrome_ui_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_ui_egtests"
       },
       {
@@ -16262,7 +16356,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_ui_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_ui_egtests_iPad Pro (12.9-inch) 13.3",
@@ -16289,7 +16385,6 @@
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
-        "test": "ios_chrome_ui_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_ui_egtests"
       },
       {
@@ -16301,7 +16396,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_ui_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_ui_egtests_iPhone X 12.4",
@@ -16328,7 +16425,6 @@
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
-        "test": "ios_chrome_ui_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_ui_egtests"
       },
       {
@@ -16340,7 +16436,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_ui_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_ui_egtests_iPhone X 13.3",
@@ -16367,7 +16465,6 @@
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
-        "test": "ios_chrome_ui_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_ui_egtests"
       },
       {
@@ -16379,7 +16476,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_unittests_iPad Air 2 12.4",
@@ -16405,7 +16504,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_unittests",
         "test_target": "//ios/chrome/test:ios_chrome_unittests"
       },
       {
@@ -16417,7 +16515,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_unittests_iPad Air 2 13.3",
@@ -16443,7 +16543,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_unittests",
         "test_target": "//ios/chrome/test:ios_chrome_unittests"
       },
       {
@@ -16455,7 +16554,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_unittests_iPhone 6s Plus 12.4",
@@ -16481,7 +16582,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_unittests",
         "test_target": "//ios/chrome/test:ios_chrome_unittests"
       },
       {
@@ -16493,7 +16593,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_unittests_iPhone 6s Plus 13.3",
@@ -16519,7 +16621,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_unittests",
         "test_target": "//ios/chrome/test:ios_chrome_unittests"
       },
       {
@@ -16531,7 +16632,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_unittests_iPhone X 12.4",
@@ -16557,7 +16660,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_unittests",
         "test_target": "//ios/chrome/test:ios_chrome_unittests"
       },
       {
@@ -16569,7 +16671,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_unittests_iPhone X 13.3",
@@ -16595,7 +16699,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_unittests",
         "test_target": "//ios/chrome/test:ios_chrome_unittests"
       },
       {
@@ -16607,7 +16710,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_web_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_web_eg2tests_module_iPad (6th generation) 12.4",
@@ -16633,7 +16738,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_web_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module"
       },
       {
@@ -16645,7 +16749,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_web_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_web_eg2tests_module_iPad (6th generation) 13.3",
@@ -16671,7 +16777,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_web_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module"
       },
       {
@@ -16683,7 +16788,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_web_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_web_eg2tests_module_iPhone 7 13.3",
@@ -16709,7 +16816,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_web_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module"
       },
       {
@@ -16721,7 +16827,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_web_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_web_eg2tests_module_iPhone X 12.4",
@@ -16747,7 +16855,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_web_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module"
       },
       {
@@ -16759,7 +16866,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_web_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_web_eg2tests_module_iPhone X 13.3",
@@ -16785,7 +16894,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_web_eg2tests_module",
         "test_target": "//ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module"
       },
       {
@@ -16797,7 +16905,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_web_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_web_egtests_iPad Air (3rd generation) 12.4",
@@ -16823,7 +16933,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_web_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_web_egtests"
       },
       {
@@ -16835,7 +16944,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_web_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_web_egtests_iPad Air (3rd generation) 13.3",
@@ -16861,7 +16972,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_web_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_web_egtests"
       },
       {
@@ -16873,7 +16983,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_web_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_web_egtests_iPhone X 12.4",
@@ -16899,7 +17011,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_web_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_web_egtests"
       },
       {
@@ -16911,7 +17022,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_chrome_web_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_chrome_web_egtests_iPhone X 13.3",
@@ -16937,7 +17050,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_chrome_web_egtests",
         "test_target": "//ios/chrome/test/earl_grey:ios_chrome_web_egtests"
       },
       {
@@ -16949,7 +17061,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_components_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_components_unittests_iPhone X 12.4",
@@ -16975,7 +17089,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_components_unittests",
         "test_target": "//ios/components:ios_components_unittests"
       },
       {
@@ -16987,7 +17100,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_components_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_components_unittests_iPhone X 13.3",
@@ -17013,7 +17128,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_components_unittests",
         "test_target": "//ios/components:ios_components_unittests"
       },
       {
@@ -17025,7 +17139,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_net_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_net_unittests_iPhone X 12.4",
@@ -17051,7 +17167,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_net_unittests",
         "test_target": "//ios/net:ios_net_unittests"
       },
       {
@@ -17063,7 +17178,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_net_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_net_unittests_iPhone X 13.3",
@@ -17089,7 +17206,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_net_unittests",
         "test_target": "//ios/net:ios_net_unittests"
       },
       {
@@ -17101,7 +17217,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_remoting_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_remoting_unittests_iPhone X 12.4",
@@ -17127,7 +17245,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_remoting_unittests",
         "test_target": "//remoting/ios:ios_remoting_unittests"
       },
       {
@@ -17139,7 +17256,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_remoting_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_remoting_unittests_iPhone X 13.3",
@@ -17165,7 +17284,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_remoting_unittests",
         "test_target": "//remoting/ios:ios_remoting_unittests"
       },
       {
@@ -17177,7 +17295,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_showcase_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_showcase_eg2tests_module_iPad (6th generation) 12.4",
@@ -17203,7 +17323,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_showcase_eg2tests_module",
         "test_target": "//ios/showcase:ios_showcase_eg2tests_module"
       },
       {
@@ -17215,7 +17334,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_showcase_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_showcase_eg2tests_module_iPad (6th generation) 13.3",
@@ -17241,7 +17362,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_showcase_eg2tests_module",
         "test_target": "//ios/showcase:ios_showcase_eg2tests_module"
       },
       {
@@ -17253,7 +17373,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_showcase_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_showcase_eg2tests_module_iPhone 7 13.3",
@@ -17279,7 +17401,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_showcase_eg2tests_module",
         "test_target": "//ios/showcase:ios_showcase_eg2tests_module"
       },
       {
@@ -17291,7 +17412,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_showcase_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_showcase_eg2tests_module_iPhone X 12.4",
@@ -17317,7 +17440,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_showcase_eg2tests_module",
         "test_target": "//ios/showcase:ios_showcase_eg2tests_module"
       },
       {
@@ -17329,7 +17451,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_showcase_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_showcase_eg2tests_module_iPhone X 13.3",
@@ -17355,7 +17479,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_showcase_eg2tests_module",
         "test_target": "//ios/showcase:ios_showcase_eg2tests_module"
       },
       {
@@ -17367,7 +17490,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_showcase_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_showcase_egtests_iPad Air (3rd generation) 12.4",
@@ -17393,7 +17518,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_showcase_egtests",
         "test_target": "//ios/showcase:ios_showcase_egtests"
       },
       {
@@ -17405,7 +17529,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_showcase_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_showcase_egtests_iPad Air (3rd generation) 13.3",
@@ -17431,7 +17557,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_showcase_egtests",
         "test_target": "//ios/showcase:ios_showcase_egtests"
       },
       {
@@ -17443,7 +17568,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_showcase_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_showcase_egtests_iPhone X 12.4",
@@ -17469,7 +17596,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_showcase_egtests",
         "test_target": "//ios/showcase:ios_showcase_egtests"
       },
       {
@@ -17481,7 +17607,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_showcase_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_showcase_egtests_iPhone X 13.3",
@@ -17507,7 +17635,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_showcase_egtests",
         "test_target": "//ios/showcase:ios_showcase_egtests"
       },
       {
@@ -17519,7 +17646,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_testing_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_testing_unittests_iPhone X 12.4",
@@ -17545,7 +17674,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_testing_unittests",
         "test_target": "//ios/testing:ios_testing_unittests"
       },
       {
@@ -17557,7 +17685,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_testing_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_testing_unittests_iPhone X 13.3",
@@ -17583,7 +17713,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_testing_unittests",
         "test_target": "//ios/testing:ios_testing_unittests"
       },
       {
@@ -17595,7 +17724,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_inttests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_inttests_iPad Air 2 12.4",
@@ -17621,7 +17752,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_inttests",
         "test_target": "//ios/web:ios_web_inttests"
       },
       {
@@ -17633,7 +17763,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_inttests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_inttests_iPad Air 2 13.3",
@@ -17659,7 +17791,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_inttests",
         "test_target": "//ios/web:ios_web_inttests"
       },
       {
@@ -17671,7 +17802,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_inttests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_inttests_iPhone 6s Plus 12.4",
@@ -17697,7 +17830,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_inttests",
         "test_target": "//ios/web:ios_web_inttests"
       },
       {
@@ -17709,7 +17841,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_inttests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_inttests_iPhone 6s Plus 13.3",
@@ -17735,7 +17869,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_inttests",
         "test_target": "//ios/web:ios_web_inttests"
       },
       {
@@ -17747,7 +17880,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_inttests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_inttests_iPhone X 12.4",
@@ -17773,7 +17908,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_inttests",
         "test_target": "//ios/web:ios_web_inttests"
       },
       {
@@ -17785,7 +17919,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_inttests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_inttests_iPhone X 13.3",
@@ -17811,7 +17947,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_inttests",
         "test_target": "//ios/web:ios_web_inttests"
       },
       {
@@ -17823,7 +17958,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_shell_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_shell_eg2tests_module_iPad (6th generation) 12.4",
@@ -17849,7 +17986,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_shell_eg2tests_module",
         "test_target": "//ios/web/shell/test:ios_web_shell_eg2tests_module"
       },
       {
@@ -17861,7 +17997,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_shell_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_shell_eg2tests_module_iPad (6th generation) 13.3",
@@ -17887,7 +18025,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_shell_eg2tests_module",
         "test_target": "//ios/web/shell/test:ios_web_shell_eg2tests_module"
       },
       {
@@ -17899,7 +18036,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_shell_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_shell_eg2tests_module_iPhone 7 13.3",
@@ -17925,7 +18064,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_shell_eg2tests_module",
         "test_target": "//ios/web/shell/test:ios_web_shell_eg2tests_module"
       },
       {
@@ -17937,7 +18075,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_shell_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_shell_eg2tests_module_iPhone X 12.4",
@@ -17963,7 +18103,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_shell_eg2tests_module",
         "test_target": "//ios/web/shell/test:ios_web_shell_eg2tests_module"
       },
       {
@@ -17975,7 +18114,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_shell_eg2tests_module",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_shell_eg2tests_module_iPhone X 13.3",
@@ -18001,7 +18142,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_shell_eg2tests_module",
         "test_target": "//ios/web/shell/test:ios_web_shell_eg2tests_module"
       },
       {
@@ -18013,7 +18153,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_shell_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_shell_egtests_iPad Pro (12.9-inch) 12.4",
@@ -18039,7 +18181,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_shell_egtests",
         "test_target": "//ios/web/shell/test:ios_web_shell_egtests"
       },
       {
@@ -18051,7 +18192,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_shell_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_shell_egtests_iPad Pro (12.9-inch) 13.3",
@@ -18077,7 +18220,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_shell_egtests",
         "test_target": "//ios/web/shell/test:ios_web_shell_egtests"
       },
       {
@@ -18089,7 +18231,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_shell_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_shell_egtests_iPhone X 12.4",
@@ -18115,7 +18259,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_shell_egtests",
         "test_target": "//ios/web/shell/test:ios_web_shell_egtests"
       },
       {
@@ -18127,7 +18270,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_shell_egtests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_shell_egtests_iPhone X 13.3",
@@ -18153,7 +18298,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_shell_egtests",
         "test_target": "//ios/web/shell/test:ios_web_shell_egtests"
       },
       {
@@ -18165,7 +18309,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_unittests_iPad Air 2 12.4",
@@ -18191,7 +18337,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_unittests",
         "test_target": "//ios/web:ios_web_unittests"
       },
       {
@@ -18203,7 +18348,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_unittests_iPad Air 2 13.3",
@@ -18229,7 +18376,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_unittests",
         "test_target": "//ios/web:ios_web_unittests"
       },
       {
@@ -18241,7 +18387,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_unittests_iPhone 6s Plus 12.4",
@@ -18267,7 +18415,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_unittests",
         "test_target": "//ios/web:ios_web_unittests"
       },
       {
@@ -18279,7 +18426,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_unittests_iPhone 6s Plus 13.3",
@@ -18305,7 +18454,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_unittests",
         "test_target": "//ios/web:ios_web_unittests"
       },
       {
@@ -18317,7 +18465,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_unittests_iPhone X 12.4",
@@ -18343,7 +18493,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_unittests",
         "test_target": "//ios/web:ios_web_unittests"
       },
       {
@@ -18355,7 +18504,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_unittests_iPhone X 13.3",
@@ -18381,7 +18532,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_unittests",
         "test_target": "//ios/web:ios_web_unittests"
       },
       {
@@ -18393,7 +18543,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_view_inttests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_view_inttests_iPad Air 2 12.4",
@@ -18419,7 +18571,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_view_inttests",
         "test_target": "//ios/web_view:ios_web_view_inttests"
       },
       {
@@ -18431,7 +18582,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_view_inttests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_view_inttests_iPad Air 2 13.3",
@@ -18457,7 +18610,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_view_inttests",
         "test_target": "//ios/web_view:ios_web_view_inttests"
       },
       {
@@ -18469,7 +18621,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_view_inttests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_view_inttests_iPhone 6s Plus 12.4",
@@ -18495,7 +18649,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_view_inttests",
         "test_target": "//ios/web_view:ios_web_view_inttests"
       },
       {
@@ -18507,7 +18660,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_view_inttests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_view_inttests_iPhone 6s Plus 13.3",
@@ -18533,7 +18688,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_view_inttests",
         "test_target": "//ios/web_view:ios_web_view_inttests"
       },
       {
@@ -18545,7 +18699,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_view_inttests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_view_inttests_iPhone X 12.4",
@@ -18571,7 +18727,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_view_inttests",
         "test_target": "//ios/web_view:ios_web_view_inttests"
       },
       {
@@ -18583,7 +18738,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_view_inttests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_view_inttests_iPhone X 13.3",
@@ -18609,7 +18766,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_view_inttests",
         "test_target": "//ios/web_view:ios_web_view_inttests"
       },
       {
@@ -18621,7 +18777,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_view_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_view_unittests_iPad Air 2 12.4",
@@ -18647,7 +18805,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_view_unittests",
         "test_target": "//ios/web_view:ios_web_view_unittests"
       },
       {
@@ -18659,7 +18816,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_view_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_view_unittests_iPad Air 2 13.3",
@@ -18685,7 +18844,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_view_unittests",
         "test_target": "//ios/web_view:ios_web_view_unittests"
       },
       {
@@ -18697,7 +18855,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_view_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_view_unittests_iPhone 6s Plus 12.4",
@@ -18723,7 +18883,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_view_unittests",
         "test_target": "//ios/web_view:ios_web_view_unittests"
       },
       {
@@ -18735,7 +18894,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_view_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_view_unittests_iPhone 6s Plus 13.3",
@@ -18761,7 +18922,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_view_unittests",
         "test_target": "//ios/web_view:ios_web_view_unittests"
       },
       {
@@ -18773,7 +18933,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_view_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_view_unittests_iPhone X 12.4",
@@ -18799,7 +18961,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_view_unittests",
         "test_target": "//ios/web_view:ios_web_view_unittests"
       },
       {
@@ -18811,7 +18972,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ios_web_view_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ios_web_view_unittests_iPhone X 13.3",
@@ -18837,7 +19000,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ios_web_view_unittests",
         "test_target": "//ios/web_view:ios_web_view_unittests"
       },
       {
@@ -18849,7 +19011,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "net_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "net_unittests_iPhone X 12.4",
@@ -18875,7 +19039,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "net_unittests",
         "test_target": "//net:net_unittests"
       },
       {
@@ -18887,7 +19050,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "net_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "net_unittests_iPhone X 13.3",
@@ -18913,7 +19078,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "net_unittests",
         "test_target": "//net:net_unittests"
       },
       {
@@ -18925,7 +19089,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "services_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "services_unittests_iPhone X 12.4",
@@ -18951,7 +19117,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "services_unittests",
         "test_target": "//services:services_unittests"
       },
       {
@@ -18963,7 +19128,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "services_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "services_unittests_iPhone X 13.3",
@@ -18989,7 +19156,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "services_unittests",
         "test_target": "//services:services_unittests"
       },
       {
@@ -19001,7 +19167,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "skia_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "skia_unittests_iPad Air 2 12.4",
@@ -19027,7 +19195,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "skia_unittests",
         "test_target": "//skia:skia_unittests"
       },
       {
@@ -19039,7 +19206,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "skia_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "skia_unittests_iPad Air 2 13.3",
@@ -19065,7 +19234,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "skia_unittests",
         "test_target": "//skia:skia_unittests"
       },
       {
@@ -19077,7 +19245,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "skia_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "skia_unittests_iPhone 6s Plus 12.4",
@@ -19103,7 +19273,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "skia_unittests",
         "test_target": "//skia:skia_unittests"
       },
       {
@@ -19115,7 +19284,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "skia_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "skia_unittests_iPhone 6s Plus 13.3",
@@ -19141,7 +19312,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "skia_unittests",
         "test_target": "//skia:skia_unittests"
       },
       {
@@ -19153,7 +19323,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "skia_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "skia_unittests_iPhone X 12.4",
@@ -19179,7 +19351,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "skia_unittests",
         "test_target": "//skia:skia_unittests"
       },
       {
@@ -19191,7 +19362,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "skia_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "skia_unittests_iPhone X 13.3",
@@ -19217,7 +19390,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "skia_unittests",
         "test_target": "//skia:skia_unittests"
       },
       {
@@ -19229,7 +19401,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "sql_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "sql_unittests_iPhone X 12.4",
@@ -19255,7 +19429,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "sql_unittests",
         "test_target": "//sql:sql_unittests"
       },
       {
@@ -19267,7 +19440,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "sql_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "sql_unittests_iPhone X 13.3",
@@ -19293,7 +19468,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "sql_unittests",
         "test_target": "//sql:sql_unittests"
       },
       {
@@ -19305,7 +19479,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ui_base_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ui_base_unittests_iPad Air 2 12.4",
@@ -19331,7 +19507,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ui_base_unittests",
         "test_target": "//ui/base:ui_base_unittests"
       },
       {
@@ -19343,7 +19518,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ui_base_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ui_base_unittests_iPad Air 2 13.3",
@@ -19369,7 +19546,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ui_base_unittests",
         "test_target": "//ui/base:ui_base_unittests"
       },
       {
@@ -19381,7 +19557,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ui_base_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ui_base_unittests_iPhone 6s Plus 12.4",
@@ -19407,7 +19585,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ui_base_unittests",
         "test_target": "//ui/base:ui_base_unittests"
       },
       {
@@ -19419,7 +19596,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ui_base_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ui_base_unittests_iPhone 6s Plus 13.3",
@@ -19445,7 +19624,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ui_base_unittests",
         "test_target": "//ui/base:ui_base_unittests"
       },
       {
@@ -19457,7 +19635,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ui_base_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ui_base_unittests_iPhone X 12.4",
@@ -19483,7 +19663,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ui_base_unittests",
         "test_target": "//ui/base:ui_base_unittests"
       },
       {
@@ -19495,7 +19674,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "ui_base_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "ui_base_unittests_iPhone X 13.3",
@@ -19521,7 +19702,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "ui_base_unittests",
         "test_target": "//ui/base:ui_base_unittests"
       },
       {
@@ -19533,7 +19713,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "url_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "url_unittests_iPhone X 12.4",
@@ -19559,7 +19741,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "url_unittests",
         "test_target": "//url:url_unittests"
       },
       {
@@ -19571,7 +19752,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}"
         ],
+        "isolate_name": "url_unittests",
         "merge": {
+          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "url_unittests_iPhone X 13.3",
@@ -19597,7 +19780,6 @@
           ],
           "service_account": "ios-isolated-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "url_unittests",
         "test_target": "//url:url_unittests"
       }
     ]

@@ -1,0 +1,14 @@
+<html>
+  <body>
+    <form id="form1" action="simple_page.html" method="post">
+      <input type="text" name="name" value="Name"><br>
+      <input type="text" name="address" value="Address"><br>
+      <input type="text" name="city" value="City"><br>
+    </form>
+  </body>
+  <script>
+    document.addEventListener('touchend', function(e) {
+      document.forms['form1'].submit();
+    }, false);
+  </script>
+</html>

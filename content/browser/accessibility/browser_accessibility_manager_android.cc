@@ -236,6 +236,7 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::NAME_CHANGED:
     case ui::AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::PLACEHOLDER_CHANGED:
+    case ui::AXEventGenerator::Event::PORTAL_ACTIVATED:
     case ui::AXEventGenerator::Event::POSITION_IN_SET_CHANGED:
     case ui::AXEventGenerator::Event::READONLY_CHANGED:
     case ui::AXEventGenerator::Event::RELATED_NODE_CHANGED:

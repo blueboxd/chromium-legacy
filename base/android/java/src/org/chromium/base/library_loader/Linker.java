@@ -129,16 +129,6 @@ public abstract class Linker {
     public static final String EXTRA_LINKER_SHARED_RELROS =
             "org.chromium.base.android.linker.shared_relros";
 
-    // The name of a class that implements TestRunner.
-    private String mTestRunnerClassName;
-
-    // Constants used to indicate a given Linker implementation, for testing.
-    //   LEGACY       -> Always uses the LegacyLinker implementation.
-    //   MODERN       -> Always uses the ModernLinker implementation.
-    // NOTE: These names are known and expected by the Linker test scripts.
-    public static final int LINKER_IMPLEMENTATION_LEGACY = 1;
-    public static final int LINKER_IMPLEMENTATION_MODERN = 2;
-
     // Singleton.
     protected static final Object sLock = new Object();
 
@@ -239,7 +229,7 @@ public abstract class Linker {
         // regular library loading. See http://crbug.com/980304 as example.
         //
         // This is only called if LibraryLoader.useChromiumLinker() returns true, meaning this is
-        // either Chrome{,Modern}, the linker tests or Trichrome.
+        // either Chrome{,Modern} or Trichrome.
         synchronized (sLock) {
             if (sSingleton == null) {
                 // With incremental install, it's important to fall back to the "normal"
@@ -591,128 +581,6 @@ public abstract class Linker {
         public long mRelroSize;   // page-aligned size in memory, or 0.
         @AccessedByNative
         public int mRelroFd = -1; // shared RELRO file descriptor, or -1
-    }
-
-    /* ---------------------- Testing support methods. ---------------------- */
-
-    /**
-     * Get Linker implementation type.
-     * For testing.
-     *
-     * @return LINKER_IMPLEMENTATION_LEGACY or LINKER_IMPLEMENTATION_MODERN
-     */
-    public final int getImplementationForTesting() {
-        // Sanity check. This method may only be called during tests.
-        assert NativeLibraries.sEnableLinkerTests;
-
-        synchronized (sLock) {
-            assert sSingleton == this;
-
-            if (sSingleton instanceof ModernLinker) {
-                return LINKER_IMPLEMENTATION_MODERN;
-            } else if (sSingleton instanceof LegacyLinker) {
-                return LINKER_IMPLEMENTATION_LEGACY;
-            }
-            throw new AssertionError("Invalid linker: " + sSingleton.getClass().getName());
-        }
-    }
-
-    /**
-     * A public interface used to run runtime linker tests after loading
-     * libraries. Should only be used to implement the linker unit tests,
-     * which is controlled by the value of NativeLibraries.sEnableLinkerTests
-     * configured at build time.
-     */
-    public interface TestRunner {
-        /**
-         * Run runtime checks and return true if they all pass.
-         *
-         * @param inBrowserProcess true iff this is the browser process.
-         * @return true if all checks pass.
-         */
-        public boolean runChecks(boolean inBrowserProcess);
-    }
-
-    /**
-     * Call this to retrieve the name of the current TestRunner class name
-     * if any. This can be useful to pass it from the browser process to
-     * child ones.
-     *
-     * @return null or a String holding the name of the class implementing
-     * the TestRunner set by calling setTestRunnerClassNameForTesting() previously.
-     */
-    public final String getTestRunnerClassNameForTesting() {
-        assert NativeLibraries.sEnableLinkerTests;
-
-        synchronized (sLock) {
-            return mTestRunnerClassName;
-        }
-    }
-
-    /**
-     * Set up the Linker for a test.
-     * Convenience function that calls setImplementationForTesting() to force an
-     * implementation, and then setTestRunnerClassNameForTesting() to set the test
-     * class name.
-     *
-     * On first call, instantiates a Linker of the requested type and sets its test
-     * runner class name. On subsequent calls, checks that the singleton produced by
-     * the first call matches the requested type and test runner class name.
-     */
-    public static final void setupForTesting(int type, String testRunnerClassName) {
-        assert NativeLibraries.sEnableLinkerTests;
-        assert type == LINKER_IMPLEMENTATION_LEGACY || type == LINKER_IMPLEMENTATION_MODERN;
-
-        if (DEBUG) Log.i(TAG, "setupForTesting(%d, %s) called", type, testRunnerClassName);
-
-        synchronized (sLock) {
-            assert sSingleton == null;
-            if (type == LINKER_IMPLEMENTATION_MODERN) {
-                sSingleton = new ModernLinker();
-            } else if (type == LINKER_IMPLEMENTATION_LEGACY) {
-                sSingleton = new LegacyLinker();
-            }
-            Log.i(TAG, "Forced linker: %s", sSingleton.getClass().getName());
-            Linker.getInstance().mTestRunnerClassName = testRunnerClassName;
-        }
-    }
-
-    /**
-     * Instantiate and run the current TestRunner, if any. The TestRunner implementation
-     * must be instantiated _after_ all libraries are loaded to ensure that its
-     * native methods are properly registered.
-     *
-     * @param inBrowserProcess true if in the browser process
-     */
-    protected final void runTestRunnerClassForTesting(boolean inBrowserProcess) {
-        assert NativeLibraries.sEnableLinkerTests;
-        if (DEBUG) Log.i(TAG, "runTestRunnerClassForTesting called");
-
-        synchronized (sLock) {
-            if (mTestRunnerClassName == null) {
-                Log.wtf(TAG, "Linker runtime tests not set up for this process");
-                assert false;
-            }
-            if (DEBUG) {
-                Log.i(TAG, "Instantiating " + mTestRunnerClassName);
-            }
-            TestRunner testRunner = null;
-            try {
-                testRunner = (TestRunner) Class.forName(mTestRunnerClassName)
-                                     .getDeclaredConstructor()
-                                     .newInstance();
-            } catch (Exception e) {
-                Log.wtf(TAG, "Could not instantiate test runner class by name", e);
-                assert false;
-            }
-
-            if (!testRunner.runChecks(inBrowserProcess)) {
-                Log.wtf(TAG, "Linker runtime tests failed in this process");
-                assert false;
-            }
-
-            Log.i(TAG, "All linker tests passed");
-        }
     }
 
     /**

@@ -22,12 +22,10 @@ CompositorAnimation::CreateWorkletAnimation(
     cc::WorkletAnimationId worklet_animation_id,
     const String& name,
     double playback_rate,
-    scoped_refptr<CompositorScrollTimeline> scroll_timeline,
     std::unique_ptr<cc::AnimationOptions> options,
     std::unique_ptr<cc::AnimationEffectTimings> effect_timings) {
   return std::make_unique<CompositorAnimation>(cc::WorkletAnimation::Create(
-      worklet_animation_id, name.Utf8(), playback_rate,
-      std::move(scroll_timeline), std::move(options),
+      worklet_animation_id, name.Utf8(), playback_rate, std::move(options),
       std::move(effect_timings)));
 }
 
@@ -86,9 +84,8 @@ void CompositorAnimation::UpdateScrollTimeline(
     base::Optional<cc::ElementId> element_id,
     base::Optional<double> start_scroll_offset,
     base::Optional<double> end_scroll_offset) {
-  cc::ToWorkletAnimation(animation_.get())
-      ->UpdateScrollTimeline(element_id, start_scroll_offset,
-                             end_scroll_offset);
+  animation_->UpdateScrollTimeline(element_id, start_scroll_offset,
+                                   end_scroll_offset);
 }
 
 void CompositorAnimation::UpdatePlaybackRate(double playback_rate) {

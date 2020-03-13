@@ -47,8 +47,15 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
   AssistantResponse();
 
   // Adds/removes the specified |observer|.
-  void AddObserver(AssistantResponseObserver* observer);
-  void RemoveObserver(AssistantResponseObserver* observer);
+  // NOTE: only the AssistantInteractionController is able to obtain non-const
+  // access to an AssistantResponse through its owned model, but there are const
+  // accessors who wish to observe the response for changes in its underlying
+  // data. To accomplish this, we make AddObserver() and RemoveObserver() const,
+  // though these methods do modify the underlying ObserverList. This is safe to
+  // do as AssistantResponseObserver only exposes const access to the underlying
+  // response data and so doesn't expose AssistantResponse for modification.
+  void AddObserver(AssistantResponseObserver* observer) const;
+  void RemoveObserver(AssistantResponseObserver* observer) const;
 
   // Adds the specified |ui_element| that should be rendered for the
   // interaction.

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper_clip_cache.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
@@ -32,14 +33,34 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   // To make it less verbose and more readable to construct and update a node,
   // a struct with default values is used to represent the state.
   struct State {
+    State(scoped_refptr<const TransformPaintPropertyNode> local_transform_space,
+          const FloatRoundedRect& clip_rect)
+        : State(local_transform_space, clip_rect, clip_rect) {}
+
+    State(scoped_refptr<const TransformPaintPropertyNode>
+              local_transform_space_arg,
+          const FloatRoundedRect& clip_rect,
+          const FloatRoundedRect& pixel_snapped_clip_rect)
+        : local_transform_space(local_transform_space_arg) {
+      SetClipRect(clip_rect, pixel_snapped_clip_rect);
+    }
+
     scoped_refptr<const TransformPaintPropertyNode> local_transform_space;
-    FloatRoundedRect clip_rect;
     base::Optional<FloatClipRect> clip_rect_excluding_overlay_scrollbars;
     scoped_refptr<const RefCountedPath> clip_path;
 
+    void SetClipRect(const FloatRoundedRect& clip_rect_arg,
+                     const FloatRoundedRect& pixel_snapped_clip_rect_arg) {
+      DCHECK(clip_rect_arg.GetRadii() ==
+             pixel_snapped_clip_rect_arg.GetRadii());
+      clip_rect = clip_rect_arg;
+      pixel_snapped_clip_rect = pixel_snapped_clip_rect_arg;
+    }
+
     PaintPropertyChangeType ComputeChange(const State& other) const {
       if (local_transform_space != other.local_transform_space ||
-          clip_rect != other.clip_rect || clip_path != other.clip_path) {
+          pixel_snapped_clip_rect != other.pixel_snapped_clip_rect ||
+          clip_path != other.clip_path) {
         return PaintPropertyChangeType::kChangedOnlyValues;
       }
       if (clip_rect_excluding_overlay_scrollbars !=
@@ -48,6 +69,12 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
       }
       return PaintPropertyChangeType::kUnchanged;
     }
+
+    friend class ClipPaintPropertyNode;
+
+   private:
+    FloatRoundedRect clip_rect;
+    FloatRoundedRect pixel_snapped_clip_rect;
   };
 
   // This node is really a sentinel, and does not represent a real clip space.
@@ -109,8 +136,13 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
     // a parent alias.
     return *Unalias().state_.local_transform_space;
   }
-  const FloatRoundedRect& ClipRect() const { return state_.clip_rect; }
-  const FloatClipRect ClipRectExcludingOverlayScrollbars() const {
+  // The pixel-snapped clip rect may be the same as the unsnapped one, in cases
+  // where pixel snapping is not desirable for a clip, such as for SVG.
+  const FloatRoundedRect& PixelSnappedClipRect() const {
+    return state_.pixel_snapped_clip_rect;
+  }
+  const FloatRoundedRect UnsnappedClipRect() const { return state_.clip_rect; }
+  const FloatClipRect UnsnappedClipRectExcludingOverlayScrollbars() const {
     return state_.clip_rect_excluding_overlay_scrollbars
                ? *state_.clip_rect_excluding_overlay_scrollbars
                : FloatClipRect(state_.clip_rect);

@@ -397,12 +397,10 @@ class OptimizationGuideStoreTest : public testing::Test {
       const auto& hint_entry = db_store_.find(hint_entry_key);
       if (hint_entry == db_store_.end()) {
         FAIL() << "No entry found for component hint: " << hint_entry_key;
-        continue;
       }
 
       if (!hint_entry->second.has_hint()) {
         FAIL() << "Component hint entry does not have hint: " << hint_entry_key;
-        continue;
       }
 
       EXPECT_EQ(hint_entry->second.hint().key(), host_suffix);
@@ -1277,7 +1275,6 @@ TEST_F(OptimizationGuideStoreTest, LoadHintSuccessInitialData) {
     OptimizationGuideStore::EntryKey hint_entry_key;
     if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
       FAIL() << "Hint entry not found for host suffix: " << host_suffix;
-      continue;
     }
 
     guide_store()->LoadHint(
@@ -1291,7 +1288,6 @@ TEST_F(OptimizationGuideStoreTest, LoadHintSuccessInitialData) {
     EXPECT_EQ(last_loaded_entry_key(), hint_entry_key);
     if (!last_loaded_hint()) {
       FAIL() << "Loaded hint was null for entry key: " << hint_entry_key;
-      continue;
     }
 
     EXPECT_EQ(last_loaded_hint()->hint()->key(), host_suffix);
@@ -1321,7 +1317,6 @@ TEST_F(OptimizationGuideStoreTest, LoadHintSuccessUpdateData) {
     OptimizationGuideStore::EntryKey hint_entry_key;
     if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
       FAIL() << "Hint entry not found for host suffix: " << host_suffix;
-      continue;
     }
 
     guide_store()->LoadHint(
@@ -1335,7 +1330,6 @@ TEST_F(OptimizationGuideStoreTest, LoadHintSuccessUpdateData) {
     EXPECT_EQ(last_loaded_entry_key(), hint_entry_key);
     if (!last_loaded_hint()) {
       FAIL() << "Loaded hint was null for entry key: " << hint_entry_key;
-      continue;
     }
 
     EXPECT_EQ(last_loaded_hint()->hint()->key(), host_suffix);
@@ -1998,7 +1992,6 @@ TEST_F(OptimizationGuideStoreTest, LoadHostModelFeaturesForHost) {
     if (!last_loaded_host_model_features()) {
       FAIL() << "Loaded host model features was null for entry key: "
              << entry_key;
-      continue;
     }
 
     EXPECT_EQ(last_loaded_host_model_features()->host(), host_suffix);

@@ -172,7 +172,6 @@ struct GPU_EXPORT Capabilities {
   bool multisample_compatibility = false;
   // True if DirectComposition layers are enabled.
   bool dc_layers = false;
-  bool use_dc_overlays_for_video = false;
   bool protected_video_swap_chain = false;
   bool gpu_vsync = false;
   bool shared_image_swap_chain = false;

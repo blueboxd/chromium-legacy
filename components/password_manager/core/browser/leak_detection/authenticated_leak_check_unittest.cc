@@ -273,7 +273,8 @@ TEST_F(AuthenticatedLeakCheckTest, ParseResponse_DecryptionError) {
   EXPECT_CALL(delegate(), OnLeakDetectionDone(false, GURL(kExampleCom),
                                               base::ASCIIToUTF16(kUsername),
                                               base::ASCIIToUTF16(kPassword)));
-  std::move(payload_and_callback.callback).Run(std::move(response));
+  std::move(payload_and_callback.callback)
+      .Run(std::move(response), base::nullopt);
   task_env().RunUntilIdle();
 
   histogram_tester().ExpectUniqueSample(
@@ -305,7 +306,8 @@ TEST_F(AuthenticatedLeakCheckTest, ParseResponse_NoLeak) {
   EXPECT_CALL(delegate(), OnLeakDetectionDone(false, GURL(kExampleCom),
                                               base::ASCIIToUTF16(kUsername),
                                               base::ASCIIToUTF16(kPassword)));
-  std::move(payload_and_callback.callback).Run(std::move(response));
+  std::move(payload_and_callback.callback)
+      .Run(std::move(response), base::nullopt);
   task_env().RunUntilIdle();
 
   histogram_tester().ExpectUniqueSample(
@@ -344,7 +346,8 @@ TEST_F(AuthenticatedLeakCheckTest, ParseResponse_Leak) {
   EXPECT_CALL(delegate(), OnLeakDetectionDone(true, GURL(kExampleCom),
                                               base::ASCIIToUTF16(kUsername),
                                               base::ASCIIToUTF16(kPassword)));
-  std::move(payload_and_callback.callback).Run(std::move(response));
+  std::move(payload_and_callback.callback)
+      .Run(std::move(response), base::nullopt);
   task_env().RunUntilIdle();
 
   histogram_tester().ExpectUniqueSample(

@@ -1621,9 +1621,7 @@ TEST_P(PaintControllerTest, DuplicatedSubsequences) {
 #if DCHECK_IS_ON()
   EXPECT_DEATH(paint_duplicated_subsequences(),
                "Multiple subsequences for client: \"test\"");
-  return;
-#endif
-
+#else
   // The following is for non-DCHECK path. No security CHECK should trigger.
   paint_duplicated_subsequences();
   // Paint again.
@@ -1642,6 +1640,7 @@ TEST_P(PaintControllerTest, DuplicatedSubsequences) {
     DrawRect(context, client, kForegroundType, FloatRect(100, 100, 100, 100));
   }
   CommitAndFinishCycle();
+#endif
 }
 
 TEST_P(PaintControllerTest, DeletedClientInUnderInvaldiatedSubsequence) {

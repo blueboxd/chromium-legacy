@@ -13,6 +13,7 @@
 #include "headless/lib/browser/protocol/page_handler.h"
 #include "headless/lib/browser/protocol/target_handler.h"
 #include "third_party/inspector_protocol/crdtp/cbor.h"
+#include "third_party/inspector_protocol/crdtp/dispatch.h"
 #include "third_party/inspector_protocol/crdtp/json.h"
 
 namespace headless {
@@ -42,23 +43,24 @@ HeadlessDevToolsSession::~HeadlessDevToolsSession() {
 }
 
 void HeadlessDevToolsSession::HandleCommand(
-    const std::string& method,
     base::span<const uint8_t> message,
     content::DevToolsManagerDelegate::NotHandledCallback callback) {
-  if (!browser_ || !dispatcher_.canDispatch(method)) {
+  if (!browser_) {
     std::move(callback).Run(message);
     return;
   }
-  int call_id;
-  std::string unused;
-  std::unique_ptr<protocol::DictionaryValue> value =
-      protocol::DictionaryValue::cast(Value::parseBinary(
-          reinterpret_cast<const uint8_t*>(message.data()), message.size()));
-  if (!dispatcher_.parseCommand(value.get(), &call_id, &unused))
+  crdtp::Dispatchable dispatchable(crdtp::SpanFrom(message));
+  // content::DevToolsSession receives this message first, so we may
+  // assume it's ok.
+  DCHECK(dispatchable.ok());
+  crdtp::UberDispatcher::DispatchResult dispatched =
+      dispatcher_.Dispatch(dispatchable);
+  if (!dispatched.MethodFound()) {
+    std::move(callback).Run(message);
     return;
-  pending_commands_[call_id] = std::move(callback);
-  dispatcher_.dispatch(call_id, method, std::move(value),
-                       crdtp::SpanFrom(message));
+  }
+  pending_commands_[dispatchable.CallId()] = std::move(callback);
+  dispatched.Run();
 }
 
 void HeadlessDevToolsSession::AddHandler(
@@ -70,7 +72,7 @@ void HeadlessDevToolsSession::AddHandler(
 // The following methods handle responses or notifications coming from
 // the browser to the client.
 
-void HeadlessDevToolsSession::sendProtocolResponse(
+void HeadlessDevToolsSession::SendProtocolResponse(
     int call_id,
     std::unique_ptr<Serializable> message) {
   pending_commands_.erase(call_id);
@@ -78,15 +80,15 @@ void HeadlessDevToolsSession::sendProtocolResponse(
   client_channel_->DispatchProtocolMessageToClient(message->Serialize());
 }
 
-void HeadlessDevToolsSession::sendProtocolNotification(
+void HeadlessDevToolsSession::SendProtocolNotification(
     std::unique_ptr<Serializable> message) {
   client_channel_->DispatchProtocolMessageToClient(message->Serialize());
 }
 
-void HeadlessDevToolsSession::flushProtocolNotifications() {}
+void HeadlessDevToolsSession::FlushProtocolNotifications() {}
 
-void HeadlessDevToolsSession::fallThrough(int call_id,
-                                          const std::string& method,
+void HeadlessDevToolsSession::FallThrough(int call_id,
+                                          crdtp::span<uint8_t> method,
                                           crdtp::span<uint8_t> message) {
   auto callback = std::move(pending_commands_[call_id]);
   pending_commands_.erase(call_id);

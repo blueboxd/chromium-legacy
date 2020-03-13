@@ -10,7 +10,9 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory.h"
 #include "url/gurl.h"
 
@@ -76,9 +78,11 @@ class AuthenticatedLeakCheck : public LeakDetectionCheck {
 
   // Called when the single leak lookup request is done. |response| is null in
   // case of an invalid server response, or contains a valid
-  // SingleLookupResponse instance otherwise.
+  // SingleLookupResponse instance otherwise. |error| is set iff |response| is
+  // null.
   void OnLookupSingleLeakResponse(
-      std::unique_ptr<SingleLookupResponse> response);
+      std::unique_ptr<SingleLookupResponse> response,
+      base::Optional<LeakDetectionError> error);
 
   // Called when the network response is analazyed on the background thread. The
   // method is called on the main thread.

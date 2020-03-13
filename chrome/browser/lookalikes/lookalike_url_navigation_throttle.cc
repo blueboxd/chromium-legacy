@@ -73,7 +73,7 @@ bool IsSafeRedirect(const std::string& matching_domain,
   DCHECK_LE(first_cross_site_redirect, redirect_chain.size() - 1);
   if (first_cross_site_redirect == 0) {
     // All URLs in the redirect chain belong to the same eTLD+1.
-    return true;
+    return false;
   }
   // There is a redirect from the initial eTLD+1 to another site. In order to be
   // a safe redirect, it should be to the root of |matching_domain|. This

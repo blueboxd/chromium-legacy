@@ -52,10 +52,10 @@ class MEDIA_EXPORT TextRenderer {
 
   // Temporarily suspends decoding and rendering, executing |callback| when
   // playback has been suspended.
-  void Pause(const base::Closure& callback);
+  void Pause(base::OnceClosure callback);
 
   // Discards any text data, executing |callback| when completed.
-  void Flush(const base::Closure& callback);
+  void Flush(base::OnceClosure callback);
 
   // Adds new |text_stream|, having the indicated |config|, to the text stream
   // collection managed by this text renderer.
@@ -109,7 +109,7 @@ class MEDIA_EXPORT TextRenderer {
   base::RepeatingClosure ended_cb_;
 
   // Callback provided to Pause().
-  base::Closure pause_cb_;
+  base::OnceClosure pause_cb_;
 
   // Simple state tracking variable.
   enum State {

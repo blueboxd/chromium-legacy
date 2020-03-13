@@ -66,6 +66,7 @@ void MaybeOverrideDlpScanResult(DownloadCheckResultReason reason,
       case DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED:
       case DownloadCheckResult::BLOCKED_TOO_LARGE:
       case DownloadCheckResult::SENSITIVE_CONTENT_BLOCK:
+      case DownloadCheckResult::BLOCKED_UNSUPPORTED_FILE_TYPE:
         callback.Run(deep_scan_result);
         return;
 

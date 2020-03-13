@@ -54,9 +54,10 @@ class TextRendererTest : public testing::Test {
   void CreateTextRenderer() {
     DCHECK(!text_renderer_);
 
-    text_renderer_.reset(new TextRenderer(
-        task_environment_.GetMainThreadTaskRunner(),
-        base::Bind(&TextRendererTest::OnAddTextTrack, base::Unretained(this))));
+    text_renderer_.reset(
+        new TextRenderer(task_environment_.GetMainThreadTaskRunner(),
+                         base::BindRepeating(&TextRendererTest::OnAddTextTrack,
+                                             base::Unretained(this))));
     text_renderer_->Initialize(
         base::BindRepeating(&TextRendererTest::OnEnd, base::Unretained(this)));
   }
@@ -171,14 +172,14 @@ class TextRendererTest : public testing::Test {
 
   void Pause() {
     text_renderer_->Pause(
-        base::Bind(&TextRendererTest::OnPause, base::Unretained(this)));
+        base::BindOnce(&TextRendererTest::OnPause, base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
   void Flush() {
     EXPECT_CALL(*this, OnFlush());
     text_renderer_->Flush(
-        base::Bind(&TextRendererTest::OnFlush, base::Unretained(this)));
+        base::BindOnce(&TextRendererTest::OnFlush, base::Unretained(this)));
   }
 
   void ExpectRead(size_t idx) {
@@ -205,9 +206,10 @@ class TextRendererTest : public testing::Test {
 };
 
 TEST_F(TextRendererTest, CreateTextRendererNoInit) {
-  text_renderer_.reset(new TextRenderer(
-      task_environment_.GetMainThreadTaskRunner(),
-      base::Bind(&TextRendererTest::OnAddTextTrack, base::Unretained(this))));
+  text_renderer_.reset(
+      new TextRenderer(task_environment_.GetMainThreadTaskRunner(),
+                       base::BindRepeating(&TextRendererTest::OnAddTextTrack,
+                                           base::Unretained(this))));
   text_renderer_.reset();
 }
 

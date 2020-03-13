@@ -433,6 +433,9 @@ void SafetyCheckHandler::OnStateChanged(
     case BulkLeakCheckService::State::kNetworkError:
       OnPasswordsCheckResult(PasswordsStatus::kOffline, 0);
       break;
+    case BulkLeakCheckService::State::kQuotaLimit:
+      OnPasswordsCheckResult(PasswordsStatus::kQuotaLimit, 0);
+      break;
     case BulkLeakCheckService::State::kTokenRequestFailure:
     case BulkLeakCheckService::State::kHashingFailure:
     case BulkLeakCheckService::State::kServiceError:

@@ -331,7 +331,21 @@ TEST_P(GeometryMapperTest, SimpleClip) {
 
   input_rect = FloatRect(0, 0, 100, 100);
   expected_transformed_rect = input_rect;  // not clipped.
-  expected_clip = FloatClipRect(clip->ClipRect());
+  expected_clip = FloatClipRect(clip->UnsnappedClipRect());
+  expected_visual_rect = expected_clip;
+  CheckMappings();
+}
+
+TEST_P(GeometryMapperTest, SimpleClipPixelSnapped) {
+  auto clip = CreateClip(c0(), t0(), FloatRoundedRect(10, 10, 50.5, 50.5),
+                         FloatRoundedRect(10, 10, 50, 51));
+  local_state.SetClip(*clip);
+
+  input_rect = FloatRect(0, 0, 100, 100);
+  expected_transformed_rect = input_rect;  // not clipped.
+
+  // GeometryMapper does not use the PixelSnappedClipRect.
+  expected_clip = FloatClipRect(clip->UnsnappedClipRect());
   expected_visual_rect = expected_clip;
   CheckMappings();
 }
@@ -343,15 +357,14 @@ TEST_P(GeometryMapperTest, SimpleClipWithAlias) {
 
   input_rect = FloatRect(0, 0, 100, 100);
   expected_transformed_rect = input_rect;  // not clipped.
-  expected_clip = FloatClipRect(clip->Unalias().ClipRect());
+  expected_clip = FloatClipRect(clip->Unalias().UnsnappedClipRect());
   expected_visual_rect = expected_clip;
   CheckMappings();
 }
 
 TEST_P(GeometryMapperTest, SimpleClipOverlayScrollbars) {
-  ClipPaintPropertyNode::State clip_state;
-  clip_state.local_transform_space = &t0();
-  clip_state.clip_rect = FloatRoundedRect(10, 10, 50, 50);
+  ClipPaintPropertyNode::State clip_state(&t0(),
+                                          FloatRoundedRect(10, 10, 50, 50));
   clip_state.clip_rect_excluding_overlay_scrollbars =
       FloatClipRect(FloatRect(10, 10, 45, 43));
   auto clip = ClipPaintPropertyNode::Create(c0(), std::move(clip_state));
@@ -448,7 +461,7 @@ TEST_P(GeometryMapperTest, RoundedClip) {
 
   input_rect = FloatRect(0, 0, 100, 100);
   expected_transformed_rect = input_rect;
-  expected_clip = FloatClipRect(clip->ClipRect());
+  expected_clip = FloatClipRect(clip->UnsnappedClipRect());
   EXPECT_TRUE(expected_clip.HasRadius());
   expected_visual_rect = expected_clip;
   CheckMappings();
@@ -481,13 +494,13 @@ TEST_P(GeometryMapperTest, TwoClips) {
 
   input_rect = FloatRect(0, 0, 100, 100);
   expected_transformed_rect = input_rect;
-  expected_clip = FloatClipRect(clip1->ClipRect());
+  expected_clip = FloatClipRect(clip1->UnsnappedClipRect());
   EXPECT_TRUE(expected_clip.HasRadius());
   expected_visual_rect = expected_clip;
   CheckMappings();
 
   ancestor_state.SetClip(*clip1);
-  expected_clip = FloatClipRect(clip2->ClipRect());
+  expected_clip = FloatClipRect(clip2->UnsnappedClipRect());
   expected_visual_rect = expected_clip;
   CheckMappings();
 }
@@ -506,12 +519,12 @@ TEST_P(GeometryMapperTest, TwoClipsTransformAbove) {
 
   input_rect = FloatRect(0, 0, 100, 100);
   expected_transformed_rect = input_rect;
-  expected_clip = FloatClipRect(clip2->ClipRect());
+  expected_clip = FloatClipRect(clip2->UnsnappedClipRect());
   expected_clip.SetHasRadius();
   expected_visual_rect = expected_clip;
   CheckMappings();
 
-  expected_clip = FloatClipRect(clip1->ClipRect());
+  expected_clip = FloatClipRect(clip1->UnsnappedClipRect());
   EXPECT_TRUE(expected_clip.HasRadius());
   local_state.SetClip(*clip1);
   expected_visual_rect = expected_clip;
@@ -527,10 +540,10 @@ TEST_P(GeometryMapperTest, ClipBeforeTransform) {
 
   input_rect = FloatRect(0, 0, 100, 100);
   expected_visual_rect = FloatClipRect(input_rect);
-  expected_visual_rect.Intersect(FloatClipRect(clip->ClipRect()));
+  expected_visual_rect.Intersect(FloatClipRect(clip->UnsnappedClipRect()));
   expected_visual_rect.Map(*expected_transform);
   EXPECT_FALSE(expected_visual_rect.IsTight());
-  expected_clip = FloatClipRect(clip->ClipRect());
+  expected_clip = FloatClipRect(clip->UnsnappedClipRect());
   expected_clip.Map(*expected_transform);
   EXPECT_FALSE(expected_clip.IsTight());
   expected_transformed_rect = expected_transform->MapRect(input_rect);
@@ -546,12 +559,12 @@ TEST_P(GeometryMapperTest, ExpandVisualRectWithClipBeforeAnimatingTransform) {
 
   input_rect = FloatRect(0, 0, 100, 100);
   expected_visual_rect = FloatClipRect(input_rect);
-  expected_visual_rect.Intersect(FloatClipRect(clip->ClipRect()));
+  expected_visual_rect.Intersect(FloatClipRect(clip->UnsnappedClipRect()));
   expected_visual_rect.Map(*expected_transform);
   // The clip has animating transform, so it doesn't apply to the visual rect.
   expected_visual_rect_expanded_for_animation = InfiniteLooseFloatClipRect();
   EXPECT_FALSE(expected_visual_rect.IsTight());
-  expected_clip = FloatClipRect(clip->ClipRect());
+  expected_clip = FloatClipRect(clip->UnsnappedClipRect());
   expected_clip.Map(*expected_transform);
   EXPECT_FALSE(expected_clip.IsTight());
   expected_clip_has_transform_animation = true;
@@ -570,9 +583,9 @@ TEST_P(GeometryMapperTest, ClipAfterTransform) {
   expected_transformed_rect = expected_transform->MapRect(input_rect);
   expected_visual_rect = FloatClipRect(input_rect);
   expected_visual_rect.Map(*expected_transform);
-  expected_visual_rect.Intersect(FloatClipRect(clip->ClipRect()));
+  expected_visual_rect.Intersect(FloatClipRect(clip->UnsnappedClipRect()));
   EXPECT_FALSE(expected_visual_rect.IsTight());
-  expected_clip = FloatClipRect(clip->ClipRect());
+  expected_clip = FloatClipRect(clip->UnsnappedClipRect());
   EXPECT_TRUE(expected_clip.IsTight());
   CheckMappings();
 }
@@ -588,9 +601,9 @@ TEST_P(GeometryMapperTest, ExpandVisualRectWithClipAfterAnimatingTransform) {
   expected_transformed_rect = expected_transform->MapRect(input_rect);
   expected_visual_rect = FloatClipRect(input_rect);
   expected_visual_rect.Map(*expected_transform);
-  expected_visual_rect.Intersect(FloatClipRect(clip->ClipRect()));
+  expected_visual_rect.Intersect(FloatClipRect(clip->UnsnappedClipRect()));
   EXPECT_FALSE(expected_visual_rect.IsTight());
-  expected_clip = FloatClipRect(clip->ClipRect());
+  expected_clip = FloatClipRect(clip->UnsnappedClipRect());
   EXPECT_TRUE(expected_clip.IsTight());
   // The visual rect is expanded first to infinity because of the transform
   // animation, then clipped by the clip.
@@ -611,9 +624,9 @@ TEST_P(GeometryMapperTest, TwoClipsWithTransformBetween) {
   input_rect = FloatRect(0, 0, 100, 100);
   expected_transformed_rect = expected_transform->MapRect(input_rect);
 
-  expected_clip = FloatClipRect(clip2->ClipRect());
+  expected_clip = FloatClipRect(clip2->UnsnappedClipRect());
   expected_clip.Map(*expected_transform);
-  expected_clip.Intersect(FloatClipRect(clip1->ClipRect()));
+  expected_clip.Intersect(FloatClipRect(clip1->UnsnappedClipRect()));
   EXPECT_FALSE(expected_clip.IsTight());
 
   // All clips are performed in the space of the ancestor. In cases such as
@@ -641,9 +654,9 @@ TEST_P(GeometryMapperTest,
   input_rect = FloatRect(0, 0, 100, 100);
   expected_transformed_rect = expected_transform->MapRect(input_rect);
 
-  expected_clip = FloatClipRect(clip2->ClipRect());
+  expected_clip = FloatClipRect(clip2->UnsnappedClipRect());
   expected_clip.Map(*expected_transform);
-  expected_clip.Intersect(FloatClipRect(clip1->ClipRect()));
+  expected_clip.Intersect(FloatClipRect(clip1->UnsnappedClipRect()));
   EXPECT_FALSE(expected_clip.IsTight());
   expected_clip_has_transform_animation = true;
   expected_visual_rect = FloatClipRect(input_rect);
@@ -654,7 +667,7 @@ TEST_P(GeometryMapperTest,
   // then clipped by clip1. clip2 doesn't apply because it's below the animating
   // transform.
   expected_visual_rect_expanded_for_animation =
-      FloatClipRect(clip1->ClipRect());
+      FloatClipRect(clip1->UnsnappedClipRect());
   expected_visual_rect_expanded_for_animation->ClearIsTight();
   CheckMappings();
 }
@@ -769,13 +782,13 @@ TEST_P(GeometryMapperTest, FilterWithClipsAndTransforms) {
   auto output = input_rect;
   output.Move(transform_below_effect->Translation2D());
   // 2. clipBelowEffect
-  output.Intersect(clip_below_effect->ClipRect().Rect());
+  output.Intersect(clip_below_effect->UnsnappedClipRect().Rect());
   EXPECT_EQ(FloatRect(20, 30, 90, 80), output);
   // 3. effect (the outset is 3 times of blur amount).
   output = filters.MapRect(output);
   EXPECT_EQ(FloatRect(-40, -30, 210, 200), output);
   // 4. clipAboveEffect
-  output.Intersect(clip_above_effect->ClipRect().Rect());
+  output.Intersect(clip_above_effect->UnsnappedClipRect().Rect());
   EXPECT_EQ(FloatRect(-40, -30, 140, 130), output);
   // 5. transformAboveEffect
   output.Move(transform_above_effect->Translation2D());
@@ -819,13 +832,13 @@ TEST_P(GeometryMapperTest, FilterWithClipsAndTransformsWithAlias) {
   auto output = input_rect;
   output.Move(transform_below_effect->Translation2D());
   // 2. clipBelowEffect
-  output.Intersect(clip_below_effect->ClipRect().Rect());
+  output.Intersect(clip_below_effect->UnsnappedClipRect().Rect());
   EXPECT_EQ(FloatRect(20, 30, 90, 80), output);
   // 3. effect (the outset is 3 times of blur amount).
   output = filters.MapRect(output);
   EXPECT_EQ(FloatRect(-40, -30, 210, 200), output);
   // 4. clipAboveEffect
-  output.Intersect(clip_above_effect->ClipRect().Rect());
+  output.Intersect(clip_above_effect->UnsnappedClipRect().Rect());
   EXPECT_EQ(FloatRect(-40, -30, 140, 130), output);
   // 5. transformAboveEffect
   output.Move(transform_above_effect->Translation2D());
@@ -854,19 +867,19 @@ TEST_P(GeometryMapperTest,
   input_rect = FloatRect(0, 0, 100, 100);
   expected_transformed_rect = input_rect;
   auto output = input_rect;
-  output.Intersect(clip2->ClipRect().Rect());
-  output.Intersect(clip1->ClipRect().Rect());
+  output.Intersect(clip2->UnsnappedClipRect().Rect());
+  output.Intersect(clip1->UnsnappedClipRect().Rect());
   EXPECT_EQ(FloatRect(50, 10, 50, 40), output);
   expected_visual_rect = FloatClipRect(output);
   expected_visual_rect.ClearIsTight();
-  expected_clip = FloatClipRect(clip2->ClipRect());
-  expected_clip.Intersect(FloatClipRect(clip1->ClipRect()));
+  expected_clip = FloatClipRect(clip2->UnsnappedClipRect());
+  expected_clip.Intersect(FloatClipRect(clip1->UnsnappedClipRect()));
   expected_clip.ClearIsTight();
   // The visual rect is expanded to infinity because of the filter animation,
   // the clipped by clip1. clip2 doesn't apply because it's below the animating
   // filter.
   expected_visual_rect_expanded_for_animation =
-      FloatClipRect(clip1->ClipRect());
+      FloatClipRect(clip1->UnsnappedClipRect());
   expected_visual_rect_expanded_for_animation->ClearIsTight();
   CheckMappings();
 }

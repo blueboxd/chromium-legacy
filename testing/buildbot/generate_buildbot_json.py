@@ -119,10 +119,16 @@ class IsolatedScriptTestGenerator(BaseGenerator):
   def generate(self, waterfall, tester_name, tester_config, input_tests):
     isolated_scripts = []
     for test_name, test_config in sorted(input_tests.iteritems()):
-      test = self.bb_gen.generate_isolated_script_test(
-        waterfall, tester_name, tester_config, test_name, test_config)
-      if test:
-        isolated_scripts.append(test)
+      # Variants allow more than one definition for a given test, and is defined
+      # in array format from resolve_variants().
+      if not isinstance(test_config, list):
+        test_config = [test_config]
+
+      for config in test_config:
+        test = self.bb_gen.generate_isolated_script_test(
+          waterfall, tester_name, tester_config, test_name, config)
+        if test:
+          isolated_scripts.append(test)
     return isolated_scripts
 
   def sort(self, tests):
@@ -680,7 +686,7 @@ class BBJSONGenerator(object):
       return None
     result = copy.deepcopy(test_config)
     result['isolate_name'] = result.get('isolate_name', test_name)
-    result['name'] = test_name
+    result['name'] = result.get('name', test_name)
     self.initialize_swarming_dictionary_for_test(result, tester_config)
     self.initialize_args_for_test(result, tester_config)
     if tester_config.get('use_android_presentation', False):
@@ -993,7 +999,6 @@ class BBJSONGenerator(object):
         # don't want to have the same name for each variant.
         cloned_config['name'] = '{}_{}'.format(test_name,
                                                cloned_variant['identifier'])
-
         definitions.append(cloned_config)
       test_suite[test_name] = definitions
     return test_suite

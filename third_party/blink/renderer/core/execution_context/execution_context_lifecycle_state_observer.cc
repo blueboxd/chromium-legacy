@@ -75,6 +75,8 @@ void ExecutionContextLifecycleStateObserver::UpdateStateIfNeeded() {
 void ExecutionContextLifecycleStateObserver::SetExecutionContext(
     ExecutionContext* context) {
   ExecutionContextLifecycleObserver::SetExecutionContext(context);
+  if (!context)
+    return;
 
   if (context->IsContextDestroyed()) {
     ContextDestroyed();

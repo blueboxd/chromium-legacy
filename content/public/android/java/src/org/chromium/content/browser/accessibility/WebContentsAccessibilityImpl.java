@@ -29,6 +29,7 @@ import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
+import android.view.inputmethod.EditorInfo;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -40,6 +41,7 @@ import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.WindowEventObserverManager;
 import org.chromium.content.browser.accessibility.captioning.CaptioningController;
+import org.chromium.content.browser.input.ImeAdapterImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl.UserDataFactory;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
@@ -111,7 +113,6 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     // TODO (mschillaci) - Replace with set IDs once R SDK finalizes values
     private static final int ACTION_IME_ENTER =
             Resources.getSystem().getIdentifier("accessibilityActionImeEnter", "id", "android");
-
     private static final int ACTION_PRESS_AND_HOLD =
             Resources.getSystem().getIdentifier("accessibilityActionPressAndHold", "id", "android");
 
@@ -524,6 +525,17 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         if (!isAccessibilityEnabled()
                 || !WebContentsAccessibilityImplJni.get().isNodeValid(
                         mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId)) {
+            return false;
+        }
+
+        // TODO (mschillaci) Move this into the switch below once ACTION_IME_ENTER is constant
+        if (action == ACTION_IME_ENTER && ACTION_IME_ENTER != 0) {
+            if (mWebContents != null) {
+                if (ImeAdapterImpl.fromWebContents(mWebContents) != null) {
+                    return ImeAdapterImpl.fromWebContents(mWebContents)
+                            .performEditorAction(EditorInfo.IME_ACTION_NEXT);
+                }
+            }
             return false;
         }
 
@@ -1368,7 +1380,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             boolean canScrollDown, boolean canScrollLeft, boolean canScrollRight, boolean clickable,
             boolean editableText, boolean enabled, boolean focusable, boolean focused,
             boolean isCollapsed, boolean isExpanded, boolean hasNonEmptyValue,
-            boolean hasNonEmptyInnerText, boolean isRangeType) {
+            boolean hasNonEmptyInnerText, boolean isRangeType, boolean isForm) {
         addAction(node, AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT);
         addAction(node, AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT);
         addAction(node, ACTION_SHOW_ON_SCREEN);
@@ -1448,6 +1460,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
         if (isRangeType) {
             addAction(node, ACTION_SET_PROGRESS);
+        }
+
+        if (isForm && ACTION_IME_ENTER != 0) {
+            addAction(node, ACTION_IME_ENTER);
         }
     }
 

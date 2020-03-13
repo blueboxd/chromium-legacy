@@ -8,12 +8,14 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "content/common/ax_content_node_data.h"
 #include "content/common/content_export.h"
 #include "content/common/render_accessibility.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_mode.h"
 
 namespace content {
@@ -61,6 +63,11 @@ class CONTENT_EXPORT RenderAccessibilityManager
   void Reset(int32_t reset_token) override;
 
   // Communication with the browser process.
+  void HandleAccessibilityEvents(
+      const std::vector<AXContentTreeUpdate>& updates,
+      const std::vector<ui::AXEvent>& events,
+      int32_t reset_token,
+      mojom::RenderAccessibilityHost::HandleAXEventsCallback callback);
   void HandleLocationChanges(std::vector<mojom::LocationChangesPtr> changes);
 
  private:

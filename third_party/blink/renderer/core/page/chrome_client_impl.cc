@@ -931,12 +931,14 @@ void ChromeClientImpl::RequestDecode(LocalFrame* frame,
 
 void ChromeClientImpl::NotifySwapTime(LocalFrame& frame,
                                       ReportTimeCallback callback) {
+  if (!web_view_->does_composite())
+    return;
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
   WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
   if (!widget)
     return;
-  WebWidgetClient* client = widget->Client();
-  client->NotifySwapTime(ConvertToBaseOnceCallback(std::move(callback)));
+  widget->NotifySwapAndPresentationTime(
+      base::NullCallback(), ConvertToBaseOnceCallback(std::move(callback)));
 }
 
 void ChromeClientImpl::FallbackCursorModeLockCursor(LocalFrame* frame,

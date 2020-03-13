@@ -53,7 +53,6 @@ class ElementAnimator {
   // The view that is being animated.
   virtual views::View* view() const;
 
- protected:
   // The layer that needs to be animated.
   // Used by the default implementations for |FadeOut| and |AbortAnimation|.
   // Defaults to |view()->layer()|.

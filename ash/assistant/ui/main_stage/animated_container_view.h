@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/model/assistant_response_observer.h"
 #include "ash/assistant/ui/base/assistant_scroll_view.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
 
@@ -51,17 +52,13 @@ class ElementAnimator;
 //       through OnAllViewsAnimatedIn().
 class COMPONENT_EXPORT(ASSISTANT_UI) AnimatedContainerView
     : public AssistantScrollView,
-      public AssistantInteractionModelObserver {
+      public AssistantInteractionModelObserver,
+      public AssistantResponseObserver {
  public:
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
 
   explicit AnimatedContainerView(AssistantViewDelegate* delegate);
   ~AnimatedContainerView() override;
-
-  // Add an animator for a view that is displayed in this content view.
-  // Should be called for each view that needs to be animated, and is usually
-  // called from inside the |HandleResponse| callback.
-  void AddElementAnimator(std::unique_ptr<ElementAnimator> view_animator);
 
   // AssistantScrollView:
   void PreferredSizeChanged() override;
@@ -72,15 +69,15 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AnimatedContainerView
   void OnResponseChanged(const scoped_refptr<AssistantResponse>&) override;
   void OnResponseCleared() override;
 
+  // AssistantResponseObserver:
+  void OnUiElementAdded(const AssistantUiElement* ui_element) override;
+  void OnSuggestionsAdded(
+      const std::vector<const AssistantSuggestion*>& suggestions) override;
+
   // Remove all current responses/views.
   // This will abort all in progress animations, and remove all the child views
   // and their animators.
   void RemoveAllViews();
-
-  // Manually trigger the animate-in animation.
-  // Should only be used if you call |AddElementAnimator| outside of the
-  // |HandleResponse| callback.
-  void AnimateIn();
 
  protected:
   // Callback called when all (new) views have been added.
@@ -110,11 +107,15 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AnimatedContainerView
   AssistantViewDelegate* delegate() { return delegate_; }
 
  private:
+  class ScopedDisablePreferredSizeChanged;
   void SetPropagatePreferredSizeChanged(bool propagate);
 
-  void FadeOutViews();
   void ChangeResponse(const scoped_refptr<const AssistantResponse>& response);
   void AddResponse(scoped_refptr<const AssistantResponse> response);
+
+  bool IsAnimatingViews() const;
+  void AddElementAnimatorAndAnimateInView(std::unique_ptr<ElementAnimator>);
+  void FadeOutViews();
 
   static bool AnimateInObserverCallback(
       const base::WeakPtr<AnimatedContainerView>& weak_ptr,

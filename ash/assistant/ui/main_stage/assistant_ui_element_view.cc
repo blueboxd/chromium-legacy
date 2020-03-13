@@ -16,18 +16,13 @@ namespace {
 
 using assistant::util::CreateLayerAnimationSequence;
 using assistant::util::CreateOpacityElement;
-using assistant::util::CreateTransformElement;
 using assistant::util::StartLayerAnimationSequence;
-using assistant::util::StartLayerAnimationSequencesTogether;
 
 // Animation.
+constexpr base::TimeDelta kAnimateInDuration =
+    base::TimeDelta::FromMilliseconds(250);
 constexpr base::TimeDelta kAnimateOutDuration =
     base::TimeDelta::FromMilliseconds(200);
-constexpr base::TimeDelta kFadeInDuration =
-    base::TimeDelta::FromMilliseconds(250);
-constexpr base::TimeDelta kTranslateUpDuration =
-    base::TimeDelta::FromMilliseconds(250);
-constexpr int kTranslateUpDistanceDip = 32;
 
 // AssistantUiElementViewAnimator ----------------------------------------------
 
@@ -43,15 +38,11 @@ class AssistantUiElementViewAnimator : public ElementAnimator {
 
   // ElementAnimator:
   void AnimateIn(ui::CallbackLayerAnimationObserver* observer) override {
-    // As part of the animation we will translate the element up from the
-    // bottom so we need to start by translating it down.
-    TranslateDown();
-    StartLayerAnimationSequencesTogether(layer()->GetAnimator(),
-                                         {
-                                             CreateFadeInAnimation(),
-                                             CreateTranslateUpAnimation(),
-                                         },
-                                         observer);
+    StartLayerAnimationSequence(
+        layer()->GetAnimator(),
+        CreateLayerAnimationSequence(CreateOpacityElement(
+            1.f, kAnimateInDuration, gfx::Tween::Type::FAST_OUT_SLOW_IN)),
+        observer);
   }
 
   void AnimateOut(ui::CallbackLayerAnimationObserver* observer) override {
@@ -65,23 +56,6 @@ class AssistantUiElementViewAnimator : public ElementAnimator {
   ui::Layer* layer() const override { return view_->GetLayerForAnimating(); }
 
  private:
-  void TranslateDown() const {
-    gfx::Transform transform;
-    transform.Translate(0, kTranslateUpDistanceDip);
-    layer()->SetTransform(transform);
-  }
-
-  ui::LayerAnimationSequence* CreateFadeInAnimation() const {
-    return CreateLayerAnimationSequence(CreateOpacityElement(
-        1.f, kFadeInDuration, gfx::Tween::Type::FAST_OUT_SLOW_IN));
-  }
-
-  ui::LayerAnimationSequence* CreateTranslateUpAnimation() const {
-    return CreateLayerAnimationSequence(
-        CreateTransformElement(gfx::Transform(), kTranslateUpDuration,
-                               gfx::Tween::Type::FAST_OUT_SLOW_IN));
-  }
-
   AssistantUiElementView* const view_;
 };
 

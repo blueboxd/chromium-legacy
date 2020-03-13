@@ -8,9 +8,37 @@
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/main_stage/element_animator.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
+#include "ui/compositor/layer_animator.h"
 
 namespace ash {
+
+namespace {
+
+using chromeos::assistant::features::IsResponseProcessingV2Enabled;
+
+}  // namespace
+
+// AnimatedContainerView::ScopedDisablePreferredSizeChanged --------------------
+
+class AnimatedContainerView::ScopedDisablePreferredSizeChanged {
+ public:
+  ScopedDisablePreferredSizeChanged(AnimatedContainerView* view)
+      : view_(view), original_value_(view_->propagate_preferred_size_changed_) {
+    view_->SetPropagatePreferredSizeChanged(false);
+  }
+
+  ~ScopedDisablePreferredSizeChanged() {
+    view_->SetPropagatePreferredSizeChanged(original_value_);
+  }
+
+ private:
+  AnimatedContainerView* const view_;
+  const bool original_value_;
+};
+
+// AnimatedContainerView -------------------------------------------------------
 
 AnimatedContainerView::AnimatedContainerView(AssistantViewDelegate* delegate)
     : delegate_(delegate) {
@@ -19,13 +47,10 @@ AnimatedContainerView::AnimatedContainerView(AssistantViewDelegate* delegate)
 }
 
 AnimatedContainerView::~AnimatedContainerView() {
-  delegate_->RemoveInteractionModelObserver(this);
-}
+  if (IsResponseProcessingV2Enabled() && response_)
+    response_.get()->RemoveObserver(this);
 
-void AnimatedContainerView::AddElementAnimator(
-    std::unique_ptr<ElementAnimator> view_animator) {
-  DCHECK_EQ(view_animator->view()->parent(), content_view());
-  animators_.push_back(std::move(view_animator));
+  delegate_->RemoveInteractionModelObserver(this);
 }
 
 void AnimatedContainerView::PreferredSizeChanged() {
@@ -61,7 +86,29 @@ void AnimatedContainerView::OnResponseCleared() {
   queued_response_ = nullptr;
 }
 
+void AnimatedContainerView::OnUiElementAdded(
+    const AssistantUiElement* ui_element) {
+  std::unique_ptr<ElementAnimator> animator = HandleUiElement(ui_element);
+  if (animator)
+    AddElementAnimatorAndAnimateInView(std::move(animator));
+}
+
+void AnimatedContainerView::OnSuggestionsAdded(
+    const std::vector<const AssistantSuggestion*>& suggestions) {
+  // We can prevent over-propagation of the PreferredSizeChanged event by
+  // stopping propagation during batched view hierarchy add/remove operations.
+  ScopedDisablePreferredSizeChanged disable_preferred_size_changed(this);
+  for (const auto* suggestion : suggestions) {
+    auto animator = HandleSuggestion(suggestion);
+    if (animator)
+      AddElementAnimatorAndAnimateInView(std::move(animator));
+  }
+}
+
 void AnimatedContainerView::RemoveAllViews() {
+  if (IsResponseProcessingV2Enabled() && response_)
+    response_.get()->RemoveObserver(this);
+
   // We explicitly abort all in progress animations here because we will remove
   // their views immediately and we want to ensure that any animation observers
   // will be notified of an abort, not an animation completion.  Otherwise there
@@ -69,12 +116,12 @@ void AnimatedContainerView::RemoveAllViews() {
   for (const auto& animator : animators_)
     animator->AbortAnimation();
 
+  animators_.clear();
+
   // We can prevent over-propagation of the PreferredSizeChanged event by
   // stopping propagation during batched view hierarchy add/remove operations.
-  SetPropagatePreferredSizeChanged(false);
-  animators_.clear();
+  ScopedDisablePreferredSizeChanged disable_preferred_size_changed(this);
   content_view()->RemoveAllChildViews(/*delete_children=*/true);
-  SetPropagatePreferredSizeChanged(true);
 
   // We inform our derived class all views have been removed.
   OnAllViewsRemoved();
@@ -83,32 +130,6 @@ void AnimatedContainerView::RemoveAllViews() {
   // our shared pointer. This allows resources associated with the underlying
   // views to be freed, provided there are no other usages.
   response_.reset();
-}
-
-void AnimatedContainerView::AnimateIn() {
-  // We don't allow processing of events while animating.
-  set_can_process_events_within_subtree(false);
-
-  auto* animation_observer = new ui::CallbackLayerAnimationObserver(
-      /*animation_ended_callback=*/base::BindRepeating(
-          AnimatedContainerView::AnimateInObserverCallback,
-          weak_factory_.GetWeakPtr()));
-
-  for (const auto& animator : animators_)
-    animator->AnimateIn(animation_observer);
-
-  // Set the observer to active so that we receive callback events.
-  animation_observer->SetActive();
-}
-
-std::unique_ptr<ElementAnimator> AnimatedContainerView::HandleUiElement(
-    const AssistantUiElement* ui_element) {
-  return nullptr;
-}
-
-std::unique_ptr<ElementAnimator> AnimatedContainerView::HandleSuggestion(
-    const AssistantSuggestion* suggestion) {
-  return nullptr;
 }
 
 void AnimatedContainerView::SetPropagatePreferredSizeChanged(bool propagate) {
@@ -123,31 +144,21 @@ void AnimatedContainerView::SetPropagatePreferredSizeChanged(bool propagate) {
     PreferredSizeChanged();
 }
 
-void AnimatedContainerView::FadeOutViews() {
-  // If there's already an animation in progress, there's nothing for us to do.
-  if (fade_out_in_progress_)
-    return;
+std::unique_ptr<ElementAnimator> AnimatedContainerView::HandleUiElement(
+    const AssistantUiElement* ui_element) {
+  return nullptr;
+}
 
-  // We don't allow processing of events while waiting for the next query
-  // response. The contents will be faded out, so it should not be interactive.
-  set_can_process_events_within_subtree(false);
-
-  fade_out_in_progress_ = true;
-
-  auto* animation_observer = new ui::CallbackLayerAnimationObserver(
-      /*animation_ended_callback=*/base::BindRepeating(
-          AnimatedContainerView::FadeOutObserverCallback,
-          weak_factory_.GetWeakPtr()));
-
-  for (const auto& animator : animators_)
-    animator->FadeOut(animation_observer);
-
-  // Set the observer to active so that we receive callback events.
-  animation_observer->SetActive();
+std::unique_ptr<ElementAnimator> AnimatedContainerView::HandleSuggestion(
+    const AssistantSuggestion* suggestion) {
+  return nullptr;
 }
 
 void AnimatedContainerView::ChangeResponse(
     const scoped_refptr<const AssistantResponse>& response) {
+  if (IsResponseProcessingV2Enabled() && response_)
+    response_.get()->RemoveObserver(this);
+
   // We may have to postpone the response while we animate the previous response
   // off stage. We use a shared pointer to ensure that any views we add to the
   // view hierarchy can be removed before the underlying views are destroyed.
@@ -183,9 +194,13 @@ void AnimatedContainerView::ChangeResponse(
 
 void AnimatedContainerView::AddResponse(
     scoped_refptr<const AssistantResponse> response) {
-  // The response should be fully processed before it is presented.
-  DCHECK_EQ(AssistantResponse::ProcessingState::kProcessed,
-            response->processing_state());
+  if (!IsResponseProcessingV2Enabled()) {
+    // The response should be fully processed before it is presented.
+    // Note that ProcessingState is only used in v1 of response processing.
+    DCHECK_EQ(AssistantResponse::ProcessingState::kProcessed,
+              response->processing_state());
+  }
+
   // All children should be animated out and removed before the new response is
   // added.
   DCHECK(content_view()->children().empty());
@@ -194,40 +209,71 @@ void AnimatedContainerView::AddResponse(
   // destroyed before we have removed associated views from the view hierarchy.
   response_ = std::move(response);
 
-  // Because the views for the response are animated in together, we can stop
-  // propagation of PreferredSizeChanged events until all views have been added
-  // to the view hierarchy to reduce layout passes.
-  SetPropagatePreferredSizeChanged(false);
-
-  std::vector<std::unique_ptr<ElementAnimator>> animators;
-
-  // Create views (and animators) for the suggestions belonging to the response.
-  for (const auto* suggestion : response_->GetSuggestions()) {
-    auto animator = HandleSuggestion(suggestion);
-    if (animator)
-      animators.push_back(std::move(animator));
+  if (IsResponseProcessingV2Enabled()) {
+    // In response processing v2, we observe the |response_| so that we handle
+    // new suggestions and UI elements that continue to stream in.
+    response_.get()->AddObserver(this);
   }
 
-  // Create views (and animators) for the UI elements belonging to the response.
-  for (const auto& ui_element : response_->GetUiElements()) {
-    auto animator = HandleUiElement(ui_element.get());
-    if (animator)
-      animators.push_back(std::move(animator));
-  }
+  // We can prevent over-propagation of the PreferredSizeChanged event by
+  // stopping propagation during batched view hierarchy add/remove operations.
+  ScopedDisablePreferredSizeChanged disable_preferred_size_changed(this);
 
-  // Cache the animators that were just created.
-  std::move(animators.begin(), animators.end(), std::back_inserter(animators_));
+  // Create views/animators for the suggestions and UI elements belonging to the
+  // |response_|. Note that this will also cause them to begin animating in.
+  OnSuggestionsAdded(response_->GetSuggestions());
+  for (const auto& ui_element : response_->GetUiElements())
+    OnUiElementAdded(ui_element.get());
+}
 
-  // Now that the response for the current query has been added to the view
-  // hierarchy, we can restart propagation of PreferredSizeChanged events since
-  // all views have been added to the view hierarchy. Note we do not re-enable
-  // processing of events yet, as that will happen once the enter animations
-  // have completed.
-  SetPropagatePreferredSizeChanged(true);
+bool AnimatedContainerView::IsAnimatingViews() const {
+  return std::any_of(animators_.begin(), animators_.end(),
+                     [](const std::unique_ptr<ElementAnimator>& animator) {
+                       return animator->layer()->GetAnimator()->is_animating();
+                     });
+}
 
-  // Now that we've received and added all views for the current query response,
-  // we can animate them in.
-  AnimateIn();
+void AnimatedContainerView::AddElementAnimatorAndAnimateInView(
+    std::unique_ptr<ElementAnimator> animator) {
+  DCHECK_EQ(animator->view()->parent(), content_view());
+  animators_.push_back(std::move(animator));
+
+  // We don't allow processing of events while animating.
+  set_can_process_events_within_subtree(false);
+
+  auto* animation_observer = new ui::CallbackLayerAnimationObserver(
+      /*animation_ended_callback=*/base::BindRepeating(
+          AnimatedContainerView::AnimateInObserverCallback,
+          weak_factory_.GetWeakPtr()));
+
+  // Start animating in the view.
+  animators_.back()->AnimateIn(animation_observer);
+
+  // Set the observer to active so that we receive callback events.
+  animation_observer->SetActive();
+}
+
+void AnimatedContainerView::FadeOutViews() {
+  // If there's already an animation in progress, there's nothing for us to do.
+  if (fade_out_in_progress_)
+    return;
+
+  fade_out_in_progress_ = true;
+
+  // We don't allow processing of events while waiting for the next query
+  // response. The contents will be faded out, so it should not be interactive.
+  set_can_process_events_within_subtree(false);
+
+  auto* animation_observer = new ui::CallbackLayerAnimationObserver(
+      /*animation_ended_callback=*/base::BindRepeating(
+          AnimatedContainerView::FadeOutObserverCallback,
+          weak_factory_.GetWeakPtr()));
+
+  for (const auto& animator : animators_)
+    animator->FadeOut(animation_observer);
+
+  // Set the observer to active so that we receive callback events.
+  animation_observer->SetActive();
 }
 
 bool AnimatedContainerView::AnimateInObserverCallback(
@@ -243,11 +289,15 @@ bool AnimatedContainerView::AnimateInObserverCallback(
   if (observer.aborted_count())
     return true;
 
-  // Now that all views have been animated in we make it interactive.
-  weak_ptr->set_can_process_events_within_subtree(true);
-
-  // Inform our derived class all views have been animated in.
-  weak_ptr->OnAllViewsAnimatedIn();
+  // If there are no further animations in progress, we can make our view
+  // interactive again and notify derived classes that all views have animated
+  // in. Note that in response processing v2, another animation may have kicked
+  // off prior to this animation finishing. Once all animations have completed
+  // interactivity will be restored and derivate classes notified.
+  if (!weak_ptr->IsAnimatingViews()) {
+    weak_ptr->set_can_process_events_within_subtree(true);
+    weak_ptr->OnAllViewsAnimatedIn();
+  }
 
   // We return true to delete our observer.
   return true;

@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
@@ -240,10 +241,11 @@ void AuthenticatedLeakCheck::DoLeakRequest(
 }
 
 void AuthenticatedLeakCheck::OnLookupSingleLeakResponse(
-    std::unique_ptr<SingleLookupResponse> response) {
+    std::unique_ptr<SingleLookupResponse> response,
+    base::Optional<LeakDetectionError> error) {
   request_.reset();
   if (!response) {
-    delegate_->OnError(LeakDetectionError::kInvalidServerResponse);
+    delegate_->OnError(*error);
     return;
   }
 

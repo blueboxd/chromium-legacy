@@ -8,6 +8,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_api.pb.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/leak_detection/single_lookup_response.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,6 +21,7 @@ constexpr char kUsernameHash[] = "ABC";
 constexpr char kEncryptedPayload[] = "dfughidsgfr56";
 
 using ::testing::Eq;
+using ::testing::IsNull;
 
 class LeakDetectionRequestTest : public testing::Test {
  public:
@@ -48,7 +50,8 @@ TEST_F(LeakDetectionRequestTest, ServerError) {
   request().LookupSingleLeak(test_url_loader_factory(), kAccessToken,
                              {kUsernameHash, kEncryptedPayload},
                              callback.Get());
-  EXPECT_CALL(callback, Run(Eq(nullptr)));
+  EXPECT_CALL(callback,
+              Run(IsNull(), Eq(LeakDetectionError::kInvalidServerResponse)));
   task_env().RunUntilIdle();
 
   histogram_tester().ExpectUniqueSample(
@@ -57,6 +60,29 @@ TEST_F(LeakDetectionRequestTest, ServerError) {
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.LeakDetection.HttpResponseCode",
       net::HTTP_INTERNAL_SERVER_ERROR, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.NetErrorCode",
+      -net::ERR_HTTP_RESPONSE_CODE_FAILURE, 1);
+}
+
+TEST_F(LeakDetectionRequestTest, QuotaLimit) {
+  test_url_loader_factory()->AddResponse(
+      LeakDetectionRequest::kLookupSingleLeakEndpoint, "",
+      net::HTTP_TOO_MANY_REQUESTS);
+
+  base::MockCallback<LeakDetectionRequest::LookupSingleLeakCallback> callback;
+  request().LookupSingleLeak(test_url_loader_factory(), kAccessToken,
+                             {kUsernameHash, kEncryptedPayload},
+                             callback.Get());
+  EXPECT_CALL(callback, Run(IsNull(), Eq(LeakDetectionError::kQuotaLimit)));
+  task_env().RunUntilIdle();
+
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.LookupSingleLeakResponseResult",
+      LeakDetectionRequest::LeakLookupResponseResult::kFetchError, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.HttpResponseCode",
+      net::HTTP_TOO_MANY_REQUESTS, 1);
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.LeakDetection.NetErrorCode",
       -net::ERR_HTTP_RESPONSE_CODE_FAILURE, 1);
@@ -72,7 +98,8 @@ TEST_F(LeakDetectionRequestTest, MalformedServerResponse) {
   request().LookupSingleLeak(test_url_loader_factory(), kAccessToken,
                              {kUsernameHash, kEncryptedPayload},
                              callback.Get());
-  EXPECT_CALL(callback, Run(Eq(nullptr)));
+  EXPECT_CALL(callback,
+              Run(IsNull(), Eq(LeakDetectionError::kInvalidServerResponse)));
   task_env().RunUntilIdle();
 
   histogram_tester().ExpectUniqueSample(
@@ -94,7 +121,8 @@ TEST_F(LeakDetectionRequestTest, WellformedServerResponse) {
   request().LookupSingleLeak(test_url_loader_factory(), kAccessToken,
                              {kUsernameHash, kEncryptedPayload},
                              callback.Get());
-  EXPECT_CALL(callback, Run(testing::Pointee(SingleLookupResponse())));
+  EXPECT_CALL(callback,
+              Run(testing::Pointee(SingleLookupResponse()), Eq(base::nullopt)));
   task_env().RunUntilIdle();
 
   histogram_tester().ExpectUniqueSample(

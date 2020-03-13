@@ -69,4 +69,15 @@ void GestureNavigationScreenHandler::Initialize() {
   }
 }
 
+void GestureNavigationScreenHandler::RegisterMessages() {
+  AddCallback("handleGesturePageChange",
+              &GestureNavigationScreenHandler::HandleGesturePageChange);
+  BaseScreenHandler::RegisterMessages();
+}
+
+void GestureNavigationScreenHandler::HandleGesturePageChange(
+    const std::string& new_page) {
+  screen_->GesturePageChange(new_page);
+}
+
 }  // namespace chromeos

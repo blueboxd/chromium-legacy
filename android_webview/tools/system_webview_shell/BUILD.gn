@@ -16,6 +16,17 @@ group("system_webview_shell") {
   ]
 }
 
+declare_args() {
+  # Android package name to use for system_webview_shell_apk (the WebView shell
+  # browser). You can change this package name to work around signing key
+  # conflicts (INSTALL_FAILED_UPDATE_INCOMPATIBLE) on devices/emulators which
+  # have the shell browser preinstalled under the default package name.
+  system_webview_shell_package_name = "org.chromium.webview_shell"
+}
+
+system_webview_shell_android_manifest =
+    "$root_gen_dir/android_webview/system_webview_shell_apk/AndroidManifest.xml"
+
 android_apk("system_webview_shell_apk") {
   apk_name = "SystemWebViewShell"
   sources = [
@@ -35,7 +46,8 @@ android_apk("system_webview_shell_apk") {
     "apk/src/org/chromium/webview_shell/WebViewTracingActivity.java",
     "apk/src/org/chromium/webview_shell/WebViewWithClipPath.java",
   ]
-  android_manifest = "apk/AndroidManifest.xml"
+  android_manifest = system_webview_shell_android_manifest
+  android_manifest_dep = ":system_webview_shell_manifest"
   target_sdk_version = 29
   deps = [
     ":system_webview_shell_apk_resources",
@@ -43,6 +55,12 @@ android_apk("system_webview_shell_apk") {
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/guava:guava_android_java",
   ]
+}
+
+jinja_template("system_webview_shell_manifest") {
+  input = "apk/AndroidManifest.xml"
+  output = system_webview_shell_android_manifest
+  variables = [ "manifest_package=$system_webview_shell_package_name" ]
 }
 
 android_resources("system_webview_shell_apk_resources") {

@@ -8,9 +8,13 @@ jumbo_component("crdtp") {
   sources = [
     "crdtp/cbor.cc",
     "crdtp/cbor.h",
+    "crdtp/dispatch.cc",
+    "crdtp/dispatch.h",
     "crdtp/error_support.cc",
     "crdtp/error_support.h",
     "crdtp/export.h",
+    "crdtp/find_by_first.h",
+    "crdtp/frontend_channel.h",
     "crdtp/glue.h",
     "crdtp/json.cc",
     "crdtp/json.h",
@@ -18,6 +22,7 @@ jumbo_component("crdtp") {
     "crdtp/serializable.cc",
     "crdtp/serializable.h",
     "crdtp/serializer_traits.h",
+    "crdtp/span.cc",
     "crdtp/span.h",
     "crdtp/status.cc",
     "crdtp/status.h",
@@ -47,7 +52,9 @@ source_set("crdtp_test") {
   testonly = true
   sources = [
     "crdtp/cbor_test.cc",
+    "crdtp/dispatch_test.cc",
     "crdtp/error_support_test.cc",
+    "crdtp/find_by_first_test.cc",
     "crdtp/glue_test.cc",
     "crdtp/json_test.cc",
     "crdtp/serializable_test.cc",

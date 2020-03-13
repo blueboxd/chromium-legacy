@@ -181,6 +181,9 @@ void BulkLeakCheckService::OnError(LeakDetectionError error) {
     case LeakDetectionError::kNetworkError:
       state_ = State::kNetworkError;
       break;
+    case LeakDetectionError::kQuotaLimit:
+      state_ = State::kQuotaLimit;
+      break;
   }
   bulk_leak_check_.reset();
   NotifyStateChanged();

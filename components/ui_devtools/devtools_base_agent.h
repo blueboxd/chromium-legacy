@@ -38,12 +38,14 @@ class UiDevToolsBaseAgent : public UiDevToolsAgent,
 
   // Common methods between all generated Backends, subclasses may
   // choose to override them (but not necessary).
-  protocol::Response enable() override { return protocol::Response::OK(); }
+  protocol::Response enable() override { return protocol::Response::Success(); }
 
-  protocol::Response disable() override { return protocol::Response::OK(); }
+  protocol::Response disable() override {
+    return protocol::Response::Success();
+  }
 
  protected:
-  UiDevToolsBaseAgent() {}
+  UiDevToolsBaseAgent() = default;
   typename DomainMetainfo::FrontendClass* frontend() const {
     return frontend_.get();
   }

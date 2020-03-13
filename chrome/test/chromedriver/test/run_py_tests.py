@@ -89,10 +89,6 @@ _NEGATIVE_FILTER = [
 
 _OS_SPECIFIC_FILTER = {}
 _OS_SPECIFIC_FILTER['win'] = [
-    # https://crbug.com/1036055
-    'MobileEmulationCapabilityTest.testClickElement',
-    # https://crbug.com/1036636
-    'MobileEmulationCapabilityTest.testTapElement',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=299
     'ChromeLogPathCapabilityTest.testChromeLogPath',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=1011095
@@ -101,14 +97,8 @@ _OS_SPECIFIC_FILTER['win'] = [
     'ChromeDownloadDirTest.testFileDownloadWithGetHeadless',
 ]
 _OS_SPECIFIC_FILTER['linux'] = [
-    # https://crbug.com/1036055
-    'MobileEmulationCapabilityTest.testClickElement',
-    # https://crbug.com/1036636
-    'MobileEmulationCapabilityTest.testTapElement',
 ]
 _OS_SPECIFIC_FILTER['mac'] = [
-    # https://crbug.com/1036055
-    'MobileEmulationCapabilityTest.testClickElement',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1927
     # https://crbug.com/1036636
     'MobileEmulationCapabilityTest.testTapElement',

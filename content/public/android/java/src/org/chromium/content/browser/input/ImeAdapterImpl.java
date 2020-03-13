@@ -759,7 +759,7 @@ public class ImeAdapterImpl
         }
     }
 
-    boolean performEditorAction(int actionCode) {
+    public boolean performEditorAction(int actionCode) {
         if (!isValid()) return false;
 
         // If mTextInputAction has been specified (indicating an enterKeyHint

@@ -122,7 +122,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override;
   void AccessibilityModeChanged(const ui::AXMode& mode) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
 
   void PerformAction(const ui::AXActionData& data);
   void Reset(int32_t reset_token);
@@ -161,12 +160,14 @@ class CONTENT_EXPORT RenderAccessibilityImpl
     ax::mojom::EventFrom event_from;
   };
 
+  // Callback that will be called from the browser upon handling the message
+  // previously sent to it via SendPendingAccessibilityEvents().
+  void OnAccessibilityEventsHandled();
+
   // RenderFrameObserver implementation.
   void OnDestruct() override;
 
   // Handlers for messages from the browser to the renderer.
-  void OnEventsAck(int ack_token);
-
   void OnHitTest(const gfx::Point& point,
                  ax::mojom::Event event_to_fire,
                  int action_request_id);
@@ -250,9 +251,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   // Nonzero if the browser requested we reset the accessibility state.
   // We need to return this token in the next IPC.
   int reset_token_;
-
-  // Token to send with event messages so we know when they're acknowledged.
-  int ack_token_;
 
   // Whether or not we've injected a stylesheet in this document
   // (only when debugging flags are enabled, never under normal circumstances).

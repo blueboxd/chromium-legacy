@@ -701,6 +701,7 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
 
   blink::WebWidgetClient web_widget_client;
   blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, frame);
+  web_view->DidAttachLocalMainFrame();
 
   base::Value html(
       ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
@@ -938,6 +939,7 @@ void PrepareFrameAndViewForPrint::CopySelection(
       blink::WebLocalFrame::CreateMainFrame(web_view, this, nullptr, nullptr);
   frame_.Reset(main_frame);
   blink::WebFrameWidget::CreateForMainFrame(this, main_frame);
+  web_view->DidAttachLocalMainFrame();
   node_to_print_.Reset();
 
   owns_web_view_ = true;

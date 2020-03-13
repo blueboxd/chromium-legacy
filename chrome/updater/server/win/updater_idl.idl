@@ -7,6 +7,17 @@ import "ocidl.idl";
 
 [
   object,
+  oleautomation,
+  uuid(7B416CFD-4216-4FD6-BD83-7C586054676E),
+  helpstring("IUpdaterObserver Interface"),
+  pointer_default(unique)
+]
+interface IUpdaterObserver : IUnknown {
+  HRESULT OnComplete([in] int error_code);
+};
+
+[
+  object,
   dual,
   uuid(63B8FFB1-5314-48C9-9C57-93EC8BC6184B),
   helpstring("IUpdater Interface"),
@@ -20,7 +31,7 @@ interface IUpdater : IUnknown {
                    [in, string] const WCHAR* version,
                    [in, string] const WCHAR* existence_checker_path);
   HRESULT Update([in, string] const WCHAR* app_id);
-  HRESULT UpdateAll();
+  HRESULT UpdateAll([in] IUpdaterObserver* observer);
 };
 
 [

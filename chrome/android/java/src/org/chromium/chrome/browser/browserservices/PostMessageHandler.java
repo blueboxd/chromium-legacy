@@ -15,6 +15,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerificationListener;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.MessagePort;
 import org.chromium.content_public.browser.MessagePort.MessageCallback;
 import org.chromium.content_public.browser.NavigationHandle;

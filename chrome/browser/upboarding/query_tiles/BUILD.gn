@@ -23,7 +23,11 @@ group("query_tiles") {
 }
 
 source_set("public") {
-  sources = [ "tile_service.h" ]
+  sources = [
+    "query_tile_entry.cc",
+    "query_tile_entry.h",
+    "tile_service.h",
+  ]
 
   deps = []
 

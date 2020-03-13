@@ -1135,6 +1135,140 @@ TEST_F(BrowserControlsTest, MAYBE(DontAffectVHUnitsUseLayoutSize)) {
   EXPECT_EQ(800, GetFrame()->View()->ViewportSizeForViewportUnits().Height());
 }
 
+// Ensure that vh units are correctly calculated when a top controls min-height
+// is set.
+TEST_F(BrowserControlsTest, MAYBE(VHUnitsWithTopMinHeight)) {
+  // Initialize with the browser controls showing.
+  // Top controls height: 100, top controls min-height: 20.
+  WebViewImpl* web_view = Initialize("vh-height.html");
+  web_view->ResizeWithBrowserControls(WebSize(400, 300), WebSize(400, 300),
+                                      {100, 20, 0, 0, false, true});
+  web_view->GetBrowserControls().UpdateConstraintsAndState(
+      cc::BrowserControlsState::kBoth, cc::BrowserControlsState::kShown);
+  web_view->GetBrowserControls().SetShownRatio(1, 1);
+  UpdateAllLifecyclePhases();
+
+  ASSERT_EQ(100.f, web_view->GetBrowserControls().ContentOffset());
+
+  // 'vh' units should be based on the viewport when the browser controls are
+  // hidden. However, the viewport height will be limited by the min-height
+  // since the top controls can't completely hide.
+  Element* abs_pos = GetElementById(WebString::FromUTF8("abs"));
+  Element* fixed_pos = GetElementById(WebString::FromUTF8("fixed"));
+  float div_height = 0.5f * (300 + (100 - 20));
+  EXPECT_FLOAT_EQ(div_height, abs_pos->getBoundingClientRect()->height());
+  EXPECT_FLOAT_EQ(div_height, fixed_pos->getBoundingClientRect()->height());
+
+  // The size used for viewport units should be reduced by the top controls
+  // min-height.
+  EXPECT_EQ(380, GetFrame()->View()->ViewportSizeForViewportUnits().Height());
+
+  // Scroll the top controls to hide. They won't scroll past the min-height.
+  VerticalScroll(-100.f);
+  web_view->ResizeWithBrowserControls(WebSize(400, 380), WebSize(400, 380),
+                                      {100, 20, 0, 0, false, false});
+  UpdateAllLifecyclePhases();
+
+  ASSERT_EQ(20.f, web_view->GetBrowserControls().ContentOffset());
+
+  // vh units should be static with respect to the browser controls so neither
+  // <div> should change size are a result of the browser controls hiding.
+  EXPECT_FLOAT_EQ(190.f, abs_pos->getBoundingClientRect()->height());
+  EXPECT_FLOAT_EQ(190.f, fixed_pos->getBoundingClientRect()->height());
+
+  // The viewport size used for vh units should not change as a result of top
+  // controls hiding.
+  ASSERT_EQ(380, GetFrame()->View()->ViewportSizeForViewportUnits().Height());
+}
+
+// Ensure that vh units are correctly calculated when a bottom controls
+// min-height is set.
+TEST_F(BrowserControlsTest, MAYBE(VHUnitsWithBottomMinHeight)) {
+  // Initialize with the browser controls showing.
+  // Top controls height: 100, top controls min-height: 20.
+  // Bottom controls height: 50, bottom controls min-height: 10.
+  WebViewImpl* web_view = Initialize("vh-height.html");
+  web_view->ResizeWithBrowserControls(WebSize(400, 250), WebSize(400, 250),
+                                      {100, 20, 50, 10, false, true});
+  web_view->GetBrowserControls().UpdateConstraintsAndState(
+      cc::BrowserControlsState::kBoth, cc::BrowserControlsState::kShown);
+  web_view->GetBrowserControls().SetShownRatio(1, 1);
+  UpdateAllLifecyclePhases();
+
+  EXPECT_FLOAT_EQ(100.f, web_view->GetBrowserControls().ContentOffset());
+
+  // 'vh' units should be based on the viewport when the browser controls are
+  // hidden. However, the viewport height will be limited by the min-height
+  // since the top and bottom controls can't completely hide.
+  Element* abs_pos = GetElementById(WebString::FromUTF8("abs"));
+  Element* fixed_pos = GetElementById(WebString::FromUTF8("fixed"));
+  float div_height = 0.5f * (250 + (100 - 20) + (50 - 10));
+  EXPECT_FLOAT_EQ(div_height, abs_pos->getBoundingClientRect()->height());
+  EXPECT_FLOAT_EQ(div_height, fixed_pos->getBoundingClientRect()->height());
+
+  // The size used for viewport units should be reduced by the top/bottom
+  // controls min-height.
+  EXPECT_EQ(370, GetFrame()->View()->ViewportSizeForViewportUnits().Height());
+
+  // Scroll the controls to hide. They won't scroll past the min-height.
+  VerticalScroll(-100.f);
+  web_view->ResizeWithBrowserControls(WebSize(400, 370), WebSize(400, 370),
+                                      {100, 20, 50, 10, false, false});
+  UpdateAllLifecyclePhases();
+
+  EXPECT_FLOAT_EQ(20.f, web_view->GetBrowserControls().ContentOffset());
+  EXPECT_FLOAT_EQ(10.f, web_view->GetBrowserControls().BottomContentOffset());
+
+  // vh units should be static with respect to the browser controls so neither
+  // <div> should change size are a result of the browser controls hiding.
+  EXPECT_FLOAT_EQ(185.f, abs_pos->getBoundingClientRect()->height());
+  EXPECT_FLOAT_EQ(185.f, fixed_pos->getBoundingClientRect()->height());
+
+  // The viewport size used for vh units should not change as a result of the
+  // controls hiding.
+  ASSERT_EQ(370, GetFrame()->View()->ViewportSizeForViewportUnits().Height());
+}
+
+// Ensure that vh units are correctly calculated with changing min-heights.
+TEST_F(BrowserControlsTest, MAYBE(VHUnitsWithMinHeightsChanging)) {
+  // Initialize with the browser controls showing.
+  // Top controls height: 100, top controls min-height: 20.
+  // Bottom controls height: 50, bottom controls min-height: 10.
+  WebViewImpl* web_view = Initialize("vh-height.html");
+  web_view->ResizeWithBrowserControls(WebSize(400, 250), WebSize(400, 250),
+                                      {100, 20, 50, 10, false, true});
+  web_view->GetBrowserControls().UpdateConstraintsAndState(
+      cc::BrowserControlsState::kBoth, cc::BrowserControlsState::kShown);
+  web_view->GetBrowserControls().SetShownRatio(1, 1);
+  UpdateAllLifecyclePhases();
+
+  EXPECT_FLOAT_EQ(100.f, web_view->GetBrowserControls().ContentOffset());
+
+  // 'vh' units should be based on the viewport when the browser controls are
+  // hidden. However, the viewport height will be limited by the min-height
+  // since the top and bottom controls can't completely hide.
+  Element* abs_pos = GetElementById(WebString::FromUTF8("abs"));
+  Element* fixed_pos = GetElementById(WebString::FromUTF8("fixed"));
+  float div_height = 0.5f * (250 + (100 - 20) + (50 - 10));
+  EXPECT_FLOAT_EQ(div_height, abs_pos->getBoundingClientRect()->height());
+  EXPECT_FLOAT_EQ(div_height, fixed_pos->getBoundingClientRect()->height());
+
+  // The size used for viewport units should be reduced by the top/bottom
+  // controls min-height.
+  EXPECT_EQ(370, GetFrame()->View()->ViewportSizeForViewportUnits().Height());
+
+  // Make the min-heights 0.
+  web_view->ResizeWithBrowserControls(WebSize(400, 250), WebSize(400, 250),
+                                      {100, 0, 50, 0, false, true});
+  UpdateAllLifecyclePhases();
+
+  // The viewport size used for vh units should be updated to reflect the change
+  // to the min-heights.
+  float height = 250 + (100 - 0) + (50 - 0);
+  ASSERT_EQ(height,
+            GetFrame()->View()->ViewportSizeForViewportUnits().Height());
+}
+
 // This tests that the viewport remains anchored when browser controls are
 // brought in while the document is fully scrolled. This normally causes
 // clamping of the visual viewport to keep it bounded by the layout viewport

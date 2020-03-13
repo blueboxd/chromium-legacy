@@ -4,6 +4,7 @@
 
 #include "content/browser/scheduler/responsiveness/calculator.h"
 
+#include "build/build_config.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -12,6 +13,7 @@ namespace content {
 namespace responsiveness {
 
 using JankType = Calculator::JankType;
+using ::testing::_;
 
 namespace {
 // Copied from calculator.cc.
@@ -33,6 +35,11 @@ class ResponsivenessCalculatorTest : public testing::Test {
   void SetUp() override {
     calculator_ = std::make_unique<testing::StrictMock<FakeCalculator>>();
     last_calculation_time_ = calculator_->GetLastCalculationTime();
+#if defined(OS_ANDROID)
+    base::android::ApplicationStatusListener::NotifyApplicationStateChange(
+        base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
+    base::RunLoop().RunUntilIdle();
+#endif
   }
 
   void AddEventUI(int queue_time_in_ms,
@@ -339,7 +346,7 @@ TEST_F(ResponsivenessCalculatorTest, LongDelay) {
   base_time += 10 * kMeasurementIntervalInMs;
   AddEventUI(base_time, base_time, base_time + 1);
 
-  // No call to EmitResponsiveness is expected.
+  EXPECT_CALL(*calculator_, EmitResponsiveness(_, _)).Times(0);
 }
 
 // A long event means that the machine likely went to sleep.
@@ -347,8 +354,27 @@ TEST_F(ResponsivenessCalculatorTest, LongEvent) {
   int base_time = 105;
   AddEventUI(base_time, base_time, base_time + 10 * kMeasurementIntervalInMs);
 
-  // No call to EmitResponsiveness is expected.
+  EXPECT_CALL(*calculator_, EmitResponsiveness(_, _)).Times(0);
 }
+
+#if defined(OS_ANDROID)
+// Metric should not be recorded when application is in background.
+TEST_F(ResponsivenessCalculatorTest, ApplicationInBackground) {
+  constexpr int kQueueTime = 35;
+  constexpr int kStartTime = 40;
+  constexpr int kFinishTime = kStartTime + kJankThresholdInMs + 5;
+  AddEventUI(kQueueTime, kStartTime, kFinishTime);
+
+  base::android::ApplicationStatusListener::NotifyApplicationStateChange(
+      base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES);
+  base::RunLoop().RunUntilIdle();
+
+  AddEventUI(kQueueTime, kStartTime + 1, kFinishTime + 1);
+
+  EXPECT_CALL(*calculator_, EmitResponsiveness(_, _)).Times(0);
+  TriggerCalculation();
+}
+#endif
 
 // An event execution that crosses a measurement interval boundary should count
 // towards both measurement intervals.

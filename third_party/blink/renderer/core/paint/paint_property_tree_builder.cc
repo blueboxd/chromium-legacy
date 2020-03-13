@@ -549,8 +549,20 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
       //   DCHECK_EQ(scroller_properties->Scroll(), context_.current.scroll);
       // However there is a bug that AncestorOverflowLayer() may be computed
       // incorrectly with clip escaping involved.
-      if (scroller_properties &&
-          scroller_properties->Scroll() == context_.current.scroll) {
+      bool nearest_scroller_is_clip =
+          scroller_properties &&
+          scroller_properties->Scroll() == context_.current.scroll;
+
+      // Additionally, we also want to make sure that the nearest scroller
+      // actually translates this node. If it doesn't (e.g. a position fixed
+      // node in a scrolling document), there's no point in adding a constraint
+      // since scrolling won't affect it. Indeed, if we do add it, the
+      // compositor assumes scrolling does affect it and produces incorrect
+      // results.
+      bool translates_with_nearest_scroller =
+          context_.current.transform->NearestScrollTranslationNode()
+              .ScrollNode() == context_.current.scroll;
+      if (nearest_scroller_is_clip && translates_with_nearest_scroller) {
         const StickyPositionScrollingConstraints& layout_constraint =
             layer->AncestorOverflowLayer()
                 ->GetScrollableArea()
@@ -1018,8 +1030,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
 
         OnUpdateClip(properties_->UpdateMaskClip(
             *context_.current.clip,
-            ClipPaintPropertyNode::State{context_.current.transform,
-                                         FloatRoundedRect(combined_clip)}));
+            ClipPaintPropertyNode::State(context_.current.transform,
+                                         FloatRoundedRect(combined_clip))));
         output_clip = properties_->MaskClip();
       } else {
         OnClearClip(properties_->ClearMaskClip());
@@ -1284,10 +1296,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateFragmentClip() {
 
   if (NeedsPaintPropertyUpdate()) {
     if (context_.fragment_clip) {
-      const auto& clip_rect = ToSnappedClipRect(*context_.fragment_clip);
+      const auto& clip_rect = *context_.fragment_clip;
       OnUpdateClip(properties_->UpdateFragmentClip(
           *context_.current.clip,
-          ClipPaintPropertyNode::State{context_.current.transform, clip_rect}));
+          ClipPaintPropertyNode::State(context_.current.transform,
+                                       FloatRoundedRect(FloatRect(clip_rect)),
+                                       ToSnappedClipRect(clip_rect))));
     } else {
       OnClearClip(properties_->ClearFragmentClip());
     }
@@ -1315,11 +1329,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateCssClip() {
       // object must be a container for absolute position descendants, and will
       // copy from in-flow context later at updateOutOfFlowContext() step.
       DCHECK(object_.CanContainAbsolutePositionObjects());
-      const auto& clip_rect = ToSnappedClipRect(
-          ToLayoutBox(object_).ClipRect(context_.current.paint_offset));
+      const auto& clip_rect =
+          ToLayoutBox(object_).ClipRect(context_.current.paint_offset);
       OnUpdateClip(properties_->UpdateCssClip(
           *context_.current.clip,
-          ClipPaintPropertyNode::State{context_.current.transform, clip_rect}));
+          ClipPaintPropertyNode::State(context_.current.transform,
+                                       FloatRoundedRect(FloatRect(clip_rect)),
+                                       ToSnappedClipRect(clip_rect))));
     } else {
       OnClearClip(properties_->ClearCssClip());
     }
@@ -1344,9 +1360,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateClipPathClip(
     if (!NeedsClipPathClip(object_)) {
       OnClearClip(properties_->ClearClipPathClip());
     } else {
-      ClipPaintPropertyNode::State state;
-      state.local_transform_space = context_.current.transform;
-      state.clip_rect = FloatRoundedRect(*fragment_data_.ClipPathBoundingBox());
+      ClipPaintPropertyNode::State state(
+          context_.current.transform,
+          FloatRoundedRect(*fragment_data_.ClipPathBoundingBox()));
       state.clip_path = fragment_data_.ClipPathPath();
       OnUpdateClip(properties_->UpdateClipPathClip(*context_.current.clip,
                                                    std::move(state)));
@@ -1504,11 +1520,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowControlsClip() {
   if (NeedsOverflowControlsClip()) {
     // Clip overflow controls to the border box rect. Not wrapped with
     // OnUpdateClip() because this clip doesn't affect descendants.
-    const auto& clip_rect = ToSnappedClipRect(PhysicalRect(
-        context_.current.paint_offset, ToLayoutBox(object_).Size()));
+    const auto& clip_rect = PhysicalRect(context_.current.paint_offset,
+                                         ToLayoutBox(object_).Size());
     properties_->UpdateOverflowControlsClip(
         *context_.current.clip,
-        ClipPaintPropertyNode::State{context_.current.transform, clip_rect});
+        ClipPaintPropertyNode::State(context_.current.transform,
+                                     FloatRoundedRect(FloatRect(clip_rect)),
+                                     ToSnappedClipRect(clip_rect)));
   } else {
     properties_->ClearOverflowControlsClip();
   }
@@ -1525,10 +1543,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateInnerBorderRadiusClip() {
   if (NeedsPaintPropertyUpdate()) {
     if (NeedsInnerBorderRadiusClip(object_)) {
       const LayoutBox& box = ToLayoutBox(object_);
-      ClipPaintPropertyNode::State state;
-      state.local_transform_space = context_.current.transform;
-      state.clip_rect = box.StyleRef().GetRoundedInnerBorderFor(LayoutRect(
-          context_.current.paint_offset.ToLayoutPoint(), box.Size()));
+      ClipPaintPropertyNode::State state(
+          context_.current.transform,
+          box.StyleRef().GetRoundedInnerBorderFor(LayoutRect(
+              context_.current.paint_offset.ToLayoutPoint(), box.Size())));
       OnUpdateClip(properties_->UpdateInnerBorderRadiusClip(
           *context_.current.clip, std::move(state)));
     } else {
@@ -1603,8 +1621,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
 
   if (NeedsPaintPropertyUpdate()) {
     if (NeedsOverflowClip(object_) && !CanOmitOverflowClip(object_)) {
-      ClipPaintPropertyNode::State state;
-      state.local_transform_space = context_.current.transform;
+      ClipPaintPropertyNode::State state(context_.current.transform,
+                                         FloatRoundedRect());
 
       if (object_.IsLayoutReplaced()) {
         const LayoutReplaced& replaced = ToLayoutReplaced(object_);
@@ -1619,34 +1637,41 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
               LayoutReplaced::PreSnappedRectForPersistentSizing(content_rect);
         }
         // LayoutReplaced clips the foreground by rounded content box.
-        state.clip_rect = replaced.StyleRef().GetRoundedInnerBorderFor(
+        auto clip_rect = replaced.StyleRef().GetRoundedInnerBorderFor(
             content_rect.ToLayoutRect(),
             LayoutRectOutsets(
                 -(replaced.PaddingTop() + replaced.BorderTop()),
                 -(replaced.PaddingRight() + replaced.BorderRight()),
                 -(replaced.PaddingBottom() + replaced.BorderBottom()),
                 -(replaced.PaddingLeft() + replaced.BorderLeft())));
+        state.SetClipRect(clip_rect, clip_rect);
         if (replaced.IsLayoutEmbeddedContent()) {
           // Embedded objects are always sized to fit the content rect, but they
           // could overflow by 1px due to pre-snapping. Adjust clip rect to
           // match pre-snapped box as a special case.
-          FloatRect adjusted_rect = state.clip_rect.Rect();
+          FloatRect adjusted_rect = clip_rect.Rect();
           adjusted_rect.SetSize(FloatSize(replaced.ReplacedContentRect().size));
-          state.clip_rect.SetRect(adjusted_rect);
+          FloatRoundedRect adjusted_clip_rect(adjusted_rect,
+                                              clip_rect.GetRadii());
+          state.SetClipRect(adjusted_clip_rect, adjusted_clip_rect);
         }
       } else if (object_.IsBox()) {
-        state.clip_rect = ToSnappedClipRect(OverflowClipRect(
-            ToLayoutBox(object_), context_.current.paint_offset));
-        state.clip_rect_excluding_overlay_scrollbars = FloatClipRect(
-            FloatRect(PixelSnappedIntRect(ToLayoutBox(object_).OverflowClipRect(
+        const auto& clip_rect = OverflowClipRect(ToLayoutBox(object_),
+                                                 context_.current.paint_offset);
+        state.SetClipRect(FloatRoundedRect(FloatRect(clip_rect)),
+                          ToSnappedClipRect(clip_rect));
+
+        state.clip_rect_excluding_overlay_scrollbars =
+            FloatClipRect(FloatRect(ToLayoutBox(object_).OverflowClipRect(
                 context_.current.paint_offset,
-                kExcludeOverlayScrollbarSizeForHitTesting))));
+                kExcludeOverlayScrollbarSizeForHitTesting)));
       } else {
         DCHECK(object_.IsSVGViewportContainer());
         const auto& viewport_container = ToLayoutSVGViewportContainer(object_);
-        state.clip_rect = FloatRoundedRect(
+        const auto clip_rect = FloatRoundedRect(
             viewport_container.LocalToSVGParentTransform().Inverse().MapRect(
                 viewport_container.Viewport()));
+        state.SetClipRect(clip_rect, clip_rect);
       }
       OnUpdateClip(properties_->UpdateOverflowClip(*context_.current.clip,
                                                    std::move(state)));
@@ -2024,8 +2049,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateOutOfFlowContext() {
       if (NeedsPaintPropertyUpdate()) {
         OnUpdate(properties_->UpdateCssClipFixedPosition(
             *context_.fixed_position.clip,
-            ClipPaintPropertyNode::State{&css_clip->LocalTransformSpace(),
-                                         css_clip->ClipRect()}));
+            ClipPaintPropertyNode::State(&css_clip->LocalTransformSpace(),
+                                         css_clip->PixelSnappedClipRect())));
       }
       if (properties_->CssClipFixedPosition())
         context_.fixed_position.clip = properties_->CssClipFixedPosition();
@@ -3073,7 +3098,7 @@ void PaintPropertyTreeBuilder::CreateFragmentContextsInFlowThread(
           new_fragment_contexts.back().fragment_clip;
       fragments_changed = !!old_fragment_clip != !!new_fragment_clip ||
                           (old_fragment_clip && new_fragment_clip &&
-                           old_fragment_clip->ClipRect() !=
+                           old_fragment_clip->PixelSnappedClipRect() !=
                                ToSnappedClipRect(*new_fragment_clip));
     }
 

@@ -34,7 +34,7 @@ bool StructTraits<network::mojom::NetworkIsolationKeyDataView,
   }
   out->opaque_and_non_transient_ = data.opaque_and_non_transient();
 
-  // If opaque_and_non_transient_ is set, then the key but also be opaque.
+  // If opaque_and_non_transient_ is set, then the key must also be opaque.
   // Otherwise, the key is not valid.
   return !out->opaque_and_non_transient_ || out->IsOpaque();
 }

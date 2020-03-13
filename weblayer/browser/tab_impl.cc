@@ -454,6 +454,15 @@ content::WebContents* TabImpl::OpenURLFromTab(
   return source;
 }
 
+void TabImpl::ShowRepostFormWarningDialog(content::WebContents* source) {
+#if defined(OS_ANDROID)
+  Java_TabImpl_showRepostFormWarningDialog(base::android::AttachCurrentThread(),
+                                           java_impl_);
+#else
+  source->GetController().CancelPendingReload();
+#endif
+}
+
 void TabImpl::NavigationStateChanged(content::WebContents* source,
                                      content::InvalidateTypes changed_flags) {
   if (changed_flags & content::INVALIDATE_TYPE_URL) {

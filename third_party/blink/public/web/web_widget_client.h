@@ -33,7 +33,9 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/i18n/rtl.h"
+#include "base/time/time.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
@@ -47,7 +49,6 @@
 #include "third_party/blink/public/platform/web_touch_action.h"
 #include "third_party/blink/public/web/web_meaningful_layout.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
-#include "third_party/blink/public/web/web_swap_result.h"
 
 class SkBitmap;
 
@@ -81,6 +82,7 @@ class WebWidgetClient {
   // single thread and no scheduler, the impl should schedule a task to run
   // a synchronous composite.
   virtual void ScheduleAnimation() {}
+
   // A notification callback for when the intrinsic sizing of the
   // widget changed. This is only called for SVG within a remote frame.
   virtual void IntrinsicSizingInfoChanged(const WebIntrinsicSizingInfo&) {}
@@ -253,15 +255,18 @@ class WebWidgetClient {
   virtual void RequestDecode(const cc::PaintImage& image,
                              base::OnceCallback<void(bool)> callback) {}
 
-  // The |callback| will be fired when the corresponding renderer frame is
-  // submitted (still called "swapped") to the display compositor (either with
-  // DidSwap or DidNotSwap).
-  virtual void NotifySwapTime(WebReportTimeCallback callback) {}
 
   virtual viz::FrameSinkId GetFrameSinkId() {
     NOTREACHED();
     return viz::FrameSinkId();
   }
+
+  // Add a presentation callback. |callback| should be called when
+  // |frame_token| has been completely displayed by the compositor.
+  // |callback| should be run on the main thread.
+  virtual void AddPresentationCallback(
+      uint32_t frame_token,
+      base::OnceCallback<void(base::TimeTicks)> callback) {}
 };
 
 }  // namespace blink

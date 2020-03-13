@@ -9,14 +9,15 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "components/viz/common/quads/render_pass.h"
-#include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/video_types.h"
+#include "ui/gl/gpu_switching_observer.h"
 
 namespace viz {
 class DisplayResourceProvider;
@@ -80,10 +81,10 @@ class VIZ_SERVICE_EXPORT DCLayerOverlay {
 
 typedef std::vector<DCLayerOverlay> DCLayerOverlayList;
 
-class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor {
+class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor
+    : public ui::GpuSwitchingObserver {
  public:
-  DCLayerOverlayProcessor(const OutputSurface::Capabilities& capabilities,
-                          const RendererSettings& settings);
+  explicit DCLayerOverlayProcessor(const RendererSettings& settings);
   // For testing.
   DCLayerOverlayProcessor();
   virtual ~DCLayerOverlayProcessor();
@@ -100,6 +101,11 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor {
   gfx::Rect previous_frame_overlay_damage_contribution() {
     return previous_frame_overlay_rect_union_;
   }
+
+  // GpuSwitchingObserver implementation.
+  void OnDisplayAdded() override;
+  void OnDisplayRemoved() override;
+  void UpdateHasHwOverlaySupport();
 
  private:
   // Returns an iterator to the element after |it|.
@@ -132,7 +138,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor {
                                   RenderPass* root_render_pass,
                                   gfx::Rect* damage_rect);
 
-  const bool has_hw_overlay_support_;
+  bool has_hw_overlay_support_;
   const bool show_debug_borders_;
 
   gfx::Rect previous_frame_underlay_rect_;
@@ -162,6 +168,8 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor {
     bool has_backdrop_filters = false;
   };
   base::flat_map<RenderPassId, RenderPassData> render_pass_data_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> viz_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DCLayerOverlayProcessor);
 };

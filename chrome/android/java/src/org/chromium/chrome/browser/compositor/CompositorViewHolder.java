@@ -575,6 +575,9 @@ public class CompositorViewHolder extends FrameLayout
         for (TouchEventObserver o : mTouchEventObservers) {
             if (o.shouldInterceptTouchEvent(e)) return true;
         }
+
+        if (mFullscreenManager != null) mFullscreenManager.onMotionEvent(e);
+
         if (mLayoutManager == null) return false;
 
         mEventOffsetHandler.onInterceptTouchEvent(e);
@@ -708,9 +711,13 @@ public class CompositorViewHolder extends FrameLayout
         // The view size takes into account of the browser controls whose height
         // should be subtracted from the view if they are visible, therefore shrink
         // Blink-side view size.
+        final int totalMinHeight = mFullscreenManager != null
+                ? mFullscreenManager.getTopControlsMinHeight()
+                        + mFullscreenManager.getBottomControlsMinHeight()
+                : 0;
         int controlsHeight = controlsResizeView()
                 ? getTopControlsHeightPixels() + getBottomControlsHeightPixels()
-                : 0;
+                : totalMinHeight;
 
         if (isAttachedToWindow(view)) {
             webContents.setSize(w, h - controlsHeight);
@@ -989,7 +996,7 @@ public class CompositorViewHolder extends FrameLayout
      * @return {@code true} if browser controls shrink Blink view's size.
      */
     public boolean controlsResizeView() {
-        return mFullscreenManager != null ? mFullscreenManager.controlsResizeView() : false;
+        return mFullscreenManager != null && mFullscreenManager.controlsResizeView();
     }
 
     @Override

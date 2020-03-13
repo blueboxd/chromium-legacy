@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -193,8 +194,7 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
 
       if (command_id >= ash::LAUNCH_APP_SHORTCUT_FIRST &&
           command_id <= ash::LAUNCH_APP_SHORTCUT_LAST) {
-        DCHECK(arc_shortcuts_menu_builder_);
-        arc_shortcuts_menu_builder_->ExecuteCommand(command_id);
+        ExecuteArcShortcutCommand(command_id);
         return;
       }
 
@@ -271,23 +271,31 @@ void AppServiceShelfContextMenu::OnGetMenuModel(
   if (ShouldAddPinMenu())
     AddPinMenu(menu_model.get());
 
+  size_t arc_shortcut_index = menu_items->items.size();
   for (size_t i = index; i < menu_items->items.size(); i++) {
-    DCHECK_EQ(apps::mojom::MenuItemType::kCommand, menu_items->items[i]->type);
-
     // For Chrome browser, add the close item before the app info item.
     if (item().id.app_id == extension_misc::kChromeAppId &&
         menu_items->items[i]->command_id == ash::SHOW_APP_INFO) {
       BuildChromeAppMenu(menu_model.get());
     }
 
-    AddContextMenuOption(
-        menu_model.get(),
-        static_cast<ash::CommandId>(menu_items->items[i]->command_id),
-        menu_items->items[i]->string_id);
+    if (menu_items->items[i]->type == apps::mojom::MenuItemType::kCommand) {
+      AddContextMenuOption(
+          menu_model.get(),
+          static_cast<ash::CommandId>(menu_items->items[i]->command_id),
+          menu_items->items[i]->string_id);
+    } else {
+      // All ARC shortcut menu items are appended at the end, so break out
+      // of the loop and continue processing ARC shortcut menu items in
+      // BuildArcAppShortcutsMenu.
+      arc_shortcut_index = i;
+      break;
+    }
   }
 
   if (app_type_ == apps::mojom::AppType::kArc) {
-    BuildArcAppShortcutsMenu(std::move(menu_model), std::move(callback));
+    BuildArcAppShortcutsMenu(std::move(menu_items), std::move(menu_model),
+                             std::move(callback), arc_shortcut_index);
     return;
   }
 
@@ -321,8 +329,10 @@ void AppServiceShelfContextMenu::BuildExtensionAppShortcutsMenu(
 }
 
 void AppServiceShelfContextMenu::BuildArcAppShortcutsMenu(
+    apps::mojom::MenuItemsPtr menu_items,
     std::unique_ptr<ui::SimpleMenuModel> menu_model,
-    GetMenuModelCallback callback) {
+    GetMenuModelCallback callback,
+    size_t arc_shortcut_index) {
   const ArcAppListPrefs* arc_prefs =
       ArcAppListPrefs::Get(controller()->profile());
   DCHECK(arc_prefs);
@@ -352,12 +362,13 @@ void AppServiceShelfContextMenu::BuildArcAppShortcutsMenu(
     }
   }
 
-  arc_shortcuts_menu_builder_ =
-      std::make_unique<arc::ArcAppShortcutsMenuBuilder>(
-          controller()->profile(), item().id.app_id, display_id(),
-          ash::LAUNCH_APP_SHORTCUT_FIRST, ash::LAUNCH_APP_SHORTCUT_LAST);
-  arc_shortcuts_menu_builder_->BuildMenu(
-      app_info->package_name, std::move(menu_model), std::move(callback));
+  app_shortcut_items_ = std::make_unique<arc::ArcAppShortcutItems>();
+  for (size_t i = arc_shortcut_index; i < menu_items->items.size(); i++) {
+    apps::PopulateItemFromMojoMenuItems(std::move(menu_items->items[i]),
+                                        menu_model.get(),
+                                        app_shortcut_items_.get());
+  }
+  std::move(callback).Run(std::move(menu_model));
 }
 
 void AppServiceShelfContextMenu::BuildCrostiniAppMenu(
@@ -501,4 +512,16 @@ bool AppServiceShelfContextMenu::ShouldAddPinMenu() {
     default:
       return false;
   }
+}
+
+void AppServiceShelfContextMenu::ExecuteArcShortcutCommand(int command_id) {
+  DCHECK(command_id >= ash::LAUNCH_APP_SHORTCUT_FIRST &&
+         command_id <= ash::LAUNCH_APP_SHORTCUT_LAST);
+  size_t index = command_id - ash::LAUNCH_APP_SHORTCUT_FIRST;
+  DCHECK(app_shortcut_items_);
+  DCHECK_LT(index, app_shortcut_items_->size());
+
+  arc::ExecuteArcShortcutCommand(controller()->profile(), item().id.app_id,
+                                 app_shortcut_items_->at(index).shortcut_id,
+                                 display_id());
 }

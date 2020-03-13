@@ -76,6 +76,11 @@ class ReputationService : public KeyedService {
                      const GURL& url,
                      SafetyTipInteraction interaction);
 
+  // Tells the service that the user has the UI disabled, and thus the warning
+  // should be ignored.  This ensures that subsequent loads of the page are not
+  // seen as flagged in metrics. This only impacts metrics for control groups.
+  void OnUIDisabledFirstVisit(const GURL& url);
+
   // Used to help mock the generated keywords for the sensitive keywords
   // heuristic for testing. The keywords passed to this function MUST be in
   // sorted order, and must have a lifetime at least as long as this service.

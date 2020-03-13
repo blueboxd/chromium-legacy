@@ -314,6 +314,7 @@ base::string16 DownloadUIModel::GetWarningText(const gfx::FontList& font_list,
       return l10n_util::GetStringFUTF16(IDS_PROMPT_APP_DEEP_SCANNING,
                                         elided_filename);
     }
+    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:

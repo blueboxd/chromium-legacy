@@ -540,12 +540,12 @@ TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
 
     // Test that arc app shortcuts provided by arc::FakeAppInstance have a
     // separator between each app shortcut.
-      EXPECT_EQ(ui::DOUBLE_SEPARATOR, menu->GetSeparatorTypeAt(index++));
-      for (int shortcut_index = 0; index < menu->GetItemCount(); ++index) {
-        EXPECT_EQ(base::StringPrintf("ShortLabel %d", shortcut_index++),
-                  base::UTF16ToUTF8(menu->GetLabelAt(index++)));
-        if (index < menu->GetItemCount())
-          EXPECT_EQ(ui::PADDED_SEPARATOR, menu->GetSeparatorTypeAt(index));
+    EXPECT_EQ(ui::DOUBLE_SEPARATOR, menu->GetSeparatorTypeAt(index++));
+    for (int shortcut_index = 0; index < menu->GetItemCount(); ++index) {
+      EXPECT_EQ(base::StringPrintf("ShortLabel %d", shortcut_index++),
+                base::UTF16ToUTF8(menu->GetLabelAt(index++)));
+      if (index < menu->GetItemCount())
+        EXPECT_EQ(ui::PADDED_SEPARATOR, menu->GetSeparatorTypeAt(index));
     }
   }
 }

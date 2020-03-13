@@ -1199,8 +1199,10 @@ bool GpuBenchmarking::AddSwapCompletionEventListener(gin::Arguments* args) {
 
   auto callback_and_context = base::MakeRefCounted<CallbackAndContext>(
       args->isolate(), callback, context.web_frame()->MainWorldScriptContext());
-  context.render_widget()->NotifySwapTime(base::BindOnce(
-      &OnSwapCompletedHelper, base::RetainedRef(callback_and_context)));
+  context.web_frame()->FrameWidget()->NotifySwapAndPresentationTime(
+      base::NullCallback(),
+      base::BindOnce(&OnSwapCompletedHelper,
+                     base::RetainedRef(callback_and_context)));
   return true;
 }
 

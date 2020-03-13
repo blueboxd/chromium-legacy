@@ -185,6 +185,9 @@ class PLATFORM_EXPORT GeometryMapper {
   // on contents of |local_state|, it's not affected by any effect nodes between
   // |local_state| and |ancestor_state|.
   //
+  // The UnsnappedClipRect of any clip nodes is used, *not* the
+  // PixelSnappedClipRect.
+  //
   // Note that the clip of |ancestor_state| is *not* applied.
   //
   // The output FloatClipRect may contain false positives for rounded-ness

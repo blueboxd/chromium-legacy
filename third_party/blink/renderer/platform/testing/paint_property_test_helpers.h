@@ -157,9 +157,17 @@ inline scoped_refptr<ClipPaintPropertyNode> CreateClip(
     const ClipPaintPropertyNode& parent,
     const TransformPaintPropertyNode& local_transform_space,
     const FloatRoundedRect& clip_rect) {
-  ClipPaintPropertyNode::State state;
-  state.local_transform_space = &local_transform_space;
-  state.clip_rect = clip_rect;
+  ClipPaintPropertyNode::State state(&local_transform_space, clip_rect);
+  return ClipPaintPropertyNode::Create(parent, std::move(state));
+}
+
+inline scoped_refptr<ClipPaintPropertyNode> CreateClip(
+    const ClipPaintPropertyNode& parent,
+    const TransformPaintPropertyNode& local_transform_space,
+    const FloatRoundedRect& clip_rect,
+    const FloatRoundedRect& pixel_snapped_clip_rect) {
+  ClipPaintPropertyNode::State state(&local_transform_space, clip_rect,
+                                     pixel_snapped_clip_rect);
   return ClipPaintPropertyNode::Create(parent, std::move(state));
 }
 
@@ -167,9 +175,7 @@ inline scoped_refptr<ClipPaintPropertyNode> CreateClipPathClip(
     const ClipPaintPropertyNode& parent,
     const TransformPaintPropertyNode& local_transform_space,
     const FloatRoundedRect& clip_rect) {
-  ClipPaintPropertyNode::State state;
-  state.local_transform_space = &local_transform_space;
-  state.clip_rect = clip_rect;
+  ClipPaintPropertyNode::State state(&local_transform_space, clip_rect);
   state.clip_path = base::AdoptRef(new RefCountedPath);
   return ClipPaintPropertyNode::Create(parent, std::move(state));
 }

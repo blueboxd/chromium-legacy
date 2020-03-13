@@ -58,6 +58,8 @@ if (enable_pdf) {
       "draw_utils/coordinates.h",
       "draw_utils/shadow.cc",
       "draw_utils/shadow.h",
+      "geometry_conversions.cc",
+      "geometry_conversions.h",
       "out_of_process_instance.cc",
       "out_of_process_instance.h",
       "page_orientation.cc",

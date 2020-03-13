@@ -1407,7 +1407,7 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniView(
       return false;
 
     return desks_controller->MoveWindowFromActiveDeskTo(
-        dragged_window, target_desk,
+        dragged_window, target_desk, root_window_,
         DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
   }
 

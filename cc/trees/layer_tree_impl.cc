@@ -369,21 +369,22 @@ void LayerTreeImpl::UpdateViewportContainerSizes() {
   ViewportAnchor anchor(InnerViewportScrollNode(), OuterViewportScrollNode(),
                         this);
 
-  // Top/bottom controls always share the same shown ratio.
   float top_controls_shown_ratio =
       top_controls_shown_ratio_->Current(IsActiveTree());
   float bottom_controls_shown_ratio =
       bottom_controls_shown_ratio_->Current(IsActiveTree());
-  float top_controls_layout_height =
-      browser_controls_shrink_blink_size() ? top_controls_height() : 0.f;
+  float top_controls_layout_height = browser_controls_shrink_blink_size()
+                                         ? top_controls_height()
+                                         : top_controls_min_height();
   float top_content_offset =
       top_controls_height() > 0
           ? top_controls_height() * top_controls_shown_ratio
           : 0.f;
   float delta_from_top_controls =
       top_controls_layout_height - top_content_offset;
-  float bottom_controls_layout_height =
-      browser_controls_shrink_blink_size() ? bottom_controls_height() : 0.f;
+  float bottom_controls_layout_height = browser_controls_shrink_blink_size()
+                                            ? bottom_controls_height()
+                                            : bottom_controls_min_height();
   float bottom_content_offset =
       bottom_controls_height() > 0
           ? bottom_controls_height() * bottom_controls_shown_ratio

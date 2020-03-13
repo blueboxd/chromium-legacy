@@ -4,14 +4,17 @@
 
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
+import androidx.annotation.Nullable;
+import androidx.browser.customtabs.CustomTabsService;
+
 import org.chromium.base.Promise;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.HashSet;
@@ -19,9 +22,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.inject.Inject;
-
-import androidx.annotation.Nullable;
-import androidx.browser.customtabs.CustomTabsService;
 
 /**
  * Provides Trusted Web Activity specific behaviour for the {@link CurrentPageVerifier}.

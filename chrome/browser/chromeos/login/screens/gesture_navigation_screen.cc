@@ -7,6 +7,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -18,6 +19,12 @@ namespace chromeos {
 namespace {
 
 constexpr const char kUserActionExitPressed[] = "exit";
+
+// The name used for each page on the gesture navigation screen.
+constexpr const char kGestureIntroPage[] = "gestureIntro";
+constexpr const char kGestureHomePage[] = "gestureHome";
+constexpr const char kGestureOverviewPage[] = "gestureOverview";
+constexpr const char kGestureBackPage[] = "gestureBack";
 
 }  // namespace
 
@@ -34,6 +41,12 @@ GestureNavigationScreen::GestureNavigationScreen(
 GestureNavigationScreen::~GestureNavigationScreen() {
   if (view_)
     view_->Bind(nullptr);
+}
+
+void GestureNavigationScreen::GesturePageChange(const std::string& new_page) {
+  page_times_[current_page_] += base::TimeTicks::Now() - start_time_;
+  start_time_ = base::TimeTicks::Now();
+  current_page_ = new_page;
 }
 
 void GestureNavigationScreen::ShowImpl() {
@@ -57,6 +70,11 @@ void GestureNavigationScreen::ShowImpl() {
     return;
   }
 
+  // Begin keeping track of current page and start time for the page shown time
+  // metrics.
+  current_page_ = kGestureIntroPage;
+  start_time_ = base::TimeTicks::Now();
+
   view_->Show();
 }
 
@@ -70,10 +88,25 @@ void GestureNavigationScreen::OnUserAction(const std::string& action_id) {
     // since they have already gone through this gesture education screen.
     ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
         ash::prefs::kGestureEducationNotificationShown, true);
+
+    RecordPageShownTimeMetrics();
     exit_callback_.Run();
   } else {
     BaseScreen::OnUserAction(action_id);
   }
+}
+
+void GestureNavigationScreen::RecordPageShownTimeMetrics() {
+  page_times_[current_page_] += base::TimeTicks::Now() - start_time_;
+
+  UmaHistogramMediumTimes("GestureNavigationOOBEScreen.PageShownTime.Intro",
+                          page_times_[kGestureIntroPage]);
+  UmaHistogramMediumTimes("GestureNavigationOOBEScreen.PageShownTime.Home",
+                          page_times_[kGestureHomePage]);
+  UmaHistogramMediumTimes("GestureNavigationOOBEScreen.PageShownTime.Overview",
+                          page_times_[kGestureOverviewPage]);
+  UmaHistogramMediumTimes("GestureNavigationOOBEScreen.PageShownTime.Back",
+                          page_times_[kGestureBackPage]);
 }
 
 }  // namespace chromeos

@@ -11,11 +11,16 @@ source_set("internal") {
   sources = [
     "image_loader.cc",
     "image_loader.h",
+    "query_tile_store.cc",
+    "query_tile_store.h",
+    "store.h",
   ]
 
   deps = [
     "//base",
     "//chrome/browser/upboarding/query_tiles:public",
+    "//chrome/browser/upboarding/query_tiles/proto",
+    "//components/leveldb_proto",
     "//skia",
     "//url",
   ]

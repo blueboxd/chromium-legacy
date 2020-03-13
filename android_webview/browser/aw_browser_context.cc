@@ -32,6 +32,7 @@
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/download/public/common/in_progress_download_manager.h"
 #include "components/keyed_service/core/simple_key_map.h"
 #include "components/policy/core/browser/browser_policy_connector_base.h"
@@ -70,6 +71,9 @@ namespace {
 const void* const kDownloadManagerDelegateKey = &kDownloadManagerDelegateKey;
 
 AwBrowserContext* g_browser_context = NULL;
+
+crash_reporter::CrashKeyString<1> g_web_view_compat_crash_key(
+    "WEBLAYER_WEB_VIEW_COMPAT_MODE");
 
 // Empty method to skip origin security check as DownloadManager will set its
 // own method.
@@ -144,6 +148,8 @@ AwBrowserContext::AwBrowserContext()
   DCHECK(!g_browser_context);
 
   TRACE_EVENT0("startup", "AwBrowserContext::AwBrowserContext");
+
+  g_web_view_compat_crash_key.Set("0");
 
   if (IsDefaultBrowserContext()) {
     MigrateProfileData(GetCacheDir(), GetContextStoragePath());
@@ -322,6 +328,10 @@ AwQuotaManagerBridge* AwBrowserContext::GetQuotaManagerBridge() {
     quota_manager_bridge_ = AwQuotaManagerBridge::Create(this);
   }
   return quota_manager_bridge_.get();
+}
+
+void AwBrowserContext::SetWebLayerRunningInSameProcess(JNIEnv* env) {
+  g_web_view_compat_crash_key.Set("1");
 }
 
 AwFormDatabaseService* AwBrowserContext::GetFormDatabaseService() {

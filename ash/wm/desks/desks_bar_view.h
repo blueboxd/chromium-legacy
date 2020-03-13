@@ -70,6 +70,10 @@ class ASH_EXPORT DesksBarView : public views::View,
   // DeskNameView on this bar.
   bool IsDeskNameBeingModified() const;
 
+  // Returns the scale factor by which a window's size will be scaled down when
+  // it is dragged and hovered on this desks bar.
+  float GetOnHoverWindowSizeScaleFactor() const;
+
   // Updates the visibility state of the close buttons on all the mini_views as
   // a result of mouse and gesture events.
   void OnHoverStateMayHaveChanged();

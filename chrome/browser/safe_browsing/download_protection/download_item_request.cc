@@ -48,11 +48,6 @@ std::string GetFileContentsBlocking(base::FilePath path) {
   return contents;
 }
 
-int GetUnsupportedFiletypesPrefValue() {
-  return g_browser_process->local_state()->GetInteger(
-      prefs::kBlockUnsupportedFiletypes);
-}
-
 }  // namespace
 
 DownloadItemRequest::DownloadItemRequest(download::DownloadItem* item,
@@ -89,22 +84,10 @@ void DownloadItemRequest::GetRequestData(DataCallback callback) {
   bool dlp = deep_scanning_request().has_dlp_scan_request();
   if (item_ && (malware || dlp) &&
       !FileTypeSupported(malware, dlp, item_->GetTargetFilePath())) {
-    bool block_file = false;
-    switch (GetUnsupportedFiletypesPrefValue()) {
-      case BLOCK_UNSUPPORTED_FILETYPES_NONE:
-      case BLOCK_UNSUPPORTED_FILETYPES_UPLOADS:
-        block_file = false;
-        break;
-      case BLOCK_UNSUPPORTED_FILETYPES_DOWNLOADS:
-      case BLOCK_UNSUPPORTED_FILETYPES_UPLOADS_AND_DOWNLOADS:
-        block_file = true;
-    }
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback),
-                       block_file
-                           ? BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE
-                           : BinaryUploadService::Result::SUCCESS,
+                       BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE,
                        Data()));
     return;
   }

@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "chromecast/base/task_runner_impl.h"
-#include "chromecast/media/base/monotonic_clock.h"
+#include "chromecast/media/base/default_monotonic_clock.h"
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "chromecast/media/cma/base/decoder_config_adapter.h"

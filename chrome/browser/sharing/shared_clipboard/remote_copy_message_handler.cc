@@ -39,11 +39,14 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "skia/ext/image_operations.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/text/bytes_formatting.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
@@ -524,10 +527,13 @@ void RemoteCopyMessageHandler::ShowNotification(
       image.drawsNothing() ? message_center::NOTIFICATION_TYPE_SIMPLE
                            : message_center::NOTIFICATION_TYPE_IMAGE;
 
+  ui::Accelerator paste_accelerator(ui::VKEY_V, ui::EF_PLATFORM_ACCELERATOR);
+
   message_center::Notification notification(
       type, notification_id, title,
-      l10n_util::GetStringUTF16(
-          IDS_SHARING_REMOTE_COPY_NOTIFICATION_DESCRIPTION),
+      l10n_util::GetStringFUTF16(
+          IDS_SHARING_REMOTE_COPY_NOTIFICATION_DESCRIPTION,
+          paste_accelerator.GetShortcutText()),
       /*icon=*/gfx::Image(),
       /*display_source=*/base::string16(),
       /*origin_url=*/GURL(), message_center::NotifierId(),

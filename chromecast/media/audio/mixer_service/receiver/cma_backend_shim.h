@@ -14,8 +14,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "chromecast/base/task_runner_impl.h"
+#include "chromecast/media/api/cma_backend.h"
 #include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
-#include "chromecast/media/cma/backend/cma_backend.h"
 
 namespace base {
 class SequencedTaskRunner;

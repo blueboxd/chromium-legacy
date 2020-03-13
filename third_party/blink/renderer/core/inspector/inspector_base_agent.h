@@ -76,7 +76,9 @@ class InspectorBaseAgent : public InspectorAgent,
     agent_state_.InitFrom(session_state);
   }
 
-  protocol::Response disable() override { return protocol::Response::OK(); }
+  protocol::Response disable() override {
+    return protocol::Response::Success();
+  }
 
   void Dispose() override {
     disable();

@@ -23,6 +23,7 @@
 #include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/display/screen.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -330,7 +331,7 @@ void Desk::MoveWindowsToDesk(Desk* target_desk) {
       // |windows_to_move| are sorted from top-most to bottom-most, hence
       // calling |StackChildAtBottom()| on each in this order will maintain that
       // same order in the |target_desk|'s container.
-      MoveWindowToDeskInternal(window, target_desk);
+      MoveWindowToDeskInternal(window, target_desk, window->GetRootWindow());
       window->parent()->StackChildAtBottom(window);
       mru_tracker->OnWindowMovedOutFromRemovingDesk(window);
     }
@@ -340,9 +341,12 @@ void Desk::MoveWindowsToDesk(Desk* target_desk) {
   target_desk->NotifyContentChanged(/*update_backdrops=*/true);
 }
 
-void Desk::MoveWindowToDesk(aura::Window* window, Desk* target_desk) {
-  DCHECK(target_desk);
+void Desk::MoveWindowToDesk(aura::Window* window,
+                            Desk* target_desk,
+                            aura::Window* target_root) {
   DCHECK(window);
+  DCHECK(target_desk);
+  DCHECK(target_root);
   DCHECK(base::Contains(windows_, window));
   DCHECK(this != target_desk);
   // The desks bar should not be allowed to move individually to another desk.
@@ -366,7 +370,7 @@ void Desk::MoveWindowToDesk(aura::Window* window, Desk* target_desk) {
     // descendants that exist on the same desk container will be taken care of
     //  by `wm::TransientWindowManager::OnWindowHierarchyChanged()`.
     aura::Window* transient_root = ::wm::GetTransientRoot(window);
-    MoveWindowToDeskInternal(transient_root, target_desk);
+    MoveWindowToDeskInternal(transient_root, target_desk, target_root);
 
     // Unminimize the window so that it shows up in the mini_view after it had
     // been dragged and moved to another desk.
@@ -404,16 +408,35 @@ void Desk::UpdateDeskBackdrops() {
     UpdateBackdropController(GetDeskContainerForRoot(root));
 }
 
-void Desk::MoveWindowToDeskInternal(aura::Window* window, Desk* target_desk) {
+void Desk::MoveWindowToDeskInternal(aura::Window* window,
+                                    Desk* target_desk,
+                                    aura::Window* target_root) {
   DCHECK(base::Contains(windows_, window));
   DCHECK(CanMoveWindowOutOfDeskContainer(window))
       << "Non-desk windows are not allowed to move out of the container.";
 
+  // When |target_root| is different than the current window's |root|, this can
+  // only happen when dragging and dropping a window on mini desk view on
+  // another display. Therefore |target_desk| is an inactive desk (i.e.
+  // invisible). The order doesn't really matter, but we move the window to the
+  // target desk's container first (so that it becomes hidden), then move it to
+  // the target display (while it's hidden).
   aura::Window* root = window->GetRootWindow();
   aura::Window* source_container = GetDeskContainerForRoot(root);
   aura::Window* target_container = target_desk->GetDeskContainerForRoot(root);
   DCHECK(window->parent() == source_container);
   target_container->AddChild(window);
+
+  if (root != target_root) {
+    // Move the window to the container with the same ID on the target display's
+    // root (i.e. container that belongs to the same desk), and adjust its
+    // bounds to fit in the new display's work area.
+    window_util::MoveWindowToDisplay(window,
+                                     display::Screen::GetScreen()
+                                         ->GetDisplayNearestWindow(target_root)
+                                         .id());
+    DCHECK_EQ(target_desk->container_id_, window->parent()->id());
+  }
 }
 
 bool Desk::MaybeResetContainersOpacities() {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_CMA_BACKEND_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_CMA_BACKEND_H_
+#ifndef CHROMECAST_MEDIA_API_CMA_BACKEND_H_
+#define CHROMECAST_MEDIA_API_CMA_BACKEND_H_
 
 #include <stdint.h>
 
@@ -104,4 +104,4 @@ class CmaBackend {
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_CMA_BACKEND_H_
+#endif  // CHROMECAST_MEDIA_API_CMA_BACKEND_H_

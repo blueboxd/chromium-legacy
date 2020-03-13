@@ -6989,7 +6989,7 @@ the Bookmarks menu.">
         Image shared from <ph name="DEVICE_NAME">$1<ex>Jimmy's Pixel</ex></ph>
       </message>
       <message name="IDS_SHARING_REMOTE_COPY_NOTIFICATION_DESCRIPTION" desc="Second line of text displayed in a Remote Copy notification.">
-        Copied to your clipboard
+        Press <ph name="MODIFIER_KEY_DESCRIPTION">$1<ex>Ctrl+V</ex></ph> to paste
       </message>
       <message name="IDS_SHARING_REMOTE_COPY_NOTIFICATION_PREPARING_DOWNLOAD" desc="Subtext shown in a Remote Copy notification while preparing the image download.">
         Preparing download

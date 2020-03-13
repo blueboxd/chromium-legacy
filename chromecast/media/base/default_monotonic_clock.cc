@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/base/monotonic_clock.h"
+#include "chromecast/media/base/default_monotonic_clock.h"
 
 #include <time.h>
 
@@ -42,7 +42,7 @@ DefaultMonotonicClock::DefaultMonotonicClock() = default;
 
 DefaultMonotonicClock::~DefaultMonotonicClock() = default;
 
-int64_t DefaultMonotonicClock::Now() {
+int64_t DefaultMonotonicClock::Now() const {
   return MonotonicClockNow();
 }
 

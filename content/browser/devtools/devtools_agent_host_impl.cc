@@ -163,13 +163,12 @@ bool DevToolsAgentHostImpl::DetachClient(DevToolsAgentHostClient* client) {
   return true;
 }
 
-bool DevToolsAgentHostImpl::DispatchProtocolMessage(
+void DevToolsAgentHostImpl::DispatchProtocolMessage(
     DevToolsAgentHostClient* client,
     base::span<const uint8_t> message) {
   DevToolsSession* session = SessionByClient(client);
-  if (!session)
-    return false;
-  return session->DispatchProtocolMessage(message);
+  if (session)
+    session->DispatchProtocolMessage(message);
 }
 
 void DevToolsAgentHostImpl::DetachInternal(DevToolsSession* session) {

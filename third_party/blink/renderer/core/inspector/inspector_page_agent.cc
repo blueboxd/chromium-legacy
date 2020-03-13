@@ -521,7 +521,7 @@ void InspectorPageAgent::Restore() {
 Response InspectorPageAgent::enable() {
   enabled_.Set(true);
   instrumenting_agents_->AddInspectorPageAgent(this);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorPageAgent::disable() {
@@ -534,7 +534,7 @@ Response InspectorPageAgent::disable() {
 
   stopScreencast();
 
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorPageAgent::addScriptToEvaluateOnNewDocument(
@@ -554,16 +554,16 @@ Response InspectorPageAgent::addScriptToEvaluateOnNewDocument(
 
   scripts_to_evaluate_on_load_.Set(*identifier, source);
   worlds_to_evaluate_on_load_.Set(*identifier, world_name.fromMaybe(""));
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorPageAgent::removeScriptToEvaluateOnNewDocument(
     const String& identifier) {
   if (scripts_to_evaluate_on_load_.Get(identifier).IsNull())
-    return Response::Error("Script not found");
+    return Response::ServerError("Script not found");
   scripts_to_evaluate_on_load_.Clear(identifier);
   worlds_to_evaluate_on_load_.Clear(identifier);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorPageAgent::addScriptToEvaluateOnLoad(const String& source,
@@ -580,7 +580,7 @@ Response InspectorPageAgent::removeScriptToEvaluateOnLoad(
 Response InspectorPageAgent::setLifecycleEventsEnabled(bool enabled) {
   lifecycle_events_enabled_.Set(enabled);
   if (!enabled)
-    return Response::OK();
+    return Response::Success();
 
   for (LocalFrame* frame : *inspected_frames_) {
     Document* document = frame->GetDocument();
@@ -623,11 +623,11 @@ Response InspectorPageAgent::setLifecycleEventsEnabled(bool enabled) {
     }
   }
 
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorPageAgent::setAdBlockingEnabled(bool enable) {
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorPageAgent::reload(
@@ -636,11 +636,11 @@ Response InspectorPageAgent::reload(
   pending_script_to_evaluate_on_load_once_ =
       optional_script_to_evaluate_on_load.fromMaybe("");
   v8_session_->setSkipAllPauses(true);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorPageAgent::stopLoading() {
-  return Response::OK();
+  return Response::Success();
 }
 
 static void CachedResourcesForDocument(Document* document,
@@ -696,13 +696,13 @@ static HeapVector<Member<Resource>> CachedResourcesForFrame(LocalFrame* frame,
 Response InspectorPageAgent::getResourceTree(
     std::unique_ptr<protocol::Page::FrameResourceTree>* object) {
   *object = BuildObjectForResourceTree(inspected_frames_->Root());
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorPageAgent::getFrameTree(
     std::unique_ptr<protocol::Page::FrameTree>* object) {
   *object = BuildObjectForFrameTree(inspected_frames_->Root());
-  return Response::OK();
+  return Response::Success();
 }
 
 void InspectorPageAgent::GetResourceContentAfterResourcesContentLoaded(
@@ -712,17 +712,19 @@ void InspectorPageAgent::GetResourceContentAfterResourcesContentLoaded(
   LocalFrame* frame =
       IdentifiersFactory::FrameById(inspected_frames_, frame_id);
   if (!frame) {
-    callback->sendFailure(Response::Error("No frame for given id found"));
+    callback->sendFailure(Response::ServerError("No frame for given id found"));
     return;
   }
   String content;
   bool base64_encoded;
   if (InspectorPageAgent::CachedResourceContent(
           CachedResource(frame, KURL(url), inspector_resource_content_loader_),
-          &content, &base64_encoded))
+          &content, &base64_encoded)) {
     callback->sendSuccess(content, base64_encoded);
-  else
-    callback->sendFailure(Response::Error("No resource with given URL found"));
+  } else {
+    callback->sendFailure(
+        Response::ServerError("No resource with given URL found"));
+  }
 }
 
 void InspectorPageAgent::getResourceContent(
@@ -730,7 +732,7 @@ void InspectorPageAgent::getResourceContent(
     const String& url,
     std::unique_ptr<GetResourceContentCallback> callback) {
   if (!enabled_.Get()) {
-    callback->sendFailure(Response::Error("Agent is not enabled."));
+    callback->sendFailure(Response::ServerError("Agent is not enabled."));
     return;
   }
   inspector_resource_content_loader_->EnsureResourcesContentLoaded(
@@ -751,7 +753,7 @@ void InspectorPageAgent::SearchContentAfterResourcesContentLoaded(
   LocalFrame* frame =
       IdentifiersFactory::FrameById(inspected_frames_, frame_id);
   if (!frame) {
-    callback->sendFailure(Response::Error("No frame for given id found"));
+    callback->sendFailure(Response::ServerError("No frame for given id found"));
     return;
   }
   String content;
@@ -759,7 +761,8 @@ void InspectorPageAgent::SearchContentAfterResourcesContentLoaded(
   if (!InspectorPageAgent::CachedResourceContent(
           CachedResource(frame, KURL(url), inspector_resource_content_loader_),
           &content, &base64_encoded)) {
-    callback->sendFailure(Response::Error("No resource with given URL found"));
+    callback->sendFailure(
+        Response::ServerError("No resource with given URL found"));
     return;
   }
 
@@ -780,7 +783,7 @@ void InspectorPageAgent::searchInResource(
     Maybe<bool> optional_is_regex,
     std::unique_ptr<SearchInResourceCallback> callback) {
   if (!enabled_.Get()) {
-    callback->sendFailure(Response::Error("Agent is not enabled."));
+    callback->sendFailure(Response::ServerError("Agent is not enabled."));
     return;
   }
   inspector_resource_content_loader_->EnsureResourcesContentLoaded(
@@ -796,7 +799,7 @@ Response InspectorPageAgent::setBypassCSP(bool enabled) {
   LocalFrame* frame = inspected_frames_->Root();
   frame->GetSettings()->SetBypassCSP(enabled);
   bypass_csp_enabled_.Set(enabled);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorPageAgent::setDocumentContent(const String& frame_id,
@@ -804,13 +807,13 @@ Response InspectorPageAgent::setDocumentContent(const String& frame_id,
   LocalFrame* frame =
       IdentifiersFactory::FrameById(inspected_frames_, frame_id);
   if (!frame)
-    return Response::Error("No frame for given id found");
+    return Response::ServerError("No frame for given id found");
 
   Document* document = frame->GetDocument();
   if (!document)
-    return Response::Error("No Document instance to set HTML for");
+    return Response::ServerError("No Document instance to set HTML for");
   document->SetContent(html);
-  return Response::OK();
+  return Response::Success();
 }
 
 void InspectorPageAgent::DidNavigateWithinDocument(LocalFrame* frame) {
@@ -1158,12 +1161,12 @@ Response InspectorPageAgent::startScreencast(Maybe<String> format,
                                              Maybe<int> max_height,
                                              Maybe<int> every_nth_frame) {
   screencast_enabled_.Set(true);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorPageAgent::stopScreencast() {
   screencast_enabled_.Set(false);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorPageAgent::getLayoutMetrics(
@@ -1220,7 +1223,7 @@ Response InspectorPageAgent::getLayoutMetrics(
                              .setScale(scale)
                              .setZoom(page_zoom_factor)
                              .build();
-  return Response::OK();
+  return Response::Success();
 }
 
 protocol::Response InspectorPageAgent::createIsolatedWorld(
@@ -1231,19 +1234,19 @@ protocol::Response InspectorPageAgent::createIsolatedWorld(
   LocalFrame* frame =
       IdentifiersFactory::FrameById(inspected_frames_, frame_id);
   if (!frame)
-    return Response::Error("No frame for given id found");
+    return Response::ServerError("No frame for given id found");
 
   scoped_refptr<DOMWrapperWorld> world = EnsureDOMWrapperWorld(
       frame, world_name.fromMaybe(""), grant_universal_access.fromMaybe(false));
   if (!world)
-    return Response::Error("Could not create isolated world");
+    return Response::ServerError("Could not create isolated world");
 
   LocalWindowProxy* isolated_world_window_proxy =
       frame->GetScriptController().WindowProxy(*world);
   v8::HandleScope handle_scope(V8PerIsolateData::MainThreadIsolate());
   *execution_context_id = v8_inspector::V8ContextInfo::executionContextId(
       isolated_world_window_proxy->ContextIfInitialized());
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorPageAgent::setFontFamilies(
@@ -1285,7 +1288,7 @@ Response InspectorPageAgent::setFontFamilies(
     settings->NotifyGenericFontFamilyChange();
   }
 
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorPageAgent::setFontSizes(
@@ -1303,7 +1306,7 @@ Response InspectorPageAgent::setFontSizes(
     }
   }
 
-  return Response::OK();
+  return Response::Success();
 }
 
 void InspectorPageAgent::ConsumeCompilationCache(
@@ -1365,28 +1368,28 @@ void InspectorPageAgent::FileChooserOpened(LocalFrame* frame,
 
 Response InspectorPageAgent::setProduceCompilationCache(bool enabled) {
   produce_compilation_cache_.Set(enabled);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorPageAgent::addCompilationCache(const String& url,
                                                  const protocol::Binary& data) {
   compilation_cache_.Set(url, data);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorPageAgent::clearCompilationCache() {
   compilation_cache_.clear();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorPageAgent::waitForDebugger() {
   client_->WaitForDebugger();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorPageAgent::setInterceptFileChooserDialog(bool enabled) {
   intercept_file_chooser_ = enabled;
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorPageAgent::generateTestReport(const String& message,
@@ -1401,7 +1404,7 @@ Response InspectorPageAgent::generateTestReport(const String& message,
   // Send the test report to any ReportingObservers.
   ReportingContext::From(document->ToExecutionContext())->QueueReport(report);
 
-  return Response::OK();
+  return Response::Success();
 }
 
 void InspectorPageAgent::Trace(Visitor* visitor) {

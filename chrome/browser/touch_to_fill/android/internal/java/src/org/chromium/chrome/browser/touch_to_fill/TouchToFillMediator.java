@@ -21,7 +21,6 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VI
 import androidx.annotation.Px;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -31,6 +30,7 @@ import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderPro
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
+import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.ui.modelutil.ListModel;

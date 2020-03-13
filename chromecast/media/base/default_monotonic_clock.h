@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_BASE_MONOTONIC_CLOCK_H_
-#define CHROMECAST_MEDIA_BASE_MONOTONIC_CLOCK_H_
+#ifndef CHROMECAST_MEDIA_BASE_DEFAULT_MONOTONIC_CLOCK_H_
+#define CHROMECAST_MEDIA_BASE_DEFAULT_MONOTONIC_CLOCK_H_
 
 #include <stdint.h>
+
+#include "chromecast/media/api/monotonic_clock.h"
 
 namespace chromecast {
 namespace media {
@@ -17,14 +19,6 @@ namespace media {
 // change whenever they feel like it upstream).
 int64_t MonotonicClockNow();
 
-// Interface that provides the monotonic time.
-class MonotonicClock {
- public:
-  virtual ~MonotonicClock() = default;
-  // Returns the monotonic time in microseconds.
-  virtual int64_t Now() = 0;
-};
-
 // Default implementation of MonotonicClock that uses MonotonicClockNow().
 class DefaultMonotonicClock : public MonotonicClock {
  public:
@@ -32,10 +26,10 @@ class DefaultMonotonicClock : public MonotonicClock {
   ~DefaultMonotonicClock() override;
 
   // MonotonicClock implementation:
-  int64_t Now() override;
+  int64_t Now() const override;
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_BASE_MONOTONIC_CLOCK_H_
+#endif  // CHROMECAST_MEDIA_BASE_DEFAULT_MONOTONIC_CLOCK_H_

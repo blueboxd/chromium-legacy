@@ -1934,7 +1934,7 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
   GeometryMapper::LocalToAncestorVisualRect(
       source_state, root_view_contents_state, mapping_rect);
 
-  FloatRect visible_content_rect = mapping_rect.Rect();
+  FloatRect visible_content_rect(EnclosingIntRect(mapping_rect.Rect()));
 
   // 3. Move into local border box transform space of the root LayoutView.
   // Note that the overflow clip has *not* been applied.

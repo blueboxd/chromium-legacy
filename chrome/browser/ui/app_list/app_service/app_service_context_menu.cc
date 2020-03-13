@@ -11,7 +11,6 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
-#include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcuts_menu_builder.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
@@ -158,8 +158,7 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
 
       if (command_id >= ash::LAUNCH_APP_SHORTCUT_FIRST &&
           command_id <= ash::LAUNCH_APP_SHORTCUT_LAST) {
-        DCHECK(arc_shortcuts_menu_builder_);
-        arc_shortcuts_menu_builder_->ExecuteCommand(command_id);
+        ExecuteArcShortcutCommand(command_id);
         return;
       }
 
@@ -244,17 +243,19 @@ void AppServiceContextMenu::OnGetMenuModel(
     BuildExtensionAppShortcutsMenu(menu_model.get());
   }
 
+  app_shortcut_items_ = std::make_unique<arc::ArcAppShortcutItems>();
   for (size_t i = index; i < menu_items->items.size(); i++) {
-    DCHECK_EQ(apps::mojom::MenuItemType::kCommand, menu_items->items[i]->type);
-    AddContextMenuOption(
-        menu_model.get(),
-        static_cast<ash::CommandId>(menu_items->items[i]->command_id),
-        menu_items->items[i]->string_id);
-  }
-
-  if (app_type_ == apps::mojom::AppType::kArc) {
-    BuildArcAppShortcutsMenu(std::move(menu_model), std::move(callback));
-    return;
+    if (menu_items->items[i]->type == apps::mojom::MenuItemType::kCommand) {
+      AddContextMenuOption(
+          menu_model.get(),
+          static_cast<ash::CommandId>(menu_items->items[i]->command_id),
+          menu_items->items[i]->string_id);
+    } else {
+      DCHECK_EQ(apps::mojom::AppType::kArc, app_type_);
+      apps::PopulateItemFromMojoMenuItems(std::move(menu_items->items[i]),
+                                          menu_model.get(),
+                                          app_shortcut_items_.get());
+    }
   }
 
   std::move(callback).Run(std::move(menu_model));
@@ -275,27 +276,6 @@ void AppServiceContextMenu::BuildExtensionAppShortcutsMenu(
   app_list::AddMenuItemIconsForSystemApps(
       app_id(), menu_model, menu_model->GetItemCount() - appended_count,
       appended_count);
-}
-
-void AppServiceContextMenu::BuildArcAppShortcutsMenu(
-    std::unique_ptr<ui::SimpleMenuModel> menu_model,
-    GetMenuModelCallback callback) {
-  const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
-  DCHECK(arc_prefs);
-  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      arc_prefs->GetApp(app_id());
-  if (!app_info) {
-    LOG(ERROR) << "App " << app_id() << " is not available.";
-    std::move(callback).Run(std::move(menu_model));
-    return;
-  }
-
-  arc_shortcuts_menu_builder_ =
-      std::make_unique<arc::ArcAppShortcutsMenuBuilder>(
-          profile(), app_id(), controller()->GetAppListDisplayId(),
-          ash::LAUNCH_APP_SHORTCUT_FIRST, ash::LAUNCH_APP_SHORTCUT_LAST);
-  arc_shortcuts_menu_builder_->BuildMenu(
-      app_info->package_name, std::move(menu_model), std::move(callback));
 }
 
 void AppServiceContextMenu::ShowAppInfo() {
@@ -346,4 +326,16 @@ void AppServiceContextMenu::SetLaunchType(int command_id) {
     default:
       return;
   }
+}
+
+void AppServiceContextMenu::ExecuteArcShortcutCommand(int command_id) {
+  DCHECK(command_id >= ash::LAUNCH_APP_SHORTCUT_FIRST &&
+         command_id <= ash::LAUNCH_APP_SHORTCUT_LAST);
+  const size_t index = command_id - ash::LAUNCH_APP_SHORTCUT_FIRST;
+  DCHECK(app_shortcut_items_);
+  DCHECK_LT(index, app_shortcut_items_->size());
+
+  arc::ExecuteArcShortcutCommand(profile(), app_id(),
+                                 app_shortcut_items_->at(index).shortcut_id,
+                                 controller()->GetAppListDisplayId());
 }

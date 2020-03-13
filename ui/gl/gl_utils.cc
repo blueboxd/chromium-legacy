@@ -17,6 +17,10 @@
 #include "third_party/libsync/src/include/sync/sync.h"
 #endif
 
+#if defined(OS_WIN)
+#include "ui/gl/direct_composition_surface_win.h"
+#endif
+
 namespace gl {
 
 // Used by chrome://gpucrash and gpu_benchmarking_extension's
@@ -76,4 +80,11 @@ bool UsePassthroughCommandDecoder(const base::CommandLine* command_line) {
         features::kDefaultPassthroughCommandDecoder);
   }
 }
+
+#if defined(OS_WIN)
+// This function is thread safe.
+bool AreOverlaysSupportedWin() {
+  return gl::DirectCompositionSurfaceWin::AreOverlaysSupported();
 }
+#endif
+}  // namespace gl

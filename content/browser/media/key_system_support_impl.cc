@@ -118,9 +118,7 @@ void GetHardwareSecureDecryptionCaps(
 #if !BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
   DVLOG(1) << "Hardware secure codecs not supported because mojo video "
               "decode was disabled at buildtime";
-  return;
-#endif
-
+#else
   base::flat_set<media::VideoCodec> video_codec_set;
   base::flat_set<media::EncryptionScheme> encryption_scheme_set;
 
@@ -130,6 +128,7 @@ void GetHardwareSecureDecryptionCaps(
 
   *video_codecs = SetToVector(video_codec_set);
   *encryption_schemes = SetToVector(encryption_scheme_set);
+#endif
 }
 
 }  // namespace

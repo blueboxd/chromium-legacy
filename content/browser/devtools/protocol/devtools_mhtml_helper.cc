@@ -143,7 +143,7 @@ void DevToolsMHTMLHelper::ReportFailure(const std::string& message) {
   if (message.empty())
     callback_->sendFailure(Response::InternalError());
   else
-    callback_->sendFailure(Response::Error(message));
+    callback_->sendFailure(Response::ServerError(message));
 }
 
 void DevToolsMHTMLHelper::ReportSuccess(

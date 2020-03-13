@@ -553,6 +553,16 @@ public final class TabImpl extends ITab.Stub {
         mBrowserControlsDelegates.get(reason).set(constraint);
     }
 
+    @CalledByNative
+    public void showRepostFormWarningDialog() {
+        BrowserViewController viewController = getViewController();
+        if (viewController == null) {
+            mWebContents.getNavigationController().cancelPendingReload();
+        } else {
+            viewController.showRepostFormWarningDialog();
+        }
+    }
+
     private static String nonEmptyOrNull(String s) {
         return TextUtils.isEmpty(s) ? null : s;
     }

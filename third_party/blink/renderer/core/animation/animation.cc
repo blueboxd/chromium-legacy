@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
+#include "third_party/blink/renderer/core/animation/scroll_timeline_util.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
@@ -1858,7 +1859,6 @@ void Animation::CreateCompositorAnimation() {
   if (Platform::Current()->IsThreadedAnimationEnabled() &&
       !compositor_animation_) {
     compositor_animation_ = CompositorAnimationHolder::Create(this);
-    DCHECK(compositor_animation_);
     AttachCompositorTimeline();
   }
 
@@ -1876,23 +1876,59 @@ void Animation::DestroyCompositorAnimation() {
 }
 
 void Animation::AttachCompositorTimeline() {
-  if (compositor_animation_) {
-    CompositorAnimationTimeline* timeline =
-        timeline_ ? To<DocumentTimeline>(*timeline_).CompositorTimeline()
-                  : nullptr;
-    if (timeline)
-      timeline->AnimationAttached(*this);
-  }
+  DCHECK(compositor_animation_);
+
+  // Register ourselves on the compositor timeline. This will cause our cc-side
+  // animation animation to be registered.
+  CompositorAnimationTimeline* compositor_timeline =
+      timeline_ ? timeline_->EnsureCompositorTimeline() : nullptr;
+  if (!compositor_timeline)
+    return;
+
+  compositor_timeline->AnimationAttached(*this);
+  if (compositor_timeline->GetAnimationTimeline()->IsScrollTimeline())
+    document_->AttachCompositorTimeline(compositor_timeline);
 }
 
 void Animation::DetachCompositorTimeline() {
-  if (compositor_animation_) {
-    CompositorAnimationTimeline* timeline =
-        timeline_ ? To<DocumentTimeline>(*timeline_).CompositorTimeline()
-                  : nullptr;
-    if (timeline)
-      timeline->AnimationDestroyed(*this);
+  DCHECK(compositor_animation_);
+
+  CompositorAnimationTimeline* compositor_timeline =
+      timeline_ ? timeline_->CompositorTimeline() : nullptr;
+  if (!compositor_timeline)
+    return;
+
+  compositor_timeline->AnimationDestroyed(*this);
+
+  if (compositor_timeline->GetAnimationTimeline()->IsScrollTimeline())
+    document_->DetachCompositorTimeline(compositor_timeline);
+}
+
+void Animation::UpdateCompositorScrollTimeline() {
+  if (!compositor_animation_ || !timeline_)
+    return;
+  Node* scroll_source = To<ScrollTimeline>(*timeline_).ResolvedScrollSource();
+  LayoutBox* box = scroll_source ? scroll_source->GetLayoutBox() : nullptr;
+
+  base::Optional<double> start_scroll_offset;
+  base::Optional<double> end_scroll_offset;
+  if (box) {
+    double current_offset;
+    double max_offset;
+    To<ScrollTimeline>(*timeline_)
+        .GetCurrentAndMaxOffset(box, current_offset, max_offset);
+
+    double resolved_start_scroll_offset = 0;
+    double resolved_end_scroll_offset = max_offset;
+    To<ScrollTimeline>(*timeline_)
+        .ResolveScrollStartAndEnd(box, max_offset, resolved_start_scroll_offset,
+                                  resolved_end_scroll_offset);
+    start_scroll_offset = resolved_start_scroll_offset;
+    end_scroll_offset = resolved_end_scroll_offset;
   }
+  compositor_animation_->GetAnimation()->UpdateScrollTimeline(
+      scroll_timeline_util::GetCompositorScrollElementId(scroll_source),
+      start_scroll_offset, end_scroll_offset);
 }
 
 void Animation::AttachCompositedLayers() {

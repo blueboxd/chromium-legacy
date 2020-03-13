@@ -61,7 +61,7 @@ class DevToolsSession : public protocol::FrontendChannel,
 
   void AttachToAgent(blink::mojom::DevToolsAgent* agent,
                      bool force_using_io_session);
-  bool DispatchProtocolMessage(base::span<const uint8_t> message);
+  void DispatchProtocolMessage(base::span<const uint8_t> message);
   void SuspendSendingMessagesToAgent();
   void ResumeSendingMessagesToAgent();
 
@@ -88,28 +88,28 @@ class DevToolsSession : public protocol::FrontendChannel,
 
     PendingMessage(PendingMessage&&);
     PendingMessage(int call_id,
-                   const std::string& method,
+                   crdtp::span<uint8_t> method,
                    crdtp::span<uint8_t> payload);
     ~PendingMessage();
   };
 
   void MojoConnectionDestroyed();
   void DispatchToAgent(const PendingMessage& message);
-  void HandleCommand(std::unique_ptr<protocol::DictionaryValue> value,
-                     base::span<const uint8_t> message);
-  bool DispatchProtocolMessageInternal(
-      base::span<const uint8_t> message,
-      std::unique_ptr<protocol::DictionaryValue> value);
+  void HandleCommand(base::span<const uint8_t> message);
+  void HandleCommandInternal(crdtp::Dispatchable dispatchable,
+                             base::span<const uint8_t> message);
+  void DispatchProtocolMessageInternal(crdtp::Dispatchable dispatchable,
+                                       base::span<const uint8_t> message);
 
   // protocol::FrontendChannel implementation.
-  void sendProtocolResponse(
+  void SendProtocolResponse(
       int call_id,
       std::unique_ptr<protocol::Serializable> message) override;
-  void sendProtocolNotification(
+  void SendProtocolNotification(
       std::unique_ptr<protocol::Serializable> message) override;
-  void flushProtocolNotifications() override;
-  void fallThrough(int call_id,
-                   const std::string& method,
+  void FlushProtocolNotifications() override;
+  void FallThrough(int call_id,
+                   crdtp::span<uint8_t> method,
                    crdtp::span<uint8_t> message) override;
 
   // content::DevToolsAgentHostClientChannel implementation.

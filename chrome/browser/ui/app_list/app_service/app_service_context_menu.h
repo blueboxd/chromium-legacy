@@ -10,16 +10,13 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcut_item.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 
 class AppContextMenuDelegate;
 class AppListControllerDelegate;
 class Profile;
-
-namespace arc {
-class ArcAppShortcutsMenuBuilder;
-}
 
 namespace extensions {
 class ContextMenuMatcher;
@@ -49,14 +46,11 @@ class AppServiceContextMenu : public app_list::AppContextMenu {
   // Build additional extension app menu items.
   void BuildExtensionAppShortcutsMenu(ui::SimpleMenuModel* menu_model);
 
-  // Build additional ARC app shortcuts menu items.
-  // TODO(crbug.com/1038487): consider merging into AppService.
-  void BuildArcAppShortcutsMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
-                                GetMenuModelCallback callback);
-
   void ShowAppInfo();
 
   void SetLaunchType(int command_id);
+
+  void ExecuteArcShortcutCommand(int command_id);
 
   apps::mojom::AppType app_type_;
 
@@ -65,7 +59,8 @@ class AppServiceContextMenu : public app_list::AppContextMenu {
 
   std::unique_ptr<extensions::ContextMenuMatcher> extension_menu_items_;
 
-  std::unique_ptr<arc::ArcAppShortcutsMenuBuilder> arc_shortcuts_menu_builder_;
+  // Caches the app shortcut items.
+  std::unique_ptr<arc::ArcAppShortcutItems> app_shortcut_items_;
 
   base::WeakPtrFactory<AppServiceContextMenu> weak_ptr_factory_{this};
 };

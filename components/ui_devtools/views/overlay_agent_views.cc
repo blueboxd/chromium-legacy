@@ -391,7 +391,7 @@ protocol::Response OverlayAgentViews::setInspectMode(
   } else if (in_mode.compare("none") == 0) {
     RemovePreTargetHandler();
   }
-  return protocol::Response::OK();
+  return protocol::Response::Success();
 }
 
 protocol::Response OverlayAgentViews::highlightNode(
@@ -403,7 +403,7 @@ protocol::Response OverlayAgentViews::highlightNode(
 protocol::Response OverlayAgentViews::hideHighlight() {
   if (layer_for_highlighting_ && layer_for_highlighting_->visible())
     layer_for_highlighting_->SetVisible(false);
-  return protocol::Response::OK();
+  return protocol::Response::Success();
 }
 
 void OverlayAgentViews::ShowDistancesInHighlightOverlay(int pinned_id,
@@ -469,10 +469,10 @@ protocol::Response OverlayAgentViews::HighlightNode(int node_id,
                                                     bool show_size) {
   UIElement* element = dom_agent()->GetElementFromNodeId(node_id);
   if (!element)
-    return protocol::Response::Error("No node found with that id");
+    return protocol::Response::ServerError("No node found with that id");
 
   if (element->type() == UIElementType::ROOT)
-    return protocol::Response::Error("Cannot highlight root node.");
+    return protocol::Response::ServerError("Cannot highlight root node.");
 
   if (!layer_for_highlighting_) {
     layer_for_highlighting_.reset(new ui::Layer(ui::LayerType::LAYER_TEXTURED));
@@ -485,7 +485,7 @@ protocol::Response OverlayAgentViews::HighlightNode(int node_id,
   show_size_on_canvas_ = show_size;
   layer_for_highlighting_->SetVisible(
       UpdateHighlight(element->GetNodeWindowAndScreenBounds()));
-  return protocol::Response::OK();
+  return protocol::Response::Success();
 }
 
 void OverlayAgentViews::OnMouseEvent(ui::MouseEvent* event) {

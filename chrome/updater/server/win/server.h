@@ -32,7 +32,7 @@ class UpdaterImpl
                           const base::char16* version,
                           const base::char16* existence_checker_path) override;
   IFACEMETHODIMP Update(const base::char16* app_id) override;
-  IFACEMETHODIMP UpdateAll() override;
+  IFACEMETHODIMP UpdateAll(IUpdaterObserver* observer) override;
 
  private:
   ~UpdaterImpl() override = default;

@@ -98,6 +98,7 @@ _CONFIG = [
             # //base/callback.h is allowed, but you need to use WTF::Bind or
             # WTF::BindRepeating to create callbacks in Blink.
             'base::BarrierClosure',
+            'base::NullCallback',
             'base::OnceCallback',
             'base::OnceClosure',
             'base::RepeatingCallback',
@@ -534,6 +535,13 @@ _CONFIG = [
         'allowed': [
             # The existing code already contains gin::IsolateHolder.
             'gin::IsolateHolder',
+        ],
+    },
+    {
+        'paths': ['third_party/blink/renderer/core/frame/web_frame_widget_base.cc'],
+        'allowed': [
+            'cc::SwapPromise',
+            'viz::CompositorFrameMetadata',
         ],
     },
     {

@@ -25,12 +25,11 @@ HeadlessDevToolsManagerDelegate::~HeadlessDevToolsManagerDelegate() = default;
 
 void HeadlessDevToolsManagerDelegate::HandleCommand(
     content::DevToolsAgentHostClientChannel* channel,
-    const std::string& method,
     base::span<const uint8_t> message,
     NotHandledCallback callback) {
   auto it = sessions_.find(channel);
   DCHECK(it != sessions_.end());
-  it->second->HandleCommand(method, message, std::move(callback));
+  it->second->HandleCommand(message, std::move(callback));
 }
 
 scoped_refptr<content::DevToolsAgentHost>

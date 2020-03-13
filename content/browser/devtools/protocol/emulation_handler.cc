@@ -98,7 +98,7 @@ Response EmulationHandler::Disable() {
     device_emulation_enabled_ = false;
     UpdateDeviceEmulationState();
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 Response EmulationHandler::SetGeolocationOverride(
@@ -115,14 +115,14 @@ Response EmulationHandler::SetGeolocationOverride(
     geoposition->timestamp = base::Time::Now();
 
     if (!device::ValidateGeoposition(*geoposition))
-      return Response::Error("Invalid geolocation");
+      return Response::ServerError("Invalid geolocation");
 
   } else {
     geoposition->error_code =
         device::mojom::Geoposition::ErrorCode::POSITION_UNAVAILABLE;
   }
   geolocation_context->SetOverride(std::move(geoposition));
-  return Response::OK();
+  return Response::Success();
 }
 
 Response EmulationHandler::ClearGeolocationOverride() {
@@ -131,7 +131,7 @@ Response EmulationHandler::ClearGeolocationOverride() {
 
   auto* geolocation_context = GetWebContents()->GetGeolocationContext();
   geolocation_context->ClearOverride();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response EmulationHandler::SetEmitTouchEventsForMouse(
@@ -140,7 +140,7 @@ Response EmulationHandler::SetEmitTouchEventsForMouse(
   touch_emulation_enabled_ = enabled;
   touch_emulation_configuration_ = configuration.fromMaybe("");
   UpdateTouchEventEmulationState();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response EmulationHandler::CanEmulate(bool* result) {
@@ -154,7 +154,7 @@ Response EmulationHandler::CanEmulate(bool* result) {
       *result = false;
   }
 #endif  // defined(OS_ANDROID)
-  return Response::OK();
+  return Response::Success();
 }
 
 Response EmulationHandler::SetDeviceMetricsOverride(
@@ -175,7 +175,7 @@ Response EmulationHandler::SetDeviceMetricsOverride(
   const static int max_orientation_angle = 360;
 
   if (!host_)
-    return Response::Error("Target does not support metrics override");
+    return Response::ServerError("Target does not support metrics override");
 
   if (screen_width.fromMaybe(0) < 0 || screen_height.fromMaybe(0) < 0 ||
       screen_width.fromMaybe(0) > max_size ||
@@ -261,7 +261,7 @@ Response EmulationHandler::SetDeviceMetricsOverride(
       size_changed =
           GetWebContents()->SetDeviceEmulationSize(gfx::Size(width, height));
     } else {
-      return Response::Error("Can't find the associated web contents");
+      return Response::ServerError("Can't find the associated web contents");
     }
   }
 
@@ -270,7 +270,7 @@ Response EmulationHandler::SetDeviceMetricsOverride(
     // only sent to the client once updates were applied.
     if (size_changed)
       return Response::FallThrough();
-    return Response::OK();
+    return Response::Success();
   }
 
   device_emulation_enabled_ = true;
@@ -281,15 +281,15 @@ Response EmulationHandler::SetDeviceMetricsOverride(
   // response is only sent to the client once updates were applied.
   // Unless the renderer has crashed.
   if (GetWebContents() && GetWebContents()->IsCrashed())
-    return Response::OK();
+    return Response::Success();
   return Response::FallThrough();
 }
 
 Response EmulationHandler::ClearDeviceMetricsOverride() {
   if (!device_emulation_enabled_)
-    return Response::OK();
+    return Response::Success();
   if (!host_)
-    return Response::Error("Can't find the associated web contents");
+    return Response::ServerError("Can't find the associated web contents");
   GetWebContents()->ClearDeviceEmulationSize();
   device_emulation_enabled_ = false;
   device_emulation_params_ = blink::WebDeviceEmulationParams();
@@ -298,7 +298,7 @@ Response EmulationHandler::ClearDeviceMetricsOverride() {
   // is only sent to the client once updates were applied.
   // Unless the renderer has crashed.
   if (GetWebContents()->IsCrashed())
-    return Response::OK();
+    return Response::Success();
   return Response::FallThrough();
 }
 
@@ -307,9 +307,9 @@ Response EmulationHandler::SetVisibleSize(int width, int height) {
     return Response::InvalidParams("Width and height must be non-negative");
 
   if (!host_)
-    return Response::Error("Can't find the associated web contents");
+    return Response::ServerError("Can't find the associated web contents");
   GetWebContents()->SetDeviceEmulationSize(gfx::Size(width, height));
-  return Response::OK();
+  return Response::Success();
 }
 
 Response EmulationHandler::SetUserAgentOverride(

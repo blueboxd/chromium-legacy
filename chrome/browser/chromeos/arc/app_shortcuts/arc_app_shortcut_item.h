@@ -25,7 +25,7 @@ struct ArcAppShortcutItem {
   std::string shortcut_id;
 
   // The short description of this shortcut.
-  base::string16 short_label;
+  std::string short_label;
 
   // The icon for this shortcut.
   gfx::ImageSkia icon;

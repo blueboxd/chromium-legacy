@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "chromecast/media/api/cma_backend.h"
 #include "chromecast/media/api/decoder_buffer_base.h"
-#include "chromecast/media/cma/backend/cma_backend.h"
 #include "chromecast/public/graphics_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

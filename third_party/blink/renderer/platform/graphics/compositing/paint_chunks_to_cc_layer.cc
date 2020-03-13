@@ -304,18 +304,21 @@ static bool CombineClip(const ClipPaintPropertyNode& clip,
     return false;
 
   // Don't combine two rounded clip rects.
-  bool clip_is_rounded = clip.ClipRect().IsRounded();
+  bool clip_is_rounded = clip.PixelSnappedClipRect().IsRounded();
   bool combined_is_rounded = combined_clip_rect.IsRounded();
   if (clip_is_rounded && combined_is_rounded)
     return false;
 
   // If one is rounded and the other contains the rounded bounds, use the
   // rounded as the combined.
-  if (combined_is_rounded)
-    return clip.ClipRect().Rect().Contains(combined_clip_rect.Rect());
+  if (combined_is_rounded) {
+    return clip.PixelSnappedClipRect().Rect().Contains(
+        combined_clip_rect.Rect());
+  }
   if (clip_is_rounded) {
-    if (combined_clip_rect.Rect().Contains(clip.ClipRect().Rect())) {
-      combined_clip_rect = clip.ClipRect();
+    if (combined_clip_rect.Rect().Contains(
+            clip.PixelSnappedClipRect().Rect())) {
+      combined_clip_rect = clip.PixelSnappedClipRect();
       return true;
     }
     return false;
@@ -323,8 +326,8 @@ static bool CombineClip(const ClipPaintPropertyNode& clip,
 
   // The combined is the intersection if both are rectangular.
   DCHECK(!combined_is_rounded && !clip_is_rounded);
-  combined_clip_rect = FloatRoundedRect(
-      Intersection(combined_clip_rect.Rect(), clip.ClipRect().Rect()));
+  combined_clip_rect = FloatRoundedRect(Intersection(
+      combined_clip_rect.Rect(), clip.PixelSnappedClipRect().Rect()));
   return true;
 }
 
@@ -380,7 +383,8 @@ void ConversionContext::SwitchToClip(
 
   // Step 3: Now apply the list of clips in top-down order.
   DCHECK(pending_clips.size());
-  auto pending_combined_clip_rect = pending_clips.back()->ClipRect();
+  auto pending_combined_clip_rect =
+      pending_clips.back()->PixelSnappedClipRect();
   const auto* lowest_combined_clip_node = pending_clips.back();
   for (auto i = pending_clips.size() - 1; i--;) {
     const auto* sub_clip = pending_clips[i];
@@ -391,7 +395,7 @@ void ConversionContext::SwitchToClip(
       // |sub_clip| can't be combined to previous clips. Output the current
       // combined clip, and start new combination.
       StartClip(pending_combined_clip_rect, *lowest_combined_clip_node);
-      pending_combined_clip_rect = sub_clip->ClipRect();
+      pending_combined_clip_rect = sub_clip->PixelSnappedClipRect();
       lowest_combined_clip_node = sub_clip;
     }
   }

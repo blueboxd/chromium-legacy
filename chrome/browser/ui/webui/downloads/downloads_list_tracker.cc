@@ -75,6 +75,8 @@ const char* GetDangerTypeString(download::DownloadDangerType danger_type) {
       return "DEEP_SCANNED_SAFE";
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
       return "DEEP_SCANNED_OPENED_DANGEROUS";
+    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
+      return "BLOCKED_UNSUPPORTED_FILE_TYPE";
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:

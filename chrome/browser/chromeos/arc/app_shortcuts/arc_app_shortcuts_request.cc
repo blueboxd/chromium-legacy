@@ -72,7 +72,7 @@ void ArcAppShortcutsRequest::OnGetAppShortcutItems(
   for (const auto& shortcut_item_ptr : shortcut_items) {
     ArcAppShortcutItem item;
     item.shortcut_id = shortcut_item_ptr->shortcut_id;
-    item.short_label = base::UTF8ToUTF16(shortcut_item_ptr->short_label);
+    item.short_label = shortcut_item_ptr->short_label;
     item.type = shortcut_item_ptr->type;
     item.rank = shortcut_item_ptr->rank;
     items_->emplace_back(std::move(item));

@@ -1267,7 +1267,8 @@ void WebViewImpl::UpdateICBAndResizeViewport(
   if (GetBrowserControls().PermittedState() ==
           cc::BrowserControlsState::kBoth &&
       !GetBrowserControls().ShrinkViewport()) {
-    icb_size.Expand(0, -GetBrowserControls().TotalHeight());
+    icb_size.Expand(0, -(GetBrowserControls().TotalHeight() -
+                         GetBrowserControls().TotalMinHeight()));
   }
 
   GetPageScaleConstraintsSet().DidChangeInitialContainingBlockSize(icb_size);

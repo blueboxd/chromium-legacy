@@ -185,23 +185,6 @@ class InMenuButtonBackground : public views::Background {
   }
 
  private:
-  static SkColor BackgroundColor(const View* view,
-                                 views::Button::ButtonState state) {
-    const ui::NativeTheme* theme = view->GetNativeTheme();
-    switch (state) {
-      case views::Button::STATE_PRESSED:
-        return theme->GetSystemColor(
-            ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
-      case views::Button::STATE_HOVERED:
-        // Hovered should be handled in DrawBackground.
-        NOTREACHED();
-        FALLTHROUGH;
-      default:
-        return theme->GetSystemColor(
-            ui::NativeTheme::kColorId_MenuBackgroundColor);
-    }
-  }
-
   void DrawBackground(gfx::Canvas* canvas,
                       const views::View* view,
                       const gfx::Rect& bounds,

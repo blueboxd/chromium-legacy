@@ -12,9 +12,11 @@ const PropertyTreeState& PropertyTreeState::Uninitialized() {
   DEFINE_STATIC_REF(const TransformPaintPropertyNode, transform,
                     TransformPaintPropertyNode::Create(
                         TransformPaintPropertyNode::Root(), {}));
-  DEFINE_STATIC_REF(const ClipPaintPropertyNode, clip,
-                    ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
-                                                  {transform}));
+  DEFINE_STATIC_REF(
+      const ClipPaintPropertyNode, clip,
+      ClipPaintPropertyNode::Create(
+          ClipPaintPropertyNode::Root(),
+          ClipPaintPropertyNode::State(transform, FloatRoundedRect())));
   DEFINE_STATIC_REF(const EffectPaintPropertyNode, effect,
                     EffectPaintPropertyNode::Create(
                         EffectPaintPropertyNode::Root(), {transform}));

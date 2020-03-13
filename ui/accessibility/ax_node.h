@@ -172,7 +172,7 @@ class AX_EXPORT AXNode final {
   void Destroy();
 
   // Return true if this object is equal to or a descendant of |ancestor|.
-  bool IsDescendantOf(AXNode* ancestor);
+  bool IsDescendantOf(const AXNode* ancestor) const;
 
   // Gets the text offsets where new lines start either from the node's data or
   // by computing them and caching the result.

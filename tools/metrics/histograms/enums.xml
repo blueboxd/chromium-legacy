@@ -16992,6 +16992,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="15" label="DEEP_SCANNED_SAFE"/>
   <int value="16" label="DEEP_SCANNED_OPENED_DANGEROUS"/>
   <int value="17" label="PROMPT_FOR_SCANNING"/>
+  <int value="18" label="BLOCKED_UNSUPPORTED_FILETYPE"/>
 </enum>
 
 <enum name="DownloadLocationDialogResult">
@@ -49956,6 +49957,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Hashing/encryption error"/>
   <int value="3" label="Invalid server response"/>
   <int value="4" label="Network error"/>
+  <int value="5" label="Quota limit"/>
 </enum>
 
 <enum name="PasswordLeakLookupResponseResult">
@@ -57583,6 +57585,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="32" label="SENSITIVE_CONTENT_BLOCK"/>
   <int value="33" label="DEEP_SCANNED_SAFE"/>
   <int value="34" label="ADVANCED_PROTECTION_PROMPT"/>
+  <int value="35" label="BLOCKED_UNSUPPOTED_FILETYPE"/>
 </enum>
 
 <enum name="SBClientDownloadCheckResult">
@@ -57600,6 +57603,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="11" label="SENSITIVE_CONTENT_BLOCK"/>
   <int value="12" label="DEEP_SCANNED_SAFE"/>
   <int value="13" label="PROMPT_FOR_SCANNING"/>
+  <int value="14" label="BLOCKED_UNSUPPORTED_FILETYPE"/>
 </enum>
 
 <enum name="SBClientDownloadExtensions">

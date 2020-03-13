@@ -256,10 +256,6 @@ public class LibraryLoader {
         return mUseModernLinker;
     }
 
-    public boolean areTestsEnabled() {
-        return NativeLibraries.sEnableLinkerTests;
-    }
-
     @RemovableInRelease
     public void enableJniChecks() {
         if (!BuildConfig.DCHECK_IS_ON) return;
@@ -711,7 +707,8 @@ public class LibraryLoader {
     }
 
     /**
-     * Override the library loader (normally with a mock) for testing.
+     * Overrides the library loader (normally with a mock) for testing.
+     *
      * @param loader the mock library loader.
      */
     @VisibleForTesting

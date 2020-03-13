@@ -21,7 +21,6 @@ FORWARD_DECLARE_TEST(WorkletAnimationTest, NonImplInstanceDoesNotTickKeyframe);
 
 class AnimationOptions;
 class AnimationEffectTimings;
-class ScrollTimeline;
 
 // A WorkletAnimation is an animation that allows its animation
 // timing to be controlled by an animator instance that is running in a
@@ -40,7 +39,6 @@ class CC_ANIMATION_EXPORT WorkletAnimation final : public Animation {
                    WorkletAnimationId worklet_animation_id,
                    const std::string& name,
                    double playback_rate,
-                   scoped_refptr<ScrollTimeline> scroll_timeline,
                    std::unique_ptr<AnimationOptions> options,
                    std::unique_ptr<AnimationEffectTimings> effect_timings,
                    bool is_controlling_instance);
@@ -48,16 +46,12 @@ class CC_ANIMATION_EXPORT WorkletAnimation final : public Animation {
       WorkletAnimationId worklet_animation_id,
       const std::string& name,
       double playback_rate,
-      scoped_refptr<ScrollTimeline> scroll_timeline,
       std::unique_ptr<AnimationOptions> options,
       std::unique_ptr<AnimationEffectTimings> effect_timings);
   scoped_refptr<Animation> CreateImplInstance() const override;
 
   WorkletAnimationId worklet_animation_id() { return worklet_animation_id_; }
   const std::string& name() const { return name_; }
-  const ScrollTimeline* scroll_timeline() const {
-    return scroll_timeline_.get();
-  }
 
   bool IsWorkletAnimation() const override;
 
@@ -75,11 +69,6 @@ class CC_ANIMATION_EXPORT WorkletAnimation final : public Animation {
 
   void PushPropertiesTo(Animation* animation_impl) override;
 
-  void PromoteScrollTimelinePendingToActive() override;
-  void UpdateScrollTimeline(base::Optional<ElementId> scroller_id,
-                            base::Optional<double> start_scroll_offset,
-                            base::Optional<double> end_scroll_offset) override;
-
   // Called by Blink WorkletAnimation when its playback rate is updated.
   void UpdatePlaybackRate(double playback_rate);
   void SetPlaybackRateForTesting(double playback_rate) {
@@ -96,7 +85,6 @@ class CC_ANIMATION_EXPORT WorkletAnimation final : public Animation {
                    WorkletAnimationId worklet_animation_id,
                    const std::string& name,
                    double playback_rate,
-                   scoped_refptr<ScrollTimeline> scroll_timeline,
                    std::unique_ptr<AnimationOptions> options,
                    std::unique_ptr<AnimationEffectTimings> effect_timings,
                    bool is_controlling_instance,
@@ -135,13 +123,6 @@ class CC_ANIMATION_EXPORT WorkletAnimation final : public Animation {
 
   WorkletAnimationId worklet_animation_id_;
   std::string name_;
-
-  // The ScrollTimeline associated with the underlying animation. If null, the
-  // animation is based on a DocumentTimeline.
-  // TODO(crbug.com/1023508): Remove scroll_timeline_. For scroll-linked
-  // animations, construct animation_timeline_ with ScrollTimeline directly via
-  // blink::Animation::AttachCompositorTimeline.
-  scoped_refptr<ScrollTimeline> scroll_timeline_;
 
   // Controls speed of the animation.
   // https://drafts.csswg.org/web-animations-2/#animation-effect-playback-rate

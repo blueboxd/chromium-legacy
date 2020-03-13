@@ -72,7 +72,7 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge {
   void OnGetAllSyncableNetworksResult(
       std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
       syncer::EntityChangeList change_list,
-      std::vector<sync_pb::WifiConfigurationSpecifics> list);
+      std::vector<sync_pb::WifiConfigurationSpecifics> local_network_list);
 
   // An in-memory list of the proto's that mirrors what is on the sync server.
   // This gets updated when changes are received from the server and after local

@@ -5363,7 +5363,7 @@ ui::AXMode ChromeContentBrowserClient::GetAXModeForBrowserContext(
 content::ContentBrowserClient::WideColorGamutHeuristic
 ChromeContentBrowserClient::GetWideColorGamutHeuristic() {
   if (viz::AlwaysUseWideColorGamut() ||
-      base::FeatureList::IsEnabled(features::kDynamicColorGamut)) {
+      features::IsDynamicColorGamutEnabled()) {
     return WideColorGamutHeuristic::kUseDisplay;
   }
 

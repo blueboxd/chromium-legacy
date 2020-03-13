@@ -15,6 +15,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -284,16 +285,16 @@ ReadJSONRulesResult& ReadJSONRulesResult::operator=(ReadJSONRulesResult&&) =
     default;
 
 // static
-const size_t RulesetSource::kStaticRulesetID = 1;
-const size_t RulesetSource::kDynamicRulesetID = 2;
-
-// static
 RulesetSource RulesetSource::CreateStatic(const Extension& extension) {
+  const DNRManifestData::RulesetInfo& info =
+      declarative_net_request::DNRManifestData::GetRuleset(extension);
+
+  DCHECK_GE(info.id, kMinValidStaticRulesetID);
   return RulesetSource(
-      declarative_net_request::DNRManifestData::GetRulesetPath(extension),
+      extension.path().Append(info.relative_path),
       extension.path().Append(file_util::GetIndexedRulesetRelativePath()),
-      kStaticRulesetID, dnr_api::SOURCE_TYPE_MANIFEST,
-      dnr_api::MAX_NUMBER_OF_RULES, extension.id());
+      info.id, dnr_api::SOURCE_TYPE_MANIFEST, dnr_api::MAX_NUMBER_OF_RULES,
+      extension.id());
 }
 
 // static
@@ -312,7 +313,7 @@ RulesetSource RulesetSource::CreateDynamic(content::BrowserContext* context,
 
 // static
 std::unique_ptr<RulesetSource> RulesetSource::CreateTemporarySource(
-    size_t id,
+    int id,
     dnr_api::SourceType type,
     size_t rule_count_limit,
     ExtensionId extension_id) {
@@ -323,23 +324,11 @@ std::unique_ptr<RulesetSource> RulesetSource::CreateTemporarySource(
     return nullptr;
   }
 
-  return std::make_unique<RulesetSource>(
+  // Use WrapUnique since RulesetSource constructor is private.
+  return base::WrapUnique(new RulesetSource(
       std::move(temporary_file_json), std::move(temporary_file_indexed), id,
-      type, rule_count_limit, std::move(extension_id));
+      type, rule_count_limit, std::move(extension_id)));
 }
-
-RulesetSource::RulesetSource(base::FilePath json_path,
-                             base::FilePath indexed_path,
-                             size_t id,
-                             dnr_api::SourceType type,
-                             size_t rule_count_limit,
-                             ExtensionId extension_id)
-    : json_path_(std::move(json_path)),
-      indexed_path_(std::move(indexed_path)),
-      id_(id),
-      type_(type),
-      rule_count_limit_(rule_count_limit),
-      extension_id_(std::move(extension_id)) {}
 
 RulesetSource::~RulesetSource() = default;
 RulesetSource::RulesetSource(RulesetSource&&) = default;
@@ -477,6 +466,19 @@ bool RulesetSource::WriteRulesToJSON(
   return base::WriteFile(json_path_, json_contents.data(), data_size) ==
          data_size;
 }
+
+RulesetSource::RulesetSource(base::FilePath json_path,
+                             base::FilePath indexed_path,
+                             int id,
+                             dnr_api::SourceType type,
+                             size_t rule_count_limit,
+                             ExtensionId extension_id)
+    : json_path_(std::move(json_path)),
+      indexed_path_(std::move(indexed_path)),
+      id_(id),
+      type_(type),
+      rule_count_limit_(rule_count_limit),
+      extension_id_(std::move(extension_id)) {}
 
 }  // namespace declarative_net_request
 }  // namespace extensions

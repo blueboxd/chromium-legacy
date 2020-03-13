@@ -76,6 +76,10 @@ void MemoryPurgeManager::OnPageDestroyed(PageLifecycleState state) {
   total_page_count_--;
   if (state == PageLifecycleState::kFrozen)
     frozen_page_count_--;
+
+  if (!CanPurge())
+    purge_timer_.Stop();
+
   DCHECK_LE(frozen_page_count_, total_page_count_);
 }
 

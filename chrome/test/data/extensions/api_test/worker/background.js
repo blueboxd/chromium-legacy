@@ -81,11 +81,19 @@ chrome.test.getConfig(function(config) {
       workerUrl),
     noRedirectTest.bind(
       undefined,
-      () => { return new SharedWorker(sharedWorkerUrl) },
+      () => {
+        return new SharedWorker(
+            sharedWorkerUrl,
+            {name: 'noRedirectTest-classic'})
+      },
       sharedWorkerUrl),
     noRedirectTest.bind(
       undefined,
-      () => { return new SharedWorker(sharedWorkerUrl, {type: 'module'}) },
+      () => {
+        return new SharedWorker(
+            sharedWorkerUrl,
+            {name: 'noRedirectTest-module', type: 'module'})
+      },
       sharedWorkerUrl),
 
     sameOriginRedirectTest.bind(
@@ -98,12 +106,18 @@ chrome.test.getConfig(function(config) {
       workerUrl),
     sameOriginRedirectTest.bind(
       undefined,
-      () => { return new SharedWorker(redirectedSharedWorkerUrl) },
+      () => {
+        return new SharedWorker(
+            redirectedSharedWorkerUrl,
+            {name: 'sameOriginRedirectTest-classic'});
+      },
       sharedWorkerUrl),
     sameOriginRedirectTest.bind(
       undefined,
       () => {
-        return new SharedWorker(redirectedSharedWorkerUrl, {type: 'module'});
+        return new SharedWorker(
+            redirectedSharedWorkerUrl,
+            {name: 'sameOriginRedirectTest-module', type: 'module'});
       },
       sharedWorkerUrl),
 
@@ -117,12 +131,17 @@ chrome.test.getConfig(function(config) {
       }),
     crossOriginRedirectTest.bind(
       undefined,
-      () => { return new SharedWorker(crossOriginRedirectedSharedWorkerUrl) }),
+      () => {
+        return new SharedWorker(
+            crossOriginRedirectedSharedWorkerUrl,
+            {name: 'crossOriginRedirectTest-classic'});
+      }),
     crossOriginRedirectTest.bind(
       undefined,
       () => {
-        return new SharedWorker(crossOriginRedirectedSharedWorkerUrl,
-                                {type: 'module'});
+        return new SharedWorker(
+            crossOriginRedirectedSharedWorkerUrl,
+            {name: 'crossOriginRedirectTest-module', type: 'module'});
       }),
   ]);
 });

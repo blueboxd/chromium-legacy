@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/test/video.h"
 
 namespace media {
@@ -25,6 +26,24 @@ VideoEncoderTestEnvironment* VideoEncoderTestEnvironment::Create(
       std::make_unique<media::test::Video>(video_path, video_metadata_path);
   if (!video->Load()) {
     LOG(ERROR) << "Failed to load " << video_path;
+    return nullptr;
+  }
+
+  // If the video file has the .webm format it needs to be decoded first.
+  // TODO(b/151134705): Add support to cache decompressed video files.
+  if (video->FilePath().MatchesExtension(FILE_PATH_LITERAL(".webm"))) {
+    VLOGF(1) << "Test video " << video->FilePath()
+             << " is compressed, decoding...";
+    if (!video->Decode()) {
+      LOG(ERROR) << "Failed to decode " << video->FilePath();
+      return nullptr;
+    }
+  }
+
+  if (video->PixelFormat() == VideoPixelFormat::PIXEL_FORMAT_UNKNOWN) {
+    LOG(ERROR) << "Test video " << video->FilePath()
+               << " has an invalid video pixel format "
+               << VideoPixelFormatToString(video->PixelFormat());
     return nullptr;
   }
 

@@ -13,7 +13,6 @@
 
 class Profile;
 class ProfileAttributesStorage;
-class ProfileManager;
 
 namespace base {
 class FilePath;
@@ -63,29 +62,6 @@ class ProfileMetrics {
     NUM_DELETE_PROFILE_METRICS
   };
 
-  // Enum for counting the ways user profiles and menus were opened.
-  enum ProfileOpen {
-    NTP_AVATAR_BUBBLE = 0,   // User opens avatar menu from NTP
-    ICON_AVATAR_BUBBLE,      // User opens the avatar menu from button
-    SWITCH_PROFILE_ICON,     // User switches profiles from icon menu
-    SWITCH_PROFILE_MENU,     // User switches profiles from menu bar
-    SWITCH_PROFILE_DOCK,     // User switches profiles from dock (Mac-only)
-    OPEN_USER_MANAGER,       // User opens the User Manager
-    SWITCH_PROFILE_MANAGER,  // User switches profiles from the User Manager
-    SWITCH_PROFILE_UNLOCK,   // User switches to locked profile via User Manager
-    SWITCH_PROFILE_GUEST,    // User switches to guest profile
-    SWITCH_PROFILE_CONTEXT_MENU,  // User switches profiles from context menu
-    SWITCH_PROFILE_DUPLICATE,     // User switches to existing duplicate profile
-    NUM_PROFILE_OPEN_METRICS
-  };
-
-  // Enum for getting net counts for adding and deleting users.
-  enum ProfileNetUserCounts {
-    ADD_NEW_USER = 0,         // Total count of add new user
-    PROFILE_DELETED,          // User deleted a profile
-    NUM_PROFILE_NET_METRICS
-  };
-
   // The options for sync are logged after the user has changed their sync
   // setting. See people_handler.h.
   // These values are persisted to logs. Entries should not be renumbered and
@@ -96,12 +72,6 @@ class ProfileMetrics {
     SYNC_ENCRYPT,             // User has chosen to encrypt all data
     SYNC_PASSPHRASE,          // User is using a passphrase
     NUM_PROFILE_SYNC_METRICS
-  };
-
-  enum ProfileType {
-    ORIGINAL = 0,             // Refers to the original/default profile
-    SECONDARY,                // Refers to a user-created profile
-    NUM_PROFILE_TYPE_METRICS
   };
 
   enum ProfileGaia {
@@ -156,10 +126,6 @@ class ProfileMetrics {
   static void CountProfileInformation(ProfileAttributesStorage* storage,
                                       profile_metrics::Counts* counts);
 
-#if !defined(OS_ANDROID)
-  static void LogNumberOfProfileSwitches();
-#endif
-
   // Returns profile type for logging.
   static profile_metrics::BrowserProfileType GetBrowserProfileType(
       Profile* profile);
@@ -168,12 +134,6 @@ class ProfileMetrics {
   static void LogProfileAddNewUser(ProfileAdd metric);
   static void LogProfileAvatarSelection(size_t icon_index);
   static void LogProfileDeleteUser(ProfileDelete metric);
-  static void LogProfileOpenMethod(ProfileOpen metric);
-#if !defined(OS_ANDROID)
-  static void LogProfileSwitch(ProfileOpen metric,
-                               ProfileManager* manager,
-                               const base::FilePath& profile_path);
-#endif
   static void LogProfileSwitchGaia(ProfileGaia metric);
   static void LogProfileSyncInfo(ProfileSync metric);
   static void LogProfileAuthResult(ProfileAuth metric);

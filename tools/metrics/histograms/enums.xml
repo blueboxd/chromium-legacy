@@ -53900,6 +53900,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="ProfileOpenMethod">
+  <obsolete>
+    Deprecated 03/2020.
+  </obsolete>
   <int value="0" label="Opened the avatar menu from NTP"/>
   <int value="1" label="Opened the avatar menu from avatar button"/>
   <int value="2" label="Switch to profile from icon menu"/>

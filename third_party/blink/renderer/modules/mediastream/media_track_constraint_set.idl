@@ -54,6 +54,6 @@ dictionary MediaTrackConstraintSet {
     ConstrainBoolean   torch;
     // The "mandatory" and "_optional" members are retained for conformance
     // with https://www.w3.org/TR/2013/WD-mediacapture-streams-20130903/
-    Dictionary mandatory;
-    sequence<Dictionary> _optional;
+    object mandatory;
+    sequence<object> _optional;
 };

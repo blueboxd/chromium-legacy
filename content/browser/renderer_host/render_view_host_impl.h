@@ -22,6 +22,7 @@
 #include "base/process/kill.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/input_device_change_observer.h"
+#include "content/browser/renderer_host/page_lifecycle_state_manager.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
 #include "content/browser/site_instance_impl.h"
@@ -221,6 +222,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   // to allow it to record the latency of this navigation.
   void LeaveBackForwardCache(base::TimeTicks navigation_start);
 
+  void SetIsFrozen(bool frozen);
+
   // Called during frame eviction to return all SurfaceIds in the frame tree.
   // Marks all views in the frame tree as evicted.
   std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction();
@@ -309,6 +312,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   // specific code away from this class.
   friend class RenderFrameHostImpl;
   friend class TestRenderViewHost;
+  friend class PageLifecycleStateManagerBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, BasicRenderFrameHost);
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, RoutingIdSane);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
@@ -384,6 +388,9 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // This monitors input changes so they can be reflected to the interaction MQ.
   std::unique_ptr<InputDeviceChangeObserver> input_device_change_observer_;
+
+  // This controls the lifecycle change and notify the renderer.
+  std::unique_ptr<PageLifecycleStateManager> page_lifecycle_state_manager_;
 
   bool updating_web_preferences_ = false;
 

@@ -7,12 +7,25 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/run_loop.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/threading/thread.h"
 #include "base/values.h"
-
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
+#include "media/base/decoder_buffer.h"
+#include "media/base/media.h"
+#include "media/base/video_decoder_config.h"
+#include "media/ffmpeg/ffmpeg_common.h"
+#include "media/filters/ffmpeg_demuxer.h"
+#include "media/filters/in_memory_url_protocol.h"
+#include "media/filters/vpx_video_decoder.h"
+#include "media/gpu/macros.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 namespace test {
@@ -64,6 +77,41 @@ bool Video::Load() {
     return false;
   }
 
+  return true;
+}
+
+bool Video::Decode() {
+  if (codec_ != VideoCodec::kCodecVP9) {
+    LOG(ERROR) << "Decoding is currently only supported for VP9 videos";
+    return false;
+  }
+
+  // The VpxVideoDecoder requires running on a SequencedTaskRunner, so we can't
+  // decode the video on the main test thread.
+  base::Thread decode_thread("DecodeThread");
+  if (!decode_thread.Start()) {
+    LOG(ERROR) << "Failed to start decode thread";
+    return false;
+  }
+
+  std::vector<uint8_t> decompressed_data;
+  bool success = false;
+  base::WaitableEvent done;
+  decode_thread.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&Video::DecodeTask, std::move(data_),
+                                &decompressed_data, &success, &done));
+  done.Wait();
+  decode_thread.Stop();
+
+  if (!success)
+    return false;
+
+  // Set the video's pixel format and clear the profile and codec as the encoded
+  // data will be replaced with the decompressed video stream.
+  pixel_format_ = VideoPixelFormat::PIXEL_FORMAT_I420;
+  profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
+  codec_ = kUnknownVideoCodec;
+  data_ = std::move(decompressed_data);
   return true;
 }
 
@@ -294,6 +342,76 @@ base::Optional<base::FilePath> Video::ResolveFilePath(
   return PathExists(resolved_path)
              ? base::Optional<base::FilePath>(resolved_path)
              : base::Optional<base::FilePath>();
+}
+
+// static
+void Video::DecodeTask(const std::vector<uint8_t> data,
+                       std::vector<uint8_t>* decompressed_data,
+                       bool* success,
+                       base::WaitableEvent* done) {
+  *success = false;
+  InitializeMediaLibrary();
+
+  // Initialize ffmpeg with the compressed video data.
+  InMemoryUrlProtocol protocol(&data[0], data.size(), false);
+  FFmpegGlue glue(&protocol);
+  ASSERT_TRUE(glue.OpenContext());
+
+  // Find the first VP9 stream in the file.
+  int stream_index = -1;
+  VideoDecoderConfig config;
+  for (size_t i = 0; i < glue.format_context()->nb_streams; ++i) {
+    AVStream* stream = glue.format_context()->streams[i];
+    const AVCodecParameters* codec_parameters = stream->codecpar;
+    const AVMediaType codec_type = codec_parameters->codec_type;
+    const AVCodecID codec_id = codec_parameters->codec_id;
+    if (codec_type == AVMEDIA_TYPE_VIDEO && codec_id == AV_CODEC_ID_VP9) {
+      *success = AVStreamToVideoDecoderConfig(stream, &config) &&
+                 config.IsValidConfig();
+      stream_index = i;
+      break;
+    }
+  }
+  if (!*success) {
+    done->Signal();
+    return;
+  }
+
+  // Setup the VP9 decoder.
+  VpxVideoDecoder decoder;
+  decoder.Initialize(
+      config, false, nullptr, base::DoNothing(),
+      base::BindRepeating(&Video::OnFrameDecoded, decompressed_data),
+      base::NullCallback());
+
+  // Start decoding and wait until all frames are ready.
+  AVPacket packet = {};
+  while (av_read_frame(glue.format_context(), &packet) >= 0) {
+    if (packet.stream_index == stream_index) {
+      decoder.Decode(DecoderBuffer::CopyFrom(packet.data, packet.size),
+                     base::DoNothing());
+      base::RunLoop().RunUntilIdle();
+    }
+    av_packet_unref(&packet);
+  }
+
+  done->Signal();
+}
+
+// static
+void Video::OnFrameDecoded(std::vector<uint8_t>* data,
+                           scoped_refptr<VideoFrame> frame) {
+  ASSERT_EQ(frame->format(), VideoPixelFormat::PIXEL_FORMAT_I420);
+  size_t num_planes = VideoFrame::NumPlanes(frame->format());
+  for (size_t plane = 0; plane < num_planes; ++plane) {
+    size_t current_pos = data->size();
+    size_t plane_size =
+        VideoFrame::PlaneSize(frame->format(), plane, frame->coded_size())
+            .GetArea();
+    // TODO(dstaessens): Avoid resizing.
+    data->resize(data->size() + plane_size);
+    std::memcpy(&data->at(current_pos), frame->data(plane), plane_size);
+  }
 }
 
 // static

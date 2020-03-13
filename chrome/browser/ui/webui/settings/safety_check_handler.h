@@ -97,6 +97,10 @@ class SafetyCheckHandler
   // button).
   void HandlePerformSafetyCheck(const base::ListValue* args);
 
+  // Handles updating the safety check parent display string to show how long
+  // ago the safety check last ran.
+  void HandleGetParentRanDisplayString(const base::ListValue* args);
+
   // Triggers an update check and invokes OnUpdateCheckResult once results
   // are available.
   void CheckUpdates();

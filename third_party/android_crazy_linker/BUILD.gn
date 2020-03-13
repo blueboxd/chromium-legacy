@@ -152,6 +152,11 @@ if (is_android) {
       configs -= [ "//build/config/compiler:chromium_code" ]
       configs += [ "//build/config/compiler:no_chromium_code" ]
 
+      # Disable orderfile instrumentation. Code in this target is in a different
+      # .so, cannot call unexported instrumentation functions from another one
+      # (link time error).
+      configs -= [ "//build/config/android:default_orderfile_instrumentation" ]
+
       # This is used to allow shared memory regions to work on Android Q+
       # See http://crbug.com/949804
       deps = [ "//third_party/ashmem" ]

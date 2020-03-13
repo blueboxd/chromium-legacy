@@ -20,6 +20,9 @@ constexpr int kMinValidID = 1;
 // Minimum valid value of a declarative rule priority.
 constexpr int kMinValidPriority = 1;
 
+constexpr int kMinValidStaticRulesetID = 1;
+constexpr int kDynamicRulesetID = 0;
+
 // Default priority used for rules when the priority is not explicity provided
 // by an extension.
 constexpr int kDefaultPriority = 1;

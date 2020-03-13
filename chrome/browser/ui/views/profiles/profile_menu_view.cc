@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
@@ -340,8 +341,7 @@ void ProfileMenuView::OnOtherProfileSelected(
   base::RecordAction(base::UserMetricsAction("ProfileChooser_ProfileClicked"));
   Hide();
   profiles::SwitchToProfile(profile_path, /*always_create=*/false,
-                            ProfileManager::CreateCallback(),
-                            ProfileMetrics::SWITCH_PROFILE_ICON);
+                            ProfileManager::CreateCallback());
 }
 
 void ProfileMenuView::OnCookiesClearedOnExitLinkClicked() {

@@ -66,8 +66,7 @@ void SigninErrorHandler::HandleSwitchToExistingProfile(
   // Switch to the existing duplicate profile. Do not create a new window when
   // any existing ones can be reused.
   profiles::SwitchToProfile(path_switching_to, false,
-                            ProfileManager::CreateCallback(),
-                            ProfileMetrics::SWITCH_PROFILE_DUPLICATE);
+                            ProfileManager::CreateCallback());
 }
 
 void SigninErrorHandler::HandleConfirm(const base::ListValue* args) {

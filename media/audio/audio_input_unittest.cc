@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/environment.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump_type.h"
@@ -19,6 +20,7 @@
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_unittest_util.h"
 #include "media/audio/test_audio_thread.h"
+#include "media/base/media_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -72,7 +74,13 @@ class AudioInputTest : public testing::Test {
       : message_loop_(base::MessagePumpType::UI),
         audio_manager_(AudioManager::CreateForTesting(
             std::make_unique<TestAudioThread>())),
-        audio_input_stream_(NULL) {
+        audio_input_stream_(nullptr) {
+#if defined(OS_LINUX)
+    // Due to problems with PulseAudio failing to start, use a fake audio
+    // stream. https://crbug.com/1047655#c70
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableAudioOutput);
+#endif
     base::RunLoop().RunUntilIdle();
   }
 
@@ -173,26 +181,21 @@ class AudioInputTest : public testing::Test {
 };
 
 // Test create and close of an AudioInputStream without recording audio.
-// Disabled: crbug.com/1060165
-TEST_F(AudioInputTest, DISABLED_CreateAndClose) {
+TEST_F(AudioInputTest, CreateAndClose) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
   MakeAudioInputStreamOnAudioThread();
   CloseAudioInputStreamOnAudioThread();
 }
 
 // Test create, open and close of an AudioInputStream without recording audio.
-// This test is failing on ARM linux: http://crbug.com/238490
-// Disabled: crbug.com/1060165
-TEST_F(AudioInputTest, DISABLED_OpenAndClose) {
+TEST_F(AudioInputTest, OpenAndClose) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
   MakeAudioInputStreamOnAudioThread();
   OpenAndCloseAudioInputStreamOnAudioThread();
 }
 
 // Test create, open, stop and close of an AudioInputStream without recording.
-// This test is failing on ARM linux: http://crbug.com/238490
-// Disabled: crbug.com/1060165
-TEST_F(AudioInputTest, DISABLED_OpenStopAndClose) {
+TEST_F(AudioInputTest, OpenStopAndClose) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
   MakeAudioInputStreamOnAudioThread();
   OpenStopAndCloseAudioInputStreamOnAudioThread();
@@ -200,9 +203,7 @@ TEST_F(AudioInputTest, DISABLED_OpenStopAndClose) {
 
 // Test a normal recording sequence using an AudioInputStream.
 // Very simple test which starts capturing and verifies that recording starts.
-// This test is failing on ARM linux: http://crbug.com/238490
-// Disabled: crbug.com/1060165
-TEST_F(AudioInputTest, DISABLED_Record) {
+TEST_F(AudioInputTest, Record) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
   MakeAudioInputStreamOnAudioThread();
 

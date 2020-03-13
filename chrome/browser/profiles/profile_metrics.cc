@@ -33,39 +33,22 @@ namespace {
 
 const int kMaximumDaysOfDisuse = 4 * 7;  // Should be integral number of weeks.
 
-#if !defined(OS_ANDROID)
-size_t number_of_profile_switches_ = 0;
-#endif
-
-// Enum for tracking the state of profiles being switched to.
-enum ProfileOpenState {
-  // Profile being switched to is already opened and has browsers opened.
-  PROFILE_OPENED = 0,
-  // Profile being switched to is already opened but has no browsers opened.
-  PROFILE_OPENED_NO_BROWSER,
-  // Profile being switched to is not opened.
-  PROFILE_UNOPENED
+enum class ProfileType {
+  ORIGINAL = 0,  // Refers to the original/default profile
+  SECONDARY,     // Refers to a user-created profile
+  kMaxValue = SECONDARY
 };
 
-#if !defined(OS_ANDROID)
-ProfileOpenState GetProfileOpenState(
-    ProfileManager* manager,
-    const base::FilePath& path) {
-  Profile* profile_switched_to = manager->GetProfileByPath(path);
-  if (!profile_switched_to)
-    return PROFILE_UNOPENED;
+// Enum for getting net counts for adding and deleting users.
+enum class ProfileNetUserCounts {
+  ADD_NEW_USER = 0,  // Total count of add new user
+  PROFILE_DELETED,   // User deleted a profile
+  kMaxValue = PROFILE_DELETED
+};
 
-  if (chrome::GetBrowserCount(profile_switched_to) > 0)
-    return PROFILE_OPENED;
-
-  return PROFILE_OPENED_NO_BROWSER;
-}
-#endif
-
-ProfileMetrics::ProfileType GetProfileType(
-    const base::FilePath& profile_path) {
+ProfileType GetProfileType(const base::FilePath& profile_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  ProfileMetrics::ProfileType metric = ProfileMetrics::SECONDARY;
+  ProfileType metric = ProfileType::SECONDARY;
   ProfileManager* manager = g_browser_process->profile_manager();
   base::FilePath user_data_dir;
   // In unittests, we do not always have a profile_manager so check.
@@ -73,7 +56,7 @@ ProfileMetrics::ProfileType GetProfileType(
     user_data_dir = manager->user_data_dir();
   }
   if (profile_path == user_data_dir.AppendASCII(chrome::kInitialProfile)) {
-    metric = ProfileMetrics::ORIGINAL;
+    metric = ProfileType::ORIGINAL;
   }
   return metric;
 }
@@ -212,13 +195,6 @@ profile_metrics::BrowserProfileType ProfileMetrics::GetBrowserProfileType(
   return profile_metrics::BrowserProfileType::kMaxValue;
 }
 
-#if !defined(OS_ANDROID)
-void ProfileMetrics::LogNumberOfProfileSwitches() {
-  UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSwitches",
-                           number_of_profile_switches_);
-}
-#endif
-
 void ProfileMetrics::LogNumberOfProfiles(ProfileAttributesStorage* storage) {
   profile_metrics::Counts counts;
   CountProfileInformation(storage, &counts);
@@ -229,8 +205,8 @@ void ProfileMetrics::LogProfileAddNewUser(ProfileAdd metric) {
   DCHECK(metric < NUM_PROFILE_ADD_METRICS);
   UMA_HISTOGRAM_ENUMERATION("Profile.AddNewUser", metric,
                             NUM_PROFILE_ADD_METRICS);
-  UMA_HISTOGRAM_ENUMERATION("Profile.NetUserCount", ADD_NEW_USER,
-                            NUM_PROFILE_NET_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Profile.NetUserCount",
+                            ProfileNetUserCounts::ADD_NEW_USER);
 }
 
 void ProfileMetrics::LogProfileAvatarSelection(size_t icon_index) {
@@ -423,55 +399,10 @@ void ProfileMetrics::LogProfileDeleteUser(ProfileDelete metric) {
       metric != DELETE_PROFILE_SETTINGS_SHOW_WARNING &&
       metric != DELETE_PROFILE_ABORTED) {
     // If a user was actually deleted, update the net user count.
-    UMA_HISTOGRAM_ENUMERATION("Profile.NetUserCount", PROFILE_DELETED,
-                              NUM_PROFILE_NET_METRICS);
+    UMA_HISTOGRAM_ENUMERATION("Profile.NetUserCount",
+                              ProfileNetUserCounts::PROFILE_DELETED);
   }
 }
-
-void ProfileMetrics::LogProfileOpenMethod(ProfileOpen metric) {
-  DCHECK(metric < NUM_PROFILE_OPEN_METRICS);
-  UMA_HISTOGRAM_ENUMERATION("Profile.OpenMethod", metric,
-                            NUM_PROFILE_OPEN_METRICS);
-}
-
-#if !defined(OS_ANDROID)
-void ProfileMetrics::LogProfileSwitch(
-    ProfileOpen metric,
-    ProfileManager* manager,
-    const base::FilePath& profile_path) {
-  DCHECK(metric < NUM_PROFILE_OPEN_METRICS);
-  ProfileOpenState open_state = GetProfileOpenState(manager, profile_path);
-  switch (open_state) {
-    case PROFILE_OPENED:
-      UMA_HISTOGRAM_ENUMERATION(
-        "Profile.OpenMethod.ToOpenedProfile",
-        metric,
-        NUM_PROFILE_OPEN_METRICS);
-      break;
-    case PROFILE_OPENED_NO_BROWSER:
-      UMA_HISTOGRAM_ENUMERATION(
-        "Profile.OpenMethod.ToOpenedProfileWithoutBrowser",
-        metric,
-        NUM_PROFILE_OPEN_METRICS);
-      break;
-    case PROFILE_UNOPENED:
-      UMA_HISTOGRAM_ENUMERATION(
-        "Profile.OpenMethod.ToUnopenedProfile",
-        metric,
-        NUM_PROFILE_OPEN_METRICS);
-      break;
-    default:
-      // There are no other possible values.
-      NOTREACHED();
-      break;
-  }
-
-  ++number_of_profile_switches_;
-  // The LogOpenMethod histogram aggregates data from profile switches as well
-  // as opening of profile related UI elements.
-  LogProfileOpenMethod(metric);
-}
-#endif
 
 void ProfileMetrics::LogProfileSwitchGaia(ProfileGaia metric) {
   if (metric == GAIA_OPT_IN)
@@ -552,11 +483,6 @@ void ProfileMetrics::LogProfileAndroidAccountManagementMenu(
 #endif  // defined(OS_ANDROID)
 
 void ProfileMetrics::LogProfileLaunch(Profile* profile) {
-  base::FilePath profile_path = profile->GetPath();
-  UMA_HISTOGRAM_ENUMERATION("Profile.LaunchBrowser",
-                            GetProfileType(profile_path),
-                            NUM_PROFILE_TYPE_METRICS);
-
   if (profile->IsSupervised()) {
     base::RecordAction(
         base::UserMetricsAction("ManagedMode_NewManagedUserWindow"));
@@ -564,7 +490,5 @@ void ProfileMetrics::LogProfileLaunch(Profile* profile) {
 }
 
 void ProfileMetrics::LogProfileUpdate(const base::FilePath& profile_path) {
-  UMA_HISTOGRAM_ENUMERATION("Profile.Update",
-                            GetProfileType(profile_path),
-                            NUM_PROFILE_TYPE_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Profile.Update", GetProfileType(profile_path));
 }

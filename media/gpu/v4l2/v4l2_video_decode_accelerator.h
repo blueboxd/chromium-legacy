@@ -57,7 +57,7 @@ class V4L2StatefulWorkaround;
 // The threading model of this class is driven by the fact that it needs to
 // interface two fundamentally different event queues -- the one Chromium
 // provides through MessageLoop, and the one driven by the V4L2 devices which
-// is waited on with epoll().  There are three threads involved:
+// is waited on with epoll().  There are three threads involved in this class:
 //
 // * The child thread, which is the main GPU process thread which calls the
 //   VideoDecodeAccelerator entry points.  Calls from this thread
@@ -69,9 +69,9 @@ class V4L2StatefulWorkaround;
 //   the *Task() routines, as well as V4L2 device events, through
 //   ServiceDeviceTask().  Almost all state modification is done on this thread
 //   (this doesn't include buffer (re)allocation sequence, see below).
-// * The V4L2 device poll thread, owned by the V4L2 device poller. All it does
-//   is epoll() and schedule a ServiceDeviceTask() on the decoder_thread_ when
-//   something interesting happens.
+// * The device_poll_thread_, owned by this class.  All it does is epoll() on
+//   the V4L2 in DevicePollTask() and schedule a ServiceDeviceTask() on the
+//   decoder_thread_ when something interesting happens.
 //   TODO(sheu): replace this thread with an TYPE_IO decoder_thread_.
 //
 // Note that this class has (almost) no locks, apart from the pictures_assigned_
@@ -269,9 +269,9 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
                       int32_t picture_buffer_id,
                       EGLImageKHR egl_image);
 
-  // Service I/O on the V4L2 devices, called by the V4L2 device poller on the
-  // |decoder_thread_|. If |event_pending| is true, one or more events on file
-  // descriptor are pending.
+  // Service I/O on the V4L2 devices.  This task should only be scheduled from
+  // DevicePollTask().  If |event_pending| is true, one or more events
+  // on file descriptor are pending.
   void ServiceDeviceTask(bool event_pending);
 
   // Release buffers awaiting for their fence to be signaled.
@@ -324,15 +324,11 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Device destruction task.
   void DestroyTask();
 
-  // Start the V4L2 device poller.
+  // Start |device_poll_thread_|.
   bool StartDevicePoll();
 
-  // Stop the V4L2 device poller.
+  // Stop |device_poll_thread_|.
   bool StopDevicePoll();
-
-  // Called by the V4L2 device poller on the |decoder_thread_| whenever an error
-  // occurred.
-  void OnPollError();
 
   bool StopInputStream();
   bool StopOutputStream();
@@ -353,6 +349,13 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Try to get |visible_size|. Return visible size, or, if querying it is not
   // supported or produces invalid size, return |coded_size| instead.
   gfx::Size GetVisibleSize(const gfx::Size& coded_size);
+
+  //
+  // Device tasks, to be run on device_poll_thread_.
+  //
+
+  // The device task.
+  void DevicePollTask(bool poll_device);
 
   //
   // Safe from any thread.
@@ -556,6 +559,13 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
 
   // Output picture visible size.
   gfx::Size visible_size_;
+
+  //
+  // The device polling thread handles notifications of V4L2 device changes.
+  //
+
+  // The thread.
+  base::Thread device_poll_thread_;
 
   //
   // Other state, held by the child (main) thread.

@@ -64,6 +64,11 @@ public class CustomTabIncognitoManager implements NativeInitObserver, Destroyabl
         }
     }
 
+    // TODO(crbug.com/1023759): Remove this function.
+    public static boolean hasIsolatedProfile() {
+        return false;
+    }
+
     private void initializeIncognito() {
         mIncognitoTabHost = new IncognitoCustomTabHost();
         IncognitoTabHostRegistry.getInstance().register(mIncognitoTabHost);

@@ -251,6 +251,9 @@ RenderViewHostImpl::RenderViewHostImpl(
   input_device_change_observer_ =
       std::make_unique<InputDeviceChangeObserver>(this);
 
+  page_lifecycle_state_manager_ =
+      std::make_unique<PageLifecycleStateManager>(this);
+
   GetWidget()->set_owner_delegate(this);
 }
 
@@ -429,6 +432,10 @@ void RenderViewHostImpl::LeaveBackForwardCache(
   is_in_back_forward_cache_ = false;
   Send(new PageMsg_RestorePageFromBackForwardCache(GetRoutingID(),
                                                    navigation_start));
+}
+
+void RenderViewHostImpl::SetIsFrozen(bool frozen) {
+  page_lifecycle_state_manager_->SetIsFrozen(frozen);
 }
 
 bool RenderViewHostImpl::IsRenderViewLive() {

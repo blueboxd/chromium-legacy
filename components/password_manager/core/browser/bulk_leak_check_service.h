@@ -102,6 +102,7 @@ class BulkLeakCheckService : public KeyedService,
 #endif  // defined(UNIT_TEST)
 
  private:
+  class MetricsReporter;
   // BulkLeakCheckDelegateInterface:
   void OnFinishedCredential(LeakCheckCredential credential,
                             IsLeaked is_leaked) override;
@@ -117,6 +118,8 @@ class BulkLeakCheckService : public KeyedService,
   std::unique_ptr<LeakDetectionCheckFactory> leak_check_factory_;
   // Currently running check.
   std::unique_ptr<BulkLeakCheck> bulk_leak_check_;
+  // Reports metrics about bulk leak check.
+  std::unique_ptr<MetricsReporter> metrics_reporter_;
 
   State state_ = State::kIdle;
   base::ObserverList<Observer> observers_;

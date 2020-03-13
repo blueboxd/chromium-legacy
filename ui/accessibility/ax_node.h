@@ -162,7 +162,7 @@ class AX_EXPORT AXNode final {
 
   // Swap the internal children vector with |children|. This instance
   // now owns all of the passed children.
-  void SwapChildren(std::vector<AXNode*>& children);
+  void SwapChildren(std::vector<AXNode*>* children);
 
   // This is called when the AXTree no longer includes this node in the
   // tree. Reference counting is used on some platforms because the

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.metrics;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
@@ -19,7 +18,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -160,8 +159,7 @@ public class StartupLoadingMetricsTest {
     @Test
     @LargeTest
     @RetryOnFailure
-    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N_MR1,
-            message = "https://crbug.com/1023433")
+    @DisabledTest(message = "https://crbug.com/1023433")
     public void testFromExternalAppRecorded() throws Exception {
         runAndWaitForPageLoadMetricsRecorded(
                 () -> mTabbedActivityTestRule.startMainActivityFromExternalApp(mTestPage, null));

@@ -54,6 +54,7 @@ struct EntryChangedDetails;
 struct FocusedNodeDetails;
 struct LoadCommittedDetails;
 struct MediaPlayerId;
+struct MediaPlayerWatchTime;
 struct PrunedDetails;
 struct Referrer;
 
@@ -531,6 +532,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
     bool has_video;
     bool has_audio;
   };
+
+  // Invoked when media playback is interrupted or completed.
+  virtual void MediaWatchTimeChanged(
+      const content::MediaPlayerWatchTime& watch_time) {}
 
   virtual void MediaStartedPlaying(const MediaPlayerInfo& video_type,
                                    const MediaPlayerId& id) {}

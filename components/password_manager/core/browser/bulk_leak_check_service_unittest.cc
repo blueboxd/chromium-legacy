@@ -7,7 +7,9 @@
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/password_manager/core/browser/leak_detection/mock_leak_detection_check_factory.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
@@ -19,11 +21,14 @@ namespace {
 
 using ::testing::ByMove;
 using ::testing::DoAll;
+using ::testing::IsEmpty;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
 using ::testing::WithArg;
 
+const int64_t kMockElapsedTime =
+    base::ScopedMockElapsedTimersForTest::kMockElapsedTime.InMilliseconds();
 constexpr char kUsername[] = "user";
 constexpr char kPassword[] = "password123";
 
@@ -49,6 +54,7 @@ LeakCheckCredential TestCredential() {
 
 std::vector<LeakCheckCredential> TestCredentials() {
   std::vector<LeakCheckCredential> result;
+  result.push_back(TestCredential());
   result.push_back(TestCredential());
   return result;
 }
@@ -85,19 +91,49 @@ class BulkLeakCheckServiceTest : public testing::Test {
   }
   ~BulkLeakCheckServiceTest() override { service_.Shutdown(); }
 
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
   BulkLeakCheckService& service() { return service_; }
   MockLeakDetectionCheckFactory& factory() { return *factory_; }
+
+  // Checks |credentials| and simulates its finish. |is_leaked| signifies if one
+  // of the credential pretends to be leaked.
+  void ConductLeakCheck(std::vector<LeakCheckCredential> credentials,
+                        IsLeaked is_leaked);
 
  private:
   base::test::TaskEnvironment task_env_;
   signin::IdentityTestEnvironment identity_test_env_;
+  base::HistogramTester histogram_tester_;
+  base::ScopedMockElapsedTimersForTest mock_elapsed_timers_;
   BulkLeakCheckService service_;
   MockLeakDetectionCheckFactory* factory_;
 };
 
+void BulkLeakCheckServiceTest::ConductLeakCheck(
+    std::vector<LeakCheckCredential> credentials,
+    IsLeaked is_leaked) {
+  auto leak_check = std::make_unique<MockBulkLeakCheck>();
+  MockBulkLeakCheck* weak_leak_check = leak_check.get();
+  EXPECT_CALL(*leak_check, CheckCredentials);
+  BulkLeakCheckDelegateInterface* delegate = nullptr;
+  EXPECT_CALL(factory(), TryCreateBulkLeakCheck)
+      .WillOnce(
+          DoAll(SaveArg<0>(&delegate), Return(ByMove(std::move(leak_check)))));
+  service().CheckUsernamePasswordPairs(std::move(credentials));
+
+  EXPECT_CALL(*weak_leak_check, GetPendingChecksCount)
+      .WillRepeatedly(Return(0));
+  delegate->OnFinishedCredential(TestCredential(), is_leaked);
+  EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().state());
+}
+
 TEST_F(BulkLeakCheckServiceTest, OnCreation) {
   EXPECT_EQ(0u, service().GetPendingChecksCount());
   EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().state());
+
+  EXPECT_THAT(
+      histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
+      IsEmpty());
 }
 
 TEST_F(BulkLeakCheckServiceTest, StartWithZeroPasswords) {
@@ -107,6 +143,9 @@ TEST_F(BulkLeakCheckServiceTest, StartWithZeroPasswords) {
   service().CheckUsernamePasswordPairs({});
   EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().state());
   EXPECT_EQ(0u, service().GetPendingChecksCount());
+  EXPECT_THAT(
+      histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
+      IsEmpty());
 }
 
 TEST_F(BulkLeakCheckServiceTest, Running) {
@@ -127,6 +166,9 @@ TEST_F(BulkLeakCheckServiceTest, Running) {
   EXPECT_CALL(*weak_leak_check, GetPendingChecksCount)
       .WillRepeatedly(Return(10));
   EXPECT_EQ(10u, service().GetPendingChecksCount());
+  EXPECT_THAT(
+      histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
+      IsEmpty());
 }
 
 TEST_F(BulkLeakCheckServiceTest, AppendRunning) {
@@ -163,6 +205,9 @@ TEST_F(BulkLeakCheckServiceTest, FailedToCreateCheck) {
 
   EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().state());
   EXPECT_EQ(0u, service().GetPendingChecksCount());
+  EXPECT_THAT(
+      histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
+      IsEmpty());
 }
 
 TEST_F(BulkLeakCheckServiceTest, FailedToCreateCheckWithError) {
@@ -180,6 +225,13 @@ TEST_F(BulkLeakCheckServiceTest, FailedToCreateCheckWithError) {
 
   EXPECT_EQ(BulkLeakCheckService::State::kSignedOut, service().state());
   EXPECT_EQ(0u, service().GetPendingChecksCount());
+  base::HistogramTester::CountsMap expected_counts;
+  expected_counts["PasswordManager.BulkCheck.Error"] = 1;
+  EXPECT_THAT(
+      histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
+      expected_counts);
+  histogram_tester().ExpectUniqueSample("PasswordManager.BulkCheck.Error",
+                                        LeakDetectionError::kNotSignIn, 1);
 }
 
 TEST_F(BulkLeakCheckServiceTest, CancelNothing) {
@@ -190,6 +242,9 @@ TEST_F(BulkLeakCheckServiceTest, CancelNothing) {
 
   EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().state());
   EXPECT_EQ(0u, service().GetPendingChecksCount());
+  EXPECT_THAT(
+      histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
+      IsEmpty());
 }
 
 TEST_F(BulkLeakCheckServiceTest, CancelSomething) {
@@ -206,6 +261,13 @@ TEST_F(BulkLeakCheckServiceTest, CancelSomething) {
 
   EXPECT_EQ(BulkLeakCheckService::State::kCanceled, service().state());
   EXPECT_EQ(0u, service().GetPendingChecksCount());
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.BulkCheck.CanceledCredentials", 2, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.BulkCheck.CanceledTime", kMockElapsedTime, 1);
+  EXPECT_THAT(
+      histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
+      ::testing::SizeIs(2));
 }
 
 TEST_F(BulkLeakCheckServiceTest, NotifyAboutLeak) {
@@ -228,6 +290,9 @@ TEST_F(BulkLeakCheckServiceTest, NotifyAboutLeak) {
   EXPECT_CALL(observer, OnCredentialDone(CredentialIs(std::cref(credential)),
                                          IsLeaked(true)));
   delegate->OnFinishedCredential(TestCredential(), IsLeaked(true));
+  EXPECT_THAT(
+      histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
+      IsEmpty());
 }
 
 TEST_F(BulkLeakCheckServiceTest, CheckFinished) {
@@ -252,6 +317,14 @@ TEST_F(BulkLeakCheckServiceTest, CheckFinished) {
 
   EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().state());
   EXPECT_EQ(0u, service().GetPendingChecksCount());
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.BulkCheck.CheckedCredentials", 2, 1);
+  histogram_tester().ExpectUniqueSample("PasswordManager.BulkCheck.LeaksFound",
+                                        0, 1);
+  histogram_tester().ExpectUniqueSample("PasswordManager.BulkCheck.Time",
+                                        kMockElapsedTime, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.BulkCheck.TimePerCredential", kMockElapsedTime / 2, 1);
 }
 
 TEST_F(BulkLeakCheckServiceTest, CheckFinishedWithLeakedCredential) {
@@ -280,6 +353,43 @@ TEST_F(BulkLeakCheckServiceTest, CheckFinishedWithLeakedCredential) {
 
   EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().state());
   EXPECT_EQ(0u, service().GetPendingChecksCount());
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.BulkCheck.CheckedCredentials", 2, 1);
+  histogram_tester().ExpectUniqueSample("PasswordManager.BulkCheck.LeaksFound",
+                                        1, 1);
+  histogram_tester().ExpectUniqueSample("PasswordManager.BulkCheck.Time",
+                                        kMockElapsedTime, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.BulkCheck.TimePerCredential", kMockElapsedTime / 2, 1);
+}
+
+TEST_F(BulkLeakCheckServiceTest, TwoChecksAfterEachOther) {
+  {
+    base::HistogramTester histogram_tester;
+    std::vector<LeakCheckCredential> result;
+    result.push_back(TestCredential());
+    ConductLeakCheck(std::move(result), IsLeaked(true));
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.BulkCheck.CheckedCredentials", 1, 1);
+    histogram_tester.ExpectUniqueSample("PasswordManager.BulkCheck.LeaksFound",
+                                        1, 1);
+    histogram_tester.ExpectUniqueSample("PasswordManager.BulkCheck.Time",
+                                        kMockElapsedTime, 1);
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.BulkCheck.TimePerCredential", kMockElapsedTime, 1);
+  }
+  {
+    base::HistogramTester histogram_tester;
+    ConductLeakCheck(TestCredentials(), IsLeaked(false));
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.BulkCheck.CheckedCredentials", 2, 1);
+    histogram_tester.ExpectUniqueSample("PasswordManager.BulkCheck.LeaksFound",
+                                        0, 1);
+    histogram_tester.ExpectUniqueSample("PasswordManager.BulkCheck.Time",
+                                        kMockElapsedTime, 1);
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.BulkCheck.TimePerCredential", kMockElapsedTime / 2, 1);
+  }
 }
 
 TEST_F(BulkLeakCheckServiceTest, CheckFinishedWithError) {
@@ -299,6 +409,14 @@ TEST_F(BulkLeakCheckServiceTest, CheckFinishedWithError) {
 
   EXPECT_EQ(BulkLeakCheckService::State::kServiceError, service().state());
   EXPECT_EQ(0u, service().GetPendingChecksCount());
+  base::HistogramTester::CountsMap expected_counts;
+  expected_counts["PasswordManager.BulkCheck.Error"] = 1;
+  EXPECT_THAT(
+      histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
+      expected_counts);
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.BulkCheck.Error",
+      LeakDetectionError::kInvalidServerResponse, 1);
 }
 
 }  // namespace

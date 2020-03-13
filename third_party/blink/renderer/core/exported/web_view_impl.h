@@ -219,6 +219,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Requests a page-scale animation based on the specified point/rect.
   void AnimateDoubleTapZoom(const gfx::Point&, const WebRect& block_bounds);
 
+  // mojom::blink::PageBroadcast method:
+  void SetPageLifecycleState(mojom::blink::PageLifecycleStatePtr state,
+                             SetPageLifecycleStateCallback callback) override;
+
   float DefaultMinimumPageScaleFactor() const;
   float DefaultMaximumPageScaleFactor() const;
   float ClampPageScaleFactorToLimits(float) const;

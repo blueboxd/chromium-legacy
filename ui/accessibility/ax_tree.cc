@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <numeric>
-#include <set>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -153,7 +154,7 @@ bool IsCollapsed(const AXNode* node) {
 //        it's a fatal error. This guarantees the tree is always complete
 //        before or after an AXTreeUpdate.
 struct PendingStructureChanges {
-  PendingStructureChanges(const AXNode* node)
+  explicit PendingStructureChanges(const AXNode* node)
       : destroy_subtree_count(0),
         destroy_node_count(0),
         create_node_count(0),
@@ -254,7 +255,7 @@ enum class AXTreePendingStructureStatus {
 
 // Intermediate state to keep track of during a tree update.
 struct AXTreeUpdateState {
-  AXTreeUpdateState(const AXTree& tree)
+  explicit AXTreeUpdateState(const AXTree& tree)
       : pending_update_status(AXTreePendingStructureStatus::kNotStarted),
         root_will_be_created(false),
         tree(tree) {}
@@ -935,7 +936,7 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   // Accumulates the work that will be required to update the AXTree.
   // This allows us to notify observers of structure changes when the
   // tree is still in a stable and unchanged state.
-  if (!ComputePendingChanges(update, update_state))
+  if (!ComputePendingChanges(update, &update_state))
     return false;
 
   // Notify observers of subtrees and nodes that are about to be destroyed or
@@ -1008,7 +1009,7 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
         for (auto* child : cleared_node->children())
           DestroySubtree(child, &update_state);
         std::vector<AXNode*> children;
-        cleared_node->SwapChildren(children);
+        cleared_node->SwapChildren(&children);
         update_state.pending_nodes.insert(cleared_node->id());
       }
     }
@@ -1227,14 +1228,15 @@ AXNode* AXTree::CreateNode(AXNode* parent,
 }
 
 bool AXTree::ComputePendingChanges(const AXTreeUpdate& update,
-                                   AXTreeUpdateState& update_state) {
+                                   AXTreeUpdateState* update_state) {
   DCHECK_EQ(AXTreePendingStructureStatus::kNotStarted,
-            update_state.pending_update_status)
+            update_state->pending_update_status)
       << "Pending changes have already started being computed.";
-  update_state.pending_update_status = AXTreePendingStructureStatus::kComputing;
+  update_state->pending_update_status =
+      AXTreePendingStructureStatus::kComputing;
 
   base::AutoReset<base::Optional<AXNode::AXID>> pending_root_id_resetter(
-      &update_state.pending_root_id,
+      &update_state->pending_root_id,
       root_ ? base::Optional<AXNode::AXID>{root_->id()} : base::nullopt);
 
   // We distinguish between updating the root, e.g. changing its children or
@@ -1246,43 +1248,43 @@ bool AXTree::ComputePendingChanges(const AXTreeUpdate& update,
     if (AXNode* cleared_node = GetFromId(update.node_id_to_clear)) {
       DCHECK(root_);
       if (cleared_node == root_ &&
-          update.root_id != update_state.pending_root_id) {
+          update.root_id != update_state->pending_root_id) {
         // Only destroy the root if the root was replaced and not if it's simply
         // updated. To figure out if the root was simply updated, we compare
         // the ID of the new root with the existing root ID.
-        MarkSubtreeForDestruction(*update_state.pending_root_id, &update_state);
+        MarkSubtreeForDestruction(*update_state->pending_root_id, update_state);
       }
 
       // If the tree has been marked for destruction because the root will be
       // replaced, there is nothing more to clear.
-      if (update_state.ShouldPendingNodeExistInTree(root_->id())) {
-        update_state.invalidate_unignored_cached_values_ids.insert(
+      if (update_state->ShouldPendingNodeExistInTree(root_->id())) {
+        update_state->invalidate_unignored_cached_values_ids.insert(
             cleared_node->id());
-        update_state.ClearLastKnownPendingNodeData(cleared_node->id());
+        update_state->ClearLastKnownPendingNodeData(cleared_node->id());
         for (AXNode* child : cleared_node->children()) {
-          MarkSubtreeForDestruction(child->id(), &update_state);
+          MarkSubtreeForDestruction(child->id(), update_state);
         }
       }
     }
   }
 
-  update_state.root_will_be_created =
+  update_state->root_will_be_created =
       !GetFromId(update.root_id) ||
-      !update_state.ShouldPendingNodeExistInTree(update.root_id);
+      !update_state->ShouldPendingNodeExistInTree(update.root_id);
 
   // Populate |update_state| with all of the changes that will be performed
   // on the tree during the update.
   for (const AXNodeData& new_data : update.nodes) {
     bool is_new_root =
-        update_state.root_will_be_created && new_data.id == update.root_id;
-    if (!ComputePendingChangesToNode(new_data, is_new_root, &update_state)) {
-      update_state.pending_update_status =
+        update_state->root_will_be_created && new_data.id == update.root_id;
+    if (!ComputePendingChangesToNode(new_data, is_new_root, update_state)) {
+      update_state->pending_update_status =
           AXTreePendingStructureStatus::kFailed;
       return false;
     }
   }
 
-  update_state.pending_update_status = AXTreePendingStructureStatus::kComplete;
+  update_state->pending_update_status = AXTreePendingStructureStatus::kComplete;
   return true;
 }
 
@@ -1468,7 +1470,7 @@ bool AXTree::UpdateNode(const AXNodeData& src,
   std::vector<AXNode*> new_children;
   bool success = CreateNewChildVector(
       node, src.child_ids, &new_children, update_state);
-  node->SwapChildren(new_children);
+  node->SwapChildren(&new_children);
 
   // Update the root of the tree if needed.
   if (is_new_root) {
@@ -1913,7 +1915,7 @@ int32_t AXTree::GetNextNegativeInternalNodeId() {
 void AXTree::PopulateOrderedSetItemsMap(
     const AXNode& original_node,
     const AXNode* ordered_set,
-    OrderedSetItemsMap& items_map_to_be_populated) const {
+    OrderedSetItemsMap* items_map_to_be_populated) const {
   // Ignored nodes are not a part of ordered sets.
   if (original_node.IsIgnored())
     return;
@@ -1942,17 +1944,19 @@ void AXTree::PopulateOrderedSetItemsMap(
                                         ordered_set_min_level, base::nullopt,
                                         items_map_to_be_populated);
 
-  // If after |RecursivelyPopulateOrderedSetItemsMap| call, the corresponding
-  // level (i.e. ordered_set_min_level) does not exist in
+  // If after RecursivelyPopulateOrderedSetItemsMap() call, the corresponding
+  // level (i.e. |ordered_set_min_level|) does not exist in
   // |items_map_to_be_populated|, and |original_node| equals |ordered_set|, we
   // know |original_node| is an empty ordered set and contains no set items.
   // However, |original_node| may still have set size attribute, so we still
   // want to add this empty set (i.e. original_node/ordered_set) to
   // |items_map_to_be_populated|.
   if (&original_node == ordered_set &&
-      !items_map_to_be_populated.HierarchicalLevelExists(ordered_set_min_level))
-    items_map_to_be_populated.Add(ordered_set_min_level,
-                                  OrderedSetContent(&original_node));
+      !items_map_to_be_populated->HierarchicalLevelExists(
+          ordered_set_min_level)) {
+    items_map_to_be_populated->Add(ordered_set_min_level,
+                                   OrderedSetContent(&original_node));
+  }
 }
 
 void AXTree::RecursivelyPopulateOrderedSetItemsMap(
@@ -1961,7 +1965,7 @@ void AXTree::RecursivelyPopulateOrderedSetItemsMap(
     const AXNode* local_parent,
     base::Optional<int> ordered_set_min_level,
     base::Optional<int> prev_level,
-    OrderedSetItemsMap& items_map_to_be_populated) const {
+    OrderedSetItemsMap* items_map_to_be_populated) const {
   // For optimization purpose, we want to only populate set items that are
   // direct descendants of |ordered_set|, since we will only be calculating
   // PosInSet & SetSize of items of that level. So we skip items on deeper
@@ -2018,26 +2022,26 @@ void AXTree::RecursivelyPopulateOrderedSetItemsMap(
 
       // We only add child to |items_map_to_be_populated| if the child set item
       // is at the same hierarchical level as |ordered_set|'s level.
-      if (!items_map_to_be_populated.HierarchicalLevelExists(curr_level)) {
+      if (!items_map_to_be_populated->HierarchicalLevelExists(curr_level)) {
+        bool use_ordered_set = child->SetRoleMatchesItemRole(ordered_set) &&
+                               ordered_set_min_level == curr_level;
         const AXNode* child_ordered_set =
-            (child->SetRoleMatchesItemRole(ordered_set) &&
-             ordered_set_min_level == curr_level)
-                ? ordered_set
-                : nullptr;
-        items_map_to_be_populated.Add(curr_level,
-                                      OrderedSetContent(child_ordered_set));
+            use_ordered_set ? ordered_set : nullptr;
+        items_map_to_be_populated->Add(curr_level,
+                                       OrderedSetContent(child_ordered_set));
       }
 
-      items_map_to_be_populated.AddItemToBack(curr_level, child);
+      items_map_to_be_populated->AddItemToBack(curr_level, child);
     }
 
     // If |child| is an ignored container for ordered set and should not be used
     // to contribute to |items_map_to_be_populated|, we recurse into |child|'s
     // descendants to populate |items_map_to_be_populated|.
-    if (child->IsIgnoredContainerForOrderedSet())
+    if (child->IsIgnoredContainerForOrderedSet()) {
       RecursivelyPopulateOrderedSetItemsMap(original_node, ordered_set, child,
                                             ordered_set_min_level, curr_level,
                                             items_map_to_be_populated);
+    }
 
     // If |curr_level| goes up one level from |prev_level|, which indicates
     // the ordered set of |prev_level| is closed, we add a new OrderedSetContent
@@ -2061,7 +2065,7 @@ void AXTree::RecursivelyPopulateOrderedSetItemsMap(
     // OrderedSetContent to level 2. When |curr_level| ends up on the items of
     // "set2-level2" next, it has a fresh new set to be populated.
     if (child->SetRoleMatchesItemRole(ordered_set) && curr_level < prev_level)
-      items_map_to_be_populated.Add(prev_level, OrderedSetContent());
+      items_map_to_be_populated->Add(prev_level, OrderedSetContent());
 
     prev_level = curr_level;
   }
@@ -2081,10 +2085,9 @@ void AXTree::ComputeSetSizePosInSetAndCache(const AXNode& node,
       !node.SetRoleMatchesItemRole(ordered_set) && !IsSetLike(node.data().role))
     return;
 
-  OrderedSetItemsMap items_map_to_be_populated;
-
   // Find all items within ordered_set and add to |items_map_to_be_populated|.
-  PopulateOrderedSetItemsMap(node, ordered_set, items_map_to_be_populated);
+  OrderedSetItemsMap items_map_to_be_populated;
+  PopulateOrderedSetItemsMap(node, ordered_set, &items_map_to_be_populated);
 
   // If ordered_set role is kPopUpButton and it wraps a kMenuListPopUp, then we
   // would like it to inherit the SetSize from the kMenuListPopUp it wraps. To
@@ -2102,7 +2105,7 @@ void AXTree::ComputeSetSizePosInSetAndCache(const AXNode& node,
       if (menu_list_popup->data().role == ax::mojom::Role::kMenuListPopup) {
         items_map_to_be_populated.Clear();
         PopulateOrderedSetItemsMap(node, menu_list_popup,
-                                   items_map_to_be_populated);
+                                   &items_map_to_be_populated);
         set_content = items_map_to_be_populated.GetFirstOrderedSetContent();
         // Replace |set_content|'s ordered set container with |node|
         // (Role::kPopUpButton), which acts as the set container for nodes with

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/memory/aligned_memory.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
@@ -23,6 +24,7 @@
 #include "media/audio/simple_sources.h"
 #include "media/audio/test_audio_thread.h"
 #include "media/base/limits.h"
+#include "media/base/media_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -38,6 +40,12 @@ class AudioOutputTest : public testing::TestWithParam<bool> {
     // The only parameter is used to enable/disable AAudio.
     if (GetParam())
       features_.InitAndEnableFeature(features::kUseAAudioDriver);
+#endif
+#if defined(OS_LINUX)
+    // Due to problems with PulseAudio failing to start, use a fake audio
+    // stream. https://crbug.com/1047655#c70
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableAudioOutput);
 #endif
     base::RunLoop().RunUntilIdle();
   }
@@ -75,16 +83,14 @@ class AudioOutputTest : public testing::TestWithParam<bool> {
 };
 
 // Test that can it be created and closed.
-// Disabled: crbug.com/1060165
-TEST_P(AudioOutputTest, DISABLED_GetAndClose) {
+TEST_P(AudioOutputTest, GetAndClose) {
   ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info_->HasAudioOutputDevices());
   CreateWithDefaultParameters();
   ASSERT_TRUE(stream_);
 }
 
 // Test that it can be opened and closed.
-// Disabled: crbug.com/1060165
-TEST_P(AudioOutputTest, DISABLED_OpenAndClose) {
+TEST_P(AudioOutputTest, OpenAndClose) {
   ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info_->HasAudioOutputDevices());
 
   CreateWithDefaultParameters();
@@ -93,8 +99,7 @@ TEST_P(AudioOutputTest, DISABLED_OpenAndClose) {
 }
 
 // Verify that Stop() can be called before Start().
-// Disabled: crbug.com/1060165
-TEST_P(AudioOutputTest, DISABLED_StopBeforeStart) {
+TEST_P(AudioOutputTest, StopBeforeStart) {
   ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info_->HasAudioOutputDevices());
   CreateWithDefaultParameters();
   EXPECT_TRUE(stream_->Open());
@@ -102,8 +107,7 @@ TEST_P(AudioOutputTest, DISABLED_StopBeforeStart) {
 }
 
 // Verify that Stop() can be called more than once.
-// Disabled: crbug.com/1060165
-TEST_P(AudioOutputTest, DISABLED_StopTwice) {
+TEST_P(AudioOutputTest, StopTwice) {
   ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info_->HasAudioOutputDevices());
   CreateWithDefaultParameters();
   EXPECT_TRUE(stream_->Open());
@@ -115,8 +119,7 @@ TEST_P(AudioOutputTest, DISABLED_StopTwice) {
 }
 
 // This test produces actual audio for .25 seconds on the default device.
-// Disabled: crbug.com/1060165
-TEST_P(AudioOutputTest, DISABLED_Play200HzTone) {
+TEST_P(AudioOutputTest, Play200HzTone) {
   ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info_->HasAudioOutputDevices());
 
   stream_params_ =
@@ -154,8 +157,7 @@ TEST_P(AudioOutputTest, DISABLED_Play200HzTone) {
 }
 
 // Test that SetVolume() and GetVolume() work as expected.
-// Disabled: crbug.com/1060165
-TEST_P(AudioOutputTest, DISABLED_VolumeControl) {
+TEST_P(AudioOutputTest, VolumeControl) {
   ABORT_AUDIO_TEST_IF_NOT(audio_manager_device_info_->HasAudioOutputDevices());
 
   CreateWithDefaultParameters();

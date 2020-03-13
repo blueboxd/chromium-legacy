@@ -264,11 +264,7 @@ void LoadProfileAsync(const base::FilePath& path,
 
 void SwitchToProfile(const base::FilePath& path,
                      bool always_create,
-                     ProfileManager::CreateCallback callback,
-                     ProfileMetrics::ProfileOpen metric) {
-  ProfileMetrics::LogProfileSwitch(metric,
-                                   g_browser_process->profile_manager(),
-                                   path);
+                     ProfileManager::CreateCallback callback) {
   g_browser_process->profile_manager()->CreateProfileAsync(
       path,
       base::Bind(&profiles::OpenBrowserWindowForProfile, callback,
@@ -277,12 +273,8 @@ void SwitchToProfile(const base::FilePath& path,
 }
 
 void SwitchToGuestProfile(ProfileManager::CreateCallback callback) {
-  const base::FilePath& path = ProfileManager::GetGuestProfilePath();
-  ProfileMetrics::LogProfileSwitch(ProfileMetrics::SWITCH_PROFILE_GUEST,
-                                   g_browser_process->profile_manager(),
-                                   path);
   g_browser_process->profile_manager()->CreateProfileAsync(
-      path,
+      ProfileManager::GetGuestProfilePath(),
       base::Bind(&profiles::OpenBrowserWindowForProfile, callback, false, false,
                  false),
       base::string16(), std::string());

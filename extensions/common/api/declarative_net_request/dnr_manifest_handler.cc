@@ -82,6 +82,7 @@ bool DNRManifestHandler::Parse(Extension* extension, base::string16* error) {
 
   DNRManifestData::RulesetInfo info;
   info.relative_path = resource.relative_path().NormalizePathSeparators();
+  info.id = kMinValidStaticRulesetID;
 
   extension->SetManifestData(
       keys::kDeclarativeNetRequestKey,

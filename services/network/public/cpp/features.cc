@@ -89,8 +89,17 @@ const base::Feature kProactivelyThrottleLowPriorityRequests{
 
 // Enables Cross-Origin Opener Policy (COOP).
 // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
-const base::Feature kCrossOriginOpenerPolicy{"CrossOriginOpenerPolicy",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+// Currently this feature is enabled for all platforms except WebView. It is not
+// possible to distinguish between Android and WebView here, so we enable the
+// feature on Android via finch.
+const base::Feature kCrossOriginOpenerPolicy {
+  "CrossOriginOpenerPolicy",
+#if defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Enables Cross-Origin Embedder Policy (COEP).
 // https://github.com/mikewest/corpp

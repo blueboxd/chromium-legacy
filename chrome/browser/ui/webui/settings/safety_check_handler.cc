@@ -36,6 +36,7 @@ constexpr char kSafeBrowsingEvent[] =
     "safety-check-safe-browsing-status-changed";
 constexpr char kExtensionsEvent[] = "safety-check-extensions-status-changed";
 constexpr char kPerformSafetyCheck[] = "performSafetyCheck";
+constexpr char kGetParentRanDisplayString[] = "getSafetyCheckRanDisplayString";
 constexpr char kNewState[] = "newState";
 constexpr char kDisplayString[] = "displayString";
 constexpr char kPasswordsCompromised[] = "passwordsCompromised";
@@ -128,6 +129,18 @@ SafetyCheckHandler::SafetyCheckHandler(
 
 void SafetyCheckHandler::HandlePerformSafetyCheck(const base::ListValue* args) {
   PerformSafetyCheck();
+}
+
+void SafetyCheckHandler::HandleGetParentRanDisplayString(
+    const base::ListValue* args) {
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  // TODO(crbug.com/1015841): Construct string stating when safety check ran
+  // and send it back to JS.
+  ResolveJavascriptCallback(
+      *callback_id, base::Value(l10n_util::GetStringUTF16(
+                        IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER)));
 }
 
 void SafetyCheckHandler::CheckUpdates() {
@@ -454,5 +467,9 @@ void SafetyCheckHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       kPerformSafetyCheck,
       base::BindRepeating(&SafetyCheckHandler::HandlePerformSafetyCheck,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kGetParentRanDisplayString,
+      base::BindRepeating(&SafetyCheckHandler::HandleGetParentRanDisplayString,
                           base::Unretained(this)));
 }

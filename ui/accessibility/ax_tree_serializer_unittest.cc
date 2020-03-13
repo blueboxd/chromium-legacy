@@ -100,7 +100,7 @@ TEST_F(AXTreeSerializerTest, UpdateContainsOnlyChangedNodes) {
   // The update should only touch nodes 1 and 4 - nodes 2 and 3 are unchanged
   // and shouldn't be affected.
   EXPECT_EQ(0, update.node_id_to_clear);
-  ASSERT_EQ(static_cast<size_t>(2), update.nodes.size());
+  ASSERT_EQ(2u, update.nodes.size());
   EXPECT_EQ(1, update.nodes[0].id);
   EXPECT_EQ(4, update.nodes[1].id);
 }
@@ -138,7 +138,7 @@ TEST_F(AXTreeSerializerTest, NewRootUpdatesEntireTree) {
   // then include all four nodes in the update, even though the
   // subtree rooted at id=2 didn't actually change.
   EXPECT_EQ(1, update.node_id_to_clear);
-  ASSERT_EQ(static_cast<size_t>(4), update.nodes.size());
+  ASSERT_EQ(4u, update.nodes.size());
   EXPECT_EQ(5, update.nodes[0].id);
   EXPECT_EQ(2, update.nodes[1].id);
   EXPECT_EQ(3, update.nodes[2].id);
@@ -187,7 +187,7 @@ TEST_F(AXTreeSerializerTest, ReparentingUpdatesSubtree) {
   // The update should delete the subtree rooted at node id=2, and
   // then include nodes 2...5.
   EXPECT_EQ(2, update.node_id_to_clear);
-  ASSERT_EQ(static_cast<size_t>(4), update.nodes.size());
+  ASSERT_EQ(4u, update.nodes.size());
   EXPECT_EQ(2, update.nodes[0].id);
   EXPECT_EQ(3, update.nodes[1].id);
   EXPECT_EQ(4, update.nodes[2].id);
@@ -336,7 +336,7 @@ TEST_F(AXTreeSerializerTest, MaximumSerializedNodeCount) {
   ASSERT_TRUE(serializer_->SerializeChanges(tree0_->root(), &update));
   // It actually serializes 5 nodes, not 4 - to be consistent.
   // It skips the children of node 5.
-  ASSERT_EQ(static_cast<size_t>(5), update.nodes.size());
+  ASSERT_EQ(5u, update.nodes.size());
 }
 
 // If duplicate ids are encountered, it returns an error and the next
@@ -377,19 +377,19 @@ TEST_F(AXTreeSerializerTest, DuplicateIdsReturnsErrorAndFlushes) {
   std::vector<AXNode*> node2_children;
   node2_children.push_back(tree1_->GetFromId(7));
   node2_children.push_back(tree1_->GetFromId(6));
-  tree1_->GetFromId(2)->SwapChildren(node2_children);
+  tree1_->GetFromId(2)->SwapChildren(&node2_children);
 
   AXTreeUpdate update;
   ASSERT_FALSE(serializer_->SerializeChanges(tree1_->GetFromId(7), &update));
 
   // Swap it back, fixing the tree.
-  tree1_->GetFromId(2)->SwapChildren(node2_children);
+  tree1_->GetFromId(2)->SwapChildren(&node2_children);
 
   // Now try to serialize again. We should get the whole tree because the
   // previous failed call to SerializeChanges reset it.
   update = AXTreeUpdate();
   serializer_->SerializeChanges(tree1_->GetFromId(7), &update);
-  ASSERT_EQ(static_cast<size_t>(5), update.nodes.size());
+  ASSERT_EQ(5u, update.nodes.size());
 }
 
 // If a tree serializer is reset, that means it doesn't know about

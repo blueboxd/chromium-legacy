@@ -121,9 +121,7 @@ class AvatarMenu :
   // Opens a Browser with the specified profile in response to the user
   // selecting an item. If |always_create| is true then a new window is created
   // even if a window for that profile already exists.
-  void SwitchToProfile(size_t index,
-                       bool always_create,
-                       ProfileMetrics::ProfileOpen metric);
+  void SwitchToProfile(size_t index, bool always_create);
 
   // Creates a new profile.
   void AddNewProfile(ProfileMetrics::ProfileAdd type);

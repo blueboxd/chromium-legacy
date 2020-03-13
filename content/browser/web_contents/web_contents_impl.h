@@ -689,6 +689,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                    int context_id) override;
   void AudioContextPlaybackStopped(RenderFrameHost* host,
                                    int context_id) override;
+  void MediaWatchTimeChanged(
+      const content::MediaPlayerWatchTime& watch_time) override;
   media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
   GetRecordAggregateWatchTimeCallback() override;
   RenderFrameHostImpl* GetMainFrameForInnerDelegate(

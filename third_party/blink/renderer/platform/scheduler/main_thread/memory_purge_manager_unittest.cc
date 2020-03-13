@@ -396,6 +396,22 @@ TEST_F(MemoryPurgeManagerTest,
   memory_purge_manager_.OnPageDestroyed(PageLifecycleState::kFrozen);
 }
 
+TEST_F(MemoryPurgeManagerTest, NoMemoryPurgeIfNoPage) {
+  scoped_feature_list_.InitWithFeatures(
+      {features::kFreezePurgeMemoryAllPagesFrozen} /* enabled */,
+      {features::kPurgeRendererMemoryWhenBackgrounded} /* disabled */);
+
+  memory_purge_manager_.SetRendererBackgrounded(true);
+  memory_purge_manager_.OnPageCreated(PageLifecycleState::kActive);
+
+  memory_purge_manager_.SetRendererBackgrounded(true);
+  memory_purge_manager_.OnPageFrozen();
+  memory_purge_manager_.OnPageDestroyed(PageLifecycleState::kFrozen);
+
+  FastForwardBy(base::TimeDelta::FromMinutes(0));
+  EXPECT_EQ(0U, MemoryPressureCount());
+}
+
 }  // namespace
 
 }  // namespace blink

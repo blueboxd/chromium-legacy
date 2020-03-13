@@ -140,6 +140,12 @@ Polymer({
     },
 
     /**
+     * UI string to display for the parent status.
+     * @private
+     */
+    parentDisplayString_: String,
+
+    /**
      * UI string to display for the updates status.
      * @private
      */
@@ -170,6 +176,12 @@ Polymer({
   /** @private {?settings.LifetimeBrowserProxy} */
   lifetimeBrowserProxy_: null,
 
+  /**
+   * Timer ID for periodic update.
+   * @private {number}
+   */
+  updateTimerId_: -1,
+
   /** @override */
   attached: function() {
     this.safetyCheckBrowserProxy_ =
@@ -190,6 +202,10 @@ Polymer({
     this.addWebUIListener(
         settings.SafetyCheckCallbackConstants.EXTENSIONS_CHANGED,
         this.onSafetyCheckExtensionsChanged_.bind(this));
+
+    // Configure default UI.
+    this.parentDisplayString_ =
+        this.i18n('safetyCheckParentPrimaryLabelBefore');
   },
 
   /**
@@ -198,6 +214,7 @@ Polymer({
    */
   runSafetyCheck_: function() {
     // Update UI.
+    this.parentDisplayString_ = this.i18n('safetyCheckRunning');
     this.parentStatus_ = ParentStatus.CHECKING;
     // Reset all children states.
     this.updatesStatus_ = settings.SafetyCheckUpdatesStatus.CHECKING;
@@ -222,7 +239,19 @@ Polymer({
             settings.SafetyCheckSafeBrowsingStatus.CHECKING &&
         this.extensionsStatus_ !=
             settings.SafetyCheckExtensionsStatus.CHECKING) {
+      // Update UI.
       this.parentStatus_ = ParentStatus.AFTER;
+      // Start periodic safety check parent ran string updates.
+      const timestamp = Date.now();
+      const update = async () => {
+        this.parentDisplayString_ =
+            await this.safetyCheckBrowserProxy_.getParentRanDisplayString(
+                timestamp);
+      };
+      clearInterval(this.updateTimerId_);
+      this.updateTimerId_ = setInterval(update, 60000);
+      // Run initial safety check parent ran string update now.
+      update();
     }
   },
 
@@ -338,26 +367,9 @@ Polymer({
    * @private
    * @return {string}
    */
-  getParentPrimaryLabelText_: function() {
-    switch (this.parentStatus_) {
-      case ParentStatus.BEFORE:
-        return this.i18n('safetyCheckParentPrimaryLabelBefore');
-      case ParentStatus.CHECKING:
-        return this.i18n('safetyCheckRunning');
-      case ParentStatus.AFTER:
-        return this.i18n('safetyCheckParentPrimaryLabelAfter');
-      default:
-        assertNotReached();
-    }
-  },
-
-  /**
-   * @private
-   * @return {string}
-   */
   getParentAriaLabel_: function() {
     return this.i18n('safetyCheckSectionTitle') + ': ' +
-        this.getParentPrimaryLabelText_();
+        this.parentDisplayString_;
   },
 
   /** @private */

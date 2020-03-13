@@ -2467,6 +2467,18 @@ void WebViewImpl::SetZoomFactorForDeviceScaleFactor(
   SetZoomLevel(zoom_level_);
 }
 
+void WebViewImpl::SetPageLifecycleState(
+    mojom::blink::PageLifecycleStatePtr state,
+    SetPageLifecycleStateCallback callback) {
+  Page* page = GetPage();
+  if (!page)
+    return;
+  Scheduler()->SetPageFrozen(state->is_frozen);
+
+  // Tell the browser that the freezing or resuming was successful.
+  std::move(callback).Run();
+}
+
 void WebViewImpl::EnableAutoResizeMode(const WebSize& min_size,
                                        const WebSize& max_size) {
   should_auto_resize_ = true;

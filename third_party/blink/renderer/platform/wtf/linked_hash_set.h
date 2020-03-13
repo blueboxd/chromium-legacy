@@ -1085,6 +1085,8 @@ class NewLinkedHashSet {
   // TODO(keinakashima): implement find, Contains after implementing iterator
 
   // TODO(keinakahsima): implement functions related to insert
+  template <typename IncomingValueType>
+  AddResult insert(IncomingValueType&&);
 
   // TODO(keinakashima): implement functions related to erase
 
@@ -1127,6 +1129,24 @@ template <typename T>
 inline void NewLinkedHashSet<T>::Swap(NewLinkedHashSet& other) {
   value_to_index_.swap(other.value_to_index_);
   list_.swap(other.list_);
+}
+
+template <typename T>
+template <typename IncomingValueType>
+typename NewLinkedHashSet<T>::AddResult NewLinkedHashSet<T>::insert(
+    IncomingValueType&& value) {
+  typename Map::AddResult result = value_to_index_.insert(value, kNotFound);
+
+  if (result.is_new_entry) {
+    const_iterator stored_position_iterator =
+        list_.insert(list_.end(), std::forward<IncomingValueType>(value));
+    result.stored_value->value = stored_position_iterator.GetIndex();
+    return AddResult(stored_position_iterator.Get(), true);
+  }
+
+  wtf_size_t index = result.stored_value->value;
+  const_iterator stored_position_iterator = list_.MakeConstIterator(index);
+  return AddResult(stored_position_iterator.Get(), false);
 }
 
 }  // namespace WTF

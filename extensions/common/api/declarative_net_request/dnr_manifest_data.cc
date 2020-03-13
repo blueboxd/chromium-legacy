@@ -20,16 +20,13 @@ bool DNRManifestData::HasRuleset(const Extension& extension) {
 }
 
 // static
-base::FilePath DNRManifestData::GetRulesetPath(const Extension& extension) {
+const DNRManifestData::RulesetInfo& DNRManifestData::GetRuleset(
+    const Extension& extension) {
   Extension::ManifestData* data =
       extension.GetManifestData(manifest_keys::kDeclarativeNetRequestKey);
   DCHECK(data);
 
-  // The ruleset path is validated during DNRManifestHandler::Validate, and
-  // hence is safe to use.
-  const base::FilePath& relative_path =
-      static_cast<DNRManifestData*>(data)->ruleset.relative_path;
-  return extension.path().Append(relative_path);
+  return static_cast<DNRManifestData*>(data)->ruleset;
 }
 
 }  // namespace declarative_net_request

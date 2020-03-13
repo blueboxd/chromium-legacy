@@ -30,7 +30,7 @@ constexpr const char* usage_msg =
 constexpr const char* help_msg =
     "Run the video encoder accelerator tests on the video specified by\n"
     "<video path>. If no <video path> is given the default\n"
-    "\"puppets-320x180.nv12.yuv\" video will be used.\n"
+    "\"bear_320x192_40frames.yuv.webm\" video will be used.\n"
     "\nThe <video metadata path> should specify the location of a json file\n"
     "containing the video's metadata, such as frame checksums. By default\n"
     "<video path>.json will be used.\n"
@@ -43,7 +43,7 @@ constexpr const char* help_msg =
 
 // Default video to be used if no test video was specified.
 constexpr base::FilePath::CharType kDefaultTestVideoPath[] =
-    FILE_PATH_LITERAL("puppets-320x180.nv12.yuv");
+    FILE_PATH_LITERAL("bear_320x192_40frames.yuv.webm");
 
 media::test::VideoEncoderTestEnvironment* g_env;
 
@@ -71,7 +71,6 @@ class VideoEncoderTest : public ::testing::Test {
 // - Vary bitrate
 // - Flush midstream
 // - Forcing key frames
-// - Add support for webm files
 
 // Encode video from start to end. Wait for the kFlushDone event at the end of
 // the stream, that notifies us all frames have been encoded.

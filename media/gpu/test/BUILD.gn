@@ -27,6 +27,7 @@ source_set("helpers") {
     "//media:test_support",
     "//media/gpu",
     "//mojo/core/embedder:embedder",
+    "//third_party/ffmpeg",
     "//third_party/libyuv",
   ]
   public_deps = [ "//testing/gtest" ]

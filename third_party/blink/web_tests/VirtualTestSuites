@@ -194,7 +194,7 @@
               "fast/multicol",
               "fragmentation",
               "printing"],
-    "args": ["--enable-blink-features=LayoutNGBlockFragmentation,LayoutNGFieldset"]
+    "args": ["--enable-blink-features=LayoutNGBlockFragmentation,LayoutNGFieldset,LayoutNGFragmentItem"]
   },
   {
     "prefix": "layout_ng_fragment_traversal",

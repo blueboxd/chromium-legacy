@@ -9,14 +9,18 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_types.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
+
+class VideoFrame;
+
 namespace test {
 
 // The video class provides functionality to load video files and manage their
@@ -38,6 +42,11 @@ class Video {
   const base::FilePath& FilePath() const;
   // Get the video data, will be empty if the video hasn't been loaded yet.
   const std::vector<uint8_t>& Data() const;
+
+  // Decode the video, replacing the video stream data in |data_| with raw video
+  // data. This is currently only supported for VP9 videos. Returns whether
+  // decoding was successful.
+  bool Decode();
 
   // Get the video's codec.
   VideoCodec Codec() const;
@@ -87,6 +96,16 @@ class Video {
   // resolved path if resolving to an existing file was successful.
   base::Optional<base::FilePath> ResolveFilePath(
       const base::FilePath& file_path);
+
+  // Decode the video on a separate thread.
+  static void DecodeTask(const std::vector<uint8_t> data,
+                         std::vector<uint8_t>* decompressed_data,
+                         bool* success,
+                         base::WaitableEvent* done);
+  // Called each time a |frame| is decoded while decoding a video. The decoded
+  // frame will be appended to the specified |data|.
+  static void OnFrameDecoded(std::vector<uint8_t>* data,
+                             scoped_refptr<VideoFrame> frame);
 
   // The path where all test video files are stored.
   // TODO(dstaessens@) Avoid using a static data path here.

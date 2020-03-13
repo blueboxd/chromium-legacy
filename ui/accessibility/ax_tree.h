@@ -7,9 +7,12 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "base/observer_list.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
@@ -22,7 +25,6 @@
 namespace ui {
 
 class AXTableInfo;
-class AXTree;
 class AXTreeObserver;
 struct AXTreeUpdateState;
 class AXLanguageDetectionManager;
@@ -34,16 +36,19 @@ class AXLanguageDetectionManager;
 // accessibility APIs on a specific platform.
 class AX_EXPORT AXTree : public AXNode::OwnerTree {
  public:
-  typedef std::map<ax::mojom::IntAttribute,
-                   std::map<int32_t, std::set<int32_t>>>
-      IntReverseRelationMap;
-  typedef std::map<ax::mojom::IntListAttribute,
-                   std::map<int32_t, std::set<int32_t>>>
-      IntListReverseRelationMap;
+  using IntReverseRelationMap =
+      std::map<ax::mojom::IntAttribute, std::map<int32_t, std::set<int32_t>>>;
+  using IntListReverseRelationMap =
+      std::map<ax::mojom::IntListAttribute,
+               std::map<int32_t, std::set<int32_t>>>;
 
   AXTree();
   explicit AXTree(const AXTreeUpdate& initial_state);
   virtual ~AXTree();
+
+  // AXTree owns pointers so copying is non-trivial.
+  AXTree(const AXTree&) = delete;
+  AXTree& operator=(const AXTree&) = delete;
 
   void AddObserver(AXTreeObserver* observer);
   bool HasObserver(AXTreeObserver* observer);
@@ -193,7 +198,7 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   // This allows us to notify observers of structure changes when the
   // tree is still in a stable and unchanged state.
   bool ComputePendingChanges(const AXTreeUpdate& update,
-                             AXTreeUpdateState& update_state);
+                             AXTreeUpdateState* update_state);
 
   // Populates |update_state| with information about actions that will
   // be performed on the tree during the update, such as adding or
@@ -340,7 +345,7 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   void PopulateOrderedSetItemsMap(
       const AXNode& original_node,
       const AXNode* ordered_set,
-      OrderedSetItemsMap& items_map_to_be_populated) const;
+      OrderedSetItemsMap* items_map_to_be_populated) const;
 
   // Helper function for recursively populating ordered sets items map with
   // all items associated with |original_node| and |ordered_set|. |local_parent|
@@ -351,7 +356,7 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
       const AXNode* local_parent,
       base::Optional<int> ordered_set_min_level,
       base::Optional<int> prev_level,
-      OrderedSetItemsMap& items_map_to_be_populated) const;
+      OrderedSetItemsMap* items_map_to_be_populated) const;
 
   // Computes the pos_in_set and set_size values of all items in ordered_set and
   // caches those values. Called by GetPosInSet and GetSetSize.
@@ -370,9 +375,6 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   // Invalidated every time the tree is updated.
   mutable std::unordered_map<int32_t, NodeSetSizePosInSetInfo>
       node_set_size_pos_in_set_info_map_;
-
-  // AXTree owns pointers so copying is non-trivial.
-  DISALLOW_COPY_AND_ASSIGN(AXTree);
 
   // Indicates if the tree is updating.
   bool tree_update_in_progress_ = false;

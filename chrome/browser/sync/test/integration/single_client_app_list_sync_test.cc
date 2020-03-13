@@ -133,8 +133,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, AppListSomeApps) {
 
   const size_t kNumApps = 5;
   for (int i = 0; i < static_cast<int>(kNumApps); ++i) {
-    apps_helper::InstallApp(GetProfile(0), i);
-    apps_helper::InstallApp(verifier(), i);
+    apps_helper::InstallHostedApp(GetProfile(0), i);
+    apps_helper::InstallHostedApp(verifier(), i);
   }
 
   // Allow async callbacks to run, such as App Service Mojo calls.
@@ -170,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, LocalStorage) {
       syncer::StringOrdinal::CreateInitialOrdinal();
   std::vector<std::string> app_ids;
   for (int i = 0; i < static_cast<int>(kNumApps); ++i) {
-    app_ids.push_back(apps_helper::InstallApp(profile, i));
+    app_ids.push_back(apps_helper::InstallHostedApp(profile, i));
   }
 
   // Allow async callbacks to run, such as App Service Mojo calls.

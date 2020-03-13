@@ -489,8 +489,7 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
   profiles::SwitchToProfile(
       profile_path, false, /* reuse any existing windows */
       base::Bind(&UserManagerScreenHandler::OnSwitchToProfileComplete,
-                 weak_ptr_factory_.GetWeakPtr()),
-      ProfileMetrics::SWITCH_PROFILE_MANAGER);
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void UserManagerScreenHandler::HandleRemoveUserWarningLoadStats(
@@ -841,8 +840,7 @@ void UserManagerScreenHandler::ReportAuthenticationResult(
     profiles::SwitchToProfile(
         authenticating_profile_path_, true,
         base::Bind(&UserManagerScreenHandler::OnSwitchToProfileComplete,
-                   weak_ptr_factory_.GetWeakPtr()),
-        ProfileMetrics::SWITCH_PROFILE_UNLOCK);
+                   weak_ptr_factory_.GetWeakPtr()));
   } else {
     web_ui()->CallJavascriptFunctionUnsafe(
         "cr.ui.UserManager.showSignInError", base::Value(0),

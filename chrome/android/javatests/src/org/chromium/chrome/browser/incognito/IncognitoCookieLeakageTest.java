@@ -26,6 +26,7 @@ import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
+import org.chromium.chrome.browser.customtabs.CustomTabIncognitoManager;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.incognito.IncognitoDataTestUtils.ActivityType;
@@ -96,9 +97,8 @@ public class IncognitoCookieLeakageTest {
         mTestServer.stopAndDestroyServer();
     }
 
-    // TODO(crbug.com/1023759) : We currently don't have proper incognito CCT profile isolation,
-    // when we do we need to update this.
     private String getExpectedString() {
+        if (CustomTabIncognitoManager.hasIsolatedProfile()) return "\"\"";
         if (mActivity1.incognito == mActivity2.incognito) return "\"Foo=Bar\"";
         return "\"\"";
     }

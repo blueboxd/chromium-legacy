@@ -94,7 +94,7 @@ class RulesetMatcher {
 
  private:
   explicit RulesetMatcher(std::string ruleset_data,
-                          size_t id,
+                          int id,
                           api::declarative_net_request::SourceType source_type,
                           const ExtensionId& extension_id);
 
@@ -102,7 +102,7 @@ class RulesetMatcher {
 
   const flat::ExtensionIndexedRuleset* const root_;
 
-  const size_t id_;
+  const int id_;
 
   // Underlying matcher for filter-list style rules supported using the
   // |url_pattern_index| component.

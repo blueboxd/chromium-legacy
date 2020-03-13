@@ -68,8 +68,7 @@ void CreateAndSwitchToProfile(const std::string& basepath) {
   // terminated by UnblockOnProfileCreation when the profile is created.
   run_loop.Run();
 
-  profiles::SwitchToProfile(path, false, ProfileManager::CreateCallback(),
-                            ProfileMetrics::SWITCH_PROFILE_ICON);
+  profiles::SwitchToProfile(path, false, ProfileManager::CreateCallback());
 }
 
 void CheckBrowserWindows(const std::vector<std::string>& expected_basepaths) {

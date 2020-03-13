@@ -4,11 +4,74 @@
 
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
 
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory_impl.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace password_manager {
+
+// Helper class that collects UMA about the service.
+class BulkLeakCheckService::MetricsReporter {
+ public:
+  MetricsReporter() = default;
+  ~MetricsReporter();
+  MetricsReporter(const MetricsReporter&) = delete;
+  MetricsReporter& operator=(const MetricsReporter&) = delete;
+
+  void OnStartCheck(size_t credential_count);
+  void OnCredentialChecked(IsLeaked is_leaked);
+  void OnCancelCheck();
+  void OnError(LeakDetectionError error);
+
+ private:
+  base::ElapsedTimer timer_since_start_;
+  size_t credential_count_ = 0;
+  size_t leaked_credential_count_ = 0;
+};
+
+BulkLeakCheckService::MetricsReporter::~MetricsReporter() {
+  if (credential_count_) {
+    base::UmaHistogramMediumTimes("PasswordManager.BulkCheck.Time",
+                                  timer_since_start_.Elapsed());
+    base::UmaHistogramTimes("PasswordManager.BulkCheck.TimePerCredential",
+                            timer_since_start_.Elapsed() / credential_count_);
+    base::UmaHistogramCounts1000("PasswordManager.BulkCheck.CheckedCredentials",
+                                 credential_count_);
+    base::UmaHistogramCounts100("PasswordManager.BulkCheck.LeaksFound",
+                                leaked_credential_count_);
+  }
+}
+
+void BulkLeakCheckService::MetricsReporter::OnStartCheck(
+    size_t credential_count) {
+  credential_count_ += credential_count;
+}
+
+void BulkLeakCheckService::MetricsReporter::OnCredentialChecked(
+    IsLeaked is_leaked) {
+  if (is_leaked)
+    leaked_credential_count_++;
+}
+
+void BulkLeakCheckService::MetricsReporter::OnCancelCheck() {
+  base::UmaHistogramCounts1000("PasswordManager.BulkCheck.CanceledCredentials",
+                               credential_count_);
+  base::UmaHistogramMediumTimes("PasswordManager.BulkCheck.CanceledTime",
+                                timer_since_start_.Elapsed());
+
+  credential_count_ = 0;
+  leaked_credential_count_ = 0;
+}
+
+void BulkLeakCheckService::MetricsReporter::OnError(LeakDetectionError error) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.BulkCheck.Error", error);
+
+  credential_count_ = 0;
+  leaked_credential_count_ = 0;
+}
 
 BulkLeakCheckService::BulkLeakCheckService(
     signin::IdentityManager* identity_manager,
@@ -24,6 +87,9 @@ void BulkLeakCheckService::CheckUsernamePasswordPairs(
   DVLOG(0) << "Bulk password check, start " << credentials.size();
   if (credentials.empty())
     return;
+  if (!metrics_reporter_)
+    metrics_reporter_ = std::make_unique<MetricsReporter>();
+  metrics_reporter_->OnStartCheck(credentials.size());
   if (bulk_leak_check_) {
     DCHECK_EQ(State::kRunning, state_);
     // The check is already running. Append the credentials to the list.
@@ -51,6 +117,10 @@ void BulkLeakCheckService::CheckUsernamePasswordPairs(
 
 void BulkLeakCheckService::Cancel() {
   DVLOG(0) << "Bulk password check cancel";
+  if (metrics_reporter_) {
+    metrics_reporter_->OnCancelCheck();
+    metrics_reporter_.reset();
+  }
   if (!bulk_leak_check_) {
     DCHECK_NE(State::kRunning, state_);
     return;
@@ -66,6 +136,7 @@ size_t BulkLeakCheckService::GetPendingChecksCount() const {
 
 void BulkLeakCheckService::Shutdown() {
   observers_.Clear();
+  metrics_reporter_.reset();
   bulk_leak_check_.reset();
   url_loader_factory_.reset();
   identity_manager_ = nullptr;
@@ -77,9 +148,11 @@ void BulkLeakCheckService::OnFinishedCredential(LeakCheckCredential credential,
   // (2) Notify about the leak if necessary.
   // (3) Notify about new state. The clients may assume that if the state is
   // idle then there won't be calls to OnLeakFound.
+  metrics_reporter_->OnCredentialChecked(is_leaked);
   if (!GetPendingChecksCount()) {
     DVLOG(0) << "Bulk password check finished";
     state_ = State::kIdle;
+    metrics_reporter_.reset();
     bulk_leak_check_.reset();
   }
   for (Observer& obs : observers_)
@@ -90,6 +163,8 @@ void BulkLeakCheckService::OnFinishedCredential(LeakCheckCredential credential,
 
 void BulkLeakCheckService::OnError(LeakDetectionError error) {
   DLOG(ERROR) << "Bulk password check error=" << static_cast<int>(error);
+  metrics_reporter_->OnError(error);
+  metrics_reporter_.reset();
   switch (error) {
     case LeakDetectionError::kNotSignIn:
       state_ = State::kSignedOut;

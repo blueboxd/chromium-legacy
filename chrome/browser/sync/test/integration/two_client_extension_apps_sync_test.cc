@@ -39,7 +39,7 @@ using apps_helper::FixNTPOrdinalCollisions;
 using apps_helper::GetAppLaunchOrdinalForApp;
 using apps_helper::IncognitoDisableApp;
 using apps_helper::IncognitoEnableApp;
-using apps_helper::InstallApp;
+using apps_helper::InstallHostedApp;
 using apps_helper::InstallPlatformApp;
 using apps_helper::SetAppLaunchOrdinalForApp;
 using apps_helper::SetPageOrdinalForApp;
@@ -77,8 +77,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionAppsSyncTest,
 
   const int kNumApps = 5;
   for (int i = 0; i < kNumApps; ++i) {
-    InstallApp(GetProfile(0), i);
-    InstallApp(GetProfile(1), i);
+    InstallHostedApp(GetProfile(0), i);
+    InstallHostedApp(GetProfile(1), i);
   }
 
   ASSERT_TRUE(SetupSync());
@@ -95,18 +95,18 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionAppsSyncTest, StartWithDifferentApps) {
 
   const int kNumCommonApps = 5;
   for (int j = 0; j < kNumCommonApps; ++i, ++j) {
-    InstallApp(GetProfile(0), i);
-    InstallApp(GetProfile(1), i);
+    InstallHostedApp(GetProfile(0), i);
+    InstallHostedApp(GetProfile(1), i);
   }
 
   const int kNumProfile0Apps = 10;
   for (int j = 0; j < kNumProfile0Apps; ++i, ++j) {
-    InstallApp(GetProfile(0), i);
+    InstallHostedApp(GetProfile(0), i);
   }
 
   const int kNumProfile1Apps = 10;
   for (int j = 0; j < kNumProfile1Apps; ++i, ++j) {
-    InstallApp(GetProfile(1), i);
+    InstallHostedApp(GetProfile(1), i);
   }
 
   const int kNumPlatformApps = 5;
@@ -130,20 +130,20 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionAppsSyncTest,
 
   const int kNumCommonApps = 5;
   for (int j = 0; j < kNumCommonApps; ++i, ++j) {
-    InstallApp(GetProfile(0), i);
-    InstallApp(GetProfile(1), i);
+    InstallHostedApp(GetProfile(0), i);
+    InstallHostedApp(GetProfile(1), i);
   }
 
   ASSERT_TRUE(SetupSync());
 
   const int kNumProfile0Apps = 10;
   for (int j = 0; j < kNumProfile0Apps; ++i, ++j) {
-    InstallApp(GetProfile(0), i);
+    InstallHostedApp(GetProfile(0), i);
   }
 
   const int kNumProfile1Apps = 10;
   for (int j = 0; j < kNumProfile1Apps; ++i, ++j) {
-    InstallApp(GetProfile(1), i);
+    InstallHostedApp(GetProfile(1), i);
   }
 
   ASSERT_TRUE(AppsMatchChecker().Wait());
@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionAppsSyncTest, E2E_ENABLED(Add)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AppsMatchChecker().Wait());
 
-  InstallApp(GetProfile(0), 0);
+  InstallHostedApp(GetProfile(0), 0);
 
   ASSERT_TRUE(AppsMatchChecker().Wait());
 }
@@ -164,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionAppsSyncTest, E2E_ENABLED(Uninstall)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AppsMatchChecker().Wait());
 
-  InstallApp(GetProfile(0), 0);
+  InstallHostedApp(GetProfile(0), 0);
   ASSERT_TRUE(AppsMatchChecker().Wait());
 
   UninstallApp(GetProfile(0), 0);
@@ -181,13 +181,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionAppsSyncTest,
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AppsMatchChecker().Wait());
 
-  InstallApp(GetProfile(0), 0);
+  InstallHostedApp(GetProfile(0), 0);
   ASSERT_TRUE(AppsMatchChecker().Wait());
 
   UninstallApp(GetProfile(0), 0);
   ASSERT_TRUE(AppsMatchChecker().Wait());
 
-  InstallApp(GetProfile(0), 1);
+  InstallHostedApp(GetProfile(0), 1);
   ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
@@ -196,16 +196,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionAppsSyncTest, E2E_ENABLED(Merge)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AppsMatchChecker().Wait());
 
-  InstallApp(GetProfile(0), 0);
+  InstallHostedApp(GetProfile(0), 0);
   ASSERT_TRUE(AppsMatchChecker().Wait());
 
   UninstallApp(GetProfile(0), 0);
 
-  InstallApp(GetProfile(0), 1);
-  InstallApp(GetProfile(0), 2);
+  InstallHostedApp(GetProfile(0), 1);
+  InstallHostedApp(GetProfile(0), 2);
 
-  InstallApp(GetProfile(1), 2);
-  InstallApp(GetProfile(1), 3);
+  InstallHostedApp(GetProfile(1), 2);
+  InstallHostedApp(GetProfile(1), 3);
 
   ASSERT_TRUE(AppsMatchChecker().Wait());
 }
@@ -216,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionAppsSyncTest,
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AppsMatchChecker().Wait());
 
-  InstallApp(GetProfile(0), 0);
+  InstallHostedApp(GetProfile(0), 0);
   ASSERT_TRUE(AppsMatchChecker().Wait());
 
   DisableApp(GetProfile(0), 0);
@@ -232,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionAppsSyncTest,
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AppsMatchChecker().Wait());
 
-  InstallApp(GetProfile(0), 0);
+  InstallHostedApp(GetProfile(0), 0);
   ASSERT_TRUE(AppsMatchChecker().Wait());
 
   IncognitoEnableApp(GetProfile(0), 0);
@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionAppsSyncTest,
 
   syncer::StringOrdinal initial_page =
       syncer::StringOrdinal::CreateInitialOrdinal();
-  InstallApp(GetProfile(0), 0);
+  InstallHostedApp(GetProfile(0), 0);
   ASSERT_TRUE(AppsMatchChecker().Wait());
 
   syncer::StringOrdinal second_page = initial_page.CreateAfter();
@@ -270,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionAppsSyncTest,
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AppsMatchChecker().Wait());
 
-  InstallApp(GetProfile(0), 0);
+  InstallHostedApp(GetProfile(0), 0);
   ASSERT_TRUE(AppsMatchChecker().Wait());
 
   syncer::StringOrdinal initial_position =

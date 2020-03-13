@@ -3214,7 +3214,6 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
 #endif
   ProfileMenuViewBase::ShowBubble(bubble_view_mode, avatar_button, browser(),
                                   focus_first_profile_button);
-  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
 }
 
 void BrowserView::ShowHatsBubble(const std::string& site_id) {

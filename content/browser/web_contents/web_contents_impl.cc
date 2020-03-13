@@ -7301,12 +7301,18 @@ void WebContentsImpl::AudioContextPlaybackStopped(RenderFrameHost* host,
     observer.AudioContextPlaybackStopped(audio_context_id);
 }
 
+void WebContentsImpl::MediaWatchTimeChanged(
+    const content::MediaPlayerWatchTime& watch_time) {
+  for (auto& observer : observers_)
+    observer.MediaWatchTimeChanged(watch_time);
+}
+
 media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
 WebContentsImpl::GetRecordAggregateWatchTimeCallback() {
   return base::BindRepeating(
-      [](base::WeakPtr<WebContentsDelegate> delegate, GURL last_committed_url,
-         base::TimeDelta total_watch_time, base::TimeDelta time_stamp,
-         bool has_video, bool has_audio) {
+      [](base::WeakPtr<RenderFrameHostDelegate> delegate,
+         GURL last_committed_url, base::TimeDelta total_watch_time,
+         base::TimeDelta time_stamp, bool has_video, bool has_audio) {
         content::MediaPlayerWatchTime watch_time(
             last_committed_url, last_committed_url.GetOrigin(),
             total_watch_time, time_stamp, has_video, has_audio);
@@ -7315,7 +7321,7 @@ WebContentsImpl::GetRecordAggregateWatchTimeCallback() {
         if (delegate)
           delegate->MediaWatchTimeChanged(watch_time);
       },
-      delegate_->GetDelegateWeakPtr(), GetMainFrameLastCommittedURL());
+      weak_factory_.GetWeakPtr(), GetMainFrameLastCommittedURL());
 }
 
 RenderFrameHostImpl* WebContentsImpl::GetMainFrameForInnerDelegate(

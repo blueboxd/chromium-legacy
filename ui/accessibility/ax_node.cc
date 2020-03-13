@@ -242,8 +242,8 @@ void AXNode::UpdateUnignoredCachedValues() {
     UpdateUnignoredCachedValuesRecursive(0);
 }
 
-void AXNode::SwapChildren(std::vector<AXNode*>& children) {
-  children.swap(children_);
+void AXNode::SwapChildren(std::vector<AXNode*>* children) {
+  children->swap(children_);
 }
 
 void AXNode::Destroy() {

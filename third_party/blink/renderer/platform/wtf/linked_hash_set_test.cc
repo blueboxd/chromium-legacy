@@ -21,4 +21,37 @@ TEST(NewLinkedHashSetTest, Iterator) {
   EXPECT_TRUE(set.rbegin() == set.rend());
 }
 
+TEST(NewLinkedHashSetTest, Insert) {
+  using Set = NewLinkedHashSet<int>;
+  Set set;
+  Set::AddResult result = set.insert(1);
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 1);
+
+  result = set.insert(1);
+  EXPECT_FALSE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 1);
+
+  result = set.insert(2);
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 2);
+
+  result = set.insert(3);
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 3);
+
+  result = set.insert(2);
+  EXPECT_FALSE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 2);
+
+  Set::const_iterator it = set.begin();
+  EXPECT_EQ(*it, 1);
+  ++it;
+  EXPECT_EQ(*it, 2);
+  ++it;
+  EXPECT_EQ(*it, 3);
+  ++it;
+  EXPECT_TRUE(it == set.end());
+}
+
 }  // namespace WTF

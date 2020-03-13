@@ -22,6 +22,7 @@
 
 // Messages sent from the browser to the renderer.
 
+// TODO(yuzus): Migrate this as a part of blink::mojom::SetPageLifecycleState.
 IPC_MESSAGE_ROUTED1(PageMsg_VisibilityChanged, content::PageVisibilityState)
 
 // Sent when the history for this page is altered from another process. The

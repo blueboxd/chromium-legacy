@@ -75,6 +75,14 @@ cr.define('settings', function() {
   class SafetyCheckBrowserProxy {
     /** Run the safety check. */
     runSafetyCheck() {}
+
+    /**
+     * Get the display string for the safety check parent, showing how long ago
+     * safety check last ran.`
+     * @param {number} timestamp The timestamp safety check last ran.
+     * @return {!Promise<string>}
+     */
+    getParentRanDisplayString(timestamp) {}
   }
 
   /** @implements {settings.SafetyCheckBrowserProxy} */
@@ -82,6 +90,11 @@ cr.define('settings', function() {
     /** @override */
     runSafetyCheck() {
       chrome.send('performSafetyCheck');
+    }
+
+    /** @override */
+    getParentRanDisplayString(timestamp) {
+      return cr.sendWithPromise('getSafetyCheckRanDisplayString', timestamp);
     }
   }
 

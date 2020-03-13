@@ -242,19 +242,16 @@ static bool Parse(const MediaTrackConstraints* constraints_in,
                   Vector<NameValueStringConstraint>& mandatory) {
   Vector<NameValueStringConstraint> mandatory_constraints_vector;
   if (constraints_in->hasMandatory()) {
-    bool ok = ParseMandatoryConstraintsDictionary(constraints_in->mandatory(),
-                                                  mandatory);
+    bool ok = ParseMandatoryConstraintsDictionary(
+        Dictionary(constraints_in->mandatory()), mandatory);
     if (!ok)
       return false;
   }
 
   if (constraints_in->hasOptional()) {
-    const Vector<Dictionary>& optional_constraints = constraints_in->optional();
-
-    for (const auto& constraint : optional_constraints) {
-      if (constraint.IsUndefinedOrNull())
-        return false;
-      bool ok = ParseOptionalConstraintsVectorElement(constraint, optional);
+    for (const auto& constraint : constraints_in->optional()) {
+      bool ok = ParseOptionalConstraintsVectorElement(Dictionary(constraint),
+                                                      optional);
       if (!ok)
         return false;
     }

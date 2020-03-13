@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/avatar_menu_observer.h"
 #include "chrome/browser/profiles/profile_list.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
@@ -85,9 +84,7 @@ AvatarMenu::Item::Item(const Item& other) = default;
 AvatarMenu::Item::~Item() {
 }
 
-void AvatarMenu::SwitchToProfile(size_t index,
-                                 bool always_create,
-                                 ProfileMetrics::ProfileOpen metric) {
+void AvatarMenu::SwitchToProfile(size_t index, bool always_create) {
   DCHECK(profiles::IsMultipleProfilesEnabled() ||
          index == GetActiveProfileIndex());
   const Item& item = GetItemAt(index);
@@ -100,7 +97,7 @@ void AvatarMenu::SwitchToProfile(size_t index,
   }
 
   profiles::SwitchToProfile(item.profile_path, always_create,
-                            ProfileManager::CreateCallback(), metric);
+                            ProfileManager::CreateCallback());
 }
 
 void AvatarMenu::AddNewProfile(ProfileMetrics::ProfileAdd type) {

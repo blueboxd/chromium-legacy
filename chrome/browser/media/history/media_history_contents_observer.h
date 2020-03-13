@@ -25,6 +25,8 @@ class MediaHistoryContentsObserver
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void MediaWatchTimeChanged(
+      const content::MediaPlayerWatchTime& watch_time) override;
   void WebContentsDestroyed() override;
 
   // media_session::mojom::MediaSessionObserver:

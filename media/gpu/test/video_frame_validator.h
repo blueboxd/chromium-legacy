@@ -179,7 +179,7 @@ class RawVideoFrameValidator : public VideoFrameValidator {
 // |tolerance_|, the validation on the frame passes.
 class PSNRVideoFrameValidator : public VideoFrameValidator {
  public:
-  constexpr static double kDefaultTolerance = 0.70;
+  constexpr static double kDefaultTolerance = 20.0;
 
   static std::unique_ptr<PSNRVideoFrameValidator> Create(
       const GetModelFrameCB& get_model_frame_cb,
@@ -208,7 +208,7 @@ class PSNRVideoFrameValidator : public VideoFrameValidator {
 // |tolerance_|, the validation on the frame passes.
 class SSIMVideoFrameValidator : public VideoFrameValidator {
  public:
-  constexpr static double kDefaultTolerance = 45.0;
+  constexpr static double kDefaultTolerance = 0.70;
 
   static std::unique_ptr<SSIMVideoFrameValidator> Create(
       const GetModelFrameCB& get_model_frame_cb,

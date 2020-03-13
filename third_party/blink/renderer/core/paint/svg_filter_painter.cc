@@ -56,7 +56,6 @@ void SVGFilterRecordingContext::Abort() {
 static void PaintFilteredContent(GraphicsContext& context,
                                  const LayoutObject& object,
                                  const DisplayItemClient& display_item_client,
-                                 const FloatRect& bounds,
                                  FilterEffect* effect) {
   if (DrawingRecorder::UseCachedDrawingIfPossible(context, display_item_client,
                                                   DisplayItem::kSVGFilter))
@@ -69,9 +68,13 @@ static void PaintFilteredContent(GraphicsContext& context,
   context.Save();
 
   // Clip drawing of filtered image to the minimum required paint rect.
-  context.ClipRect(effect->MapRect(object.StrokeBoundingBox()));
+  const FloatRect object_bounds = object.StrokeBoundingBox();
+  const FloatRect paint_rect = effect->MapRect(object_bounds);
+  context.ClipRect(paint_rect);
 
-  context.BeginLayer(1, SkBlendMode::kSrcOver, &bounds, kColorFilterNone,
+  // Use the union of the pre-image and the post-image as the layer bounds.
+  const FloatRect layer_bounds = UnionRect(object_bounds, paint_rect);
+  context.BeginLayer(1, SkBlendMode::kSrcOver, &layer_bounds, kColorFilterNone,
                      std::move(image_filter));
   context.EndLayer();
   context.Restore();
@@ -103,8 +106,7 @@ GraphicsContext* SVGFilterPainter::PrepareEffect(
   if (!filter || !filter->LastEffect())
     return nullptr;
 
-  IntRect source_region = EnclosingIntRect(
-      Intersection(filter->FilterRegion(), object.StrokeBoundingBox()));
+  IntRect source_region = EnclosingIntRect(object.StrokeBoundingBox());
   filter->GetSourceGraphic()->SetSourceRect(source_region);
 
   auto* filter_data = MakeGarbageCollected<FilterData>();
@@ -147,11 +149,11 @@ void SVGFilterPainter::FinishEffect(
 
   // Check for RecordingContent here because we may can be re-painting
   // without re-recording the contents to be filtered.
-  Filter* filter = filter_data->last_effect->GetFilter();
-  FloatRect bounds = filter->FilterRegion();
   if (filter_data->state_ == FilterData::kRecordingContent) {
-    DCHECK(filter->GetSourceGraphic());
     sk_sp<PaintRecord> content = recording_context.EndContent();
+    Filter* filter = filter_data->last_effect->GetFilter();
+    FloatRect bounds = filter->FilterRegion();
+    DCHECK(filter->GetSourceGraphic());
     paint_filter_builder::BuildSourceGraphic(filter->GetSourceGraphic(),
                                              std::move(content), bounds);
     filter_data->state_ = FilterData::kReadyToPaint;
@@ -160,7 +162,7 @@ void SVGFilterPainter::FinishEffect(
   DCHECK_EQ(filter_data->state_, FilterData::kReadyToPaint);
   filter_data->state_ = FilterData::kPaintingFilter;
   PaintFilteredContent(recording_context.PaintingContext(), object,
-                       display_item_client, bounds, filter_data->last_effect);
+                       display_item_client, filter_data->last_effect);
   filter_data->state_ = FilterData::kReadyToPaint;
 }
 

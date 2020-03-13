@@ -32,6 +32,11 @@ shared_library("chromium_android_linker") {
   # Disable coverage to avoid linker issue.
   configs -= [ "//build/config/coverage:default_coverage" ]
 
+  # Disable orderfile instrumentation. Code in this target is in a different
+  # .so, cannot call unexported instrumentation functions from another one (link
+  # time error).
+  configs -= [ "//build/config/android:default_orderfile_instrumentation" ]
+
   # Avoid linking libc++ and support libraries, to avoid 100 kiB of
   # un-necessary code.
   no_default_deps = true

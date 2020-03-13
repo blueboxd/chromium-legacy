@@ -98,8 +98,7 @@ class WorkerTaskProviderBrowserTest : public InProcessBrowserTest,
     run_loop.Run();
 
     profiles::SwitchToProfile(new_path, /* always_create = */ false,
-                              base::DoNothing(),
-                              ProfileMetrics::SWITCH_PROFILE_ICON);
+                              base::DoNothing());
     BrowserList* browser_list = BrowserList::GetInstance();
     return *browser_list->begin_last_active();
   }

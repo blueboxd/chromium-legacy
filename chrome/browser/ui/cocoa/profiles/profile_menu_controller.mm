@@ -105,15 +105,13 @@ class Observer : public BrowserListObserver, public AvatarMenuObserver {
 }
 
 - (IBAction)switchToProfileFromMenu:(id)sender {
-  _avatarMenu->SwitchToProfile([sender tag], false,
-                               ProfileMetrics::SWITCH_PROFILE_MENU);
+  _avatarMenu->SwitchToProfile([sender tag], false);
 }
 
 - (IBAction)switchToProfileFromDock:(id)sender {
   // Explicitly bring to the foreground when taking action from the dock.
   [NSApp activateIgnoringOtherApps:YES];
-  _avatarMenu->SwitchToProfile([sender tag], false,
-                               ProfileMetrics::SWITCH_PROFILE_DOCK);
+  _avatarMenu->SwitchToProfile([sender tag], false);
 }
 
 - (IBAction)editProfile:(id)sender {

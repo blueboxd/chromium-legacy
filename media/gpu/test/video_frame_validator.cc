@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "media/base/video_frame.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/test/image_quality_metrics.h"
 #include "media/gpu/test/video_test_helpers.h"
 #include "media/gpu/video_frame_mapper.h"
@@ -313,7 +314,8 @@ PSNRVideoFrameValidator::Validate(scoped_refptr<const VideoFrame> frame,
   auto model_frame = get_model_frame_cb_.Run(frame_index);
   CHECK(model_frame);
   double psnr = ComputePSNR(*frame, *model_frame);
-  if (psnr > tolerance_)
+  DVLOGF(4) << "frame_index: " << frame_index << ", psnr: " << psnr;
+  if (psnr < tolerance_)
     return std::make_unique<PSNRMismatchedFrameInfo>(frame_index, psnr);
   return nullptr;
 }
@@ -362,7 +364,8 @@ SSIMVideoFrameValidator::Validate(scoped_refptr<const VideoFrame> frame,
   auto model_frame = get_model_frame_cb_.Run(frame_index);
   CHECK(model_frame);
   double ssim = ComputeSSIM(*frame, *model_frame);
-  if (ssim > tolerance_)
+  DVLOGF(4) << "frame_index: " << frame_index << ", ssim: " << ssim;
+  if (ssim < tolerance_)
     return std::make_unique<SSIMMismatchedFrameInfo>(frame_index, ssim);
   return nullptr;
 }

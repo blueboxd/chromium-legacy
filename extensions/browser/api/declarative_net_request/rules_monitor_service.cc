@@ -31,6 +31,7 @@
 #include "extensions/browser/warning_service_factory.h"
 #include "extensions/browser/warning_set.h"
 #include "extensions/common/api/declarative_net_request.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
 #include "extensions/common/extension_id.h"
@@ -260,13 +261,13 @@ void RulesMonitorService::OnRulesetLoaded(LoadRequestData load_data) {
   // per extension.
   DCHECK(load_data.rulesets.size() == 1u || load_data.rulesets.size() == 2u);
   RulesetInfo& static_ruleset = load_data.rulesets[0];
-  DCHECK_EQ(static_ruleset.source().id(), RulesetSource::kStaticRulesetID)
+  DCHECK_GE(static_ruleset.source().id(), kMinValidStaticRulesetID)
       << static_ruleset.source().id();
 
   RulesetInfo* dynamic_ruleset =
       load_data.rulesets.size() == 2 ? &load_data.rulesets[1] : nullptr;
   DCHECK(!dynamic_ruleset ||
-         dynamic_ruleset->source().id() == RulesetSource::kDynamicRulesetID)
+         dynamic_ruleset->source().id() == kDynamicRulesetID)
       << dynamic_ruleset->source().id();
 
   // Update the ruleset checksums if needed.

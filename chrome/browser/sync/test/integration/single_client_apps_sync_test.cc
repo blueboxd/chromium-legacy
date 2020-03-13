@@ -16,7 +16,7 @@
 namespace {
 
 using apps_helper::AllProfilesHaveSameApps;
-using apps_helper::InstallApp;
+using apps_helper::InstallHostedApp;
 using apps_helper::InstallPlatformApp;
 
 class SingleClientAppsSyncTest : public SyncTest {
@@ -48,8 +48,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, StartWithSomeLegacyApps) {
 
   const int kNumApps = 5;
   for (int i = 0; i < kNumApps; ++i) {
-    InstallApp(GetProfile(0), i);
-    InstallApp(verifier(), i);
+    InstallHostedApp(GetProfile(0), i);
+    InstallHostedApp(verifier(), i);
   }
 
   ASSERT_TRUE(SetupSync());
@@ -74,8 +74,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomeLegacyApps) {
 
   const int kNumApps = 5;
   for (int i = 0; i < kNumApps; ++i) {
-    InstallApp(GetProfile(0), i);
-    InstallApp(verifier(), i);
+    InstallHostedApp(GetProfile(0), i);
+    InstallHostedApp(verifier(), i);
   }
 
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
@@ -103,8 +103,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, MAYBE_InstallSomeApps) {
 
   const int kNumApps = 5;
   for (int j = 0; j < kNumApps; ++i, ++j) {
-    InstallApp(GetProfile(0), i);
-    InstallApp(verifier(), i);
+    InstallHostedApp(GetProfile(0), i);
+    InstallHostedApp(verifier(), i);
   }
 
   const int kNumPlatformApps = 5;

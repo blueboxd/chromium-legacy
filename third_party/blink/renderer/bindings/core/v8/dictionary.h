@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_DICTIONARY_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_DICTIONARY_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -44,9 +45,14 @@ class CORE_EXPORT Dictionary final {
 
  public:
   Dictionary() : isolate_(nullptr) {}
-  Dictionary(v8::Isolate*,
-             v8::Local<v8::Value> dictionary_object,
-             ExceptionState&);
+  explicit Dictionary(v8::Isolate*,
+                      v8::Local<v8::Value> dictionary_object,
+                      ExceptionState&);
+  explicit Dictionary(const ScriptValue& script_value)
+      : isolate_(script_value.GetIsolate()) {
+    CHECK(script_value.IsObject());
+    dictionary_object_ = script_value.V8Value().As<v8::Object>();
+  }
 
   Dictionary& operator=(const Dictionary&) = default;
 

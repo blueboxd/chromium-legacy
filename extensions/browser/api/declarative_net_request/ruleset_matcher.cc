@@ -116,7 +116,7 @@ RulesetMatcher::GetAllowlistedFrameActionForTesting(
 
 RulesetMatcher::RulesetMatcher(
     std::string ruleset_data,
-    size_t id,
+    int id,
     api::declarative_net_request::SourceType source_type,
     const ExtensionId& extension_id)
     : ruleset_data_(std::move(ruleset_data)),

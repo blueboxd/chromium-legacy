@@ -51,7 +51,7 @@ double ComputeSimilarity(const VideoFrame* frame1,
     frame1 = converted_frame1.get();
   }
   if (frame2->format() != PIXEL_FORMAT_I420) {
-    converted_frame2 = ConvertVideoFrame(frame1, PIXEL_FORMAT_I420);
+    converted_frame2 = ConvertVideoFrame(frame2, PIXEL_FORMAT_I420);
     frame2 = converted_frame2.get();
   }
 

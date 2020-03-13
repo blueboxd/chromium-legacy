@@ -2734,8 +2734,7 @@ void RenderViewContextMenu::ExecOpenLinkInProfile(int profile_index) {
   profiles::SwitchToProfile(
       profile_path, false,
       base::Bind(OnProfileCreated, params_.link_url,
-                 CreateReferrer(params_.link_url, params_)),
-      ProfileMetrics::SWITCH_PROFILE_CONTEXT_MENU);
+                 CreateReferrer(params_.link_url, params_)));
 }
 
 void RenderViewContextMenu::ExecInspectElement() {

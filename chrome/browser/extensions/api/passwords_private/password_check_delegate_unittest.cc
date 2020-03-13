@@ -582,6 +582,12 @@ TEST_F(PasswordCheckDelegateTest, RemoveCompromisedCredentialSuccess) {
 // Tests that we don't create an entry in the database if there is no matching
 // saved password.
 TEST_F(PasswordCheckDelegateTest, OnLeakFoundDoesNotCreateCredential) {
+  identity_test_env().MakeAccountAvailable(kTestEmail);
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1, kPassword1));
+  RunUntilIdle();
+  delegate().StartPasswordCheck();
+  store().RemoveLogin(MakeSavedPassword(kExampleCom, kUsername1, kPassword1));
+  RunUntilIdle();
   static_cast<BulkLeakCheckDelegateInterface*>(service())->OnFinishedCredential(
       LeakCheckCredential(base::ASCIIToUTF16(kUsername1),
                           base::ASCIIToUTF16(kPassword1)),
@@ -609,9 +615,11 @@ TEST_F(PasswordCheckDelegateTest, NoLeakedFound) {
 // Test that a found leak creates a compromised credential in the password
 // store.
 TEST_F(PasswordCheckDelegateTest, OnLeakFoundCreatesCredential) {
+  identity_test_env().MakeAccountAvailable(kTestEmail);
   store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1, kPassword1));
   RunUntilIdle();
 
+  delegate().StartPasswordCheck();
   static_cast<BulkLeakCheckDelegateInterface*>(service())->OnFinishedCredential(
       LeakCheckCredential(base::ASCIIToUTF16(kUsername1),
                           base::ASCIIToUTF16(kPassword1)),
@@ -639,6 +647,8 @@ TEST_F(PasswordCheckDelegateTest, OnLeakFoundCreatesMultipleCredential) {
   store().AddLogin(MakeSavedPassword(kExampleOrg, kUsername2Email, kPassword2));
   RunUntilIdle();
 
+  identity_test_env().MakeAccountAvailable(kTestEmail);
+  delegate().StartPasswordCheck();
   static_cast<BulkLeakCheckDelegateInterface*>(service())->OnFinishedCredential(
       LeakCheckCredential(base::ASCIIToUTF16(kUsername1),
                           base::ASCIIToUTF16(kPassword1)),

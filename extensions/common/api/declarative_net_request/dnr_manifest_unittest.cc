@@ -78,8 +78,8 @@ class DNRManifestTest : public testing::Test {
     EXPECT_TRUE(error.empty());
 
     ASSERT_TRUE(DNRManifestData::HasRuleset(*extension));
-    EXPECT_EQ(DNRManifestData::GetRulesetPath(*extension),
-              temp_dir_.GetPath().Append(rules_file_path_));
+    EXPECT_EQ(DNRManifestData::GetRuleset(*extension).relative_path,
+              rules_file_path_);
   }
 
  private:

@@ -31,18 +31,18 @@ bool HasSameApps(Profile* profile1, Profile* profile2);
 // legacy packaged and platform).
 bool AllProfilesHaveSameApps() WARN_UNUSED_RESULT;
 
-// Installs the app for the given index to |profile|, and returns the extension
-// ID of the new app.
-std::string InstallApp(Profile* profile, int index);
+// Installs the hosted app for the given index to |profile|, and returns the
+// extension ID of the new app.
+std::string InstallHostedApp(Profile* profile, int index);
 
 // Installs the platform app for the given index to |profile|, and returns the
 // extension ID of the new app. Indices passed to this method should be distinct
 // from indices passed to InstallApp.
 std::string InstallPlatformApp(Profile* profile, int index);
 
-// Installs the app for the given index to all profiles (including the
+// Installs the hosted app for the given index to all profiles (including the
 // verifier), and returns the extension ID of the new app.
-std::string InstallAppForAllProfiles(int index);
+std::string InstallHostedAppForAllProfiles(int index);
 
 // Uninstalls the app for the given index from |profile|. Assumes that it was
 // previously installed.

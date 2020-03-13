@@ -115,9 +115,6 @@ struct ReadJSONRulesResult {
 // Holds paths for an extension ruleset.
 class RulesetSource {
  public:
-  const static size_t kStaticRulesetID;
-  const static size_t kDynamicRulesetID;
-
   // Creates RulesetSource corresponding to the static ruleset in the extension
   // package. This must only be called for extensions which specified a
   // declarative ruleset.
@@ -132,17 +129,11 @@ class RulesetSource {
   // Creates a temporary source i.e. a source corresponding to temporary files.
   // Returns null on failure.
   static std::unique_ptr<RulesetSource> CreateTemporarySource(
-      size_t id,
+      int id,
       api::declarative_net_request::SourceType type,
       size_t rule_count_limit,
       ExtensionId extension_id);
 
-  RulesetSource(base::FilePath json_path,
-                base::FilePath indexed_path,
-                size_t id,
-                api::declarative_net_request::SourceType type,
-                size_t rule_count_limit,
-                ExtensionId extension_id);
   ~RulesetSource();
   RulesetSource(RulesetSource&&);
   RulesetSource& operator=(RulesetSource&&);
@@ -156,7 +147,7 @@ class RulesetSource {
   const base::FilePath& indexed_path() const { return indexed_path_; }
 
   // Each ruleset source within an extension has a distinct ID.
-  size_t id() const { return id_; }
+  int id() const { return id_; }
 
   // The origin type for this ruleset. Can be from the manifest or dynamic.
   api::declarative_net_request::SourceType type() const { return type_; }
@@ -199,9 +190,16 @@ class RulesetSource {
       const std::vector<api::declarative_net_request::Rule>& rules) const;
 
  private:
+  RulesetSource(base::FilePath json_path,
+                base::FilePath indexed_path,
+                int id,
+                api::declarative_net_request::SourceType type,
+                size_t rule_count_limit,
+                ExtensionId extension_id);
+
   base::FilePath json_path_;
   base::FilePath indexed_path_;
-  size_t id_;
+  int id_;
   api::declarative_net_request::SourceType type_;
   size_t rule_count_limit_;
   ExtensionId extension_id_;

@@ -37,7 +37,7 @@ constexpr const char* usage_msg =
 constexpr const char* help_msg =
     "Run the video encode accelerator performance tests on the video\n"
     "specified by <video path>. If no <video path> is given the default\n"
-    "\"puppets-320x180.nv12.yuv\" video will be used.\n"
+    "\"bear_320x192_40frames.yuv.webm\" video will be used.\n"
     "\nThe <video metadata path> should specify the location of a json file\n"
     "containing the video's metadata. By default <video path>.json will be\n"
     "used.\n"
@@ -52,7 +52,7 @@ constexpr const char* help_msg =
 
 // Default video to be used if no test video was specified.
 constexpr base::FilePath::CharType kDefaultTestVideoPath[] =
-    FILE_PATH_LITERAL("puppets-320x180.nv12.yuv");
+    FILE_PATH_LITERAL("bear_320x192_40frames.yuv.webm");
 
 media::test::VideoEncoderTestEnvironment* g_env;
 

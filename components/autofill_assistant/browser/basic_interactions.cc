@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/basic_interactions.h"
+#include <algorithm>
 #include "base/bind_helpers.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/string_number_conversions.h"
@@ -358,6 +359,59 @@ bool BasicInteractions::SetUserActions(const SetUserActionsProto& proto) {
   }
 
   delegate_->SetUserActions(std::move(user_actions));
+  return true;
+}
+
+bool BasicInteractions::ToggleUserAction(const ToggleUserActionProto& proto) {
+  auto user_actions_value = delegate_->GetUserModel()->GetValue(
+      proto.user_actions_model_identifier());
+  if (!user_actions_value.has_value()) {
+    DVLOG(2) << "Error evaluating " << __func__ << ": "
+             << proto.user_actions_model_identifier() << " not found in model";
+    return false;
+  }
+  if (!user_actions_value->has_user_actions()) {
+    DVLOG(2) << "Error evaluating " << __func__
+             << ": expected user_actions_model_identifier to contain user "
+                "actions, but was "
+             << *user_actions_value;
+    return false;
+  }
+
+  auto enabled_value =
+      delegate_->GetUserModel()->GetValue(proto.enabled_model_identifier());
+  if (!enabled_value.has_value()) {
+    DVLOG(2) << "Error evaluating " << __func__ << ": "
+             << proto.enabled_model_identifier() << " not found in model";
+    return false;
+  }
+  if (enabled_value->booleans().values_size() != 1) {
+    DVLOG(2) << "Error evaluating " << __func__
+             << ": expected enabled_model_identifier to contain a single bool, "
+                "but was "
+             << *enabled_value;
+    return false;
+  }
+
+  auto user_action_it = std::find_if(
+      user_actions_value->user_actions().values().cbegin(),
+      user_actions_value->user_actions().values().cend(),
+      [&](const UserActionProto& user_action) {
+        return user_action.identifier() == proto.user_action_identifier();
+      });
+  if (user_action_it == user_actions_value->user_actions().values().cend()) {
+    DVLOG(2) << "Error evaluating " << __func__ << ": "
+             << proto.user_action_identifier() << " not found in "
+             << *user_actions_value;
+    return false;
+  }
+  auto user_action_index =
+      user_action_it - user_actions_value->user_actions().values().cbegin();
+  user_actions_value->mutable_user_actions()
+      ->mutable_values(user_action_index)
+      ->set_enabled(enabled_value->booleans().values(0));
+  delegate_->GetUserModel()->SetValue(proto.user_actions_model_identifier(),
+                                      *user_actions_value);
   return true;
 }
 

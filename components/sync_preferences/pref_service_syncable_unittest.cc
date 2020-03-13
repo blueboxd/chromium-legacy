@@ -406,7 +406,8 @@ class PrefServiceSyncableMergeTest : public testing::Test {
         kDefaultCharsetPrefName, kDefaultCharsetValue,
         user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
-    pref_sync_service_ = prefs_.GetSyncableService(syncer::PREFERENCES);
+    pref_sync_service_ = static_cast<PrefModelAssociator*>(
+        prefs_.GetSyncableService(syncer::PREFERENCES));
     ASSERT_THAT(pref_sync_service_, NotNull());
   }
 
@@ -474,7 +475,7 @@ class PrefServiceSyncableMergeTest : public testing::Test {
   scoped_refptr<TestingPrefStore> user_prefs_;
   TestPrefModelAssociatorClient client_;
   PrefServiceSyncable prefs_;
-  syncer::SyncableService* pref_sync_service_;
+  PrefModelAssociator* pref_sync_service_;
   int next_pref_remote_sync_node_id_;
 };
 
@@ -649,7 +650,7 @@ TEST_F(PrefServiceSyncableMergeTest, ShouldIgnoreUpdatesToNotSyncablePrefs) {
       1, pref_name, base::Value("remote_value2"), SyncChange::ACTION_UPDATE));
   pref_sync_service_->ProcessSyncChanges(FROM_HERE, remote_changes);
   // The pref isn't synced.
-  EXPECT_THAT(pref_sync_service_->GetAllSyncData(syncer::PREFERENCES),
+  EXPECT_THAT(pref_sync_service_->GetAllSyncDataForTesting(syncer::PREFERENCES),
               IsEmpty());
   EXPECT_THAT(GetPreferenceValue(pref_name).GetString(), Eq("default_value"));
 }

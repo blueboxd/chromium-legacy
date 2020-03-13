@@ -57,8 +57,21 @@ void TestService::GetRequestorName(GetRequestorNameCallback callback) {
   std::move(callback).Run(requestor_name_);
 }
 
-void TestService::CreateSharedBuffer(const std::string& message,
-                                     CreateSharedBufferCallback callback) {
+void TestService::CreateReadOnlySharedMemoryRegion(
+    const std::string& message,
+    CreateReadOnlySharedMemoryRegionCallback callback) {
+  NOTREACHED();
+}
+
+void TestService::CreateWritableSharedMemoryRegion(
+    const std::string& message,
+    CreateWritableSharedMemoryRegionCallback callback) {
+  NOTREACHED();
+}
+
+void TestService::CreateUnsafeSharedMemoryRegion(
+    const std::string& message,
+    CreateUnsafeSharedMemoryRegionCallback callback) {
   NOTREACHED();
 }
 

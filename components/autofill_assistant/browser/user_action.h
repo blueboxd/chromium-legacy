@@ -35,6 +35,7 @@ class UserAction {
   UserAction(const UserActionProto& action);
   UserAction(const ChipProto& chip,
              const DirectActionProto& direct_action,
+             bool enabled,
              const std::string& identifier);
 
   // Returns true if the action has no trigger, that is, there is no chip and no

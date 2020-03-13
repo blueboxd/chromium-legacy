@@ -68,6 +68,12 @@ async function verifyRecentVideos(appId, expectedEntries) {
   await verifyCurrentEntries(appId, expectedEntries);
 }
 
+async function verifyBreadcrumbsPath(appId, expectedPath) {
+  const path =
+      await remoteCall.callRemoteTestUtil('getBreadcrumbPath', appId, []);
+  chrome.test.assertEq(expectedPath, path);
+}
+
 testcase.recentsDownloads = async () => {
   // Populate downloads.
   const appId = await setupAndWaitUntilReady(
@@ -119,6 +125,9 @@ testcase.recentAudioDownloads = async () => {
       RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
   // ENTRIES.beautiful is recently-modified and has .ogg file extension.
   await verifyRecentAudio(appId, [ENTRIES.beautiful]);
+
+  // Breadcrumbs path should be '/Audio'.
+  await verifyBreadcrumbsPath(appId, '/Audio');
 };
 
 testcase.recentAudioDownloadsAndDrive = async () => {
@@ -136,6 +145,9 @@ testcase.recentImagesDownloads = async () => {
       RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
   // ENTRIES.desktop is recently-modified and has .png file extension.
   await verifyRecentImages(appId, [ENTRIES.desktop]);
+
+  // Breadcrumbs path should be '/Images'.
+  await verifyBreadcrumbsPath(appId, '/Images');
 };
 
 testcase.recentImagesDownloadsAndDrive = async () => {
@@ -152,6 +164,9 @@ testcase.recentVideosDownloads = async () => {
       RootPath.DOWNLOADS,
       BASIC_LOCAL_ENTRY_SET.concat([RECENTLY_MODIFIED_VIDEO]), []);
   await verifyRecentVideos(appId, [RECENTLY_MODIFIED_VIDEO]);
+
+  // Breadcrumbs path should be '/Videos'.
+  await verifyBreadcrumbsPath(appId, '/Videos');
 };
 
 testcase.recentVideosDownloadsAndDrive = async () => {

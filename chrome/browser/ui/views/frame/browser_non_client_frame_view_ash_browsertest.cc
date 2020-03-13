@@ -1067,7 +1067,7 @@ IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
 }
 
 // TODO(): Flaky crash on Chrome OS debug.
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#if defined(OS_CHROMEOS)
 #define MAYBE_BrowserCommandFocusToolbarGeolocation \
   DISABLED_BrowserCommandFocusToolbarGeolocation
 #else

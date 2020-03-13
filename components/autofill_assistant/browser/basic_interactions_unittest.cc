@@ -13,6 +13,11 @@
 
 namespace autofill_assistant {
 
+using ::testing::ElementsAre;
+using ::testing::Eq;
+using ::testing::Property;
+using ::testing::StrEq;
+
 namespace {
 DateProto CreateDateProto(int year, int month, int day) {
   DateProto proto;
@@ -345,6 +350,74 @@ TEST_F(BasicInteractionsTest, ComputeValueCompare) {
   user_model_.SetValue("value_a", SimpleValue(2));
   EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
   EXPECT_EQ(user_model_.GetValue("result"), SimpleValue(true));
+}
+
+TEST_F(BasicInteractionsTest, ToggleUserAction) {
+  ToggleUserActionProto proto;
+  ValueProto user_actions_value;
+  UserActionProto cancel_user_action;
+  cancel_user_action.set_identifier("cancel_identifier");
+  cancel_user_action.mutable_chip()->set_type(ChipType::CANCEL_ACTION);
+  cancel_user_action.mutable_chip()->set_text("Cancel");
+  *user_actions_value.mutable_user_actions()->add_values() = cancel_user_action;
+  UserActionProto done_user_action;
+  done_user_action.set_identifier("done_identifier");
+  done_user_action.mutable_chip()->set_type(ChipType::HIGHLIGHTED_ACTION);
+  done_user_action.mutable_chip()->set_text("Done");
+  *user_actions_value.mutable_user_actions()->add_values() = done_user_action;
+  user_model_.SetValue("chips", user_actions_value);
+  user_model_.SetValue("enabled", SimpleValue(false));
+
+  // Missing fields.
+  EXPECT_FALSE(basic_interactions_.ToggleUserAction(proto));
+  proto.set_user_actions_model_identifier("chips");
+  EXPECT_FALSE(basic_interactions_.ToggleUserAction(proto));
+  proto.set_enabled_model_identifier("enabled");
+  EXPECT_FALSE(basic_interactions_.ToggleUserAction(proto));
+  proto.set_user_action_identifier("done_identifier");
+  EXPECT_TRUE(basic_interactions_.ToggleUserAction(proto));
+
+  // Wrong value types/sizes.
+  user_model_.SetValue("chips", SimpleValue(3));
+  EXPECT_FALSE(basic_interactions_.ToggleUserAction(proto));
+  user_model_.SetValue("chips", user_actions_value);
+  user_model_.SetValue("enabled", SimpleValue(2));
+  EXPECT_FALSE(basic_interactions_.ToggleUserAction(proto));
+  ValueProto multi_bool;
+  multi_bool.mutable_booleans()->add_values(true);
+  multi_bool.mutable_booleans()->add_values(false);
+  user_model_.SetValue("enabled", multi_bool);
+  EXPECT_FALSE(basic_interactions_.ToggleUserAction(proto));
+  user_model_.SetValue("enabled", SimpleValue(false));
+  EXPECT_TRUE(basic_interactions_.ToggleUserAction(proto));
+
+  // Wrong user action identifier.
+  proto.set_user_action_identifier("wrong");
+  EXPECT_FALSE(basic_interactions_.ToggleUserAction(proto));
+  proto.set_user_action_identifier("cancel_identifier");
+  EXPECT_TRUE(basic_interactions_.ToggleUserAction(proto));
+
+  // Check changes to values.
+  user_model_.SetValue("chips", user_actions_value);
+  user_model_.SetValue("enabled", SimpleValue(false));
+  proto.set_user_action_identifier("done_identifier");
+  EXPECT_THAT(
+      user_model_.GetValue("chips")->user_actions().values(),
+      ElementsAre(AllOf(Property(&UserActionProto::identifier,
+                                 StrEq("cancel_identifier")),
+                        Property(&UserActionProto::enabled, Eq(true))),
+                  AllOf(Property(&UserActionProto::identifier,
+                                 StrEq("done_identifier")),
+                        Property(&UserActionProto::enabled, Eq(true)))));
+  EXPECT_TRUE(basic_interactions_.ToggleUserAction(proto));
+  EXPECT_THAT(
+      user_model_.GetValue("chips")->user_actions().values(),
+      ElementsAre(AllOf(Property(&UserActionProto::identifier,
+                                 StrEq("cancel_identifier")),
+                        Property(&UserActionProto::enabled, Eq(true))),
+                  AllOf(Property(&UserActionProto::identifier,
+                                 StrEq("done_identifier")),
+                        Property(&UserActionProto::enabled, Eq(false)))));
 }
 
 }  // namespace autofill_assistant

@@ -13,6 +13,8 @@
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/engine/sync_engine_switches.h"
+#include "components/sync/nigori/cryptographer_impl.h"
+#include "components/sync/nigori/nigori_key_bag.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace encryption_helper {
@@ -33,36 +35,46 @@ std::unique_ptr<syncer::Cryptographer>
 InitCustomPassphraseCryptographerFromNigori(
     const sync_pb::NigoriSpecifics& nigori,
     const std::string& passphrase) {
-  auto cryptographer = std::make_unique<syncer::DirectoryCryptographer>();
+  std::unique_ptr<syncer::CryptographerImpl> cryptographer;
   sync_pb::EncryptedData keybag = nigori.encryption_keybag();
-  cryptographer->SetPendingKeys(keybag);
 
   std::string decoded_salt;
   switch (syncer::ProtoKeyDerivationMethodToEnum(
       nigori.custom_passphrase_key_derivation_method())) {
     case syncer::KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
-      EXPECT_TRUE(cryptographer->DecryptPendingKeys(
-          {syncer::KeyDerivationParams::CreateForPbkdf2(), passphrase}));
+      cryptographer =
+          syncer::CryptographerImpl::FromSingleKeyForTesting(passphrase);
       break;
     case syncer::KeyDerivationMethod::SCRYPT_8192_8_11:
       EXPECT_TRUE(base::Base64Decode(
           nigori.custom_passphrase_key_derivation_salt(), &decoded_salt));
-      EXPECT_TRUE(cryptographer->DecryptPendingKeys(
-          {syncer::KeyDerivationParams::CreateForScrypt(decoded_salt),
-           passphrase}));
+      cryptographer = syncer::CryptographerImpl::FromSingleKeyForTesting(
+          passphrase,
+          syncer::KeyDerivationParams::CreateForScrypt(decoded_salt));
       break;
     case syncer::KeyDerivationMethod::UNSUPPORTED:
       // This test cannot pass since we wouldn't know how to decrypt data
       // encrypted using an unsupported method.
       ADD_FAILURE() << "Unsupported key derivation method encountered: "
                     << nigori.custom_passphrase_key_derivation_method();
+      return syncer::CryptographerImpl::CreateEmpty();
   }
 
+  std::string decrypted_keys_str;
+  EXPECT_TRUE(cryptographer->DecryptToString(nigori.encryption_keybag(),
+                                             &decrypted_keys_str));
+
+  sync_pb::NigoriKeyBag decrypted_keys;
+  EXPECT_TRUE(decrypted_keys.ParseFromString(decrypted_keys_str));
+
+  syncer::NigoriKeyBag key_bag =
+      syncer::NigoriKeyBag::CreateFromProto(decrypted_keys);
+
+  cryptographer->EmplaceKeysFrom(key_bag);
   return cryptographer;
 }
 
-sync_pb::NigoriSpecifics CreateCustomPassphraseNigori(
-    const syncer::KeyParams& params) {
+sync_pb::NigoriSpecifics CreateCustomPassphraseNigori(const KeyParams& params) {
   syncer::KeyDerivationMethod method = params.derivation_params.method();
 
   sync_pb::NigoriSpecifics nigori;
@@ -100,27 +112,27 @@ sync_pb::NigoriSpecifics CreateCustomPassphraseNigori(
   // keybag using a key derived from that passphrase). However, in some migrated
   // states, the keybag might also additionally contain an old, pre-migration
   // key.
-  syncer::DirectoryCryptographer cryptographer;
-  bool add_key_result = cryptographer.AddKey(params);
-  DCHECK(add_key_result);
-  bool get_keys_result =
-      cryptographer.GetKeys(nigori.mutable_encryption_keybag());
-  DCHECK(get_keys_result);
+  auto cryptographer = syncer::CryptographerImpl::FromSingleKeyForTesting(
+      params.password, params.derivation_params);
+  sync_pb::CryptographerData proto = cryptographer->ToProto();
+  bool encrypt_result = cryptographer->Encrypt(
+      proto.key_bag(), nigori.mutable_encryption_keybag());
+  DCHECK(encrypt_result);
 
   return nigori;
 }
 
 sync_pb::EntitySpecifics GetEncryptedBookmarkEntitySpecifics(
     const sync_pb::BookmarkSpecifics& bookmark_specifics,
-    const syncer::KeyParams& key_params) {
+    const KeyParams& key_params) {
   sync_pb::EntitySpecifics new_specifics;
 
   sync_pb::EntitySpecifics wrapped_entity_specifics;
   *wrapped_entity_specifics.mutable_bookmark() = bookmark_specifics;
-  syncer::DirectoryCryptographer cryptographer;
-  bool add_key_result = cryptographer.AddKey(key_params);
-  DCHECK(add_key_result);
-  bool encrypt_result = cryptographer.Encrypt(
+  auto cryptographer = syncer::CryptographerImpl::FromSingleKeyForTesting(
+      key_params.password, key_params.derivation_params);
+
+  bool encrypt_result = cryptographer->Encrypt(
       wrapped_entity_specifics, new_specifics.mutable_encrypted());
   DCHECK(encrypt_result);
 

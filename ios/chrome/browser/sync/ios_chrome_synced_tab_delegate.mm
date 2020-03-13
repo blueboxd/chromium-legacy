@@ -73,6 +73,19 @@ bool IOSChromeSyncedTabDelegate::IsInitialBlankNavigation() const {
 
 int IOSChromeSyncedTabDelegate::GetCurrentEntryIndex() const {
   if (GetSessionStorageIfNeeded()) {
+    NSInteger lastCommittedIndex = session_storage_.lastCommittedItemIndex;
+    if (lastCommittedIndex < 0 ||
+        lastCommittedIndex >=
+            static_cast<NSInteger>(session_storage_.itemStorages.count)) {
+      // It has been observed that lastCommittedIndex can be invalid (see
+      // crbug.com/1060553). Returning an invalid index will cause a crash.
+      // If lastCommittedIndex is invalid, consider the last index as the
+      // current one.
+      // As GetSessionStorageIfNeeded just returned true,
+      // session_storage_.itemStorages.count is not 0 and
+      // session_storage_.itemStorages.count - 1 is valid.
+      return session_storage_.itemStorages.count - 1;
+    }
     return session_storage_.lastCommittedItemIndex;
   }
   return web_state_->GetNavigationManager()->GetLastCommittedItemIndex();

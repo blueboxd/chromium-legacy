@@ -35,11 +35,8 @@ const char kChooserUsbOverviewURL[] =
 const char kChromeBetaForumURL[] =
     "https://support.google.com/chrome/?p=beta_forum";
 
-// TODO(https://crbug.com/1015841): Replace answer number with p-link once the
-// p-link has been created.
-// https://bugs.chromium.org/p/chromium/issues/detail?id=679462
 const char kChromeFixUpdateProblems[] =
-    "https://support.google.com/chrome/answer/111996";
+    "https://support.google.com/chrome?p=fix_chrome_updates";
 
 // TODO: replace w/link after marketing provides it.
 const char kChromeReleaseNotesURL[] =
@@ -273,11 +270,8 @@ const char kUpgradeHelpCenterBaseURL[] =
     "https://support.google.com/installer/?product="
     "{8A69D345-D564-463c-AFF1-A69D9E530F96}&error=";
 
-// TODO(https://crbug.com/1015841): Replace answer number with p-link once the
-// p-link has been created.
-// https://bugs.chromium.org/p/chromium/issues/detail?id=679462
 const char kWhoIsMyAdministratorHelpURL[] =
-    "https://support.google.com/accounts/answer/6208960";
+    "https://support.google.com/chrome?p=your_administrator";
 
 #if defined(OS_ANDROID)
 const char kAndroidAppScheme[] = "android-app";

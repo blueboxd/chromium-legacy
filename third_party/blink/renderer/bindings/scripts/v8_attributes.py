@@ -181,6 +181,10 @@ def attribute_context(interface, attribute, interfaces, component_info):
 
     internal_name = cpp_encoded_property_name(attribute)
 
+    cpp_type = idl_type.cpp_type
+    if idl_type.is_explicit_nullable:
+        cpp_type = v8_types.cpp_template_type('base::Optional', cpp_type)
+
     context = {
         # [ActivityLogging]
         'activity_logging_world_list_for_getter':
@@ -202,7 +206,7 @@ def attribute_context(interface, attribute, interfaces, component_info):
         'context_enabled_feature_name':
         v8_utilities.context_enabled_feature_name(attribute),
         'cpp_name': cpp_name(attribute),
-        'cpp_type': idl_type.cpp_type,
+        'cpp_type': cpp_type,
         'cpp_type_initializer': idl_type.cpp_type_initializer,
         'deprecate_as': deprecate_as,
         'does_generate_getter': does_generate_getter,
@@ -412,6 +416,11 @@ def getter_context(interface, attribute, context):
         if (context['is_keep_alive_for_gc']
                 or 'CachedAttribute' in extended_attributes):
             return 'V8SetReturnValue(info, v8_value)'
+        if idl_type.is_explicit_nullable:
+            cpp_return_value = 'cpp_value.value()'
+            if idl_type.is_frozen_array:
+                cpp_return_value = 'FreezeV8Object(ToV8(cpp_value.value(), info.Holder(), info.GetIsolate()), info.GetIsolate())'
+            return 'V8SetReturnValue(info, {})'.format(cpp_return_value)
         return idl_type.v8_set_return_value(
             cpp_value,
             extended_attributes=extended_attributes,
@@ -457,8 +466,6 @@ def getter_expression(interface, attribute, context):
             and not attribute.is_static):
         arguments.append('*impl')
     arguments.extend(extra_arguments)
-    if attribute.idl_type.is_explicit_nullable:
-        arguments.append('is_null')
     if context['is_getter_raises_exception']:
         arguments.append('exception_state')
     if attribute.idl_type.use_output_parameter_for_result:
@@ -649,8 +656,6 @@ def setter_expression(interface, attribute, context):
         arguments.append('std::move(cpp_value)')
     else:
         arguments.append('cpp_value')
-    if idl_type.is_explicit_nullable:
-        arguments.append('is_null')
     if context['is_setter_raises_exception']:
         arguments.append('exception_state')
     if context['use_common_reflection_setter']:

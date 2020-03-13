@@ -365,7 +365,7 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Returns all syncable TemplateURLs from this model as SyncData. This should
   // include every search engine and no Extension keywords.
-  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const;
   // Process new search engine changes from Sync, merging them into our local
   // data. This may send notifications if local search engines are added,
   // updated or removed.

@@ -8,55 +8,42 @@
 #include <stdint.h>
 
 #include "content/common/content_export.h"
+#include "ipc/ipc_message.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_update.h"
 
 namespace content {
 
-enum AXContentIntAttribute {
-  // The routing ID of this node's child tree.
-  AX_CONTENT_ATTR_CHILD_ROUTING_ID,
-
-  AX_CONTENT_INT_ATTRIBUTE_LAST
-};
-
 // A subclass of AXNodeData that contains extra fields for
 // content-layer-specific AX attributes.
 struct CONTENT_EXPORT AXContentNodeData : public ui::AXNodeData {
-  AXContentNodeData();
-  AXContentNodeData(const AXNodeData& other);
-  AXContentNodeData(const AXContentNodeData& other);
-  ~AXContentNodeData() override;
-
-  bool HasContentIntAttribute(AXContentIntAttribute attribute) const;
-  int GetContentIntAttribute(AXContentIntAttribute attribute) const;
-  bool GetContentIntAttribute(AXContentIntAttribute attribute,
-                              int* value) const;
-  void AddContentIntAttribute(AXContentIntAttribute attribute, int value);
+  AXContentNodeData() = default;
+  AXContentNodeData(const AXContentNodeData& other) = default;
+  ~AXContentNodeData() override = default;
+  AXContentNodeData& operator=(const AXNodeData& other);
 
   // Return a string representation of this data, for debugging.
   std::string ToString() const override;
 
-  // This is a simple serializable struct. All member variables should be
-  // public and copyable.
-  std::vector<std::pair<AXContentIntAttribute, int32_t>> content_int_attributes;
+  // The routing ID of this node's child tree.
+  int32_t child_routing_id = MSG_ROUTING_NONE;
 };
 
 // A subclass of AXTreeData that contains extra fields for
 // content-layer-specific AX attributes.
 struct CONTENT_EXPORT AXContentTreeData : public ui::AXTreeData {
-  AXContentTreeData();
-  ~AXContentTreeData() override;
+  AXContentTreeData() = default;
+  ~AXContentTreeData() override = default;
 
   // Return a string representation of this data, for debugging.
   std::string ToString() const override;
 
   // The routing ID of this frame.
-  int routing_id;
+  int routing_id = MSG_ROUTING_NONE;
 
   // The routing ID of the parent frame.
-  int parent_routing_id;
+  int parent_routing_id = MSG_ROUTING_NONE;
 };
 
 typedef ui::AXTreeUpdateBase<content::AXContentNodeData,

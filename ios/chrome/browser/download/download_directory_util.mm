@@ -21,23 +21,15 @@
 namespace {
 
 // Synchronously deletes downloads directory.
-void DeleteDownloadsDirectorySync() {
+void DeleteTempDownloadsDirectorySync() {
   base::FilePath downloads_directory;
-  if (GetDownloadsDirectory(&downloads_directory)) {
+  if (GetTempDownloadsDirectory(&downloads_directory)) {
     DeleteFile(downloads_directory, /*recursive=*/true);
   }
 }
 }  // namespace
 
-bool GetDownloadsDirectory(base::FilePath* directory_path) {
-  // If downloads manager's flag is enabled, moves the downloads folder to
-  // user's Documents.
-  if (base::FeatureList::IsEnabled(web::features::kEnablePersistentDownloads)) {
-    *directory_path =
-        base::mac::NSStringToFilePath([NSSearchPathForDirectoriesInDomains(
-            NSDocumentDirectory, NSAllDomainsMask, YES) objectAtIndex:0]);
-    return true;
-  }
+bool GetTempDownloadsDirectory(base::FilePath* directory_path) {
   if (!GetTempDir(directory_path)) {
     return false;
   }
@@ -45,10 +37,14 @@ bool GetDownloadsDirectory(base::FilePath* directory_path) {
   return true;
 }
 
-void DeleteDownloadsDirectory() {
-  // If downloads manager's flag is enabled, keeps downloads folder.
-  if (!base::FeatureList::IsEnabled(web::features::kEnablePersistentDownloads))
-    base::ThreadPool::PostTask(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(&DeleteDownloadsDirectorySync));
+void GetDownloadsDirectory(base::FilePath* directory_path) {
+  *directory_path =
+      base::mac::NSStringToFilePath([NSSearchPathForDirectoriesInDomains(
+          NSDocumentDirectory, NSAllDomainsMask, YES) firstObject]);
+}
+
+void DeleteTempDownloadsDirectory() {
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&DeleteTempDownloadsDirectorySync));
 }

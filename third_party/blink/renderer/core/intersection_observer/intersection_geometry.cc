@@ -335,9 +335,6 @@ void IntersectionGeometry::ComputeGeometry(const RootGeometry& root_geometry,
               .Inverse();
       intersection_rect_ = PhysicalRect::EnclosingRect(
           matrix.ProjectQuad(FloatRect(intersection_rect_)).BoundingBox());
-      unclipped_intersection_rect_ = PhysicalRect::EnclosingRect(
-          matrix.ProjectQuad(FloatRect(unclipped_intersection_rect_))
-              .BoundingBox());
       // intersection_rect_ is in the coordinate system of the implicit root;
       // map it down the to absolute coordinates for the target's document.
     } else {
@@ -347,10 +344,6 @@ void IntersectionGeometry::ComputeGeometry(const RootGeometry& root_geometry,
       intersection_rect_ = PhysicalRect::EnclosingRect(
           root_geometry.root_to_document_transform
               .MapQuad(FloatQuad(FloatRect(intersection_rect_)))
-              .BoundingBox());
-      unclipped_intersection_rect_ = PhysicalRect::EnclosingRect(
-          root_geometry.root_to_document_transform
-              .MapQuad(FloatQuad(FloatRect(unclipped_intersection_rect_)))
               .BoundingBox());
     }
   } else {

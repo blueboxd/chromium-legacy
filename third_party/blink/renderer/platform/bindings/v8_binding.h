@@ -103,6 +103,11 @@ inline void V8SetReturnValue(const CallbackInfo& info, uint32_t value) {
 }
 
 template <typename CallbackInfo>
+inline void V8SetReturnValue(const CallbackInfo& info, uint64_t value) {
+  info.GetReturnValue().Set(static_cast<double>(value));
+}
+
+template <typename CallbackInfo>
 inline void V8SetReturnValueBool(const CallbackInfo& info, bool v) {
   info.GetReturnValue().Set(v);
 }

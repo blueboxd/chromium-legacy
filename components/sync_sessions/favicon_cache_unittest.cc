@@ -373,9 +373,9 @@ testing::AssertionResult SyncFaviconCacheTest::VerifyLocalIcons(
 testing::AssertionResult SyncFaviconCacheTest::VerifyLocalCustomIcons(
     const std::vector<TestFaviconData>& expected_custom_icons) {
   syncer::SyncDataList image_data_list =
-      cache()->GetAllSyncData(syncer::FAVICON_IMAGES);
+      cache()->GetAllSyncDataForTesting(syncer::FAVICON_IMAGES);
   syncer::SyncDataList tracking_data_list =
-      cache()->GetAllSyncData(syncer::FAVICON_TRACKING);
+      cache()->GetAllSyncDataForTesting(syncer::FAVICON_TRACKING);
   if (expected_custom_icons.size() > image_data_list.size() ||
       expected_custom_icons.size() > tracking_data_list.size())
     return testing::AssertionFailure() << "Number of icons doesn't match.";
@@ -579,7 +579,8 @@ TEST_F(SyncFaviconCacheTest, SyncEmpty) {
                                         CreateAndPassProcessor(),
                                         CreateAndPassSyncErrorFactory());
 
-  EXPECT_EQ(0U, cache()->GetAllSyncData(syncer::FAVICON_IMAGES).size());
+  EXPECT_EQ(0U,
+            cache()->GetAllSyncDataForTesting(syncer::FAVICON_IMAGES).size());
   EXPECT_EQ(0U, processor()->GetAndResetChangeList().size());
   EXPECT_EQ(0, merge_result.num_items_added());
   EXPECT_EQ(0, merge_result.num_items_modified());
@@ -593,7 +594,8 @@ TEST_F(SyncFaviconCacheTest, SyncEmpty) {
                                         CreateAndPassProcessor(),
                                         CreateAndPassSyncErrorFactory());
 
-  EXPECT_EQ(0U, cache()->GetAllSyncData(syncer::FAVICON_TRACKING).size());
+  EXPECT_EQ(0U,
+            cache()->GetAllSyncDataForTesting(syncer::FAVICON_TRACKING).size());
   EXPECT_EQ(0U, processor()->GetAndResetChangeList().size());
   EXPECT_EQ(0, merge_result.num_items_added());
   EXPECT_EQ(0, merge_result.num_items_modified());
@@ -621,7 +623,7 @@ TEST_F(SyncFaviconCacheTest, SyncExistingLocal) {
                                         CreateAndPassProcessor(),
                                         CreateAndPassSyncErrorFactory());
   EXPECT_EQ(static_cast<size_t>(kFaviconBatchSize),
-            cache()->GetAllSyncData(syncer::FAVICON_IMAGES).size());
+            cache()->GetAllSyncDataForTesting(syncer::FAVICON_IMAGES).size());
   syncer::SyncChangeList change_list = processor()->GetAndResetChangeList();
   EXPECT_TRUE(VerifyChanges(syncer::FAVICON_IMAGES,
                             expected_change_types,
@@ -639,7 +641,7 @@ TEST_F(SyncFaviconCacheTest, SyncExistingLocal) {
                                         CreateAndPassProcessor(),
                                         CreateAndPassSyncErrorFactory());
   EXPECT_EQ(static_cast<size_t>(kFaviconBatchSize),
-            cache()->GetAllSyncData(syncer::FAVICON_TRACKING).size());
+            cache()->GetAllSyncDataForTesting(syncer::FAVICON_TRACKING).size());
   change_list = processor()->GetAndResetChangeList();
   EXPECT_TRUE(VerifyChanges(syncer::FAVICON_TRACKING,
                             expected_change_types,
@@ -676,7 +678,7 @@ TEST_F(SyncFaviconCacheTest, SyncExistingRemote) {
                                         CreateAndPassProcessor(),
                                         CreateAndPassSyncErrorFactory());
   EXPECT_EQ(static_cast<size_t>(kFaviconBatchSize),
-            cache()->GetAllSyncData(syncer::FAVICON_IMAGES).size());
+            cache()->GetAllSyncDataForTesting(syncer::FAVICON_IMAGES).size());
   EXPECT_EQ(0U, processor()->GetAndResetChangeList().size());
   EXPECT_EQ(kFaviconBatchSize, merge_result.num_items_added());
   EXPECT_EQ(0, merge_result.num_items_modified());
@@ -690,7 +692,7 @@ TEST_F(SyncFaviconCacheTest, SyncExistingRemote) {
                                         CreateAndPassProcessor(),
                                         CreateAndPassSyncErrorFactory());
   EXPECT_EQ(static_cast<size_t>(kFaviconBatchSize),
-            cache()->GetAllSyncData(syncer::FAVICON_TRACKING).size());
+            cache()->GetAllSyncDataForTesting(syncer::FAVICON_TRACKING).size());
   EXPECT_EQ(0U, processor()->GetAndResetChangeList().size());
   EXPECT_EQ(0, merge_result.num_items_added());
   EXPECT_EQ(kFaviconBatchSize, merge_result.num_items_modified());
@@ -745,7 +747,7 @@ TEST_F(SyncFaviconCacheTest, SyncMergesImages) {
                                         CreateAndPassProcessor(),
                                         CreateAndPassSyncErrorFactory());
   EXPECT_EQ(static_cast<size_t>(kFaviconBatchSize),
-            cache()->GetAllSyncData(syncer::FAVICON_IMAGES).size());
+            cache()->GetAllSyncDataForTesting(syncer::FAVICON_IMAGES).size());
   syncer::SyncChangeList changes = processor()->GetAndResetChangeList();
   EXPECT_EQ(static_cast<size_t>(kFaviconBatchSize)/2, changes.size());
   EXPECT_EQ(0, merge_result.num_items_added());
@@ -760,7 +762,7 @@ TEST_F(SyncFaviconCacheTest, SyncMergesImages) {
                                         CreateAndPassProcessor(),
                                         CreateAndPassSyncErrorFactory());
   EXPECT_EQ(static_cast<size_t>(kFaviconBatchSize),
-            cache()->GetAllSyncData(syncer::FAVICON_TRACKING).size());
+            cache()->GetAllSyncDataForTesting(syncer::FAVICON_TRACKING).size());
   EXPECT_EQ(0U, processor()->GetAndResetChangeList().size());
   EXPECT_EQ(0, merge_result.num_items_added());
   EXPECT_EQ(kFaviconBatchSize, merge_result.num_items_modified());
@@ -820,7 +822,7 @@ TEST_F(SyncFaviconCacheTest, SyncMergesTracking) {
                                         CreateAndPassProcessor(),
                                         CreateAndPassSyncErrorFactory());
   EXPECT_EQ(static_cast<size_t>(kFaviconBatchSize),
-            cache()->GetAllSyncData(syncer::FAVICON_IMAGES).size());
+            cache()->GetAllSyncDataForTesting(syncer::FAVICON_IMAGES).size());
   EXPECT_EQ(0U, processor()->GetAndResetChangeList().size());
   EXPECT_EQ(0, merge_result.num_items_added());
   EXPECT_EQ(kFaviconBatchSize, merge_result.num_items_modified());
@@ -834,7 +836,7 @@ TEST_F(SyncFaviconCacheTest, SyncMergesTracking) {
                                         CreateAndPassProcessor(),
                                         CreateAndPassSyncErrorFactory());
   EXPECT_EQ(static_cast<size_t>(kFaviconBatchSize),
-            cache()->GetAllSyncData(syncer::FAVICON_TRACKING).size());
+            cache()->GetAllSyncDataForTesting(syncer::FAVICON_TRACKING).size());
   syncer::SyncChangeList changes = processor()->GetAndResetChangeList();
   EXPECT_EQ(static_cast<size_t>(kFaviconBatchSize)/2, changes.size());
   EXPECT_EQ(0, merge_result.num_items_added());
@@ -1128,7 +1130,7 @@ TEST_F(SyncFaviconCacheTest, ExpireOnMergeData) {
   EXPECT_EQ(static_cast<size_t>(kMaxSyncFavicons)*2,
             GetFaviconCount());  // Still have tracking.
   EXPECT_EQ(static_cast<size_t>(kMaxSyncFavicons),
-            cache()->GetAllSyncData(syncer::FAVICON_IMAGES).size());
+            cache()->GetAllSyncDataForTesting(syncer::FAVICON_IMAGES).size());
   EXPECT_EQ(0U, processor()->GetAndResetChangeList().size());
   EXPECT_EQ(kMaxSyncFavicons, merge_result.num_items_added());
   EXPECT_EQ(0, merge_result.num_items_modified());
@@ -1143,7 +1145,7 @@ TEST_F(SyncFaviconCacheTest, ExpireOnMergeData) {
                                         CreateAndPassProcessor(),
                                         CreateAndPassSyncErrorFactory());
   EXPECT_EQ(static_cast<size_t>(kMaxSyncFavicons),
-            cache()->GetAllSyncData(syncer::FAVICON_TRACKING).size());
+            cache()->GetAllSyncDataForTesting(syncer::FAVICON_TRACKING).size());
   EXPECT_EQ(0U, processor()->GetAndResetChangeList().size());
   EXPECT_EQ(0, merge_result.num_items_added());
   EXPECT_EQ(kMaxSyncFavicons, merge_result.num_items_modified());

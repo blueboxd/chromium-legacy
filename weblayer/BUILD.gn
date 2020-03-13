@@ -86,7 +86,7 @@ if (is_android) {
   }
 }
 
-source_set("weblayer_lib_base") {
+static_library("weblayer_lib") {
   sources = [
     "app/content_main_delegate_impl.cc",
     "app/content_main_delegate_impl.h",
@@ -344,16 +344,13 @@ source_set("weblayer_lib_base") {
       "//android_webview:generate_aw_strings",
       "//components/android_system_error_page",
       "//components/autofill/android:provider",
-      "//components/crash/android:crash_android",
       "//components/crash/android:crashpad_main",
       "//components/embedder_support/android:context_menu",
-      "//components/embedder_support/android:util",
       "//components/embedder_support/android:web_contents_delegate",
       "//components/embedder_support/android/metrics",
       "//components/javascript_dialogs",
       "//components/metrics",
       "//components/minidump_uploader",
-      "//components/permissions/android:native",
       "//components/safe_browsing/content/common:interfaces",
       "//components/safe_browsing/content/renderer:throttles",
       "//components/safe_browsing/core/common",
@@ -402,49 +399,6 @@ source_set("weblayer_lib_base") {
   }
 }
 
-if (is_android) {
-  # Lib used in standalone WebView which allows manual JNI registration.
-  static_library("weblayer_lib_webview") {
-    public_deps = [ ":weblayer_lib_base" ]
-    deps = [
-      "//base",
-      "//weblayer/browser/java:jni",
-      "//weblayer/browser/java:weblayer_jni_registration",
-    ]
-    sources = [
-      "$target_gen_dir/browser/java/weblayer_jni_registration.h",
-      "browser/web_view_compatibility_helper_impl.cc",
-      "browser/web_view_compatibility_helper_impl.h",
-    ]
-    defines = [ "WEBLAYER_MANUAL_JNI_REGISTRATION" ]
-
-    # Explicit dependency required for JNI registration to be able to
-    # find the native side functions.
-    if (is_component_build) {
-      deps += [
-        "//device/gamepad",
-        "//media/midi",
-        "//ui/events/devices",
-      ]
-    }
-  }
-
-  # Lib used in Monochrome which does not support manual JNI registration.
-  # Separate from the standalone WebView version to reduce APK size.
-  static_library("weblayer_lib") {
-    public_deps = [ ":weblayer_lib_base" ]
-    deps = [ "//weblayer/browser/java:jni" ]
-    sources = [
-      "browser/web_view_compatibility_helper_impl.cc",
-      "browser/web_view_compatibility_helper_impl.h",
-    ]
-  }
-} else {
-  source_set("weblayer_lib") {
-    public_deps = [ ":weblayer_lib_base" ]
-  }
-}
-
 grit("resources") {
   source = "weblayer_resources.grd"
 
@@ -466,7 +420,7 @@ if (is_android) {
   shared_library("libweblayer") {
     sources = [ "app/entry_point.cc" ]
     deps = [
-      ":weblayer_lib_webview",
+      ":weblayer_lib",
       "//base",
       "//content/public/app:both",
     ]

@@ -68,6 +68,8 @@ class SharedImageRepresentationEglImageGLTexture
 
   gles2::Texture* GetTexture() override { return texture_; }
 
+  bool SupportsMultipleConcurrentReadAccess() override { return true; }
+
  private:
   SharedImageBackingEglImage* egl_backing() {
     return static_cast<SharedImageBackingEglImage*>(backing());

@@ -548,12 +548,14 @@ class NavigationListModel extends cr.EventTarget {
      * their file types.
      * @param {string} label
      * @param {chrome.fileManagerPrivate.RecentFileType} fileType
+     * @param {VolumeManagerCommon.RootType} rootType
      * @return {!NavigationModelFakeItem}
      */
-    const createFilteredRecentModelItem = (label, fileType) => {
+    const createFilteredRecentModelItem = (label, fileType, rootType) => {
       const entry = /** @type {!FakeEntry} */ (Object.assign(
           Object.create(FakeEntry.prototype), this.recentModelItem_.entry));
       entry.recentFileType = fileType;
+      entry.rootType = rootType;
       return new NavigationModelFakeItem(
           label, NavigationModelItemType.RECENT, entry);
     };
@@ -567,13 +569,16 @@ class NavigationListModel extends cr.EventTarget {
         // Unified Media View (Images, Videos and Audio).
         this.navigationItems_.push(createFilteredRecentModelItem(
             str('MEDIA_VIEW_AUDIO_ROOT_LABEL'),
-            chrome.fileManagerPrivate.RecentFileType.AUDIO));
+            chrome.fileManagerPrivate.RecentFileType.AUDIO,
+            VolumeManagerCommon.RootType.RECENT_AUDIO));
         this.navigationItems_.push(createFilteredRecentModelItem(
             str('MEDIA_VIEW_IMAGES_ROOT_LABEL'),
-            chrome.fileManagerPrivate.RecentFileType.IMAGE));
+            chrome.fileManagerPrivate.RecentFileType.IMAGE,
+            VolumeManagerCommon.RootType.RECENT_IMAGES));
         this.navigationItems_.push(createFilteredRecentModelItem(
             str('MEDIA_VIEW_VIDEOS_ROOT_LABEL'),
-            chrome.fileManagerPrivate.RecentFileType.VIDEO));
+            chrome.fileManagerPrivate.RecentFileType.VIDEO,
+            VolumeManagerCommon.RootType.RECENT_VIDEOS));
       }
     }
 

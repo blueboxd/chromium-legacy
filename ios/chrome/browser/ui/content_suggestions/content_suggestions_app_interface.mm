@@ -190,18 +190,6 @@ ContentSuggestion CreateSuggestion(Category category,
   return ntp_home::FakeOmnibox();
 }
 
-+ (void)swizzleSearchButtonLogging {
-  [[ContentSuggestionsTestSingleton sharedInstance]
-      swizzleLocationBarCoordinatorSearchButton];
-}
-
-+ (BOOL)resetSearchButtonLogging {
-  ContentSuggestionsTestSingleton* singleton =
-      [ContentSuggestionsTestSingleton sharedInstance];
-  [singleton resetSwizzle];
-  return singleton.locationBarCoordinatorSearchButtonMethodCalled;
-}
-
 #pragma mark - Helper
 
 + (MockContentSuggestionsProvider*)provider {

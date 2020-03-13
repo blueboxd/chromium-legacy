@@ -141,7 +141,7 @@ class ResourceLoadingCancellingThrottle
     page_load_metrics::InitPageLoadTimingForTest(timing.get());
     observer->OnTimingUpdated(
         navigation_handle()->GetRenderFrameHost(), std::move(timing),
-        page_load_metrics::mojom::PageLoadMetadataPtr(base::in_place),
+        page_load_metrics::mojom::FrameMetadataPtr(base::in_place),
         page_load_metrics::mojom::PageLoadFeaturesPtr(base::in_place),
         resources,
         page_load_metrics::mojom::FrameRenderDataUpdatePtr(base::in_place),

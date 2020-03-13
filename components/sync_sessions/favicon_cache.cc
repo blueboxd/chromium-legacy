@@ -321,8 +321,8 @@ void FaviconCache::StopSyncing(syncer::ModelType type) {
   page_task_map_.clear();
 }
 
-syncer::SyncDataList FaviconCache::GetAllSyncData(syncer::ModelType type)
-    const {
+syncer::SyncDataList FaviconCache::GetAllSyncDataForTesting(
+    syncer::ModelType type) const {
   syncer::SyncDataList data_list;
   for (auto iter = synced_favicons_.begin(); iter != synced_favicons_.end();
        ++iter) {

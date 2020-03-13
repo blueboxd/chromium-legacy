@@ -38,6 +38,8 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkiaGL
       std::vector<GrBackendSemaphore>* end_semaphores) override;
   void EndReadAccess() override;
 
+  bool SupportsMultipleConcurrentReadAccess() override;
+
  private:
   SharedImageRepresentationSkiaGL(
       std::unique_ptr<SharedImageRepresentationGLTextureBase> gl_representation,

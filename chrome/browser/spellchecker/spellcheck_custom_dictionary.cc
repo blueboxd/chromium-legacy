@@ -350,7 +350,7 @@ void SpellcheckCustomDictionary::StopSyncing(syncer::ModelType type) {
   sync_error_handler_.reset();
 }
 
-syncer::SyncDataList SpellcheckCustomDictionary::GetAllSyncData(
+syncer::SyncDataList SpellcheckCustomDictionary::GetAllSyncDataForTesting(
     syncer::ModelType type) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(syncer::DICTIONARY, type);

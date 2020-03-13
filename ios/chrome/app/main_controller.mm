@@ -357,7 +357,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)scheduleTasksRequiringBVCWithBrowserState;
 // Schedules the deletion of user downloaded files that might be leftover
 // from the last time Chrome was run.
-- (void)scheduleDeleteDownloadsDirectory;
+- (void)scheduleDeleteTempDownloadsDirectory;
 // Schedule the deletion of the temporary passwords files that might
 // be left over from incomplete export operations.
 - (void)scheduleDeleteTempPasswordsDirectory;
@@ -1001,7 +1001,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self scheduleAuthenticationServiceNotification];
   [self sendQueuedFeedback];
   [self scheduleSpotlightResync];
-  [self scheduleDeleteDownloadsDirectory];
+  [self scheduleDeleteTempDownloadsDirectory];
   [self scheduleDeleteTempPasswordsDirectory];
   [self scheduleStartupAttemptReset];
   [self startFreeMemoryMonitoring];
@@ -1022,11 +1022,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
 }
 
-- (void)scheduleDeleteDownloadsDirectory {
+- (void)scheduleDeleteTempDownloadsDirectory {
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kDeleteDownloads
                   block:^{
-                    DeleteDownloadsDirectory();
+                    DeleteTempDownloadsDirectory();
                   }];
 }
 

@@ -16,7 +16,6 @@
 #include "ipc/ipc_param_traits.h"
 #include "ipc/param_traits_macros.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
-#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_param_traits.h"
@@ -28,37 +27,6 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 #define IPC_MESSAGE_START AccessibilityMsgStart
-
-IPC_ENUM_TRAITS_MAX_VALUE(content::AXContentIntAttribute,
-                          content::AX_CONTENT_INT_ATTRIBUTE_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::Action, ax::mojom::Action::kMaxValue)
-
-IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::ScrollAlignment,
-                          ax::mojom::ScrollAlignment::kMaxValue)
-
-IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::ScrollBehavior,
-                          ax::mojom::ScrollBehavior::kMaxValue)
-
-IPC_STRUCT_TRAITS_BEGIN(ui::AXActionData)
-  IPC_STRUCT_TRAITS_MEMBER(action)
-  IPC_STRUCT_TRAITS_MEMBER(target_tree_id)
-  IPC_STRUCT_TRAITS_MEMBER(source_extension_id)
-  IPC_STRUCT_TRAITS_MEMBER(target_node_id)
-  IPC_STRUCT_TRAITS_MEMBER(request_id)
-  IPC_STRUCT_TRAITS_MEMBER(flags)
-  IPC_STRUCT_TRAITS_MEMBER(anchor_node_id)
-  IPC_STRUCT_TRAITS_MEMBER(anchor_offset)
-  IPC_STRUCT_TRAITS_MEMBER(focus_node_id)
-  IPC_STRUCT_TRAITS_MEMBER(focus_offset)
-  IPC_STRUCT_TRAITS_MEMBER(custom_action_id)
-  IPC_STRUCT_TRAITS_MEMBER(target_rect)
-  IPC_STRUCT_TRAITS_MEMBER(target_point)
-  IPC_STRUCT_TRAITS_MEMBER(value)
-  IPC_STRUCT_TRAITS_MEMBER(hit_test_event_to_fire)
-  IPC_STRUCT_TRAITS_MEMBER(horizontal_scroll_alignment)
-  IPC_STRUCT_TRAITS_MEMBER(vertical_scroll_alignment)
-  IPC_STRUCT_TRAITS_MEMBER(scroll_behavior)
-IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::AXContentNodeData)
   IPC_STRUCT_TRAITS_MEMBER(id)
@@ -72,8 +40,8 @@ IPC_STRUCT_TRAITS_BEGIN(content::AXContentNodeData)
   IPC_STRUCT_TRAITS_MEMBER(intlist_attributes)
   IPC_STRUCT_TRAITS_MEMBER(html_attributes)
   IPC_STRUCT_TRAITS_MEMBER(child_ids)
-  IPC_STRUCT_TRAITS_MEMBER(content_int_attributes)
   IPC_STRUCT_TRAITS_MEMBER(relative_bounds)
+  IPC_STRUCT_TRAITS_MEMBER(child_routing_id)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::AXContentTreeData)

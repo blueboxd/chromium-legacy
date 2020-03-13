@@ -27991,6 +27991,9 @@ Called by update_feature_policy_enum.py.-->
   <int value="21" label="EXTERNAL_MEDIA"/>
   <int value="22" label="DOCUMENTS_PROVIDER"/>
   <int value="23" label="SMB"/>
+  <int value="24" label="RECENT_AUDIO"/>
+  <int value="25" label="RECENT_IMAGES"/>
+  <int value="26" label="RECENT_VIDEOS"/>
 </enum>
 
 <enum name="FileManagerTaskType">
@@ -53719,6 +53722,15 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="Profile deleted"/>
 </enum>
 
+<enum name="ProfileAvatarState">
+  <int value="0" label="Signed In: Gaia avatar"/>
+  <int value="1" label="Signed In: Modern avatar"/>
+  <int value="2" label="Signed In: Old avatar"/>
+  <int value="3" label="Signed Out: Default avatar (Grey silhouette)"/>
+  <int value="4" label="Signed Out: Modern avatar"/>
+  <int value="5" label="Signed Out: Old avatar"/>
+</enum>
+
 <enum name="ProfileCreateResult">
   <int value="0" label="Failed locally"/>
   <int value="1" label="Failed remotely"/>
@@ -53843,6 +53855,14 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="17" label="Edit profile button"/>
 </enum>
 
+<enum name="ProfileNameState">
+  <int value="0" label="Gaia name"/>
+  <int value="1" label="Gaia name and custom name"/>
+  <int value="2" label="Gaia name and default name (for unambiguity)"/>
+  <int value="3" label="Custom name only (signed-out)"/>
+  <int value="4" label="Default name only (signed-out)"/>
+</enum>
+
 <enum name="ProfileNetUserCount">
   <int value="0" label="Added new user"/>
   <int value="1" label="Deleted a profile"/>
@@ -53951,6 +53971,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 <enum name="ProfileType">
   <int value="0" label="Original (default) profile"/>
   <int value="1" label="Secondary (user-created) profile"/>
+</enum>
+
+<enum name="ProfileUnconsentedPrimaryAccountType">
+  <int value="0" label="Consumer account"/>
+  <int value="1" label="Enterprise account"/>
+  <int value="2" label="Child account"/>
+  <int value="3" label="No account (signed-out)"/>
 </enum>
 
 <enum name="ProfileUpgradeEnrollment">
@@ -59840,6 +59867,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="SigninDiceMigrationStatus">
+  <obsolete>
+    Removed 03/2020.
+  </obsolete>
   <int value="0" label="Enabled"/>
   <int value="1" label="Disabled, ready for migration"/>
   <int value="2" label="Disabled, not ready for migration"/>

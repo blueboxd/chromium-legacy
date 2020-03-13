@@ -1,0 +1,13 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+mojom = "//content/common/ax_content_node_data.mojom"
+public_headers = [ "//content/common/ax_content_node_data.h" ]
+traits_headers = [ "//content/common/ax_content_node_data_mojom_traits.h" ]
+sources = [
+  "ax_content_node_data_mojom_traits.cc",
+  "ax_content_node_data_mojom_traits.h",
+]
+deps = [ "//ui/accessibility" ]
+type_mappings = [ "ax.mojom.AXContentNodeData=::content::AXContentNodeData" ]

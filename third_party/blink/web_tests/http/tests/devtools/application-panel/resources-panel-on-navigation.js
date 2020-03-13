@@ -44,7 +44,7 @@
 
   await new Promise(createIndexedDB);
   await ApplicationTestRunner.createWebSQLDatabase('database-for-test');
-  UI.viewManager.showView('resources');
+  await UI.viewManager.showView('resources');
   UI.panels.resources._sidebar.databasesListTreeElement.firstChild().select(false, true);
   dumpCurrentState('Initial state:');
   await TestRunner.reloadPagePromise();

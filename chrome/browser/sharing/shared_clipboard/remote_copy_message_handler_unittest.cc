@@ -26,6 +26,8 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/clipboard/clipboard_monitor.h"
+#include "ui/base/clipboard/clipboard_observer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/skia_util.h"
@@ -38,6 +40,21 @@ const char kEmptyDeviceName[] = "";
 const char kDeviceNameInMessage[] = "DeviceNameInMessage";
 const char kHistogramName[] = "Sharing.RemoteCopyHandleMessageResult";
 const char kTestImageUrl[] = "https://foo.com/image.png";
+
+class ClipboardObserver : public ui::ClipboardObserver {
+ public:
+  explicit ClipboardObserver(base::RepeatingClosure callback)
+      : callback_(callback) {}
+  ClipboardObserver(const ClipboardObserver&) = delete;
+  ClipboardObserver& operator=(const ClipboardObserver&) = delete;
+  ~ClipboardObserver() override = default;
+
+  // ui::ClipboardObserver:
+  void OnClipboardDataChanged() override { callback_.Run(); }
+
+ private:
+  base::RepeatingClosure callback_;
+};
 
 class RemoteCopyMessageHandlerTest : public SharedClipboardTestBase {
  public:
@@ -170,9 +187,8 @@ TEST_F(RemoteCopyMessageHandlerTest, IsImageSourceAllowed) {
       IsImageSourceAllowed(image_url, "https://bar.com,https://foo.com"));
 }
 
-// Times out on all platforms. https://crbug.com/1060869
 TEST_F(RemoteCopyMessageHandlerTest,
-       DISABLED_NoProgressNotificationWithoutProgressFlag) {
+       NoProgressNotificationWithoutProgressFlag) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeaturesAndParameters(
       {{kRemoteCopyReceiver,
@@ -183,11 +199,13 @@ TEST_F(RemoteCopyMessageHandlerTest,
                               base::DoNothing());
 
   EXPECT_FALSE(HasProgressNotification());
+
+  // Calling GetDefaultStoragePartition creates tasks that need to run before
+  // the ScopedFeatureList is destroyed. See crbug.com/1060869
+  task_environment_.RunUntilIdle();
 }
 
-// Times out on all platforms. https://crbug.com/1060869
-TEST_F(RemoteCopyMessageHandlerTest,
-       DISABLED_ProgressNotificationWithProgressFlag) {
+TEST_F(RemoteCopyMessageHandlerTest, ProgressNotificationWithProgressFlag) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeaturesAndParameters(
       {{kRemoteCopyReceiver, {{kRemoteCopyAllowedOrigins.name, kTestImageUrl}}},
@@ -208,16 +226,22 @@ TEST_F(RemoteCopyMessageHandlerTest,
                 IDS_SHARING_REMOTE_COPY_NOTIFICATION_PREPARING_DOWNLOAD),
             notification.progress_status());
   EXPECT_EQ(-1, notification.progress());
+
+  // Calling GetDefaultStoragePartition creates tasks that need to run before
+  // the ScopedFeatureList is destroyed. See crbug.com/1060869
+  task_environment_.RunUntilIdle();
 }
 
-// Times out on all platforms. https://crbug.com/1060869
-TEST_F(RemoteCopyMessageHandlerTest,
-       DISABLED_ImageNotificationWithoutProgressFlag) {
+TEST_F(RemoteCopyMessageHandlerTest, ImageNotificationWithoutProgressFlag) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeaturesAndParameters(
       {{kRemoteCopyReceiver,
         {{kRemoteCopyAllowedOrigins.name, kTestImageUrl}}}},
       {kRemoteCopyProgressNotification});
+
+  base::RunLoop run_loop;
+  ClipboardObserver observer(run_loop.QuitClosure());
+  ui::ClipboardMonitor::GetInstance()->AddObserver(&observer);
 
   message_handler_->OnMessage(CreateMessageWithImage(kTestImageUrl),
                               base::DoNothing());
@@ -225,8 +249,10 @@ TEST_F(RemoteCopyMessageHandlerTest,
   // There should not be a progress notification without the flag set.
   EXPECT_FALSE(HasProgressNotification());
 
-  // Let tasks run until the image is decoded and written to the clipboard.
-  task_environment_.RunUntilIdle();
+  // Let tasks run until the image is decoded, written to the clipboard and the
+  // image notification is shown.
+  run_loop.Run();
+  ui::ClipboardMonitor::GetInstance()->RemoveObserver(&observer);
 
   // Expect the image to be in the clipboard now.
   SkBitmap image = GetClipboardImage();
@@ -235,16 +261,22 @@ TEST_F(RemoteCopyMessageHandlerTest,
   // Expect an image notification showing the image.
   auto notification = GetImageNotification();
   EXPECT_FALSE(notification.image().IsEmpty());
+
+  // Calling GetDefaultStoragePartition creates tasks that need to run before
+  // the ScopedFeatureList is destroyed. See crbug.com/1060869
+  task_environment_.RunUntilIdle();
 }
 
-// Times out on all platforms. https://crbug.com/1060869
-TEST_F(RemoteCopyMessageHandlerTest,
-       DISABLED_ImageNotificationWithProgressFlag) {
+TEST_F(RemoteCopyMessageHandlerTest, ImageNotificationWithProgressFlag) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeaturesAndParameters(
       {{kRemoteCopyReceiver, {{kRemoteCopyAllowedOrigins.name, kTestImageUrl}}},
        {kRemoteCopyProgressNotification, {}}},
       {});
+
+  base::RunLoop run_loop;
+  ClipboardObserver observer(run_loop.QuitClosure());
+  ui::ClipboardMonitor::GetInstance()->AddObserver(&observer);
 
   message_handler_->OnMessage(CreateMessageWithImage(kTestImageUrl),
                               base::DoNothing());
@@ -252,10 +284,10 @@ TEST_F(RemoteCopyMessageHandlerTest,
   // There should be a progress notification with the flag set.
   EXPECT_TRUE(HasProgressNotification());
 
-  // Let tasks run until the image is decoded and written to the clipboard.
-  // TODO(knollr): Test updates to the progress notitification during the
-  // download.
-  task_environment_.RunUntilIdle();
+  // Let tasks run until the image is decoded, written to the clipboard and the
+  // image notification is shown.
+  run_loop.Run();
+  ui::ClipboardMonitor::GetInstance()->RemoveObserver(&observer);
 
   // After finishing the transfer there should be no progress notification.
   EXPECT_FALSE(HasProgressNotification());
@@ -267,10 +299,13 @@ TEST_F(RemoteCopyMessageHandlerTest,
   // Expect an image notification showing the image.
   auto notification = GetImageNotification();
   EXPECT_FALSE(notification.image().IsEmpty());
+
+  // Calling GetDefaultStoragePartition creates tasks that need to run before
+  // the ScopedFeatureList is destroyed. See crbug.com/1060869
+  task_environment_.RunUntilIdle();
 }
 
-// Times out on all platforms. https://crbug.com/1060869
-TEST_F(RemoteCopyMessageHandlerTest, DISABLED_CancelProgressNotification) {
+TEST_F(RemoteCopyMessageHandlerTest, CancelProgressNotification) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeaturesAndParameters(
       {{kRemoteCopyReceiver, {{kRemoteCopyAllowedOrigins.name, kTestImageUrl}}},
@@ -296,13 +331,16 @@ TEST_F(RemoteCopyMessageHandlerTest, DISABLED_CancelProgressNotification) {
   EXPECT_FALSE(HasImageNotification());
 }
 
-// Times out on all platforms. https://crbug.com/1060869
-TEST_F(RemoteCopyMessageHandlerTest, DISABLED_DismissProgressNotification) {
+TEST_F(RemoteCopyMessageHandlerTest, DismissProgressNotification) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeaturesAndParameters(
       {{kRemoteCopyReceiver, {{kRemoteCopyAllowedOrigins.name, kTestImageUrl}}},
        {kRemoteCopyProgressNotification, {}}},
       {});
+
+  base::RunLoop run_loop;
+  ClipboardObserver observer(run_loop.QuitClosure());
+  ui::ClipboardMonitor::GetInstance()->AddObserver(&observer);
 
   message_handler_->OnMessage(CreateMessageWithImage(kTestImageUrl),
                               base::DoNothing());
@@ -316,8 +354,14 @@ TEST_F(RemoteCopyMessageHandlerTest, DISABLED_DismissProgressNotification) {
   // The progress notification should now be closed.
   EXPECT_FALSE(HasProgressNotification());
 
-  // Let tasks run until the image is decoded and written to the clipboard.
-  task_environment_.RunUntilIdle();
+  // Let tasks run until the image is decoded, written to the clipboard and the
+  // image notification is shown.
+  run_loop.Run();
+  ui::ClipboardMonitor::GetInstance()->RemoveObserver(&observer);
 
   EXPECT_TRUE(HasImageNotification());
+
+  // Calling GetDefaultStoragePartition creates tasks that need to run before
+  // the ScopedFeatureList is destroyed. See crbug.com/1060869
+  task_environment_.RunUntilIdle();
 }

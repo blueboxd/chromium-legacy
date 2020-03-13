@@ -1481,8 +1481,14 @@ void LocalFrame::SetViewportIntersectionFromParent(
   // Notify the render frame observers when the main frame intersection changes.
   if (intersection_state_.main_frame_document_intersection !=
       intersection_state.main_frame_document_intersection) {
+    // Put the main frame document intersection in the coordinate system of the
+    // viewport.
+    IntRect offset_main_frame_intersection =
+        intersection_state.main_frame_document_intersection;
+    offset_main_frame_intersection.MoveBy(
+        IntPoint(intersection_state.viewport_offset));
     Client()->OnMainFrameDocumentIntersectionChanged(
-        intersection_state.main_frame_document_intersection);
+        offset_main_frame_intersection);
   }
 
   bool can_skip_sticky_frame_tracking =

@@ -15,7 +15,7 @@
   var frameId2;
   var frameId3;
 
-  UI.viewManager.showView('resources');
+  await UI.viewManager.showView('resources');
   ApplicationTestRunner.startApplicationCacheStatusesRecording();
   ApplicationTestRunner.dumpApplicationCache();
   ApplicationTestRunner.createAndNavigateIFrame(

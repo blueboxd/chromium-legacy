@@ -592,11 +592,13 @@ UIViewController* TopPresentedViewController() {
     EARL_GREY_TEST_SKIPPED(@"No omnibox button to tap.");
   }
 
+  [ChromeEarlGrey waitForMainTabCount:1];
+
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kToolbarSearchButtonIdentifier)]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      assertWithMatcher:firstResponder()];
+
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests share button is enabled only on pages that can be shared.

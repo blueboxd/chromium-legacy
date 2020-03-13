@@ -37,12 +37,6 @@ class AdditionalSuggestionsHelper;
 - (void)registerArticleProvider:
     (ntp_snippets::ContentSuggestionsService*)service;
 
-// Enables the swizzling of the @"focusOmniboxFromSearchButton" selector on the
-// location bar coordinator.
-- (void)swizzleLocationBarCoordinatorSearchButton;
-// Resets the swizzling of the location bar coordinator.
-- (void)resetSwizzle;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_NTP_HOME_PROVIDER_TEST_SINGLETON_H_

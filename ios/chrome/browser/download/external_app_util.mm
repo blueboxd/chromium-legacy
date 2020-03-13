@@ -29,9 +29,7 @@ bool IsGoogleDriveAppInstalled() {
 
 NSURL* GetFilesAppUrl() {
   base::FilePath download_dir;
-  if (!GetDownloadsDirectory(&download_dir)) {
-    return nil;
-  }
+  GetDownloadsDirectory(&download_dir);
 
   return [NSURL
       URLWithString:[NSString stringWithFormat:@"shareddocuments://%s",

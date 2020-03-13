@@ -575,13 +575,24 @@ util.getTeamDriveName = entry => {
 };
 
 /**
+ * Returns true if the given root type is for a container of recent files.
+ * @param {VolumeManagerCommon.RootType|null} rootType
+ * @return {boolean}
+ */
+util.isRecentRootType = rootType => {
+  return rootType == VolumeManagerCommon.RootType.RECENT ||
+      rootType == VolumeManagerCommon.RootType.RECENT_AUDIO ||
+      rootType == VolumeManagerCommon.RootType.RECENT_IMAGES ||
+      rootType == VolumeManagerCommon.RootType.RECENT_VIDEOS;
+};
+
+/**
  * Returns true if the given entry is the root folder of recent files.
  * @param {!Entry|!FilesAppEntry} entry Entry or a fake entry.
  * @returns {boolean}
  */
 util.isRecentRoot = entry => {
-  return util.isFakeEntry(entry) &&
-      entry.rootType == VolumeManagerCommon.RootType.RECENT;
+  return util.isFakeEntry(entry) && util.isRecentRootType(entry.rootType);
 };
 
 /**
@@ -1119,6 +1130,12 @@ util.getRootTypeLabel = locationInfo => {
       return str('DRIVE_DIRECTORY_LABEL');
     case VolumeManagerCommon.RootType.RECENT:
       return str('RECENT_ROOT_LABEL');
+    case VolumeManagerCommon.RootType.RECENT_AUDIO:
+      return str('MEDIA_VIEW_AUDIO_ROOT_LABEL');
+    case VolumeManagerCommon.RootType.RECENT_IMAGES:
+      return str('MEDIA_VIEW_IMAGES_ROOT_LABEL');
+    case VolumeManagerCommon.RootType.RECENT_VIDEOS:
+      return str('MEDIA_VIEW_VIDEOS_ROOT_LABEL');
     case VolumeManagerCommon.RootType.CROSTINI:
       return str('LINUX_FILES_ROOT_LABEL');
     case VolumeManagerCommon.RootType.MY_FILES:

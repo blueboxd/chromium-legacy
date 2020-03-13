@@ -897,10 +897,10 @@ void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point,
   AXContentNodeData data;
   ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
   tree_source_.SerializeNode(obj, &data);
-  if (data.HasContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID)) {
+  if (data.child_routing_id != MSG_ROUTING_NONE) {
     gfx::Point transformed_point = point;
-    bool is_remote_frame = RenderFrameProxy::FromRoutingID(
-        data.GetContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID));
+    bool is_remote_frame =
+        RenderFrameProxy::FromRoutingID(data.child_routing_id);
     if (is_remote_frame) {
       // Remote frames don't have access to the information from the visual
       // viewport regarding the visual viewport offset, so we adjust the
@@ -917,8 +917,7 @@ void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point,
     }
     Send(new AccessibilityHostMsg_ChildFrameHitTestResult(
         routing_id(), action_request_id, transformed_point,
-        data.GetContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID), 0,
-        event_to_fire));
+        data.child_routing_id, 0, event_to_fire));
     return;
   }
 

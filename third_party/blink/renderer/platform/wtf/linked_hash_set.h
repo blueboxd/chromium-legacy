@@ -1088,11 +1088,20 @@ class NewLinkedHashSet {
   template <typename IncomingValueType>
   AddResult insert(IncomingValueType&&);
 
+  template <typename IncomingValueType>
+  AddResult AppendOrMoveToLast(IncomingValueType&&);
+
+  template <typename IncomingValueType>
+  AddResult PrependOrMoveToFirst(IncomingValueType&&);
+
   // TODO(keinakashima): implement functions related to erase
 
   // TODO(keinakashima): implement clear (,RemoveAll, Trace)
 
  private:
+  template <typename IncomingValueType>
+  AddResult InsertOrMoveBefore(const_iterator, IncomingValueType&&);
+
   HashMap<Value, wtf_size_t> value_to_index_;
   VectorBackedLinkedList<Value> list_;
 };
@@ -1147,6 +1156,41 @@ typename NewLinkedHashSet<T>::AddResult NewLinkedHashSet<T>::insert(
   wtf_size_t index = result.stored_value->value;
   const_iterator stored_position_iterator = list_.MakeConstIterator(index);
   return AddResult(stored_position_iterator.Get(), false);
+}
+
+template <typename T>
+template <typename IncomingValueType>
+typename NewLinkedHashSet<T>::AddResult NewLinkedHashSet<T>::AppendOrMoveToLast(
+    IncomingValueType&& value) {
+  return InsertOrMoveBefore(end(), std::forward<IncomingValueType>(value));
+}
+
+template <typename T>
+template <typename IncomingValueType>
+typename NewLinkedHashSet<T>::AddResult
+NewLinkedHashSet<T>::PrependOrMoveToFirst(IncomingValueType&& value) {
+  return InsertOrMoveBefore(begin(), std::forward<IncomingValueType>(value));
+}
+
+template <typename T>
+template <typename IncomingValueType>
+typename NewLinkedHashSet<T>::AddResult NewLinkedHashSet<T>::InsertOrMoveBefore(
+    const_iterator position,
+    IncomingValueType&& value) {
+  typename Map::AddResult result = value_to_index_.insert(value, kNotFound);
+
+  if (result.is_new_entry) {
+    const_iterator stored_position_iterator =
+        list_.insert(position, std::forward<IncomingValueType>(value));
+    result.stored_value->value = stored_position_iterator.GetIndex();
+    return AddResult(stored_position_iterator.Get(), true);
+  }
+
+  const_iterator stored_position_iterator =
+      list_.MakeConstIterator(result.stored_value->value);
+  const_iterator moved_position_iterator =
+      list_.MoveTo(stored_position_iterator, position);
+  return AddResult(moved_position_iterator.Get(), false);
 }
 
 }  // namespace WTF

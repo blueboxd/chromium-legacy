@@ -228,7 +228,9 @@ void CharacterData::DidModifyData(const String& old_data, UpdateSource source) {
   if (parentNode()) {
     ContainerNode::ChildrenChange change = {
         ContainerNode::ChildrenChangeType::kTextChanged,
-        ContainerNode::ChildrenChangeSource::kAPI,
+        source == kUpdateFromParser
+            ? ContainerNode::ChildrenChangeSource::kParser
+            : ContainerNode::ChildrenChangeSource::kAPI,
         this,
         previousSibling(),
         nextSibling(),

@@ -48,6 +48,7 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.BooleanAndProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.BooleanList;
+import org.chromium.chrome.browser.autofill_assistant.proto.BooleanNotProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.CallbackProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipType;
@@ -90,6 +91,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.TextViewProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ToStringProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ToggleUserActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.UserActionList;
 import org.chromium.chrome.browser.autofill_assistant.proto.UserActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ValueProto;
@@ -1196,5 +1198,97 @@ public class AutofillAssistantGenericUiTest {
         onView(withText("no-desc"))
                 .check(matches(isImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO)));
         onView(withText("custom-desc")).check(matches(withContentDescription("custom")));
+    }
+
+    /**
+     * Shows a chip that becomes enabled/disabled based on other interactions.
+     */
+    @Test
+    @MediumTest
+    public void testGenericUiDisableChips() {
+        List<InteractionProto> interactions = new ArrayList<>();
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
+                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
+                                        "chips")))
+                        .addCallbacks(CallbackProto.newBuilder().setSetUserActions(
+                                SetUserActionsProto.newBuilder().setModelIdentifier("chips")))
+                        .build());
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
+                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
+                                        "enabled")))
+                        .addCallbacks(CallbackProto.newBuilder().setToggleUserAction(
+                                ToggleUserActionProto.newBuilder()
+                                        .setUserActionsModelIdentifier("chips")
+                                        .setEnabledModelIdentifier("enabled")
+                                        .setUserActionIdentifier("done_chip")))
+                        .build());
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
+                                OnViewClickedEventProto.newBuilder().setViewIdentifier(
+                                        "text_view")))
+                        .addCallbacks(CallbackProto.newBuilder().setComputeValue(
+                                ComputeValueProto.newBuilder()
+                                        .setResultModelIdentifier("enabled")
+                                        .setBooleanNot(
+                                                BooleanNotProto.newBuilder().setModelIdentifier(
+                                                        "enabled"))))
+                        .build());
+
+        List<ModelProto.ModelValue> modelValues = new ArrayList<>();
+        modelValues.add(
+                (ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                        .setIdentifier("chips")
+                        .setValue(ValueProto.newBuilder().setUserActions(
+                                UserActionList.newBuilder().addValues(
+                                        UserActionProto.newBuilder()
+                                                .setChip(ChipProto.newBuilder()
+                                                                 .setText("Done")
+                                                                 .setType(ChipType.NORMAL_ACTION))
+                                                .setIdentifier("done_chip"))))
+                        .build());
+        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("enabled")
+                                .setValue(ValueProto.newBuilder().setBooleans(
+                                        BooleanList.newBuilder().addValues(false)))
+                                .build());
+
+        GenericUserInterfaceProto genericUserInterface =
+                (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
+                        .setRootView(createTextView("Click me to toggle the chip", "text_view"))
+                        .setInteractions(
+                                InteractionsProto.newBuilder().addAllInteractions(interactions))
+                        .setModel(ModelProto.newBuilder().addAllValues(modelValues))
+                        .build();
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowGenericUi(ShowGenericUiProto.newBuilder().setGenericUserInterface(
+                                 genericUserInterface))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Done"), isCompletelyDisplayed());
+        onView(withContentDescription("Done")).check(matches(not(isEnabled())));
+
+        onView(withText("Click me to toggle the chip")).perform(click());
+        waitUntilViewMatchesCondition(withContentDescription("Done"), isEnabled());
+
+        onView(withText("Click me to toggle the chip")).perform(click());
+        waitUntilViewMatchesCondition(withContentDescription("Done"), not(isEnabled()));
     }
 }

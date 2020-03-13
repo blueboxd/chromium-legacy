@@ -122,7 +122,7 @@ void ThemeSyncableService::StopSyncing(syncer::ModelType type) {
   sync_error_handler_.reset();
 }
 
-syncer::SyncDataList ThemeSyncableService::GetAllSyncData(
+syncer::SyncDataList ThemeSyncableService::GetAllSyncDataForTesting(
     syncer::ModelType type) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(type, syncer::THEMES);

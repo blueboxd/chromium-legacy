@@ -487,9 +487,10 @@ def main():
 
     # Require zlib compression.
     zlib_dir = AddZlibToPath()
-    base_cmake_args.append('-DLLVM_ENABLE_ZLIB=FORCE_ON')
+    base_cmake_args.append('-DLLVM_ENABLE_ZLIB=ON')
     cflags.append('-I' + zlib_dir)
     cxxflags.append('-I' + zlib_dir)
+    ldflags.append('-LIBPATH:' + zlib_dir)
 
   if sys.platform == 'darwin':
     # Use the system libc++abi.
@@ -528,9 +529,12 @@ def main():
         '-DCMAKE_INSTALL_PREFIX=' + LLVM_BOOTSTRAP_INSTALL_DIR,
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
+        '-DCMAKE_EXE_LINKER_FLAGS=' + ' '.join(ldflags),
+        '-DCMAKE_SHARED_LINKER_FLAGS=' + ' '.join(ldflags),
+        '-DCMAKE_MODULE_LINKER_FLAGS=' + ' '.join(ldflags),
         # Ignore args.disable_asserts for the bootstrap compiler.
         '-DLLVM_ENABLE_ASSERTIONS=ON',
-        ]
+    ]
     if sys.platform == 'darwin':
       # On macOS, the bootstrap toolchain needs to have compiler-rt because
       # dsymutil's link needs libclang_rt.osx.a. Only the x86_64 osx
@@ -614,9 +618,12 @@ def main():
         '-DLLVM_ENABLE_PROJECTS=' + projects,
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
+        '-DCMAKE_EXE_LINKER_FLAGS=' + ' '.join(ldflags),
+        '-DCMAKE_SHARED_LINKER_FLAGS=' + ' '.join(ldflags),
+        '-DCMAKE_MODULE_LINKER_FLAGS=' + ' '.join(ldflags),
         # Build with instrumentation.
         '-DLLVM_BUILD_INSTRUMENTED=IR',
-        ]
+    ]
     # Build with the bootstrap compiler.
     if cc is not None:  instrument_args.append('-DCMAKE_C_COMPILER=' + cc)
     if cxx is not None: instrument_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
@@ -789,13 +796,16 @@ def main():
     compiler_rt_args = base_cmake_args + [
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
+        '-DCMAKE_EXE_LINKER_FLAGS=' + ' '.join(ldflags),
+        '-DCMAKE_SHARED_LINKER_FLAGS=' + ' '.join(ldflags),
+        '-DCMAKE_MODULE_LINKER_FLAGS=' + ' '.join(ldflags),
         '-DCOMPILER_RT_BUILD_BUILTINS=OFF',
         '-DCOMPILER_RT_BUILD_CRT=OFF',
         '-DCOMPILER_RT_BUILD_LIBFUZZER=OFF',
         '-DCOMPILER_RT_BUILD_PROFILE=ON',
         '-DCOMPILER_RT_BUILD_SANITIZERS=OFF',
         '-DCOMPILER_RT_BUILD_XRAY=OFF',
-        ]
+    ]
     RunCommand(['cmake'] + compiler_rt_args +
                [os.path.join(LLVM_DIR, 'llvm')],
                msvc_arch='x86', env=deployment_env)

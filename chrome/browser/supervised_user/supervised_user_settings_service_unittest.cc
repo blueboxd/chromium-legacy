@@ -302,8 +302,8 @@ TEST_F(SupervisedUserSettingsServiceTest, UploadItem) {
   }
 
   // It should also show up in local Sync data.
-  syncer::SyncDataList sync_data =
-      settings_service_.GetAllSyncData(syncer::SUPERVISED_USER_SETTINGS);
+  syncer::SyncDataList sync_data = settings_service_.GetAllSyncDataForTesting(
+      syncer::SUPERVISED_USER_SETTINGS);
   EXPECT_EQ(3u, sync_data.size());
   for (const syncer::SyncData& sync_data_item : sync_data)
     VerifySyncDataItem(sync_data_item);
@@ -317,7 +317,7 @@ TEST_F(SupervisedUserSettingsServiceTest, UploadItem) {
   EXPECT_EQ(syncer::SyncChange::ACTION_ADD, change.change_type());
   VerifySyncDataItem(change.sync_data());
 
-  sync_data = settings_service_.GetAllSyncData(
+  sync_data = settings_service_.GetAllSyncDataForTesting(
       syncer::SUPERVISED_USER_SETTINGS);
   EXPECT_EQ(4u, sync_data.size());
   for (const syncer::SyncData& sync_data_item : sync_data)
@@ -333,7 +333,7 @@ TEST_F(SupervisedUserSettingsServiceTest, UploadItem) {
   EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, change.change_type());
   VerifySyncDataItem(change.sync_data());
 
-  sync_data = settings_service_.GetAllSyncData(
+  sync_data = settings_service_.GetAllSyncDataForTesting(
       syncer::SUPERVISED_USER_SETTINGS);
   EXPECT_EQ(4u, sync_data.size());
   for (const syncer::SyncData& sync_data_item : sync_data)
@@ -347,7 +347,7 @@ TEST_F(SupervisedUserSettingsServiceTest, UploadItem) {
   EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, change.change_type());
   VerifySyncDataItem(change.sync_data());
 
-  sync_data = settings_service_.GetAllSyncData(
+  sync_data = settings_service_.GetAllSyncDataForTesting(
       syncer::SUPERVISED_USER_SETTINGS);
   EXPECT_EQ(4u, sync_data.size());
   for (const syncer::SyncData& sync_data_item : sync_data)

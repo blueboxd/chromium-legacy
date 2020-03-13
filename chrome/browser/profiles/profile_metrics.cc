@@ -31,7 +31,10 @@
 
 namespace {
 
-const int kMaximumDaysOfDisuse = 4 * 7;  // Should be integral number of weeks.
+#if !defined(OS_ANDROID)
+constexpr base::TimeDelta kProfileActivityThreshold =
+    base::TimeDelta::FromDays(28);  // Should be integral number of weeks.
+#endif
 
 enum class ProfileType {
   ORIGINAL = 0,  // Refers to the original/default profile
@@ -59,17 +62,6 @@ ProfileType GetProfileType(const base::FilePath& profile_path) {
     metric = ProfileType::ORIGINAL;
   }
   return metric;
-}
-
-bool HasProfileBeenActiveSince(const ProfileAttributesEntry* entry,
-                               const base::Time& active_limit) {
-#if !defined(OS_ANDROID)
-  // TODO(mlerman): iOS and Android should set an ActiveTime in the
-  // ProfileAttributesStorage. (see ProfileManager::OnBrowserSetLastActive)
-  if (entry->GetActiveTime() < active_limit)
-    return false;
-#endif
-  return true;
 }
 
 }  // namespace
@@ -139,6 +131,17 @@ enum ProfileAvatar {
   NUM_PROFILE_AVATAR_METRICS
 };
 
+// static
+bool ProfileMetrics::IsProfileActive(const ProfileAttributesEntry* entry) {
+#if !defined(OS_ANDROID)
+  // TODO(mlerman): iOS and Android should set an ActiveTime in the
+  // ProfileAttributesStorage. (see ProfileManager::OnBrowserSetLastActive)
+  if (base::Time::Now() - entry->GetActiveTime() > kProfileActivityThreshold)
+    return false;
+#endif
+  return true;
+}
+
 void ProfileMetrics::CountProfileInformation(ProfileAttributesStorage* storage,
                                              profile_metrics::Counts* counts) {
   size_t number_of_profiles = storage->GetNumberOfProfiles();
@@ -148,14 +151,10 @@ void ProfileMetrics::CountProfileInformation(ProfileAttributesStorage* storage,
   if (!number_of_profiles)
     return;
 
-  // Maximum age for "active" profile is 4 weeks.
-  base::Time oldest = base::Time::Now() -
-      base::TimeDelta::FromDays(kMaximumDaysOfDisuse);
-
   std::vector<ProfileAttributesEntry*> entries =
       storage->GetAllProfilesAttributes();
   for (ProfileAttributesEntry* entry : entries) {
-    if (!HasProfileBeenActiveSince(entry, oldest)) {
+    if (!IsProfileActive(entry)) {
       counts->unused++;
     } else {
       counts->active++;

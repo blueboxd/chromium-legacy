@@ -25,11 +25,21 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/blink/public/common/context_menu_data/media_type.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/test/base/launchservices_utils_mac.h"
+#endif
+
 using content::WebContents;
 
 class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
  public:
   RegisterProtocolHandlerBrowserTest() { }
+
+  void SetUpOnMainThread() override {
+#if defined(OS_MACOSX)
+    ASSERT_TRUE(test::RegisterAppWithLaunchServices());
+#endif
+  }
 
   TestRenderViewContextMenu* CreateContextMenu(GURL url) {
     content::ContextMenuParams params;

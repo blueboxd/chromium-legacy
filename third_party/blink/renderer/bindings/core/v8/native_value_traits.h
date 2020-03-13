@@ -87,12 +87,15 @@ struct NativeValueTraitsBase {
   static constexpr bool has_null_value =
       bindings::NativeValueTraitsHasNullValue<ImplType>::value;
 
+  template <typename... ExtraArgs>
   static decltype(auto) ArgumentValue(v8::Isolate* isolate,
                                       int argument_index,
                                       v8::Local<v8::Value> value,
-                                      ExceptionState& exception_state) {
+                                      ExceptionState& exception_state,
+                                      ExtraArgs... extra_args) {
     return NativeValueTraits<std::remove_pointer_t<T>>::NativeValue(
-        isolate, value, exception_state);
+        isolate, value, exception_state,
+        std::forward<ExtraArgs>(extra_args)...);
   }
 };
 
@@ -107,12 +110,15 @@ struct NativeValueTraitsBase<
   static constexpr bool has_null_value =
       bindings::NativeValueTraitsHasNullValue<ImplType>::value;
 
+  template <typename... ExtraArgs>
   static decltype(auto) ArgumentValue(v8::Isolate* isolate,
                                       int argument_index,
                                       v8::Local<v8::Value> value,
-                                      ExceptionState& exception_state) {
+                                      ExceptionState& exception_state,
+                                      ExtraArgs... extra_args) {
     return NativeValueTraits<std::remove_pointer_t<T>>::NativeValue(
-        isolate, value, exception_state);
+        isolate, value, exception_state,
+        std::forward<ExtraArgs>(extra_args)...);
   }
 };
 

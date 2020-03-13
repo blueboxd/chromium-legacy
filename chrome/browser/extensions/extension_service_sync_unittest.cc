@@ -699,7 +699,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncData) {
       std::make_unique<syncer::SyncErrorFactoryMock>());
 
   syncer::SyncDataList list =
-      extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+      extension_sync_service()->GetAllSyncDataForTesting(syncer::EXTENSIONS);
   ASSERT_EQ(list.size(), 1U);
   std::unique_ptr<ExtensionSyncData> data =
       ExtensionSyncData::CreateFromSyncData(list[0]);
@@ -728,7 +728,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncDataDisableReasons) {
 
   {
     syncer::SyncDataList list =
-        extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+        extension_sync_service()->GetAllSyncDataForTesting(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
     std::unique_ptr<ExtensionSyncData> data =
         ExtensionSyncData::CreateFromSyncData(list[0]);
@@ -744,7 +744,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncDataDisableReasons) {
                               extensions::disable_reason::DISABLE_USER_ACTION);
   {
     syncer::SyncDataList list =
-        extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+        extension_sync_service()->GetAllSyncDataForTesting(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
     std::unique_ptr<ExtensionSyncData> data =
         ExtensionSyncData::CreateFromSyncData(list[0]);
@@ -761,7 +761,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncDataDisableReasons) {
                               extensions::disable_reason::DISABLE_RELOAD);
   {
     syncer::SyncDataList list =
-        extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+        extension_sync_service()->GetAllSyncDataForTesting(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
     std::unique_ptr<ExtensionSyncData> data =
         ExtensionSyncData::CreateFromSyncData(list[0]);
@@ -780,7 +780,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncDataDisableReasons) {
                                   extensions::disable_reason::DISABLE_RELOAD);
   {
     syncer::SyncDataList list =
-        extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+        extension_sync_service()->GetAllSyncDataForTesting(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
     std::unique_ptr<ExtensionSyncData> data =
         ExtensionSyncData::CreateFromSyncData(list[0]);
@@ -806,7 +806,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncDataTerminated) {
       std::make_unique<syncer::SyncErrorFactoryMock>());
 
   syncer::SyncDataList list =
-      extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+      extension_sync_service()->GetAllSyncDataForTesting(syncer::EXTENSIONS);
   ASSERT_EQ(list.size(), 1U);
   std::unique_ptr<ExtensionSyncData> data =
       ExtensionSyncData::CreateFromSyncData(list[0]);
@@ -834,7 +834,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncDataFilter) {
       std::make_unique<syncer::SyncErrorFactoryMock>());
 
   syncer::SyncDataList list =
-      extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+      extension_sync_service()->GetAllSyncDataForTesting(syncer::EXTENSIONS);
   ASSERT_EQ(list.size(), 0U);
 }
 
@@ -851,7 +851,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncExtensionDataUserSettings) {
 
   {
     syncer::SyncDataList list =
-        extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+        extension_sync_service()->GetAllSyncDataForTesting(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
     std::unique_ptr<ExtensionSyncData> data =
         ExtensionSyncData::CreateFromSyncData(list[0]);
@@ -864,7 +864,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncExtensionDataUserSettings) {
                               extensions::disable_reason::DISABLE_USER_ACTION);
   {
     syncer::SyncDataList list =
-        extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+        extension_sync_service()->GetAllSyncDataForTesting(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
     std::unique_ptr<ExtensionSyncData> data =
         ExtensionSyncData::CreateFromSyncData(list[0]);
@@ -876,7 +876,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncExtensionDataUserSettings) {
   extensions::util::SetIsIncognitoEnabled(good_crx, profile(), true);
   {
     syncer::SyncDataList list =
-        extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+        extension_sync_service()->GetAllSyncDataForTesting(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
     std::unique_ptr<ExtensionSyncData> data =
         ExtensionSyncData::CreateFromSyncData(list[0]);
@@ -888,7 +888,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncExtensionDataUserSettings) {
   service()->EnableExtension(good_crx);
   {
     syncer::SyncDataList list =
-        extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+        extension_sync_service()->GetAllSyncDataForTesting(syncer::EXTENSIONS);
     ASSERT_EQ(list.size(), 1U);
     std::unique_ptr<ExtensionSyncData> data =
         ExtensionSyncData::CreateFromSyncData(list[0]);
@@ -947,7 +947,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncAppDataUserSettings) {
       syncer::StringOrdinal::CreateInitialOrdinal();
   {
     syncer::SyncDataList list =
-        extension_sync_service()->GetAllSyncData(syncer::APPS);
+        extension_sync_service()->GetAllSyncDataForTesting(syncer::APPS);
     ASSERT_EQ(list.size(), 1U);
 
     std::unique_ptr<ExtensionSyncData> app_sync_data =
@@ -960,7 +960,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncAppDataUserSettings) {
   sorting->SetAppLaunchOrdinal(app->id(), initial_ordinal.CreateAfter());
   {
     syncer::SyncDataList list =
-        extension_sync_service()->GetAllSyncData(syncer::APPS);
+        extension_sync_service()->GetAllSyncDataForTesting(syncer::APPS);
     ASSERT_EQ(list.size(), 1U);
 
     std::unique_ptr<ExtensionSyncData> app_sync_data =
@@ -973,7 +973,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncAppDataUserSettings) {
   sorting->SetPageOrdinal(app->id(), initial_ordinal.CreateAfter());
   {
     syncer::SyncDataList list =
-        extension_sync_service()->GetAllSyncData(syncer::APPS);
+        extension_sync_service()->GetAllSyncDataForTesting(syncer::APPS);
     ASSERT_EQ(list.size(), 1U);
 
     std::unique_ptr<ExtensionSyncData> app_sync_data =
@@ -1010,7 +1010,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncAppDataUserSettingsOnExtensionMoved) {
       ->OnExtensionMoved(apps[0]->id(), apps[1]->id(), apps[2]->id());
   {
     syncer::SyncDataList list =
-        extension_sync_service()->GetAllSyncData(syncer::APPS);
+        extension_sync_service()->GetAllSyncDataForTesting(syncer::APPS);
     ASSERT_EQ(list.size(), 3U);
 
     std::unique_ptr<ExtensionSyncData> data[kAppCount];
@@ -1055,9 +1055,12 @@ TEST_F(ExtensionServiceSyncTest, GetSyncDataList) {
                               extensions::disable_reason::DISABLE_USER_ACTION);
   TerminateExtension(theme2_crx);
 
-  EXPECT_EQ(0u, extension_sync_service()->GetAllSyncData(syncer::APPS).size());
   EXPECT_EQ(
-      2u, extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS).size());
+      0u,
+      extension_sync_service()->GetAllSyncDataForTesting(syncer::APPS).size());
+  EXPECT_EQ(2u, extension_sync_service()
+                    ->GetAllSyncDataForTesting(syncer::EXTENSIONS)
+                    .size());
 }
 
 TEST_F(ExtensionServiceSyncTest, ProcessSyncDataUninstall) {
@@ -1341,7 +1344,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataVersionCheck) {
     EXPECT_FALSE(service()->updater()->WillCheckSoon());
     // Make sure the version we'll send back to sync didn't change.
     syncer::SyncDataList data =
-        extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+        extension_sync_service()->GetAllSyncDataForTesting(syncer::EXTENSIONS);
     ASSERT_EQ(1u, data.size());
     std::unique_ptr<ExtensionSyncData> extension_data =
         ExtensionSyncData::CreateFromSyncData(data[0]);
@@ -1360,7 +1363,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataVersionCheck) {
     EXPECT_FALSE(service()->updater()->WillCheckSoon());
     // Make sure the version we'll send back to sync didn't change.
     syncer::SyncDataList data =
-        extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+        extension_sync_service()->GetAllSyncDataForTesting(syncer::EXTENSIONS);
     ASSERT_EQ(1u, data.size());
     std::unique_ptr<ExtensionSyncData> extension_data =
         ExtensionSyncData::CreateFromSyncData(data[0]);
@@ -1382,7 +1385,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataVersionCheck) {
     // haven't actually updated yet. This is to prevent the data in sync from
     // flip-flopping back and forth until all clients are up to date.
     syncer::SyncDataList data =
-        extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
+        extension_sync_service()->GetAllSyncDataForTesting(syncer::EXTENSIONS);
     ASSERT_EQ(1u, data.size());
     std::unique_ptr<ExtensionSyncData> extension_data =
         ExtensionSyncData::CreateFromSyncData(data[0]);

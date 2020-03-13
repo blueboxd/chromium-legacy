@@ -24,6 +24,8 @@
 namespace {
 
 constexpr base::TimeDelta kInactivityTimeout = base::TimeDelta::FromMinutes(5);
+constexpr base::TimeDelta kLongTimeOfInactivity =
+    base::TimeDelta::FromMinutes(30);
 
 }  // namespace
 
@@ -57,7 +59,9 @@ class ProfileActivityMetricsRecorderTest : public testing::Test {
     Browser::CreateParams browser_params(profile, false);
     browsers_.push_back(CreateBrowserWithTestWindowForParams(&browser_params));
 
+    // This triggers the recorder to post a task, wait until that's done.
     BrowserList::SetLastActive(browsers_.back().get());
+    task_environment_.RunUntilIdle();
   }
 
   void ActivateIncognitoBrowser(Profile* profile) {
@@ -205,4 +209,43 @@ TEST_F(ProfileActivityMetricsRecorderTest, SessionInactivityNotRecorded) {
   // The inactive time is not recorded.
   histograms()->ExpectBucketCount("Profile.SessionDuration.PerProfile",
                                   /*bucket=*/1, /*count=*/2);
+}
+
+TEST_F(ProfileActivityMetricsRecorderTest, ProfileState) {
+  Profile* regular_profile = profile_manager()->CreateTestingProfile("p1");
+  Profile* guest_profile = profile_manager()->CreateGuestProfile();
+  histograms()->ExpectTotalCount("Profile.State.Avatar_All", 0);
+
+  // TODO(crbug.com/1060113): It seems like some state is sometimes carried over
+  // in these tests: sometimes the first profile activation does not trigger
+  // recording profile state any more. Reset the object to simulate a fresh
+  // start.
+  ProfileActivityMetricsRecorder::CleanupForTesting();
+  ProfileActivityMetricsRecorder::Initialize();
+
+  ActivateBrowser(regular_profile);
+  histograms()->ExpectTotalCount("Profile.State.Avatar_All", 1);
+  // This is somehow important for the session to end later in the test.
+  SimulateUserEvent();
+
+  // Repeating the same thing immediately has no impact.
+  ActivateBrowser(regular_profile);
+  histograms()->ExpectTotalCount("Profile.State.Avatar_All", 1);
+
+  // Repeating the same thing immediately has no impact (neither for any other
+  // profile). Note that guest profile can only get created with incognito.
+  ActivateIncognitoBrowser(guest_profile);
+  histograms()->ExpectTotalCount("Profile.State.Avatar_All", 1);
+
+  // Stay inactive so the session ends and stay inactive long after that.
+  task_environment()->FastForwardBy(kInactivityTimeout * 2 +
+                                    kLongTimeOfInactivity);
+
+  // Now we get another record (no matter which profile triggers that).
+  ActivateBrowser(regular_profile);
+  histograms()->ExpectTotalCount("Profile.State.Avatar_All", 2);
+
+  // Repeating the same thing immediately has no impact.
+  ActivateBrowser(regular_profile);
+  histograms()->ExpectTotalCount("Profile.State.Avatar_All", 2);
 }

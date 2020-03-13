@@ -862,7 +862,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNotShownTest, OnlyNotShownMetricsLogged) {
 
   // Make sure that the metrics that required the Payment Request to be shown
   // are not logged.
-  histogram_tester.ExpectTotalCount("PaymentRequest.SelectedPaymentMethod", 0);
   histogram_tester.ExpectTotalCount("PaymentRequest.NumberOfSelectionAdds", 0);
   histogram_tester.ExpectTotalCount("PaymentRequest.NumberOfSelectionChanges",
                                     0);

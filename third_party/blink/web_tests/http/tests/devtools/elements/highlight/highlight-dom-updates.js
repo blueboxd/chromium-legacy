@@ -125,8 +125,8 @@
       runAndDumpHighlights('setFirstChildTextContent(\'textTest\', \'\')', textTestNode, next);
     },
 
-    function testAppendChildWhenHidden(next) {
-      UI.viewManager.showView('console');
+    async function testAppendChildWhenHidden(next) {
+      await UI.viewManager.showView('console');
       runAndDumpHighlights('appendChild(\'childTest\', \'child1\')', childTestNode, next);
     }
   ]);

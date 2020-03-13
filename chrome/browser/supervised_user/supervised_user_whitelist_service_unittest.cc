@@ -264,18 +264,3 @@ TEST_F(SupervisedUserWhitelistServiceTest, ApplyChanges) {
 
   CheckFinalStateAndPreferences();
 }
-
-TEST_F(SupervisedUserWhitelistServiceTest, GetAllSyncData) {
-  PrepareInitialStateAndPreferences();
-
-  syncer::SyncDataList sync_data =
-      service_->GetAllSyncData(syncer::SUPERVISED_USER_WHITELISTS);
-  ASSERT_EQ(2u, sync_data.size());
-  const sync_pb::ManagedUserWhitelistSpecifics* whitelist =
-      FindWhitelist(sync_data, "aaaa");
-  ASSERT_TRUE(whitelist);
-  EXPECT_EQ("Whitelist A", whitelist->name());
-  whitelist = FindWhitelist(sync_data, "bbbb");
-  ASSERT_TRUE(whitelist);
-  EXPECT_EQ("Whitelist B", whitelist->name());
-}

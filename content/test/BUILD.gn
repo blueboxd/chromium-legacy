@@ -671,7 +671,10 @@ mojom("content_test_mojo_bindings") {
     "frame_host_test_interface.mojom",
     "test_browser_associated_interfaces.mojom",
   ]
-  public_deps = [ "//url/mojom:url_mojom_gurl" ]
+  public_deps = [
+    "//mojo/public/mojom/base",
+    "//url/mojom:url_mojom_gurl",
+  ]
 }
 
 mojom("web_ui_test_mojo_bindings") {

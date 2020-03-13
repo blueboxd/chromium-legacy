@@ -83,7 +83,7 @@ TEST_F(ARQuickLookTabHelperTest, SuccessFileExtention) {
   base::FilePath file =
       task_ptr->GetResponseWriter()->AsFileWriter()->file_path();
   base::FilePath download_dir;
-  ASSERT_TRUE(GetDownloadsDirectory(&download_dir));
+  ASSERT_TRUE(GetTempDownloadsDirectory(&download_dir));
   EXPECT_TRUE(download_dir.IsParent(file));
 
   histogram_tester()->ExpectBucketCount(
@@ -121,7 +121,7 @@ TEST_P(ARQuickLookTabHelperTest, SuccessContentType) {
   base::FilePath file =
       task_ptr->GetResponseWriter()->AsFileWriter()->file_path();
   base::FilePath download_dir;
-  ASSERT_TRUE(GetDownloadsDirectory(&download_dir));
+  ASSERT_TRUE(GetTempDownloadsDirectory(&download_dir));
   EXPECT_TRUE(download_dir.IsParent(file));
 
   histogram_tester()->ExpectBucketCount(

@@ -226,10 +226,12 @@ def native_value_tag(idl_type):
 
     if (real_type.is_boolean or real_type.is_numeric or real_type.is_any
             or real_type.is_object):
-        return "IDL{}".format(real_type.type_name)
+        return "IDL{}".format(
+            idl_type.type_name_with_extended_attribute_key_values)
 
     if real_type.is_string:
-        return "IDL{}V2".format(real_type.type_name)
+        return "IDL{}V2".format(
+            idl_type.type_name_with_extended_attribute_key_values)
 
     if real_type.is_array_buffer:
         return blink_type_info(real_type).typename
@@ -417,22 +419,23 @@ def make_v8_to_blink_value(blink_var_name,
 
     def create_definition(symbol_node):
         if argument_index is None:
+            func_name = "NativeValue"
             arguments = ["${isolate}", v8_value_expr, "${exception_state}"]
-            blink_value_expr = _format(
-                "NativeValueTraits<{_1}>::NativeValue({_2})",
-                _1=native_value_tag(idl_type),
-                _2=", ".join(arguments))
         else:
+            func_name = "ArgumentValue"
             arguments = [
                 "${isolate}",
                 str(argument_index),
                 v8_value_expr,
                 "${exception_state}",
             ]
-            blink_value_expr = _format(
-                "NativeValueTraits<{_1}>::ArgumentValue({_2})",
-                _1=native_value_tag(idl_type),
-                _2=", ".join(arguments))
+        if "StringContext" in idl_type.effective_annotations:
+            arguments.append("${execution_context}")
+        blink_value_expr = _format(
+            "NativeValueTraits<{_1}>::{_2}({_3})",
+            _1=native_value_tag(idl_type),
+            _2=func_name,
+            _3=", ".join(arguments))
 
         if default_value is None:
             return SymbolDefinitionNode(symbol_node, [
@@ -489,13 +492,17 @@ def make_v8_to_blink_value_variadic(blink_var_name, v8_array,
 
     pattern = ("auto&& ${{{_1}}} = "
                "bindings::VariadicArgumentsToNativeValues<{_2}>({_3});")
-    _1 = blink_var_name
-    _2 = native_value_tag(idl_type.element_type)
-    _3 = [
+    arguments = [
         "${isolate}", v8_array,
         str(v8_array_start_index), "${exception_state}"
     ]
-    text = _format(pattern, _1=_1, _2=_2, _3=", ".join(_3))
+    if "StringContext" in idl_type.element_type.effective_annotations:
+        arguments.append("${execution_context}")
+    text = _format(
+        pattern,
+        _1=blink_var_name,
+        _2=native_value_tag(idl_type.element_type),
+        _3=", ".join(arguments))
 
     def create_definition(symbol_node):
         return SymbolDefinitionNode(symbol_node, [

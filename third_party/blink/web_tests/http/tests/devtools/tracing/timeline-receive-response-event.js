@@ -27,7 +27,7 @@
       }
   `);
 
-  UI.viewManager.showView('timeline');
+  await UI.viewManager.showView('timeline');
   const panel = UI.panels.timeline;
   panel._disableCaptureJSProfileSetting.set(true);
   await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');

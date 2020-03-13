@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 
 class Profile;
+class ProfileAttributesEntry;
 class ProfileAttributesStorage;
 
 namespace base {
@@ -120,6 +121,9 @@ class ProfileMetrics {
     NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS,
   };
 #endif  // defined(OS_ANDROID)
+
+  // Returns whether profile |entry| is considered active for metrics.
+  static bool IsProfileActive(const ProfileAttributesEntry* entry);
 
   // Count and return summary information about the profiles currently in the
   // |storage|. This information is returned in the output variable |counts|.

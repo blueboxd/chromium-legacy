@@ -7,11 +7,8 @@
 #include "base/bind.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
-
-#if defined(OS_ANDROID)
 #include "components/version_info/android/channel_getter.h"
-#endif
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using version_info::Channel;
 
@@ -50,11 +47,7 @@ WebLayerVariationsServiceClient::GetNetworkTimeTracker() {
 }
 
 Channel WebLayerVariationsServiceClient::GetChannel() {
-#if defined(OS_ANDROID)
   return version_info::android::GetChannel();
-#else
-  return version_info::Channel::UNKNOWN;
-#endif
 }
 
 bool WebLayerVariationsServiceClient::OverridesRestrictParameter(

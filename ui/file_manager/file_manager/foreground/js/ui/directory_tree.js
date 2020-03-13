@@ -1845,7 +1845,7 @@ class FakeItem extends TreeItem {
     icon.classList.add('item-icon');
     icon.setAttribute('root-type-icon', rootType);
 
-    if (rootType === VolumeManagerCommon.RootType.RECENT) {
+    if (util.isRecentRootType(rootType)) {
       if (this.dirEntry_.recentFileType) {
         icon.setAttribute('recent-file-type', this.dirEntry_.recentFileType);
       } else {  // Recent tab scroll fix: crbug.com/1027973.

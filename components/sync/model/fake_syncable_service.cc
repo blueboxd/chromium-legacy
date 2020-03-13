@@ -56,10 +56,6 @@ void FakeSyncableService::StopSyncing(ModelType type) {
   sync_processor_.reset();
 }
 
-SyncDataList FakeSyncableService::GetAllSyncData(ModelType type) const {
-  return SyncDataList();
-}
-
 SyncError FakeSyncableService::ProcessSyncChanges(
     const base::Location& from_here,
     const SyncChangeList& change_list) {

@@ -15,7 +15,7 @@
   var frameId1;
   var frameId2;
 
-  UI.viewManager.showView('resources');
+  await UI.viewManager.showView('resources');
   ApplicationTestRunner.startApplicationCacheStatusesRecording();
   ApplicationTestRunner.dumpApplicationCache();
   ApplicationTestRunner.createAndNavigateIFrame('resources/with-versioned-manifest.php', step1);

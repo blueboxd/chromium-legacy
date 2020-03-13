@@ -1078,7 +1078,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, PRE_VersionChangeCrashResilience) {
 
 // Fails to cleanup GPU processes on swarming.
 // http://crbug.com/552543
-#if defined(OS_WIN)
+// Flasky on TSAN:
+// crbug.com/1061251
+#if defined(OS_WIN) || defined(THREAD_SANITIZER)
 #define MAYBE_VersionChangeCrashResilience DISABLED_VersionChangeCrashResilience
 #else
 #define MAYBE_VersionChangeCrashResilience VersionChangeCrashResilience

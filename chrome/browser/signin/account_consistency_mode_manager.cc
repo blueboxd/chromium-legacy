@@ -33,34 +33,7 @@ namespace {
 // Preference indicating that the Dice migraton has happened.
 const char kDiceMigrationCompletePref[] = "signin.DiceMigrationComplete";
 
-const char kDiceMigrationStatusHistogram[] = "Signin.DiceMigrationStatus";
-
 const char kAllowBrowserSigninArgument[] = "allow-browser-signin";
-
-// Used for UMA histogram kDiceMigrationStatusHistogram.
-// Do not remove or re-order values.
-enum class DiceMigrationStatus {
-  kEnabled,
-  kDisabledReadyForMigration,
-  kDisabledNotReadyForMigration,
-  kDisabled,
-
-  // This is the last value. New values should be inserted above.
-  kDiceMigrationStatusCount
-};
-
-DiceMigrationStatus GetDiceMigrationStatus(
-    AccountConsistencyMethod account_consistency) {
-  switch (account_consistency) {
-    case AccountConsistencyMethod::kDice:
-      return DiceMigrationStatus::kEnabled;
-    case AccountConsistencyMethod::kDisabled:
-      return DiceMigrationStatus::kDisabled;
-    case AccountConsistencyMethod::kMirror:
-      NOTREACHED();
-      return DiceMigrationStatus::kDisabled;
-  }
-}
 
 bool IsBrowserSigninAllowedByCommandLine() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -110,10 +83,6 @@ AccountConsistencyModeManager::AccountConsistencyModeManager(Profile* profile)
   // were created before Dice.
   if (profile_->IsNewProfile())
     SetDiceMigrationCompleted();
-
-  UMA_HISTOGRAM_ENUMERATION(kDiceMigrationStatusHistogram,
-                            GetDiceMigrationStatus(account_consistency_),
-                            DiceMigrationStatus::kDiceMigrationStatusCount);
 #endif
 
   DCHECK_EQ(account_consistency_, ComputeAccountConsistencyMethod(profile_));

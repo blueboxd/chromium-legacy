@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "content/common/accessibility_messages.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/accessibility/ax_image_annotator.h"
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
@@ -1135,10 +1134,8 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
 
     // Frames and iframes.
     WebFrame* frame = WebFrame::FromFrameOwnerElement(element);
-    if (frame) {
-      dst->AddContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID,
-                                  RenderFrame::GetRoutingIdForWebFrame(frame));
-    }
+    if (frame)
+      dst->child_routing_id = RenderFrame::GetRoutingIdForWebFrame(frame);
   }
 
   // Add the ids of *indirect* children - those who are children of this node,

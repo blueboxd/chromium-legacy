@@ -487,8 +487,7 @@ class MainWindowComponent {
   onWindowFocus_() {
     // When the window have got a focus while the current directory is Recent
     // root, refresh the contents.
-    if (this.directoryModel_.getCurrentRootType() ===
-        VolumeManagerCommon.RootType.RECENT) {
+    if (util.isRecentRootType(this.directoryModel_.getCurrentRootType())) {
       this.directoryModel_.rescan(true /* refresh */);
       // Do not start the spinner here to silently refresh the contents.
     }

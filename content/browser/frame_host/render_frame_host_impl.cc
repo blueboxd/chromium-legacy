@@ -6479,21 +6479,12 @@ void RenderFrameHostImpl::AXContentNodeDataToAXNodeData(
   // Copy the common fields.
   *dst = src;
 
-  // Map content-specific attributes based on routing IDs or browser plugin
-  // instance IDs to generic attributes with global AXTreeIDs.
-  for (auto iter : src.content_int_attributes) {
-    AXContentIntAttribute attr = iter.first;
-    int32_t value = iter.second;
-    switch (attr) {
-      case AX_CONTENT_ATTR_CHILD_ROUTING_ID:
-        dst->string_attributes.push_back(
-            std::make_pair(ax::mojom::StringAttribute::kChildTreeId,
-                           RoutingIDToAXTreeID(value).ToString()));
-        break;
-      case AX_CONTENT_INT_ATTRIBUTE_LAST:
-        NOTREACHED();
-        break;
-    }
+  // Map content-specific's |child_routing_id| attribute to a generic attribute
+  // with a global AXTreeID.
+  if (src.child_routing_id != MSG_ROUTING_NONE) {
+    dst->string_attributes.push_back(
+        std::make_pair(ax::mojom::StringAttribute::kChildTreeId,
+                       RoutingIDToAXTreeID(src.child_routing_id).ToString()));
   }
 }
 
@@ -6503,10 +6494,10 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(ui::AXTreeData* dst) {
   // Copy the common fields.
   *dst = src;
 
-  if (src.routing_id != -1)
+  if (src.routing_id != MSG_ROUTING_NONE)
     dst->tree_id = RoutingIDToAXTreeID(src.routing_id);
 
-  if (src.parent_routing_id != -1)
+  if (src.parent_routing_id != MSG_ROUTING_NONE)
     dst->parent_tree_id = RoutingIDToAXTreeID(src.parent_routing_id);
 
   if (browser_plugin_embedder_ax_tree_id_ != ui::AXTreeIDUnknown())

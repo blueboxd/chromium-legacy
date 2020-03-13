@@ -214,8 +214,8 @@ syncer::SyncMergeResult PrefModelAssociator::MergeDataAndStartSyncing(
       // We're not syncing this preference locally, ignore the sync data.
       // TODO(zea): Eventually we want to be able to have the syncable service
       // reconstruct all sync data for its datatype (therefore having
-      // GetAllSyncData be a complete representation). We should store this
-      // data somewhere, even if we don't use it.
+      // GetAllSyncDataForTesting be a complete representation). We should store
+      // this data somewhere, even if we don't use it.
       continue;
     }
 
@@ -362,7 +362,7 @@ base::Value PrefModelAssociator::MergeDictionaryValues(
 // with user controlled data. We do not track any information for preferences
 // not registered locally as syncable and do not inform the syncer of
 // non-user controlled preferences.
-syncer::SyncDataList PrefModelAssociator::GetAllSyncData(
+syncer::SyncDataList PrefModelAssociator::GetAllSyncDataForTesting(
     syncer::ModelType type) const {
   DCHECK_EQ(type_, type);
   syncer::SyncDataList current_data;

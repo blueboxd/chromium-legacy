@@ -22,7 +22,6 @@ namespace test {
 
 namespace {
 
-// TODO(crbug.com/1045825): Check IsFlushSupported() before flushing encoder.
 // TODO(crbug.com/1045825): Support encoding parameter changes.
 
 // Callbacks can be called from any thread, but WeakPtrs are not thread-safe.
@@ -295,6 +294,13 @@ void VideoEncoderClient::FlushTask() {
 
   // Changing the state to flushing will abort any pending encodes.
   encoder_client_state_ = VideoEncoderClientState::kFlushing;
+
+  // If the encoder does not support flush, immediately consider flushing done.
+  if (!encoder_->IsFlushSupported()) {
+    FireEvent(VideoEncoder::EncoderEvent::kFlushing);
+    FlushDoneTask(true);
+    return;
+  }
 
   auto flush_done_cb = base::BindOnce(
       CallbackThunk<decltype(&VideoEncoderClient::FlushDoneTask), bool>,

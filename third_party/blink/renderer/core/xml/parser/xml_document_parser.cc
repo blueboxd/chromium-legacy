@@ -377,7 +377,7 @@ bool XMLDocumentParser::UpdateLeafTextNode() {
   if (!leaf_text_node_)
     return true;
 
-  leaf_text_node_->appendData(
+  leaf_text_node_->ParserAppendData(
       ToString(buffered_text_.data(), buffered_text_.size()));
   buffered_text_.clear();
   leaf_text_node_ = nullptr;

@@ -189,7 +189,7 @@ using IDLByteStringV2 =
 template <bindings::IDLStringConvMode mode>
 struct IDLStringBaseV2 final : public IDLBaseHelper<String> {};
 using IDLStringV2 = IDLStringBaseV2<bindings::IDLStringConvMode::kDefault>;
-using IDLStringTreatNullAsV2 =
+using IDLStringTreatNullAsEmptyStringV2 =
     IDLStringBaseV2<bindings::IDLStringConvMode::kTreatNullAsEmptyString>;
 
 // USVString
@@ -197,6 +197,36 @@ template <bindings::IDLStringConvMode mode>
 struct IDLUSVStringBaseV2 final : public IDLBaseHelper<String> {};
 using IDLUSVStringV2 =
     IDLUSVStringBaseV2<bindings::IDLStringConvMode::kDefault>;
+
+// [StringContext=TrustedHTML] DOMString
+template <bindings::IDLStringConvMode mode>
+struct IDLStringStringContextTrustedHTMLBaseV2 final
+    : public IDLBaseHelper<String> {};
+using IDLStringStringContextTrustedHTMLV2 =
+    IDLStringStringContextTrustedHTMLBaseV2<
+        bindings::IDLStringConvMode::kDefault>;
+using IDLStringStringContextTrustedHTMLTreatNullAsEmptyStringV2 =
+    IDLStringStringContextTrustedHTMLBaseV2<
+        bindings::IDLStringConvMode::kTreatNullAsEmptyString>;
+
+// [StringContext=TrustedScript] DOMString
+template <bindings::IDLStringConvMode mode>
+struct IDLStringStringContextTrustedScriptBaseV2 final
+    : public IDLBaseHelper<String> {};
+using IDLStringStringContextTrustedScriptV2 =
+    IDLStringStringContextTrustedScriptBaseV2<
+        bindings::IDLStringConvMode::kDefault>;
+using IDLStringStringContextTrustedScriptTreatNullAsEmptyStringV2 =
+    IDLStringStringContextTrustedScriptBaseV2<
+        bindings::IDLStringConvMode::kTreatNullAsEmptyString>;
+
+// [StringContext=TrustedScriptURL] USVString
+template <bindings::IDLStringConvMode mode>
+struct IDLUSVStringStringContextTrustedScriptURLBaseV2 final
+    : public IDLBaseHelper<String> {};
+using IDLUSVStringStringContextTrustedScriptURLV2 =
+    IDLUSVStringStringContextTrustedScriptURLBaseV2<
+        bindings::IDLStringConvMode::kDefault>;
 
 // object
 struct IDLObject final : public IDLBaseHelper<ScriptValue> {};

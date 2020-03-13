@@ -47,7 +47,7 @@ per-file roll_webgl_conformance.py=bajones@chromium.org
 per-file roll_webgl_conformance.py=kbr@chromium.org
 per-file roll_webgl_conformance.py=geofflang@chromium.org
 per-file roll_webgl_conformance.py=zmo@chromium.org
-per-file roll_webrtc.py=phoglund@chromium.org
+per-file roll_webrtc.py=mbonadei@chromium.org
 
 per-file sort-headers.py=satorux@chromium.org
 per-file sort-sources.py=satorux@chromium.org

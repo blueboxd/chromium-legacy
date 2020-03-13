@@ -414,7 +414,7 @@ AXLanguageDetectionManager::GetLanguageAnnotationForStringAttribute(
           attr_value, kMaxDetectedLanguagesPerPage);
   // Create vector of AXLanguageSpans.
   for (const auto& result : top_languages) {
-    std::vector<SpanInfo> ranges = result.byte_ranges;
+    const std::vector<SpanInfo>& ranges = result.byte_ranges;
     for (const auto& span_info : ranges) {
       language_annotation.push_back(
           AXLanguageSpan{span_info.start_index, span_info.end_index,

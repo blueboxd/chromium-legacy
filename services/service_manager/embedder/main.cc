@@ -13,6 +13,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
+#include "base/memory/shared_memory_hooks.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/optional.h"
 #include "base/process/launch.h"
@@ -31,6 +32,7 @@
 #include "mojo/core/embedder/configuration.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "services/service_manager/embedder/main_delegate.h"
 #include "services/service_manager/embedder/process_type.h"
 #include "services/service_manager/embedder/set_process_title.h"
@@ -39,6 +41,7 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_executable/service_executable_environment.h"
 #include "services/service_manager/public/cpp/service_executable/switches.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -373,6 +376,38 @@ int Main(const MainParams& params) {
       }
       return exit_code;
     }
+
+    // Note #1: the installed shared memory hooks require a live instance of
+    // mojo::core::ScopedIPCSupport to function, which is instantiated below by
+    // the process type's main function. However, some implementations of the
+    // service_manager::MainDelegate::Initialize() delegate method allocate
+    // shared memory, so the hooks cannot be installed before the Initialize()
+    // call above, or the shared memory allocation will simply fail.
+    //
+    // Note #2: some platforms can directly allocated shared memory in a
+    // sandboxed process. The defines below must be in sync with the
+    // implementation of mojo::NodeController::CreateSharedBuffer().
+#if !defined(OS_MACOSX) && !defined(OS_NACL_SFI) && !defined(OS_FUCHSIA)
+    // TODO(dcheng): The separate check for |is_broker_process| should not be
+    // required, but avoid changing the behavior of IsUnsandboxedSandboxType()
+    // for now.
+    if (mojo_config.is_broker_process ||
+        service_manager::IsUnsandboxedSandboxType(
+            service_manager::SandboxTypeFromCommandLine(command_line))) {
+      // Unsandboxed processes don't need shared memory brokering... because
+      // they're not sandboxed.
+    } else if (mojo_config.force_direct_shared_memory_allocation) {
+      // Don't bother with hooks if direct shared memory allocation has been
+      // requested.
+    } else {
+      // Otherwise, this is a sandboxed process that will need brokering to
+      // allocate shared memory.
+      base::SharedMemoryHooks::SetCreateHooks(
+          &mojo::CreateReadOnlySharedMemoryRegion,
+          &mojo::CreateUnsafeSharedMemoryRegion,
+          &mojo::CreateWritableSharedMemoryRegion);
+    }
+#endif  // !defined(OS_MACOSX) && !defined(OS_NACL_SFI) && !defined(OS_FUCHSIA)
 
 #if defined(OS_WIN)
     // Route stdio to parent console (if any) or create one.

@@ -58,6 +58,14 @@ void TryEndAction(base::WeakPtr<BasicInteractions> basic_interactions,
   basic_interactions->EndAction(proto);
 }
 
+void TryToggleUserAction(base::WeakPtr<BasicInteractions> basic_interactions,
+                         const ToggleUserActionProto& proto) {
+  if (!basic_interactions) {
+    return;
+  }
+  basic_interactions->ToggleUserAction(proto);
+}
+
 void ShowInfoPopup(const InfoPopupProto& proto,
                    base::android::ScopedJavaGlobalRef<jobject> jcontext) {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -362,6 +370,27 @@ CreateInteractionCallbackFromProto(
       return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
           base::BindRepeating(&SetTextViewText, user_model->GetWeakPtr(),
                               proto.set_text(), views));
+      break;
+    case CallbackProto::kToggleUserAction:
+      if (proto.toggle_user_action().user_actions_model_identifier().empty()) {
+        VLOG(1) << "Error creating ToggleUserAction interaction: "
+                   "user_actions_model_identifier not set";
+        return base::nullopt;
+      }
+      if (proto.toggle_user_action().user_action_identifier().empty()) {
+        VLOG(1) << "Error creating ToggleUserAction interaction: "
+                   "user_action_identifier not set";
+        return base::nullopt;
+      }
+      if (proto.toggle_user_action().enabled_model_identifier().empty()) {
+        VLOG(1) << "Error creating ToggleUserAction interaction: "
+                   "enabled_model_identifier not set";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
+          base::BindRepeating(&TryToggleUserAction,
+                              basic_interactions->GetWeakPtr(),
+                              proto.toggle_user_action()));
     case CallbackProto::KIND_NOT_SET:
       VLOG(1) << "Error creating interaction: kind not set";
       return base::nullopt;

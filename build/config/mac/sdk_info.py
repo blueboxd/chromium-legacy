@@ -115,9 +115,13 @@ def CreateXcodeSymlinkUnderChromiumSource(src):
     os.makedirs(XCODE_LINK_DIR)
 
   dst = os.path.join(XCODE_LINK_DIR, os.path.basename(src))
-  # Update the symlink if exist.
+  # Update the symlink only if it is different from the current destination.
   if os.path.islink(dst):
-    os.unlink(dst)
+    current_dst = os.readlink(src)
+    if current_dst != dst:
+      os.unlink(src)
+      sys.stderr.write('existing symlink %s points %s; want %s. Removed.' %
+                       (src, current_dst, dst))
   os.symlink(src, dst)
 
   return '//' + os.path.relpath(dst, ROOT_SRC_DIR)

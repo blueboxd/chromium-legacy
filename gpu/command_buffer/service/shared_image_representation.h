@@ -169,6 +169,8 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTextureBase
   // exist.
   virtual bool BeginAccess(GLenum mode);
   virtual void EndAccess() {}
+
+  virtual bool SupportsMultipleConcurrentReadAccess();
 };
 
 class GPU_GLES2_EXPORT SharedImageRepresentationGLTexture

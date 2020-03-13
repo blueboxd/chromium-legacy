@@ -337,8 +337,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
     app_list_syncable_service_ =
         app_list::AppListSyncableServiceFactory::GetForProfile(profile());
-    StartAppSyncService(
-        app_list_syncable_service_->GetAllSyncData(syncer::APP_LIST));
+    StartAppSyncService(app_list_syncable_service_->GetAllSyncDataForTesting());
 
     std::string error;
     extension_chrome_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
@@ -1443,7 +1442,7 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPinCrossPlatformWorkflow) {
   // Persist pin state, we don't have active pin for ARC apps yet, but pin
   // model should have it.
   syncer::SyncDataList copy_sync_list =
-      app_list_syncable_service_->GetAllSyncData(syncer::APP_LIST);
+      app_list_syncable_service_->GetAllSyncDataForTesting();
 
   ResetLauncherController();
   SendPinChanges(syncer::SyncChangeList(), true);
@@ -1476,7 +1475,7 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPinCrossPlatformWorkflow) {
             GetPinnedAppStatus());
 
   app_service_test().WaitForAppService();
-  copy_sync_list = app_list_syncable_service_->GetAllSyncData(syncer::APP_LIST);
+  copy_sync_list = app_list_syncable_service_->GetAllSyncDataForTesting();
 
   ResetLauncherController();
   ResetPinModel();
@@ -4452,7 +4451,7 @@ TEST_F(ChromeLauncherControllerTest, SyncOffLocalUpdate) {
   EXPECT_EQ("Chrome, App1, App2", GetPinnedAppStatus());
 
   syncer::SyncDataList copy_sync_list =
-      app_list_syncable_service_->GetAllSyncData(syncer::APP_LIST);
+      app_list_syncable_service_->GetAllSyncDataForTesting();
 
   app_list_syncable_service_->StopSyncing(syncer::APP_LIST);
   RecreateLauncherController()->Init();

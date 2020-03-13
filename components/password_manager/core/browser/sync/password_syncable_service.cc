@@ -254,7 +254,7 @@ void PasswordSyncableService::StopSyncing(syncer::ModelType type) {
   sync_error_factory_.reset();
 }
 
-syncer::SyncDataList PasswordSyncableService::GetAllSyncData(
+syncer::SyncDataList PasswordSyncableService::GetAllSyncDataForTesting(
     syncer::ModelType type) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(syncer::PASSWORDS, type);

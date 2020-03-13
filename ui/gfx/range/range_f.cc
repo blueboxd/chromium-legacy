@@ -14,16 +14,6 @@
 
 namespace gfx {
 
-RangeF RangeF::Intersect(const RangeF& range) const {
-  float min = std::max(GetMin(), range.GetMin());
-  float max = std::min(GetMax(), range.GetMax());
-
-  if (min >= max)  // No intersection.
-    return InvalidRange();
-
-  return RangeF(min, max);
-}
-
 RangeF RangeF::Intersect(const Range& range) const {
   RangeF range_f(range.start(), range.end());
   return Intersect(range_f);

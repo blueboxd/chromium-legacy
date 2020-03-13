@@ -11,7 +11,7 @@
       <button id="inspected" role="checkbox" aria-checked="true">ARIA checkbox</button>
     `);
 
-  UI.viewManager.showView('accessibility.view')
+  await UI.viewManager.showView('accessibility.view')
       .then(() => AccessibilityTestRunner.selectNodeAndWaitForAccessibility('inspected'))
       .then(editAriaChecked);
 

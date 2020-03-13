@@ -54,4 +54,58 @@ TEST(NewLinkedHashSetTest, Insert) {
   EXPECT_TRUE(it == set.end());
 }
 
+TEST(NewLinkedHashSetTest, AppendOrMoveToLast) {
+  using Set = NewLinkedHashSet<int>;
+  Set set;
+  Set::AddResult result = set.AppendOrMoveToLast(1);
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 1);
+
+  result = set.AppendOrMoveToLast(2);
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 2);
+
+  result = set.AppendOrMoveToLast(1);
+  EXPECT_FALSE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 1);
+
+  result = set.AppendOrMoveToLast(3);
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 3);
+
+  Set::const_iterator it = set.begin();
+  EXPECT_EQ(*it, 2);
+  ++it;
+  EXPECT_EQ(*it, 1);
+  ++it;
+  EXPECT_EQ(*it, 3);
+}
+
+TEST(NewLinkedHashSetTest, PrependOrMoveToFirst) {
+  using Set = NewLinkedHashSet<int>;
+  Set set;
+  Set::AddResult result = set.PrependOrMoveToFirst(1);
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 1);
+
+  result = set.PrependOrMoveToFirst(2);
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 2);
+
+  result = set.PrependOrMoveToFirst(1);
+  EXPECT_FALSE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 1);
+
+  result = set.PrependOrMoveToFirst(3);
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 3);
+
+  Set::const_iterator it = set.begin();
+  EXPECT_EQ(*it, 3);
+  ++it;
+  EXPECT_EQ(*it, 1);
+  ++it;
+  EXPECT_EQ(*it, 2);
+}
+
 }  // namespace WTF

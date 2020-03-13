@@ -35,7 +35,7 @@
     await queryView.once(Resources.DatabaseQueryView.Events.SchemaUpdated);
     return new Promise(resolve => setTimeout(resolve));
   }
-  UI.viewManager.showView('resources');
+  await UI.viewManager.showView('resources');
   dumpCurrentState('Initial state:');
 
   await TestRunner.evaluateInPagePromise(

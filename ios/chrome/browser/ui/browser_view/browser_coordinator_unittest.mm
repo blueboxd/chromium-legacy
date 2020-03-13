@@ -50,7 +50,7 @@ TEST_F(BrowserCoordinatorTest, ShowDownloadsFolder) {
   feature_list.InitAndEnableFeature(kOpenDownloadsInFilesApp);
 
   base::FilePath download_dir;
-  ASSERT_TRUE(GetDownloadsDirectory(&download_dir));
+  GetDownloadsDirectory(&download_dir);
 
   NSURL* url = GetFilesAppUrl();
   ASSERT_TRUE(url);

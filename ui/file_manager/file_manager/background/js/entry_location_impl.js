@@ -30,7 +30,7 @@ class EntryLocationImpl {
         this.rootType === VolumeManagerCommon.RootType.DRIVE_OFFLINE ||
         this.rootType === VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME ||
         this.rootType === VolumeManagerCommon.RootType.DRIVE_RECENT ||
-        this.rootType === VolumeManagerCommon.RootType.RECENT;
+        util.isRecentRootType(this.rootType);
 
     /** @override */
     this.isDriveBased = this.rootType === VolumeManagerCommon.RootType.DRIVE ||

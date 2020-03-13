@@ -966,10 +966,7 @@ void AppListSyncableService::StopSyncing(syncer::ModelType type) {
   sync_error_handler_.reset();
 }
 
-syncer::SyncDataList AppListSyncableService::GetAllSyncData(
-    syncer::ModelType type) const {
-  DCHECK_EQ(syncer::APP_LIST, type);
-
+syncer::SyncDataList AppListSyncableService::GetAllSyncDataForTesting() const {
   VLOG(2) << this << ": GetAllSyncData: " << sync_items_.size();
   syncer::SyncDataList list;
   for (auto iter = sync_items_.begin(); iter != sync_items_.end(); ++iter) {

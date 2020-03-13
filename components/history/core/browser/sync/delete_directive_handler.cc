@@ -458,14 +458,6 @@ void DeleteDirectiveHandler::StopSyncing(syncer::ModelType type) {
   sync_processor_.reset();
 }
 
-syncer::SyncDataList DeleteDirectiveHandler::GetAllSyncData(
-    syncer::ModelType type) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(type, syncer::HISTORY_DELETE_DIRECTIVES);
-  // TODO(akalin): Keep track of existing delete directives.
-  return syncer::SyncDataList();
-}
-
 syncer::SyncError DeleteDirectiveHandler::ProcessSyncChanges(
     const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {

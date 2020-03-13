@@ -120,7 +120,8 @@ bool operator==(const UserActionProto& value_a,
                 const UserActionProto& value_b) {
   return value_a.chip() == value_b.chip() &&
          value_a.direct_action() == value_b.direct_action() &&
-         value_a.identifier() == value_b.identifier();
+         value_a.identifier() == value_b.identifier() &&
+         value_a.enabled() == value_b.enabled();
 }
 
 // Compares two |DateProto| instances and returns true if they exactly match.

@@ -68,11 +68,11 @@ class PrefModelAssociator : public syncer::SyncableService {
   syncer::SyncError ProcessSyncChanges(
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
-  // Note for GetAllSyncData: This will build a model of all preferences
-  // registered as syncable with user controlled data. We do not track any
-  // information for preferences not registered locally as syncable and do not
-  // inform the syncer of non-user controlled preferences.
-  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
+  // Note for GetAllSyncDataForTesting: This will build a model of all
+  // preferences registered as syncable with user controlled data. We do not
+  // track any information for preferences not registered locally as syncable
+  // and do not inform the syncer of non-user controlled preferences.
+  syncer::SyncDataList GetAllSyncDataForTesting(syncer::ModelType type) const;
 
   // Register a preference with the specified name for syncing. We do not care
   // about the type at registration time, but when changes arrive from the

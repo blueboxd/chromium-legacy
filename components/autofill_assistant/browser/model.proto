@@ -248,6 +248,9 @@ message UserActionProto {
 
   // A unique identifier for this user action.
   optional string identifier = 3;
+
+  // Whether this action is enabled or not.
+  optional bool enabled = 4 [default = true];
 }
 
 message DateProto {

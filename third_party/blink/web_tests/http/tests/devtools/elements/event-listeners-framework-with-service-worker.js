@@ -38,12 +38,12 @@
     SourcesTestRunner.waitForExecutionContextInTarget(target, step2);
   }
 
-  function step2(executionContext) {
+  async function step2(executionContext) {
     TestRunner.addResult('Selecting service worker thread');
     SourcesTestRunner.selectThread(executionContext.target());
     TestRunner.addResult('Context is service worker: ' + isServiceWorker());
     TestRunner.addResult('Dumping listeners');
-    UI.viewManager.showView('sources.globalListeners').then(() => {
+    await UI.viewManager.showView('sources.globalListeners').then(() => {
       objectEventListenersPane.update();
       ElementsTestRunner.expandAndDumpEventListeners(objectEventListenersPane._eventListenersView, step3);
     });

@@ -12,11 +12,20 @@
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "components/sync/driver/trusted_vault_client.h"
+#include "components/sync/nigori/nigori.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
-#include "components/sync/syncable/directory_cryptographer.h"
 #include "components/sync/test/fake_server/fake_server.h"
 
+namespace syncer {
+class Cryptographer;
+}  // namespace syncer
+
 namespace encryption_helper {
+
+struct KeyParams {
+  syncer::KeyDerivationParams derivation_params;
+  std::string password;
+};
 
 // Given a |fake_server|, fetches its Nigori node and writes it to the
 // proto pointed to by |nigori|. Returns false if the server does not contain
@@ -42,12 +51,11 @@ InitCustomPassphraseCryptographerFromNigori(
 // provided BookmarkSpecifics and encrypted using the given |key_params|.
 sync_pb::EntitySpecifics GetEncryptedBookmarkEntitySpecifics(
     const sync_pb::BookmarkSpecifics& specifics,
-    const syncer::KeyParams& key_params);
+    const KeyParams& key_params);
 
 // Creates a NigoriSpecifics that describes encryption using a custom passphrase
 // with the given key parameters.
-sync_pb::NigoriSpecifics CreateCustomPassphraseNigori(
-    const syncer::KeyParams& params);
+sync_pb::NigoriSpecifics CreateCustomPassphraseNigori(const KeyParams& params);
 
 }  // namespace encryption_helper
 

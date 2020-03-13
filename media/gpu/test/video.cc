@@ -378,19 +378,33 @@ void Video::DecodeTask(const std::vector<uint8_t> data,
   }
 
   // Setup the VP9 decoder.
-  VpxVideoDecoder decoder;
+  VpxVideoDecoder decoder(
+      media::OffloadableVideoDecoder::OffloadState::kOffloaded);
+  media::VideoDecoder::InitCB init_cb = base::BindOnce(
+      [](bool* success, bool init_success) { *success = init_success; },
+      success);
   decoder.Initialize(
-      config, false, nullptr, base::DoNothing(),
+      config, false, nullptr, std::move(init_cb),
       base::BindRepeating(&Video::OnFrameDecoded, decompressed_data),
       base::NullCallback());
+  if (!*success) {
+    done->Signal();
+    return;
+  }
 
   // Start decoding and wait until all frames are ready.
   AVPacket packet = {};
   while (av_read_frame(glue.format_context(), &packet) >= 0) {
     if (packet.stream_index == stream_index) {
+      media::VideoDecoder::DecodeCB decode_cb = base::BindOnce(
+          [](bool* success, media::DecodeStatus status) {
+            *success = (status == media::DecodeStatus::OK);
+          },
+          success);
       decoder.Decode(DecoderBuffer::CopyFrom(packet.data, packet.size),
-                     base::DoNothing());
-      base::RunLoop().RunUntilIdle();
+                     std::move(decode_cb));
+      if (!*success)
+        break;
     }
     av_packet_unref(&packet);
   }

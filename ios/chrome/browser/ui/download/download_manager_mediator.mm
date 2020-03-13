@@ -16,6 +16,7 @@
 #include "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/download/external_app_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/web/common/features.h"
 #import "ios/web/public/download/download_task.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher_response_writer.h"
@@ -47,9 +48,13 @@ void DownloadManagerMediator::SetDownloadTask(web::DownloadTask* task) {
   }
 }
 
+base::FilePath DownloadManagerMediator::GetDownloadPath() {
+  return download_path_;
+}
+
 void DownloadManagerMediator::StartDowloading() {
   base::FilePath download_dir;
-  if (!GetDownloadsDirectory(&download_dir)) {
+  if (!GetTempDownloadsDirectory(&download_dir)) {
     [consumer_ setState:kDownloadManagerStateFailed];
     return;
   }
@@ -116,10 +121,32 @@ void DownloadManagerMediator::OnDownloadDestroyed(web::DownloadTask* task) {
 
 void DownloadManagerMediator::UpdateConsumer() {
   DownloadManagerState state = GetDownloadManagerState();
+
+  if (state == kDownloadManagerStateSucceeded) {
+    download_path_ = task_->GetResponseWriter()->AsFileWriter()->file_path();
+
+    if (base::FeatureList::IsEnabled(
+            web::features::kEnablePersistentDownloads)) {
+      NSURL* temp_download_url = [NSURL
+          fileURLWithPath:base::SysUTF8ToNSString(download_path_.value())];
+
+      base::FilePath user_download_path;
+      GetDownloadsDirectory(&user_download_path);
+      user_download_path = user_download_path.Append(
+          base::UTF16ToUTF8(task_->GetSuggestedFilename()));
+      NSURL* download_url = [NSURL
+          fileURLWithPath:base::SysUTF8ToNSString(user_download_path.value())];
+
+      [[NSFileManager defaultManager] moveItemAtURL:temp_download_url
+                                              toURL:download_url
+                                              error:nil];
+      download_path_ = user_download_path;
+    }
+  }
+
   if (state == kDownloadManagerStateSucceeded && !IsGoogleDriveAppInstalled()) {
     [consumer_ setInstallDriveButtonVisible:YES animated:YES];
   }
-
   [consumer_ setState:state];
   [consumer_ setCountOfBytesReceived:task_->GetReceivedBytes()];
   [consumer_ setCountOfBytesExpectedToReceive:task_->GetTotalBytes()];

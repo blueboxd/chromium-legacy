@@ -67,7 +67,7 @@
     dumpCurrentState('Revealed ' + name + ':');
   }
 
-  UI.viewManager.showView('resources');
+  await UI.viewManager.showView('resources');
   dumpCurrentState('Initial state:');
   await revealResourceWithDisplayName('json-value.js');
   await revealResourceWithDisplayName('image.png');

@@ -138,9 +138,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% if attribute.is_getter_raises_exception %}
   {{define_exception_state}}
   {% endif %}
-  {% if attribute.is_explicit_nullable %}
-  bool is_null = false;
-  {% endif %}
 
   {% if attribute.cpp_value_original %}
   {{attribute.cpp_type}} {{attribute.cpp_value}}({{attribute.cpp_value_original}});
@@ -163,17 +160,21 @@ const v8::FunctionCallbackInfo<v8::Value>& info
       | trim | indent(2)}}
   {% endif %}
 
+  {% if attribute.is_explicit_nullable %}
+  if (!{{attribute.cpp_value}}.has_value()) {
+    {% if attribute.cached_attribute_validation_method %}
+    // [CachedAttribute]
+    property_symbol.Set(holder, v8::Null(info.GetIsolate()));
+    {% endif %}
+    V8SetReturnValueNull(info);
+    return;
+  }
+  {% endif %}
+
   {% if attribute.cached_attribute_validation_method %}
   // [CachedAttribute]
   v8::Local<v8::Value> v8_value({{attribute.cpp_value_to_v8_value}});
   property_symbol.Set(holder, v8_value);
-  {% endif %}
-
-  {% if attribute.is_explicit_nullable %}
-  if (is_null) {
-    V8SetReturnValueNull(info);
-    return;
-  }
   {% endif %}
 
   {% if attribute.is_keep_alive_for_gc %}

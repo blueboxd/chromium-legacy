@@ -54,6 +54,11 @@ bool SharedImageRepresentationGLTextureBase::BeginAccess(GLenum mode) {
   return true;
 }
 
+bool SharedImageRepresentationGLTextureBase::
+    SupportsMultipleConcurrentReadAccess() {
+  return false;
+}
+
 gpu::TextureBase* SharedImageRepresentationGLTexture::GetTextureBase() {
   return GetTexture();
 }

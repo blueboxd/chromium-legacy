@@ -239,7 +239,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
   // from extension id to its sync data.
   SettingSyncDataMultimap GetAllSyncData(syncer::ModelType model_type) {
     syncer::SyncDataList as_list =
-        GetSyncableService(model_type)->GetAllSyncData(model_type);
+        GetSyncableService(model_type)->GetAllSyncDataForTesting(model_type);
     SettingSyncDataMultimap as_map;
     for (auto it = as_list.begin(); it != as_list.end(); ++it) {
       std::unique_ptr<SettingSyncData> sync_data(new SettingSyncData(*it));
@@ -1026,7 +1026,7 @@ TEST_F(ExtensionSettingsSyncTest, FailingGetAllSyncDataDoesntStopSync) {
     GetExisting("bad")->set_status_code(ValueStore::CORRUPTION);
     {
       syncer::SyncDataList all_sync_data =
-          GetSyncableService(model_type)->GetAllSyncData(model_type);
+          GetSyncableService(model_type)->GetAllSyncDataForTesting(model_type);
       EXPECT_EQ(1u, all_sync_data.size());
       EXPECT_EQ("good/foo", syncer::SyncDataLocal(all_sync_data[0]).GetTag());
     }

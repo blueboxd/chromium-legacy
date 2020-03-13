@@ -56,18 +56,6 @@
   service->RegisterProvider(std::move(provider));
 }
 
-- (void)swizzleLocationBarCoordinatorSearchButton {
-  _tapped = NO;
-  _swizzler = std::make_unique<ScopedBlockSwizzler>(
-      NSClassFromString(@"LocationBarCoordinator"),
-      NSSelectorFromString(@"focusOmniboxFromSearchButton"), ^{
-        _tapped = YES;
-      });
-}
-- (void)resetSwizzle {
-  _swizzler.reset();
-}
-
 - (BOOL)locationBarCoordinatorSearchButtonMethodCalled {
   return _tapped;
 }

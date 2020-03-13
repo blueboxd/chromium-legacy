@@ -461,29 +461,6 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString];
 }
 
-// Tests that tapping the omnibox search button logs correctly.
-// It is important for ranking algorithm of omnibox that requests from the
-// search button and real omnibox are marked appropriately.
-- (void)testTapOmniboxSearchButtonLogsCorrectly {
-  if ([ChromeEarlGrey isRegularXRegularSizeClass]) {
-    // This logging only happens on iPhone, since on iPad there's no secondary
-    // toolbar.
-    return;
-  }
-  [ContentSuggestionsAppInterface swizzleSearchButtonLogging];
-
-  // Tap the search button.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kToolbarSearchButtonIdentifier)]
-      performAction:grey_tap()];
-
-  BOOL tapped = [ContentSuggestionsAppInterface resetSearchButtonLogging];
-
-  // Check that the page is loaded.
-  GREYAssertTrue(tapped,
-                 @"The tap on the search button was not correctly logged.");
-}
-
 // Tests that tapping the fake omnibox moves the collection.
 - (void)testTapFakeOmniboxScroll {
   // Get the collection and its layout.
@@ -567,24 +544,6 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
       collectionView.contentOffset.y >= origin.y &&
           collectionView.contentOffset.y <= origin.y + 6,
       @"The collection is not scrolled back to its previous position");
-}
-
-// Tests tapping the search button when the fake omnibox is scrolled.
-- (void)testTapSearchButtonFakeOmniboxScrolled {
-  if ([ChromeEarlGrey isRegularXRegularSizeClass]) {
-    // This only happens on iPhone, since on iPad there's no secondary toolbar.
-    return;
-  }
-
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                          ContentSuggestionCollectionView()]
-      performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
-  // Tap the search button.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kToolbarSearchButtonIdentifier)]
-      performAction:grey_tap()];
-  [ChromeEarlGrey
-      waitForSufficientlyVisibleElementWithMatcher:chrome_test_util::Omnibox()];
 }
 
 - (void)testOpeningNewTab {

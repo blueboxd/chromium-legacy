@@ -129,7 +129,8 @@ Polymer({
     const additionalToSUrl =
         loadTimeData.getString('eulaAdditionalToSOnlineUrl');
     this.screen.loadEulaToWebview_(
-        this.$.additionalChromeToS, additionalToSUrl, true /* clear_anchors */);
+        this.$.additionalChromeToSFrame, additionalToSUrl,
+        true /* clear_anchors */);
     this.i18nUpdateLocale();
   },
 
@@ -151,8 +152,27 @@ Polymer({
     this.screen.onUsageStatsClicked_(this.$.usageStats.checked);
   },
 
+  /**
+   * @private
+   */
   onAdditionalTermsClicked_() {
-    this.$['additional-tos'].showDialog();
+    this.$['additional-tos'].showModal();
+  },
+
+  /**
+   * On-click event handler for close button of the additional ToS dialog.
+   *
+   * @private
+   */
+  hideToSDialog_() {
+    this.$['additional-tos'].close();
+  },
+
+  /**
+   * @private
+   */
+  focusAdditionalTermsLink_() {
+    this.$.additionalTerms.focus();
   },
 
   /**

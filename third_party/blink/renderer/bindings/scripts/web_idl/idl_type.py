@@ -202,6 +202,16 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
                 sorted(self.effective_annotations.keys())))
 
     @property
+    def type_name_with_extended_attribute_key_values(self):
+        name_pieces = []
+        name_pieces.append(self.type_name_without_extended_attributes)
+        annotations = self.effective_annotations
+        for key in sorted(annotations.keys()):
+            name_pieces.append(key)
+            name_pieces.extend(annotations.values_of(key))
+        return ''.join(name_pieces)
+
+    @property
     def type_name_without_extended_attributes(self):
         raise exceptions.NotImplementedError()
 

@@ -13,8 +13,8 @@ namespace cc {
 namespace {
 
 bool IsMutualVisible(const SnapSearchResult& a, const SnapSearchResult& b) {
-  return a.visible_range().Contains(gfx::RangeF(b.snap_offset())) &&
-         b.visible_range().Contains(gfx::RangeF(a.snap_offset()));
+  return gfx::RangeF(b.snap_offset()).IsBoundedBy(a.visible_range()) &&
+         gfx::RangeF(a.snap_offset()).IsBoundedBy(b.visible_range());
 }
 
 void SetOrUpdateResult(const SnapSearchResult& candidate,

@@ -62,7 +62,7 @@ CrSettingsCheckboxTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsCheckboxTest', 'All', function() {
+TEST_F('CrSettingsCheckboxTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -394,7 +394,7 @@ CrSettingsPasswordsCheckTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsPasswordsCheckTest', 'All', function() {
+TEST_F('CrSettingsPasswordsCheckTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -1643,7 +1643,7 @@ CrSettingsSiteDataTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsSiteDataTest', 'All', function() {
+TEST_F('CrSettingsSiteDataTest', 'DISABLED_All', function() {
   mocha.run();
 });
 

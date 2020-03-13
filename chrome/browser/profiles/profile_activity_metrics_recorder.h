@@ -42,6 +42,7 @@ class ProfileActivityMetricsRecorder
 
   Profile* last_active_profile_ = nullptr;
   base::TimeTicks profile_session_start_;
+  base::TimeTicks last_profile_session_end_;
 
   base::ActionCallback action_callback_;
 

@@ -332,7 +332,7 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_DisabledByAdmin) {
   VerifyDisplayString(
       event,
       "Updates are managed by <a target=\"_blank\" "
-      "href=\"https://support.google.com/accounts/answer/6208960\">your "
+      "href=\"https://support.google.com/chrome?p=your_administrator\">your "
       "administrator</a>");
 }
 
@@ -360,9 +360,8 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Failed) {
   VerifyDisplayString(
       event,
       "Browser didn't update, something went wrong. <a target=\"_blank\" "
-      "href=\"https://support.google.com/chrome/answer/111996\">Fix "
-      "Browser "
-      "update problems and failed updates.</a>");
+      "href=\"https://support.google.com/chrome?p=fix_chrome_updates\">Fix "
+      "Browser update problems and failed updates.</a>");
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_Enabled) {
@@ -410,7 +409,7 @@ TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_DisabledByAdmin) {
   VerifyDisplayString(
       event,
       "<a target=\"_blank\" "
-      "href=\"https://support.google.com/accounts/answer/6208960\">Your "
+      "href=\"https://support.google.com/chrome?p=your_administrator\">Your "
       "administrator</a> has turned off Safe Browsing");
 }
 

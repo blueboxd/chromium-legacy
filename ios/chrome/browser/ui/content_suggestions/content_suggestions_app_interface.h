@@ -55,13 +55,6 @@
 // Returns the fake omnibox.
 + (UIView*)fakeOmnibox;
 
-// Swizzles the callback for the search button tap action so it is recorded.
-+ (void)swizzleSearchButtonLogging;
-
-// Resets the swizzle for the search button tap, and return the whether the
-// swizzled method was called.
-+ (BOOL)resetSearchButtonLogging;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_APP_INTERFACE_H_

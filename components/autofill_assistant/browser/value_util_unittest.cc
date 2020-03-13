@@ -149,6 +149,28 @@ TEST_F(ValueUtilTest, DateComparison) {
   EXPECT_TRUE(value_a == value_b);
 }
 
+TEST_F(ValueUtilTest, UserActionComparison) {
+  ValueProto user_actions_value;
+  UserActionProto user_action_a;
+  user_action_a.set_identifier("identifier");
+  user_action_a.mutable_chip()->set_type(ChipType::HIGHLIGHTED_ACTION);
+  user_action_a.mutable_chip()->set_text("text");
+  UserActionProto user_action_b = user_action_a;
+
+  ValueProto value_a;
+  *value_a.mutable_user_actions()->add_values() = user_action_a;
+  ValueProto value_b;
+  *value_b.mutable_user_actions()->add_values() = user_action_b;
+  EXPECT_TRUE(value_a == value_b);
+
+  value_b.mutable_user_actions()->mutable_values(0)->set_enabled(false);
+  EXPECT_FALSE(value_a == value_b);
+
+  value_b = value_a;
+  value_b.mutable_user_actions()->mutable_values(0)->set_identifier("test");
+  EXPECT_FALSE(value_a == value_b);
+}
+
 TEST_F(ValueUtilTest, AreAllValuesOfType) {
   ValueProto value_a;
   ValueProto value_b;

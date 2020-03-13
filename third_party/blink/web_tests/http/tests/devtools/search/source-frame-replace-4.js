@@ -8,7 +8,7 @@
   await TestRunner.showPanel('sources');
   await TestRunner.addScriptTag('resources/search.js');
 
-  UI.viewManager.showView('sources');
+  await UI.viewManager.showView('sources');
   SourcesTestRunner.showScriptSource('search.js', didShowScriptSource);
 
   function didShowScriptSource(sourceFrame) {

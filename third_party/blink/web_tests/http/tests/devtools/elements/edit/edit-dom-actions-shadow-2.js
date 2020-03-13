@@ -24,7 +24,7 @@
     `);
 
   // Save time on style updates.
-  UI.viewManager.showView('elements');
+  await UI.viewManager.showView('elements');
 
   Elements.StylesSidebarPane.prototype.update = function() {};
   Elements.MetricsSidebarPane.prototype.update = function() {};

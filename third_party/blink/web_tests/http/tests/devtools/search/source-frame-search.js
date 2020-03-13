@@ -32,7 +32,7 @@
     }
   }
 
-  UI.viewManager.showView('sources');
+  await UI.viewManager.showView('sources');
   SourcesTestRunner.showScriptSource('search.js', didShowScriptSource);
 
   function didShowScriptSource(sourceFrame) {

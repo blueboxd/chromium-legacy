@@ -147,4 +147,8 @@ void SharedImageRepresentationSkiaGL::CheckContext() {
 #endif
 }
 
+bool SharedImageRepresentationSkiaGL::SupportsMultipleConcurrentReadAccess() {
+  return gl_representation_->SupportsMultipleConcurrentReadAccess();
+}
+
 }  // namespace gpu

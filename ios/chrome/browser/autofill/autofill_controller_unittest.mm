@@ -448,7 +448,7 @@ TEST_F(AutofillControllerTest, ProfileSuggestions) {
 TEST_F(AutofillControllerTest, ProfileSuggestionsTwoAnonymousForms) {
   SetUpForSuggestions(
       [NSString stringWithFormat:@"%@%@", kProfileFormHtml, kProfileFormHtml],
-      2);
+      1);
   ForceViewRendering(web_state()->GetView());
   ExecuteJavaScript(@"document.forms[0].name.focus()");
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);

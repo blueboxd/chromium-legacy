@@ -336,7 +336,7 @@ void SupervisedUserSettingsService::StopSyncing(ModelType type) {
   error_handler_.reset();
 }
 
-SyncDataList SupervisedUserSettingsService::GetAllSyncData(
+SyncDataList SupervisedUserSettingsService::GetAllSyncDataForTesting(
     ModelType type) const {
   DCHECK_EQ(syncer::SUPERVISED_USER_SETTINGS, type);
   SyncDataList data;

@@ -526,7 +526,7 @@
   }
 
   base::FilePath download_dir;
-  if (!GetDownloadsDirectory(&download_dir)) {
+  if (!GetTempDownloadsDirectory(&download_dir)) {
     return;
   }
 

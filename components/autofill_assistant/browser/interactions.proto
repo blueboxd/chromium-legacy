@@ -36,6 +36,7 @@ message CallbackProto {
     EndActionProto end_action = 6;
     ShowCalendarPopupProto show_calendar_popup = 7;
     SetTextProto set_text = 8;
+    ToggleUserActionProto toggle_user_action = 9;
   }
 }
 
@@ -196,6 +197,17 @@ message SetUserActionsProto {
   // The model identifier containing the user actions. Must point to a
   // UserActionList value.
   optional string model_identifier = 1;
+}
+
+// Enables or disables a single user action. Modifies the value in-place.
+message ToggleUserActionProto {
+  // Input and output. Should point to a list of user actions to modify.
+  optional string user_actions_model_identifier = 1;
+  // The identifier of the specific user action to modify.
+  optional string user_action_identifier = 2;
+  // Whether the user action should be enabled or disabled. Should point to a
+  // single boolean.
+  optional string enabled_model_identifier = 3;
 }
 
 // Ends the generic Ui action (this is usually tied to a chip).

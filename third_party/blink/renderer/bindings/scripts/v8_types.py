@@ -312,6 +312,8 @@ def cpp_type_initializer(idl_type):
 
     if idl_type.native_array_element_type:
         return ''
+    if idl_type.is_explicit_nullable:
+        return ''
     if idl_type.is_numeric_type:
         return ' = 0'
     if base_idl_type == 'boolean':
@@ -865,11 +867,12 @@ def v8_value_to_local_cpp_value(idl_type,
 
     if (idl_type.is_explicit_nullable
             and code_generation_target == 'attribute_set'):
+        this_cpp_type = cpp_template_type('base::Optional', this_cpp_type)
+        expr = '{cpp_type}({expr})'.format(
+            cpp_type=this_cpp_type, expr=assign_expression)
         assign_expression = ("is_null "
-                             "? {cpp_type}() "
-                             ": {expr}".format(
-                                 cpp_type=this_cpp_type,
-                                 expr=assign_expression))
+                             "? base::nullopt "
+                             ": {expr}".format(expr=expr))
 
     return {
         'assign_expression': assign_expression,

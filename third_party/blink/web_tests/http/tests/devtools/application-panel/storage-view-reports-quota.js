@@ -28,7 +28,7 @@
 
   async function dumpWhenMatches(view, predicate) {
     await new Promise(resolve => {
-      function sniffer(usage, quota) {
+      function sniffer(usage, quota, breakdown) {
         if (usage !== null && (!predicate || predicate(usage, quota)))
           resolve();
         else
@@ -60,7 +60,7 @@
       TestRunner.addResult(typeUsage);
     }
   }
-  UI.viewManager.showView('resources');
+  await UI.viewManager.showView('resources');
 
   var parent = UI.panels.resources._sidebar._applicationTreeElement;
   var clearStorageElement = parent.children().find(child => child.title === 'Clear storage');

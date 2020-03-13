@@ -414,7 +414,7 @@ TEST_F(PasswordSyncableServiceTest, ProcessSyncChanges) {
 }
 
 // Retrives sync data from the model.
-TEST_F(PasswordSyncableServiceTest, GetAllSyncData) {
+TEST_F(PasswordSyncableServiceTest, GetAllSyncDataForTesting) {
   autofill::PasswordForm form1;
   form1.signon_realm = kSignonRealm;
   form1.action = GURL("http://foo.com");
@@ -434,7 +434,8 @@ TEST_F(PasswordSyncableServiceTest, GetAllSyncData) {
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
       .WillOnce(AppendForm(form2));
 
-  SyncDataList actual_list = service()->GetAllSyncData(syncer::PASSWORDS);
+  SyncDataList actual_list =
+      service()->GetAllSyncDataForTesting(syncer::PASSWORDS);
   std::vector<autofill::PasswordForm> actual_form_list;
   for (auto it = actual_list.begin(); it != actual_list.end(); ++it) {
     actual_form_list.push_back(
@@ -477,7 +478,8 @@ TEST_F(PasswordSyncableServiceTest, MergeDataAndPushBack) {
               AddLoginImpl(PasswordIs(form1), _));
 
   syncer::SyncDataList other_service_data =
-      other_service_wrapper.service()->GetAllSyncData(syncer::PASSWORDS);
+      other_service_wrapper.service()->GetAllSyncDataForTesting(
+          syncer::PASSWORDS);
   service()->MergeDataAndStartSyncing(
       syncer::PASSWORDS, other_service_data,
       std::make_unique<syncer::SyncChangeProcessorWrapperForTest>(

@@ -15,7 +15,9 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/download/download_directory_util.h"
 #include "ios/chrome/browser/download/download_manager_metric_names.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #import "ios/chrome/browser/download/external_app_util.h"
@@ -350,8 +352,7 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
 
 - (void)presentOpenInForDownloadManagerViewController:
     (DownloadManagerViewController*)controller {
-  base::FilePath path =
-      _downloadTask->GetResponseWriter()->AsFileWriter()->file_path();
+  base::FilePath path = _mediator.GetDownloadPath();
   NSURL* URL = [NSURL fileURLWithPath:base::SysUTF8ToNSString(path.value())];
 
   NSArray* customActions = @[ URL ];

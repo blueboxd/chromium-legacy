@@ -39,6 +39,9 @@ class BasicInteractions {
   // true on success, false on error.
   bool SetUserActions(const SetUserActionsProto& proto);
 
+  // Enables or disables a user action. Returns true on success, false on error.
+  bool ToggleUserAction(const ToggleUserActionProto& proto);
+
   // Ends the current action. Can only be called during a ShowGenericUiAction.
   bool EndAction(const EndActionProto& proto);
 

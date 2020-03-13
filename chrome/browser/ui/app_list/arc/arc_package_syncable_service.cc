@@ -204,20 +204,6 @@ void ArcPackageSyncableService::StopSyncing(syncer::ModelType type) {
   pending_uninstall_items_.clear();
 }
 
-syncer::SyncDataList ArcPackageSyncableService::GetAllSyncData(
-    syncer::ModelType type) const {
-  DCHECK_EQ(type, syncer::ARC_PACKAGE);
-
-  syncer::SyncDataList list;
-  for (const auto& item : sync_items_)
-    list.emplace_back(GetSyncDataFromSyncItem(item.second.get()));
-
-  for (const auto& item : pending_install_items_)
-    list.emplace_back(GetSyncDataFromSyncItem(item.second.get()));
-
-  return list;
-}
-
 syncer::SyncError ArcPackageSyncableService::ProcessSyncChanges(
     const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {

@@ -127,7 +127,7 @@ class VectorBackedLinkedList {
 
   // Moves |target| right before |new_position| in a linked list. This operation
   // is executed by just updating indices of related nodes.
-  void MoveTo(const_iterator target, const_iterator new_position);
+  iterator MoveTo(const_iterator target, const_iterator new_position);
 
   iterator erase(const_iterator);
 
@@ -472,21 +472,23 @@ typename VectorBackedLinkedList<T>::iterator VectorBackedLinkedList<T>::insert(
 }
 
 template <typename T>
-void VectorBackedLinkedList<T>::MoveTo(const_iterator target,
-                                       const_iterator new_position) {
+typename VectorBackedLinkedList<T>::iterator VectorBackedLinkedList<T>::MoveTo(
+    const_iterator target,
+    const_iterator new_position) {
   DCHECK(target != end());
   RegisterModification();
-  if (target == new_position)
-    return;
 
   wtf_size_t target_index = target.GetIndex();
+  if (target == new_position)
+    return MakeIterator(target_index);
+
   Node& target_node = nodes_[target_index];
   wtf_size_t new_position_index = new_position.GetIndex();
   Node& new_position_node = nodes_[new_position_index];
   wtf_size_t prev_index = new_position_node.prev_index_;
 
   if (prev_index == target_index)
-    return;
+    return MakeIterator(target_index);
 
   Unlink(target_node);
 
@@ -494,6 +496,7 @@ void VectorBackedLinkedList<T>::MoveTo(const_iterator target,
   new_position_node.prev_index_ = target_index;
   target_node.prev_index_ = prev_index;
   target_node.next_index_ = new_position_index;
+  return MakeIterator(target_index);
 }
 
 template <typename T>

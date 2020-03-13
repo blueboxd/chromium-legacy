@@ -234,7 +234,12 @@ TEST_F(DownloadManagerCoordinatorTest, DelegateCreatedDownload) {
 // one.
 TEST_F(DownloadManagerCoordinatorTest, DelegateReplacedDownload) {
   auto task = CreateTestTask();
+  base::FilePath path;
+  ASSERT_TRUE(base::GetTempDir(&path));
+  task->Start(std::make_unique<net::URLFetcherFileWriter>(
+      base::ThreadTaskRunnerHandle::Get(), path));
   task->SetDone(true);
+
   [coordinator_ downloadManagerTabHelper:&tab_helper_
                        didCreateDownload:task.get()
                        webStateIsVisible:YES];
@@ -438,12 +443,14 @@ TEST_F(DownloadManagerCoordinatorTest, OpenIn) {
     // These calls will retain coordinator, which should outlive thread bundle.
     [view_controller.delegate
         downloadManagerViewControllerDidStartDownload:view_controller];
+
+    // Complete the download before presenting Open In... menu.
+    task->SetDone(true);
+
     [view_controller.delegate
         presentOpenInForDownloadManagerViewController:view_controller];
   }
 
-  // Complete the download to log UMA.
-  task->SetDone(true);
   // Download task is destroyed without opening the file.
   task = nullptr;
   histogram_tester_.ExpectTotalCount("Download.IOSDownloadedFileNetError", 0);
@@ -649,7 +656,7 @@ TEST_F(DownloadManagerCoordinatorTest, StartDownload) {
   // Download file should be located in download directory.
   base::FilePath file = task.GetResponseWriter()->AsFileWriter()->file_path();
   base::FilePath download_dir;
-  ASSERT_TRUE(GetDownloadsDirectory(&download_dir));
+  ASSERT_TRUE(GetTempDownloadsDirectory(&download_dir));
   EXPECT_TRUE(download_dir.IsParent(file));
 
   histogram_tester_.ExpectTotalCount("Download.IOSDownloadFileInBackground", 0);
@@ -748,6 +755,12 @@ TEST_F(DownloadManagerCoordinatorTest, SucceedingInBackground) {
   DownloadManagerViewController* viewController =
       base_view_controller_.childViewControllers.firstObject;
   ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+
+  // Start the download.
+  base::FilePath path;
+  ASSERT_TRUE(base::GetTempDir(&path));
+  task.Start(std::make_unique<net::URLFetcherFileWriter>(
+      base::ThreadTaskRunnerHandle::Get(), path));
 
   // Start the download.
   @autoreleasepool {

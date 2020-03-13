@@ -9,10 +9,13 @@
 #include "base/hash/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "url/gurl.h"
+
+using base::UTF16ToUTF8;
 
 namespace autofill {
 
@@ -20,7 +23,7 @@ namespace {
 
 // Returns a copy of |input| without >= 5 consecutive digits.
 std::string StripDigitsIfRequired(const base::string16& input) {
-  std::string input_utf8 = base::UTF16ToUTF8(input);
+  std::string input_utf8 = UTF16ToUTF8(input);
   std::string result;
   result.reserve(input_utf8.length());
 
@@ -42,6 +45,19 @@ std::string StripDigitsIfRequired(const base::string16& input) {
 }
 
 }  // namespace
+
+// If a form name was set by Chrome, we should ignore it when calculating
+// the form signature.
+std::string GetDOMFormName(const std::string& form_name) {
+#if defined(OS_IOS)
+  // In case of an empty form name, the synthetic name is created. Ignore it.
+  return (StartsWith(form_name, "gChrome~form~", base::CompareCase::SENSITIVE)
+              ? std::string()
+              : form_name);
+#else
+  return form_name;
+#endif
+}
 
 FormSignature CalculateFormSignature(const FormData& form_data) {
   const GURL& target_url = form_data.action;
@@ -67,9 +83,9 @@ FormSignature CalculateFormSignature(const FormData& form_data) {
     }
   }
 
-  std::string form_string = scheme + "://" + host + "&" +
-                            base::UTF16ToUTF8(form_data.name) +
-                            form_signature_field_names;
+  std::string form_name = GetDOMFormName(UTF16ToUTF8(form_data.name));
+  std::string form_string =
+      scheme + "://" + host + "&" + form_name + form_signature_field_names;
 
   return StrToHash64Bit(form_string);
 }
@@ -77,7 +93,7 @@ FormSignature CalculateFormSignature(const FormData& form_data) {
 FieldSignature CalculateFieldSignatureByNameAndType(
     const base::string16& field_name,
     const std::string& field_type) {
-  std::string name = base::UTF16ToUTF8(field_name);
+  std::string name = UTF16ToUTF8(field_name);
   std::string field_string = name + "&" + field_type;
   return StrToHash32Bit(field_string);
 }

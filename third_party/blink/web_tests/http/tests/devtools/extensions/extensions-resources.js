@@ -8,8 +8,8 @@
   await TestRunner.loadModule('extensions_test_runner');
   await TestRunner.loadModule('sources_test_runner');
 
-  TestRunner.clickOnURL = function() {
-    UI.viewManager.showView("console").then(() => {
+  TestRunner.clickOnURL = async function() {
+    await UI.viewManager.showView("console").then(() => {
       Console.ConsoleView.instance()._updateMessageList();
 
       // Trigger link creation so we can properly await pending live location updates. Needed so we can

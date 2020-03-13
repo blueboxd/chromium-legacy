@@ -12,10 +12,10 @@
 
   TestRunner.waitForUISourceCode('after.css').then(uiSourceCode => uiSourceCode.requestContent()).then(onAfterContent);
 
-  function onAfterContent({ content, error, isEncoded }) {
+  async function onAfterContent({ content, error, isEncoded }) {
     SourcesTestRunner.waitForScriptSource('before.css', uiSourceCode => uiSourceCode.setWorkingCopy(content));
     TestRunner.addSniffer(Changes.ChangesView.prototype, '_renderDiffRows', rowsRendered, true);
-    UI.viewManager.showView('changes.changes');
+    await UI.viewManager.showView('changes.changes');
   }
 
   function rowsRendered() {

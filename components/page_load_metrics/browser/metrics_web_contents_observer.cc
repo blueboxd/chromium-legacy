@@ -683,7 +683,7 @@ MetricsWebContentsObserver::NotifyAbortedProvisionalLoadsNewNavigation(
 void MetricsWebContentsObserver::OnTimingUpdated(
     content::RenderFrameHost* render_frame_host,
     mojom::PageLoadTimingPtr timing,
-    mojom::PageLoadMetadataPtr metadata,
+    mojom::FrameMetadataPtr metadata,
     mojom::PageLoadFeaturesPtr new_features,
     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
     mojom::FrameRenderDataUpdatePtr render_data,
@@ -702,6 +702,8 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     // any of the errors below for main frames. Thus, we track occurrences of
     // all errors below, rather than returning early after encountering an
     // error.
+    // TODO(crbug/1061090): Update page load metrics IPC validation to ues
+    // mojo::ReportBadMessage.
     bool error = false;
     if (!committed_load_) {
       RecordInternalError(ERR_IPC_WITH_NO_RELEVANT_LOAD);
@@ -710,6 +712,14 @@ void MetricsWebContentsObserver::OnTimingUpdated(
 
     if (!web_contents()->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
       RecordInternalError(ERR_IPC_FROM_BAD_URL_SCHEME);
+      error = true;
+    }
+
+    if (!metadata->intersection_update.is_null()) {
+      mojo::ReportBadMessage(
+          "page_load_metrics.mojom.FrameMetadata does not report an "
+          "intersection "
+          "update for the main frame. ");
       error = true;
     }
 
@@ -729,7 +739,7 @@ void MetricsWebContentsObserver::OnTimingUpdated(
 
 void MetricsWebContentsObserver::UpdateTiming(
     mojom::PageLoadTimingPtr timing,
-    mojom::PageLoadMetadataPtr metadata,
+    mojom::FrameMetadataPtr metadata,
     mojom::PageLoadFeaturesPtr new_features,
     std::vector<mojom::ResourceDataUpdatePtr> resources,
     mojom::FrameRenderDataUpdatePtr render_data,

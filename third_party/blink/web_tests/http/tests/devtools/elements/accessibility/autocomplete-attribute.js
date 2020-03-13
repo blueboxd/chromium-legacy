@@ -11,7 +11,7 @@
       <span id="inspected" aria-checked="true" role="checkbox"></span>
     `);
 
-  UI.viewManager.showView('accessibility.view')
+  await UI.viewManager.showView('accessibility.view')
       .then(() => AccessibilityTestRunner.selectNodeAndWaitForAccessibility('inspected'))
       .then(runTests);
 

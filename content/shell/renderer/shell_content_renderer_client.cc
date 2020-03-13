@@ -86,8 +86,21 @@ class TestRendererServiceImpl : public mojom::TestService {
     std::move(callback).Run("Not implemented.");
   }
 
-  void CreateSharedBuffer(const std::string& message,
-                          CreateSharedBufferCallback callback) override {
+  void CreateReadOnlySharedMemoryRegion(
+      const std::string& message,
+      CreateReadOnlySharedMemoryRegionCallback callback) override {
+    NOTREACHED();
+  }
+
+  void CreateWritableSharedMemoryRegion(
+      const std::string& message,
+      CreateWritableSharedMemoryRegionCallback callback) override {
+    NOTREACHED();
+  }
+
+  void CreateUnsafeSharedMemoryRegion(
+      const std::string& message,
+      CreateUnsafeSharedMemoryRegionCallback callback) override {
     NOTREACHED();
   }
 

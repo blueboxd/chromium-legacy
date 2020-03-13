@@ -100,12 +100,13 @@ void V8SetReflectedNullableDOMStringAttribute(
 
 namespace bindings {
 
-template <typename T>
+template <typename T, typename... ExtraArgs>
 typename IDLSequence<T>::ImplType VariadicArgumentsToNativeValues(
     v8::Isolate* isolate,
     const v8::FunctionCallbackInfo<v8::Value>& info,
     int start_index,
-    ExceptionState& exception_state) {
+    ExceptionState& exception_state,
+    ExtraArgs... extra_args) {
   using VectorType = typename IDLSequence<T>::ImplType;
 
   const int length = info.Length();
@@ -116,7 +117,7 @@ typename IDLSequence<T>::ImplType VariadicArgumentsToNativeValues(
   result.ReserveInitialCapacity(length - start_index);
   for (int i = start_index; i < length; ++i) {
     result.UncheckedAppend(NativeValueTraits<T>::ArgumentValue(
-        isolate, i, info[i], exception_state));
+        isolate, i, info[i], exception_state, extra_args...));
     if (exception_state.HadException())
       return VectorType();
   }

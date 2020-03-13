@@ -74,10 +74,6 @@ class SyncableService : public base::SupportsWeakPtr<SyncableService> {
   virtual SyncError ProcessSyncChanges(const base::Location& from_here,
                                        const SyncChangeList& change_list) = 0;
 
-  // TODO(crbug.com/870624): We don't seem to use this function anywhere, so
-  // we should simply remove it and simplify all implementations.
-  virtual SyncDataList GetAllSyncData(ModelType type) const = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncableService);
 };

@@ -209,8 +209,7 @@ class DirectoryModel extends cr.EventTarget {
    */
   isCurrentRootVolumeType_(volumeType) {
     const rootType = this.getCurrentRootType();
-    return rootType != null &&
-        rootType != VolumeManagerCommon.RootType.RECENT &&
+    return rootType != null && !util.isRecentRootType(rootType) &&
         VolumeManagerCommon.getVolumeTypeFromRootType(rootType) === volumeType;
   }
 
@@ -1308,7 +1307,7 @@ class DirectoryModel extends cr.EventTarget {
             chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE &&
         (locationInfo && locationInfo.isDriveBased);
 
-    if (entry.rootType == VolumeManagerCommon.RootType.RECENT) {
+    if (util.isRecentRootType(entry.rootType)) {
       return DirectoryContents.createForRecent(
           context, /** @type {!FakeEntry} */ (entry), query);
     }

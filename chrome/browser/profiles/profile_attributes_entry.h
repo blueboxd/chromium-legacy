@@ -32,6 +32,12 @@ enum class SigninState {
   kSignedInWithConsentedPrimaryAccount,
 };
 
+enum class NameForm {
+  kGaiaName,
+  kLocalName,
+  kGaiaAndLocalName,
+};
+
 class ProfileAttributesEntry {
  public:
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
@@ -51,6 +57,8 @@ class ProfileAttributesEntry {
   base::string16 GetGAIANameToDisplay() const;
   // Returns true if the profile name has changed.
   bool HasProfileNameChanged();
+  // Returns how the value of GetName() gets constructed.
+  NameForm GetNameForm() const;
 
   // Gets the local profile name.
   base::string16 GetLocalProfileName() const;
@@ -172,13 +180,6 @@ class ProfileAttributesEntry {
                   const base::FilePath& path,
                   PrefService* prefs);
 
-  // Gets the name of the profile which is the one displayed in the User Menu,
-  // which could be:
-  // - Profile name (The profile is not signed in).
-  // - Gaia name if the profile name is empty or |ShouldShowProfileLocalName()|
-  //   return false.
-  // - Otherwise the concatenation of GAIA name and local profile name.
-  base::string16 GetNameToDisplay() const;
   base::string16 GetLastNameToDisplay() const;
 
   // Returns true if:

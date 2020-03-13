@@ -36,7 +36,6 @@ class FakeSyncableService : public SyncableService {
       std::unique_ptr<SyncChangeProcessor> sync_processor,
       std::unique_ptr<SyncErrorFactory> sync_error_factory) override;
   void StopSyncing(ModelType type) override;
-  SyncDataList GetAllSyncData(ModelType type) const override;
   SyncError ProcessSyncChanges(const base::Location& from_here,
                                const SyncChangeList& change_list) override;
 

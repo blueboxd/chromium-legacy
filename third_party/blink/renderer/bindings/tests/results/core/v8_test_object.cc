@@ -1364,16 +1364,14 @@ static void BooleanOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  bool is_null = false;
+  base::Optional<bool> cpp_value(impl->booleanOrNullAttribute());
 
-  bool cpp_value(impl->booleanOrNullAttribute(is_null));
-
-  if (is_null) {
+  if (!cpp_value.has_value()) {
     V8SetReturnValueNull(info);
     return;
   }
 
-  V8SetReturnValueBool(info, cpp_value);
+  V8SetReturnValue(info, cpp_value.value());
 }
 
 static void BooleanOrNullAttributeAttributeSetter(
@@ -1391,11 +1389,11 @@ static void BooleanOrNullAttributeAttributeSetter(
   bool is_null = IsUndefinedOrNull(v8_value);
 
   // Prepare the value to be set.
-  bool cpp_value = is_null ? bool() : NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  base::Optional<bool> cpp_value = is_null ? base::nullopt : base::Optional<bool>(NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state));
   if (exception_state.HadException())
     return;
 
-  impl->setBooleanOrNullAttribute(cpp_value, is_null);
+  impl->setBooleanOrNullAttribute(cpp_value);
 }
 
 static void StringOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -1429,16 +1427,14 @@ static void LongOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  bool is_null = false;
+  base::Optional<int32_t> cpp_value(impl->longOrNullAttribute());
 
-  int32_t cpp_value(impl->longOrNullAttribute(is_null));
-
-  if (is_null) {
+  if (!cpp_value.has_value()) {
     V8SetReturnValueNull(info);
     return;
   }
 
-  V8SetReturnValueInt(info, cpp_value);
+  V8SetReturnValue(info, cpp_value.value());
 }
 
 static void LongOrNullAttributeAttributeSetter(
@@ -1456,11 +1452,11 @@ static void LongOrNullAttributeAttributeSetter(
   bool is_null = IsUndefinedOrNull(v8_value);
 
   // Prepare the value to be set.
-  int32_t cpp_value = is_null ? int32_t() : NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  base::Optional<int32_t> cpp_value = is_null ? base::nullopt : base::Optional<int32_t>(NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state));
   if (exception_state.HadException())
     return;
 
-  impl->setLongOrNullAttribute(cpp_value, is_null);
+  impl->setLongOrNullAttribute(cpp_value);
 }
 
 static void TestInterfaceOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {

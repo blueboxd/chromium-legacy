@@ -17,14 +17,14 @@ struct StructTraits<ax::mojom::AXTreeUpdateDataView, ui::AXTreeUpdate> {
   static bool has_tree_data(const ui::AXTreeUpdate& p) {
     return p.has_tree_data;
   }
-  static ui::AXTreeData tree_data(const ui::AXTreeUpdate& p) {
+  static const ui::AXTreeData& tree_data(const ui::AXTreeUpdate& p) {
     return p.tree_data;
   }
   static int32_t node_id_to_clear(const ui::AXTreeUpdate& p) {
     return p.node_id_to_clear;
   }
   static int32_t root_id(const ui::AXTreeUpdate& p) { return p.root_id; }
-  static std::vector<ui::AXNodeData> nodes(const ui::AXTreeUpdate& p) {
+  static const std::vector<ui::AXNodeData>& nodes(const ui::AXTreeUpdate& p) {
     return p.nodes;
   }
   static ax::mojom::EventFrom event_from(const ui::AXTreeUpdate& p) {

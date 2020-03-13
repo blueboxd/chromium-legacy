@@ -203,7 +203,7 @@ void ExtensionSyncService::StopSyncing(syncer::ModelType type) {
   GetSyncBundle(type)->Reset();
 }
 
-syncer::SyncDataList ExtensionSyncService::GetAllSyncData(
+syncer::SyncDataList ExtensionSyncService::GetAllSyncDataForTesting(
     syncer::ModelType type) const {
   const SyncBundle* bundle = GetSyncBundle(type);
   if (!bundle->IsSyncing())

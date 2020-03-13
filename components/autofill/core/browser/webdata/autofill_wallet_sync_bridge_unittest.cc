@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
@@ -393,12 +394,14 @@ TEST_F(AutofillWalletSyncBridgeTest, GetStorageKeyForCreditCardCloudTokenData) {
 
 TEST_F(AutofillWalletSyncBridgeTest,
        GetAllDataForDebugging_ShouldReturnAllData) {
+  // Create Wallet Data and store them to table.
   AutofillProfile address1 = test::GetServerProfile();
   AutofillProfile address2 = test::GetServerProfile2();
   table()->SetServerProfiles({address1, address2});
   CreditCard card1 = test::GetMaskedServerCard();
   CreditCard card2 = test::GetMaskedServerCardAmex();
-  table()->SetServerCreditCards({card1, card2});
+  CreditCard card_with_nickname = test::GetMaskedServerCardWithNickname();
+  table()->SetServerCreditCards({card1, card2, card_with_nickname});
   PaymentsCustomerData customer_data{/*customer_id=*/kCustomerDataId};
   table()->SetPaymentsCustomerData(&customer_data);
   CreditCardCloudTokenData data1 = test::GetCreditCardCloudTokenData1();
@@ -413,6 +416,9 @@ TEST_F(AutofillWalletSyncBridgeTest,
   SetAutofillWalletSpecificsFromServerCard(card1, &card_specifics1);
   AutofillWalletSpecifics card_specifics2;
   SetAutofillWalletSpecificsFromServerCard(card2, &card_specifics2);
+  AutofillWalletSpecifics card_specifics_with_nickname;
+  SetAutofillWalletSpecificsFromServerCard(card_with_nickname,
+                                           &card_specifics_with_nickname);
   AutofillWalletSpecifics customer_data_specifics;
   SetAutofillWalletSpecificsFromPaymentsCustomerData(customer_data,
                                                      &customer_data_specifics);
@@ -423,12 +429,19 @@ TEST_F(AutofillWalletSyncBridgeTest,
   SetAutofillWalletSpecificsFromCreditCardCloudTokenData(
       data2, &cloud_token_data_specifics2);
 
+  // First ensure that specific fields in expected wallet specifics are set
+  // correctly before we compare with local table.
+  EXPECT_FALSE(card_specifics_with_nickname.masked_card().nickname().empty());
+  EXPECT_TRUE(card_specifics2.masked_card().nickname().empty());
+  // Read local Wallet Data from Autofill table, and compare with expected
+  // wallet specifics.
   EXPECT_THAT(
       GetAllLocalData(),
       UnorderedElementsAre(EqualsSpecifics(profile_specifics1),
                            EqualsSpecifics(profile_specifics2),
                            EqualsSpecifics(card_specifics1),
                            EqualsSpecifics(card_specifics2),
+                           EqualsSpecifics(card_specifics_with_nickname),
                            EqualsSpecifics(customer_data_specifics),
                            EqualsSpecifics(cloud_token_data_specifics1),
                            EqualsSpecifics(cloud_token_data_specifics2)));
@@ -829,6 +842,7 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletAddressData) {
 TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletCardData) {
   // Create a card to be synced from the server.
   CreditCard card = test::GetMaskedServerCard();
+  card.set_nickname(base::ASCIIToUTF16("Grocery card"));
   AutofillWalletSpecifics card_specifics;
   SetAutofillWalletSpecificsFromServerCard(card, &card_specifics);
 
@@ -852,6 +866,7 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletCardData) {
   EXPECT_EQ(card.expiration_month(), cards[0]->expiration_month());
   EXPECT_EQ(card.expiration_year(), cards[0]->expiration_year());
   EXPECT_EQ(card.billing_address_id(), cards[0]->billing_address_id());
+  EXPECT_EQ(card.nickname(), cards[0]->nickname());
 
   // Also make sure that those types are not empty, to exercice all the code
   // paths.
@@ -859,6 +874,7 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletCardData) {
   EXPECT_FALSE(card.LastFourDigits().empty());
   EXPECT_NE(0, card.expiration_month());
   EXPECT_NE(0, card.expiration_year());
+  EXPECT_FALSE(card.nickname().empty());
 }
 
 // Test that all field values for a cloud token data sent from the server are

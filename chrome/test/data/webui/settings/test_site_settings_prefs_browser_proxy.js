@@ -28,8 +28,6 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       'fetchBlockAutoplayStatus',
       'fetchZoomLevels',
       'getAllSites',
-      'getCookieSettingDescription',
-      'getRecentSitePermissions',
       'getChooserExceptionList',
       'getDefaultValueForContentType',
       'getFormattedBytes',
@@ -74,6 +72,11 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
 
     /** @private {boolean} */
     this.isPatternValidForType_ = true;
+
+    this.mockMethods([
+      'getCookieSettingDescription',
+      'getRecentSitePermissions',
+    ]);
   }
 
   /**
@@ -236,18 +239,6 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     });
 
     return Promise.resolve(result);
-  }
-
-  /** @override */
-  getCookieSettingDescription() {
-    this.methodCalled('getCookieSettingDescription');
-    return this.getResultFor('getCookieSettingDescription');
-  }
-
-  /** @override */
-  getRecentSitePermissions(contentTypes, numSources) {
-    this.methodCalled('getRecentSitePermissions', contentTypes);
-    return this.getResultFor('getRecentSitePermissions');
   }
 
   /** @override */

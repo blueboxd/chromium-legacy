@@ -73,11 +73,6 @@ class MESSAGE_CENTER_EXPORT PopupTimersController
       std::map<std::string, std::unique_ptr<PopupTimer>>;
   PopupTimerCollection popup_timers_;
 
-  // Timeout values used to dismiss notifications automatically after they are
-  // shown.
-  static int notification_timeout_default_seconds_;
-  static int notification_timeout_high_priority_seconds_;
-
   DISALLOW_COPY_AND_ASSIGN(PopupTimersController);
 };
 

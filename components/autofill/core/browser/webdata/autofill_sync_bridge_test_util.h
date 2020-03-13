@@ -22,7 +22,8 @@ sync_pb::AutofillWalletSpecifics CreateAutofillWalletSpecificsForAddress(
 
 sync_pb::AutofillWalletSpecifics CreateAutofillWalletSpecificsForCard(
     const std::string& client_tag,
-    const std::string& billing_address_id = "");
+    const std::string& billing_address_id = "",
+    const std::string& nickname = "");
 
 sync_pb::AutofillWalletSpecifics
 CreateAutofillWalletSpecificsForPaymentsCustomerData(

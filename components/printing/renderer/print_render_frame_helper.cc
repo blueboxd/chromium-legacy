@@ -35,6 +35,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/escape.h"
 #include "printing/buildflags/buildflags.h"
@@ -592,7 +593,7 @@ bool CopyMetafileDataToReadOnlySharedMem(
     return false;
 
   base::MappedReadOnlyRegion region_mapping =
-      base::ReadOnlySharedMemoryRegion::Create(buf_size);
+      mojo::CreateReadOnlySharedMemoryRegion(buf_size);
   if (!region_mapping.IsValid())
     return false;
 

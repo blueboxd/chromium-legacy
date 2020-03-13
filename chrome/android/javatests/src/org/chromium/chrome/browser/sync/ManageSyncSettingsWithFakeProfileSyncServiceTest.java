@@ -12,9 +12,9 @@ import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.SmallTest;
-import android.support.v7.preference.Preference;
 
 import androidx.annotation.Nullable;
+import androidx.preference.Preference;
 
 import org.junit.After;
 import org.junit.Assert;

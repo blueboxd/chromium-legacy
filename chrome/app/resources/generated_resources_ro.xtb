@@ -757,7 +757,6 @@
 <translation id="2025632980034333559"><ph name="APP_NAME" /> s-a blocat. Dă clic pe acest balon pentru a reîncărca extensia.</translation>
 <translation id="2025891858974379949">Conținut nesecurizat</translation>
 <translation id="202918510990975568">Introdu parola pentru a configura securitatea și conectarea</translation>
-<translation id="2030672406208960151">Deschide terminalul de recuperare</translation>
 <translation id="2034346955588403444">Adaugă altă rețea Wi-Fi</translation>
 <translation id="203574396658008164">Activează scrierea de note din ecranul de blocare</translation>
 <translation id="2037445849770872822">S-a configurat supravegherea pentru acest Cont Google. Ca să configurezi în continuare controlul parental, selectează Continuă.
@@ -1663,7 +1662,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3228679360002431295">Se conectează și se verifică<ph name="ANIMATED_ELLIPSIS" /></translation>
 <translation id="3232318083971127729">Valoare:</translation>
 <translation id="3233271424239923319">Fă backup pentru aplicațiile și fișierele Linux</translation>
-<translation id="323803881985677942">Deschide opțiunile pentru extensii</translation>
 <translation id="3239373508713281971">Limita de timp pentru <ph name="APP_NAME" /> a fost eliminată</translation>
 <translation id="3241680850019875542">Selectează directorul rădăcină al extensiei ce trebuie împachetată. Pentru a actualiza o extensie, selectează și fișierul cu cheia privată pentru reutilizare.</translation>
 <translation id="3244294424315804309">Continuă să dezactivezi sunetul</translation>
@@ -2419,7 +2417,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="424963718355121712">Aplicațiile trebuie să fie difuzate de gazda pe care o afectează</translation>
 <translation id="4250229828105606438">Captură de ecran</translation>
 <translation id="4250680216510889253">Nu</translation>
-<translation id="4251288318602771141">Cu furnizorul de servicii actual. Este posibil să nu fie disponibil oricând un DNS securizat.</translation>
 <translation id="4252852543720145436">Identificatori de conținut protejat</translation>
 <translation id="4252899949534773101">Bluetooth este dezactivat</translation>
 <translation id="4252996741873942488"><ph name="WINDOW_TITLE" /> – se permite accesul la conținutul filei</translation>
@@ -2489,7 +2486,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> trimite conținutul unei ferestre.</translation>
 <translation id="4364830672918311045">Afișează notificările</translation>
 <translation id="4370975561335139969">Adresa de e-mail și parola pe care le-ai introdus nu se potrivesc</translation>
-<translation id="437184764829821926">Setări avansate pentru fonturi</translation>
 <translation id="4374831787438678295">Programul de instalare Linux</translation>
 <translation id="4375035964737468845">Deschide fișierele descărcate</translation>
 <translation id="4377363674125277448">A apărut o problemă cu privire la certificatul serverului.</translation>
@@ -2653,7 +2649,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4596295440756783523">Ai certificate stocate care identifică aceste servere</translation>
 <translation id="4598556348158889687">Gestionarea stocării</translation>
 <translation id="4598776695426288251">Conexiune Wi-Fi disponibilă prin mai multe dispozitive</translation>
-<translation id="4599134080475764833">Plugin VM poate fi folosit</translation>
 <translation id="4602466770786743961">Permiteți întotdeauna accesul <ph name="HOST" /> la camera și microfonul dvs.</translation>
 <translation id="4606551464649945562">Nu permite site-urilor să creeze o hartă 3D a lucrurilor din jur sau să urmărească poziția camerei video</translation>
 <translation id="4608500690299898628">&amp;Caută...</translation>
@@ -2748,11 +2743,9 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Află cum să actualizezi aplicații<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Activează sunetul pentru site}few{Activează sunetul pentru site-uri}other{Activează sunetul pentru site-uri}}</translation>
 <translation id="4746351372139058112">Mesaje</translation>
-<translation id="4748762018725435655">Necesită o extensie din Magazinul web Chrome</translation>
 <translation id="4750394297954878236">Sugestii</translation>
 <translation id="475088594373173692">Primul utilizator</translation>
 <translation id="4751476147751820511">Senzori de mișcare sau de lumină</translation>
-<translation id="4754969275105595499">Pentru a reveni la ecranul anterior, glisează din lateral.</translation>
 <translation id="4756269098451810636">Imagine trimisă de pe <ph name="DEVICE_NAME" /></translation>
 <translation id="4756378406049221019">Oprește/Reîncarcă</translation>
 <translation id="4756388243121344051">&amp;Istoric</translation>
@@ -3055,7 +3048,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5184063094292164363">Consolă &amp;JavaScript</translation>
 <translation id="5184209580557088469">Există deja un tichet cu acest nume de utilizator</translation>
 <translation id="5184662919967270437">Se actualizează dispozitivul</translation>
-<translation id="5185359571430619712">Extensii pentru recenzii</translation>
+<translation id="5185359571430619712">Examinează extensiile</translation>
 <translation id="5185386675596372454">Cea mai nouă versiune a „<ph name="EXTENSION_NAME" />” a fost dezactivată, deoarece necesită permisiuni suplimentare.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> vrea să descarce mai multe fișiere</translation>
@@ -3531,7 +3524,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5833726373896279253">Aceste setări pot fi modificate numai de proprietar:</translation>
 <translation id="5834581999798853053">Au mai rămas aproape <ph name="TIME" /> min.</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – camera foto sau microfonul înregistrează</translation>
-<translation id="5841270259333717135">Configură rețeaua Ethernet</translation>
+<translation id="5841270259333717135">Configurează setările de Ethernet</translation>
 <translation id="5842497610951477805">Activează Bluetooth</translation>
 <translation id="5846200638699387931">Eroare de sintaxă a relației: <ph name="ERROR_LINE" /></translation>
 <translation id="5849212445710944278">Adăugat deja</translation>
@@ -3745,7 +3738,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6104311680260824317">Dispozitivul nu a putut fi asociat domeniului. Serverul nu acceptă tipurile de criptare Kerberos specificate. Accesează „Mai multe opțiuni” pentru setările de criptare.</translation>
 <translation id="6104641575223043670"><ph name="ORGANIZATION_NAME" /> solicită o actualizare imediată pentru acest dispozitiv</translation>
 <translation id="6106186653986077033">Plugin VM necesită licență</translation>
-<translation id="6107047744202598802">Permite site-urilor să rețină vizita și să te urmărească pe web</translation>
 <translation id="6112294629795967147">Atinge pentru a redimensiona</translation>
 <translation id="6112727384379533756">Adaugă un tichet</translation>
 <translation id="6112931163620622315">Verifică pe telefon</translation>
@@ -4073,7 +4065,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Calea sau numele fișierului sunt prea lungi. Salvați utilizând un nume mai scurt sau într-o altă locație.</translation>
 <translation id="6563469144985748109">Administratorul nu l-a aprobat încă</translation>
-<translation id="6565955132287672866">Dispozitivul nu s-a închis corect. Pentru a folosi Linux (Beta), trebuie să îl repornești.</translation>
 <translation id="6567688344210276845">Nu se poate încărca pictograma „<ph name="ICON" />” pentru acțiunea paginii.</translation>
 <translation id="6569934958368283244">Alte persoane</translation>
 <translation id="657402800789773160">&amp;Reîncarcă această pagină</translation>
@@ -5943,7 +5934,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="9065203028668620118">Editează</translation>
 <translation id="9066773882585798925">Ascultă textul citit cu voce tare</translation>
 <translation id="9066782832737749352">Redarea vocală a textului</translation>
-<translation id="9067559831321817373">Gestionează-ți conturile conectate. Site-urile, aplicațiile și extensiile din Chrome și Google Play pot folosi aceste conturi pentru a-ți personaliza experiența, în funcție de permisiuni. &lt;a&gt;Află mai multe&lt;/a&gt;</translation>
 <translation id="9068849894565669697">Selectați culoarea</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

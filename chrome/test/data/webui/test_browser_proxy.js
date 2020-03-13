@@ -8,7 +8,7 @@
 /**
  * @typedef {{resolver: !PromiseResolver,
  *            callCount: number,
- *            result?: *}}
+ *            resultMapper: Function}}
  */
 let MethodData;
 
@@ -42,10 +42,10 @@ let MethodData;
  */
 /* #export */ class TestBrowserProxy {
   /**
-   * @param {!Array<string>} methodNames Names of all methods whose calls
+   * @param {!Array<string>=} methodNames Names of all methods whose calls
    *     need to be tracked.
    */
-  constructor(methodNames) {
+  constructor(methodNames = []) {
     /** @private {!Map<string, !MethodData>} */
     this.resolverMap_ = new Map();
     methodNames.forEach(methodName => {
@@ -54,28 +54,106 @@ let MethodData;
   }
 
   /**
+   * Creates a |TestBrowserProxy|, which has mock functions for all functions of
+   * class |clazz|.
+   * @param {Class} clazz
+   * @return {TestBrowserProxy}
+   */
+  static fromClass(clazz) {
+    const methodNames = Object.getOwnPropertyNames(clazz.prototype)
+                            .filter(methodName => methodName !== 'constructor');
+    const proxy = new TestBrowserProxy();
+    proxy.mockMethods(methodNames);
+    return proxy;
+  }
+
+  /**
+   * Creates a mock implementation for each method name. These mocks allow tests
+   * to either set a result when the mock is called using
+   * |setResultFor(methodName)|, or set a result mapper function that will be
+   * invoked when a method is called using |setResultMapperFor(methodName)|.
+   * @param {!Array<string>} methodNames
+   * @protected
+   */
+  mockMethods(methodNames) {
+    methodNames.forEach(methodName => {
+      if (!this.resolverMap_.has(methodName)) {
+        this.createMethodData_(methodName);
+      }
+      this[methodName] = function() {
+        const args = Array.from(arguments);
+        const argObject = {};
+        if (args.length > 1) {
+          argObject.args = args;
+        } else {
+          argObject.arg = args[0];
+        }
+        return this.methodCalledWithResult_(methodName, argObject);
+      }.bind(this);
+    });
+  }
+
+  /**
    * Called by subclasses when a tracked method is called from the code that
    * is being tested.
    * @param {string} methodName
-   * @param {*=} opt_arg Optional argument to be forwarded to the testing
+   * @param {*=} args Optional argument to be forwarded to the testing
    *     code, useful for checking whether the proxy method was called with
    *     the expected arguments.
    * @protected
    */
-  methodCalled(methodName, opt_arg) {
+  methodCalled(methodName, args) {
     const methodData = this.resolverMap_.get(methodName);
     methodData.callCount += 1;
-    this.resolverMap_.set(methodName, methodData);
-    methodData.resolver.resolve(opt_arg);
+    const {callCount, resolvers} = methodData;
+    if (resolvers.length >= callCount) {
+      resolvers[callCount - 1].resolve(args);
+    } else {
+      assert(resolvers.length === callCount - 1);
+      const resolver = new PromiseResolver();
+      resolver.resolve(args);
+      resolvers.push(resolver);
+    }
+  }
+
+  /**
+   * Called by subclasses when a tracked method is called from the code that
+   * is being tested.
+   * @param {string} methodName
+   * @param {!{arg: *, args: Array}} argObject Optional argument to be forwarded
+   *     to the testing code, useful for checking whether the proxy method was
+   *     called with the expected arguments. Only |arg| or |args| should be set.
+   * @return {*}
+   * @private
+   */
+  methodCalledWithResult_(methodName, {arg, args}) {
+    assert(arg === undefined || args === undefined);
+    this.methodCalled(methodName, args === undefined ? arg : args);
+    const {resultMapper} = this.resolverMap_.get(methodName);
+    if (resultMapper) {
+      assert(typeof resultMapper === 'function');
+      if (args !== undefined) {
+        return resultMapper(...args);
+      }
+      return resultMapper(arg);
+    }
   }
 
   /**
    * @param {string} methodName
+   * @param {number=} callCount
    * @return {!Promise} A promise that is resolved when the given method
-   *     is called.
+   *     is called |callCount| times.
    */
-  whenCalled(methodName) {
-    return this.getMethodData_(methodName).resolver.promise;
+  whenCalled(methodName, callCount = 1) {
+    const {resolvers} = this.getMethodData_(methodName);
+    for (let i = 0; i < callCount - resolvers.length; i++) {
+      resolvers.push(new PromiseResolver());
+    }
+    if (callCount === 1) {
+      return resolvers[0].promise;
+    }
+    return Promise.all(resolvers.slice(callCount).map(r => r.promise));
   }
 
   /**
@@ -106,24 +184,24 @@ let MethodData;
   }
 
   /**
-   * Sets the return value of a method.
+   * Sets a function |resultMapper| that is called with the original arguments
+   * passed to method named |methodName|. This allows a test to return a unique
+   * object each method invovation or have the returned value be different based
+   * on the arguments.
    * @param {string} methodName
-   * @paran {*} value
+   * @param {!Function} resultMapper
    */
-  setResultFor(methodName, value) {
-    this.getMethodData_(methodName).result = value;
+  setResultMapperFor(methodName, resultMapper) {
+    this.getMethodData_(methodName).resultMapper = resultMapper;
   }
 
   /**
-   * Returns the return value of a method or the default value if no return
-   * value is registered.
+   * Sets the return value of a method.
    * @param {string} methodName
-   * @param {*} defaultValue
-   * @return {*}
+   * @param {*} value
    */
-  getResultFor(methodName, defaultValue) {
-    const methodData = this.getMethodData_(methodName);
-    return 'result' in methodData ? methodData.result : defaultValue;
+  setResultFor(methodName, value) {
+    this.getMethodData_(methodName).resultMapper = () => value;
   }
 
   /**
@@ -146,7 +224,6 @@ let MethodData;
    * @private
    */
   createMethodData_(methodName) {
-    this.resolverMap_.set(
-        methodName, {resolver: new PromiseResolver(), callCount: 0});
+    this.resolverMap_.set(methodName, {resolvers: [], callCount: 0});
   }
 }

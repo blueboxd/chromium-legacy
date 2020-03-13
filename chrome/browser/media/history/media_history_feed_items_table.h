@@ -1,0 +1,65 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_FEED_ITEMS_TABLE_H_
+#define CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_FEED_ITEMS_TABLE_H_
+
+#include <vector>
+
+#include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
+#include "chrome/browser/media/history/media_history_table_base.h"
+#include "sql/init_status.h"
+#include "url/gurl.h"
+
+namespace base {
+class UpdateableSequencedTaskRunner;
+}  // namespace base
+
+namespace media_history {
+
+class MediaHistoryFeedItemsTable : public MediaHistoryTableBase {
+ public:
+  static const char kTableName[];
+
+  static const char kFeedItemReadResultHistogramName[];
+
+  // If we read a feed item from the database then we record the result to
+  // |kFeedItemReadResultHistogramName|. Do not change the numbering since this
+  // is recorded.
+  enum class FeedItemReadResult {
+    kSuccess = 0,
+    kBadType = 1,
+    kBadActionStatus = 2,
+    kMaxValue = kBadActionStatus,
+  };
+
+  MediaHistoryFeedItemsTable(const MediaHistoryFeedItemsTable&) = delete;
+  MediaHistoryFeedItemsTable& operator=(const MediaHistoryFeedItemsTable&) =
+      delete;
+
+ private:
+  friend class MediaHistoryStoreInternal;
+
+  explicit MediaHistoryFeedItemsTable(
+      scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner);
+  ~MediaHistoryFeedItemsTable() override;
+
+  // MediaHistoryTableBase:
+  sql::InitStatus CreateTableIfNonExistent() override;
+
+  // Saves a newly discovered feed item in the database.
+  bool SaveItem(const int64_t feed_id,
+                const media_feeds::mojom::MediaFeedItemPtr& item);
+
+  // Deletes all items from a feed.
+  bool DeleteItems(const int64_t feed_id);
+
+  // Gets all the items associated with |feed_id|.
+  std::vector<media_feeds::mojom::MediaFeedItemPtr> GetItemsForFeed(
+      const int64_t feed_id);
+};
+
+}  // namespace media_history
+
+#endif  // CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_FEED_ITEMS_TABLE_H_

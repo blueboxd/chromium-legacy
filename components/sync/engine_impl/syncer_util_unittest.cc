@@ -46,7 +46,9 @@ class GetUpdatePositionTest : public ::testing::Test {
     update.set_mtime(100);
     update.set_ctime(100);
     update.set_deleted(false);
-    update.mutable_specifics()->mutable_bookmark()->set_title("Chrome");
+    update.mutable_specifics()
+        ->mutable_bookmark()
+        ->set_legacy_canonicalized_title("Chrome");
     update.mutable_specifics()->mutable_bookmark()->set_url(
         "https://www.chrome.com");
   }

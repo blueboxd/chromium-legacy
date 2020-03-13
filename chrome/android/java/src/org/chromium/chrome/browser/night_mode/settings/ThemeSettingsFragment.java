@@ -9,9 +9,9 @@ import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_TH
 
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.preference.PreferenceFragmentCompat;
 
 import androidx.annotation.Nullable;
+import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;

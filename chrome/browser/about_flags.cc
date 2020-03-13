@@ -900,6 +900,8 @@ const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
      base::size(kOmniboxNTPZPSLocal), nullptr},
     {"ZPS on NTP: Remote History", kOmniboxNTPZPSRemote,
      base::size(kOmniboxNTPZPSRemote), /* variation_id */ "t3314248"},
+    {"ZPS on NTP: Extended Remote History", kOmniboxNTPZPSRemote,
+     base::size(kOmniboxNTPZPSRemote), /* variation_id */ "t3317456"},
     {"ZPS on NTP: Onboarding", kOmniboxNTPZPSRemote,
      base::size(kOmniboxNTPZPSRemote), /* variation_id */ "t3316638"},
 #else   // !defined(OS_ANDROID)

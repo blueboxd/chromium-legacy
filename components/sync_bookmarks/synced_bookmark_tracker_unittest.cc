@@ -52,7 +52,7 @@ enum class ExpectedCorruptionReason {
 sync_pb::EntitySpecifics GenerateSpecifics(const std::string& title,
                                            const std::string& url) {
   sync_pb::EntitySpecifics specifics;
-  specifics.mutable_bookmark()->set_title(title);
+  specifics.mutable_bookmark()->set_legacy_canonicalized_title(title);
   specifics.mutable_bookmark()->set_url(url);
   return specifics;
 }

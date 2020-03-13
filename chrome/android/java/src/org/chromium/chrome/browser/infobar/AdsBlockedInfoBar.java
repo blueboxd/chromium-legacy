@@ -4,13 +4,14 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import android.support.v7.widget.SwitchCompat;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+
+import androidx.appcompat.widget.SwitchCompat;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;

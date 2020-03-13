@@ -228,10 +228,9 @@ void ExtensionActionViewController::OnContextMenuClosed() {
     extensions_container_->OnContextMenuClosed(this);
     return;
   }
-  if (extensions_container_->GetPoppedOutAction() == this &&
-      !view_delegate_->IsMenuRunning()) {
+
+  if (extensions_container_->GetPoppedOutAction() == this && !IsShowingPopup())
     extensions_container_->UndoPopOut();
-  }
 }
 
 bool ExtensionActionViewController::ExecuteAction(bool by_user) {

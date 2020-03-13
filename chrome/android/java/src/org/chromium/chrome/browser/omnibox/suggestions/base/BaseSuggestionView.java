@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.omnibox.suggestions.base;
 
 import android.content.Context;
-import android.support.v7.widget.AppCompatImageView;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -15,6 +14,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.LayoutRes;
+import androidx.appcompat.widget.AppCompatImageView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;

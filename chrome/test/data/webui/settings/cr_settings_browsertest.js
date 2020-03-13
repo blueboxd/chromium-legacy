@@ -989,9 +989,7 @@ CrSettingsPrivacyPageTest.prototype = {
     '../test_browser_proxy.js',
     'test_privacy_page_browser_proxy.js',
     'test_metrics_browser_proxy.js',
-    'test_site_settings_prefs_browser_proxy.js',
     'test_sync_browser_proxy.js',
-    'test_util.js',
     'privacy_page_test.js',
   ]),
 };
@@ -1142,8 +1140,7 @@ CrSettingsSiteSettingsPageTest.prototype = {
     '//ui/webui/resources/js/promise_resolver.js',
     '../test_util.js',
     '../test_browser_proxy.js',
-    'test_site_settings_prefs_browser_proxy.js',
-    'test_util.js',
+    'test_metrics_browser_proxy.js',
     'site_settings_page_test.js',
   ])
 };

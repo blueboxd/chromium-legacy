@@ -864,6 +864,7 @@ GLenum GLRenderer::GetFramebufferCopyTextureFormat() {
 }
 
 uint32_t GLRenderer::GetBackdropTexture(const gfx::Rect& window_rect,
+                                        float scale,
                                         GLenum* internal_format) {
   DCHECK(internal_format);
   DCHECK_GE(window_rect.x(), 0);
@@ -880,20 +881,42 @@ uint32_t GLRenderer::GetBackdropTexture(const gfx::Rect& window_rect,
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  ResourceFormat resource_format = CurrentRenderPassResourceFormat();
+  // Get gl_format, gl_type and internal_format.
+  DCHECK(GLSupportsFormat(resource_format));
+  *internal_format = GLInternalFormat(resource_format);
+  GLenum gl_format = GLDataFormat(resource_format);
+  GLenum gl_type = GLDataType(resource_format);
 
-  // If there is a source texture |current_framebuffer_texture_| and the
-  // workaround |prefer_draw_to_copy_| is enabled, then do texture to texture
-  // copy via draw instead of glCopyTexImage2D.
-  if (prefer_draw_to_copy_ && current_framebuffer_texture_) {
-    // Copying from a non-root renderpass, so will use the format of the bound
-    // texture.
-    ResourceFormat resource_format = CurrentRenderPassResourceFormat();
+  if (scale != 1.0f) {
+    DCHECK(!prefer_draw_to_copy_ || !current_framebuffer_texture_);
 
-    // Get gl_format, gl_type and internal_format.
-    DCHECK(GLSupportsFormat(resource_format));
-    *internal_format = GLInternalFormat(resource_format);
-    GLenum gl_format = GLDataFormat(resource_format);
-    GLenum gl_type = GLDataType(resource_format);
+    gfx::Size target_size = window_rect.size();
+    target_size = gfx::ScaleToCeiledSize(target_size, scale);
+
+    gl_->TexImage2D(GL_TEXTURE_2D, 0, *internal_format, target_size.width(),
+                    target_size.height(), 0, gl_format, gl_type, nullptr);
+
+    unsigned fbo = 0;
+    gl_->GenFramebuffers(1, &fbo);
+    gl_->BindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+    gl_->FramebufferTexture2D(GL_DRAW_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0,
+                              GL_TEXTURE_2D, texture_id, 0);
+    DCHECK_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
+              gl_->CheckFramebufferStatus(GL_DRAW_FRAMEBUFFER_EXT));
+
+    gl_->Scissor(0, 0, target_size.width(), target_size.height());
+
+    gl_->BlitFramebufferCHROMIUM(window_rect.x(), window_rect.y(),
+                                 window_rect.right(), window_rect.bottom(), 0,
+                                 0, target_size.width(), target_size.height(),
+                                 GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+    gl_->DeleteFramebuffers(1, &fbo);
+  } else if (prefer_draw_to_copy_ && current_framebuffer_texture_) {
+    // If there is a source texture |current_framebuffer_texture_| and the
+    // workaround |prefer_draw_to_copy_| is enabled, then do texture to texture
+    // copy via draw instead of glCopyTexImage2D.
 
     // Size the destination texture with empty data. This is required since
     // CopySubTextureCHROMIUM() does not sizes the texture but CopyTexImage2D
@@ -1297,8 +1320,13 @@ void GLRenderer::UpdateRPDQShadersForBlending(
       // This function allocates a texture, which should contribute to the
       // amount of memory used by render surfaces:
       // LayerTreeHost::CalculateMemoryForRenderSurfaces.
+      const auto& operations = params->backdrop_filters->operations();
+      DCHECK(params->backdrop_filter_quality == 1.0f ||
+             (operations.size() == 1 &&
+              operations.front().type() == cc::FilterOperation::BLUR));
       params->background_texture = GetBackdropTexture(
-          params->background_rect, &params->background_texture_format);
+          params->background_rect, params->backdrop_filter_quality,
+          &params->background_texture_format);
 
       if (ShouldApplyBackdropFilters(params)) {
         // Apply the background filters to R, so that it is applied in the

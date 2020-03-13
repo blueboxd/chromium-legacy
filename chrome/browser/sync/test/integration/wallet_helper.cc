@@ -344,10 +344,10 @@ sync_pb::SyncEntity CreateDefaultSyncWalletCard() {
                               kDefaultBillingAddressID);
 }
 
-sync_pb::SyncEntity CreateSyncWalletCard(
-    const std::string& name,
-    const std::string& last_four,
-    const std::string& billing_address_id) {
+sync_pb::SyncEntity CreateSyncWalletCard(const std::string& name,
+                                         const std::string& last_four,
+                                         const std::string& billing_address_id,
+                                         const std::string& nickname) {
   sync_pb::SyncEntity entity;
   entity.set_name(name);
   entity.set_id_string(name);
@@ -370,6 +370,9 @@ sync_pb::SyncEntity CreateSyncWalletCard(
   credit_card->set_type(kDefaultCardType);
   if (!billing_address_id.empty()) {
     credit_card->set_billing_address_id(billing_address_id);
+  }
+  if (!nickname.empty()) {
+    credit_card->set_nickname(nickname);
   }
   return entity;
 }

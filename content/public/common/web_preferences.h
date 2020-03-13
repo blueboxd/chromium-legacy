@@ -199,6 +199,8 @@ struct CONTENT_EXPORT WebPreferences {
 
   bool user_gesture_required_for_presentation;
 
+  bool text_tracks_enabled;
+
   // These fields specify the foreground and background color for WebVTT text
   // tracks. Their values can be any legal CSS color descriptor.
   std::string text_track_background_color;
@@ -210,6 +212,7 @@ struct CONTENT_EXPORT WebPreferences {
   std::string text_track_text_size;
   std::string text_track_text_shadow;
   std::string text_track_font_family;
+  std::string text_track_font_style;
   // Specifies the value for CSS font-variant property.
   std::string text_track_font_variant;
 

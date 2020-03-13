@@ -5,11 +5,11 @@
 package org.chromium.chrome.browser.search_engines.settings;
 
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
 import android.view.View;
 import android.widget.ListView;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.fragment.app.ListFragment;
 
 import org.chromium.chrome.R;
 

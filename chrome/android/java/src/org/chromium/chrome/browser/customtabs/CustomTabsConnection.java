@@ -147,7 +147,7 @@ public class CustomTabsConnection {
 
     // TODO(lizeb): Move to the support library.
     @VisibleForTesting
-    static final String REDIRECT_ENDPOINT_KEY = "android.support.customtabs.REDIRECT_ENDPOINT";
+    static final String REDIRECT_ENDPOINT_KEY = "androidx.browser.REDIRECT_ENDPOINT";
     @VisibleForTesting
     static final String PARALLEL_REQUEST_REFERRER_KEY =
             "android.support.customtabs.PARALLEL_REQUEST_REFERRER";
@@ -157,7 +157,7 @@ public class CustomTabsConnection {
     static final String PARALLEL_REQUEST_URL_KEY =
             "android.support.customtabs.PARALLEL_REQUEST_URL";
     static final String RESOURCE_PREFETCH_URL_LIST_KEY =
-            "android.support.customtabs.RESOURCE_PREFETCH_URL_LIST";
+            "androidx.browser.RESOURCE_PREFETCH_URL_LIST";
 
     @IntDef({ParallelRequestStatus.NO_REQUEST, ParallelRequestStatus.SUCCESS,
             ParallelRequestStatus.FAILURE_NOT_INITIALIZED,

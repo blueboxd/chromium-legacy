@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/login_client_cert_usage_observer.h"
 
 #include <cstdint>
-#include <string>
 
 #include "base/logging.h"
 #include "base/optional.h"
@@ -40,9 +39,8 @@ bool ObtainSignatureAlgorithms(
     return false;
   }
   std::vector<uint16_t> ssl_algorithms;
-  std::string extension_id;
-  if (!certificate_provider_service->LookUpSpki(
-          spki.as_string(), &ssl_algorithms, &extension_id)) {
+  if (!certificate_provider_service->GetSupportedAlgorithmsBySpki(
+          spki.as_string(), &ssl_algorithms)) {
     return false;
   }
   signature_algorithms->clear();
@@ -71,8 +69,8 @@ bool LoginClientCertUsageObserver::ClientCertsWereUsed() const {
 
 bool LoginClientCertUsageObserver::GetOnlyUsedClientCert(
     scoped_refptr<net::X509Certificate>* cert,
-    std::vector<ChallengeResponseKey::SignatureAlgorithm>* signature_algorithms,
-    std::string* extension_id) const {
+    std::vector<ChallengeResponseKey::SignatureAlgorithm>* signature_algorithms)
+    const {
   if (!used_cert_count_)
     return false;
   if (used_cert_count_ > 1) {
@@ -85,17 +83,14 @@ bool LoginClientCertUsageObserver::GetOnlyUsedClientCert(
   if (!ObtainSignatureAlgorithms(*used_cert_, signature_algorithms))
     return false;
   *cert = used_cert_;
-  *extension_id = used_extension_id_;
   return true;
 }
 
 void LoginClientCertUsageObserver::OnSignCompleted(
-    const scoped_refptr<net::X509Certificate>& certificate,
-    const std::string& extension_id) {
+    const scoped_refptr<net::X509Certificate>& certificate) {
   if (!used_cert_ || !used_cert_->EqualsExcludingChain(certificate.get()))
     ++used_cert_count_;
   used_cert_ = certificate;
-  used_extension_id_ = extension_id;
 }
 
 }  // namespace chromeos

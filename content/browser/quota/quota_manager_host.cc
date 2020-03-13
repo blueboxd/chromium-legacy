@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/quota/quota_dispatcher_host.h"
+#include "content/browser/quota/quota_manager_host.h"
 
 #include <stdint.h>
 
@@ -25,52 +25,37 @@
 
 using blink::mojom::StorageType;
 using storage::QuotaClient;
-using storage::QuotaManager;
 
 namespace content {
 
-// static
-void QuotaDispatcherHost::BindQuotaDispatcherHostOnIOThread(
-    int render_process_id,
-    int render_frame_id,
-    storage::QuotaManager* quota_manager,
-    mojo::PendingReceiver<blink::mojom::QuotaDispatcherHost> receiver) {
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<QuotaDispatcherHost>(
-          render_process_id, render_frame_id, quota_manager,
-          GetContentClient()->browser()->CreateQuotaPermissionContext()),
-      std::move(receiver));
-}
-
-QuotaDispatcherHost::QuotaDispatcherHost(
-    int process_id,
-    int render_frame_id,
-    QuotaManager* quota_manager,
-    scoped_refptr<QuotaPermissionContext> permission_context)
+QuotaManagerHost::QuotaManagerHost(int process_id,
+                                   int render_frame_id,
+                                   const url::Origin& origin,
+                                   storage::QuotaManager* quota_manager,
+                                   QuotaPermissionContext* permission_context)
     : process_id_(process_id),
       render_frame_id_(render_frame_id),
+      origin_(origin),
       quota_manager_(quota_manager),
-      permission_context_(std::move(permission_context)) {
+      permission_context_(permission_context) {
   DCHECK(quota_manager);
   // TODO(sashab): Work out the conditions for permission_context to be set and
   // add a DCHECK for it here.
 }
 
-void QuotaDispatcherHost::QueryStorageUsageAndQuota(
-    const url::Origin& origin,
+void QuotaManagerHost::QueryStorageUsageAndQuota(
     StorageType storage_type,
     QueryStorageUsageAndQuotaCallback callback) {
   quota_manager_->GetUsageAndQuotaWithBreakdown(
-      origin, storage_type,
-      base::BindOnce(&QuotaDispatcherHost::DidQueryStorageUsageAndQuota,
+      origin_, storage_type,
+      base::BindOnce(&QuotaManagerHost::DidQueryStorageUsageAndQuota,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void QuotaDispatcherHost::RequestStorageQuota(
-    const url::Origin& origin,
+void QuotaManagerHost::RequestStorageQuota(
     StorageType storage_type,
     uint64_t requested_size,
-    blink::mojom::QuotaDispatcherHost::RequestStorageQuotaCallback callback) {
+    blink::mojom::QuotaManagerHost::RequestStorageQuotaCallback callback) {
   if (storage_type != StorageType::kTemporary &&
       storage_type != StorageType::kPersistent) {
     mojo::ReportBadMessage("Unsupported storage type specified.");
@@ -83,7 +68,7 @@ void QuotaDispatcherHost::RequestStorageQuota(
     return;
   }
 
-  if (origin.opaque()) {
+  if (origin_.opaque()) {
     mojo::ReportBadMessage("Unique origins may not request storage quota.");
     return;
   }
@@ -92,20 +77,20 @@ void QuotaDispatcherHost::RequestStorageQuota(
          storage_type == StorageType::kPersistent);
   if (storage_type == StorageType::kPersistent) {
     quota_manager_->GetUsageAndQuotaForWebApps(
-        origin, storage_type,
-        base::BindOnce(&QuotaDispatcherHost::DidGetPersistentUsageAndQuota,
-                       weak_factory_.GetWeakPtr(), origin, storage_type,
-                       requested_size, std::move(callback)));
+        origin_, storage_type,
+        base::BindOnce(&QuotaManagerHost::DidGetPersistentUsageAndQuota,
+                       weak_factory_.GetWeakPtr(), storage_type, requested_size,
+                       std::move(callback)));
   } else {
     quota_manager_->GetUsageAndQuotaForWebApps(
-        origin, storage_type,
-        base::BindOnce(&QuotaDispatcherHost::DidGetTemporaryUsageAndQuota,
+        origin_, storage_type,
+        base::BindOnce(&QuotaManagerHost::DidGetTemporaryUsageAndQuota,
                        weak_factory_.GetWeakPtr(), requested_size,
                        std::move(callback)));
   }
 }
 
-void QuotaDispatcherHost::DidQueryStorageUsageAndQuota(
+void QuotaManagerHost::DidQueryStorageUsageAndQuota(
     QueryStorageUsageAndQuotaCallback callback,
     blink::mojom::QuotaStatusCode status,
     int64_t usage,
@@ -114,8 +99,7 @@ void QuotaDispatcherHost::DidQueryStorageUsageAndQuota(
   std::move(callback).Run(status, usage, quota, std::move(usage_breakdown));
 }
 
-void QuotaDispatcherHost::DidGetPersistentUsageAndQuota(
-    const url::Origin& origin,
+void QuotaManagerHost::DidGetPersistentUsageAndQuota(
     StorageType storage_type,
     uint64_t requested_quota,
     RequestStorageQuotaCallback callback,
@@ -133,7 +117,7 @@ void QuotaDispatcherHost::DidGetPersistentUsageAndQuota(
   // TODO(nhiroki): The backend should accept uint64_t values.
   int64_t requested_quota_signed =
       base::saturated_cast<int64_t>(requested_quota);
-  if (quota_manager_->IsStorageUnlimited(origin, storage_type) ||
+  if (quota_manager_->IsStorageUnlimited(origin_, storage_type) ||
       requested_quota_signed <= current_quota) {
     std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk, current_usage,
                             requested_quota);
@@ -145,20 +129,18 @@ void QuotaDispatcherHost::DidGetPersistentUsageAndQuota(
   DCHECK(permission_context_);
   StorageQuotaParams params;
   params.render_frame_id = render_frame_id_;
-  params.origin_url = origin.GetURL();
+  params.origin_url = origin_.GetURL();
   params.storage_type = storage_type;
   params.requested_size = requested_quota;
 
   permission_context_->RequestQuotaPermission(
       params, process_id_,
-      base::BindOnce(&QuotaDispatcherHost::DidGetPermissionResponse,
-                     weak_factory_.GetWeakPtr(), origin, requested_quota,
-                     current_usage, current_quota,
-                     base::Passed(std::move(callback))));
+      base::BindOnce(&QuotaManagerHost::DidGetPermissionResponse,
+                     weak_factory_.GetWeakPtr(), requested_quota, current_usage,
+                     current_quota, base::Passed(std::move(callback))));
 }
 
-void QuotaDispatcherHost::DidGetPermissionResponse(
-    const url::Origin& origin,
+void QuotaManagerHost::DidGetPermissionResponse(
     uint64_t requested_quota,
     int64_t current_usage,
     int64_t current_quota,
@@ -176,20 +158,20 @@ void QuotaDispatcherHost::DidGetPermissionResponse(
   // wasted work, e.g. if the origin has a host it can return that early. Maybe
   // rewrite to just convert the host to a string directly.
   quota_manager_->SetPersistentHostQuota(
-      net::GetHostOrSpecFromURL(origin.GetURL()), requested_quota,
-      base::BindOnce(&QuotaDispatcherHost::DidSetHostQuota,
+      net::GetHostOrSpecFromURL(origin_.GetURL()), requested_quota,
+      base::BindOnce(&QuotaManagerHost::DidSetHostQuota,
                      weak_factory_.GetWeakPtr(), current_usage,
                      std::move(callback)));
 }
 
-void QuotaDispatcherHost::DidSetHostQuota(int64_t current_usage,
-                                          RequestStorageQuotaCallback callback,
-                                          blink::mojom::QuotaStatusCode status,
-                                          int64_t new_quota) {
+void QuotaManagerHost::DidSetHostQuota(int64_t current_usage,
+                                       RequestStorageQuotaCallback callback,
+                                       blink::mojom::QuotaStatusCode status,
+                                       int64_t new_quota) {
   std::move(callback).Run(status, current_usage, new_quota);
 }
 
-void QuotaDispatcherHost::DidGetTemporaryUsageAndQuota(
+void QuotaManagerHost::DidGetTemporaryUsageAndQuota(
     int64_t requested_quota,
     RequestStorageQuotaCallback callback,
     blink::mojom::QuotaStatusCode status,
@@ -198,6 +180,6 @@ void QuotaDispatcherHost::DidGetTemporaryUsageAndQuota(
   std::move(callback).Run(status, usage, std::min(requested_quota, quota));
 }
 
-QuotaDispatcherHost::~QuotaDispatcherHost() = default;
+QuotaManagerHost::~QuotaManagerHost() = default;
 
 }  // namespace content

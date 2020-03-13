@@ -37,6 +37,30 @@ namespace media {
 
 namespace {
 
+// This class wraps the underlying data of a DecoderBufferBase.
+// This class does not take the ownership of the data. The DecoderBufferBase
+// is still responsible for deleting the data. This class holds a reference
+// to the DecoderBufferBase so that it lives longer than this DecoderBuffer.
+class DecoderBuffer : public ::media::DecoderBuffer {
+ public:
+  DecoderBuffer(scoped_refptr<DecoderBufferBase> buffer)
+      : ::media::DecoderBuffer(
+            std::unique_ptr<uint8_t[]>(const_cast<uint8_t*>(buffer->data())),
+            buffer->data_size()),
+        buffer_(std::move(buffer)) {
+    set_timestamp(::base::TimeDelta::FromMicroseconds(buffer_->timestamp()));
+  }
+
+ private:
+  ~DecoderBuffer() override {
+    // Releases the data to prevent it from being deleted.
+    DCHECK_EQ(data_.get(), buffer_->data());
+    data_.release();
+  }
+
+  scoped_refptr<DecoderBufferBase> buffer_;
+};
+
 class CastAudioDecoderImpl : public CastAudioDecoder {
  public:
   CastAudioDecoderImpl(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -126,7 +150,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
 
     decode_pending_ = true;
     pending_decode_callback_ = std::move(decode_callback);
-    decoder_->Decode(data->ToMediaBuffer(),
+    decoder_->Decode(base::WrapRefCounted(new DecoderBuffer(std::move(data))),
                      base::BindRepeating(&CastAudioDecoderImpl::OnDecodeStatus,
                                          weak_this_, timestamp));
   }

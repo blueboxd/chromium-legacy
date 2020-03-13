@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.settings;
 
-import android.support.v7.preference.Preference;
+import androidx.preference.Preference;
 
 /**
  * A delegate that determines whether a Preference is managed by enterprise policy. This is used

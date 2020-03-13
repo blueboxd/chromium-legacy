@@ -1470,6 +1470,62 @@ TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
                       IDS_INVALID_AD_UPN_BASE));
 }
 
+// Customer configured a valid AD UPN but user is trying to a
+// machine that is joined to different AD domain forest.
+TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
+       GetSerialization_WithAD_InvalidDomainForest) {
+  // Add the user as a domain joined user.
+  const wchar_t user_name[] = L"ad_user";
+  const wchar_t password[] = L"password";
+
+  const wchar_t domain_name[] = L"ad_domain";
+  CComBSTR existing_user_sid;
+  DWORD error;
+  HRESULT add_domain_user_hr = fake_os_user_manager()->AddUser(
+      user_name, password, L"fullname", L"comment", true, domain_name,
+      &existing_user_sid, &error);
+  ASSERT_EQ(S_OK, add_domain_user_hr);
+  ASSERT_EQ(0u, error);
+
+  // Set token result a valid access token.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(gaia_urls_->oauth2_token_url().spec().c_str()),
+      FakeWinHttpUrlFetcher::Headers(), "{\"access_token\": \"dummy_token\"}");
+
+  const wchar_t another_domain_name[] = L"ad_another_domain";
+  // Invalid configuration in admin sdk. Don't set the username.
+  std::string admin_sdk_response = base::StringPrintf(
+      "{\"customSchemas\": {\"Enhanced_desktop_security\": {\"AD_accounts\":"
+      "[{ \"value\": \"%ls\\\\%ls\" }]}}}",
+      another_domain_name, user_name);
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(get_cd_user_url_.c_str()), FakeWinHttpUrlFetcher::Headers(),
+      admin_sdk_response);
+
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred_.As(&test));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  ASSERT_TRUE(base::size(test->GetFinalEmail()) == 0);
+
+  // Make sure no user was created and the login attempt failed.
+  PSID sid = nullptr;
+  EXPECT_EQ(
+      HRESULT_FROM_WIN32(NERR_UserNotFound),
+      fake_os_user_manager()->GetUserSID(
+          OSUserManager::GetLocalDomain().c_str(), kDefaultUsername, &sid));
+  ASSERT_EQ(nullptr, sid);
+
+  // No new user is created.
+  EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+
+  ASSERT_EQ(S_OK, FinishLogonProcess(
+                      /*expected_success=*/false,
+                      /*expected_credentials_change_fired=*/false,
+                      IDS_INVALID_AD_UPN_BASE));
+}
+
 // This is the success scenario where all preconditions are met in the
 // AD login scenario. The user is successfully logged in.
 TEST_F(GcpGaiaCredentialBaseAdScenariosTest,

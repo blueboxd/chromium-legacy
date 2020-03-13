@@ -265,6 +265,11 @@ class MODULES_EXPORT DeferredTaskHandler final
 
   // Graph locking.
   RecursiveMutex context_graph_mutex_;
+
+  // Protects |rendering_automatic_pull_handlers| when updating, processing, and
+  // clearing. (See crbug.com/1061018)
+  mutable Mutex automatic_pull_handlers_lock_;
+
   std::atomic<base::PlatformThreadId> audio_thread_;
 };
 

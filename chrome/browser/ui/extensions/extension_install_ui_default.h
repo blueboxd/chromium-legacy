@@ -13,6 +13,7 @@ namespace content {
 class BrowserContext;
 }
 
+class Browser;
 class Profile;
 
 class ExtensionInstallUIDefault : public extensions::ExtensionInstallUI {
@@ -28,6 +29,13 @@ class ExtensionInstallUIDefault : public extensions::ExtensionInstallUI {
   void OpenAppInstalledUI(const std::string& app_id) override;
   void SetSkipPostInstallUI(bool skip_ui) override;
   gfx::NativeWindow GetDefaultInstallDialogParent() override;
+
+  // Show the platform-specific bubble UI. This method has different
+  // implementations on different platforms, controlled by build flags.
+  static void ShowPlatformBubble(
+      scoped_refptr<const extensions::Extension> extension,
+      Browser* browser,
+      const SkBitmap& icon);
 
  private:
   Profile* profile_;

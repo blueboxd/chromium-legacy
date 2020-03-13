@@ -31,6 +31,11 @@ class OneShotTimer;
 namespace chromeos {
 namespace app_time {
 
+extern const char kAppsWithTimeLimitMetric[];
+extern const char kBlockedAppsCountMetric[];
+extern const char kPolicyUpdateCountMetric[];
+extern const char kEngagementMetric[];
+
 class AppServiceWrapper;
 class WebTimeLimitEnforcer;
 class WebTimeActivityProvider;
@@ -76,6 +81,9 @@ class AppTimeController : public SystemClockClient::Observer,
   base::Optional<base::TimeDelta> GetTimeLimitForApp(
       const std::string& app_service_id,
       apps::mojom::AppType app_type) const;
+
+  // Called by ChildUserService when it is being destructed to save metrics.
+  void RecordMetricsOnShutdown() const;
 
   // SystemClockClient::Observer:
   void SystemClockUpdated() override;
@@ -153,6 +161,10 @@ class AppTimeController : public SystemClockClient::Observer,
 
   // Used to observe when policy preferences change.
   std::unique_ptr<PrefChangeRegistrar> pref_registrar_;
+
+  // Metrics information to be recorded for PerAppTimeLimits.
+  int patl_policy_update_count_ = 0;
+  int apps_with_limit_ = 0;
 };
 
 }  // namespace app_time

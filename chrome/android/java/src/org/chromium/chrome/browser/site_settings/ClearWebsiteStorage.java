@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.site_settings;
 
 import android.content.Context;
-import android.support.v7.preference.DialogPreference;
 import android.util.AttributeSet;
+
+import androidx.preference.DialogPreference;
 
 /**
  * Dialog that prompts the user to clear website storage on the device.

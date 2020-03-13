@@ -27,6 +27,7 @@
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
+#include "ash/shelf/drag_handle.h"
 #include "ash/shelf/home_to_overview_nudge_controller.h"
 #include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/shelf.h"
@@ -609,11 +610,18 @@ void ShelfLayoutManager::UpdateContextualNudges() {
   const bool in_app_shelf = ShelfConfig::Get()->is_in_app();
   const bool in_tablet_mode = Shell::Get()->IsInTabletMode();
 
+  contextual_tooltip::SetDragHandleNudgeDisabledForHiddenShelf(!IsVisible());
+
   if (in_app_shelf && in_tablet_mode) {
     if (contextual_tooltip::ShouldShowNudge(
             Shell::Get()->session_controller()->GetLastActiveUserPrefService(),
             contextual_tooltip::TooltipType::kDragHandle)) {
       shelf_widget_->ScheduleShowDragHandleNudge();
+    } else if (IsVisible() || !shelf_widget_->GetDragHandle()->ShowingNudge()) {
+      // Keep the nudge around if the shelf is hidden, and the drag handle is
+      // already shown (so it's shown when the user drags the shelf up again).
+      // If the drag handle is not yet shown, cancel any scheduled shows.
+      shelf_widget_->HideDragHandleNudge();
     }
   } else {
     shelf_widget_->HideDragHandleNudge();
@@ -1091,6 +1099,7 @@ void ShelfLayoutManager::OnSessionStateChanged(
   CalculateTargetBoundsAndUpdateWorkArea();
   UpdateBoundsAndOpacity(true /* animate */);
   UpdateVisibilityState();
+  UpdateContextualNudges();
 }
 
 void ShelfLayoutManager::OnLoginStatusChanged(LoginStatus loing_status) {
@@ -1139,7 +1148,6 @@ void ShelfLayoutManager::OnShelfConfigUpdated() {
   SetState(state_.visibility_state);
   LayoutShelf(/*animate=*/true);
   MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
-  UpdateContextualNudges();
 }
 
 void ShelfLayoutManager::OnTabletModeStarted() {
@@ -1277,6 +1285,8 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
     for (auto& observer : observers_)
       observer.OnHotseatStateChanged(previous_hotseat_state, hotseat_state());
   }
+
+  UpdateContextualNudges();
 }
 
 HotseatState ShelfLayoutManager::CalculateHotseatState(

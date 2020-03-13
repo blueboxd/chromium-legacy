@@ -9,15 +9,18 @@
 
 namespace net {
 
-DohProviderEntry::DohProviderEntry(std::string provider,
-                                   std::set<std::string> ip_strs,
-                                   std::set<std::string> dns_over_tls_hostnames,
-                                   std::string dns_over_https_template,
-                                   std::string ui_name,
-                                   std::string privacy_policy,
-                                   bool display_globally,
-                                   std::set<std::string> display_countries)
+DohProviderEntry::DohProviderEntry(
+    std::string provider,
+    base::Optional<DohProviderIdForHistogram> provider_id_for_histogram,
+    std::set<std::string> ip_strs,
+    std::set<std::string> dns_over_tls_hostnames,
+    std::string dns_over_https_template,
+    std::string ui_name,
+    std::string privacy_policy,
+    bool display_globally,
+    std::set<std::string> display_countries)
     : provider(std::move(provider)),
+      provider_id_for_histogram(std::move(provider_id_for_histogram)),
       dns_over_tls_hostnames(std::move(dns_over_tls_hostnames)),
       dns_over_https_template(std::move(dns_over_https_template)),
       ui_name(std::move(ui_name)),
@@ -28,6 +31,7 @@ DohProviderEntry::DohProviderEntry(std::string provider,
   if (display_globally || !this->display_countries.empty()) {
     DCHECK(!this->ui_name.empty());
     DCHECK(!this->privacy_policy.empty());
+    DCHECK(this->provider_id_for_histogram.has_value());
   }
   for (const auto& display_country : this->display_countries) {
     DCHECK_EQ(2u, display_country.size());
@@ -49,7 +53,7 @@ const std::vector<DohProviderEntry>& GetDohProviderList() {
   // tools/metrics/histograms/histograms.xml.
   static const base::NoDestructor<std::vector<DohProviderEntry>> providers{{
       DohProviderEntry(
-          "CleanBrowsingAdult",
+          "CleanBrowsingAdult", base::nullopt /* provider_id_for_histogram */,
           {"185.228.168.10", "185.228.169.11", "2a0d:2a00:1::1",
            "2a0d:2a00:2::1"},
           {"adult-filter-dns.cleanbrowsing.org"} /* dot_hostnames */,
@@ -58,6 +62,7 @@ const std::vector<DohProviderEntry>& GetDohProviderList() {
           false /* display_globally */, {} /* display_countries */),
       DohProviderEntry(
           "CleanBrowsingFamily",
+          DohProviderIdForHistogram::kCleanBrowsingFamily,
           {"185.228.168.168", "185.228.169.168",
            "2a0d:2a00:1::", "2a0d:2a00:2::"},
           {"family-filter-dns.cleanbrowsing.org"} /* dot_hostnames */,
@@ -66,7 +71,7 @@ const std::vector<DohProviderEntry>& GetDohProviderList() {
           "https://cleanbrowsing.org/privacy" /* privacy_policy */,
           true /* display_globally */, {} /* display_countries */),
       DohProviderEntry(
-          "CleanBrowsingSecure",
+          "CleanBrowsingSecure", base::nullopt /* provider_id_for_histogram */,
           {"185.228.168.9", "185.228.169.9", "2a0d:2a00:1::2",
            "2a0d:2a00:2::2"},
           {"security-filter-dns.cleanbrowsing.org"} /* dot_hostnames */,
@@ -74,7 +79,7 @@ const std::vector<DohProviderEntry>& GetDohProviderList() {
           "" /* ui_name */, "" /* privacy_policy */,
           false /* display_globally */, {} /* display_countries */),
       DohProviderEntry(
-          "Cloudflare",
+          "Cloudflare", DohProviderIdForHistogram::kCloudflare,
           {"1.1.1.1", "1.0.0.1", "2606:4700:4700::1111",
            "2606:4700:4700::1001"},
           {"one.one.one.one",
@@ -84,7 +89,7 @@ const std::vector<DohProviderEntry>& GetDohProviderList() {
           "https://developers.cloudflare.com/1.1.1.1/commitment-to-privacy/"
           "privacy-policy/privacy-policy/" /* privacy_policy */,
           true /* display_globally */, {} /* display_countries */),
-      DohProviderEntry("Comcast",
+      DohProviderEntry("Comcast", base::nullopt /* provider_id_for_histogram */,
                        {"75.75.75.75", "75.75.76.76", "2001:558:feed::1",
                         "2001:558:feed::2"},
                        {"dot.xfinity.com"} /* dns_over_tls_hostnames */,
@@ -93,13 +98,14 @@ const std::vector<DohProviderEntry>& GetDohProviderList() {
                        false /* display_globally */,
                        {} /* display_countries */),
       DohProviderEntry(
-          "Dnssb", {"185.222.222.222", "185.184.222.222", "2a09::", "2a09::1"},
+          "Dnssb", base::nullopt /* provider_id_for_histogram */,
+          {"185.222.222.222", "185.184.222.222", "2a09::", "2a09::1"},
           {"dns.sb"} /* dns_over_tls_hostnames */,
           {"https://doh.dns.sb/dns-query?no_ecs=true{&dns}",
            false /* use_post */},
           "" /* ui_name */, "" /* privacy_policy */,
           false /* display_globally */, {} /* display_countries */),
-      DohProviderEntry("Google",
+      DohProviderEntry("Google", DohProviderIdForHistogram::kGoogle,
                        {"8.8.8.8", "8.8.4.4", "2001:4860:4860::8888",
                         "2001:4860:4860::8844"},
                        {"dns.google", "dns.google.com",
@@ -109,13 +115,14 @@ const std::vector<DohProviderEntry>& GetDohProviderList() {
                        "https://developers.google.com/speed/public-dns/"
                        "privacy" /* privacy_policy */,
                        true /* display_globally */, {} /* display_countries */),
-      DohProviderEntry("Iij", {} /* ip_strs */, {} /* dns_over_tls_hostnames */,
+      DohProviderEntry("Iij", DohProviderIdForHistogram::kIij, {} /* ip_strs */,
+                       {} /* dns_over_tls_hostnames */,
                        "https://public.dns.iij.jp/dns-query",
                        "IIJ (Public DNS)" /* ui_name */,
                        "https://public.dns.iij.jp/" /* privacy_policy */,
                        false /* display_globally */,
                        {"JP"} /* display_countries */),
-      DohProviderEntry("OpenDNS",
+      DohProviderEntry("OpenDNS", base::nullopt /* provider_id_for_histogram */,
                        {"208.67.222.222", "208.67.220.220", "2620:119:35::35",
                         "2620:119:53::53"},
                        {""} /* dns_over_tls_hostnames */,
@@ -123,31 +130,30 @@ const std::vector<DohProviderEntry>& GetDohProviderList() {
                        "" /* ui_name */, "" /* privacy_policy */,
                        false /* display_globally */,
                        {} /* display_countries */),
-      DohProviderEntry("OpenDNSFamily",
-                       {"208.67.222.123", "208.67.220.123", "2620:119:35::123",
-                        "2620:119:53::123"},
-                       {""} /* dns_over_tls_hostnames */,
-                       "https://doh.familyshield.opendns.com/"
-                       "dns-query{?dns}",
-                       "" /* ui_name */, "" /* privacy_policy */,
-                       false /* display_globally */,
-                       {} /* display_countries */),
       DohProviderEntry(
-          "Quad9Cdn",
+          "OpenDNSFamily", base::nullopt /* provider_id_for_histogram */,
+          {"208.67.222.123", "208.67.220.123", "2620:119:35::123",
+           "2620:119:53::123"},
+          {""} /* dns_over_tls_hostnames */,
+          "https://doh.familyshield.opendns.com/dns-query{?dns}",
+          "" /* ui_name */, "" /* privacy_policy */,
+          false /* display_globally */, {} /* display_countries */),
+      DohProviderEntry(
+          "Quad9Cdn", base::nullopt /* provider_id_for_histogram */,
           {"9.9.9.11", "149.112.112.11", "2620:fe::11", "2620:fe::fe:11"},
           {"dns11.quad9.net"} /* dns_over_tls_hostnames */,
           "https://dns11.quad9.net/dns-query", "" /* ui_name */,
           "" /* privacy_policy */, false /* display_globally */,
           {} /* display_countries */),
       DohProviderEntry(
-          "Quad9Insecure",
+          "Quad9Insecure", base::nullopt /* provider_id_for_histogram */,
           {"9.9.9.10", "149.112.112.10", "2620:fe::10", "2620:fe::fe:10"},
           {"dns10.quad9.net"} /* dns_over_tls_hostnames */,
           "https://dns10.quad9.net/dns-query", "" /* ui_name */,
           "" /* privacy_policy */, false /* display_globally */,
           {} /* display_countries */),
       DohProviderEntry(
-          "Quad9Secure",
+          "Quad9Secure", DohProviderIdForHistogram::kQuad9Secure,
           {"9.9.9.9", "149.112.112.112", "2620:fe::fe", "2620:fe::9"},
           {"dns.quad9.net", "dns9.quad9.net"} /* dns_over_tls_hostnames */,
           "https://dns.quad9.net/dns-query", "Quad9 (9.9.9.9)" /* ui_name */,

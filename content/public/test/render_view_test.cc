@@ -675,8 +675,9 @@ void RenderViewTest::SimulateRectTap(const gfx::Rect& rect) {
 }
 
 void RenderViewTest::SetFocused(const blink::WebElement& element) {
-  RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
-  view->FocusedElementChanged(blink::WebElement(), element);
+  auto* frame = RenderFrameImpl::FromWebFrame(element.GetDocument().GetFrame());
+  if (frame)
+    frame->FocusedElementChanged(element);
 }
 
 void RenderViewTest::Reload(const GURL& url) {

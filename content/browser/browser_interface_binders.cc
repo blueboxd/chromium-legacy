@@ -95,7 +95,7 @@
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom.h"
 #include "third_party/blink/public/mojom/prerender/prerender.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
-#include "third_party/blink/public/mojom/quota/quota_dispatcher_host.mojom.h"
+#include "third_party/blink/public/mojom/quota/quota_manager_host.mojom.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_recognizer.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
@@ -235,12 +235,12 @@ void BindProcessInternalsHandler(
   process_internals_ui->BindProcessInternalsHandler(std::move(receiver), host);
 }
 
-void BindQuotaDispatcherHost(
+void BindQuotaManagerHost(
     content::RenderFrameHost* host,
-    mojo::PendingReceiver<blink::mojom::QuotaDispatcherHost> receiver) {
-  host->GetProcess()->BindQuotaDispatcherHost(host->GetRoutingID(),
-                                              host->GetLastCommittedOrigin(),
-                                              std::move(receiver));
+    mojo::PendingReceiver<blink::mojom::QuotaManagerHost> receiver) {
+  host->GetProcess()->BindQuotaManagerHost(host->GetRoutingID(),
+                                           host->GetLastCommittedOrigin(),
+                                           std::move(receiver));
 }
 
 void BindSharedWorkerConnector(
@@ -472,8 +472,8 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::mojom::PresentationService>(base::BindRepeating(
       &RenderFrameHostImpl::GetPresentationService, base::Unretained(host)));
 
-  map->Add<blink::mojom::QuotaDispatcherHost>(
-      base::BindRepeating(&BindQuotaDispatcherHost, base::Unretained(host)));
+  map->Add<blink::mojom::QuotaManagerHost>(
+      base::BindRepeating(&BindQuotaManagerHost, base::Unretained(host)));
 
   map->Add<blink::mojom::SharedWorkerConnector>(
       base::BindRepeating(&BindSharedWorkerConnector, base::Unretained(host)));
@@ -773,9 +773,9 @@ void PopulateBinderMapWithContext(
   // render process host binders taking a frame id and an origin
   map->Add<blink::mojom::LockManager>(BindWorkerReceiverForOriginAndFrameId(
       &RenderProcessHost::CreateLockManager, host));
-  map->Add<blink::mojom::QuotaDispatcherHost>(
+  map->Add<blink::mojom::QuotaManagerHost>(
       BindWorkerReceiverForOriginAndFrameId(
-          &RenderProcessHost::BindQuotaDispatcherHost, host));
+          &RenderProcessHost::BindQuotaManagerHost, host));
 }
 
 void PopulateBinderMap(DedicatedWorkerHost* host,
@@ -843,9 +843,9 @@ void PopulateBinderMapWithContext(
   // render process host binders taking a frame id and an origin
   map->Add<blink::mojom::LockManager>(BindWorkerReceiverForOriginAndFrameId(
       &RenderProcessHost::CreateLockManager, host));
-  map->Add<blink::mojom::QuotaDispatcherHost>(
+  map->Add<blink::mojom::QuotaManagerHost>(
       BindWorkerReceiverForOriginAndFrameId(
-          &RenderProcessHost::BindQuotaDispatcherHost, host));
+          &RenderProcessHost::BindQuotaManagerHost, host));
 }
 
 void PopulateBinderMap(SharedWorkerHost* host,
@@ -946,9 +946,9 @@ void PopulateBinderMapWithContext(
   map->Add<blink::mojom::LockManager>(
       BindServiceWorkerReceiverForOriginAndFrameId(
           &RenderProcessHost::CreateLockManager, host));
-  map->Add<blink::mojom::QuotaDispatcherHost>(
+  map->Add<blink::mojom::QuotaManagerHost>(
       BindServiceWorkerReceiverForOriginAndFrameId(
-          &RenderProcessHost::BindQuotaDispatcherHost, host));
+          &RenderProcessHost::BindQuotaManagerHost, host));
 }
 
 void PopulateBinderMap(ServiceWorkerProviderHost* host,

@@ -14,6 +14,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
+#include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -125,9 +126,22 @@ class UserSettingsEventLoggerTest : public AshTestBase {
     task_environment_->FastForwardBy(kSliderDelay);
   }
 
+  void LogBrightness(const int current_level,
+                     const bool initiated_by_user = true) {
+    power_manager::BacklightBrightnessChange change;
+    change.set_cause(
+        initiated_by_user
+            ? power_manager::BacklightBrightnessChange_Cause_USER_REQUEST
+            : power_manager::BacklightBrightnessChange_Cause_OTHER);
+    change.set_percent(current_level);
+
+    logger_->ScreenBrightnessChanged(change);
+  }
+
   // Brightness features are logged at the end of the timer delay.
-  void LogBrightnessAndWait(const int previous_level, const int current_level) {
-    logger_->LogBrightnessUkmEvent(previous_level, current_level);
+  void LogBrightnessAndWait(const int current_level,
+                            const bool initiated_by_user = true) {
+    LogBrightness(current_level, initiated_by_user);
     task_environment_->FastForwardBy(kSliderDelay);
   }
 
@@ -366,53 +380,73 @@ TEST_F(UserSettingsEventLoggerTest, TestVolumeDelay) {
   TestUkmRecorder::ExpectEntryMetric(entry, "CurrentValue", 15);
 }
 
-TEST_F(UserSettingsEventLoggerTest, TestLogBrightnessFeatures) {
-  LogBrightnessAndWait(12, 29);
-
-  // Enter fullscreen.
-  logger_->OnFullscreenStateChanged(true, nullptr);
-  LogBrightnessAndWait(0, 0);
-
-  // Exit fullscreen. |is_recently_fullscreen| should remain true for 5 minutes,
-  // with 1 second given for leeway on either side.
-  logger_->OnFullscreenStateChanged(false, nullptr);
-  FastForwardBySeconds(299 - kSliderDelay.InSeconds());
-  LogBrightnessAndWait(0, 0);
-  FastForwardBySeconds(2);
-  LogBrightnessAndWait(0, 0);
+TEST_F(UserSettingsEventLoggerTest, TestLogBrightnessReason) {
+  LogBrightnessAndWait(1);
+  LogBrightnessAndWait(2);
+  LogBrightnessAndWait(3, false);  // Not logged, but updates the brightness.
+  LogBrightnessAndWait(4);
 
   const auto& entries = GetUkmEntries();
-  ASSERT_EQ(4ul, entries.size());
+  ASSERT_EQ(3ul, entries.size());
 
-  // Check that the first entry has all details recorded correctly.
+  // Check that the first entry has basic details recorded correctly.
   const auto* entry = entries[0];
   TestUkmRecorder::ExpectEntryMetric(entry, "SettingId",
                                      UserSettingsEvent::Event::BRIGHTNESS);
   TestUkmRecorder::ExpectEntryMetric(entry, "SettingType",
                                      UserSettingsEvent::Event::QUICK_SETTINGS);
-  TestUkmRecorder::ExpectEntryMetric(entry, "PreviousValue", 12);
-  TestUkmRecorder::ExpectEntryMetric(entry, "CurrentValue", 29);
-  TestUkmRecorder::ExpectEntryMetric(entry, "IsRecentlyFullscreen", false);
+  EXPECT_FALSE(TestUkmRecorder::EntryHasMetric(entry, "PreviousValue"));
+  TestUkmRecorder::ExpectEntryMetric(entry, "CurrentValue", 1);
 
-  // Check that subsequent entries correctly record |is_recently_fullscreen|.
+  // Check that subsequent entries correctly record values.
+  TestUkmRecorder::ExpectEntryMetric(entries[1], "PreviousValue", 1);
+  TestUkmRecorder::ExpectEntryMetric(entries[1], "CurrentValue", 2);
+  TestUkmRecorder::ExpectEntryMetric(entries[2], "PreviousValue", 3);
+  TestUkmRecorder::ExpectEntryMetric(entries[2], "CurrentValue", 4);
+}
+
+TEST_F(UserSettingsEventLoggerTest, TestLogRecentlyFullscreen) {
+  LogBrightnessAndWait(0);
+
+  // Enter fullscreen.
+  logger_->OnFullscreenStateChanged(true, nullptr);
+  LogBrightnessAndWait(0);
+
+  // Exit fullscreen. |is_recently_fullscreen| should remain true for 5 minutes,
+  // with 1 second given for leeway on either side.
+  logger_->OnFullscreenStateChanged(false, nullptr);
+  FastForwardBySeconds(299 - kSliderDelay.InSeconds());
+  LogBrightnessAndWait(0);
+  FastForwardBySeconds(2);
+  LogBrightnessAndWait(0);
+
+  const auto& entries = GetUkmEntries();
+  ASSERT_EQ(4ul, entries.size());
+
+  TestUkmRecorder::ExpectEntryMetric(entries[0], "IsRecentlyFullscreen", false);
   TestUkmRecorder::ExpectEntryMetric(entries[1], "IsRecentlyFullscreen", true);
   TestUkmRecorder::ExpectEntryMetric(entries[2], "IsRecentlyFullscreen", true);
   TestUkmRecorder::ExpectEntryMetric(entries[3], "IsRecentlyFullscreen", false);
 }
 
 TEST_F(UserSettingsEventLoggerTest, TestBrightnessDelay) {
+  LogBrightnessAndWait(10, false);  // Set an initial unlogged value.
+
   // Only log an event if there is a pause of |kSliderDelay|.
-  logger_->LogBrightnessUkmEvent(10, 11);
+  LogBrightness(11);
   task_environment_->FastForwardBy(kSliderDelay / 2);
-  logger_->LogBrightnessUkmEvent(11, 12);
-  logger_->LogBrightnessUkmEvent(12, 13);
-  logger_->LogBrightnessUkmEvent(13, 14);
+  LogBrightness(12);
   task_environment_->FastForwardBy(kSliderDelay / 2);
-  logger_->LogBrightnessUkmEvent(14, 15);
+  LogBrightness(13);
+  LogBrightness(14, false);
+  LogBrightness(15);
+  LogBrightness(16, false);
   task_environment_->FastForwardBy(kSliderDelay);
 
+  LogBrightnessAndWait(17);
+
   const auto& entries = GetUkmEntries();
-  ASSERT_EQ(1ul, entries.size());
+  ASSERT_EQ(2ul, entries.size());
 
   const auto* entry = entries[0];
   TestUkmRecorder::ExpectEntryMetric(entry, "SettingId",
@@ -421,6 +455,10 @@ TEST_F(UserSettingsEventLoggerTest, TestBrightnessDelay) {
                                      UserSettingsEvent::Event::QUICK_SETTINGS);
   TestUkmRecorder::ExpectEntryMetric(entry, "PreviousValue", 10);
   TestUkmRecorder::ExpectEntryMetric(entry, "CurrentValue", 15);
+
+  entry = entries[1];
+  TestUkmRecorder::ExpectEntryMetric(entry, "PreviousValue", 16);
+  TestUkmRecorder::ExpectEntryMetric(entry, "CurrentValue", 17);
 }
 
 TEST_F(UserSettingsEventLoggerTest, TestLogDatetimeFeatures) {

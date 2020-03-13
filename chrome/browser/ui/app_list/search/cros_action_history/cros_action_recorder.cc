@@ -21,6 +21,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action.pb.h"
 
@@ -34,12 +35,6 @@ constexpr int kActionLimitInMemory = 3600;
 // If current file already contains more record than this, skip the rest for
 // that day.
 constexpr int kActionLimitPerFile = 100000;
-
-// The sub-directory in profile path where the action history is stored.
-constexpr char kActionHistoryDir[] = "cros_action_history";
-
-// The basename of the file for the copied action history.
-constexpr char kActionHistoryBasename[] = "cros_action_history.pb";
 
 // Represents the events of the CrOSActionRecorder.
 // This enum is used for a histogram and should not be renumbered and the old
@@ -102,7 +97,8 @@ void SaveToDiskOnWorkerThread(const CrOSActionHistoryProto actions,
 
 void DeleteExistingLog(const base::FilePath model_dir) {
   // We don't want anyone accidentally deletes everything in the home directory.
-  if (model_dir.BaseName().MaybeAsASCII() != kActionHistoryDir)
+  if (model_dir.BaseName().MaybeAsASCII() !=
+      CrOSActionRecorder::kActionHistoryDir)
     return;
 
   base::DeleteFileRecursively(model_dir);
@@ -162,14 +158,11 @@ void CopyToDownloadDir(const base::FilePath model_dir,
 }  // namespace
 
 constexpr base::TimeDelta CrOSActionRecorder::kSaveInternal;
+constexpr char CrOSActionRecorder::kActionHistoryDir[];
+constexpr char CrOSActionRecorder::kActionHistoryBasename[];
 
 CrOSActionRecorder::CrOSActionRecorder()
-    : CrOSActionRecorder(
-          ProfileManager::GetActiveUserProfile()->GetPath().Append(
-              kActionHistoryDir),
-          DownloadPrefs(ProfileManager::GetActiveUserProfile())
-              .GetDefaultDownloadDirectoryForProfile()
-              .Append(kActionHistoryBasename)) {}
+    : CrOSActionRecorder(ProfileManager::GetActiveUserProfile()) {}
 
 CrOSActionRecorder::~CrOSActionRecorder() = default;
 
@@ -209,19 +202,26 @@ void CrOSActionRecorder::RecordAction(
   MaybeFlushToDisk();
 }
 
-CrOSActionRecorder::CrOSActionRecorder(
-    const base::FilePath& model_dir,
-    const base::FilePath& filename_in_download_dir)
-    : last_save_timestamp_(base::Time::Now()),
-      model_dir_(model_dir),
-      filename_in_download_dir_(filename_in_download_dir) {
+CrOSActionRecorder::CrOSActionRecorder(Profile* profile) {
+  Init(profile);
+}
+
+void CrOSActionRecorder::Init(Profile* profile) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  last_save_timestamp_ = base::Time::Now();
   SetCrOSActionRecorderType();
 
+  // Do not record if the profile is empty.
+  if (!profile) {
+    type_ = CrOSActionRecorderType::kDefault;
+  }
   // Skip if if the feature is not enabled.
   if (type_ == CrOSActionRecorderType::kDefault)
     return;
+
+  model_dir_ =
+      profile->GetPath().AppendASCII(CrOSActionRecorder::kActionHistoryDir);
 
   task_runner_ = base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
@@ -236,6 +236,11 @@ CrOSActionRecorder::CrOSActionRecorder(
 
   // Copy to download directory if required.
   if (type_ == CrOSActionRecorderType::kCopyToDownloadDir) {
+    const base::FilePath filename_in_download_dir =
+        DownloadPrefs(profile)
+            .GetDefaultDownloadDirectoryForProfile()
+            .AppendASCII(CrOSActionRecorder::kActionHistoryBasename);
+
     task_runner_->PostTask(FROM_HERE,
                            base::BindOnce(&CopyToDownloadDir, model_dir_,
                                           filename_in_download_dir));
@@ -256,7 +261,7 @@ void CrOSActionRecorder::MaybeFlushToDisk() {
     // Writes the predictor proto to disk asynchronously.
     const std::string day = base::NumberToString(
         static_cast<int>(now.ToDoubleT() / kSecondsPerDay));
-    const base::FilePath action_filepath = model_dir_.Append(day);
+    const base::FilePath action_filepath = model_dir_.AppendASCII(day);
 
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&SaveToDiskOnWorkerThread,
@@ -269,7 +274,7 @@ void CrOSActionRecorder::SetCrOSActionRecorderType() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   if (command_line->HasSwitch(ash::switches::kEnableCrOSActionRecorder)) {
-    std::string cros_action_flag = command_line->GetSwitchValueASCII(
+    const std::string& cros_action_flag = command_line->GetSwitchValueASCII(
         ash::switches::kEnableCrOSActionRecorder);
 
     if (cros_action_flag == ash::switches::kCrOSActionRecorderWithHash) {

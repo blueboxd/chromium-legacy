@@ -17,11 +17,11 @@
 
 namespace base {
 class Clock;
-class FilePath;
 }  // namespace base
 
 class PrefRegistrySimple;
 class PrefService;
+class Profile;
 
 // Whether to enable announcement notification system.
 extern const base::Feature kAnnouncementNotification;
@@ -86,12 +86,14 @@ class AnnouncementNotificationService : public KeyedService {
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
   static AnnouncementNotificationService* Create(
-      const base::FilePath& profile_path,
-      bool new_profile,
+      Profile* profile,
       PrefService* pref_service,
       std::unique_ptr<Delegate> delegate,
       base::Clock* clock);
   static GURL GetAnnouncementURL();
+
+  // Returns if the announcement can be opened.
+  static bool CanOpenAnnouncement(Profile* profile);
 
   AnnouncementNotificationService();
   ~AnnouncementNotificationService() override;

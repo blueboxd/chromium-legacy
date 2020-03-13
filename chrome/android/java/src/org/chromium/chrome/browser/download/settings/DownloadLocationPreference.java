@@ -5,11 +5,12 @@
 package org.chromium.chrome.browser.download.settings;
 
 import android.content.Context;
-import android.support.v7.preference.DialogPreference;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
+
+import androidx.preference.DialogPreference;
 
 import org.chromium.chrome.browser.download.DirectoryOption;
 import org.chromium.chrome.download.R;

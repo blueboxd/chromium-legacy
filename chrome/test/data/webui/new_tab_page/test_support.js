@@ -52,37 +52,16 @@ export function assertFocus(element) {
 }
 
 /**
- * Creates a |TestBrowserProxy|, which has mock functions for all functions of
- * class |clazz|.
- * @param {Class} clazz
- * @return {TestBrowserProxy}
- */
-export function mock(clazz) {
-  const props = Object.getOwnPropertyNames(clazz.prototype);
-  const mockBrowserProxy = new TestBrowserProxy(props);
-  for (const prop of props) {
-    if (prop == 'constructor') {
-      continue;
-    }
-    mockBrowserProxy[prop] = function() {
-      const args = arguments.length == 1 ? arguments[0] : Array.from(arguments);
-      mockBrowserProxy.methodCalled(prop, args);
-      return mockBrowserProxy.getResultFor(prop, undefined);
-    };
-  }
-  return mockBrowserProxy;
-}
-
-/**
  * Creates a mocked test proxy.
  * @return {TestBrowserProxy}
  */
 export function createTestProxy() {
-  const testProxy = mock(BrowserProxy);
+  const testProxy = TestBrowserProxy.fromClass(BrowserProxy);
   testProxy.callbackRouter = new newTabPage.mojom.PageCallbackRouter();
   testProxy.callbackRouterRemote =
       testProxy.callbackRouter.$.bindNewPipeAndPassRemote();
-  testProxy.handler = mock(newTabPage.mojom.PageHandlerRemote);
+  testProxy.handler =
+      TestBrowserProxy.fromClass(newTabPage.mojom.PageHandlerRemote);
   testProxy.setResultFor('createUntrustedIframeSrc', '');
   return testProxy;
 }

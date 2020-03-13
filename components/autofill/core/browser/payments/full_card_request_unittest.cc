@@ -54,6 +54,7 @@ class MockUIDelegate : public FullCardRequest::UIDelegate,
                     base::WeakPtr<CardUnmaskDelegate>));
   MOCK_METHOD1(OnUnmaskVerificationResult,
                void(AutofillClient::PaymentsRpcResult));
+  MOCK_CONST_METHOD0(ShouldOfferFidoAuth, bool());
 };
 
 // The personal data manager.

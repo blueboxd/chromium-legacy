@@ -60,11 +60,6 @@ void DOMScheduler::Trace(Visitor* visitor) {
   Supplement<Document>::Trace(visitor);
 }
 
-// TODO(japhet,shaseley): These are probably useful for metrics/tracing, or
-// for handling incumbent task state.
-void DOMScheduler::OnTaskStarted(DOMTask*) {}
-void DOMScheduler::OnTaskCompleted(DOMTask*) {}
-
 ScriptPromise DOMScheduler::postTask(ScriptState* script_state,
                                      V8Function* callback_function,
                                      SchedulerPostTaskOptions* options,

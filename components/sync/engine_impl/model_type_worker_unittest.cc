@@ -2017,7 +2017,9 @@ TEST_F(ModelTypeWorkerBookmarksTest, CanDecryptUpdateWithMissingBookmarkGUID) {
   // Generate specifics without a GUID.
   sync_pb::SyncEntity entity;
   entity.mutable_specifics()->mutable_bookmark()->set_url("www.foo.com");
-  entity.mutable_specifics()->mutable_bookmark()->set_title("Title");
+  entity.mutable_specifics()
+      ->mutable_bookmark()
+      ->set_legacy_canonicalized_title("Title");
   entity.set_id_string("testserverid");
   entity.set_originator_client_item_id(kGuid1);
   *entity.mutable_unique_position() =
@@ -2066,7 +2068,9 @@ TEST_F(ModelTypeWorkerBookmarksTest,
   // originator_client_item_id.
   sync_pb::SyncEntity entity;
   entity.mutable_specifics()->mutable_bookmark()->set_url("www.foo.com");
-  entity.mutable_specifics()->mutable_bookmark()->set_title("Title");
+  entity.mutable_specifics()
+      ->mutable_bookmark()
+      ->set_legacy_canonicalized_title("Title");
   entity.set_id_string("testserverid");
   entity.set_originator_client_item_id(kInvalidOCII);
   *entity.mutable_unique_position() =

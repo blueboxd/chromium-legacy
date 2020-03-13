@@ -12,6 +12,7 @@
 #include "content/public/test/test_utils.h"
 #include "media/base/limits.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -252,7 +253,7 @@ TEST_F(DevToolsVideoConsumerTest, CallbacksAreCalledWhenBufferValid) {
   // On valid buffer the |receiver_| gets a frame via OnFrameFromVideoConsumer.
   EXPECT_CALL(receiver_, OnFrameFromVideoConsumerMock(_)).Times(1);
 
-  auto region = base::ReadOnlySharedMemoryRegion::Create(
+  auto region = mojo::CreateReadOnlySharedMemoryRegion(
                     media::VideoFrame::AllocationSize(kFormat, kResolution))
                     .region;
   ASSERT_TRUE(region.IsValid());
@@ -280,7 +281,7 @@ TEST_F(DevToolsVideoConsumerTest, CallbackIsNotCalledWhenBufferIsTooSmall) {
   ASSERT_LT(too_few_number_of_bytes,
             media::VideoFrame::AllocationSize(kFormat, kResolution));
   auto region =
-      base::ReadOnlySharedMemoryRegion::Create(too_few_number_of_bytes).region;
+      mojo::CreateReadOnlySharedMemoryRegion(too_few_number_of_bytes).region;
   ASSERT_TRUE(region.IsValid());
   SimulateFrameCapture(std::move(region));
   base::RunLoop().RunUntilIdle();

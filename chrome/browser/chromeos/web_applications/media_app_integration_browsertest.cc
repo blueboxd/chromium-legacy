@@ -7,12 +7,10 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
 #include "chrome/browser/chromeos/file_manager/web_file_tasks.h"
 #include "chrome/browser/chromeos/web_applications/system_web_app_integration_test.h"
 #include "chrome/browser/extensions/component_loader.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -24,7 +22,6 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/entry_info.h"
-#include "extensions/browser/extension_system.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 
@@ -65,13 +62,6 @@ class MediaAppIntegrationTest : public SystemWebAppIntegrationTest {
 class MediaAppIntegrationWithFilesAppTest : public MediaAppIntegrationTest {
   void SetUpOnMainThread() override {
     file_manager::test::AddDefaultComponentExtensionsOnMainThread(profile());
-    // Add the Files App, but remove the Gallery app, since its own file
-    // handling may interfere. Long term, the Galley app will be removed.
-    // TODO(crbug.com/1030935): Rely on flags alone to remove the Gallery App
-    // (i.e. migrate this step to release code).
-    extensions::ExtensionService* service =
-        extensions::ExtensionSystem::Get(profile())->extension_service();
-    service->component_loader()->Remove(file_manager::kGalleryAppId);
     MediaAppIntegrationTest::SetUpOnMainThread();
   }
 };

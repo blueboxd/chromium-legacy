@@ -245,7 +245,6 @@
 <translation id="3995138139523574647">USB-C 裝置 (右後方連接埠)</translation>
 <translation id="4017989525502048489">雷射筆</translation>
 <translation id="4021716437419160885">向下捲動</translation>
-<translation id="402772165574991617">在平板電腦模式中使用手勢快速切換應用程式，並與 Chromebook 互動。</translation>
 <translation id="4028481283645788203">基於安全考量，請輸入密碼</translation>
 <translation id="4042660782729322247">你正在分享螢幕畫面</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{針對 1 個應用程式關閉}other{針對 # 個應用程式關閉}}</translation>
@@ -534,7 +533,6 @@
 <translation id="8000066093800657092">沒有網路</translation>
 <translation id="8029629653277878342">基於安全考量，請輸入 PIN 碼或密碼</translation>
 <translation id="8030169304546394654">已中斷連線</translation>
-<translation id="8042024183333293953">試用新的手勢操作功能</translation>
 <translation id="8048123526339889627">藍牙設定</translation>
 <translation id="8054466585765276473">正在計算電池使用時間。</translation>
 <translation id="8061464966246066292">高對比模式</translation>

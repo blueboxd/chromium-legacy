@@ -43,7 +43,6 @@ per-file back_forward_cache_browsertest.cc=altimin@chromium.org
 # Storage API dependencies.
 per-file storage_partition*=file://storage/OWNERS
 per-file storage_service*=file://components/services/storage/OWNERS
-per-file quota_dispatcher_host*=file://storage/OWNERS
 
 # Variations.
 per-file field_trial_synchronizer.*=file://base/metrics/OWNERS

@@ -1905,6 +1905,16 @@ body.files-ng #list-container .thumbnail-grid:focus
   box-shadow: 0 0 0 1px var(--google-blue-600);
 }
 
+body.check-select.files-ng #list-container .thumbnail-grid
+    .thumbnail-item[lead],
+body.files-ng #list-container .thumbnail-grid
+    .thumbnail-item[lead]:not([selected]) {
+  /* 2px border: 1px via box-shadow + 1px via border, to accommodate
+     the difference between regular border 1px and selected border 2px.*/
+  border-color: var(--google-grey-700);
+  box-shadow: 0 0 0 1px var(--google-grey-700);
+}
+
 body.files-ng #list-container .thumbnail-grid .thumbnail-item[lead].directory
     .shield {
   height: 36px;
@@ -2030,6 +2040,11 @@ body.files-ng #list-container li {
 body.files-ng.check-select #list-container list:focus > li[lead] {
   background-color: var(--google-blue-50);
   border: 1px solid var(--google-blue-600);
+}
+
+body.files-ng.check-select #list-container list > li[lead] {
+  border: 1px solid var(--google-grey-700);
+  border-radius: 2px;
 }
 
 #list-container.nohover grid > .accepts {
@@ -2680,9 +2695,16 @@ body.files-ng #list-container li .detail-checkmark {
   -webkit-mask-repeat: no-repeat;
   background-color: currentColor;
   background-image: none;
-  color: var(--google-blue-600);
   height: 40px;
   width: 32px;
+}
+
+body.files-ng #list-container :focus li .detail-checkmark {
+  color: var(--google-blue-600);
+}
+
+body.files-ng #list-container li .detail-checkmark {
+  color: var(--google-grey-700);
 }
 
 body.files-ng #list-container li .detail-thumbnail {

@@ -37,7 +37,7 @@
             {
               'kvm': '1',
               'os': 'Ubuntu-16.04',
-              'pool': 'chrome.tests.cros-vm',
+              'pool': 'chrome.tests.cros-vm.template',
             },
           ],
         },
@@ -60,7 +60,7 @@
             {
               'kvm': '1',
               'os': 'Ubuntu-16.04',
-              'pool': 'chrome.tests.cros-vm',
+              'pool': 'chrome.tests.cros-vm.template',
             },
           ],
         },
@@ -78,7 +78,7 @@
             {
               'os': 'ChromeOS',
               'device_type': 'eve',
-              'pool': 'luci.chrome.cros-dut',
+              'pool': 'luci.chrome.cros-dut.template',
             },
           ],
         },
@@ -96,7 +96,7 @@
             {
               'os': 'ChromeOS',
               'device_type': 'kevin',
-              'pool': 'luci.chrome.cros-dut',
+              'pool': 'luci.chrome.cros-dut.template',
             },
           ],
         },
@@ -1811,6 +1811,7 @@
       },
       'ios-simulator-code-coverage': {
         'mixins': [
+          'code-coverage',
           'ios_swarming_account',
           'mac_10.14',
           'mac_toolchain',

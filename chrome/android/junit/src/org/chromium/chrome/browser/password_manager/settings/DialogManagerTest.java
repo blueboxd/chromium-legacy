@@ -10,10 +10,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
-
 import androidx.annotation.IntDef;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
 
 import org.junit.Before;
 import org.junit.Rule;

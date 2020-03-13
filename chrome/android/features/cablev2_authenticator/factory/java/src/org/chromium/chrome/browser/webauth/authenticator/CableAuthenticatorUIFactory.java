@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.webauth.authenticator;
 
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 
 /**
  * Use {@link #createComponent()} to instantiate a {@link ManualFillingComponent}.

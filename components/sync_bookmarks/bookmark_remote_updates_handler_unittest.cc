@@ -82,7 +82,7 @@ syncer::UpdateResponseData CreateUpdateResponseData(
     sync_pb::BookmarkSpecifics* bookmark_specifics =
         data.specifics.mutable_bookmark();
     bookmark_specifics->set_guid(guid);
-    bookmark_specifics->set_title(title);
+    bookmark_specifics->set_legacy_canonicalized_title(title);
   }
   data.is_folder = true;
   syncer::UpdateResponseData response_data;
@@ -938,7 +938,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
       data.specifics.mutable_bookmark();
   bookmark_specifics->set_guid(base::GenerateGUID());
   // Use the server id as the title for simplicity.
-  bookmark_specifics->set_title(kTitle);
+  bookmark_specifics->set_legacy_canonicalized_title(kTitle);
   bookmark_specifics->set_url(kUrl.spec());
   data.is_folder = false;
   syncer::UpdateResponseData response_data;
@@ -986,7 +986,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
       data.specifics.mutable_bookmark();
   bookmark_specifics->set_guid(base::GenerateGUID());
   // Use the server id as the title for simplicity.
-  bookmark_specifics->set_title(kTitle);
+  bookmark_specifics->set_legacy_canonicalized_title(kTitle);
   bookmark_specifics->set_url(kUrl.spec());
   bookmark_specifics->set_icon_url(kIconUrl.spec());
   bookmark_specifics->set_favicon("PNG");
@@ -1025,7 +1025,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
       data.specifics.mutable_bookmark();
   bookmark_specifics->set_guid(base::GenerateGUID());
   // Use the server id as the title for simplicity.
-  bookmark_specifics->set_title(kTitle);
+  bookmark_specifics->set_legacy_canonicalized_title(kTitle);
   bookmark_specifics->set_url(kUrl.spec());
   data.is_folder = false;
   syncer::UpdateResponseData response_data;
@@ -1062,7 +1062,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   sync_pb::EntitySpecifics specifics;
   sync_pb::BookmarkSpecifics* bookmark_specifics = specifics.mutable_bookmark();
   bookmark_specifics->set_guid(base::GenerateGUID());
-  bookmark_specifics->set_title("Title");
+  bookmark_specifics->set_legacy_canonicalized_title("Title");
   bookmarks::BookmarkNode node(/*id=*/1, base::GenerateGUID(), GURL());
   // Track a sync entity (similar to what happens after a local creation). The
   // |originator_client_item_id| is used a temp sync id and mark the entity that

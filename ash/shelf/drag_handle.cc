@@ -133,6 +133,7 @@ void DragHandle::SetColorAndOpacity(SkColor color, float opacity) {
 }
 
 void DragHandle::HideDragHandleNudge() {
+  show_drag_handle_nudge_timer_.Stop();
   if (!ShowingNudge())
     return;
   hide_drag_handle_nudge_timer_.Stop();

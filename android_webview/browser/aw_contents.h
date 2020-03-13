@@ -233,6 +233,11 @@ class AwContents : public FindHelper::Listener,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& js_object_name);
 
+  base::android::ScopedJavaLocalRef<jobjectArray> GetJsObjectsInfo(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jclass>& clazz);
+
   bool GetViewTreeForceDarkState() { return view_tree_force_dark_state_; }
 
   // PermissionRequestHandlerClient implementation.

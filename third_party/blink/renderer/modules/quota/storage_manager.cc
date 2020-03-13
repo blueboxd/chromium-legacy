@@ -35,15 +35,16 @@ namespace {
 const char kUniqueOriginErrorMessage[] =
     "The operation is not supported in this context.";
 
-void QueryStorageUsageAndQuotaCallback(ScriptPromiseResolver* resolver,
-                                       mojom::QuotaStatusCode status_code,
-                                       int64_t usage_in_bytes,
-                                       int64_t quota_in_bytes,
-                                       UsageBreakdownPtr usage_breakdown) {
+void QueryStorageUsageAndQuotaCallback(
+    ScriptPromiseResolver* resolver,
+    mojom::blink::QuotaStatusCode status_code,
+    int64_t usage_in_bytes,
+    int64_t quota_in_bytes,
+    UsageBreakdownPtr usage_breakdown) {
   // Avoid crash on shutdown. crbug.com/971594
   if (!resolver)
     return;
-  if (status_code != mojom::QuotaStatusCode::kOk) {
+  if (status_code != mojom::blink::QuotaStatusCode::kOk) {
     // TODO(sashab): Replace this with a switch statement, and remove the enum
     // values from QuotaStatusCode.
     resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -150,10 +151,10 @@ ScriptPromise StorageManager::estimate(ScriptState* script_state) {
       WTF::Bind(&QueryStorageUsageAndQuotaCallback, WrapPersistent(resolver));
   GetQuotaHost(execution_context)
       ->QueryStorageUsageAndQuota(
-          WrapRefCounted(security_origin), mojom::StorageType::kTemporary,
+          mojom::blink::StorageType::kTemporary,
           mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-              std::move(callback), mojom::QuotaStatusCode::kErrorAbort, 0, 0,
-              nullptr));
+              std::move(callback), mojom::blink::QuotaStatusCode::kErrorAbort,
+              0, 0, nullptr));
   return promise;
 }
 
@@ -183,10 +184,10 @@ void StorageManager::PermissionRequestComplete(ScriptPromiseResolver* resolver,
   resolver->Resolve(status == PermissionStatus::GRANTED);
 }
 
-mojom::blink::QuotaDispatcherHost* StorageManager::GetQuotaHost(
+mojom::blink::QuotaManagerHost* StorageManager::GetQuotaHost(
     ExecutionContext* execution_context) {
   if (!quota_host_) {
-    ConnectToQuotaDispatcherHost(
+    ConnectToQuotaManagerHost(
         execution_context,
         quota_host_.BindNewPipeAndPassReceiver(
             execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
@@ -194,13 +195,13 @@ mojom::blink::QuotaDispatcherHost* StorageManager::GetQuotaHost(
   return quota_host_.get();
 }
 
-STATIC_ASSERT_ENUM(mojom::QuotaStatusCode::kErrorNotSupported,
+STATIC_ASSERT_ENUM(mojom::blink::QuotaStatusCode::kErrorNotSupported,
                    DOMExceptionCode::kNotSupportedError);
-STATIC_ASSERT_ENUM(mojom::QuotaStatusCode::kErrorInvalidModification,
+STATIC_ASSERT_ENUM(mojom::blink::QuotaStatusCode::kErrorInvalidModification,
                    DOMExceptionCode::kInvalidModificationError);
-STATIC_ASSERT_ENUM(mojom::QuotaStatusCode::kErrorInvalidAccess,
+STATIC_ASSERT_ENUM(mojom::blink::QuotaStatusCode::kErrorInvalidAccess,
                    DOMExceptionCode::kInvalidAccessError);
-STATIC_ASSERT_ENUM(mojom::QuotaStatusCode::kErrorAbort,
+STATIC_ASSERT_ENUM(mojom::blink::QuotaStatusCode::kErrorAbort,
                    DOMExceptionCode::kAbortError);
 
 }  // namespace blink

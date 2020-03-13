@@ -245,7 +245,6 @@
 <translation id="3995138139523574647">C-tyypin USB-laite (oikean sivun taaimmainen portti)</translation>
 <translation id="4017989525502048489">Laserosoitin</translation>
 <translation id="4021716437419160885">Vieritä alas</translation>
-<translation id="402772165574991617">Siirry nopeasti sovelluksesta toiseen ja käytä Chromebookia tablettitilassa eleiden avulla.</translation>
 <translation id="4028481283645788203">Salasana vaaditaan suojauksen parantamiseksi</translation>
 <translation id="4042660782729322247">Jaat näyttösi</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Pois käytöstä sovelluksessa}other{Pois käytöstä # sovelluksessa}}</translation>
@@ -536,7 +535,6 @@
 <translation id="8000066093800657092">Ei verkkoa</translation>
 <translation id="8029629653277878342">PIN-koodi tai salasana vaaditaan suojauksen parantamiseksi</translation>
 <translation id="8030169304546394654">Yhteys katkaistu</translation>
-<translation id="8042024183333293953">Kokeile eleillä navigointia</translation>
 <translation id="8048123526339889627">Bluetooth-asetukset</translation>
 <translation id="8054466585765276473">Lasketaan akun kesto.</translation>
 <translation id="8061464966246066292">Suuri kontrasti</translation>

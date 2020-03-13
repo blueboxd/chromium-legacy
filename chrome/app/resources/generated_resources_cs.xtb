@@ -757,7 +757,6 @@
 <translation id="2025632980034333559">Rozšíření <ph name="APP_NAME" /> selhalo. Kliknutím na tuto bublinu rozšíření obnovíte.</translation>
 <translation id="2025891858974379949">Nezabezpečený obsah</translation>
 <translation id="202918510990975568">Chcete-li nakonfigurovat zabezpečení a přihlášení, zadejte heslo</translation>
-<translation id="2030672406208960151">Otevřít terminál pro obnovení</translation>
 <translation id="2034346955588403444">Přidat jinou síť Wi-Fi</translation>
 <translation id="203574396658008164">Povolit psaní poznámek na obrazovce uzamčení</translation>
 <translation id="2037445849770872822">V tomto účtu Google je nastaven dohled. Chcete-li nastavit další rodičovskou kontrolu, vyberte Pokračovat.
@@ -1662,7 +1661,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3228679360002431295">Připojování a ověřování<ph name="ANIMATED_ELLIPSIS" /></translation>
 <translation id="3232318083971127729">Hodnota:</translation>
 <translation id="3233271424239923319">Zálohovat aplikace a soubory systému Linux</translation>
-<translation id="323803881985677942">Otevřít možnosti rozšíření</translation>
 <translation id="3239373508713281971">U aplikace <ph name="APP_NAME" /> byl odstraněn časový limit</translation>
 <translation id="3241680850019875542">Vyberte kořenový adresář rozšíření, které chcete zabalit. Chcete-li rozšíření aktualizovat, vyberte také soubor soukromého klíče, který chcete znovu použít.</translation>
 <translation id="3244294424315804309">Pokračovat v tlumení zvuku</translation>
@@ -2417,7 +2415,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="424963718355121712">Aplikace musí být poskytovány hostitelem, kterého ovlivňují</translation>
 <translation id="4250229828105606438">Snímek obrazovky</translation>
 <translation id="4250680216510889253">Ne</translation>
-<translation id="4251288318602771141">Prostřednictvím vašeho aktuálního poskytovatele služeb. Zabezpečené DNS nemusí být vždy k dispozici.</translation>
 <translation id="4252852543720145436">Identifikátory chráněného obsahu</translation>
 <translation id="4252899949534773101">Rozhraní Bluetooth je zakázáno</translation>
 <translation id="4252996741873942488"><ph name="WINDOW_TITLE" /> – obsah karty se sdílí</translation>
@@ -2487,7 +2484,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> sdílí okno.</translation>
 <translation id="4364830672918311045">Zobrazování oznámení</translation>
 <translation id="4370975561335139969">Zadaný e-mail a heslo se neshodují.</translation>
-<translation id="437184764829821926">Rozšířené nastavení písma</translation>
 <translation id="4374831787438678295">Instalační program Linuxu</translation>
 <translation id="4375035964737468845">Otevírání stažených souborů</translation>
 <translation id="4377363674125277448">Došlo k problému s certifikátem serveru.</translation>
@@ -2651,7 +2647,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4596295440756783523">Máte založené certifikáty, které identifikují tyto servery</translation>
 <translation id="4598556348158889687">Správa úložiště</translation>
 <translation id="4598776695426288251">Je k dispozici síť Wi-Fi prostřednictvím několika zařízení</translation>
-<translation id="4599134080475764833">Plugin VM je připraven k použití</translation>
 <translation id="4602466770786743961">Vždy povolit webu <ph name="HOST" /> přístup k webové kameře a mikrofonu</translation>
 <translation id="4606551464649945562">Nepovolovat webům vytvořit 3D mapu okolí ani sledovat polohu kamery</translation>
 <translation id="4608500690299898628">&amp;Najít...</translation>
@@ -2746,11 +2741,9 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Přečtěte si, jak aktualizovat aplikace<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Zapnout zvuk webu}few{Zapnout zvuk webů}many{Zapnout zvuk webů}other{Zapnout zvuk webů}}</translation>
 <translation id="4746351372139058112">Zprávy</translation>
-<translation id="4748762018725435655">Vyžaduje rozšíření z Internetového obchodu Chrome</translation>
 <translation id="4750394297954878236">Návrhy</translation>
 <translation id="475088594373173692">První uživatel</translation>
 <translation id="4751476147751820511">Senzory pohybu nebo světla</translation>
-<translation id="4754969275105595499">Na předchozí obrazovku se vrátíte přejetím prstem ze strany obrazovky.</translation>
 <translation id="4756269098451810636">Obrázek sdílený ze zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="4756378406049221019">Zastavit / načíst znovu</translation>
 <translation id="4756388243121344051">Historie</translation>
@@ -3743,7 +3736,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6104311680260824317">Zařízení do domény nelze přidat. Server nepodporuje zadané typy šifrování Kerberos. Zkontrolujte nastavení šifrování v části Další možnosti.</translation>
 <translation id="6104641575223043670">Organizace <ph name="ORGANIZATION_NAME" /> vyžaduje okamžitou aktualizaci tohoto zařízení</translation>
 <translation id="6106186653986077033">Plugin VM vyžaduje licenci</translation>
-<translation id="6107047744202598802">Umožňuje webům pamatovat si vaši návštěvu a sledovat vás a webu</translation>
 <translation id="6112294629795967147">Klepnutím změníte velikost</translation>
 <translation id="6112727384379533756">Přidat lístek</translation>
 <translation id="6112931163620622315">Zkontrolujte telefon</translation>
@@ -4071,7 +4063,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Cesta nebo název souboru jsou příliš dlouhé. Použijte kratší název nebo vyberte jiné umístění.</translation>
 <translation id="6563469144985748109">Správce vám přístup na web dosud neschválil.</translation>
-<translation id="6565955132287672866">Zařízení nebylo řádně vypnuto. Linux (Beta) je nutné nejprve restartovat.</translation>
 <translation id="6567688344210276845">Nelze načíst ikonu „<ph name="ICON" />“ pro akci stránky.</translation>
 <translation id="6569934958368283244">Jiní lidé</translation>
 <translation id="657402800789773160">&amp;Načíst tuto stránku znovu</translation>
@@ -5940,7 +5931,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="9065203028668620118">Upravit</translation>
 <translation id="9066773882585798925">Čtení textu nahlas</translation>
 <translation id="9066782832737749352">Převod textu na řeč</translation>
-<translation id="9067559831321817373">Spravujte účty, ve kterých jste přihlášeni. V závislosti na oprávněních vám weby, aplikace a rozšíření v Chromu a na Google Play pomocí těchto účtů mohou přizpůsobovat prostředí. &lt;a&gt;Další informace&lt;/a&gt;</translation>
 <translation id="9068849894565669697">Výběr barvy</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

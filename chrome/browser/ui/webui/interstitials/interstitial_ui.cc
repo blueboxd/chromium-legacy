@@ -25,6 +25,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/grit/dev_ui_components_resources.h"
+#include "components/lookalikes/lookalike_url_util.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/security_interstitials/content/bad_clock_blocking_page.h"
 #include "components/security_interstitials/content/blocked_interception_blocking_page.h"
@@ -266,7 +267,7 @@ std::unique_ptr<LookalikeUrlBlockingPage> CreateLookalikeInterstitialPage(
 
   return std::make_unique<LookalikeUrlBlockingPage>(
       web_contents, safe_url, ukm::kInvalidSourceId,
-      LookalikeUrlBlockingPage::MatchType::kNone,
+      LookalikeUrlMatchType::kNone,
       std::make_unique<LookalikeUrlControllerClient>(web_contents, request_url,
                                                      safe_url));
 }

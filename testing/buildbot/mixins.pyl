@@ -170,7 +170,7 @@
   'chrome-swarming-pool': {
     'swarming': {
       'dimensions': {
-        'pool': 'chrome.tests',
+        'pool': 'chrome.tests.template',
       },
     },
   },

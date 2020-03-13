@@ -473,7 +473,11 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
     ChildProcessTerminationInfo info =
         GetTerminationInfo(true /* known_dead */);
 #if defined(OS_ANDROID)
-    delegate_->OnProcessCrashed(info.exit_code);
+    // Do not treat clean_exit, ie when child process exited due to quitting
+    // its main loop, as a crash.
+    if (!info.clean_exit) {
+      delegate_->OnProcessCrashed(info.exit_code);
+    }
     base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NotifyProcessKilled, data_.Duplicate(), info));

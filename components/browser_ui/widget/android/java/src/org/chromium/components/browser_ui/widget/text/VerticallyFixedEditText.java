@@ -5,9 +5,10 @@
 package org.chromium.components.browser_ui.widget.text;
 
 import android.content.Context;
-import android.support.v7.widget.AppCompatEditText;
 import android.util.AttributeSet;
 import android.widget.EditText;
+
+import androidx.appcompat.widget.AppCompatEditText;
 
 /**
  * This custom {@link EditText} does not allow the user to scroll the text vertically.  This is

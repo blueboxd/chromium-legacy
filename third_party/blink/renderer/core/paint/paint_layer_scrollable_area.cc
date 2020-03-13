@@ -2339,8 +2339,8 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet() {
   // PaintPropertyTreeBuilder::updateScrollAndScrollTranslation).
   GetLayoutBox()->SetNeedsPaintPropertyUpdate();
 
-  // Scroll hit test display items depend on whether the box scrolls overflow.
-  // The scroll hit test display items paint in the background phase
+  // Scroll hit test data depend on whether the box scrolls overflow.
+  // They are painted in the background phase
   // (see: BoxPainter::PaintBoxDecorationBackground).
   GetLayoutBox()->SetBackgroundNeedsFullPaintInvalidation();
 

@@ -41,6 +41,14 @@ class CardUnmaskDelegate {
 
   // Called when the unmask prompt is closed (e.g., cancelled).
   virtual void OnUnmaskPromptClosed() = 0;
+
+  // Returns whether or not the user, while on the CVC prompt, should be
+  // offered to switch to FIDO authentication for card unmasking. This will
+  // always be false for Desktop since FIDO authentication is offered as a
+  // separate prompt after the CVC prompt. On Android, however, this is offered
+  // through a checkbox on the CVC prompt. This feature does not yet exist on
+  // iOS.
+  virtual bool ShouldOfferFidoAuth() const = 0;
 };
 
 }  // namespace autofill

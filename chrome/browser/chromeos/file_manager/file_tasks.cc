@@ -23,6 +23,7 @@
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/arc_file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/crostini_file_tasks.h"
@@ -57,6 +58,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
+#include "net/base/mime_util.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -156,7 +158,24 @@ void RemoveFileManagerInternalActions(const std::set<std::string>& actions,
 
 // Returns true if the given task is a handler by built-in apps like the Files
 // app itself or QuickOffice etc. They are used as the initial default app.
-bool IsFallbackFileHandler(const FullTaskDescriptor& task) {
+bool IsFallbackFileHandler(const FullTaskDescriptor& task, bool is_all_images) {
+  // TODO(crbug/1030935): Once Media app is the default app for all the types
+  // it accepts (defined in
+  // chromeos/components/media_app_ui/resources/manifest.json) delete this and
+  // merge Media App logic with below.
+  // The task to open with the Media App (kMediaAppId) is only returned as an
+  // option when the Media App is enabled, so there is no need to check feature
+  // flags here. This logic will choose the Media App (when it is enabled) as
+  // the default over Gallery even when they are both installed because of the
+  // order of operations in FindExtensionAndAppTasks, which appends web tasks
+  // (like Media App) before file handler tasks (like Gallery). Relying on this
+  // order of operations is a temporary measure.
+  if (task.task_descriptor().app_id ==
+          chromeos::default_web_apps::kMediaAppId &&
+      is_all_images) {
+    return true;
+  }
+
   if ((task.task_descriptor().task_type !=
            file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER &&
        task.task_descriptor().task_type !=
@@ -165,7 +184,7 @@ bool IsFallbackFileHandler(const FullTaskDescriptor& task) {
     return false;
   }
 
-  const char* const kBuiltInApps[] = {
+  constexpr const char* kBuiltInApps[] = {
       kFileManagerAppId,
       kVideoPlayerAppId,
       kGalleryAppId,
@@ -175,12 +194,7 @@ bool IsFallbackFileHandler(const FullTaskDescriptor& task) {
       extension_misc::kQuickOfficeInternalExtensionId,
       extension_misc::kQuickOfficeExtensionId};
 
-  for (size_t i = 0; i < base::size(kBuiltInApps); ++i) {
-    if (task.task_descriptor().app_id == kBuiltInApps[i]) {
-      return true;
-    }
-  }
-  return false;
+  return base::Contains(kBuiltInApps, task.task_descriptor().app_id);
 }
 
 // Gets the profile in which a file task owned by |extension| should be
@@ -720,10 +734,14 @@ void ChooseAndSetDefaultTask(const PrefService& pref_service,
   // No default task, check for an explicit file extension match (without
   // MIME match) in the extension manifest and pick that over the fallback
   // handlers below (see crbug.com/803930)
+  const bool all_images =
+      std::all_of(entries.begin(), entries.end(), [](const auto& e) {
+        return net::MatchesMimeType("image/*", e.mime_type);
+      });
   for (size_t i = 0; i < tasks->size(); ++i) {
     FullTaskDescriptor& task = (*tasks)[i];
     if (task.is_file_extension_match() && !task.is_generic_file_handler() &&
-        !IsFallbackFileHandler(task)) {
+        !IsFallbackFileHandler(task, all_images)) {
       task.set_is_default(true);
       return;
     }
@@ -734,7 +752,7 @@ void ChooseAndSetDefaultTask(const PrefService& pref_service,
   for (size_t i = 0; i < tasks->size(); ++i) {
     FullTaskDescriptor& task = (*tasks)[i];
     DCHECK(!task.is_default());
-    if (IsFallbackFileHandler(task)) {
+    if (IsFallbackFileHandler(task, all_images)) {
       task.set_is_default(true);
       return;
     }

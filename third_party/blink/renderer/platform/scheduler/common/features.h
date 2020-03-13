@@ -19,6 +19,10 @@ const base::Feature kHighPriorityInputOnCompositorThread{
 const base::Feature kDedicatedWorkerThrottling{
     "BlinkSchedulerWorkerThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kBestEffortPriorityForFindInPage{
+    "BlinkSchedulerBestEffortPriorityForFindInPage",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // COMPOSITING PRIORITY EXPERIMENT CONTROLS
 
 // Enables experiment to increase priority of the compositing tasks during

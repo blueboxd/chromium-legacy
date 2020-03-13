@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/settings/site_settings_handler.h"
 
 #include <algorithm>
-#include <set>
 #include <utility>
 #include <vector>
 
@@ -44,12 +43,9 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
-#include "components/content_settings/core/common/features.h"
-#include "components/content_settings/core/common/pref_names.h"
 #include "components/crx_file/id_util.h"
 #include "components/permissions/chooser_context_base.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
@@ -334,56 +330,6 @@ void LogAllSitesAction(AllSitesAction2 action) {
   UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.AllSitesAction2", action);
 }
 
-int GetNumCookieExceptionsOfTypes(HostContentSettingsMap* map,
-                                  const std::set<ContentSetting> types) {
-  ContentSettingsForOneType output;
-  map->GetSettingsForOneType(ContentSettingsType::COOKIES, std::string(),
-                             &output);
-  return std::count_if(
-      output.begin(), output.end(),
-      [types](const ContentSettingPatternSource setting) {
-        return types.count(
-            content_settings::ValueToContentSetting(&setting.setting_value));
-      });
-}
-
-std::string GetCookieSettingDescription(Profile* profile) {
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile);
-  auto content_setting =
-      map->GetDefaultContentSetting(ContentSettingsType::COOKIES, nullptr);
-
-  bool block_third_party =
-      profile->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies);
-  auto control_mode = static_cast<content_settings::CookieControlsMode>(
-      profile->GetPrefs()->GetInteger(prefs::kCookieControlsMode));
-
-  // Determine what the effective cookie setting is. These conditions are not
-  // mutually exclusive and rely on ordering.
-  if (content_setting == ContentSetting::CONTENT_SETTING_BLOCK) {
-    return l10n_util::GetPluralStringFUTF8(
-        IDS_SETTINGS_SITE_SETTINGS_COOKIES_BLOCK,
-        GetNumCookieExceptionsOfTypes(
-            map, {ContentSetting::CONTENT_SETTING_ALLOW,
-                  ContentSetting::CONTENT_SETTING_SESSION_ONLY}));
-  } else if (block_third_party) {
-    return l10n_util::GetStringUTF8(
-        IDS_SETTINGS_SITE_SETTINGS_COOKIES_BLOCK_THIRD_PARTY);
-  } else if (base::FeatureList::IsEnabled(
-                 content_settings::kImprovedCookieControls) &&
-             control_mode ==
-                 content_settings::CookieControlsMode::kIncognitoOnly) {
-    return l10n_util::GetStringUTF8(
-        IDS_SETTINGS_SITE_SETTINGS_COOKIES_BLOCK_THIRD_PARTY_INCOGNITO);
-  } else {
-    // We do not make a distinction between allow and clear on exit.
-    return l10n_util::GetPluralStringFUTF8(
-        IDS_SETTINGS_SITE_SETTINGS_COOKIES_ALLOW,
-        GetNumCookieExceptionsOfTypes(map,
-                                      {ContentSetting::CONTENT_SETTING_BLOCK}));
-  }
-}
-
 }  // namespace
 
 SiteSettingsHandler::SiteSettingsHandler(Profile* profile,
@@ -417,11 +363,6 @@ void SiteSettingsHandler::RegisterMessages() {
       "getAllSites",
       base::BindRepeating(&SiteSettingsHandler::HandleGetAllSites,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getCookieSettingDescription",
-      base::BindRepeating(
-          &SiteSettingsHandler::HandleGetCookieSettingDescription,
-          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getRecentSitePermissions",
       base::BindRepeating(&SiteSettingsHandler::HandleGetRecentSitePermissions,
@@ -528,16 +469,6 @@ void SiteSettingsHandler::OnJavascriptAllowed() {
       base::Bind(&SiteSettingsHandler::SendBlockAutoplayStatus,
                  base::Unretained(this)));
 
-  // Listen for prefs that impact the effective cookie setting
-  pref_change_registrar_->Add(
-      prefs::kBlockThirdPartyCookies,
-      base::Bind(&SiteSettingsHandler::SendCookieSettingDescription,
-                 base::Unretained(this)));
-  pref_change_registrar_->Add(
-      prefs::kCookieControlsMode,
-      base::Bind(&SiteSettingsHandler::SendCookieSettingDescription,
-                 base::Unretained(this)));
-
 #if defined(OS_CHROMEOS)
   pref_change_registrar_->Add(
       prefs::kEnableDRM,
@@ -551,8 +482,6 @@ void SiteSettingsHandler::OnJavascriptDisallowed() {
   chooser_observer_.RemoveAll();
   host_zoom_map_subscription_.reset();
   pref_change_registrar_->Remove(prefs::kBlockAutoplayEnabled);
-  pref_change_registrar_->Remove(prefs::kBlockThirdPartyCookies);
-  pref_change_registrar_->Remove(prefs::kCookieControlsMode);
 #if defined(OS_CHROMEOS)
   pref_change_registrar_->Remove(prefs::kEnableDRM);
 #endif
@@ -619,12 +548,6 @@ void SiteSettingsHandler::OnContentSettingChanged(
       secondary_pattern == ContentSettingsPattern() &&
       content_type == ContentSettingsType::SOUND) {
     SendBlockAutoplayStatus();
-  }
-
-  // If the default cookie setting changed we should update the effective
-  // setting description.
-  if (content_type == ContentSettingsType::COOKIES) {
-    SendCookieSettingDescription();
   }
 }
 
@@ -811,15 +734,6 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   send_sites_list_ = true;
 
   ResolveJavascriptCallback(base::Value(callback_id), result);
-}
-
-void SiteSettingsHandler::HandleGetCookieSettingDescription(
-    const base::ListValue* args) {
-  AllowJavascript();
-  CHECK_EQ(1U, args->GetList().size());
-  std::string callback_id = args->GetList()[0].GetString();
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(GetCookieSettingDescription(profile_)));
 }
 
 void SiteSettingsHandler::HandleGetRecentSitePermissions(
@@ -1606,10 +1520,4 @@ void SiteSettingsHandler::SetCookiesTreeModelForTesting(
 void SiteSettingsHandler::ClearAllSitesMapForTesting() {
   all_sites_map_.clear();
 }
-
-void SiteSettingsHandler::SendCookieSettingDescription() {
-  FireWebUIListener("cookieSettingDescriptionChanged",
-                    base::Value(GetCookieSettingDescription(profile_)));
-}
-
 }  // namespace settings

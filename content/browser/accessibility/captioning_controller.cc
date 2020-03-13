@@ -8,6 +8,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/android/content_jni_headers/CaptioningController_jni.h"
+#include "content/public/common/web_preferences.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
@@ -88,25 +89,27 @@ void CaptioningController::SetTextTrackSettings(
     const JavaParamRef<jstring>& textTrackTextColor,
     const JavaParamRef<jstring>& textTrackTextShadow,
     const JavaParamRef<jstring>& textTrackTextSize) {
-  FrameMsg_TextTrackSettings_Params params;
-  params.text_tracks_enabled = textTracksEnabled;
-  params.text_track_background_color =
+  auto web_prefs = web_contents()
+                       ->GetMainFrame()
+                       ->GetRenderViewHost()
+                       ->GetWebkitPreferences();
+  web_prefs.text_tracks_enabled = textTracksEnabled;
+  web_prefs.text_track_background_color =
       AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackBackgroundColor));
-  params.text_track_font_family =
+  web_prefs.text_track_font_family =
       AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackFontFamily));
-  params.text_track_font_style =
+  web_prefs.text_track_font_style =
       AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackFontStyle));
-  params.text_track_font_variant =
+  web_prefs.text_track_font_variant =
       AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackFontVariant));
-  params.text_track_text_color =
+  web_prefs.text_track_text_color =
       AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackTextColor));
-  params.text_track_text_shadow =
+  web_prefs.text_track_text_shadow =
       AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackTextShadow));
-  params.text_track_text_size =
+  web_prefs.text_track_text_size =
       AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackTextSize));
-  static_cast<WebContentsImpl*>(web_contents())
-      ->GetMainFrame()
-      ->SetTextTrackSettings(params);
+  web_contents()->GetMainFrame()->GetRenderViewHost()->UpdateWebkitPreferences(
+      web_prefs);
 }
 
 jlong JNI_CaptioningController_Init(

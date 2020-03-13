@@ -630,18 +630,6 @@ void BenchmarkingCanvas::onDrawImageRect(const SkImage* image, const SkRect* src
   INHERITED::onDrawImageRect(image, src, dst, op.paint(), constraint);
 }
 
-void BenchmarkingCanvas::onDrawBitmapNine(const SkBitmap& bitmap,
-                                          const SkIRect& center,
-                                          const SkRect& dst,
-                                          const SkPaint* paint) {
-  AutoOp op(this, "DrawBitmapNine", paint);
-  op.addParam("bitmap", AsValue(bitmap));
-  op.addParam("center", AsValue(SkRect::Make(center)));
-  op.addParam("dst", AsValue(dst));
-
-  INHERITED::onDrawBitmapNine(bitmap, center, dst, op.paint());
-}
-
 void BenchmarkingCanvas::onDrawTextBlob(const SkTextBlob* blob, SkScalar x, SkScalar y,
                                         const SkPaint& paint) {
   DCHECK(blob);

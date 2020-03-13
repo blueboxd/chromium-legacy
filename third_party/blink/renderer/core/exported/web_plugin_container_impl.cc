@@ -101,7 +101,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
-#include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -151,9 +150,9 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
     return;
 
   if (WantsWheelEvents()) {
-    ScrollHitTestDisplayItem::Record(
-        context, *GetLayoutEmbeddedContent(), DisplayItem::kPluginScrollHitTest,
-        nullptr, GetLayoutEmbeddedContent()->FirstFragment().VisualRect());
+    context.GetPaintController().RecordScrollHitTestData(
+        *GetLayoutEmbeddedContent(), DisplayItem::kPluginScrollHitTest, nullptr,
+        GetLayoutEmbeddedContent()->FirstFragment().VisualRect());
   }
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() && layer_) {
@@ -637,8 +636,8 @@ void WebPluginContainerImpl::SetWantsWheelEvents(bool wants_wheel_events) {
         LocalFrameView* frame_view = element_->GetDocument().GetFrame()->View();
         scrolling_coordinator->NotifyGeometryChanged(frame_view);
 
-        // Scroll hit test display items depend on wheel events. The scroll
-        // hit test display items paint in the background phase.
+        // Scroll hit test data depend on wheel events. They are painted in the
+        // background phase.
         GetLayoutEmbeddedContent()->SetBackgroundNeedsFullPaintInvalidation();
       }
     }

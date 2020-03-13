@@ -26,7 +26,8 @@ message MetaInfo {
 message BookmarkSpecifics {
   optional string url = 1;
   optional bytes favicon = 2;
-  optional string title = 3;
+  // Contains legacy title which is truncated and may contain escaped symbols.
+  optional string legacy_canonicalized_title = 3;
   // Corresponds to BookmarkNode::date_added() represented as microseconds since
   // the Windows epoch.
   optional int64 creation_time_us = 4;
@@ -46,4 +47,7 @@ message BookmarkSpecifics {
   // If not present, the value can be safely inferred using the very same
   // methods listed above.
   optional string guid = 10;
+  // Contains full title as is. |legacy_canonicalized_title| is a prefix of
+  // |full_title| with escaped symbols.
+  optional string full_title = 11;
 }

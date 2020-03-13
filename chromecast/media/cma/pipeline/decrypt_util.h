@@ -28,7 +28,6 @@ class DecoderBufferClear : public DecoderBufferBase {
   size_t data_size() const override;
   const CastDecryptConfig* decrypt_config() const override;
   bool end_of_stream() const override;
-  scoped_refptr<::media::DecoderBuffer> ToMediaBuffer() const override;
 
  private:
   ~DecoderBufferClear() override;

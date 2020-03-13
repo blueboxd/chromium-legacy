@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.dom_distiller;
 
 import android.content.Context;
 import android.graphics.Typeface;
-import android.support.v7.app.AlertDialog;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +19,8 @@ import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AlertDialog;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/storage/storage_notification_service_impl.h"
 
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 
@@ -11,9 +12,18 @@
 #include "chrome/browser/ui/storage_pressure_bubble.h"
 #endif
 
-base::RepeatingCallback<void(const url::Origin)>
-StorageNotificationServiceImpl::GetStoragePressureNotificationClosure() {
-  return base::BindRepeating(&chrome::ShowStoragePressureBubble);
+// Minimum interval between consecutive storage pressure notifications.
+const base::TimeDelta kDiskPressureNotificationInterval =
+    base::TimeDelta::FromDays(1);
+
+void StorageNotificationServiceImpl::MaybeShowStoragePressureNotification(
+    const url::Origin origin) {
+  if (base::TimeTicks::Now() - disk_pressure_notification_last_sent_at_ <
+      kDiskPressureNotificationInterval)
+    return;
+
+  chrome::ShowStoragePressureBubble(origin);
+  disk_pressure_notification_last_sent_at_ = base::TimeTicks::Now();
 }
 
 StorageNotificationServiceImpl::StorageNotificationServiceImpl() = default;

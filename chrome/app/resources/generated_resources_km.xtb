@@ -757,7 +757,6 @@
 <translation id="2025632980034333559"><ph name="APP_NAME" /> បានគាំង។ ចុចប៊ូឡុងនេះដើម្បីដំណើរការកម្មវិធីបន្ថែមឡើងវិញ។</translation>
 <translation id="2025891858974379949">ខ្លឹមសារ​ដែលគ្មាន​សុវត្ថិភាព</translation>
 <translation id="202918510990975568">បញ្ចូល​ពាក្យសម្ងាត់​របស់អ្នក ដើម្បី​កំណត់​រចនាសម្ព័ន្ធ​សុវត្ថិភាព និងការចូលគណនី</translation>
-<translation id="2030672406208960151">បើក​ស្ថានីយ​ស្ដារ</translation>
 <translation id="2034346955588403444">បន្ថែមបណ្តាញ WiFi ផ្សេងទៀត</translation>
 <translation id="203574396658008164">បើកការកត់ត្រាពីអេក្រង់ចាក់សោ</translation>
 <translation id="2037445849770872822">ការគ្រប់គ្រង​ត្រូវបាន​រៀបចំ​សម្រាប់​គណនី Google នេះ។ ដើម្បី​រៀបចំការគ្រប់គ្រងដោយមាតាបិតា​បន្ថែម​ទៀត សូម​ជ្រើសរើស "បន្ត"។
@@ -1607,7 +1606,7 @@
     ការពណ៌នា
     <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3149510190863420837">កម្មវិធី Chrome</translation>
-<translation id="3150693969729403281">ដំណើការ​ការពិនិត្យ​សុវត្ថិភាព​ឥឡូវនេះ</translation>
+<translation id="3150693969729403281">ដំណើរការ​ការពិនិត្យ​សុវត្ថិភាព​ឥឡូវនេះ</translation>
 <translation id="3150927491400159470">Hard Reload</translation>
 <translation id="315116470104423982">ទិន្នន័យទូរស័ព្ទ</translation>
 <translation id="3151539355209957474">ម៉ោង​ចាប់​ផ្ដើម</translation>
@@ -1663,7 +1662,6 @@
 <translation id="3228679360002431295">កំពុងភ្ជាប់ និងផ្ទៀតផ្ទាត់<ph name="ANIMATED_ELLIPSIS" /></translation>
 <translation id="3232318083971127729">តម្លៃ៖</translation>
 <translation id="3233271424239923319">បម្រុងទុក​កម្មវិធី និង​ឯកសារ Linux</translation>
-<translation id="323803881985677942">បើកជម្រើសបន្ថែម</translation>
 <translation id="3239373508713281971">បានលុប​រយៈពេល​កំណត់​សម្រាប់ <ph name="APP_NAME" /></translation>
 <translation id="3241680850019875542">ជ្រើសរើសថតឯកសារគោលនៃកម្មវិធីបន្ថែមដើម្បីវិចខ្ចប់។ ដើម្បីធ្វើបច្ចុប្បន្នភាព ផ្នែកបន្ថែម ជ្រើសរើសថតឯកសារប៊ូតុងឯកជន ដើម្បីប្រើម្តងទៀតផងដែរ។</translation>
 <translation id="3244294424315804309">បន្ត​បិទ​សំឡេង</translation>
@@ -2419,7 +2417,6 @@
 <translation id="424963718355121712">កម្មវិធី​ត្រូវ​បាន​ផ្ដល់​ពី​ម៉ាស៊ីន​ដែល​ដែលវាមានឥទ្ធិពលលើ</translation>
 <translation id="4250229828105606438">ថតអេក្រង់</translation>
 <translation id="4250680216510889253">ទេ</translation>
-<translation id="4251288318602771141">ជាមួយ​ក្រុមហ៊ុនផ្ដល់សេវា​បច្ចុប្បន្នរបស់អ្នក។ DNS សុវត្ថិភាពប្រហែលជាមិនអាចប្រើបានគ្រប់ពេលនោះទេ។</translation>
 <translation id="4252852543720145436">តម្លៃ​សម្គាល់​ខ្លឹមសារ​ដែលបាន​ការពារ</translation>
 <translation id="4252899949534773101">បានបិទប៊្លូធូស</translation>
 <translation id="4252996741873942488"><ph name="WINDOW_TITLE" /> - បានចែករំលែកមាតិការបស់ផ្ទាំង</translation>
@@ -2489,7 +2486,6 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" /> កំពុងចែករំលែកផ្ទាំងវិនដូ</translation>
 <translation id="4364830672918311045">បង្ហាញការជូនដំណឹង</translation>
 <translation id="4370975561335139969">អ៊ីមែល និងពាក្យសម្ងាត់ដែលអ្នកបញ្ចូលមិនត្រូវគ្នាទេ</translation>
-<translation id="437184764829821926">ការកំណត់ពុម្ពអក្សរកម្រិតខ្ពស់</translation>
 <translation id="4374831787438678295">កម្មវិធី​ដំឡើង Linux</translation>
 <translation id="4375035964737468845">បើកឯកសារដែលបានទាញយក</translation>
 <translation id="4377363674125277448">មានបញ្ហាអ្វីមួយជាមួយវិញ្ញាបនប័ត្រម៉ាស៊ីនមេ។</translation>
@@ -2653,7 +2649,6 @@
 <translation id="4596295440756783523">អ្នកមានវិញ្ញាបនបត្រនៅលើឯកសារដែលកំណត់អត្តសញ្ញាណម៉ាស៊ីនមេទាំងនេះ</translation>
 <translation id="4598556348158889687">ការគ្រប់គ្រងទំហំផ្ទុក</translation>
 <translation id="4598776695426288251">មាន Wi-Fi តាមរយៈ​ឧបករណ៍​ជាច្រើន</translation>
-<translation id="4599134080475764833">អាចប្រើ Plugin VM បានហើយ</translation>
 <translation id="4602466770786743961">អនុញ្ញាត <ph name="HOST" /> ឲ្យចូលប្រើកាមេរ៉ា និងម៉ៃក្រូហ្វូនរបស់អ្នកជានិច្ច</translation>
 <translation id="4606551464649945562">កុំអនុញ្ញាតឱ្យគេហទំព័របង្កើតផែនទី 3D នៃមជ្ឈដ្ឋានជុំវិញរបស់អ្នក ឬតាមដានទីតាំងកាមេរ៉ា</translation>
 <translation id="4608500690299898628">ស្វែងរក...</translation>
@@ -2748,11 +2743,9 @@
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />ស្វែងយល់​អំពី​របៀប​ដំឡើង​ជំនាន់​កម្មវិធី<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{បើកសំឡេង​គេហទំព័រ}other{បើកសំឡេង​គេហទំព័រ}}</translation>
 <translation id="4746351372139058112">សារ</translation>
-<translation id="4748762018725435655">តម្រូវឲ្យមានផ្នែកបន្ថែមពី Chrome Web Store</translation>
 <translation id="4750394297954878236">ការផ្តល់យោបល់</translation>
 <translation id="475088594373173692">អ្នកប្រើដំបូង</translation>
 <translation id="4751476147751820511">ឧបករណ៍​ចាប់​សញ្ញាពន្លឺ ឬ​ចលនា</translation>
-<translation id="4754969275105595499">ដើម្បី​ត្រឡប់​ទៅអេក្រង់​មុនវិញ សូមអូស​ពីចំហៀង។</translation>
 <translation id="4756269098451810636">រូបភាព​ដែលបាន​ចែករំលែកពី <ph name="DEVICE_NAME" /></translation>
 <translation id="4756378406049221019">បញ្ឈប់/ផ្ទុកឡើងវិញ</translation>
 <translation id="4756388243121344051">ប្រវត្តិ</translation>
@@ -3745,7 +3738,6 @@
 <translation id="6104311680260824317">មិនអាច​ភ្ជាប់ឧបករណ៍​ទៅដែន​បានទេ។ ម៉ាសីុនមេ​មិនអាច​ប្រើប្រភេទ​អ៊ីនគ្រីប Kerberos ដែលបានបញ្ជាក់​ទេ។ សូម​ពិនិត្យមើល "ជម្រើស​ច្រើនទៀត" សម្រាប់​ការកំណត់​ការអ៊ីនគ្រីប។</translation>
 <translation id="6104641575223043670"><ph name="ORGANIZATION_NAME" /> តម្រូវឱ្យដំឡើងកំណែ​​ឧបករណ៍នេះភ្លាមៗ</translation>
 <translation id="6106186653986077033">Plugin VM តម្រូវឱ្យមាន​អាជ្ញាបណ្ណ</translation>
-<translation id="6107047744202598802">អនុញ្ញាតឱ្យគេហទំព័រ​ចងចាំការចូលមើល​របស់អ្នក និងតាមដានអ្នកនៅលើអ៊ីនធឺណិត</translation>
 <translation id="6112294629795967147">ប៉ះ​ដើម្បីប្ដូរ​ទំហំ</translation>
 <translation id="6112727384379533756">បញ្ចូលសំបុត្រ</translation>
 <translation id="6112931163620622315">ពិនិត្យមើល​ទូរសព្ទ​របស់អ្នក</translation>
@@ -4073,7 +4065,6 @@
 <translation id="6561726789132298588">បញ្ចូល</translation>
 <translation id="656293578423618167">ផ្លូវ និងឈ្មោះឯកសារវែងពេក។  សូមរក្សាទុកជាមួយឈ្មោះខ្លីជាងនេះ ឬទៅទីតាំងដ៏ទៃទៀត។</translation>
 <translation id="6563469144985748109">អ្នកគ្រប់គ្រងរបស់អ្នកមិនទាន់យល់ព្រមនៅឡើយទេ</translation>
-<translation id="6565955132287672866">ឧបករណ៍​របស់អ្នកមិនបានបិទត្រឹមត្រូវទេ។ ដើម្បីប្រើ Linux (បេតា) អ្នកត្រូវតែចាប់ផ្ដើម​ឡើងវិញ។</translation>
 <translation id="6567688344210276845">មិនអាចដំណើរការរូបតំណាង '<ph name="ICON" />' សម្រាប់សកម្មភាពទំព័របានទេ។</translation>
 <translation id="6569934958368283244">មនុស្ស​ផ្សេងទៀត</translation>
 <translation id="657402800789773160">ដំណើរការទំព័រនេះឡើងវិញ</translation>
@@ -5942,7 +5933,6 @@
 <translation id="9065203028668620118">កែប្រែ</translation>
 <translation id="9066773882585798925">ស្តាប់ការ​អានអក្សរ​ឮៗ</translation>
 <translation id="9066782832737749352">អត្ថបទទៅការនិយាយ</translation>
-<translation id="9067559831321817373">គ្រប់គ្រង​គណនី​ដែលអ្នក​បានចូល។ គេហទំព័រ កម្មវិធី និង​កម្មវិធីបន្ថែម​នៅក្នុង Chrome និង Google Play អាចប្រើ​គណនីទាំងនេះ ដើម្បីកំណត់​បទពិសោធន៍​ប្រើប្រាស់តាមបំណង​របស់អ្នក ដោយផ្អែកលើ​ការអនុញ្ញាត។ &lt;a&gt;ស្វែងយល់បន្ថែម&lt;/a&gt;</translation>
 <translation id="9068849894565669697">ជ្រើសរើសពណ៌</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">ប៊្លូធូស</translation>

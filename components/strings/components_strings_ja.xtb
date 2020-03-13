@@ -809,7 +809,7 @@
 <translation id="4466881336512663640">フォームの変更内容は破棄されます。続行してもよろしいですか？</translation>
 <translation id="4477350412780666475">次の曲</translation>
 <translation id="4482953324121162758">このサイトは翻訳されません。</translation>
-<translation id="4486757593530038591">オンにすると、サイトはあなたが別のサイトで閲覧した内容に基づいて広告をカスタマイズできなくなります。一部のサイトの機能は使用できなくなる可能性があります。</translation>
+<translation id="4486757593530038591">オンにすると、サイトが別のサイトでのあなたの閲覧アクティビティを使用できなくなるため、広告はカスタマイズされません。一部サイトの機能が使用できなくなる可能性もあります。</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">これらの機能はデフォルトで無効になっています。Chrome の今後のバージョンではご利用いただけません。</translation>
 <translation id="4493480324863638523">URL が無効です。標準のスキームを使用した URL を指定してください（例: http://example.com、https://example.com）。</translation>

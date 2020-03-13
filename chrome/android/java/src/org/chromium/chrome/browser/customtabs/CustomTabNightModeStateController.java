@@ -5,10 +5,10 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatDelegate;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.IntentUtils;

@@ -1,7 +1,6 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Helpers related to multiprocessing."""
 
 from __future__ import division
@@ -16,7 +15,6 @@ import os
 import sys
 import threading
 import traceback
-
 
 DISABLE_ASYNC = os.environ.get('SUPERSIZE_DISABLE_ASYNC') == '1'
 if DISABLE_ASYNC:
@@ -50,18 +48,20 @@ class _ImmediateResult(object):
 
 class _ExceptionWrapper(object):
   """Used to marshal exception messages back to main process."""
+
   def __init__(self, msg, exception_type=None):
     self.msg = msg
     self.exception_type = exception_type
 
   def MaybeThrow(self):
     if self.exception_type:
-      raise getattr(__builtin__, self.exception_type)(
-          'Originally caused by: ' + self.msg)
+      raise getattr(__builtin__,
+                    self.exception_type)('Originally caused by: ' + self.msg)
 
 
 class _FuncWrapper(object):
   """Runs on the fork()'ed side to catch exceptions and spread *args."""
+
   def __init__(self, func):
     global _is_child_process
     _is_child_process = True
@@ -90,6 +90,7 @@ class _WrappedResult(object):
   * Raises exception caught by _FuncWrapper.
   * Allows for custom unmarshalling of return value.
   """
+
   def __init__(self, result, pool=None, decode_func=None):
     self._result = result
     self._pool = pool
@@ -128,6 +129,7 @@ def _TerminatePools():
   # it was registered before fork()ing.
   if _is_child_process:
     return
+
   def close_pool(pool):
     try:
       pool.terminate()
@@ -137,8 +139,8 @@ def _TerminatePools():
   for i, pool in enumerate(_all_pools):
     # Without calling terminate() on a separate thread, the call can block
     # forever.
-    thread = threading.Thread(name='Pool-Terminate-{}'.format(i),
-                              target=close_pool, args=(pool,))
+    thread = threading.Thread(
+        name='Pool-Terminate-{}'.format(i), target=close_pool, args=(pool, ))
     thread.daemon = True
     thread.start()
 
@@ -183,7 +185,7 @@ def ForkAndCall(func, args, decode_func=None):
     result = _ImmediateResult(func(*args))
   else:
     pool = _MakeProcessPool([args])  # Omit |kwargs|.
-    result = pool.apply_async(_FuncWrapper(func), (0,))
+    result = pool.apply_async(_FuncWrapper(func), (0, ))
     pool.close()
   return _WrappedResult(result, pool=pool, decode_func=decode_func)
 
@@ -237,8 +239,8 @@ def EncodeDictOfLists(d, key_transform=None, value_transform=None):
     keys = (key_transform(k) for k in keys)
   keys = '\x01'.join(keys)
   if value_transform:
-    values = '\x01'.join('\x02'.join(value_transform(y) for y in x) for x in
-                         d.itervalues())
+    values = '\x01'.join(
+        '\x02'.join(value_transform(y) for y in x) for x in d.itervalues())
   else:
     values = '\x01'.join('\x02'.join(x) for x in d.itervalues())
   return keys, values
@@ -250,7 +252,8 @@ def JoinEncodedDictOfLists(encoded_values):
           '\x01'.join(x[1] for x in encoded_values if x[1]))
 
 
-def DecodeDictOfLists(encoded_keys_and_values, key_transform=None,
+def DecodeDictOfLists(encoded_keys_and_values,
+                      key_transform=None,
                       value_transform=None):
   """Deserializes a dict where values are lists of strings."""
   encoded_keys, encoded_values = encoded_keys_and_values

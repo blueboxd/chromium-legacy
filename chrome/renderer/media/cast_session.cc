@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/renderer/media/cast_session_delegate.h"
 #include "content/public/renderer/render_thread.h"
@@ -19,6 +18,7 @@
 #include "media/base/video_frame.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 
 namespace {
 
@@ -36,7 +36,7 @@ void CreateVideoEncodeMemory(
   DCHECK(content::RenderThread::Get());
 
   base::UnsafeSharedMemoryRegion shm =
-      base::UnsafeSharedMemoryRegion::Create(size);
+      mojo::CreateUnsafeSharedMemoryRegion(size);
   DCHECK(shm.IsValid()) << "Failed to allocate shared memory";
   callback.Run(std::move(shm));
 }

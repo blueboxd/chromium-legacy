@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import android.support.v7.content.res.AppCompatResources;
 import android.widget.ImageView;
+
+import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;

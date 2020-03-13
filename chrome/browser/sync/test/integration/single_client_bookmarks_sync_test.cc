@@ -356,7 +356,9 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   std::vector<sync_pb::SyncEntity> server_bookmarks =
       GetFakeServer()->GetSyncEntitiesByModelType(syncer::BOOKMARKS);
   ASSERT_EQ(1u, server_bookmarks.size());
-  ASSERT_EQ(title2, server_bookmarks[0].specifics().bookmark().title());
+  ASSERT_EQ(
+      title2,
+      server_bookmarks[0].specifics().bookmark().legacy_canonicalized_title());
   EXPECT_EQ(lowercase_guid, server_bookmarks[0].specifics().bookmark().guid());
 }
 
@@ -616,7 +618,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
       fake_server_->GetSyncEntitiesByModelType(syncer::BOOKMARKS);
   std::vector<std::string> committed_titles;
   for (const sync_pb::SyncEntity& entity : entities) {
-    committed_titles.push_back(entity.specifics().bookmark().title());
+    committed_titles.push_back(
+        entity.specifics().bookmark().legacy_canonicalized_title());
   }
 
   // A space should have been appended to each illegal title before committing.

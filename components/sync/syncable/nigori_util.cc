@@ -243,7 +243,7 @@ bool UpdateEntryWithEncryption(BaseTransaction* const trans,
           generated_specifics.mutable_bookmark();
       if (!entry->GetIsDir())
         bookmark_specifics->set_url(kEncryptedString);
-      bookmark_specifics->set_title(kEncryptedString);
+      bookmark_specifics->set_legacy_canonicalized_title(kEncryptedString);
     }
   }
 

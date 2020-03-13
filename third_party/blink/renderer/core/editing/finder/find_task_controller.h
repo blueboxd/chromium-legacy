@@ -68,7 +68,8 @@ class CORE_EXPORT FindTaskController final
                      bool finished_whole_request,
                      PositionInFlatTree next_starting_position,
                      int match_count,
-                     bool aborted);
+                     bool aborted,
+                     base::TimeTicks task_start_time);
 
   Range* ResumeFindingFromRange() const { return resume_finding_from_range_; }
   int CurrentMatchCount() const { return current_match_count_; }
@@ -90,6 +91,17 @@ class CORE_EXPORT FindTaskController final
   void RequestFindTask(int identifier,
                        const WebString& search_text,
                        const mojom::blink::FindOptions& options);
+
+  enum class RequestEndState {
+    // The find-in-page request got aborted before going through every text in
+    // the document.
+    ABORTED,
+    // The find-in-page request finished going through every text in the
+    // document.
+    FINISHED,
+  };
+
+  void RecordRequestMetrics(RequestEndState request_end_state);
 
   Member<WebLocalFrameImpl> owner_frame_;
 
@@ -118,6 +130,13 @@ class CORE_EXPORT FindTaskController final
   // The identifier of the current find request, we should only run FindTasks
   // that have the same identifier as this.
   int current_find_identifier_ = kInvalidFindIdentifier;
+
+  // The start time of the current find-in-page request.
+  base::TimeTicks current_request_start_time_;
+  // The combined duration of all the tasks done for the current request.
+  base::TimeDelta total_task_duration_for_current_request_;
+  // The number of find-in-page tasks the current request has made.
+  int task_count_for_current_request_;
 
   // Keeps track of the last string this frame searched for. This is used for
   // short-circuiting searches in the following scenarios: When a frame has

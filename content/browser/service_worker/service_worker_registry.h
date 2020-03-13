@@ -28,6 +28,9 @@ namespace content {
 class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
 
+class ServiceWorkerRegistryTest;
+FORWARD_DECLARE_TEST(ServiceWorkerRegistryTest, StoragePolicyChange);
+
 // This class manages in-memory representation of service worker registrations
 // (i.e., ServiceWorkerRegistration) including installing and uninstalling
 // registrations. The instance of this class is owned by
@@ -231,6 +234,11 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   void DisableDeleteAndStartOverForTesting();
 
  private:
+  friend class ServiceWorkerRegistryTest;
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerRegistryTest, StoragePolicyChange);
+
+  void Start();
+
   ServiceWorkerRegistration* FindInstallingRegistrationForClientUrl(
       const GURL& client_url);
   ServiceWorkerRegistration* FindInstallingRegistrationForScope(
@@ -288,8 +296,10 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       const std::vector<int64_t>& newly_purgeable_resources);
   void DidDeleteRegistration(
       int64_t registration_id,
+      const GURL& origin,
       StatusCallback callback,
       storage::mojom::ServiceWorkerDatabaseStatus database_status,
+      ServiceWorkerStorage::OriginState origin_state,
       int64_t deleted_version_id,
       const std::vector<int64_t>& newly_purgeable_resources);
 
@@ -330,11 +340,31 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
 
   void ScheduleDeleteAndStartOver();
 
+  // TODO(bashi): Consider introducing a helper class that handles the below.
+  // These are almost the same as DOMStorageContextWrapper.
+  void DidGetRegisteredOriginsOnStartup(std::vector<url::Origin> origins);
+  void EnsureRegisteredOriginIsTracked(const url::Origin& origin);
+  void OnStoragePolicyChanged();
+  bool ShouldPurgeOnShutdown(const url::Origin& origin);
+
   // The ServiceWorkerContextCore object must outlive this.
   ServiceWorkerContextCore* const context_;
 
   std::unique_ptr<ServiceWorkerStorage> storage_;
   bool is_storage_disabled_ = false;
+
+  const scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
+  class StoragePolicyObserver;
+  base::SequenceBound<StoragePolicyObserver> storage_policy_observer_;
+
+  // TODO(bashi): Avoid duplication. Merge this with LocalStorageOriginState.
+  struct StorageOriginState {
+    bool should_purge_on_shutdown = false;
+    bool will_purge_on_shutdown = false;
+  };
+  // IMPORTANT: Don't use this other than updating storage policies. This can
+  // be out of sync with |registered_origins_| in ServiceWorkerStorage.
+  std::map<url::Origin, StorageOriginState> tracked_origins_for_policy_update_;
 
   // For finding registrations being installed or uninstalled.
   using RegistrationRefsById =

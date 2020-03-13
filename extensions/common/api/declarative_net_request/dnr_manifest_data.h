@@ -15,7 +15,11 @@ namespace declarative_net_request {
 // Manifest data required for the kDeclarativeNetRequestKey manifest
 // key.
 struct DNRManifestData : Extension::ManifestData {
-  explicit DNRManifestData(base::FilePath ruleset_relative_path);
+  struct RulesetInfo {
+    base::FilePath relative_path;
+  };
+
+  explicit DNRManifestData(RulesetInfo ruleset);
   ~DNRManifestData() override;
 
   // Returns true if the extension specified the kDeclarativeNetRequestKey
@@ -26,7 +30,7 @@ struct DNRManifestData : Extension::ManifestData {
   // called only if HasRuleset returns true for the |extension|.
   static base::FilePath GetRulesetPath(const Extension& extension);
 
-  base::FilePath ruleset_relative_path;
+  RulesetInfo ruleset;
 
   DISALLOW_COPY_AND_ASSIGN(DNRManifestData);
 };

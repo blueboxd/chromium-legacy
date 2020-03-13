@@ -119,6 +119,7 @@ base::TimeDelta ChildUserService::GetWebTimeLimit() const {
 void ChildUserService::Shutdown() {
   if (app_time_controller_) {
     app_time_controller_->app_registry()->SaveAppActivity();
+    app_time_controller_->RecordMetricsOnShutdown();
     app_time_controller_.reset();
   }
 }

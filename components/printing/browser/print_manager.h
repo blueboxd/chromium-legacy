@@ -61,14 +61,19 @@ class PrintManager : public content::WebContentsObserver {
   // IPC message PrintHostMsg_DidPrintDocument can require handling in other
   // processes beyond the rendering process running OnMessageReceived(),
   // requiring that the renderer needs to wait.
-  class DelayedFrameDispatchHelper {
+  class DelayedFrameDispatchHelper : public content::WebContentsObserver {
    public:
-    DelayedFrameDispatchHelper(content::RenderFrameHost* render_frame_host,
+    DelayedFrameDispatchHelper(content::WebContents* contents,
+                               content::RenderFrameHost* render_frame_host,
                                IPC::Message* reply_msg);
     DelayedFrameDispatchHelper(const DelayedFrameDispatchHelper&) = delete;
-    ~DelayedFrameDispatchHelper();
+    ~DelayedFrameDispatchHelper() override;
     DelayedFrameDispatchHelper& operator=(const DelayedFrameDispatchHelper&) =
         delete;
+
+    // content::WebContentsObserver
+    void RenderFrameDeleted(
+        content::RenderFrameHost* render_frame_host) override;
 
     // SendCompleted() can be called at most once, since it provides the success
     // reply for a message. A failure reply for the message is automatically

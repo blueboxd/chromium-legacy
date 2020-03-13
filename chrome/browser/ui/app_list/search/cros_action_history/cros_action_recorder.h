@@ -16,6 +16,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action.pb.h"
 
+class Profile;
+
 namespace app_list {
 
 class CrOSActionHistoryProto;
@@ -42,6 +44,12 @@ class CrOSActionRecorder {
       const CrOSAction& action,
       const std::vector<std::pair<std::string, int>>& conditions = {});
 
+  // The sub-directory in profile path where the action history is stored.
+  static constexpr char kActionHistoryDir[] = "cros_action_history";
+
+  // The basename of the file for the copied action history.
+  static constexpr char kActionHistoryBasename[] = "cros_action_history.pb";
+
  private:
   // Enum for recorder settings from flags.
   enum CrOSActionRecorderType {
@@ -53,14 +61,18 @@ class CrOSActionRecorder {
   };
 
   friend class CrOSActionRecorderTest;
+  friend class CrOSActionRecorderTabTrackerTest;
 
   // kSaveInternal controls how often we save the action history to disk.
   static constexpr base::TimeDelta kSaveInternal =
       base::TimeDelta::FromHours(1);
 
-  // Private constructor used for testing purpose.
-  CrOSActionRecorder(const base::FilePath& model_dir,
-                     const base::FilePath& filename_in_download_dir);
+  // Private constructor used for testing purpose. Which basically calls the
+  // Init function.
+  explicit CrOSActionRecorder(Profile* profile);
+
+  // Does the actual initialization of CrOSActionRecorder.
+  void Init(Profile* profile);
 
   // Saves the current |actions_| to disk and clear it when certain
   // criteria is met.
@@ -83,8 +95,6 @@ class CrOSActionRecorder {
   CrOSActionHistoryProto actions_;
   // Path to save the actions history.
   base::FilePath model_dir_;
-  // Filename in download directory to save the action history if enabled.
-  base::FilePath filename_in_download_dir_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

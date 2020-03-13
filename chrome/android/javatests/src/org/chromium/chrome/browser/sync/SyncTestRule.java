@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.sync;
 import android.accounts.Account;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.support.v7.preference.TwoStatePreference;
+
+import androidx.preference.TwoStatePreference;
 
 import org.junit.Assert;
 import org.junit.runner.Description;

@@ -6,8 +6,9 @@ package org.chromium.chrome.browser.autofill.settings;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v7.preference.Preference;
-import android.support.v7.preference.PreferenceFragmentCompat;
+
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeStringConstants;

@@ -24,15 +24,9 @@ class TestCertificateProviderExtension;
 class TestCertificateProviderExtensionLoginScreenMixin final
     : public InProcessBrowserTestMixin {
  public:
-  static std::string GetExtensionId();
-
-  // If |load_extension_immediately| is false,
-  // |AddExtensionForForceInstallation()| needs to be called by the test.
-  // Otherwise, the extension will be installed during setup.
   TestCertificateProviderExtensionLoginScreenMixin(
       InProcessBrowserTestMixinHost* host,
-      chromeos::DeviceStateMixin* device_state_mixin,
-      bool load_extension_immediately);
+      chromeos::DeviceStateMixin* device_state_mixin);
   TestCertificateProviderExtensionLoginScreenMixin(
       const TestCertificateProviderExtensionLoginScreenMixin&) = delete;
   TestCertificateProviderExtensionLoginScreenMixin& operator=(
@@ -51,20 +45,9 @@ class TestCertificateProviderExtensionLoginScreenMixin final
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
 
-  // Triggers async installation of the extension. Will be called during setup
-  // if |load_extension_immediately_| is set in ctor. In that case, should not
-  // be called again in tests.
-  void AddExtensionForForceInstallation();
-
-  // Waits until the extension is installed and loaded. Will be called during
-  // setup if |load_extension_immediately_| is set in ctor. In that case, should
-  // not be called again in tests.
-  void WaitUntilExtensionLoaded();
-
  private:
   chromeos::DeviceStateMixin* const device_state_mixin_;
   net::EmbeddedTestServer embedded_test_server_;
-  bool load_extension_immediately_;
   std::unique_ptr<TestCertificateProviderExtension>
       test_certificate_provider_extension_;
 };

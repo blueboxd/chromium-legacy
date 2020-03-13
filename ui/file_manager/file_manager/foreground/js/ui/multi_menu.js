@@ -494,7 +494,10 @@ cr.define('cr.ui', () => {
       this.menu.contextElement = this;
       this.menu.show(opt_mousePos);
 
+      // Toggle aria and open state.
+      this.setAttribute('aria-expanded', 'true');
       this.setAttribute('menu-shown', '');
+
       // Handle mouse-over to trigger sub menu opening on hover.
       this.showingEvents_.add(this.menu, 'mouseover', this);
       this.showingEvents_.add(this.menu, 'mouseout', this);
@@ -574,7 +577,10 @@ cr.define('cr.ui', () => {
       // Hide any visible sub-menus first
       this.hideSubMenu_();
 
+      // Toggle aria and open state.
+      this.setAttribute('aria-expanded', 'false');
       this.removeAttribute('menu-shown');
+
       if (opt_hideType == HideType.DELAYED) {
         this.menu.classList.add('hide-delayed');
       } else {

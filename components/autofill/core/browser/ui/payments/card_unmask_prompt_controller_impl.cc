@@ -229,10 +229,16 @@ bool CardUnmaskPromptControllerImpl::GetStoreLocallyStartState() const {
       prefs::kAutofillWalletImportStorageCheckboxState);
 }
 
+#if defined(OS_ANDROID)
+bool CardUnmaskPromptControllerImpl::ShouldOfferWebauthn() const {
+  return delegate_ && delegate_->ShouldOfferFidoAuth();
+}
+
 bool CardUnmaskPromptControllerImpl::GetWebauthnOfferStartState() const {
   return pref_service_->GetBoolean(
       prefs::kAutofillCreditCardFidoAuthOfferCheckboxState);
 }
+#endif
 
 bool CardUnmaskPromptControllerImpl::InputCvcIsValid(
     const base::string16& input_text) const {

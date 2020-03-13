@@ -639,7 +639,9 @@ TEST_F(SyncApiTest, WriteEmptyBookmarkTitle) {
     ReadNode bookmark_node(&trans);
     ASSERT_EQ(BaseNode::INIT_OK, bookmark_node.InitByIdLookup(bookmark_id));
     EXPECT_EQ("", bookmark_node.GetTitle());
-    EXPECT_EQ(" ", bookmark_node.GetEntitySpecifics().bookmark().title());
+    EXPECT_EQ(" ", bookmark_node.GetEntitySpecifics()
+                       .bookmark()
+                       .legacy_canonicalized_title());
     EXPECT_EQ(" ", bookmark_node.GetEntry()->GetNonUniqueName());
   }
 }
@@ -1580,7 +1582,7 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
     EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(node_id1));
     EXPECT_EQ(BOOKMARKS, node.GetModelType());
     EXPECT_EQ(title, node.GetTitle());
-    EXPECT_EQ(title, node.GetBookmarkSpecifics().title());
+    EXPECT_EQ(title, node.GetBookmarkSpecifics().legacy_canonicalized_title());
     EXPECT_EQ(url, node.GetBookmarkSpecifics().url());
 
     ReadNode node2(&trans);
@@ -1589,7 +1591,8 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
     // We should de-canonicalize the title in GetTitle(), but the title in the
     // specifics should be stored in the server legal form.
     EXPECT_EQ(raw_title2, node2.GetTitle());
-    EXPECT_EQ(title2, node2.GetBookmarkSpecifics().title());
+    EXPECT_EQ(title2,
+              node2.GetBookmarkSpecifics().legacy_canonicalized_title());
     EXPECT_EQ(url2, node2.GetBookmarkSpecifics().url());
   }
 
@@ -1616,7 +1619,7 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
     EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(node_id1));
     EXPECT_EQ(BOOKMARKS, node.GetModelType());
     EXPECT_EQ(title, node.GetTitle());
-    EXPECT_EQ(title, node.GetBookmarkSpecifics().title());
+    EXPECT_EQ(title, node.GetBookmarkSpecifics().legacy_canonicalized_title());
     EXPECT_EQ(url, node.GetBookmarkSpecifics().url());
 
     ReadNode node2(&trans);
@@ -1625,7 +1628,8 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
     // We should de-canonicalize the title in GetTitle(), but the title in the
     // specifics should be stored in the server legal form.
     EXPECT_EQ(raw_title2, node2.GetTitle());
-    EXPECT_EQ(title2, node2.GetBookmarkSpecifics().title());
+    EXPECT_EQ(title2,
+              node2.GetBookmarkSpecifics().legacy_canonicalized_title());
     EXPECT_EQ(url2, node2.GetBookmarkSpecifics().url());
   }
 }
@@ -1669,7 +1673,7 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   std::string client_tag = "title";
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.mutable_bookmark()->set_url("url");
-  entity_specifics.mutable_bookmark()->set_title("title");
+  entity_specifics.mutable_bookmark()->set_legacy_canonicalized_title("title");
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, client_tag,
                  GenerateSyncableHash(BOOKMARKS, client_tag), entity_specifics);
   // New node shouldn't start off unsynced.
@@ -1778,7 +1782,8 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   // Manually change to different data. Should set is_unsynced.
   {
     entity_specifics.mutable_bookmark()->set_url("url2");
-    entity_specifics.mutable_bookmark()->set_title("title2");
+    entity_specifics.mutable_bookmark()->set_legacy_canonicalized_title(
+        "title2");
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK,
@@ -2112,7 +2117,7 @@ TEST_F(SyncManagerTest, ReencryptEverythingWithUnrecoverableErrorBookmarks) {
                              "fake_key"};
     other_cryptographer.AddKey(fake_params);
     sync_pb::EntitySpecifics bm_specifics;
-    bm_specifics.mutable_bookmark()->set_title("title");
+    bm_specifics.mutable_bookmark()->set_legacy_canonicalized_title("title");
     bm_specifics.mutable_bookmark()->set_url("url");
     sync_pb::EncryptedData encrypted;
     other_cryptographer.Encrypt(bm_specifics, &encrypted);
@@ -2145,7 +2150,7 @@ TEST_F(SyncManagerTest, SetBookmarkTitle) {
   std::string client_tag = "title";
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.mutable_bookmark()->set_url("url");
-  entity_specifics.mutable_bookmark()->set_title("title");
+  entity_specifics.mutable_bookmark()->set_legacy_canonicalized_title("title");
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, client_tag,
                  GenerateSyncableHash(BOOKMARKS, client_tag), entity_specifics);
   // New node shouldn't start off unsynced.
@@ -2179,7 +2184,7 @@ TEST_F(SyncManagerTest, SetBookmarkTitleWithEncryption) {
   std::string client_tag = "title";
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.mutable_bookmark()->set_url("url");
-  entity_specifics.mutable_bookmark()->set_title("title");
+  entity_specifics.mutable_bookmark()->set_legacy_canonicalized_title("title");
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, client_tag,
                  GenerateSyncableHash(BOOKMARKS, client_tag), entity_specifics);
   // New node shouldn't start off unsynced.
@@ -2381,7 +2386,7 @@ TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     DirectoryCryptographer* crypto = GetCryptographer(&trans);
     sync_pb::EntitySpecifics bm_specifics;
-    bm_specifics.mutable_bookmark()->set_title("title");
+    bm_specifics.mutable_bookmark()->set_legacy_canonicalized_title("title");
     bm_specifics.mutable_bookmark()->set_url("url");
     sync_pb::EncryptedData encrypted;
     crypto->Encrypt(bm_specifics, &encrypted);
@@ -2447,7 +2452,7 @@ TEST_F(SyncManagerTest, IncrementTransactionVersion) {
   std::string client_tag = "title";
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.mutable_bookmark()->set_url("url");
-  entity_specifics.mutable_bookmark()->set_title("title");
+  entity_specifics.mutable_bookmark()->set_legacy_canonicalized_title("title");
   MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, client_tag,
                  GenerateSyncableHash(BOOKMARKS, client_tag), entity_specifics);
 

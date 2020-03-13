@@ -4,9 +4,10 @@
 
 package org.chromium.chrome.browser.toolbar.top;
 
-import android.support.v7.app.ActionBar;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.appcompat.app.ActionBar;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;

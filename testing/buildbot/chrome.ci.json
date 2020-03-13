@@ -768,7 +768,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "idempotent": false,
@@ -788,7 +788,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -806,7 +806,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "idempotent": false,
@@ -841,7 +841,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -860,7 +860,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -879,7 +879,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -902,7 +902,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -921,7 +921,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -940,7 +940,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "idempotent": false,
@@ -960,7 +960,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -979,7 +979,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -997,7 +997,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "idempotent": false,
@@ -1017,7 +1017,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1036,7 +1036,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1060,7 +1060,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1079,7 +1079,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1098,7 +1098,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1117,7 +1117,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1137,7 +1137,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1159,7 +1159,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1178,7 +1178,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1197,7 +1197,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1226,7 +1226,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -1249,7 +1249,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1271,7 +1271,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1290,7 +1290,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1309,7 +1309,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1328,7 +1328,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1347,7 +1347,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1366,7 +1366,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1385,7 +1385,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1414,7 +1414,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "idempotent": false,
@@ -1442,7 +1442,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.cros-vm"
+              "pool": "chrome.tests.cros-vm.template"
             }
           ],
           "idempotent": false,
@@ -1472,7 +1472,7 @@
             {
               "device_type": "eve",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "luci.chrome.cros-dut.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1494,7 +1494,7 @@
             {
               "device_type": "eve",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "luci.chrome.cros-dut.template"
             }
           ],
           "idempotent": false,
@@ -1517,7 +1517,7 @@
             {
               "device_type": "eve",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "luci.chrome.cros-dut.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1538,7 +1538,7 @@
             {
               "device_type": "eve",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "luci.chrome.cros-dut.template"
             }
           ],
           "idempotent": false,
@@ -1570,7 +1570,7 @@
             {
               "device_type": "eve",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "luci.chrome.cros-dut.template"
             }
           ],
           "idempotent": false,
@@ -1600,7 +1600,7 @@
             {
               "device_type": "eve",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "luci.chrome.cros-dut.template"
             }
           ],
           "idempotent": false,
@@ -1633,7 +1633,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "luci.chrome.cros-dut.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1655,7 +1655,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "luci.chrome.cros-dut.template"
             }
           ],
           "idempotent": false,
@@ -1678,7 +1678,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "luci.chrome.cros-dut.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1699,7 +1699,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "luci.chrome.cros-dut.template"
             }
           ],
           "idempotent": false,
@@ -1729,7 +1729,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "pool": "chrome.tests"
+              "pool": "chrome.tests.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1756,7 +1756,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -1775,7 +1775,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -1794,7 +1794,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -1813,7 +1813,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -1832,7 +1832,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -1851,7 +1851,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -1870,7 +1870,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -1889,7 +1889,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -1908,7 +1908,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -1927,7 +1927,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -1946,7 +1946,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -1965,7 +1965,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -1985,7 +1985,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2004,7 +2004,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2023,7 +2023,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2065,7 +2065,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2087,7 +2087,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2106,7 +2106,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2125,7 +2125,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2144,7 +2144,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2163,7 +2163,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2182,7 +2182,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2201,7 +2201,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2220,7 +2220,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2239,7 +2239,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2258,7 +2258,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2277,7 +2277,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2297,7 +2297,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2316,7 +2316,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2335,7 +2335,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2354,7 +2354,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2373,7 +2373,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2392,7 +2392,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2411,7 +2411,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2430,7 +2430,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2449,7 +2449,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2468,7 +2468,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2487,7 +2487,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2506,7 +2506,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2525,7 +2525,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2544,7 +2544,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2563,7 +2563,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2582,7 +2582,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2601,7 +2601,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2623,7 +2623,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2643,7 +2643,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2662,7 +2662,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2681,7 +2681,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2700,7 +2700,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2719,7 +2719,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2738,7 +2738,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2757,7 +2757,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2776,7 +2776,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2795,7 +2795,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2814,7 +2814,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2833,7 +2833,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2852,7 +2852,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2871,7 +2871,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2890,7 +2890,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2909,7 +2909,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2928,7 +2928,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2950,7 +2950,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2972,7 +2972,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -2991,7 +2991,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3010,7 +3010,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3029,7 +3029,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3048,7 +3048,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3067,7 +3067,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3086,7 +3086,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3105,7 +3105,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3124,7 +3124,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3143,7 +3143,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3162,7 +3162,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3181,7 +3181,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3200,7 +3200,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3219,7 +3219,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3238,7 +3238,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3257,7 +3257,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3276,7 +3276,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3295,7 +3295,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3314,7 +3314,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3333,7 +3333,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3355,7 +3355,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3374,7 +3374,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3394,7 +3394,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3413,7 +3413,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3432,7 +3432,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3451,7 +3451,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3470,7 +3470,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3489,7 +3489,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3511,7 +3511,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
+              "pool": "chrome.tests.template",
               "ssd": "0"
             }
           ],
@@ -3675,7 +3675,7 @@
           "dimension_sets": [
             {
               "os": "Mac-10.14.6",
-              "pool": "chrome.tests"
+              "pool": "chrome.tests.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -3807,7 +3807,7 @@
           "dimension_sets": [
             {
               "os": "Windows-10-15063",
-              "pool": "chrome.tests"
+              "pool": "chrome.tests.template"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"

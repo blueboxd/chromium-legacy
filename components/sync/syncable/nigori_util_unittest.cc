@@ -29,7 +29,8 @@ TEST(NigoriUtilTest, SpecificsNeedsEncryption) {
   AddDefaultFieldValue(BOOKMARKS, &bookmark_specifics);
   EXPECT_TRUE(SpecificsNeedsEncryption(encrypted_types, bookmark_specifics));
 
-  bookmark_specifics.mutable_bookmark()->set_title("title");
+  bookmark_specifics.mutable_bookmark()->set_legacy_canonicalized_title(
+      "title");
   bookmark_specifics.mutable_bookmark()->set_url("url");
   EXPECT_TRUE(SpecificsNeedsEncryption(encrypted_types, bookmark_specifics));
   EXPECT_FALSE(SpecificsNeedsEncryption(ModelTypeSet(), bookmark_specifics));

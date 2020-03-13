@@ -9,12 +9,18 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
+#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
+#include "components/services/storage/public/mojom/local_storage_control.mojom.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
+#include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
 namespace content {
@@ -75,6 +81,39 @@ void CompleteFindSoon(
 
 }  // namespace
 
+// A helper class that runs on the IO thread to observe storage policy updates.
+class ServiceWorkerRegistry::StoragePolicyObserver
+    : public storage::SpecialStoragePolicy::Observer {
+ public:
+  StoragePolicyObserver(
+      base::WeakPtr<ServiceWorkerRegistry> owner,
+      scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy)
+      : owner_(owner), special_storage_policy_(special_storage_policy) {
+    DCHECK(special_storage_policy_);
+    special_storage_policy_->AddObserver(this);
+  }
+
+  StoragePolicyObserver(const StoragePolicyObserver&) = delete;
+  StoragePolicyObserver& operator=(const StoragePolicyObserver&) = delete;
+
+  ~StoragePolicyObserver() override {
+    special_storage_policy_->RemoveObserver(this);
+  }
+
+ private:
+  // storage::SpecialStoragePolicy::Observer:
+  void OnPolicyChanged() override {
+    ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
+        FROM_HERE,
+        base::BindOnce(&ServiceWorkerRegistry::OnStoragePolicyChanged, owner_));
+  }
+
+  // |owner_| is dereferenced on the core thread. This shouldn't be dereferenced
+  // on the IO thread.
+  base::WeakPtr<ServiceWorkerRegistry> owner_;
+  const scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
+};
+
 ServiceWorkerRegistry::ServiceWorkerRegistry(
     const base::FilePath& user_data_directory,
     ServiceWorkerContextCore* context,
@@ -84,19 +123,22 @@ ServiceWorkerRegistry::ServiceWorkerRegistry(
     : context_(context),
       storage_(ServiceWorkerStorage::Create(user_data_directory,
                                             std::move(database_task_runner),
-                                            quota_manager_proxy,
-                                            special_storage_policy)) {
+                                            quota_manager_proxy)),
+      special_storage_policy_(special_storage_policy) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(context_);
+  Start();
 }
 
 ServiceWorkerRegistry::ServiceWorkerRegistry(
     ServiceWorkerContextCore* context,
     ServiceWorkerRegistry* old_registry)
     : context_(context),
-      storage_(ServiceWorkerStorage::Create(old_registry->storage())) {
+      storage_(ServiceWorkerStorage::Create(old_registry->storage())),
+      special_storage_policy_(old_registry->special_storage_policy_) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(context_);
+  Start();
 }
 
 ServiceWorkerRegistry::~ServiceWorkerRegistry() = default;
@@ -362,7 +404,7 @@ void ServiceWorkerRegistry::DeleteRegistration(
   storage()->DeleteRegistration(
       registration->id(), origin,
       base::BindOnce(&ServiceWorkerRegistry::DidDeleteRegistration,
-                     weak_factory_.GetWeakPtr(), registration->id(),
+                     weak_factory_.GetWeakPtr(), registration->id(), origin,
                      std::move(callback)));
 
   DCHECK(!base::Contains(uninstalling_registrations_, registration->id()));
@@ -683,6 +725,20 @@ void ServiceWorkerRegistry::DisableDeleteAndStartOverForTesting() {
   DCHECK(should_schedule_delete_and_start_over_);
   should_schedule_delete_and_start_over_ = false;
   is_storage_disabled_ = true;
+}
+
+void ServiceWorkerRegistry::Start() {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  if (special_storage_policy_) {
+    storage_policy_observer_ = base::SequenceBound<StoragePolicyObserver>(
+        base::CreateSequencedTaskRunner(BrowserThread::IO),
+        weak_factory_.GetWeakPtr(),
+        base::WrapRefCounted(special_storage_policy_.get()));
+
+    storage()->GetRegisteredOrigins(
+        base::BindOnce(&ServiceWorkerRegistry::DidGetRegisteredOriginsOnStartup,
+                       weak_factory_.GetWeakPtr()));
+  }
 }
 
 ServiceWorkerRegistration*
@@ -1097,13 +1153,21 @@ void ServiceWorkerRegistry::DidStoreRegistration(
   }
   context_->NotifyRegistrationStored(stored_registration_id, stored_scope);
 
+  if (special_storage_policy_) {
+    EnsureRegisteredOriginIsTracked(
+        url::Origin::Create(stored_scope.GetOrigin()));
+    OnStoragePolicyChanged();
+  }
+
   std::move(callback).Run(status);
 }
 
 void ServiceWorkerRegistry::DidDeleteRegistration(
     int64_t registration_id,
+    const GURL& origin,
     StatusCallback callback,
     storage::mojom::ServiceWorkerDatabaseStatus database_status,
+    ServiceWorkerStorage::OriginState origin_state,
     int64_t deleted_version_id,
     const std::vector<int64_t>& newly_purgeable_resources) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
@@ -1123,6 +1187,11 @@ void ServiceWorkerRegistry::DidDeleteRegistration(
       context_->GetLiveRegistration(registration_id);
   if (registration)
     registration->UnsetStored();
+
+  if (special_storage_policy_ &&
+      origin_state == ServiceWorkerStorage::OriginState::kDelete) {
+    tracked_origins_for_policy_update_.erase(url::Origin::Create(origin));
+  }
 
   std::move(callback).Run(status);
 }
@@ -1254,6 +1323,50 @@ void ServiceWorkerRegistry::ScheduleDeleteAndStartOver() {
   // ServiceWorkerContextCore should call PrepareForDeleteAndStartOver().
   DCHECK(!should_schedule_delete_and_start_over_);
   DCHECK(is_storage_disabled_);
+}
+
+void ServiceWorkerRegistry::DidGetRegisteredOriginsOnStartup(
+    std::vector<url::Origin> origins) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  for (const auto& origin : origins)
+    EnsureRegisteredOriginIsTracked(origin);
+  OnStoragePolicyChanged();
+}
+
+void ServiceWorkerRegistry::EnsureRegisteredOriginIsTracked(
+    const url::Origin& origin) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  auto it = tracked_origins_for_policy_update_.find(origin);
+  if (it == tracked_origins_for_policy_update_.end())
+    tracked_origins_for_policy_update_[origin] = {};
+}
+
+void ServiceWorkerRegistry::OnStoragePolicyChanged() {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  if (is_storage_disabled_)
+    return;
+
+  std::vector<storage::mojom::LocalStoragePolicyUpdatePtr> policy_updates;
+  for (auto& entry : tracked_origins_for_policy_update_) {
+    const url::Origin& origin = entry.first;
+    StorageOriginState& state = entry.second;
+    state.should_purge_on_shutdown = ShouldPurgeOnShutdown(origin);
+    if (state.should_purge_on_shutdown != state.will_purge_on_shutdown) {
+      state.will_purge_on_shutdown = state.should_purge_on_shutdown;
+      policy_updates.push_back(storage::mojom::LocalStoragePolicyUpdate::New(
+          origin, state.should_purge_on_shutdown));
+    }
+  }
+
+  if (!policy_updates.empty())
+    storage()->ApplyPolicyUpdates(std::move(policy_updates));
+}
+
+bool ServiceWorkerRegistry::ShouldPurgeOnShutdown(const url::Origin& origin) {
+  if (!special_storage_policy_)
+    return false;
+  return special_storage_policy_->IsStorageSessionOnly(origin.GetURL()) &&
+         !special_storage_policy_->IsStorageProtected(origin.GetURL());
 }
 
 }  // namespace content

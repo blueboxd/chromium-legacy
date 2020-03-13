@@ -5,9 +5,10 @@
 package org.chromium.chrome.browser.download.settings;
 
 import android.os.Bundle;
-import android.support.v7.preference.PreferenceDialogFragmentCompat;
 import android.view.View;
 import android.widget.ListView;
+
+import androidx.preference.PreferenceDialogFragmentCompat;
 
 import org.chromium.chrome.download.R;
 

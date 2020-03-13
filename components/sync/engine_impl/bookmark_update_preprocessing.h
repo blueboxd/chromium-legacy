@@ -26,9 +26,9 @@ struct EntityData;
 void AdaptUniquePositionForBookmark(const sync_pb::SyncEntity& update_entity,
                                     EntityData* data);
 
-// Populates |specifics->bookmark().title()| from the various supported sources,
-// or no-op if specifics already have the field set. |specifics| must not be
-// null.
+// Populates |specifics->bookmark().legacy_canonicalized_title()| from the
+// various supported sources, or no-op if specifics already have the field set.
+// |specifics| must not be null.
 void AdaptTitleForBookmark(const sync_pb::SyncEntity& update_entity,
                            sync_pb::EntitySpecifics* specifics,
                            bool specifics_were_encrypted);

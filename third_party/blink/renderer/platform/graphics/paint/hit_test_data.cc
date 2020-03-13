@@ -36,18 +36,21 @@ String HitTestData::ToString() const {
     printed_top_level_field = true;
   }
 
-  if (scroll_hit_test) {
+  if (!scroll_hit_test_rect.IsEmpty()) {
     if (printed_top_level_field)
       sb.Append(", ");
-    sb.AppendFormat(
-        "scroll_hit_test: \"%s\" with offset %p",
-        scroll_hit_test->scroll_container_bounds.ToString().Utf8().data(),
-        scroll_hit_test->scroll_offset);
+    sb.Append("scroll_hit_test_rect: ");
+    sb.Append(scroll_hit_test_rect.ToString());
     printed_top_level_field = true;
   }
 
-  sb.Append("}");
+  if (scroll_translation) {
+    if (printed_top_level_field)
+      sb.Append(", ");
+    sb.AppendFormat("scroll_translation: %p", scroll_translation);
+  }
 
+  sb.Append("}");
   return sb.ToString();
 }
 

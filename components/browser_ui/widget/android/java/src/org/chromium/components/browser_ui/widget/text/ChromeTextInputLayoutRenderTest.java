@@ -7,11 +7,12 @@ package org.chromium.components.browser_ui.widget.text;
 import android.app.Activity;
 import android.graphics.Color;
 import android.support.test.filters.MediumTest;
-import android.support.v7.widget.AppCompatEditText;
 import android.text.InputType;
 import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.appcompat.widget.AppCompatEditText;
 
 import org.junit.Rule;
 import org.junit.Test;

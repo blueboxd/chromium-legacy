@@ -1,4 +1,4 @@
-# TEAM: paymentrequest@chromium.org
+# TEAM: payments-dev@chromium.org
 # COMPONENT: Blink>Payments
-rouslan@chromium.org
-mathp@chromium.org
+
+file://components/payments/OWNERS

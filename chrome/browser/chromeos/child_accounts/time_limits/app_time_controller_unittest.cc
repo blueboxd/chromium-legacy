@@ -7,6 +7,7 @@
 #include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
@@ -461,6 +462,60 @@ TEST_F(AppTimeControllerTest, RestoreLastResetTime) {
             AppState::kAvailable);
   EXPECT_EQ(controller()->app_registry()->GetActiveTime(kApp1), kZeroTime);
   EXPECT_EQ(controller()->app_registry()->GetActiveTime(kApp2), kZeroTime);
+}
+
+TEST_F(AppTimeControllerTest, MetricsTest) {
+  base::HistogramTester histogram_tester;
+  DeleteController();
+  InstantiateController();
+
+  {
+    AppTimeLimitsPolicyBuilder builder;
+    AppId absent_app(apps::mojom::AppType::kArc, "absent_app");
+    AppLimit app_limit(AppRestriction::kTimeLimit, kOneHour, base::Time::Now());
+    AppLimit blocked_app(AppRestriction::kBlocked, base::nullopt,
+                         base::Time::Now());
+    builder.AddAppLimit(kApp1, app_limit);
+    builder.AddAppLimit(absent_app, app_limit);
+    builder.AddAppLimit(kApp2, blocked_app);
+    builder.SetResetTime(6, 0);
+    DictionaryPrefUpdate update(profile().GetPrefs(),
+                                prefs::kPerAppTimeLimitsPolicy);
+    base::Value* value = update.Get();
+    *value = builder.value().Clone();
+  }
+
+  // Enagagement is recorded at the beginning of the session when
+  // AppTimeController is instantiated. There was no policy set at the beginning
+  // of this session. Therefore engagement is 0.
+  histogram_tester.ExpectBucketCount(kEngagementMetric, 0, 1);
+
+  // Even though the policy has 2 apps with time limit set, one of them is not
+  // installed/present in AppActivityRegistry. Therefore bucket size is one.
+  histogram_tester.ExpectBucketCount(kAppsWithTimeLimitMetric, 1, 1);
+  histogram_tester.ExpectBucketCount(kBlockedAppsCountMetric, 1, 1);
+
+  controller()->app_registry()->SaveAppActivity();
+  controller()->RecordMetricsOnShutdown();
+  DeleteController();
+  histogram_tester.ExpectBucketCount(kPolicyUpdateCountMetric, 1, 1);
+
+  InstantiateController();
+
+  // Session 2 starts with PerAppTimeLimits policy already set with one
+  // application which has time limit set.
+  histogram_tester.ExpectBucketCount(kEngagementMetric, 1, 1);
+
+  // There was no update to policy. Therefore, no change in the following
+  // metrics.
+  histogram_tester.ExpectBucketCount(kBlockedAppsCountMetric, 1, 1);
+  histogram_tester.ExpectBucketCount(kAppsWithTimeLimitMetric, 1, 1);
+  histogram_tester.ExpectBucketCount(kPolicyUpdateCountMetric, 1, 1);
+
+  controller()->RecordMetricsOnShutdown();
+  DeleteController();
+  // There was actually no policy update when the controller was reinstantiated.
+  histogram_tester.ExpectBucketCount(kPolicyUpdateCountMetric, 0, 1);
 }
 
 }  // namespace app_time

@@ -8,7 +8,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -24,6 +23,9 @@ class CaptioningController : public WebContentsObserver {
                        WebContents* web_contents);
 
   ~CaptioningController() override;
+
+  CaptioningController(const CaptioningController&) = delete;
+  CaptioningController& operator=(const CaptioningController&) = delete;
 
   void SetTextTrackSettings(
       JNIEnv* env,
@@ -46,8 +48,6 @@ class CaptioningController : public WebContentsObserver {
 
   // A weak reference to the Java CaptioningController object.
   JavaObjectWeakGlobalRef java_ref_;
-
-  DISALLOW_COPY_AND_ASSIGN(CaptioningController);
 };
 
 }  // namespace content

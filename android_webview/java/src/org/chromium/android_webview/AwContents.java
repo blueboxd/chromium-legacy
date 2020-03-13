@@ -1341,6 +1341,10 @@ public class AwContents implements SmartClipProvider {
             javascriptInterfaces.putAll(getJavascriptInjector().getInterfaces());
         }
 
+        // Save injected WebMessageListeners
+        WebMessageListenerInfo[] listeners = AwContentsJni.get().getJsObjectsInfo(
+                mNativeAwContents, AwContents.this, WebMessageListenerInfo.class);
+
         setNewAwContents(popupNativeAwContents);
         // We defer loading any URL on the popup until it has been properly initialized (through
         // setNewAwContents). We resume the load here.
@@ -1367,6 +1371,14 @@ public class AwContents implements SmartClipProvider {
             Class<? extends Annotation> requiredAnnotation = entry.getValue().second;
             getJavascriptInjector().addPossiblyUnsafeInterface(
                     entry.getValue().first, entry.getKey(), requiredAnnotation);
+        }
+
+        // Restore injected WebMessageListeners.
+        if (listeners != null) {
+            for (WebMessageListenerInfo info : listeners) {
+                addWebMessageListener(
+                        info.mObjectName, info.mAllowedOriginRules, info.mHolder.getListener());
+            }
         }
     }
 
@@ -4038,5 +4050,7 @@ public class AwContents implements SmartClipProvider {
                 WebMessageListenerHolder listener, String jsObjectName, String[] allowedOrigins);
         void removeWebMessageListener(
                 long nativeAwContents, AwContents caller, String jsObjectName);
+        WebMessageListenerInfo[] getJsObjectsInfo(
+                long nativeAwContents, AwContents caller, Class clazz);
     }
 }

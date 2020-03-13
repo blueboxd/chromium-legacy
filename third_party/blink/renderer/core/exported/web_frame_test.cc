@@ -13171,4 +13171,52 @@ TEST_F(WebFrameTest, FaviconURLUpdateEvent) {
   web_view_helper.Reset();
 }
 
+class TestFocusedElementChangedLocalFrameHost : public FakeLocalFrameHost {
+ public:
+  TestFocusedElementChangedLocalFrameHost() = default;
+  ~TestFocusedElementChangedLocalFrameHost() override = default;
+
+  // FakeLocalFrameHost:
+  void FocusedElementChanged(bool is_editable_element,
+                             const gfx::Rect& bounds_in_frame_widget) override {
+    did_notify_ = true;
+  }
+
+  bool did_notify_ = false;
+};
+
+TEST_F(WebFrameTest, FocusElementCallsFocusedElementChanged) {
+  TestFocusedElementChangedLocalFrameHost frame_host;
+  frame_test_helpers::TestWebFrameClient web_frame_client;
+  frame_host.Init(web_frame_client.GetRemoteNavigationAssociatedInterfaces());
+  frame_test_helpers::WebViewHelper web_view_helper;
+  web_view_helper.Initialize(&web_frame_client);
+  RunPendingTasks();
+  auto* main_frame = web_view_helper.GetWebView()->MainFrameImpl();
+
+  main_frame->GetFrame()->GetDocument()->documentElement()->setInnerHTML(
+      "<input id='test1' value='hello1'></input>"
+      "<input id='test2' value='hello2'></input>");
+  RunPendingTasks();
+
+  EXPECT_FALSE(frame_host.did_notify_);
+
+  main_frame->ExecuteScript(
+      WebScriptSource(WebString("document.getElementById('test1').focus();")));
+  RunPendingTasks();
+  EXPECT_TRUE(frame_host.did_notify_);
+  frame_host.did_notify_ = false;
+
+  main_frame->ExecuteScript(
+      WebScriptSource(WebString("document.getElementById('test2').focus();")));
+  RunPendingTasks();
+  EXPECT_TRUE(frame_host.did_notify_);
+  frame_host.did_notify_ = false;
+
+  main_frame->ExecuteScript(
+      WebScriptSource(WebString("document.getElementById('test2').blur();")));
+  RunPendingTasks();
+  EXPECT_TRUE(frame_host.did_notify_);
+}
+
 }  // namespace blink

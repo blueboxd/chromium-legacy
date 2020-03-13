@@ -10,8 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v7.content.res.AppCompatResources;
 import android.text.InputType;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -32,6 +30,8 @@ import android.widget.TextView;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.StringRes;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.fragment.app.Fragment;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;

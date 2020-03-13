@@ -62,10 +62,6 @@ class LoggingCanvas : public InterceptingCanvasBase {
                         const SkRect& dst,
                         const SkPaint*,
                         SrcRectConstraint) override;
-  void onDrawBitmapNine(const SkBitmap&,
-                        const SkIRect& center,
-                        const SkRect& dst,
-                        const SkPaint*) override;
   void onDrawImage(const SkImage*, SkScalar, SkScalar, const SkPaint*) override;
   void onDrawImageRect(const SkImage*,
                        const SkRect* src,

@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.autofill.settings;
 
 import android.content.Context;
-import android.support.v7.preference.DialogPreference;
+
+import androidx.preference.DialogPreference;
 
 /**
  * Launches the UI to edit, create or delete an Autofill profile entry.

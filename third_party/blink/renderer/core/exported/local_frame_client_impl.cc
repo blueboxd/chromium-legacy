@@ -1059,6 +1059,11 @@ void LocalFrameClientImpl::FrameRectsChanged(const IntRect& frame_rect) {
   web_frame_->Client()->FrameRectsChanged(frame_rect);
 }
 
+void LocalFrameClientImpl::FocusedElementChanged(Element* element) {
+  DCHECK(web_frame_->Client());
+  web_frame_->Client()->FocusedElementChanged(element);
+}
+
 void LocalFrameClientImpl::OnMainFrameDocumentIntersectionChanged(
     const IntRect& intersection_rect) {
   DCHECK(web_frame_->Client());

@@ -14,6 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/stl_util.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1889,6 +1890,8 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
   inputs[1].SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1111"));
   inputs[1].SetNetworkForMaskedCard(kVisaCard);
   inputs[1].SetServerStatus(CreditCard::EXPIRED);
+  base::string16 nickname = ASCIIToUTF16("Grocery card");
+  inputs[1].set_nickname(nickname);
 
   test::SetServerCreditCards(table_.get(), inputs);
 
@@ -1913,6 +1916,9 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
 
   EXPECT_EQ(CreditCard::OK, outputs[0]->GetServerStatus());
   EXPECT_EQ(CreditCard::EXPIRED, outputs[1]->GetServerStatus());
+
+  EXPECT_TRUE(outputs[0]->nickname().empty());
+  EXPECT_EQ(nickname, outputs[1]->nickname());
 }
 
 TEST_F(AutofillTableTest, SetGetRemoveServerCardMetadata) {
@@ -2121,6 +2127,7 @@ TEST_F(AutofillTableTest, SetServerCardsData) {
   inputs[0].SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1111"));
   inputs[0].SetNetworkForMaskedCard(kVisaCard);
   inputs[0].SetServerStatus(CreditCard::EXPIRED);
+  inputs[0].set_nickname(ASCIIToUTF16("Grocery card"));
   table_->SetServerCardsData(inputs);
 
   // Make sure the card was added correctly.

@@ -41,7 +41,6 @@
 
 namespace blink {
 
-class WebElement;
 class WebPagePopup;
 class WebURL;
 class WebURLRequest;
@@ -121,11 +120,6 @@ class WebViewClient {
   // in the containing window.
   virtual void FocusNext() {}
   virtual void FocusPrevious() {}
-
-  // Called when a new element gets focused. |from_element| is the previously
-  // focused element, |to_element| is the newly focused one. Either can be null.
-  virtual void FocusedElementChanged(const WebElement& from_element,
-                                     const WebElement& to_element) {}
 
   // Called to check if layout update should be processed.
   virtual bool CanUpdateLayout() { return false; }

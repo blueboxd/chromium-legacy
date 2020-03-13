@@ -38,8 +38,8 @@ DecoderBuffer::DecoderBuffer(const uint8_t* data,
 }
 
 DecoderBuffer::DecoderBuffer(std::unique_ptr<uint8_t[]> data, size_t size)
-    : size_(size),
-      data_(std::move(data)),
+    : data_(std::move(data)),
+      size_(size),
       side_data_size_(0),
       is_key_frame_(false) {}
 

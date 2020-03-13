@@ -69,6 +69,9 @@ void AnnouncementNotificationHandler::OnClick(
 }
 
 void AnnouncementNotificationHandler::OpenAnnouncement(Profile* profile) {
+  if (!AnnouncementNotificationService::CanOpenAnnouncement(profile))
+    return;
+
   // Open the announcement URL in a new tab.
   GURL url = AnnouncementNotificationService::GetAnnouncementURL();
   NavigateParams params(profile, url, ui::PAGE_TRANSITION_LINK);

@@ -8,16 +8,19 @@
 #include "ash/ash_export.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
+#include "ui/views/view_observer.h"
 
 namespace ash {
 
 class FeaturePodIconButton;
 class PrivacyScreenToastLabelView;
+class PrivacyScreenToastController;
 
 // The view shown inside the privacy screen toast bubble.
-class ASH_EXPORT PrivacyScreenToastView : public views::View {
+class ASH_EXPORT PrivacyScreenToastView : public views::View,
+                                          public views::ViewObserver {
  public:
-  explicit PrivacyScreenToastView(views::ButtonListener* button_listener);
+  explicit PrivacyScreenToastView(PrivacyScreenToastController* controller);
   ~PrivacyScreenToastView() override;
   PrivacyScreenToastView(PrivacyScreenToastView&) = delete;
   PrivacyScreenToastView operator=(PrivacyScreenToastView&) = delete;
@@ -25,9 +28,22 @@ class ASH_EXPORT PrivacyScreenToastView : public views::View {
   // Updates the toast with whether the privacy screen is enabled and managed.
   void SetPrivacyScreenEnabled(bool enabled, bool managed);
 
+  // Returns the accessible name for the view.
+  base::string16 GetAccessibleName();
+
+  // Returns true if the toggle button is focused.
+  bool IsButtonFocused() const;
+
  private:
+  // views::ViewObserver:
+  void OnViewFocused(views::View* observed_view) override;
+  void OnViewBlurred(views::View* observed_view) override;
+
+  PrivacyScreenToastController* controller_ = nullptr;
   FeaturePodIconButton* button_ = nullptr;
   PrivacyScreenToastLabelView* label_ = nullptr;
+  bool is_enabled_ = false;
+  bool is_managed_ = false;
 };
 
 }  // namespace ash

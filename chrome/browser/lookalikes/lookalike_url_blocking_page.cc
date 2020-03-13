@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "components/grit/components_resources.h"
+#include "components/lookalikes/lookalike_url_util.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_interstitials/core/metrics_helper.h"
@@ -30,7 +31,7 @@ LookalikeUrlBlockingPage::LookalikeUrlBlockingPage(
     content::WebContents* web_contents,
     const GURL& request_url,
     ukm::SourceId source_id,
-    MatchType match_type,
+    LookalikeUrlMatchType match_type,
     std::unique_ptr<
         security_interstitials::SecurityInterstitialControllerClient>
         controller_client)
@@ -45,9 +46,10 @@ LookalikeUrlBlockingPage::LookalikeUrlBlockingPage(
       MetricsHelper::TOTAL_VISITS);
 }
 
-LookalikeUrlBlockingPage::~LookalikeUrlBlockingPage() {}
+LookalikeUrlBlockingPage::~LookalikeUrlBlockingPage() = default;
 
-void LookalikeUrlBlockingPage::ReportUkmIfNeeded(UserAction action) {
+void LookalikeUrlBlockingPage::ReportUkmIfNeeded(
+    LookalikeUrlBlockingPageUserAction action) {
   // We rely on the saved SourceId because deconstruction happens after the next
   // navigation occurs, so web contents points to the new destination.
   if (source_id_ != ukm::kInvalidSourceId) {
@@ -59,8 +61,8 @@ void LookalikeUrlBlockingPage::ReportUkmIfNeeded(UserAction action) {
 // static
 void LookalikeUrlBlockingPage::RecordUkmEvent(
     ukm::SourceId source_id,
-    LookalikeUrlBlockingPage::MatchType match_type,
-    LookalikeUrlBlockingPage::UserAction user_action) {
+    LookalikeUrlMatchType match_type,
+    LookalikeUrlBlockingPageUserAction user_action) {
   ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
   CHECK(ukm_recorder);
 
@@ -104,7 +106,7 @@ void LookalikeUrlBlockingPage::PopulateInterstitialStrings(
 }
 
 void LookalikeUrlBlockingPage::OnInterstitialClosing() {
-  ReportUkmIfNeeded(UserAction::kCloseOrBack);
+  ReportUkmIfNeeded(LookalikeUrlBlockingPageUserAction::kCloseOrBack);
 }
 
 bool LookalikeUrlBlockingPage::ShouldDisplayURL() const {
@@ -127,13 +129,13 @@ void LookalikeUrlBlockingPage::CommandReceived(const std::string& command) {
     case security_interstitials::CMD_DONT_PROCEED:
       controller()->metrics_helper()->RecordUserDecision(
           MetricsHelper::DONT_PROCEED);
-      ReportUkmIfNeeded(UserAction::kAcceptSuggestion);
+      ReportUkmIfNeeded(LookalikeUrlBlockingPageUserAction::kAcceptSuggestion);
       controller()->GoBack();
       break;
     case security_interstitials::CMD_PROCEED:
       controller()->metrics_helper()->RecordUserDecision(
           MetricsHelper::PROCEED);
-      ReportUkmIfNeeded(UserAction::kClickThrough);
+      ReportUkmIfNeeded(LookalikeUrlBlockingPageUserAction::kClickThrough);
       controller()->Proceed();
       break;
     case security_interstitials::CMD_DO_REPORT:

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/browser_process.h"
@@ -102,6 +103,12 @@ void SecureDnsHandler::RegisterMessages() {
       "probeCustomDnsTemplate",
       base::BindRepeating(&SecureDnsHandler::HandleProbeCustomDnsTemplate,
                           base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "recordUserDropdownInteraction",
+      base::BindRepeating(
+          &SecureDnsHandler::HandleRecordUserDropdownInteraction,
+          base::Unretained(this)));
 }
 
 void SecureDnsHandler::OnJavascriptAllowed() {
@@ -131,6 +138,7 @@ base::Value SecureDnsHandler::GetSecureDnsResolverListForCountry(
                   base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   base::Value resolvers(base::Value::Type::LIST);
+  resolver_histogram_map_.clear();
   // Add all non-disabled resolvers that should be displayed in |country_id|.
   for (const auto& entry : providers) {
     if (base::Contains(disabled_providers, entry.provider))
@@ -150,6 +158,9 @@ base::Value SecureDnsHandler::GetSecureDnsResolverListForCountry(
       dict.SetKey("value", base::Value(entry.dns_over_https_template));
       dict.SetKey("policy", base::Value(entry.privacy_policy));
       resolvers.Append(std::move(dict));
+      DCHECK(entry.provider_id_for_histogram.has_value());
+      resolver_histogram_map_.insert({entry.dns_over_https_template,
+                                      entry.provider_id_for_histogram.value()});
     }
   }
 
@@ -163,6 +174,8 @@ base::Value SecureDnsHandler::GetSecureDnsResolverListForCountry(
   custom.SetKey("value", base::Value("custom"));
   custom.SetKey("policy", base::Value(std::string()));
   resolvers.Insert(resolvers.GetList().begin(), std::move(custom));
+  resolver_histogram_map_.insert(
+      {"custom", net::DohProviderIdForHistogram::kCustom});
 
   return resolvers;
 }
@@ -200,16 +213,18 @@ void SecureDnsHandler::HandleValidateCustomDnsEntry(
 
   // At least one template must be valid for the entry to be considered valid.
   std::string server_method;
+  std::string valid_template;
   for (const std::string& server_template :
        SplitString(server_templates, " ", base::TRIM_WHITESPACE,
                    base::SPLIT_WANT_NONEMPTY)) {
     if (net::dns_util::IsValidDohTemplate(server_template, &server_method)) {
-      ResolveJavascriptCallback(*callback_id, base::Value(server_template));
-      return;
+      valid_template = server_template;
+      break;
     }
   }
-  ResolveJavascriptCallback(*callback_id, base::Value(std::string()));
-  return;
+  UMA_HISTOGRAM_BOOLEAN("Net.DNS.UI.ValidationAttemptSuccess",
+                        !valid_template.empty());
+  ResolveJavascriptCallback(*callback_id, base::Value(valid_template));
 }
 
 void SecureDnsHandler::HandleProbeCustomDnsTemplate(
@@ -257,6 +272,31 @@ void SecureDnsHandler::HandleProbeCustomDnsTemplate(
       &SecureDnsHandler::OnMojoConnectionError, base::Unretained(this)));
 }
 
+void SecureDnsHandler::HandleRecordUserDropdownInteraction(
+    const base::ListValue* args) {
+  CHECK_EQ(2U, args->GetSize());
+  std::string old_provider;
+  std::string new_provider;
+  CHECK(args->GetString(0, &old_provider));
+  CHECK(args->GetString(1, &new_provider));
+  DCHECK(resolver_histogram_map_.find(old_provider) !=
+         resolver_histogram_map_.end());
+  DCHECK(resolver_histogram_map_.find(new_provider) !=
+         resolver_histogram_map_.end());
+  for (auto& pair : resolver_histogram_map_) {
+    if (pair.first == old_provider) {
+      UMA_HISTOGRAM_ENUMERATION("Net.DNS.UI.DropdownSelectionEvent.Unselected",
+                                pair.second);
+    } else if (pair.first == new_provider) {
+      UMA_HISTOGRAM_ENUMERATION("Net.DNS.UI.DropdownSelectionEvent.Selected",
+                                pair.second);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("Net.DNS.UI.DropdownSelectionEvent.Ignored",
+                                pair.second);
+    }
+  }
+}
+
 // network::ResolveHostClientBase impl:
 void SecureDnsHandler::OnComplete(
     int result,
@@ -264,6 +304,7 @@ void SecureDnsHandler::OnComplete(
     const base::Optional<net::AddressList>& resolved_addresses) {
   receiver_.reset();
   host_resolver_.reset();
+  UMA_HISTOGRAM_BOOLEAN("Net.DNS.UI.ProbeAttemptSuccess", (result == 0));
   ResolveJavascriptCallback(base::Value(probe_callback_id_),
                             base::Value(result == 0));
 }

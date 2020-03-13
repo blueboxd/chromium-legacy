@@ -11,7 +11,6 @@
 #include "ui/views/view.h"
 
 namespace views {
-class ImageView;
 class LabelButton;
 }  // namespace views
 
@@ -55,7 +54,6 @@ class UserConsentView : public views::View, public views::ButtonListener {
   QuickAnswersUiController* const ui_controller_;
 
   // Owned by view hierarchy.
-  views::ImageView* assistant_icon_ = nullptr;
   views::View* content_ = nullptr;
   views::LabelButton* settings_button_ = nullptr;
   views::LabelButton* consent_button_ = nullptr;

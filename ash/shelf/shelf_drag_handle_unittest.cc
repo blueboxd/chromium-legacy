@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
 #include "ash/shelf/drag_handle.h"
 #include "ash/shelf/test/shelf_layout_manager_test_base.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/test/scoped_feature_list.h"
@@ -218,6 +220,42 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeShownOnTap) {
   EXPECT_TRUE(GetShelfWidget()
                   ->GetDragHandle()
                   ->has_hide_drag_handle_timer_for_testing());
+}
+
+TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeNotShownForHiddenShelf) {
+  GetPrimaryShelf()->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  // Creates a widget that will become maximized in tablet mode.
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+
+  ShelfWidget* const shelf_widget = GetShelfWidget();
+  DragHandle* const drag_handle = shelf_widget->GetDragHandle();
+
+  // The shelf is hidden, so the drag handle nudge should not be shown.
+  EXPECT_TRUE(drag_handle->GetVisible());
+  EXPECT_FALSE(drag_handle->ShowingNudge());
+  EXPECT_FALSE(drag_handle->has_show_drag_handle_timer_for_testing());
+
+  PrefService* const prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  // Back gesture nudge should be allowed if the shelf is hidden.
+  EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
+      prefs, contextual_tooltip::TooltipType::kBackGesture));
+
+  // Swipe up to show the shelf - this should schedule the drag handle nudge.
+  SwipeUpOnShelf();
+
+  // Back gesture nudge should be disallowed at this time, given that the drag
+  // handle nudge can be shown.
+  EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(
+      prefs, contextual_tooltip::TooltipType::kBackGesture));
+
+  ASSERT_TRUE(drag_handle->has_show_drag_handle_timer_for_testing());
+  drag_handle->fire_show_drag_handle_timer_for_testing();
+  EXPECT_TRUE(drag_handle->ShowingNudge());
 }
 
 // Tests that the drag handle nudge is horizontally centered in screen, and

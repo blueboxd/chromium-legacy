@@ -95,10 +95,6 @@ class InterceptingCanvasBase : public SkCanvas {
                         const SkRect& dst,
                         const SkPaint*,
                         SrcRectConstraint) override = 0;
-  void onDrawBitmapNine(const SkBitmap&,
-                        const SkIRect& center,
-                        const SkRect& dst,
-                        const SkPaint*) override = 0;
   void onDrawImage(const SkImage*,
                    SkScalar,
                    SkScalar,
@@ -205,14 +201,6 @@ class InterceptingCanvas : public InterceptingCanvasBase {
                         SrcRectConstraint constraint) override {
     Interceptor interceptor(this);
     this->SkCanvas::onDrawBitmapRect(bitmap, src, dst, paint, constraint);
-  }
-
-  void onDrawBitmapNine(const SkBitmap& bitmap,
-                        const SkIRect& center,
-                        const SkRect& dst,
-                        const SkPaint* paint) override {
-    Interceptor interceptor(this);
-    this->SkCanvas::onDrawBitmapNine(bitmap, center, dst, paint);
   }
 
   void onDrawImage(const SkImage* image,

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.signin;
 
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 
 /**
  * This class is used to test {@link AccountPickerDialogFragment}.

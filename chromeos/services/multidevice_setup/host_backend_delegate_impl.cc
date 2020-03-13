@@ -278,6 +278,12 @@ void HostBackendDelegateImpl::AttemptNetworkRequest(bool is_retry) {
                << (should_enable ? "enable" : "disable") << " the host.\n"
                << GenerateDeviceIdString(device_to_set);
 
+  // If the |device_to_set| has a non-trivial Instance ID, then it was returned
+  // from a v2 DeviceSync (Instance IDs are not part of the v1 protocol). In
+  // that case, exercise the v2 RPC SetFeatureStatus, even if v1 DeviceSync is
+  // still running in parallel. SetFeatureStatus and its v1 counterpart,
+  // SetSoftwareFeatureState, ultimately update the same backend database entry,
+  // so only one needs to be invoked.
   if (features::ShouldUseV1DeviceSync()) {
     // In order to avoid a race condition in mutating the BetterTogether host
     // state on the CryptAuth backend, we are assuming that all

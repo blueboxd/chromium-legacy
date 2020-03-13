@@ -5,9 +5,10 @@
 package org.chromium.chrome.browser.media;
 
 import android.app.Dialog;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
 import android.view.View;
+
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeActivity;

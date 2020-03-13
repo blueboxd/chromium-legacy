@@ -663,7 +663,6 @@
 <translation id="5853623416121554550">прыпынена</translation>
 <translation id="5854790677617711513">Даныя, старэйшыя за 30 дзён</translation>
 <translation id="5858741533101922242">Браўзеру Chrome не ўдалося ўключыць Bluetooth-адаптар</translation>
-<translation id="5860491529813859533">Уключыць</translation>
 <translation id="5862731021271217234">Каб глядзець укладкі са сваіх іншых прылад, уключыце сінхранізацыю</translation>
 <translation id="5864174910718532887">Падрабязнасці: адсартавана па назве сайта</translation>
 <translation id="5864419784173784555">Чаканне іншай спампоўкі…</translation>
@@ -690,7 +689,6 @@
 <translation id="604996488070107836">Не ўдалося спампаваць файл "<ph name="FILE_NAME" />" з-за невядомай памылкі.</translation>
 <translation id="605721222689873409">ГГ</translation>
 <translation id="6064125863973209585">Завершаныя спампоўкі</translation>
-<translation id="6092062101542170135">Каб працягнуць, уключыце NFC у наладах Android</translation>
 <translation id="60923314841986378">Засталося <ph name="HOURS" /> гадз</translation>
 <translation id="6108923351542677676">Ідзе наладка…</translation>
 <translation id="6111020039983847643">выкарыстаны трафік</translation>
@@ -802,7 +800,7 @@
 <translation id="6846298663435243399">Ідзе загрузка…</translation>
 <translation id="6850409657436465440">Спампоўка ўсё яшчэ працягваецца</translation>
 <translation id="6850830437481525139">Закрытыя ўкладкі (<ph name="TAB_COUNT" />)</translation>
-<translation id="6864395892908308021">Гэта прылада не чытае NFC</translation>
+<translation id="6864395892908308021">Гэта прылада не падтрымлівае функцыю NFC</translation>
 <translation id="6864459304226931083">Спампаваць відарыс</translation>
 <translation id="6865313869410766144">Даныя для аўтазапаўнення</translation>
 <translation id="6884306546558072722">Праглядайце змесціва ў пазасеткавым рэжыме</translation>

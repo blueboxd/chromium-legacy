@@ -7080,6 +7080,8 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides) {
   overrides.timeout = timeout;
   const int attempts = 20;
   overrides.attempts = attempts;
+  const int doh_attempts = 19;
+  overrides.doh_attempts = doh_attempts;
   overrides.rotate = true;
   overrides.use_local_ipv6 = true;
   const std::vector<DnsConfig::DnsOverHttpsServerConfig>
@@ -7110,6 +7112,7 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides) {
   EXPECT_EQ(ndots, overridden_config->ndots);
   EXPECT_EQ(timeout, overridden_config->timeout);
   EXPECT_EQ(attempts, overridden_config->attempts);
+  EXPECT_EQ(doh_attempts, overridden_config->doh_attempts);
   EXPECT_TRUE(overridden_config->rotate);
   EXPECT_TRUE(overridden_config->use_local_ipv6);
   EXPECT_EQ(dns_over_https_servers, overridden_config->dns_over_https_servers);

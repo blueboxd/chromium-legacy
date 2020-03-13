@@ -2305,6 +2305,33 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.LifeCycle.HasPausedActivities">
+  <owner>ssid@chromium.org</owner>
+  <owner>chrome-android-app@chromium.org</owner>
+  <description>
+    Chrome application has at least one paused and no running activites.
+    Recorded when the state of the application changes.
+  </description>
+</action>
+
+<action name="Android.LifeCycle.HasRunningActivities">
+  <owner>ssid@chromium.org</owner>
+  <owner>chrome-android-app@chromium.org</owner>
+  <description>
+    Chrome application has at least one activity in running state. Recorded when
+    the state of the application changes.
+  </description>
+</action>
+
+<action name="Android.LifeCycle.HasStoppedActivities">
+  <owner>ssid@chromium.org</owner>
+  <owner>chrome-android-app@chromium.org</owner>
+  <description>
+    Chrome application has at least one activity in stopped state, and none
+    running or paused. Recorded when the state of the application changes.
+  </description>
+</action>
+
 <action name="Android.ManageSpace">
   <owner>dmurph@chromium.org</owner>
   <description>

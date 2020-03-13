@@ -30,6 +30,8 @@ class MediaFeedsUI : public ui::MojoWebUIController,
 
   // media_history::mojom::MediaHistoryStore:
   void GetMediaFeeds(GetMediaFeedsCallback callback) override;
+  void GetItemsForMediaFeed(int64_t feed_id,
+                            GetItemsForMediaFeedCallback callback) override;
 
  private:
   media_history::MediaHistoryKeyedService* GetMediaHistoryService();

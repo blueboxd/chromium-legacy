@@ -226,21 +226,11 @@ void ChromeClientImpl::TakeFocus(mojom::blink::FocusType type) {
     web_view_->Client()->FocusNext();
 }
 
-void ChromeClientImpl::FocusedElementChanged(Element* from_element,
-                                             Element* to_element) {
-  web_view_->GetPage()->GetValidationMessageClient().DidChangeFocusTo(
-      to_element);
-
-  if (!web_view_->Client())
-    return;
-
-  web_view_->Client()->FocusedElementChanged(WebElement(from_element),
-                                             WebElement(to_element));
-
+void ChromeClientImpl::SetKeyboardFocusURL(Element* new_focus_element) {
   WebURL focus_url;
-  if (to_element && to_element->IsLiveLink() &&
-      to_element->ShouldHaveFocusAppearance())
-    focus_url = to_element->HrefURL();
+  if (new_focus_element && new_focus_element->IsLiveLink() &&
+      new_focus_element->ShouldHaveFocusAppearance())
+    focus_url = new_focus_element->HrefURL();
   web_view_->Client()->SetKeyboardFocusURL(focus_url);
 }
 

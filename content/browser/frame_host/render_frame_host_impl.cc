@@ -1544,7 +1544,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnAccessibilitySnapshotResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SelectionChanged, OnSelectionChanged)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameDidCallFocus, OnFrameDidCallFocus)
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
@@ -4211,7 +4210,7 @@ void RenderFrameHostImpl::OnSelectionChanged(const base::string16& text,
   GetRenderWidgetHost()->SelectionChanged(text, offset, range);
 }
 
-void RenderFrameHostImpl::OnFocusedNodeChanged(
+void RenderFrameHostImpl::FocusedElementChanged(
     bool is_editable_element,
     const gfx::Rect& bounds_in_frame_widget) {
   if (!GetView())
@@ -6140,12 +6139,6 @@ void RenderFrameHostImpl::UpdateAXTreeData() {
 
   SendAccessibilityEventsToManager(detail);
   delegate_->AccessibilityEventReceived(detail);
-}
-
-void RenderFrameHostImpl::SetTextTrackSettings(
-    const FrameMsg_TextTrackSettings_Params& params) {
-  DCHECK(!GetParent());
-  Send(new FrameMsg_SetTextTrackSettings(routing_id_, params));
 }
 
 BrowserAccessibilityManager*

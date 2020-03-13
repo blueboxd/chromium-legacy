@@ -62,6 +62,8 @@ class MockSpecialStoragePolicy : public SpecialStoragePolicy {
 
   void NotifyCleared() { SpecialStoragePolicy::NotifyCleared(); }
 
+  void NotifyPolicyChanged() { SpecialStoragePolicy::NotifyPolicyChanged(); }
+
  protected:
   ~MockSpecialStoragePolicy() override;
 

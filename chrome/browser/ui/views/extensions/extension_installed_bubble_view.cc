@@ -2,28 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/extensions/extension_installed_bubble_view.h"
-
-#include <algorithm>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "build/buildflag.h"
-#include "chrome/browser/extensions/api/commands/command_service.h"
-#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/bubble_anchor_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/extensions/extension_installed_bubble.h"
+#include "chrome/browser/ui/extensions/extension_install_ui_default.h"
 #include "chrome/browser/ui/extensions/extension_installed_bubble_model.h"
+#include "chrome/browser/ui/extensions/extension_installed_waiter.h"
+#include "chrome/browser/ui/extensions/extension_removal_watcher.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
@@ -31,26 +24,15 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
-#include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
-#include "chrome/common/extensions/command.h"
-#include "chrome/common/extensions/sync_helper.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/bubble/bubble_controller.h"
-#include "components/signin/public/base/signin_metrics.h"
-#include "components/signin/public/identity_manager/account_info.h"
 #include "extensions/common/extension.h"
-#include "ui/base/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -59,8 +41,6 @@
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/sync/dice_bubble_sync_promo_view.h"
 #endif
-
-using extensions::Extension;
 
 namespace {
 
@@ -138,15 +118,15 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
                                      public views::BubbleDialogDelegateView {
  public:
   ExtensionInstalledBubbleView(
-      BubbleReference reference,
       Browser* browser,
       std::unique_ptr<ExtensionInstalledBubbleModel> model);
   ~ExtensionInstalledBubbleView() override;
 
+  static void Show(Browser* browser,
+                   std::unique_ptr<ExtensionInstalledBubbleModel> model);
+
   // Recalculate the anchor position for this bubble.
   void UpdateAnchorView();
-
-  void CloseBubble(BubbleCloseReason reason);
 
   const ExtensionInstalledBubbleModel* model() const { return model_.get(); }
 
@@ -164,8 +144,6 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
 
   void LinkClicked();
 
-  BubbleReference bubble_reference_;
-
   Browser* const browser_;
   const std::unique_ptr<ExtensionInstalledBubbleModel> model_;
   gfx::ImageSkia icon_;
@@ -173,15 +151,38 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubbleView);
 };
 
+// static
+void ExtensionInstalledBubbleView::Show(
+    Browser* browser,
+    std::unique_ptr<ExtensionInstalledBubbleModel> model) {
+  auto delegate =
+      std::make_unique<ExtensionInstalledBubbleView>(browser, std::move(model));
+  auto* weak_delegate = delegate.get();
+  views::Widget* const widget =
+      views::BubbleDialogDelegateView::CreateBubble(delegate.release());
+  // When the extension is installed to the ExtensionsToolbarContainer, use the
+  // container to pop out the extension icon and show the widget. Otherwise show
+  // the widget directly.
+  if (weak_delegate->model()->anchor_to_action() &&
+      base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+    ExtensionsToolbarContainer* const container =
+        BrowserView::GetBrowserViewForBrowser(browser)
+            ->toolbar_button_provider()
+            ->GetExtensionsToolbarContainer();
+    container->ShowWidgetForExtension(widget,
+                                      weak_delegate->model()->extension_id());
+  } else {
+    widget->Show();
+  }
+}
+
 ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
-    BubbleReference bubble_reference,
     Browser* browser,
     std::unique_ptr<ExtensionInstalledBubbleModel> model)
-    : BubbleDialogDelegateView(nullptr,
+    : BubbleDialogDelegateView(AnchorViewForBrowser(model.get(), browser),
                                model->anchor_to_omnibox()
                                    ? views::BubbleBorder::TOP_LEFT
                                    : views::BubbleBorder::TOP_RIGHT),
-      bubble_reference_(bubble_reference),
       browser_(browser),
       model_(std::move(model)),
       icon_(model_->MakeIconOfSize(kMaxIconSize)) {
@@ -199,16 +200,6 @@ void ExtensionInstalledBubbleView::UpdateAnchorView() {
   views::View* reference_view = AnchorViewForBrowser(model_.get(), browser_);
   DCHECK(reference_view);
   SetAnchorView(reference_view);
-}
-
-void ExtensionInstalledBubbleView::CloseBubble(BubbleCloseReason reason) {
-  // Tells the BubbleController to close the bubble to update the bubble's
-  // status in BubbleManager. This does not circulate back to this method
-  // because of the nullptr checks in place.
-  if (bubble_reference_)
-    bubble_reference_->CloseBubble(reason);
-
-  GetWidget()->Close();
 }
 
 base::string16 ExtensionInstalledBubbleView::GetWindowTitle() const {
@@ -289,7 +280,7 @@ void ExtensionInstalledBubbleView::OnEnableSync(const AccountInfo& account,
       browser_, account,
       signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE,
       is_default_promo_account);
-  CloseBubble(BUBBLE_CLOSE_NAVIGATED);
+  GetWidget()->Close();
 }
 
 void ExtensionInstalledBubbleView::LinkClicked() {
@@ -297,84 +288,112 @@ void ExtensionInstalledBubbleView::LinkClicked() {
                                 chrome::kExtensionConfigureCommandsSubPage}));
   NavigateParams params = GetSingletonTabNavigateParams(browser_, kUrl);
   Navigate(&params);
-  CloseBubble(BUBBLE_CLOSE_NAVIGATED);
+  GetWidget()->Close();
 }
 
-ExtensionInstalledBubbleUi::ExtensionInstalledBubbleUi(
-    ExtensionInstalledBubble* bubble)
-    : bubble_(bubble), bubble_view_(nullptr) {
-  DCHECK(bubble_);
+void ShowUiOnToolbarMenu(scoped_refptr<const extensions::Extension> extension,
+                         Browser* browser,
+                         const SkBitmap& icon) {
+  DCHECK(base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
+  ExtensionInstalledBubbleView::Show(
+      browser, std::make_unique<ExtensionInstalledBubbleModel>(
+                   browser->profile(), extension.get(), icon));
 }
 
-ExtensionInstalledBubbleUi::~ExtensionInstalledBubbleUi() {
-  if (bubble_view_)
-    bubble_view_->GetWidget()->RemoveObserver(this);
-}
+// TODO(ellyjones): Remove this class once ExtensionsToolbarMenu is always on.
+class IconAnimationWaiter {
+ public:
+  static void WaitForUi(scoped_refptr<const extensions::Extension> extension,
+                        Browser* browser,
+                        const SkBitmap& icon) {
+    (new IconAnimationWaiter(extension, browser, icon))->Wait();
+  }
 
-void ExtensionInstalledBubbleUi::Show(BubbleReference bubble_reference) {
-  bubble_view_ = new ExtensionInstalledBubbleView(
-      bubble_reference, bubble_->browser(),
-      std::make_unique<ExtensionInstalledBubbleModel>(
-          bubble_->browser()->profile(), bubble_->extension(),
-          bubble_->icon()));
-  bubble_reference_ = bubble_reference;
+  IconAnimationWaiter(const IconAnimationWaiter& other) = delete;
+  IconAnimationWaiter& operator=(const IconAnimationWaiter& other) = delete;
 
-  views::Widget* const widget =
-      views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
-  // When the extension is installed to the ExtensionsToolbarContainer, use the
-  // container to pop out the extension icon and show the widget. Otherwise show
-  // the widget directly.
-  if (bubble_view_->model()->anchor_to_action() &&
-      base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-    ExtensionsToolbarContainer* const container =
-        BrowserView::GetBrowserViewForBrowser(bubble_->browser())
-            ->toolbar_button_provider()
-            ->GetExtensionsToolbarContainer();
-    if (container) {
-      container->ShowWidgetForExtension(widget, bubble_->extension()->id());
-    } else {
-      widget->Show();
+ private:
+  // This class manages its own lifetime.
+  IconAnimationWaiter(scoped_refptr<const extensions::Extension> extension,
+                      Browser* browser,
+                      const SkBitmap& icon)
+      : extension_(extension),
+        browser_(browser),
+        icon_(icon),
+        model_(
+            std::make_unique<ExtensionInstalledBubbleModel>(browser->profile(),
+                                                            extension.get(),
+                                                            icon)) {
+    removal_watcher_ = std::make_unique<ExtensionRemovalWatcher>(
+        browser, extension,
+        base::Bind(&IconAnimationWaiter::OnExtensionRemoved,
+                   weak_factory_.GetWeakPtr()));
+  }
+  virtual ~IconAnimationWaiter() = default;
+
+  void Wait() {
+    DCHECK(extensions::ExtensionRegistry::Get(browser_->profile())
+               ->enabled_extensions()
+               .GetByID(extension_->id()));
+
+    constexpr int kMaxRetries = 10;
+    constexpr auto kRetryDelay = base::TimeDelta::FromMilliseconds(50);
+
+    if (ShouldShow()) {
+      Show();
+      return;
     }
-  } else {
-    widget->Show();
+
+    if (retries_++ >= kMaxRetries) {
+      StopWaiting();
+      return;
+    }
+
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&IconAnimationWaiter::Wait, weak_factory_.GetWeakPtr()),
+        kRetryDelay);
   }
-  bubble_view_->GetWidget()->AddObserver(this);
-}
 
-void ExtensionInstalledBubbleUi::Close() {
-  if (bubble_view_)
-    bubble_view_->CloseBubble(BUBBLE_CLOSE_USER_DISMISSED);
-}
+  void StopWaiting() { delete this; }
 
-void ExtensionInstalledBubbleUi::UpdateAnchorPosition() {
-  DCHECK(bubble_view_);
-  bubble_view_->UpdateAnchorView();
-}
+  void Show() {
+    ExtensionInstalledBubbleView::Show(browser_, std::move(model_));
+    delete this;
+  }
 
-void ExtensionInstalledBubbleUi::OnWidgetClosing(views::Widget* widget) {
-  widget->RemoveObserver(this);
-  bubble_view_ = nullptr;
-
-  // Tells the BubbleController to close the bubble to update the bubble's
-  // status in BubbleManager.
-  if (bubble_reference_)
-    bubble_reference_->CloseBubble(BUBBLE_CLOSE_FOCUS_LOST);
-}
-
-// Views (BrowserView) specific implementation.
-bool ExtensionInstalledBubble::ShouldShow() {
-  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
+  bool ShouldShow() {
+    if (model_->anchor_to_action()) {
+      BrowserActionsContainer* container =
+          BrowserView::GetBrowserViewForBrowser(browser_)
+              ->toolbar()
+              ->browser_actions();
+      return container && !container->animating();
+    }
     return true;
-  if (anchor_position() == ANCHOR_ACTION) {
-    BrowserActionsContainer* container =
-        BrowserView::GetBrowserViewForBrowser(browser_)
-            ->toolbar()
-            ->browser_actions();
-    return container && !container->animating();
   }
-  return true;
-}
 
-std::unique_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
-  return base::WrapUnique(new ExtensionInstalledBubbleUi(this));
+  void OnExtensionRemoved() { delete this; }
+
+  const scoped_refptr<const extensions::Extension> extension_;
+  Browser* browser_;
+  SkBitmap icon_;
+  std::unique_ptr<ExtensionRemovalWatcher> removal_watcher_;
+  int retries_ = 0;
+  std::unique_ptr<ExtensionInstalledBubbleModel> model_;
+
+  base::WeakPtrFactory<IconAnimationWaiter> weak_factory_{this};
+};
+
+void ExtensionInstallUIDefault::ShowPlatformBubble(
+    scoped_refptr<const extensions::Extension> extension,
+    Browser* browser,
+    const SkBitmap& icon) {
+  base::OnceClosure show_closure =
+      base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)
+          ? base::BindOnce(&ShowUiOnToolbarMenu, extension, browser, icon)
+          : base::BindOnce(&IconAnimationWaiter::WaitForUi, extension, browser,
+                           icon);
+  ExtensionInstalledWaiter::WaitForInstall(extension, browser,
+                                           std::move(show_closure));
 }

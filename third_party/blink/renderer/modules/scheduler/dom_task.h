@@ -40,6 +40,8 @@ class DOMTask final : public GarbageCollected<DOMTask> {
   void InvokeInternal(ScriptState*);
   void Abort();
 
+  void RecordTaskStartMetrics();
+
   Member<DOMScheduler> scheduler_;
   TaskHandle task_handle_;
   Member<V8Function> callback_;
@@ -47,6 +49,7 @@ class DOMTask final : public GarbageCollected<DOMTask> {
   Member<ScriptPromiseResolver> resolver_;
   probe::AsyncTaskId async_task_id_;
   Member<DOMTaskSignal> signal_;
+  const base::TimeTicks queue_time_;
 };
 
 }  // namespace blink

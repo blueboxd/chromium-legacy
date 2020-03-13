@@ -41,8 +41,6 @@ extern const int kContextualCardsDiagnosticIntegration;
 extern const int kSimplifiedServerDeprecatedMixin;
 // Activates server-side debugging.
 extern const int kContextualCardsServerDebugMixin;
-// Indicates that the current request is for an exact search.
-extern const int kExactSearchMixin;
 
 // Longpress resolve variations:
 extern const char kLongpressResolveParamName[];

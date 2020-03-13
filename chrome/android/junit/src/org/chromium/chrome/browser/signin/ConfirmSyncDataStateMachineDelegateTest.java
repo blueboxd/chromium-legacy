@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.signin;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 
 import org.junit.Assert;
 import org.junit.Before;

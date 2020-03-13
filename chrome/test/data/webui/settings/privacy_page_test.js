@@ -231,12 +231,6 @@ cr.define('settings_privacy_page', function() {
       /** @type {SettingsPrivacyPageElement} */
       let page;
 
-      /** @type {TestSiteSettingsPrefsBrowserProxy}*/
-      let siteSettingsBrowserProxy = null;
-
-      /** @type {Array<string>} */
-      const testLabels = ['test label 1', 'test label 2'];
-
       suiteSetup(function() {
         loadTimeData.overrideValues({
           privacySettingsRedesignEnabled: true,
@@ -244,11 +238,6 @@ cr.define('settings_privacy_page', function() {
       });
 
       setup(function() {
-        siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
-        settings.SiteSettingsPrefsBrowserProxyImpl.instance_ =
-            siteSettingsBrowserProxy;
-        siteSettingsBrowserProxy.setResultFor(
-            'getCookieSettingDescription', Promise.resolve(testLabels[0]));
         PolymerTest.clearBody();
         page = document.createElement('settings-privacy-page');
         document.body.appendChild(page);
@@ -277,17 +266,6 @@ cr.define('settings_privacy_page', function() {
         ].forEach(selector => {
           assertFalse(test_util.isChildVisible(page, selector));
         });
-      });
-
-      test('CookiesLinkRowSublabel', async function() {
-        await siteSettingsBrowserProxy.whenCalled(
-            'getCookieSettingDescription');
-        Polymer.dom.flush();
-        assertEquals(page.$$('#cookiesLinkRow').subLabel, testLabels[0]);
-
-        cr.webUIListenerCallback(
-            'cookieSettingDescriptionChanged', testLabels[1]);
-        assertEquals(page.$$('#cookiesLinkRow').subLabel, testLabels[1]);
       });
     });
   }

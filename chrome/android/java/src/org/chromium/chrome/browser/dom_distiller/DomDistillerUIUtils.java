@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.dom_distiller;
 
 import android.app.Activity;
-import android.support.v7.app.AlertDialog;
+
+import androidx.appcompat.app.AlertDialog;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;

@@ -1759,7 +1759,7 @@
     {
       // See https://crbug.com/1012063
       name: "VideoRequestAnimationFrame",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "VideoRotateToFullscreen",

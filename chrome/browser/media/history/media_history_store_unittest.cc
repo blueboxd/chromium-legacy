@@ -8,6 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/pooled_sequenced_task_runner.h"
@@ -16,6 +17,7 @@
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
+#include "chrome/browser/media/history/media_history_feed_items_table.h"
 #include "chrome/browser/media/history/media_history_feeds_table.h"
 #include "chrome/browser/media/history/media_history_images_table.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
@@ -521,12 +523,89 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
     MediaHistoryStoreUnitTest::SetUp();
   }
 
+  std::vector<media_feeds::mojom::MediaFeedItemPtr> GetItemsForMediaFeedSync(
+      MediaHistoryKeyedService* service,
+      const int64_t feed_id) {
+    base::RunLoop run_loop;
+    std::vector<media_feeds::mojom::MediaFeedItemPtr> out;
+
+    service->GetItemsForMediaFeedForDebug(
+        feed_id,
+        base::BindLambdaForTesting(
+            [&](std::vector<media_feeds::mojom::MediaFeedItemPtr> rows) {
+              out = std::move(rows);
+              run_loop.Quit();
+            }));
+
+    run_loop.Run();
+    return out;
+  }
+
+  static std::vector<media_feeds::mojom::MediaFeedItemPtr> GetExpectedItems() {
+    std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
+
+    {
+      auto item = media_feeds::mojom::MediaFeedItem::New();
+      item->name = base::ASCIIToUTF16("The Movie");
+      item->type = media_feeds::mojom::MediaFeedItemType::kMovie;
+      item->date_published = base::Time::FromDeltaSinceWindowsEpoch(
+          base::TimeDelta::FromMinutes(10));
+      item->is_family_friendly = true;
+      item->action_status =
+          media_feeds::mojom::MediaFeedItemActionStatus::kPotential;
+      item->genre = base::ASCIIToUTF16("test");
+      item->duration = base::TimeDelta::FromSeconds(30);
+      item->is_live = true;
+      item->live_start_time = base::Time::FromDeltaSinceWindowsEpoch(
+          base::TimeDelta::FromMinutes(20));
+      item->live_end_time = base::Time::FromDeltaSinceWindowsEpoch(
+          base::TimeDelta::FromMinutes(30));
+      item->shown_count = 3;
+      item->clicked = true;
+      items.push_back(std::move(item));
+    }
+
+    {
+      auto item = media_feeds::mojom::MediaFeedItem::New();
+      item->type = media_feeds::mojom::MediaFeedItemType::kTVSeries;
+      item->name = base::ASCIIToUTF16("The TV Series");
+      item->action_status =
+          media_feeds::mojom::MediaFeedItemActionStatus::kPotential;
+      item->duration = base::TimeDelta::FromSeconds(90);
+      items.push_back(std::move(item));
+    }
+
+    return items;
+  }
+
+  static std::vector<media_feeds::mojom::MediaFeedItemPtr>
+  GetAltExpectedItems() {
+    std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
+
+    {
+      auto item = media_feeds::mojom::MediaFeedItem::New();
+      item->type = media_feeds::mojom::MediaFeedItemType::kVideo;
+      item->name = base::ASCIIToUTF16("The Video");
+      item->date_published = base::Time::FromDeltaSinceWindowsEpoch(
+          base::TimeDelta::FromMinutes(20));
+      item->is_family_friendly = false;
+      item->action_status =
+          media_feeds::mojom::MediaFeedItemActionStatus::kActive;
+      items.push_back(std::move(item));
+    }
+
+    return items;
+  }
+
  private:
   base::test::ScopedFeatureList features_;
 };
 
+INSTANTIATE_TEST_SUITE_P(All, MediaHistoryStoreFeedsTest, testing::Bool());
+
 TEST_P(MediaHistoryStoreFeedsTest, CreateDatabaseTables) {
   ASSERT_TRUE(GetDB().DoesTableExist("mediaFeed"));
+  ASSERT_TRUE(GetDB().DoesTableExist("mediaFeedItem"));
 }
 
 TEST_P(MediaHistoryStoreFeedsTest, SaveMediaFeed) {
@@ -579,6 +658,176 @@ TEST_P(MediaHistoryStoreFeedsTest, SaveMediaFeed) {
 
     // The OTR service should have the same data.
     EXPECT_EQ(feeds, GetMediaFeedsSync(otr_service()));
+  }
+}
+
+TEST_P(MediaHistoryStoreFeedsTest, ReplaceMediaFeedItems) {
+  service()->SaveMediaFeed(GURL("https://www.google.com/feed"));
+  WaitForDB();
+
+  // If we are read only we should use -1 as a placeholder feed id because the
+  // feed will not have been stored. This is so we can run the rest of the test
+  // to ensure a no-op.
+  const int feed_id = IsReadOnly() ? -1 : GetMediaFeedsSync(service())[0]->id;
+
+  service()->ReplaceMediaFeedItems(feed_id, GetExpectedItems());
+  WaitForDB();
+
+  {
+    // The media items should be stored.
+    auto items = GetItemsForMediaFeedSync(service(), feed_id);
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(items.empty());
+    } else {
+      EXPECT_EQ(GetExpectedItems(), items);
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id));
+  }
+
+  service()->ReplaceMediaFeedItems(feed_id, GetAltExpectedItems());
+  WaitForDB();
+
+  {
+    // The new media items should be stored.
+    auto items = GetItemsForMediaFeedSync(service(), feed_id);
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(items.empty());
+    } else {
+      EXPECT_EQ(GetAltExpectedItems(), items);
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id));
+  }
+}
+
+TEST_P(MediaHistoryStoreFeedsTest, ReplaceMediaFeedItems_WithEmpty) {
+  service()->SaveMediaFeed(GURL("https://www.google.com/feed"));
+  WaitForDB();
+
+  // If we are read only we should use -1 as a placeholder feed id because the
+  // feed will not have been stored. This is so we can run the rest of the test
+  // to ensure a no-op.
+  const int feed_id = IsReadOnly() ? -1 : GetMediaFeedsSync(service())[0]->id;
+
+  service()->ReplaceMediaFeedItems(feed_id, GetExpectedItems());
+  WaitForDB();
+
+  {
+    // The media items should be stored.
+    auto items = GetItemsForMediaFeedSync(service(), feed_id);
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(items.empty());
+    } else {
+      EXPECT_EQ(GetExpectedItems(), items);
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id));
+  }
+
+  service()->ReplaceMediaFeedItems(
+      feed_id, std::vector<media_feeds::mojom::MediaFeedItemPtr>());
+  WaitForDB();
+
+  {
+    // There should be no items stored.
+    auto items = GetItemsForMediaFeedSync(service(), feed_id);
+    EXPECT_TRUE(items.empty());
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id));
+  }
+}
+
+TEST_P(MediaHistoryStoreFeedsTest, ReplaceMediaFeedItems_MultipleFeeds) {
+  service()->SaveMediaFeed(GURL("https://www.google.com/feed"));
+  service()->SaveMediaFeed(GURL("https://www.google.co.uk/feed"));
+  WaitForDB();
+
+  // If we are read only we should use -1 as a placeholder feed id because the
+  // feed will not have been stored. This is so we can run the rest of the test
+  // to ensure a no-op.
+  const int feed_id_a = IsReadOnly() ? -1 : GetMediaFeedsSync(service())[0]->id;
+  const int feed_id_b = IsReadOnly() ? -1 : GetMediaFeedsSync(service())[1]->id;
+
+  service()->ReplaceMediaFeedItems(feed_id_a, GetExpectedItems());
+  WaitForDB();
+
+  service()->ReplaceMediaFeedItems(feed_id_b, GetAltExpectedItems());
+  WaitForDB();
+
+  {
+    // The media items should be stored.
+    auto items = GetItemsForMediaFeedSync(service(), feed_id_a);
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(items.empty());
+    } else {
+      EXPECT_EQ(GetExpectedItems(), items);
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id_a));
+  }
+
+  {
+    // The media items should be stored.
+    auto items = GetItemsForMediaFeedSync(service(), feed_id_b);
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(items.empty());
+    } else {
+      EXPECT_EQ(GetAltExpectedItems(), items);
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id_b));
+  }
+}
+
+TEST_P(MediaHistoryStoreFeedsTest, ReplaceMediaFeedItems_BadType) {
+  service()->SaveMediaFeed(GURL("https://www.google.com/feed"));
+  WaitForDB();
+
+  // If we are read only we should use -1 as a placeholder feed id because the
+  // feed will not have been stored. This is so we can run the rest of the test
+  // to ensure a no-op.
+  const int feed_id = IsReadOnly() ? -1 : GetMediaFeedsSync(service())[0]->id;
+
+  service()->ReplaceMediaFeedItems(feed_id, GetExpectedItems());
+  WaitForDB();
+
+  {
+    // The media items should be stored.
+    auto items = GetItemsForMediaFeedSync(service(), feed_id);
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(items.empty());
+    } else {
+      EXPECT_EQ(GetExpectedItems(), items);
+    }
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id));
+  }
+
+  sql::Statement s(
+      GetDB().GetUniqueStatement("UPDATE mediaFeedItem SET type = 99"));
+  ASSERT_TRUE(s.Run());
+
+  {
+    // The items should be skipped because of the invalid type.
+    auto items = GetItemsForMediaFeedSync(service(), feed_id);
+    EXPECT_TRUE(items.empty());
+
+    // The OTR service should have the same data.
+    EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id));
   }
 }
 

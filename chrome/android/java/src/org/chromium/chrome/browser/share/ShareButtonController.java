@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.share;
 
 import android.content.Context;
-import android.support.v7.content.res.AppCompatResources;
 import android.view.View.OnClickListener;
+
+import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordUserAction;

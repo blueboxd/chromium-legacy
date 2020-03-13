@@ -1,7 +1,10 @@
-gogerald@chromium.org
+# TEAM: payments-dev@chromium.org
+# COMPONENT: UI>Browser>Payments
+
 rouslan@chromium.org
 danyao@chromium.org
 maxlg@chromium.org
 sahel@chromium.org
 
-# COMPONENT: UI>Browser>Payments
+# Emeritus
+gogerald@chromium.org

@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
@@ -31,6 +30,7 @@
 #include "media/mojo/clients/mojo_video_decoder.h"
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/skia/include/core/SkTypes.h"
 
@@ -411,7 +411,7 @@ base::UnsafeSharedMemoryRegion
 GpuVideoAcceleratorFactoriesImpl::CreateSharedMemoryRegion(size_t size) {
   // If necessary, this call will make a synchronous request to a privileged
   // process to create the shared region.
-  return base::UnsafeSharedMemoryRegion::Create(size);
+  return mojo::CreateUnsafeSharedMemoryRegion(size);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

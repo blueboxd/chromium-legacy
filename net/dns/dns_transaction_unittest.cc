@@ -32,6 +32,7 @@
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_response.h"
+#include "net/dns/dns_server_iterator.h"
 #include "net/dns/dns_session.h"
 #include "net/dns/dns_test_util.h"
 #include "net/dns/dns_util.h"
@@ -1735,36 +1736,52 @@ TEST_F(DnsTransactionTest, HttpsMarkHttpsBad) {
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
   // UDP server 0 is our only UDP server, so it will be good. HTTPS
   // servers 0 and 1 failed and will be marked bad. HTTPS server 2 succeeded
-  // so will be good.
-  EXPECT_EQ(resolve_context_->ClassicServerIndexToUse(0, session_.get()), 0u);
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(2u));
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  1, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(2u));
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  2, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(2u));
+  // so it will be good.
+  // The expected order of the HTTPS servers is therefore 2, 0, then 1.
+  {
+    std::unique_ptr<DnsServerIterator> classic_itr =
+        resolve_context_->GetClassicDnsIterator(session_->config(),
+                                                session_.get());
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::AUTOMATIC,
+                                         session_.get());
+    EXPECT_TRUE(classic_itr->AttemptAvailable());
+    EXPECT_EQ(classic_itr->GetNextAttemptIndex(), 0u);
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 2u);
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 0u);
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 1u);
+  }
   size_t kOrder0[] = {1, 2, 3};
   CheckServerOrder(kOrder0, base::size(kOrder0));
 
   EXPECT_TRUE(helper1.RunUntilDone(transaction_factory_.get()));
-  // UDP server 0 is still our only UDP server, so will be good by definition.
-  // HTTPS server 2 started out as good, so was tried first and failed. HTTPS
-  // server 0 then had the oldest failure so would be the next good server and
-  // failed so is marked bad. Next attempt was HTTPS server 1, which succeeded
-  // so is good.
-  EXPECT_EQ(resolve_context_->ClassicServerIndexToUse(0, session_.get()), 0u);
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(1u));
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  1, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(1u));
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  2, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(1u));
+  // UDP server 0 is still our only UDP server, so it will be good by
+  // definition. HTTPS server 2 started out as good, so it was tried first and
+  // failed. HTTPS server 0 then had the oldest failure so it would be the next
+  // good server and then it failed so it's marked bad. Next attempt was HTTPS
+  // server 1, which succeeded so it's good. The expected order of the HTTPS
+  // servers is therefore 1, 2, then 0.
+
+  {
+    std::unique_ptr<DnsServerIterator> classic_itr =
+        resolve_context_->GetClassicDnsIterator(session_->config(),
+                                                session_.get());
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::AUTOMATIC,
+                                         session_.get());
+
+    EXPECT_EQ(classic_itr->GetNextAttemptIndex(), 0u);
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 1u);
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 2u);
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 0u);
+  }
+
   size_t kOrder1[] = {
       1, 2, 3, /* transaction0 */
       3, 1, 2  /* transaction1 */
@@ -1815,12 +1832,16 @@ TEST_F(DnsTransactionTest, HttpsNotAvailableThenHttpFallback) {
   resolve_context_->RecordServerSuccess(
       1u /* server_index */, true /* is_doh_server*/, session_.get());
 
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(1u));
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  1, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(1u));
+  {
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::AUTOMATIC,
+                                         session_.get());
+
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 1u);
+    EXPECT_FALSE(doh_itr->AttemptAvailable());
+  }
   AddQueryAndResponse(0, kT0HostName, kT0Qtype, kT0ResponseDatagram,
                       base::size(kT0ResponseDatagram), SYNCHRONOUS,
                       Transport::HTTPS, nullptr /* opt_rdata */,
@@ -1830,12 +1851,16 @@ TEST_F(DnsTransactionTest, HttpsNotAvailableThenHttpFallback) {
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
   size_t kOrder0[] = {2};
   CheckServerOrder(kOrder0, base::size(kOrder0));
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(1u));
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  1, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(1u));
+  {
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::AUTOMATIC,
+                                         session_.get());
+
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 1u);
+    EXPECT_FALSE(doh_itr->AttemptAvailable());
+  }
 }
 
 // Fail first DoH server, then no fallbacks marked available in AUTOMATIC mode.
@@ -1848,15 +1873,17 @@ TEST_F(DnsTransactionTest, HttpsFailureThenNotAvailable_Automatic) {
   resolve_context_->RecordServerSuccess(
       0u /* server_index */, true /* is_doh_server*/, session_.get());
 
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(0u));
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  1, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(0u));
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  2, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(0u));
+  {
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::AUTOMATIC,
+                                         session_.get());
+
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 0u);
+    EXPECT_FALSE(doh_itr->AttemptAvailable());
+  }
+
   AddQueryAndErrorResponse(0, kT0HostName, kT0Qtype, ERR_CONNECTION_REFUSED,
                            SYNCHRONOUS, Transport::HTTPS,
                            nullptr /* opt_rdata */,
@@ -1870,15 +1897,16 @@ TEST_F(DnsTransactionTest, HttpsFailureThenNotAvailable_Automatic) {
   size_t kOrder0[] = {1};
   CheckServerOrder(kOrder0, base::size(kOrder0));
 
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(0u));
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  1, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(0u));
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  2, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(0u));
+  {
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::AUTOMATIC,
+                                         session_.get());
+
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 0u);
+    EXPECT_FALSE(doh_itr->AttemptAvailable());
+  }
 }
 
 // Test a secure transaction failure in SECURE mode when other DoH servers are
@@ -1892,15 +1920,20 @@ TEST_F(DnsTransactionTest, HttpsFailureThenNotAvailable_Secure) {
   resolve_context_->RecordServerSuccess(
       0u /* server_index */, true /* is_doh_server*/, session_.get());
 
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  0, DnsConfig::SecureDnsMode::SECURE, session_.get()),
-              testing::Optional(0u));
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  1, DnsConfig::SecureDnsMode::SECURE, session_.get()),
-              testing::Optional(1u));
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  2, DnsConfig::SecureDnsMode::SECURE, session_.get()),
-              testing::Optional(2u));
+  {
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::SECURE,
+                                         session_.get());
+
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 0u);
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 1u);
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 2u);
+  }
+
   AddQueryAndErrorResponse(0, kT0HostName, kT0Qtype, ERR_CONNECTION_REFUSED,
                            SYNCHRONOUS, Transport::HTTPS,
                            nullptr /* opt_rdata */,
@@ -1922,24 +1955,30 @@ TEST_F(DnsTransactionTest, HttpsFailureThenNotAvailable_Secure) {
   size_t kOrder0[] = {1, 2, 3};
   CheckServerOrder(kOrder0, base::size(kOrder0));
 
-  // Expect server 0 to become preferred due to least recent failure.
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  0, DnsConfig::SecureDnsMode::SECURE, session_.get()),
-              testing::Optional(0u));
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  1, DnsConfig::SecureDnsMode::SECURE, session_.get()),
-              testing::Optional(0u));
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  2, DnsConfig::SecureDnsMode::SECURE, session_.get()),
-              testing::Optional(0u));
+  // Expect server 0 to be preferred due to least recent failure.
+  {
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::SECURE,
+                                         session_.get());
+
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 0u);
+  }
 }
 
 TEST_F(DnsTransactionTest, MaxHttpsFailures_NonConsecutive) {
   config_.attempts = 1;
   ConfigureDohServers(false /* use_post */);
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(0u));
+  {
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::AUTOMATIC,
+                                         session_.get());
+
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 0u);
+  }
 
   for (size_t i = 0; i < ResolveContext::kAutomaticModeFailureLimit - 1; i++) {
     AddQueryAndErrorResponse(0, kT0HostName, kT0Qtype, ERR_CONNECTION_REFUSED,
@@ -1949,9 +1988,14 @@ TEST_F(DnsTransactionTest, MaxHttpsFailures_NonConsecutive) {
     TransactionHelper failure(kT0HostName, kT0Qtype, true /* secure */,
                               ERR_CONNECTION_REFUSED, resolve_context_.get());
     EXPECT_TRUE(failure.RunUntilDone(transaction_factory_.get()));
-    EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                    0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-                testing::Optional(0u));
+
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::AUTOMATIC,
+                                         session_.get());
+
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 0u);
   }
 
   // A success should reset the failure counter for DoH.
@@ -1962,9 +2006,15 @@ TEST_F(DnsTransactionTest, MaxHttpsFailures_NonConsecutive) {
   TransactionHelper success(kT0HostName, kT0Qtype, true /* secure */,
                             kT0RecordCount, resolve_context_.get());
   EXPECT_TRUE(success.RunUntilDone(transaction_factory_.get()));
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(0u));
+  {
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::AUTOMATIC,
+                                         session_.get());
+
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 0u);
+  }
 
   // One more failure should not pass the threshold because failures were reset.
   AddQueryAndErrorResponse(0, kT0HostName, kT0Qtype, ERR_CONNECTION_REFUSED,
@@ -1975,17 +2025,29 @@ TEST_F(DnsTransactionTest, MaxHttpsFailures_NonConsecutive) {
                                  ERR_CONNECTION_REFUSED,
                                  resolve_context_.get());
   EXPECT_TRUE(last_failure.RunUntilDone(transaction_factory_.get()));
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(0u));
+  {
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::AUTOMATIC,
+                                         session_.get());
+
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 0u);
+  }
 }
 
 TEST_F(DnsTransactionTest, MaxHttpsFailures_Consecutive) {
   config_.attempts = 1;
   ConfigureDohServers(false /* use_post */);
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(0u));
+  {
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::AUTOMATIC,
+                                         session_.get());
+
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 0u);
+  }
 
   for (size_t i = 0; i < ResolveContext::kAutomaticModeFailureLimit - 1; i++) {
     AddQueryAndErrorResponse(0, kT0HostName, kT0Qtype, ERR_CONNECTION_REFUSED,
@@ -1995,12 +2057,16 @@ TEST_F(DnsTransactionTest, MaxHttpsFailures_Consecutive) {
     TransactionHelper failure(kT0HostName, kT0Qtype, true /* secure */,
                               ERR_CONNECTION_REFUSED, resolve_context_.get());
     EXPECT_TRUE(failure.RunUntilDone(transaction_factory_.get()));
-    EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                    0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-                testing::Optional(0u));
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::AUTOMATIC,
+                                         session_.get());
+
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 0u);
   }
 
-  // One more failure should not pass the threshold.
+  // One more failure should pass the threshold.
   AddQueryAndErrorResponse(0, kT0HostName, kT0Qtype, ERR_CONNECTION_REFUSED,
                            SYNCHRONOUS, Transport::HTTPS,
                            nullptr /* opt_rdata */,
@@ -2009,18 +2075,29 @@ TEST_F(DnsTransactionTest, MaxHttpsFailures_Consecutive) {
                                  ERR_CONNECTION_REFUSED,
                                  resolve_context_.get());
   EXPECT_TRUE(last_failure.RunUntilDone(transaction_factory_.get()));
-  EXPECT_EQ(resolve_context_->DohServerIndexToUse(
-                0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-            base::nullopt);
+  {
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::AUTOMATIC,
+                                         session_.get());
+
+    EXPECT_FALSE(doh_itr->AttemptAvailable());
+  }
 }
 
 // Test that a secure transaction started before a DoH server becomes
 // unavailable can complete and make the server available again.
 TEST_F(DnsTransactionTest, SuccessfulTransactionStartedBeforeUnavailable) {
   ConfigureDohServers(false /* use_post */);
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(0u));
+  {
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::AUTOMATIC,
+                                         session_.get());
+
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 0u);
+  }
 
   // Create a socket data to first return ERR_IO_PENDING. This will pause the
   // response and not return the second response until
@@ -2519,21 +2596,19 @@ TEST_F(DnsTransactionTestWithMockTime, ProbeUntilSuccess) {
 
   // The first probe happens without any delay.
   RunUntilIdle();
-  EXPECT_EQ(resolve_context_->DohServerIndexToUse(
-                0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-            base::nullopt);
+  std::unique_ptr<DnsServerIterator> doh_itr = resolve_context_->GetDohIterator(
+      session_->config(), DnsConfig::SecureDnsMode::AUTOMATIC, session_.get());
+
+  EXPECT_FALSE(doh_itr->AttemptAvailable());
 
   // Expect the server to still be unavailable after the second probe.
   FastForwardBy(runner->GetDelayUntilNextProbeForTest(0));
-  EXPECT_EQ(resolve_context_->DohServerIndexToUse(
-                0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-            base::nullopt);
+  EXPECT_FALSE(doh_itr->AttemptAvailable());
 
   // Expect the server to be available after the successful third probe.
   FastForwardBy(runner->GetDelayUntilNextProbeForTest(0));
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(0u));
+  ASSERT_TRUE(doh_itr->AttemptAvailable());
+  EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 0u);
 }
 
 // Test that if a probe attempt hangs, additional probes will still run on
@@ -2657,9 +2732,15 @@ TEST_F(DnsTransactionTestWithMockTime, MultipleProbeRunners) {
   // The first two probes (one for each runner) happen without any delay
   // and mark the first server good.
   RunUntilIdle();
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(0u));
+  {
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::AUTOMATIC,
+                                         session_.get());
+
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 0u);
+  }
 
   // Both probes expected to self-cancel on next scheduled run.
   FastForwardBy(runner1->GetDelayUntilNextProbeForTest(0));
@@ -2699,12 +2780,22 @@ TEST_F(DnsTransactionTestWithMockTime, MultipleProbeRunners_SeparateContexts) {
   // The first two probes (one for each runner) happen without any delay.
   // Probe for first context succeeds and second fails.
   RunUntilIdle();
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  0u, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(0u));
-  EXPECT_EQ(context2.DohServerIndexToUse(
-                0u, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-            base::nullopt);
+  {
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::AUTOMATIC,
+                                         session_.get());
+
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 0u);
+  }
+  {
+    std::unique_ptr<DnsServerIterator> doh_itr2 = context2.GetDohIterator(
+        session_->config(), DnsConfig::SecureDnsMode::AUTOMATIC,
+        session_.get());
+
+    EXPECT_FALSE(doh_itr2->AttemptAvailable());
+  }
 
   // First probe runner expected to be compete and self-cancel on next run.
   FastForwardBy(runner1->GetDelayUntilNextProbeForTest(0));
@@ -2712,9 +2803,14 @@ TEST_F(DnsTransactionTestWithMockTime, MultipleProbeRunners_SeparateContexts) {
 
   // Expect second runner to succeed on its second probe.
   FastForwardBy(runner2->GetDelayUntilNextProbeForTest(0));
-  EXPECT_THAT(context2.DohServerIndexToUse(
-                  0u, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(0u));
+  {
+    std::unique_ptr<DnsServerIterator> doh_itr2 = context2.GetDohIterator(
+        session_->config(), DnsConfig::SecureDnsMode::AUTOMATIC,
+        session_.get());
+
+    ASSERT_TRUE(doh_itr2->AttemptAvailable());
+    EXPECT_EQ(doh_itr2->GetNextAttemptIndex(), 0u);
+  }
   FastForwardBy(runner2->GetDelayUntilNextProbeForTest(0));
   EXPECT_EQ(runner2->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
 }
@@ -2737,15 +2833,15 @@ TEST_F(DnsTransactionTestWithMockTime, CancelDohProbe) {
 
   // The first probe happens without any delay.
   RunUntilIdle();
-  EXPECT_EQ(resolve_context_->DohServerIndexToUse(
-                0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-            base::nullopt);
+  std::unique_ptr<DnsServerIterator> doh_itr = resolve_context_->GetDohIterator(
+      session_->config(), DnsConfig::SecureDnsMode::AUTOMATIC, session_.get());
+
+  EXPECT_FALSE(doh_itr->AttemptAvailable());
 
   // Expect the server to still be unavailable after the second probe.
   FastForwardBy(runner->GetDelayUntilNextProbeForTest(0));
-  EXPECT_EQ(resolve_context_->DohServerIndexToUse(
-                0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-            base::nullopt);
+
+  EXPECT_FALSE(doh_itr->AttemptAvailable());
 
   base::TimeDelta next_delay = runner->GetDelayUntilNextProbeForTest(0);
   runner.reset();
@@ -2754,9 +2850,8 @@ TEST_F(DnsTransactionTestWithMockTime, CancelDohProbe) {
   // success. No success result is added, so this FastForward will cause a
   // failure if probes attempt to run.
   FastForwardBy(next_delay);
-  EXPECT_EQ(resolve_context_->DohServerIndexToUse(
-                0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-            base::nullopt);
+
+  EXPECT_FALSE(doh_itr->AttemptAvailable());
 }
 
 TEST_F(DnsTransactionTestWithMockTime, CancelOneOfMultipleProbeRunners) {
@@ -2784,9 +2879,10 @@ TEST_F(DnsTransactionTestWithMockTime, CancelOneOfMultipleProbeRunners) {
 
   // The first two probes (one for each runner) happen without any delay.
   RunUntilIdle();
-  EXPECT_EQ(resolve_context_->DohServerIndexToUse(
-                0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-            base::nullopt);
+  std::unique_ptr<DnsServerIterator> doh_itr = resolve_context_->GetDohIterator(
+      session_->config(), DnsConfig::SecureDnsMode::AUTOMATIC, session_.get());
+
+  EXPECT_FALSE(doh_itr->AttemptAvailable());
   EXPECT_GT(runner1->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
   EXPECT_GT(runner2->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
 
@@ -2795,9 +2891,9 @@ TEST_F(DnsTransactionTestWithMockTime, CancelOneOfMultipleProbeRunners) {
 
   // Expect the server to be available after the successful third probe.
   FastForwardBy(runner2->GetDelayUntilNextProbeForTest(0));
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(0u));
+
+  ASSERT_TRUE(doh_itr->AttemptAvailable());
+  EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 0u);
   FastForwardBy(runner2->GetDelayUntilNextProbeForTest(0));
   EXPECT_EQ(runner2->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
 }
@@ -2823,9 +2919,10 @@ TEST_F(DnsTransactionTestWithMockTime, CancelAllOfMultipleProbeRunners) {
 
   // The first two probes (one for each runner) happen without any delay.
   RunUntilIdle();
-  EXPECT_EQ(resolve_context_->DohServerIndexToUse(
-                0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-            base::nullopt);
+  std::unique_ptr<DnsServerIterator> doh_itr = resolve_context_->GetDohIterator(
+      session_->config(), DnsConfig::SecureDnsMode::AUTOMATIC, session_.get());
+
+  EXPECT_FALSE(doh_itr->AttemptAvailable());
   EXPECT_GT(runner1->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
   EXPECT_GT(runner2->GetDelayUntilNextProbeForTest(0), base::TimeDelta());
 
@@ -2837,9 +2934,7 @@ TEST_F(DnsTransactionTestWithMockTime, CancelAllOfMultipleProbeRunners) {
   // success. No success result is added, so this FastForward will cause a
   // failure if probes attempt to run.
   FastForwardBy(next_delay);
-  EXPECT_EQ(resolve_context_->DohServerIndexToUse(
-                0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-            base::nullopt);
+  EXPECT_FALSE(doh_itr->AttemptAvailable());
 }
 
 TEST_F(DnsTransactionTestWithMockTime, CancelDohProbe_AfterSuccess) {
@@ -2856,17 +2951,29 @@ TEST_F(DnsTransactionTestWithMockTime, CancelDohProbe_AfterSuccess) {
 
   // The first probe happens without any delay, and immediately succeeds.
   RunUntilIdle();
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(0u));
+  {
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::AUTOMATIC,
+                                         session_.get());
+
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 0u);
+  }
 
   runner.reset();
 
   // No change expected after cancellation.
   RunUntilIdle();
-  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
-                  0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-              testing::Optional(0u));
+  {
+    std::unique_ptr<DnsServerIterator> doh_itr =
+        resolve_context_->GetDohIterator(session_->config(),
+                                         DnsConfig::SecureDnsMode::AUTOMATIC,
+                                         session_.get());
+
+    ASSERT_TRUE(doh_itr->AttemptAvailable());
+    EXPECT_EQ(doh_itr->GetNextAttemptIndex(), 0u);
+  }
 }
 
 TEST_F(DnsTransactionTestWithMockTime, DestroyFactoryAfterStartingDohProbe) {
@@ -2883,9 +2990,10 @@ TEST_F(DnsTransactionTestWithMockTime, DestroyFactoryAfterStartingDohProbe) {
 
   // The first probe happens without any delay.
   RunUntilIdle();
-  EXPECT_EQ(resolve_context_->DohServerIndexToUse(
-                0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-            base::nullopt);
+  std::unique_ptr<DnsServerIterator> doh_itr = resolve_context_->GetDohIterator(
+      session_->config(), DnsConfig::SecureDnsMode::AUTOMATIC, session_.get());
+
+  EXPECT_FALSE(doh_itr->AttemptAvailable());
 
   // Destroy factory and session.
   transaction_factory_.reset();

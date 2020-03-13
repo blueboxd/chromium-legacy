@@ -179,8 +179,10 @@ void AdaptTitleForBookmark(const sync_pb::SyncEntity& update_entity,
   }
   // Legacy clients populate the name field in the SyncEntity instead of the
   // title field in the BookmarkSpecifics.
-  if (!specifics->bookmark().has_title() && !update_entity.name().empty()) {
-    specifics->mutable_bookmark()->set_title(update_entity.name());
+  if (!specifics->bookmark().has_legacy_canonicalized_title() &&
+      !update_entity.name().empty()) {
+    specifics->mutable_bookmark()->set_legacy_canonicalized_title(
+        update_entity.name());
   }
 }
 

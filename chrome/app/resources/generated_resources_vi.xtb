@@ -757,7 +757,6 @@
 <translation id="2025632980034333559"><ph name="APP_NAME" /> đã xảy ra lỗi. Nhấp vào bong bóng này để tải lại tiện ích.</translation>
 <translation id="2025891858974379949">Nội dung không an toàn</translation>
 <translation id="202918510990975568">Nhập mật khẩu để định cấu hình tùy chọn cài đặt bảo mật và đăng nhập</translation>
-<translation id="2030672406208960151">Mở Cửa sổ lệnh khôi phục</translation>
 <translation id="2034346955588403444">Thêm mạng Wi-Fi khác</translation>
 <translation id="203574396658008164">Bật tính năng ghi chú từ màn hình khóa</translation>
 <translation id="2037445849770872822">Tính năng giám sát đã được thiết lập cho Tài khoản Google này. Để thiết lập thêm quyền kiểm soát của cha mẹ, hãy chọn Tiếp tục.
@@ -1032,7 +1031,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2387052489799050037">Chuyển đến Màn hình chính</translation>
 <translation id="2387458720915042159">Loại kết nối proxy</translation>
 <translation id="2391419135980381625">Phông chữ tiêu chuẩn</translation>
-<translation id="2392163307141705938">Thời gian sử dụng <ph name="IDS_SHORT_PRODUCT_NAME" /> do cha mẹ đặt ra cho bạn đã hết.</translation>
+<translation id="2392163307141705938">Bạn đã đạt đến giới hạn thời gian sử dụng <ph name="IDS_SHORT_PRODUCT_NAME" /> do cha mẹ đặt ra.</translation>
 <translation id="2392369802118427583">Kích hoạt</translation>
 <translation id="2394566832561516196">Cài đặt sẽ được xóa trong lần tải lại tiếp theo.</translation>
 <translation id="2395616325548404795">Thiết bị <ph name="DEVICE_TYPE" /> của bạn đã được đăng ký thành công cho quản lý doanh nghiệp, nhưng không gửi được thông tin phần tử và vị trí. Vui lòng nhập thủ công thông tin này từ Bảng điều khiển dành cho quản trị viên của thiết bị này.</translation>
@@ -1663,7 +1662,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3228679360002431295">Đang kết nối và xác minh<ph name="ANIMATED_ELLIPSIS" /></translation>
 <translation id="3232318083971127729">Giá trị:</translation>
 <translation id="3233271424239923319">Sao lưu các ứng dụng và tệp Linux</translation>
-<translation id="323803881985677942">Mở tùy chọn tiện ích</translation>
 <translation id="3239373508713281971">Đã xóa giới hạn thời gian đối với <ph name="APP_NAME" /></translation>
 <translation id="3241680850019875542">Chọn thư mục gốc của tiện ích để đóng gói. Để cập nhật tiện ích, bạn cũng chọn tệp khóa cá nhân để sử dụng lại.</translation>
 <translation id="3244294424315804309">Tiếp tục tắt tiếng</translation>
@@ -2419,7 +2417,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="424963718355121712">Ứng dụng phải được cung cấp từ máy chủ lưu trữ mà chúng ảnh hưởng</translation>
 <translation id="4250229828105606438">Ảnh chụp màn hình</translation>
 <translation id="4250680216510889253">Không</translation>
-<translation id="4251288318602771141">Với nhà cung cấp dịch vụ hiện tại của bạn. DNS bảo mật có thể không phải lúc nào cũng hoạt động.</translation>
 <translation id="4252852543720145436">Giá trị nhận dạng cho nội dung được bảo vệ</translation>
 <translation id="4252899949534773101">Bluetooth đã bị tắt</translation>
 <translation id="4252996741873942488"><ph name="WINDOW_TITLE" /> - Đã chia sẻ nội dung tab</translation>
@@ -2489,7 +2486,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4364567974334641491"><ph name="APP_NAME" /> đang chia sẻ một cửa sổ.</translation>
 <translation id="4364830672918311045">Hiển thị thông báo</translation>
 <translation id="4370975561335139969">Email và mật khẩu bạn nhập không khớp</translation>
-<translation id="437184764829821926">Cài đặt phông chữ nâng cao</translation>
 <translation id="4374831787438678295">Trình cài đặt Linux</translation>
 <translation id="4375035964737468845">Mở các tệp đã tải xuống</translation>
 <translation id="4377363674125277448">Đã xảy ra sự cố với chứng chỉ của máy chủ.</translation>
@@ -2653,7 +2649,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4596295440756783523">Bạn có các chứng chỉ trên tệp có thể nhận dạng các máy chủ này</translation>
 <translation id="4598556348158889687">Quản lý bộ nhớ</translation>
 <translation id="4598776695426288251">Wi-Fi khả dụng qua nhiều thiết bị</translation>
-<translation id="4599134080475764833">Máy chủ ảo plugin đã sẵn sàng sử dụng</translation>
 <translation id="4602466770786743961">Luôn cho phép <ph name="HOST" /> truy cập vào máy ảnh và micrô của bạn</translation>
 <translation id="4606551464649945562">Không cho phép trang web tạo bản đồ 3D về các khu vực xung quanh bạn hoặc theo dõi thông tin vị trí của máy ảnh</translation>
 <translation id="4608500690299898628">&amp;Tìm...</translation>
@@ -2748,11 +2743,9 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Tìm hiểu cách cập nhật ứng dụng<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Bật âm thanh trang web}other{Bật âm thanh các trang web}}</translation>
 <translation id="4746351372139058112">Tin nhắn</translation>
-<translation id="4748762018725435655">Yêu cầu tiện ích từ Cửa hàng Chrome trực tuyến</translation>
 <translation id="4750394297954878236">Đề xuất</translation>
 <translation id="475088594373173692">Người dùng đầu tiên</translation>
 <translation id="4751476147751820511">Cảm biến chuyển động hoặc ánh sáng</translation>
-<translation id="4754969275105595499">Để quay lại màn hình trước, hãy vuốt từ cạnh bên.</translation>
 <translation id="4756269098451810636">Hình ảnh chia sẻ từ <ph name="DEVICE_NAME" /></translation>
 <translation id="4756378406049221019">Dừng/Tải lại</translation>
 <translation id="4756388243121344051">&amp;Lịch sử</translation>
@@ -2786,7 +2779,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4808667324955055115">Đã chặn cửa sổ bật lên:</translation>
 <translation id="480990236307250886">Mở trang chủ</translation>
 <translation id="4811503964269049987">Nhóm thẻ đã chọn</translation>
-<translation id="4811818760963189951">Đang bị tắt vì bạn đã vô hiệu hóa tính năng đồng bộ hóa lịch sử</translation>
+<translation id="4811818760963189951">Tính năng này đã bị tắt vì bạn đã vô hiệu hóa tính năng đồng bộ hóa lịch sử</translation>
 <translation id="4813136279048157860">Hình ảnh của tôi</translation>
 <translation id="4813512666221746211">Lỗi mạng</translation>
 <translation id="4814378367953456825">Nhập tên cho vân tay này</translation>
@@ -2956,7 +2949,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5040823038948176460">Các tùy chọn cài đặt nội dung khác</translation>
 <translation id="5042282098504489593">Mở phần Cài đặt để kết nối <ph name="USB_DEVICE_NAME" /> với Linux</translation>
 <translation id="5043913660911154449">Hoặc chỉ định tệp PPD cho máy in của bạn <ph name="LINK_BEGIN" />Tìm hiểu thêm<ph name="LINK_END" /></translation>
-<translation id="5044314273978194362">Đang bị tắt do bạn đã mã hóa dữ liệu đồng bộ hóa bằng cụm mật khẩu</translation>
+<translation id="5044314273978194362">Tính năng này đã bị tắt do bạn đã mã hóa dữ liệu đồng bộ hóa bằng cụm mật khẩu</translation>
 <translation id="5045550434625856497">Mật khẩu sai</translation>
 <translation id="504561833207953641">Mở trong phiên trình duyệt hiện tại.</translation>
 <translation id="5047421709274785093">Chặn các trang web sử dụng cảm biến chuyển động và ánh sáng</translation>
@@ -3745,7 +3738,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6104311680260824317">Không thể kết hợp thiết bị với miền. Máy chủ không hỗ trợ các loại mã hóa Kerbero được chỉ định. Hãy xem phần "Tùy chọn khác" để biết các tùy chọn cài đặt mã hóa.</translation>
 <translation id="6104641575223043670"><ph name="ORGANIZATION_NAME" /> yêu cầu bạn cập nhật thiết bị này ngay lập tức</translation>
 <translation id="6106186653986077033">Máy chủ ảo plugin cần có giấy phép</translation>
-<translation id="6107047744202598802">Cho phép các trang web ghi nhớ lượt truy cập của bạn và theo dõi bạn trên web</translation>
 <translation id="6112294629795967147">Chạm để đổi kích thước</translation>
 <translation id="6112727384379533756">Thêm phiếu</translation>
 <translation id="6112931163620622315">Kiểm tra điện thoại của bạn</translation>
@@ -4073,7 +4065,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Tên hoặc đường dẫn của tệp quá dài.  Hãy lưu với tên ngắn hơn hoặc lưu vào một vị trí khác.</translation>
 <translation id="6563469144985748109">Người quản lý của bạn chưa phê duyệt trang web</translation>
-<translation id="6565955132287672866">Thiết bị của bạn không tắt đúng cách. Để sử dụng Linux (Bản thử nghiệm), bạn phải khởi động lại thiết bị.</translation>
 <translation id="6567688344210276845">Không thể tải biểu tượng '<ph name="ICON" />' cho tác vụ trang.</translation>
 <translation id="6569934958368283244">Người khác</translation>
 <translation id="657402800789773160">&amp;Tải lại trang này</translation>
@@ -5943,7 +5934,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="9065203028668620118">Chỉnh sửa</translation>
 <translation id="9066773882585798925">Nghe đọc to văn bản</translation>
 <translation id="9066782832737749352">Chuyển văn bản sang lời nói</translation>
-<translation id="9067559831321817373">Quản lý các tài khoản bạn đã đăng nhập. Các trang web, ứng dụng và tiện ích trong Chrome cũng như Google Play có thể dùng những tài khoản này để mang lại trải nghiệm phù hợp cho bạn, tùy theo sự cho phép. &lt;a&gt;Tìm hiểu thêm&lt;/a&gt;</translation>
 <translation id="9068849894565669697">Chọn màu</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

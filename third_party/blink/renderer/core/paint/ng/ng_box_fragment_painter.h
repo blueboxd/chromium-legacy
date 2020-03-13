@@ -163,9 +163,8 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                        BackgroundBleedAvoidance = kBackgroundBleedNone);
   void PaintCarets(const PaintInfo&, const PhysicalOffset& paint_offset);
 
-  // Paint a scroll hit test display item and record scroll hit test data. This
-  // should be called in the background paint phase even if there is no other
-  // painted content.
+  // This should be called in the background paint phase even if there is no
+  // other painted content.
   void RecordScrollHitTestData(const PaintInfo&,
                                const DisplayItemClient& background_client);
 

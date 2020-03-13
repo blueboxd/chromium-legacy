@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.photo_picker;
 import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
-import android.support.v7.app.AlertDialog;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.app.AlertDialog;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;

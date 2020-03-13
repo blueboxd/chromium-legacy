@@ -28,6 +28,5 @@ const int kContextualCardsDiagnosticIntegration = 99;
 // Mixin values. These are a bit mask * 100:
 const int kSimplifiedServerDeprecatedMixin = 100;
 const int kContextualCardsServerDebugMixin = 200;
-const int kExactSearchMixin = 400;
 
 }  // namespace contextual_search

@@ -580,7 +580,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
                        NewSyncDataShouldReplaceExistingData) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
-                            kDefaultBillingAddressID),
+                            kDefaultBillingAddressID, /*nickname=*/""),
        CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateDefaultSyncPaymentsCustomerData(),
        CreateSyncCreditCardCloudTokenData(/*cloud_token_data_id=*/"data-1")});
@@ -592,6 +592,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   std::vector<CreditCard*> cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
   EXPECT_EQ(ASCIIToUTF16("0001"), cards[0]->LastFourDigits());
+  // When no nickname is returned from Sync server, credit card's nickname is
+  // empty.
+  EXPECT_TRUE(cards[0]->nickname().empty());
   std::vector<AutofillProfile*> profiles = pdm->GetServerProfiles();
   ASSERT_EQ(1uL, profiles.size());
   EXPECT_EQ("Company-1", TruncateUTF8(base::UTF16ToUTF8(
@@ -605,7 +608,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   // Put some completely new data in the sync server.
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"new-card", /*last_four=*/"0002",
-                            kDefaultBillingAddressID),
+                            kDefaultBillingAddressID,
+                            /*nickname=*/"Grocery Card"),
        CreateSyncWalletAddress(/*name=*/"new-address", /*company=*/"Company-2"),
        CreateSyncPaymentsCustomerData(/*customer_id=*/"different"),
        CreateSyncCreditCardCloudTokenData(/*cloud_token_data_id=*/"data-2")});
@@ -616,6 +620,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
   EXPECT_EQ(ASCIIToUTF16("0002"), cards[0]->LastFourDigits());
+  EXPECT_EQ(ASCIIToUTF16("Grocery Card"), cards[0]->nickname());
   profiles = pdm->GetServerProfiles();
   ASSERT_EQ(1uL, profiles.size());
   EXPECT_EQ("Company-2", TruncateUTF8(base::UTF16ToUTF8(
@@ -747,7 +752,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, SameUpdatesAreIgnored) {
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ChangedEntityGetsUpdated) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0002",
-                            kDefaultBillingAddressID),
+                            kDefaultBillingAddressID, /*nickname=*/"Outdated"),
        CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-2"),
        CreateDefaultSyncPaymentsCustomerData(),
        CreateSyncCreditCardCloudTokenData("data-1")});
@@ -763,10 +768,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ChangedEntityGetsUpdated) {
   pdm->RecordUseOf(*profiles[0]);
 
   // Update the data (also change the customer data to force the full update as
-  // FakeServer computes the hash for progress markers only based on ids).
+  // FakeServer computes the hash for progress markers only based on ids). For
+  // server card, only the card's nickname is changed, metadata is unchanged.
   GetFakeServer()->SetWalletData(
-      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
-                            kDefaultBillingAddressID),
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0002",
+                            kDefaultBillingAddressID,
+                            /*nickname=*/"Grocery Card"),
        CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateSyncPaymentsCustomerData("different"),
        CreateSyncCreditCardCloudTokenData("data-2")});
@@ -776,7 +783,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ChangedEntityGetsUpdated) {
   // Make sure the data is present on the client.
   cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
-  EXPECT_EQ(ASCIIToUTF16("0001"), cards[0]->LastFourDigits());
+  EXPECT_EQ(ASCIIToUTF16("Grocery Card"), cards[0]->nickname());
   profiles = pdm->GetServerProfiles();
   ASSERT_EQ(1uL, profiles.size());
   EXPECT_EQ("Company-1", TruncateUTF8(base::UTF16ToUTF8(

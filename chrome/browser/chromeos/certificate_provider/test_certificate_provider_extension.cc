@@ -24,7 +24,6 @@
 #include "crypto/rsa_private_key.h"
 #include "extensions/browser/api/test/test_api.h"
 #include "extensions/browser/notification_types.h"
-#include "net/cert/asn1_util.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/test/cert_test_util.h"
@@ -53,10 +52,6 @@ std::vector<uint8_t> ExtractBytesFromValue(const base::Value& value) {
   for (const base::Value& item_value : value.GetList())
     bytes.push_back(base::checked_cast<uint8_t>(item_value.GetInt()));
   return bytes;
-}
-
-scoped_refptr<net::X509Certificate> GetCertificate() {
-  return net::ImportCertFromFile(net::GetTestCertsDirectory(), "client_1.pem");
 }
 
 base::span<const uint8_t> GetCertDer(const net::X509Certificate& certificate) {
@@ -114,24 +109,13 @@ void SendReplyToJs(extensions::TestSendMessageFunction* function,
 
 }  // namespace
 
-// Returns the Spki of the certificate provided by the extension.
-std::string TestCertificateProviderExtension::GetCertificateSpki() {
-  const scoped_refptr<net::X509Certificate> certificate = GetCertificate();
-  base::StringPiece spki_bytes;
-  if (!net::asn1::ExtractSPKIFromDERCert(
-          net::x509_util::CryptoBufferAsStringPiece(certificate->cert_buffer()),
-          &spki_bytes)) {
-    return {};
-  }
-  return spki_bytes.as_string();
-}
-
 TestCertificateProviderExtension::TestCertificateProviderExtension(
     content::BrowserContext* browser_context,
     const std::string& extension_id)
     : browser_context_(browser_context),
       extension_id_(extension_id),
-      certificate_(GetCertificate()),
+      certificate_(net::ImportCertFromFile(net::GetTestCertsDirectory(),
+                                           "client_1.pem")),
       private_key_(net::key_util::LoadEVP_PKEYFromPEM(
           net::GetTestCertsDirectory().Append(
               FILE_PATH_LITERAL("client_1.key")))) {

@@ -112,8 +112,8 @@ import logging
 import os
 import shutil
 
-import concurrent
 import models
+import parallel
 
 
 # File format version for .size files.
@@ -536,7 +536,7 @@ def SaveDeltaSizeInfo(delta_size_info, path, file_obj=None):
   before_size_file = cStringIO.StringIO()
   after_size_file = cStringIO.StringIO()
 
-  after_promise = concurrent.CallOnThread(
+  after_promise = parallel.CallOnThread(
       SaveSizeInfo,
       delta_size_info.after,
       '',

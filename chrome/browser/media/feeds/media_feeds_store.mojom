@@ -4,6 +4,8 @@
 
 module media_feeds.mojom;
 
+import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "url/mojom/url.mojom";
 
 struct MediaFeed {
@@ -14,9 +16,85 @@ struct MediaFeed {
   url.mojom.Url url;
 };
 
+// The type of the feed item. This enum is committed to storage so do not
+// change the numbering.
+enum MediaFeedItemType {
+  // Any video. https://schema.org/VideoObject
+  kVideo = 0,
+
+  // A TV series. https://schema.org/TVSeries
+  kTVSeries = 1,
+
+  // A movie. https://schema.org/Movie
+  kMovie = 2,
+};
+
+// The action status for the feed item. This enum is committed to storage so
+// do not change the numbering.
+// https://schema.org/actionStatus
+enum MediaFeedItemActionStatus {
+  kUnknown = 0,
+
+  // The user is currently watching this media.
+  // https://schema.org/ActiveActionStatus
+  kActive = 1,
+
+  // The user has not started watching this media.
+  // https://schema.org/PotentialActionStatus
+  kPotential = 2,
+
+  // The user has finished watching this media.
+  // https://schema.org/CompletedActionStatus
+  kCompleted = 3,
+};
+
+// The Media Feed Item is an individual item stored in a Media Feed. It
+// represents a single recommendation such as a video or TV show.
+// https://wicg.github.io/media-feeds-api/index.html#media-feed-item
+struct MediaFeedItem {
+  // The type of this feed item such as a video or TV show.
+  MediaFeedItemType type;
+
+  // The name of the feed item to be displayed to the user.
+  mojo_base.mojom.String16 name;
+
+  // The date/time this feed item was published.
+  mojo_base.mojom.Time date_published;
+
+  // Whether the media item is considered "family friendly".
+  bool is_family_friendly;
+
+  // The action status for this feed item.
+  MediaFeedItemActionStatus action_status;
+
+  // The genre of this feed item.
+  mojo_base.mojom.String16 genre;
+
+  // // The duration of this feed item.
+  mojo_base.mojom.TimeDelta duration;
+
+  // Whether the feed item is live.
+  bool is_live;
+
+  // The date/time the feed item became live.
+  mojo_base.mojom.Time live_start_time;
+
+  // The date/time the feed item finished becoming live.
+  mojo_base.mojom.Time live_end_time;
+
+  // How many times this feed item has been displayed in the Chrome UI.
+  uint64 shown_count;
+
+  // Whether the user has previously clicked on this feed item.
+  bool clicked;
+};
+
 // MediaFeedStore allows the Media Feeds WebUI to access data from the Media
 // Feeds backend in the browser process for diagnostic purposes.
 interface MediaFeedsStore {
   // Gets all the discovered media feeds.
   GetMediaFeeds() => (array<MediaFeed> feeds);
+
+  // Gets the items for the media feed.
+  GetItemsForMediaFeed(int64 feed_id) => (array<MediaFeedItem> items);
 };

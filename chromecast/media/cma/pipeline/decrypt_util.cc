@@ -67,11 +67,6 @@ bool DecoderBufferClear::end_of_stream() const {
   return buffer_->end_of_stream();
 }
 
-scoped_refptr<::media::DecoderBuffer>
-DecoderBufferClear::ToMediaBuffer() const {
-  return buffer_->ToMediaBuffer();
-}
-
 void DecryptDecoderBuffer(scoped_refptr<DecoderBufferBase> buffer,
                           DecryptContextImpl* decrypt_ctxt,
                           BufferDecryptedCB buffer_decrypted_cb) {

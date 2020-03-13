@@ -170,7 +170,8 @@ bool IsExtendedReportingOptInAllowed(const PrefService& prefs) {
 }
 
 bool IsExtendedReportingEnabled(const PrefService& prefs) {
-  return prefs.GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled) ||
+  return (IsSafeBrowsingEnabled(prefs) &&
+          prefs.GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled)) ||
          IsEnhancedProtectionEnabled(prefs);
 }
 

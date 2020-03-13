@@ -170,6 +170,21 @@ void MediaHistoryKeyedService::SavePlaybackSession(
     store->SavePlaybackSession(url, metadata, position, artwork);
 }
 
+void MediaHistoryKeyedService::GetItemsForMediaFeedForDebug(
+    const int64_t feed_id,
+    base::OnceCallback<void(std::vector<media_feeds::mojom::MediaFeedItemPtr>)>
+        callback) {
+  store_->GetForRead()->GetItemsForMediaFeedForDebug(feed_id,
+                                                     std::move(callback));
+}
+
+void MediaHistoryKeyedService::ReplaceMediaFeedItems(
+    const int64_t feed_id,
+    std::vector<media_feeds::mojom::MediaFeedItemPtr> items) {
+  if (auto* store = store_->GetForWrite())
+    store->ReplaceMediaFeedItems(feed_id, std::move(items));
+}
+
 void MediaHistoryKeyedService::GetURLsInTableForTest(
     const std::string& table,
     base::OnceCallback<void(std::set<GURL>)> callback) {

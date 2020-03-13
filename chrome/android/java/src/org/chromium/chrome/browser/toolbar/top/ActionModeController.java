@@ -10,8 +10,9 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.support.v7.app.ActionBar;
 import android.util.Property;
+
+import androidx.appcompat.app.ActionBar;
 
 import org.chromium.chrome.R;
 

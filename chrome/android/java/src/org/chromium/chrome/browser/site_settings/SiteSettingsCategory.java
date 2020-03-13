@@ -17,12 +17,12 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Process;
 import android.provider.Settings;
-import android.support.v7.preference.Preference;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.preference.Preference;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;

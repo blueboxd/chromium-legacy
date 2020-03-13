@@ -11,8 +11,9 @@ import static org.junit.Assert.assertThat;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.support.v7.preference.CheckBoxPreference;
-import android.support.v7.preference.PreferenceScreen;
+
+import androidx.preference.CheckBoxPreference;
+import androidx.preference.PreferenceScreen;
 
 import org.junit.After;
 import org.junit.Before;

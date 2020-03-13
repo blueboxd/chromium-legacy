@@ -60,9 +60,17 @@ class CreditCardCVCAuthenticator
   };
   class Requester {
    public:
-    virtual ~Requester() {}
+    virtual ~Requester() = default;
     virtual void OnCVCAuthenticationComplete(
         const CVCAuthenticationResponse& response) = 0;
+
+    // Returns whether or not the user, while on the CVC prompt, should be
+    // offered to switch to FIDO authentication for card unmasking. This will
+    // always be false for Desktop since FIDO authentication is offered as a
+    // separate prompt after the CVC prompt. On Android, however, this is
+    // offered through a checkbox on the CVC prompt. This feature does not yet
+    // exist on iOS.
+    virtual bool ShouldOfferFidoAuth() const = 0;
   };
   explicit CreditCardCVCAuthenticator(AutofillClient* client);
   ~CreditCardCVCAuthenticator() override;
@@ -86,6 +94,7 @@ class CreditCardCVCAuthenticator
                         base::WeakPtr<CardUnmaskDelegate> delegate) override;
   void OnUnmaskVerificationResult(
       AutofillClient::PaymentsRpcResult result) override;
+  bool ShouldOfferFidoAuth() const override;
 
   payments::FullCardRequest* GetFullCardRequest();
 

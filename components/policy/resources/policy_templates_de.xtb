@@ -279,7 +279,6 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
 <translation id="1388918874748125262">Erweitertes Safe Browsing aktivieren</translation>
 <translation id="1393485621820363363">Aktivierte, an Geräte gebundene Unternehmensdrucker</translation>
 <translation id="1397855852561539316">Vorschlags-URL für die Standardsuchmaschine</translation>
-<translation id="1398636873839401839">Alle Variationen auf dem Anmeldebildschirm aktivieren</translation>
 <translation id="1404043648050567997">Der Safe Browsing-Dienst zeigt eine Seite mit einer Warnmeldung an, wenn Nutzer Websites aufrufen, die als potenziell schädlich eingestuft sind. Wenn diese Einstellung aktiviert ist, können Nutzer die schädliche Website nicht von der Hinweisseite aus besuchen.
 
       Durch diese Richtlinie werden Nutzer nur bei Safe Browsing-Warnungen (etwa wegen Malware oder Phishing) daran gehindert weiterzugehen, nicht jedoch bei Problemen mit SSL-Zertifikaten, z. B. wenn diese ungültig oder abgelaufen sind.
@@ -329,6 +328,11 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
 
       Falls die Richtlinie nicht konfiguriert ist, gilt der Standardwert "MultiProfileUserBehaviorMustBePrimary" für alle vom Unternehmen verwalteten Nutzer und "MultiProfileUserBehaviorUnrestricted" für nicht verwaltete Nutzer.</translation>
 <translation id="1465619815762735808">Click-to-Play</translation>
+<translation id="1467633031685836974">Diese Funktion ermöglicht es Hyperlinks und URL-Navigationen in der Adressleiste, zu bestimmten Textfragmenten auf einer Webseite zu scrollen, sobald die Seite geladen ist.
+
+Wenn Sie diese Richtlinie aktivieren oder nicht konfigurieren, wird das Scrollen zu bestimmten Textfragmenten auf Webseiten via URL aktiviert.
+
+Wenn Sie diese Richtlinie deaktivieren, wird das Scrollen zu bestimmten Textfragmenten auf Webseiten via URL deaktiviert.</translation>
 <translation id="1468707346106619889">Ist diese Richtlinie auf "true" gesetzt, wird Unified Desktop zugelassen und
       standardmäßig aktiviert. So können sich Apps über mehrere Bildschirme erstrecken.
       Der Nutzer kann Unified Desktop für einzelne Bildschirme deaktivieren,
@@ -910,17 +914,7 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
       Wenn die URI-Vorlage eine <ph name="HTTP_VARIABLE_DNS" />-Variable enthält, verwenden Anfragen an den Resolver <ph name="HTTP_METHOD_GET" />; andernfalls verwenden Anfragen <ph name="HTTP_METHOD_POST" />.
 
       Inkorrekt formatierte Vorlagen werden ignoriert.</translation>
-<translation id="2331539005176436538">Nur Variationen für wichtige Fehlerbehebungen auf dem Anmeldebildschirm aktivieren</translation>
 <translation id="2345547870894930157">DoH-Modus ohne unsicheres Fallback-Verhalten aktivieren</translation>
-<translation id="2368120844613930637">Die Konfiguration dieser Richtlinie ermöglicht die Angabe der Variationen, die in <ph name="PRODUCT_NAME" /> auf dem Anmeldebildschirm angewendet werden dürfen.
-
-      Variationen sind ein Mittel, um Modifikationen für <ph name="PRODUCT_NAME" /> anzubieten, ohne durch Aktivieren oder Deaktivieren bestehender Funktionen eine neue Version des Browsers herauszubringen.
-
-      Wenn Sie die Option "<ph name="VARIATIONS_ENABLED_OPTION_NAME" />" (Wert: 0) festlegen oder die Richtlinie nicht konfiguriert ist, können alle Variationen für den Browser auf dem Anmeldebildschirm angewendet werden.
-
-      Wenn Sie die Option "<ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />" festlegen (Wert: 1), werden auf dem Anmeldebildschirm nur Variationen für <ph name="PRODUCT_NAME" /> angewandt, die als wichtige Sicherheits- oder Stabilitätskorrekturen gewertet werden.
-
-      Wenn Sie die Option "<ph name="VARIATIONS_DISABLED_OPTION_NAME" />" festlegen (Wert: 2), werden auf dem Anmeldebildschirm keine Variationen auf den Browser angewandt. Dieser Modus kann <ph name="PRODUCT_NAME" />-Entwickler möglicherweise daran hindern, wichtige Sicherheitskorrekturen zeitnah durchzuführen. Er ist daher nicht empfohlen.</translation>
 <translation id="237494535617297575">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Anzeigen von Benachrichtigungen gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultNotificationsSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="2386362615870139244">Bildschirm-Wakelocks zulassen</translation>
 <translation id="2398554235599593694"> Mit dieser Richtlinie kann festgelegt werden, ob das Kästchen für "Immer öffnen" auf Bestätigungsaufforderungen beim Start externer Protokolle angezeigt werden soll.
@@ -3408,6 +3402,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
           Der Richtlinienwert muss in Millisekunden angegeben werden und wird automatisch auf einen Wert unter der Inaktivitätsverzögerung reduziert.</translation>
 <translation id="6097601282776163274">Anonymisierte URL-Datenerfassung aktivieren</translation>
 <translation id="6099853574908182288">Standardmäßiger Farbdruckmodus</translation>
+<translation id="6102342563050263313">Scrollen zu in URL-Fragmenten angegebenem Text aktivieren</translation>
 <translation id="6107642964266628393">Legt fest, wie und wann Chrome OS-Updates angewendet werden.</translation>
 <translation id="6111936128861357925">Easter Egg-Dinosaurierspiel zulassen</translation>
 <translation id="6114416803310251055">Veraltet</translation>
@@ -4197,7 +4192,6 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="7426112309807051726">Diese Richtlinie legt fest, ob die <ph name="TLS_FALSE_START" />-Optimierung deaktiviert werden soll. Aus Gründen, die mit dem Hergang der Funktion zu tun haben, heißt diese Richtlinie "DisableSSLRecordSplitting".
 
       Wenn die Richtlinie nicht konfiguriert oder auf "false" festgelegt ist, wird die Funktion "<ph name="TLS_FALSE_START" />" aktiviert. Ist "true" festgelegt, wird die Funktion "<ph name="TLS_FALSE_START" />" deaktiviert.</translation>
-<translation id="7427296104923393585">Alle Variationen auf dem Anmeldebildschirm deaktivieren</translation>
 <translation id="7433714841194914373">Google Instant aktivieren</translation>
 <translation id="7434202861148928348">Erforderliche Domainnamen für Remotezugriff-Clients konfigurieren</translation>
 <translation id="7443616896860707393">Ursprungsübergreifende HTTP-Basic-Authentifizierungsabfragen</translation>
@@ -4381,6 +4375,9 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 <translation id="7713608076604149344">Download-Einschränkungen</translation>
 <translation id="7715711044277116530">Prozentsatz für die Skalierung der Spanne für die Bildschirmabdunkelung im Präsentationsmodus</translation>
 <translation id="7717938661004793600">Hiermit konfigurieren Sie die Zugänglichkeitsfunktionen für <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="7724652568947700864">Wenn Sie diese Richtlinie konfigurieren, werden alle angegebenen Datentypen von der Synchronisierung ausgeschlossen. Dies gilt sowohl für Google Sync als auch für die Synchronisierung von Roaming-Profilen. Dadurch lässt sich die Größe von Roaming-Profilen reduzieren und Sie können einschränken, welche Arten von Daten auf die Google Sync-Server hochgeladen werden.
+
+      Aktuell werden folgende Datentypen unterstützt: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs" und "wifiConfiguration". Bei diesen Namen muss die Groß- und Kleinschreibung beachtet werden.</translation>
 <translation id="7731026922044991970">Auf allen Websites das alte "<ph name="ATTRIBUTE_SAMESITE_NAME" />"-Verhalten für Cookies wiederherstellen</translation>
 <translation id="7747447585227954402">Geräten erlauben, <ph name="PLUGIN_VM_NAME" /> auf <ph name="PRODUCT_OS_NAME" /> zu verwenden</translation>
 <translation id="7749024457938190837">Erweiterungen, die den Bestätigungsdialog beim Senden von Druckaufträgen über "chrome.printing API" überspringen dürfen</translation>
@@ -5314,7 +5311,6 @@ Wenn die Richtlinie auf "true" gesetzt ist, ist "Kopf- und Fußzeilen" im Dialog
 <translation id="974349541138387272">Die URI-Vorlage des gewünschten DoH-Resolvers (DNS over HTTPS) angeben</translation>
 <translation id="981346395360763138">Standortdienste von Google deaktiviert</translation>
 <translation id="982497069985795632">Rechtschreibprüfung aktivieren</translation>
-<translation id="986367416344815079">Verfügbarkeit der Variationen auf dem Anmeldebildschirm festlegen</translation>
 <translation id="991560005425213776">Nutzer- und Dateiname an native Drucker senden</translation>
 <translation id="99232017131102456">Diese Richtlinie konfiguriert einen einzelnen globalen Profil-Cache mit HTTP-Server-Auth-Anmeldedaten.
 

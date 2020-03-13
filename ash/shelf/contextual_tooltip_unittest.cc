@@ -43,6 +43,7 @@ class ContextualTooltipTest : public AshTestBase,
   void SetUp() override {
     AshTestBase::SetUp();
     contextual_tooltip::OverrideClockForTesting(&test_clock_);
+    test_clock_.Advance(base::TimeDelta::FromSeconds(360));
   }
   void TearDown() override {
     contextual_tooltip::ClearClockOverrideForTesting();
@@ -132,6 +133,102 @@ TEST_P(ContextualTooltipTest, ShouldNotShowNudgeAfterSuccessLimit) {
 
   EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
                                                    TooltipType::kDragHandle));
+}
+
+// Should not show back gesture nudge if drag handle nudge is expected to be
+// shown.
+TEST_P(ContextualTooltipTest,
+       DoNotShowBackGestureNudgeIfDragHandleNudgeIsExpected) {
+  EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
+                                                  TooltipType::kDragHandle));
+
+  // The drag handle nudge is expected to show, so back gesture nudge should not
+  // be shown at the same time.
+  EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
+                                                   TooltipType::kBackGesture));
+
+  // After the nudge is shown, back gesture should remain hidden until
+  // sufficient amount of time passes.
+  contextual_tooltip::HandleNudgeShown(GetPrefService(),
+                                       TooltipType::kDragHandle);
+  EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
+                                                   TooltipType::kBackGesture));
+
+  clock()->Advance(
+      contextual_tooltip::kMinIntervalBetweenBackAndDragHandleNudge / 2);
+  EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
+                                                   TooltipType::kBackGesture));
+
+  clock()->Advance(
+      contextual_tooltip::kMinIntervalBetweenBackAndDragHandleNudge);
+  EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
+                                                  TooltipType::kBackGesture));
+
+  // After the drag handle becomes eligible to show again, the back gesture
+  // should be disabled.
+  clock()->Advance(contextual_tooltip::kMinInterval);
+  EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
+                                                   TooltipType::kBackGesture));
+}
+
+// Tests that back gesture is allowed if the shelf is hidden, even if drag
+// handle would normally be available.
+TEST_P(ContextualTooltipTest, AllowBackGestureForHiddenShelf) {
+  EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
+                                                  TooltipType::kDragHandle));
+
+  // The drag handle nudge is expected to show, so back gesture nudge should not
+  // be shown at the same time.
+  EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
+                                                   TooltipType::kBackGesture));
+
+  // If drag handle nudge is disabled because the shelf is hidden, the back
+  // gesture nudge should be allowed.
+  contextual_tooltip::SetDragHandleNudgeDisabledForHiddenShelf(true);
+  EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
+                                                   TooltipType::kDragHandle));
+  EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
+                                                  TooltipType::kBackGesture));
+
+  // Disallow back gesture nudge if the shelf becomes visible.
+  contextual_tooltip::SetDragHandleNudgeDisabledForHiddenShelf(false);
+  EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
+                                                  TooltipType::kDragHandle));
+  EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
+                                                   TooltipType::kBackGesture));
+}
+
+// Tests that the drag handle nudge should not be shown while back gesture is
+// showing, or soon after it's been shown.
+TEST_P(ContextualTooltipTest,
+       DoNotShowDragHandleNudgeIfBackGEstureNudgeIsShown) {
+  EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
+                                                  TooltipType::kDragHandle));
+
+  // Drag handle nudge not allowed if back gesture is showing.
+  contextual_tooltip::SetDragHandleNudgeDisabledForHiddenShelf(true);
+  contextual_tooltip::SetBackGestureNudgeShowing(true);
+  EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
+                                                   TooltipType::kDragHandle));
+
+  // Allow drag handle only if sufficient amount of time passes since showing
+  // the back gesture nudge.
+  contextual_tooltip::SetBackGestureNudgeShowing(false);
+  contextual_tooltip::HandleNudgeShown(GetPrefService(),
+                                       TooltipType::kBackGesture);
+  contextual_tooltip::SetDragHandleNudgeDisabledForHiddenShelf(false);
+  EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
+                                                   TooltipType::kDragHandle));
+
+  clock()->Advance(
+      contextual_tooltip::kMinIntervalBetweenBackAndDragHandleNudge / 2);
+  EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
+                                                   TooltipType::kDragHandle));
+
+  clock()->Advance(
+      contextual_tooltip::kMinIntervalBetweenBackAndDragHandleNudge);
+  EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
+                                                  TooltipType::kDragHandle));
 }
 
 }  // namespace contextual_tooltip

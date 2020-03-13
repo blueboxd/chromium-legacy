@@ -170,12 +170,6 @@ cr.define('settings', function() {
     getAllSites(contentTypes) {}
 
     /**
-     * Get the string which describes the current effective cookie setting.
-     * @return {!Promise<string>}
-     */
-    getCookieSettingDescription() {}
-
-    /**
      * Gets most recently changed permissions grouped by host and limited to
      * numSources different origin/profile (inconigto/regular) pairings.
      * This includes permissions adjusted by embargo, but excludes any set
@@ -420,11 +414,6 @@ cr.define('settings', function() {
     /** @override */
     getAllSites(contentTypes) {
       return cr.sendWithPromise('getAllSites', contentTypes);
-    }
-
-    /** @override */
-    getCookieSettingDescription() {
-      return cr.sendWithPromise('getCookieSettingDescription');
     }
 
     /** @override */

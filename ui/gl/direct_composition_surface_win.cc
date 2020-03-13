@@ -19,6 +19,7 @@
 #include "ui/gl/dc_layer_tree.h"
 #include "ui/gl/direct_composition_child_surface_win.h"
 #include "ui/gl/gl_angle_util_win.h"
+#include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_presentation_helper.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
@@ -238,6 +239,10 @@ bool DirectCompositionSurfaceWin::IsDirectCompositionSupported() {
     if (command_line->HasSwitch(switches::kDisableDirectComposition))
       return false;
 
+    // Direct composition can only be used with ANGLE.
+    if (gl::GetGLImplementation() != gl::kGLImplementationEGLANGLE)
+      return false;
+
     // Blacklist direct composition if MCTU.dll or MCTUX.dll are injected. These
     // are user mode drivers for display adapters from Magic Control Technology
     // Corporation.
@@ -373,6 +378,10 @@ void DirectCompositionSurfaceWin::SetOverlayFormatUsedForTesting(
 bool DirectCompositionSurfaceWin::IsHDRSupported() {
   // HDR support was introduced in Windows 10 Creators Update.
   if (base::win::GetVersion() < base::win::Version::WIN10_RS2)
+    return false;
+
+  // Only direct composition surface can allocate HDR swap chains.
+  if (!IsDirectCompositionSupported())
     return false;
 
   HRESULT hr = S_OK;

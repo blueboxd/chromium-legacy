@@ -23,8 +23,6 @@ class MainThreadSchedulerImpl;
 class PLATFORM_EXPORT FindInPageBudgetPoolController
     : public BudgetPoolController {
  public:
-  // TODO(rakina): Have a flag that makes find-in-page tasks to use best-effort
-  // priority instead of very-high/normal priority and compare.
   static constexpr auto kFindInPageBudgetNotExhaustedPriority =
       QueuePriority::kVeryHighPriority;
   static constexpr auto kFindInPageBudgetExhaustedPriority =
@@ -59,7 +57,8 @@ class PLATFORM_EXPORT FindInPageBudgetPoolController
 
   MainThreadSchedulerImpl* scheduler_;  // Not owned.
   std::unique_ptr<CPUTimeBudgetPool> find_in_page_budget_pool_;
-  QueuePriority task_priority_ = kFindInPageBudgetNotExhaustedPriority;
+  QueuePriority task_priority_;
+  const bool best_effort_budget_experiment_enabled_;
 };
 
 }  // namespace scheduler

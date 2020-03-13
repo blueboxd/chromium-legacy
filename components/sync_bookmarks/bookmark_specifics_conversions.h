@@ -24,6 +24,10 @@ class FaviconService;
 
 namespace sync_bookmarks {
 
+// Canonicalize |node_title| similar to legacy client's implementation by
+// truncating and the appending ' ' in some cases.
+std::string FullTitleToLegacyCanonicalizedTitle(const std::string& node_title);
+
 // TODO(crbug.com/978430): Remove argument |include_guid| once the client tag
 // hash is required to be populated during sync metadata validation upon
 // startup in SyncedBookmarkTracker::BookmarkModelMatchesMetadata().

@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import android.os.Bundle;
-import android.support.v7.preference.PreferenceFragmentCompat;
 
 import androidx.annotation.XmlRes;
+import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;

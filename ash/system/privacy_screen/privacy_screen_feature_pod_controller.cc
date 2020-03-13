@@ -85,7 +85,7 @@ void PrivacyScreenFeaturePodController::UpdateButton() {
   }
 
   button_->SetIconAndLabelTooltips(l10n_util::GetStringFUTF16(
-      IDS_ASH_STATUS_TRAY_ROTATION_LOCK_TOOLTIP, tooltip_state));
+      IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_TOOLTIP, tooltip_state));
 }
 
 void PrivacyScreenFeaturePodController::OnPrivacyScreenSettingChanged(

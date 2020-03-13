@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
-#include "chrome/browser/ui/extensions/extension_installed_bubble.h"
+#include "chrome/browser/ui/extensions/extension_install_ui_default.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
@@ -99,8 +99,8 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
       LoadTestExtension("extensions/uitest/window_open");
 
       // Trigger post-install dialog.
-      ExtensionInstalledBubble::ShowBubble(extensions()[0], browser(),
-                                           SkBitmap());
+      ExtensionInstallUIDefault::ShowPlatformBubble(extensions()[0], browser(),
+                                                    SkBitmap());
     } else {
       ClickExtensionsMenuButton();
       ASSERT_TRUE(ExtensionsMenuView::GetExtensionsMenuViewForTesting());

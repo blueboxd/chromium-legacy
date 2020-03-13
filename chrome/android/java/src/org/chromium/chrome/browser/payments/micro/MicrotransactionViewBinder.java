@@ -4,9 +4,10 @@
 
 package org.chromium.chrome.browser.payments.micro;
 
-import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
+
+import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;

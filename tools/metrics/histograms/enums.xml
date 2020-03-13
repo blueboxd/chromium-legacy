@@ -14567,6 +14567,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="16" label="Chrome Canvas"/>
   <int value="17" label="Camera"/>
   <int value="18" label="Discover"/>
+  <int value="19" label="Media App"/>
 </enum>
 
 <enum name="DefaultBrowserAsyncAttemptResult">
@@ -15663,6 +15664,15 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="0" label="A script on the page is blockable"/>
   <int value="1" label="Reload scenario, so not blockable"/>
   <int value="2" label="Same Site Different Scheme Script"/>
+</enum>
+
+<enum name="DohProviderId">
+  <int value="0" label="CUSTOM"/>
+  <int value="1" label="CLEANBROWSING_FAMILY"/>
+  <int value="2" label="CLOUDFLARE"/>
+  <int value="3" label="GOOGLE"/>
+  <int value="4" label="IIJ"/>
+  <int value="5" label="QUAD9_SECURE"/>
 </enum>
 
 <enum name="DomainBoundCerts.DBLoadStatus">
@@ -26808,6 +26818,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3187" label="V8Document_GetAnimations_Method"/>
   <int value="3188" label="V8ShadowRoot_GetAnimations_Method"/>
   <int value="3189" label="ClientHintsUAFullVersion"/>
+  <int value="3190" label="SchedulerCurrentTaskSignal"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -42580,6 +42591,12 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Significant Playback"/>
 </enum>
 
+<enum name="MediaFeedItemReadResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Bad type"/>
+  <int value="2" label="Bad action status"/>
+</enum>
+
 <enum name="MediaGalleriesUsageType">
   <int value="0" label="Gallery added from permission dialog"/>
   <int value="1" label="Gallery permission added from permission dialog"/>
@@ -53312,6 +53329,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="25" label="FIT_TO_PAPER"/>
 </enum>
 
+<enum name="PriorityChangeStatus">
+  <int value="0" label="NoPriorityChange"/>
+  <int value="1" label="PriorityChanged"/>
+</enum>
+
 <enum name="PrivetNotificationsEvent">
   <int value="0" label="PRIVET_SERVICE_STARTED"/>
   <int value="1" label="PRIVET_LISTER_STARTED"/>
@@ -56251,13 +56273,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1044427386" label="blink.mojom.SmsManager"/>
   <int value="1048723358" label="content.mojom.InputInjector"/>
   <int value="1049460515" label="translate.mojom.ContentTranslateDriver"/>
-  <int value="1071268620" label="blink.mojom.QuotaDispatcherHost"/>
+  <int value="1071268620" label="blink.mojom.QuotaManagerHost"/>
   <int value="1100311626" label="blink.mojom.TextSuggestionHost"/>
   <int value="1102158904" label="chrome.mojom.PrerenderCanceler"/>
   <int value="1116085333"
       label="content.mojom.RendererAudioOutputStreamFactory"/>
   <int value="1117840258" label="media.mojom.InterfaceFactory"/>
-  <int value="1123228604" label="blink.mojom.QuotaDispatcherHost"/>
+  <int value="1123228604" label="blink.mojom.QuotaManagerHost"/>
   <int value="1144764995" label="network.mojom.WebSocket"/>
   <int value="1144778719" label="ui.mojom.Gpu"/>
   <int value="1148580579" label="blink.mojom.LockManager"/>

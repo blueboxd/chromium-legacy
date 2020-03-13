@@ -81,6 +81,13 @@ cr.define('settings', function() {
      * @return {!Promise<boolean>}
      */
     probeCustomDnsTemplate(template) {}
+
+    /**
+     * Records metrics on the user's interaction with the dropdown menu.
+     * @param {string} oldSelection value of previously selected dropdown option
+     * @param {string} newSelection value of newly selected dropdown option
+     */
+    recordUserDropdownInteraction(oldSelection, newSelection) {}
   }
 
   /**
@@ -130,6 +137,12 @@ cr.define('settings', function() {
     /** @override */
     probeCustomDnsTemplate(template) {
       return cr.sendWithPromise('probeCustomDnsTemplate', template);
+    }
+
+    /** override */
+    recordUserDropdownInteraction(oldSelection, newSelection) {
+      chrome.send(
+          'recordUserDropdownInteraction', [oldSelection, newSelection]);
     }
   }
 

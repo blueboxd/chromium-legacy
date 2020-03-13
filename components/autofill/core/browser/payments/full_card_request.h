@@ -51,6 +51,14 @@ class FullCardRequest final : public CardUnmaskDelegate {
         base::WeakPtr<CardUnmaskDelegate> delegate) = 0;
     virtual void OnUnmaskVerificationResult(
         AutofillClient::PaymentsRpcResult result) = 0;
+
+    // Returns whether or not the user, while on the CVC prompt, should be
+    // offered to switch to FIDO authentication for card unmasking. This will
+    // always be false for Desktop since FIDO authentication is offered as a
+    // separate prompt after the CVC prompt. On Android, however, this may be
+    // offered through a checkbox on the CVC prompt. This feature does not yet
+    // exist on iOS.
+    virtual bool ShouldOfferFidoAuth() const;
   };
 
   // The parameters should outlive the FullCardRequest.
@@ -134,6 +142,7 @@ class FullCardRequest final : public CardUnmaskDelegate {
   void OnUnmaskPromptAccepted(
       const UserProvidedUnmaskDetails& user_response) override;
   void OnUnmaskPromptClosed() override;
+  bool ShouldOfferFidoAuth() const override;
 
   // Called by autofill client when the risk data has been loaded.
   void OnDidGetUnmaskRiskData(const std::string& risk_data);

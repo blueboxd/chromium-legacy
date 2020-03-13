@@ -71,6 +71,12 @@ namespace declarativeNetRequest {
     allowAllRequests
   };
 
+  // Describes a single static ruleset.
+  dictionary Ruleset {
+    // The path of the JSON ruleset relative to the extension directory.
+    DOMString path;
+  };
+
   // Represents a query key-value pair.
   dictionary QueryKeyValue {
     DOMString key;

@@ -38,10 +38,8 @@ class ScrollableAreaPainter {
 
   // Records a scroll hit test data to force main thread handling of events
   // in the expanded resizer touch area.
-  void RecordResizerScrollHitTestData(
-      GraphicsContext&,
-      const PhysicalOffset& paint_offset,
-      const DisplayItemClient& background_client);
+  void RecordResizerScrollHitTestData(GraphicsContext&,
+                                      const PhysicalOffset& paint_offset);
 
  private:
   void DrawPlatformResizerImage(GraphicsContext&,

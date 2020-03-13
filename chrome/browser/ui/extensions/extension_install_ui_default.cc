@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/extension_installed_bubble.h"
 #include "chrome/browser/ui/extensions/installation_error_infobar_delegate.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/simple_message_box.h"
@@ -48,21 +47,12 @@ Browser* FindOrCreateVisibleBrowser(Profile* profile) {
   // TODO(mpcomplete): remove this workaround for http://crbug.com/244246
   // after fixing http://crbug.com/38676.
   if (!IncognitoModePrefs::CanOpenBrowser(profile))
-    return NULL;
+    return nullptr;
   chrome::ScopedTabbedBrowserDisplayer displayer(profile);
   Browser* browser = displayer.browser();
   if (browser->tab_strip_model()->count() == 0)
     chrome::AddTabAt(browser, GURL(), -1, true);
   return browser;
-}
-
-void ShowExtensionInstalledBubble(
-    scoped_refptr<const extensions::Extension> extension,
-    Profile* profile,
-    const SkBitmap& icon) {
-  Browser* browser = FindOrCreateVisibleBrowser(profile);
-  if (browser)
-    ExtensionInstalledBubble::ShowBubble(extension, browser, icon);
 }
 
 }  // namespace
@@ -91,15 +81,11 @@ void ExtensionInstallUIDefault::OnInstallSuccess(
   // Extensions aren't enabled by default in incognito so we confirm
   // the install in a normal window.
   Profile* current_profile = profile_->GetOriginalProfile();
+  Browser* browser = FindOrCreateVisibleBrowser(current_profile);
   if (extension->is_app()) {
-    bool use_bubble = false;
-
-#if defined(TOOLKIT_VIEWS)  || defined(OS_MACOSX)
-    use_bubble = use_app_installed_bubble_;
-#endif
-
-    if (use_bubble) {
-      ShowExtensionInstalledBubble(extension, current_profile, *icon);
+    if (use_app_installed_bubble_) {
+      if (browser)
+        ShowPlatformBubble(extension, browser, *icon);
       return;
     }
 
@@ -111,7 +97,7 @@ void ExtensionInstallUIDefault::OnInstallSuccess(
     return;
   }
 
-  ShowExtensionInstalledBubble(extension, current_profile, *icon);
+  ShowPlatformBubble(extension, browser, *icon);
 }
 
 void ExtensionInstallUIDefault::OnInstallFailure(
@@ -121,7 +107,7 @@ void ExtensionInstallUIDefault::OnInstallFailure(
     return;
 
   Browser* browser = chrome::FindLastActiveWithProfile(profile_);
-  if (!browser)  // Can be NULL in unittests.
+  if (!browser)  // Can be nullptr in unittests.
     return;
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
@@ -167,5 +153,5 @@ gfx::NativeWindow ExtensionInstallUIDefault::GetDefaultInstallDialogParent() {
         browser->tab_strip_model()->GetActiveWebContents();
     return contents->GetTopLevelNativeWindow();
   }
-  return NULL;
+  return nullptr;
 }

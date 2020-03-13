@@ -8,10 +8,11 @@ import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.support.v7.preference.PreferenceFragmentCompat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+
+import androidx.preference.PreferenceFragmentCompat;
 
 import org.junit.Assert;
 import org.junit.Before;

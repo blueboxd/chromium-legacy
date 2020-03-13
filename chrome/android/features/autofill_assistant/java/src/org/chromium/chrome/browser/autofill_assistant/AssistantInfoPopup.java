@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.content.Context;
-import android.support.v7.app.AlertDialog;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;

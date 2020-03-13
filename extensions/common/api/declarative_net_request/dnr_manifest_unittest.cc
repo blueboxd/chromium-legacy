@@ -9,6 +9,7 @@
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "components/version_info/version_info.h"
+#include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
@@ -24,6 +25,7 @@
 namespace extensions {
 namespace keys = manifest_keys;
 namespace errors = manifest_errors;
+namespace dnr_api = api::declarative_net_request;
 
 namespace declarative_net_request {
 namespace {
@@ -56,7 +58,7 @@ class DNRManifestTest : public testing::Test {
   }
 
   // Loads the extension and verifies the |expected_error|.
-  void LoadAndExpectError(const base::StringPiece expected_error) {
+  void LoadAndExpectError(const std::string& expected_error) {
     WriteManifestAndRuleset();
     std::string error;
     scoped_refptr<Extension> extension = file_util::LoadExtension(
@@ -132,8 +134,17 @@ TEST_F(DNRManifestTest, InvalidRulesFileKey) {
 TEST_F(DNRManifestTest, MultipleRulesFile) {
   std::unique_ptr<base::DictionaryValue> manifest =
       CreateManifest(kJSONRulesFilename);
-  manifest->SetList(GetRuleResourcesKey(),
-                    ToListValue({"file1.json", "file2.json"}));
+
+  ListBuilder rule_resources;
+
+  dnr_api::Ruleset ruleset;
+  ruleset.path = "file1.json";
+  rule_resources.Append(ruleset.ToValue());
+
+  ruleset.path = "file2.json";
+  rule_resources.Append(ruleset.ToValue());
+
+  manifest->SetList(GetRuleResourcesKey(), rule_resources.Build());
   SetManifest(std::move(manifest));
   LoadAndExpectError(ErrorUtils::FormatErrorMessage(
       errors::kInvalidDeclarativeRulesFileKey, keys::kDeclarativeNetRequestKey,
@@ -141,13 +152,17 @@ TEST_F(DNRManifestTest, MultipleRulesFile) {
 }
 
 TEST_F(DNRManifestTest, NonExistentRulesFile) {
+  dnr_api::Ruleset ruleset;
+  ruleset.path = "invalid_file.json";
+
   std::unique_ptr<base::DictionaryValue> manifest =
       CreateManifest(kJSONRulesFilename);
-  manifest->SetList(GetRuleResourcesKey(), ToListValue({"invalid_file.json"}));
+  manifest->SetList(GetRuleResourcesKey(),
+                    ListBuilder().Append(ruleset.ToValue()).Build());
   SetManifest(std::move(manifest));
   LoadAndExpectError(ErrorUtils::FormatErrorMessage(
       errors::kRulesFileIsInvalid, keys::kDeclarativeNetRequestKey,
-      keys::kDeclarativeRuleResourcesKey));
+      keys::kDeclarativeRuleResourcesKey, ruleset.path));
 }
 
 TEST_F(DNRManifestTest, NeedsDeclarativeNetRequestPermission) {
@@ -167,8 +182,12 @@ TEST_F(DNRManifestTest, RulesFileInNestedDirectory) {
   SetRulesFilePath(nested_path);
   std::unique_ptr<base::DictionaryValue> manifest =
       CreateManifest(kJSONRulesFilename);
+
+  dnr_api::Ruleset ruleset;
+  ruleset.path = "dir/rules_file.json";
+
   manifest->SetList(GetRuleResourcesKey(),
-                    ToListValue({"dir/rules_file.json"}));
+                    ListBuilder().Append(ruleset.ToValue()).Build());
   SetManifest(std::move(manifest));
   LoadAndExpectSuccess();
 }

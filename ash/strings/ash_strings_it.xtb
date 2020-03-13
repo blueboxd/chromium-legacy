@@ -246,13 +246,13 @@
 <translation id="3995138139523574647">Dispositivo USB-C (porta posteriore destra)</translation>
 <translation id="4017989525502048489">Puntatore laser</translation>
 <translation id="4021716437419160885">Scorri verso il basso</translation>
-<translation id="402772165574991617">Usa i gesti per spostarti rapidamente tra le app e per interagire con il Chromebook in modalità tablet.</translation>
 <translation id="4028481283645788203">Password obbligatoria per maggiore sicurezza</translation>
 <translation id="4042660782729322247">Stai condividendo lo schermo</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Disattivata per un'app}other{Disattivate per # app}}</translation>
 <translation id="4072264167173457037">Segnale medio</translation>
 <translation id="4112140312785995938">Vai indietro</translation>
 <translation id="4129129681837227511">Se vuoi vedere le notifiche nella schermata di blocco, sblocca il dispositivo per cambiare l'impostazione</translation>
+<translation id="4144413954005649103">Se fai clic con il pulsante destro del mouse o con una pressione prolungata, l'assistente ti mostra le informazioni relative agli elementi che selezioni sulla schermata.</translation>
 <translation id="4146833061457621061">Fammi ascoltare musica</translation>
 <translation id="4149156641122542261">Dispositivo <ph name="DEVICE_TYPE" /> gestito da <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Lingue</translation>
@@ -400,6 +400,7 @@
 <translation id="615957422585914272">Mostra tastiera sullo schermo</translation>
 <translation id="6164005077879661055">Tutti i file e i dati locali associati all'utente controllato verranno eliminati definitivamente in seguito alla rimozione dell'utente. Le impostazioni e i siti web visitati relativi all'utente controllato potrebbero essere ancora visibili al gestore all'indirizzo <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
+<translation id="6236290670123303279">Gestisci impostazioni</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Bloccata in orizzontale</translation>
 <translation id="6259254695169772643">Usa lo stilo per selezionare</translation>
@@ -441,6 +442,7 @@
 <translation id="6669268301501499730">On</translation>
 <translation id="6670153871843998651">Scrivania 3</translation>
 <translation id="6691659475504239918">Tasto per la ricerca + MAIUSC + H</translation>
+<translation id="6692996468359469499">Ricevi informazioni correlate alla tua selezione</translation>
 <translation id="6696025732084565524">La tastiera rimovibile richiede un aggiornamento critico</translation>
 <translation id="6700713906295497288">Pulsante di menu IME</translation>
 <translation id="6713285437468012787">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" è stato accoppiato ed è ora disponibile per tutti gli utenti. Puoi rimuovere tale accoppiamento utilizzando il menu Impostazioni.</translation>
@@ -535,7 +537,6 @@
 <translation id="8000066093800657092">Nessuna rete</translation>
 <translation id="8029629653277878342">PIN o password obbligatori per maggiore sicurezza</translation>
 <translation id="8030169304546394654">Disconnessa</translation>
-<translation id="8042024183333293953">Prova la nuova navigazione tramite gesti</translation>
 <translation id="8048123526339889627">Impostazioni Bluetooth</translation>
 <translation id="8054466585765276473">Calcolo della durata della batteria.</translation>
 <translation id="8061464966246066292">Contrasto elevato</translation>

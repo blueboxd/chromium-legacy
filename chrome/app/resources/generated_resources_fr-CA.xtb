@@ -757,7 +757,6 @@
 <translation id="2025632980034333559"><ph name="APP_NAME" /> a planté. Cliquez sur cette infobulle pour redémarrer l'application.</translation>
 <translation id="2025891858974379949">Contenu non sécurisé</translation>
 <translation id="202918510990975568">Entrez votre mot de passe pour configurer la sécurité et la connexion</translation>
-<translation id="2030672406208960151">Ouvrir le terminal de récupération</translation>
 <translation id="2034346955588403444">Ajouter un autre réseau Wi-Fi</translation>
 <translation id="203574396658008164">Activer la prise de notes à partir de l'écran de verrouillage</translation>
 <translation id="2037445849770872822">La supervision est configurée pour ce compte Google. Si vous souhaitez configurer davantage de contrôles parentaux, sélectionnez Continuer.
@@ -1566,7 +1565,7 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3085412380278336437">Le site peut utiliser votre appareil photo</translation>
 <translation id="3085752524577180175">Hôte SOCKS</translation>
 <translation id="3088052000289932193">Le site utilise un appareil MIDI</translation>
-<translation id="3088128611727407543">Préparation du profil d'applications en cours…</translation>
+<translation id="3088128611727407543">Préparation du profil d'application en cours…</translation>
 <translation id="3088325635286126843">&amp;Renommer...</translation>
 <translation id="3089137131053189723">Recherche effacée</translation>
 <translation id="3090193911106258841">Accès aux entrées audio et vidéo</translation>
@@ -1664,7 +1663,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3228679360002431295">Connexion et validation en cours<ph name="ANIMATED_ELLIPSIS" /></translation>
 <translation id="3232318083971127729">Valeur :</translation>
 <translation id="3233271424239923319">Sauvegarder les applications et les fichiers Linux</translation>
-<translation id="323803881985677942">Ouvrir les options pour les extensions</translation>
 <translation id="3239373508713281971">Limite de temps supprimée pour <ph name="APP_NAME" /></translation>
 <translation id="3241680850019875542">Sélectionnez le répertoire racine de l'extension à empaqueter. Pour mettre à jour une extension, sélectionnez également le fichier de clé privée à réutiliser.</translation>
 <translation id="3244294424315804309">Continuer à désactiver le son</translation>
@@ -2420,7 +2418,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="424963718355121712">Les applications doivent être diffusées de l'hôte sur lequel elles ont un effet</translation>
 <translation id="4250229828105606438">Saisie d'écran</translation>
 <translation id="4250680216510889253">Non</translation>
-<translation id="4251288318602771141">Avec votre fournisseur de services actuel. Le DNS sécurisé pourrait ne pas être accessible en tout temps.</translation>
 <translation id="4252852543720145436">Identifiants de contenu protégé</translation>
 <translation id="4252899949534773101">Le Bluetooth est désactivé</translation>
 <translation id="4252996741873942488"><ph name="WINDOW_TITLE" /> - Partage du contenu de l'onglet</translation>
@@ -2490,7 +2487,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> partage une fenêtre.</translation>
 <translation id="4364830672918311045">Afficher les notifications</translation>
 <translation id="4370975561335139969">L’adresse de courriel et le mot de passe que vous avez entrés ne correspondent pas</translation>
-<translation id="437184764829821926">Paramètres de police avancés</translation>
 <translation id="4374831787438678295">Installateur Linux</translation>
 <translation id="4375035964737468845">Ouvrir les fichiers téléchargés</translation>
 <translation id="4377363674125277448">Un problème est survenu avec le certificat du serveur.</translation>
@@ -2654,7 +2650,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4596295440756783523">Vous disposez de certificats qui identifient ces serveurs</translation>
 <translation id="4598556348158889687">Gestion du stockage</translation>
 <translation id="4598776695426288251">Connexion Wi-Fi possible à partir de plusieurs appareils</translation>
-<translation id="4599134080475764833">L'application Plugin VM est prête à être utilisée</translation>
 <translation id="4602466770786743961">Toujours autoriser <ph name="HOST" /> à accéder à votre caméra et à votre microphone</translation>
 <translation id="4606551464649945562">Ne pas autoriser les sites à créer une carte 3D de votre environnement ni à faire le suivi de la position de l'appareil photo</translation>
 <translation id="4608500690299898628">Rec&amp;hercher...</translation>
@@ -2749,11 +2744,9 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Découvrir comment mettre à jour des applications<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Réactiver le son sur le site}one{Réactiver le son sur le site}other{Réactiver le son sur les sites}}</translation>
 <translation id="4746351372139058112">Messages</translation>
-<translation id="4748762018725435655">Nécessite une extension de la boutique en ligne Chrome Web Store.</translation>
 <translation id="4750394297954878236">Suggestions</translation>
 <translation id="475088594373173692">Premier utilisateur</translation>
 <translation id="4751476147751820511">Capteurs de mouvement ou de luminosité</translation>
-<translation id="4754969275105595499">Pour revenir à l'écran précédent, balayez l'écran latéralement.</translation>
 <translation id="4756269098451810636">Image partagée à partir de <ph name="DEVICE_NAME" /></translation>
 <translation id="4756378406049221019">Arrêter/Actualiser</translation>
 <translation id="4756388243121344051">&amp;Historique</translation>
@@ -2787,7 +2780,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4808667324955055115">Fenêtres contextuelles bloquées :</translation>
 <translation id="480990236307250886">Ouvrir la page d'accueil</translation>
 <translation id="4811503964269049987">Ajouter l'onglet sélectionné à un groupe</translation>
-<translation id="4811818760963189951">Désactivé, parce que vous avez désactivé la synchronisation de l'historique</translation>
+<translation id="4811818760963189951">Désactivé parce que vous avez désactivé la synchronisation de l'historique</translation>
 <translation id="4813136279048157860">Mes images</translation>
 <translation id="4813512666221746211">Erreur réseau</translation>
 <translation id="4814378367953456825">Entrez un nom pour cette empreinte digitale</translation>
@@ -2957,7 +2950,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5040823038948176460">Paramètres de contenu supplémentaires</translation>
 <translation id="5042282098504489593">Ouvrez le menu Paramètres pour connecter <ph name="USB_DEVICE_NAME" /> à Linux</translation>
 <translation id="5043913660911154449">Ou encore, sélectionnez le fichier PPD de votre imprimante <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
-<translation id="5044314273978194362">Désactivé parce que vous avez chiffré vos données synchronisées avec une phrase de passe.</translation>
+<translation id="5044314273978194362">Désactivé parce que vous avez chiffré vos données synchronisées avec une phrase de passe</translation>
 <translation id="5045550434625856497">Mot de passe incorrect</translation>
 <translation id="504561833207953641">Ouverture dans une session de navigateur existante.</translation>
 <translation id="5047421709274785093">Bloquer l'utilisation de capteurs de mouvement et de luminosité par les sites</translation>
@@ -3683,7 +3676,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6040852767465482106">Authentification anonyme</translation>
 <translation id="6041046205544295907"><ph name="BEGIN_PARAGRAPH1" />Les services de localisation de Google utilisent des sources comme les réseaux Wi-Fi et cellulaires, ainsi que des capteurs, pour estimer la position de votre appareil.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Vous pouvez couper ce service en désactivant le paramètre de localisation principal de l'appareil. Vous pouvez également désactiver l'utilisation des réseaux Wi‑Fi, des réseaux cellulaires et des capteurs pour la localisation dans les paramètres de localisation.<ph name="END_PARAGRAPH2" /></translation>
-<translation id="6041150002191391409"><ph name="ORIGIN" /> sera en mesure d'afficher les fichiers dans le dossier <ph name="FOLDERNAME" /> jusqu'à ce que vous fermiez tous ces onglets de <ph name="ORIGIN" />.</translation>
+<translation id="6041150002191391409"><ph name="ORIGIN" /> sera en mesure d'afficher les fichiers dans le dossier <ph name="FOLDERNAME" /> jusqu'à ce que vous fermiez tous ces onglets de <ph name="ORIGIN" /></translation>
 <translation id="6041155700700864984">Quitter le mode Plein écran</translation>
 <translation id="604124094241169006">Automatique</translation>
 <translation id="6042308850641462728">Plus</translation>
@@ -3745,7 +3738,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6104311680260824317">Impossible d'associer l'appareil au domaine. Le serveur ne prend pas en charge les types de chiffrement Kerberos spécifiés. Consultez « Plus d'options » pour afficher les paramètres de chiffrement.</translation>
 <translation id="6104641575223043670"><ph name="ORGANIZATION_NAME" /> exige l'installation immédiate d'une mise à jour sur cet appareil</translation>
 <translation id="6106186653986077033">L'application Plugin VM nécessite une licence</translation>
-<translation id="6107047744202598802">Permet aux sites Web de se souvenir de votre visite et de vous suivre sur le Web</translation>
 <translation id="6112294629795967147">Touchez pour redimensionner</translation>
 <translation id="6112727384379533756">Ajouter un ticket</translation>
 <translation id="6112931163620622315">Vérifier votre téléphone</translation>
@@ -4073,7 +4065,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6561726789132298588">entrée</translation>
 <translation id="656293578423618167">Le chemin d'accès ou le nom du fichier est trop long. Veuillez raccourcir le nom ou enregistrer le fichier à un autre endroit.</translation>
 <translation id="6563469144985748109">Votre gestionnaire n'a pas encore donné son autorisation</translation>
-<translation id="6565955132287672866">Votre appareil ne s'est pas fermé correctement. Pour utiliser Linux (version bêta), vous devez le redémarrer.</translation>
 <translation id="6567688344210276845">Impossible de charger l'icône « <ph name="ICON" /> » d'action de page.</translation>
 <translation id="6569934958368283244">Autres personnes</translation>
 <translation id="657402800789773160">Actualise&amp;r cette page</translation>
@@ -4449,7 +4440,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
     <ph name="BEGIN_BOLD" />Souvenez-vous :<ph name="END_BOLD" /> Une voix similaire ou un enregistrement pourrait aussi accéder à l'Assistant Google. Vous pouvez supprimer l'autorisation de Voice Match plus tard dans les paramètres de l'Assistant Google.</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Échanger des données avec les appareils : <ph name="HOSTNAMES" /></translation>
-<translation id="7094434674404953373">L'appareil redémarrera lorsque l'installation des mises à jour est terminée.</translation>
+<translation id="7094434674404953373">L'appareil redémarrera lorsque l'installation des mises à jour sera terminée.</translation>
 <translation id="7098389117866926363">Appareil USB-C (port arrière-gauche)</translation>
 <translation id="7098447629416471489">Les autres moteurs de recherche enregistrés s'afficheront ici</translation>
 <translation id="7099337801055912064">Impossible de charger un PPD volumineux. La taille maximale est de 250 k.</translation>
@@ -4573,7 +4564,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7258225044283673131">L'application ne répond pas. Sélectionnez « Forcer la fermeture » pour fermer l'application.</translation>
 <translation id="7258697411818564379">Votre NIP a été ajouté</translation>
 <translation id="7262004276116528033">Le service de connexion est hébergé par <ph name="SAML_DOMAIN" /></translation>
-<translation id="7266898409676782635">Obtenez des conseils sur votre <ph name="DEVICE_TYPE" />, des offres et des mises à jour, et partagez vos commentaires. Vous pouvez vous désabonner à tout moment.</translation>
+<translation id="7266898409676782635">Obtenez des conseils sur votre <ph name="DEVICE_TYPE" />, des offres et des mises à jour, et transmettez vos commentaires. Vous pouvez vous désabonner à tout moment.</translation>
 <translation id="7268127947535186412">Ce paramètre est géré par le propriétaire de l'appareil.</translation>
 <translation id="7270858098575133036">Demander lorsqu'un site veut utiliser des messages exclusifs au système pour accéder aux appareils MIDI</translation>
 <translation id="7272674038937250585">Aucune description fournie</translation>
@@ -5942,7 +5933,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9065203028668620118">Modifier</translation>
 <translation id="9066773882585798925">Lire à voix haute le texte à l'écran</translation>
 <translation id="9066782832737749352">Synthèse vocale</translation>
-<translation id="9067559831321817373">Gérez vos comptes auxquels vous êtes connecté. Les sites Web, les applications et les extensions dans Chrome et dans Google Play peuvent utiliser ces comptes pour personnaliser votre expérience, selon les autorisations accordées. &lt;a&gt;En savoir plus&lt;/a&gt;</translation>
 <translation id="9068849894565669697">Sélectionner une couleur</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

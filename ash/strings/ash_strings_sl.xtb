@@ -245,7 +245,6 @@
 <translation id="3995138139523574647">Naprava USB-C (vrata desno zadaj)</translation>
 <translation id="4017989525502048489">Laserski kazalnik</translation>
 <translation id="4021716437419160885">Pomik navzdol</translation>
-<translation id="402772165574991617">S potezami hitro preklapljajte med aplikacijami in uporabljajte Chromebook v načinu tabličnega računalnika.</translation>
 <translation id="4028481283645788203">Zaradi večje varnosti je obvezno geslo</translation>
 <translation id="4042660782729322247">Zaslon delite z drugimi</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Izklopljeno za eno aplikacijo}one{Izklopljeno za # aplikacijo}two{Izklopljeno za # aplikaciji}few{Izklopljeno za # aplikacije}other{Izklopljeno za # aplikacij}}</translation>
@@ -534,7 +533,6 @@
 <translation id="8000066093800657092">Ni omrežja</translation>
 <translation id="8029629653277878342">Zaradi večje varnosti je obvezna koda PIN ali geslo</translation>
 <translation id="8030169304546394654">Ni povezave</translation>
-<translation id="8042024183333293953">Preizkusite pomikanje s potezami</translation>
 <translation id="8048123526339889627">Nastavitve za Bluetooth</translation>
 <translation id="8054466585765276473">Izračunavanje časa trajanja akumulatorja.</translation>
 <translation id="8061464966246066292">Visok kontrast</translation>

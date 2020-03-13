@@ -273,7 +273,6 @@
 <translation id="1388918874748125262">啟用安全瀏覽強化防護功能</translation>
 <translation id="1393485621820363363">已啟用企業裝置印表機</translation>
 <translation id="1397855852561539316">預設搜尋引擎建議網址</translation>
-<translation id="1398636873839401839">在登入畫面上啟用所有變化版本</translation>
 <translation id="1404043648050567997">「安全瀏覽」服務會檢查使用者要瀏覽的網站，如果是已知有惡意攻擊風險的網站，就會顯示警告網頁。如果啟用這項政策，可防止使用者忽略警告而繼續前往惡意網站。
 
       這項政策只能防止使用者在收到「安全瀏覽」警告 (例如惡意軟體和網路詐騙警告) 後繼續前往網站，不適用於 SSL 憑證相關問題 (例如憑證無效或過期)。
@@ -902,17 +901,7 @@
       如果 URI 範本包含 <ph name="HTTP_VARIABLE_DNS" /> 變數，則對解析器的要求會使用 <ph name="HTTP_METHOD_GET" />；否則這些要求會使用 <ph name="HTTP_METHOD_POST" />。
 
       系統會忽略格式不正確的範本。</translation>
-<translation id="2331539005176436538">僅在登入畫面上啟用與重大修正項目相關的變化版本</translation>
 <translation id="2345547870894930157">啟用 DNS-over-HTTPS，而且禁止改用不安全查詢</translation>
-<translation id="2368120844613930637">你可以透過這項政策指定哪些變化版本可在登入畫面上套用至 <ph name="PRODUCT_NAME" />。
-
-      變化版本可以透過選擇性啟用或停用現有功能的方式，在不推出新版瀏覽器的情況下提供對 <ph name="PRODUCT_NAME" /> 的修改項目。
-
-      如果將這項政策設為 <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (值為 0) 或未設定，使用者可以在登入畫面上將所有變化版本套用到瀏覽器。
-
-      如果設為 <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (值為 1)，使用者在登入畫面上只能將修正重大安全性或穩定性問題的變化版本套用到 <ph name="PRODUCT_NAME" />。
-
-      如果設為 <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (值為 2)，使用者無法在登入畫面上將任何變化版本套用到瀏覽器。請注意，這個模式可能會讓 <ph name="PRODUCT_NAME" /> 開發人員無法及時提供重大安全性修正項目，因此不建議使用。</translation>
 <translation id="237494535617297575">允許你設定網址模式清單，指定可以展示通知的網站。如果未設定這項政策，系統會從「DefaultNotificationsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="2386362615870139244">允許使用螢幕喚醒鎖</translation>
 <translation id="2398554235599593694"> 這項政策可控管系統是否要在外部通訊協定的啟動確認提示中顯示「一律開啟」核取方塊。
@@ -4166,7 +4155,6 @@
 <translation id="7426112309807051726">指定是否停用 <ph name="TLS_FALSE_START" /> 最佳化。基於歷史原因，這項政策名為 DisableSSLRecordSplitting。
 
       如未設定這項政策，或設為 False，系統將會啟用 <ph name="TLS_FALSE_START" />。如已設為 True，系統將會停用 <ph name="TLS_FALSE_START" />。</translation>
-<translation id="7427296104923393585">在登入畫面上停用所有變化版本</translation>
 <translation id="7433714841194914373">啟用互動智慧搜尋</translation>
 <translation id="7434202861148928348">為遠端存取用戶端設定必要的網域名稱</translation>
 <translation id="7443616896860707393">跨原始來源的 HTTP 基本驗證提示</translation>
@@ -5273,7 +5261,6 @@
 <translation id="974349541138387272">指定所需 DNS-over-HTTPS 解析器的 URI 範本</translation>
 <translation id="981346395360763138">Google 定位服務已停用</translation>
 <translation id="982497069985795632">啟用拼字檢查</translation>
-<translation id="986367416344815079">指定變化版本在登入畫面上的可用性</translation>
 <translation id="991560005425213776">將使用者名稱和檔案名稱傳送到原生印表機</translation>
 <translation id="99232017131102456">這項政策會針對 HTTP 伺服器驗證憑證設定適用於個別設定檔的單一全域快取。
 

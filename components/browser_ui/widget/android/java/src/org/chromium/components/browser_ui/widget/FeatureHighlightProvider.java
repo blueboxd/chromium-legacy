@@ -4,13 +4,13 @@
 
 package org.chromium.components.browser_ui.widget;
 
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.IntDef;
 import androidx.annotation.StringRes;
 import androidx.annotation.StyleRes;
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

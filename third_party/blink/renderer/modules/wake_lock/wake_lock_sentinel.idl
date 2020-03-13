@@ -6,8 +6,7 @@
 
 [
   ActiveScriptWrappable,
-  Exposed=(DedicatedWorker,Window),
-  RuntimeEnabled=WakeLock,
+  Exposed(DedicatedWorker SystemWakeLock, Window WakeLock),
   SecureContext
 ] interface WakeLockSentinel : EventTarget {
   attribute EventHandler onrelease;

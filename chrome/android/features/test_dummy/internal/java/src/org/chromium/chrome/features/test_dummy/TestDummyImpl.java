@@ -6,9 +6,9 @@ package org.chromium.chrome.features.test_dummy;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.v7.app.AlertDialog;
 
 import androidx.annotation.IntDef;
+import androidx.appcompat.app.AlertDialog;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.NativeMethods;

@@ -15,7 +15,8 @@ import static org.mockito.Mockito.when;
 
 import android.os.Bundle;
 import android.support.test.filters.SmallTest;
-import android.support.v7.widget.AppCompatEditText;
+
+import androidx.appcompat.widget.AppCompatEditText;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;

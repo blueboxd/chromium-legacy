@@ -6,8 +6,9 @@ package org.chromium.chrome.browser.sync;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
-import android.support.v7.preference.Preference;
-import android.support.v7.preference.PreferenceCategory;
+
+import androidx.preference.Preference;
+import androidx.preference.PreferenceCategory;
 
 import org.junit.Assert;
 import org.junit.Rule;

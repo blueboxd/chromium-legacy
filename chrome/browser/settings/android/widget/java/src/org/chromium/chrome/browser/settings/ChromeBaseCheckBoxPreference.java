@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.settings;
 
 import android.content.Context;
-import android.support.v7.preference.CheckBoxPreference;
-import android.support.v7.preference.PreferenceViewHolder;
 import android.util.AttributeSet;
 import android.widget.TextView;
+
+import androidx.preference.CheckBoxPreference;
+import androidx.preference.PreferenceViewHolder;
 
 /**
  * Contains the basic functionality that should be shared by all CheckBoxPreference in Chrome.

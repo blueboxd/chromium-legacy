@@ -813,8 +813,16 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
 
   // If a crashed RenderFrameHost must not be reused, replace it by a
   // new one immediately.
-  if (render_frame_host_->must_be_replaced())
+  if (render_frame_host_->must_be_replaced()) {
     use_current_rfh = false;
+    // TODO(https://crbug.com/1006814): Remove this.
+    if (render_frame_host_->render_view_host()
+            ->GetWidget()
+            ->renderer_initialized()) {
+      base::debug::DumpWithoutCrashing();
+      NOTREACHED();
+    }
+  }
 
   // Force using a different RenderFrameHost when RenderDocument is enabled.
   // TODO(arthursonzogni, fergal): Add support for the main frame.

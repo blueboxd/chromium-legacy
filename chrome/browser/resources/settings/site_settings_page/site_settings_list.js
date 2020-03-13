@@ -92,20 +92,6 @@ cr.define('settings', function() {
         });
         this.browserProxy_.observeProtocolHandlersEnabledState();
       }
-
-      if (loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
-        const hasCookies = this.categoryList.some(item => {
-          return item.id === settings.ContentSettingsTypes.COOKIES;
-        });
-        if (hasCookies) {
-          // The cookies sub-label is provided by an update from C++.
-          this.browserProxy_.getCookieSettingDescription().then(
-              this.updateCookiesLabel_.bind(this));
-          this.addWebUIListener(
-              'cookieSettingDescriptionChanged',
-              this.updateCookiesLabel_.bind(this));
-        }
-      }
     },
 
     /**
@@ -114,12 +100,6 @@ cr.define('settings', function() {
      * @private
      */
     refreshDefaultValueLabel_(category) {
-      if (category == settings.ContentSettingsTypes.COOKIES &&
-          loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
-        // Updates to the cookies label are handled by the
-        // cookieSettingDescriptionChanged event listener.
-        return;
-      }
       this.browserProxy_.getDefaultValueForContentType(category).then(
           defaultValue => {
             this.updateDefaultValueLabel_(category, defaultValue.setting);
@@ -149,17 +129,6 @@ cr.define('settings', function() {
               dataItem.enabledLabel ? this.i18n(dataItem.enabledLabel) : '',
               dataItem.disabledLabel ? this.i18n(dataItem.disabledLabel) : '',
               dataItem.otherLabel ? this.i18n(dataItem.otherLabel) : null));
-    },
-
-    /**
-     * Update the cookies link row label when the cookies setting description
-     * changes.
-     * @param {string} label
-     * @private
-     */
-    updateCookiesLabel_(label) {
-      const index = this.$$('dom-repeat').indexForElement(this.$$('#cookies'));
-      this.set(`categoryList.${index}.subLabel`, label);
     },
 
     /**

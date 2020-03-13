@@ -61,22 +61,48 @@ class WebEngineDebugIntegrationTest : public testing::Test {
   ~WebEngineDebugIntegrationTest() override = default;
 
   void SetUp() override {
-    web_context_provider_ =
-        cr_fuchsia::ConnectContextProvider(web_engine_controller_.NewRequest());
+    // Add an argument to WebEngine instance to distinguish it from other
+    // instances that may be started by other tests.
+    std::string test_arg =
+        std::string("--test-name=") +
+        testing::UnitTest::GetInstance()->current_test_info()->name();
+
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    command_line.AppendSwitch(test_arg);
+
+    web_context_provider_ = cr_fuchsia::ConnectContextProvider(
+        web_engine_controller_.NewRequest(), command_line);
     web_context_provider_.set_error_handler(
         [](zx_status_t status) { ADD_FAILURE(); });
 
     WaitForWebEngine();
 
-    // Connect to the Debug API.
+    // Enumerate all entries in /hub/c/context_provider.cmx to find WebEngine
+    // instance with |test_arg|.
     base::FileEnumerator file_enum(
         base::FilePath("/hub/c/context_provider.cmx"), false,
         base::FileEnumerator::DIRECTORIES);
-    web_engine_path_ = file_enum.Next();
-    ASSERT_FALSE(web_engine_path_.empty());
 
-    // There should only be one instance of WebEngine in the realm.
-    ASSERT_TRUE(file_enum.Next().empty());
+    for (auto dir = file_enum.Next(); !dir.empty(); dir = file_enum.Next()) {
+      std::string args;
+      if (!base::ReadFileToString(dir.Append("args"), &args)) {
+        // WebEngine may shutdown while we are enumerating the directory, so
+        // it's safe to ignore this error.
+        continue;
+      }
+
+      if (args.find(test_arg) != std::string::npos) {
+        // There should only one instance of WebEngine with |test_arg|.
+        EXPECT_TRUE(web_engine_path_.empty());
+
+        web_engine_path_ = dir;
+
+        // Keep iterating to check that there are no other matching instances.
+      }
+    }
+
+    // Check that we've found the WebEngine instance with |test_arg|.
+    ASSERT_FALSE(web_engine_path_.empty());
 
     debug_dir_ = std::make_unique<sys::ServiceDirectory>(
         base::fuchsia::OpenDirectory(web_engine_path_.Append("out/debug")));

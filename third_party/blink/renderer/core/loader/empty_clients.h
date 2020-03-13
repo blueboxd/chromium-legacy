@@ -91,7 +91,6 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   bool CanTakeFocus(mojom::blink::FocusType) override { return false; }
   void TakeFocus(mojom::blink::FocusType) override {}
 
-  void FocusedElementChanged(Element*, Element*) override {}
   void Show(NavigationPolicy) override {}
 
   void DidOverscroll(const gfx::Vector2dF&,

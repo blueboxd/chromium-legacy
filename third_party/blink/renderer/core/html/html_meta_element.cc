@@ -577,7 +577,7 @@ void HTMLMetaElement::ProcessContent() {
   } else if (EqualIgnoringASCIICase(name_value, "referrer")) {
     UseCounter::Count(&GetDocument(),
                       WebFeature::kHTMLMetaElementReferrerPolicy);
-    GetDocument().ToExecutionContext()->ParseAndSetReferrerPolicy(
+    GetExecutionContext()->ParseAndSetReferrerPolicy(
         content_value, true /* support legacy keywords */);
   } else if (EqualIgnoringASCIICase(name_value, "handheldfriendly") &&
              EqualIgnoringASCIICase(content_value, "true")) {

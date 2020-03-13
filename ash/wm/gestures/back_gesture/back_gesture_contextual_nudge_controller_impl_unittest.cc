@@ -14,6 +14,7 @@
 #include "ash/wm/gestures/back_gesture/test_back_gesture_contextual_nudge_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/simple_test_clock.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/wm/core/window_util.h"
 
@@ -53,12 +54,24 @@ class BackGestureContextualNudgeControllerTest : public NoSessionAshTestBase {
     GetSessionControllerClient()->SetSessionState(
         session_manager::SessionState::ACTIVE);
 
+    // Is only allowed after the drag handle nudge has been shown - simulate
+    // drag handle so back gesture gets enabled.
+    contextual_tooltip::OverrideClockForTesting(&test_clock_);
+    test_clock_.Advance(base::TimeDelta::FromSeconds(360));
+    contextual_tooltip::HandleNudgeShown(
+        user1_pref_service(), contextual_tooltip::TooltipType::kDragHandle);
+    contextual_tooltip::HandleNudgeShown(
+        user2_pref_service(), contextual_tooltip::TooltipType::kDragHandle);
+    test_clock_.Advance(
+        contextual_tooltip::kMinIntervalBetweenBackAndDragHandleNudge * 2);
+
     // Enter tablet mode.
     TabletModeControllerTestApi().EnterTabletMode();
   }
 
   void TearDown() override {
     nudge_controller_.reset();
+    contextual_tooltip::ClearClockOverrideForTesting();
     NoSessionAshTestBase::TearDown();
   }
 
@@ -77,9 +90,14 @@ class BackGestureContextualNudgeControllerTest : public NoSessionAshTestBase {
     }
   }
 
-  PrefService* user1_perf_service() {
+  PrefService* user1_pref_service() {
     return Shell::Get()->session_controller()->GetUserPrefServiceForUser(
         AccountId::FromUserEmail(kUser1Email));
+  }
+
+  PrefService* user2_pref_service() {
+    return Shell::Get()->session_controller()->GetUserPrefServiceForUser(
+        AccountId::FromUserEmail(kUser2Email));
   }
 
   BackGestureContextualNudgeControllerImpl* nudge_controller() {
@@ -88,8 +106,11 @@ class BackGestureContextualNudgeControllerTest : public NoSessionAshTestBase {
 
   BackGestureContextualNudge* nudge() { return nudge_controller()->nudge(); }
 
+  base::SimpleTestClock* clock() { return &test_clock_; }
+
  private:
   bool can_go_back_;
+  base::SimpleTestClock test_clock_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<BackGestureContextualNudgeControllerImpl> nudge_controller_;
@@ -137,7 +158,7 @@ TEST_F(BackGestureContextualNudgeControllerTest,
   EXPECT_FALSE(nudge());
 
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      user1_perf_service(), contextual_tooltip::TooltipType::kBackGesture));
+      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture));
 
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
   // If nudge() is true, it indicates that it's currently in animation.
@@ -148,12 +169,12 @@ TEST_F(BackGestureContextualNudgeControllerTest,
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();
   EXPECT_FALSE(nudge()->ShouldNudgeCountAsShown());
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      user1_perf_service(), contextual_tooltip::TooltipType::kBackGesture));
+      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture));
 
   // Wait until nudge animation is finished.
   WaitNudgeAnimationDone();
   EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(
-      user1_perf_service(), contextual_tooltip::TooltipType::kBackGesture));
+      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture));
 }
 
 // Test that ending tablet mode will cancel in-waiting or in-progress nudge
@@ -165,7 +186,7 @@ TEST_F(BackGestureContextualNudgeControllerTest,
   EXPECT_FALSE(nudge());
 
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      user1_perf_service(), contextual_tooltip::TooltipType::kBackGesture));
+      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture));
 
   std::unique_ptr<aura::Window> window = CreateTestWindow();
   EXPECT_TRUE(nudge());
@@ -173,19 +194,19 @@ TEST_F(BackGestureContextualNudgeControllerTest,
   TabletModeControllerTestApi().LeaveTabletMode();
   WaitNudgeAnimationDone();
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      user1_perf_service(), contextual_tooltip::TooltipType::kBackGesture));
+      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture));
 }
 
 // Do not show nudge ui on window that can't perform "go back" operation.
 TEST_F(BackGestureContextualNudgeControllerTestCantGoBack, WindowTest) {
   EXPECT_FALSE(nudge());
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      user1_perf_service(), contextual_tooltip::TooltipType::kBackGesture));
+      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture));
 
   std::unique_ptr<aura::Window> window = CreateTestWindow();
   EXPECT_FALSE(nudge());
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      user1_perf_service(), contextual_tooltip::TooltipType::kBackGesture));
+      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture));
 }
 
 TEST_F(BackGestureContextualNudgeControllerTest, ShowNudgeOnExistingWindow) {
@@ -197,6 +218,27 @@ TEST_F(BackGestureContextualNudgeControllerTest, ShowNudgeOnExistingWindow) {
 
   tablet_mode_api.EnterTabletMode();
   EXPECT_TRUE(nudge());
+}
+
+// Do not show nudge ui on window if shelf drag handle nudge should be shown at
+// the same time.
+TEST_F(BackGestureContextualNudgeControllerTest, NotShownWithDragHandleNudge) {
+  TabletModeControllerTestApi tablet_mode_api;
+  tablet_mode_api.LeaveTabletMode();
+
+  // Advance the contextual tooltip manager's clock so drag handle nudge can be
+  // shown again (note that the drag handle nudge is first shown during test
+  // setup to enable the back gesture nudge).
+  clock()->Advance(contextual_tooltip::kMinInterval);
+
+  tablet_mode_api.EnterTabletMode();
+  ASSERT_TRUE(contextual_tooltip::ShouldShowNudge(
+      user1_pref_service(), contextual_tooltip::TooltipType::kDragHandle));
+
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  EXPECT_FALSE(nudge());
+  EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(
+      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture));
 }
 
 }  // namespace ash

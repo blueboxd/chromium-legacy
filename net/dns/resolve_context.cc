@@ -20,6 +20,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/network_change_notifier.h"
+#include "net/dns/dns_server_iterator.h"
 #include "net/dns/dns_session.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/host_cache.h"
@@ -74,34 +75,26 @@ static RttBuckets* GetRttBuckets() {
   return buckets.get();
 }
 
+static std::unique_ptr<base::SampleVector> GetRttHistogram(
+    base::TimeDelta rtt_estimate) {
+  std::unique_ptr<base::SampleVector> histogram =
+      std::make_unique<base::SampleVector>(GetRttBuckets());
+  // Seed histogram with 2 samples at |rtt_estimate| timeout.
+  histogram->Accumulate(base::checked_cast<base::HistogramBase::Sample>(
+                            rtt_estimate.InMilliseconds()),
+                        kNumSeeds);
+  return histogram;
+}
+
 }  // namespace
 
-// Runtime statistics of DNS server.
-struct ResolveContext::ServerStats {
-  ServerStats(base::TimeDelta rtt_estimate, RttBuckets* buckets)
-      : last_failure_count(0),
-        rtt_histogram(std::make_unique<base::SampleVector>(buckets)) {
-    // Seed histogram with 2 samples at |rtt_estimate| timeout.
-    rtt_histogram->Accumulate(base::checked_cast<base::HistogramBase::Sample>(
-                                  rtt_estimate.InMilliseconds()),
-                              kNumSeeds);
-  }
+ResolveContext::ServerStats::ServerStats(
+    std::unique_ptr<base::SampleVector> buckets)
+    : last_failure_count(0), rtt_histogram(std::move(buckets)) {}
 
-  // Count of consecutive failures after last success.
-  int last_failure_count;
+ResolveContext::ServerStats::ServerStats(ServerStats&&) = default;
 
-  // True if any success has ever been recorded for this server for the current
-  // connection.
-  bool current_connection_success = false;
-
-  // Last time when server returned failure or timeout.
-  base::TimeTicks last_failure;
-  // Last time when server returned success.
-  base::TimeTicks last_success;
-
-  // A histogram of observed RTT .
-  std::unique_ptr<base::SampleVector> rtt_histogram;
-};
+ResolveContext::ServerStats::~ServerStats() = default;
 
 ResolveContext::ResolveContext(URLRequestContext* url_request_context,
                                bool enable_caching)
@@ -112,102 +105,29 @@ ResolveContext::ResolveContext(URLRequestContext* url_request_context,
 
 ResolveContext::~ResolveContext() = default;
 
-size_t ResolveContext::FirstServerIndex(bool doh_server,
-                                        const DnsSession* session) {
-  if (!IsCurrentSession(session))
-    return 0u;
+std::unique_ptr<DnsServerIterator> ResolveContext::GetDohIterator(
+    const DnsConfig& config,
+    const DnsConfig::SecureDnsMode& mode,
+    const DnsSession* session) {
+  // Make the iterator even if the session differs. The first call to the member
+  // functions will catch the out of date session.
 
-  // DoH first server doesn't rotate, so always return 0u.
-  if (doh_server)
-    return 0u;
-
-  size_t index = ClassicServerIndexToUse(classic_server_index_, session);
-  if (current_session_->config().rotate) {
-    classic_server_index_ = (classic_server_index_ + 1) %
-                            current_session_->config().nameservers.size();
-  }
-  return index;
+  std::unique_ptr<DnsServerIterator> itr(new DohDnsServerIterator(
+      doh_server_stats_.size(), FirstServerIndex(true, session),
+      config.doh_attempts, config.attempts, mode, this, session));
+  return itr;
 }
 
-size_t ResolveContext::ClassicServerIndexToUse(
-    size_t classic_starting_server_index,
+std::unique_ptr<DnsServerIterator> ResolveContext::GetClassicDnsIterator(
+    const DnsConfig& config,
     const DnsSession* session) {
-  if (!IsCurrentSession(session))
-    return classic_starting_server_index;
+  // Make the iterator even if the session differs. The first call to the member
+  // functions will catch the out of date session.
 
-  CHECK_LT(classic_starting_server_index, classic_server_stats_.size());
-  size_t index = classic_starting_server_index;
-  base::TimeTicks oldest_server_failure;
-  base::Optional<size_t> oldest_server_failure_index;
-
-  do {
-    CHECK_LT(index, classic_server_stats_.size());
-
-    // If number of failures on this server doesn't exceed number of allowed
-    // attempts, return its index.
-    if (classic_server_stats_[index].last_failure_count <
-        current_session_->config().attempts) {
-      return index;
-    }
-    // Track oldest failed server.
-    base::TimeTicks cur_server_failure =
-        classic_server_stats_[index].last_failure;
-    if (!oldest_server_failure_index.has_value() ||
-        cur_server_failure < oldest_server_failure) {
-      oldest_server_failure = cur_server_failure;
-      oldest_server_failure_index = index;
-    }
-    index = (index + 1) % current_session_->config().nameservers.size();
-  } while (index != classic_starting_server_index);
-
-  // If we are here it means that there are no successful servers, so we have
-  // to use one that has failed least recently.
-  DCHECK(oldest_server_failure_index.has_value());
-  return oldest_server_failure_index.value();
-}
-
-base::Optional<size_t> ResolveContext::DohServerIndexToUse(
-    size_t starting_doh_server_index,
-    DnsConfig::SecureDnsMode secure_dns_mode,
-    const DnsSession* session) {
-  if (!IsCurrentSession(session))
-    return base::nullopt;
-
-  CHECK_LT(starting_doh_server_index, doh_server_stats_.size());
-  size_t index = starting_doh_server_index;
-  base::TimeTicks oldest_server_failure;
-  base::Optional<size_t> oldest_available_server_failure_index;
-
-  do {
-    CHECK_LT(index, doh_server_stats_.size());
-    // For a server to be considered "available", the server must have a
-    // successful probe status if we are in AUTOMATIC mode.
-    if (secure_dns_mode == DnsConfig::SecureDnsMode::SECURE ||
-        GetDohServerAvailability(index, session)) {
-      // If number of failures on this server doesn't exceed |config_.attempts|,
-      // return its index. |config_.attempts| will generally be more restrictive
-      // than |kAutomaticModeFailureLimit|, although this is not guaranteed.
-      if (doh_server_stats_[index].last_failure_count <
-          session->config().attempts) {
-        return index;
-      }
-      // Track oldest failed available server.
-      base::TimeTicks cur_server_failure =
-          doh_server_stats_[index].last_failure;
-      if (!oldest_available_server_failure_index.has_value() ||
-          cur_server_failure < oldest_server_failure) {
-        oldest_server_failure = cur_server_failure;
-        oldest_available_server_failure_index = index;
-      }
-    }
-    index = (index + 1) % session->config().dns_over_https_servers.size();
-  } while (index != starting_doh_server_index);
-
-  // If we are here it means that there are either no available DoH servers or
-  // that all available DoH servers have at least |config_.attempts| consecutive
-  // failures. In the latter case, we'll return the available DoH server that
-  // failed least recently. In the former case we return nullopt.
-  return oldest_available_server_failure_index;
+  std::unique_ptr<DnsServerIterator> itr(new ClassicDnsServerIterator(
+      config.nameservers.size(), FirstServerIndex(false, session),
+      config.attempts, config.attempts, this, session));
+  return itr;
 }
 
 bool ResolveContext::GetDohServerAvailability(size_t doh_server_index,
@@ -354,11 +274,11 @@ void ResolveContext::InvalidateCachesAndPerSessionData(
   initial_timeout_ = GetDefaultTimeout(current_session_->config());
 
   for (size_t i = 0; i < new_session->config().nameservers.size(); ++i) {
-    classic_server_stats_.emplace_back(initial_timeout_, GetRttBuckets());
+    classic_server_stats_.emplace_back(GetRttHistogram(initial_timeout_));
   }
   for (size_t i = 0; i < new_session->config().dns_over_https_servers.size();
        ++i) {
-    doh_server_stats_.emplace_back(initial_timeout_, GetRttBuckets());
+    doh_server_stats_.emplace_back(GetRttHistogram(initial_timeout_));
   }
 
   CHECK_EQ(new_session->config().nameservers.size(),
@@ -370,6 +290,23 @@ void ResolveContext::InvalidateCachesAndPerSessionData(
 
   if (!doh_server_stats_.empty())
     NotifyDohStatusObserversOfUnavailable(network_change);
+}
+
+size_t ResolveContext::FirstServerIndex(bool doh_server,
+                                        const DnsSession* session) {
+  if (!IsCurrentSession(session))
+    return 0u;
+
+  // DoH first server doesn't rotate, so always return 0u.
+  if (doh_server)
+    return 0u;
+
+  size_t index = classic_server_index_;
+  if (current_session_->config().rotate) {
+    classic_server_index_ = (classic_server_index_ + 1) %
+                            current_session_->config().nameservers.size();
+  }
+  return index;
 }
 
 bool ResolveContext::IsCurrentSession(const DnsSession* session) const {

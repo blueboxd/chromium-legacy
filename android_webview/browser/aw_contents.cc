@@ -1334,6 +1334,16 @@ void AwContents::RemoveWebMessageListener(
   GetJsJavaConfiguratorHost()->RemoveWebMessageListener(env, js_object_name);
 }
 
+base::android::ScopedJavaLocalRef<jobjectArray> AwContents::GetJsObjectsInfo(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jclass>& clazz) {
+  if (js_java_configurator_host_.get()) {
+    return GetJsJavaConfiguratorHost()->GetJsObjectsInfo(env, clazz);
+  }
+  return nullptr;
+}
+
 void AwContents::ClearView(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   browser_view_renderer_.ClearView();

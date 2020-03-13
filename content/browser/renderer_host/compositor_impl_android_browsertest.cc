@@ -267,6 +267,12 @@ class CompositorImplBrowserTestRefreshRate
     if (fabs(refresh_rate - expected_refresh_rate_) < 2.f)
       run_loop_->Quit();
   }
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    content::ContentBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(
+        switches::kAutoplayPolicy,
+        switches::autoplay::kNoUserGestureRequiredPolicy);
+  }
 
   float expected_refresh_rate_ = 0.f;
   std::unique_ptr<base::RunLoop> run_loop_;

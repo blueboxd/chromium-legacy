@@ -65,10 +65,6 @@ class MODULES_EXPORT DOMScheduler : public ScriptWrappable,
 
   base::SingleThreadTaskRunner* GetTaskRunnerFor(WebSchedulingPriority);
 
-  // Callbacks invoked by DOMTasks when they run.
-  void OnTaskStarted(DOMTask*);
-  void OnTaskCompleted(DOMTask*);
-
   void ContextDestroyed() override;
 
   void Trace(Visitor*) override;

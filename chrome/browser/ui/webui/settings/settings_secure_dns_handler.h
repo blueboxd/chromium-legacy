@@ -54,6 +54,9 @@ class SecureDnsHandler : public SettingsPageUIHandler,
   // Returns whether or not a test query to the resolver succeeds.
   void HandleProbeCustomDnsTemplate(const base::ListValue* args);
 
+  // Records metrics on the user-initiated dropdown selection event.
+  void HandleRecordUserDropdownInteraction(const base::ListValue* args);
+
   // Retrieves the current host resolver configuration, computes the
   // corresponding UI representation, and sends it to javascript.
   void SendSecureDnsSettingUpdatesToJavascript();
@@ -67,6 +70,7 @@ class SecureDnsHandler : public SettingsPageUIHandler,
 
   void OnMojoConnectionError();
 
+  std::map<std::string, net::DohProviderIdForHistogram> resolver_histogram_map_;
   network::mojom::NetworkContext* network_context_for_testing_ = nullptr;
   mojo::Receiver<network::mojom::ResolveHostClient> receiver_{this};
   mojo::Remote<network::mojom::HostResolver> host_resolver_;

@@ -366,6 +366,9 @@ need to be translated for each locale.-->
       </message>
 
       <!-- General application strings -->
+      <message name="IDS_SENTENCE_END" desc="The symbol that is used to end a sentence.">
+        .
+      </message>
       <if expr="is_win or is_ios">
         <message name="IDS_APP_UNTITLED_SHORTCUT_FILE_NAME" desc="The name of the Internet Shortcut file created for URLs dragged that have no title">
           Untitled Webpage

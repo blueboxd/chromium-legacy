@@ -15,6 +15,7 @@ class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
       'getSecureDnsSetting',
       'validateCustomDnsEntry',
       'probeCustomDnsTemplate',
+      'recordUserDropdownInteraction',
     ]);
 
     /** @type {!MetricsReporting} */
@@ -119,5 +120,11 @@ class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
   probeCustomDnsTemplate(template) {
     this.methodCalled('probeCustomDnsTemplate', template);
     return Promise.resolve(this.probeSuccess_);
+  }
+
+  /** @override */
+  recordUserDropdownInteraction(oldSelection, newSelection) {
+    this.methodCalled(
+        'recordUserDropdownInteraction', [oldSelection, newSelection]);
   }
 }

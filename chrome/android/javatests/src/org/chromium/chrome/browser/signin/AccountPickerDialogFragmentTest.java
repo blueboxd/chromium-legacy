@@ -15,8 +15,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import android.accounts.Account;
 import android.support.test.InstrumentationRegistry;
-import android.support.v4.app.FragmentManager;
 
+import androidx.fragment.app.FragmentManager;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 

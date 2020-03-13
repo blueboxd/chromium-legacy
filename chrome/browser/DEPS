@@ -135,6 +135,7 @@ include_rules = [
   "+components/leveldb_proto/public",
   "+components/leveldb_proto/testing",
   "+components/location/android",
+  "+components/lookalikes",
   "+components/login",
   "+components/media_message_center",
   "+components/metal_util",

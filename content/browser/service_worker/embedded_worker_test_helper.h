@@ -74,6 +74,9 @@ class EmbeddedWorkerTestHelper {
   // If |user_data_directory| is empty, the context makes storage stuff in
   // memory.
   explicit EmbeddedWorkerTestHelper(const base::FilePath& user_data_directory);
+  EmbeddedWorkerTestHelper(
+      const base::FilePath& user_data_directory,
+      storage::SpecialStoragePolicy* special_storage_policy);
   virtual ~EmbeddedWorkerTestHelper();
 
   ServiceWorkerContextCore* context();

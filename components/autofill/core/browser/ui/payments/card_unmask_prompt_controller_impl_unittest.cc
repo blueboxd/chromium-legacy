@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -40,6 +41,7 @@ class TestCardUnmaskDelegate : public CardUnmaskDelegate {
     details_ = details;
   }
   void OnUnmaskPromptClosed() override {}
+  bool ShouldOfferFidoAuth() const override { return false; }
 
   const UserProvidedUnmaskDetails& details() { return details_; }
 
@@ -72,8 +74,13 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
             features::kAutofillNoLocalSaveOnUnmaskSuccess)) {}
 
   bool CanStoreLocally() const override { return can_store_locally_; }
-
+#if defined(OS_ANDROID)
+  bool ShouldOfferWebauthn() const override { return should_offer_webauthn_; }
+#endif
   void set_can_store_locally(bool can) { can_store_locally_ = can; }
+  void set_should_offer_webauthn(bool should) {
+    should_offer_webauthn_ = should;
+  }
 
   void SetCreditCardForTesting(CreditCard card) {
     CardUnmaskPromptControllerImpl::SetCreditCardForTesting(card);
@@ -85,6 +92,7 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
 
  private:
   bool can_store_locally_;
+  bool should_offer_webauthn_;
   base::WeakPtrFactory<TestCardUnmaskPromptController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestCardUnmaskPromptController);

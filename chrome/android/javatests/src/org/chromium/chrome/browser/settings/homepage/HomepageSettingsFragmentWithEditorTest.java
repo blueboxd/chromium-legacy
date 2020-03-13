@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.settings.homepage;
 
 import android.support.test.filters.SmallTest;
-import android.support.v7.preference.Preference;
+
+import androidx.preference.Preference;
 
 import org.junit.After;
 import org.junit.Assert;

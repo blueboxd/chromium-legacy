@@ -49,6 +49,8 @@ class MediaHistoryStore {
       Profile* profile,
       scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner);
   ~MediaHistoryStore();
+  MediaHistoryStore(const MediaHistoryStore& t) = delete;
+  MediaHistoryStore& operator=(const MediaHistoryStore&) = delete;
 
   using GetPlaybackSessionsFilter =
       base::RepeatingCallback<bool(const base::TimeDelta& duration,
@@ -100,6 +102,16 @@ class MediaHistoryStore {
 
   // Saves a newly discovered media feed in the media history store.
   void SaveMediaFeed(const GURL& url);
+
+  void ReplaceMediaFeedItems(
+      const int64_t feed_id,
+      std::vector<media_feeds::mojom::MediaFeedItemPtr> items);
+
+  // Gets all the feed items for |feed_id|.
+  void GetItemsForMediaFeedForDebug(
+      const int64_t feed_id,
+      base::OnceCallback<
+          void(std::vector<media_feeds::mojom::MediaFeedItemPtr>)> callback);
 
   scoped_refptr<base::UpdateableSequencedTaskRunner> GetDBTaskRunnerForTest();
 

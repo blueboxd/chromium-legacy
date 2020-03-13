@@ -754,7 +754,6 @@
 <translation id="2025632980034333559"><ph name="APP_NAME" /> har fått programstopp. Klikk på denne ballongen for å laste inn denne utvidelsen på nytt.</translation>
 <translation id="2025891858974379949">Usikkert innhold</translation>
 <translation id="202918510990975568">Skriv inn passordet ditt for å konfigurere sikkerhet og pålogging</translation>
-<translation id="2030672406208960151">Åpne gjenopprettingsterminalen</translation>
 <translation id="2034346955588403444">Legg til et annet Wi-Fi-nettverk</translation>
 <translation id="203574396658008164">Slå på notatskriving på låseskjermen</translation>
 <translation id="2037445849770872822">Tilsyn er satt opp for denne Google-kontoen. For å sette opp mer foreldrekontroll, velg Fortsett.
@@ -1660,7 +1659,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3228679360002431295">Kobler til og bekrefter <ph name="ANIMATED_ELLIPSIS" /></translation>
 <translation id="3232318083971127729">Verdi:</translation>
 <translation id="3233271424239923319">Sikkerhetskopiér Linux-apper og -filer</translation>
-<translation id="323803881985677942">Åpne utvidelsesalternativer</translation>
 <translation id="3239373508713281971">Tidsgrensen er fjernet for <ph name="APP_NAME" /></translation>
 <translation id="3241680850019875542">Velg rotkatalogen til utvidelsen som skal pakkes. Hvis du vil oppdatere en utvidelse, velger du også den private nøkkelfilen.</translation>
 <translation id="3244294424315804309">Fortsett med å kutte lyden</translation>
@@ -2414,7 +2412,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="424963718355121712">Apper må leveres fra verten de påvirker</translation>
 <translation id="4250229828105606438">Skjermdump</translation>
 <translation id="4250680216510889253">Nei</translation>
-<translation id="4251288318602771141">Med den nåværende tjenesteleverandøren din. Sikker DNS er kanskje ikke tilgjengelig hele tiden.</translation>
 <translation id="4252852543720145436">Beskyttede innholdsidentifikatorer</translation>
 <translation id="4252899949534773101">Bluetooth er slått av</translation>
 <translation id="4252996741873942488"><ph name="WINDOW_TITLE" /> – faneinnholdet er delt</translation>
@@ -2484,7 +2481,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4364567974334641491"><ph name="APP_NAME" /> deler et vindu.</translation>
 <translation id="4364830672918311045">Vis varsler</translation>
 <translation id="4370975561335139969">E-posten og passordet du skrev inn, stemmer ikke overens.</translation>
-<translation id="437184764829821926">Avanserte innstillinger for skrifttype</translation>
 <translation id="4374831787438678295">Linux-installasjonsprogram</translation>
 <translation id="4375035964737468845">åpne nedlastede filer</translation>
 <translation id="4377363674125277448">Det oppsto et problem med sertifikatet til tjeneren.</translation>
@@ -2648,7 +2644,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4596295440756783523">Du har registrerte sertifikater som identifiserer disse tjenerne</translation>
 <translation id="4598556348158889687">Lagringsbehandling</translation>
 <translation id="4598776695426288251">Wi-Fi er tilgjengelig via flere enheter</translation>
-<translation id="4599134080475764833">Plugin VM er klar til bruk</translation>
 <translation id="4602466770786743961">Tillat alltid at <ph name="HOST" /> bruker kameraet og mikrofonen</translation>
 <translation id="4606551464649945562">Ikke la nettsteder lage 3D-kart av omgivelsene dine eller spore kameraposisjonen</translation>
 <translation id="4608500690299898628">&amp;Finn</translation>
@@ -2743,11 +2738,9 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Finn ut hvordan du oppdaterer programmer<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Slå på lyden for nettstedet}other{Slå på lyden for nettstedene}}</translation>
 <translation id="4746351372139058112">Meldinger</translation>
-<translation id="4748762018725435655">Krever utvidelse fra Chrome Nettmarked</translation>
 <translation id="4750394297954878236">Forslag</translation>
 <translation id="475088594373173692">Første bruker</translation>
 <translation id="4751476147751820511">Bevegelses- eller lyssensorer</translation>
-<translation id="4754969275105595499">For å gå tilbake til det forrige skjermbildet, sveip fra siden.</translation>
 <translation id="4756269098451810636"><ph name="DEVICE_NAME" /> har delt et bilde</translation>
 <translation id="4756378406049221019">Stopp / last inn på nytt</translation>
 <translation id="4756388243121344051">&amp;Logg</translation>
@@ -3740,7 +3733,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6104311680260824317">Kan ikke knytte enheten til domenet. Tjeneren støtter ikke de angitte Kerberos-krypteringstypene. Du finner innstillinger for kryptering under «Flere alternativer».</translation>
 <translation id="6104641575223043670"><ph name="ORGANIZATION_NAME" /> krever at denne enheten oppdateres med det samme</translation>
 <translation id="6106186653986077033">VM for programtillegg krever lisens</translation>
-<translation id="6107047744202598802">Gjør det mulig for nettsteder å huske besøket ditt og spore deg overalt på nettet</translation>
 <translation id="6112294629795967147">Trykk for å endre størrelsen</translation>
 <translation id="6112727384379533756">Legg til en sak</translation>
 <translation id="6112931163620622315">Sjekk telefonen din</translation>
@@ -4068,7 +4060,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Filbanen- eller -navnet er for langt. Lagre med et annet navn eller på et annet sted.</translation>
 <translation id="6563469144985748109">Administratoren din har ikke godkjent det ennå</translation>
-<translation id="6565955132287672866">Enheten ble ikke avsluttet ordentlig. Den må startes på nytt før du kan bruke Linux (beta).</translation>
 <translation id="6567688344210276845">Kan ikke laste inn ikonet «<ph name="ICON" />» for sidehandling.</translation>
 <translation id="6569934958368283244">Andre personer</translation>
 <translation id="657402800789773160">&amp;Last inn denne siden på nytt</translation>
@@ -5938,7 +5929,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9065203028668620118">Endre</translation>
 <translation id="9066773882585798925">Få tekst lest opp</translation>
 <translation id="9066782832737749352">Tekst til tale</translation>
-<translation id="9067559831321817373">Administrer de påloggede kontoene dine. Nettsteder, apper og utvidelser i Chrome og Google Play kan bruke disse kontoene til å tilpasse opplevelsen din, avhengig av tillatelser. &lt;a&gt;Finn ut mer&lt;/a&gt;</translation>
 <translation id="9068849894565669697">Velg farge</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

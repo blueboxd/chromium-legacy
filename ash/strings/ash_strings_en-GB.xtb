@@ -245,13 +245,13 @@
 <translation id="3995138139523574647">USB-C device (right-hand-side back port)</translation>
 <translation id="4017989525502048489">Laser pointer</translation>
 <translation id="4021716437419160885">Scroll down</translation>
-<translation id="402772165574991617">Use gestures to quickly switch between apps and interact with your chromebook in tablet mode.</translation>
 <translation id="4028481283645788203">Password required for more security</translation>
 <translation id="4042660782729322247">You're sharing your screen</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Off for an app}other{Off for # apps}}</translation>
 <translation id="4072264167173457037">Medium signal</translation>
 <translation id="4112140312785995938">Seek backwards</translation>
 <translation id="4129129681837227511">To see notifications on your lock screen, unlock to change the setting</translation>
+<translation id="4144413954005649103">With a right click or long press, Assistant shows you info related to what you select on the screen.</translation>
 <translation id="4146833061457621061">Play music</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> managed by <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Languages</translation>
@@ -399,6 +399,7 @@
 <translation id="615957422585914272">Show on-screen keyboard</translation>
 <translation id="6164005077879661055">All files and local data associated with the supervised user will be permanently deleted once this supervised user is removed. Visited websites and settings for this supervised user may still be visible by the manager at <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Learn more</translation>
+<translation id="6236290670123303279">Manage settings</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Locked to horizontal</translation>
 <translation id="6259254695169772643">Use your stylus to select</translation>
@@ -440,6 +441,7 @@
 <translation id="6669268301501499730">On</translation>
 <translation id="6670153871843998651">Desk 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
+<translation id="6692996468359469499">Get info related to your selection</translation>
 <translation id="6696025732084565524">Your detachable keyboard needs a critical update</translation>
 <translation id="6700713906295497288">IME menu button</translation>
 <translation id="6713285437468012787">Bluetooth device "<ph name="DEVICE_NAME" />" has been paired and is now available to all users. You may remove this pairing using Settings.</translation>
@@ -534,7 +536,6 @@
 <translation id="8000066093800657092">No network</translation>
 <translation id="8029629653277878342">PIN or password required for more security</translation>
 <translation id="8030169304546394654">Disconnected</translation>
-<translation id="8042024183333293953">Try out new gesture navigation</translation>
 <translation id="8048123526339889627">Bluetooth settings</translation>
 <translation id="8054466585765276473">Calculating battery time.</translation>
 <translation id="8061464966246066292">High contrast</translation>

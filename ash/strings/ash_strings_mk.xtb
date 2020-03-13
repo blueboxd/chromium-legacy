@@ -246,13 +246,13 @@
 <translation id="3995138139523574647">USB-Ц уред (задна порта од десна страна)</translation>
 <translation id="4017989525502048489">Ласерски покажувач</translation>
 <translation id="4021716437419160885">Оди надолу</translation>
-<translation id="402772165574991617">Користете движења за брзо префрлање помеѓу апликациите и за да комуницирате со вашиот Chromebook во режим на таблет.</translation>
 <translation id="4028481283645788203">Потребна е лозинка за поголема безбедност</translation>
 <translation id="4042660782729322247">Го споделувате екранот</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Исклучени за една апликација}one{Исклучени за # апликација}other{Исклучени за # апликации}}</translation>
 <translation id="4072264167173457037">Среден сигнал</translation>
 <translation id="4112140312785995938">Премотај наназад</translation>
 <translation id="4129129681837227511">За да гледате известувања на заклучениот екран, отклучете за да ја промените поставката</translation>
+<translation id="4144413954005649103">Со кликнување со десното копче или со долго притискање, „Помошникот“ ви прикажува информации поврзани со она што ќе го изберете на екранот.</translation>
 <translation id="4146833061457621061">Пушти музика</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> е управуван од <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Јазици</translation>
@@ -400,6 +400,7 @@
 <translation id="615957422585914272">Покажи тастатура на екран</translation>
 <translation id="6164005077879661055">Сите датотеки и локални податоци што се поврзани со надгледуваниот корисник трајно ќе се избришат откако тој ќе се отстрани. Посетените веб-локации и поставки за надгледуваниот корисник можеби уште ќе бидат видливи за управникот на <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Дознајте повеќе</translation>
+<translation id="6236290670123303279">Управувајте со поставките</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Заклучен хоризонтално</translation>
 <translation id="6259254695169772643">Користете го пенкалото за да изберете</translation>
@@ -441,6 +442,7 @@
 <translation id="6669268301501499730">Вклучено</translation>
 <translation id="6670153871843998651">Биро 3</translation>
 <translation id="6691659475504239918">„Пребарување“+Shift+H</translation>
+<translation id="6692996468359469499">Добивајте информации поврзани со вашиот избор</translation>
 <translation id="6696025732084565524">Отстранливата тастатура има потреба од важно ажурирање</translation>
 <translation id="6700713906295497288">Копче за мени на IME</translation>
 <translation id="6713285437468012787">Bluetooth-уредот „<ph name="DEVICE_NAME" />“ е спарен и сега е достапен за сите корисници. Може да го отстраните ова спарување користејќи Поставки.</translation>
@@ -535,7 +537,6 @@
 <translation id="8000066093800657092">Нема мрежа</translation>
 <translation id="8029629653277878342">Потребен е PIN или лозинка за поголема безбедност</translation>
 <translation id="8030169304546394654">Исклучено</translation>
-<translation id="8042024183333293953">Испробајте ја новата навигација со движење</translation>
 <translation id="8048123526339889627">Поставки за Bluetooth</translation>
 <translation id="8054466585765276473">пресметување време на батерија.</translation>
 <translation id="8061464966246066292">Висок контраст</translation>

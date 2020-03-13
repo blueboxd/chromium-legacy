@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/settings_secure_dns_handler.h"
 
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/dns_probe_test_util.h"
@@ -36,38 +37,45 @@ namespace {
 constexpr char kGetSecureDnsResolverList[] = "getSecureDnsResolverList";
 constexpr char kValidateCustomDnsEntry[] = "validateCustomDnsEntry";
 constexpr char kProbeCustomDnsTemplate[] = "probeCustomDnsTemplate";
+constexpr char kRecordUserDropdownInteraction[] =
+    "recordUserDropdownInteraction";
 constexpr char kWebUiFunctionName[] = "webUiCallbackName";
 
 const std::vector<DohProviderEntry>& GetDohProviderListForTesting() {
   static const base::NoDestructor<std::vector<DohProviderEntry>> test_providers{
       {
           DohProviderEntry(
-              "Provider_Global1", {} /*ip_strs */, {} /* dot_hostnames */,
+              "Provider_Global1", net::DohProviderIdForHistogram(-1),
+              {} /*ip_strs */, {} /* dot_hostnames */,
               "https://global1.provider/dns-query{?dns}",
               "Global Provider 1" /* ui_name */,
               "https://global1.provider/privacy_policy/" /* privacy_policy */,
               true /* display_globally */, {} /* display_countries */),
           DohProviderEntry(
-              "Provider_NoDisplay", {} /*ip_strs */, {} /* dot_hostnames */,
+              "Provider_NoDisplay", net::DohProviderIdForHistogram(-2),
+              {} /*ip_strs */, {} /* dot_hostnames */,
               "https://nodisplay.provider/dns-query{?dns}",
               "No Display Provider" /* ui_name */,
               "https://nodisplay.provider/privacy_policy/" /* privacy_policy */,
               false /* display_globally */, {} /* display_countries */),
           DohProviderEntry(
-              "Provider_EE_FR", {} /*ip_strs */, {} /* dot_hostnames */,
+              "Provider_EE_FR", net::DohProviderIdForHistogram(-3),
+              {} /*ip_strs */, {} /* dot_hostnames */,
               "https://ee.fr.provider/dns-query{?dns}",
               "EE/FR Provider" /* ui_name */,
               "https://ee.fr.provider/privacy_policy/" /* privacy_policy */,
               false /* display_globally */,
               {"EE", "FR"} /* display_countries */),
           DohProviderEntry(
-              "Provider_FR", {} /*ip_strs */, {} /* dot_hostnames */,
+              "Provider_FR", net::DohProviderIdForHistogram(-4),
+              {} /*ip_strs */, {} /* dot_hostnames */,
               "https://fr.provider/dns-query{?dns}",
               "FR Provider" /* ui_name */,
               "https://fr.provider/privacy_policy/" /* privacy_policy */,
               false /* display_globally */, {"FR"} /* display_countries */),
           DohProviderEntry(
-              "Provider_Global2", {} /*ip_strs */, {} /* dot_hostnames */,
+              "Provider_Global2", net::DohProviderIdForHistogram(-5),
+              {} /*ip_strs */, {} /* dot_hostnames */,
               "https://global2.provider/dns-query{?dns}",
               "Global Provider 2" /* ui_name */,
               "https://global2.provider/privacy_policy/" /* privacy_policy */,
@@ -367,6 +375,26 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, DropdownListForCountry) {
                                "https://global2.provider/privacy_policy/"));
 }
 
+IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, DropdownListChange) {
+  // Populate the map for recording dropdown change metrics.
+  base::Value resolver_list = handler_->GetSecureDnsResolverListForCountry(
+      country_codes::CountryCharsToCountryID('E', 'E'),
+      GetDohProviderListForTesting());
+  EXPECT_EQ(4u, resolver_list.GetList().size());
+
+  base::HistogramTester histograms;
+  base::ListValue args;
+  args.AppendString("custom" /* old_provider */);
+  args.AppendString(
+      "https://global1.provider/dns-query{?dns}" /* new_provider */);
+  web_ui_.HandleReceivedMessage(kRecordUserDropdownInteraction, &args);
+
+  const std::string uma_base("Net.DNS.UI.DropdownSelectionEvent");
+  histograms.ExpectTotalCount(uma_base + ".Ignored", 2u);
+  histograms.ExpectTotalCount(uma_base + ".Selected", 1u);
+  histograms.ExpectTotalCount(uma_base + ".Unselected", 1u);
+}
+
 class SecureDnsHandlerTestWithDisabledProviders : public SecureDnsHandlerTest {
  protected:
   SecureDnsHandlerTestWithDisabledProviders() {
@@ -450,6 +478,7 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateValid) {
   args.AppendString(kWebUiFunctionName);
   args.AppendString("https://example.template/dns-query");
 
+  base::HistogramTester histograms;
   web_ui_.HandleReceivedMessage(kValidateCustomDnsEntry, &args);
   const content::TestWebUI::CallData& call_data = *web_ui_.call_data().back();
   EXPECT_EQ("cr.webUIResponse", call_data.function_name());
@@ -459,6 +488,8 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateValid) {
   // The template should be valid.
   ASSERT_EQ("https://example.template/dns-query",
             call_data.arg3()->GetString());
+  histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", false, 0);
+  histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", true, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateInvalid) {
@@ -466,6 +497,7 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateInvalid) {
   args.AppendString(kWebUiFunctionName);
   args.AppendString("invalid_template");
 
+  base::HistogramTester histograms;
   web_ui_.HandleReceivedMessage(kValidateCustomDnsEntry, &args);
   const content::TestWebUI::CallData& call_data = *web_ui_.call_data().back();
   EXPECT_EQ("cr.webUIResponse", call_data.function_name());
@@ -474,9 +506,12 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateInvalid) {
   ASSERT_TRUE(call_data.arg2()->GetBool());
   // The template should be invalid.
   ASSERT_EQ(std::string(), call_data.arg3()->GetString());
+  histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", false, 1);
+  histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", true, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, MultipleTemplates) {
+  base::HistogramTester histograms;
   base::ListValue args_valid;
   args_valid.AppendString(kWebUiFunctionName);
   args_valid.AppendString(
@@ -491,6 +526,8 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, MultipleTemplates) {
   // The second template should be valid.
   ASSERT_EQ("https://example.template/dns-query",
             call_data_valid.arg3()->GetString());
+  histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", false, 0);
+  histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", true, 1);
 
   base::ListValue args_invalid;
   args_invalid.AppendString(kWebUiFunctionName);
@@ -504,6 +541,8 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, MultipleTemplates) {
   ASSERT_TRUE(call_data_invalid.arg2()->GetBool());
   // The entry should be invalid.
   ASSERT_EQ(std::string(), call_data_invalid.arg3()->GetString());
+  histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", false, 1);
+  histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", true, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateProbeSuccess) {
@@ -517,6 +556,7 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateProbeSuccess) {
           std::vector<chrome_browser_net::FakeHostResolver::
                           SingleResult>() /* google_config_result_list */);
   handler_->SetNetworkContextForTesting(network_context_.get());
+  base::HistogramTester histograms;
   base::ListValue args_valid;
   args_valid.AppendString(kWebUiFunctionName);
   args_valid.AppendString("https://example.template/dns-query");
@@ -531,6 +571,8 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateProbeSuccess) {
   ASSERT_TRUE(call_data_valid.arg2()->GetBool());
   // The probe query should have succeeded.
   ASSERT_TRUE(call_data_valid.arg3()->GetBool());
+  histograms.ExpectBucketCount("Net.DNS.UI.ProbeAttemptSuccess", false, 0);
+  histograms.ExpectBucketCount("Net.DNS.UI.ProbeAttemptSuccess", true, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateProbeFailure) {
@@ -545,6 +587,7 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateProbeFailure) {
           std::vector<chrome_browser_net::FakeHostResolver::
                           SingleResult>() /* google_config_result_list */);
   handler_->SetNetworkContextForTesting(network_context_.get());
+  base::HistogramTester histograms;
   base::ListValue args_valid;
   args_valid.AppendString(kWebUiFunctionName);
   args_valid.AppendString("https://example.template/dns-query");
@@ -559,6 +602,8 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateProbeFailure) {
   ASSERT_TRUE(call_data_valid.arg2()->GetBool());
   // The probe query should have failed.
   ASSERT_FALSE(call_data_valid.arg3()->GetBool());
+  histograms.ExpectBucketCount("Net.DNS.UI.ProbeAttemptSuccess", false, 1);
+  histograms.ExpectBucketCount("Net.DNS.UI.ProbeAttemptSuccess", true, 0);
 }
 
 }  // namespace settings

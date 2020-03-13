@@ -92,7 +92,7 @@
 <translation id="4708774505295300557">前回このパソコンで別のユーザー（<ph name="ACCOUNT_EMAIL_LAST" />）が Chromium にログインしました。情報を個別に保持するには、新しい Chromium ユーザーを作成してください。</translation>
 <translation id="4746050847053251315">今すぐ Chromium を終了しますか？</translation>
 <translation id="4748217263233248895">Chromium の特別なセキュリティ アップデートが適用されました。今すぐ再起動してください。タブは復元されます。</translation>
-<translation id="4750035648288509542">アップデートが適用されました。更新を完了するには Chromium を再起動してください。シークレット ウィンドウは、再起動後は自動的に開かれません。</translation>
+<translation id="4750035648288509542">アップデートが適用されました。更新を完了するには Chromium を再起動してください。再起動後、シークレット ウィンドウは自動的に開きません。</translation>
 <translation id="479167709087336770">Google 検索と同じスペルチェックが使用されます。ブラウザに入力したテキストは Google に送信されます。この動作はいつでも設定で変更できます。</translation>
 <translation id="4888717733111232871">mDNS トラフィックを許可する Chromium のインバウンド ルールです。</translation>
 <translation id="4943838377383847465">Chromium はバックグラウンド モードです。</translation>

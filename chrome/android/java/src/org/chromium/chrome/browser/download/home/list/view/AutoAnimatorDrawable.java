@@ -13,9 +13,9 @@ import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.RotateDrawable;
 import android.graphics.drawable.ScaleDrawable;
 import android.os.Build;
-import android.support.v7.graphics.drawable.DrawableWrapper;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.graphics.drawable.DrawableWrapper;
 import androidx.vectordrawable.graphics.drawable.Animatable2Compat;
 
 import org.chromium.base.task.PostTask;

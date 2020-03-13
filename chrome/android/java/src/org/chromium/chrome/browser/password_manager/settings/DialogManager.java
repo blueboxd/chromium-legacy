@@ -4,11 +4,10 @@
 
 package org.chromium.chrome.browser.password_manager.settings;
 
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
-
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.content_public.browser.UiThreadTaskTraits;

@@ -1273,15 +1273,16 @@ bool ServerBookmarksEqualityChecker::IsExitConditionSatisfied(
     auto it =
         std::find_if(expected.begin(), expected.end(),
                      [actual_specifics](const ExpectedBookmark& bookmark) {
-                       return actual_specifics.title() == bookmark.title &&
+                       return actual_specifics.legacy_canonicalized_title() ==
+                                  bookmark.title &&
                               actual_specifics.url() == bookmark.url;
                      });
     if (it != expected.end()) {
       expected.erase(it);
     } else {
       ADD_FAILURE() << "Could not find expected bookmark with title '"
-                    << actual_specifics.title() << "' and URL '"
-                    << actual_specifics.url() << "'";
+                    << actual_specifics.legacy_canonicalized_title()
+                    << "' and URL '" << actual_specifics.url() << "'";
     }
   }
 

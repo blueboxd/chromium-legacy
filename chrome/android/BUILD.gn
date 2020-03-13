@@ -329,6 +329,7 @@ android_library("chrome_java") {
     "//components/search_engines/android:java",
     "//components/security_interstitials/content/android:java",
     "//components/security_state/content/android:java",
+    "//components/security_state/core:security_state_enums_java",
     "//components/signin/core/browser/android:java",
     "//components/signin/public/android:java",
     "//components/spellcheck/browser/android:java",
@@ -831,12 +832,14 @@ android_library("chrome_test_java") {
     "//components/download/network:network_java",
     "//components/download/public/common:public_java",
     "//components/embedder_support/android:content_view_java",
+    "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/external_intents/android:java",
     "//components/feature_engagement:feature_engagement_java",
     "//components/gcm_driver/android:gcm_driver_java",
     "//components/gcm_driver/instance_id/android:instance_id_driver_java",
     "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
+    "//components/infobars/core:infobar_enums_java",
     "//components/javascript_dialogs/android:java",
     "//components/location/android:location_java",
     "//components/metrics:metrics_java",
@@ -857,6 +860,7 @@ android_library("chrome_test_java") {
     "//components/schema_org/common:mojom_java",
     "//components/search_engines/android:java",
     "//components/security_interstitials/content/android:java",
+    "//components/security_state/core:security_state_enums_java",
     "//components/signin/core/browser/android:java",
     "//components/signin/core/browser/android:signin_java_test_support",
     "//components/signin/core/browser/android:signin_javatests",
@@ -2332,6 +2336,7 @@ group("chrome_public_wpt") {
   data_deps = [
     ":chrome_public_apk",
     "//build/android:test_runner_py",
+    "//chrome/test/chromedriver:chromedriver($host_toolchain)",
   ]
   set_sources_assignment_filter([ "#*" ])
   sources = read_file("//testing/scripts/run_android_wpt.pydeps", "list lines")

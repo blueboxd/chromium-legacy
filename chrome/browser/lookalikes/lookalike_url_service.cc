@@ -22,6 +22,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/lookalikes/lookalike_url_util.h"
 #include "components/url_formatter/spoof_checks/top_domains/top_domain_util.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -70,56 +71,6 @@ class LookalikeUrlServiceFactory : public BrowserContextKeyedServiceFactory {
 };
 
 }  // namespace
-
-std::string GetETLDPlusOne(const std::string& hostname) {
-  return net::registry_controlled_domains::GetDomainAndRegistry(
-      hostname, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-}
-
-DomainInfo::DomainInfo(const std::string& arg_domain_and_registry,
-                       const std::string& arg_domain_without_registry,
-                       const url_formatter::IDNConversionResult& arg_idn_result,
-                       const url_formatter::Skeletons& arg_skeletons)
-    : domain_and_registry(arg_domain_and_registry),
-      domain_without_registry(arg_domain_without_registry),
-      idn_result(arg_idn_result),
-      skeletons(arg_skeletons) {}
-
-DomainInfo::~DomainInfo() = default;
-
-DomainInfo::DomainInfo(const DomainInfo&) = default;
-
-DomainInfo GetDomainInfo(const GURL& url) {
-  if (net::IsLocalhost(url) || net::IsHostnameNonUnique(url.host())) {
-    return DomainInfo(std::string(), std::string(),
-                      url_formatter::IDNConversionResult(),
-                      url_formatter::Skeletons());
-  }
-  // Perform all computations on eTLD+1.
-  const std::string domain_and_registry = GetETLDPlusOne(url.host());
-  const std::string domain_without_registry =
-      domain_and_registry.empty()
-          ? std::string()
-          : url_formatter::top_domains::HostnameWithoutRegistry(
-                domain_and_registry);
-
-  // eTLD+1 can be empty for private domains.
-  if (domain_and_registry.empty()) {
-    return DomainInfo(domain_and_registry, domain_without_registry,
-                      url_formatter::IDNConversionResult(),
-                      url_formatter::Skeletons());
-  }
-  // Compute skeletons using eTLD+1, skipping all spoofing checks. Spoofing
-  // checks in url_formatter can cause the converted result to be punycode.
-  // We want to avoid this in order to get an accurate skeleton for the unicode
-  // version of the domain.
-  const url_formatter::IDNConversionResult idn_result =
-      url_formatter::UnsafeIDNToUnicodeWithDetails(domain_and_registry);
-  const url_formatter::Skeletons skeletons =
-      url_formatter::GetSkeletons(idn_result.result);
-  return DomainInfo(domain_and_registry, domain_without_registry, idn_result,
-                    skeletons);
-}
 
 LookalikeUrlService::LookalikeUrlService(Profile* profile)
     : profile_(profile), clock_(base::DefaultClock::GetInstance()) {}

@@ -159,6 +159,10 @@ void FakeLocalFrameHost::UpdateFaviconURL(
 void FakeLocalFrameHost::DownloadURL(
     mojom::blink::DownloadURLParamsPtr params) {}
 
+void FakeLocalFrameHost::FocusedElementChanged(
+    bool is_editable_element,
+    const gfx::Rect& bounds_in_frame_widget) {}
+
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::LocalFrameHost>(

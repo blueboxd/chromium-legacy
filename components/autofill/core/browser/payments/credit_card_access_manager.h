@@ -159,6 +159,7 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   void OnCVCAuthenticationComplete(
       const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response)
       override;
+  bool ShouldOfferFidoAuth() const override;
 
 #if !defined(OS_IOS)
   // CreditCardFIDOAuthenticator::Requester:

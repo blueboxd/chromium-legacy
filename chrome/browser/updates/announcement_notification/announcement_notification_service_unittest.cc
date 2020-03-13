@@ -14,11 +14,13 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +31,7 @@ using testing::Return;
 
 namespace {
 
-const char kProfileId[] = "dummy_profile";
+const char kProfileId[] = "dummy@gmail.com";
 const char kRemoteUrl[] = "www.example.com";
 
 class MockDelegate : public AnnouncementNotificationService::Delegate {
@@ -87,7 +89,8 @@ class AnnouncementNotificationServiceTest : public testing::Test {
             bool enable_feature,
             bool sign_in,
             int current_version,
-            bool new_profile) {
+            bool new_profile,
+            bool guest_session = false) {
     if (enable_feature) {
       scoped_feature_list_.InitAndEnableFeatureWithParameters(
           kAnnouncementNotification, parameters);
@@ -99,8 +102,23 @@ class AnnouncementNotificationServiceTest : public testing::Test {
     test_profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(test_profile_manager_->SetUp());
-    test_profile_ =
-        test_profile_manager_->CreateTestingProfile("dummy@gmail.com");
+
+    // Build the testing profile.
+    TestingProfile::Builder builder;
+    builder.SetPath(
+        test_profile_manager_->profiles_dir().AppendASCII(kProfileId));
+    std::unique_ptr<sync_preferences::PrefServiceSyncable>();
+    builder.SetPrefService(
+        std::unique_ptr<sync_preferences::PrefServiceSyncable>());
+    builder.SetProfileName(kProfileId);
+    builder.OverrideIsNewProfile(new_profile);
+    if (guest_session)
+      builder.SetGuestSession();
+    test_profile_ = builder.Build();
+
+    // Mock the sign in profile data.
+    DCHECK_EQ(test_profile_->GetPath(),
+              test_profile_manager_->profiles_dir().AppendASCII(kProfileId));
     std::string gaia_id = sign_in ? "dummy_gaia_id" : std::string();
     test_profile_manager_->profile_attributes_storage()->AddProfile(
         test_profile_manager_->profiles_dir().AppendASCII(kProfileId),
@@ -118,19 +136,19 @@ class AnnouncementNotificationServiceTest : public testing::Test {
     auto delegate = std::make_unique<NiceMock<MockDelegate>>();
     delegate_ = delegate.get();
     service_ = base::WrapUnique<AnnouncementNotificationService>(
-        AnnouncementNotificationService::Create(
-            test_profile_manager_->profiles_dir().AppendASCII(kProfileId),
-            new_profile, pref_service_.get(), std::move(delegate), &clock_));
+        AnnouncementNotificationService::Create(test_profile_.get(),
+                                                pref_service_.get(),
+                                                std::move(delegate), &clock_));
   }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
-  TestingProfile* test_profile_;
   std::unique_ptr<TestingProfileManager> test_profile_manager_;
   base::SimpleTestClock clock_;
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<AnnouncementNotificationService> service_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<TestingProfile> test_profile_;
   MockDelegate* delegate_ = nullptr;
   DISALLOW_COPY_AND_ASSIGN(AnnouncementNotificationServiceTest);
 };
@@ -152,6 +170,16 @@ TEST_F(AnnouncementNotificationServiceTest, SkipNewProfile) {
       {kSkipFirstRun, "false"}, {kVersion, "2"}, {kSkipNewProfile, "true"}};
   Init(parameters, true, false, 1, true /*new_profile*/);
 
+  ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(false));
+  EXPECT_CALL(*delegate(), ShowNotification()).Times(0);
+  service()->MaybeShowNotification();
+  EXPECT_EQ(CurrentVersionPref(), 2);
+}
+
+TEST_F(AnnouncementNotificationServiceTest, SkipGuestProfile) {
+  std::map<std::string, std::string> parameters = {
+      {kSkipFirstRun, "false"}, {kVersion, "2"}, {kSkipNewProfile, "false"}};
+  Init(parameters, true, false, 1, false, /*guest_profile=*/true);
   ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(false));
   EXPECT_CALL(*delegate(), ShowNotification()).Times(0);
   service()->MaybeShowNotification();

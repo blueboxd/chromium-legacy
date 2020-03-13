@@ -32,12 +32,29 @@
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/browser_context.h"
-#include "crypto/signature_verifier.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
+#include "net/cert/asn1_util.h"
+#include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/ssl/client_cert_identity.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/cryptohome/dbus-constants.h"
+
+namespace {
+
+// Extracts the SubjectPublicKeyInfo from the given certificate.
+std::string GetCertSpki(const net::X509Certificate& certificate) {
+  base::StringPiece spki_bytes;
+  if (!net::asn1::ExtractSPKIFromDERCert(
+          net::x509_util::CryptoBufferAsStringPiece(certificate.cert_buffer()),
+          &spki_bytes)) {
+    return {};
+  }
+  return spki_bytes.as_string();
+}
+
+}  // namespace
 
 // Tests for the CryptohomeKeyDelegateServiceProvider class.
 class CryptohomeKeyDelegateServiceProviderTest
@@ -115,7 +132,7 @@ class CryptohomeKeyDelegateServiceProviderTest
         cryptohome::KeyChallengeRequest::CHALLENGE_TYPE_SIGNATURE);
     request.mutable_signature_request_data()->set_data_to_sign(kDataToSign);
     request.mutable_signature_request_data()->set_public_key_spki_der(
-        cert_provider_extension()->GetCertificateSpki());
+        GetCertSpki(*cert_provider_extension()->certificate()));
     request.mutable_signature_request_data()->set_signature_algorithm(
         signature_algorithm);
 
@@ -145,7 +162,8 @@ class CryptohomeKeyDelegateServiceProviderTest
   // data.
   bool IsSignatureValid(crypto::SignatureVerifier::SignatureAlgorithm algorithm,
                         const std::vector<uint8_t>& signature) const {
-    const std::string spki = cert_provider_extension()->GetCertificateSpki();
+    const std::string spki =
+        GetCertSpki(*cert_provider_extension()->certificate());
     crypto::SignatureVerifier verifier;
     if (!verifier.VerifyInit(algorithm, signature,
                              base::as_bytes(base::make_span(spki)))) {
@@ -170,8 +188,7 @@ class CryptohomeKeyDelegateServiceProviderTest
       &mixin_host_,
       chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
   TestCertificateProviderExtensionLoginScreenMixin
-      cert_provider_extension_mixin_{&mixin_host_, &device_state_mixin_,
-                                     /*load_extension_immediately=*/true};
+      cert_provider_extension_mixin_{&mixin_host_, &device_state_mixin_};
 
   chromeos::CryptohomeKeyDelegateServiceProvider service_provider_;
   std::unique_ptr<chromeos::ServiceProviderTestHelper>

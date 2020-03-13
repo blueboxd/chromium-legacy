@@ -59,6 +59,7 @@ class COMPONENT_EXPORT(EVDEV) NeuralStylusPalmDetectionFilter
       std::vector<std::pair<float, int>>* nearest_strokes) const;
   void FindBiggestNeighborsWithin(
       int neighbor_count,
+      unsigned long min_sample_count,
       float max_distance,
       const PalmFilterStroke& stroke,
       std::vector<std::pair<float, int>>* biggest_strokes) const;

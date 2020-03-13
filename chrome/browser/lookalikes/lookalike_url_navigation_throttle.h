@@ -8,6 +8,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/engagement/site_engagement_details.mojom.h"
@@ -24,15 +25,6 @@ class Profile;
 
 struct DomainInfo;
 
-// Returns true if the domain given by |domain_info| is a top domain.
-bool IsTopDomain(const DomainInfo& domain_info);
-
-// Returns true if the Levenshtein distance between |str1| and |str2| is at most
-// one. This has O(max(n,m)) complexity as opposed to O(n*m) of the usual edit
-// distance computation.
-bool IsEditDistanceAtMostOne(const base::string16& str1,
-                             const base::string16& str2);
-
 // Returns true if the redirect is deemed to be safe. These are generally
 // defensive registrations where the domain owner redirects the IDN to the ASCII
 // domain. See the unit tests for examples.
@@ -45,24 +37,6 @@ bool IsSafeRedirect(const std::string& safe_url_host,
 // is visually similar to a top domain or a domain with a site engagement score.
 class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
  public:
-  // Used for metrics. Multiple events can occur per navigation.
-  enum class NavigationSuggestionEvent {
-    kNone = 0,
-    // Interstitial results recorded using security_interstitials::MetricsHelper
-    // kInfobarShown = 1,
-    // kLinkClicked = 2,
-    kMatchTopSite = 3,
-    kMatchSiteEngagement = 4,
-    kMatchEditDistance = 5,
-    kMatchEditDistanceSiteEngagement = 6,
-
-    // Append new items to the end of the list above; do not modify or
-    // replace existing values. Comment out obsolete items.
-    kMaxValue = kMatchEditDistanceSiteEngagement,
-  };
-
-  static const char kHistogramName[];
-
   explicit LookalikeUrlNavigationThrottle(content::NavigationHandle* handle);
   ~LookalikeUrlNavigationThrottle() override;
 
@@ -74,25 +48,7 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
   static std::unique_ptr<LookalikeUrlNavigationThrottle>
   MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle);
 
-  static bool ShouldDisplayInterstitial(
-      LookalikeUrlBlockingPage::MatchType match_type,
-      const DomainInfo& navigated_domain);
-
-  // Returns true if a domain is visually similar to the hostname of |url|. The
-  // matching domain can be a top domain or an engaged site. Similarity
-  // check is made using both visual skeleton and edit distance comparison.  If
-  // this returns true, match details will be written into |matched_domain|.
-  // Pointer arguments can't be nullptr.
-  static bool GetMatchingDomain(
-      const DomainInfo& navigated_domain,
-      const std::vector<DomainInfo>& engaged_sites,
-      std::string* matched_domain,
-      LookalikeUrlBlockingPage::MatchType* match_type);
-
  private:
-  FRIEND_TEST_ALL_PREFIXES(LookalikeUrlNavigationThrottleTest,
-                           IsEditDistanceAtMostOne);
-
   // Checks whether the navigation to |url| can proceed. If
   // |check_safe_redirect| is true, will check if a safe redirect led to |url|.
   ThrottleCheckResult HandleThrottleRequest(const GURL& url,
@@ -112,11 +68,10 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
                              bool check_safe_redirect,
                              const std::vector<DomainInfo>& engaged_sites);
 
-  ThrottleCheckResult ShowInterstitial(
-      const GURL& safe_domain,
-      const GURL& url,
-      ukm::SourceId source_id,
-      LookalikeUrlBlockingPage::MatchType match_type);
+  ThrottleCheckResult ShowInterstitial(const GURL& safe_domain,
+                                       const GURL& url,
+                                       ukm::SourceId source_id,
+                                       LookalikeUrlMatchType match_type);
 
   bool interstitials_enabled_;
 

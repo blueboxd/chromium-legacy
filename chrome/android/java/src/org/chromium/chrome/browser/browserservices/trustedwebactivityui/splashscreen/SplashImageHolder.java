@@ -18,7 +18,7 @@ import javax.inject.Singleton;
 
 /**
  * Stores the splash images received from TWA clients between the call to
- * {@link android.support.customtabs.CustomTabsService#receiveFile} and a Trusted Web Activity
+ * {@link androidx.browser.customtabs.CustomTabsService#receiveFile} and a Trusted Web Activity
  * claiming the image.
  *
  * This class is thread-safe.

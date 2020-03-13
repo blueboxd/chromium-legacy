@@ -41,8 +41,8 @@ import os
 import subprocess
 
 import ar
-import concurrent
 import models
+import parallel
 import path_util
 
 
@@ -257,7 +257,7 @@ def _AnnotateStringData(string_data, path_value_gen):
 # This is a target for BulkForkAndCall().
 def ResolveStringPiecesIndirect(encoded_string_addresses_by_path, string_data,
                                 tool_prefix, output_directory):
-  string_addresses_by_path = concurrent.DecodeDictOfLists(
+  string_addresses_by_path = parallel.DecodeDictOfLists(
       encoded_string_addresses_by_path)
   # Assign |target| as archive path, or a list of object paths.
   any_path = next(string_addresses_by_path.iterkeys())
@@ -279,13 +279,13 @@ def ResolveStringPiecesIndirect(encoded_string_addresses_by_path, string_data,
         yield path, value
 
   ret = _AnnotateStringData(string_data, GeneratePathAndValues())
-  return [concurrent.EncodeDictOfLists(x) for x in ret]
+  return [parallel.EncodeDictOfLists(x) for x in ret]
 
 
 # This is a target for BulkForkAndCall().
 def ResolveStringPieces(encoded_strings_by_path, string_data):
   # ast.literal_eval() undoes repr() applied to strings.
-  strings_by_path = concurrent.DecodeDictOfLists(
+  strings_by_path = parallel.DecodeDictOfLists(
       encoded_strings_by_path, value_transform=ast.literal_eval)
 
   def GeneratePathAndValues():
@@ -294,7 +294,7 @@ def ResolveStringPieces(encoded_strings_by_path, string_data):
         yield path, value
 
   ret = _AnnotateStringData(string_data, GeneratePathAndValues())
-  return [concurrent.EncodeDictOfLists(x) for x in ret]
+  return [parallel.EncodeDictOfLists(x) for x in ret]
 
 
 def ReadStringLiterals(symbols, elf_path, tool_prefix, all_rodata=False):

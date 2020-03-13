@@ -10,7 +10,10 @@
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_mock_clock_override.h"
-#include "base/test/task_environment.h"
+#include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,17 +31,28 @@ class CrOSActionRecorderTest : public testing::Test {
  protected:
   void SetUp() override {
     Test::SetUp();
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    model_dir_ = temp_dir_.GetPath().Append("cros_action_history");
-    ASSERT_TRUE(base::IsDirectoryEmpty(model_dir_));
+    profile_ = std::make_unique<TestingProfile>();
+
+    model_dir_ =
+        profile_->GetPath().AppendASCII(CrOSActionRecorder::kActionHistoryDir);
+    download_filename_ =
+        DownloadPrefs(profile_.get())
+            .GetDefaultDownloadDirectoryForProfile()
+            .AppendASCII(CrOSActionRecorder::kActionHistoryBasename);
 
     actions_ = {"Action0", "Action1", "Action2"};
     conditions_ = {"Condition0", "Condition1", "Condition2"};
 
     save_internal_secs_ = CrOSActionRecorder::kSaveInternal.InSeconds();
-
     // Set time_ to be base::Time::UnixEpoch().
     time_.Advance(base::TimeDelta::FromSeconds(11612937600));
+  }
+
+  void TearDown() override {
+    Test::TearDown();
+    // Delete download_filename_ because it is put into a directory that may not
+    // be deleted automatically.
+    base::DeleteFile(download_filename_, false);
   }
 
   CrOSActionHistoryProto GetCrOSActionHistory() { return recorder_->actions_; }
@@ -50,8 +64,8 @@ class CrOSActionRecorderTest : public testing::Test {
     }
     // Have to use base::WrapUnique instead of std::make_unique because the
     // constructor is private.
-    recorder_ = base::WrapUnique(new CrOSActionRecorder(
-        model_dir_, model_dir_.Append("cros-action-history.pb")));
+    recorder_ = base::WrapUnique(new CrOSActionRecorder(profile_.get()));
+
     Wait();
   }
 
@@ -74,9 +88,7 @@ class CrOSActionRecorderTest : public testing::Test {
     SetCrOSActionRecorderType(ash::switches::kCrOSActionRecorderDisabled);
   }
 
-  // Read and Parse log from basename file.
-  CrOSActionHistoryProto ReadLog(const std::string& basename) {
-    const base::FilePath action_file_path = model_dir_.Append(basename);
+  CrOSActionHistoryProto ReadLog(const base::FilePath& action_file_path) {
     std::string proto_str;
     CHECK(base::ReadFileToString(action_file_path, &proto_str));
     CrOSActionHistoryProto actions_history;
@@ -84,11 +96,16 @@ class CrOSActionRecorderTest : public testing::Test {
     return actions_history;
   }
 
+  // Read and Parse log from basename file.
+  CrOSActionHistoryProto ReadLog(const std::string& basename) {
+    return ReadLog(model_dir_.AppendASCII(basename));
+  }
+
   void WriteLog(const CrOSActionHistoryProto& proto, const int day) {
     ASSERT_TRUE(base::PathExists(model_dir_) ||
                 base::CreateDirectory(model_dir_));
     const base::FilePath action_file_path =
-        model_dir_.Append(base::NumberToString(day));
+        model_dir_.AppendASCII(base::NumberToString(day));
     const std::string proto_str = proto.SerializeAsString();
     ASSERT_TRUE(
         base::WriteFile(action_file_path, proto_str.data(), proto_str.size()));
@@ -112,17 +129,17 @@ class CrOSActionRecorderTest : public testing::Test {
 
   void Wait() { task_environment_.RunUntilIdle(); }
 
+  content::BrowserTaskEnvironment task_environment_;
+  base::ScopedMockClockOverride time_;
+  std::unique_ptr<Profile> profile_;
+
+  int64_t save_internal_secs_ = 0;
+  base::FilePath model_dir_;
+  base::FilePath download_filename_;
   std::vector<std::string> actions_;
   std::vector<std::string> conditions_;
 
   std::unique_ptr<CrOSActionRecorder> recorder_;
-  base::ScopedTempDir temp_dir_;
-  base::FilePath model_dir_;
-  int64_t save_internal_secs_ = 0;
-  base::ScopedMockClockOverride time_;
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::DEFAULT,
-      base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED};
 };
 
 // Log is disabled by default.
@@ -246,7 +263,8 @@ TEST_F(CrOSActionRecorderTest, CopyToDownloadDir) {
 
   // Check they are merged into one file in the expected order.
   const CrOSActionHistoryProto action_history_merged =
-      ReadLog("cros-action-history.pb");
+      ReadLog(download_filename_);
+
   EXPECT_EQ(action_history_merged.actions_size(), 3);
 
   ExpectCrOSAction(action_history_merged.actions(0), 0, 0, false);
@@ -269,14 +287,11 @@ TEST_F(CrOSActionRecorderTest, LogToHomeDoesNotTriggerCopy) {
   condition1.set_value(1 + kConditionValue);
   WriteLog(proto1, 1);
 
-  const base::FilePath action_history =
-      model_dir_.Append("cros-action-history.pb");
+  SetLogWithoutHash();
+  EXPECT_FALSE(base::PathExists(download_filename_));
 
   SetLogWithoutHash();
-  EXPECT_FALSE(base::PathExists(action_history));
-
-  SetLogWithoutHash();
-  EXPECT_FALSE(base::PathExists(action_history));
+  EXPECT_FALSE(base::PathExists(download_filename_));
 }
 
 // Check SetLogDisabled removes everything in the cros action directory.

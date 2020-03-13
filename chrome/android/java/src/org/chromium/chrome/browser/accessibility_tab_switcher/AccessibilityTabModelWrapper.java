@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.accessibility_tab_switcher;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
@@ -14,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.content.res.AppCompatResources;
 
 import com.google.android.material.tabs.TabLayout;
 

@@ -19,6 +19,13 @@
 namespace autofill {
 namespace payments {
 
+bool FullCardRequest::UIDelegate::ShouldOfferFidoAuth() const {
+  // This will always be false for Desktop since FIDO authentication is offered
+  // as a separate prompt after the CVC prompt. On Android, however, this may be
+  // overridden.
+  return false;
+}
+
 FullCardRequest::FullCardRequest(RiskDataLoader* risk_data_loader,
                                  payments::PaymentsClient* payments_client,
                                  PersonalDataManager* personal_data_manager)
@@ -150,6 +157,10 @@ void FullCardRequest::OnUnmaskPromptClosed() {
     result_delegate_->OnFullCardRequestFailed();
 
   Reset();
+}
+
+bool FullCardRequest::ShouldOfferFidoAuth() const {
+  return ui_delegate_ && ui_delegate_->ShouldOfferFidoAuth();
 }
 
 void FullCardRequest::OnDidGetUnmaskRiskData(const std::string& risk_data) {

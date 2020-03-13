@@ -52,9 +52,9 @@ import threading
 import traceback
 
 import bcanalyzer
-import concurrent
 import demangle
 import nm
+import parallel
 import string_extract
 
 
@@ -131,8 +131,10 @@ class _BulkObjectFileAnalyzerWorker(object):
   def _DoBulkFork(self, runner, batches):
     # Order of the jobs doesn't matter since each job owns independent paths,
     # and our output is a dict where paths are the key.
-    return concurrent.BulkForkAndCall(
-        runner, batches, tool_prefix=self._tool_prefix,
+    return parallel.BulkForkAndCall(
+        runner,
+        batches,
+        tool_prefix=self._tool_prefix,
         output_directory=self._output_directory)
 
   def _RunNm(self, paths_by_type):
@@ -150,12 +152,12 @@ class _BulkObjectFileAnalyzerWorker(object):
     total_no_symbols = 0
     for encoded_syms, encoded_strs, num_no_symbols in results:
       total_no_symbols += num_no_symbols
-      symbol_names_by_path = concurrent.DecodeDictOfLists(encoded_syms)
+      symbol_names_by_path = parallel.DecodeDictOfLists(encoded_syms)
       for path, names in symbol_names_by_path.iteritems():
         for name in names:
           all_paths_by_name[name].append(path)
 
-      if encoded_strs != concurrent.EMPTY_ENCODED_DICT:
+      if encoded_strs != parallel.EMPTY_ENCODED_DICT:
         self._encoded_string_addresses_by_path_chunks.append(encoded_strs)
     if total_no_symbols:
       logging.warn('nm found no symbols in %d objects.', total_no_symbols)
@@ -167,7 +169,7 @@ class _BulkObjectFileAnalyzerWorker(object):
     results = self._DoBulkFork(
         bcanalyzer.RunBcAnalyzerOnIntermediates, batches)
     for encoded_strs in results:
-      if encoded_strs != concurrent.EMPTY_ENCODED_DICT:
+      if encoded_strs != parallel.EMPTY_ENCODED_DICT:
         self._encoded_strings_by_path_chunks.append(encoded_strs);
 
   def AnalyzePaths(self, paths):
@@ -203,9 +205,11 @@ class _BulkObjectFileAnalyzerWorker(object):
         for chunk in self._encoded_string_addresses_by_path_chunks)
     # Order of the jobs doesn't matter since each job owns independent paths,
     # and our output is a dict where paths are the key.
-    results = concurrent.BulkForkAndCall(
-        string_extract.ResolveStringPiecesIndirect, params,
-        string_data=string_data, tool_prefix=self._tool_prefix,
+    results = parallel.BulkForkAndCall(
+        string_extract.ResolveStringPiecesIndirect,
+        params,
+        string_data=string_data,
+        tool_prefix=self._tool_prefix,
         output_directory=self._output_directory)
     return list(results)
 
@@ -213,7 +217,7 @@ class _BulkObjectFileAnalyzerWorker(object):
     params = ((chunk,) for chunk in self._encoded_strings_by_path_chunks)
     # Order of the jobs doesn't matter since each job owns independent paths,
     # and our output is a dict where paths are the key.
-    results = concurrent.BulkForkAndCall(
+    results = parallel.BulkForkAndCall(
         string_extract.ResolveStringPieces, params, string_data=string_data)
     return list(results)
 
@@ -234,15 +238,17 @@ class _BulkObjectFileAnalyzerWorker(object):
       for encoded_ranges in encoded_ranges_sources:  # [source_idx].
         t.extend([b[section_idx] for b in encoded_ranges])  # [batch_idx].
       self._list_of_encoded_elf_string_ranges_by_path.append(
-        concurrent.JoinEncodedDictOfLists(t))
+          parallel.JoinEncodedDictOfLists(t))
     logging.debug('worker: AnalyzeStringLiterals() completed.')
 
   def GetSymbolNames(self):
     return self._paths_by_name
 
   def GetStringPositions(self):
-    return [concurrent.DecodeDictOfLists(x, value_transform=_DecodePosition)
-            for x in self._list_of_encoded_elf_string_ranges_by_path]
+    return [
+        parallel.DecodeDictOfLists(x, value_transform=_DecodePosition)
+        for x in self._list_of_encoded_elf_string_ranges_by_path
+    ]
 
   def GetEncodedStringPositions(self):
     return self._list_of_encoded_elf_string_ranges_by_path
@@ -308,15 +314,17 @@ class _BulkObjectFileAnalyzerMaster(object):
     self._pipe.recv()  # None
     logging.debug('Decoding nm results from forked process')
     encoded_paths_by_name = self._pipe.recv()
-    return concurrent.DecodeDictOfLists(encoded_paths_by_name)
+    return parallel.DecodeDictOfLists(encoded_paths_by_name)
 
   def GetStringPositions(self):
     self._pipe.send((_MSG_GET_STRINGS,))
     self._pipe.recv()  # None
     logging.debug('Decoding string symbol results from forked process')
     result = self._pipe.recv()
-    return [concurrent.DecodeDictOfLists(x, value_transform=_DecodePosition)
-            for x in result]
+    return [
+        parallel.DecodeDictOfLists(x, value_transform=_DecodePosition)
+        for x in result
+    ]
 
   def Close(self):
     self._pipe.close()
@@ -376,7 +384,7 @@ class _BulkObjectFileAnalyzerSlave(object):
       self._WaitForAnalyzePathJobs()
       self._pipe.send(None)
       paths_by_name = self._worker_analyzer.GetSymbolNames()
-      self._pipe.send(concurrent.EncodeDictOfLists(paths_by_name))
+      self._pipe.send(parallel.EncodeDictOfLists(paths_by_name))
     elif message[0] == _MSG_GET_STRINGS:
       self._job_queue.join()
       # Send a None packet so that other side can measure IPC transfer time.
@@ -400,7 +408,7 @@ class _BulkObjectFileAnalyzerSlave(object):
 
 
 BulkObjectFileAnalyzer = _BulkObjectFileAnalyzerMaster
-if concurrent.DISABLE_ASYNC:
+if parallel.DISABLE_ASYNC:
   BulkObjectFileAnalyzer = _BulkObjectFileAnalyzerWorker
 
 
@@ -422,7 +430,7 @@ def main():
     bulk_analyzer = _BulkObjectFileAnalyzerMaster(
         args.tool_prefix, args.output_directory)
   else:
-    concurrent.DISABLE_ASYNC = True
+    parallel.DISABLE_ASYNC = True
     bulk_analyzer = _BulkObjectFileAnalyzerWorker(
         args.tool_prefix, args.output_directory)
 

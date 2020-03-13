@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_DEPRECATED_STORAGE_QUOTA_H_
 
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/mojom/quota/quota_dispatcher_host.mojom-blink.h"
+#include "third_party/blink/public/mojom/quota/quota_manager_host.mojom-blink.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -72,10 +72,10 @@ class DeprecatedStorageQuota final : public ScriptWrappable {
  private:
   // Binds the interface (if not already bound) with the given interface
   // provider, and returns it,
-  mojom::blink::QuotaDispatcherHost* GetQuotaHost(ExecutionContext*);
+  mojom::blink::QuotaManagerHost* GetQuotaHost(ExecutionContext*);
 
   Type type_;
-  mojo::Remote<mojom::blink::QuotaDispatcherHost> quota_host_;
+  mojo::Remote<mojom::blink::QuotaManagerHost> quota_host_;
 };
 
 }  // namespace blink

@@ -105,6 +105,9 @@ struct NET_EXPORT DnsConfig {
   base::TimeDelta timeout;
   // Maximum number of attempts, see res_state.retry.
   int attempts;
+  // Maximum number of times a DoH server is attempted per attempted per DNS
+  // transaction. This is separate from the global failure limit.
+  int doh_attempts;
   // Round robin entries in |nameservers| for subsequent requests.
   bool rotate;
 

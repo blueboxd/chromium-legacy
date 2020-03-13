@@ -54,6 +54,7 @@
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
 #include "net/third_party/quiche/src/quic/test_tools/qpack/qpack_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_session_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -583,6 +584,13 @@ class BidirectionalStreamQuicImplTest
     TestCompletionCallback callback;
     session_->CryptoConnect(callback.callback());
     EXPECT_TRUE(session_->IsEncryptionEstablished());
+    if (VersionUsesHttp3(version_.transport_version)) {
+      // Let the stream id manager know that the fake handshake is done and
+      // outgoing streams can be created.
+      quic::test::QuicSessionPeer::v99_streamid_manager(
+          static_cast<quic::QuicSession*>(session_.get()))
+          ->OnConfigNegotiated();
+    }
   }
 
   void ConfirmHandshake() {
@@ -2516,12 +2524,6 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
 // QuicChromiumClientSession::Handle::ReleaseStream() is called, there is no
 // crash. Regression test for crbug.com/754823.
 TEST_P(BidirectionalStreamQuicImplTest, ReleaseStreamFails) {
-  if (VersionHasIetfQuicFrames(version_.transport_version)) {
-    // Re-enable after crbug.com/1060765 is fixed.
-    // Session should be configured before creating streams.
-    return;
-  }
-
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   Initialize();
 

@@ -4,10 +4,9 @@
 
 package org.chromium.chrome.browser.night_mode;
 
-import android.support.v7.app.AppCompatDelegate;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.app.AppCompatDelegate;
 
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;

@@ -12,6 +12,7 @@
 <translation id="1979103255016296513">கடவுச்சொல்லை மாற்ற வேண்டும்</translation>
 <translation id="2049639323467105390"><ph name="DOMAIN" /> ஆல் இந்த சாதனம் நிர்வகிக்கப்படுகிறது.</translation>
 <translation id="2338501278241028356">அருகிலுள்ள சாதனங்களைக் கண்டறிய, புளூடூத்தை இயக்கவும்</translation>
+<translation id="2375079107209812402"><ph name="ATTEMPTS_LEFT" /> முயற்சிகள் மீதமுள்ளன</translation>
 <translation id="2805756323405976993">ஆப்ஸ்</translation>
 <translation id="2872961005593481000">நிறுத்து</translation>
 <translation id="3008341117444806826">புதுப்பி</translation>
@@ -42,6 +43,7 @@
 <translation id="808894953321890993">கடவுச்சொல்லை மாற்று</translation>
 <translation id="8208861521865154048">சலுகைகள்</translation>
 <translation id="8747900814994928677">மாற்றத்தை உறுதிப்படுத்துங்கள்</translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> முயற்சிகள் மீதமுள்ளன</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> வலைதளத்திற்கான டிக்கெட்டை ரெஃப்ரெஷ் செய்யவும்</translation>
 <translation id="9111102763498581341">பூட்டைத் திற</translation>
 </translationbundle>

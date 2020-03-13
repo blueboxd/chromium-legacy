@@ -766,11 +766,13 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveOldNigori) {
   DirectoryCryptographer other_cryptographer;
   other_cryptographer.AddKey(old_key);
   sync_pb::EntitySpecifics other_encrypted_specifics;
-  other_encrypted_specifics.mutable_bookmark()->set_title("title");
+  other_encrypted_specifics.mutable_bookmark()->set_legacy_canonicalized_title(
+      "title");
   other_cryptographer.Encrypt(other_encrypted_specifics,
                               other_encrypted_specifics.mutable_encrypted());
   sync_pb::EntitySpecifics our_encrypted_specifics;
-  our_encrypted_specifics.mutable_bookmark()->set_title("title2");
+  our_encrypted_specifics.mutable_bookmark()->set_legacy_canonicalized_title(
+      "title2");
 
   // Set up the current encryption state (containing both keys and encrypt
   // everything).

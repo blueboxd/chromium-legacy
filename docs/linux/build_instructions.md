@@ -150,7 +150,7 @@ Once you've allowed to use `Goma` service and installed the client,
 
 ```
 use_goma=true
-goma_dir=/path/to/goma-client
+goma_dir="/path/to/goma-client"
 ```
 
 #### Disable NaCl

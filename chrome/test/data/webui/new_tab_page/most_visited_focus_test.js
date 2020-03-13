@@ -65,6 +65,10 @@ suite('NewTabPageMostVisitedFocusTest', () => {
     PolymerTest.clearBody();
 
     testProxy = createTestProxy();
+    testProxy.setResultMapperFor('matchMedia', () => ({
+                                                 addListener() {},
+                                                 removeListener() {},
+                                               }));
     BrowserProxy.instance_ = testProxy;
 
     mostVisited = document.createElement('ntp-most-visited');

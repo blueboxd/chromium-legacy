@@ -80,7 +80,7 @@ sync_pb::EntitySpecifics BookmarkEntityBuilder::CreateBaseEntitySpecifics(
       entity_specifics.mutable_bookmark();
 
   if (!is_legacy) {
-    bookmark_specifics->set_title(title_);
+    bookmark_specifics->set_legacy_canonicalized_title(title_);
     bookmark_specifics->set_guid(originator_client_item_id_);
   }
 

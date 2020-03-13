@@ -4,6 +4,7 @@
 
 #include "ash/system/privacy_screen/privacy_screen_toast_controller.h"
 
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -23,7 +24,7 @@ PrivacyScreenToastController::PrivacyScreenToastController(
 
 PrivacyScreenToastController::~PrivacyScreenToastController() {
   close_timer_.Stop();
-  if (bubble_widget_)
+  if (bubble_widget_ && !bubble_widget_->IsClosed())
     bubble_widget_->CloseNow();
 }
 
@@ -69,6 +70,12 @@ void PrivacyScreenToastController::ShowToast() {
 
   tray_->SetTrayBubbleHeight(
       bubble_widget_->GetWindowBoundsInScreen().height());
+
+  // Activate the bubble so ChromeVox can announce the toast.
+  if (Shell::Get()->accessibility_controller()->spoken_feedback_enabled()) {
+    bubble_widget_->widget_delegate()->SetCanActivate(true);
+    bubble_widget_->Activate();
+  }
 }
 
 void PrivacyScreenToastController::HideToast() {
@@ -95,6 +102,12 @@ void PrivacyScreenToastController::OnMouseExitedView() {
   mouse_hovered_ = false;
 }
 
+base::string16 PrivacyScreenToastController::GetAccessibleNameForBubble() {
+  if (!toast_view_)
+    return base::string16();
+  return toast_view_->GetAccessibleName();
+}
+
 void PrivacyScreenToastController::OnPrivacyScreenSettingChanged(bool enabled) {
   if (tray_->IsBubbleShown())
     return;
@@ -104,10 +117,17 @@ void PrivacyScreenToastController::OnPrivacyScreenSettingChanged(bool enabled) {
 
 void PrivacyScreenToastController::StartAutoCloseTimer() {
   close_timer_.Stop();
-  close_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(kTrayPopupAutoCloseDelayInSeconds), this,
-      &PrivacyScreenToastController::HideToast);
+
+  // Don't start the timer if the toast is focused.
+  if (toast_view_ && toast_view_->IsButtonFocused())
+    return;
+
+  int autoclose_delay = kTrayPopupAutoCloseDelayInSeconds;
+  if (Shell::Get()->accessibility_controller()->spoken_feedback_enabled())
+    autoclose_delay = kTrayPopupAutoCloseDelayInSecondsWithSpokenFeedback;
+
+  close_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(autoclose_delay),
+                     this, &PrivacyScreenToastController::HideToast);
 }
 
 void PrivacyScreenToastController::UpdateToastView() {
@@ -125,6 +145,10 @@ void PrivacyScreenToastController::ButtonPressed(views::Button* sender,
   auto* privacy_screen_controller = Shell::Get()->privacy_screen_controller();
   privacy_screen_controller->SetEnabled(
       !privacy_screen_controller->GetEnabled());
+}
+
+void PrivacyScreenToastController::StopAutocloseTimer() {
+  close_timer_.Stop();
 }
 
 }  // namespace ash

@@ -53,6 +53,7 @@ struct NET_EXPORT DnsConfigOverrides {
   base::Optional<int> ndots;
   base::Optional<base::TimeDelta> timeout;
   base::Optional<int> attempts;
+  base::Optional<int> doh_attempts;
   base::Optional<bool> rotate;
   base::Optional<bool> use_local_ipv6;
   base::Optional<std::vector<DnsConfig::DnsOverHttpsServerConfig>>

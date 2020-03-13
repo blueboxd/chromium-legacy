@@ -9,9 +9,6 @@ import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.StrictMode;
-import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.preference.PreferenceFragmentCompat;
-import android.support.v7.widget.ActionMenuView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnScrollChangedListener;
@@ -20,6 +17,9 @@ import android.widget.ImageView;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 import androidx.annotation.XmlRes;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.appcompat.widget.ActionMenuView;
+import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 

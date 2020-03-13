@@ -51,7 +51,7 @@
 
 namespace blink {
 
-using mojom::StorageType;
+using mojom::blink::StorageType;
 using mojom::blink::UsageBreakdownPtr;
 
 namespace {
@@ -70,11 +70,11 @@ StorageType GetStorageType(DeprecatedStorageQuota::Type type) {
 void DeprecatedQueryStorageUsageAndQuotaCallback(
     V8StorageUsageCallback* success_callback,
     V8StorageErrorCallback* error_callback,
-    mojom::QuotaStatusCode status_code,
+    mojom::blink::QuotaStatusCode status_code,
     int64_t usage_in_bytes,
     int64_t quota_in_bytes,
     UsageBreakdownPtr usage_breakdown) {
-  if (status_code != mojom::QuotaStatusCode::kOk) {
+  if (status_code != mojom::blink::QuotaStatusCode::kOk) {
     if (error_callback) {
       error_callback->InvokeAndReportException(nullptr,
                                                DOMError::Create(status_code));
@@ -90,10 +90,10 @@ void DeprecatedQueryStorageUsageAndQuotaCallback(
 
 void RequestStorageQuotaCallback(V8StorageQuotaCallback* success_callback,
                                  V8StorageErrorCallback* error_callback,
-                                 mojom::QuotaStatusCode status_code,
+                                 mojom::blink::QuotaStatusCode status_code,
                                  int64_t usage_in_bytes,
                                  int64_t granted_quota_in_bytes) {
-  if (status_code != mojom::QuotaStatusCode::kOk) {
+  if (status_code != mojom::blink::QuotaStatusCode::kOk) {
     if (error_callback) {
       error_callback->InvokeAndReportException(nullptr,
                                                DOMError::Create(status_code));
@@ -158,10 +158,10 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
                             WrapPersistent(error_callback));
   GetQuotaHost(execution_context)
       ->QueryStorageUsageAndQuota(
-          WrapRefCounted(security_origin), storage_type,
+          storage_type,
           mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-              std::move(callback), mojom::QuotaStatusCode::kErrorAbort, 0, 0,
-              nullptr));
+              std::move(callback), mojom::blink::QuotaStatusCode::kErrorAbort,
+              0, 0, nullptr));
 }
 
 void DeprecatedStorageQuota::requestQuota(
@@ -191,21 +191,22 @@ void DeprecatedStorageQuota::requestQuota(
   const SecurityOrigin* security_origin = document.GetSecurityOrigin();
   if (security_origin->IsOpaque()) {
     // Unique origins cannot store persistent state.
-    std::move(callback).Run(blink::mojom::QuotaStatusCode::kErrorAbort, 0, 0);
+    std::move(callback).Run(mojom::blink::QuotaStatusCode::kErrorAbort, 0, 0);
     return;
   }
 
   GetQuotaHost(execution_context)
       ->RequestStorageQuota(
-          WrapRefCounted(security_origin), storage_type, new_quota_in_bytes,
+          storage_type, new_quota_in_bytes,
           mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-              std::move(callback), mojom::QuotaStatusCode::kErrorAbort, 0, 0));
+              std::move(callback), mojom::blink::QuotaStatusCode::kErrorAbort,
+              0, 0));
 }
 
-mojom::blink::QuotaDispatcherHost* DeprecatedStorageQuota::GetQuotaHost(
+mojom::blink::QuotaManagerHost* DeprecatedStorageQuota::GetQuotaHost(
     ExecutionContext* execution_context) {
   if (!quota_host_) {
-    ConnectToQuotaDispatcherHost(
+    ConnectToQuotaManagerHost(
         execution_context,
         quota_host_.BindNewPipeAndPassReceiver(execution_context->GetTaskRunner(
             blink::TaskType::kInternalDefault)));

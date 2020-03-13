@@ -30,9 +30,10 @@ bool UseHighPriorityDelay(Notification* notification) {
 
 }  // namespace
 
-int PopupTimersController::notification_timeout_default_seconds_ =
-    kAutocloseDefaultDelaySeconds;
-int PopupTimersController::notification_timeout_high_priority_seconds_ =
+// Timeout values used to dismiss notifications automatically after they are
+// shown.
+int notification_timeout_default_seconds_ = kAutocloseDefaultDelaySeconds;
+int notification_timeout_high_priority_seconds_ =
     kAutocloseHighPriorityDelaySeconds;
 
 PopupTimersController::PopupTimersController(MessageCenter* message_center)
@@ -93,12 +94,10 @@ void PopupTimersController::TimerFinished(const std::string& id) {
 
 base::TimeDelta PopupTimersController::GetTimeoutForNotification(
     Notification* notification) {
-  if (UseHighPriorityDelay(notification)) {
-    return base::TimeDelta::FromSeconds(
-        notification_timeout_high_priority_seconds_);
-  } else {
-    return base::TimeDelta::FromSeconds(notification_timeout_default_seconds_);
-  }
+  return base::TimeDelta::FromSeconds(
+      UseHighPriorityDelay(notification)
+          ? notification_timeout_high_priority_seconds_
+          : notification_timeout_default_seconds_);
 }
 
 int PopupTimersController::GetNotificationTimeoutDefault() {

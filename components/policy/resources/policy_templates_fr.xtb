@@ -283,7 +283,6 @@
 <translation id="1388918874748125262">Activer la protection renforcée de la navigation sécurisée</translation>
 <translation id="1393485621820363363">Imprimantes d'appareils d'entreprise activées</translation>
 <translation id="1397855852561539316">URL de suggestions de recherche du moteur de recherche par défaut</translation>
-<translation id="1398636873839401839">Activer toutes les variantes sur l'écran de connexion</translation>
 <translation id="1404043648050567997">Le service de navigation sécurisée affiche une page d'avertissement lorsque l'utilisateur essaie d'accéder à des sites signalés comme étant potentiellement malveillants. L'activation de ce paramètre bloque la navigation sur ces sites dès lors que l'avertissement apparaît.
 
       Cette règle empêche l'utilisateur de poursuivre uniquement à la suite d'un avertissement relatif à la navigation sécurisée (en cas de logiciel malveillant ou d'hameçonnage, par exemple). Elle ne s'applique pas en cas de problème lié à un certificat SSL (non valide ou expiré, par exemple).
@@ -335,11 +334,11 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Si la règle n'est pas définie, la valeur par défaut "MultiProfileUserBehaviorMustBePrimary'' s'applique aux utilisateurs gérés par l'entreprise et la valeur "MultiProfileUserBehaviorUnrestricted" est utilisée pour les utilisateurs non gérés.</translation>
 <translation id="1465619815762735808">Cliquer pour lire</translation>
-<translation id="1467633031685836974">Cette fonctionnalité autorise les liens hypertexte et les navigations d'URL de barre d'adresse de cibler du texte spécifique dans une page Web. Une fois le chargement de la page Web effectué, ce texte fait l'objet d'un défilement.
+<translation id="1467633031685836974">Cette fonctionnalité autorise les liens hypertexte et les navigations d'URL depuis la barre d'adresse à cibler un fragment de texte spécifique dans une page Web de sorte que, une fois chargée, la page défile jusqu'à ce fragment de texte.
 
-Si vous activez cette règle ou ne la configurez pas, le défilement de page Web vers des fragments de texte spécifique via URL sera activé.
+Si vous activez cette règle ou ne la configurez pas, le défilement des pages Web vers des fragments de texte spécifiques via URL sera activé.
 
-Si vous désactivez cette règle, le défilement de page Web vers des fragments de texte spécifique via URL sera désactivé.</translation>
+Si vous la désactivez, le défilement des pages Web vers des fragments de texte spécifiques via URL sera désactivé.</translation>
 <translation id="1468707346106619889">Si cette règle est définie sur "True", le bureau unifié est autorisé et activé
       par défaut, ce qui permet aux applications de couvrir plusieurs affichages.
       L'utilisateur peut désactiver le bureau unifié pour certains affichages
@@ -938,17 +937,7 @@ Si cette règle n'est pas configurée, le paramètre "BlockPopups" est utilisé 
       Si le modèle URI contient une variable <ph name="HTTP_VARIABLE_DNS" />, les requêtes envoyées au résolveur utilisent la méthode <ph name="HTTP_METHOD_GET" />. Sinon, elles utilisent la méthode <ph name="HTTP_METHOD_POST" />.
 
       Les modèles dont le format est incorrect sont ignorés.</translation>
-<translation id="2331539005176436538">Activer les variantes concernant les correctifs essentiels sur l'écran de connexion seulement</translation>
 <translation id="2345547870894930157">Activer DNS-over-HTTPS sans solution de secours à risque</translation>
-<translation id="2368120844613930637">Permet de définir quelles variantes peuvent être appliquées sur l'écran de connexion de <ph name="PRODUCT_NAME" />.
-
-      Les variantes offrent un moyen de proposer des modifications concernant <ph name="PRODUCT_NAME" /> sans envoyer de nouvelle version du navigateur, en activant ou en désactivant au choix des fonctionnalités déjà disponibles.
-
-      Si vous définissez <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> sur "0" ou si vous ne la définissez pas, toutes les variantes peuvent alors être appliquées au navigateur sur l'écran de connexion.
-
-      Si vous définissez <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> sur "1", seules les variantes considérées comme des correctifs essentiels de sécurité ou de stabilité peuvent être appliquées à <ph name="PRODUCT_NAME" /> sur l'écran de connexion.
-
-      Si vous définissez <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> sur "2", aucune variante ne peut être appliquée au navigateur sur l'écran de connexion. Veuillez noter que ce mode n'est pas recommandé, car il est susceptible d'empêcher les développeurs de <ph name="PRODUCT_NAME" /> de fournir des correctifs essentiels de sécurité en temps voulu.</translation>
 <translation id="237494535617297575">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à afficher des notifications. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultNotificationsSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
@@ -4314,7 +4303,6 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
 <translation id="7426112309807051726">Indique si l'optimisation de <ph name="TLS_FALSE_START" /> doit être désactivée. Pour des raisons historiques, cette règle se nomme DisableSSLRecordSplitting.
 
       Si cette règle n'est pas configurée, ou si elle est définie sur "False", <ph name="TLS_FALSE_START" /> est activé. Si elle est définie sur "True", <ph name="TLS_FALSE_START" /> est désactivé.</translation>
-<translation id="7427296104923393585">Désactiver toutes les variantes sur l'écran de connexion</translation>
 <translation id="7433714841194914373">Activer la recherche instantanée</translation>
 <translation id="7434202861148928348">Configurer les noms de domaines requis pour les clients d'accès à distance</translation>
 <translation id="7443616896860707393">Invites d'authentification de base HTTP (Basic Auth) multi-domaine</translation>
@@ -4506,7 +4494,7 @@ au maximum si un utilisateur se sert de l'appareil.
 <translation id="7713608076604149344">Restrictions de téléchargement</translation>
 <translation id="7715711044277116530">Pourcentage d'adaptation du délai d'assombrissement de l'écran en mode Présentation</translation>
 <translation id="7717938661004793600">Permet de configurer les fonctionnalités d'accessibilité de <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724652568947700864">Si cette règle est configurée, tous les types de données spécifiés seront exclus de la synchronisation Google Sync et de la synchronisation du profil itinérant. Cela peut permettre de réduire la taille du profil itinérant ou de limiter les types de données importés sur les serveurs Google Sync.
+<translation id="7724652568947700864">Si cette règle est configurée, tous les types de données spécifiés ne seront pas synchronisés avec Google Sync et ni avec le profil itinérant. Cela peut permettre de réduire la taille du profil itinérant ou de limiter les types de données importés sur les serveurs Google Sync.
 
       Les types de données actuels pour cette règle sont : "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs" et "wifiConfiguration". Ces noms sont sensibles à la casse.</translation>
 <translation id="7731026922044991970">Rétablir l'ancien comportement <ph name="ATTRIBUTE_SAMESITE_NAME" /> pour les cookies sur tous les sites</translation>
@@ -5463,7 +5451,6 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
 <translation id="974349541138387272">Permet de définir le modèle URI du résolveur DNS-over-HTTPS souhaité</translation>
 <translation id="981346395360763138">Services de localisation Google</translation>
 <translation id="982497069985795632">Activer la vérification orthographique</translation>
-<translation id="986367416344815079">Déterminer la disponibilité des variantes sur l'écran de connexion</translation>
 <translation id="991560005425213776">Envoyer le nom d'utilisateur et le nom de fichier aux imprimantes en natif</translation>
 <translation id="99232017131102456">Cette règle permet de définir un cache unique global pour chaque profil avec des identifiants d'authentification de serveur HTTP.
 

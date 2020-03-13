@@ -28,6 +28,15 @@ class MODULES_EXPORT DOMTaskSignal final
  public:
   enum class Type { kCreatedByController, kImplicit };
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class PriorityChangeStatus {
+    kNoPriorityChange = 0,
+    kPriorityHasChanged = 1,
+
+    kMaxValue = kPriorityHasChanged
+  };
+
   DOMTaskSignal(Document*, WebSchedulingPriority, Type);
   ~DOMTaskSignal() override;
 
@@ -44,6 +53,10 @@ class MODULES_EXPORT DOMTaskSignal final
 
   void Trace(Visitor*) override;
 
+  PriorityChangeStatus GetPriorityChangeStatus() const {
+    return priority_change_status_;
+  }
+
  private:
   WebSchedulingPriority priority_;
 
@@ -53,6 +66,9 @@ class MODULES_EXPORT DOMTaskSignal final
   // detach, so a DOMTaskSignal will fail to schedule tasks in a detached
   // frame.
   std::unique_ptr<WebSchedulingTaskQueue> web_scheduling_task_queue_;
+
+  PriorityChangeStatus priority_change_status_ =
+      PriorityChangeStatus::kNoPriorityChange;
 };
 
 template <>

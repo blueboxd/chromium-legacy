@@ -124,7 +124,7 @@ sync_pb::EntitySpecifics GetEncryptedBookmarkEntitySpecifics(
       wrapped_entity_specifics, new_specifics.mutable_encrypted());
   DCHECK(encrypt_result);
 
-  new_specifics.mutable_bookmark()->set_title("encrypted");
+  new_specifics.mutable_bookmark()->set_legacy_canonicalized_title("encrypted");
   new_specifics.mutable_bookmark()->set_url("encrypted");
 
   return new_specifics;

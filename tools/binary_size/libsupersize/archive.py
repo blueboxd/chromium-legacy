@@ -26,7 +26,6 @@ import zlib
 
 import apkanalyzer
 import ar
-import concurrent
 import demangle
 import describe
 import file_format
@@ -36,6 +35,7 @@ import models
 import ninja_parser
 import nm
 import obj_analyzer
+import parallel
 import path_util
 import string_extract
 
@@ -1401,8 +1401,8 @@ def CreateSectionSizesAndSymbols(map_path=None,
   knobs = knobs or SectionSizeKnobs()
   if apk_path and elf_path:
     # Extraction takes around 1 second, so do it in parallel.
-    apk_elf_result = concurrent.ForkAndCall(
-        _ElfInfoFromApk, (apk_path, apk_so_path, tool_prefix))
+    apk_elf_result = parallel.ForkAndCall(_ElfInfoFromApk,
+                                          (apk_path, apk_so_path, tool_prefix))
 
   outdir_context = None
   source_mapper = None

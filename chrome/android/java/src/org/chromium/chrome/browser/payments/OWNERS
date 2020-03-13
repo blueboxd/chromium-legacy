@@ -1,10 +1,7 @@
-file://components/payments/OWNERS
+# TEAM: payments-dev@chromium.org
+# COMPONENT: UI>Browser>Payments
 
-per-file JourneyLogger.java=sebsg@chromium.org
-per-file PaymentRequestMetrics.java=sebsg@chromium.org
-per-file PaymentResponseHelper.java=sebsg@chromium.org
+file://components/payments/OWNERS
 
 per-file *TypeConverter*.*=set noparent
 per-file *TypeConverter*.*=file://ipc/SECURITY_OWNERS
-
-# COMPONENT: UI>Browser>Payments

@@ -98,7 +98,17 @@ class PLATFORM_EXPORT PaintController {
     if (rect.IsEmpty())
       return;
     PaintChunk::Id id(client, DisplayItem::kHitTest, current_fragment_);
+    CheckDuplicatePaintChunkId(id);
     new_paint_chunks_.AddHitTestDataToCurrentChunk(id, rect, touch_action);
+  }
+  void RecordScrollHitTestData(
+      const DisplayItemClient& client,
+      DisplayItem::Type type,
+      const TransformPaintPropertyNode* scroll_translation,
+      const IntRect& rect) {
+    PaintChunk::Id id(client, type, current_fragment_);
+    CheckDuplicatePaintChunkId(id);
+    new_paint_chunks_.CreateScrollHitTestChunk(id, scroll_translation, rect);
   }
 
   template <typename DisplayItemClass, typename... Args>

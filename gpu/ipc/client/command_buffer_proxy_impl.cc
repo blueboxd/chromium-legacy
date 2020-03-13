@@ -29,6 +29,7 @@
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/gpu_param_traits.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -692,7 +693,7 @@ bool CommandBufferProxyImpl::Send(IPC::Message* msg) {
 std::pair<base::UnsafeSharedMemoryRegion, base::WritableSharedMemoryMapping>
 CommandBufferProxyImpl::AllocateAndMapSharedMemory(size_t size) {
   base::UnsafeSharedMemoryRegion region =
-      base::UnsafeSharedMemoryRegion::Create(size);
+      mojo::CreateUnsafeSharedMemoryRegion(size);
   if (!region.IsValid()) {
     DLOG(ERROR) << "AllocateAndMapSharedMemory: Allocation failed";
     return {};

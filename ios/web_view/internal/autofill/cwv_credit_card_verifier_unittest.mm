@@ -65,6 +65,7 @@ class FakeCardUnmaskDelegate : public autofill::CardUnmaskDelegate {
         }));
   }
   void OnUnmaskPromptClosed() override {}
+  bool ShouldOfferFidoAuth() const override { return false; }
 
   base::WeakPtr<FakeCardUnmaskDelegate> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();

@@ -239,7 +239,7 @@ TEST_F(DirectoryCommitContributionTest, DeletedBookmarksWithSpecifics) {
     sync_pb::EntitySpecifics specifics;
     sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
     bm_specifics->set_url("http://www.chrome.com");
-    bm_specifics->set_title("Chrome");
+    bm_specifics->set_legacy_canonicalized_title("Chrome");
     sync_pb::MetaInfo* meta_info = bm_specifics->add_meta_info();
     meta_info->set_key("K");
     meta_info->set_value("V");
@@ -282,7 +282,7 @@ TEST_F(DirectoryCommitContributionTest, HierarchySupport_Bookmark) {
     sync_pb::EntitySpecifics specifics;
     sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
     bm_specifics->set_url("http://www.chrome.com");
-    bm_specifics->set_title("Chrome");
+    bm_specifics->set_legacy_canonicalized_title("Chrome");
     e.PutSpecifics(specifics);
 
     e.PutIsDel(false);
@@ -317,7 +317,7 @@ TEST_F(DirectoryCommitContributionTest,
     sync_pb::EntitySpecifics specifics;
     sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
     bm_specifics->set_url("http://www.chrome.com");
-    bm_specifics->set_title("Chrome");
+    bm_specifics->set_legacy_canonicalized_title("Chrome");
     e.PutSpecifics(specifics);
     e.PutIsDel(false);
     e.PutIsUnsynced(true);

@@ -6,13 +6,13 @@ package org.chromium.chrome.browser.settings;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.preference.PreferenceGroup;
-import android.support.v7.preference.PreferenceViewHolder;
 import android.util.AttributeSet;
 import android.view.View;
 
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.preference.PreferenceGroup;
+import androidx.preference.PreferenceViewHolder;
 
 import org.chromium.ui.drawable.StateListDrawableBuilder;
 import org.chromium.ui.widget.CheckableImageView;

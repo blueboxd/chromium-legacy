@@ -678,20 +678,23 @@ structures:
 
 2. [`HitTestData::touch_action_rects`](../../platform/graphics/paint/hit_test_data.h)
 
-    Used for [touch action rects](http://docs.google.com/document/u/1/d/1ksiqEPkDeDuI_l5HvWlq1MfzFyDxSnsNB8YXIaXa3sE/view)
-    which are areas of the page that allow certain gesture effects, as well as
-    areas of the page that disallow touch events due to blocking touch event
-    handlers.
+   Used for [touch action rects](http://docs.google.com/document/u/1/d/1ksiqEPkDeDuI_l5HvWlq1MfzFyDxSnsNB8YXIaXa3sE/view)
+   which are areas of the page that allow certain gesture effects, as well as
+   areas of the page that disallow touch events due to blocking touch event
+   handlers.
 
-3. [`ScrollHitTestDisplayItem`](../../platform/graphics/paint/scroll_hit_test_display_item.h)
+3. [`HitTestData::scroll_translation`](../../platform/graphics/paint/hit_test_data.h)
+   and
+   [`HitTestData::scroll_hit_test_rect`](../../platform/graphics/paint/hit_test_data.h)
 
-    Used to create
-    [non-fast scrollable regions](https://docs.google.com/document/d/1IyYJ6bVF7KZq96b_s5NrAzGtVoBXn_LQnya9y4yT3iw/view)
-    to prevent compositor scrolling of non-composited scrollers, plugins with
-    blocking scroll event handlers, and resize handles.
+   Used to create
+   [non-fast scrollable regions](https://docs.google.com/document/d/1IyYJ6bVF7KZq96b_s5NrAzGtVoBXn_LQnya9y4yT3iw/view)
+   to prevent compositor scrolling of non-composited scrollers, plugins with
+   blocking scroll event handlers, and resize handles.
 
-    This is also used for CompositeAfterPaint to force a special cc::Layer that
-    is marked as being scrollable.
+   If `scroll_translation` is not null, this is also used for
+   CompositeAfterPaint to force a special cc::Layer that is marked as being
+   scrollable when composited scrolling is needed for the scroller.
 
 ### Scrollbar painting
 

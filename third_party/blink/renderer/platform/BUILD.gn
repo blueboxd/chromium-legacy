@@ -1066,8 +1066,6 @@ jumbo_component("platform") {
     "graphics/paint/scoped_display_item_fragment.h",
     "graphics/paint/scoped_paint_chunk_hint.h",
     "graphics/paint/scoped_paint_chunk_properties.h",
-    "graphics/paint/scroll_hit_test_display_item.cc",
-    "graphics/paint/scroll_hit_test_display_item.h",
     "graphics/paint/scroll_paint_property_node.cc",
     "graphics/paint/scroll_paint_property_node.h",
     "graphics/paint/scrollbar_display_item.cc",

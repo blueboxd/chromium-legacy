@@ -383,7 +383,7 @@ const char kInvalidCssList[] =
 const char kInvalidDeclarativeNetRequestKey[] = "Invalid value for '*' key";
 const char kInvalidDeclarativeRulesFileKey[] =
     "Invalid value for '*.*' key. It must be a list containing a single "
-    "string.";
+    "Ruleset dictionary.";
 const char kInvalidDefaultLocale[] =
     "Invalid value for default locale - locale name must be a string.";
 const char kInvalidDescription[] =
@@ -767,7 +767,7 @@ const char kSandboxPagesCSPKeyNotAllowed[] =
     "The Content Security Policy for sandboxed pages should be specified in "
     "'content_security_policy.sandbox'.";
 const char kRulesFileIsInvalid[] =
-    "Invalid value for key '*.*': The provided path is invalid.";
+    "Invalid value for key '*.*': The provided path '*' is invalid.";
 const char kTransientBackgroundConflictsWithPersistentBackground[] =
     "The 'transientBackground' permission cannot be used with a persistent "
     "background page.";

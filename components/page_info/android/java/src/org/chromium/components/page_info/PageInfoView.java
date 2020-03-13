@@ -8,7 +8,6 @@ import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
-import android.support.v7.widget.AppCompatTextView;
 import android.text.Layout;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -26,6 +25,7 @@ import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.widget.AppCompatTextView;
 
 import org.chromium.ui.UiUtils;
 

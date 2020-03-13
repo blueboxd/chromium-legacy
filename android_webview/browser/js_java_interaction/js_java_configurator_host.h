@@ -42,6 +42,10 @@ class JsJavaConfiguratorHost : public content::WebContentsObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jstring>& js_object_name);
 
+  base::android::ScopedJavaLocalRef<jobjectArray> GetJsObjectsInfo(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jclass>& clazz);
+
   // content::WebContentsObserver implementations
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;

@@ -14,7 +14,12 @@
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
+
+namespace power_manager {
+class BacklightBrightnessChange;
+}
 
 namespace ash {
 namespace ml {
@@ -24,8 +29,9 @@ static constexpr base::TimeDelta kSliderDelay = base::TimeDelta::FromSeconds(1);
 // This class handles logging for settings changes that are initiated by the
 // user from the quick settings tray. Exported for tests.
 class ASH_EXPORT UserSettingsEventLogger
-    : public ShellObserver,
-      public chromeos::CrasAudioHandler::AudioObserver,
+    : public chromeos::CrasAudioHandler::AudioObserver,
+      public chromeos::PowerManagerClient::Observer,
+      public ShellObserver,
       public VideoDetector::Observer {
  public:
   UserSettingsEventLogger(const UserSettingsEventLogger&) = delete;
@@ -62,18 +68,18 @@ class ASH_EXPORT UserSettingsEventLogger
   // Logs an event to UKM that the user has changed the volume from the tray.
   void LogVolumeUkmEvent(int previous_level, int current_level);
 
-  // Logs an event to UKM that the user has changed the brightness from the
-  // tray.
-  void LogBrightnessUkmEvent(int previous_level, int current_level);
+  // chromeos::CrasAudioHandler::AudioObserver overrides:
+  void OnOutputStarted() override;
+  void OnOutputStopped() override;
+
+  // chromeos::PowerManagerClient::Observer overrides:
+  void ScreenBrightnessChanged(
+      const power_manager::BacklightBrightnessChange& change) override;
 
   // ShellObserver overrides:
   void OnCastingSessionStartedOrStopped(bool started) override;
   void OnFullscreenStateChanged(bool is_fullscreen,
                                 aura::Window* container) override;
-
-  // chromeos::CrasAudioHandler::AudioObserver overrides:
-  void OnOutputStarted() override;
-  void OnOutputStopped() override;
 
   // VideoDetector::Observer overrides:
   void OnVideoStateChanged(VideoDetector::State state) override;
@@ -104,8 +110,11 @@ class ASH_EXPORT UserSettingsEventLogger
 
   // Timer to ensure that brightness is only recorded after a pause.
   base::OneShotTimer brightness_timer_;
-  int previous_brightness_;
-  int current_brightness_;
+  // Most up-to-date brightness value. Can be null briefly, before an initial
+  // brightness is set upon login.
+  base::Optional<int> brightness_;
+  base::Optional<int> brightness_before_user_change_;
+  int brightness_after_user_change_;
 
   base::OneShotTimer presenting_timer_;
   int presenting_session_count_;

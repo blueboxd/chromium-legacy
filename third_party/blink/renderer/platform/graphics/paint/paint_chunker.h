@@ -67,6 +67,10 @@ class PLATFORM_EXPORT PaintChunker final {
   void AddHitTestDataToCurrentChunk(const PaintChunk::Id&,
                                     const IntRect&,
                                     TouchAction);
+  void CreateScrollHitTestChunk(
+      const PaintChunk::Id&,
+      const TransformPaintPropertyNode* scroll_translation,
+      const IntRect&);
 
   // Releases the generated paint chunk list and raster invalidations and
   // resets the state of this object.

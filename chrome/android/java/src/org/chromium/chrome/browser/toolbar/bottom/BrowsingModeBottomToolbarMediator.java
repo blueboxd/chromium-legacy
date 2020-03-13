@@ -5,11 +5,11 @@
 package org.chromium.chrome.browser.toolbar.bottom;
 
 import android.graphics.Color;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.StringRes;
+import androidx.appcompat.app.AppCompatActivity;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;

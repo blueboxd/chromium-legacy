@@ -66,7 +66,8 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   void ApplyStopSyncChanges(std::unique_ptr<syncer::MetadataChangeList>
                                 delete_metadata_change_list) override;
 
-  // Sends all Wallet Data to the |callback| and keeps all the strings in their
+  // Retrieves all Wallet Data from local table, converts to EntityData and
+  // sends all Wallet Data to the |callback| and keeps all the strings in their
   // original format (whereas GetAllDataForDebugging() has to make them UTF-8).
   void GetAllDataForTesting(DataCallback callback);
 

@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.settings;
 
 import android.content.Context;
-import android.support.v7.preference.PreferenceViewHolder;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
 import android.widget.TextView;
+
+import androidx.preference.PreferenceViewHolder;
 
 /**
  * A preference that displays informational text, and a summary which can contain a link.

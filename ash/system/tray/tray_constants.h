@@ -29,6 +29,7 @@ constexpr int kTrayImageItemPadding = 3;
 extern const int kTrayMenuWidth;
 
 extern const int kTrayPopupAutoCloseDelayInSeconds;
+extern const int kTrayPopupAutoCloseDelayInSecondsWithSpokenFeedback;
 extern const int kTrayPopupPaddingHorizontal;
 extern const int kTrayPopupButtonEndMargin;
 

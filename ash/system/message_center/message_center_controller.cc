@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/session/session_controller_impl.h"
@@ -22,6 +23,8 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/popup_timers_controller.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
@@ -76,6 +79,12 @@ MessageCenterController::MessageCenterController() {
           switches::kSuppressMessageCenterPopups)) {
     all_popup_blocker_ =
         std::make_unique<PopupNotificationBlocker>(MessageCenter::Get());
+  }
+
+  if (features::IsNotificationExperimentalShortTimeoutsEnabled()) {
+    message_center::PopupTimersController::SetNotificationTimeouts(
+        message_center::kAutocloseShortDelaySeconds,
+        message_center::kAutocloseShortDelaySeconds);
   }
 
   // Set the system notification source display name ("Chrome OS" or "Chromium

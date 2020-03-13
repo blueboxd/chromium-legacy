@@ -76,11 +76,20 @@ class WindowPlacementPrefUpdate : public DictionaryPrefUpdate {
 }  // namespace
 
 std::string GetWindowName(const Browser* browser) {
-  if (browser->app_name().empty()) {
-    return browser->is_type_normal() ? prefs::kBrowserWindowPlacement
-                                     : prefs::kBrowserWindowPlacementPopup;
+  switch (browser->type()) {
+    case Browser::TYPE_NORMAL:
+#if defined(OS_CHROMEOS)
+    case Browser::TYPE_CUSTOM_TAB:
+#endif
+      return prefs::kBrowserWindowPlacement;
+    case Browser::TYPE_POPUP:
+      return prefs::kBrowserWindowPlacementPopup;
+    case Browser::TYPE_APP:
+    case Browser::TYPE_DEVTOOLS:
+      return browser->app_name();
+    case Browser::TYPE_APP_POPUP:
+      return browser->app_name() + "_popup";
   }
-  return browser->app_name();
 }
 
 std::unique_ptr<DictionaryPrefUpdate> GetWindowPlacementDictionaryReadWrite(

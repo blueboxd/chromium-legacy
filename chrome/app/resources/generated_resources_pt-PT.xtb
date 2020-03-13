@@ -757,7 +757,6 @@
 <translation id="2025632980034333559"><ph name="APP_NAME" /> falhou. Clique neste balão para recarregar a extensão.</translation>
 <translation id="2025891858974379949">Conteúdo inseguro</translation>
 <translation id="202918510990975568">Introduza a sua palavra-passe para configurar a segurança e o início de sessão.</translation>
-<translation id="2030672406208960151">Abrir Terminal de recuperação</translation>
 <translation id="2034346955588403444">Adicionar outra rede Wi-Fi</translation>
 <translation id="203574396658008164">Ativar a opção de tirar notas a partir do ecrã de bloqueio</translation>
 <translation id="2037445849770872822">A supervisão está configurada para esta Conta Google. Para configurar mais controlos parentais, selecione Continuar.
@@ -1663,7 +1662,6 @@ Pretende pará-lo?</translation>
 <translation id="3228679360002431295">A ligar e a confirmar<ph name="ANIMATED_ELLIPSIS" /></translation>
 <translation id="3232318083971127729">Valor:</translation>
 <translation id="3233271424239923319">Fazer uma cópia de segurança de aplicações e ficheiros do Linux</translation>
-<translation id="323803881985677942">Abrir opções de extensão</translation>
 <translation id="3239373508713281971">Limite de tempo removido para a app <ph name="APP_NAME" />.</translation>
 <translation id="3241680850019875542">Selecione o directório raiz da extensão a comprimir. Para atualizar uma extensão, selecione também o ficheiro de chave privada a reutilizar.</translation>
 <translation id="3244294424315804309">Manter o som desativado</translation>
@@ -2419,7 +2417,6 @@ Pretende pará-lo?</translation>
 <translation id="424963718355121712">As aplicações têm de ser publicadas a partir do anfitrião que afetam.</translation>
 <translation id="4250229828105606438">Captura de ecrã</translation>
 <translation id="4250680216510889253">Não</translation>
-<translation id="4251288318602771141">Com o seu fornecedor de serviços atual. O DNS seguro pode não estar sempre disponível.</translation>
 <translation id="4252852543720145436">Identificadores de conteúdo protegido</translation>
 <translation id="4252899949534773101">O Bluetooth está desativado</translation>
 <translation id="4252996741873942488"><ph name="WINDOW_TITLE" /> – conteúdo do separador partilhado</translation>
@@ -2489,7 +2486,6 @@ Pretende pará-lo?</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> está a partilhar uma janela.</translation>
 <translation id="4364830672918311045">Apresentar notificações</translation>
 <translation id="4370975561335139969">O email e a palavra-passe introduzidos não coincidem.</translation>
-<translation id="437184764829821926">Definições avançadas do tipo de letra</translation>
 <translation id="4374831787438678295">Instalador para o Linux</translation>
 <translation id="4375035964737468845">Abrir ficheiros transferidos</translation>
 <translation id="4377363674125277448">Ocorreu um problema com o certificado do servidor.</translation>
@@ -2653,7 +2649,6 @@ Pretende pará-lo?</translation>
 <translation id="4596295440756783523">Tem certificados em arquivo que identificam estes servidores</translation>
 <translation id="4598556348158889687">Gestão de armazenamento</translation>
 <translation id="4598776695426288251">Wi-Fi disponível através de vários dispositivos</translation>
-<translation id="4599134080475764833">O Plugin VM está pronto a utilizar.</translation>
 <translation id="4602466770786743961">Permitir sempre que <ph name="HOST" /> aceda à sua câmara e microfone</translation>
 <translation id="4606551464649945562">Não permitir que os sites criem um mapa 3D do ambiente à sua volta nem monitorizem a posição da câmara</translation>
 <translation id="4608500690299898628">&amp;Localizar...</translation>
@@ -2748,11 +2743,9 @@ Pretende pará-lo?</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Saiba como atualizar aplicações<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Reativar o som do site}other{Reativar o som dos sites}}</translation>
 <translation id="4746351372139058112">Mensagens</translation>
-<translation id="4748762018725435655">Requer extensão da Web Store do Chrome</translation>
 <translation id="4750394297954878236">Sugestões</translation>
 <translation id="475088594373173692">Primeiro utilizador</translation>
 <translation id="4751476147751820511">Sensores de movimento ou de luz</translation>
-<translation id="4754969275105595499">Para voltar ao ecrã anterior, deslize rapidamente a partir da parte lateral.</translation>
 <translation id="4756269098451810636">Imagem partilhada a partir do <ph name="DEVICE_NAME" /></translation>
 <translation id="4756378406049221019">Parar/atualizar</translation>
 <translation id="4756388243121344051">&amp;Histórico</translation>
@@ -3746,7 +3739,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6104311680260824317">Não é possível associar o dispositivo ao domínio. O servidor não suporta os tipos de encriptação Kerberos especificados. Selecione "Mais opções" para aceder às definições de encriptação.</translation>
 <translation id="6104641575223043670">A entidade <ph name="ORGANIZATION_NAME" /> requer uma atualização imediata a este dispositivo.</translation>
 <translation id="6106186653986077033">O plug-in VM requer uma licença</translation>
-<translation id="6107047744202598802">Permite que os Websites memorizem a sua visita e monitorizem a sua navegação na Web.</translation>
 <translation id="6112294629795967147">Tocar para redimensionar</translation>
 <translation id="6112727384379533756">Adicionar uma permissão</translation>
 <translation id="6112931163620622315">Verificar o seu telemóvel</translation>
@@ -4074,7 +4066,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6561726789132298588">introduzir</translation>
 <translation id="656293578423618167">O caminho ou nome do ficheiro é demasiado longo. Guarde com um nome mais curto ou noutra localização.</translation>
 <translation id="6563469144985748109">O seu gestor ainda não o aprovou</translation>
-<translation id="6565955132287672866">O seu dispositivo não foi encerrado corretamente. Para utilizar o Linux (beta), tem de ser reiniciado.</translation>
 <translation id="6567688344210276845">Não foi possível carregar o ícone "<ph name="ICON" />" para a ação da página.</translation>
 <translation id="6569934958368283244">Outras pessoas</translation>
 <translation id="657402800789773160">&amp;Recarregar esta página</translation>
@@ -5943,7 +5934,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9066773882585798925">Ouvir o texto em voz alta</translation>
 <translation id="9066782832737749352">Síntese de voz</translation>
-<translation id="9067559831321817373">Faça a gestão das suas contas com sessão iniciada. Os Websites, as apps e as extensões no Chrome e Google Play podem utilizar estas contas para personalizar a sua experiência, consoante as autorizações. &lt;a&gt;Saber mais&lt;/a&gt;</translation>
 <translation id="9068849894565669697">Selecionar cor</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

@@ -7,6 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/values.h"
+#include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_constants.h"
@@ -14,6 +15,8 @@
 
 namespace extensions {
 namespace keys = manifest_keys;
+namespace dnr_api = api::declarative_net_request;
+
 namespace declarative_net_request {
 
 namespace {
@@ -202,12 +205,18 @@ std::unique_ptr<base::DictionaryValue> CreateManifest(
   if (has_background_script)
     background_scripts.push_back("background.js");
 
+  dnr_api::Ruleset ruleset;
+  ruleset.path = json_rules_filename;
+
+  std::unique_ptr<base::ListValue> rule_resources =
+      ListBuilder().Append(ruleset.ToValue()).Build();
+
   return DictionaryBuilder()
       .Set(keys::kName, "Test extension")
       .Set(keys::kDeclarativeNetRequestKey,
            DictionaryBuilder()
                .Set(keys::kDeclarativeRuleResourcesKey,
-                    ToListValue({json_rules_filename}))
+                    std::move(rule_resources))
                .Build())
       .Set(keys::kPermissions, ToListValue(permissions))
       .Set(keys::kVersion, "1.0")

@@ -754,7 +754,6 @@
 <translation id="2025632980034333559"><ph name="APP_NAME" /> خراب شده است. برای تازه‌سازی پسوند بر روی این بالون کلیک کنید.</translation>
 <translation id="2025891858974379949">محتوای ناامن</translation>
 <translation id="202918510990975568">برای پیکربندی امنیت و ورود به سیستم، گذرواژه‌تان را وارد کنید</translation>
-<translation id="2030672406208960151">باز کردن پایانه بازیابی</translation>
 <translation id="2034346955588403444">‏افزودن شبکه WiFi دیگر</translation>
 <translation id="203574396658008164">فعال کردن یادداشت‌برداری از صفحه درحالت قفل</translation>
 <translation id="2037445849770872822">‏برای این «حساب Google» نظارت تنظیم شده است. برای تنظیم کنترل‌های والدین بیشتر، «ادامه» را انتخاب کنید.
@@ -1660,7 +1659,6 @@
 <translation id="3228679360002431295">در حال اتصال و تأیید<ph name="ANIMATED_ELLIPSIS" /></translation>
 <translation id="3232318083971127729">مقدار:</translation>
 <translation id="3233271424239923319">‏پشتیبان‌گیری برنامه‌ها و فایل‌های Linux</translation>
-<translation id="323803881985677942">باز کردن گزینه‌های افزونه</translation>
 <translation id="3239373508713281971">محدودیت زمانی برای <ph name="APP_NAME" /> برداشته شده است</translation>
 <translation id="3241680850019875542">دایرکتوری ریشه برنامهٔ افزودنی را برای فشرده کردن انتخاب کنید. همچنین برای به‌روزرسانی برنامهٔ افزودنی، فایل کلید خصوصی را برای استفاده مجدد انتخاب کنید.</translation>
 <translation id="3244294424315804309">همچنان بی‌صدا</translation>
@@ -2416,7 +2414,6 @@
 <translation id="424963718355121712">برنامه‌ها باید ازجانب میزبانی ارائه شوند که بر آن‌ها تأثیر دارد</translation>
 <translation id="4250229828105606438">عکس صفحه‌نمایش</translation>
 <translation id="4250680216510889253">نه</translation>
-<translation id="4251288318602771141">‏با ارائه‌دهنده خدمات فعلی شما. ممکن است DNS ایمن همیشه در دسترس نباشد.</translation>
 <translation id="4252852543720145436">شناسه‌های محتوای محافظت‌شده</translation>
 <translation id="4252899949534773101">بلوتوث غیرفعال است</translation>
 <translation id="4252996741873942488"><ph name="WINDOW_TITLE" /> - محتوای برگه به اشتراک گذاشته شده است</translation>
@@ -2486,7 +2483,6 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" /> در حال اشتراک‌گذاری یک پنجره است.</translation>
 <translation id="4364830672918311045">نمایش اعلان‌ها</translation>
 <translation id="4370975561335139969">ایمیل و گذرواژه‌ای که وارد کرده‌اید، مطابقت ندارند</translation>
-<translation id="437184764829821926">تنظیمات پیشرفته قلم</translation>
 <translation id="4374831787438678295">‏نصب‌کننده Linux</translation>
 <translation id="4375035964737468845">باز کردن فایل‌های بارگیری‌شده</translation>
 <translation id="4377363674125277448">مشکلی در رابطه با گواهی سرور پیش آمد.</translation>
@@ -2650,7 +2646,6 @@
 <translation id="4596295440756783523">گواهی‌هایی در فایل دارید که این سرورها را شناسایی می‌کنند</translation>
 <translation id="4598556348158889687">مدیریت فضای ذخیره‌سازی</translation>
 <translation id="4598776695426288251">‏Wi-Fi ازطریق چند دستگاه دردسترس است</translation>
-<translation id="4599134080475764833">‏افزایه VM برای استفاده آماده است</translation>
 <translation id="4602466770786743961">همیشه به <ph name="HOST" /> اجازه داده شود به دوربین و میکروفون شما دسترسی داشته باشد</translation>
 <translation id="4606551464649945562">به سایت‌ها اجازه داده نشود نقشه سه‌بعدی از محیط ایجاد کنند یا موقعیت دوربین را ردیابی کنند</translation>
 <translation id="4608500690299898628">&amp;یافتن...</translation>
@@ -2745,11 +2740,9 @@
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />با نحوه به‌روزرسانی برنامه‌ها آشنا شوید<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{باصدا کردن سایت}one{باصدا کردن سایت‌ها}other{باصدا کردن سایت‌ها}}</translation>
 <translation id="4746351372139058112">پیام‌ها</translation>
-<translation id="4748762018725435655">‏به افزونه‌ای از «نت‌بازار Chrome» نیاز است</translation>
 <translation id="4750394297954878236">پیشنهادات</translation>
 <translation id="475088594373173692">کاربر اول</translation>
 <translation id="4751476147751820511">حسگرهای نوری یا حرکتی</translation>
-<translation id="4754969275105595499">برای برگشتن به صفحه قبلی، از کنار صفحه تند به‌سمت دیگر بکشید.</translation>
 <translation id="4756269098451810636">تصویر هم‌رسانی‌شده از <ph name="DEVICE_NAME" /></translation>
 <translation id="4756378406049221019">توقف/تازه‌سازی</translation>
 <translation id="4756388243121344051">&amp;سابقه</translation>
@@ -3742,7 +3735,6 @@
 <translation id="6104311680260824317">‏نمی‌توان دستگاه را به دامنه وصل کرد. این سرور از رمزگذاری‌های Kerberos مشخص‌شده پشتیبانی نمی‌کند. برای تنظیمات رمزگذاری «گزینه‌های بیشتر» را بررسی کنید.</translation>
 <translation id="6104641575223043670"><ph name="ORGANIZATION_NAME" /> از شما می‌خواهد این دستگاه را فوراً به‌روزرسانی کنید</translation>
 <translation id="6106186653986077033">‏Plugin VM به مجوز نیاز دارد</translation>
-<translation id="6107047744202598802">به وب‌سایت‌ها اجازه می‌دهد بازدیدتان را به‌خاطر داشته باشند و در سراسر وب شما را ردیابی کنند</translation>
 <translation id="6112294629795967147">لمس کردن برای تغییر اندازه</translation>
 <translation id="6112727384379533756">افزودن بلیت</translation>
 <translation id="6112931163620622315">تلفن را بررسی کنید</translation>
@@ -4070,7 +4062,6 @@
 <translation id="6561726789132298588">Enter</translation>
 <translation id="656293578423618167">مسیر یا نام فایل خیلی طولانی است. لطفاً با یک نام کوتاه‌تر یا در محل دیگری ذخیره کنید.</translation>
 <translation id="6563469144985748109">مدیرتان هنوز این سایت را تأیید نکرده است</translation>
-<translation id="6565955132287672866">‏دستگاهتان درست خاموش نشد. برای استفاده از Linux (بتا) باید دوباره راه‌اندازی شود.</translation>
 <translation id="6567688344210276845">بارگیری نماد "<ph name="ICON" />" برای عملکرد صفحه ممکن نیست.</translation>
 <translation id="6569934958368283244">افراد دیگر</translation>
 <translation id="657402800789773160">&amp;بارگیری مجدد این صفحه</translation>
@@ -5940,7 +5931,6 @@
 <translation id="9065203028668620118">ویرایش</translation>
 <translation id="9066773882585798925">بلند خوانده شدن نوشتار</translation>
 <translation id="9066782832737749352">تبدیل نوشتار به‌ گفتار</translation>
-<translation id="9067559831321817373">‏حساب‌هایی را که به سیستم آن‌ها وارد شده‌اید مدیریت کنید. وب‌سایت‌ها، برنامه‌ها، و افزونه‌های Chrome و Google Play ممکن است بسته به مجوزها، از این حساب‌ها برای سفارشی کردن تجربه شما استفاده کنند. &lt;a&gt;بیشتر بدانید&lt;/a&gt;</translation>
 <translation id="9068849894565669697">انتخاب رنگ</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">بلوتوث</translation>

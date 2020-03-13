@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
-#include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scrollbar_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
@@ -188,14 +187,13 @@ static scoped_refptr<cc::Layer> CcLayerForPaintChunk(
 }
 
 const TransformPaintPropertyNode&
-PaintArtifactCompositor::ScrollOffsetTranslationForLayer(
+PaintArtifactCompositor::NearestScrollTranslationForLayer(
     const PaintArtifact& paint_artifact,
     const PendingLayer& pending_layer) {
-  if (const auto* scroll_hit_test =
-          ScrollHitTestForLayer(paint_artifact, pending_layer)) {
-    if (scroll_hit_test->scroll_offset)
-      return *scroll_hit_test->scroll_offset;
-  }
+  if (const auto* scroll_translation =
+          ScrollTranslationForLayer(paint_artifact, pending_layer))
+    return *scroll_translation;
+
   const auto& transform = pending_layer.property_tree_state.Transform();
   // TODO(pdr): This could be a performance issue because it crawls up the
   // transform tree for each pending layer. If this is on profiles, we should
@@ -203,41 +201,33 @@ PaintArtifactCompositor::ScrollOffsetTranslationForLayer(
   return transform.NearestScrollTranslationNode();
 }
 
-const HitTestData::ScrollHitTest*
-PaintArtifactCompositor::ScrollHitTestForLayer(
+const TransformPaintPropertyNode*
+PaintArtifactCompositor::ScrollTranslationForLayer(
     const PaintArtifact& paint_artifact,
     const PendingLayer& pending_layer) {
   if (pending_layer.paint_chunk_indices.size() != 1)
     return nullptr;
 
-  const auto& paint_chunk =
-      paint_artifact.PaintChunks()[pending_layer.paint_chunk_indices[0]];
-  if (paint_chunk.size() != 1)
+  const auto& paint_chunk = pending_layer.FirstPaintChunk(paint_artifact);
+  if (!paint_chunk.hit_test_data)
     return nullptr;
 
-  const HitTestData* hit_test_data = paint_chunk.hit_test_data.get();
-  if (!hit_test_data)
-    return nullptr;
-
-  return base::OptionalOrNullptr(hit_test_data->scroll_hit_test);
+  return paint_chunk.hit_test_data->scroll_translation;
 }
 
 scoped_refptr<cc::Layer>
 PaintArtifactCompositor::ScrollHitTestLayerForPendingLayer(
     const PaintArtifact& paint_artifact,
     const PendingLayer& pending_layer) {
-  const auto* scroll_hit_test =
-      ScrollHitTestForLayer(paint_artifact, pending_layer);
-  if (!scroll_hit_test)
-    return nullptr;
-  const auto* scroll_offset = scroll_hit_test->scroll_offset;
-  if (!scroll_offset)
+  const auto* scroll_translation =
+      ScrollTranslationForLayer(paint_artifact, pending_layer);
+  if (!scroll_translation)
     return nullptr;
 
   // We shouldn't decomposite scroll transform nodes.
   DCHECK_EQ(FloatPoint(), pending_layer.offset_of_decomposited_transforms);
 
-  const auto& scroll_node = *scroll_offset->ScrollNode();
+  const auto& scroll_node = *scroll_translation->ScrollNode();
   auto scroll_element_id = scroll_node.GetCompositorElementId();
 
   scoped_refptr<cc::Layer> scroll_layer;
@@ -399,7 +389,7 @@ void PaintArtifactCompositor::UpdateNonFastScrollableRegions(
   for (const auto& chunk : paint_chunks) {
     // Add any non-fast scrollable hit test data from the paint chunk.
     const auto* hit_test_data = chunk.hit_test_data.get();
-    if (!hit_test_data || !hit_test_data->scroll_hit_test)
+    if (!hit_test_data || hit_test_data->scroll_hit_test_rect.IsEmpty())
       continue;
 
     // Skip the scroll hit test rect if it is for scrolling this cc::Layer.
@@ -407,18 +397,15 @@ void PaintArtifactCompositor::UpdateNonFastScrollableRegions(
     // pre-CompositeAfterPaint does not paint scroll hit test data for
     // composited scrollers.
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      const auto* scroll_offset = hit_test_data->scroll_hit_test->scroll_offset;
-      if (scroll_offset) {
-        const auto& scroll_node = *scroll_offset->ScrollNode();
+      if (const auto* scroll_translation = hit_test_data->scroll_translation) {
+        const auto& scroll_node = *scroll_translation->ScrollNode();
         auto scroll_element_id = scroll_node.GetCompositorElementId();
         if (layer->element_id() == scroll_element_id)
           continue;
       }
     }
 
-    const auto& bounds =
-        hit_test_data->scroll_hit_test->scroll_container_bounds;
-    auto rect = FloatClipRect(FloatRect(bounds));
+    FloatClipRect rect(FloatRect(chunk.hit_test_data->scroll_hit_test_rect));
     const auto& chunk_state = chunk.properties.GetPropertyTreeState();
     if (!GeometryMapper::LocalToAncestorVisualRect(chunk_state, layer_state,
                                                    rect)) {
@@ -426,7 +413,7 @@ void PaintArtifactCompositor::UpdateNonFastScrollableRegions(
     }
     rect.MoveBy(FloatPoint(-layer_offset.x(), -layer_offset.y()));
     non_fast_scrollable_regions_in_layer_space.Union(
-        (gfx::Rect)EnclosingIntRect(rect.Rect()));
+        EnclosingIntRect(rect.Rect()));
   }
   layer->SetNonFastScrollableRegion(non_fast_scrollable_regions_in_layer_space);
 }
@@ -809,13 +796,12 @@ static bool SkipGroupIfEffectivelyInvisible(
   return true;
 }
 
-static bool IsCompositedScrollHitTest(const DisplayItem& item) {
-  if (!item.IsScrollHitTest())
+static bool IsCompositedScrollHitTest(const PaintChunk& chunk) {
+  if (!chunk.hit_test_data)
     return false;
-  const auto* scroll_offset_node =
-      static_cast<const ScrollHitTestDisplayItem&>(item).scroll_offset_node();
-  return scroll_offset_node &&
-         scroll_offset_node->HasDirectCompositingReasons();
+  const auto* scroll_translation = chunk.hit_test_data->scroll_translation;
+  return scroll_translation &&
+         scroll_translation->HasDirectCompositingReasons();
 }
 
 static bool IsCompositedScrollbar(const DisplayItem& item) {
@@ -867,15 +853,16 @@ void PaintArtifactCompositor::LayerizeGroup(
     if (&chunk_effect == &unaliased_group) {
       // Case A: The next chunk belongs to the current group but no subgroup.
       bool requires_own_layer = false;
-      if (chunk_it->size()) {
+      if (IsCompositedScrollHitTest(*chunk_it)) {
+        requires_own_layer = true;
+      } else if (chunk_it->size()) {
         const auto& first_display_item =
             paint_artifact.GetDisplayItemList()[chunk_it->begin_index];
         requires_own_layer = first_display_item.IsForeignLayer() ||
                              first_display_item.IsGraphicsLayerWrapper() ||
-                             IsCompositedScrollHitTest(first_display_item) ||
                              IsCompositedScrollbar(first_display_item);
       }
-      DCHECK(!requires_own_layer || chunk_it->size() == 1u);
+      DCHECK(!requires_own_layer || chunk_it->size() <= 1u);
 
       pending_layers_.emplace_back(
           *chunk_it, chunk_it - paint_artifact.PaintChunks().begin(),
@@ -1163,11 +1150,9 @@ void PaintArtifactCompositor::DecompositeTransforms(
       // The scroll translation node of a scroll hit test layer may not be
       // referenced by any pending layer's property tree state. Disallow
       // decomposition of it (and its ancestors).
-      if (const auto* scroll_hit_test =
-              ScrollHitTestForLayer(paint_artifact, pending_layer)) {
-        if (const auto* scroll_offset = scroll_hit_test->scroll_offset)
-          mark_not_decompositable(scroll_offset);
-      }
+      if (const auto* scroll_translation =
+              ScrollTranslationForLayer(paint_artifact, pending_layer))
+        mark_not_decompositable(scroll_translation);
     }
   }
 
@@ -1277,7 +1262,7 @@ void PaintArtifactCompositor::Update(
     // The compositor scroll node is not directly stored in the property tree
     // state but can be created via the scroll offset translation node.
     const auto& scroll_translation =
-        ScrollOffsetTranslationForLayer(*paint_artifact, pending_layer);
+        NearestScrollTranslationForLayer(*paint_artifact, pending_layer);
     int scroll_id =
         property_tree_manager.EnsureCompositorScrollNode(scroll_translation);
 
@@ -1577,9 +1562,11 @@ CompositingReasons PaintArtifactCompositor::GetCompositingReasons(
     return CompositingReason::kOverlap;
 
   if (layer.compositing_type == PendingLayer::kRequiresOwnLayer) {
+    const auto& first_chunk = layer.FirstPaintChunk(paint_artifact);
+    if (IsCompositedScrollHitTest(first_chunk))
+      return CompositingReason::kOverflowScrolling;
     const auto& display_item =
-        paint_artifact.GetDisplayItemList()
-            [layer.FirstPaintChunk(paint_artifact).begin_index];
+        paint_artifact.GetDisplayItemList()[first_chunk.begin_index];
     switch (display_item.GetType()) {
       case DisplayItem::kForeignLayerCanvas:
         return CompositingReason::kCanvas;
@@ -1587,8 +1574,6 @@ CompositingReasons PaintArtifactCompositor::GetCompositingReasons(
         return CompositingReason::kPlugin;
       case DisplayItem::kForeignLayerVideo:
         return CompositingReason::kVideo;
-      case DisplayItem::kScrollHitTest:
-        return CompositingReason::kOverflowScrolling;
       case DisplayItem::kScrollbarHorizontal:
         return CompositingReason::kLayerForHorizontalScrollbar;
       case DisplayItem::kScrollbarVertical:

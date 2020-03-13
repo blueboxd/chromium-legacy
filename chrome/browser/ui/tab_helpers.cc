@@ -139,6 +139,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_navigation_observer.h"
+#include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder_tab_tracker.h"
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
@@ -368,6 +369,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #endif
 
 #if defined(OS_CHROMEOS)
+  app_list::CrOSActionRecorderTabTracker::CreateForWebContents(web_contents);
   chromeos::app_time::WebTimeNavigationObserver::MaybeCreateForWebContents(
       web_contents);
 #endif

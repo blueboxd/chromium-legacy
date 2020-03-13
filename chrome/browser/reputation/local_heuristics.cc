@@ -10,13 +10,12 @@
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
 #include "chrome/common/chrome_features.h"
+#include "components/lookalikes/lookalike_url_util.h"
 #include "components/security_state/core/features.h"
 #include "components/url_formatter/spoof_checks/top_domains/top_domain_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace {
-
-using MatchType = LookalikeUrlBlockingPage::MatchType;
 
 const base::FeatureParam<bool> kEnableLookalikeTopSites{
     &security_state::features::kSafetyTipUI, "topsites", true};
@@ -34,7 +33,7 @@ bool ShouldTriggerSafetyTipFromLookalike(
     const std::vector<DomainInfo>& engaged_sites,
     GURL* safe_url) {
   std::string matched_domain;
-  MatchType match_type;
+  LookalikeUrlMatchType match_type;
 
   // If the domain and registry is empty, this is a private domain and thus
   // should never be flagged as malicious.
@@ -42,34 +41,35 @@ bool ShouldTriggerSafetyTipFromLookalike(
     return false;
   }
 
-  if (!LookalikeUrlNavigationThrottle::GetMatchingDomain(
-          navigated_domain, engaged_sites, &matched_domain, &match_type)) {
+  if (!GetMatchingDomain(navigated_domain, engaged_sites, &matched_domain,
+                         &match_type)) {
     return false;
   }
 
   // If we're already displaying an interstitial, don't warn again.
-  if (LookalikeUrlNavigationThrottle::ShouldDisplayInterstitial(
-          match_type, navigated_domain)) {
+  if (base::FeatureList::IsEnabled(
+          features::kLookalikeUrlNavigationSuggestionsUI) &&
+      ShouldBlockLookalikeUrlNavigation(match_type, navigated_domain)) {
     return false;
   }
 
   *safe_url = GURL(std::string(url::kHttpScheme) +
                    url::kStandardSchemeSeparator + matched_domain);
   switch (match_type) {
-    case MatchType::kTopSite:
+    case LookalikeUrlMatchType::kTopSite:
       return kEnableLookalikeTopSites.Get();
-    case MatchType::kEditDistance:
+    case LookalikeUrlMatchType::kEditDistance:
       return kEnableLookalikeEditDistance.Get();
-    case MatchType::kEditDistanceSiteEngagement:
+    case LookalikeUrlMatchType::kEditDistanceSiteEngagement:
       return kEnableLookalikeEditDistanceSiteEngagement.Get();
-    case MatchType::kSiteEngagement:
+    case LookalikeUrlMatchType::kSiteEngagement:
       // We should only ever reach this case when the
       // kLookalikeUrlNavigationSuggestionsUI feature is disabled. Otherwise, an
       // interstitial will already be shown on the kSiteEngagement match type.
       DCHECK(!base::FeatureList::IsEnabled(
           features::kLookalikeUrlNavigationSuggestionsUI));
       return true;
-    case MatchType::kNone:
+    case LookalikeUrlMatchType::kNone:
       NOTREACHED();
   }
 

@@ -161,7 +161,6 @@ const DisplayItem::Type kForegroundType =
     static_cast<DisplayItem::Type>(DisplayItem::kDrawingPaintPhaseFirst + 5);
 const DisplayItem::Type kDocumentBackgroundType =
     DisplayItem::kDocumentBackground;
-const DisplayItem::Type kScrollHitTestType = DisplayItem::kScrollHitTest;
 const DisplayItem::Type kClipType = DisplayItem::kClipPaintPhaseFirst;
 
 #define EXPECT_SUBSEQUENCE(client, expected_start_chunk_index,     \

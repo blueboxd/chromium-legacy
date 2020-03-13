@@ -1487,6 +1487,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_ENTERPRISE_MANAGED" desc="The text for the privacy screen indicating the feature is enforced by enterprise policy.">
         Enforced by your administrator
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_TOAST_ACCESSIBILITY_TEXT" desc="The accessibility text for the privacy screen toast.">
+        <ph name="STATE_TEXT">$1<ex>Privacy screen is on</ex></ph>. <ph name="ENTERPRISE_TEXT">$2<ex>Enforced by your administrator</ex></ph>
+      </message>
 
       <!-- Status tray networking strings. -->
       <message name="IDS_ASH_STATUS_TRAY_MOBILE_SCANNING" desc="Message when scanning for mobile networks">

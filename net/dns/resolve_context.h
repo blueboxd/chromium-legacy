@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/sample_vector.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/optional.h"
@@ -18,7 +19,10 @@
 
 namespace net {
 
+class ClassicDnsServerIterator;
 class DnsSession;
+class DnsServerIterator;
+class DohDnsServerIterator;
 class HostCache;
 class URLRequestContext;
 
@@ -61,38 +65,15 @@ class NET_EXPORT_PRIVATE ResolveContext : public base::CheckedObserver {
 
   ~ResolveContext() override;
 
-  // TODO(crbug.com/1045507): Rework the server index selection logic and
-  // interface to not be susceptible to race conditions on server
-  // availability/failure-tracking changing between attempts. As-is, this code
-  // can easily result in working servers getting skipped and failing servers
-  // getting extra attempts (further inflating the failure tracking).
+  // Returns an iterator for DoH DNS servers.
+  std::unique_ptr<DnsServerIterator> GetDohIterator(
+      const DnsConfig& config,
+      const DnsConfig::SecureDnsMode& mode,
+      const DnsSession* session);
 
-  // Return the (potentially rotating) index of the first configured server (to
-  // be passed to [Doh]ServerIndexToUse()). Always returns 0 if |session| is not
-  // the current session.
-  size_t FirstServerIndex(bool doh_server, const DnsSession* session);
-
-  // Find the index of a non-DoH server to use for this attempt.  Starts from
-  // |starting_server| and finds the first server (wrapping around as necessary)
-  // below failure limits (|DnsConfig::attempts|), or if no servers are below
-  // failure limits, the one with the oldest last failure. If |session| is not
-  // the current session, assumes all servers are below failure limits and thus
-  // always returns |starting_server|.
-  size_t ClassicServerIndexToUse(size_t classic_starting_server_index,
-                                 const DnsSession* session);
-
-  // Find the index of a DoH server to use for this attempt. Starts from
-  // |starting_doh_server_index| and finds the first eligible server (wrapping
-  // around as necessary) below failure limits (|DnsConfig::attempts|), or of no
-  // eligible servers are below failure limits, the eligible one with the oldest
-  // last failure. Returns nullopt if there are no eligible DoH servers or
-  // |session| is not the current session.
-  //
-  // If in AUTOMATIC mode, DoH servers are only eligible if "available".  See
-  // GetDohServerAvailability() for details.
-  base::Optional<size_t> DohServerIndexToUse(
-      size_t starting_doh_server_index,
-      DnsConfig::SecureDnsMode secure_dns_mode,
+  // Returns an iterator for classic DNS servers.
+  std::unique_ptr<DnsServerIterator> GetClassicDnsIterator(
+      const DnsConfig& config,
       const DnsSession* session);
 
   // Returns whether |doh_server_index| is eligible for use in AUTOMATIC mode,
@@ -163,7 +144,36 @@ class NET_EXPORT_PRIVATE ResolveContext : public base::CheckedObserver {
   }
 
  private:
-  struct ServerStats;
+  friend DohDnsServerIterator;
+  friend ClassicDnsServerIterator;
+  // Runtime statistics of DNS server.
+  struct ServerStats {
+    explicit ServerStats(std::unique_ptr<base::SampleVector> rtt_histogram);
+
+    ServerStats(ServerStats&&);
+
+    ~ServerStats();
+
+    // Count of consecutive failures after last success.
+    int last_failure_count;
+
+    // True if any success has ever been recorded for this server for the
+    // current connection.
+    bool current_connection_success = false;
+
+    // Last time when server returned failure or timeout.
+    base::TimeTicks last_failure;
+    // Last time when server returned success.
+    base::TimeTicks last_success;
+
+    // A histogram of observed RTT .
+    std::unique_ptr<base::SampleVector> rtt_histogram;
+  };
+
+  // Return the (potentially rotating) index of the first configured server (to
+  // be passed to [Doh]ServerIndexToUse()). Always returns 0 if |session| is not
+  // the current session.
+  size_t FirstServerIndex(bool doh_server, const DnsSession* session);
 
   bool IsCurrentSession(const DnsSession* session) const;
 

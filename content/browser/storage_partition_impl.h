@@ -72,6 +72,7 @@ class PrefetchURLLoaderService;
 class GeneratedCodeCacheContext;
 class NativeFileSystemEntryFactory;
 class NativeFileSystemManagerImpl;
+class QuotaContext;
 
 class CONTENT_EXPORT StoragePartitionImpl
     : public StoragePartition,
@@ -193,6 +194,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   PrefetchURLLoaderService* GetPrefetchURLLoaderService();
   CookieStoreContext* GetCookieStoreContext();
   NativeFileSystemManagerImpl* GetNativeFileSystemManager();
+  QuotaContext* GetQuotaContext();
   ConversionManager* GetConversionManager();
 
   // blink::mojom::DomStorage interface.
@@ -455,6 +457,7 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   mojo::Remote<storage::mojom::Partition> remote_partition_;
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
+  scoped_refptr<QuotaContext> quota_context_;
   scoped_refptr<storage::QuotaManager> quota_manager_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<storage::FileSystemContext> filesystem_context_;

@@ -26,6 +26,12 @@ namespace content {
 
 EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
     const base::FilePath& user_data_directory)
+    : EmbeddedWorkerTestHelper(user_data_directory,
+                               /*special_storage_policy=*/nullptr) {}
+
+EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
+    const base::FilePath& user_data_directory,
+    storage::SpecialStoragePolicy* special_storage_policy)
     : browser_context_(std::make_unique<TestBrowserContext>()),
       render_process_host_(
           std::make_unique<MockRenderProcessHost>(browser_context_.get())),
@@ -41,8 +47,9 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
   scoped_refptr<base::SequencedTaskRunner> database_task_runner =
       base::ThreadTaskRunnerHandle::Get();
   wrapper_->InitOnCoreThread(
-      user_data_directory, std::move(database_task_runner), nullptr, nullptr,
-      nullptr, url_loader_factory_getter_.get(),
+      user_data_directory, std::move(database_task_runner),
+      /*quota_manager_proxy=*/nullptr, special_storage_policy, nullptr,
+      url_loader_factory_getter_.get(),
       blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled()
           ? wrapper_
                 ->CreateNonNetworkPendingURLLoaderFactoryBundleForUpdateCheck(

@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">Се испраќа до <ph name="DEVICE_NAME" />…</translation>
 <translation id="1036727731225946849">Се додава <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">Од веб-сајтови</translation>
+<translation id="1044891598689252897">Сајтовите ќе работат нормално</translation>
 <translation id="1049743911850919806">Инкогнито</translation>
 <translation id="10614374240317010">Никогаш не е зачувано</translation>
 <translation id="1067922213147265141">Други услуги на Google</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">Не може да се сподели <ph name="CONTENT_TYPE" /></translation>
 <translation id="1477626028522505441">Преземањето на <ph name="FILE_NAME" /> не успеа поради проблеми со серверот.</translation>
 <translation id="1506061864768559482">Пребарувач</translation>
+<translation id="1509960214886564027">Функциите на многу сајтови може да не функционираат</translation>
 <translation id="1513352483775369820">Обележувачи и веб-историја</translation>
 <translation id="1513858653616922153">Избриши ја лозинката</translation>
 <translation id="1521774566618522728">Активен денес</translation>
@@ -235,6 +237,7 @@
 <translation id="2647434099613338025">Додај јазик</translation>
 <translation id="2650751991977523696">Дали да се преземе датотеката повторно?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудиодатотека}one{# аудиодатотека}other{# аудиодатотеки}}</translation>
+<translation id="2687403674020088961">Блокирај ги сите колачиња (не се препорачува)</translation>
 <translation id="2707726405694321444">Освежи ја страницата</translation>
 <translation id="2709516037105925701">Автоматско пополнување</translation>
 <translation id="2717722538473713889">Адреси за е-пошта</translation>
@@ -340,6 +343,7 @@
 <translation id="3478363558367712427">Може да го изберете вашиот пребарувач</translation>
 <translation id="3492207499832628349">Нова инкогнито картичка</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /> за предложените содржини</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Проширена реалност</translation>
 <translation id="3518985090088779359">Прифати и продолжи</translation>
 <translation id="3522247891732774234">Достапно е ажурирање. Повеќе опции</translation>
@@ -355,6 +359,7 @@
 <translation id="358794129225322306">Дозволете сајтот автоматски да презема повеќе датотеки.</translation>
 <translation id="3590487821116122040">Достапен простор на сајтот за кој Chrome смета дека не е важен (на пр., сајтови без зачувани поставки или коишто не ги посетувате често)</translation>
 <translation id="3594780231884063836">Исклучете звук на видео</translation>
+<translation id="3596414637720633074">Блокирај колачиња од трети страни во „Инкогнито“</translation>
 <translation id="3599863153486145794">Ја чисти историјата од сите најавени уреди. Вашата сметка на Google можеби има други видови историја на прелистување на <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Исклучи го звукот на сајтовите што пуштаат звук</translation>
 <translation id="3616113530831147358">Аудио</translation>
@@ -663,7 +668,6 @@
 <translation id="5853623416121554550">паузирано</translation>
 <translation id="5854790677617711513">Постари од 30 дена</translation>
 <translation id="5858741533101922242">Chrome не може да го вклучи Bluetooth адаптерот</translation>
-<translation id="5860491529813859533">Вклучи</translation>
 <translation id="5862731021271217234">За да ги добиете вашите картички од другите уреди, вклучете ја синхронизацијата</translation>
 <translation id="5864174910718532887">Детали: подредени по име на сајт</translation>
 <translation id="5864419784173784555">Се чека друго преземање…</translation>
@@ -690,7 +694,6 @@
 <translation id="604996488070107836">Преземањето на <ph name="FILE_NAME" /> не успеа поради непозната грешка.</translation>
 <translation id="605721222689873409">ГГ</translation>
 <translation id="6064125863973209585">Преземањата завршија</translation>
-<translation id="6092062101542170135">За да продолжите, вклучете ја NFC во поставките за Android</translation>
 <translation id="60923314841986378">Останаа <ph name="HOURS" /> часа</translation>
 <translation id="6108923351542677676">Поставувањето е во тек…</translation>
 <translation id="6111020039983847643">искористен сообраќај</translation>
@@ -943,6 +946,7 @@
 <translation id="79859296434321399">За да прегледувате содржини во проширена реалност, инсталирајте го ARCore</translation>
 <translation id="7986741934819883144">Изберете контакт</translation>
 <translation id="7987073022710626672">Услови за користење на Chrome</translation>
+<translation id="7993619969781047893">Функциите на некои сајтови може да не функционираат</translation>
 <translation id="7998918019931843664">Повторно отвори ја затворената картичка</translation>
 <translation id="7999064672810608036">Дали сте сигурни дека сакате да ги исчистите сите локални податоци, вклучувајќи ги колачињата, и да ги ресетирате сите дозволи за веб-локацијата?</translation>
 <translation id="8004582292198964060">Прелистувач</translation>
@@ -1077,6 +1081,7 @@
 <translation id="8965591936373831584">чека на ред</translation>
 <translation id="8970887620466824814">Нешто тргна наопаку.</translation>
 <translation id="8972098258593396643">Дали да се преземе во стандардната папка?</translation>
+<translation id="8988028529677883095">Користете го телефонот како безбедносен клуч</translation>
 <translation id="8993760627012879038">Отворете нова картичка во режим инкогнито</translation>
 <translation id="8998729206196772491">Се најавувате со сметка управувана од <ph name="MANAGED_DOMAIN" /> и му давате контрола над податоците на Chrome на нејзиниот администратор. Вашите податоци ќе бидат трајно врзани за оваа сметка. Одјавувањето од Chrome ќе ги избрише податоците од уредов, но тие ќе останат зачувани на сметката на Google.</translation>
 <translation id="9019902583201351841">Управувано од вашите родители</translation>

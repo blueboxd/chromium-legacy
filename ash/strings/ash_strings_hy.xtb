@@ -245,7 +245,6 @@
 <translation id="3995138139523574647">USB-C սարք (հետևի ձախակողմյան միացք)</translation>
 <translation id="4017989525502048489">Լազերային ցուցիչ</translation>
 <translation id="4021716437419160885">Ոլորել վար</translation>
-<translation id="402772165574991617">Ժեստերի միջոցով արագ անցեք մեկ հավելվածից մյուսը և օգտագործեք Chromebook-ը պլանշետի ռեժիմում։</translation>
 <translation id="4028481283645788203">Անվտանգության նկատառումներից ելնելով անհրաժեշտ է մուտքագրել գաղտնաբառը</translation>
 <translation id="4042660782729322247">Դուք հասանելի եք դարձրել ձեր էկրանը</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Անջատել 1 հավելվածի համար}one{Անջատել # հավելվածի համար}other{Անջատել # հավելվածների համար}}</translation>
@@ -534,7 +533,6 @@
 <translation id="8000066093800657092">Ցանց չկա</translation>
 <translation id="8029629653277878342">Անվտանգության նկատառումներից ելնելով անհրաժեշտ է մուտքագրել PIN կոդը կամ գաղտնաբառը</translation>
 <translation id="8030169304546394654">Անջատված է</translation>
-<translation id="8042024183333293953">Փորձեք ժեստերով նոր նավարկումը</translation>
 <translation id="8048123526339889627">Bluetooth-ի կարգավորումներ</translation>
 <translation id="8054466585765276473">Մարտկոցի ժամանակի հաշվարկում:</translation>
 <translation id="8061464966246066292">Բարձր կոնտրաստ</translation>

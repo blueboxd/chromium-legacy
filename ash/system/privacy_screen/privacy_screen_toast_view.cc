@@ -8,6 +8,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/default_color_constants.h"
+#include "ash/system/privacy_screen/privacy_screen_toast_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -114,16 +115,18 @@ class PrivacyScreenToastLabelView : public views::View {
 };
 
 PrivacyScreenToastView::PrivacyScreenToastView(
-    views::ButtonListener* button_listener) {
+    PrivacyScreenToastController* controller)
+    : controller_(controller) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal, kPrivacyScreenToastInsets,
       kPrivacyScreenToastSpacing));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
-  button_ = new FeaturePodIconButton(button_listener, /*is_togglable=*/true);
+  button_ = new FeaturePodIconButton(controller, /*is_togglable=*/true);
   button_->SetVectorIcon(kPrivacyScreenIcon);
   button_->SetToggled(false);
+  button_->AddObserver(this);
   AddChildView(button_);
 
   label_ = new PrivacyScreenToastLabelView();
@@ -133,13 +136,51 @@ PrivacyScreenToastView::PrivacyScreenToastView(
   layer()->SetFillsBoundsOpaquely(false);
 }
 
-PrivacyScreenToastView::~PrivacyScreenToastView() = default;
+PrivacyScreenToastView::~PrivacyScreenToastView() {
+  button_->RemoveObserver(this);
+}
 
 void PrivacyScreenToastView::SetPrivacyScreenEnabled(bool enabled,
                                                      bool managed) {
+  is_enabled_ = enabled;
+  is_managed_ = managed;
   button_->SetToggled(enabled);
   label_->SetPrivacyScreenEnabled(enabled, managed);
+
+  base::string16 state = l10n_util::GetStringUTF16(
+      is_enabled_ ? IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_ON_STATE
+                  : IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_OFF_STATE);
+  button_->SetTooltipText(l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_TOOLTIP, state));
+
   Layout();
+}
+
+base::string16 PrivacyScreenToastView::GetAccessibleName() {
+  base::string16 enabled_state = l10n_util::GetStringUTF16(
+      is_enabled_ ? IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_ON_STATE
+                  : IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_OFF_STATE);
+  base::string16 managed_state =
+      is_managed_ ? l10n_util::GetStringUTF16(
+                        IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_ENTERPRISE_MANAGED)
+                  : base::string16();
+  return l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_TOAST_ACCESSIBILITY_TEXT,
+      enabled_state, managed_state);
+}
+
+bool PrivacyScreenToastView::IsButtonFocused() const {
+  return button_->HasFocus();
+}
+
+void PrivacyScreenToastView::OnViewFocused(views::View* observed_view) {
+  DCHECK(observed_view == button_);
+  controller_->StopAutocloseTimer();
+}
+
+void PrivacyScreenToastView::OnViewBlurred(views::View* observed_view) {
+  DCHECK(observed_view == button_);
+  controller_->StartAutoCloseTimer();
 }
 
 }  // namespace ash

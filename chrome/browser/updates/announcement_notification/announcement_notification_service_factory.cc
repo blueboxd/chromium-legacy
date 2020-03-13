@@ -55,8 +55,7 @@ KeyedService* AnnouncementNotificationServiceFactory::BuildServiceInstanceFor(
       std::make_unique<AnnouncementNotificationDelegate>(display_service);
 #endif  // OS_ANDROID
   return AnnouncementNotificationService::Create(
-      profile->GetPath(), profile->IsNewProfile(), pref, std::move(delegate),
-      base::DefaultClock::GetInstance());
+      profile, pref, std::move(delegate), base::DefaultClock::GetInstance());
 }
 
 content::BrowserContext*

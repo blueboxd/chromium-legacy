@@ -15,10 +15,11 @@ import static org.chromium.chrome.browser.ui.appmenu.AppMenuAdapterTest.buildTit
 
 import android.graphics.drawable.Drawable;
 import android.support.test.filters.MediumTest;
-import android.support.v7.content.res.AppCompatResources;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
+
+import androidx.appcompat.content.res.AppCompatResources;
 
 import org.junit.Rule;
 import org.junit.Test;

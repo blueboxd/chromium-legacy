@@ -79,7 +79,7 @@ TEST(BookmarkSpecificsConversionsTest, ShouldCreateSpecificsFromBookmarkNode) {
       node, model.get(), /*force_favicon_load=*/false, /*include_guid=*/true);
   const sync_pb::BookmarkSpecifics& bm_specifics = specifics.bookmark();
   EXPECT_THAT(bm_specifics.guid(), Eq(node->guid()));
-  EXPECT_THAT(bm_specifics.title(), Eq(kTitle));
+  EXPECT_THAT(bm_specifics.legacy_canonicalized_title(), Eq(kTitle));
   EXPECT_THAT(GURL(bm_specifics.url()), Eq(kUrl));
   EXPECT_THAT(
       base::Time::FromDeltaSinceWindowsEpoch(
@@ -109,7 +109,7 @@ TEST(BookmarkSpecificsConversionsTest,
   sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
       node, model.get(), /*force_favicon_load=*/false, /*include_guid=*/false);
   const sync_pb::BookmarkSpecifics& bm_specifics = specifics.bookmark();
-  ASSERT_THAT(bm_specifics.title(), Eq(kTitle));
+  ASSERT_THAT(bm_specifics.legacy_canonicalized_title(), Eq(kTitle));
   ASSERT_THAT(GURL(bm_specifics.url()), Eq(kUrl));
   EXPECT_FALSE(bm_specifics.has_guid());
 }
@@ -130,7 +130,8 @@ TEST(BookmarkSpecificsConversionsTest,
     sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
         node, model.get(), /*force_favicon_load=*/false, /*include_guid=*/true);
     // Legacy clients append a space to illegal titles.
-    EXPECT_THAT(specifics.bookmark().title(), Eq(illegal_title + " "));
+    EXPECT_THAT(specifics.bookmark().legacy_canonicalized_title(),
+                Eq(illegal_title + " "));
   }
 }
 
@@ -208,7 +209,7 @@ TEST(BookmarkSpecificsConversionsTest, ShouldCreateBookmarkNodeFromSpecifics) {
   bm_specifics->set_guid(kGuid);
   bm_specifics->set_icon_url(kIconUrl.spec());
   bm_specifics->set_favicon("PNG");
-  bm_specifics->set_title(kTitle);
+  bm_specifics->set_legacy_canonicalized_title(kTitle);
   bm_specifics->set_creation_time_us(
       kTime.ToDeltaSinceWindowsEpoch().InMicroseconds());
   sync_pb::MetaInfo* meta_info1 = bm_specifics->add_meta_info();
@@ -243,6 +244,60 @@ TEST(BookmarkSpecificsConversionsTest, ShouldCreateBookmarkNodeFromSpecifics) {
 }
 
 TEST(BookmarkSpecificsConversionsTest,
+     ShouldPreferFullTitleOnCreatingBookmarkNodeFromSpecifics) {
+  const GURL kUrl("http://www.url.com");
+  const std::string kGuid = base::GenerateGUID();
+  const std::string kTitle = "Title";
+  const std::string kFullTitle = "Title Long Version";
+  const base::Time kTime = base::Time::Now();
+  const GURL kIconUrl("http://www.icon-url.com");
+  const std::string kKey1 = "key1";
+  const std::string kValue1 = "value1";
+  const std::string kKey2 = "key2";
+  const std::string kValue2 = "value2";
+
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
+  bm_specifics->set_url(kUrl.spec());
+  bm_specifics->set_guid(kGuid);
+  bm_specifics->set_icon_url(kIconUrl.spec());
+  bm_specifics->set_favicon("PNG");
+  bm_specifics->set_legacy_canonicalized_title(kTitle);
+  bm_specifics->set_full_title(kFullTitle);
+  bm_specifics->set_creation_time_us(
+      kTime.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  sync_pb::MetaInfo* meta_info1 = bm_specifics->add_meta_info();
+  meta_info1->set_key(kKey1);
+  meta_info1->set_value(kValue1);
+
+  sync_pb::MetaInfo* meta_info2 = bm_specifics->add_meta_info();
+  meta_info2->set_key(kKey2);
+  meta_info2->set_value(kValue2);
+
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  EXPECT_CALL(favicon_service,
+              AddPageNoVisitForBookmark(kUrl, base::UTF8ToUTF16(kFullTitle)));
+  EXPECT_CALL(favicon_service, MergeFavicon(kUrl, kIconUrl, _, _, _));
+  const bookmarks::BookmarkNode* node = CreateBookmarkNodeFromSpecifics(
+      *bm_specifics,
+      /*parent=*/model->bookmark_bar_node(), /*index=*/0,
+      /*is_folder=*/false, model.get(), &favicon_service);
+  ASSERT_THAT(node, NotNull());
+  EXPECT_THAT(node->guid(), Eq(kGuid));
+  EXPECT_THAT(node->GetTitle(), Eq(base::UTF8ToUTF16(kFullTitle)));
+  EXPECT_THAT(node->url(), Eq(kUrl));
+  EXPECT_THAT(node->date_added(), Eq(kTime));
+  std::string value1;
+  node->GetMetaInfo(kKey1, &value1);
+  EXPECT_THAT(value1, Eq(kValue1));
+  std::string value2;
+  node->GetMetaInfo(kKey2, &value2);
+  EXPECT_THAT(value2, Eq(kValue2));
+}
+
+TEST(BookmarkSpecificsConversionsTest,
      ShouldCreateBookmarkNodeFromSpecificsWithIllegalTitle) {
   std::unique_ptr<bookmarks::BookmarkModel> model =
       bookmarks::TestBookmarkClient::CreateModel();
@@ -257,7 +312,7 @@ TEST(BookmarkSpecificsConversionsTest,
     bm_specifics->set_url("http://www.url.com");
     bm_specifics->set_guid(base::GenerateGUID());
     // Legacy clients append an extra space to illegal clients.
-    bm_specifics->set_title(illegal_title + " ");
+    bm_specifics->set_legacy_canonicalized_title(illegal_title + " ");
     const bookmarks::BookmarkNode* node = CreateBookmarkNodeFromSpecifics(
         *bm_specifics,
         /*parent=*/model->bookmark_bar_node(), index++,
@@ -280,7 +335,7 @@ TEST(BookmarkSpecificsConversionsTest,
   bm_specifics->set_url(kUrl.spec());
   bm_specifics->set_guid(kGuid);
   bm_specifics->set_favicon("PNG");
-  bm_specifics->set_title(kTitle);
+  bm_specifics->set_legacy_canonicalized_title(kTitle);
 
   std::unique_ptr<bookmarks::BookmarkModel> model =
       bookmarks::TestBookmarkClient::CreateModel();
@@ -327,7 +382,7 @@ TEST(BookmarkSpecificsConversionsTest, ShouldUpdateBookmarkNodeFromSpecifics) {
   bm_specifics->set_guid(node->guid());
   bm_specifics->set_icon_url(kNewIconUrl.spec());
   bm_specifics->set_favicon("PNG");
-  bm_specifics->set_title(kNewTitle);
+  bm_specifics->set_legacy_canonicalized_title(kNewTitle);
   bm_specifics->set_creation_time_us(
       kTime.ToDeltaSinceWindowsEpoch().InMicroseconds());
   sync_pb::MetaInfo* meta_info1 = bm_specifics->add_meta_info();
@@ -345,6 +400,68 @@ TEST(BookmarkSpecificsConversionsTest, ShouldUpdateBookmarkNodeFromSpecifics) {
   UpdateBookmarkNodeFromSpecifics(*bm_specifics, node, model.get(),
                                   &favicon_service);
   EXPECT_THAT(node->GetTitle(), Eq(base::UTF8ToUTF16(kNewTitle)));
+  EXPECT_THAT(node->url(), Eq(kNewUrl));
+  std::string value1;
+  node->GetMetaInfo(kKey1, &value1);
+  EXPECT_THAT(value1, Eq(kNewValue1));
+  std::string value2;
+  node->GetMetaInfo(kKey2, &value2);
+  EXPECT_THAT(value2, Eq(kNewValue2));
+}
+
+TEST(BookmarkSpecificsConversionsTest,
+     ShouldPreferFullTitleOnUpdateBookmarkNodeFromSpecifics) {
+  const GURL kUrl("http://www.url.com");
+  const std::string kTitle = "Title";
+  const base::Time kTime = base::Time::Now();
+  const std::string kKey1 = "key1";
+  const std::string kValue1 = "value1";
+  const std::string kKey2 = "key2";
+  const std::string kValue2 = "value2";
+
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  const bookmarks::BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* node = model->AddURL(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16(kTitle),
+      GURL(kUrl));
+  ASSERT_THAT(node, NotNull());
+  model->SetNodeMetaInfo(node, kKey1, kValue1);
+  model->SetNodeMetaInfo(node, kKey2, kValue2);
+
+  const GURL kNewUrl("http://www.new-url.com");
+  const std::string kNewTitle = "NewTitle";
+  const std::string kNewFullTitle = "NewTitle Long Version";
+  const GURL kNewIconUrl("http://www.new-icon-url.com");
+  const std::string kNewValue1 = "new-value1";
+  const std::string kNewValue2 = "new-value2";
+
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
+  bm_specifics->set_url(kNewUrl.spec());
+  bm_specifics->set_guid(node->guid());
+  bm_specifics->set_icon_url(kNewIconUrl.spec());
+  bm_specifics->set_favicon("PNG");
+  bm_specifics->set_legacy_canonicalized_title(kNewTitle);
+  bm_specifics->set_full_title(kNewFullTitle);
+  bm_specifics->set_creation_time_us(
+      kTime.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  sync_pb::MetaInfo* meta_info1 = bm_specifics->add_meta_info();
+  meta_info1->set_key(kKey1);
+  meta_info1->set_value(kNewValue1);
+
+  sync_pb::MetaInfo* meta_info2 = bm_specifics->add_meta_info();
+  meta_info2->set_key(kKey2);
+  meta_info2->set_value(kNewValue2);
+
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  EXPECT_CALL(favicon_service, AddPageNoVisitForBookmark(
+                                   kNewUrl, base::UTF8ToUTF16(kNewFullTitle)));
+  EXPECT_CALL(favicon_service, MergeFavicon(kNewUrl, kNewIconUrl, _, _, _));
+  UpdateBookmarkNodeFromSpecifics(*bm_specifics, node, model.get(),
+                                  &favicon_service);
+  EXPECT_THAT(node->GetTitle(), Eq(base::UTF8ToUTF16(kNewFullTitle)));
   EXPECT_THAT(node->url(), Eq(kNewUrl));
   std::string value1;
   node->GetMetaInfo(kKey1, &value1);

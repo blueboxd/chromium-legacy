@@ -55,12 +55,14 @@ class FindTaskController::FindTask final : public GarbageCollected<FindTask> {
   }
 
   void Invoke() {
+    const base::TimeTicks task_start_time = base::TimeTicks::Now();
     if (!controller_->ShouldFindMatches(identifier_, search_text_, *options_)) {
       controller_->DidFinishTask(identifier_, search_text_, *options_,
                                  true /* finished_whole_request */,
                                  PositionInFlatTree(), 0 /* match_count */,
-                                 true /* aborted */);
+                                 true /* aborted */, task_start_time);
     }
+    SCOPED_UMA_HISTOGRAM_TIMER("WebCore.FindInPage.TaskDuration");
 
     Document::ScopedForceActivatableDisplayLocks
         forced_activatable_display_locks(
@@ -138,10 +140,10 @@ class FindTaskController::FindTask final : public GarbageCollected<FindTask> {
       if (time_elapsed > kFindTaskTimeAllotment)
         break;
     }
-
     controller_->DidFinishTask(identifier_, search_text_, *options_,
                                full_range_searched, next_task_start_position,
-                               match_count, false /* aborted */);
+                               match_count, false /* aborted */,
+                               task_start_time);
   }
 
   Member<Document> document_;
@@ -161,6 +163,10 @@ void FindTaskController::StartRequest(
     int identifier,
     const WebString& search_text,
     const mojom::blink::FindOptions& options) {
+  TRACE_EVENT_ASYNC_BEGIN0("blink", "FindInPageRequest", identifier);
+  current_request_start_time_ = base::TimeTicks::Now();
+  total_task_duration_for_current_request_ = base::TimeDelta();
+  task_count_for_current_request_ = 0;
   DCHECK(!finding_in_progress_);
   DCHECK_EQ(current_find_identifier_, kInvalidFindIdentifier);
   // This is a brand new search, so we need to reset everything.
@@ -173,8 +179,10 @@ void FindTaskController::StartRequest(
 void FindTaskController::CancelPendingRequest() {
   if (find_task_)
     find_task_.Clear();
-  if (finding_in_progress_)
+  if (finding_in_progress_) {
+    RecordRequestMetrics(RequestEndState::ABORTED);
     last_find_request_completed_with_no_matches_ = false;
+  }
   finding_in_progress_ = false;
   resume_finding_from_range_ = nullptr;
   current_find_identifier_ = kInvalidFindIdentifier;
@@ -186,6 +194,7 @@ void FindTaskController::RequestFindTask(
     const mojom::blink::FindOptions& options) {
   DCHECK_EQ(find_task_, nullptr);
   DCHECK_EQ(identifier, current_find_identifier_);
+  task_count_for_current_request_++;
   find_task_ = MakeGarbageCollected<FindTask>(
       this, GetLocalFrame()->GetDocument(), identifier, search_text, options);
 }
@@ -197,7 +206,10 @@ void FindTaskController::DidFinishTask(
     bool finished_whole_request,
     PositionInFlatTree next_starting_position,
     int match_count,
-    bool aborted) {
+    bool aborted,
+    base::TimeTicks task_start_time) {
+  total_task_duration_for_current_request_ +=
+      base::TimeTicks::Now() - task_start_time;
   if (find_task_)
     find_task_.Clear();
   // Remember what we search for last time, so we can skip searching if more
@@ -225,10 +237,37 @@ void FindTaskController::DidFinishTask(
   text_finder_->FinishCurrentScopingEffort(identifier);
 
   if (identifier == current_find_identifier_) {
+    RecordRequestMetrics(RequestEndState::ABORTED);
     last_find_request_completed_with_no_matches_ =
         !aborted && !current_match_count_;
     finding_in_progress_ = false;
     current_find_identifier_ = kInvalidFindIdentifier;
+  }
+}
+
+void FindTaskController::RecordRequestMetrics(
+    RequestEndState request_end_state) {
+  bool aborted = (request_end_state == RequestEndState::ABORTED);
+  TRACE_EVENT_ASYNC_END1("blink", "FindInPageRequest", current_find_identifier_,
+                         "aborted", aborted);
+  if (aborted) {
+    UMA_HISTOGRAM_MEDIUM_TIMES("WebCore.FindInPage.TotalTaskDuration.Aborted",
+                               total_task_duration_for_current_request_);
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "WebCore.FindInPage.RequestDuration.Aborted",
+        base::TimeTicks::Now() - current_request_start_time_);
+    UMA_HISTOGRAM_COUNTS_1000(
+        "WebCore.FindInPage.NumberOfTasksPerRequest.Aborted",
+        task_count_for_current_request_);
+  } else {
+    UMA_HISTOGRAM_MEDIUM_TIMES("WebCore.FindInPage.TotalTaskDuration.Finished",
+                               total_task_duration_for_current_request_);
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "WebCore.FindInPage.RequestDuration.Finished",
+        base::TimeTicks::Now() - current_request_start_time_);
+    UMA_HISTOGRAM_COUNTS_1000(
+        "WebCore.FindInPage.NumberOfTasksPerRequest.Finished",
+        task_count_for_current_request_);
   }
 }
 

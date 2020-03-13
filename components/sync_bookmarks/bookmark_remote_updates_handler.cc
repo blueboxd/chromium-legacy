@@ -478,16 +478,19 @@ BookmarkRemoteUpdatesHandler::ProcessCreate(
   const bookmarks::BookmarkNode* parent_node = GetParentNode(update_entity);
   if (!parent_node) {
     // If we cannot find the parent, we can do nothing.
-    DLOG(ERROR) << "Could not find parent of node being added."
-                << " Node title: " << update_entity.specifics.bookmark().title()
-                << ", parent id = " << update_entity.parent_id;
+    DLOG(ERROR)
+        << "Could not find parent of node being added."
+        << " Node title: "
+        << update_entity.specifics.bookmark().legacy_canonicalized_title()
+        << ", parent id = " << update_entity.parent_id;
     LogProblematicBookmark(RemoteBookmarkUpdateError::kMissingParentNode);
     return nullptr;
   }
   if (!parent_node->is_folder()) {
-    DLOG(ERROR) << "Parent node is not a folder. Node title: "
-                << update_entity.specifics.bookmark().title()
-                << ", parent id: " << update_entity.parent_id;
+    DLOG(ERROR)
+        << "Parent node is not a folder. Node title: "
+        << update_entity.specifics.bookmark().legacy_canonicalized_title()
+        << ", parent id: " << update_entity.parent_id;
     LogProblematicBookmark(RemoteBookmarkUpdateError::kParentNotFolder);
     return nullptr;
   }

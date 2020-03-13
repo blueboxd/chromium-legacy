@@ -21,6 +21,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/services/storage/public/mojom/local_storage_control.mojom.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
@@ -32,7 +33,6 @@ class SequencedTaskRunner;
 
 namespace storage {
 class QuotaManagerProxy;
-class SpecialStoragePolicy;
 }
 
 namespace content {
@@ -64,10 +64,19 @@ FORWARD_DECLARE_TEST(ServiceWorkerStorageTest, DisabledStorage);
 // See the toplevel description of ServiceWorkerRegistry.
 class CONTENT_EXPORT ServiceWorkerStorage {
  public:
+  enum class OriginState {
+    // Registrations may exist at this origin. It cannot be deleted.
+    kKeep,
+    // No registrations exist at this origin. It can be deleted.
+    kDelete
+  };
+
   using RegistrationList =
       std::vector<storage::mojom::ServiceWorkerRegistrationDataPtr>;
   using ResourceList =
       std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>;
+  using GetRegisteredOriginsCallback =
+      base::OnceCallback<void(std::vector<url::Origin> callback)>;
   using FindRegistrationDataCallback = base::OnceCallback<void(
       storage::mojom::ServiceWorkerRegistrationDataPtr data,
       std::unique_ptr<ResourceList> resources,
@@ -85,6 +94,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       const std::vector<int64_t>& newly_purgeable_resources)>;
   using DeleteRegistrationCallback = base::OnceCallback<void(
       ServiceWorkerDatabase::Status status,
+      OriginState origin_state,
       int64_t deleted_version_id,
       const std::vector<int64_t>& newly_purgeable_resources)>;
 
@@ -111,12 +121,14 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   static std::unique_ptr<ServiceWorkerStorage> Create(
       const base::FilePath& user_data_directory,
       scoped_refptr<base::SequencedTaskRunner> database_task_runner,
-      storage::QuotaManagerProxy* quota_manager_proxy,
-      storage::SpecialStoragePolicy* special_storage_policy);
+      storage::QuotaManagerProxy* quota_manager_proxy);
 
   // Used for DeleteAndStartOver. Creates new storage based on |old_storage|.
   static std::unique_ptr<ServiceWorkerStorage> Create(
       ServiceWorkerStorage* old_storage);
+
+  // Returns all origins which have service worker registrations.
+  void GetRegisteredOrigins(GetRegisteredOriginsCallback callback);
 
   // Reads stored registrations for |client_url| or |scope| or
   // |registration_id|. Returns ServiceWorkerDatabase::Status::kOk with
@@ -289,6 +301,10 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void PurgeResources(const std::vector<int64_t>& resource_ids);
   void PurgeResources(const std::set<int64_t>& resource_ids);
 
+  // Applies |policy_updates|.
+  void ApplyPolicyUpdates(
+      std::vector<storage::mojom::LocalStoragePolicyUpdatePtr> policy_updates);
+
   void LazyInitializeForTest();
 
   void SetPurgingCompleteCallbackForTest(base::OnceClosure callback);
@@ -335,13 +351,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
     ~DidDeleteRegistrationParams();
   };
 
-  enum class OriginState {
-    // Registrations may exist at this origin. It cannot be deleted.
-    kKeep,
-    // No registrations exist at this origin. It can be deleted.
-    kDelete
-  };
-
   using InitializeCallback =
       base::OnceCallback<void(std::unique_ptr<InitialData> data,
                               ServiceWorkerDatabase::Status status)>;
@@ -364,8 +373,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   ServiceWorkerStorage(
       const base::FilePath& user_data_directory,
       scoped_refptr<base::SequencedTaskRunner> database_task_runner,
-      storage::QuotaManagerProxy* quota_manager_proxy,
-      storage::SpecialStoragePolicy* special_storage_policy);
+      storage::QuotaManagerProxy* quota_manager_proxy);
 
   base::FilePath GetDatabasePath();
   base::FilePath GetDiskCachePath();
@@ -515,6 +523,8 @@ class CONTENT_EXPORT ServiceWorkerStorage {
 
   // Origins having registations.
   std::set<GURL> registered_origins_;
+  // The set of origins whose storage should be cleaned on shutdown.
+  std::set<GURL> origins_to_purge_on_shutdown_;
 
   // Pending database tasks waiting for initialization.
   std::vector<base::OnceClosure> pending_tasks_;
@@ -551,7 +561,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   scoped_refptr<base::SequencedTaskRunner> database_task_runner_;
 
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
-  scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
 
   std::unique_ptr<ServiceWorkerDiskCache> disk_cache_;
 

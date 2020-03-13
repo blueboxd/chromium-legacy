@@ -80,7 +80,7 @@ class MostVisitedElement extends PolymerElement {
       columnCount_: {
         type: Boolean,
         computed: `computeColumnCount_(tiles_, screenWidth_, maxTiles_,
-            visible_, showAdd_)`,
+            visible_)`,
       },
 
       /** @private */
@@ -132,7 +132,7 @@ class MostVisitedElement extends PolymerElement {
       showAdd_: {
         type: Boolean,
         value: false,
-        computed: 'computeShowAdd_(tiles_, maxTiles_, customLinksEnabled_)',
+        computed: 'computeShowAdd_(tiles_, columnCount_, customLinksEnabled_)',
       },
 
       /** @private */
@@ -216,11 +216,12 @@ class MostVisitedElement extends PolymerElement {
 
     /** @private {!Function} */
     this.boundOnWidthChange_ = this.updateScreenWidth_.bind(this);
+    const {matchMedia} = BrowserProxy.getInstance();
     /** @private {!MediaQueryList} */
-    this.mediaListenerWideWidth_ = window.matchMedia('(min-width: 672px)');
+    this.mediaListenerWideWidth_ = matchMedia('(min-width: 672px)');
     this.mediaListenerWideWidth_.addListener(this.boundOnWidthChange_);
     /** @private {!MediaQueryList} */
-    this.mediaListenerMediumWidth_ = window.matchMedia('(min-width: 560px)');
+    this.mediaListenerMediumWidth_ = matchMedia('(min-width: 560px)');
     this.mediaListenerMediumWidth_.addListener(this.boundOnWidthChange_);
     this.updateScreenWidth_();
     /** @private {!function(Event)} */
@@ -254,9 +255,10 @@ class MostVisitedElement extends PolymerElement {
       maxColumns = 4;
     }
 
-    const tileCount = Math.min(
-        this.maxTiles_,
-        (this.tiles_ ? this.tiles_.length : 0) + (this.showAdd_ ? 1 : 0));
+    const shortcutCount = this.tiles_ ? this.tiles_.length : 0;
+    const canShowAdd = this.maxTiles_ > shortcutCount;
+    const tileCount =
+        Math.min(this.maxTiles_, shortcutCount + (canShowAdd ? 1 : 0));
     const columnCount = tileCount <= maxColumns ?
         tileCount :
         Math.min(maxColumns, Math.ceil(tileCount / 2));
@@ -277,7 +279,7 @@ class MostVisitedElement extends PolymerElement {
    */
   computeShowAdd_() {
     return this.customLinksEnabled_ && this.tiles_ &&
-        this.tiles_.length < this.maxTiles_;
+        this.tiles_.length < this.columnCount_ * 2;
   }
 
   /**

@@ -36,10 +36,13 @@ class ASH_EXPORT PrivacyScreenToastController
   // closes.
   void HideToast();
 
- private:
+  // Stops the timer to autoclose the toast.
+  void StopAutocloseTimer();
+
   // Triggers a timer to automatically close the toast.
   void StartAutoCloseTimer();
 
+ private:
   // Updates the toast UI with the current privacy screen state.
   void UpdateToastView();
 
@@ -47,6 +50,7 @@ class ASH_EXPORT PrivacyScreenToastController
   void BubbleViewDestroyed() override;
   void OnMouseEnteredView() override;
   void OnMouseExitedView() override;
+  base::string16 GetAccessibleNameForBubble() override;
 
   // PrivacyScreenController::Observer:
   void OnPrivacyScreenSettingChanged(bool enabled) override;

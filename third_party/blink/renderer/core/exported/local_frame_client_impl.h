@@ -246,6 +246,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void FrameRectsChanged(const IntRect&) override;
 
+  void FocusedElementChanged(Element* element) override;
+
   void OnMainFrameDocumentIntersectionChanged(
       const IntRect& intersection_rect) override;
 

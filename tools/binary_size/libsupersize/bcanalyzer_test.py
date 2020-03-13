@@ -10,7 +10,7 @@ import os
 import unittest
 
 import bcanalyzer
-import concurrent
+import parallel
 
 
 _SCRIPT_DIR = os.path.dirname(__file__)
@@ -107,7 +107,7 @@ class BcAnalyzerTest(unittest.TestCase):
 
       encoded_results = bcanalyzer.RunBcAnalyzerOnIntermediates(
           ['test.o'], _TEST_TOOL_PREFIX, _TEST_OUTPUT_DIR)
-      results = concurrent.DecodeDictOfLists(
+      results = parallel.DecodeDictOfLists(
           encoded_results, value_transform=ast.literal_eval)
       self.assertEquals(['test.o'], results.keys())
       str_list = results['test.o']

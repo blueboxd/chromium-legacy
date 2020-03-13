@@ -757,7 +757,6 @@
 <translation id="2025632980034333559"><ph name="APP_NAME" />이(가) 다운되었습니다. 확장 프로그램을 다시 로드하려면 이 풍선을 클릭하세요.</translation>
 <translation id="2025891858974379949">안전하지 않은 콘텐츠</translation>
 <translation id="202918510990975568">비밀번호를 입력하여 보안을 구성하고 로그인하세요.</translation>
-<translation id="2030672406208960151">복구 터미널 열기</translation>
 <translation id="2034346955588403444">다른 Wi-Fi 네트워크 추가</translation>
 <translation id="203574396658008164">잠금 화면에서 메모 작성 사용</translation>
 <translation id="2037445849770872822">이 Google 계정에 감독 기능이 설정되었습니다. 더 많은 자녀 보호 기능을 설정하려면 계속을 선택하세요.
@@ -1663,7 +1662,6 @@
 <translation id="3228679360002431295">연결 및 확인 중<ph name="ANIMATED_ELLIPSIS" /></translation>
 <translation id="3232318083971127729">값:</translation>
 <translation id="3233271424239923319">Linux 앱 및 파일 백업</translation>
-<translation id="323803881985677942">확장 프로그램 옵션 열기</translation>
 <translation id="3239373508713281971"><ph name="APP_NAME" />의 시간제한이 삭제되었습니다.</translation>
 <translation id="3241680850019875542">압축할 확장 프로그램의 루트 디렉터리를 선택합니다. 확장 프로그램을 업데이트하려면 다시 사용할 비공개 키 파일도 선택합니다.</translation>
 <translation id="3244294424315804309">계속 음소거</translation>
@@ -2417,7 +2415,6 @@
 <translation id="424963718355121712">앱은 영향을 미치는 호스트에서 제공되어야 합니다</translation>
 <translation id="4250229828105606438">스크린샷</translation>
 <translation id="4250680216510889253">아니요</translation>
-<translation id="4251288318602771141">현재 서비스 제공업체의 경우 보안 DNS가 항상 제공되지 않을 수도 있습니다.</translation>
 <translation id="4252852543720145436">보호된 콘텐츠 식별자</translation>
 <translation id="4252899949534773101">블루투스가 사용 중지됨</translation>
 <translation id="4252996741873942488"><ph name="WINDOW_TITLE" /> - 탭 콘텐츠 공유됨</translation>
@@ -2487,7 +2484,6 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" />이(가) 창을 공유합니다.</translation>
 <translation id="4364830672918311045">알림 표시</translation>
 <translation id="4370975561335139969">입력한 이메일과 비밀번호가 일치하지 않습니다.</translation>
-<translation id="437184764829821926">고급 글꼴 설정</translation>
 <translation id="4374831787438678295">Linux 설치 프로그램</translation>
 <translation id="4375035964737468845">다운로드한 파일 열기</translation>
 <translation id="4377363674125277448">서버의 인증서에 문제가 발생했습니다.</translation>
@@ -2651,7 +2647,6 @@
 <translation id="4596295440756783523">다음 서버를 식별하는 인증서가 등록되어 있습니다.</translation>
 <translation id="4598556348158889687">저장용량 관리</translation>
 <translation id="4598776695426288251">여러 기기를 통해 Wi-Fi 사용 가능</translation>
-<translation id="4599134080475764833">플러그인 VM 사용 가능</translation>
 <translation id="4602466770786743961"><ph name="HOST" />에서 카메라와 마이크에 액세스하도록 항상 허용</translation>
 <translation id="4606551464649945562">사이트에서 주변 환경의 3D 지도를 생성하거나 카메라 위치를 추적하도록 허용하지 않음</translation>
 <translation id="4608500690299898628">찾기(&amp;F)...</translation>
@@ -2746,11 +2741,9 @@
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />애플리케이션 업데이트 방법 알아보기<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{사이트 숨기기 취소}other{사이트 숨기기 취소}}</translation>
 <translation id="4746351372139058112">메시지</translation>
-<translation id="4748762018725435655">Chrome 웹 스토어의 확장 프로그램 필요</translation>
 <translation id="4750394297954878236">추천</translation>
 <translation id="475088594373173692">첫 번째 사용자</translation>
 <translation id="4751476147751820511">모션 또는 조도 센서</translation>
-<translation id="4754969275105595499">이전 화면으로 돌아가려면 옆쪽에서 스와이프하세요.</translation>
 <translation id="4756269098451810636"><ph name="DEVICE_NAME" />에서 공유한 이미지</translation>
 <translation id="4756378406049221019">중지/새로고침</translation>
 <translation id="4756388243121344051">방문 기록(&amp;H)</translation>
@@ -3743,7 +3736,6 @@
 <translation id="6104311680260824317">기기가 도메인에 가입하지 못했습니다. 서버가 지정된 Kerberos 암호화 유형을 지원하지 않습니다. '옵션 더보기'에서 암호화 설정을 확인하세요.</translation>
 <translation id="6104641575223043670"><ph name="ORGANIZATION_NAME" />에서 기기 업데이트를 즉시 요구합니다.</translation>
 <translation id="6106186653986077033">플러그인 VM에 라이선스 필요</translation>
-<translation id="6107047744202598802">웹사이트에서 방문 내역을 기억하고 웹 전반에서 사용자를 추적하도록 허용합니다.</translation>
 <translation id="6112294629795967147">터치하여 크기 조정</translation>
 <translation id="6112727384379533756">티켓 추가</translation>
 <translation id="6112931163620622315">휴대전화 확인</translation>
@@ -4071,7 +4063,6 @@
 <translation id="6561726789132298588">입력</translation>
 <translation id="656293578423618167">파일 경로 또는 이름이 너무 깁니다. 짧은 이름으로 변경하거나 다른 위치에 저장하세요.</translation>
 <translation id="6563469144985748109">관리자가 아직 승인하지 않았습니다.</translation>
-<translation id="6565955132287672866">기기가 제대로 종료되지 않았습니다. Linux(베타)를 사용하려면 다시 시작해야 합니다.</translation>
 <translation id="6567688344210276845">페이지 작업의 아이콘('<ph name="ICON" />')을 로드하지 못했습니다.</translation>
 <translation id="6569934958368283244">다른 사용자</translation>
 <translation id="657402800789773160">페이지 새로고침(&amp;R)</translation>
@@ -5941,7 +5932,6 @@
 <translation id="9065203028668620118">수정</translation>
 <translation id="9066773882585798925">텍스트 소리 내어 읽기</translation>
 <translation id="9066782832737749352">텍스트 음성 변환</translation>
-<translation id="9067559831321817373">로그인된 계정을 관리합니다. 웹사이트, 앱, Chrome 확장 프로그램 및 Google Play에서 권한에 따라 이 계정을 사용하여 사용 환경을 맞춤설정할 수 있습니다. &lt;a&gt;자세히 알아보기&lt;/a&gt;</translation>
 <translation id="9068849894565669697">색상 선택</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">블루투스</translation>

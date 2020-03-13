@@ -245,7 +245,6 @@
 <translation id="3995138139523574647">USB-C 기기(우측 후면 포트)</translation>
 <translation id="4017989525502048489">레이저 포인터</translation>
 <translation id="4021716437419160885">아래로 스크롤</translation>
-<translation id="402772165574991617">태블릿 모드에서 동작을 사용하여 앱 간에 빠르게 전환하고 Chromebook과 상호작용하세요.</translation>
 <translation id="4028481283645788203">보안 강화를 위해 비밀번호가 필요합니다.</translation>
 <translation id="4042660782729322247">화면 공유 중</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{앱 1개에서 사용 중지됨}other{앱 #개에서 사용 중지됨}}</translation>
@@ -534,7 +533,6 @@
 <translation id="8000066093800657092">네트워크 없음</translation>
 <translation id="8029629653277878342">보안 강화를 위해 PIN 또는 비밀번호가 필요합니다.</translation>
 <translation id="8030169304546394654">연결 끊김</translation>
-<translation id="8042024183333293953">새로운 동작 탐색 사용해 보기</translation>
 <translation id="8048123526339889627">블루투스 설정</translation>
 <translation id="8054466585765276473">배터리 시간 계산 중</translation>
 <translation id="8061464966246066292">고대비</translation>

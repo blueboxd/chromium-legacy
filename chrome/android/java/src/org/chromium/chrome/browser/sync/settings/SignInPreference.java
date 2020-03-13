@@ -5,13 +5,13 @@
 package org.chromium.chrome.browser.sync.settings;
 
 import android.content.Context;
-import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.preference.Preference;
-import android.support.v7.preference.PreferenceViewHolder;
 import android.util.AttributeSet;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceViewHolder;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;

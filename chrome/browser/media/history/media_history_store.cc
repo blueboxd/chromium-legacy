@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/media/feeds/media_feeds_service.h"
+#include "chrome/browser/media/history/media_history_feed_items_table.h"
 #include "chrome/browser/media/history/media_history_feeds_table.h"
 #include "chrome/browser/media/history/media_history_images_table.h"
 #include "chrome/browser/media/history/media_history_origin_table.h"
@@ -92,6 +93,13 @@ class MediaHistoryStoreInternal
 
   void SaveMediaFeed(const GURL& url);
 
+  void ReplaceMediaFeedItems(
+      const int64_t feed_id,
+      std::vector<media_feeds::mojom::MediaFeedItemPtr> items);
+
+  std::vector<media_feeds::mojom::MediaFeedItemPtr>
+  GetItemsForMediaFeedForDebug(const int64_t feed_id);
+
   scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner_;
   const base::FilePath db_path_;
   std::unique_ptr<sql::Database> db_;
@@ -102,6 +110,7 @@ class MediaHistoryStoreInternal
   scoped_refptr<MediaHistorySessionImagesTable> session_images_table_;
   scoped_refptr<MediaHistoryImagesTable> images_table_;
   scoped_refptr<MediaHistoryFeedsTable> feeds_table_;
+  scoped_refptr<MediaHistoryFeedItemsTable> feed_items_table_;
   bool initialization_successful_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaHistoryStoreInternal);
@@ -121,6 +130,9 @@ MediaHistoryStoreInternal::MediaHistoryStoreInternal(
       feeds_table_(media_feeds::MediaFeedsService::IsEnabled()
                        ? new MediaHistoryFeedsTable(db_task_runner_)
                        : nullptr),
+      feed_items_table_(media_feeds::MediaFeedsService::IsEnabled()
+                            ? new MediaHistoryFeedItemsTable(db_task_runner_)
+                            : nullptr),
       initialization_successful_(false) {}
 
 MediaHistoryStoreInternal::~MediaHistoryStoreInternal() {
@@ -130,6 +142,7 @@ MediaHistoryStoreInternal::~MediaHistoryStoreInternal() {
   db_task_runner_->ReleaseSoon(FROM_HERE, std::move(session_images_table_));
   db_task_runner_->ReleaseSoon(FROM_HERE, std::move(images_table_));
   db_task_runner_->ReleaseSoon(FROM_HERE, std::move(feeds_table_));
+  db_task_runner_->ReleaseSoon(FROM_HERE, std::move(feed_items_table_));
   db_task_runner_->DeleteSoon(FROM_HERE, std::move(db_));
 }
 
@@ -233,6 +246,8 @@ sql::InitStatus MediaHistoryStoreInternal::InitializeTables() {
     status = images_table_->Initialize(db_.get());
   if (feeds_table_ && status == sql::INIT_OK)
     status = feeds_table_->Initialize(db_.get());
+  if (feed_items_table_ && status == sql::INIT_OK)
+    status = feed_items_table_->Initialize(db_.get());
 
   return status;
 }
@@ -479,6 +494,48 @@ void MediaHistoryStoreInternal::SaveMediaFeed(const GURL& url) {
   DB()->CommitTransaction();
 }
 
+void MediaHistoryStoreInternal::ReplaceMediaFeedItems(
+    const int64_t feed_id,
+    std::vector<media_feeds::mojom::MediaFeedItemPtr> items) {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (!initialization_successful_)
+    return;
+
+  if (!DB()->BeginTransaction()) {
+    LOG(ERROR) << "Failed to begin the transaction.";
+    return;
+  }
+
+  if (!feed_items_table_)
+    return;
+
+  // Remove all the items currently associated with this feed.
+  if (!feed_items_table_->DeleteItems(feed_id)) {
+    DB()->RollbackTransaction();
+    return;
+  }
+
+  for (auto& item : items) {
+    // Save each item to the table.
+    if (!feed_items_table_->SaveItem(feed_id, item)) {
+      DB()->RollbackTransaction();
+      return;
+    }
+  }
+
+  DB()->CommitTransaction();
+}
+
+std::vector<media_feeds::mojom::MediaFeedItemPtr>
+MediaHistoryStoreInternal::GetItemsForMediaFeedForDebug(const int64_t feed_id) {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+
+  if (!initialization_successful_ || !feed_items_table_)
+    return std::vector<media_feeds::mojom::MediaFeedItemPtr>();
+
+  return feed_items_table_->GetItemsForFeed(feed_id);
+}
+
 MediaHistoryStore::MediaHistoryStore(
     Profile* profile,
     scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner)
@@ -613,6 +670,26 @@ void MediaHistoryStore::SaveMediaFeed(const GURL& url) {
 void MediaHistoryStore::PostTaskToDBForTest(base::OnceClosure callback) {
   db_->db_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
                                          std::move(callback));
+}
+
+void MediaHistoryStore::ReplaceMediaFeedItems(
+    const int64_t feed_id,
+    std::vector<media_feeds::mojom::MediaFeedItemPtr> items) {
+  db_->db_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&MediaHistoryStoreInternal::ReplaceMediaFeedItems, db_,
+                     feed_id, std::move(items)));
+}
+
+void MediaHistoryStore::GetItemsForMediaFeedForDebug(
+    const int64_t feed_id,
+    base::OnceCallback<void(std::vector<media_feeds::mojom::MediaFeedItemPtr>)>
+        callback) {
+  base::PostTaskAndReplyWithResult(
+      db_->db_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&MediaHistoryStoreInternal::GetItemsForMediaFeedForDebug,
+                     db_, feed_id),
+      std::move(callback));
 }
 
 }  // namespace media_history

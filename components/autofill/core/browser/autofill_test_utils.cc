@@ -373,6 +373,7 @@ AutofillProfile GetServerProfile2() {
 
 CreditCard GetCreditCard() {
   CreditCard credit_card(base::GenerateGUID(), kEmptyOrigin);
+  // TODO(crbug/1059087): Change hardcoded year to NextYear.
   SetCreditCardInfo(&credit_card, "Test User", "4111111111111111" /* Visa */,
                     "11", "2022", "1");
   return credit_card;
@@ -380,6 +381,7 @@ CreditCard GetCreditCard() {
 
 CreditCard GetCreditCard2() {
   CreditCard credit_card(base::GenerateGUID(), kEmptyOrigin);
+  // TODO(crbug/1059087): Change hardcoded year to NextYear.
   SetCreditCardInfo(&credit_card, "Someone Else", "378282246310005" /* AmEx */,
                     "07", "2022", "1");
   return credit_card;
@@ -387,6 +389,7 @@ CreditCard GetCreditCard2() {
 
 CreditCard GetExpiredCreditCard() {
   CreditCard credit_card(base::GenerateGUID(), kEmptyOrigin);
+  // TODO(crbug/1059087): Change hardcoded year to NextYear.
   SetCreditCardInfo(&credit_card, "Test User", "4111111111111111" /* Visa */,
                     "11", "2002", "1");
   return credit_card;
@@ -394,6 +397,7 @@ CreditCard GetExpiredCreditCard() {
 
 CreditCard GetIncompleteCreditCard() {
   CreditCard credit_card(base::GenerateGUID(), kEmptyOrigin);
+  // TODO(crbug/1059087): Change hardcoded year to NextYear.
   SetCreditCardInfo(&credit_card, "", "4111111111111111" /* Visa */, "11",
                     "2022", "1");
   return credit_card;
@@ -413,6 +417,7 @@ CreditCard GetVerifiedCreditCard2() {
 
 CreditCard GetMaskedServerCard() {
   CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  // TODO(crbug/1059087): Change hardcoded year to NextYear.
   test::SetCreditCardInfo(&credit_card, "Bonnie Parker",
                           "2109" /* Mastercard */, "12", "2020", "1");
   credit_card.SetNetworkForMaskedCard(kMasterCard);
@@ -421,14 +426,26 @@ CreditCard GetMaskedServerCard() {
 
 CreditCard GetMaskedServerCardAmex() {
   CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "b456");
+  // TODO(crbug/1059087): Change hardcoded year to NextYear.
   test::SetCreditCardInfo(&credit_card, "Justin Thyme", "8431" /* Amex */, "9",
                           "2020", "1");
   credit_card.SetNetworkForMaskedCard(kAmericanExpressCard);
   return credit_card;
 }
 
+CreditCard GetMaskedServerCardWithNickname() {
+  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "c789");
+  // TODO(crbug/1059087): Change hardcoded year to NextYear.
+  test::SetCreditCardInfo(&credit_card, "Test user", "1111" /* Visa */, "9",
+                          "2050", "1");
+  credit_card.SetNetworkForMaskedCard(kVisaCard);
+  credit_card.set_nickname(ASCIIToUTF16("Test nickname"));
+  return credit_card;
+}
+
 CreditCard GetFullServerCard() {
   CreditCard credit_card(CreditCard::FULL_SERVER_CARD, "c123");
+  // TODO(crbug/1059087): Change hardcoded year to NextYear.
   test::SetCreditCardInfo(&credit_card, "Full Carter",
                           "4111111111111111" /* Visa */, "12", "2020", "1");
   return credit_card;

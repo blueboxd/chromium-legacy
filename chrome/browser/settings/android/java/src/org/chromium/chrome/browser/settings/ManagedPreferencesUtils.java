@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.settings;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.v7.preference.Preference;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -14,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.preference.Preference;
 
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;

@@ -28,6 +28,10 @@ suite('NewTabPageAppTest', () => {
     testProxy.handler.setResultFor('getChromeThemes', Promise.resolve({
       chromeThemes: [],
     }));
+    testProxy.setResultMapperFor('matchMedia', () => ({
+                                                 addListener() {},
+                                                 removeListener() {},
+                                               }));
     BrowserProxy.instance_ = testProxy;
 
     app = document.createElement('ntp-app');

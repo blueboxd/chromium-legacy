@@ -93,6 +93,10 @@ constexpr SkColor kNotificationDefaultAccentColor = gfx::kChromeIconGrey;
 // Not used when --enabled-new-style-notification is set.
 const size_t kNotificationMaximumItems = 5;
 
+// This is an experimental short delay for all notification timeouts.
+// It is currently only enabled if the kNotificationExperimentalShortTimeouts
+// flag is enabled. If disabled the below delays are used as before.
+const int kAutocloseShortDelaySeconds = 6;
 // Timing. Web Notifications always use high-priority timings except on
 // Chrome OS. Given the absence of a notification center on non-Chrome OS
 // platforms, this improves users' ability to interact with the toasts.

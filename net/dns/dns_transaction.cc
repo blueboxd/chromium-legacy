@@ -45,6 +45,7 @@
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_response.h"
+#include "net/dns/dns_server_iterator.h"
 #include "net/dns/dns_session.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/public/dns_protocol.h"
@@ -1037,9 +1038,7 @@ class DnsTransactionImpl : public DnsTransaction,
         net_log_(net_log),
         qnames_initial_size_(0),
         attempts_count_(0),
-        doh_attempts_(0),
         had_tcp_attempt_(false),
-        first_server_index_(0),
         resolve_context_(resolve_context),
         request_priority_(DEFAULT_PRIORITY) {
     DCHECK(session_.get());
@@ -1194,14 +1193,8 @@ class DnsTransactionImpl : public DnsTransaction,
     } else {
       query = attempts_[0]->GetQuery()->CloneWithNewId(id);
     }
-
-    const DnsConfig& config = session_->config();
-
-    size_t non_doh_server_index =
-        (first_server_index_ + attempt_number) % config.nameservers.size();
-    // Skip over known failed servers.
-    non_doh_server_index = resolve_context_->ClassicServerIndexToUse(
-        non_doh_server_index, session_.get());
+    DCHECK(dns_server_iterator_->AttemptAvailable());
+    size_t non_doh_server_index = dns_server_iterator_->GetNextAttemptIndex();
 
     std::unique_ptr<DnsSession::SocketLease> lease =
         session_->AllocateSocket(non_doh_server_index, net_log_.source());
@@ -1234,33 +1227,19 @@ class DnsTransactionImpl : public DnsTransaction,
   AttemptResult MakeHTTPAttempt() {
     DCHECK(secure_);
 
-    // doh_attempts_ counts the number of attempts made via HTTPS. To
-    // get a server index cap that by the number of DoH servers we
-    // have configured and search for the next good server.
-    base::Optional<size_t> doh_server_index =
-        resolve_context_->DohServerIndexToUse(
-            first_server_index_ +
-                doh_attempts_ %
-                    session_->config().dns_over_https_servers.size(),
-            secure_dns_mode_, session_.get());
-    // Do not construct an attempt if there is no DoH server that we should send
-    // a request to.
-    if (!doh_server_index)
-      return AttemptResult(ERR_BLOCKED_BY_CLIENT, nullptr);
+    size_t doh_server_index = dns_server_iterator_->GetNextAttemptIndex();
 
     unsigned attempt_number = attempts_.size();
-    ConstructDnsHTTPAttempt(session_.get(), doh_server_index.value(),
-                            qnames_.front(), qtype_, opt_rdata_, &attempts_,
-                            resolve_context_->url_request_context(),
-                            request_priority_);
-    ++doh_attempts_;
+    ConstructDnsHTTPAttempt(
+        session_.get(), doh_server_index, qnames_.front(), qtype_, opt_rdata_,
+        &attempts_, resolve_context_->url_request_context(), request_priority_);
     ++attempts_count_;
     int rv = attempts_.back()->Start(base::BindOnce(
         &DnsTransactionImpl::OnAttemptComplete, base::Unretained(this),
         attempt_number, true /* record_rtt */, base::TimeTicks::Now()));
     if (rv == ERR_IO_PENDING) {
-      base::TimeDelta timeout = resolve_context_->NextDohTimeout(
-          doh_server_index.value(), session_.get());
+      base::TimeDelta timeout =
+          resolve_context_->NextDohTimeout(doh_server_index, session_.get());
       timer_.Start(FROM_HERE, timeout, this, &DnsTransactionImpl::OnTimeout);
     }
     return AttemptResult(rv, attempts_.back().get());
@@ -1315,10 +1294,21 @@ class DnsTransactionImpl : public DnsTransaction,
     net_log_.BeginEventWithStringParams(NetLogEventType::DNS_TRANSACTION_QUERY,
                                         "qname", dotted_qname);
 
-    first_server_index_ =
-        resolve_context_->FirstServerIndex(secure_, session_.get());
     attempts_.clear();
     had_tcp_attempt_ = false;
+    if (secure_) {
+      dns_server_iterator_ = resolve_context_->GetDohIterator(
+          session_->config(), secure_dns_mode_, session_.get());
+    } else {
+      dns_server_iterator_ = resolve_context_->GetClassicDnsIterator(
+          session_->config(), session_.get());
+    }
+    DCHECK(dns_server_iterator_);
+    // Check for available server before starting as DoH servers might be
+    // unavailable.
+    if (!dns_server_iterator_->AttemptAvailable())
+      return AttemptResult(ERR_BLOCKED_BY_CLIENT, nullptr);
+
     return MakeAttempt();
   }
 
@@ -1351,17 +1341,7 @@ class DnsTransactionImpl : public DnsTransaction,
     if (had_tcp_attempt_)
       return false;
 
-    const DnsConfig& config = session_->config();
-    if (secure_) {
-      if (secure_dns_mode_ == DnsConfig::SecureDnsMode::AUTOMATIC) {
-        return attempts_.size() <
-               resolve_context_->NumAvailableDohServers(session_.get());
-      } else {
-        return attempts_.size() < config.dns_over_https_servers.size();
-      }
-    }
-
-    return attempts_.size() < config.attempts * config.nameservers.size();
+    return dns_server_iterator_->AttemptAvailable();
   }
 
   // Resolves the result of a DnsAttempt until a terminal result is reached
@@ -1480,11 +1460,10 @@ class DnsTransactionImpl : public DnsTransaction,
   std::vector<std::unique_ptr<DnsAttempt>> attempts_;
   // Count of attempts, not reset when |attempts_| vector is cleared.
   int attempts_count_;
-  uint16_t doh_attempts_;
   bool had_tcp_attempt_;
 
-  // Index of the first server to try on each search query.
-  size_t first_server_index_;
+  // Iterator to get the index of the DNS server for each search query.
+  std::unique_ptr<DnsServerIterator> dns_server_iterator_;
 
   base::OneShotTimer timer_;
 

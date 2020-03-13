@@ -12,13 +12,6 @@
         "name": "weblayer_shell_wpt",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "chromium/chrome/test/chromedriver/cipd",
-              "location": "chrome/test/chromedriver/cipd",
-              "revision": "JvTGvPUc-qPtmBqyJhvc-1i28yILiGeTjqGi-BvjiN4C"
-            }
-          ],
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -356,13 +349,6 @@
         "name": "chrome_public_wpt",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "chromium/chrome/test/chromedriver/cipd",
-              "location": "chrome/test/chromedriver/cipd",
-              "revision": "JvTGvPUc-qPtmBqyJhvc-1i28yILiGeTjqGi-BvjiN4C"
-            }
-          ],
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -391,13 +377,6 @@
         "name": "system_webview_wpt",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "chromium/chrome/test/chromedriver/cipd",
-              "location": "chrome/test/chromedriver/cipd",
-              "revision": "JvTGvPUc-qPtmBqyJhvc-1i28yILiGeTjqGi-BvjiN4C"
-            }
-          ],
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -479,13 +458,6 @@
         "name": "chrome_public_wpt",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "chromium/chrome/test/chromedriver/cipd",
-              "location": "chrome/test/chromedriver/cipd",
-              "revision": "JvTGvPUc-qPtmBqyJhvc-1i28yILiGeTjqGi-BvjiN4C"
-            }
-          ],
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -511,13 +483,6 @@
         "name": "system_webview_wpt",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "chromium/chrome/test/chromedriver/cipd",
-              "location": "chrome/test/chromedriver/cipd",
-              "revision": "JvTGvPUc-qPtmBqyJhvc-1i28yILiGeTjqGi-BvjiN4C"
-            }
-          ],
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",

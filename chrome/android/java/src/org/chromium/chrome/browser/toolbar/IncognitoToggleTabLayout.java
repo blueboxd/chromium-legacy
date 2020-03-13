@@ -6,9 +6,10 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.widget.ImageView;
+
+import androidx.appcompat.content.res.AppCompatResources;
 
 import com.google.android.material.tabs.TabLayout;
 

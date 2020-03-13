@@ -10,8 +10,8 @@
 namespace extensions {
 namespace declarative_net_request {
 
-DNRManifestData::DNRManifestData(base::FilePath ruleset_relative_path)
-    : ruleset_relative_path(std::move(ruleset_relative_path)) {}
+DNRManifestData::DNRManifestData(RulesetInfo ruleset)
+    : ruleset(std::move(ruleset)) {}
 DNRManifestData::~DNRManifestData() = default;
 
 // static
@@ -28,7 +28,7 @@ base::FilePath DNRManifestData::GetRulesetPath(const Extension& extension) {
   // The ruleset path is validated during DNRManifestHandler::Validate, and
   // hence is safe to use.
   const base::FilePath& relative_path =
-      static_cast<DNRManifestData*>(data)->ruleset_relative_path;
+      static_cast<DNRManifestData*>(data)->ruleset.relative_path;
   return extension.path().Append(relative_path);
 }
 

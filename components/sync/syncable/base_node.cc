@@ -71,7 +71,8 @@ bool BaseNode::DecryptIfNecessary() {
   // we fill the unencrypted_data_ with a copy of the bookmark specifics that
   // follows the new bookmarks format.
   if (!specifics.has_encrypted()) {
-    if (GetModelType() == BOOKMARKS && !specifics.bookmark().has_title() &&
+    if (GetModelType() == BOOKMARKS &&
+        !specifics.bookmark().has_legacy_canonicalized_title() &&
         !GetTitle().empty()) {  // Last check ensures this isn't a new node.
       // We need to fill in the title.
       std::string title = GetTitle();
@@ -80,7 +81,8 @@ bool BaseNode::DecryptIfNecessary() {
       DVLOG(1) << "Reading from legacy bookmark, manually returning title "
                << title;
       unencrypted_data_.CopyFrom(specifics);
-      unencrypted_data_.mutable_bookmark()->set_title(server_legal_title);
+      unencrypted_data_.mutable_bookmark()->set_legacy_canonicalized_title(
+          server_legal_title);
     }
     return true;
   }
@@ -119,7 +121,7 @@ const sync_pb::EntitySpecifics& BaseNode::GetUnencryptedSpecifics(
     if (GetModelType() == BOOKMARKS) {
       const sync_pb::BookmarkSpecifics& bookmark_specifics =
           specifics.bookmark();
-      if (bookmark_specifics.has_title() ||
+      if (bookmark_specifics.has_legacy_canonicalized_title() ||
           GetTitle().empty() ||  // For the empty node case
           GetIsPermanentFolder()) {
         // It's possible we previously had to convert and set
@@ -166,7 +168,8 @@ std::string BaseNode::GetTitle() const {
   if (BOOKMARKS == GetModelType() &&
       GetEntry()->GetSpecifics().has_encrypted()) {
     // Special case for legacy bookmarks dealing with encryption.
-    ServerNameToSyncAPIName(GetBookmarkSpecifics().title(), &result);
+    ServerNameToSyncAPIName(GetBookmarkSpecifics().legacy_canonicalized_title(),
+                            &result);
   } else {
     ServerNameToSyncAPIName(GetEntry()->GetNonUniqueName(), &result);
   }

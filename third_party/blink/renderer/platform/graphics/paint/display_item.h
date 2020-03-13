@@ -123,14 +123,18 @@ class PLATFORM_EXPORT DisplayItem {
     kSVGEffectPaintPhaseFirst,
     kSVGEffectPaintPhaseLast = kSVGEffectPaintPhaseFirst + kPaintPhaseMax,
 
+    // The following hit test types are for paint chunks containing hit test
+    // data, when we don't have an previously set explicit chunk id when
+    // creating the paint chunk, or we need dedicated paint chunk for the hit
+    // test data.
+
     // Compositor hit testing requires that layers are created and sized to
-    // include content that does not paint. Hit test display items ensure
-    // a layer exists and is sized properly even if no content would otherwise
-    // be painted.
+    // include content that does not paint. Hit test data ensure a layer exists
+    // and is sized properly even if no content would otherwise be painted.
     kHitTest,
 
     // Used both for specifying the paint-order scroll location, and for non-
-    // composited scroll hit testing (see: scroll_hit_test_display_item.h).
+    // composited scroll hit testing (see: hit_test_data.h).
     kScrollHitTest,
     // Used to prevent composited scrolling on the resize handle.
     kResizerScrollHitTest,
@@ -255,14 +259,6 @@ class PLATFORM_EXPORT DisplayItem {
   DEFINE_PAINT_PHASE_CONVERSION_METHOD(Scroll)
   DEFINE_PAINT_PHASE_CONVERSION_METHOD(SVGTransform)
   DEFINE_PAINT_PHASE_CONVERSION_METHOD(SVGEffect)
-
-  bool IsHitTest() const { return type_ == kHitTest; }
-  bool IsScrollHitTest() const {
-    return type_ == kScrollHitTest || IsResizerScrollHitTest() ||
-           IsPluginScrollHitTest();
-  }
-  bool IsResizerScrollHitTest() const { return type_ == kResizerScrollHitTest; }
-  bool IsPluginScrollHitTest() const { return type_ == kPluginScrollHitTest; }
 
   bool IsScrollbar() const {
     return type_ == kScrollbarHorizontal || type_ == kScrollbarVertical;

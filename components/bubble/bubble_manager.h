@@ -82,8 +82,6 @@ class BubbleManager {
   void CloseBubblesOwnedBy(const content::RenderFrameHost* frame);
 
  private:
-  friend class ExtensionInstalledBubbleBrowserTest;
-
   // All matching bubbles will get a close event for the specified |reason|. Any
   // bubble that is closed will also be deleted. Bubbles match if 1) |bubble| is
   // null or it refers to the bubble, and 2) |owner| is null or owns the bubble.

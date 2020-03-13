@@ -6,9 +6,10 @@ package org.chromium.chrome.browser.autofill.settings;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.support.v7.preference.PreferenceFragmentCompat;
 import android.view.KeyEvent;
 import android.widget.EditText;
+
+import androidx.preference.PreferenceFragmentCompat;
 
 import org.junit.Assert;
 import org.junit.Before;

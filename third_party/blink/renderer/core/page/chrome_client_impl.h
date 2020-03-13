@@ -71,7 +71,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void Focus(LocalFrame*) override;
   bool CanTakeFocus(mojom::blink::FocusType) override;
   void TakeFocus(mojom::blink::FocusType) override;
-  void FocusedElementChanged(Element* from_node, Element* to_node) override;
+  void SetKeyboardFocusURL(Element* new_focus_element) override;
   void BeginLifecycleUpdates(LocalFrame& main_frame) override;
   void StartDeferringCommits(LocalFrame& main_frame,
                              base::TimeDelta timeout) override;

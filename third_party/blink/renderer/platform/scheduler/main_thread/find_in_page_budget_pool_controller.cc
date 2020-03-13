@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/scheduler/main_thread/find_in_page_budget_pool_controller.h"
 
+#include "third_party/blink/renderer/platform/scheduler/common/features.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 
@@ -27,11 +28,20 @@ const QueuePriority
 
 FindInPageBudgetPoolController::FindInPageBudgetPoolController(
     MainThreadSchedulerImpl* scheduler)
-    : scheduler_(scheduler) {}
+    : scheduler_(scheduler),
+      best_effort_budget_experiment_enabled_(
+          base::FeatureList::IsEnabled(kBestEffortPriorityForFindInPage)) {
+  if (best_effort_budget_experiment_enabled_) {
+    task_priority_ = QueuePriority::kBestEffortPriority;
+  } else {
+    task_priority_ = kFindInPageBudgetNotExhaustedPriority;
+  }
+}
 
 FindInPageBudgetPoolController::~FindInPageBudgetPoolController() = default;
 
 void FindInPageBudgetPoolController::EnsureBudgetPoolInitialized() {
+  DCHECK(!best_effort_budget_experiment_enabled_);
   if (find_in_page_budget_pool_)
     return;
   base::TimeTicks now = scheduler_->GetTickClock()->NowTicks();
@@ -48,7 +58,7 @@ void FindInPageBudgetPoolController::EnsureBudgetPoolInitialized() {
 void FindInPageBudgetPoolController::OnTaskCompleted(
     MainThreadTaskQueue* queue,
     TaskQueue::TaskTiming* task_timing) {
-  if (!queue)
+  if (!queue || best_effort_budget_experiment_enabled_)
     return;
   EnsureBudgetPoolInitialized();
   if (queue->GetPrioritisationType() ==

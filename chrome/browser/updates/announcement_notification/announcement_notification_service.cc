@@ -33,13 +33,11 @@ static bool notification_shown = false;
 class AnnouncementNotificationServiceImpl
     : public AnnouncementNotificationService {
  public:
-  AnnouncementNotificationServiceImpl(const base::FilePath& profile_path,
-                                      bool new_profile,
+  AnnouncementNotificationServiceImpl(Profile* profile,
                                       PrefService* pref_service,
                                       std::unique_ptr<Delegate> delegate,
                                       base::Clock* clock)
-      : profile_path_(profile_path),
-        new_profile_(new_profile),
+      : profile_(profile),
         pref_service_(pref_service),
         delegate_(std::move(delegate)),
         clock_(clock),
@@ -50,6 +48,7 @@ class AnnouncementNotificationServiceImpl
         require_signout_(false),
         show_one_(false) {
     DCHECK(delegate_);
+    DCHECK(profile_);
 
     if (!IsFeatureEnabled())
       return;
@@ -128,7 +127,7 @@ class AnnouncementNotificationServiceImpl
       return;
 
     // Skip new profile if needed.
-    if (skip_new_profile_ && new_profile_)
+    if (skip_new_profile_ && profile_->IsNewProfile())
       return;
 
     // Require signed out but the user signed in.
@@ -139,6 +138,9 @@ class AnnouncementNotificationServiceImpl
     if (show_one_ && notification_shown)
       return;
 
+    // Check profile type, some types can't create new navigation.
+    if (!CanOpenAnnouncement(profile_))
+      return;
     ShowNotification();
   }
 
@@ -181,15 +183,15 @@ class AnnouncementNotificationServiceImpl
         g_browser_process->profile_manager()->GetProfileAttributesStorage();
 
     // Can't find the profile path, assume the user is not signed in.
+    DCHECK(profile_);
     ProfileAttributesEntry* entry = nullptr;
-    if (!storage.GetProfileAttributesWithPath(profile_path_, &entry))
+    if (!storage.GetProfileAttributesWithPath(profile_->GetPath(), &entry))
       return false;
 
     return entry->GetSigninState() != SigninState::kNotSignedIn;
   }
 
-  const base::FilePath profile_path_;
-  bool new_profile_;
+  Profile* profile_;
   PrefService* pref_service_;
   std::unique_ptr<Delegate> delegate_;
   base::Clock* clock_;
@@ -239,13 +241,12 @@ void AnnouncementNotificationService::RegisterProfilePrefs(
 
 // static
 AnnouncementNotificationService* AnnouncementNotificationService::Create(
-    const base::FilePath& profile_path,
-    bool new_profile,
+    Profile* profile,
     PrefService* pref_service,
     std::unique_ptr<Delegate> delegate,
     base::Clock* clock) {
-  return new AnnouncementNotificationServiceImpl(
-      profile_path, new_profile, pref_service, std::move(delegate), clock);
+  return new AnnouncementNotificationServiceImpl(profile, pref_service,
+                                                 std::move(delegate), clock);
 }
 
 // static
@@ -257,6 +258,15 @@ GURL AnnouncementNotificationService::GetAnnouncementURL() {
                         ? l10n_util::GetStringUTF8(IDS_TOS_NOTIFICATION_LINK)
                         : remote_url;
   return GURL(url);
+}
+
+// static
+bool AnnouncementNotificationService::CanOpenAnnouncement(Profile* profile) {
+  DCHECK(profile);
+  if (!profile)
+    return false;
+
+  return !(profile->IsGuestSession() || profile->IsSystemProfile());
 }
 
 AnnouncementNotificationService::AnnouncementNotificationService() = default;

@@ -271,7 +271,6 @@
 <translation id="1388918874748125262">Güvenli Tarama Gelişmiş Koruma özelliğini etkinleştir</translation>
 <translation id="1393485621820363363">Etkinleştirilmiş kurumsal cihaz yazıcıları</translation>
 <translation id="1397855852561539316">Arama önerileri için varsayılan arama sağlayıcı URL'si</translation>
-<translation id="1398636873839401839">Giriş ekranında tüm varyasyonları etkinleştir</translation>
 <translation id="1404043648050567997">Güvenli Tarama hizmeti, kullanıcılar kötü amaçlı olabileceklerine dair işaret taşıyan sitelere girdiklerinde bir uyarı sayfası gösterir. Bu ayarın etkinleştirilmesi, kullanıcıların uyarı sayfasından kötü amaçlı siteye herhangi bir şekilde ilerlemesini önler.
 
       Bu politika yalnızca kullanıcıların Güvenli Tarama uyarılarından (ör. kötü amaçlı yazılım ve kimlik avı) öteye geçmesini önler; SSL sertifikasıyla ilgili sorunlar (ör. geçersiz veya süresi dolmuş sertifikalar) konusunda etkili değildir.
@@ -325,9 +324,9 @@
 <translation id="1465619815762735808">Tıklandığında oynat</translation>
 <translation id="1467633031685836974">Bu özellik, köprülerin ve adres çubuğu URL gezinmelerinin web sayfasındaki belirli bir metni hedeflemesine olanak tanıyarak, yüklenmesi tamamlandığında web sayfasını hedeflenen konuma kaydırır.
 
-Bu politikayı etkinleştirir veya yapılandırmazsanız web sayfasını URL yoluyla belirli metin parçalarına kaydırma etkinleştirilir.
+Bu politikayı etkinleştirir veya yapılandırmazsanız web sayfasını URL yoluyla belirli metin parçalarına kaydırma işlevi etkinleştirilir.
 
-Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli metin parçalarına kaydırma devre dışı bırakılır.</translation>
+Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli metin parçalarına kaydırma işlevi devre dışı bırakılır.</translation>
 <translation id="1468707346106619889">Bu politika "doğru" seçeneğine ayarlanırsa Birleşik Masaüstü'ne varsayılan olarak
       izin verilir ve bu özellik etkinleştirilir. Bu şekilde, uygulamaların birden fazla
       ekrana yayılmasına olanak sağlanır.
@@ -922,17 +921,7 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
       URI şablonu <ph name="HTTP_VARIABLE_DNS" /> değişkeni içeriyorsa çözümleyiciye gelen istekler <ph name="HTTP_METHOD_GET" /> yöntemini kullanır; aksi takdirde istekler <ph name="HTTP_METHOD_POST" /> yöntemini kullanır.
 
       Yanlış biçimlendirilmiş şablonlar yok sayılır.</translation>
-<translation id="2331539005176436538">Yalnızca giriş ekranında önemli düzeltmelerle ilgili varyasyonları etkinleştir</translation>
 <translation id="2345547870894930157">DNS-over-HTTPS'i güvenli olmayan geçiş olmadan etkinleştir</translation>
-<translation id="2368120844613930637">Bu politikanın yapılandırılması <ph name="PRODUCT_NAME" /> ürününde giriş ekranında hangi varyasyonların uygulanmasına izin verileceğini belirtmeye olanak tanır.
-
-      Varyasyonlar, halihazırda varolan özellikler arasından seçilenleri etkinleştirerek veya devre dışı bırakarak tarayıcının yeni bir sürümünü göndermeden <ph name="PRODUCT_NAME" /> ürününde değişiklikler sunmanın bir yolunu sağlar.
-
-      <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (0 değeri) ayarlanırsa veya politika ayarlanmadan bırakılırsa tarayıcıya giriş ekranında tüm varyasyonların uygulanması sağlanır.
-
-      <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (1 değeri) ayarlanırsa <ph name="PRODUCT_NAME" /> ürününe giriş ekranında sadece önemli güvenlik veya kararlılık düzeltmelerinin uygulanması sağlanır.
-
-      <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (2 değeri) ayarlanırsa tarayıcıya giriş ekranında hiçbir varyasyonun uygulanmasına izin verilmez. Bu modun, <ph name="PRODUCT_NAME" /> geliştiricilerinin kritik güvenlik düzeltmelerini zamanında sağlamalarını engelleyebileceğini ve dolayısıyla önerilmediğini lütfen unutmayın.</translation>
 <translation id="237494535617297575">Bildirim görüntülemelerine izin verilen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultNotificationsSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
@@ -3481,7 +3470,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
           Politikanın değeri milisaniye olarak belirtilmelidir. Değerler boşta kalma bekleme süresinden az olacak şekilde ayarlanır.</translation>
 <translation id="6097601282776163274">URL içeren veya URL'lerle ilişkili anonim veri toplamayı etkinleştir</translation>
 <translation id="6099853574908182288">Varsayılan renkli yazdırma modu</translation>
-<translation id="6102342563050263313">URL parçalarında belirtilen metne kaydırmayı etkinleştirme</translation>
+<translation id="6102342563050263313">URL parçalarında belirtilen metne kaydırma işlevini etkinleştirme</translation>
 <translation id="6107642964266628393">Chrome OS güncellemelerinin nasıl ve ne zaman uygulanacağını kontrol eder.</translation>
 <translation id="6111936128861357925">Dinozor Paskalya Yumurtası Oyununa İzin Verme</translation>
 <translation id="6114416803310251055">onaylanmadı</translation>
@@ -4287,7 +4276,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7426112309807051726"><ph name="TLS_FALSE_START" /> optimizasyonunun devre dışı bırakılıp bırakılmayacağını belirtir. Geçmişteki sebeplerden dolayı, bu politikaya DisableSSLRecordSplitting adı verilmiştir.
 
       Bu politika ayarlanmazsa veya yanlış seçeneğine ayarlanırsa <ph name="TLS_FALSE_START" /> özelliği etkinleştirilir. Doğru seçeneğine ayarlanırsa <ph name="TLS_FALSE_START" /> özelliği devre dışı olur.</translation>
-<translation id="7427296104923393585">Giriş ekranında tüm varyasyonları devre dışı bırak</translation>
 <translation id="7433714841194914373">Anında Arama'yı etkinleştir</translation>
 <translation id="7434202861148928348">Uzaktan erişim istemcileri için gereken alan adlarını yapılandır</translation>
 <translation id="7443616896860707393">Çapraz kökenli HTTP Basic Auth bilgi istemleri</translation>
@@ -5416,7 +5404,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 <translation id="974349541138387272">İstenen DNS-over-HTTPS çözümleyicisinin URI şablonunu belirler</translation>
 <translation id="981346395360763138">Google konum hizmetleri devre dışı</translation>
 <translation id="982497069985795632">Yazım denetimini etkinleştir</translation>
-<translation id="986367416344815079">Giriş ekranında varyasyonların kullanılabilirliğini belirle</translation>
 <translation id="991560005425213776">Kullanıcı adını ve dosya adını yerel yazıcılara gönderme</translation>
 <translation id="99232017131102456">Bu politika, HTTP sunucusu kimlik doğrulama bilgileri ile tek bir genel profil başına önbellek yapılandırır.
 

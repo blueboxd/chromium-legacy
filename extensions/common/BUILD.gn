@@ -339,6 +339,7 @@ if (enable_extensions) {
       "//third_party/icu",
       "//third_party/re2",
       "//third_party/zlib/google:compression_utils",
+      "//tools/json_schema_compiler:generated_api_util",
       "//ui/base",
       "//ui/gfx/geometry",
       "//ui/gfx/ipc",
@@ -395,6 +396,7 @@ if (enable_extensions) {
     deps = [
       ":common",
       "//base",
+      "//extensions/common/api",
     ]
   }
 
@@ -463,6 +465,7 @@ if (enable_extensions) {
       "//components/version_info:version_info",
       "//content/test:test_support",
       "//extensions:extensions_resources",
+      "//extensions/common/api",
 
       # TODO(brettw) these tests should not be including headers from browser.
       "//extensions:test_support",

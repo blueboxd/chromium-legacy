@@ -1837,6 +1837,7 @@ test("content_unittests") {
     "../browser/service_worker/service_worker_process_manager_unittest.cc",
     "../browser/service_worker/service_worker_provider_host_unittest.cc",
     "../browser/service_worker/service_worker_registration_unittest.cc",
+    "../browser/service_worker/service_worker_registry_unittest.cc",
     "../browser/service_worker/service_worker_request_handler_unittest.cc",
     "../browser/service_worker/service_worker_script_loader_factory_unittest.cc",
     "../browser/service_worker/service_worker_single_script_update_checker_unittest.cc",

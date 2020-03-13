@@ -98,6 +98,8 @@ CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
   result.SetExpirationMonth(card.exp_month());
   result.SetExpirationYear(card.exp_year());
   result.set_billing_address_id(card.billing_address_id());
+  if (!card.nickname().empty())
+    result.set_nickname(base::UTF8ToUTF16(card.nickname()));
   return result;
 }
 
@@ -238,6 +240,8 @@ void SetAutofillWalletSpecificsFromServerCard(
   wallet_card->set_last_four(base::UTF16ToUTF8(card.LastFourDigits()));
   wallet_card->set_exp_month(card.expiration_month());
   wallet_card->set_exp_year(card.expiration_year());
+  if (!card.nickname().empty())
+    wallet_card->set_nickname(base::UTF16ToUTF8(card.nickname()));
 }
 
 void SetAutofillWalletSpecificsFromPaymentsCustomerData(

@@ -73,15 +73,6 @@ std::unique_ptr<JSONObject> ObjectForSkRect(const SkRect& rect) {
   return rect_item;
 }
 
-std::unique_ptr<JSONObject> ObjectForSkIRect(const SkIRect& rect) {
-  auto rect_item = std::make_unique<JSONObject>();
-  rect_item->SetDouble("left", rect.left());
-  rect_item->SetDouble("top", rect.top());
-  rect_item->SetDouble("right", rect.right());
-  rect_item->SetDouble("bottom", rect.bottom());
-  return rect_item;
-}
-
 String PointModeName(SkCanvas::PointMode mode) {
   switch (mode) {
     case SkCanvas::kPoints_PointMode:
@@ -557,20 +548,6 @@ void LoggingCanvas::onDrawBitmapRect(const SkBitmap& bitmap,
     params->SetObject("paint", ObjectForSkPaint(*paint));
   params->SetInteger("flags", constraint);
   this->SkCanvas::onDrawBitmapRect(bitmap, src, dst, paint, constraint);
-}
-
-void LoggingCanvas::onDrawBitmapNine(const SkBitmap& bitmap,
-                                     const SkIRect& center,
-                                     const SkRect& dst,
-                                     const SkPaint* paint) {
-  AutoLogger logger(this);
-  JSONObject* params = logger.LogItemWithParams("drawBitmapNine");
-  params->SetObject("bitmap", ObjectForSkBitmap(bitmap));
-  params->SetObject("center", ObjectForSkIRect(center));
-  params->SetObject("dst", ObjectForSkRect(dst));
-  if (paint)
-    params->SetObject("paint", ObjectForSkPaint(*paint));
-  this->SkCanvas::onDrawBitmapNine(bitmap, center, dst, paint);
 }
 
 void LoggingCanvas::onDrawImage(const SkImage* image,

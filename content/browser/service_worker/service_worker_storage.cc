@@ -29,7 +29,6 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
-#include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -93,11 +92,10 @@ ServiceWorkerStorage::~ServiceWorkerStorage() {
 std::unique_ptr<ServiceWorkerStorage> ServiceWorkerStorage::Create(
     const base::FilePath& user_data_directory,
     scoped_refptr<base::SequencedTaskRunner> database_task_runner,
-    storage::QuotaManagerProxy* quota_manager_proxy,
-    storage::SpecialStoragePolicy* special_storage_policy) {
+    storage::QuotaManagerProxy* quota_manager_proxy) {
   return base::WrapUnique(new ServiceWorkerStorage(
-      user_data_directory, std::move(database_task_runner), quota_manager_proxy,
-      special_storage_policy));
+      user_data_directory, std::move(database_task_runner),
+      quota_manager_proxy));
 }
 
 // static
@@ -105,8 +103,29 @@ std::unique_ptr<ServiceWorkerStorage> ServiceWorkerStorage::Create(
     ServiceWorkerStorage* old_storage) {
   return base::WrapUnique(new ServiceWorkerStorage(
       old_storage->user_data_directory_, old_storage->database_task_runner_,
-      old_storage->quota_manager_proxy_.get(),
-      old_storage->special_storage_policy_.get()));
+      old_storage->quota_manager_proxy_.get()));
+}
+
+void ServiceWorkerStorage::GetRegisteredOrigins(
+    GetRegisteredOriginsCallback callback) {
+  switch (state_) {
+    case STORAGE_STATE_DISABLED:
+      std::move(callback).Run(/*origins=*/std::vector<url::Origin>());
+      return;
+    case STORAGE_STATE_INITIALIZING:  // Fall-through.
+    case STORAGE_STATE_UNINITIALIZED:
+      LazyInitialize(base::BindOnce(&ServiceWorkerStorage::GetRegisteredOrigins,
+                                    weak_factory_.GetWeakPtr(),
+                                    std::move(callback)));
+      return;
+    case STORAGE_STATE_INITIALIZED:
+      break;
+  }
+
+  std::vector<url::Origin> origins;
+  for (const auto& origin : registered_origins_)
+    origins.push_back(url::Origin::Create(origin));
+  std::move(callback).Run(std::move(origins));
 }
 
 void ServiceWorkerStorage::FindRegistrationForClientUrl(
@@ -876,11 +895,21 @@ void ServiceWorkerStorage::PurgeResources(
   StartPurgingResources(resource_ids);
 }
 
+void ServiceWorkerStorage::ApplyPolicyUpdates(
+    std::vector<storage::mojom::LocalStoragePolicyUpdatePtr> policy_updates) {
+  for (const auto& update : policy_updates) {
+    GURL url = update->origin.GetURL();
+    if (!update->purge_on_shutdown)
+      origins_to_purge_on_shutdown_.erase(url);
+    else
+      origins_to_purge_on_shutdown_.insert(std::move(url));
+  }
+}
+
 ServiceWorkerStorage::ServiceWorkerStorage(
     const base::FilePath& user_data_directory,
     scoped_refptr<base::SequencedTaskRunner> database_task_runner,
-    storage::QuotaManagerProxy* quota_manager_proxy,
-    storage::SpecialStoragePolicy* special_storage_policy)
+    storage::QuotaManagerProxy* quota_manager_proxy)
     : next_registration_id_(blink::mojom::kInvalidServiceWorkerRegistrationId),
       next_version_id_(blink::mojom::kInvalidServiceWorkerVersionId),
       next_resource_id_(blink::mojom::kInvalidServiceWorkerResourceId),
@@ -889,7 +918,6 @@ ServiceWorkerStorage::ServiceWorkerStorage(
       user_data_directory_(user_data_directory),
       database_task_runner_(std::move(database_task_runner)),
       quota_manager_proxy_(quota_manager_proxy),
-      special_storage_policy_(special_storage_policy),
       is_purge_pending_(false),
       has_checked_for_stale_resources_(false) {
   database_.reset(new ServiceWorkerDatabase(GetDatabasePath()));
@@ -1026,7 +1054,7 @@ void ServiceWorkerStorage::DidDeleteRegistration(
     ServiceWorkerDatabase::Status status) {
   if (status != ServiceWorkerDatabase::Status::kOk) {
     std::move(params->callback)
-        .Run(status, deleted_version.version_id,
+        .Run(status, origin_state, deleted_version.version_id,
              deleted_version.newly_purgeable_resources);
     return;
   }
@@ -1044,7 +1072,8 @@ void ServiceWorkerStorage::DidDeleteRegistration(
     registered_origins_.erase(params->origin);
 
   std::move(params->callback)
-      .Run(ServiceWorkerDatabase::Status::kOk, deleted_version.version_id,
+      .Run(ServiceWorkerDatabase::Status::kOk, origin_state,
+           deleted_version.version_id,
            deleted_version.newly_purgeable_resources);
 }
 
@@ -1205,25 +1234,9 @@ void ServiceWorkerStorage::DidCollectStaleResources(
 }
 
 void ServiceWorkerStorage::ClearSessionOnlyOrigins() {
-  // Can be null in tests.
-  if (!special_storage_policy_)
-    return;
-
-  if (!special_storage_policy_->HasSessionOnlyOrigins())
-    return;
-
-  std::set<GURL> session_only_origins;
-  for (const GURL& origin : registered_origins_) {
-    if (!special_storage_policy_->IsStorageSessionOnly(origin))
-      continue;
-    if (special_storage_policy_->IsStorageProtected(origin))
-      continue;
-    session_only_origins.insert(origin);
-  }
-
   database_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&DeleteAllDataForOriginsFromDB, database_.get(),
-                                session_only_origins));
+                                origins_to_purge_on_shutdown_));
 }
 
 int64_t ServiceWorkerStorage::NewRegistrationId() {

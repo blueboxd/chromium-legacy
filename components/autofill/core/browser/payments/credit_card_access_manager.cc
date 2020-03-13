@@ -569,6 +569,10 @@ void CreditCardAccessManager::OnCVCAuthenticationComplete(
 #endif
 }
 
+bool CreditCardAccessManager::ShouldOfferFidoAuth() const {
+  return unmask_details_.offer_fido_opt_in;
+}
+
 #if !defined(OS_IOS)
 void CreditCardAccessManager::OnFIDOAuthenticationComplete(
     bool did_succeed,

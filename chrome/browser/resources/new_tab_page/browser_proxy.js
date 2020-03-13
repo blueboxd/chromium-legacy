@@ -56,6 +56,14 @@ export class BrowserProxy {
   createUntrustedIframeSrc(path) {
     return `chrome-untrusted://new-tab-page/${path}`;
   }
+
+  /**
+   * @param {string} query
+   * @return {!MediaQueryList}
+   */
+  matchMedia(query) {
+    return window.matchMedia(query);
+  }
 }
 
 addSingletonGetter(BrowserProxy);

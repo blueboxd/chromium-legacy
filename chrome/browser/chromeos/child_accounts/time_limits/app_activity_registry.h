@@ -142,12 +142,14 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
 
   // Updates time limits for all installed apps.
   // Apps not present in |app_limits| are treated as they do not have limit set.
-  void UpdateAppLimits(const std::map<AppId, AppLimit>& app_limits);
+  // Returns true if a new app limit is observed in any of the applications.
+  bool UpdateAppLimits(const std::map<AppId, AppLimit>& app_limits);
 
   // Sets time limit for app identified with |app_id|.
   // Does not affect limits of any other app. Not specified |app_limit| means
   // that app does not have limit set. Does not affect limits of any other app.
-  void SetAppLimit(const AppId& app_id,
+  // Returns true if a new app limit is observed.
+  bool SetAppLimit(const AppId& app_id,
                    const base::Optional<AppLimit>& app_limit);
 
   // Reset time has been reached at |timestamp|.
@@ -163,6 +165,9 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
 
   // Saves app activity into user preference.
   void SaveAppActivity();
+
+  std::vector<AppId> GetAppsWithAppRestriction(
+      AppRestriction restriction) const;
 
  private:
   // Bundles detailed data stored for a specific app.
@@ -230,8 +235,9 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   void CheckTimeLimitForApp(const AppId& app_id);
 
   // Shows notification about time limit updates for the app if there were
-  // relevant changes between |old_limit| and |new_limit|.
-  void ShowLimitUpdatedNotificationIfNeeded(
+  // relevant changes between |old_limit| and |new_limit|. Returns true if a
+  // notification has been made.
+  bool ShowLimitUpdatedNotificationIfNeeded(
       const AppId& app_id,
       const base::Optional<AppLimit>& old_limit,
       const base::Optional<AppLimit>& new_limit);

@@ -421,9 +421,10 @@ void AppActivityRegistry::OnSuccessfullyReported(base::Time timestamp) {
       timestamp.ToDeltaSinceWindowsEpoch().InMicroseconds());
 }
 
-void AppActivityRegistry::UpdateAppLimits(
+bool AppActivityRegistry::UpdateAppLimits(
     const std::map<AppId, AppLimit>& app_limits) {
   base::Time latest_update = latest_app_limit_update_;
+  bool policy_updated = false;
   for (auto& entry : activity_registry_) {
     const AppId& app_id = entry.first;
     base::Optional<AppLimit> new_limit;
@@ -441,7 +442,7 @@ void AppActivityRegistry::UpdateAppLimits(
       new_limit = app_limits.at(GetAndroidChromeAppId());
     }
 
-    SetAppLimit(app_id, new_limit);
+    policy_updated |= SetAppLimit(app_id, new_limit);
 
     if (new_limit && new_limit->last_updated() > latest_update)
       latest_update = new_limit->last_updated();
@@ -453,9 +454,11 @@ void AppActivityRegistry::UpdateAppLimits(
   profile_->GetPrefs()->SetInt64(
       prefs::kPerAppTimeLimitsLatestLimitUpdateTime,
       latest_app_limit_update_.ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  return policy_updated;
 }
 
-void AppActivityRegistry::SetAppLimit(
+bool AppActivityRegistry::SetAppLimit(
     const AppId& app_id,
     const base::Optional<AppLimit>& app_limit) {
   DCHECK(base::Contains(activity_registry_, app_id));
@@ -464,12 +467,13 @@ void AppActivityRegistry::SetAppLimit(
   // Limit 'data' are considered equal if only the |last_updated_| is different.
   // Update the limit to store new |last_updated_| value.
   bool did_change = !details.IsLimitEqual(app_limit);
-  ShowLimitUpdatedNotificationIfNeeded(app_id, details.limit, app_limit);
+  bool updated =
+      ShowLimitUpdatedNotificationIfNeeded(app_id, details.limit, app_limit);
   details.limit = app_limit;
 
   // Limit 'data' is the same - no action needed.
   if (!did_change)
-    return;
+    return updated;
 
   if (IsWhitelistedApp(app_id)) {
     if (app_limit.has_value()) {
@@ -478,7 +482,7 @@ void AppActivityRegistry::SetAppLimit(
     }
 
     details.limit = base::nullopt;
-    return;
+    return false;
   }
 
   // Limit for the active app changed - adjust the timers.
@@ -487,7 +491,7 @@ void AppActivityRegistry::SetAppLimit(
   if (IsAppActive(app_id)) {
     details.ResetTimeCheck();
     ScheduleTimeLimitCheckForApp(app_id);
-    return;
+    return updated;
   }
 
   // Inactive available app reached the limit - update the state.
@@ -496,7 +500,7 @@ void AppActivityRegistry::SetAppLimit(
   if (IsAppAvailable(app_id) && details.IsLimitReached()) {
     SetAppInactive(app_id, base::Time::Now());
     SetAppState(app_id, AppState::kLimitReached);
-    return;
+    return updated;
   }
 
   // Paused inactive app is below the limit again - update the state.
@@ -505,8 +509,10 @@ void AppActivityRegistry::SetAppLimit(
   // only reach the limit if it is available.
   if (IsAppTimeLimitReached(app_id) && !details.IsLimitReached()) {
     SetAppState(app_id, AppState::kAvailable);
-    return;
+    return updated;
   }
+
+  return updated;
 }
 
 void AppActivityRegistry::OnChromeAppActivityChanged(
@@ -592,6 +598,19 @@ void AppActivityRegistry::SaveAppActivity() {
 
   // Ensure that the app activity is persisted.
   profile_->GetPrefs()->CommitPendingWrite();
+}
+
+std::vector<AppId> AppActivityRegistry::GetAppsWithAppRestriction(
+    AppRestriction restriction) const {
+  std::vector<AppId> apps_with_limit;
+  for (const auto& entry : activity_registry_) {
+    const AppId& app = entry.first;
+    const AppDetails& details = entry.second;
+    if (details.limit && details.limit->restriction() == restriction) {
+      apps_with_limit.push_back(app);
+    }
+  }
+  return apps_with_limit;
 }
 
 void AppActivityRegistry::OnResetTimeReached(base::Time timestamp) {
@@ -871,19 +890,18 @@ void AppActivityRegistry::CheckTimeLimitForApp(const AppId& app_id) {
   }
 }
 
-void AppActivityRegistry::ShowLimitUpdatedNotificationIfNeeded(
+bool AppActivityRegistry::ShowLimitUpdatedNotificationIfNeeded(
     const AppId& app_id,
     const base::Optional<AppLimit>& old_limit,
     const base::Optional<AppLimit>& new_limit) {
   // Web app limit changes are covered by Chrome notification.
   if (app_id.app_type() == apps::mojom::AppType::kWeb)
-    return;
+    return false;
 
   // Don't show notification if the time limit's update was older than the
   // latest update.
-  if (new_limit && new_limit->last_updated() <= latest_app_limit_update_) {
-    return;
-  }
+  if (new_limit && new_limit->last_updated() <= latest_app_limit_update_)
+    return false;
 
   const bool had_time_limit =
       old_limit && old_limit->restriction() == AppRestriction::kTimeLimit;
@@ -894,7 +912,7 @@ void AppActivityRegistry::ShowLimitUpdatedNotificationIfNeeded(
   if (!has_time_limit && had_time_limit) {
     notification_delegate_->ShowAppTimeLimitNotification(
         app_id, base::nullopt, AppNotification::kTimeLimitChanged);
-    return;
+    return true;
   }
 
   // Time limit was set or value changed.
@@ -902,8 +920,10 @@ void AppActivityRegistry::ShowLimitUpdatedNotificationIfNeeded(
                                                 new_limit->daily_limit())) {
     notification_delegate_->ShowAppTimeLimitNotification(
         app_id, new_limit->daily_limit(), AppNotification::kTimeLimitChanged);
-    return;
+    return true;
   }
+
+  return false;
 }
 
 base::TimeDelta AppActivityRegistry::GetWebActiveRunningTime() const {

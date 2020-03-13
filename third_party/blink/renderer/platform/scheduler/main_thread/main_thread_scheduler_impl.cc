@@ -304,6 +304,9 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
   main_thread_only()
       .compositor_priority_experiments.OnMainThreadSchedulerInitialized();
 
+  main_thread_only().current_policy.find_in_page_priority() =
+      find_in_page_budget_pool_controller_->CurrentTaskPriority();
+
   g_main_thread_scheduler = this;
 }
 

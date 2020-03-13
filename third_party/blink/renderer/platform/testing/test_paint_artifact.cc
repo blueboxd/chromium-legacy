@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
-#include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -101,12 +100,10 @@ TestPaintArtifact& TestPaintArtifact::RectDrawing(DummyRectClient& client,
 
 TestPaintArtifact& TestPaintArtifact::ScrollHitTest(
     DummyRectClient& client,
-    const TransformPaintPropertyNode* scroll_offset,
+    const TransformPaintPropertyNode* scroll_translation,
     const IntRect& scroll_container_bounds) {
-  display_item_list_.AllocateAndConstruct<ScrollHitTestDisplayItem>(
-      client, DisplayItem::kScrollHitTest, scroll_offset,
-      scroll_container_bounds);
-  DidAddDisplayItem();
+  paint_chunks_.back().EnsureHitTestData().scroll_translation =
+      scroll_translation;
   return *this;
 }
 

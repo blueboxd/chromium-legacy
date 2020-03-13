@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunker.h"
 
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
-#include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
 
 namespace blink {
 
@@ -71,7 +70,7 @@ PaintChunk& PaintChunker::EnsureCurrentChunk(const PaintChunk::Id& id) {
 bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
   bool item_forces_new_chunk = item.IsForeignLayer() ||
                                item.IsGraphicsLayerWrapper() ||
-                               item.IsScrollHitTest() || item.IsScrollbar();
+                               item.IsScrollbar();
   if (item_forces_new_chunk)
     SetForceNewChunk(true);
 
@@ -90,16 +89,6 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
 
   chunk.outset_for_raster_effects =
       std::max(chunk.outset_for_raster_effects, item.OutsetForRasterEffects());
-
-  if (item.IsScrollHitTest()) {
-    const auto& scroll_hit_test_item =
-        static_cast<const ScrollHitTestDisplayItem&>(item);
-    if (!chunk.hit_test_data)
-      chunk.hit_test_data = std::make_unique<HitTestData>();
-    chunk.hit_test_data->SetScrollHitTest(
-        scroll_hit_test_item.scroll_offset_node(),
-        scroll_hit_test_item.scroll_container_bounds());
-  }
 
   chunk.end_index++;
 
@@ -129,9 +118,37 @@ void PaintChunker::AddHitTestDataToCurrentChunk(const PaintChunk::Id& id,
   auto& chunk = EnsureCurrentChunk(id);
   chunk.bounds.Unite(rect);
   if (touch_action != TouchAction::kAuto) {
-    chunk.EnsureHitTestData().AppendTouchActionRect(
+    chunk.EnsureHitTestData().touch_action_rects.push_back(
         TouchActionRect{rect, touch_action});
   }
+}
+
+void PaintChunker::CreateScrollHitTestChunk(
+    const PaintChunk::Id& id,
+    const TransformPaintPropertyNode* scroll_translation,
+    const IntRect& rect) {
+#if DCHECK_IS_ON()
+  if (id.type == DisplayItem::Type::kResizerScrollHitTest ||
+      id.type == DisplayItem::Type::kPluginScrollHitTest) {
+    // Resizer and plugin scroll hit tests are only used to prevent composited
+    // scrolling and should not have a scroll offset node.
+    DCHECK(!scroll_translation);
+  } else if (id.type == DisplayItem::Type::kScrollHitTest) {
+    DCHECK(scroll_translation);
+    // The scroll offset transform node should have an associated scroll node.
+    DCHECK(scroll_translation->ScrollNode());
+  } else {
+    NOTREACHED();
+  }
+#endif
+
+  SetForceNewChunk(true);
+  auto& chunk = EnsureCurrentChunk(id);
+  chunk.bounds.Unite(rect);
+  auto& hit_test_data = chunk.EnsureHitTestData();
+  hit_test_data.scroll_translation = scroll_translation;
+  hit_test_data.scroll_hit_test_rect = rect;
+  SetForceNewChunk(true);
 }
 
 void PaintChunker::UpdateLastChunkKnownToBeOpaque() {

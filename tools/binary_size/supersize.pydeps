@@ -45,7 +45,6 @@ libsupersize/ar.py
 libsupersize/archive.py
 libsupersize/bcanalyzer.py
 libsupersize/canned_queries.py
-libsupersize/concurrent.py
 libsupersize/console.py
 libsupersize/demangle.py
 libsupersize/describe.py
@@ -60,6 +59,7 @@ libsupersize/models.py
 libsupersize/ninja_parser.py
 libsupersize/nm.py
 libsupersize/obj_analyzer.py
+libsupersize/parallel.py
 libsupersize/path_util.py
 libsupersize/start_server.py
 libsupersize/string_extract.py

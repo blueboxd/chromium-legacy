@@ -42,7 +42,7 @@ TEST_P(NGBoxFragmentPainterTest, ScrollHitTestOrder) {
     </style>
     <div id='scroller'>TEXT</div>
   )HTML");
-  auto& scroller = *GetLayoutObjectByElementId("scroller");
+  auto& scroller = ToLayoutBox(*GetLayoutObjectByElementId("scroller"));
 
   const NGPaintFragment& root_fragment = *scroller.PaintFragment();
   const NGPaintFragment& line_box_fragment = *root_fragment.FirstChild();
@@ -51,8 +51,44 @@ TEST_P(NGBoxFragmentPainterTest, ScrollHitTestOrder) {
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
               ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
                                    DisplayItem::kDocumentBackground),
-                          IsSameId(&root_fragment, DisplayItem::kScrollHitTest),
                           IsSameId(&text_fragment, kForegroundType)));
+  HitTestData scroll_hit_test;
+  scroll_hit_test.scroll_translation =
+      &scroller.FirstFragment().ContentsProperties().Transform();
+  scroll_hit_test.scroll_hit_test_rect = IntRect(0, 0, 40, 40);
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    EXPECT_THAT(
+        RootPaintController().PaintChunks(),
+        ElementsAre(
+            IsPaintChunk(0, 1,
+                         PaintChunk::Id(ViewScrollingBackgroundClient(),
+                                        DisplayItem::kDocumentBackground),
+                         GetLayoutView().FirstFragment().ContentsProperties()),
+            IsPaintChunk(
+                1, 1,
+                PaintChunk::Id(*scroller.Layer(), DisplayItem::kLayerChunk),
+                scroller.FirstFragment().LocalBorderBoxProperties()),
+            IsPaintChunk(
+                1, 1,
+                PaintChunk::Id(root_fragment, DisplayItem::kScrollHitTest),
+                scroller.FirstFragment().LocalBorderBoxProperties(),
+                &scroll_hit_test, IntRect(0, 0, 40, 40)),
+            IsPaintChunk(1, 2)));
+  } else {
+    EXPECT_THAT(
+        RootPaintController().PaintChunks(),
+        ElementsAre(
+            IsPaintChunk(0, 1,
+                         PaintChunk::Id(ViewScrollingBackgroundClient(),
+                                        DisplayItem::kDocumentBackground),
+                         GetLayoutView().FirstFragment().ContentsProperties()),
+            IsPaintChunk(
+                1, 1,
+                PaintChunk::Id(root_fragment, DisplayItem::kScrollHitTest),
+                scroller.FirstFragment().LocalBorderBoxProperties(),
+                &scroll_hit_test, IntRect(0, 0, 40, 40)),
+            IsPaintChunk(1, 2)));
+  }
 }
 
 }  // namespace blink

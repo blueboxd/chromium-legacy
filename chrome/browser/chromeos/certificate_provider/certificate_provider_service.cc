@@ -6,9 +6,7 @@
 
 #include <stddef.h>
 
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -277,7 +275,7 @@ void CertificateProviderService::ReplyToSignRequest(
 
   if (!signature.empty()) {
     for (auto& observer : observers_)
-      observer.OnSignCompleted(certificate, extension_id);
+      observer.OnSignCompleted(certificate);
   }
 }
 
@@ -343,15 +341,15 @@ void CertificateProviderService::RequestSignatureBySpki(
                                 std::move(callback));
 }
 
-bool CertificateProviderService::LookUpSpki(
+bool CertificateProviderService::GetSupportedAlgorithmsBySpki(
     const std::string& subject_public_key_info,
-    std::vector<uint16_t>* supported_algorithms,
-    std::string* extension_id) {
+    std::vector<uint16_t>* supported_algorithms) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool is_currently_provided = false;
   CertificateInfo info;
+  std::string extension_id;
   certificate_map_.LookUpCertificateBySpki(
-      subject_public_key_info, &is_currently_provided, &info, extension_id);
+      subject_public_key_info, &is_currently_provided, &info, &extension_id);
   if (!is_currently_provided) {
     LOG(ERROR) << "no certificate with the specified spki was found";
     return false;

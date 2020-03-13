@@ -9,10 +9,24 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_export.h"
 
 namespace net {
+
+// Provider ids for usage in histograms. Entries should not be renumbered and
+// numeric values should never be reused. Please keep in sync with
+// "DohProviderId" in src/tools/metrics/histograms/enums.xml.
+enum class DohProviderIdForHistogram {
+  kCustom = 0,
+  kCleanBrowsingFamily = 1,
+  kCloudflare = 2,
+  kGoogle = 3,
+  kIij = 4,
+  kQuad9Secure = 5,
+  kMaxValue = kQuad9Secure,
+};
 
 // Represents insecure DNS, DoT, and DoH services run by the same provider.
 // These entries are used to support upgrade from insecure DNS or DoT services
@@ -26,18 +40,23 @@ namespace net {
 // codes, if any, where the entry is eligible for being displayed in the
 // dropdown menu.
 struct NET_EXPORT DohProviderEntry {
-  DohProviderEntry(std::string provider,
-                   std::set<std::string> ip_strs,
-                   std::set<std::string> dns_over_tls_hostnames,
-                   std::string dns_over_https_template,
-                   std::string ui_name,
-                   std::string privacy_policy,
-                   bool display_globally,
-                   std::set<std::string> display_countries);
+  DohProviderEntry(
+      std::string provider,
+      base::Optional<DohProviderIdForHistogram> provider_id_for_histogram,
+      std::set<std::string> ip_strs,
+      std::set<std::string> dns_over_tls_hostnames,
+      std::string dns_over_https_template,
+      std::string ui_name,
+      std::string privacy_policy,
+      bool display_globally,
+      std::set<std::string> display_countries);
   DohProviderEntry(const DohProviderEntry& other);
   ~DohProviderEntry();
 
   const std::string provider;
+  // A provider_id_for_histogram is required for entries that are intended to
+  // be visible in the UI.
+  const base::Optional<DohProviderIdForHistogram> provider_id_for_histogram;
   std::set<IPAddress> ip_addresses;
   const std::set<std::string> dns_over_tls_hostnames;
   const std::string dns_over_https_template;

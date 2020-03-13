@@ -90,7 +90,6 @@ HTMLSelectElement::HTMLSelectElement(Document& document)
       size_(0),
       last_on_change_option_(nullptr),
       is_multiple_(false),
-      active_selection_state_(false),
       should_recalc_list_items_(false),
       is_autofilled_by_preview_(false),
       index_to_select_on_cancel_(-1) {

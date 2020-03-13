@@ -21,7 +21,6 @@
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/chooser_context_base.h"
-#include "components/prefs/pref_store.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "ppapi/buildflags/buildflags.h"
 
@@ -125,7 +124,6 @@ class SiteSettingsHandler
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ZoomLevels);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
                            HandleClearEtldPlus1DataAndCookies);
-  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, CookieSettingDescription);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, HandleGetFormattedBytes);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
                            NotificationPermissionRevokeUkm);
@@ -166,9 +164,6 @@ class SiteSettingsHandler
   // data, which will send the list of sites with cookies or usage data to
   // the front end when fetching finished.
   void HandleGetAllSites(const base::ListValue* args);
-
-  // Returns a string for display describing the current cookie settings.
-  void HandleGetCookieSettingDescription(const base::ListValue* args);
 
   // Returns a list containing the most recent permission changes for the
   // provided content types grouped by origin/profile (incognito, regular)
@@ -253,10 +248,6 @@ class SiteSettingsHandler
       std::unique_ptr<CookiesTreeModel> cookies_tree_model);
 
   void ClearAllSitesMapForTesting();
-
-  // Notifies the JS side the effective cookies setting has changed and
-  // provides the updated description label for display.
-  void SendCookieSettingDescription();
 
   Profile* profile_;
   web_app::AppRegistrar& app_registrar_;

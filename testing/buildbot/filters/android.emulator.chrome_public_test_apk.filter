@@ -43,3 +43,51 @@
 
 # crbug.com/1059046
 -org.chromium.chrome.browser.customtabs.CustomTabFromChromeExternalNavigationTest.testIntentWithRedirectToApp
+
+# crbug.com/1060724
+-org.chromium.chrome.browser.offlinepages.indicator.OfflineIndicatorControllerTest.testDoNotShowOfflineIndicatorWhenTemporarilyPaused
+
+# crbug.com/1061158
+-org.chromium.chrome.browser.TabsOpenedFromExternalAppTest.testLaunchWebLiteURLNoPreviews
+
+# crbug.com/1061173
+-org.chromium.chrome.browser.customtabs.CustomTabsConnectionTest.testGetSchedulerGroup
+
+# crbug.com/1041822
+-org.chromium.chrome.browser.offlinepages.OfflinePageAutoFetchTest.testAutoFetchTriggersOnDNSErrorWhenOffline
+
+# crbug.com/1061177
+-org.chromium.chrome.browser.payments.PaymentRequestPaymentAppsSortingTest.testPaymentAppsSortingByFrecency
+
+# crbug.com/1061178
+-org.chromium.chrome.browser.tasks.tab_management.TabGridDialogTest.testSwipeToDismiss_Dialog
+-org.chromium.chrome.features.start_surface.StartSurfaceLayoutTest.testSwipeToDismiss_GTS
+
+# crbug.com/1060724
+-org.chromium.chrome.browser.offlinepages.indicator.OfflineIndicatorControllerTest.testDoNotShowOfflineIndicatorWhenTemporarilyPaused
+
+# crbug.com/1061198
+-org.chromium.chrome.browser.settings.password.PasswordSettingsTest.testExportMenuDisabled
+
+# crbug.com/1061201
+-org.chromium.chrome.browser.history.HistoryActivityTest.testOpenSelectedItems
+
+# crbug.com/1061208
+-org.chromium.chrome.browser.autofill.settings.AutofillProfilesFragmentTest.testKeyboardShownOnDpadCenter
+
+# crbug.com/1061212
+-org.chromium.chrome.browser.metrics.UkmTest.testRegularPlusIncognitoCheck
+
+# crbug.com/1061214
+-org.chromium.chrome.browser.customtabs.CustomTabActivityTest.testHiddenTabAndChangingFragmentDontWait
+
+# crbug.com/1061216
+-org.chromium.chrome.browser.gesturenav.NavigationHandlerTest.testRightSwipeNavigateForwardOnNativePage
+
+# crbug.com/1058877
+-org.chromium.chrome.browser.autofill.AutofillUpstreamTest.testSaveCardInfoBarContinueButton_EmptyExpDate_launchesExpDateFixFlow
+-org.chromium.chrome.browser.autofill.AutofillUpstreamTest.testSaveCardInfoBarContinueButton_EmptyName_launchesNameFixFlow
+-org.chromium.chrome.browser.autofill.AutofillUpstreamTest.testSaveCardInfoBarWithEmptyMonth
+-org.chromium.chrome.browser.autofill.AutofillUpstreamTest.testSaveCardInfoBarWithEmptyMonthAndYear
+-org.chromium.chrome.browser.autofill.AutofillUpstreamTest.testSaveCardInfoBarWithEmptyName
+-org.chromium.chrome.browser.autofill.AutofillUpstreamTest.testSaveCardInfoBarWithEmptyYear

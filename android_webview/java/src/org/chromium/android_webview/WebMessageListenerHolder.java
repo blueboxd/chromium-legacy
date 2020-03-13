@@ -36,6 +36,10 @@ public class WebMessageListenerHolder {
                 message, Uri.parse(sourceOrigin), isMainFrame, replyProxy, messagePorts);
     }
 
+    public WebMessageListener getListener() {
+        return mListener;
+    }
+
     private static MessagePort convertRawHandleToMessagePort(int rawHandle) {
         return MessagePort.create(
                 CoreImpl.getInstance().acquireNativeHandle(rawHandle).toMessagePipeHandle());

@@ -25,8 +25,8 @@ functions and events which return information on declarative rules matched.
 wants to redirect requests. You must also declare the
 <code>"declarative_net_request"</code> manifest key, which should be a
 dictionary with a single key called <code>"rule_resources"</code>. It should be
-a list containing a single element, the path to a JSON file containing the
-declarative rules to use, as shown below.
+a list containing a single dictionary of type
+<a href="#type-Ruleset">Ruleset</a>, as shown below.
 </p>
 
 <pre data-filename="manifest.json">
@@ -35,7 +35,9 @@ declarative rules to use, as shown below.
   ...
 <b>
   "declarative_net_request" : {
-    "rule_resources" : ["rules.json"]
+    "rule_resources" : [{
+      "path": "rules.json"
+    }]
   },
   "permissions": [
     "declarativeNetRequest",
@@ -278,7 +280,9 @@ are evaluated on the request and response headers. All matching
   "name": "declarativeNetRequest extension",
   "version": "1",
   "declarative_net_request": {
-    "rule_resources": ["rules.json"]
+    "rule_resources": [{
+      "path": "rules.json"
+    }]
   },
   "permissions": [
     "*://*.google.com/*",

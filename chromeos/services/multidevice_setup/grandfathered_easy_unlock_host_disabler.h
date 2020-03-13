@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate.h"
 
@@ -40,7 +41,7 @@ namespace multidevice_setup {
 //                           |                |                               |
 //             (retry timer) |                |                               |
 //                           |                V                    (success)  |
-//                           +--- OnSetSoftwareFeatureStateResult ------------+
+//                           +--- OnDisableEasyUnlockResult ------------------+
 class GrandfatheredEasyUnlockHostDisabler
     : public HostBackendDelegate::Observer {
  public:
@@ -81,7 +82,7 @@ class GrandfatheredEasyUnlockHostDisabler
   void OnHostChangedOnBackend() override;
 
   void DisableEasyUnlockHostIfNecessary();
-  void OnSetSoftwareFeatureStateResult(
+  void OnDisableEasyUnlockHostResult(
       multidevice::RemoteDeviceRef device,
       device_sync::mojom::NetworkRequestResult result_code);
   void SetPotentialEasyUnlockHostToDisable(
@@ -93,6 +94,9 @@ class GrandfatheredEasyUnlockHostDisabler
   PrefService* pref_service_;
   std::unique_ptr<base::OneShotTimer> timer_;
   base::Optional<multidevice::RemoteDeviceRef> current_better_together_host_;
+
+  base::WeakPtrFactory<GrandfatheredEasyUnlockHostDisabler> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(GrandfatheredEasyUnlockHostDisabler);
 };

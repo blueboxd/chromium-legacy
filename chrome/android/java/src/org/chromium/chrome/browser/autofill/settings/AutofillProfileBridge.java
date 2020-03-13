@@ -5,10 +5,10 @@
 package org.chromium.chrome.browser.autofill.settings;
 
 import android.app.Activity;
-import android.support.v4.app.Fragment;
 import android.util.Pair;
 
 import androidx.annotation.IntDef;
+import androidx.fragment.app.Fragment;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;

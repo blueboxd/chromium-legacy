@@ -152,7 +152,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   virtual bool CanTakeFocus(mojom::blink::FocusType) = 0;
   virtual void TakeFocus(mojom::blink::FocusType) = 0;
 
-  virtual void FocusedElementChanged(Element*, Element*) = 0;
+  virtual void SetKeyboardFocusURL(Element*) {}
 
   // Allow document lifecycle updates to be run in order to produce composited
   // outputs. Updates are blocked from occurring during loading navigation in

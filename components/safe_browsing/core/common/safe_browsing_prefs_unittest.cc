@@ -24,6 +24,7 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
  protected:
   void SetUp() override {
     task_environment_ = CreateTestTaskEnvironment();
+    prefs_.registry()->RegisterBooleanPref(prefs::kSafeBrowsingEnabled, true);
     prefs_.registry()->RegisterBooleanPref(prefs::kSafeBrowsingEnhanced, false);
     prefs_.registry()->RegisterBooleanPref(
         prefs::kSafeBrowsingScoutReportingEnabled, false);

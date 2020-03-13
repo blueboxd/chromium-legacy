@@ -469,8 +469,8 @@ public class BookmarksTest {
         for (Pair<String, JSONObject> rawBookmark : rawBookmarks) {
             String id = rawBookmark.first;
             JSONObject json = rawBookmark.second;
-            bookmarks.add(new Bookmark(id, json.getString("title"), json.optString("url", null),
-                    json.getString("parent_id")));
+            bookmarks.add(new Bookmark(id, json.getString("legacy_canonicalized_title"),
+                    json.optString("url", null), json.getString("parent_id")));
         }
         return bookmarks;
     }
@@ -483,7 +483,7 @@ public class BookmarksTest {
             String id = entity.getIdString();
             String parentId = entity.getParentIdString();
             BookmarkSpecifics specifics = entity.getSpecifics().getBookmark();
-            bookmarks.add(new Bookmark(id, specifics.getTitle(),
+            bookmarks.add(new Bookmark(id, specifics.getLegacyCanonicalizedTitle(),
                     entity.getFolder() ? null : specifics.getUrl(), parentId));
         }
         return bookmarks;

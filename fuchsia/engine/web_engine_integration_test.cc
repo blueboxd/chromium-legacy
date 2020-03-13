@@ -129,6 +129,8 @@ class WebEngineIntegrationTest : public testing::Test {
   }
 
  protected:
+  void RunPermissionTest(bool grant);
+
   const base::test::TaskEnvironment task_environment_;
 
   fidl::InterfaceHandle<fuchsia::sys::ComponentController>
@@ -397,4 +399,39 @@ TEST_F(WebEngineIntegrationTest, PlayAudio) {
       &navigation_listener);
   frame_->SetNavigationEventListener(listener_binding.NewBinding());
   navigation_listener.RunUntilTitleEquals("ended");
+}
+
+void WebEngineIntegrationTest::RunPermissionTest(bool grant) {
+  StartWebEngine();
+
+  fuchsia::web::CreateContextParams create_params =
+      DefaultContextParamsWithTestData();
+  CreateContextAndFrame(std::move(create_params));
+
+  if (grant) {
+    // Grant microphone permission.
+    fuchsia::web::PermissionDescriptor mic_permission;
+    mic_permission.set_type(fuchsia::web::PermissionType::MICROPHONE);
+    frame_->SetPermissionState(std::move(mic_permission),
+                               "fuchsia-dir://testdata/",
+                               fuchsia::web::PermissionState::GRANTED);
+  }
+
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      navigation_controller_.get(), fuchsia::web::LoadUrlParams(),
+      "fuchsia-dir://testdata/check_mic_permission.html"));
+
+  cr_fuchsia::TestNavigationListener navigation_listener;
+  fidl::Binding<fuchsia::web::NavigationEventListener> listener_binding(
+      &navigation_listener);
+  frame_->SetNavigationEventListener(listener_binding.NewBinding());
+  navigation_listener.RunUntilTitleEquals(grant ? "granted" : "denied");
+}
+
+TEST_F(WebEngineIntegrationTest, PermissionDenied) {
+  RunPermissionTest(false);
+}
+
+TEST_F(WebEngineIntegrationTest, PermissionGranted) {
+  RunPermissionTest(true);
 }

@@ -790,7 +790,7 @@ bool LoopbackServer::ModifyBookmarkEntity(
   entity->SetParentId(parent_id);
   entity->SetSpecifics(updated_specifics);
   if (updated_specifics.has_bookmark()) {
-    entity->SetName(updated_specifics.bookmark().title());
+    entity->SetName(updated_specifics.bookmark().legacy_canonicalized_title());
   }
   UpdateEntityVersion(entity);
   return true;

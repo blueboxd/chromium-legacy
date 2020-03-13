@@ -2092,6 +2092,9 @@
   <message name="IDS_SETTINGS_COOKIES_PAGE" desc="Title of the cookies settings page">
     Cookies and other site data
   </message>
+  <message name="IDS_SETTINGS_COOKIES_PAGE_DESCRIPTION" desc="Description of the settings page which controls cookie settings">
+    Allows websites to remember your visit and track you across the web
+  </message>
   <message name="IDS_SETTINGS_COOKIES_CONTROLS" desc="Title of the general cookies control section.">
     General settings
   </message>
@@ -2372,24 +2375,6 @@
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SHOW_ALL_RECOMMENDED" desc="Label for the global 'Show all' toggle (category default) in site settings -- a recommended setting for some categories, such as when sites want to show images.">
     Show all (recommended)
-  </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES_ALLOW" desc="The sub-label for links to manage cookies when the current cookie setting is allow.">
-    {COUNT, plural,
-     =0 {Cookies are allowed}
-     =1 {Cookies are allowed, 1 exception}
-     other {Cookies are allowed, # exceptions}}
-  </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES_BLOCK" desc="The sub-label for links to manage cookies when the current cookie setting is allow.">
-    {COUNT, plural,
-     =0 {Cookies are blocked.}
-     =1 {Cookies are blocked, 1 exception}
-     other {Cookies are blocked, # exceptions}}
-  </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES_BLOCK_THIRD_PARTY" desc="The sub-label for links to manage cookies when the current cookie setting is to block third party cookies.">
-    Third-party cookies are blocked
-  </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES_BLOCK_THIRD_PARTY_INCOGNITO" desc="The sub-label for links to manage cookies when the current cookie setting is to block third party cookies in incognito.">
-    Third-party cookies are blocked in Incognito mode
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES_ALLOW_SITES" desc="The 'allow cookies' label in site settings.">
     Allow sites to save and read cookie data

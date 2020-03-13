@@ -10,7 +10,6 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.support.v7.content.res.AppCompatResources;
 import android.text.format.DateUtils;
 import android.util.TypedValue;
 import android.view.ViewGroup;
@@ -18,6 +17,7 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
 
 import org.junit.After;
 import org.junit.AfterClass;

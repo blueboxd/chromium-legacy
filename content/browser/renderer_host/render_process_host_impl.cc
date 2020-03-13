@@ -115,7 +115,7 @@
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
 #include "content/browser/push_messaging/push_messaging_manager.h"
-#include "content/browser/quota/quota_dispatcher_host.h"
+#include "content/browser/quota/quota_context.h"
 #include "content/browser/renderer_host/agent_metrics_collector.h"
 #include "content/browser/renderer_host/code_cache_host_impl.h"
 #include "content/browser/renderer_host/embedded_frame_sink_provider_impl.h"
@@ -2015,21 +2015,15 @@ void RenderProcessHostImpl::BindVideoDecodePerfHistory(
       std::move(receiver));
 }
 
-void RenderProcessHostImpl::BindQuotaDispatcherHost(
+void RenderProcessHostImpl::BindQuotaManagerHost(
     int render_frame_id,
     const url::Origin& origin,
-    mojo::PendingReceiver<blink::mojom::QuotaDispatcherHost> receiver) {
-  // TODO(crbug.com/779444): Save the |origin| here and use it rather than the
-  // one provided by QuotaDispatcher.
-
-  // Bind on the IO thread.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &QuotaDispatcherHost::BindQuotaDispatcherHostOnIOThread, GetID(),
-          render_frame_id,
-          base::RetainedRef(GetStoragePartition()->GetQuotaManager()),
-          std::move(receiver)));
+    mojo::PendingReceiver<blink::mojom::QuotaManagerHost> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* storage_partition =
+      static_cast<StoragePartitionImpl*>(GetStoragePartition());
+  storage_partition->GetQuotaContext()->BindQuotaManagerHost(
+      GetID(), render_frame_id, origin, std::move(receiver));
 }
 
 void RenderProcessHostImpl::CreateLockManager(

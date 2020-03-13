@@ -12,6 +12,7 @@
 <translation id="1979103255016296513">Passwortänderung überfällig</translation>
 <translation id="2049639323467105390">Dieses Gerät wird durch <ph name="DOMAIN" /> verwaltet.</translation>
 <translation id="2338501278241028356">Aktivieren Sie Bluetooth, damit Geräte in der Nähe gefunden werden</translation>
+<translation id="2375079107209812402">Noch <ph name="ATTEMPTS_LEFT" /> Versuche</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2872961005593481000">Herunterfahren</translation>
 <translation id="3008341117444806826">AKTUALISIEREN</translation>
@@ -42,6 +43,7 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="808894953321890993">Passwort ändern</translation>
 <translation id="8208861521865154048">Vorteile</translation>
 <translation id="8747900814994928677">Änderung bestätigen</translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> verbleibende Versuche</translation>
 <translation id="910415269708673980">Aktualisieren Sie das Ticket für <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Entsperren</translation>
 </translationbundle>

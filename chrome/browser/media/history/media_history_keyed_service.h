@@ -83,6 +83,18 @@ class MediaHistoryKeyedService : public KeyedService,
   // Saves a newly discovered media feed in the media history store.
   void SaveMediaFeed(const GURL& url);
 
+  // Gets the media items in |feed_id|.
+  void GetItemsForMediaFeedForDebug(
+      const int64_t feed_id,
+      base::OnceCallback<
+          void(std::vector<media_feeds::mojom::MediaFeedItemPtr>)> callback);
+
+  // Replaces the media items in |feed_id|. This will delete any old feed items
+  // and store the new ones in |items|.
+  void ReplaceMediaFeedItems(
+      const int64_t feed_id,
+      std::vector<media_feeds::mojom::MediaFeedItemPtr> items);
+
   void GetURLsInTableForTest(const std::string& table,
                              base::OnceCallback<void(std::set<GURL>)> callback);
 

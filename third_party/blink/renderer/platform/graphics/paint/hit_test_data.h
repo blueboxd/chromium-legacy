@@ -13,32 +13,20 @@ namespace blink {
 
 struct PLATFORM_EXPORT HitTestData {
   Vector<TouchActionRect> touch_action_rects;
-  struct ScrollHitTest {
-    const TransformPaintPropertyNode* scroll_offset;
-    IntRect scroll_container_bounds;
-    bool operator==(const ScrollHitTest& rhs) const {
-      return scroll_offset == rhs.scroll_offset &&
-             scroll_container_bounds == rhs.scroll_container_bounds;
-    }
-  };
-  base::Optional<ScrollHitTest> scroll_hit_test;
+
+  // If scroll_translation is nullptr or in pre-CompositeAfterPaint, this marks
+  // a region in which composited scroll is not allowed. In CompositeAfterPaint
+  // when scroll_translation is not nullptr, this is the bounds of the scroll
+  // container, and whether the region allows composited scrolling depends
+  // whether the scroll_translation is composited.
+  IntRect scroll_hit_test_rect;
+  const TransformPaintPropertyNode* scroll_translation = nullptr;
 
   bool operator==(const HitTestData& rhs) const {
     return touch_action_rects == rhs.touch_action_rects &&
-           scroll_hit_test == rhs.scroll_hit_test;
+           scroll_hit_test_rect == rhs.scroll_hit_test_rect &&
+           scroll_translation == rhs.scroll_translation;
   }
-
-  void AppendTouchActionRect(const TouchActionRect& rect) {
-    touch_action_rects.push_back(rect);
-  }
-
-  void SetScrollHitTest(const TransformPaintPropertyNode* scroll_offset,
-                        const IntRect& scroll_container_bounds) {
-    DCHECK(!scroll_offset || scroll_offset->ScrollNode());
-    scroll_hit_test = base::make_optional(
-        ScrollHitTest{scroll_offset, scroll_container_bounds});
-  }
-
   bool operator!=(const HitTestData& rhs) const { return !(*this == rhs); }
 
   String ToString() const;

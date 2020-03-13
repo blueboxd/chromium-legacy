@@ -28,7 +28,7 @@ import os
 import re
 import subprocess
 
-import concurrent
+import parallel
 import path_util
 
 
@@ -351,8 +351,8 @@ def RunBcAnalyzerOnIntermediates(target, tool_prefix, output_directory):
   for t in target:
     strings_by_path[t] = [s for _, s in _ParseBcAnalyzer(runner.RunOnFile(t))]
   # Escape strings by repr() so there will be no special characters to interfere
-  # concurrent.EncodeDictOfLists() and decoding.
-  return concurrent.EncodeDictOfLists(strings_by_path, value_transform=repr)
+  # parallel.EncodeDictOfLists() and decoding.
+  return parallel.EncodeDictOfLists(strings_by_path, value_transform=repr)
 
 
 def main():

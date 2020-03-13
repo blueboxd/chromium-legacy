@@ -53,6 +53,8 @@ source_set("dns") {
       "dns_reloader.cc",
       "dns_reloader.h",
       "dns_response.cc",
+      "dns_server_iterator.cc",
+      "dns_server_iterator.h",
       "dns_session.cc",
       "dns_session.h",
       "dns_socket_pool.cc",

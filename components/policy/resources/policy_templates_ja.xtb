@@ -281,7 +281,6 @@
 <translation id="1388918874748125262">セーフ ブラウジングの保護強化機能を有効にする</translation>
 <translation id="1393485621820363363">有効な企業デバイス プリンタ</translation>
 <translation id="1397855852561539316">デフォルト検索プロバイダ サジェスト URL</translation>
-<translation id="1398636873839401839">ログイン画面ですべてのバリエーションを有効にする</translation>
 <translation id="1404043648050567997">セーフ ブラウジング サービスでは、不正なサイトの可能性があると報告されているサイトにユーザーが移動しようとすると、警告ページが表示されます。この設定を有効にすると、ユーザーはその警告ページから不正なサイトに進むことができなくなります。
 
       このポリシーは、ユーザーがセーフ ブラウジングによる警告（不正なサイト、フィッシングなど）から先に進めないようにすることのみを目的としたものであり、無効な証明書や期限切れの証明書など、SSL 証明書関連の問題に対応するものではありません。
@@ -906,17 +905,7 @@
       URI テンプレートに <ph name="HTTP_VARIABLE_DNS" /> 変数が含まれている場合、リゾルバのリクエストでは <ph name="HTTP_METHOD_GET" /> が使用されます。それ以外の場合、リクエストでは <ph name="HTTP_METHOD_POST" /> が使用されます。
 
       不適切な形式のテンプレートは無視されます。</translation>
-<translation id="2331539005176436538">ログイン画面で重要な修正に関係するバリエーションのみを有効にする</translation>
 <translation id="2345547870894930157">DNS-over-HTTPS を有効にする（安全でないフォールバックなし）</translation>
-<translation id="2368120844613930637">このポリシーを設定すると、ログイン画面で <ph name="PRODUCT_NAME" /> への適用を許可するバリエーションを指定できます。
-
-     バリエーションは、ブラウザの新しいバージョンを送信せずに、既存の機能を選択的に有効または無効にして、<ph name="PRODUCT_NAME" /> に修正を加えるという更新方法です。
-
-      <ph name="VARIATIONS_ENABLED_OPTION_NAME" />（値 0）に設定するか、このポリシーを未設定のままにした場合は、ログイン画面ですべてのバリエーションをブラウザに適用します。
-
-      <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />（値 1）に設定した場合は、ログイン画面でセキュリティまたは安定性に関する重要な修正とみなされるバリエーションのみ <ph name="PRODUCT_NAME" /> に適用します。
-
-      <ph name="VARIATIONS_DISABLED_OPTION_NAME" />（値 2）に設定した場合は、ログイン画面でどのバリエーションもブラウザに適用しません。このモードは、<ph name="PRODUCT_NAME" /> のデベロッパーがセキュリティに関する重要な修正を適切なタイミングで適用できない場合があるため推奨されません。</translation>
 <translation id="237494535617297575">通知表示を許可するサイトを指定する URL パターンのリストを設定できます。このポリシーが未設定の場合、グローバルのデフォルト値がすべてのサイトで使用されます。グローバルのデフォルト値は「DefaultNotificationsSetting」ポリシーの値か、この値が未設定の場合はユーザーの個人設定の値です。</translation>
 <translation id="2386362615870139244">ウェイクアップ画面のロックを許可する</translation>
 <translation id="2398554235599593694"> このポリシーでは、外部プロトコルの呼び出しに関する確認メッセージに [常に開く] チェックボックスを表示するかどうかを管理します。
@@ -4199,7 +4188,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="7426112309807051726">「<ph name="TLS_FALSE_START" />」最適化を無効にするかどうかを指定します。過去の経緯から、このポリシーの名前は DisableSSLRecordSplitting となっています。
 
       このポリシーが未設定の場合、または false に設定されている場合、「<ph name="TLS_FALSE_START" />」は有効になります。true に設定されている場合、「<ph name="TLS_FALSE_START" />」は無効になります。</translation>
-<translation id="7427296104923393585">ログイン画面ですべてのバリエーションを無効にする</translation>
 <translation id="7433714841194914373">インスタント検索を有効にする</translation>
 <translation id="7434202861148928348">リモート アクセス クライアントの必須のドメイン名を設定する</translation>
 <translation id="7443616896860707393">クロスオリジンでの HTTP Basic 認証プロンプト</translation>
@@ -5321,7 +5309,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="974349541138387272">希望の DNS-over-HTTPS リゾルバの URI テンプレートを指定する</translation>
 <translation id="981346395360763138">Google 位置情報サービスが無効</translation>
 <translation id="982497069985795632">スペルチェックを有効にする</translation>
-<translation id="986367416344815079">ログイン画面で適用可能なバリエーションを管理する</translation>
 <translation id="991560005425213776">ネイティブ プリンタにユーザー名とファイル名を送信する</translation>
 <translation id="99232017131102456">このポリシーでは、HTTP サーバー認証の認証情報をプロフィール単位でグローバルに 1 つだけキャッシュするよう設定します。
 

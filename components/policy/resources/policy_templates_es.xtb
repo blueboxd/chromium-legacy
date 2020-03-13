@@ -280,7 +280,6 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 <translation id="1388918874748125262">Habilitar la protección mejorada para Navegación Segura</translation>
 <translation id="1393485621820363363">Impresoras de dispositivos de empresa habilitadas</translation>
 <translation id="1397855852561539316">URL de sugerencia del proveedor de búsquedas predeterminadas</translation>
-<translation id="1398636873839401839">Habilitar todas las variaciones en la pantalla de inicio de sesión</translation>
 <translation id="1404043648050567997">El servicio Navegación Segura muestra una página de advertencia cuando los usuarios acceden a sitios web marcados como potencialmente maliciosos. Habilitar esta opción evita que los usuarios sigan navegando de todos modos desde la página de advertencia hasta el sitio web malicioso.
 
       Esta política solo evita que los usuarios sigan navegando si aparece una advertencia de Navegación Segura (por ejemplo, software malicioso y suplantación de identidad), pero no si se trata de un problema relacionado con un certificado SSL que no es válido o ha caducado.
@@ -926,17 +925,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si la plantilla URI contiene una variable <ph name="HTTP_VARIABLE_DNS" />, las solicitudes para la resolución utilizarán <ph name="HTTP_METHOD_GET" />; de lo contrario, las solicitudes utilizarán <ph name="HTTP_METHOD_POST" />.
 
       Las plantillas con formato incorrecto se ignorarán.</translation>
-<translation id="2331539005176436538">Habilitar variaciones referentes solo a correcciones críticas en la pantalla de inicio de sesión</translation>
 <translation id="2345547870894930157">Habilitar DNS-over-HTTPS sin alternativa insegura</translation>
-<translation id="2368120844613930637">Configura esta política para especificar qué variaciones pueden aplicarse a <ph name="PRODUCT_NAME" /> en la pantalla de inicio de sesión.
-
-      Las variaciones proporcionan un medio para ofrecer modificaciones a <ph name="PRODUCT_NAME" /> sin enviar una nueva versión del navegador, ya que permiten habilitar o inhabilitar de forma selectiva las funciones existentes.
-
-      Si se establece la opción <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valor 0) o no se asigna ningún valor a la política, se permitirá que se apliquen todas las variaciones al navegador en la pantalla de inicio de sesión.
-
-      Si se establece la opción <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valor 1), solo se permitirá que se apliquen a <ph name="PRODUCT_NAME" /> las variaciones que se consideren correcciones críticas de seguridad o de estabilidad en la pantalla de inicio de sesión.
-
-      Si se establece la opción <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valor 2), no se permitirá aplicar ninguna variación al navegador en la pantalla de inicio de sesión. Ten en cuenta que este modo puede evitar que los desarrolladores de <ph name="PRODUCT_NAME" /> proporcionen correcciones críticas de seguridad a su debido tiempo y, por lo tanto, no se recomienda su uso.</translation>
 <translation id="237494535617297575">Permite establecer una lista de patrones de URL que especifiquen sitios que puedan mostrar notificaciones.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultNotificationsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
@@ -4324,7 +4313,6 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 <translation id="7426112309807051726">Especifica si la optimización de <ph name="TLS_FALSE_START" /> se debe inhabilitar. Por razones históricas, esta política se denomina DisableSSLRecordSplitting.
 
       Si esta política no se establece o se le asigna el valor false, se habilitará <ph name="TLS_FALSE_START" />. Si se asigna el valor true a esta política, se inhabilitará <ph name="TLS_FALSE_START" />.</translation>
-<translation id="7427296104923393585">Inhabilitar todas las variaciones en la pantalla de inicio de sesión</translation>
 <translation id="7433714841194914373">Habilitar Instant</translation>
 <translation id="7434202861148928348">Configurar los nombres de dominio requeridos para los clientes de acceso remoto</translation>
 <translation id="7443616896860707393">Mensajes de autenticación básica de HTTP de origen cruzado</translation>
@@ -5471,7 +5459,6 @@ Los controladores de protocolos registrados por la política se combinan con los
 <translation id="974349541138387272">Especifica la plantilla URI de resolución de DNS-over-HTTPS deseada</translation>
 <translation id="981346395360763138">Los servicios de ubicación de Google están inhabilitados</translation>
 <translation id="982497069985795632">Habilitar corrector ortográfico</translation>
-<translation id="986367416344815079">Determinar la disponibilidad de variaciones en la pantalla de inicio de sesión</translation>
 <translation id="991560005425213776">Enviar los nombres de usuario y de archivo a impresoras nativas</translation>
 <translation id="99232017131102456">Esta política configura una caché única global por perfil con credenciales de autenticación del servidor HTTP.
 

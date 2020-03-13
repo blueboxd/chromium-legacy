@@ -269,6 +269,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
+#include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -5343,14 +5344,40 @@ void Document::ClearFocusedElement() {
 
 void Document::NotifyFocusedElementChanged(Element* old_focused_element,
                                            Element* new_focused_element) {
+  // |old_focused_element| may not belong to this document by invoking
+  // adoptNode in event handlers during moving the focus to the new element.
+  DCHECK(!new_focused_element || new_focused_element->GetDocument() == this);
+
   if (AXObjectCache* cache = ExistingAXObjectCache()) {
     cache->HandleFocusedUIElementChanged(old_focused_element,
                                          new_focused_element);
   }
 
   if (GetPage()) {
-    GetPage()->GetChromeClient().FocusedElementChanged(old_focused_element,
-                                                       new_focused_element);
+    GetPage()->GetValidationMessageClient().DidChangeFocusTo(
+        new_focused_element);
+
+    bool is_editable = false;
+    gfx::Rect element_bounds;
+    if (new_focused_element) {
+      IntRect rect = new_focused_element->BoundsInViewport();
+      View()->FrameToScreen(rect);
+      is_editable = IsEditableElement(*new_focused_element);
+      element_bounds = gfx::Rect(rect);
+    }
+
+    GetFrame()->GetLocalFrameHostRemote().FocusedElementChanged(is_editable,
+                                                                element_bounds);
+
+    Document* old_document =
+        old_focused_element ? &old_focused_element->GetDocument() : nullptr;
+    if (old_document && old_document != this && old_document->GetFrame())
+      old_document->GetFrame()->Client()->FocusedElementChanged(nullptr);
+
+    GetFrame()->Client()->FocusedElementChanged(new_focused_element);
+
+    GetPage()->GetChromeClient().SetKeyboardFocusURL(new_focused_element);
+
     if (GetSettings()->GetSpatialNavigationEnabled())
       GetPage()->GetSpatialNavigationController().FocusedNodeChanged(this);
   }

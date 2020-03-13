@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -16,6 +17,19 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
+
+#define QUEUEING_TIME_PER_PRIORITY_METRIC_NAME \
+  "DOMScheduler.QueueingDurationPerPriority"
+
+#define PRIORITY_CHANGED_HISTOGRAM_NAME \
+  "DOMSchedler.TaskSignalPriorityWasChanged"
+
+// Same as UMA_HISTOGRAM_TIMES but for a broader view of this metric we end
+// at 1 minute instead of 10 seconds.
+#define QUEUEING_TIME_HISTOGRAM(name, sample)                              \
+  UMA_HISTOGRAM_CUSTOM_TIMES(QUEUEING_TIME_PER_PRIORITY_METRIC_NAME name,  \
+                             sample, base::TimeDelta::FromMilliseconds(1), \
+                             base::TimeDelta::FromMinutes(1), 50)
 
 DOMTask::DOMTask(DOMScheduler* scheduler,
                  ScriptPromiseResolver* resolver,
@@ -27,7 +41,11 @@ DOMTask::DOMTask(DOMScheduler* scheduler,
       callback_(callback),
       arguments_(args),
       resolver_(resolver),
-      signal_(signal) {
+      signal_(signal),
+      // TODO(kdillon): Expose queuing time from base::sequence_manager so we
+      // don't have to recalculate it here.
+      queue_time_(delay.is_zero() ? base::TimeTicks::Now()
+                                  : base::TimeTicks()) {
   DCHECK(signal_);
   DCHECK(signal_->GetTaskRunner());
   DCHECK(callback_);
@@ -60,9 +78,8 @@ void DOMTask::Invoke() {
   if (!script_state || !script_state->ContextIsValid())
     return;
 
-  scheduler_->OnTaskStarted(this);
+  RecordTaskStartMetrics();
   InvokeInternal(script_state);
-  scheduler_->OnTaskCompleted(this);
   callback_.Release();
 }
 
@@ -103,6 +120,32 @@ void DOMTask::Abort() {
   DCHECK(script_state && script_state->ContextIsValid());
   probe::AsyncTaskCanceled(ExecutionContext::From(script_state),
                            &async_task_id_);
+}
+
+void DOMTask::RecordTaskStartMetrics() {
+  UMA_HISTOGRAM_ENUMERATION(PRIORITY_CHANGED_HISTOGRAM_NAME,
+                            signal_->GetPriorityChangeStatus());
+
+  if (queue_time_ > base::TimeTicks()) {
+    base::TimeDelta queue_duration = base::TimeTicks::Now() - queue_time_;
+    DCHECK_GT(queue_duration, base::TimeDelta());
+    if (signal_->GetPriorityChangeStatus() ==
+        DOMTaskSignal::PriorityChangeStatus::kNoPriorityChange) {
+      WebSchedulingPriority priority =
+          WebSchedulingPriorityFromString(signal_->priority());
+      switch (priority) {
+        case WebSchedulingPriority::kUserBlockingPriority:
+          QUEUEING_TIME_HISTOGRAM(".UserBlocking", queue_duration);
+          break;
+        case WebSchedulingPriority::kUserVisiblePriority:
+          QUEUEING_TIME_HISTOGRAM(".UserVisable", queue_duration);
+          break;
+        case WebSchedulingPriority::kBackgroundPriority:
+          QUEUEING_TIME_HISTOGRAM(".Background", queue_duration);
+          break;
+      }
+    }
+  }
 }
 
 }  // namespace blink

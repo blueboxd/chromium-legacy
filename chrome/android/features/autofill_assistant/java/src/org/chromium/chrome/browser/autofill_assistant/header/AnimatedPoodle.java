@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.autofill_assistant.header;
 
 import android.content.Context;
-import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+
+import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.chrome.autofill_assistant.poodle.R;
 

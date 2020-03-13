@@ -16,7 +16,6 @@ import android.net.Uri;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.Browser;
-import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.LongSparseArray;
 import android.view.LayoutInflater;
@@ -25,6 +24,7 @@ import android.webkit.URLUtil;
 import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.app.AlertDialog;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;

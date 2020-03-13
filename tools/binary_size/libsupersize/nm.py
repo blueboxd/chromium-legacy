@@ -22,8 +22,8 @@ from __future__ import division
 import collections
 import subprocess
 
-import concurrent
 import demangle
+import parallel
 import path_util
 
 
@@ -141,14 +141,15 @@ def CollectAliasesByAddress(elf_path, tool_prefix):
 
 def _CollectAliasesByAddressAsyncHelper(elf_path, tool_prefix):
   result = CollectAliasesByAddress(elf_path, tool_prefix)
-  return concurrent.EncodeDictOfLists(result, key_transform=str)
+  return parallel.EncodeDictOfLists(result, key_transform=str)
 
 
 def CollectAliasesByAddressAsync(elf_path, tool_prefix):
   """Calls CollectAliasesByAddress in a helper process. Returns a Result."""
   def decode(encoded):
-    return concurrent.DecodeDictOfLists(encoded, key_transform=int)
-  return concurrent.ForkAndCall(
+    return parallel.DecodeDictOfLists(encoded, key_transform=int)
+
+  return parallel.ForkAndCall(
       _CollectAliasesByAddressAsyncHelper, (elf_path, tool_prefix),
       decode_func=decode)
 
@@ -200,7 +201,7 @@ def RunNmOnIntermediates(target, tool_prefix, output_directory):
   lines = stdout.splitlines()
   # Empty .a file has no output.
   if not lines:
-    return concurrent.EMPTY_ENCODED_DICT, concurrent.EMPTY_ENCODED_DICT
+    return parallel.EMPTY_ENCODED_DICT, concurrent.EMPTY_ENCODED_DICT
   is_multi_file = not lines[0]
   lines = iter(lines)
   if is_multi_file:
@@ -227,6 +228,5 @@ def RunNmOnIntermediates(target, tool_prefix, output_directory):
   # faster to use join & split.
   # TODO(agrieve): We could use path indices as keys rather than paths to cut
   #     down on marshalling overhead.
-  return (concurrent.EncodeDictOfLists(symbol_names_by_path),
-          concurrent.EncodeDictOfLists(string_addresses_by_path),
-          num_no_symbols)
+  return (parallel.EncodeDictOfLists(symbol_names_by_path),
+          parallel.EncodeDictOfLists(string_addresses_by_path), num_no_symbols)

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.password_manager.settings;
 
-import android.support.v4.app.FragmentActivity;
+import androidx.fragment.app.FragmentActivity;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

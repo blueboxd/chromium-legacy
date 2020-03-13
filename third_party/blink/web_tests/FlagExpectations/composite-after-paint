@@ -102,6 +102,8 @@ crbug.com/765003 compositing/contents-opaque/layer-opacity.html [ Failure ]
 # Less layers or other different layer trees.
 paint/invalidation/compositing/overlap-test-with-filter.html [ Failure ]
 paint/invalidation/compositing/should-not-repaint-composited-descendants.html [ Failure ]
+# Extra layers for non-fast scrolling areas.
+compositing/overflow/textarea-scroll-touch.html [ Failure ]
 
 # Subpixel or invisible color differences that look benign, but we can't rebaseline ref tests.
 compositing/overflow/ancestor-with-clip-path.html [ Failure ]

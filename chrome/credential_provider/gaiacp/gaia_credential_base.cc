@@ -365,6 +365,7 @@ HRESULT GetUserAndDomainInfo(
     *error_text =
         CGaiaCredentialBase::AllocErrorString(IDS_INVALID_AD_UPN_BASE);
     LOGFN(ERROR) << "Could not find a valid samAccountName.";
+    return E_FAIL;
   }
 
   // For non-AD usecase, we will fallback to creating new local account

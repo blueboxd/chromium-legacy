@@ -6,7 +6,7 @@
 
 [
   ImplementedAs=WorkerNavigatorWakeLock,
-  RuntimeEnabled=WakeLock,
+  RuntimeEnabled=SystemWakeLock,
   SecureContext
 ] partial interface WorkerNavigator {
   [CallWith=ScriptState, SameObject] readonly attribute WakeLock wakeLock;

@@ -82,6 +82,13 @@ Polymer({
     resolverOptions_: Array,
 
     /**
+     * Track the selected dropdown option so that it can be logged when a user-
+     * initiated UI dropdown selection change event occurs.
+     * @private
+     */
+    lastResolverOption_: String,
+
+    /**
      * String displaying the privacy policy of the resolver selected in the
      * dropdown menu.
      * @private
@@ -109,6 +116,7 @@ Polymer({
     // to match the underlying host resolver configuration.
     this.browserProxy_.getSecureDnsResolverList().then(resolvers => {
       this.resolverOptions_ = resolvers;
+      this.lastResolverOption_ = this.resolverOptions_[0].value;
       this.browserProxy_.getSecureDnsSetting().then(
           this.onSecureDnsPrefsChanged_.bind(this));
 
@@ -253,6 +261,10 @@ Polymer({
     if (this.$.secureResolverSelect.value === 'custom') {
       this.$.secureDnsInput.focus();
     }
+
+    this.browserProxy_.recordUserDropdownInteraction(
+        this.lastResolverOption_, this.$.secureResolverSelect.value);
+    this.lastResolverOption_ = this.$.secureResolverSelect.value;
   },
 
   /**
@@ -323,12 +335,14 @@ Polymer({
           r => r.value === secureDnsTemplates[0]);
       if (resolver) {
         this.$.secureResolverSelect.value = resolver.value;
+        this.lastResolverOption_ = resolver.value;
         return;
       }
     }
 
     // Otherwise, select the custom option.
     this.$.secureResolverSelect.value = 'custom';
+    this.lastResolverOption_ = 'custom';
 
     // Only update the custom input field if the templates are non-empty.
     // Otherwise, we may be clearing a previous value that the user wishes to

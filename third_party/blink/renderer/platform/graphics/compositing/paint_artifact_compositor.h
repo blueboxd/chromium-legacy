@@ -316,14 +316,15 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   bool PropertyTreeStateChanged(const PropertyTreeState&) const;
 
-  const TransformPaintPropertyNode& ScrollOffsetTranslationForLayer(
+  const TransformPaintPropertyNode& NearestScrollTranslationForLayer(
       const PaintArtifact&,
       const PendingLayer&);
 
-  // If the pending layer is a special scroll hit test layer, return the
-  // associated hit test information.
-  const HitTestData::ScrollHitTest* ScrollHitTestForLayer(const PaintArtifact&,
-                                                          const PendingLayer&);
+  // If the pending layer has scroll hit test data, return the associated
+  // scroll translation node.
+  const TransformPaintPropertyNode* ScrollTranslationForLayer(
+      const PaintArtifact&,
+      const PendingLayer&);
 
   // Finds an existing or creates a new scroll hit test layer for the pending
   // layer, returning nullptr if the layer is not a scroll hit test layer.

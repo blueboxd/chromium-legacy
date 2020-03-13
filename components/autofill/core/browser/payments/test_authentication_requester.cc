@@ -27,6 +27,10 @@ void TestAuthenticationRequester::OnCVCAuthenticationComplete(
   }
 }
 
+bool TestAuthenticationRequester::ShouldOfferFidoAuth() const {
+  return false;
+}
+
 #if !defined(OS_IOS)
 void TestAuthenticationRequester::OnFIDOAuthenticationComplete(
     bool did_succeed,

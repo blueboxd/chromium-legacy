@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
+#include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -55,14 +56,16 @@ UserSettingsEventLogger::UserSettingsEventLogger()
       is_playing_audio_(false),
       is_playing_video_(false),
       clock_(base::DefaultClock::GetInstance()) {
-  Shell::Get()->AddShellObserver(this);
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
+  Shell::Get()->AddShellObserver(this);
   Shell::Get()->video_detector()->AddObserver(this);
 }
 
 UserSettingsEventLogger::~UserSettingsEventLogger() {
-  Shell::Get()->RemoveShellObserver(this);
   chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->video_detector()->RemoveObserver(this);
 }
 
@@ -203,14 +206,29 @@ void UserSettingsEventLogger::OnVolumeTimerEnded() {
   SendToUkmAndAppList(settings_event);
 }
 
-void UserSettingsEventLogger::LogBrightnessUkmEvent(const int previous_level,
-                                                    const int current_level) {
-  if (!brightness_timer_.IsRunning()) {
-    previous_brightness_ = previous_level;
+void UserSettingsEventLogger::OnOutputStarted() {
+  is_playing_audio_ = true;
+}
+
+void UserSettingsEventLogger::OnOutputStopped() {
+  is_playing_audio_ = false;
+}
+
+void UserSettingsEventLogger::ScreenBrightnessChanged(
+    const power_manager::BacklightBrightnessChange& change) {
+  const int new_brightness = std::floor(change.percent());
+  if (change.cause() ==
+      power_manager::BacklightBrightnessChange_Cause_USER_REQUEST) {
+    if (!brightness_timer_.IsRunning()) {
+      brightness_before_user_change_ = brightness_;
+    }
+    brightness_after_user_change_ = new_brightness;
+    // Keep starting the timer until there is a pause in brightness activity.
+    // Then only one event will be logged to summarise that activity.
+    brightness_timer_.Start(FROM_HERE, kSliderDelay, this,
+                            &UserSettingsEventLogger::OnBrightnessTimerEnded);
   }
-  current_brightness_ = current_level;
-  brightness_timer_.Start(FROM_HERE, kSliderDelay, this,
-                          &UserSettingsEventLogger::OnBrightnessTimerEnded);
+  brightness_ = new_brightness;
 }
 
 void UserSettingsEventLogger::OnBrightnessTimerEnded() {
@@ -219,8 +237,10 @@ void UserSettingsEventLogger::OnBrightnessTimerEnded() {
 
   event->set_setting_id(UserSettingsEvent::Event::BRIGHTNESS);
   event->set_setting_type(UserSettingsEvent::Event::QUICK_SETTINGS);
-  event->set_previous_value(previous_brightness_);
-  event->set_current_value(current_brightness_);
+  if (brightness_before_user_change_.has_value()) {
+    event->set_previous_value(brightness_before_user_change_.value());
+  }
+  event->set_current_value(brightness_after_user_change_);
 
   settings_event.mutable_features()->set_is_recently_fullscreen(
       is_recently_fullscreen_);
@@ -267,14 +287,6 @@ void UserSettingsEventLogger::OnFullscreenStateChanged(
 
 void UserSettingsEventLogger::OnFullscreenTimerEnded() {
   is_recently_fullscreen_ = false;
-}
-
-void UserSettingsEventLogger::OnOutputStarted() {
-  is_playing_audio_ = true;
-}
-
-void UserSettingsEventLogger::OnOutputStopped() {
-  is_playing_audio_ = false;
 }
 
 void UserSettingsEventLogger::OnVideoStateChanged(

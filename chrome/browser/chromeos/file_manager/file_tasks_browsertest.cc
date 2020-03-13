@@ -2,25 +2,211 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/file_manager/file_tasks.h"
-
 #include "base/bind.h"
+#include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
+#include "chrome/browser/chromeos/file_manager/file_tasks.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "extensions/browser/entry_info.h"
 #include "net/base/mime_util.h"
+#include "third_party/blink/public/common/features.h"
+
+using chromeos::default_web_apps::kMediaAppId;
 
 namespace file_manager {
 namespace file_tasks {
+
+// A list of file extensions (`/` delimited) representing a selection of files
+// and the app expected to be the default to open these files.
+struct Expectation {
+  const char* file_extensions;
+  const char* app_id;
+};
 
 class FileTasksBrowserTest : public InProcessBrowserTest {
  public:
   void SetUpOnMainThread() override {
     test::AddDefaultComponentExtensionsOnMainThread(browser()->profile());
+    web_app::WebAppProvider::Get(browser()->profile())
+        ->system_web_app_manager()
+        .InstallSystemAppsForTesting();
+  }
+
+  void TestExpectationsAgainstDefaultTasks(
+      const std::vector<Expectation>& expectations) {
+    base::RunLoop run_loop;
+    int remaining = expectations.size();
+    auto callback = base::BindRepeating(
+        [](base::RepeatingClosure quit, int* remaining,
+           const char* file_extensions, const char* expected_app_id,
+           std::unique_ptr<std::vector<FullTaskDescriptor>> result) {
+          ASSERT_TRUE(result) << file_extensions;
+
+          auto default_task =
+              std::find_if(result->begin(), result->end(),
+                           [](const auto& task) { return task.is_default(); });
+
+          ASSERT_TRUE(default_task != result->end()) << file_extensions;
+
+          EXPECT_EQ(expected_app_id, default_task->task_descriptor().app_id)
+              << " for extension: " << file_extensions;
+
+          // Verify no other task is set as default.
+          EXPECT_EQ(1u, std::count_if(
+                            result->begin(), result->end(),
+                            [](const auto& task) { return task.is_default(); }))
+              << file_extensions;
+
+          if (--*remaining == 0)
+            quit.Run();
+        },
+        run_loop.QuitClosure(), &remaining);
+
+    const base::FilePath prefix = base::FilePath().AppendASCII("file");
+
+    for (const Expectation& test : expectations) {
+      std::vector<extensions::EntryInfo> entries;
+      std::vector<base::StringPiece> all_extensions =
+          base::SplitStringPiece(test.file_extensions, "/",
+                                 base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+      for (base::StringPiece extension : all_extensions) {
+        base::FilePath path = prefix.AddExtension(extension);
+        // Fetching a mime type is part of the default app determination, but it
+        // doesn't need to succeed.
+        std::string mime_type;
+        net::GetMimeTypeFromFile(path, &mime_type);
+        entries.push_back({path, mime_type, false});
+      }
+      std::vector<GURL> file_urls{entries.size(), GURL()};
+      FindAllTypesOfTasks(
+          browser()->profile(), entries, file_urls,
+          base::BindRepeating(callback, test.file_extensions, test.app_id));
+    }
+    run_loop.Run();
+    EXPECT_EQ(0, remaining);
   }
 };
+
+class FileTasksBrowserTestWithMediaApp : public FileTasksBrowserTest {
+ public:
+  FileTasksBrowserTestWithMediaApp() {
+    // Enable Media App.
+    scoped_feature_list_.InitWithFeatures(
+        {chromeos::features::kMediaApp, blink::features::kFileHandlingAPI}, {});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// List of single file default app expectations that we don't expect to change
+// regardless of app flags. Changes to this test may have implications for file
+// handling declarations in built-in app manifests, because logic in
+// ChooseAndSetDefaultTask() treats handlers for extensions with a higher
+// priority than handlers for mime types.
+constexpr Expectation kUnchangedExpectations[] = {
+    // Raw.
+    {"arw", kGalleryAppId},
+    {"cr2", kGalleryAppId},
+    {"dng", kGalleryAppId},
+    {"nef", kGalleryAppId},
+    {"nrw", kGalleryAppId},
+    {"orf", kGalleryAppId},
+    {"raf", kGalleryAppId},
+    {"rw2", kGalleryAppId},
+
+    // Video.
+    {"3gp", kVideoPlayerAppId},
+    {"avi", kVideoPlayerAppId},
+    {"m4v", kVideoPlayerAppId},
+    {"mkv", kVideoPlayerAppId},
+    {"mov", kVideoPlayerAppId},
+    {"mp4", kVideoPlayerAppId},
+    {"mpeg", kVideoPlayerAppId},
+    {"mpeg4", kVideoPlayerAppId},
+    {"mpg", kVideoPlayerAppId},
+    {"mpg4", kVideoPlayerAppId},
+    {"ogm", kVideoPlayerAppId},
+    {"ogv", kVideoPlayerAppId},
+    {"ogx", kVideoPlayerAppId},
+    {"webm", kVideoPlayerAppId},
+
+    // Audio.
+    {"amr", kAudioPlayerAppId},
+    {"flac", kAudioPlayerAppId},
+    {"m4a", kAudioPlayerAppId},
+    {"mp3", kAudioPlayerAppId},
+    {"oga", kAudioPlayerAppId},
+    {"ogg", kAudioPlayerAppId},
+    {"wav", kAudioPlayerAppId},
+};
+
+// Test file extensions correspond to mime types where expected.
+IN_PROC_BROWSER_TEST_F(FileTasksBrowserTest, ExtensionToMimeMapping) {
+  constexpr struct {
+    const char* file_extension;
+    bool has_mime = true;
+  } kExpectations[] = {
+      // Images.
+      {"bmp"},
+      {"gif"},
+      {"ico"},
+      {"jpg"},
+      {"jpeg"},
+      {"png"},
+      {"webp"},
+
+      // Raw.
+      {"arw", false},
+      {"cr2", false},
+      {"dng", false},
+      {"nef", false},
+      {"nrw", false},
+      {"orf", false},
+      {"raf", false},
+      {"rw2", false},
+
+      // Video.
+      {"3gp", false},
+      {"avi", false},
+      {"m4v"},
+      {"mkv", false},
+      {"mov", false},
+      {"mp4"},
+      {"mpeg"},
+      {"mpeg4", false},
+      {"mpg"},
+      {"mpg4", false},
+      {"ogm"},
+      {"ogv"},
+      {"ogx", false},
+      {"webm"},
+
+      // Audio.
+      {"amr", false},
+      {"flac"},
+      {"m4a"},
+      {"mp3"},
+      {"oga"},
+      {"ogg"},
+      {"wav"},
+  };
+
+  const base::FilePath prefix = base::FilePath().AppendASCII("file");
+  std::string mime_type;
+
+  for (const auto& test : kExpectations) {
+    base::FilePath path = prefix.AddExtension(test.file_extension);
+
+    EXPECT_EQ(test.has_mime, net::GetMimeTypeFromFile(path, &mime_type))
+        << test.file_extension;
+  }
+}
 
 // Tests the default handlers for various file types in ChromeOS. This test
 // exists to ensure the default app that launches when you open a file in the
@@ -32,103 +218,59 @@ class FileTasksBrowserTest : public InProcessBrowserTest {
 // If desires change, we'll need to update ChooseAndSetDefaultTask() with some
 // additional logic.
 IN_PROC_BROWSER_TEST_F(FileTasksBrowserTest, DefaultHandlerChangeDetector) {
-  constexpr struct {
-    const char* file_extension;
-    const char* app_id;
-    bool has_mime = true;
-  } kExpectations[] = {
+  //  With the Media App disabled, all images should be handled by Gallery.
+  std::vector<Expectation> expectations = {
       // Images.
-      {"bmp", kGalleryAppId},
-      {"gif", kGalleryAppId},
-      {"ico", kGalleryAppId},
-      {"jpg", kGalleryAppId},
-      {"jpeg", kGalleryAppId},
-      {"png", kGalleryAppId},
+      {"bmp", kGalleryAppId},  {"gif", kGalleryAppId},  {"ico", kGalleryAppId},
+      {"jpg", kGalleryAppId},  {"jpeg", kGalleryAppId}, {"png", kGalleryAppId},
       {"webp", kGalleryAppId},
+  };
+  expectations.insert(expectations.end(), std::begin(kUnchangedExpectations),
+                      std::end(kUnchangedExpectations));
 
-      // Raw.
-      {"arw", kGalleryAppId, false},
-      {"cr2", kGalleryAppId, false},
-      {"dng", kGalleryAppId, false},
-      {"nef", kGalleryAppId, false},
-      {"nrw", kGalleryAppId, false},
-      {"orf", kGalleryAppId, false},
-      {"raf", kGalleryAppId, false},
-      {"rw2", kGalleryAppId, false},
+  TestExpectationsAgainstDefaultTasks(expectations);
+}
 
-      // Video.
-      {"3gp", kVideoPlayerAppId, false},
-      {"avi", kVideoPlayerAppId, false},
-      {"m4v", kVideoPlayerAppId},
-      {"mkv", kVideoPlayerAppId, false},
-      {"mov", kVideoPlayerAppId, false},
-      {"mp4", kVideoPlayerAppId},
-      {"mpeg", kVideoPlayerAppId},
-      {"mpeg4", kVideoPlayerAppId, false},
-      {"mpg", kVideoPlayerAppId},
-      {"mpg4", kVideoPlayerAppId, false},
-      {"ogm", kVideoPlayerAppId},
-      {"ogv", kVideoPlayerAppId},
-      {"ogx", kVideoPlayerAppId, false},
-      {"webm", kVideoPlayerAppId},
-
-      // Audio.
-      {"amr", kAudioPlayerAppId, false},
-      {"flac", kAudioPlayerAppId},
-      {"m4a", kAudioPlayerAppId},
-      {"mp3", kAudioPlayerAppId},
-      {"oga", kAudioPlayerAppId},
-      {"ogg", kAudioPlayerAppId},
-      {"wav", kAudioPlayerAppId},
+// Spot test the default handlers for selections that include multiple different
+// file types. Only tests combinations of interest to the Media App.
+IN_PROC_BROWSER_TEST_F(FileTasksBrowserTest, MultiSelectDefaultHandler) {
+  std::vector<Expectation> expectations = {
+      {"jpg/gif", kGalleryAppId},
+      {"jpg/avi", kGalleryAppId},
   };
 
-  base::RunLoop run_loop;
-  int remaining = base::size(kExpectations);
-  auto callback = base::BindRepeating(
-      [](base::RepeatingClosure quit, int* remaining,
-         const char* file_extension, const char* expected_app_id,
-         std::unique_ptr<std::vector<FullTaskDescriptor>> result) {
-        ASSERT_TRUE(result) << file_extension;
+  TestExpectationsAgainstDefaultTasks(expectations);
+}
 
-        auto default_task =
-            std::find_if(result->begin(), result->end(),
-                         [](const auto& task) { return task.is_default(); });
+// Tests the default handlers with the Media App installed.
+IN_PROC_BROWSER_TEST_F(FileTasksBrowserTestWithMediaApp,
+                       DefaultHandlerChangeDetector) {
+  // With the Media App enabled, images should be handled by it by default (but
+  // video, which it also handles should be unchanged).
+  std::vector<Expectation> expectations = {
+      // Images.
+      {"bmp", kMediaAppId},  {"gif", kMediaAppId},  {"ico", kMediaAppId},
+      {"jpg", kMediaAppId},  {"jpeg", kMediaAppId}, {"png", kMediaAppId},
+      {"webp", kMediaAppId},
+  };
+  expectations.insert(expectations.end(), std::begin(kUnchangedExpectations),
+                      std::end(kUnchangedExpectations));
 
-        ASSERT_TRUE(default_task != result->end()) << file_extension;
+  TestExpectationsAgainstDefaultTasks(expectations);
+}
 
-        EXPECT_EQ(expected_app_id, default_task->task_descriptor().app_id)
-            << " for extension: " << file_extension;
+// Spot test the default handlers for selections that include multiple different
+// file types with the Media App installed.
+IN_PROC_BROWSER_TEST_F(FileTasksBrowserTestWithMediaApp,
+                       MultiSelectDefaultHandler) {
+  std::vector<Expectation> expectations = {
+      {"jpg/gif", kMediaAppId},
+      // Test video specifically since the Media App's manifest specifies it
+      // handles video files.
+      {"jpg/avi", kGalleryAppId},
+  };
 
-        // Verify no other task is set as default.
-        EXPECT_EQ(1u, std::count_if(
-                          result->begin(), result->end(),
-                          [](const auto& task) { return task.is_default(); }))
-            << file_extension;
-
-        if (--*remaining == 0)
-          quit.Run();
-      },
-      run_loop.QuitClosure(), &remaining);
-
-  const base::FilePath prefix = base::FilePath().AppendASCII("file");
-
-  for (const auto& test : kExpectations) {
-    base::FilePath path = prefix.AddExtension(test.file_extension);
-
-    // Fetching a mime type is part of the default app determination, but it
-    // doesn't need to succeed.
-    std::string mime_type;
-    EXPECT_EQ(test.has_mime, net::GetMimeTypeFromFile(path, &mime_type))
-        << test.file_extension;
-
-    std::vector<extensions::EntryInfo> entries = {{path, mime_type, false}};
-    std::vector<GURL> file_urls{GURL()};
-    FindAllTypesOfTasks(
-        browser()->profile(), entries, file_urls,
-        base::BindRepeating(callback, test.file_extension, test.app_id));
-  }
-  run_loop.Run();
-  EXPECT_EQ(0, remaining);
+  TestExpectationsAgainstDefaultTasks(expectations);
 }
 
 }  // namespace file_tasks

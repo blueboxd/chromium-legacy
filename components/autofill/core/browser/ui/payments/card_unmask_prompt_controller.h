@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_UI_PAYMENTS_CARD_UNMASK_PROMPT_CONTROLLER_H_
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 
 namespace base {
@@ -33,7 +34,10 @@ class CardUnmaskPromptController {
   virtual bool ShouldRequestExpirationDate() const = 0;
   virtual bool CanStoreLocally() const = 0;
   virtual bool GetStoreLocallyStartState() const = 0;
+#if defined(OS_ANDROID)
+  virtual bool ShouldOfferWebauthn() const = 0;
   virtual bool GetWebauthnOfferStartState() const = 0;
+#endif
   virtual base::TimeDelta GetSuccessMessageDuration() const = 0;
   virtual AutofillClient::PaymentsRpcResult GetVerificationResult() const = 0;
 

@@ -159,12 +159,11 @@ class PaintArtifactCompositorTest : public testing::Test,
 
   cc::Layer* RootLayer() { return paint_artifact_compositor_->RootLayer(); }
 
-  // CompositeAfterPaint creates scroll hit test display items (which create
-  // scroll hit test layers in PaintArtifactCompositor) whereas before
-  // CompositeAfterPaint, scrollable foreign layers are created in
-  // ScrollingCoordinator and passed to PaintArtifactCompositor. This function
-  // is used to create a chunk representing the scrollable layer in either of
-  // these modes.
+  // CompositeAfterPaint creates scroll hit test data (which create scroll hit
+  // test layers in PaintArtifactCompositor) whereas before CompositeAfterPaint,
+  // scrollable foreign layers are created in ScrollingCoordinator and passed
+  // to PaintArtifactCompositor. This function is used to create a chunk
+  // representing the scrollable layer in either of these modes.
   void CreateScrollableChunk(TestPaintArtifact& artifact,
                              const TransformPaintPropertyNode& scroll_offset,
                              const ClipPaintPropertyNode& clip,

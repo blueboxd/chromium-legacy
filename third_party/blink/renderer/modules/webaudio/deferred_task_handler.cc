@@ -132,6 +132,7 @@ void DeferredTaskHandler::HandleDirtyAudioNodeOutputs() {
 
 void DeferredTaskHandler::AddAutomaticPullNode(
     scoped_refptr<AudioHandler> node) {
+  DCHECK(IsAudioThread());
   AssertGraphOwner();
 
   if (!automatic_pull_handlers_.Contains(node)) {
@@ -151,11 +152,16 @@ void DeferredTaskHandler::RemoveAutomaticPullNode(AudioHandler* node) {
 }
 
 void DeferredTaskHandler::UpdateAutomaticPullNodes() {
+  DCHECK(IsAudioThread());
   AssertGraphOwner();
 
   if (automatic_pull_handlers_need_updating_) {
-    CopyToVector(automatic_pull_handlers_, rendering_automatic_pull_handlers_);
-    automatic_pull_handlers_need_updating_ = false;
+    MutexTryLocker try_locker(automatic_pull_handlers_lock_);
+    if (try_locker.Locked()) {
+      CopyToVector(automatic_pull_handlers_,
+                   rendering_automatic_pull_handlers_);
+      automatic_pull_handlers_need_updating_ = false;
+    }
   }
 }
 
@@ -163,9 +169,12 @@ void DeferredTaskHandler::ProcessAutomaticPullNodes(
     uint32_t frames_to_process) {
   DCHECK(IsAudioThread());
 
-  for (unsigned i = 0; i < rendering_automatic_pull_handlers_.size(); ++i) {
-    rendering_automatic_pull_handlers_[i]->ProcessIfNecessary(
-        frames_to_process);
+  MutexTryLocker try_locker(automatic_pull_handlers_lock_);
+  if (try_locker.Locked()) {
+    for (auto& rendering_automatic_pull_handler :
+         rendering_automatic_pull_handlers_) {
+      rendering_automatic_pull_handler->ProcessIfNecessary(frames_to_process);
+    }
   }
 }
 
@@ -350,12 +359,17 @@ void DeferredTaskHandler::DeleteHandlersOnMainThread() {
 
 void DeferredTaskHandler::ClearHandlersToBeDeleted() {
   DCHECK(IsMainThread());
+
+  {
+    MutexLocker locker(automatic_pull_handlers_lock_);
+    rendering_automatic_pull_handlers_.clear();
+  }
+
   GraphAutoLocker locker(*this);
   tail_processing_handlers_.clear();
   rendering_orphan_handlers_.clear();
   deletable_orphan_handlers_.clear();
   automatic_pull_handlers_.clear();
-  rendering_automatic_pull_handlers_.clear();
   finished_source_handlers_.clear();
   active_source_handlers_.clear();
 }

@@ -448,7 +448,7 @@ TEST_F(PaintChunkerTest, ChunksFollowingForcedChunk) {
   // Both before_forced items should be in a chunk together.
   chunker.IncrementDisplayItemIndex(before_forced1);
   chunker.IncrementDisplayItemIndex(before_forced2);
-  // The forced scroll hit test item should be in its own chunk.
+  // |forced| forces a dedicted paint chunk.
   chunker.IncrementDisplayItemIndex(forced);
   // Both after_forced items should be in a chunk together.
   chunker.IncrementDisplayItemIndex(after_forced1);
@@ -546,8 +546,8 @@ TEST_F(PaintChunkerTest, AddHitTestDataToCurrentChunk) {
       TestChunkerDisplayItem(client_, DisplayItemType(5)));
 
   HitTestData hit_test_data;
-  hit_test_data.AppendTouchActionRect(
-      {IntRect(20, 30, 40, 50), TouchAction::kPan});
+  hit_test_data.touch_action_rects = {
+      {IntRect(20, 30, 40, 50), TouchAction::kPan}};
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_THAT(
         chunker.PaintChunks(),

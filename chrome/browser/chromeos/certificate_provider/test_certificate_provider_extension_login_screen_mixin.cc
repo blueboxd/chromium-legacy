@@ -30,25 +30,13 @@ constexpr char kTestCertProviderExtensionId[] =
 constexpr char kTestCertProviderExtensionUpdateManifestPath[] =
     "/extensions/test_certificate_provider/update_manifest.xml";
 
-Profile* GetProfile() {
-  return chromeos::ProfileHelper::GetSigninProfile()->GetOriginalProfile();
-}
-
 }  // namespace
-
-// static
-std::string TestCertificateProviderExtensionLoginScreenMixin::GetExtensionId() {
-  return kTestCertProviderExtensionId;
-}
 
 TestCertificateProviderExtensionLoginScreenMixin::
     TestCertificateProviderExtensionLoginScreenMixin(
         InProcessBrowserTestMixinHost* host,
-        chromeos::DeviceStateMixin* device_state_mixin,
-        bool load_extension_immediately)
-    : InProcessBrowserTestMixin(host),
-      device_state_mixin_(device_state_mixin),
-      load_extension_immediately_(load_extension_immediately) {
+        chromeos::DeviceStateMixin* device_state_mixin)
+    : InProcessBrowserTestMixin(host), device_state_mixin_(device_state_mixin) {
   base::FilePath test_data_dir;
   base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
   embedded_test_server_.ServeFilesFromDirectory(test_data_dir);
@@ -63,35 +51,30 @@ TestCertificateProviderExtensionLoginScreenMixin::
     ~TestCertificateProviderExtensionLoginScreenMixin() = default;
 
 void TestCertificateProviderExtensionLoginScreenMixin::SetUpOnMainThread() {
-  test_certificate_provider_extension_ =
-      std::make_unique<TestCertificateProviderExtension>(GetProfile(),
-                                                         GetExtensionId());
   ASSERT_TRUE(embedded_test_server_.Start());
-  if (load_extension_immediately_) {
-    AddExtensionForForceInstallation();
-    WaitUntilExtensionLoaded();
-  }
-}
 
-void TestCertificateProviderExtensionLoginScreenMixin::TearDownOnMainThread() {
-  test_certificate_provider_extension_.reset();
-}
+  Profile* const profile =
+      chromeos::ProfileHelper::GetSigninProfile()->GetOriginalProfile();
+  test_certificate_provider_extension_ =
+      std::make_unique<TestCertificateProviderExtension>(
+          profile, kTestCertProviderExtensionId);
 
-void TestCertificateProviderExtensionLoginScreenMixin::
-    AddExtensionForForceInstallation() {
+  extensions::TestBackgroundPageFirstLoadObserver bg_page_first_load_observer(
+      profile, kTestCertProviderExtensionId);
+
   const GURL update_manifest_url = embedded_test_server_.GetURL(
       kTestCertProviderExtensionUpdateManifestPath);
   const std::string policy_item_value = base::ReplaceStringPlaceholders(
-      "$1;$2", {GetExtensionId(), update_manifest_url.spec()}, nullptr);
+      "$1;$2", {kTestCertProviderExtensionId, update_manifest_url.spec()},
+      nullptr);
   device_state_mixin_->RequestDevicePolicyUpdate()
       ->policy_payload()
       ->mutable_device_login_screen_extensions()
       ->add_device_login_screen_extensions(policy_item_value);
+
+  bg_page_first_load_observer.Wait();
 }
 
-void TestCertificateProviderExtensionLoginScreenMixin::
-    WaitUntilExtensionLoaded() {
-  extensions::TestBackgroundPageFirstLoadObserver bg_page_first_load_observer(
-      GetProfile(), GetExtensionId());
-  bg_page_first_load_observer.Wait();
+void TestCertificateProviderExtensionLoginScreenMixin::TearDownOnMainThread() {
+  test_certificate_provider_extension_.reset();
 }

@@ -201,10 +201,10 @@ void UserConsentView::InitLayout() {
       views::BoxLayout::CrossAxisAlignment::kStart);
 
   // Assistant icon.
-  assistant_icon_ = AddChildView(std::make_unique<views::ImageView>());
-  assistant_icon_->SetBorder(views::CreateEmptyBorder(
+  auto* assistant_icon = AddChildView(std::make_unique<views::ImageView>());
+  assistant_icon->SetBorder(views::CreateEmptyBorder(
       (kLineHeightDip - kAssistantIconSizeDip) / 2, 0, 0, 0));
-  assistant_icon_->SetImage(gfx::CreateVectorIcon(
+  assistant_icon->SetImage(gfx::CreateVectorIcon(
       kAssistantIcon, kAssistantIconSizeDip, gfx::kPlaceholderColor));
 
   // Content.
@@ -236,7 +236,7 @@ void UserConsentView::InitContent() {
   // width as the anchor, so its preferred size will be calculated correctly.
   int desc_desired_width = anchor_view_bounds_.width() -
                            kMainViewInsets.width() - kContentInsets.width() -
-                           assistant_icon_->width();
+                           kAssistantIconSizeDip;
   desc->SizeToFit(desc_desired_width);
 
   // Button bar.

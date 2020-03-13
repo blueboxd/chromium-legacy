@@ -13,7 +13,8 @@ import android.content.IntentFilter;
 import android.provider.Settings;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.support.v7.preference.Preference;
+
+import androidx.preference.Preference;
 
 import org.junit.Assert;
 import org.junit.Test;

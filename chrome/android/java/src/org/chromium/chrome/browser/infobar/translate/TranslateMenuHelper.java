@@ -69,11 +69,14 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
         } else {
             for (int i = 0; i < mOptions.allLanguages().size(); ++i) {
                 String code = mOptions.allLanguages().get(i).mLanguageCode;
-                // Avoid source language in both the source and target language list.
-                // Avoid target language only in the target language list.
-                if (code.equals(mOptions.sourceLanguageCode())
-                        || (menuType == TranslateMenu.MENU_TARGET_LANGUAGE
-                                   && code.equals(mOptions.targetLanguageCode()))) {
+                // Avoid source language in the source language list.
+                if (menuType == TranslateMenu.MENU_SOURCE_LANGUAGE
+                        && code.equals(mOptions.sourceLanguageCode())) {
+                    continue;
+                }
+                // Avoid target language in the target language list.
+                if (menuType == TranslateMenu.MENU_TARGET_LANGUAGE
+                        && code.equals(mOptions.targetLanguageCode())) {
                     continue;
                 }
                 menuList.add(new TranslateMenu.MenuItem(TranslateMenu.ITEM_LANGUAGE, i, code));

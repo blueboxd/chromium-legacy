@@ -131,9 +131,6 @@ cr.define('settings', function() {
       },
 
       /** @private */
-      cookieSettingDescription_: String,
-
-      /** @private */
       enableBlockAutoplayContentSetting_: {
         type: Boolean,
         value() {
@@ -293,13 +290,6 @@ cr.define('settings', function() {
           this.handleSyncStatus_.bind(this));
       this.addWebUIListener(
           'sync-status-changed', this.handleSyncStatus_.bind(this));
-
-      settings.SiteSettingsPrefsBrowserProxyImpl.getInstance()
-          .getCookieSettingDescription()
-          .then(description => this.cookieSettingDescription_ = description);
-      this.addWebUIListener(
-          'cookieSettingDescriptionChanged',
-          description => this.cookieSettingDescription_ = description);
     },
 
     /**

@@ -394,3 +394,6 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_send_ping_when_pto_skips_packet_number,
     true)
+
+// If true, QuicSession\'s various write methods will set transmission type.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_write_with_transmission, false)

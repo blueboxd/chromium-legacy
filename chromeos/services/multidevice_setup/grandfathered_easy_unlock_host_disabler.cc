@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/multidevice/logging/logging.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -17,10 +18,12 @@ namespace multidevice_setup {
 
 namespace {
 
-// Name of the pref that stores the ID of the device which still potentially
-// needs to have kSmartLockHost disabled on it.
+// Name of the prefs that stores the legacy device ID and Instance ID of the
+// device which still potentially needs to have kSmartLockHost disabled on it.
 const char kEasyUnlockHostIdToDisablePrefName[] =
     "multidevice_setup.easy_unlock_host_id_to_disable";
+const char kEasyUnlockHostInstanceIdToDisablePrefName[] =
+    "multidevice_setup.easy_unlock_host_instance_id_to_disable";
 
 const char kNoDevice[] = "";
 
@@ -69,6 +72,8 @@ GrandfatheredEasyUnlockHostDisabler::Factory::~Factory() = default;
 void GrandfatheredEasyUnlockHostDisabler::RegisterPrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterStringPref(kEasyUnlockHostIdToDisablePrefName, kNoDevice);
+  registry->RegisterStringPref(kEasyUnlockHostInstanceIdToDisablePrefName,
+                               kNoDevice);
 }
 
 GrandfatheredEasyUnlockHostDisabler::~GrandfatheredEasyUnlockHostDisabler() {
@@ -116,16 +121,49 @@ void GrandfatheredEasyUnlockHostDisabler::DisableEasyUnlockHostIfNecessary() {
 
   PA_LOG(VERBOSE) << "Attempting to disable kSmartLockHost on device "
                   << host_to_disable->GetTruncatedDeviceIdForLogs();
-  device_sync_client_->SetSoftwareFeatureState(
-      host_to_disable->public_key(),
-      multidevice::SoftwareFeature::kSmartLockHost, false /* enabled */,
-      false /* is_exclusive */,
-      base::BindOnce(
-          &GrandfatheredEasyUnlockHostDisabler::OnSetSoftwareFeatureStateResult,
-          base::Unretained(this), *host_to_disable));
+  // If the host has a non-trivial Instance ID, then it was returned from a v2
+  // DeviceSync (Instance IDs are not part of the v1 protocol). In that case,
+  // exercise the v2 RPC SetFeatureStatus, even if v1 DeviceSync is still
+  // running in parallel. SetFeatureStatus and its v1 counterpart,
+  // SetSoftwareFeatureState, ultimately update the same backend database entry,
+  // so only one needs to be invoked.
+  if (features::ShouldUseV1DeviceSync()) {
+    // In order to avoid a race condition, we are assuming that all
+    // SetFeatureStatus() and SetSoftwareFeatureState() requests are added to
+    // the same queue and processed in order. The DeviceSync service
+    // implementation guarantees this ordering.
+    if (!host_to_disable->instance_id().empty()) {
+      device_sync_client_->SetFeatureStatus(
+          host_to_disable->instance_id(),
+          multidevice::SoftwareFeature::kSmartLockHost,
+          device_sync::FeatureStatusChange::kDisable,
+          base::BindOnce(&GrandfatheredEasyUnlockHostDisabler::
+                             OnDisableEasyUnlockHostResult,
+                         weak_ptr_factory_.GetWeakPtr(), *host_to_disable));
+
+    } else {
+      DCHECK(!host_to_disable->public_key().empty());
+      device_sync_client_->SetSoftwareFeatureState(
+          host_to_disable->public_key(),
+          multidevice::SoftwareFeature::kSmartLockHost, false /* enabled */,
+          false /* is_exclusive */,
+          base::BindOnce(&GrandfatheredEasyUnlockHostDisabler::
+                             OnDisableEasyUnlockHostResult,
+                         weak_ptr_factory_.GetWeakPtr(), *host_to_disable));
+    }
+  } else {
+    DCHECK(!host_to_disable->instance_id().empty());
+    device_sync_client_->SetFeatureStatus(
+        host_to_disable->instance_id(),
+        multidevice::SoftwareFeature::kSmartLockHost,
+        device_sync::FeatureStatusChange::kDisable,
+        base::BindOnce(
+            &GrandfatheredEasyUnlockHostDisabler::OnDisableEasyUnlockHostResult,
+            weak_ptr_factory_.GetWeakPtr(), *host_to_disable));
+  }
 }
 
-void GrandfatheredEasyUnlockHostDisabler::OnSetSoftwareFeatureStateResult(
+void GrandfatheredEasyUnlockHostDisabler::OnDisableEasyUnlockHostResult(
     multidevice::RemoteDeviceRef device,
     device_sync::mojom::NetworkRequestResult result_code) {
   bool success =
@@ -141,7 +179,7 @@ void GrandfatheredEasyUnlockHostDisabler::OnSetSoftwareFeatureStateResult(
   }
 
   // Return if the EasyUnlock host to disable changed between calls to
-  // SetSoftwareFeatureState() and OnSetSoftwareFeatureStateResult().
+  // DisableEasyUnlockHostIfNecessary() and OnDisableEasyUnlockHostResult().
   if (device != GetEasyUnlockHostToDisable())
     return;
 
@@ -162,23 +200,34 @@ void GrandfatheredEasyUnlockHostDisabler::OnSetSoftwareFeatureStateResult(
 void GrandfatheredEasyUnlockHostDisabler::SetPotentialEasyUnlockHostToDisable(
     base::Optional<multidevice::RemoteDeviceRef> device) {
   pref_service_->SetString(kEasyUnlockHostIdToDisablePrefName,
-                           device ? device->GetDeviceId() : kNoDevice);
+                           !device || device->GetDeviceId().empty()
+                               ? kNoDevice
+                               : device->GetDeviceId());
+  pref_service_->SetString(kEasyUnlockHostInstanceIdToDisablePrefName,
+                           !device || device->instance_id().empty()
+                               ? kNoDevice
+                               : device->instance_id());
 }
 
 base::Optional<multidevice::RemoteDeviceRef>
 GrandfatheredEasyUnlockHostDisabler::GetEasyUnlockHostToDisable() {
-  std::string device_id =
+  std::string legacy_device_id =
       pref_service_->GetString(kEasyUnlockHostIdToDisablePrefName);
-
-  if (device_id == kNoDevice)
+  std::string instance_id =
+      pref_service_->GetString(kEasyUnlockHostInstanceIdToDisablePrefName);
+  if (legacy_device_id == kNoDevice && instance_id == kNoDevice)
     return base::nullopt;
 
   multidevice::RemoteDeviceRefList synced_devices =
       device_sync_client_->GetSyncedDevices();
-  auto it = std::find_if(synced_devices.begin(), synced_devices.end(),
-                         [&device_id](const auto& remote_device) {
-                           return remote_device.GetDeviceId() == device_id;
-                         });
+  auto it = std::find_if(
+      synced_devices.begin(), synced_devices.end(),
+      [&legacy_device_id, &instance_id](const auto& remote_device) {
+        return (legacy_device_id != kNoDevice &&
+                remote_device.GetDeviceId() == legacy_device_id) ||
+               (instance_id != kNoDevice &&
+                remote_device.instance_id() == instance_id);
+      });
 
   // The device does not need to have kSmartLockHost disabled if any of the
   // following are true:

@@ -50,6 +50,18 @@ static ScopedJavaLocalRef<jstring> JNI_CommandLine_GetSwitchValue(
   return ConvertUTF8ToJavaString(env, value);
 }
 
+static ScopedJavaLocalRef<jobjectArray> JNI_CommandLine_GetSwitchesFlattened(
+    JNIEnv* env) {
+  // JNI doesn't support returning Maps. Instead, express this map as a 1
+  // dimensional array: [ key1, value1, key2, value2, ... ]
+  std::vector<std::string> keys_and_values;
+  for (const auto& entry : CommandLine::ForCurrentProcess()->GetSwitches()) {
+    keys_and_values.push_back(entry.first);
+    keys_and_values.push_back(entry.second);
+  }
+  return base::android::ToJavaArrayOfStrings(env, keys_and_values);
+}
+
 static void JNI_CommandLine_AppendSwitch(JNIEnv* env,
                                          const JavaParamRef<jstring>& jswitch) {
   std::string switch_string(ConvertJavaStringToUTF8(env, jswitch));

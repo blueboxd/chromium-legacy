@@ -215,6 +215,9 @@ class MEDIA_EXPORT DecoderBuffer
 
   virtual ~DecoderBuffer();
 
+  // Encoded data, if it is stored on the heap.
+  std::unique_ptr<uint8_t[]> data_;
+
  private:
   // Presentation time of the frame.
   base::TimeDelta timestamp_;
@@ -223,8 +226,6 @@ class MEDIA_EXPORT DecoderBuffer
 
   // Size of the encoded data.
   size_t size_;
-  // Encoded data, if it is stored on the heap.
-  std::unique_ptr<uint8_t[]> data_;
 
   // Side data. Used for alpha channel in VPx, and for text cues.
   size_t side_data_size_;

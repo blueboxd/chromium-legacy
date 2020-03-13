@@ -37,7 +37,6 @@ TEST(DecoderBufferAdapterTest, Default) {
   EXPECT_EQ(kBufferDataSize, buffer_adapter->data_size());
   EXPECT_EQ(nullptr, buffer_adapter->decrypt_config());
   EXPECT_FALSE(buffer_adapter->end_of_stream());
-  EXPECT_EQ(buffer, buffer_adapter->ToMediaBuffer());
 }
 
 TEST(DecoderBufferAdapterTest, Secondary) {

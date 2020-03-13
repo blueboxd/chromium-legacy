@@ -716,6 +716,13 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetPresentationRequiresUserGesture(
       prefs.user_gesture_required_for_presentation);
 
+  if (prefs.text_tracks_enabled) {
+    settings->SetTextTrackKindUserPreference(
+        WebSettings::TextTrackKindUserPreference::kCaptions);
+  } else {
+    settings->SetTextTrackKindUserPreference(
+        WebSettings::TextTrackKindUserPreference::kDefault);
+  }
   settings->SetTextTrackBackgroundColor(
       WebString::FromASCII(prefs.text_track_background_color));
   settings->SetTextTrackTextColor(
@@ -726,6 +733,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       WebString::FromASCII(prefs.text_track_text_shadow));
   settings->SetTextTrackFontFamily(
       WebString::FromASCII(prefs.text_track_font_family));
+  settings->SetTextTrackFontStyle(
+      WebString::FromASCII(prefs.text_track_font_style));
   settings->SetTextTrackFontVariant(
       WebString::FromASCII(prefs.text_track_font_variant));
   settings->SetTextTrackMarginPercentage(prefs.text_track_margin_percentage);
@@ -1567,23 +1576,6 @@ void RenderViewImpl::FocusNext() {
 
 void RenderViewImpl::FocusPrevious() {
   Send(new ViewHostMsg_TakeFocus(GetRoutingID(), true));
-}
-
-void RenderViewImpl::FocusedElementChanged(const WebElement& from_element,
-                                           const WebElement& to_element) {
-  RenderFrameImpl* previous_frame = nullptr;
-  if (!from_element.IsNull())
-    previous_frame =
-        RenderFrameImpl::FromWebFrame(from_element.GetDocument().GetFrame());
-  RenderFrameImpl* new_frame = nullptr;
-  if (!to_element.IsNull())
-    new_frame =
-        RenderFrameImpl::FromWebFrame(to_element.GetDocument().GetFrame());
-
-  if (previous_frame && previous_frame != new_frame)
-    previous_frame->FocusedElementChanged(WebElement());
-  if (new_frame)
-    new_frame->FocusedElementChanged(to_element);
 }
 
 void RenderViewImpl::DidUpdateMainFrameLayout() {

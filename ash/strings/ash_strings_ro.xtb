@@ -245,7 +245,6 @@
 <translation id="3995138139523574647">Dispozitiv USB-C (portul din dreapta spate)</translation>
 <translation id="4017989525502048489">Indicator laser</translation>
 <translation id="4021716437419160885">Derulează în jos</translation>
-<translation id="402772165574991617">Folosește gesturile pentru a comuta rapid între aplicații și a interacționa cu Chromebookul în modul tabletă.</translation>
 <translation id="4028481283645788203">Este necesară parola pentru mai multă siguranță</translation>
 <translation id="4042660782729322247">Permiți accesul la ecran</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Dezactivat pentru o aplicație}few{Dezactivat pentru # aplicații}other{Dezactivat pentru # de aplicații}}</translation>
@@ -534,7 +533,6 @@
 <translation id="8000066093800657092">Nicio rețea</translation>
 <translation id="8029629653277878342">Este necesar codul PIN sau parola pentru mai multă siguranță</translation>
 <translation id="8030169304546394654">Deconectat</translation>
-<translation id="8042024183333293953">Încearcă navigarea prin gesturi noi</translation>
 <translation id="8048123526339889627">Setări Bluetooth</translation>
 <translation id="8054466585765276473">Se calculează durata bateriei.</translation>
 <translation id="8061464966246066292">Contrast ridicat</translation>

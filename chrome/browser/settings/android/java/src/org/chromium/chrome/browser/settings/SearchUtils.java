@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.settings;
 
 import android.app.Activity;
-import android.support.v7.widget.SearchView;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -13,6 +12,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 
 /**
  * A helper class for applying the default search behavior to search items in Chromium settings.
@@ -96,7 +96,7 @@ public class SearchUtils {
     }
 
     /**
-     * Handles an item in {@link android.support.v4.app.Fragment#onOptionsItemSelected(MenuItem)} if
+     * Handles an item in {@link androidx.fragment.app.Fragment#onOptionsItemSelected(MenuItem)} if
      * it is a search item and returns true. If it is not applicable, it returns false.
      * @param selectedItem The user-selected menu item.
      * @param searchItem The menu item known to contain the search view.

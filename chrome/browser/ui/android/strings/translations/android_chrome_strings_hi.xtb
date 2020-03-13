@@ -326,7 +326,7 @@
 <translation id="3350687908700087792">सभी गुप्त टैब बंद करें</translation>
 <translation id="3353615205017136254">लाइट पेज Google ने मुहैया कराया है. मूल पेज लोड करने के लिए 'मूल पेज लोड करें' बटन पर टैप करें.</translation>
 <translation id="3367813778245106622">सिंक शुरू करने के लिए फिर से साइन इन करें</translation>
-<translation id="3373979091428520308">इस पेज को किसी और डिवाइस पर शेयर करने के लिए, अन्य डिवाइस की Chrome सेटिंग में सिंक की सुविधा चालू करें</translation>
+<translation id="3373979091428520308">इस पेज को किसी और डिवाइस पर शेयर करने के लिए, दूसरे डिवाइस की Chrome सेटिंग में सिंक की सुविधा चालू करें</translation>
 <translation id="3374023511497244703">आपके बुकमार्क, इतिहास, पासवर्ड, और Chrome पर मौजूद दूसरा डेटा अब Google खाते से सिंक नहीं होगा</translation>
 <translation id="3384347053049321195">इमेज शेयर करें</translation>
 <translation id="3386292677130313581">साइटों को अपनी जगह की जानकारी देने से पहले अनुमति लेना ज़रूरी बनाएं (सुझाया गया)</translation>
@@ -660,7 +660,6 @@
 <translation id="5853623416121554550">रोका गया</translation>
 <translation id="5854790677617711513">30 दिनों से ज़्यादा पुराना</translation>
 <translation id="5858741533101922242">Chrome, ब्लूटूथ एडाप्टर को चालू नहीं कर सका</translation>
-<translation id="5860491529813859533">चालू करें</translation>
 <translation id="5862731021271217234">अपने दूसरे डिवाइस से अपने टैब पाने के लिए, 'सिंक करें' को चालू करें</translation>
 <translation id="5864174910718532887">जानकारी: 'साइट नाम' के अनुसार क्रम से लगाया गया</translation>
 <translation id="5864419784173784555">दूसरे डाउनलोड का इंतज़ार किया जा रहा है…</translation>
@@ -686,7 +685,6 @@
 <translation id="604996488070107836">किसी अज्ञात गड़बड़ी के कारण <ph name="FILE_NAME" /> का डाउनलोड विफल रहा.</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6064125863973209585">पूरे हो चुके डाउनलोड</translation>
-<translation id="6092062101542170135">जारी रखने के लिए, Android सेटिंग में जाकर NFC को चालू करें</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> घंटे शेष</translation>
 <translation id="6108923351542677676">सेटअप प्रगति में है…</translation>
 <translation id="6111020039983847643">डेटा इस्तेमाल किया गया</translation>

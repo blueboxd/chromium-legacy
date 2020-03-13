@@ -103,7 +103,7 @@ public class TrustedWebActivityPreferencesUiTest {
             final ExpandablePreferenceGroup group =
                     (ExpandablePreferenceGroup) websitePreferences.findPreference(groupName);
             Assert.assertEquals(1, group.getPreferenceCount());
-            android.support.v7.preference.Preference preference = group.getPreference(0);
+            androidx.preference.Preference preference = group.getPreference(0);
             CharSequence title = preference.getTitle();
             Assert.assertEquals("example.com", title.toString());
         });

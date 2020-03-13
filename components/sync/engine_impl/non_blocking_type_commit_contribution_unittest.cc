@@ -44,7 +44,7 @@ EntitySpecifics GenerateBookmarkSpecifics(const std::string& url,
                                           const std::string& title) {
   EntitySpecifics specifics;
   specifics.mutable_bookmark()->set_url(url);
-  specifics.mutable_bookmark()->set_title(title);
+  specifics.mutable_bookmark()->set_legacy_canonicalized_title(title);
   return specifics;
 }
 
@@ -135,7 +135,7 @@ TEST(NonBlockingTypeCommitContributionTest, PopulateCommitProtoBookmark) {
   EXPECT_TRUE(entity.client_defined_unique_tag().empty());
   EXPECT_EQ(kURL, entity.specifics().bookmark().url());
   EXPECT_FALSE(entity.deleted());
-  EXPECT_EQ(kTitle, entity.specifics().bookmark().title());
+  EXPECT_EQ(kTitle, entity.specifics().bookmark().legacy_canonicalized_title());
   EXPECT_TRUE(entity.folder());
   EXPECT_FALSE(entity.parent_id_string().empty());
   EXPECT_TRUE(entity.unique_position().has_custom_compressed_v1());

@@ -453,8 +453,11 @@ void SafeBrowsingUrlCheckerImpl::StartLookupOnUIThread(
     base::WeakPtr<RealTimeUrlLookupService> url_lookup_service_on_ui,
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager) {
   DCHECK(CurrentlyOnThread(ThreadID::UI));
-  if (!url_lookup_service_on_ui ||
-      url_lookup_service_on_ui->IsInBackoffMode()) {
+  bool is_lookup_service_available =
+      url_lookup_service_on_ui && !url_lookup_service_on_ui->IsInBackoffMode();
+  base::UmaHistogramBoolean("SafeBrowsing.RT.IsLookupServiceAvailable",
+                            is_lookup_service_available);
+  if (!is_lookup_service_available) {
     base::PostTask(
         FROM_HERE, CreateTaskTraits(ThreadID::IO),
         base::BindOnce(&SafeBrowsingUrlCheckerImpl::PerformHashBasedCheck,

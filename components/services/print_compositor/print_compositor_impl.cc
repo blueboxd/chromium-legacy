@@ -17,6 +17,7 @@
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "components/services/print_compositor/public/cpp/print_service_mojo_types.h"
 #include "content/public/utility/utility_thread.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/common/metafile_utils.h"
@@ -374,7 +375,7 @@ mojom::PrintCompositor::Status PrintCompositorImpl::CompositeToPdf(
   doc->close();
 
   base::MappedReadOnlyRegion region_mapping =
-      base::ReadOnlySharedMemoryRegion::Create(wstream.bytesWritten());
+      mojo::CreateReadOnlySharedMemoryRegion(wstream.bytesWritten());
   if (!region_mapping.IsValid()) {
     DLOG(ERROR) << "CompositeToPdf: Cannot create new shared memory region.";
     return mojom::PrintCompositor::Status::kHandleMapError;
@@ -390,7 +391,7 @@ mojom::PrintCompositor::Status PrintCompositorImpl::CompleteDocumentToPdf(
   docinfo_->doc->close();
 
   base::MappedReadOnlyRegion region_mapping =
-      base::ReadOnlySharedMemoryRegion::Create(
+      mojo::CreateReadOnlySharedMemoryRegion(
           docinfo_->compositor_stream.bytesWritten());
   if (!region_mapping.IsValid()) {
     DLOG(ERROR)

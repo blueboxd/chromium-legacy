@@ -115,6 +115,7 @@ class MenuListSelectType final : public SelectType {
   int ax_menulist_last_active_index_ = -1;
   bool has_updated_menulist_active_option_ = false;
   bool popup_is_visible_ = false;
+  bool snav_arrow_key_selection_ = false;
 };
 
 void MenuListSelectType::Trace(Visitor* visitor) {
@@ -141,7 +142,7 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
     // from the select element when the user hits any of the arrow keys,
     // instead of changing the selection.
     if (IsSpatialNavigationEnabled(select_->GetDocument().GetFrame())) {
-      if (!select_->active_selection_state_)
+      if (!snav_arrow_key_selection_)
         return false;
     }
 
@@ -196,7 +197,7 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
         IsSpatialNavigationEnabled(select_->GetDocument().GetFrame())) {
       // Use space to toggle arrow key handling for selection change or
       // spatial navigation.
-      select_->active_selection_state_ = !select_->active_selection_state_;
+      snav_arrow_key_selection_ = !snav_arrow_key_selection_;
       return true;
     }
 
@@ -628,6 +629,7 @@ class ListBoxSelectType final : public SelectType {
 
   Vector<bool> cached_state_for_active_selection_;
   bool is_in_non_contiguous_selection_ = false;
+  bool active_selection_state_ = false;
 };
 
 bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
@@ -828,7 +830,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
           (!IsSpatialNavigationEnabled(select_->GetDocument().GetFrame()) &&
            !is_in_non_contiguous_selection_);
       if (select_new_item)
-        select_->active_selection_state_ = true;
+        active_selection_state_ = true;
       // If the anchor is uninitialized, or if we're going to deselect all
       // other options, then set the anchor index equal to the end index.
       bool deselect_others = !select_->is_multiple_ ||
@@ -911,7 +913,7 @@ void ListBoxSelectType::SelectAll() {
   // when dispatching change events.
   select_->SaveLastSelection();
 
-  select_->active_selection_state_ = true;
+  active_selection_state_ = true;
   select_->SetActiveSelectionAnchor(NextSelectableOption(nullptr));
   select_->SetActiveSelectionEnd(PreviousSelectableOption(nullptr));
 
@@ -942,7 +944,7 @@ HTMLOptionElement* ListBoxSelectType::NextSelectableOptionPageAway(
 }
 
 void ListBoxSelectType::ToggleSelection(HTMLOptionElement& option) {
-  select_->active_selection_state_ = !select_->active_selection_state_;
+  active_selection_state_ = !active_selection_state_;
   UpdateSelectedState(&option, SelectionMode::kNotChangeOthers);
   select_->ListBoxOnChange();
 }
@@ -954,7 +956,7 @@ void ListBoxSelectType::UpdateSelectedState(HTMLOptionElement* clicked_option,
   // dispatching change events during mouseup, or after autoscroll finishes.
   select_->SaveLastSelection();
 
-  select_->active_selection_state_ = true;
+  active_selection_state_ = true;
 
   if (!select_->is_multiple_)
     mode = SelectionMode::kDeselectOthers;
@@ -962,7 +964,7 @@ void ListBoxSelectType::UpdateSelectedState(HTMLOptionElement* clicked_option,
   // Keep track of whether an active selection (like during drag selection),
   // should select or deselect.
   if (clicked_option->Selected() && mode == SelectionMode::kNotChangeOthers) {
-    select_->active_selection_state_ = false;
+    active_selection_state_ = false;
     clicked_option->SetSelectedState(false);
     clicked_option->SetDirty(true);
   }
@@ -1012,7 +1014,7 @@ void ListBoxSelectType::UpdateListBoxSelection(bool deselect_other_options,
       continue;
     }
     if (i >= start && i <= end) {
-      option->SetSelectedState(select_->active_selection_state_);
+      option->SetSelectedState(active_selection_state_);
       option->SetDirty(true);
     } else if (deselect_other_options ||
                i >= static_cast<int>(

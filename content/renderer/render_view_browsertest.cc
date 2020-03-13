@@ -2305,37 +2305,6 @@ TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
                 .Ascii());
 }
 
-TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {
-  LoadHTML("<input id='test1' value='hello1'></input>"
-           "<input id='test2' value='hello2'></input>");
-
-  ExecuteJavaScriptForTests("document.getElementById('test1').focus();");
-  const IPC::Message* msg1 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_FocusedNodeChanged::ID);
-  EXPECT_TRUE(msg1);
-
-  FrameHostMsg_FocusedNodeChanged::Param params;
-  FrameHostMsg_FocusedNodeChanged::Read(msg1, &params);
-  EXPECT_TRUE(std::get<0>(params));
-  render_thread_->sink().ClearMessages();
-
-  ExecuteJavaScriptForTests("document.getElementById('test2').focus();");
-  const IPC::Message* msg2 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_FocusedNodeChanged::ID);
-  EXPECT_TRUE(msg2);
-  FrameHostMsg_FocusedNodeChanged::Read(msg2, &params);
-  EXPECT_TRUE(std::get<0>(params));
-  render_thread_->sink().ClearMessages();
-
-  ExecuteJavaScriptForTests("document.getElementById('test2').blur();");
-  const IPC::Message* msg3 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_FocusedNodeChanged::ID);
-  EXPECT_TRUE(msg3);
-  FrameHostMsg_FocusedNodeChanged::Read(msg3, &params);
-  EXPECT_FALSE(std::get<0>(params));
-  render_thread_->sink().ClearMessages();
-}
-
 TEST_F(RenderViewImplTest, SetAccessibilityMode) {
   ASSERT_TRUE(GetAccessibilityMode().is_mode_off());
   ASSERT_TRUE(GetRenderAccessibilityManager());

@@ -116,7 +116,7 @@ mojom("mojom_platform") {
     "presentation/presentation.mojom",
     "push_messaging/push_messaging.mojom",
     "push_messaging/push_messaging_status.mojom",
-    "quota/quota_dispatcher_host.mojom",
+    "quota/quota_manager_host.mojom",
     "quota/quota_types.mojom",
     "referrer.mojom",
     "renderer_preference_watcher.mojom",

@@ -32,7 +32,6 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.AutofillUiUtils.ErrorType;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -147,8 +146,8 @@ public class CardUnmaskPrompt
     public CardUnmaskPrompt(Context context, CardUnmaskPromptDelegate delegate, String title,
             String instructions, String confirmButtonLabel, int drawableId,
             boolean shouldRequestExpirationDate, boolean canStoreLocally,
-            boolean defaultToStoringLocally, boolean defaultUseScreenlockChecked,
-            long successMessageDurationMilliseconds) {
+            boolean defaultToStoringLocally, boolean shouldOfferWebauthn,
+            boolean defaultUseScreenlockChecked, long successMessageDurationMilliseconds) {
         mDelegate = delegate;
 
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -169,9 +168,7 @@ public class CardUnmaskPrompt
         mStoreLocallyCheckbox.setChecked(canStoreLocally && defaultToStoringLocally);
         mUseScreenlockCheckbox = (CheckBox) v.findViewById(R.id.use_screenlock_checkbox);
         mUseScreenlockCheckbox.setChecked(defaultUseScreenlockChecked);
-        if (canStoreLocally
-                || !ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.AUTOFILL_CREDIT_CARD_AUTHENTICATION)) {
+        if (canStoreLocally || !shouldOfferWebauthn) {
             mUseScreenlockCheckbox.setVisibility(View.GONE);
             mUseScreenlockCheckbox.setChecked(false);
         }

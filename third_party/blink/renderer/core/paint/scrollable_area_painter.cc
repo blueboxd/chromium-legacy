@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
-#include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scrollbar_display_item.h"
 
 namespace blink {
@@ -73,8 +72,7 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
 
 void ScrollableAreaPainter::RecordResizerScrollHitTestData(
     GraphicsContext& context,
-    const PhysicalOffset& paint_offset,
-    const DisplayItemClient& client) {
+    const PhysicalOffset& paint_offset) {
   if (!GetScrollableArea().GetLayoutBox()->CanResize())
     return;
 
@@ -83,8 +81,9 @@ void ScrollableAreaPainter::RecordResizerScrollHitTestData(
           paint_offset),
       kResizerForTouch);
   touch_rect.MoveBy(RoundedIntPoint(paint_offset));
-  ScrollHitTestDisplayItem::Record(
-      context, client, DisplayItem::kResizerScrollHitTest, nullptr, touch_rect);
+  context.GetPaintController().RecordScrollHitTestData(
+      DisplayItemClientForCorner(), DisplayItem::kResizerScrollHitTest, nullptr,
+      touch_rect);
 }
 
 void ScrollableAreaPainter::DrawPlatformResizerImage(

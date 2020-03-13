@@ -105,6 +105,7 @@ void BackGestureContextualNudgeControllerImpl::MaybeShowNudgeUi(
       window->type() == aura::client::WINDOW_TYPE_NORMAL &&
       !window->is_destroying() &&
       Shell::Get()->shell_delegate()->CanGoBack(window) && CanShowNudge()) {
+    contextual_tooltip::SetBackGestureNudgeShowing(true);
     nudge_ = std::make_unique<BackGestureContextualNudge>(base::BindOnce(
         &BackGestureContextualNudgeControllerImpl::OnNudgeAnimationFinished,
         weak_ptr_factory_.GetWeakPtr()));
@@ -149,6 +150,8 @@ void BackGestureContextualNudgeControllerImpl::OnNudgeAnimationFinished() {
   // window monitoring is updated.
   nudge_.reset();
 
+  contextual_tooltip::SetBackGestureNudgeShowing(false);
+
   if (count_as_shown) {
     contextual_tooltip::HandleNudgeShown(
         GetActivePrefService(), contextual_tooltip::TooltipType::kBackGesture);
@@ -170,6 +173,7 @@ void BackGestureContextualNudgeControllerImpl::DoCleanUp() {
   }
 
   nudge_.reset();
+  contextual_tooltip::SetBackGestureNudgeShowing(false);
   is_monitoring_windows_ = false;
 }
 

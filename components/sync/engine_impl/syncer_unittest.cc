@@ -638,7 +638,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
   KeyParams other_params = {KeyDerivationParams::CreateForPbkdf2(), "foobar2"};
   sync_pb::EntitySpecifics bookmark, encrypted_bookmark;
   bookmark.mutable_bookmark()->set_url("url");
-  bookmark.mutable_bookmark()->set_title("title");
+  bookmark.mutable_bookmark()->set_legacy_canonicalized_title("title");
   AddDefaultFieldValue(BOOKMARKS, &encrypted_bookmark);
   mock_server_->AddUpdateDirectory(1, 0, "A", 10, 10, foreign_cache_guid(),
                                    "-1");
@@ -750,7 +750,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
 
 TEST_F(SyncerTest, GetUpdatesPartialThrottled) {
   sync_pb::EntitySpecifics bookmark, pref;
-  bookmark.mutable_bookmark()->set_title("title");
+  bookmark.mutable_bookmark()->set_legacy_canonicalized_title("title");
   pref.mutable_preference()->set_name("name");
   AddDefaultFieldValue(BOOKMARKS, &bookmark);
   AddDefaultFieldValue(PREFERENCES, &pref);
@@ -831,7 +831,7 @@ TEST_F(SyncerTest, GetUpdatesPartialThrottled) {
 
 TEST_F(SyncerTest, GetUpdatesPartialFailure) {
   sync_pb::EntitySpecifics bookmark, pref;
-  bookmark.mutable_bookmark()->set_title("title");
+  bookmark.mutable_bookmark()->set_legacy_canonicalized_title("title");
   pref.mutable_preference()->set_name("name");
   AddDefaultFieldValue(BOOKMARKS, &bookmark);
   AddDefaultFieldValue(PREFERENCES, &pref);
@@ -1014,10 +1014,11 @@ TEST_F(SyncerTest, EncryptionAwareConflicts) {
   DirectoryCryptographer other_cryptographer;
   other_cryptographer.AddKey(key_params);
   sync_pb::EntitySpecifics bookmark, encrypted_bookmark, modified_bookmark;
-  bookmark.mutable_bookmark()->set_title("title");
+  bookmark.mutable_bookmark()->set_legacy_canonicalized_title("title");
   other_cryptographer.Encrypt(bookmark, encrypted_bookmark.mutable_encrypted());
   AddDefaultFieldValue(BOOKMARKS, &encrypted_bookmark);
-  modified_bookmark.mutable_bookmark()->set_title("title2");
+  modified_bookmark.mutable_bookmark()->set_legacy_canonicalized_title(
+      "title2");
   other_cryptographer.Encrypt(modified_bookmark,
                               modified_bookmark.mutable_encrypted());
   sync_pb::EntitySpecifics pref, encrypted_pref, modified_pref;

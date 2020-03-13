@@ -141,12 +141,6 @@ class ExternalAudioDecoderWrapper::DecodedBuffer : public DecoderBufferBase {
   const CastDecryptConfig* decrypt_config() const override { return nullptr; }
   bool end_of_stream() const override { return false; }
 
-  scoped_refptr<::media::DecoderBuffer> ToMediaBuffer() const override {
-    auto buffer = ::media::DecoderBuffer::CopyFrom(data(), data_size());
-    buffer->set_timestamp(timestamp_);
-    return buffer;
-  }
-
  private:
   ~DecodedBuffer() override = default;
 

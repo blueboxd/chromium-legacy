@@ -93,7 +93,6 @@ js_library("privacy_page") {
     "../settings_page:settings_animated_pages",
     "../site_settings:constants",
     "../site_settings:site_data_details_subpage",
-    "../site_settings:site_settings_prefs_browser_proxy",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:web_ui_listener_behavior",

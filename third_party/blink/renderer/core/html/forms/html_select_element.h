@@ -295,7 +295,6 @@ class CORE_EXPORT HTMLSelectElement final
   Member<HTMLOptionElement> suggested_option_;
   bool uses_menu_list_ = true;
   bool is_multiple_;
-  bool active_selection_state_;
   mutable bool should_recalc_list_items_;
   bool is_autofilled_by_preview_;
 

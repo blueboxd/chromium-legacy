@@ -117,7 +117,6 @@
 #endif
 
 struct FrameMsg_MixedContentFound_Params;
-struct FrameMsg_TextTrackSettings_Params;
 
 namespace blink {
 class WebComputedAXTree;
@@ -341,10 +340,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(https://crbug.com/578349): Remove this once provisional frames are
   // gone, and clean up code that depends on it.
   bool in_frame_tree() { return in_frame_tree_; }
-
-  // The focused element changed to |element|. If focus was lost from this
-  // frame, |element| will be null.
-  void FocusedElementChanged(const blink::WebElement& element);
 
   // A RenderView opened by this RenderFrame needs to be shown.
   void ShowCreatedWindow(bool opened_by_user_gesture,
@@ -725,6 +720,7 @@ class CONTENT_EXPORT RenderFrameImpl
   bool HandleCurrentKeyboardEvent() override;
   void ShowContextMenu(const blink::WebContextMenuData& data) override;
   void FrameRectsChanged(const blink::WebRect& frame_rect) override;
+  void FocusedElementChanged(const blink::WebElement& element) override;
   void OnMainFrameDocumentIntersectionChanged(
       const blink::WebRect& intersect_rect) override;
   void WillSendRequest(blink::WebURLRequest& request) override;
@@ -1043,8 +1039,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSnapshotAccessibilityTree(int callback_id, ui::AXMode ax_mode);
   void OnUpdateOpener(int opener_routing_id);
   void OnAdvanceFocus(blink::mojom::FocusType type, int32_t source_routing_id);
-  void OnTextTrackSettingsChanged(
-      const FrameMsg_TextTrackSettings_Params& params);
   void OnGetSavableResourceLinks();
   void OnGetSerializedHtmlWithLocalLinks(
       const std::map<GURL, base::FilePath>& url_to_local_path,

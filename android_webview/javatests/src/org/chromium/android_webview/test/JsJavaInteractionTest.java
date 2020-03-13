@@ -20,11 +20,13 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.JsReplyProxy;
 import org.chromium.android_webview.WebMessageListener;
 import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedTitleHelper;
+import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.MessagePort;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -939,6 +941,46 @@ public class JsJavaInteractionTest {
                         mAwContents, mContentsClient, "window.origin"));
 
         verifyOnPostMessageOriginIsNull();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testWebMessageListenerForPopupWindow() throws Throwable {
+        TestWebServer webServer = TestWebServer.start();
+
+        final String popupPath = "/popup.html";
+        final String parentPageHtml = CommonResources.makeHtmlPageFrom("",
+                "<script>"
+                        + "function tryOpenWindow() {"
+                        + "  var newWindow = window.open('" + popupPath + "');"
+                        + "}</script>");
+
+        final String popupPageHtml =
+                CommonResources.makeHtmlPageFrom("<title>popup</title>", "This is a popup window");
+
+        mActivityTestRule.triggerPopup(mAwContents, mContentsClient, webServer, parentPageHtml,
+                popupPageHtml, popupPath, "tryOpenWindow()");
+        AwActivityTestRule.PopupInfo popupInfo = mActivityTestRule.createPopupContents(mAwContents);
+        TestAwContentsClient popupContentsClient = popupInfo.popupContentsClient;
+        final AwContents popupContents = popupInfo.popupContents;
+
+        // App adds WebMessageListener to the child WebView, e.g. in onCreateWindow().
+        addWebMessageListenerOnUiThread(
+                popupContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
+
+        mActivityTestRule.loadPopupContents(mAwContents, popupInfo, null);
+
+        // Test if the listener was re-injected.
+        mActivityTestRule.executeJavaScriptAndWaitForResult(
+                popupContents, popupContentsClient, JS_OBJECT_NAME + ".postMessage('Hello');");
+
+        TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+
+        Assert.assertEquals(HELLO, data.mMessage);
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+
+        webServer.shutdown();
     }
 
     @Test

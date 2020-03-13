@@ -34,16 +34,20 @@ struct PrintManager::FrameDispatchHelper {
     // when dealing with any other incoming message) to a persistent variable
     // on the heap that can be referenced by the asynchronous processing which
     // occurs beyond the scope of PrintViewManagerBase::OnMessageReceived().
-    manager->OnDidPrintDocument(render_frame_host, params,
-                                std::make_unique<DelayedFrameDispatchHelper>(
-                                    render_frame_host, reply_msg));
+    manager->OnDidPrintDocument(
+        render_frame_host, params,
+        std::make_unique<DelayedFrameDispatchHelper>(
+            manager->web_contents(), render_frame_host, reply_msg));
   }
 };
 
 PrintManager::DelayedFrameDispatchHelper::DelayedFrameDispatchHelper(
+    content::WebContents* contents,
     content::RenderFrameHost* render_frame_host,
     IPC::Message* reply_msg)
-    : render_frame_host_(render_frame_host), reply_msg_(reply_msg) {}
+    : content::WebContentsObserver(contents),
+      render_frame_host_(render_frame_host),
+      reply_msg_(reply_msg) {}
 
 PrintManager::DelayedFrameDispatchHelper::~DelayedFrameDispatchHelper() {
   if (reply_msg_) {
@@ -53,13 +57,20 @@ PrintManager::DelayedFrameDispatchHelper::~DelayedFrameDispatchHelper() {
 }
 
 void PrintManager::DelayedFrameDispatchHelper::SendCompleted() {
-  DCHECK(reply_msg_);
+  if (!reply_msg_)
+    return;
 
   PrintHostMsg_DidPrintDocument::WriteReplyParams(reply_msg_, true);
   render_frame_host_->Send(reply_msg_);
 
   // This wraps up the one allowed reply for the message.
   reply_msg_ = nullptr;
+}
+
+void PrintManager::DelayedFrameDispatchHelper::RenderFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  if (render_frame_host == render_frame_host_)
+    reply_msg_ = nullptr;
 }
 
 PrintManager::PrintManager(content::WebContents* contents)

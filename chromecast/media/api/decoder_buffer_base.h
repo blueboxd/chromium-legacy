@@ -16,11 +16,6 @@
 #include "chromecast/public/media/cast_decoder_buffer.h"
 #include "chromecast/public/media/decrypt_context.h"
 
-namespace media {
-// TODO(qwp): remove this dependency
-class DecoderBuffer;
-}  // namespace media
-
 namespace chromecast {
 namespace media {
 
@@ -43,8 +38,6 @@ class DecoderBufferBase : public CastDecoderBuffer,
   // Gets a pointer to the frame data buffer.
   virtual uint8_t* writable_data() const = 0;
 
-  virtual scoped_refptr<::media::DecoderBuffer> ToMediaBuffer() const = 0;
-
  protected:
   friend class base::RefCountedThreadSafe<DecoderBufferBase>;
 
@@ -54,7 +47,8 @@ class DecoderBufferBase : public CastDecoderBuffer,
  private:
   std::unique_ptr<DecryptContext> decrypt_context_;
 
-  DISALLOW_COPY_AND_ASSIGN(DecoderBufferBase);
+  DecoderBufferBase(const DecoderBufferBase&) = delete;
+  DecoderBufferBase& operator=(const DecoderBufferBase&) = delete;
 };
 
 inline DecoderBufferBase::DecoderBufferBase() {}

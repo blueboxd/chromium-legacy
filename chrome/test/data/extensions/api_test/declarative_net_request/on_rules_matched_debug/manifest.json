@@ -1,8 +1,9 @@
 {
   "name": "Test extension",
   "declarative_net_request": {
-    "rule_resources": [
-      "rules.json"
+    "rule_resources": [{
+      "path": "rules.json"
+    }
     ]
   },
   "manifest_version": 2,

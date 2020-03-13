@@ -245,7 +245,6 @@
 <translation id="3995138139523574647">USB-C uređaj (stražnji desni priključak)</translation>
 <translation id="4017989525502048489">Laserski pokazivač</translation>
 <translation id="4021716437419160885">Klizni prema dolje</translation>
-<translation id="402772165574991617">Koristite pokrete za brzo prebacivanje između aplikacija i interakciju s Chromebookom u načinu rada za tablet.</translation>
 <translation id="4028481283645788203">Potrebna je lozinka za dodatnu sigurnost</translation>
 <translation id="4042660782729322247">Trenutno dijelite ekran</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Isključeno za aplikaciju}one{Isključeno za # aplikaciju}few{Isključeno za # aplikacije}other{Isključeno za # aplikacija}}</translation>
@@ -534,7 +533,6 @@
 <translation id="8000066093800657092">Nema mreže</translation>
 <translation id="8029629653277878342">Potreban je PIN ili lozika za dodatnu sigurnost</translation>
 <translation id="8030169304546394654">Nije povezano</translation>
-<translation id="8042024183333293953">Isprobajte novo navigiranje pokretima</translation>
 <translation id="8048123526339889627">Postavke Bluetootha</translation>
 <translation id="8054466585765276473">Izračunava se vrijeme baterije.</translation>
 <translation id="8061464966246066292">Visoki kontrast</translation>

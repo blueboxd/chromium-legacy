@@ -831,6 +831,8 @@ jumbo_component("views") {
 
     if (use_aura) {
       sources += [
+        "accessibility/views_ax_tree_manager.cc",
+        "accessibility/views_ax_tree_manager.h",
         "accessibility/views_utilities_aura.cc",
         "accessibility/views_utilities_aura.h",
       ]
@@ -1192,6 +1194,10 @@ test("views_unittests") {
       "accessibility/ax_virtual_view_unittest.cc",
       "accessibility/view_ax_platform_node_delegate_unittest.cc",
     ]
+
+    if (use_aura) {
+      sources += [ "accessibility/views_ax_tree_manager_unittest.cc" ]
+    }
   }
 
   if (is_mac) {

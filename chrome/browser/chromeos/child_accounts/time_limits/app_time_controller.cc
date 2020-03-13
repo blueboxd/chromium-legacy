@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -42,6 +43,14 @@
 
 namespace chromeos {
 namespace app_time {
+
+const char kAppsWithTimeLimitMetric[] =
+    "SupervisedUsers.PerAppTimeLimits.AppsWithTimeLimit";
+const char kBlockedAppsCountMetric[] =
+    "SupervisedUsers.PerAppTimeLimits.BlockedAppsCount";
+const char kPolicyUpdateCountMetric[] =
+    "SupervisedUsers.PerAppTimeLimits.PolicyUpdateCount";
+const char kEngagementMetric[] = "SupervisedUsers.PerAppTimeLimits.Engagement";
 
 namespace {
 
@@ -258,6 +267,9 @@ AppTimeController::AppTimeController(Profile* profile)
 
   // AppActivityRegistry may have missed |OnAppInstalled| calls. Notify it.
   app_registry_->SetInstalledApps(app_service_wrapper_->GetInstalledApps());
+
+  // Record enagement metrics.
+  base::UmaHistogramCounts1000(kEngagementMetric, apps_with_limit_);
 }
 
 AppTimeController::~AppTimeController() {
@@ -283,6 +295,11 @@ base::Optional<base::TimeDelta> AppTimeController::GetTimeLimitForApp(
   const app_time::AppId app_id =
       app_service_wrapper_->AppIdFromAppServiceId(app_service_id, app_type);
   return app_registry_->GetTimeLimit(app_id);
+}
+
+void AppTimeController::RecordMetricsOnShutdown() const {
+  base::UmaHistogramCounts1000(kPolicyUpdateCountMetric,
+                               patl_policy_update_count_);
 }
 
 void AppTimeController::SystemClockUpdated() {
@@ -325,13 +342,30 @@ void AppTimeController::TimeLimitsPolicyUpdated(const std::string& pref_name) {
     return;
   }
 
-  app_registry_->UpdateAppLimits(policy::AppLimitsFromDict(*policy));
+  bool updated =
+      app_registry_->UpdateAppLimits(policy::AppLimitsFromDict(*policy));
 
   base::Optional<base::TimeDelta> new_reset_time =
       policy::ResetTimeFromDict(*policy);
   // TODO(agawronska): Propagate the information about reset time change.
   if (new_reset_time && *new_reset_time != limits_reset_time_)
     limits_reset_time_ = *new_reset_time;
+
+  apps_with_limit_ =
+      app_registry_->GetAppsWithAppRestriction(AppRestriction::kTimeLimit)
+          .size();
+
+  if (updated) {
+    patl_policy_update_count_++;
+
+    base::UmaHistogramCounts1000(kAppsWithTimeLimitMetric, apps_with_limit_);
+
+    int blocked_apps =
+        app_registry_->GetAppsWithAppRestriction(AppRestriction::kBlocked)
+            .size();
+
+    base::UmaHistogramCounts1000(kBlockedAppsCountMetric, blocked_apps);
+  }
 }
 
 void AppTimeController::TimeLimitsWhitelistPolicyUpdated(

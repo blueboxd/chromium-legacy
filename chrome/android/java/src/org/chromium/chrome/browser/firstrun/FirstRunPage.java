@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.firstrun;
 
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 
 /**
  * Represents first run page shown during the First Run. Actual page implementation is created

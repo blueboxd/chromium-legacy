@@ -18,7 +18,10 @@ import android.os.IBinder;
 import android.os.Process;
 
 import org.chromium.android_webview.common.DeveloperModeUtils;
+import org.chromium.android_webview.common.FlagOverrideHelper;
+import org.chromium.android_webview.common.ProductionSupportedFlagList;
 import org.chromium.android_webview.common.services.IDeveloperUiService;
+import org.chromium.base.CommandLine;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +40,9 @@ public final class DeveloperUiService extends Service {
     @GuardedBy("sLock")
     private static Map<String, Boolean> sOverriddenFlags = new HashMap<>();
 
+    private static final Map<String, String> INITIAL_SWITCHES =
+            CommandLine.getInstance().getSwitches();
+
     @GuardedBy("sLock")
     private boolean mDeveloperModeEnabled;
 
@@ -48,6 +54,7 @@ public final class DeveloperUiService extends Service {
                         "setFlagOverrides() may only be called by the Developer UI app");
             }
             synchronized (sLock) {
+                applyFlagsToCommandLine(sOverriddenFlags, overriddenFlags);
                 sOverriddenFlags = overriddenFlags;
                 if (sOverriddenFlags.isEmpty()) {
                     disableDeveloperMode();
@@ -155,5 +162,32 @@ public final class DeveloperUiService extends Service {
             stopForeground(/* removeNotification */ true);
             stopSelf();
         }
+    }
+
+    /**
+     * Undoes {@code oldFlags} and applies {@code newFlags}. When undoing {@code oldFlags}, we do
+     * a best-effort attempt to restore the initial CommandLine state set by the flags file. More
+     * precisely, we default to whatever state is captured by INITIAL_SWITCHES.
+     *
+     * <p><b>Note:</b> {@code newFlags} are not applied atomically.
+     */
+    private void applyFlagsToCommandLine(
+            Map<String, Boolean> oldFlags, Map<String, Boolean> newFlags) {
+        // Best-effort attempt to undo oldFlags back to the initial CommandLine.
+        for (String flagName : oldFlags.keySet()) {
+            if (INITIAL_SWITCHES.containsKey(flagName)) {
+                // If the initial CommandLine had this switch, restore its value.
+                CommandLine.getInstance().appendSwitchWithValue(
+                        flagName, INITIAL_SWITCHES.get(flagName));
+            } else if (CommandLine.getInstance().hasSwitch(flagName)) {
+                // Otherwise, make sure it's removed from the CommandLine. As an optimization, this
+                // is only necessary if the current CommandLine has the switch.
+                CommandLine.getInstance().removeSwitch(flagName);
+            }
+        }
+
+        // Apply newFlags
+        FlagOverrideHelper helper = new FlagOverrideHelper(ProductionSupportedFlagList.sFlagList);
+        helper.applyFlagOverrides(newFlags);
     }
 }

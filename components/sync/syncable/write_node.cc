@@ -62,7 +62,7 @@ void WriteNode::SetTitle(const std::string& title) {
   std::string current_legal_title;
   if (BOOKMARKS == type && entry_->GetSpecifics().has_encrypted()) {
     // Encrypted bookmarks only have their title in the unencrypted specifics.
-    current_legal_title = GetBookmarkSpecifics().title();
+    current_legal_title = GetBookmarkSpecifics().legacy_canonicalized_title();
   } else {
     // Non-bookmarks and legacy bookmarks (those with no title in their
     // specifics) store their title in NON_UNIQUE_NAME. Non-legacy bookmarks
@@ -78,8 +78,9 @@ void WriteNode::SetTitle(const std::string& title) {
   // TODO(zea): refactor bookmarks to not need this functionality.
   sync_pb::EntitySpecifics specifics = GetEntitySpecifics();
   if (GetModelType() == BOOKMARKS &&
-      specifics.bookmark().title() != new_legal_title) {
-    specifics.mutable_bookmark()->set_title(new_legal_title);
+      specifics.bookmark().legacy_canonicalized_title() != new_legal_title) {
+    specifics.mutable_bookmark()->set_legacy_canonicalized_title(
+        new_legal_title);
     SetEntitySpecifics(specifics);  // Does it's own encryption checking.
     title_matches = false;
   }

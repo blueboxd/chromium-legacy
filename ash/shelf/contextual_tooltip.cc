@@ -28,6 +28,15 @@ constexpr char kLastTimeShown[] = "last_time_shown";
 // successfully performed by the user.
 constexpr char kSuccessCount[] = "success_count";
 
+// Whether the drag handle nudge cannot be shown because the shelf is currently
+// hidden - used to unblock showing back gesture when shelf is hidden (the back
+// gesture will normally show only if the drag handle nudge has already been
+// shown within the last nudge show interval).
+bool g_drag_handle_nudge_disabled_for_hidden_shelf = false;
+
+// Whether the back gesture nudge is currently being shown.
+bool g_back_gesture_nudge_showing = false;
+
 base::Clock* g_clock_override = nullptr;
 
 base::Time GetTime() {
@@ -90,6 +99,11 @@ bool ShouldShowNudge(PrefService* prefs, TooltipType type) {
   if (!features::AreContextualNudgesEnabled())
     return false;
 
+  if (type == TooltipType::kDragHandle &&
+      g_drag_handle_nudge_disabled_for_hidden_shelf) {
+    return false;
+  }
+
   const int success_count = GetSuccessCount(prefs, type);
   if (success_count >= kSuccessLimit ||
       (type == TooltipType::kHomeToOverview &&
@@ -100,8 +114,45 @@ bool ShouldShowNudge(PrefService* prefs, TooltipType type) {
   const int shown_count = GetShownCount(prefs, type);
   if (shown_count >= kNotificationLimit)
     return false;
+
+  // Before showing back gesture nudge, do not show it if in-app to shelf nudge
+  // should be shown (to prevent two nudges from showing up at the same time).
+  // Verify that the in-app to home nudge was shown within the last show
+  // interval.
+  if (type == TooltipType::kBackGesture) {
+    if (!g_drag_handle_nudge_disabled_for_hidden_shelf &&
+        ShouldShowNudge(prefs, TooltipType::kDragHandle)) {
+      return false;
+    }
+
+    // Verify that drag handle nudge has been shown at least a minute ago.
+    const base::Time drag_handle_nudge_last_shown_time =
+        GetLastShownTime(prefs, TooltipType::kDragHandle);
+    if (!drag_handle_nudge_last_shown_time.is_null() &&
+        GetTime() - drag_handle_nudge_last_shown_time <
+            kMinIntervalBetweenBackAndDragHandleNudge) {
+      return false;
+    }
+  }
+
+  // Make sure that drag handle nudge is not shown within a minute of back
+  // gesture nudge.
+  if (type == TooltipType::kDragHandle) {
+    if (g_back_gesture_nudge_showing)
+      return false;
+
+    const base::Time back_nudge_last_shown_time =
+        GetLastShownTime(prefs, TooltipType::kBackGesture);
+    if (!back_nudge_last_shown_time.is_null() &&
+        GetTime() - back_nudge_last_shown_time <
+            kMinIntervalBetweenBackAndDragHandleNudge) {
+      return false;
+    }
+  }
+
   if (shown_count == 0)
     return true;
+
   const base::Time last_shown_time = GetLastShownTime(prefs, type);
   base::TimeDelta min_interval =
       GetMinIntervalOverride().value_or(kMinInterval);
@@ -133,6 +184,14 @@ void HandleGesturePerformed(PrefService* prefs, TooltipType type) {
   const int success_count = GetSuccessCount(prefs, type);
   DictionaryPrefUpdate update(prefs, prefs::kContextualTooltips);
   update->SetIntPath(GetPath(type, kSuccessCount), success_count + 1);
+}
+
+void SetDragHandleNudgeDisabledForHiddenShelf(bool nudge_disabled) {
+  g_drag_handle_nudge_disabled_for_hidden_shelf = nudge_disabled;
+}
+
+void SetBackGestureNudgeShowing(bool showing) {
+  g_back_gesture_nudge_showing = showing;
 }
 
 void ClearPrefs() {

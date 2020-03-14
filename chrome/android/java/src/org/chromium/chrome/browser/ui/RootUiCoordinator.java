@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.identity_disc.IdentityDiscController;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.metrics.UkmRecorder;
+import org.chromium.chrome.browser.paint_preview.PaintPreviewTabHelper;
 import org.chromium.chrome.browser.share.ShareButtonController;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareUtils;
@@ -52,7 +53,6 @@ import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
-import org.chromium.components.paintpreview.browser.PaintPreviewUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogManagerObserver;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -282,8 +282,10 @@ public class RootUiCoordinator
         } else if (id == R.id.share_menu_id || id == R.id.direct_share_menu_id) {
             onShareMenuItemSelected(id == R.id.direct_share_menu_id,
                     mActivity.getTabModelSelector().isIncognitoSelected());
-        } else if (id == R.id.paint_preview_capture_id) {
-            PaintPreviewUtils.capturePaintPreview(mActivity.getCurrentWebContents());
+        } else if (id == R.id.paint_preview_show_id) {
+            Tab tab = mActivityTabProvider.get();
+            PaintPreviewTabHelper paintPreviewTabHelper = PaintPreviewTabHelper.get(tab);
+            paintPreviewTabHelper.showPaintPreviewDemo();
         }
 
         return false;

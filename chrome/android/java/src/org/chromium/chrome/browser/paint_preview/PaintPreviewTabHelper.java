@@ -33,7 +33,7 @@ public class PaintPreviewTabHelper extends EmptyTabObserver implements UserData 
 
     /**
      * Attempts to capture the current tab as a Paint Preview and displays it. This is only
-     * accessible from a menu item that is guarded behind a about:flag.
+     * accessible from a menu item that is guarded behind an about:flag.
      */
     public void showPaintPreviewDemo() {
         if (mTab == null || !qualifiesForCapture(mTab)) {
@@ -44,7 +44,8 @@ public class PaintPreviewTabHelper extends EmptyTabObserver implements UserData 
     }
 
     /**
-     * Removes the Paint Preview demo view if it's being displayed.
+     * Removes the Paint Preview demo view if it's being displayed. Paint Preview demo is only
+     * accessible from a menu item that is guarded behind an about:flag.
      * @return Whether the Paint Preview demo was showing.
      */
     public boolean removePaintPreviewDemoIfShowing() {

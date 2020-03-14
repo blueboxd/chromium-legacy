@@ -70,25 +70,7 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 
   void SetCurrentNetworkID(const std::string& network_id);
 
-  base::Optional<std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
-  GetInFlightWarmupProxyDetails() const override;
-
-  void SetInFlightWarmupProxyDetails(
-      base::Optional<
-          std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
-          in_flight_warmup_proxy_details);
-
-  bool IsFetchInFlight() const override;
-
-  void SetIsFetchInFlight(bool fetch_in_flight);
-
-  size_t GetWarmupURLFetchAttemptCounts() const override;
-
-  void SetWarmupURLFetchAttemptCounts(
-      base::Optional<size_t> previous_attempt_counts);
-
   using DataReductionProxyConfig::UpdateConfigForTesting;
-  using DataReductionProxyConfig::HandleWarmupFetcherResponse;
 
  private:
   bool GetIsCaptivePortal() const override;
@@ -98,9 +80,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   base::Optional<size_t> previous_attempt_counts_;
 
   base::Optional<std::string> current_network_id_;
-
-  base::Optional<std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
-      in_flight_warmup_proxy_details_;
 
   // Set to true if the captive portal probe for the current network has been
   // blocked.
@@ -126,8 +105,6 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
 
   MOCK_CONST_METHOD1(ContainsDataReductionProxy,
                      bool(const net::ProxyConfig::ProxyRules& proxy_rules));
-  MOCK_METHOD1(SecureProxyCheck,
-               void(SecureProxyCheckerCallback fetcher_callback));
 };
 
 }  // namespace data_reduction_proxy

@@ -32,6 +32,15 @@ content::WebContents* GetPaymentHandlerWebContentsForTest();
 
 bool ClickPaymentHandlerSecurityIconForTest();
 
+// Confirms payment in minimal UI. Returns true on success.
+bool ConfirmMinimalUIForTest();
+
+// Dismisses the minimal UI. Returns true on success.
+bool DismissMinimalUIForTest();
+
+// Returns true when running on Android M.
+bool IsAndroidMarshmallowForTest();
+
 // Sets an observer on future Java PaymentRequests that will call these
 // callbacks when the events occur.
 void SetUseNativeObserverOnPaymentRequestForTesting(
@@ -43,7 +52,8 @@ void SetUseNativeObserverOnPaymentRequestForTesting(
     base::RepeatingClosure on_not_supported_error,
     base::RepeatingClosure on_connection_terminated,
     base::RepeatingClosure on_abort_called,
-    base::RepeatingClosure on_complete_called);
+    base::RepeatingClosure on_complete_called,
+    base::RepeatingClosure on_minimal_ui_ready);
 
 }  // namespace payments
 

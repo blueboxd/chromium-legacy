@@ -36,15 +36,7 @@ namespace {
 std::unique_ptr<net::test_server::HttpResponse>
 HandleDataReductionProxyWarmupRequest(
     const net::test_server::HttpRequest& request) {
-  if (!base::StartsWith(request.relative_url,
-                        data_reduction_proxy::params::GetWarmupURL().path(),
-                        base::CompareCase::INSENSITIVE_ASCII))
-    return std::unique_ptr<net::test_server::HttpResponse>();
-
-  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
-  http_response->set_content(std::string(1024, ' '));
-  http_response->set_code(net::HTTP_OK);
-  return std::move(http_response);
+  return std::unique_ptr<net::test_server::HttpResponse>();
 }
 }  // namespace
 

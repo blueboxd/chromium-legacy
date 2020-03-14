@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.payments.PackageManagerDelegate;
@@ -24,6 +25,7 @@ import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator.Co
 import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator.ConfirmObserver;
 import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator.DismissObserver;
 import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator.ErrorAndCloseObserver;
+import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator.ReadyObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
@@ -56,14 +58,17 @@ import org.chromium.ui.modelutil.PropertyModel;
     private final CancellationSignal mCancellationSignal = new CancellationSignal();
     private final Handler mHandler = new Handler();
     private final boolean mIsFingerprintScanEnabled;
+    private ReadyObserver mReadyObserver;
     private Runnable mPendingTask;
     private boolean mIsSheetOpened;
     private boolean mIsInProcessingState;
 
     /* package */ MicrotransactionMediator(Context context, PaymentApp app, PropertyModel model,
-            ConfirmObserver confirmObserver, DismissObserver dismissObserver, Runnable hider) {
+            ReadyObserver readyObserver, ConfirmObserver confirmObserver,
+            DismissObserver dismissObserver, Runnable hider) {
         mApp = app;
         mModel = model;
+        mReadyObserver = readyObserver;
         mConfirmObserver = confirmObserver;
         mDismissObserver = dismissObserver;
         mHider = hider;
@@ -96,8 +101,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 
                             @Override
                             public void onAuthenticationSucceeded(AuthenticationResult result) {
-                                showProcessing();
-                                mConfirmObserver.onConfirmed(mApp);
+                                showProcessingAndNotifyConfirmObserver();
                             }
 
                             @Override
@@ -169,7 +173,7 @@ import org.chromium.ui.modelutil.PropertyModel;
         }, ERROR_DELAY_MS);
     }
 
-    private void showProcessing() {
+    private void showProcessingAndNotifyConfirmObserver() {
         mHandler.removeCallbacksAndMessages(null);
         mCancellationSignal.cancel();
 
@@ -195,6 +199,8 @@ import org.chromium.ui.modelutil.PropertyModel;
                 mPendingTask = null;
             }
         }, PROCESSING_DELAY_MS);
+
+        mConfirmObserver.onConfirmed(mApp);
     }
 
     private void showErrorAndWait(
@@ -270,7 +276,18 @@ import org.chromium.ui.modelutil.PropertyModel;
     }
 
     @Override
-    public void onSheetFullyPeeked() {}
+    public void onSheetFullyPeeked() {
+        // Post to avoid destroying the native JourneyLogger before it has recoreded its events in
+        // tests. JourneyLogger records events after MicrotransactionCoordinator.show() returns,
+        // which can happen after onSheetFullyPeeked().
+        mHandler.post(() -> {
+            // onSheetFullyPeeked() can be invoked more than once, but mReadyObserver.onReady() is
+            // expected to be called at most once.
+            if (mReadyObserver == null) return;
+            mReadyObserver.onReady();
+            mReadyObserver = null;
+        });
+    }
 
     @Override
     public void onSheetContentChanged(BottomSheetContent newContent) {}
@@ -279,7 +296,16 @@ import org.chromium.ui.modelutil.PropertyModel;
     @Override
     public void onClick(View v) {
         if (!mModel.get(MicrotransactionProperties.IS_SHOWING_PAY_BUTTON)) return;
-        showProcessing();
-        mConfirmObserver.onConfirmed(mApp);
+        showProcessingAndNotifyConfirmObserver();
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    /* package */ void confirmForTest() {
+        showProcessingAndNotifyConfirmObserver();
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    /* package */ void dismissForTest() {
+        onSheetStateChanged(BottomSheetController.SheetState.HIDDEN);
     }
 }

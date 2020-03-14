@@ -60,8 +60,8 @@
                 android:title="@null" />
           </menu>
         </item>
-        <item android:id="@+id/paint_preview_capture_id"
-            android:title="@string/menu_paint_preview_capture" />
+        <item android:id="@+id/paint_preview_show_id"
+            android:title="@string/menu_paint_preview_show" />
         <item android:id="@+id/find_in_page_id"
             android:title="@string/menu_find_in_page" />
         <item android:id="@+id/add_to_homescreen_id"

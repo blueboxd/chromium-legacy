@@ -265,8 +265,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
             boolean isChromeOrInterstitialPage =
                     isChromeScheme || ((TabImpl) currentTab).isShowingInterstitialPage();
 
-            menu.findItem(R.id.paint_preview_capture_id)
-                    .setVisible(CachedFeatureFlags.isEnabled(ChromeFeatureList.PAINT_PREVIEW_TEST)
+            menu.findItem(R.id.paint_preview_show_id)
+                    .setVisible(CachedFeatureFlags.isEnabled(ChromeFeatureList.PAINT_PREVIEW_DEMO)
                             && !isChromeOrInterstitialPage && !isIncognito);
 
             // Disable find in page on the native NTP.

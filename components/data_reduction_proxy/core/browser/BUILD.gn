@@ -36,10 +36,6 @@ browser_sources = [
   "db_data_owner.h",
   "network_properties_manager.cc",
   "network_properties_manager.h",
-  "secure_proxy_checker.cc",
-  "secure_proxy_checker.h",
-  "warmup_url_fetcher.cc",
-  "warmup_url_fetcher.h",
 ]
 
 if (is_android) {
@@ -169,7 +165,6 @@ source_set("unit_tests") {
     "data_reduction_proxy_util_unittest.cc",
     "data_usage_store_unittest.cc",
     "network_properties_manager_unittest.cc",
-    "warmup_url_fetcher_unittest.cc",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]

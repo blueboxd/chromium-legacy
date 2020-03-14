@@ -48,7 +48,6 @@ class DataReductionProxyCompressionStats;
 class DataReductionProxyConfig;
 class DataReductionProxyConfigServiceClient;
 class DataReductionProxyRequestOptions;
-class DataReductionProxyServer;
 class DataReductionProxySettings;
 class NetworkPropertiesManager;
 
@@ -221,12 +220,6 @@ class DataReductionProxyService
 
   // Called when the list of proxies changes.
   void OnProxyConfigUpdated();
-
-  // Creates a config using |proxies_for_http| that can be sent to the
-  // NetworkContext.
-  network::mojom::CustomProxyConfigPtr CreateCustomProxyConfig(
-      bool is_warmup_url,
-      const std::vector<DataReductionProxyServer>& proxies_for_http) const;
 
   // Stores a serialized Data Reduction Proxy configuration in preferences
   // storage.

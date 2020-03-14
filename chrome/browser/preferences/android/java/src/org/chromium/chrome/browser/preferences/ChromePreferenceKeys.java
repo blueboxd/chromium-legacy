@@ -336,12 +336,6 @@ public final class ChromePreferenceKeys {
     public static final String FLAGS_CACHED_NETWORK_SERVICE_WARM_UP_ENABLED =
             "network_service_warm_up_enabled";
     /**
-     * Whether the Paint Preview Capture menu item is enabled.
-     * Default value is false.
-     */
-    public static final String FLAGS_CACHED_PAINT_PREVIEW_TEST_ENABLED_KEY =
-            "Chrome.Flags.PaintPreviewTestEnabled";
-    /**
      * Whether or not bootstrap tasks should be prioritized (i.e. bootstrap task prioritization
      * experiment is enabled). Default value is true.
      */
@@ -683,7 +677,6 @@ public final class ChromePreferenceKeys {
                 EXPLORE_OFFLINE_CONTENT_AVAILABILITY_STATUS,
                 FLAGS_CACHED.pattern(),
                 FLAGS_CACHED_DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED,
-                FLAGS_CACHED_PAINT_PREVIEW_TEST_ENABLED_KEY,
                 FLAGS_FIELD_TRIAL_PARAM_CACHED.pattern(),
                 HOMEPAGE_LOCATION_POLICY,
                 HOMEPAGE_USE_CHROME_NTP

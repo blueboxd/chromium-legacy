@@ -315,12 +315,6 @@ DataReductionProxyBypassType GetDataReductionProxyBypassType(
     DataReductionProxyInfo* data_reduction_proxy_info) {
   DCHECK(data_reduction_proxy_info);
 
-  // Responses from the warmup URL probe should not be checked for bypass types.
-  // Doing so may unnecessarily cause all data saver proxies to be marked as
-  // bad (e.g., when via header is missing on the response to the probe from the
-  // HTTP proxy).
-  DCHECK(url_chain.empty() || (params::GetWarmupURL() != url_chain.back()));
-
   bool has_via_header = HasDataReductionProxyViaHeader(headers, nullptr);
 
   // The following logic to detect redirect cycles works only when network
@@ -388,8 +382,7 @@ DataReductionProxyBypassType GetDataReductionProxyBypassType(
     return BYPASS_EVENT_TYPE_MALFORMED_407;
   }
 
-  bool disable_bypass_on_missing_via_header =
-      params::IsWarmupURLFetchCallbackEnabled();
+  bool disable_bypass_on_missing_via_header = false;
 
   if (!has_via_header && !disable_bypass_on_missing_via_header &&
       (headers.response_code() != net::HTTP_NOT_MODIFIED)) {

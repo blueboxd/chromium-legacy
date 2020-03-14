@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.payments.micro;
 
 import android.content.Context;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.browser.payments.PaymentApp;
 import org.chromium.chrome.browser.payments.ui.LineItem;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -22,6 +24,15 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 public class MicrotransactionCoordinator {
     private MicrotransactionMediator mMediator;
     private Runnable mHider;
+
+    /** Observer for microtransaction UI being ready for user input. */
+    public interface ReadyObserver {
+        /**
+         * Called when the microtransaction UI is ready for user input, i.e., fingerprint scan or
+         * click on [Pay] button.
+         */
+        void onReady();
+    }
 
     /** Observer for the confirmation of the microtransaction UI. */
     public interface ConfirmObserver {
@@ -74,6 +85,7 @@ public class MicrotransactionCoordinator {
      *                        upon user confirmation.
      * @param formatter       Formats the account balance amount according to its currency.
      * @param total           The total amount and currency for this microtransaction.
+     * @param readyObserver   The observer to be notified when the UI is ready for user input.
      * @param confirmObserver The observer to be notified when the user has confirmed the
      *                        microtransaction.
      * @param dismissObserver The observer to be notified when the user has dismissed the UI.
@@ -81,7 +93,8 @@ public class MicrotransactionCoordinator {
      */
     public boolean show(Context context, BottomSheetController bottomSheetController,
             PaymentApp app, CurrencyFormatter formatter, LineItem total,
-            ConfirmObserver confirmObserver, DismissObserver dismissObserver) {
+            ReadyObserver readyObserver, ConfirmObserver confirmObserver,
+            DismissObserver dismissObserver) {
         assert mMediator == null : "Already showing microtransaction UI";
 
         PropertyModel model =
@@ -98,7 +111,7 @@ public class MicrotransactionCoordinator {
                         .build();
 
         mMediator = new MicrotransactionMediator(
-                context, app, model, confirmObserver, dismissObserver, this::hide);
+                context, app, model, readyObserver, confirmObserver, dismissObserver, this::hide);
 
         bottomSheetController.addObserver(mMediator);
 
@@ -142,5 +155,17 @@ public class MicrotransactionCoordinator {
      */
     public void showErrorAndClose(ErrorAndCloseObserver observer, int errorMessageResourceId) {
         mMediator.showErrorAndClose(observer, null, errorMessageResourceId);
+    }
+
+    /** Confirms payment in minimal UI. Used only in tests. */
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public void confirmForTest() {
+        mMediator.confirmForTest();
+    }
+
+    /** Dismisses the minimal UI. Used only in tests. */
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public void dismissForTest() {
+        mMediator.dismissForTest();
     }
 }

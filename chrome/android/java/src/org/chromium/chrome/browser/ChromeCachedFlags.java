@@ -53,7 +53,7 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.HOMEPAGE_LOCATION_POLICY,
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
                 ChromeFeatureList.IMMERSIVE_UI_MODE,
-                ChromeFeatureList.PAINT_PREVIEW_TEST,
+                ChromeFeatureList.PAINT_PREVIEW_DEMO,
                 ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS,
                 ChromeFeatureList.INSTANT_START,
                 ChromeFeatureList.SHARE_BUTTON_IN_TOP_TOOLBAR,

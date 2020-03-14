@@ -3171,9 +3171,9 @@
     "expiry_milestone": 84
   },
   {
-    "name": "paint-preview-test",
-    "owners": [ "ckitagawa", "mahmoudi", "vollick" ],
-    "expiry_milestone": 83
+    "name": "paint-preview-demo",
+    "owners": [ "ckitagawa", "fredmello", "mahmoudi" ],
+    "expiry_milestone": 84
   },
   {
     "name": "passive-event-listeners-due-to-fling",

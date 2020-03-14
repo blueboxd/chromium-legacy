@@ -121,8 +121,6 @@ DataReductionProxyService::DataReductionProxyService(
   // caller is owned by |this|.
   config_->Initialize(
       url_loader_factory_,
-      base::BindRepeating(&DataReductionProxyService::CreateCustomProxyConfig,
-                          base::Unretained(this), true),
       network_properties_manager_.get(), user_agent);
   if (config_client_)
     config_client_->Initialize(url_loader_factory_);
@@ -407,29 +405,6 @@ void DataReductionProxyService::OnServicesDataUse(int32_t service_hash_code,
   }
 }
 
-network::mojom::CustomProxyConfigPtr
-DataReductionProxyService::CreateCustomProxyConfig(
-    bool is_warmup_url,
-    const std::vector<DataReductionProxyServer>& proxies_for_http) const {
-  auto config = network::mojom::CustomProxyConfig::New();
-
-  net::EffectiveConnectionType type = GetEffectiveConnectionType();
-  if (type > net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
-    DCHECK_NE(net::EFFECTIVE_CONNECTION_TYPE_LAST, type);
-    config->pre_cache_headers.SetHeader(
-        chrome_proxy_ect_header(),
-        net::GetNameForEffectiveConnectionType(type));
-  }
-
-  request_options_->AddRequestHeader(&config->post_cache_headers,
-                                     base::nullopt);
-
-  config->assume_https_proxies_support_quic = true;
-  config->can_use_proxy_on_http_url_redirect_cycles = false;
-
-  return config;
-}
-
 void DataReductionProxyService::StoreSerializedConfig(
     const std::string& serialized_config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -449,8 +424,6 @@ void DataReductionProxyService::SetDependenciesForTesting(
   config_ = std::move(config);
   config_->Initialize(
       url_loader_factory_,
-      base::BindRepeating(&DataReductionProxyService::CreateCustomProxyConfig,
-                          base::Unretained(this), true),
       network_properties_manager_.get(), std::string());
 
   request_options_ = std::move(request_options);

@@ -209,7 +209,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &net::features::kSameSiteByDefaultCookies,
     &net::features::kCookiesWithoutSameSiteMustBeSecure,
     &paint_preview::kPaintPreviewCaptureExperiment,
-    &paint_preview::kPaintPreviewTest,
+    &paint_preview::kPaintPreviewDemo,
     &payments::features::kAlwaysAllowJustInTimePaymentApp,
     &payments::features::kPaymentRequestSkipToGPay,
     &payments::features::kPaymentRequestSkipToGPayIfNoCard,

@@ -3747,9 +3747,9 @@ const char kNaclDescription[] =
 #endif  // ENABLE_NACL
 
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW) && defined(OS_ANDROID)
-const char kPaintPreviewTestName[] = "Paint Preview Test";
-const char kPaintPreviewTestDescription[] =
-    "If enabled a menu item is added to the Android main menu to test paint "
+const char kPaintPreviewDemoName[] = "Paint Preview Demo";
+const char kPaintPreviewDemoDescription[] =
+    "If enabled a menu item is added to the Android main menu to demo paint "
     "previews.";
 #endif  // ENABLE_PAINT_PREVIEW && defined(OS_ANDROID)
 

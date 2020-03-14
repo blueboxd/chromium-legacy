@@ -46,7 +46,6 @@ class OptimizationGuideTopHostProviderTest
         data_reduction_proxy::DataReductionProxyTestContext::Builder()
             .WithMockConfig()
             .Build();
-    drp_test_context_->DisableWarmupURLFetch();
   }
 
   void TearDown() override {

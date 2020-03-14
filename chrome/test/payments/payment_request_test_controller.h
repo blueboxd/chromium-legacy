@@ -34,9 +34,10 @@ class PaymentRequestTestObserver {
   virtual void OnConnectionTerminated() {}
   virtual void OnAbortCalled() {}
   virtual void OnCompleteCalled() {}
+  virtual void OnMinimalUIReady() {}
 
  protected:
-  virtual ~PaymentRequestTestObserver() {}
+  virtual ~PaymentRequestTestObserver() = default;
 };
 
 // A class to control creation and behaviour of PaymentRequests in a
@@ -69,6 +70,17 @@ class PaymentRequestTestController {
   bool ClickPaymentHandlerSecurityIcon();
 #endif
 
+  // Confirms payment in minimal UI. Returns true on success or if the minimal
+  // UI is not implemented on the current platform.
+  bool ConfirmMinimalUI();
+
+  // Dismisses payment in minimal UI. Returns true on success or if the minimal
+  // UI is not implemented on the current platform.
+  bool DismissMinimalUI();
+
+  // Returns true when running on Android M.
+  bool IsAndroidMarshmallow();
+
  private:
   // Observers that forward through to the PaymentRequestTestObserver.
   void OnCanMakePaymentCalled();
@@ -80,6 +92,7 @@ class PaymentRequestTestController {
   void OnConnectionTerminated();
   void OnAbortCalled();
   void OnCompleteCalled();
+  void OnMinimalUIReady();
 
   PaymentRequestTestObserver* observer_ = nullptr;
 

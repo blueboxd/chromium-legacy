@@ -577,25 +577,11 @@ void DataReductionProxyTestContext::
   // constructed without a valid SharedURLLoaderFactory instance.
   DCHECK(test_url_loader_factory_);
 
-  // Enable the Data Reduction Proxy, simulating a successful secure proxy
-  // check.
-  test_url_loader_factory_->AddResponse(params::GetSecureProxyCheckURL().spec(),
-                                        "OK");
-
   // Set the pref to cause the secure proxy check to be issued.
   SetDataReductionProxyEnabled(true);
   RunUntilIdle();
 }
 
-void DataReductionProxyTestContext::DisableWarmupURLFetch() {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisableDataReductionProxyWarmupURLFetch);
-}
-
-void DataReductionProxyTestContext::DisableWarmupURLFetchCallback() {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisableDataReductionProxyWarmupURLFetchCallback);
-}
 
 MockDataReductionProxyConfig* DataReductionProxyTestContext::mock_config()
     const {

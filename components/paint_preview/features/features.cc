@@ -10,7 +10,7 @@ namespace paint_preview {
 
 const base::Feature kPaintPreviewCaptureExperiment{
     "PaintPreviewCaptureExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kPaintPreviewTest{"PaintPreviewTest",
+const base::Feature kPaintPreviewDemo{"PaintPreviewDemo",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace paint_preview

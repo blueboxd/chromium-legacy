@@ -85,44 +85,6 @@ void TestDataReductionProxyConfig::SetCurrentNetworkID(
   current_network_id_ = network_id;
 }
 
-base::Optional<std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
-TestDataReductionProxyConfig::GetInFlightWarmupProxyDetails() const {
-  if (in_flight_warmup_proxy_details_)
-    return in_flight_warmup_proxy_details_;
-  return DataReductionProxyConfig::GetInFlightWarmupProxyDetails();
-}
-
-void TestDataReductionProxyConfig::SetInFlightWarmupProxyDetails(
-    base::Optional<
-        std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
-        in_flight_warmup_proxy_details) {
-  // |is_core_proxy| should be true since all proxies are now marked as core.
-  DCHECK(!in_flight_warmup_proxy_details ||
-         in_flight_warmup_proxy_details->second);
-  in_flight_warmup_proxy_details_ = in_flight_warmup_proxy_details;
-}
-
-bool TestDataReductionProxyConfig::IsFetchInFlight() const {
-  if (fetch_in_flight_)
-    return fetch_in_flight_.value();
-  return DataReductionProxyConfig::IsFetchInFlight();
-}
-
-void TestDataReductionProxyConfig::SetIsFetchInFlight(bool fetch_in_flight) {
-  fetch_in_flight_ = fetch_in_flight;
-}
-
-size_t TestDataReductionProxyConfig::GetWarmupURLFetchAttemptCounts() const {
-  if (!previous_attempt_counts_)
-    return DataReductionProxyConfig::GetWarmupURLFetchAttemptCounts();
-  return previous_attempt_counts_.value();
-}
-
-void TestDataReductionProxyConfig::SetWarmupURLFetchAttemptCounts(
-    base::Optional<size_t> previous_attempt_counts) {
-  previous_attempt_counts_ = previous_attempt_counts;
-}
-
 MockDataReductionProxyConfig::MockDataReductionProxyConfig(
     std::unique_ptr<DataReductionProxyConfigValues> config_values)
     : TestDataReductionProxyConfig(std::move(config_values)) {}

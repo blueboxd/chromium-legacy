@@ -291,6 +291,7 @@ public class PaymentRequestImpl
         void onConnectionTerminated();
         void onAbortCalled();
         void onCompleteCalled();
+        void onMinimalUIReady();
     }
 
     /** Limit in the number of suggested items in a section. */
@@ -1116,8 +1117,8 @@ public class PaymentRequestImpl
         if (mMicrotransactionUi.show(chromeActivity, chromeActivity.getBottomSheetController(),
                     (PaymentApp) mPaymentMethodsSection.getSelectedItem(),
                     mCurrencyFormatterMap.get(mRawTotal.amount.currency),
-                    mUiShoppingCart.getTotal(), this::onMicrotransactionUiConfirmed,
-                    this::onMicrotransactionUiDismissed)) {
+                    mUiShoppingCart.getTotal(), this::onMinimalUIReady,
+                    this::onMicrotransactionUiConfirmed, this::onMicrotransactionUiDismissed)) {
             mDidRecordShowEvent = true;
             mShouldRecordAbortReason = true;
             mJourneyLogger.setEventOccurred(Event.SHOWN);
@@ -1125,6 +1126,10 @@ public class PaymentRequestImpl
         }
 
         disconnectFromClientWithDebugMessage(ErrorStrings.MICROTRANSACTION_UI_SUPPRESSED);
+    }
+
+    private void onMinimalUIReady() {
+        if (mNativeObserverForTest != null) mNativeObserverForTest.onMinimalUIReady();
     }
 
     private void onMicrotransactionUiConfirmed(PaymentApp app) {
@@ -1303,6 +1308,42 @@ public class PaymentRequestImpl
     private boolean clickPaymentHandlerSecurityIconForTestInternal() {
         if (mPaymentHandlerUi == null) return false;
         mPaymentHandlerUi.clickSecurityIconForTest();
+        return true;
+    }
+
+    /**
+     * Confirms payment in minimal UI. Used only in test.
+     *
+     * @return Whether the payment was confirmed successfully.
+     */
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public static boolean confirmMinimalUIForTest() {
+        return sShowingPaymentRequest != null
+                && sShowingPaymentRequest.confirmMinimalUIForTestInternal();
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    private boolean confirmMinimalUIForTestInternal() {
+        if (mMicrotransactionUi == null) return false;
+        mMicrotransactionUi.confirmForTest();
+        return true;
+    }
+
+    /**
+     * Dismisses the minimal UI. Used only in test.
+     *
+     * @return Whether the dismissal was successful.
+     */
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public static boolean dismissMinimalUIForTest() {
+        return sShowingPaymentRequest != null
+                && sShowingPaymentRequest.dismissMinimalUIForTestInternal();
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    private boolean dismissMinimalUIForTestInternal() {
+        if (mMicrotransactionUi == null) return false;
+        mMicrotransactionUi.dismissForTest();
         return true;
     }
 

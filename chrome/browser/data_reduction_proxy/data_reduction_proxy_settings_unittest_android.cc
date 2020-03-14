@@ -162,8 +162,6 @@ class DataReductionProxySettingsAndroidTest : public ::testing::Test {
         data_reduction_proxy::DataReductionProxyTestContext::Builder()
             .Build();
 
-    drp_test_context_->DisableWarmupURLFetch();
-
     android_settings_.reset(new TestDataReductionProxySettingsAndroid(
         drp_test_context_->settings()));
   }

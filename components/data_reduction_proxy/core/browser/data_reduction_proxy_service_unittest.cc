@@ -63,8 +63,6 @@ std::string CreateEncodedConfig(
 class DataReductionProxyServiceTest : public testing::Test {
  public:
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableDataReductionProxyWarmupURLFetch);
     RegisterSimpleProfilePrefs(prefs_.registry());
   }
 

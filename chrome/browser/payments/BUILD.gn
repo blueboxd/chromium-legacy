@@ -17,6 +17,7 @@ source_set("browsertests") {
     "payment_handler_just_in_time_installation_browsertest.cc",
     "payment_request_can_make_payment_browsertest.cc",
     "payment_request_can_make_payment_event_browsertest.cc",
+    "payment_request_minimal_ui_browsertest.cc",
     "sec_fetch_site_browsertest.cc",
   ]
 

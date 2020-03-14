@@ -19,6 +19,7 @@ public class DeprecatedChromePreferenceKeys {
     static List<String> getKeysForTesting() {
         // clang-format off
         return Arrays.asList(
+                "Chrome.Flags.PaintPreviewTestEnabled",
                 "PersistedNotificationId",
                 "PhysicalWeb.ActivityReferral",
                 "PhysicalWeb.HasDeferredMetrics",

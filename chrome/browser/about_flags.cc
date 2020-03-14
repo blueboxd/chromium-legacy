@@ -4855,9 +4855,9 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_WIN
 
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW) && defined(OS_ANDROID)
-    {"paint-preview-test", flag_descriptions::kPaintPreviewTestName,
-     flag_descriptions::kPaintPreviewTestDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(paint_preview::kPaintPreviewTest)},
+    {"paint-preview-demo", flag_descriptions::kPaintPreviewDemoName,
+     flag_descriptions::kPaintPreviewDemoDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(paint_preview::kPaintPreviewDemo)},
 #endif  // ENABLE_PAINT_PREVIEW && defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)

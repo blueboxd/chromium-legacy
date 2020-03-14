@@ -134,6 +134,11 @@ void PaymentRequestPlatformBrowserTestBase::OnCompleteCalled() {
     event_waiter_->OnEvent(TestEvent::kPaymentCompleted);
 }
 
+void PaymentRequestPlatformBrowserTestBase::OnMinimalUIReady() {
+  if (event_waiter_)
+    event_waiter_->OnEvent(TestEvent::kMinimalUIReady);
+}
+
 void PaymentRequestPlatformBrowserTestBase::ResetEventWaiterForSingleEvent(
     TestEvent event) {
   event_waiter_ = std::make_unique<EventWaiter>(

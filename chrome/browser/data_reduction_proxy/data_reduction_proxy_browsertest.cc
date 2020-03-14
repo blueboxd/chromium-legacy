@@ -143,13 +143,6 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
     command_line->AppendSwitchASCII(
         network::switches::kForceEffectiveConnectionType, "4G");
 
-    secure_proxy_check_server_.RegisterRequestHandler(
-        base::BindRepeating(&BasicResponse, "OK"));
-    ASSERT_TRUE(secure_proxy_check_server_.Start());
-    command_line->AppendSwitchASCII(
-        switches::kDataReductionProxySecureProxyCheckURL,
-        secure_proxy_check_server_.base_url().spec());
-
     config_server_.RegisterRequestHandler(base::BindRepeating(
         &DataReductionProxyBrowsertestBase::GetConfigResponse,
         base::Unretained(this)));
@@ -274,7 +267,6 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
   }
 
   ClientConfig config_;
-  net::EmbeddedTestServer secure_proxy_check_server_;
   net::EmbeddedTestServer config_server_;
   std::unique_ptr<net::test_server::ControllableHttpResponse> favicon_catcher_;
 };
@@ -283,8 +275,6 @@ class DataReductionProxyBrowsertest : public DataReductionProxyBrowsertestBase {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     DataReductionProxyBrowsertestBase::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(
-        switches::kDisableDataReductionProxyWarmupURLFetch);
   }
 };
 

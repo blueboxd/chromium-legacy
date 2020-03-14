@@ -60,7 +60,7 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.IMMERSIVE_UI_MODE, false);
             put(ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT, true);
             put(ChromeFeatureList.START_SURFACE_ANDROID, false);
-            put(ChromeFeatureList.PAINT_PREVIEW_TEST, false);
+            put(ChromeFeatureList.PAINT_PREVIEW_DEMO, false);
             put(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, false);
             put(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
             put(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID, false);
@@ -108,8 +108,6 @@ public class CachedFeatureFlags {
                             .FLAGS_CACHED_SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT);
             put(ChromeFeatureList.START_SURFACE_ANDROID,
                     ChromePreferenceKeys.FLAGS_CACHED_START_SURFACE_ENABLED);
-            put(ChromeFeatureList.PAINT_PREVIEW_TEST,
-                    ChromePreferenceKeys.FLAGS_CACHED_PAINT_PREVIEW_TEST_ENABLED_KEY);
             put(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                     ChromePreferenceKeys.FLAGS_CACHED_GRID_TAB_SWITCHER_ENABLED);
             put(ChromeFeatureList.TAB_GROUPS_ANDROID,

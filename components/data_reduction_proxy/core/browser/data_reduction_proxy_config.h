@@ -20,14 +20,13 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/data_reduction_proxy/core/browser/secure_proxy_checker.h"
-#include "components/data_reduction_proxy/core/browser/warmup_url_fetcher.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_type_info.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace net {
 class ProxyServer;
@@ -37,36 +36,8 @@ namespace data_reduction_proxy {
 
 class DataReductionProxyConfigValues;
 class NetworkPropertiesManager;
-class SecureProxyChecker;
 struct DataReductionProxyTypeInfo;
 
-// Values of the UMA DataReductionProxy.ProbeURL histogram.
-// This enum must remain synchronized with
-// DataReductionProxyProbeURLFetchResult in metrics/histograms/histograms.xml.
-enum SecureProxyCheckFetchResult {
-  // The secure proxy check failed because the Internet was disconnected.
-  INTERNET_DISCONNECTED = 0,
-
-  // The secure proxy check failed for any other reason, and as a result, the
-  // proxy was disabled.
-  FAILED_PROXY_DISABLED,
-
-  // The secure proxy check failed, but the proxy was already restricted.
-  FAILED_PROXY_ALREADY_DISABLED,
-
-  // The secure proxy check succeeded, and as a result the proxy was restricted.
-  SUCCEEDED_PROXY_ENABLED,
-
-  // The secure proxy check succeeded, but the proxy was already restricted.
-  SUCCEEDED_PROXY_ALREADY_ENABLED,
-
-  // The secure proxy has been disabled on a network change until the check
-  // succeeds.
-  PROXY_DISABLED_BEFORE_CHECK,
-
-  // This must always be last.
-  SECURE_PROXY_CHECK_FETCH_RESULT_COUNT
-};
 
 // Central point for holding the Data Reduction Proxy configuration.
 // This object lives on the IO thread and all of its methods are expected to be
@@ -88,8 +59,6 @@ class DataReductionProxyConfig
   // making URL requests. The requests disable the use of proxies.
   void Initialize(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      WarmupURLFetcher::CreateCustomProxyConfigCallback
-          create_custom_proxy_config_callback,
       NetworkPropertiesManager* manager,
       const std::string& user_agent);
 
@@ -135,13 +104,6 @@ class DataReductionProxyConfig
   // saver proxy is currently allowed or not.
   const NetworkPropertiesManager& GetNetworkPropertiesManager() const;
 
-  // Returns the details of the proxy to which the warmup URL probe is
-  // in-flight. Returns base::nullopt if no warmup probe is in-flight.
-  // Virtualized for testing.
-  virtual base::Optional<
-      std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
-  GetInFlightWarmupProxyDetails() const;
-
 #if defined(OS_CHROMEOS)
   // Enables getting the network id asynchronously when
   // GatherEstimatesForNextConnectionType(). This should always be called in
@@ -166,25 +128,6 @@ class DataReductionProxyConfig
 
   // Returns the ID of the current network by calling the platform APIs.
   virtual std::string GetCurrentNetworkID() const;
-
-  // Callback that is executed when the warmup URL fetch is complete.
-  // |proxy_server| is the proxy server over which the warmup URL was fetched.
-  // |success_response| is true if the fetching of the URL was successful or
-  // not.
-  void HandleWarmupFetcherResponse(
-      const net::ProxyServer& proxy_server,
-      WarmupURLFetcher::FetchResult success_response);
-
-  // Returns the details of the proxy to which the next warmup URL probe should
-  // be sent to.
-  base::Optional<DataReductionProxyServer> GetProxyConnectionToProbe() const;
-
-  // Returns true if a warmup URL probe is in-flight. Virtualized for testing.
-  virtual bool IsFetchInFlight() const;
-
-  // Returns the number of previous attempt counts for the proxy that is going
-  // to be probed. Virtualized for testing.
-  virtual size_t GetWarmupURLFetchAttemptCounts() const;
 
  private:
   friend class MockDataReductionProxyConfig;
@@ -221,15 +164,6 @@ class DataReductionProxyConfig
   // net::GetWifiSSID() call gets stuck.
   void ContinueNetworkChanged(const std::string& network_id);
 
-  // Requests the secure proxy check URL. Upon completion, returns the results
-  // to the caller via the |fetcher_callback|. Virtualized for unit testing.
-  virtual void SecureProxyCheck(SecureProxyCheckerCallback fetcher_callback);
-
-  // Parses the secure proxy check responses and appropriately configures the
-  // Data Reduction Proxy rules.
-  void HandleSecureProxyCheckResponse(const std::string& response,
-                                      int net_status,
-                                      int http_response_code);
 
   // Checks if all configured data reduction proxies are in the retry map.
   // Returns true if the request is bypassed by all configured data reduction
@@ -253,15 +187,6 @@ class DataReductionProxyConfig
   // testing.
   virtual bool GetIsCaptivePortal() const;
 
-  // Fetches the warmup URL.
-  void FetchWarmupProbeURL();
-
-  // URL fetcher used for performing the secure proxy check. May be null.
-  std::unique_ptr<SecureProxyChecker> secure_proxy_checker_;
-
-  // URL fetcher used for fetching the warmup URL. May be null.
-  std::unique_ptr<WarmupURLFetcher> warmup_url_fetcher_;
-
   bool unreachable_;
   bool enabled_by_user_;
 
@@ -281,12 +206,6 @@ class DataReductionProxyConfig
 
   // The current connection type.
   network::mojom::ConnectionType connection_type_;
-
-  // Stores the properties of the proxy which is currently being probed. The
-  // values are valid only if a probe (or warmup URL) fetch is currently
-  // in-flight.
-  bool warmup_url_fetch_in_flight_secure_proxy_;
-  bool warmup_url_fetch_in_flight_core_proxy_;
 
   // Should be accessed only on the IO thread. Guaranteed to be non-null during
   // the lifetime of |this| if accessed on the IO thread.

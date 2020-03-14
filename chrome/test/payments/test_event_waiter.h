@@ -25,6 +25,7 @@ enum class TestEvent : int32_t {
   kAbortCalled,
   kShowAppsReady,
   kPaymentCompleted,
+  kMinimalUIReady,
 };
 
 std::ostream& operator<<(std::ostream& out, TestEvent event);

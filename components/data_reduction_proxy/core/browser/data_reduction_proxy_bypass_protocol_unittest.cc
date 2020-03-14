@@ -64,10 +64,6 @@ TEST(DataReductionProxyBypassProtocolTest, InvalidHeadersNoRetry) {
 // was indicated. In both the single and double bypass cases, if the request
 // was idempotent, it will be retried over a direct connection.
 TEST(DataReductionProxyBypassProtocolTest, BypassLogic) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisableDataReductionProxyWarmupURLFetch);
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisableDataReductionProxyWarmupURLFetchCallback);
   const struct {
     const char* method;
     const char* response_headers;

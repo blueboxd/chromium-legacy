@@ -124,10 +124,6 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
                         .SkipSettingsInitialization()
                         .Build();
 
-    // Disable fetching of warmup URL to avoid generating extra traffic which
-    // would need to be satisfied using mock sockets.
-    test_context_->DisableWarmupURLFetch();
-
     test_context_->InitSettings();
     ResetBackoffEntryReleaseTime();
     test_context_->test_config_client()->SetNow(base::Time::UnixEpoch());

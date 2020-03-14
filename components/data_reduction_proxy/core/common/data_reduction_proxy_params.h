@@ -101,29 +101,6 @@ std::string GetDataSaverServerExperimentsOptionName();
 // experiment is enabled.
 std::string GetDataSaverServerExperiments();
 
-// Returns the URL to check to decide if the secure proxy origin should be
-// used.
-GURL GetSecureProxyCheckURL();
-
-// Returns true if fetching of the warmup URL is enabled.
-bool FetchWarmupProbeURLEnabled();
-
-// Returns the warmup URL.
-GURL GetWarmupURL();
-
-// Returns true if the warmup URL fetcher should callback into DRP to report the
-// result of the warmup fetch.
-bool IsWarmupURLFetchCallbackEnabled();
-
-// Returns true if |url| is the warmup url.
-bool IsWarmupURL(const GURL& url);
-
-// Returns true if the |http_response_code| is in the whitelist of HTTP response
-// codes that are considered as successful for fetching the warmup probe URL.
-// If this method returns false, then the probe should be considered as
-// unsuccessful.
-bool IsWhitelistedHttpResponseCodeForProbes(int http_response_code);
-
 // Returns whether network service is enabled and data reduction proxy should be
 // used.
 bool IsEnabledWithNetworkService();

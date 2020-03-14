@@ -104,6 +104,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.omaha.OmahaBase;
 import org.chromium.chrome.browser.omnibox.LocationBar;
+import org.chromium.chrome.browser.paint_preview.PaintPreviewTabHelper;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -1746,6 +1747,10 @@ public class ChromeTabbedActivity
         if (getManualFillingComponent().handleBackPress()) return true;
 
         final Tab currentTab = getActivityTab();
+
+        if (PaintPreviewTabHelper.get(currentTab).removePaintPreviewDemoIfShowing()) {
+            return true;
+        }
 
         if (exitFullscreenIfShowing()) {
             return true;

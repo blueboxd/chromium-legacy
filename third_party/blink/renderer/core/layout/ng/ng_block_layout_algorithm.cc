@@ -1869,7 +1869,8 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
       // If line-clamping occurred save the intrinsic block-size, as this
       // becomes the final intrinsic block-size.
       intrinsic_block_size_when_clamped_ =
-          previous_inflow_position->logical_block_offset;
+          previous_inflow_position->logical_block_offset +
+          border_scrollbar_padding_.block_end;
     }
   }
   return NGLayoutResult::kSuccess;

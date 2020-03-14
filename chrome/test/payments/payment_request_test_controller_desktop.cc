@@ -82,6 +82,20 @@ PaymentRequestTestController::GetPaymentHandlerWebContents() {
   return nullptr;
 }
 
+bool PaymentRequestTestController::ConfirmMinimalUI() {
+  // Desktop does not have a minimal UI.
+  return true;
+}
+
+bool PaymentRequestTestController::DismissMinimalUI() {
+  // Desktop does not have a minimal UI.
+  return true;
+}
+
+bool PaymentRequestTestController::IsAndroidMarshmallow() {
+  return false;
+}
+
 void PaymentRequestTestController::SetUpOnMainThread() {
   // Register all prefs with our pref testing service, since we're not using the
   // one chrome sets up.
@@ -163,6 +177,10 @@ void PaymentRequestTestController::OnCompleteCalled() {
   if (observer_) {
     observer_->OnCompleteCalled();
   }
+}
+
+void PaymentRequestTestController::OnMinimalUIReady() {
+  NOTREACHED();
 }
 
 void PaymentRequestTestController::OnNotSupportedError() {

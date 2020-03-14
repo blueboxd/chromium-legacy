@@ -37,20 +37,20 @@ BackGestureContextualNudgeControllerImpl::
 
 void BackGestureContextualNudgeControllerImpl::OnActiveUserSessionChanged(
     const AccountId& account_id) {
-  UpdateWindowMonitoring();
+  UpdateWindowMonitoring(/*can_show_nudge_immediately=*/true);
 }
 
 void BackGestureContextualNudgeControllerImpl::OnSessionStateChanged(
     session_manager::SessionState state) {
-  UpdateWindowMonitoring();
+  UpdateWindowMonitoring(/*can_show_nudge_immediately=*/true);
 }
 
 void BackGestureContextualNudgeControllerImpl::OnTabletModeStarted() {
-  UpdateWindowMonitoring();
+  UpdateWindowMonitoring(/*can_show_nudge_immediately=*/true);
 }
 
 void BackGestureContextualNudgeControllerImpl::OnTabletModeEnded() {
-  UpdateWindowMonitoring();
+  UpdateWindowMonitoring(/*can_show_nudge_immediately=*/false);
 }
 
 void BackGestureContextualNudgeControllerImpl::OnTabletControllerDestroyed() {
@@ -86,7 +86,8 @@ void BackGestureContextualNudgeControllerImpl::NavigationEntryChanged(
   MaybeShowNudgeUi(window);
 }
 
-bool BackGestureContextualNudgeControllerImpl::CanShowNudge() const {
+bool BackGestureContextualNudgeControllerImpl::CanShowNudge(
+    base::TimeDelta* recheck_delay) const {
   if (!Shell::Get()->IsInTabletMode())
     return false;
 
@@ -96,7 +97,8 @@ bool BackGestureContextualNudgeControllerImpl::CanShowNudge() const {
   }
 
   return contextual_tooltip::ShouldShowNudge(
-      GetActivePrefService(), contextual_tooltip::TooltipType::kBackGesture);
+      GetActivePrefService(), contextual_tooltip::TooltipType::kBackGesture,
+      recheck_delay);
 }
 
 void BackGestureContextualNudgeControllerImpl::MaybeShowNudgeUi(
@@ -104,7 +106,8 @@ void BackGestureContextualNudgeControllerImpl::MaybeShowNudgeUi(
   if ((!nudge_ || !nudge_->ShouldNudgeCountAsShown()) &&
       window->type() == aura::client::WINDOW_TYPE_NORMAL &&
       !window->is_destroying() &&
-      Shell::Get()->shell_delegate()->CanGoBack(window) && CanShowNudge()) {
+      Shell::Get()->shell_delegate()->CanGoBack(window) &&
+      CanShowNudge(nullptr)) {
     contextual_tooltip::SetBackGestureNudgeShowing(true);
     nudge_ = std::make_unique<BackGestureContextualNudge>(base::BindOnce(
         &BackGestureContextualNudgeControllerImpl::OnNudgeAnimationFinished,
@@ -112,8 +115,21 @@ void BackGestureContextualNudgeControllerImpl::MaybeShowNudgeUi(
   }
 }
 
-void BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring() {
-  const bool should_monitor = CanShowNudge();
+void BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring(
+    bool can_show_nudge_immediately) {
+  base::TimeDelta recheck_delay;
+  const bool should_monitor = CanShowNudge(&recheck_delay);
+
+  // If the nudge cannot be shown at this time, but could become available after
+  // some time, schedule a timer to re-evaluate window monitoring state.
+  if (!should_monitor && !recheck_delay.is_zero()) {
+    auto_show_timer_.Start(
+        FROM_HERE, recheck_delay,
+        base::BindOnce(
+            &BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring,
+            base::Unretained(this), /*can_show_nudge_immediately=*/false));
+  }
+
   if (is_monitoring_windows_ == should_monitor)
     return;
   is_monitoring_windows_ = should_monitor;
@@ -127,7 +143,8 @@ void BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring() {
     // navigation status, start monitoring it now.
     aura::Window* active_window = window_util::GetActiveWindow();
     if (active_window) {
-      MaybeShowNudgeUi(active_window);
+      if (can_show_nudge_immediately)
+        MaybeShowNudgeUi(active_window);
       nudge_delegate_->MaybeStartTrackingNavigation(active_window);
     }
 
@@ -155,12 +172,15 @@ void BackGestureContextualNudgeControllerImpl::OnNudgeAnimationFinished() {
   if (count_as_shown) {
     contextual_tooltip::HandleNudgeShown(
         GetActivePrefService(), contextual_tooltip::TooltipType::kBackGesture);
-    UpdateWindowMonitoring();
+    UpdateWindowMonitoring(/*can_show_nudge_immediately=*/false);
 
     // Set a timer to monitoring windows and show nudge ui again.
     auto_show_timer_.Start(
-        FROM_HERE, contextual_tooltip::kMinInterval, this,
-        &BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring);
+        FROM_HERE, contextual_tooltip::kMinInterval,
+        base::BindOnce(
+            &BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring,
+            base::Unretained(this),
+            /*can_show_nudge_immediately=*/false));
   }
 }
 

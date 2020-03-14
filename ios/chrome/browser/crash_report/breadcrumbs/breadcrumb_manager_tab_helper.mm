@@ -5,10 +5,13 @@
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_tab_helper.h"
 
 #import "base/ios/ns_error_util.h"
+#include "components/infobars/core/infobar.h"
+#include "components/infobars/core/infobar_delegate.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
+#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/net/protocol_handler_util.h"
 #include "ios/web/public/favicon/favicon_url.h"
 #import "ios/web/public/navigation/navigation_context.h"
@@ -35,21 +38,30 @@ const char kBreadcrumbDidFinishNavigation[] = "FinishNav";
 const char kBreadcrumbPageLoaded[] = "PageLoad";
 const char kBreadcrumbDidChangeVisibleSecurityState[] = "SecurityChange";
 
+const char kBreadcrumbInfobarAdded[] = "AddInfobar";
+const char kBreadcrumbInfobarRemoved[] = "RemoveInfobar";
+const char kBreadcrumbInfobarReplaced[] = "ReplaceInfobar";
+
 const char kBreadcrumbAuthenticationBroken[] = "#broken";
 const char kBreadcrumbDownload[] = "#download";
 const char kBreadcrumbMixedContent[] = "#mixed";
+const char kBreadcrumbInfobarNotAnimated[] = "#not-animated";
 const char kBreadcrumbNtpNavigation[] = "#ntp";
 const char kBreadcrumbPageLoadFailure[] = "#failure";
 const char kBreadcrumbRendererInitiatedByUser[] = "#renderer-user";
 const char kBreadcrumbRendererInitiatedByScript[] = "#renderer-script";
 
 BreadcrumbManagerTabHelper::BreadcrumbManagerTabHelper(web::WebState* web_state)
-    : web_state_(web_state) {
+    : web_state_(web_state),
+      infobar_manager_(InfoBarManagerImpl::FromWebState(web_state)),
+      infobar_observer_(this) {
   DCHECK(web_state_);
   web_state_->AddObserver(this);
 
   static int next_unique_id = 1;
   unique_id_ = next_unique_id++;
+
+  infobar_observer_.Add(infobar_manager_);
 }
 
 BreadcrumbManagerTabHelper::~BreadcrumbManagerTabHelper() = default;
@@ -167,6 +179,54 @@ void BreadcrumbManagerTabHelper::RenderProcessGone(web::WebState* web_state) {
 
 void BreadcrumbManagerTabHelper::WebStateDestroyed(web::WebState* web_state) {
   web_state->RemoveObserver(this);
+}
+
+void BreadcrumbManagerTabHelper::OnInfoBarAdded(infobars::InfoBar* infobar) {
+  sequentially_replaced_infobars_ = 0;
+
+  LogEvent(base::StringPrintf("%s%d", kBreadcrumbInfobarAdded,
+                              infobar->delegate()->GetIdentifier()));
+}
+
+void BreadcrumbManagerTabHelper::OnInfoBarRemoved(infobars::InfoBar* infobar,
+                                                  bool animate) {
+  sequentially_replaced_infobars_ = 0;
+
+  std::vector<std::string> event = {
+      base::StringPrintf("%s%d", kBreadcrumbInfobarRemoved,
+                         infobar->delegate()->GetIdentifier()),
+  };
+
+  if (!animate) {
+    event.push_back(kBreadcrumbInfobarNotAnimated);
+  }
+
+  LogEvent(base::JoinString(event, " "));
+}
+
+void BreadcrumbManagerTabHelper::OnInfoBarReplaced(
+    infobars::InfoBar* old_infobar,
+    infobars::InfoBar* new_infobar) {
+  sequentially_replaced_infobars_++;
+
+  if (sequentially_replaced_infobars_ == 1 ||
+      sequentially_replaced_infobars_ == 2 ||
+      sequentially_replaced_infobars_ == 5 ||
+      sequentially_replaced_infobars_ == 20 ||
+      sequentially_replaced_infobars_ == 100 ||
+      sequentially_replaced_infobars_ == 200) {
+    LogEvent(base::StringPrintf("%s%d %d", kBreadcrumbInfobarReplaced,
+                                new_infobar->delegate()->GetIdentifier(),
+                                sequentially_replaced_infobars_));
+  }
+}
+
+void BreadcrumbManagerTabHelper::OnManagerShuttingDown(
+    infobars::InfoBarManager* manager) {
+  DCHECK_EQ(infobar_manager_, manager);
+  infobar_observer_.Remove(manager);
+  infobar_manager_ = nullptr;
+  sequentially_replaced_infobars_ = 0;
 }
 
 WEB_STATE_USER_DATA_KEY_IMPL(BreadcrumbManagerTabHelper)

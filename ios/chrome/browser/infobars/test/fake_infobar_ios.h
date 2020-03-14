@@ -20,6 +20,7 @@ class FakeInfobarIOS : public InfoBarIOS {
  public:
   FakeInfobarIOS(
       base::string16 message_text = base::ASCIIToUTF16("FakeInfobar"));
+  FakeInfobarIOS(std::unique_ptr<FakeInfobarDelegate> fake_delegate);
   ~FakeInfobarIOS() override;
 
   // Creates a FakeInfobarIOS whose FakeInfobarUIDelegate's infobar type is

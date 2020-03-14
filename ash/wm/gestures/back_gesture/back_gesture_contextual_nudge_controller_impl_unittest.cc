@@ -158,7 +158,8 @@ TEST_F(BackGestureContextualNudgeControllerTest,
   EXPECT_FALSE(nudge());
 
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture));
+      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture,
+      nullptr));
 
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
   // If nudge() is true, it indicates that it's currently in animation.
@@ -169,12 +170,14 @@ TEST_F(BackGestureContextualNudgeControllerTest,
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();
   EXPECT_FALSE(nudge()->ShouldNudgeCountAsShown());
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture));
+      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture,
+      nullptr));
 
   // Wait until nudge animation is finished.
   WaitNudgeAnimationDone();
   EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(
-      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture));
+      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture,
+      nullptr));
 }
 
 // Test that ending tablet mode will cancel in-waiting or in-progress nudge
@@ -186,7 +189,8 @@ TEST_F(BackGestureContextualNudgeControllerTest,
   EXPECT_FALSE(nudge());
 
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture));
+      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture,
+      nullptr));
 
   std::unique_ptr<aura::Window> window = CreateTestWindow();
   EXPECT_TRUE(nudge());
@@ -194,19 +198,22 @@ TEST_F(BackGestureContextualNudgeControllerTest,
   TabletModeControllerTestApi().LeaveTabletMode();
   WaitNudgeAnimationDone();
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture));
+      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture,
+      nullptr));
 }
 
 // Do not show nudge ui on window that can't perform "go back" operation.
 TEST_F(BackGestureContextualNudgeControllerTestCantGoBack, WindowTest) {
   EXPECT_FALSE(nudge());
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture));
+      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture,
+      nullptr));
 
   std::unique_ptr<aura::Window> window = CreateTestWindow();
   EXPECT_FALSE(nudge());
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture));
+      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture,
+      nullptr));
 }
 
 TEST_F(BackGestureContextualNudgeControllerTest, ShowNudgeOnExistingWindow) {
@@ -233,12 +240,84 @@ TEST_F(BackGestureContextualNudgeControllerTest, NotShownWithDragHandleNudge) {
 
   tablet_mode_api.EnterTabletMode();
   ASSERT_TRUE(contextual_tooltip::ShouldShowNudge(
-      user1_pref_service(), contextual_tooltip::TooltipType::kDragHandle));
+      user1_pref_service(), contextual_tooltip::TooltipType::kDragHandle,
+      nullptr));
 
   std::unique_ptr<aura::Window> window = CreateTestWindow();
   EXPECT_FALSE(nudge());
   EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(
-      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture));
+      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture,
+      nullptr));
+}
+
+// Verifies that back gesture nudge will be shown after drag handle nudge if
+// enough time passes, even if the user does not leave tablet mode.
+TEST_F(BackGestureContextualNudgeControllerTest,
+       CanBeShownAfterDragHandleNudgeWithoutLeavingTabletMode) {
+  ui::ScopedAnimationDurationScaleMode non_zero(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  TabletModeControllerTestApi tablet_mode_api;
+  tablet_mode_api.LeaveTabletMode();
+
+  // Advance the contextual tooltip manager's clock so drag handle nudge can be
+  // shown again (note that the drag handle nudge is first shown during test
+  // setup to enable the back gesture nudge).
+  clock()->Advance(contextual_tooltip::kMinInterval);
+
+  tablet_mode_api.EnterTabletMode();
+  ASSERT_TRUE(contextual_tooltip::ShouldShowNudge(
+      user1_pref_service(), contextual_tooltip::TooltipType::kDragHandle,
+      nullptr));
+
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  EXPECT_FALSE(nudge());
+  EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(
+      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture,
+      nullptr));
+
+  contextual_tooltip::HandleNudgeShown(
+      user1_pref_service(), contextual_tooltip::TooltipType::kDragHandle);
+  clock()->Advance(
+      contextual_tooltip::kMinIntervalBetweenBackAndDragHandleNudge);
+  ASSERT_TRUE(nudge_controller()->auto_show_timer_for_testing()->IsRunning());
+  nudge_controller()->auto_show_timer_for_testing()->FireNow();
+
+  std::unique_ptr<aura::Window> window_2 = CreateTestWindow();
+  EXPECT_TRUE(nudge());
+}
+
+// Verifies that back gesture nudge will be shown again if enough time passes,
+// even it the user does not leave tablet mode.
+TEST_F(BackGestureContextualNudgeControllerTest,
+       CanBeShownAfterRenteringTabletMode) {
+  ui::ScopedAnimationDurationScaleMode non_zero(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Verify the nudge is shown and wait until nudge animation is finished.
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  EXPECT_TRUE(nudge());
+  WaitNudgeAnimationDone();
+
+  EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(
+      user1_pref_service(), contextual_tooltip::TooltipType::kBackGesture,
+      nullptr));
+
+  // Reenter tablet mode, and verify the nudge van be shown again after the
+  // nudge interval passes.
+  TabletModeControllerTestApi tablet_mode_api;
+  tablet_mode_api.LeaveTabletMode();
+  tablet_mode_api.EnterTabletMode();
+  clock()->Advance(contextual_tooltip::kMinInterval);
+  contextual_tooltip::HandleNudgeShown(
+      user1_pref_service(), contextual_tooltip::TooltipType::kDragHandle);
+
+  clock()->Advance(
+      contextual_tooltip::kMinIntervalBetweenBackAndDragHandleNudge);
+  ASSERT_TRUE(nudge_controller()->auto_show_timer_for_testing()->IsRunning());
+  nudge_controller()->auto_show_timer_for_testing()->FireNow();
+
+  std::unique_ptr<aura::Window> window_2 = CreateTestWindow();
+  EXPECT_TRUE(nudge());
 }
 
 }  // namespace ash

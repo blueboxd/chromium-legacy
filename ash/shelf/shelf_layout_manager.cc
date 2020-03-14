@@ -615,7 +615,7 @@ void ShelfLayoutManager::UpdateContextualNudges() {
   if (in_app_shelf && in_tablet_mode) {
     if (contextual_tooltip::ShouldShowNudge(
             Shell::Get()->session_controller()->GetLastActiveUserPrefService(),
-            contextual_tooltip::TooltipType::kDragHandle)) {
+            contextual_tooltip::TooltipType::kDragHandle, nullptr)) {
       shelf_widget_->ScheduleShowDragHandleNudge();
     } else if (IsVisible() || !shelf_widget_->GetDragHandle()->ShowingNudge()) {
       // Keep the nudge around if the shelf is hidden, and the drag handle is

@@ -95,12 +95,22 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
     registry->RegisterDictionaryPref(prefs::kContextualTooltips);
 }
 
-bool ShouldShowNudge(PrefService* prefs, TooltipType type) {
-  if (!features::AreContextualNudgesEnabled())
+bool ShouldShowNudge(PrefService* prefs,
+                     TooltipType type,
+                     base::TimeDelta* recheck_delay) {
+  auto set_recheck_delay = [&recheck_delay](base::TimeDelta delay) {
+    if (recheck_delay)
+      *recheck_delay = delay;
+  };
+
+  if (!features::AreContextualNudgesEnabled()) {
+    set_recheck_delay(base::TimeDelta());
     return false;
+  }
 
   if (type == TooltipType::kDragHandle &&
       g_drag_handle_nudge_disabled_for_hidden_shelf) {
+    set_recheck_delay(base::TimeDelta());
     return false;
   }
 
@@ -108,12 +118,15 @@ bool ShouldShowNudge(PrefService* prefs, TooltipType type) {
   if (success_count >= kSuccessLimit ||
       (type == TooltipType::kHomeToOverview &&
        success_count >= kSuccessLimitHomeToOverview)) {
+    set_recheck_delay(base::TimeDelta());
     return false;
   }
 
   const int shown_count = GetShownCount(prefs, type);
-  if (shown_count >= kNotificationLimit)
+  if (shown_count >= kNotificationLimit) {
+    set_recheck_delay(base::TimeDelta());
     return false;
+  }
 
   // Before showing back gesture nudge, do not show it if in-app to shelf nudge
   // should be shown (to prevent two nudges from showing up at the same time).
@@ -121,32 +134,44 @@ bool ShouldShowNudge(PrefService* prefs, TooltipType type) {
   // interval.
   if (type == TooltipType::kBackGesture) {
     if (!g_drag_handle_nudge_disabled_for_hidden_shelf &&
-        ShouldShowNudge(prefs, TooltipType::kDragHandle)) {
+        ShouldShowNudge(prefs, TooltipType::kDragHandle, nullptr)) {
+      set_recheck_delay(kMinIntervalBetweenBackAndDragHandleNudge);
       return false;
     }
 
     // Verify that drag handle nudge has been shown at least a minute ago.
     const base::Time drag_handle_nudge_last_shown_time =
         GetLastShownTime(prefs, TooltipType::kDragHandle);
-    if (!drag_handle_nudge_last_shown_time.is_null() &&
-        GetTime() - drag_handle_nudge_last_shown_time <
-            kMinIntervalBetweenBackAndDragHandleNudge) {
-      return false;
+    if (!drag_handle_nudge_last_shown_time.is_null()) {
+      const base::TimeDelta time_since_drag_handle_nudge =
+          GetTime() - drag_handle_nudge_last_shown_time;
+      if (time_since_drag_handle_nudge <
+          kMinIntervalBetweenBackAndDragHandleNudge) {
+        set_recheck_delay(kMinIntervalBetweenBackAndDragHandleNudge -
+                          time_since_drag_handle_nudge);
+        return false;
+      }
     }
   }
 
   // Make sure that drag handle nudge is not shown within a minute of back
   // gesture nudge.
   if (type == TooltipType::kDragHandle) {
-    if (g_back_gesture_nudge_showing)
+    if (g_back_gesture_nudge_showing) {
+      set_recheck_delay(kMinIntervalBetweenBackAndDragHandleNudge);
       return false;
+    }
 
     const base::Time back_nudge_last_shown_time =
         GetLastShownTime(prefs, TooltipType::kBackGesture);
-    if (!back_nudge_last_shown_time.is_null() &&
-        GetTime() - back_nudge_last_shown_time <
-            kMinIntervalBetweenBackAndDragHandleNudge) {
-      return false;
+    if (!back_nudge_last_shown_time.is_null()) {
+      const base::TimeDelta time_since_back_nudge =
+          GetTime() - back_nudge_last_shown_time;
+      if (time_since_back_nudge < kMinIntervalBetweenBackAndDragHandleNudge) {
+        set_recheck_delay(kMinIntervalBetweenBackAndDragHandleNudge -
+                          time_since_back_nudge);
+        return false;
+      }
     }
   }
 
@@ -154,9 +179,14 @@ bool ShouldShowNudge(PrefService* prefs, TooltipType type) {
     return true;
 
   const base::Time last_shown_time = GetLastShownTime(prefs, type);
-  base::TimeDelta min_interval =
+  const base::TimeDelta min_interval =
       GetMinIntervalOverride().value_or(kMinInterval);
-  return (GetTime() - last_shown_time) >= min_interval;
+  const base::TimeDelta time_since_last_nudge = GetTime() - last_shown_time;
+  if (time_since_last_nudge < min_interval) {
+    set_recheck_delay(min_interval - time_since_last_nudge);
+    return false;
+  }
+  return true;
 }
 
 base::TimeDelta GetNudgeTimeout(PrefService* prefs, TooltipType type) {

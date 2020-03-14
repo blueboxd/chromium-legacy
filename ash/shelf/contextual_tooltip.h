@@ -43,7 +43,15 @@ ASH_EXPORT void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
 // Returns true if the contextual tooltip of |type| should be shown for the user
 // with the given |prefs|.
-ASH_EXPORT bool ShouldShowNudge(PrefService* prefs, TooltipType type);
+// If the nudge should not be shown at this time, the |recheck_delay| will be
+// set to the time delta after which the nudge might become available. If nudge
+// is not expected to be shown any longer, or it's not known when the nudge
+// might become available again (e.g. for drag handle nudge if the shelf is
+// hidden) |recheck_delay| will be set to zero.
+// |recheck_delay| might be nullptr, in which case it will be ignored.
+ASH_EXPORT bool ShouldShowNudge(PrefService* prefs,
+                                TooltipType type,
+                                base::TimeDelta* recheck_delay);
 
 // Checks whether the tooltip should be hidden after a timeout. Returns the
 // timeout if it should, returns base::TimeDelta() if not.

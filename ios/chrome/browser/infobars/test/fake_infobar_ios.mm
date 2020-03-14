@@ -22,6 +22,17 @@ FakeInfobarIOS::FakeInfobarIOS(base::string16 message_text)
   DCHECK(fake_delegate_);
 }
 
+FakeInfobarIOS::FakeInfobarIOS(
+    std::unique_ptr<FakeInfobarDelegate> fake_delegate)
+    : InfoBarIOS([[FakeInfobarUIDelegate alloc] init],
+                 std::move(fake_delegate)),
+      fake_ui_delegate_(
+          static_cast<FakeInfobarUIDelegate*>(InfobarUIDelegate())),
+      fake_delegate_(static_cast<FakeInfobarDelegate*>(delegate())) {
+  DCHECK([fake_ui_delegate_ isKindOfClass:[FakeInfobarUIDelegate class]]);
+  DCHECK(fake_delegate_);
+}
+
 FakeInfobarIOS::~FakeInfobarIOS() = default;
 
 // static

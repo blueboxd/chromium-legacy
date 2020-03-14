@@ -243,7 +243,7 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeNotShownForHiddenShelf) {
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   // Back gesture nudge should be allowed if the shelf is hidden.
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
-      prefs, contextual_tooltip::TooltipType::kBackGesture));
+      prefs, contextual_tooltip::TooltipType::kBackGesture, nullptr));
 
   // Swipe up to show the shelf - this should schedule the drag handle nudge.
   SwipeUpOnShelf();
@@ -251,7 +251,7 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeNotShownForHiddenShelf) {
   // Back gesture nudge should be disallowed at this time, given that the drag
   // handle nudge can be shown.
   EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(
-      prefs, contextual_tooltip::TooltipType::kBackGesture));
+      prefs, contextual_tooltip::TooltipType::kBackGesture, nullptr));
 
   ASSERT_TRUE(drag_handle->has_show_drag_handle_timer_for_testing());
   drag_handle->fire_show_drag_handle_timer_for_testing();

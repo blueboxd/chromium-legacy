@@ -152,7 +152,8 @@ void HomeToOverviewNudgeController::SetNudgeAllowedForCurrentShelf(
   PrefService* pref_service =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   if (!contextual_tooltip::ShouldShowNudge(
-          pref_service, contextual_tooltip::TooltipType::kHomeToOverview)) {
+          pref_service, contextual_tooltip::TooltipType::kHomeToOverview,
+          nullptr)) {
     return;
   }
 

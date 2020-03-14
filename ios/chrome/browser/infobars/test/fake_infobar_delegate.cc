@@ -6,14 +6,24 @@
 
 #include "base/strings/utf_string_conversions.h"
 
+FakeInfobarDelegate::FakeInfobarDelegate()
+    : identifier_(infobars::InfoBarDelegate::InfoBarIdentifier::TEST_INFOBAR),
+      message_text_(base::ASCIIToUTF16("FakeInfobarDelegate")) {}
+
+FakeInfobarDelegate::FakeInfobarDelegate(
+    infobars::InfoBarDelegate::InfoBarIdentifier identifier)
+    : identifier_(identifier),
+      message_text_(base::ASCIIToUTF16("FakeInfobarDelegate")) {}
+
 FakeInfobarDelegate::FakeInfobarDelegate(base::string16 message_text)
-    : message_text_(message_text) {}
+    : identifier_(infobars::InfoBarDelegate::InfoBarIdentifier::TEST_INFOBAR),
+      message_text_(message_text) {}
 
 FakeInfobarDelegate::~FakeInfobarDelegate() = default;
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 FakeInfobarDelegate::GetIdentifier() const {
-  return TEST_INFOBAR;
+  return identifier_;
 }
 
 // Returns the message string to be displayed for the Infobar.

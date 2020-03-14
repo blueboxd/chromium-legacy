@@ -12,17 +12,19 @@
 // Fake version of InfoBarDelegate.
 class FakeInfobarDelegate : public ConfirmInfoBarDelegate {
  public:
-  FakeInfobarDelegate(
-      base::string16 message_text = base::ASCIIToUTF16("FakeInfobarDelegate"));
+  FakeInfobarDelegate();
+  FakeInfobarDelegate(base::string16 message_text);
+  FakeInfobarDelegate(infobars::InfoBarDelegate::InfoBarIdentifier identifier);
   ~FakeInfobarDelegate() override;
 
-  // Returns InfoBarIdentifier::TEST_INFOBAR.
+  // Returns |identifier_|, set during construction.
   InfoBarIdentifier GetIdentifier() const override;
 
   // Returns the message string to be displayed for the Infobar.
   base::string16 GetMessageText() const override;
 
  private:
+  infobars::InfoBarDelegate::InfoBarIdentifier identifier_;
   base::string16 message_text_;
 };
 

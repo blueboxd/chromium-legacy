@@ -62,16 +62,27 @@ class ASH_EXPORT BackGestureContextualNudgeControllerImpl
     return nudge_delegate_.get();
   }
 
+  base::OneShotTimer* auto_show_timer_for_testing() {
+    return &auto_show_timer_;
+  }
+
  private:
   // Returns true if we can show back gesture contextual nudge ui in current
   // configuration.
-  bool CanShowNudge() const;
+  // |recheck_delay| - If the nudge should not be shown, it will be set to the
+  // delay after which the nudge availability should be checked again.
+  bool CanShowNudge(base::TimeDelta* recheck_delay) const;
+
   // Maybe show nudge ui on top of |window|.
   void MaybeShowNudgeUi(aura::Window* window);
 
   // Starts or stops monitoring windows activation changes to decide if and when
   // to show up the contextual nudge ui.
-  void UpdateWindowMonitoring();
+  // |can_show_nudge_immediately| - If the nudge can be shown at this point,
+  // whether the controller should attempt to show it immediately, or wait for a
+  // window navigation (this should be set if monitoring is updated due to a
+  // user action rather than a timer callback).
+  void UpdateWindowMonitoring(bool can_show_nudge_immediately);
 
   // Callback function to be called after nudge animation is cancelled or
   // completed.

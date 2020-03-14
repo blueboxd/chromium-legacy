@@ -10,6 +10,7 @@
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_tab_helper.h"
+#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
@@ -59,6 +60,7 @@ TEST_F(BreadcrumbManagerBrowserAgentTest, LogEvent) {
   web::WebState::CreateParams createParams(browser_state_.get());
   std::unique_ptr<web::WebState> web_state =
       web::WebState::Create(createParams);
+  InfoBarManagerImpl::CreateForWebState(web_state.get());
   BreadcrumbManagerTabHelper::CreateForWebState(web_state.get());
   browser->GetWebStateList()->InsertWebState(
       /*index=*/0, std::move(web_state),
@@ -83,6 +85,7 @@ TEST_F(BreadcrumbManagerBrowserAgentTest, MultipleBrowsers) {
   web::WebState::CreateParams createParams(browser_state_.get());
   std::unique_ptr<web::WebState> web_state =
       web::WebState::Create(createParams);
+  InfoBarManagerImpl::CreateForWebState(web_state.get());
   BreadcrumbManagerTabHelper::CreateForWebState(web_state.get());
   browser->GetWebStateList()->InsertWebState(
       /*index=*/0, std::move(web_state),
@@ -97,6 +100,7 @@ TEST_F(BreadcrumbManagerBrowserAgentTest, MultipleBrowsers) {
   // Insert WebState into |browser2|.
   std::unique_ptr<web::WebState> web_state2 =
       web::WebState::Create(createParams);
+  InfoBarManagerImpl::CreateForWebState(web_state2.get());
   BreadcrumbManagerTabHelper::CreateForWebState(web_state2.get());
   browser2->GetWebStateList()->InsertWebState(
       /*index=*/0, std::move(web_state2),

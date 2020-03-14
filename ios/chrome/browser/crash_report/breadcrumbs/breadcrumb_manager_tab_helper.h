@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_CRASH_REPORT_BREADCRUMBS_BREADCRUMB_MANAGER_TAB_HELPER_H_
 #define IOS_CHROME_BROWSER_CRASH_REPORT_BREADCRUMBS_BREADCRUMB_MANAGER_TAB_HELPER_H_
 
+#include "base/scoped_observer.h"
+#include "components/infobars/core/infobar_manager.h"
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
 
@@ -25,6 +27,18 @@ extern const char kBreadcrumbPageLoaded[];
 // (see WebStateObserver::DidChangeVisibleSecurityState).
 extern const char kBreadcrumbDidChangeVisibleSecurityState[];
 
+// Name of OnInfoBarAdded event
+// (see infobars::InfoBarManager::Observer::OnInfoBarAdded).
+extern const char kBreadcrumbInfobarAdded[];
+
+// Name of OnInfoBarRemoved event
+// (see infobars::InfoBarManager::Observer::OnInfoBarRemoved).
+extern const char kBreadcrumbInfobarRemoved[];
+
+// Name of OnInfoBarReplaced event
+// (see infobars::InfoBarManager::Observer::OnInfoBarReplaced).
+extern const char kBreadcrumbInfobarReplaced[];
+
 // Constants below represent metadata for breadcrumb events.
 
 // Appended to |kBreadcrumbDidChangeVisibleSecurityState| event if page has bad
@@ -34,6 +48,9 @@ extern const char kBreadcrumbAuthenticationBroken[];
 // Appended to |kBreadcrumbDidFinishNavigation| event if
 // navigation is a download.
 extern const char kBreadcrumbDownload[];
+
+// Appended to |kBreadcrumbInfobarRemoved| if infobar removal is not animated.
+extern const char kBreadcrumbInfobarNotAnimated[];
 
 // Appended to |kBreadcrumbDidChangeVisibleSecurityState| event if page has
 // passive mixed content (f.e. an http served image on https served page).
@@ -57,10 +74,10 @@ extern const char kBreadcrumbRendererInitiatedByScript[];
 // widow.open with user gesture).
 extern const char kBreadcrumbRendererInitiatedByUser[];
 
-// Handles logging of Breadcrumb events associated with |web_state_| based on
-// calls from WebStateObserver.
+// Handles logging of Breadcrumb events associated with |web_state_|.
 class BreadcrumbManagerTabHelper
-    : public web::WebStateObserver,
+    : public infobars::InfoBarManager::Observer,
+      public web::WebStateObserver,
       public web::WebStateUserData<BreadcrumbManagerTabHelper> {
  public:
   ~BreadcrumbManagerTabHelper() override;
@@ -95,9 +112,26 @@ class BreadcrumbManagerTabHelper
   void RenderProcessGone(web::WebState* web_state) override;
   void WebStateDestroyed(web::WebState* web_state) override;
 
+  // infobars::InfoBarManager::Observer
+  void OnInfoBarAdded(infobars::InfoBar* infobar) override;
+  void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override;
+  void OnInfoBarReplaced(infobars::InfoBar* old_infobar,
+                         infobars::InfoBar* new_infobar) override;
+  void OnManagerShuttingDown(infobars::InfoBarManager* manager) override;
+
   // The webstate associated with this tab helper.
   web::WebState* web_state_ = nullptr;
   int unique_id_ = -1;
+
+  infobars::InfoBarManager* infobar_manager_ = nullptr;
+  // A counter which is incremented for each |OnInfoBarReplaced| call. This
+  // value is reset when any other infobars::InfoBarManager::Observer callback
+  // is received.
+  int sequentially_replaced_infobars_ = 0;
+
+  // Manages this object as an observer of infobars.
+  ScopedObserver<infobars::InfoBarManager, infobars::InfoBarManager::Observer>
+      infobar_observer_;
 
   WEB_STATE_USER_DATA_KEY_DECL();
 };

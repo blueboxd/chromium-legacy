@@ -965,6 +965,12 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaRowHeader) {
   RunAriaTest(FILE_PATH_LITERAL("aria-rowheader.html"));
 }
 
+// TODO(http://crbug.com/1061624): fails on Windows.
+#if defined(OS_WIN)
+#define MAYBE_AccessibilityAriaRowText DISABLED_AccessibilityAriaRowText
+#else
+#define MAYBE_AccessibilityAriaRowText AccessibilityAriaRowText
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaRowText) {
   RunAriaTest(FILE_PATH_LITERAL("aria-rowtext.html"));
 }

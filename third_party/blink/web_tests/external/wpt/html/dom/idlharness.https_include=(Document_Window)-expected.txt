@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 963 tests; 936 PASS, 27 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 963 tests; 939 PASS, 24 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -639,7 +639,7 @@ PASS Document interface: iframe.contentDocument must inherit property "applets" 
 PASS Document interface: iframe.contentDocument must inherit property "clear()" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "captureEvents()" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "releaseEvents()" with the proper type
-FAIL Document interface: iframe.contentDocument must inherit property "all" with the proper type assert_in_array: wrong type: not object or function value "undefined" not in array ["object", "function"]
+PASS Document interface: iframe.contentDocument must inherit property "all" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onabort" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onauxclick" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onblur" with the proper type
@@ -765,7 +765,7 @@ PASS Document interface: new Document() must inherit property "applets" with the
 PASS Document interface: new Document() must inherit property "clear()" with the proper type
 PASS Document interface: new Document() must inherit property "captureEvents()" with the proper type
 PASS Document interface: new Document() must inherit property "releaseEvents()" with the proper type
-FAIL Document interface: new Document() must inherit property "all" with the proper type assert_in_array: wrong type: not object or function value "undefined" not in array ["object", "function"]
+PASS Document interface: new Document() must inherit property "all" with the proper type
 PASS Document interface: new Document() must inherit property "onabort" with the proper type
 PASS Document interface: new Document() must inherit property "onauxclick" with the proper type
 PASS Document interface: new Document() must inherit property "onblur" with the proper type
@@ -891,7 +891,7 @@ PASS Document interface: documentWithHandlers must inherit property "applets" wi
 PASS Document interface: documentWithHandlers must inherit property "clear()" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "captureEvents()" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "releaseEvents()" with the proper type
-FAIL Document interface: documentWithHandlers must inherit property "all" with the proper type assert_in_array: wrong type: not object or function value "undefined" not in array ["object", "function"]
+PASS Document interface: documentWithHandlers must inherit property "all" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "onabort" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "onauxclick" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "onblur" with the proper type

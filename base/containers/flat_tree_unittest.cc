@@ -956,6 +956,18 @@ TEST(FlatTree, EraseKey) {
   EXPECT_THAT(cont, ElementsAre());
 }
 
+TEST(FlatTree, EraseEndDeath) {
+  {
+    IntTree tree;
+    ASSERT_DEATH_IF_SUPPORTED(tree.erase(tree.cend()), "");
+  }
+
+  {
+    IntTree tree = {1, 2, 3, 4};
+    ASSERT_DEATH_IF_SUPPORTED(tree.erase(tree.find(5)), "");
+  }
+}
+
 // ----------------------------------------------------------------------------
 // Comparators.
 

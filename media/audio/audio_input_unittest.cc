@@ -88,8 +88,16 @@ class AudioInputTest : public testing::Test {
 
  protected:
   bool InputDevicesAvailable() {
+#if defined(OS_FUCHSIA)
+    // On Fuchsia HasAudioInputDevices() returns true, but AudioInputStream is
+    // not implemented. Audio input is implemented in
+    // FuchsiaAudioCapturerStream. It implements AudioCapturerStream interface
+    // and runs in the renderer process.
+    return false;
+#else
     return AudioDeviceInfoAccessorForTests(audio_manager_.get())
         .HasAudioInputDevices();
+#endif
   }
 
   void MakeAudioInputStreamOnAudioThread() {

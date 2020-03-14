@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL default and invalid values on mrow assert_equals: no attribute expected 0 but got -1
+Harness: the test ran to completion.
+

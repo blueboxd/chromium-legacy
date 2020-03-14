@@ -15,6 +15,11 @@ struct AudioConsumerRequest {
   handle<platform> request;
 };
 
+// Mojo struct for fidl::InterfaceRequest<fuchsia::media::AudioCapturer>.
+struct AudioCapturerRequest {
+  handle<platform> request;
+};
+
 // Interface used by the render to create media resources. Instances are
 // document-scoped.
 interface FuchsiaMediaResourceProvider {
@@ -25,4 +30,7 @@ interface FuchsiaMediaResourceProvider {
 
   // Creates a fuchsia.media.AudioConsumer for the current frame.
   CreateAudioConsumer(AudioConsumerRequest request);
+
+  // Creates a fuchsia.media.AudioCapturer for the current frame.
+  CreateAudioCapturer(AudioCapturerRequest request);
 };

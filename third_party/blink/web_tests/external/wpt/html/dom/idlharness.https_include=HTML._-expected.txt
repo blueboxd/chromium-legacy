@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 3732 tests; 3694 PASS, 38 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 3732 tests; 3701 PASS, 31 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -177,13 +177,13 @@ PASS HTMLAllCollection interface: existence and properties of interface prototyp
 PASS HTMLAllCollection interface: attribute length
 PASS HTMLAllCollection interface: operation namedItem(DOMString)
 PASS HTMLAllCollection interface: operation item(optional DOMString)
-FAIL HTMLAllCollection must be primary interface of document.all assert_equals: wrong typeof object expected "object" but got "undefined"
-FAIL Stringification of document.all assert_equals: wrong typeof object expected "object" but got "undefined"
-FAIL HTMLAllCollection interface: document.all must inherit property "length" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
-FAIL HTMLAllCollection interface: document.all must inherit property "namedItem(DOMString)" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
-FAIL HTMLAllCollection interface: calling namedItem(DOMString) on document.all with too few arguments must throw TypeError assert_equals: wrong typeof object expected "object" but got "undefined"
-FAIL HTMLAllCollection interface: document.all must inherit property "item(optional DOMString)" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
-FAIL HTMLAllCollection interface: calling item(optional DOMString) on document.all with too few arguments must throw TypeError assert_equals: wrong typeof object expected "object" but got "undefined"
+PASS HTMLAllCollection must be primary interface of document.all
+PASS Stringification of document.all
+PASS HTMLAllCollection interface: document.all must inherit property "length" with the proper type
+PASS HTMLAllCollection interface: document.all must inherit property "namedItem(DOMString)" with the proper type
+PASS HTMLAllCollection interface: calling namedItem(DOMString) on document.all with too few arguments must throw TypeError
+PASS HTMLAllCollection interface: document.all must inherit property "item(optional DOMString)" with the proper type
+PASS HTMLAllCollection interface: calling item(optional DOMString) on document.all with too few arguments must throw TypeError
 PASS HTMLFormControlsCollection interface: existence and properties of interface object
 PASS HTMLFormControlsCollection interface object length
 PASS HTMLFormControlsCollection interface object name

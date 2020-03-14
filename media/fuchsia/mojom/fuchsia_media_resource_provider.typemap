@@ -20,4 +20,5 @@ public_deps = [
 type_mappings = [
   "media.mojom.CdmRequest=::fidl::InterfaceRequest<::fuchsia::media::drm::ContentDecryptionModule>[move_only]",
   "media.mojom.AudioConsumerRequest=::fidl::InterfaceRequest<::fuchsia::media::AudioConsumer>[move_only]",
+  "media.mojom.AudioCapturerRequest=::fidl::InterfaceRequest<::fuchsia::media::AudioCapturer>[move_only]",
 ]

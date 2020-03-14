@@ -24,14 +24,16 @@ bool AudioManagerFuchsia::HasAudioOutputDevices() {
 }
 
 bool AudioManagerFuchsia::HasAudioInputDevices() {
-  NOTIMPLEMENTED();
-  return false;
+  // TODO(crbug.com/852834): Fuchsia currently doesn't provide an API for device
+  // enumeration. Update this method when that functionality is implemented.
+  return true;
 }
 
 void AudioManagerFuchsia::GetAudioInputDeviceNames(
     AudioDeviceNames* device_names) {
-  device_names->clear();
-  NOTIMPLEMENTED();
+  // TODO(crbug.com/852834): Fuchsia currently doesn't provide an API for device
+  // enumeration. Update this method when that functionality is implemented.
+  *device_names = {AudioDeviceName::CreateDefault()};
 }
 
 void AudioManagerFuchsia::GetAudioOutputDeviceNames(
@@ -43,8 +45,13 @@ void AudioManagerFuchsia::GetAudioOutputDeviceNames(
 
 AudioParameters AudioManagerFuchsia::GetInputStreamParameters(
     const std::string& device_id) {
-  NOTREACHED();
-  return AudioParameters();
+  // TODO(crbug.com/852834): Fuchsia currently doesn't provide an API to get
+  // device configuration. Update this method when that functionality is
+  // implemented.
+  // Use 48kHz sample rate with 10ms buffer, which is consistent with
+  // the default configuration used on other platforms.
+  return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                         CHANNEL_LAYOUT_MONO, 48000, 480);
 }
 
 AudioParameters AudioManagerFuchsia::GetPreferredOutputStreamParameters(

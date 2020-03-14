@@ -764,12 +764,14 @@ void flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::replace(
 template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
 auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::erase(
     iterator position) -> iterator {
+  CHECK(position != impl_.body_.end());
   return impl_.body_.erase(position);
 }
 
 template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
 auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::erase(
     const_iterator position) -> iterator {
+  CHECK(position != impl_.body_.end());
   return impl_.body_.erase(position);
 }
 

@@ -695,6 +695,11 @@ class BrowserView : public BrowserWindow,
   // this returns false.
   bool CanChangeWindowIcon() const;
 
+  // Searches for inactive bubbles anchored to elements in this browser view
+  // and activates them. It returns true if it succeeded activating a bubble or
+  // false otherwise.
+  bool ActivateFirstInactiveBubbleForAccessibility();
+
   // The BrowserFrame that hosts this view.
   BrowserFrame* frame_ = nullptr;
 

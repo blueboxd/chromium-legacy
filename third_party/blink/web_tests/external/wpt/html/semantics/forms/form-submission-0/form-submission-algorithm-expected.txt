@@ -8,5 +8,6 @@ PASS firing an event named submit; form.requestSubmit()
 FAIL firing an event named submit; form.requestSubmit(null) promise_test: Unhandled rejection with value: object "TypeError: Failed to execute 'requestSubmit' on 'HTMLFormElement': parameter 1 is not of type 'HTMLElement'."
 PASS firing an event named submit; form.requestSubmit(submitter)
 PASS Cannot navigate (after constructing the entry list)
+PASS Submission URL should always have a non-null query part
 Harness: the test ran to completion.
 

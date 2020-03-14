@@ -2985,6 +2985,9 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Fail
 crbug.com/1053965 external/wpt/css/css-values/ex-unit-004.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/cssom/CSSStyleSheet-constructable-disallow-import.tentative.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/css/cssom/CSSStyleSheet-constructable-disallow-import.tentative.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/css/cssom/CSSStyleSheet-constructable-disallow-import.tentative.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/css/css-layout-api/auto-block-size/absolute.https.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/css/css-layout-api/auto-block-size/absolute.https.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/css/css-layout-api/edges/all.https.html [ Failure ]
@@ -7036,8 +7039,14 @@ crbug.com/1061131 [ Linux ] virtual/threaded-no-composited-antialiasing/animatio
 crbug.com/1061131 [ Linux ] virtual/threaded-no-composited-antialiasing/animations/animationworklet/scroll-timeline-non-scrollable.html [ Pass Crash ]
 crbug.com/1061131 [ Linux ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Pass Crash ]
 crbug.com/1061131 [ Linux ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Pass Crash ]
+
 crbug.com/1061131 [ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/middle-click-autoscroll-latching-clicked-node.html [ Pass Failure Timeout ]
 crbug.com/1060974 [ Debug ] virtual/threaded/external/wpt/scroll-animations/two-animations-attach-to-same-scroll-timeline-cancel-one.html [ Pass Failure ]
+
+# Failing on Fuchsia due to dependency on FuchsiaMediaResourceProvider, which is not implemented in content_shell.
+crbug.com/1061226 [ Fuchsia ] fast/mediastream/MediaStream-onactive-oninactive.html [ Crash ]
+crbug.com/1061226 [ Fuchsia ] fast/speech/scripted/speechrecognition-restart-onend.html [ Crash ]
+crbug.com/1061226 [ Fuchsia ] external/wpt/mediacapture-streams/MediaStream-idl.https.html [ Crash ]
 
 # Sheriff 2020-03-13
 crbug.com/1061159 [ Fuchsia ] fast/inspector-support/cssURLQuotes.html [ Pass Failure ]

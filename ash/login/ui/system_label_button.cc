@@ -116,9 +116,7 @@ void SystemLabelButton::SetAlertMode(bool alert_mode) {
 
   SkColor font_color = alert_mode ? kSystemButtonContentColorAlert
                                   : kSystemButtonContentColorDefault;
-  SetTextColor(views::Button::STATE_NORMAL, font_color);
-  SetTextColor(views::Button::STATE_HOVERED, font_color);
-  SetTextColor(views::Button::STATE_PRESSED, font_color);
+  SetEnabledTextColors(font_color);
 
   if (alert_mode) {
     const AshColorProvider::RippleAttributes ripple_attributes =

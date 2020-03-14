@@ -14,6 +14,7 @@ namespace {
 const UChar32 kLeftBraceCodePoint = '{';
 const UChar32 kOverBraceCodePoint = 0x23DE;
 const UChar32 kArabicMathOperatorHahWithDalCodePoint = 0x1EEF1;
+const UChar32 kNAryWhiteVerticalBarCodePoint = 0x2AFF;
 }  // namespace
 
 namespace blink {
@@ -406,6 +407,60 @@ TEST_F(OpenTypeMathSupportTest, MathVariantsWithTable) {
         math.PrimaryFont()->PlatformData().GetHarfBuzzFace(), over_brace,
         OpenTypeMathStretchData::StretchAxis::Vertical);
     EXPECT_TRUE(parts.IsEmpty());
+  }
+}
+
+// See third_party/blink/web_tests/external/wpt/mathml/tools/largeop.py
+TEST_F(OpenTypeMathSupportTest, MathItalicCorrection) {
+  {
+    Font math = CreateMathFont(
+        "largeop-displayoperatorminheight2000-2AFF-italiccorrection3000.woff");
+    Glyph base_glyph =
+        math.PrimaryFont()->GlyphForCharacter(kNAryWhiteVerticalBarCodePoint);
+
+    // Retrieve the glyph with italic correction.
+    Vector<OpenTypeMathStretchData::GlyphVariantRecord> variants =
+        OpenTypeMathSupport::GetGlyphVariantRecords(
+            math.PrimaryFont()->PlatformData().GetHarfBuzzFace(), base_glyph,
+            OpenTypeMathStretchData::StretchAxis::Vertical);
+    EXPECT_EQ(variants.size(), 3u);
+    EXPECT_EQ(variants[0], base_glyph);
+    EXPECT_EQ(variants[1], base_glyph);
+    Glyph glyph_with_italic_correction = variants[2];
+
+    // MathItalicCorrection with a value.
+    base::Optional<float> glyph_with_italic_correction_value =
+        OpenTypeMathSupport::MathItalicCorrection(
+            math.PrimaryFont()->PlatformData().GetHarfBuzzFace(),
+            glyph_with_italic_correction);
+    EXPECT_TRUE(glyph_with_italic_correction_value);
+    EXPECT_FLOAT_EQ(*glyph_with_italic_correction_value, 3000);
+
+    // GetGlyphPartRecords does not set italic correction when there is no
+    // construction available.
+    float italic_correction = -1000;
+    Vector<OpenTypeMathStretchData::GlyphPartRecord> parts =
+        OpenTypeMathSupport::GetGlyphPartRecords(
+            math.PrimaryFont()->PlatformData().GetHarfBuzzFace(), base_glyph,
+            OpenTypeMathStretchData::StretchAxis::Vertical, &italic_correction);
+    EXPECT_TRUE(parts.IsEmpty());
+    EXPECT_FLOAT_EQ(italic_correction, -1000);
+  }
+
+  {
+    Font math = CreateMathFont(
+        "largeop-displayoperatorminheight7000-2AFF-italiccorrection5000.woff");
+    Glyph base_glyph =
+        math.PrimaryFont()->GlyphForCharacter(kNAryWhiteVerticalBarCodePoint);
+
+    // OpenTypeMathSupport::GetGlyphPartRecords sets italic correction.
+    float italic_correction = -1000;
+    Vector<OpenTypeMathStretchData::GlyphPartRecord> parts =
+        OpenTypeMathSupport::GetGlyphPartRecords(
+            math.PrimaryFont()->PlatformData().GetHarfBuzzFace(), base_glyph,
+            OpenTypeMathStretchData::StretchAxis::Vertical, &italic_correction);
+    EXPECT_EQ(parts.size(), 3u);
+    EXPECT_FLOAT_EQ(italic_correction, 5000);
   }
 }
 

@@ -913,9 +913,7 @@ PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
   help_button_->SetPaintToLayer();
   help_button_->layer()->SetFillsBoundsOpaquely(false);
   help_button_->SetTextSubpixelRenderingEnabled(false);
-  help_button_->SetTextColor(views::Button::STATE_NORMAL, kTextColor);
-  help_button_->SetTextColor(views::Button::STATE_HOVERED, kTextColor);
-  help_button_->SetTextColor(views::Button::STATE_PRESSED, kTextColor);
+  help_button_->SetEnabledTextColors(kTextColor);
   help_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
   help_button_->SetVisible(request.help_button_enabled);
   footer->AddChildView(help_button_);

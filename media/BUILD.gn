@@ -181,6 +181,10 @@ test("media_unittests") {
     ]
   }
 
+  if (is_fuchsia) {
+    deps += [ "//media/fuchsia/audio:unittests" ]
+  }
+
   if (enable_media_remoting) {
     deps += [ "//media/remoting:media_remoting_tests" ]
   }

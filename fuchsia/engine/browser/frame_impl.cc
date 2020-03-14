@@ -16,11 +16,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/permission_controller_delegate.h"
 #include "content/public/browser/renderer_preferences_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/was_activated_option.mojom.h"
@@ -213,6 +215,41 @@ content::PermissionType FidlPermissionTypeToContentPermissionType(
     case fuchsia::web::PermissionType::PERSISTENT_STORAGE:
       return content::PermissionType::DURABLE_STORAGE;
   }
+}
+
+// Permission request callback for FrameImpl::RequestMediaAccessPermission.
+void HandleMediaPermissionsRequestResult(
+    const content::MediaStreamRequest& request,
+    content::MediaResponseCallback callback,
+    const std::vector<blink::mojom::PermissionStatus>& result) {
+  blink::MediaStreamDevices devices;
+
+  int result_pos = 0;
+
+  if (request.audio_type ==
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE) {
+    if (result[result_pos] == blink::mojom::PermissionStatus::GRANTED) {
+      devices.push_back(blink::MediaStreamDevice(
+          request.audio_type, request.requested_audio_device_id,
+          /*name=*/""));
+    }
+    result_pos++;
+  }
+
+  if (request.video_type ==
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE) {
+    if (result[result_pos] == blink::mojom::PermissionStatus::GRANTED) {
+      devices.push_back(blink::MediaStreamDevice(
+          request.video_type, request.requested_video_device_id,
+          /*name=*/""));
+    }
+  }
+
+  std::move(callback).Run(
+      devices,
+      devices.empty() ? blink::mojom::MediaStreamRequestResult::NO_HARDWARE
+                      : blink::mojom::MediaStreamRequestResult::OK,
+      nullptr);
 }
 
 base::Optional<url::Origin> ParseAndValidateWebOrigin(
@@ -884,6 +921,52 @@ bool FrameImpl::DidAddMessageToConsole(
     console_log_message_hook_.Run(formatted_message);
 
   return true;
+}
+
+void FrameImpl::RequestMediaAccessPermission(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    content::MediaResponseCallback callback) {
+  DCHECK_EQ(web_contents_.get(), web_contents);
+
+  std::vector<content::PermissionType> permissions;
+
+  if (request.audio_type ==
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE) {
+    permissions.push_back(content::PermissionType::AUDIO_CAPTURE);
+  } else if (request.audio_type != blink::mojom::MediaStreamType::NO_SERVICE) {
+    std::move(callback).Run(
+        blink::MediaStreamDevices(),
+        blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED, nullptr);
+    return;
+  }
+
+  if (request.video_type ==
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE) {
+    permissions.push_back(content::PermissionType::VIDEO_CAPTURE);
+  } else if (request.video_type != blink::mojom::MediaStreamType::NO_SERVICE) {
+    std::move(callback).Run(
+        blink::MediaStreamDevices(),
+        blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED, nullptr);
+    return;
+  }
+
+  auto* render_frame_host = content::RenderFrameHost::FromID(
+      request.render_process_id, request.render_frame_id);
+  if (!render_frame_host) {
+    std::move(callback).Run(
+        blink::MediaStreamDevices(),
+        blink::mojom::MediaStreamRequestResult::INVALID_STATE, nullptr);
+    return;
+  }
+
+  auto* permission_controller =
+      web_contents_->GetBrowserContext()->GetPermissionControllerDelegate();
+  permission_controller->RequestPermissions(
+      permissions, render_frame_host, request.security_origin,
+      request.user_gesture,
+      base::BindOnce(&HandleMediaPermissionsRequestResult, request,
+                     std::move(callback)));
 }
 
 void FrameImpl::ReadyToCommitNavigation(

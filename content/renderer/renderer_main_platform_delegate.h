@@ -15,6 +15,10 @@
 #include "content/common/content_export.h"
 #include "content/public/common/main_function_params.h"
 
+#if defined(OS_FUCHSIA)
+#include "content/renderer/media/audio/fuchsia_audio_device_factory.h"
+#endif  // defined(OS_FUCHSIA)
+
 namespace content {
 
 class CONTENT_EXPORT RendererMainPlatformDelegate {
@@ -35,6 +39,10 @@ class CONTENT_EXPORT RendererMainPlatformDelegate {
 #if defined(OS_WIN)
   const MainFunctionParams& parameters_;
 #endif
+
+#if defined(OS_FUCHSIA)
+  std::unique_ptr<FuchsiaAudioDeviceFactory> fuchsia_audio_device_factory_;
+#endif  // defined(OS_FUCHSIA)
 
   DISALLOW_COPY_AND_ASSIGN(RendererMainPlatformDelegate);
 };

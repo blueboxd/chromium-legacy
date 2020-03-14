@@ -45,6 +45,8 @@ class MediaResourceProviderImpl
           request) final;
   void CreateAudioConsumer(
       fidl::InterfaceRequest<fuchsia::media::AudioConsumer> request) final;
+  void CreateAudioCapturer(
+      fidl::InterfaceRequest<fuchsia::media::AudioCapturer> request) final;
 
  private:
   media::FuchsiaCdmManager* const cdm_manager_;
@@ -83,6 +85,25 @@ void MediaResourceProviderImpl::CreateAudioConsumer(
   factory->CreateAudioConsumer(
       FrameImpl::FromRenderFrameHost(render_frame_host())->media_session_id(),
       std::move(request));
+}
+
+void MediaResourceProviderImpl::CreateAudioCapturer(
+    fidl::InterfaceRequest<fuchsia::media::AudioCapturer> request) {
+  if (FrameImpl::FromRenderFrameHost(render_frame_host())
+          ->permission_controller()
+          ->GetPermissionState(content::PermissionType::AUDIO_CAPTURE,
+                               origin()) !=
+      blink::mojom::PermissionStatus::GRANTED) {
+    DLOG(WARNING)
+        << "Received CreateAudioCapturer request from an origin that doesn't "
+           "have AUDIO_CAPTURE permission.";
+    return;
+  }
+
+  auto factory = base::fuchsia::ComponentContextForCurrentProcess()
+                     ->svc()
+                     ->Connect<fuchsia::media::Audio>();
+  factory->CreateAudioCapturer(std::move(request), /*loopback=*/false);
 }
 
 class WidevineHandler : public media::FuchsiaCdmManager::KeySystemHandler {

@@ -174,12 +174,14 @@
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/native_theme/native_theme_dark_aura.h"
 #include "ui/views/accessibility/view_accessibility_utils.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -1423,15 +1425,8 @@ void BrowserView::FocusBookmarksToolbar() {
 }
 
 void BrowserView::FocusInactivePopupForAccessibility() {
-  if (GetLocationBarView()->ActivateFirstInactiveBubbleForAccessibility())
+  if (ActivateFirstInactiveBubbleForAccessibility())
     return;
-
-  if (toolbar_ && toolbar_->toolbar_account_icon_container() &&
-      toolbar_->toolbar_account_icon_container()
-          ->page_action_icon_controller()
-          ->ActivateFirstInactiveBubbleForAccessibility()) {
-    return;
-  }
 
   if (!infobar_container_->children().empty())
     infobar_container_->SetPaneFocusAndFocusDefault();
@@ -1455,16 +1450,41 @@ void BrowserView::FocusAppMenu() {
 
 void BrowserView::RotatePaneFocus(bool forwards) {
   // If an inactive bubble is showing this intentionally focuses that dialog to
-  // provide an easy access method to these dialogs without requring additional
+  // provide an easy access method to these dialogs without requiring additional
   // keyboard shortcuts or commands. To get back out to pane cycling the dialog
   // needs to be accepted or dismissed.
-  if (GetLocationBarView()->ActivateFirstInactiveBubbleForAccessibility())
+  if (ActivateFirstInactiveBubbleForAccessibility())
     return;
 
   GetFocusManager()->RotatePaneFocus(
       forwards ?
           views::FocusManager::kForward : views::FocusManager::kBackward,
       views::FocusManager::kWrap);
+}
+
+bool BrowserView::ActivateFirstInactiveBubbleForAccessibility() {
+  if (GetLocationBarView()->ActivateFirstInactiveBubbleForAccessibility())
+    return true;
+
+  // TODO: this fixes http://crbug.com/1042010, but a more general solution
+  // should be desirable to find any bubbles anchored in the views hierarchy.
+  if (toolbar_ && toolbar_->app_menu_button()) {
+    views::BubbleDialogDelegateView* bubble =
+        toolbar_->app_menu_button()->GetProperty(views::kAnchoredDialogKey);
+    if (bubble) {
+      bubble->GetInitiallyFocusedView()->RequestFocus();
+      return true;
+    }
+  }
+
+  if (toolbar_ && toolbar_->toolbar_account_icon_container() &&
+      toolbar_->toolbar_account_icon_container()
+          ->page_action_icon_controller()
+          ->ActivateFirstInactiveBubbleForAccessibility()) {
+    return true;
+  }
+
+  return false;
 }
 
 void BrowserView::DestroyBrowser() {

@@ -80,7 +80,20 @@ class PLATFORM_EXPORT OpenTypeMathSupport {
     kRadicalDegreeBottomRaisePercent = 55
   };
 
+  // Returns the value of the requested math constant or null if the font does
+  // not have any OpenType MATH table. All values are 16.16 fixed-point values
+  // converted to float except percentages (kScriptPercentScaleDown,
+  // kScriptScriptPercentScaleDown and kRadicalDegreeBottomRaisePercent) which
+  // are represented by a number between 0 and 1.
+  // https://docs.microsoft.com/en-us/typography/opentype/spec/math#mathconstants-table
   static base::Optional<float> MathConstant(const HarfBuzzFace*, MathConstants);
+
+  // Returns the italic correction corresponding to the specified glyph or null
+  // if the font does not have any OpenType MATH table. This value provides an
+  // estimation of how much the glyph is slanted, which can be used e.g. when
+  // attaching scripts to the glyph.
+  // https://docs.microsoft.com/en-us/typography/opentype/spec/math#mathitalicscorrectioninfo-table
+  static base::Optional<float> MathItalicCorrection(const HarfBuzzFace*, Glyph);
 
   // Returns a vector of GlyphVariantRecords corresponding to the specified
   // glyph and stretch axis. The base glyph is always added as the first item.
@@ -91,12 +104,15 @@ class PLATFORM_EXPORT OpenTypeMathSupport {
                          OpenTypeMathStretchData::StretchAxis);
 
   // Returns a vector of GlyphPartRecords corresponding to the specified
-  // glyph and stretch axis. It is empty if there is no such construction.
+  // glyph and stretch axis or an empty vector if there is no such construction.
+  // If the italic_correction parameter is specified and a construction is
+  // available, then it is set to the italic correction of the glyph assembly.
   // https://docs.microsoft.com/en-us/typography/opentype/spec/math#mathvariants-table
   static Vector<OpenTypeMathStretchData::GlyphPartRecord> GetGlyphPartRecords(
       const HarfBuzzFace*,
       Glyph base_glyph,
-      OpenTypeMathStretchData::StretchAxis);
+      OpenTypeMathStretchData::StretchAxis,
+      float* italic_correction = nullptr);
 };
 
 }  // namespace blink

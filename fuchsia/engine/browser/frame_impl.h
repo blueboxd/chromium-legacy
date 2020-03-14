@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/platform_shared_memory_region.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "fuchsia/engine/browser/accessibility_bridge.h"
@@ -55,6 +55,9 @@ class FrameImpl : public fuchsia::web::Frame,
             ContextImpl* context,
             fidl::InterfaceRequest<fuchsia::web::Frame> frame_request);
   ~FrameImpl() override;
+
+  FrameImpl(const FrameImpl&) = delete;
+  FrameImpl& operator=(const FrameImpl&) = delete;
 
   uint64_t media_session_id() const { return media_session_id_; }
 
@@ -201,6 +204,10 @@ class FrameImpl : public fuchsia::web::Frame,
                       const gfx::Rect& initial_rect,
                       bool user_gesture,
                       bool* was_blocked) override;
+  void RequestMediaAccessPermission(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      content::MediaResponseCallback callback) override;
 
   // content::WebContentsObserver implementation.
   void ReadyToCommitNavigation(
@@ -242,8 +249,6 @@ class FrameImpl : public fuchsia::web::Frame,
   gfx::Size render_size_override_;
 
   fidl::Binding<fuchsia::web::Frame> binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameImpl);
 };
 
 #endif  // FUCHSIA_ENGINE_BROWSER_FRAME_IMPL_H_

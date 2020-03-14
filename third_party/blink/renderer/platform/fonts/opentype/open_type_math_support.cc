@@ -25,6 +25,13 @@ float HarfBuzzUnitsToFloat(hb_position_t value) {
 // See https://chromium-review.googlesource.com/c/chromium/src/+/2074678
 unsigned kMaxHarfBuzzRecords = 20;
 
+hb_direction_t HarfBuzzDirection(
+    blink::OpenTypeMathStretchData::StretchAxis stretch_axis) {
+  return stretch_axis == blink::OpenTypeMathStretchData::StretchAxis::Horizontal
+             ? HB_DIRECTION_LTR
+             : HB_DIRECTION_BTT;
+}
+
 }  // namespace
 
 namespace blink {
@@ -120,6 +127,19 @@ base::Optional<float> OpenTypeMathSupport::MathConstant(
   return base::nullopt;
 }
 
+base::Optional<float> OpenTypeMathSupport::MathItalicCorrection(
+    const HarfBuzzFace* harfbuzz_face,
+    Glyph glyph) {
+  if (!harfbuzz_face)
+    return base::nullopt;
+
+  hb_font_t* font =
+      harfbuzz_face->GetScaledFont(nullptr, HarfBuzzFace::NoVerticalLayout);
+
+  return base::Optional<float>(HarfBuzzUnitsToFloat(
+      hb_ot_math_get_glyph_italics_correction(font, glyph)));
+}
+
 template <typename HarfBuzzRecordType>
 using GetHarfBuzzMathRecordGetter =
     base::OnceCallback<unsigned int(hb_font_t* font,
@@ -145,10 +165,7 @@ Vector<RecordType> GetHarfBuzzMathRecord(
       harfbuzz_face->GetScaledFont(nullptr, HarfBuzzFace::NoVerticalLayout);
   DCHECK(hb_font);
 
-  hb_direction_t hb_stretch_axis =
-      stretch_axis == OpenTypeMathStretchData::StretchAxis::Horizontal
-          ? HB_DIRECTION_LTR
-          : HB_DIRECTION_BTT;
+  hb_direction_t hb_stretch_axis = HarfBuzzDirection(stretch_axis);
 
   // In practice, math fonts have, for a given base glyph and stretch axis only
   // provide a few GlyphVariantRecords (size variants of increasing sizes) and
@@ -195,7 +212,8 @@ Vector<OpenTypeMathStretchData::GlyphPartRecord>
 OpenTypeMathSupport::GetGlyphPartRecords(
     const HarfBuzzFace* harfbuzz_face,
     Glyph base_glyph,
-    OpenTypeMathStretchData::StretchAxis stretch_axis) {
+    OpenTypeMathStretchData::StretchAxis stretch_axis,
+    float* italic_correction) {
   DCHECK(harfbuzz_face);
   DCHECK(base_glyph);
 
@@ -217,10 +235,24 @@ OpenTypeMathSupport::GetGlyphPartRecords(
                 HarfBuzzUnitsToFloat(record.full_advance),
                 record.flags & HB_MATH_GLYPH_PART_FLAG_EXTENDER};
       });
-  return GetHarfBuzzMathRecord(
-      harfbuzz_face, base_glyph, stretch_axis, std::move(getter),
-      std::move(converter),
-      base::Optional<OpenTypeMathStretchData::GlyphPartRecord>());
+  Vector<OpenTypeMathStretchData::GlyphPartRecord> parts =
+      GetHarfBuzzMathRecord(
+          harfbuzz_face, base_glyph, stretch_axis, std::move(getter),
+          std::move(converter),
+          base::Optional<OpenTypeMathStretchData::GlyphPartRecord>());
+  if (italic_correction && !parts.IsEmpty()) {
+    hb_font_t* hb_font =
+        harfbuzz_face->GetScaledFont(nullptr, HarfBuzzFace::NoVerticalLayout);
+    // A GlyphAssembly subtable exists for the specified font, glyph and stretch
+    // axis since it has been possible to retrieve the GlyphPartRecords. This
+    // means that the following call is guaranteed to get an italic correction.
+    hb_position_t harfbuzz_italic_correction;
+    hb_ot_math_get_glyph_assembly(hb_font, base_glyph,
+                                  HarfBuzzDirection(stretch_axis), 0, nullptr,
+                                  nullptr, &harfbuzz_italic_correction);
+    *italic_correction = HarfBuzzUnitsToFloat(harfbuzz_italic_correction);
+  }
+  return parts;
 }
 
 }  // namespace blink

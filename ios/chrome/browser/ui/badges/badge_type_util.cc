@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/ui/badges/badge_type_util.h"
 
+#include "base/logging.h"
+
 BadgeType BadgeTypeForInfobarType(InfobarType infobar_type) {
   switch (infobar_type) {
     case InfobarType::kInfobarTypePasswordSave:
@@ -16,5 +18,21 @@ BadgeType BadgeTypeForInfobarType(InfobarType infobar_type) {
       return BadgeType::kBadgeTypeTranslate;
     default:
       return BadgeType::kBadgeTypeNone;
+  }
+}
+
+InfobarType InfobarTypeForBadgeType(BadgeType badge_type) {
+  switch (badge_type) {
+    case BadgeType::kBadgeTypePasswordSave:
+      return InfobarType::kInfobarTypePasswordSave;
+    case BadgeType::kBadgeTypePasswordUpdate:
+      return InfobarType::kInfobarTypePasswordUpdate;
+    case BadgeType::kBadgeTypeSaveCard:
+      return InfobarType::kInfobarTypeSaveCard;
+    case BadgeType::kBadgeTypeTranslate:
+      return InfobarType::kInfobarTypeTranslate;
+    default:
+      NOTREACHED() << "Unsupported badge type.";
+      return InfobarType::kInfobarTypeConfirm;
   }
 }

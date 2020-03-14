@@ -160,7 +160,8 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       action_module_(std::make_unique<action::CrosActionModule>(
           this,
           assistant::features::IsAppSupportEnabled(),
-          assistant::features::IsRoutinesEnabled())),
+          assistant::features::IsRoutinesEnabled(),
+          /*show_timers_enabled=*/false)),
       chromium_api_delegate_(std::move(pending_url_loader_factory)),
       assistant_settings_manager_(
           std::make_unique<AssistantSettingsManagerImpl>(context, this)),

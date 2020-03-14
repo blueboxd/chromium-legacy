@@ -12,4 +12,8 @@
 // if that InfobarType does not support badges.
 BadgeType BadgeTypeForInfobarType(InfobarType infobar_type);
 
+// Returns the corresponding InfobarType for |badge_type|. |badge_type| must
+// not be kBadgeTypeNone.
+InfobarType InfobarTypeForBadgeType(BadgeType badge_type);
+
 #endif  // IOS_CHROME_BROWSER_UI_BADGES_BADGE_TYPE_UTIL_H_

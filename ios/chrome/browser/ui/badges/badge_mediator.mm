@@ -9,8 +9,11 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper_delegate.h"
+#include "ios/chrome/browser/infobars/infobar_ios.h"
+#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
+#import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
 #include "ios/chrome/browser/infobars/overlays/overlay_request_infobar_util.h"
 #include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
@@ -20,8 +23,11 @@
 #import "ios/chrome/browser/ui/badges/badge_item.h"
 #import "ios/chrome/browser/ui/badges/badge_static_item.h"
 #import "ios/chrome/browser/ui/badges/badge_tappable_item.h"
+#include "ios/chrome/browser/ui/badges/badge_type_util.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/infobar_commands.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
+#import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -195,34 +201,21 @@ const char kInfobarOverflowBadgeShownUserAction[] =
   DCHECK(badgeButton.badgeType == BadgeType::kBadgeTypePasswordSave ||
          badgeButton.badgeType == BadgeType::kBadgeTypePasswordUpdate);
 
-  if (badgeButton.badgeType == BadgeType::kBadgeTypePasswordSave) {
-    [self.dispatcher displayModalInfobar:InfobarType::kInfobarTypePasswordSave];
-    [self recordMetricsForBadgeButton:badgeButton
-                          infobarType:InfobarType::kInfobarTypePasswordSave];
-  } else if (badgeButton.badgeType == BadgeType::kBadgeTypePasswordUpdate) {
-    [self.dispatcher
-        displayModalInfobar:InfobarType::kInfobarTypePasswordUpdate];
-    [self recordMetricsForBadgeButton:badgeButton
-                          infobarType:InfobarType::kInfobarTypePasswordUpdate];
-  }
+  [self handleTappedBadgeButton:badgeButton];
 }
 
 - (void)saveCardBadgeButtonTapped:(id)sender {
   BadgeButton* badgeButton = base::mac::ObjCCastStrict<BadgeButton>(sender);
   DCHECK_EQ(badgeButton.badgeType, BadgeType::kBadgeTypeSaveCard);
 
-  [self.dispatcher displayModalInfobar:InfobarType::kInfobarTypeSaveCard];
-  [self recordMetricsForBadgeButton:badgeButton
-                        infobarType:InfobarType::kInfobarTypeSaveCard];
+  [self handleTappedBadgeButton:badgeButton];
 }
 
 - (void)translateBadgeButtonTapped:(id)sender {
   BadgeButton* badgeButton = base::mac::ObjCCastStrict<BadgeButton>(sender);
   DCHECK_EQ(badgeButton.badgeType, BadgeType::kBadgeTypeTranslate);
 
-  [self.dispatcher displayModalInfobar:InfobarType::kInfobarTypeTranslate];
-  [self recordMetricsForBadgeButton:badgeButton
-                        infobarType:InfobarType::kInfobarTypeTranslate];
+  [self handleTappedBadgeButton:badgeButton];
 }
 
 - (void)overflowBadgeButtonTapped:(id)sender {
@@ -337,32 +330,6 @@ const char kInfobarOverflowBadgeShownUserAction[] =
   self.webState = newWebState;
 }
 
-#pragma mark - Helpers
-
-// Records Badge tap Histograms through the InfobarMetricsRecorder and then
-// records UserActions.
-- (void)recordMetricsForBadgeButton:(BadgeButton*)badgeButton
-                        infobarType:(InfobarType)infobarType {
-  MobileMessagesBadgeState badgeState =
-      badgeButton.accepted ? MobileMessagesBadgeState::Active
-                           : MobileMessagesBadgeState::Inactive;
-
-  InfobarMetricsRecorder* metricsRecorder =
-      [[InfobarMetricsRecorder alloc] initWithType:infobarType];
-  [metricsRecorder recordBadgeTappedInState:badgeState];
-
-  switch (badgeState) {
-    case MobileMessagesBadgeState::Active:
-      base::RecordAction(
-          base::UserMetricsAction("MobileMessagesBadgeAcceptedTapped"));
-      break;
-    case MobileMessagesBadgeState::Inactive:
-      base::RecordAction(
-          base::UserMetricsAction("MobileMessagesBadgeNonAcceptedTapped"));
-      break;
-  }
-}
-
 #pragma mark - Private
 
 // Directs consumer to update read status depending on the state of the
@@ -420,6 +387,57 @@ const char kInfobarOverflowBadgeShownUserAction[] =
   [self.consumer updateDisplayedBadge:displayedBadge
                       fullScreenBadge:self.offTheRecordBadge];
   [self updateConsumerReadStatus];
+}
+
+// Shows the modal UI when |button| is tapped.
+- (void)handleTappedBadgeButton:(BadgeButton*)button {
+  InfobarType infobarType = InfobarTypeForBadgeType(button.badgeType);
+  if (base::FeatureList::IsEnabled(kInfobarOverlayUI)) {
+    DCHECK(self.webState);
+    InfoBarIOS* infobar = [self infobarWithType:infobarType];
+    DCHECK(infobar);
+    InfobarOverlayRequestInserter::CreateForWebState(self.webState);
+    InfobarOverlayRequestInserter::FromWebState(self.webState)
+        ->AddOverlayRequest(infobar, InfobarOverlayType::kModal);
+  } else {
+    [self.dispatcher displayModalInfobar:infobarType];
+  }
+  [self recordMetricsForBadgeButton:button infobarType:infobarType];
+}
+
+// Returns the infobar in the active WebState's InfoBarManager with |type|.
+- (InfoBarIOS*)infobarWithType:(InfobarType)type {
+  InfoBarManagerImpl* manager = InfoBarManagerImpl::FromWebState(self.webState);
+  for (size_t index = 0; index < manager->infobar_count(); ++index) {
+    InfoBarIOS* infobar = static_cast<InfoBarIOS*>(manager->infobar_at(index));
+    if (infobar->InfobarUIDelegate().infobarType == type)
+      return infobar;
+  }
+  return nullptr;
+}
+
+// Records Badge tap Histograms through the InfobarMetricsRecorder and then
+// records UserActions.
+- (void)recordMetricsForBadgeButton:(BadgeButton*)badgeButton
+                        infobarType:(InfobarType)infobarType {
+  MobileMessagesBadgeState badgeState =
+      badgeButton.accepted ? MobileMessagesBadgeState::Active
+                           : MobileMessagesBadgeState::Inactive;
+
+  InfobarMetricsRecorder* metricsRecorder =
+      [[InfobarMetricsRecorder alloc] initWithType:infobarType];
+  [metricsRecorder recordBadgeTappedInState:badgeState];
+
+  switch (badgeState) {
+    case MobileMessagesBadgeState::Active:
+      base::RecordAction(
+          base::UserMetricsAction("MobileMessagesBadgeAcceptedTapped"));
+      break;
+    case MobileMessagesBadgeState::Inactive:
+      base::RecordAction(
+          base::UserMetricsAction("MobileMessagesBadgeNonAcceptedTapped"));
+      break;
+  }
 }
 
 @end

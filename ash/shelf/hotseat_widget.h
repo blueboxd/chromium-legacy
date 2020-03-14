@@ -92,8 +92,11 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   ShelfView* GetShelfView();
   const ShelfView* GetShelfView() const;
 
-  // Returns the background blur of the |translucent_background_| for test.
+  // Returns the background blur of the |translucent_background_|, for tests.
   int GetHotseatBackgroundBlurForTest() const;
+
+  // Returns whether the translucent background is visible, for tests.
+  bool GetIsTranslucentBackgroundVisibleForTest() const;
 
   void SetState(HotseatState state);
   HotseatState state() const { return state_; }

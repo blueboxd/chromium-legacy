@@ -310,24 +310,24 @@ namespace ui {
 class AXPlatformNodeWin;
 class AXPlatformRelationWin;
 
-// A simple interface for a class that wants to be notified when IAccessible2
-// is used by a client, a strong indication that full accessibility support
-// should be enabled.
-//
-// TODO(dmazzoni): Rename this to something more general.
-class AX_EXPORT IAccessible2UsageObserver {
+// A simple interface for a class that wants to be notified when Windows
+// accessibility APIs are used by a client, a strong indication that full
+// accessibility support should be enabled.
+class AX_EXPORT WinAccessibilityAPIUsageObserver {
  public:
-  IAccessible2UsageObserver();
-  virtual ~IAccessible2UsageObserver();
+  WinAccessibilityAPIUsageObserver();
+  virtual ~WinAccessibilityAPIUsageObserver();
   virtual void OnIAccessible2Used() = 0;
   virtual void OnScreenReaderHoneyPotQueried() = 0;
   virtual void OnAccNameCalled() = 0;
+  virtual void OnUIAutomationUsed() = 0;
 };
 
 // Get an observer list that allows modules across the codebase to
-// listen to when usage of IAccessible2 is detected.
-extern AX_EXPORT base::ObserverList<IAccessible2UsageObserver>::Unchecked&
-GetIAccessible2UsageObserverList();
+// listen to when usage of Windows accessibility APIs is detected.
+extern AX_EXPORT
+    base::ObserverList<WinAccessibilityAPIUsageObserver>::Unchecked&
+    GetWinAccessibilityAPIUsageObserverList();
 
 // TODO(nektar): Remove multithread superclass since we don't support it.
 class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))

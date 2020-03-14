@@ -33,8 +33,10 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -42,6 +44,7 @@
 #include "content/public/browser/gpu_feature_checker.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_function_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -49,6 +52,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -277,9 +281,13 @@ WebstorePrivateBeginInstallWithManifest3Function::
     WebstorePrivateBeginInstallWithManifest3Function() : chrome_details_(this) {
 }
 
-WebstorePrivateBeginInstallWithManifest3Function::
-    ~WebstorePrivateBeginInstallWithManifest3Function() {
+base::string16 WebstorePrivateBeginInstallWithManifest3Function::
+    GetBlockedByPolicyErrorMessageForTesting() const {
+  return blocked_by_policy_error_message_;
 }
+
+WebstorePrivateBeginInstallWithManifest3Function::
+    ~WebstorePrivateBeginInstallWithManifest3Function() = default;
 
 ExtensionFunction::ResponseAction
 WebstorePrivateBeginInstallWithManifest3Function::Run() {
@@ -390,14 +398,14 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
         blocked_for_child = true;
     }
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
-    api::webstore_private::Result code =
-        blocked_for_child
-            ? api::webstore_private::RESULT_BLOCKED_FOR_CHILD_ACCOUNT
-            : api::webstore_private::RESULT_BLOCKED_BY_POLICY;
-    Respond(BuildResponse(code, base::UTF16ToUTF8(policy_error)));
-    // Matches the AddRef in Run().
-    Release();
-    return;
+    if (blocked_for_child) {
+      Respond(
+          BuildResponse(api::webstore_private::RESULT_BLOCKED_FOR_CHILD_ACCOUNT,
+                        base::UTF16ToUTF8(policy_error)));
+      // Matches the AddRef in Run().
+      Release();
+      return;
+    }
   }
 
   content::WebContents* web_contents = GetSenderWebContents();
@@ -409,6 +417,15 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
     Release();
     return;
   }
+  if (install_status == kBlockedByPolicy) {
+    ShowBlockedByPolicyDialog(
+        dummy_extension_.get(), icon_, web_contents,
+        base::BindRepeating(&WebstorePrivateBeginInstallWithManifest3Function::
+                                OnBlockByPolicyPromptDone,
+                            this));
+    return;
+  }
+
   install_prompt_.reset(new ExtensionInstallPrompt(web_contents));
   if (install_status == kCanRequest || install_status == kRequestPending) {
     install_prompt_->ShowDialog(
@@ -429,7 +446,8 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
         dummy_extension_.get(), &icon_,
         ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
-  // Control flow finishes up in OnInstallPromptDone or OnRequestPromptDone.
+  // Control flow finishes up in OnInstallPromptDone, OnRequestPromptDone or
+  // OnBlockByPolicyPromptDone.
 }
 
 void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseFailure(
@@ -478,6 +496,15 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnRequestPromptDone(
       NOTREACHED();
   }
 
+  Respond(BuildResponse(api::webstore_private::RESULT_USER_CANCELLED,
+                        kWebstoreUserCancelledError));
+  // Matches the AddRef in Run().
+  Release();
+}
+void WebstorePrivateBeginInstallWithManifest3Function::
+    OnBlockByPolicyPromptDone() {
+  // TODO(crbug.com/1061205): Returns |blocked_by_policy| when CWS is ready for
+  // the new dialog change.
   Respond(BuildResponse(api::webstore_private::RESULT_USER_CANCELLED,
                         kWebstoreUserCancelledError));
   // Matches the AddRef in Run().
@@ -549,11 +576,48 @@ WebstorePrivateBeginInstallWithManifest3Function::CreateResults(
   return BeginInstallWithManifest3::Results::Create(result);
 }
 
+void WebstorePrivateBeginInstallWithManifest3Function::
+    ShowBlockedByPolicyDialog(const Extension* extension,
+                              const SkBitmap& icon,
+                              content::WebContents* contents,
+                              base::OnceClosure done_callback) {
+  DCHECK(extension);
+  DCHECK(contents);
+
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+
+  std::string message_from_admin =
+      extensions::ExtensionManagementFactory::GetForBrowserContext(profile)
+          ->BlockedInstallMessage(extension->id());
+  if (!message_from_admin.empty()) {
+    blocked_by_policy_error_message_ =
+        l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_MESSAGE_FROM_ADMIN,
+                                   base::UTF8ToUTF16(message_from_admin));
+  }
+
+  gfx::ImageSkia image =
+      (icon.empty()
+           ? (extension->is_app() ? extensions::util::GetDefaultAppIcon()
+                                  : extensions::util::GetDefaultExtensionIcon())
+           : gfx::ImageSkia::CreateFrom1xBitmap(icon));
+
+  if (extensions::ScopedTestDialogAutoConfirm::GetAutoConfirmValue() !=
+      extensions::ScopedTestDialogAutoConfirm::NONE) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(done_callback));
+    return;
+  }
+
+  chrome::ShowExtensionInstallBlockedDialog(
+      extension->name(), blocked_by_policy_error_message_, image, contents,
+      std::move(done_callback));
+}
+
 WebstorePrivateCompleteInstallFunction::
     WebstorePrivateCompleteInstallFunction() : chrome_details_(this) {}
 
 WebstorePrivateCompleteInstallFunction::
-    ~WebstorePrivateCompleteInstallFunction() {}
+    ~WebstorePrivateCompleteInstallFunction() = default;
 
 ExtensionFunction::ResponseAction
 WebstorePrivateCompleteInstallFunction::Run() {

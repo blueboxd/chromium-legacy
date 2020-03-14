@@ -802,6 +802,11 @@
           'shards': 15,
         },
       },
+      'android-lollipop-arm-rel': {
+        'swarming': {
+          'shards': 15,
+        },
+      },
       'android-marshmallow-arm64-rel': {
         'swarming': {
           'shards': 16,
@@ -1789,6 +1794,7 @@
       'android-code-coverage',
       'android-code-coverage-native',
       'android-kitkat-arm-rel',
+      'android-lollipop-arm-rel',
       'android-marshmallow-arm64-rel',
       'android-marshmallow-x86-fyi-rel',
       'android-pie-arm64-rel',
@@ -1902,6 +1908,11 @@
   'sandbox_linux_unittests': {
     'modifications': {
       'Lollipop Phone Tester': {
+        'args': [
+          '--shard-timeout=300',
+        ],
+      },
+      'android-lollipop-arm-rel': {
         'args': [
           '--shard-timeout=300',
         ],

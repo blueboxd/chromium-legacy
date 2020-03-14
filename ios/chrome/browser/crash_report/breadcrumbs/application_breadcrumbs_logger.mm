@@ -28,6 +28,7 @@ ApplicationBreadcrumbsLogger::ApplicationBreadcrumbsLogger(
 }
 
 ApplicationBreadcrumbsLogger::~ApplicationBreadcrumbsLogger() {
+  breadcrumb_manager_->AddEvent("Shutdown");
   base::RemoveActionCallback(user_action_callback_);
   breakpad::StopMonitoringBreadcrumbManager(breadcrumb_manager_);
 }

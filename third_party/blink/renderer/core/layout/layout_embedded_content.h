@@ -27,6 +27,10 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 
+namespace ui {
+class Cursor;
+}
+
 namespace blink {
 
 class EmbeddedContentView;
@@ -75,7 +79,7 @@ class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
   void PaintReplaced(const PaintInfo&,
                      const PhysicalOffset& paint_offset) const override;
   void InvalidatePaint(const PaintInvalidatorContext&) const final;
-  CursorDirective GetCursor(const PhysicalOffset&, Cursor&) const final;
+  CursorDirective GetCursor(const PhysicalOffset&, ui::Cursor&) const final;
 
   bool CanBeSelectionLeafInternal() const final { return true; }
 

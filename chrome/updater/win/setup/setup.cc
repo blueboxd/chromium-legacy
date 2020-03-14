@@ -16,10 +16,12 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/scoped_com_initializer.h"
+#include "base/win/win_util.h"
 #include "chrome/installer/util/install_service_work_item.h"
 #include "chrome/installer/util/self_cleaning_temp_dir.h"
 #include "chrome/installer/util/work_item_list.h"
@@ -75,11 +77,15 @@ void AddComServerWorkItems(HKEY root,
   }
 
   list->AddCreateRegKeyWorkItem(root, clsid_reg_path, WorkItem::kWow64Default);
+  const base::string16 local_server32_reg_path =
+      base::StrCat({clsid_reg_path, L"\\LocalServer32"});
+  list->AddCreateRegKeyWorkItem(root, local_server32_reg_path,
+                                WorkItem::kWow64Default);
 
   base::CommandLine run_com_server_command(com_server_path);
   run_com_server_command.AppendSwitch(kServerSwitch);
   list->AddSetRegValueWorkItem(
-      root, clsid_reg_path, WorkItem::kWow64Default, L"LocalServer32",
+      root, local_server32_reg_path, WorkItem::kWow64Default, L"",
       run_com_server_command.GetCommandLineString(), true);
 }
 
@@ -145,9 +151,9 @@ void AddComInterfacesWorkItems(HKEY root,
                                L"{00020424-0000-0000-C000-000000000046}", true);
   list->AddCreateRegKeyWorkItem(root, iid_reg_path + L"\\TypeLib",
                                 WorkItem::kWow64Default);
-  list->AddSetRegValueWorkItem(root, iid_reg_path + L"\\TypeLib",
-                               WorkItem::kWow64Default, L"",
-                               GetComServerClsid(), true);
+  list->AddSetRegValueWorkItem(
+      root, iid_reg_path + L"\\TypeLib", WorkItem::kWow64Default, L"",
+      base::win::String16FromGUID(__uuidof(IUpdater)), true);
 
   // The TypeLib registration for the Ole Automation marshaler.
   list->AddCreateRegKeyWorkItem(root, typelib_reg_path + L"\\1.0\\0\\win32",

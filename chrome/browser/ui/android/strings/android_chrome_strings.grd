@@ -4098,6 +4098,20 @@ Only you can see what your camera is looking at. The site can't see your camera'
       <message name="IDS_ANDROID_NFC_UNSUPPORTED" desc="The message to show when NFC is not supported globally in Android">
         This device can't read NFC
       </message>
+
+      <!-- Paint Preview Demo -->
+      <message name="IDS_PAINT_PREVIEW_DEMO_CAPTURE_SUCCESS" desc="Toast message displayed when paint preview capture finishes successfully. Used in paint preview demo mode." translateable="false">
+        Paint Preview captured successfully.
+      </message>
+      <message name="IDS_PAINT_PREVIEW_DEMO_CAPTURE_FAILURE" desc="Toast message displayed when paint preview capture fails. Used in paint preview demo mode." translateable="false">
+        Failed to capture Paint Preview.
+      </message>
+      <message name="IDS_PAINT_PREVIEW_DEMO_PLAYBACK_START" desc="Toast message displayed when paint preview starts displaying. Used in paint preview demo mode." translateable="false">
+        Displaying Paint Preview. Press back to exit the Paint Preview demo.
+      </message>
+      <message name="IDS_PAINT_PREVIEW_DEMO_PLAYBACK_END" desc="Toast message displayed when the user exists paint preview demo. Used in paint preview demo mode." translateable="false">
+        Exited Paint Preview demo.
+      </message>
     </messages>
   </release>
 </grit>

@@ -26,11 +26,12 @@ TabGroup::TabGroup(TabGroupController* controller,
   visual_data_ = std::make_unique<tab_groups::TabGroupVisualData>(visual_data);
 }
 
-TabGroup::~TabGroup() {}
+TabGroup::~TabGroup() = default;
 
-void TabGroup::SetVisualData(
-    const tab_groups::TabGroupVisualData& visual_data) {
+void TabGroup::SetVisualData(const tab_groups::TabGroupVisualData& visual_data,
+                             bool is_customized) {
   visual_data_ = std::make_unique<tab_groups::TabGroupVisualData>(visual_data);
+  is_customized_ = is_customized;
   controller_->ChangeTabGroupVisuals(id_);
 }
 
@@ -67,6 +68,10 @@ void TabGroup::RemoveTab() {
 
 bool TabGroup::IsEmpty() const {
   return tab_count_ == 0;
+}
+
+bool TabGroup::IsCustomized() const {
+  return is_customized_;
 }
 
 std::vector<int> TabGroup::ListTabs() const {

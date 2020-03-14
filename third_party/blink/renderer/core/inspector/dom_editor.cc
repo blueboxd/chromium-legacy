@@ -457,10 +457,9 @@ static Response ToResponse(ExceptionState& exception_state) {
                                    exception_state.CodeAs<DOMExceptionCode>()) +
                                    " "
                              : g_empty_string;
-    String msg = name_prefix + exception_state.Message();
-    return Response::ServerError(msg.Utf8());
+    return Response::Error(name_prefix + exception_state.Message());
   }
-  return Response::Success();
+  return Response::OK();
 }
 
 Response DOMEditor::InsertBefore(ContainerNode* parent_node,

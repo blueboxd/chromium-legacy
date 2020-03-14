@@ -597,6 +597,10 @@
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
 #endif
 
+#if BUILDFLAG(ENABLE_VR)
+#include "chrome/browser/vr/service/chrome_xr_integration_client.h"
+#endif
+
 using base::FileDescriptor;
 using content::BrowserThread;
 using content::BrowserURLHandler;
@@ -5540,3 +5544,13 @@ bool ChromeContentBrowserClient::ShouldAllowPluginCreation(
   return true;
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
+
+#if BUILDFLAG(ENABLE_VR)
+content::XrIntegrationClient*
+ChromeContentBrowserClient::GetXrIntegrationClient() {
+  if (!xr_integration_client_)
+    xr_integration_client_ = std::make_unique<vr::ChromeXrIntegrationClient>(
+        util::PassKey<ChromeContentBrowserClient>());
+  return xr_integration_client_.get();
+}
+#endif  // BUILDFLAG(ENABLE_VR)

@@ -16,6 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -58,10 +59,10 @@ TEST_F(SequencedTaskRunnerHandleTest, FromTaskEnvironment) {
 }
 
 TEST_F(SequencedTaskRunnerHandleTest, FromThreadPoolSequencedTask) {
-  base::CreateSequencedTaskRunner({ThreadPool()})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&SequencedTaskRunnerHandleTest::
-                                    VerifyCurrentSequencedTaskRunner));
+  base::ThreadPool::CreateSequencedTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &SequencedTaskRunnerHandleTest::VerifyCurrentSequencedTaskRunner));
   task_environment_.RunUntilIdle();
 }
 

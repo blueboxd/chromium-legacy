@@ -25,8 +25,6 @@ class SettingsUI : public content::WebUIController {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  static void SetHatsTimeoutForTesting(int timeout);
-
   explicit SettingsUI(content::WebUI* web_ui);
   ~SettingsUI() override;
 
@@ -42,9 +40,6 @@ class SettingsUI : public content::WebUIController {
 
   // Makes a request to show a HaTS survey.
   void TryShowHatsSurveyWithTimeout();
-
-  // Timeout (in milliseconds) used in TryShowHatsSurveyWithTimeout.
-  static int hats_timeout_ms_;
 
   WebuiLoadTimer webui_load_timer_;
 

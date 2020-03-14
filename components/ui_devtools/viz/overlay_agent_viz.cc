@@ -14,17 +14,17 @@ OverlayAgentViz::~OverlayAgentViz() {}
 protocol::Response OverlayAgentViz::setInspectMode(
     const protocol::String& in_mode,
     protocol::Maybe<protocol::Overlay::HighlightConfig> in_highlightConfig) {
-  return protocol::Response::Success();
+  return protocol::Response::OK();
 }
 
 protocol::Response OverlayAgentViz::highlightNode(
     std::unique_ptr<protocol::Overlay::HighlightConfig> highlight_config,
     protocol::Maybe<int> node_id) {
-  return protocol::Response::Success();
+  return protocol::Response::OK();
 }
 
 protocol::Response OverlayAgentViz::hideHighlight() {
-  return protocol::Response::Success();
+  return protocol::Response::OK();
 }
 
 }  // namespace ui_devtools

@@ -14,6 +14,7 @@
 #include "base/task/thread_pool.h"
 #include "chrome/updater/app/app.h"
 #import "chrome/updater/configurator.h"
+#import "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/server/mac/service_delegate.h"
 #import "chrome/updater/update_service.h"
 #include "chrome/updater/update_service_in_process.h"
@@ -44,14 +45,12 @@ void AppServer::Initialize() {
 
 void AppServer::FirstTaskRun() {
   @autoreleasepool {
-    std::string service_name = MAC_BUNDLE_IDENTIFIER_STRING;
-    service_name.append(".UpdaterXPCService");
     delegate_.reset([[CRUUpdateCheckXPCServiceDelegate alloc]
         initWithUpdateService:std::make_unique<UpdateServiceInProcess>(
                                   config_)]);
 
     listener_.reset([[NSXPCListener alloc]
-        initWithMachServiceName:base::SysUTF8ToNSString(service_name)]);
+        initWithMachServiceName:GetGoogleUpdateServiceMachName().get()]);
     listener_.get().delegate = delegate_.get();
 
     [listener_ resume];

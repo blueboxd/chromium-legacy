@@ -145,7 +145,7 @@ Response LegacyDOMSnapshotAgent::GetSnapshot(
   computed_styles_map_.reset();
   css_property_filter_.reset();
   paint_order_map_.reset();
-  return Response::Success();
+  return Response::OK();
 }
 
 int LegacyDOMSnapshotAgent::VisitNode(Node* node,

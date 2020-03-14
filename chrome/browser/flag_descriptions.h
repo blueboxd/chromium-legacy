@@ -1082,6 +1082,9 @@ extern const char kTabToGTSAnimationAndroidDescription[];
 extern const char kTabGroupsName[];
 extern const char kTabGroupsDescription[];
 
+extern const char kTabGroupsCollapseName[];
+extern const char kTabGroupsCollapseDescription[];
+
 extern const char kTabHoverCardsName[];
 extern const char kTabHoverCardsDescription[];
 

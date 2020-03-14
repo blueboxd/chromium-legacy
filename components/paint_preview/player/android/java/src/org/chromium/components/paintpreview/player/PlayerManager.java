@@ -28,6 +28,7 @@ public class PlayerManager {
     private PlayerCompositorDelegateImpl mDelegate;
     private PlayerFrameCoordinator mRootFrameCoordinator;
     private FrameLayout mHostView;
+    private Runnable mViewReadyCallback;
 
     public PlayerManager(
             Context context, NativePaintPreviewServiceProvider service, String directoryKey) {
@@ -35,6 +36,13 @@ public class PlayerManager {
         mDelegate =
                 new PlayerCompositorDelegateImpl(service, directoryKey, this::onCompositorReady);
         mHostView = new FrameLayout(mContext);
+    }
+
+    public PlayerManager(Context context,
+            NativePaintPreviewServiceProvider nativePaintPreviewServiceProvider,
+            String directoryKey, Runnable viewReadyCallback) {
+        this(context, nativePaintPreviewServiceProvider, directoryKey);
+        mViewReadyCallback = viewReadyCallback;
     }
 
     /**
@@ -54,12 +62,15 @@ public class PlayerManager {
         mHostView.addView(mRootFrameCoordinator.getView(),
                 new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        if (mViewReadyCallback != null) {
+            mViewReadyCallback.run();
+        }
     }
 
     /**
-     * This method builds a hierarchy of {@link PaintPreviewFrame}s from primitive variables
-     * that originate from native. Detailed explanation of the parameters can be found in
-     * {@link PlayerCompositorDelegateImpl#onCompositorReady}.
+     * This method builds a hierarchy of {@link PaintPreviewFrame}s from primitive variables that
+     * originate from native. Detailed explanation of the parameters can be found in {@link
+     * PlayerCompositorDelegateImpl#onCompositorReady}.
      *
      * @return The root {@link PaintPreviewFrame}
      */
@@ -101,7 +112,9 @@ public class PlayerManager {
      */
     private void buildSubFrameCoordinators(
             PlayerFrameCoordinator frameCoordinator, PaintPreviewFrame frame) {
-        if (frame.getSubFrames() == null || frame.getSubFrames().length == 0) return;
+        if (frame.getSubFrames() == null || frame.getSubFrames().length == 0) {
+            return;
+        }
 
         for (int i = 0; i < frame.getSubFrames().length; i++) {
             PaintPreviewFrame childFrame = frame.getSubFrames()[i];

@@ -1060,4 +1060,10 @@ bool ContentBrowserClient::ShouldAllowPluginCreation(
 }
 #endif
 
+#if BUILDFLAG(ENABLE_VR)
+XrIntegrationClient* ContentBrowserClient::GetXrIntegrationClient() {
+  return nullptr;
+}
+#endif
+
 }  // namespace content

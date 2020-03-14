@@ -64,12 +64,7 @@ bool TranslateFeature(feedwire::Feature* feature,
   result->stream_structure.set_type(type);
 
   if (type == feedstore::StreamStructure::CONTENT) {
-    if (!feature->HasExtension(feedwire::Content::content_extension)) {
-      return false;
-    }
-
-    feedwire::Content* wire_content =
-        feature->MutableExtension(feedwire::Content::content_extension);
+    feedwire::Content* wire_content = feature->mutable_content_extension();
 
     if (wire_content->type() != feedwire::Content::XSURFACE)
       return false;
@@ -216,13 +211,9 @@ std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
   if (response.response_version() != feedwire::Response::FEED_RESPONSE)
     return nullptr;
 
-  if (!response.HasExtension(feedwire::FeedResponse::feed_response))
-    return nullptr;
-
   auto result = std::make_unique<StreamModelUpdateRequest>();
 
-  feedwire::FeedResponse* feed_response =
-      response.MutableExtension(feedwire::FeedResponse::feed_response);
+  feedwire::FeedResponse* feed_response = response.mutable_feed_response();
   for (auto& wire_data_operation : *feed_response->mutable_data_operation()) {
     if (!wire_data_operation.has_operation())
       continue;

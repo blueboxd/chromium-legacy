@@ -47,9 +47,15 @@ struct CORE_EXPORT NGLayoutOpportunity {
   // Calculates a line layout opportunity which takes into account any shapes
   // which may affect the available inline size for the line breaker.
   NGLineLayoutOpportunity ComputeLineLayoutOpportunity(
-      const NGConstraintSpace&,
+      const NGConstraintSpace& space,
       LayoutUnit line_block_size,
-      LayoutUnit block_delta) const;
+      LayoutUnit block_delta) const {
+    return NGLineLayoutOpportunity(
+        ComputeLineLeftOffset(space, line_block_size, block_delta),
+        ComputeLineRightOffset(space, line_block_size, block_delta),
+        rect.LineStartOffset(), rect.LineEndOffset(),
+        rect.BlockStartOffset() + block_delta, line_block_size);
+  }
 
  private:
   LayoutUnit ComputeLineLeftOffset(const NGConstraintSpace&,

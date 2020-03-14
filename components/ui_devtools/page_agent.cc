@@ -12,7 +12,7 @@ PageAgent::~PageAgent() {}
 
 protocol::Response PageAgent::reload(protocol::Maybe<bool> bypass_cache) {
   NOTREACHED();
-  return protocol::Response::Success();
+  return protocol::Response::OK();
 }
 
 }  // namespace ui_devtools

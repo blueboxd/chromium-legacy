@@ -183,24 +183,24 @@ void InspectorLogAgent::InnerEnable() {
 
 Response InspectorLogAgent::enable() {
   if (enabled_.Get())
-    return Response::Success();
+    return Response::OK();
   enabled_.Set(true);
   InnerEnable();
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorLogAgent::disable() {
   if (!enabled_.Get())
-    return Response::Success();
+    return Response::OK();
   enabled_.Clear();
   stopViolationsReport();
   instrumenting_agents_->RemoveInspectorLogAgent(this);
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorLogAgent::clear() {
   storage_->Clear();
-  return Response::Success();
+  return Response::OK();
 }
 
 static PerformanceMonitor::Violation ParseViolation(const String& name) {
@@ -224,11 +224,9 @@ static PerformanceMonitor::Violation ParseViolation(const String& name) {
 Response InspectorLogAgent::startViolationsReport(
     std::unique_ptr<protocol::Array<ViolationSetting>> settings) {
   if (!enabled_.Get())
-    return Response::ServerError("Log is not enabled");
-  if (!performance_monitor_) {
-    return Response::ServerError(
-        "Violations are not supported for this target");
-  }
+    return Response::Error("Log is not enabled");
+  if (!performance_monitor_)
+    return Response::Error("Violations are not supported for this target");
   performance_monitor_->UnsubscribeAll(this);
   violation_thresholds_.Clear();
   for (const std::unique_ptr<ViolationSetting>& setting : *settings) {
@@ -241,17 +239,15 @@ Response InspectorLogAgent::startViolationsReport(
         violation, base::TimeDelta::FromMillisecondsD(threshold), this);
     violation_thresholds_.Set(name, threshold);
   }
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorLogAgent::stopViolationsReport() {
   violation_thresholds_.Clear();
-  if (!performance_monitor_) {
-    return Response::ServerError(
-        "Violations are not supported for this target");
-  }
+  if (!performance_monitor_)
+    return Response::Error("Violations are not supported for this target");
   performance_monitor_->UnsubscribeAll(this);
-  return Response::Success();
+  return Response::OK();
 }
 
 void InspectorLogAgent::ReportLongLayout(base::TimeDelta duration) {

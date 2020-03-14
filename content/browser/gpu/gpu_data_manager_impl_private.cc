@@ -476,12 +476,6 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
   CGDisplayRegisterReconfigurationCallback(DisplayReconfigCallback, owner_);
 #endif  // OS_MACOSX
 
-#if defined(OS_WIN)
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI) &&
-      display::Screen::GetScreen())
-    display::Screen::GetScreen()->AddObserver(owner_);
-#endif
-
   // For testing only.
   if (command_line->HasSwitch(switches::kDisableDomainBlockingFor3DAPIs))
     domain_blocking_enabled_ = false;
@@ -890,6 +884,18 @@ void GpuDataManagerImplPrivate::UpdateDx12VulkanRequestStatus(
 bool GpuDataManagerImplPrivate::Dx12VulkanRequested() const {
   return gpu_info_dx12_vulkan_requested_;
 }
+
+void GpuDataManagerImplPrivate::OnBrowserThreadsStarted() {
+  // Launch the info collection GPU process to collect DX12 and Vulkan support
+  // information. Not to affect Chrome startup, this is done in a delayed mode,
+  // i.e., 120 seconds after Chrome startup.
+  RequestDxdiagDx12VulkanGpuInfoIfNeeded(kGpuInfoRequestDx12Vulkan,
+                                         /*delayed=*/true);
+  // Observer for display change.
+  if (display::Screen::GetScreen())
+    display::Screen::GetScreen()->AddObserver(owner_);
+}
+
 #endif
 
 void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(

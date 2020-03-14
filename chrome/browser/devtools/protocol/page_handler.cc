@@ -45,9 +45,9 @@ protocol::Response PageHandler::Disable() {
 
 protocol::Response PageHandler::SetAdBlockingEnabled(bool enabled) {
   if (!enabled_)
-    return protocol::Response::ServerError("Page domain is disabled.");
+    return protocol::Response::Error("Page domain is disabled.");
   ToggleAdBlocking(enabled);
-  return protocol::Response::Success();
+  return protocol::Response::OK();
 }
 
 void PageHandler::GetInstallabilityErrors(
@@ -58,7 +58,7 @@ void PageHandler::GetInstallabilityErrors(
                      : nullptr;
   if (!manager) {
     callback->sendFailure(
-        protocol::Response::ServerError("Unable to fetch errors for target"));
+        protocol::Response::Error("Unable to fetch errors for target"));
     return;
   }
   manager->GetAllErrors(base::BindOnce(&PageHandler::GotInstallabilityErrors,
@@ -100,7 +100,7 @@ void PageHandler::GetManifestIcons(
 
   if (!manager) {
     callback->sendFailure(
-        protocol::Response::ServerError("Unable to fetch icons for target"));
+        protocol::Response::Error("Unable to fetch icons for target"));
     return;
   }
 

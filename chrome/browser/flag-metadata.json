@@ -3701,6 +3701,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "tab-groups-collapse",
+    "owners": [ "chrome-desktop-ui-seattle@google.com", "xialinyan" ],
+    "expiry_milestone": 84
+  },
+  {
     "name": "tab-hover-card-images",
     "owners": [ "dfried", "corising", "//chrome/browser/ui/views/tabs/OWNERS" ],
     "expiry_milestone": 82

@@ -187,11 +187,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'a8c95f74dac6a349b12e923cbcd9ca8d17443190',
+  'angle_revision': 'a3cf06ac1718de5cee0c84891e2ac7fc3bfbe92a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '7d09824f5aa1d51631d1e65cb8c922401415f391',
+  'swiftshader_revision': '3a50a43df988b2d375a1247073329fb9ad64bca0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -302,7 +302,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '0338b7ae194ac8bd295afd64a264ff6ee3e58526',
+  'dawn_revision': '459c2f930fbbff6d2d5d8160aa883b56041b2944',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -888,7 +888,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '9f29465e529150fb4e63c2f8930c61d5d2af633c',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'c48fb8427c8c06ab9b734fc91e5852e62fe27c98',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1518,7 +1518,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5158d6360055aa7e655b8c458b77dcd4bcf1df66',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@735a9cd7804e86a788edf4f14a1e0407fb78ebd1',
     'condition': 'checkout_src_internal',
   },
 

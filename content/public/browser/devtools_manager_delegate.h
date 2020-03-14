@@ -69,6 +69,7 @@ class CONTENT_EXPORT DevToolsManagerDelegate {
   using NotHandledCallback =
       base::OnceCallback<void(base::span<const uint8_t>)>;
   virtual void HandleCommand(DevToolsAgentHostClientChannel* channel,
+                             const std::string& method,
                              base::span<const uint8_t> message,
                              NotHandledCallback callback);
 

@@ -25,9 +25,9 @@ Message ConstructRunOrClosePipeMessage(
 
   Message message(pipe_control::kRunOrClosePipeMessageId, 0, 0, 0, nullptr);
   internal::SerializationContext context;
-  pipe_control::internal::RunOrClosePipeMessageParams_Data::BufferWriter params;
+  pipe_control::internal::RunOrClosePipeMessageParams_Data::BufferWriter writer;
   internal::Serialize<pipe_control::RunOrClosePipeMessageParamsDataView>(
-      params_ptr, message.payload_buffer(), &params, &context);
+      params_ptr, message.payload_buffer(), &writer, &context);
   message.set_interface_id(kInvalidInterfaceId);
   message.set_heap_profiler_tag(kMessageTag);
   message.AttachHandlesFromSerializationContext(&context);

@@ -107,14 +107,14 @@ void WebAuthnHandler::Wire(UberDispatcher* dispatcher) {
 
 Response WebAuthnHandler::Enable() {
   if (!frame_host_)
-    return Response::ServerError(kDevToolsNotAttached);
+    return Response::Error(kDevToolsNotAttached);
 
   AuthenticatorEnvironmentImpl::GetInstance()->EnableVirtualAuthenticatorFor(
       frame_host_->frame_tree_node());
   virtual_discovery_factory_ =
       AuthenticatorEnvironmentImpl::GetInstance()->GetVirtualFactoryFor(
           frame_host_->frame_tree_node());
-  return Response::Success();
+  return Response::OK();
 }
 
 Response WebAuthnHandler::Disable() {
@@ -123,14 +123,14 @@ Response WebAuthnHandler::Disable() {
         frame_host_->frame_tree_node());
   }
   virtual_discovery_factory_ = nullptr;
-  return Response::Success();
+  return Response::OK();
 }
 
 Response WebAuthnHandler::AddVirtualAuthenticator(
     std::unique_ptr<WebAuthn::VirtualAuthenticatorOptions> options,
     String* out_authenticator_id) {
   if (!virtual_discovery_factory_)
-    return Response::ServerError(kVirtualEnvironmentNotEnabled);
+    return Response::Error(kVirtualEnvironmentNotEnabled);
 
   auto transport =
       device::ConvertToFidoTransportProtocol(options->GetTransport());
@@ -154,7 +154,7 @@ Response WebAuthnHandler::AddVirtualAuthenticator(
       options->GetHasResidentKey(false /* default */),
       options->GetHasUserVerification(false /* default */));
   if (!authenticator)
-    return Response::ServerError(kErrorCreatingAuthenticator);
+    return Response::Error(kErrorCreatingAuthenticator);
 
   authenticator->SetUserPresence(
       options->GetAutomaticPresenceSimulation(true /* default */));
@@ -162,18 +162,18 @@ Response WebAuthnHandler::AddVirtualAuthenticator(
       options->GetIsUserVerified(false /* default */));
 
   *out_authenticator_id = authenticator->unique_id();
-  return Response::Success();
+  return Response::OK();
 }
 
 Response WebAuthnHandler::RemoveVirtualAuthenticator(
     const String& authenticator_id) {
   if (!virtual_discovery_factory_)
-    return Response::ServerError(kVirtualEnvironmentNotEnabled);
+    return Response::Error(kVirtualEnvironmentNotEnabled);
 
   if (!virtual_discovery_factory_->RemoveAuthenticator(authenticator_id))
     return Response::InvalidParams(kAuthenticatorNotFound);
 
-  return Response::Success();
+  return Response::OK();
 }
 
 Response WebAuthnHandler::AddCredential(
@@ -181,7 +181,7 @@ Response WebAuthnHandler::AddCredential(
     std::unique_ptr<WebAuthn::Credential> credential) {
   VirtualAuthenticator* authenticator;
   Response response = FindAuthenticator(authenticator_id, &authenticator);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
 
   Binary user_handle = credential->GetUserHandle(Binary());
@@ -217,9 +217,9 @@ Response WebAuthnHandler::AddCredential(
   }
 
   if (!credential_created)
-    return Response::ServerError(kCouldNotCreateCredential);
+    return Response::Error(kCouldNotCreateCredential);
 
-  return Response::Success();
+  return Response::OK();
 }
 
 Response WebAuthnHandler::GetCredential(
@@ -228,7 +228,7 @@ Response WebAuthnHandler::GetCredential(
     std::unique_ptr<WebAuthn::Credential>* out_credential) {
   VirtualAuthenticator* authenticator;
   Response response = FindAuthenticator(authenticator_id, &authenticator);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
 
   auto registration =
@@ -237,7 +237,7 @@ Response WebAuthnHandler::GetCredential(
     return Response::InvalidParams(kCredentialNotFound);
 
   *out_credential = BuildCredentialFromRegistration(*registration);
-  return Response::Success();
+  return Response::OK();
 }
 
 Response WebAuthnHandler::GetCredentials(
@@ -245,7 +245,7 @@ Response WebAuthnHandler::GetCredentials(
     std::unique_ptr<Array<WebAuthn::Credential>>* out_credentials) {
   VirtualAuthenticator* authenticator;
   Response response = FindAuthenticator(authenticator_id, &authenticator);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
 
   *out_credentials = std::make_unique<Array<WebAuthn::Credential>>();
@@ -253,41 +253,41 @@ Response WebAuthnHandler::GetCredentials(
     (*out_credentials)
         ->emplace_back(BuildCredentialFromRegistration(registration));
   }
-  return Response::Success();
+  return Response::OK();
 }
 
 Response WebAuthnHandler::RemoveCredential(const String& authenticator_id,
                                            const Binary& credential_id) {
   VirtualAuthenticator* authenticator;
   Response response = FindAuthenticator(authenticator_id, &authenticator);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
 
   if (!authenticator->RemoveRegistration(CopyBinaryToVector(credential_id)))
     return Response::InvalidParams(kCredentialNotFound);
 
-  return Response::Success();
+  return Response::OK();
 }
 
 Response WebAuthnHandler::ClearCredentials(const String& authenticator_id) {
   VirtualAuthenticator* authenticator;
   Response response = FindAuthenticator(authenticator_id, &authenticator);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
 
   authenticator->ClearRegistrations();
-  return Response::Success();
+  return Response::OK();
 }
 
 Response WebAuthnHandler::SetUserVerified(const String& authenticator_id,
                                           bool is_user_verified) {
   VirtualAuthenticator* authenticator;
   Response response = FindAuthenticator(authenticator_id, &authenticator);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
 
   authenticator->set_user_verified(is_user_verified);
-  return Response::Success();
+  return Response::OK();
 }
 
 Response WebAuthnHandler::FindAuthenticator(
@@ -295,13 +295,13 @@ Response WebAuthnHandler::FindAuthenticator(
     VirtualAuthenticator** out_authenticator) {
   *out_authenticator = nullptr;
   if (!virtual_discovery_factory_)
-    return Response::ServerError(kVirtualEnvironmentNotEnabled);
+    return Response::Error(kVirtualEnvironmentNotEnabled);
 
   *out_authenticator = virtual_discovery_factory_->GetAuthenticator(id);
   if (!*out_authenticator)
     return Response::InvalidParams(kAuthenticatorNotFound);
 
-  return Response::Success();
+  return Response::OK();
 }
 
 }  // namespace protocol

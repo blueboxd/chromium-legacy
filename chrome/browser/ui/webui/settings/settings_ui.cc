@@ -137,14 +137,6 @@ constexpr char kGeneratedPath[] =
 #endif
 
 // static
-int SettingsUI::hats_timeout_ms_ = 20000;
-
-// static
-void SettingsUI::SetHatsTimeoutForTesting(int timeout) {
-  hats_timeout_ms_ = timeout;
-}
-
-// static
 void SettingsUI::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kImportDialogAutofillFormData, true);
@@ -423,9 +415,8 @@ void SettingsUI::TryShowHatsSurveyWithTimeout() {
       HatsServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()),
                                         /* create_if_necessary = */ true);
   if (hats_service) {
-    hats_service->LaunchDelayedSurveyForWebContents(kHatsSurveyTriggerSettings,
-                                                    web_ui()->GetWebContents(),
-                                                    hats_timeout_ms_);
+    hats_service->LaunchDelayedSurveyForWebContents(
+        kHatsSurveyTriggerSettings, web_ui()->GetWebContents(), 20000);
   }
 }
 

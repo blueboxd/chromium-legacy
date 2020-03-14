@@ -26,11 +26,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// Banner View constant.
-const CGFloat kBannerOverlapWithOmnibox = 5.0;
-}  // namespace
-
 @interface InfobarCoordinator () <InfobarCoordinatorImplementation,
                                   InfobarBannerPositioner,
                                   InfobarModalPositioner> {
@@ -289,10 +284,8 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
                            view:self.baseViewController.view];
   UIView* omniboxView = omniboxGuide.owningView;
   CGRect omniboxFrame = [omniboxView convertRect:omniboxGuide.layoutFrame
-                                          toView:self.baseViewController.view];
-
-  return omniboxFrame.origin.y + omniboxFrame.size.height -
-         kBannerOverlapWithOmnibox;
+                                          toView:omniboxView.window];
+  return CGRectGetMaxY(omniboxFrame) - kInfobarBannerOverlapWithOmnibox;
 }
 
 - (UIView*)bannerView {

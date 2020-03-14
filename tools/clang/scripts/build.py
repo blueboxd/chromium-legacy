@@ -236,31 +236,32 @@ def AddGnuWinToPath():
 def AddZlibToPath():
   """Download and build zlib, and add to PATH."""
   zlib_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'zlib-1.2.11')
-  if not os.path.exists(zlib_dir):
-    zip_name = 'zlib-1.2.11.tar.gz'
-    DownloadAndUnpack(CDS_URL + '/tools/' + zip_name, LLVM_BUILD_TOOLS_DIR)
-    os.chdir(zlib_dir)
-    zlib_files = [
-        'adler32', 'compress', 'crc32', 'deflate', 'gzclose', 'gzlib',
-        'gzread', 'gzwrite', 'inflate', 'infback', 'inftrees', 'inffast',
-        'trees', 'uncompr', 'zutil'
-        ]
-    cl_flags = [
-        '/nologo', '/O2', '/DZLIB_DLL', '/c', '/D_CRT_SECURE_NO_DEPRECATE',
-        '/D_CRT_NONSTDC_NO_DEPRECATE'
-        ]
+  zip_name = 'zlib-1.2.11.tar.gz'
 
-    try:
-      RunCommand(['cl.exe'] + [f + '.c' for f in zlib_files] + cl_flags,
-                 msvc_arch='x64')
-      RunCommand(['lib.exe'] + [f + '.obj' for f in zlib_files] +
-                 ['/nologo', '/out:zlib.lib'], msvc_arch='x64')
-      # Remove the test directory so it isn't found when trying to find
-      # test.exe.
-      shutil.rmtree('test')
-    except Exception as e:
-      print('Failed to build zlib: ' + str(e))
-      sys.exit(1)
+  shutil.rmtree(zlib_dir)
+  DownloadAndUnpack(CDS_URL + '/tools/' + zip_name, LLVM_BUILD_TOOLS_DIR)
+  os.chdir(zlib_dir)
+
+  # Build zlib.
+  zlib_files = [
+      'adler32', 'compress', 'crc32', 'deflate', 'gzclose', 'gzlib', 'gzread',
+      'gzwrite', 'inflate', 'infback', 'inftrees', 'inffast', 'trees',
+      'uncompr', 'zutil'
+  ]
+  cl_flags = [
+      '/nologo', '/O2', '/DZLIB_DLL', '/c', '/D_CRT_SECURE_NO_DEPRECATE',
+      '/D_CRT_NONSTDC_NO_DEPRECATE'
+  ]
+
+  RunCommand(
+      ['cl.exe'] + [f + '.c' for f in zlib_files] + cl_flags, msvc_arch='x64')
+  RunCommand(
+      ['lib.exe'] + [f + '.obj'
+                     for f in zlib_files] + ['/nologo', '/out:zlib.lib'],
+      msvc_arch='x64')
+  # Remove the test directory so it isn't found when trying to find
+  # test.exe.
+  shutil.rmtree('test')
 
   os.environ['PATH'] = zlib_dir + os.pathsep + os.environ.get('PATH', '')
   return zlib_dir

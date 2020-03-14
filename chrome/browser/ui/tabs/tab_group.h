@@ -34,7 +34,12 @@ class TabGroup {
   const tab_groups::TabGroupVisualData* visual_data() const {
     return visual_data_.get();
   }
-  void SetVisualData(const tab_groups::TabGroupVisualData& visual_data);
+
+  // Sets the visual data of the tab group. |is_customized| is true when this
+  // method is called from the user explicitly setting the data and defaults to
+  // false for callsites that may set the data such as tab restore.
+  void SetVisualData(const tab_groups::TabGroupVisualData& visual_data,
+                     bool is_customized = false);
 
   // Returns a user-visible string describing the contents of the group, such as
   // "Google Search and 3 other tabs". Used for accessibly describing the group,
@@ -53,6 +58,9 @@ class TabGroup {
   // Returns whether the group has no tabs.
   bool IsEmpty() const;
 
+  // Returns whether the user has explicitly set the visual data themselves.
+  bool IsCustomized() const;
+
   // Returns the model indices of all tabs in this group. Notably does not rely
   // on the TabGroup's internal metadata, but rather traverses directly through
   // the tabs in TabStripModel.
@@ -65,6 +73,8 @@ class TabGroup {
   std::unique_ptr<tab_groups::TabGroupVisualData> visual_data_;
 
   int tab_count_ = 0;
+
+  bool is_customized_ = false;
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_GROUP_H_

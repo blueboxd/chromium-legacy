@@ -523,7 +523,7 @@ Response InspectorAccessibilityAgent::getPartialAXTree(
   Node* dom_node = nullptr;
   Response response =
       dom_agent_->AssertNode(dom_node_id, backend_node_id, object_id, dom_node);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
 
   Document& document = dom_node->GetDocument();
@@ -532,7 +532,7 @@ Response InspectorAccessibilityAgent::getPartialAXTree(
       document.Lifecycle());
   LocalFrame* local_frame = document.GetFrame();
   if (!local_frame)
-    return Response::ServerError("Frame is detached.");
+    return Response::Error("Frame is detached.");
   AXContext ax_context(document);
   auto& cache = To<AXObjectCacheImpl>(ax_context.GetAXObjectCache());
 
@@ -542,7 +542,7 @@ Response InspectorAccessibilityAgent::getPartialAXTree(
     (*nodes)->emplace_back(BuildObjectForIgnoredNode(
         dom_node, inspected_ax_object, fetch_relatives.fromMaybe(true), *nodes,
         cache));
-    return Response::Success();
+    return Response::OK();
   } else {
     (*nodes)->emplace_back(
         BuildProtocolAXObject(*inspected_ax_object, inspected_ax_object,
@@ -550,16 +550,16 @@ Response InspectorAccessibilityAgent::getPartialAXTree(
   }
 
   if (!inspected_ax_object)
-    return Response::Success();
+    return Response::OK();
 
   AXObject* parent = inspected_ax_object->ParentObjectUnignored();
   if (!parent)
-    return Response::Success();
+    return Response::OK();
 
   if (fetch_relatives.fromMaybe(true))
     AddAncestors(*parent, inspected_ax_object, *nodes, cache);
 
-  return Response::Success();
+  return Response::OK();
 }
 
 void InspectorAccessibilityAgent::AddAncestors(
@@ -718,7 +718,7 @@ Response InspectorAccessibilityAgent::getFullAXTree(
     std::unique_ptr<protocol::Array<AXNode>>* nodes) {
   Document* document = inspected_frames_->Root()->GetDocument();
   if (!document)
-    return Response::ServerError("No document.");
+    return Response::Error("No document.");
   if (document->View()->NeedsLayout() || document->NeedsLayoutTreeUpdate())
     document->UpdateStyleAndLayout(DocumentUpdateReason::kInspector);
   *nodes = std::make_unique<protocol::Array<protocol::Accessibility::AXNode>>();
@@ -743,7 +743,7 @@ Response InspectorAccessibilityAgent::getFullAXTree(
     node->setChildIds(std::move(child_ids));
     (*nodes)->emplace_back(std::move(node));
   }
-  return Response::Success();
+  return Response::OK();
 }
 
 void InspectorAccessibilityAgent::FillCoreProperties(
@@ -853,12 +853,12 @@ void InspectorAccessibilityAgent::EnableAndReset() {
 protocol::Response InspectorAccessibilityAgent::enable() {
   if (!enabled_.Get())
     EnableAndReset();
-  return Response::Success();
+  return Response::OK();
 }
 
 protocol::Response InspectorAccessibilityAgent::disable() {
   if (!enabled_.Get())
-    return Response::Success();
+    return Response::OK();
   enabled_.Set(false);
   context_ = nullptr;
   LocalFrame* frame = inspected_frames_->Root();
@@ -867,7 +867,7 @@ protocol::Response InspectorAccessibilityAgent::disable() {
   it->value.erase(this);
   if (it->value.IsEmpty())
     EnabledAgents().erase(frame);
-  return Response::Success();
+  return Response::OK();
 }
 
 void InspectorAccessibilityAgent::Restore() {

@@ -110,7 +110,7 @@ js_library("tab_swiper") {
 }
 
 group("tab_strip_modules") {
-  deps = [
+  public_deps = [
     ":alert_indicator_module",
     ":alert_indicators_module",
     ":tab_group_module",

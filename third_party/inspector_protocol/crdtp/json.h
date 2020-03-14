@@ -6,7 +6,6 @@
 #define CRDTP_JSON_H_
 
 #include <memory>
-#include <vector>
 #include "export.h"
 #include "parser_handler.h"
 

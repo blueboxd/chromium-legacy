@@ -8,35 +8,22 @@ package feedwire;
 
 option optimize_for = LITE_RUNTIME;
 
-import "components/feed/core/proto/v2/wire/feature.proto";
-
 // Top level feature which shows a stream of cards.  Provides any UI information
 // which may be needed in order to render the stream of cards.
 message Stream {
-  extend Feature { optional Stream stream_extension = 185431437; }
 }
 
 // Feature which represents a cluster in a Stream. May have a Card or Content
 // as children.
 // TODO Determine if Clusters can be removed.
 message Cluster {
-  extend Feature { optional Cluster cluster_extension = 190812910; }
-
   // Empty for now as we don't support any custom information.
-}
-
-// Feature which represents a full card in a Stream.  Allows metadata to be sent
-// to describe how to render the card.
-message Card {
-  extend Feature { optional Card card_extension = 185431438; }
 }
 
 // Feature which is able to show actual content in a stream. This could be
 // inside or outside a card. Actual data on what to display will be sent on an
 // extension.
 message Content {
-  extend Feature { optional Content content_extension = 185431439; }
-
   enum Type {
     UNKNOWN_CONTENT = 0;
     XSURFACE = 1;
@@ -45,7 +32,10 @@ message Content {
 
   optional bool is_ad = 3;
 
-  extensions 1000;  // ElementsContent
+  optional XSurfaceContent xsurface_content = 1000;
 
   reserved 2;
 }
+
+// No fields used yet.
+message XSurfaceContent {}

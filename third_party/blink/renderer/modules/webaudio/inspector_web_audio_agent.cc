@@ -74,20 +74,20 @@ void InspectorWebAudioAgent::Restore() {
 
 Response InspectorWebAudioAgent::enable() {
   if (enabled_.Get())
-    return Response::Success();
+    return Response::OK();
   enabled_.Set(true);
   AudioGraphTracer* graph_tracer = AudioGraphTracer::FromPage(page_);
   graph_tracer->SetInspectorAgent(this);
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorWebAudioAgent::disable() {
   if (!enabled_.Get())
-    return Response::Success();
+    return Response::OK();
   enabled_.Clear();
   AudioGraphTracer* graph_tracer = AudioGraphTracer::FromPage(page_);
   graph_tracer->SetInspectorAgent(nullptr);
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorWebAudioAgent::getRealtimeData(
@@ -95,14 +95,14 @@ Response InspectorWebAudioAgent::getRealtimeData(
     std::unique_ptr<ContextRealtimeData>* out_data) {
   auto* const graph_tracer = AudioGraphTracer::FromPage(page_);
   if (!enabled_.Get())
-    return Response::ServerError("Enable agent first.");
+    return Response::Error("Enable agent first.");
 
   BaseAudioContext* context = graph_tracer->GetContextById(contextId);
   if (!context)
-    return Response::ServerError("Cannot find BaseAudioContext with such id.");
+    return Response::Error("Cannot find BaseAudioContext with such id.");
 
   if (!context->HasRealtimeConstraint()) {
-    return Response::ServerError(
+    return Response::Error(
         "ContextRealtimeData is only avaliable for an AudioContext.");
   }
 
@@ -115,7 +115,7 @@ Response InspectorWebAudioAgent::getRealtimeData(
           .setCallbackIntervalMean(metric.mean_callback_interval)
           .setCallbackIntervalVariance(metric.variance_callback_interval)
           .build();
-  return Response::Success();
+  return Response::OK();
 }
 
 void InspectorWebAudioAgent::DidCreateBaseAudioContext(

@@ -55,6 +55,18 @@ mac_app_bundle("updater_bundle") {
   ]
 }
 
+source_set("xpc_names") {
+  sources = [
+    "xpc_service_names.h",
+    "xpc_service_names.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome/updater:version_header",
+  ]
+}
+
 source_set("updater_setup_sources") {
   sources = [
     "setup/setup.h",
@@ -63,6 +75,7 @@ source_set("updater_setup_sources") {
 
   deps = [
     ":network_fetcher_sources",
+    ":xpc_names",
     "//base",
     "//chrome/common/mac:launchd",
     "//chrome/updater:base",

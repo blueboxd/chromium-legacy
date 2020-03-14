@@ -65,10 +65,12 @@
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
-namespace blink {
-
-class AffineTransform;
+namespace ui {
 class Cursor;
+}
+
+namespace blink {
+class AffineTransform;
 class HitTestLocation;
 class HitTestRequest;
 class InlineBox;
@@ -1819,7 +1821,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return StyleRef().VisitedDependentColor(color_property);
   }
 
-  virtual CursorDirective GetCursor(const PhysicalOffset&, Cursor&) const;
+  virtual CursorDirective GetCursor(const PhysicalOffset&, ui::Cursor&) const;
 
   // Return the LayoutBoxModelObject in the container chain which is responsible
   // for painting this object. The function crosses frames boundaries so the

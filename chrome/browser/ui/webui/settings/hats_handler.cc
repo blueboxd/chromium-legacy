@@ -26,13 +26,11 @@ void HatsHandler::RegisterMessages() {
 }
 
 void HatsHandler::HandleTryShowHatsSurvey(const base::ListValue* args) {
-  const std::string& trigger = args->GetList()[0].GetString();
-  const int timeout_ms = args->GetList()[1].GetInt();
   HatsService* hats_service = HatsServiceFactory::GetForProfile(
       Profile::FromWebUI(web_ui()), /* create_if_necessary = */ true);
   if (hats_service) {
     hats_service->LaunchDelayedSurveyForWebContents(
-        trigger, web_ui()->GetWebContents(), timeout_ms);
+        kHatsSurveyTriggerSettingsPrivacy, web_ui()->GetWebContents(), 20000);
   }
 }
 

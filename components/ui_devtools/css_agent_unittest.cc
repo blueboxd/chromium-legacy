@@ -110,7 +110,7 @@ class CSSAgentTest : public testing::Test {
     edits->emplace_back(std::move(edit));
     std::unique_ptr<StyleArray> output;
     auto response = css_agent_->setStyleTexts(std::move(edits), &output);
-    return {response.IsSuccess(), std::move(output)};
+    return {response.isSuccess(), std::move(output)};
   }
 
   std::string GetValueForProperty(protocol::CSS::CSSStyle* style,
@@ -134,7 +134,7 @@ class CSSAgentTest : public testing::Test {
     std::string output;
     auto response = css_agent_->getStyleSheetText(
         BuildStylesheetUId(element()->node_id(), 0), &output);
-    return {response.IsSuccess(), output};
+    return {response.isSuccess(), output};
   }
 
   CSSAgent* css_agent() { return css_agent_.get(); }

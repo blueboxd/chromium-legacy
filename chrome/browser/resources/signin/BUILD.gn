@@ -12,12 +12,12 @@ group("closure_compile") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":signin_shared_css_module",
     "sync_confirmation:polymer3_elements",
   ]
   if (!is_chromeos) {
-    deps += [ "signin_email_confirmation:polymer3_elements" ]
+    public_deps += [ "signin_email_confirmation:polymer3_elements" ]
   }
 }
 

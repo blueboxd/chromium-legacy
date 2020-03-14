@@ -220,7 +220,7 @@ static void ResponseBodyFileReaderLoaderDone(
     std::unique_ptr<GetResponseBodyCallback> callback,
     scoped_refptr<SharedBuffer> raw_data) {
   if (!raw_data) {
-    callback->sendFailure(Response::ServerError("Couldn't read BLOB"));
+    callback->sendFailure(Response::Error("Couldn't read BLOB"));
     return;
   }
   String result;
@@ -229,7 +229,7 @@ static void ResponseBodyFileReaderLoaderDone(
           raw_data, mime_type, text_encoding_name, &result, &base64_encoded)) {
     callback->sendSuccess(result, base64_encoded);
   } else {
-    callback->sendFailure(Response::ServerError("Couldn't encode data"));
+    callback->sendFailure(Response::Error("Couldn't encode data"));
   }
 }
 
@@ -1384,7 +1384,7 @@ Response InspectorNetworkAgent::enable(Maybe<int> total_buffer_size,
       resource_buffer_size.fromMaybe(kDefaultResourceBufferSize));
   max_post_data_size_.Set(max_post_data_size.fromMaybe(0));
   Enable();
-  return Response::Success();
+  return Response::OK();
 }
 
 void InspectorNetworkAgent::Enable() {
@@ -1403,7 +1403,7 @@ Response InspectorNetworkAgent::disable() {
   instrumenting_agents_->RemoveInspectorNetworkAgent(this);
   agent_state_.ClearAllFields();
   resources_data_->Clear();
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorNetworkAgent::setExtraHTTPHeaders(
@@ -1416,7 +1416,7 @@ Response InspectorNetworkAgent::setExtraHTTPHeaders(
     if (entry.second && entry.second->asString(&value))
       extra_request_headers_.Set(entry.first, value);
   }
-  return Response::Success();
+  return Response::OK();
 }
 
 bool InspectorNetworkAgent::CanGetResponseBodyBlob(const String& request_id) {
@@ -1463,7 +1463,7 @@ void InspectorNetworkAgent::getResponseBody(
   String content;
   bool base64_encoded;
   Response response = GetResponseBody(request_id, &content, &base64_encoded);
-  if (response.IsSuccess()) {
+  if (response.isSuccess()) {
     callback->sendSuccess(content, base64_encoded);
   } else {
     callback->sendFailure(response);
@@ -1475,7 +1475,7 @@ Response InspectorNetworkAgent::setBlockedURLs(
   blocked_urls_.Clear();
   for (const String& url : *urls)
     blocked_urls_.Set(url, true);
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorNetworkAgent::replayXHR(const String& request_id) {
@@ -1484,12 +1484,12 @@ Response InspectorNetworkAgent::replayXHR(const String& request_id) {
   XHRReplayData* xhr_replay_data = resources_data_->XhrReplayData(request_id);
   auto* data = resources_data_->Data(request_id);
   if (!xhr_replay_data || !data)
-    return Response::ServerError("Given id does not correspond to XHR");
+    return Response::Error("Given id does not correspond to XHR");
 
   ExecutionContext* execution_context = xhr_replay_data->GetExecutionContext();
   if (!execution_context || execution_context->IsContextDestroyed()) {
     resources_data_->SetXHRReplayData(request_id, nullptr);
-    return Response::ServerError("Document is already detached");
+    return Response::Error("Document is already detached");
   }
 
   XMLHttpRequest* xhr = XMLHttpRequest::Create(execution_context);
@@ -1508,17 +1508,17 @@ Response InspectorNetworkAgent::replayXHR(const String& request_id) {
                                  IGNORE_EXCEPTION_FOR_TESTING);
 
   replay_xhrs_.insert(xhr);
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorNetworkAgent::canClearBrowserCache(bool* result) {
   *result = true;
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorNetworkAgent::canClearBrowserCookies(bool* result) {
   *result = true;
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorNetworkAgent::emulateNetworkConditions(
@@ -1528,13 +1528,13 @@ Response InspectorNetworkAgent::emulateNetworkConditions(
     double upload_throughput,
     Maybe<String> connection_type) {
   if (!IsMainThread())
-    return Response::ServerError("Not supported");
+    return Response::Error("Not supported");
 
   WebConnectionType type = kWebConnectionTypeUnknown;
   if (connection_type.isJust()) {
     type = ToWebConnectionType(connection_type.fromJust());
     if (type == kWebConnectionTypeUnknown)
-      return Response::ServerError("Unknown connection type");
+      return Response::Error("Unknown connection type");
   }
   // TODO(dgozman): networkStateNotifier is per-process. It would be nice to
   // have per-frame override instead.
@@ -1545,7 +1545,7 @@ Response InspectorNetworkAgent::emulateNetworkConditions(
   } else {
     GetNetworkStateNotifier().ClearOverride();
   }
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorNetworkAgent::setCacheDisabled(bool cache_disabled) {
@@ -1555,18 +1555,18 @@ Response InspectorNetworkAgent::setCacheDisabled(bool cache_disabled) {
   cache_disabled_.Set(cache_disabled);
   if (cache_disabled && IsMainThread())
     GetMemoryCache()->EvictResources();
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorNetworkAgent::setBypassServiceWorker(bool bypass) {
   bypass_service_worker_.Set(bypass);
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorNetworkAgent::setDataSizeLimitsForTest(int max_total,
                                                          int max_resource) {
   resources_data_->SetResourcesDataSizeLimits(max_total, max_resource);
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorNetworkAgent::getCertificate(
@@ -1585,10 +1585,10 @@ Response InspectorNetworkAgent::getCertificate(
             ->emplace_back(
                 Base64Encode(base::as_bytes(base::make_span(cert.Latin1()))));
       }
-      return Response::Success();
+      return Response::OK();
     }
   }
-  return Response::Success();
+  return Response::OK();
 }
 
 void InspectorNetworkAgent::DidCommitLoad(LocalFrame* frame,
@@ -1626,18 +1626,17 @@ Response InspectorNetworkAgent::GetResponseBody(const String& request_id,
   NetworkResourcesData::ResourceData const* resource_data =
       resources_data_->Data(request_id);
   if (!resource_data) {
-    return Response::ServerError("No resource with given identifier found");
+    return Response::Error("No resource with given identifier found");
   }
 
   if (resource_data->HasContent()) {
     *content = resource_data->Content();
     *base64_encoded = resource_data->Base64Encoded();
-    return Response::Success();
+    return Response::OK();
   }
 
   if (resource_data->IsContentEvicted()) {
-    return Response::ServerError(
-        "Request content was evicted from inspector cache");
+    return Response::Error("Request content was evicted from inspector cache");
   }
 
   if (resource_data->Buffer() && !resource_data->TextEncodingName().IsNull()) {
@@ -1645,17 +1644,16 @@ Response InspectorNetworkAgent::GetResponseBody(const String& request_id,
         resource_data->Buffer(), resource_data->MimeType(),
         resource_data->TextEncodingName(), content, base64_encoded);
     DCHECK(success);
-    return Response::Success();
+    return Response::OK();
   }
 
   if (resource_data->CachedResource() &&
       InspectorPageAgent::CachedResourceContent(resource_data->CachedResource(),
                                                 content, base64_encoded)) {
-    return Response::Success();
+    return Response::OK();
   }
 
-  return Response::ServerError(
-      "No data found for resource with given identifier");
+  return Response::Error("No data found for resource with given identifier");
 }
 
 Response InspectorNetworkAgent::searchInResponseBody(
@@ -1669,7 +1667,7 @@ Response InspectorNetworkAgent::searchInResponseBody(
   String content;
   bool base64_encoded;
   Response response = GetResponseBody(request_id, &content, &base64_encoded);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
 
   auto results = v8_session_->searchInTextByLines(
@@ -1678,7 +1676,7 @@ Response InspectorNetworkAgent::searchInResponseBody(
   *matches = std::make_unique<
       protocol::Array<v8_inspector::protocol::Debugger::API::SearchMatch>>(
       std::move(results));
-  return Response::Success();
+  return Response::OK();
 }
 
 bool InspectorNetworkAgent::FetchResourceContent(Document* document,
@@ -1768,13 +1766,13 @@ void InspectorNetworkAgent::getRequestPostData(
       resources_data_->Data(request_id);
   if (!resource_data) {
     callback->sendFailure(
-        Response::ServerError("No resource with given id was found"));
+        Response::Error("No resource with given id was found"));
     return;
   }
   scoped_refptr<EncodedFormData> post_data = resource_data->PostData();
   if (!post_data || post_data->IsEmpty()) {
     callback->sendFailure(
-        Response::ServerError("No post data available for the request"));
+        Response::Error("No post data available for the request"));
     return;
   }
   ExecutionContext* context = GetTargetExecutionContext();

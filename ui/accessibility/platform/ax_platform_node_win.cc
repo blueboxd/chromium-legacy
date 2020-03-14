@@ -201,8 +201,9 @@ typedef std::unordered_set<AXPlatformNodeWin*> AXPlatformNodeWinSet;
 base::LazyInstance<AXPlatformNodeWinSet>::Leaky g_alert_targets =
     LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<base::ObserverList<IAccessible2UsageObserver>::Unchecked>::
-    Leaky g_iaccessible2_usage_observer_list = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<
+    base::ObserverList<WinAccessibilityAPIUsageObserver>::Unchecked>::Leaky
+    g_win_accessibility_api_usage_observer_list = LAZY_INSTANCE_INITIALIZER;
 
 // Sets the multiplier by which large changes to a RangeValueProvider are
 // greater than small changes.
@@ -251,17 +252,17 @@ const uint32_t kScreenReaderAndHTMLAccessibilityModes =
     AXMode::kScreenReader | AXMode::kHTML;
 
 //
-// IAccessible2UsageObserver
+// WinAccessibilityAPIUsageObserver
 //
 
-IAccessible2UsageObserver::IAccessible2UsageObserver() {}
+WinAccessibilityAPIUsageObserver::WinAccessibilityAPIUsageObserver() {}
 
-IAccessible2UsageObserver::~IAccessible2UsageObserver() {}
+WinAccessibilityAPIUsageObserver::~WinAccessibilityAPIUsageObserver() {}
 
 // static
-base::ObserverList<IAccessible2UsageObserver>::Unchecked&
-GetIAccessible2UsageObserverList() {
-  return g_iaccessible2_usage_observer_list.Get();
+base::ObserverList<WinAccessibilityAPIUsageObserver>::Unchecked&
+GetWinAccessibilityAPIUsageObserverList() {
+  return g_win_accessibility_api_usage_observer_list.Get();
 }
 
 //
@@ -1070,8 +1071,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accName(VARIANT var_id, BSTR* name_bstr) {
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, name_bstr, target);
 
-  for (IAccessible2UsageObserver& observer :
-       GetIAccessible2UsageObserverList()) {
+  for (WinAccessibilityAPIUsageObserver& observer :
+       GetWinAccessibilityAPIUsageObserverList()) {
     observer.OnAccNameCalled();
   }
 
@@ -4356,8 +4357,8 @@ IFACEMETHODIMP AXPlatformNodeWin::QueryService(REFGUID guidService,
   COM_OBJECT_VALIDATE_1_ARG(object);
 
   if (riid == IID_IAccessible2) {
-    for (IAccessible2UsageObserver& observer :
-         GetIAccessible2UsageObserverList()) {
+    for (WinAccessibilityAPIUsageObserver& observer :
+         GetWinAccessibilityAPIUsageObserverList()) {
       observer.OnIAccessible2Used();
     }
   }

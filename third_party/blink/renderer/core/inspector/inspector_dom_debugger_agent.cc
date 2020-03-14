@@ -224,7 +224,7 @@ Response InspectorDOMDebuggerAgent::disable() {
   SetEnabled(false);
   dom_breakpoints_.clear();
   agent_state_.ClearAllFields();
-  return Response::Success();
+  return Response::OK();
 }
 
 void InspectorDOMDebuggerAgent::Restore() {
@@ -248,11 +248,11 @@ Response InspectorDOMDebuggerAgent::setInstrumentationBreakpoint(
 Response InspectorDOMDebuggerAgent::SetBreakpoint(const String& event_name,
                                                   const String& target_name) {
   if (event_name.IsEmpty())
-    return Response::ServerError("Event name is empty");
+    return Response::Error("Event name is empty");
   event_listener_breakpoints_.Set(
       EventListenerBreakpointKey(event_name, target_name), true);
   DidAddBreakpoint();
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorDOMDebuggerAgent::removeEventListenerBreakpoint(
@@ -272,11 +272,11 @@ Response InspectorDOMDebuggerAgent::RemoveBreakpoint(
     const String& event_name,
     const String& target_name) {
   if (event_name.IsEmpty())
-    return Response::ServerError("Event name is empty");
+    return Response::Error("Event name is empty");
   event_listener_breakpoints_.Clear(
       EventListenerBreakpointKey(event_name, target_name));
   DidRemoveBreakpoint();
-  return Response::Success();
+  return Response::OK();
 }
 
 void InspectorDOMDebuggerAgent::DidInvalidateStyleAttr(Node* node) {
@@ -316,18 +316,17 @@ void InspectorDOMDebuggerAgent::DidRemoveDOMNode(Node* node) {
 static Response DomTypeForName(const String& type_string, int& type) {
   if (type_string == "subtree-modified") {
     type = SubtreeModified;
-    return Response::Success();
+    return Response::OK();
   }
   if (type_string == "attribute-modified") {
     type = AttributeModified;
-    return Response::Success();
+    return Response::OK();
   }
   if (type_string == "node-removed") {
     type = NodeRemoved;
-    return Response::Success();
+    return Response::OK();
   }
-  return Response::ServerError(
-      String("Unknown DOM breakpoint type: " + type_string).Utf8());
+  return Response::Error(String("Unknown DOM breakpoint type: " + type_string));
 }
 
 static String DomTypeName(int type) {
@@ -349,12 +348,12 @@ Response InspectorDOMDebuggerAgent::setDOMBreakpoint(
     const String& type_string) {
   Node* node = nullptr;
   Response response = dom_agent_->AssertNode(node_id, node);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
 
   int type = -1;
   response = DomTypeForName(type_string, type);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
 
   uint32_t root_bit = 1 << type;
@@ -365,7 +364,7 @@ Response InspectorDOMDebuggerAgent::setDOMBreakpoint(
       UpdateSubtreeBreakpoints(child, root_bit, true);
   }
   DidAddBreakpoint();
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorDOMDebuggerAgent::removeDOMBreakpoint(
@@ -373,12 +372,12 @@ Response InspectorDOMDebuggerAgent::removeDOMBreakpoint(
     const String& type_string) {
   Node* node = nullptr;
   Response response = dom_agent_->AssertNode(node_id, node);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
 
   int type = -1;
   response = DomTypeForName(type_string, type);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
 
   uint32_t root_bit = 1 << type;
@@ -395,7 +394,7 @@ Response InspectorDOMDebuggerAgent::removeDOMBreakpoint(
       UpdateSubtreeBreakpoints(child, root_bit, false);
   }
   DidRemoveBreakpoint();
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorDOMDebuggerAgent::getEventListeners(
@@ -411,7 +410,7 @@ Response InspectorDOMDebuggerAgent::getEventListeners(
   std::unique_ptr<v8_inspector::StringBuffer> object_group;
   if (!v8_session_->unwrapObject(&error, ToV8InspectorStringView(object_id),
                                  &object, &context, &object_group)) {
-    return Response::ServerError(ToCoreString(std::move(error)).Utf8());
+    return Response::Error(ToCoreString(std::move(error)));
   }
   v8::Context::Scope scope(context);
   V8EventListenerInfoList event_information;
@@ -420,7 +419,7 @@ Response InspectorDOMDebuggerAgent::getEventListeners(
       pierce.fromMaybe(false), &event_information);
   *listeners_array = BuildObjectsForEventListeners(event_information, context,
                                                    object_group->string());
-  return Response::Success();
+  return Response::OK();
 }
 
 std::unique_ptr<protocol::Array<protocol::DOMDebugger::EventListener>>
@@ -693,7 +692,7 @@ Response InspectorDOMDebuggerAgent::setXHRBreakpoint(const String& url) {
   else
     xhr_breakpoints_.Set(url, true);
   DidAddBreakpoint();
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorDOMDebuggerAgent::removeXHRBreakpoint(const String& url) {
@@ -702,7 +701,7 @@ Response InspectorDOMDebuggerAgent::removeXHRBreakpoint(const String& url) {
   else
     xhr_breakpoints_.Clear(url);
   DidRemoveBreakpoint();
-  return Response::Success();
+  return Response::OK();
 }
 
 // Returns the breakpoint url if a match is found, or WTF::String().

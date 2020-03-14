@@ -213,4 +213,10 @@ blink_core_sources("frame") {
     "window_or_worker_global_scope.cc",
     "window_or_worker_global_scope.h",
   ]
+
+  deps = [
+    "//skia",
+    "//ui/base/cursor",
+    "//ui/base/mojom:cursor_type_blink",
+  ]
 }

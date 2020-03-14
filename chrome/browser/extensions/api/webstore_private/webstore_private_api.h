@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/strings/string16.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "chrome/browser/extensions/active_install_data.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
@@ -51,6 +52,8 @@ class WebstorePrivateBeginInstallWithManifest3Function
 
   WebstorePrivateBeginInstallWithManifest3Function();
 
+  base::string16 GetBlockedByPolicyErrorMessageForTesting() const;
+
  private:
   using Params = api::webstore_private::BeginInstallWithManifest3::Params;
 
@@ -70,6 +73,7 @@ class WebstorePrivateBeginInstallWithManifest3Function
 
   void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
   void OnRequestPromptDone(ExtensionInstallPrompt::Result result);
+  void OnBlockByPolicyPromptDone();
 
   void HandleInstallProceed();
   void HandleInstallAbort(bool user_initiated);
@@ -79,6 +83,15 @@ class WebstorePrivateBeginInstallWithManifest3Function
       const std::string& error);
   std::unique_ptr<base::ListValue> CreateResults(
       api::webstore_private::Result result) const;
+
+  // Shows block dialog when |extension| is blcoked by policy on the Window that
+  // |contents| belongs to. |done_callback| will be invoked once the dialog is
+  // closed by user.
+  // Custom error message will be appended if it's set by the policy.
+  void ShowBlockedByPolicyDialog(const Extension* extension,
+                                 const SkBitmap& icon,
+                                 content::WebContents* contents,
+                                 base::OnceClosure done_callback);
 
   const Params::Details& details() const { return params_->details; }
 
@@ -94,6 +107,8 @@ class WebstorePrivateBeginInstallWithManifest3Function
   // A dummy Extension object we create for the purposes of using
   // ExtensionInstallPrompt to prompt for confirmation of the install.
   scoped_refptr<Extension> dummy_extension_;
+
+  base::string16 blocked_by_policy_error_message_;
 
   std::unique_ptr<ExtensionInstallPrompt> install_prompt_;
 };

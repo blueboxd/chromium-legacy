@@ -8,15 +8,11 @@ package feedwire;
 
 option optimize_for = LITE_RUNTIME;
 
-import "components/feed/core/proto/v2/wire/action_response.proto";
 import "components/feed/core/proto/v2/wire/consistency_token.proto";
 
 // A feed action response returns when an action has been successfully uploaded
 // to the server.
 message FeedActionResponse {
-  extend ActionResponse {
-    optional FeedActionResponse feed_action_response = 1000;
-  }
   // Token used to read or write to the same storage.
   optional ConsistencyToken consistency_token = 1;
 }

@@ -98,7 +98,7 @@ polymer_modulizer("shared_styles") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":audio_settings_module",
     ":battery_settings_module",
     ":bluetooth_settings_module",

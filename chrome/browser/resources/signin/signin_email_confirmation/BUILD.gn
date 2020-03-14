@@ -19,7 +19,7 @@ js_library("signin_email_confirmation_app") {
 }
 
 group("polymer3_elements") {
-  deps = [ ":signin_email_confirmation_app_module" ]
+  public_deps = [ ":signin_email_confirmation_app_module" ]
 }
 
 polymer_modulizer("signin_email_confirmation_app") {

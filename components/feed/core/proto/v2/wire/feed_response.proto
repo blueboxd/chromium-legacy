@@ -9,16 +9,17 @@ package feedwire;
 option optimize_for = LITE_RUNTIME;
 
 import "components/feed/core/proto/v2/wire/capability.proto";
+import "components/feed/core/proto/v2/wire/feed_action_response.proto";
 import "components/feed/core/proto/v2/wire/data_operation.proto";
 import "components/feed/core/proto/v2/wire/feed_id.proto";
-import "components/feed/core/proto/v2/wire/response.proto";
 import "components/feed/core/proto/v2/wire/response_status_code.proto";
 
 // A feed response is  a series of directives to manipulate backend storage,
 // similar to database commands.  Individual data operations contain all the
 // necessary information to manipulate the client state.
 message FeedResponse {
-  extend Response { optional FeedResponse feed_response = 1000; }
+  optional FeedActionResponse feed_response = 1000;
+
   // DataOperations are applied on the client in order in which they are
   // received.
   repeated DataOperation data_operation = 1;

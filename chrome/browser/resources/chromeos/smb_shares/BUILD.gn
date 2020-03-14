@@ -45,7 +45,7 @@ polymer_modulizer("smb_credentials_dialog") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":smb_credentials_dialog_module",
     ":smb_share_dialog_module",
   ]

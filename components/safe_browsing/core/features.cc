@@ -42,7 +42,7 @@ const base::Feature kContentComplianceEnabled{
     "SafeBrowsingContentComplianceEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDownloadRequestWithToken{
-    "SafeBrowsingDownloadRequestWithToken", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SafeBrowsingDownloadRequestWithToken", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMalwareScanEnabled{"SafeBrowsingMalwareScanEnabled",
                                         base::FEATURE_DISABLED_BY_DEFAULT};

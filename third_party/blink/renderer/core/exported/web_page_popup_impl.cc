@@ -69,7 +69,6 @@
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
-#include "ui/base/cursor/cursor.h"
 
 namespace blink {
 
@@ -175,8 +174,8 @@ class PagePopupChromeClient final : public EmptyChromeClient {
 
   IntSize MinimumWindowSize() const override { return IntSize(0, 0); }
 
-  void SetCursor(const Cursor& cursor, LocalFrame* local_frame) override {
-    popup_->WidgetClient()->DidChangeCursor(cursor.GetCursor());
+  void SetCursor(const ui::Cursor& cursor, LocalFrame* local_frame) override {
+    popup_->WidgetClient()->DidChangeCursor(cursor);
   }
 
   void SetEventListenerProperties(

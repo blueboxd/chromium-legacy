@@ -660,8 +660,8 @@ void TestRunner::Run(const std::vector<std::string>& test_names) {
   runners_done_ = 0;
   task_runners_.clear();
   for (size_t i = 0; i < runner_count_; i++) {
-    task_runners_.push_back(CreateSequencedTaskRunner(
-        {ThreadPool(), MayBlock(), TaskShutdownBehavior::BLOCK_SHUTDOWN}));
+    task_runners_.push_back(ThreadPool::CreateSequencedTaskRunner(
+        {MayBlock(), TaskShutdownBehavior::BLOCK_SHUTDOWN}));
     ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         BindOnce(&TestRunner::LaunchNextTask, weak_ptr_factory_.GetWeakPtr(),

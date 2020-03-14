@@ -94,7 +94,6 @@
 #include "third_party/blink/renderer/core/page/popup_opening_observer.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
-#include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
@@ -111,7 +110,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_concatenate.h"
-#include "ui/base/cursor/cursor.h"
 
 namespace blink {
 
@@ -706,18 +704,18 @@ void ChromeClientImpl::DidCompleteFileChooser(FileChooser& chooser) {
   DidCompleteFileChooser(*next_chooser);
 }
 
-Cursor ChromeClientImpl::LastSetCursorForTesting() const {
+ui::Cursor ChromeClientImpl::LastSetCursorForTesting() const {
   return last_set_mouse_cursor_for_testing_;
-}
-
-void ChromeClientImpl::SetCursor(const Cursor& cursor,
-                                 LocalFrame* local_frame) {
-  last_set_mouse_cursor_for_testing_ = cursor;
-  SetCursor(cursor.GetCursor(), local_frame);
 }
 
 void ChromeClientImpl::SetCursor(const ui::Cursor& cursor,
                                  LocalFrame* local_frame) {
+  last_set_mouse_cursor_for_testing_ = cursor;
+  SetCursorInternal(cursor, local_frame);
+}
+
+void ChromeClientImpl::SetCursorInternal(const ui::Cursor& cursor,
+                                         LocalFrame* local_frame) {
   if (cursor_overridden_)
     return;
 
@@ -736,7 +734,7 @@ void ChromeClientImpl::SetCursor(const ui::Cursor& cursor,
 
 void ChromeClientImpl::SetCursorForPlugin(const ui::Cursor& cursor,
                                           LocalFrame* local_frame) {
-  SetCursor(cursor, local_frame);
+  SetCursorInternal(cursor, local_frame);
 }
 
 void ChromeClientImpl::SetCursorOverridden(bool overridden) {

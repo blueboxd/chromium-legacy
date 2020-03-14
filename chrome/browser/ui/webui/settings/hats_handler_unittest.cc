@@ -54,13 +54,10 @@ class HatsHandlerTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(HatsHandlerTest, HandleTryShowHatsSurvey) {
-  int timeout = 0;
   EXPECT_CALL(*mock_hats_service_,
-              LaunchDelayedSurveyForWebContents(kHatsSurveyTriggerSettings,
-                                                web_contents(), timeout));
+              LaunchDelayedSurveyForWebContents(
+                  kHatsSurveyTriggerSettingsPrivacy, web_contents(), 20000));
   base::ListValue args;
-  args.Append(std::make_unique<base::Value>(kHatsSurveyTriggerSettings));
-  args.Append(std::make_unique<base::Value>(timeout));
   handler()->HandleTryShowHatsSurvey(&args);
   task_environment()->RunUntilIdle();
 }

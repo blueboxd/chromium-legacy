@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 
 suite('SiteSettingsPage', function() {
-  /** @type {settings.TestMetricsBrowserProxy} */
-  let testBrowserProxy;
+  /** @type {TestSiteSettingsPrefsBrowserProxy} */
+  let siteSettingsBrowserProxy = null;
 
   /** @type {SettingsSiteSettingsPageElement} */
   let page;
+
+  /** @type {Array<string>} */
+  const testLabels = ['test label 1', 'test label 2'];
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
@@ -16,8 +19,11 @@ suite('SiteSettingsPage', function() {
   });
 
   function setupPage() {
-    testBrowserProxy = new TestMetricsBrowserProxy();
-    settings.MetricsBrowserProxyImpl.instance_ = testBrowserProxy;
+    siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
+    settings.SiteSettingsPrefsBrowserProxyImpl.instance_ =
+        siteSettingsBrowserProxy;
+    siteSettingsBrowserProxy.setResultFor(
+        'getCookieSettingDescription', Promise.resolve(testLabels[0]));
     PolymerTest.clearBody();
     page = document.createElement('settings-site-settings-page');
     document.body.appendChild(page);
@@ -61,5 +67,30 @@ suite('SiteSettingsPage', function() {
         'c',
         settings.defaultSettingLabel(
             settings.ContentSetting.IMPORTANT_CONTENT, 'a', 'b', 'c'));
+  });
+
+  test('CookiesLinkRowSublabel', function() {
+    loadTimeData.overrideValues({
+      privacySettingsRedesignEnabled: false,
+    });
+    setupPage();
+    const allSettingsList = page.$$('#allSettingsList');
+    assertEquals(
+        allSettingsList.$$('#cookies').subLabel,
+        allSettingsList.i18n('siteSettingsCookiesAllowed'));
+  });
+
+  test('CookiesLinkRowSublabel_Redesign', async function() {
+    loadTimeData.overrideValues({
+      privacySettingsRedesignEnabled: true,
+    });
+    setupPage();
+    await siteSettingsBrowserProxy.whenCalled('getCookieSettingDescription');
+    Polymer.dom.flush();
+    const cookiesLinkRow = page.$$('#basicContentList').$$('#cookies');
+    assertEquals(cookiesLinkRow.subLabel, testLabels[0]);
+
+    cr.webUIListenerCallback('cookieSettingDescriptionChanged', testLabels[1]);
+    assertEquals(cookiesLinkRow.subLabel, testLabels[1]);
   });
 });

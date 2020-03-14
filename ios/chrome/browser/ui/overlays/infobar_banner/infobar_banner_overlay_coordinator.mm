@@ -13,21 +13,28 @@
 #import "ios/chrome/browser/overlays/public/overlay_response.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_accessibility_util.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
+#import "ios/chrome/browser/ui/infobars/infobar_constants.h"
+#import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_positioner.h"
+#import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_transition_driver.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/passwords/save_password_infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_mediator_util.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface InfobarBannerOverlayCoordinator ()
+@interface InfobarBannerOverlayCoordinator () <InfobarBannerPositioner>
 // The list of supported mediator classes.
 @property(class, nonatomic, readonly) NSArray<Class>* supportedMediatorClasses;
 // The banner view being managed by this coordinator.
-@property(nonatomic) InfobarBannerViewController* bannerViewController;
+@property(nonatomic, strong) InfobarBannerViewController* bannerViewController;
+// The transition delegate used by the coordinator to present the banner.
+@property(nonatomic, strong)
+    InfobarBannerTransitionDriver* bannerTransitionDriver;
 @end
 
 @implementation InfobarBannerOverlayCoordinator
@@ -48,6 +55,22 @@
   return _requestSupport.get();
 }
 
+#pragma mark - InfobarBannerPositioner
+
+- (CGFloat)bannerYPosition {
+  NamedGuide* omniboxGuide =
+      [NamedGuide guideWithName:kOmniboxGuide
+                           view:self.baseViewController.view];
+  UIView* owningView = omniboxGuide.owningView;
+  CGRect omniboxFrame = [owningView convertRect:omniboxGuide.layoutFrame
+                                         toView:owningView.window];
+  return CGRectGetMaxY(omniboxFrame) - kInfobarBannerOverlapWithOmnibox;
+}
+
+- (UIView*)bannerView {
+  return self.bannerViewController.view;
+}
+
 #pragma mark - OverlayRequestCoordinator
 
 - (void)startAnimated:(BOOL)animated {
@@ -64,11 +87,11 @@
   mediator.consumer = self.bannerViewController;
   self.mediator = mediator;
   // Present the banner.
-  // TODO(crbug.com/1030357): Use custom presentation.
-  self.bannerViewController.modalPresentationStyle =
-      UIModalPresentationOverCurrentContext;
-  self.bannerViewController.modalTransitionStyle =
-      UIModalTransitionStyleCrossDissolve;
+  self.bannerViewController.modalPresentationStyle = UIModalPresentationCustom;
+  self.bannerTransitionDriver = [[InfobarBannerTransitionDriver alloc] init];
+  self.bannerTransitionDriver.bannerPositioner = self;
+  self.bannerViewController.transitioningDelegate = self.bannerTransitionDriver;
+  self.bannerViewController.interactionDelegate = self.bannerTransitionDriver;
   [self.baseViewController presentViewController:self.viewController
                                         animated:animated
                                       completion:^{

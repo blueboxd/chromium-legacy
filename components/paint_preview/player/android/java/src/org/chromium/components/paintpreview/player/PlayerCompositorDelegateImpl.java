@@ -52,9 +52,9 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
      * scroll extent. The order corresponds to {@code frameGuids}. The content width and height for
      * the ith frame in {@code frameGuids} are respectively in the {@code 2*i} and {@code 2*i+1}
      * indices of {@code frameContentSize}.
-     * @param subFramesCount Contains the number of sub-frames for each frame. The order
-     * corresponds to {@code frameGuids}. The number of sub-frames for the {@code i}th frame in
-     * {@code frameGuids} is {@code subFramesCount[i]}.
+     * @param subFramesCount Contains the number of sub-frames for each frame. The order corresponds
+     * to {@code frameGuids}. The number of sub-frames for the {@code i}th frame in {@code
+     * frameGuids} is {@code subFramesCount[i]}.
      * @param subFrameGuids Contains the GUIDs of all sub-frames. The GUID for the {@code j}th
      * sub-frame of {@code frameGuids[i]} will be at {@code subFrameGuids[k]}, where {@code k} is:
      * <pre>
@@ -62,10 +62,10 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
      *     for (int s = 0; s < i; s++) k += subFramesCount[s];
      * </pre>
      * @param subFrameClipRects Contains clip rect values for each sub-frame. Each clip rect value
-     * comes in a series of four consecutive integers that represent x, y, width, and height.
-     * The clip rect values for the {@code j}th sub-frame of {@code frameGuids[i]} will be at
-     * {@code subFrameGuids[4*k]}, {@code subFrameGuids[4*k+1]} , {@code subFrameGuids[4*k+2]},
-     * and {@code subFrameGuids[4*k+3]}, where {@code k} has the same value as above.
+     * comes in a series of four consecutive integers that represent x, y, width, and height. The
+     * clip rect values for the {@code j}th sub-frame of {@code frameGuids[i]} will be at {@code
+     * subFrameGuids[4*k]}, {@code subFrameGuids[4*k+1]} , {@code subFrameGuids[4*k+2]}, and {@code
+     * subFrameGuids[4*k+3]}, where {@code k} has the same value as above.
      */
     @CalledByNative
     void onCompositorReady(UnguessableToken rootFrameGuid, UnguessableToken[] frameGuids,
@@ -78,7 +78,9 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
     @Override
     public void requestBitmap(UnguessableToken frameGuid, Rect clipRect, float scaleFactor,
             Callback<Bitmap> bitmapCallback, Runnable errorCallback) {
-        if (mNativePlayerCompositorDelegate == 0) return;
+        if (mNativePlayerCompositorDelegate == 0) {
+            return;
+        }
 
         PlayerCompositorDelegateImplJni.get().requestBitmap(mNativePlayerCompositorDelegate,
                 frameGuid, bitmapCallback, errorCallback, scaleFactor, clipRect.left, clipRect.top,
@@ -87,14 +89,18 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
 
     @Override
     public void onClick(UnguessableToken frameGuid, Point point) {
-        if (mNativePlayerCompositorDelegate == 0) return;
+        if (mNativePlayerCompositorDelegate == 0) {
+            return;
+        }
 
         PlayerCompositorDelegateImplJni.get().onClick(
                 mNativePlayerCompositorDelegate, frameGuid, point.x, point.y);
     }
 
     void destroy() {
-        if (mNativePlayerCompositorDelegate == 0) return;
+        if (mNativePlayerCompositorDelegate == 0) {
+            return;
+        }
 
         PlayerCompositorDelegateImplJni.get().destroy(mNativePlayerCompositorDelegate);
         mNativePlayerCompositorDelegate = 0;

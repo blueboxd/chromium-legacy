@@ -8,6 +8,8 @@ package feedwire;
 
 option optimize_for = LITE_RUNTIME;
 
+import "components/feed/core/proto/v2/wire/feed_action_request.proto";
+
 // Top level request message.
 message ActionRequest {
   // Supported versions of request messages are specified as extensions to
@@ -19,5 +21,5 @@ message ActionRequest {
   }
   optional RequestVersion request_version = 1;
 
-  extensions 1000;  // FeedActionRequest
+  optional FeedActionRequest feed_action_request = 1000;
 }

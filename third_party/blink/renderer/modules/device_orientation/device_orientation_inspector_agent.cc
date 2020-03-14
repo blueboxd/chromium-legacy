@@ -51,7 +51,7 @@ Response DeviceOrientationInspectorAgent::setDeviceOrientationOverride(
         DeviceOrientationData::Create(alpha, beta, gamma, false));
   }
   sensor_agent_->SetOrientationSensorOverride(alpha, beta, gamma);
-  return Response::Success();
+  return Response::OK();
 }
 
 Response DeviceOrientationInspectorAgent::clearDeviceOrientationOverride() {
@@ -63,7 +63,7 @@ Response DeviceOrientationInspectorAgent::disable() {
   if (Controller())
     Controller()->ClearOverride();
   sensor_agent_->Disable();
-  return Response::Success();
+  return Response::OK();
 }
 
 void DeviceOrientationInspectorAgent::Restore() {

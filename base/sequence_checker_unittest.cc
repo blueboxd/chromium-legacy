@@ -16,6 +16,7 @@
 #include "base/sequence_token.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/task_environment.h"
@@ -272,7 +273,7 @@ TEST(SequenceCheckerTest, CalledOnValidSequenceFromThreadDestruction) {
   ThreadLocalOwnedPointer<SequenceCheckerOwner> thread_local_owner;
   {
     test::TaskEnvironment task_environment;
-    auto task_runner = CreateSequencedTaskRunner({ThreadPool()});
+    auto task_runner = ThreadPool::CreateSequencedTaskRunner({});
     task_runner->PostTask(
         FROM_HERE, BindLambdaForTesting([&]() {
           thread_local_owner.Set(std::make_unique<SequenceCheckerOwner>());

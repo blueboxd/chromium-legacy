@@ -39,5 +39,5 @@ polymer_modulizer("app") {
 }
 
 group("polymer3_elements") {
-  deps = [ ":app_module" ]
+  public_deps = [ ":app_module" ]
 }

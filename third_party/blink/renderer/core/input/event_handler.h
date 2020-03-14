@@ -47,13 +47,13 @@
 #include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
-#include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
+#include "ui/base/cursor/cursor.h"
 
 namespace blink {
 
@@ -295,11 +295,11 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   bool IsSelectingLink(const HitTestResult&);
   bool ShouldShowIBeamForNode(const Node*, const HitTestResult&);
   bool ShouldShowResizeForNode(const Node*, const HitTestLocation&);
-  base::Optional<Cursor> SelectCursor(const HitTestLocation& location,
-                                      const HitTestResult&);
-  base::Optional<Cursor> SelectAutoCursor(const HitTestResult&,
-                                          Node*,
-                                          const Cursor& i_beam);
+  base::Optional<ui::Cursor> SelectCursor(const HitTestLocation& location,
+                                          const HitTestResult&);
+  base::Optional<ui::Cursor> SelectAutoCursor(const HitTestResult&,
+                                              Node*,
+                                              const ui::Cursor& i_beam);
 
   void HoverTimerFired(TimerBase*);
   void CursorUpdateTimerFired(TimerBase*);

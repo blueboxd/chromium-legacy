@@ -21,7 +21,7 @@ Path list
 ---------
 A list of paths. The first line is the size of the list,
 and the next N lines that follow are items in the list. Each item is a tuple
-of (object_path, source_path) where the two parts are tab seperated.
+of (object_path, source_path) where the two parts are tab separated.
 
 Component list
 --------------
@@ -33,17 +33,17 @@ This section is only present if 'has_components' is True in the metadata.
 Symbol counts
 -------------
 2 lines long.
-The first line is a tab seperated list of section names.
-The second line is a tab seperated list of symbol group lengths, in the same
+The first line is a tab separated list of section names.
+The second line is a tab separated list of symbol group lengths, in the same
 order as the previous line.
 
 Numeric values
 --------------
 In each section, the number of rows is the same as the number of section names
-in Symbol counts. The values on a row are space seperated, in the order of the
+in Symbol counts. The values on a row are space separated, in the order of the
 symbols in each group.
 
-Addressses
+Addresses
 ~~~~~~~~~~
 Symbol start addresses which are delta-encoded.
 
@@ -69,7 +69,7 @@ This section is only present if 'has_components' is True in the metadata.
 Symbols
 -------
 The final section contains details info on each symbol. Each line represents
-a single symbol. Values are tab seperated and follow this format:
+a single symbol. Values are tab separated and follow this format:
 symbol.full_name, symbol.num_aliases, symbol.flags
 |num_aliases| will be omitted if the aliases of the symbol are the same as the
 previous line. |flags| will be omitted if there are no flags.
@@ -123,6 +123,40 @@ _SERIALIZATION_VERSION = 'Size File Format v1'
 _SIZEDIFF_HEADER = '# Created by //tools/binary_size\nDIFF\n'
 
 
+class _Writer:
+  """Helper to format and write data to a file object."""
+
+  def __init__(self, file_obj):
+    self.file_obj_ = file_obj
+
+  def WriteBytes(self, b):
+    # Direct write of raw bytes.
+    self.file_obj_.write(b)
+
+  def WriteString(self, s):
+    # TODO(huangs): Python 3 will require |s.encode('ascii')|.
+    self.file_obj_.write(s)
+
+  def WriteLine(self, s):
+    # TODO(huangs): Python 3 will require |s.encode('ascii')|.
+    self.file_obj_.write(s)
+    self.file_obj_.write(b'\n')
+
+  def WriteNumberList(self, gen):
+    """Writes numbers from |gen| separated by space, in one line."""
+    sep = b''
+    for num in gen:
+      self.WriteBytes(sep)
+      self.WriteString(str(num))
+      sep = b' '
+    self.WriteBytes(b'\n')
+
+  def LogSize(self, desc):
+    self.file_obj_.flush()
+    size = self.file_obj_.tell()
+    logging.debug('File size with %s: %d' % (desc, size))
+
+
 def SortSymbols(raw_symbols):
   logging.debug('Sorting %d symbols', len(raw_symbols))
   # TODO(agrieve): Either change this sort so that it's only sorting by section
@@ -172,14 +206,6 @@ def CalculatePadding(raw_symbols):
         '%r\nprev symbol: %r' % (symbol, prev_symbol))
 
 
-def _LogSize(file_obj, desc):
-  if not hasattr(file_obj, 'fileno'):
-    return
-  file_obj.flush()
-  size = os.fstat(file_obj.fileno()).st_size
-  logging.debug('File size with %s: %d' % (desc, size))
-
-
 def _ExpandSparseSymbols(sparse_symbols):
   """Expands a symbol list with all aliases of all symbols in the list.
 
@@ -210,7 +236,7 @@ def _SaveSizeInfoToFile(size_info,
 
   Args:
     size_info: Data to write to the file
-    file_object: File opened for writing
+    file_obj: File opened for writing
     sparse_symbols: If present, only save these symbols to the file
   """
   if sparse_symbols is not None:
@@ -220,9 +246,12 @@ def _SaveSizeInfoToFile(size_info,
     raw_symbols = _ExpandSparseSymbols(sparse_symbols)
   else:
     raw_symbols = size_info.raw_symbols
+
+  w = _Writer(file_obj)
+
   # Created by supersize header
-  file_obj.write('# Created by //tools/binary_size\n')
-  file_obj.write('%s\n' % _SERIALIZATION_VERSION)
+  w.WriteLine('# Created by //tools/binary_size')
+  w.WriteLine(_SERIALIZATION_VERSION)
   # JSON metadata
   headers = {
       'metadata': size_info.metadata,
@@ -231,79 +260,84 @@ def _SaveSizeInfoToFile(size_info,
       'has_padding': include_padding,
   }
   metadata_str = json.dumps(headers, file_obj, indent=2, sort_keys=True)
-  file_obj.write('%d\n' % len(metadata_str))
-  file_obj.write(metadata_str)
-  file_obj.write('\n')
-  _LogSize(file_obj, 'header')  # For libchrome: 570 bytes.
+  # TODO(huangs): Remove .replace() after transitioning to Python 3.
+  # Strip space at end of each line, injected by Python 2 json.dumps().
+  metadata_str = metadata_str.replace(' \n', '\n')
+
+  w.WriteLine(str(len(metadata_str)))
+  w.WriteLine(metadata_str)
+  w.LogSize('header')  # For libchrome: 570 bytes.
 
   # Store a single copy of all paths and have them referenced by index.
   unique_path_tuples = sorted(
       set((s.object_path, s.source_path) for s in raw_symbols))
   path_tuples = {tup: i for i, tup in enumerate(unique_path_tuples)}
-  file_obj.write('%d\n' % len(unique_path_tuples))
-  file_obj.writelines('%s\t%s\n' % pair for pair in unique_path_tuples)
-  _LogSize(file_obj, 'paths')  # For libchrome, adds 200kb.
+  w.WriteLine(str(len(unique_path_tuples)))
+  for pair in unique_path_tuples:
+    w.WriteLine('%s\t%s' % pair)
+  w.LogSize('paths')  # For libchrome, adds 200kb.
 
   # Store a single copy of all components and have them referenced by index.
   unique_components = sorted(set(s.component for s in raw_symbols))
   components = {comp: i for i, comp in enumerate(unique_components)}
-  file_obj.write('%d\n' % len(unique_components))
-  file_obj.writelines('%s\n' % comp for comp in unique_components)
-  _LogSize(file_obj, 'components')
+  w.WriteLine(str(len(unique_components)))
+  for comp in unique_components:
+    w.WriteLine(comp)
+  w.LogSize('components')
 
   # Symbol counts by section.
-  by_section = raw_symbols.GroupedBySectionName()
-  file_obj.write('%s\n' % '\t'.join(g.name for g in by_section))
-  file_obj.write('%s\n' % '\t'.join(str(len(g)) for g in by_section))
+  symbol_group_by_section = raw_symbols.GroupedBySectionName()
+  w.WriteLine('\t'.join(g.name for g in symbol_group_by_section))
+  w.WriteLine('\t'.join(str(len(g)) for g in symbol_group_by_section))
 
-  # Addresses, sizes, path indices, component indices
-  def write_numeric(func, delta=False):
-    """Write the result of func(symbol) for each symbol in each symbol group.
+  def gen_delta(gen, prev_value=0):
+    """Adapts a generator of numbers to deltas."""
+    for value in gen:
+      yield value - prev_value
+      prev_value = value
 
-    Each line written represents one symbol group in |by_section|.
-    The values in each line are space seperated and are the result of calling
+  def write_groups(func, delta=False):
+    """Write func(symbol) for each symbol in each symbol group.
+
+    Each line written represents one symbol group in |symbol_group_by_section|.
+    The values in each line are space separated and are the result of calling
     |func| with the Nth symbol in the group.
 
-    If |delta| is True, the differences in values are written instead.
-    """
-    for group in by_section:
-      prev_value = 0
-      last_sym = group[-1]
-      for symbol in group:
-        value = func(symbol)
-        if delta:
-          value, prev_value = value - prev_value, value
-        file_obj.write(str(value))
-        if symbol is not last_sym:
-          file_obj.write(' ')
-      file_obj.write('\n')
+    If |delta| is True, the differences in values are written instead."""
+    for group in symbol_group_by_section:
+      gen = itertools.imap(func, group)
+      w.WriteNumberList(gen_delta(gen) if delta else gen)
 
-  write_numeric(lambda s: s.address, delta=True)
-  _LogSize(file_obj, 'addresses')  # For libchrome, adds 300kb.
-  write_numeric(lambda s: s.size if s.IsOverhead() else s.size_without_padding)
-  _LogSize(file_obj, 'sizes')  # For libchrome, adds 300kb
+  write_groups(lambda s: s.address, delta=True)
+  w.LogSize('addresses')  # For libchrome, adds 300kb.
+
+  write_groups(lambda s: s.size if s.IsOverhead() else s.size_without_padding)
+  w.LogSize('sizes')  # For libchrome, adds 300kb
+
   # Padding for non-padding-only symbols is recalculated from addresses on
   # load, so we only need to write it if we're writing a subset of symbols.
   if include_padding:
-    write_numeric(lambda s: s.padding)
-    _LogSize(file_obj, 'paddings')  # For libchrome, adds 300kb
-  write_numeric(lambda s: path_tuples[(s.object_path, s.source_path)],
-                delta=True)
-  _LogSize(file_obj, 'path indices')  # For libchrome: adds 125kb.
-  write_numeric(lambda s: components[s.component], delta=True)
-  _LogSize(file_obj, 'component indices')
+    write_groups(lambda s: s.padding)
+    w.LogSize('paddings')  # For libchrome, adds 300kb
+
+  write_groups(
+      lambda s: path_tuples[(s.object_path, s.source_path)], delta=True)
+  w.LogSize('path indices')  # For libchrome: adds 125kb.
+
+  write_groups(lambda s: components[s.component], delta=True)
+  w.LogSize('component indices')
 
   prev_aliases = None
-  for group in by_section:
+  for group in symbol_group_by_section:
     for symbol in group:
-      file_obj.write(symbol.full_name)
+      w.WriteString(symbol.full_name)
       if symbol.aliases and symbol.aliases is not prev_aliases:
-        file_obj.write('\t0%x' % symbol.num_aliases)
+        w.WriteString('\t0%x' % symbol.num_aliases)
       prev_aliases = symbol.aliases
       if symbol.flags:
-        file_obj.write('\t%x' % symbol.flags)
-      file_obj.write('\n')
-  _LogSize(file_obj, 'names (final)')  # For libchrome: adds 3.5mb.
+        w.WriteString('\t%x' % symbol.flags)
+      w.WriteBytes(b'\n')
+  w.LogSize('names (final)')  # For libchrome: adds 3.5mb.
 
 
 def _ReadLine(file_iter):
@@ -376,7 +410,7 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
   def read_numeric(delta=False):
     """Read numeric values, where each line corresponds to a symbol group.
 
-    The values in each line are space seperated.
+    The values in each line are space separated.
     If |delta| is True, the numbers are read as a value to add to the sum of the
     prior values in the line, or as the amount to change by.
     """
@@ -504,6 +538,7 @@ def SaveSizeInfo(size_info,
           sparse_symbols=sparse_symbols)
   else:
     # It is seconds faster to do gzip in a separate step. 6s -> 3.5s.
+    # TODO(huangs): Use io.BytesIO for Python 3.
     stringio = cStringIO.StringIO()
     _SaveSizeInfoToFile(
         size_info,
@@ -533,6 +568,7 @@ def SaveDeltaSizeInfo(delta_size_info, path, file_obj=None):
   after_symbols = models.SymbolGroup(
       [sym.after_symbol for sym in changed_symbols if sym.after_symbol])
 
+  # TODO(huangs): Use io.BytesIO for Python 3.
   before_size_file = cStringIO.StringIO()
   after_size_file = cStringIO.StringIO()
 
@@ -551,16 +587,23 @@ def SaveDeltaSizeInfo(delta_size_info, path, file_obj=None):
       sparse_symbols=before_symbols)
 
   with file_obj or open(path, 'wb') as output_file:
-    output_file.write(_SIZEDIFF_HEADER)
+    w = _Writer(output_file)
+
+    # |_SIZEDIFF_HEADER| is multi-line with new line at end, so use
+    # WriteString() instead of WriteLine().
+    w.WriteString(_SIZEDIFF_HEADER)
+
     # JSON metadata
     headers = {
         'version': 1,
         'before_length': before_size_file.tell(),
     }
     metadata_str = json.dumps(headers, output_file, indent=2, sort_keys=True)
-    output_file.write('%d\n' % len(metadata_str))
-    output_file.write(metadata_str)
-    output_file.write('\n')
+    # TODO(huangs): Remove .replace() after transitioning to Python 3.
+    # Strip space at end of each line, injected by Python 2 json.dumps().
+    metadata_str = metadata_str.replace(' \n', '\n')
+    w.WriteLine(str(len(metadata_str)))
+    w.WriteLine(metadata_str)
 
     before_size_file.seek(0)
     shutil.copyfileobj(before_size_file, output_file)

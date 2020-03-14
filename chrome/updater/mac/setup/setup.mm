@@ -22,6 +22,7 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/crash_client.h"
 #include "chrome/updater/crash_reporter.h"
+#import "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
 #include "components/crash/core/common/crash_key.h"
@@ -127,48 +128,6 @@ bool DeleteInstallFolder() {
   return true;
 }
 
-base::ScopedCFTypeRef<CFStringRef> CopyGoogleUpdateCheckLaunchDName() {
-  std::string launchd_name = MAC_BUNDLE_IDENTIFIER_STRING;
-  launchd_name.append(".check");
-  return base::ScopedCFTypeRef<CFStringRef>(
-      base::SysUTF8ToCFStringRef(launchd_name), base::scoped_policy::RETAIN);
-}
-
-base::ScopedCFTypeRef<CFStringRef> CopyGoogleUpdateServiceLaunchDName() {
-  std::string launchd_name = MAC_BUNDLE_IDENTIFIER_STRING;
-  launchd_name.append(".service");
-  return base::ScopedCFTypeRef<CFStringRef>(
-      base::SysUTF8ToCFStringRef(launchd_name), base::scoped_policy::RETAIN);
-}
-
-base::scoped_nsobject<NSString> GetGoogleUpdateCheckLaunchDLabel() {
-  return base::scoped_nsobject<NSString>(
-      base::mac::CFToNSCast(CopyGoogleUpdateCheckLaunchDName()));
-}
-
-base::scoped_nsobject<NSString> GetGoogleUpdateServiceLaunchDLabel() {
-  return base::scoped_nsobject<NSString>(
-      base::mac::CFToNSCast(CopyGoogleUpdateServiceLaunchDName()));
-}
-
-base::scoped_nsobject<NSString> GetGoogleUpdateCheckMachName() {
-  base::scoped_nsobject<NSString> name(
-      base::mac::CFToNSCast(CopyGoogleUpdateCheckLaunchDName()));
-  return base::scoped_nsobject<NSString>(
-      [name stringByAppendingFormat:@".%lu",
-                                    [GetGoogleUpdateCheckLaunchDLabel() hash]]);
-}
-
-base::scoped_nsobject<NSString> GetGoogleUpdateServiceMachName() {
-  base::scoped_nsobject<NSString> name(
-      base::mac::CFToNSCast(CopyGoogleUpdateServiceLaunchDName()));
-  return base::scoped_nsobject<NSString>(
-      [name
-          stringByAppendingFormat:@".%lu",
-                                  [GetGoogleUpdateServiceLaunchDLabel() hash]],
-      base::scoped_policy::RETAIN);
-}
-
 base::ScopedCFTypeRef<CFDictionaryRef> CreateGoogleUpdateCheckLaunchdPlist(
     const base::FilePath* updater_path) {
   // See the man page for launchd.plist.
@@ -176,7 +135,6 @@ base::ScopedCFTypeRef<CFDictionaryRef> CreateGoogleUpdateCheckLaunchdPlist(
     @LAUNCH_JOBKEY_LABEL : GetGoogleUpdateCheckLaunchDLabel(),
     @LAUNCH_JOBKEY_PROGRAMARGUMENTS :
         @[ base::SysUTF8ToNSString(updater_path->value()), @"--ua" ],
-    @LAUNCH_JOBKEY_MACHSERVICES : @{GetGoogleUpdateCheckMachName() : @YES},
     @LAUNCH_JOBKEY_STARTINTERVAL : @18000,
     @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @NO,
     @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : @"Aqua"

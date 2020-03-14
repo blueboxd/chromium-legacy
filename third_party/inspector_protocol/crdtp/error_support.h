@@ -7,7 +7,6 @@
 
 #include <cstdint>
 #include <string>
-#include <vector>
 #include "export.h"
 #include "span.h"
 

@@ -52,7 +52,6 @@ IN_PROC_BROWSER_TEST_F(SettingsUITest, TriggerHappinessTrackingSurveys) {
   MockHatsService* mock_hats_service_ = static_cast<MockHatsService*>(
       HatsServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           browser()->profile(), base::BindRepeating(&BuildMockHatsService)));
-  settings::SettingsUI::SetHatsTimeoutForTesting(0);
   EXPECT_CALL(*mock_hats_service_, LaunchDelayedSurveyForWebContents(
                                        kHatsSurveyTriggerSettings, _, _));
   NavigateToURL(browser(), GURL(chrome::kChromeUISettingsURL));

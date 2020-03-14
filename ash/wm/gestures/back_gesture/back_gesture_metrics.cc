@@ -10,7 +10,6 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
-#include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/client/aura_constants.h"
@@ -147,7 +146,7 @@ BackGestureUnderneathWindowType GetUnderneathWindowType(
     return BackGestureUnderneathWindowType::kOverview;
   }
 
-  const auto* window = TabletModeWindowManager::GetTopWindow();
+  const auto* window = window_util::GetTopWindow();
   DCHECK(window);
   const int app_type = window->GetProperty(aura::client::kAppType);
   if (app_type == static_cast<int>(AppType::BROWSER))

@@ -30,6 +30,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_id_name_manager.h"
@@ -1008,12 +1009,13 @@ void TraceLog::FinishFlush(int generation, bool discard_events) {
   }
 
   if (use_worker_thread_) {
-    base::PostTask(FROM_HERE,
-                   {ThreadPool(), MayBlock(), TaskPriority::BEST_EFFORT,
-                    TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                   BindOnce(&TraceLog::ConvertTraceEventsToTraceFormat,
-                            std::move(previous_logged_events),
-                            flush_output_callback, argument_filter_predicate));
+    base::ThreadPool::PostTask(
+        FROM_HERE,
+        {MayBlock(), TaskPriority::BEST_EFFORT,
+         TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        BindOnce(&TraceLog::ConvertTraceEventsToTraceFormat,
+                 std::move(previous_logged_events), flush_output_callback,
+                 argument_filter_predicate));
     return;
   }
 

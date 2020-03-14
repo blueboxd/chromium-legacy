@@ -28,16 +28,14 @@ static bool g_nvda = false;
 static bool g_supernova = false;
 static bool g_zoomtext = false;
 
-// Enables accessibility based on three possible clues that indicate
-// accessibility API usage.
-//
-// TODO(dmazzoni): Rename IAccessible2UsageObserver to something more general.
-class WindowsAccessibilityEnabler : public ui::IAccessible2UsageObserver {
+// Enables accessibility based on clues that indicate accessibility API usage.
+class WindowsAccessibilityEnabler
+    : public ui::WinAccessibilityAPIUsageObserver {
  public:
   WindowsAccessibilityEnabler() {}
 
  private:
-  // IAccessible2UsageObserver
+  // WinAccessibilityAPIUsageObserver
   void OnIAccessible2Used() override {
     // When IAccessible2 APIs have been used elsewhere in the codebase,
     // enable basic web accessibility support. (Full screen reader support is
@@ -70,6 +68,14 @@ class WindowsAccessibilityEnabler : public ui::IAccessible2UsageObserver {
     }
   }
 
+  void OnUIAutomationUsed() override {
+    // UI Automation insulates providers from knowing about the client(s) asking
+    // for information. When UI Automation is requested, assume the presence of
+    // a full-fledged accessibility technology and enable full support.
+    BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
+        ui::kAXModeComplete);
+  }
+
   bool screen_reader_honeypot_queried_ = false;
   bool acc_name_called_ = false;
 };
@@ -87,7 +93,7 @@ void OnWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
 }  // namespace
 
 void BrowserAccessibilityStateImpl::PlatformInitialize() {
-  ui::GetIAccessible2UsageObserverList().AddObserver(
+  ui::GetWinAccessibilityAPIUsageObserverList().AddObserver(
       new WindowsAccessibilityEnabler());
 
   singleton_hwnd_observer_.reset(

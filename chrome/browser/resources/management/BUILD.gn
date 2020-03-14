@@ -39,7 +39,7 @@ polymer_modulizer("icons") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":icons_module",
     ":management_ui_module",
   ]

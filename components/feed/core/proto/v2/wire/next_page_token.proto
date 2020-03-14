@@ -8,9 +8,6 @@ package feedwire;
 
 option optimize_for = LITE_RUNTIME;
 
-import "components/feed/core/proto/v2/wire/token.proto";
-
 message NextPageToken {
-  extend Token { optional NextPageToken next_page_token_extension = 1002; }
   optional bytes next_page_token = 1;
 }

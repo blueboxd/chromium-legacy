@@ -84,7 +84,7 @@ polymer_modulizer("step_indicator") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":action_link_style_css_module",
     ":animations_css_module",
     ":chooser_shared_css_module",

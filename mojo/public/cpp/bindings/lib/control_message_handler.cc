@@ -120,9 +120,9 @@ bool ControlMessageHandler::Run(
                            Message::kFlagIsResponse, 0, 0, nullptr);
   response_message.set_request_id(message->request_id());
   interface_control::internal::RunResponseMessageParams_Data::BufferWriter
-      response_params;
+      response_writer;
   Serialize<interface_control::RunResponseMessageParamsDataView>(
-      response_params_ptr, response_message.payload_buffer(), &response_params,
+      response_params_ptr, response_message.payload_buffer(), &response_writer,
       &context_);
   ignore_result(responder->Accept(&response_message));
   return true;

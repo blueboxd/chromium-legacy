@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -16,9 +15,6 @@
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
-#include "ash/system/model/system_tray_model.h"
-#include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -30,6 +26,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_event_handler.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/backdrop_controller.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
@@ -147,64 +144,10 @@ TabletModeWindowManager::TabletModeWindowManager() = default;
 
 TabletModeWindowManager::~TabletModeWindowManager() = default;
 
-// static
-aura::Window* TabletModeWindowManager::GetTopWindow() {
-  MruWindowTracker::WindowList windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
-
-  return windows.empty() ? nullptr : windows[0];
-}
-
-// static
-bool TabletModeWindowManager::ShouldMinimizeTopWindowOnBack() {
-  if (!features::IsSwipingFromLeftEdgeToGoBackEnabled())
-    return false;
-
-  Shell* shell = Shell::Get();
-  if (!shell->tablet_mode_controller()->InTabletMode())
-    return false;
-
-  aura::Window* window = GetTopWindow();
-  if (!window)
-    return false;
-
-  // Do not minimize the app if a Android IME is visible. The Android IME will
-  // eat the back event that follows and close itself. Note that the ChromeOS
-  // IME does not close itself when it sees a back event so it must be closed
-  // explicitly.
-  // TODO(sammiequon): For fullscreen apps, fullscreen is exited first before
-  // the keyboard is hidden. It should be the other way, but this is done to
-  // keep the logic simple for merging.
-  if (Shell::Get()->system_tray_model()->virtual_keyboard()->visible())
-    return false;
-
-  // Do not minimize the window if it is in overview. This can avoid unnecessary
-  // window minimize animation.
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  if (overview_controller->InOverviewSession() &&
-      overview_controller->overview_session()->IsWindowInOverview(window)) {
-    return false;
-  }
-
-  const int app_type = window->GetProperty(aura::client::kAppType);
-  if (app_type != static_cast<int>(AppType::BROWSER) &&
-      app_type != static_cast<int>(AppType::CHROME_APP)) {
-    return false;
-  }
-
-  WindowState* window_state = WindowState::Get(window);
-  if (!window_state || !window_state->CanMinimize() ||
-      window_state->IsMinimized()) {
-    return false;
-  }
-
-  // Minimize the window if it is at the bottom page.
-  return !shell->shell_delegate()->CanGoBack(window);
-}
-
 void TabletModeWindowManager::Init() {
   {
-    ScopedObserveWindowAnimation scoped_observe(GetTopWindow(), this,
+    ScopedObserveWindowAnimation scoped_observe(window_util::GetTopWindow(),
+                                                this,
                                                 /*exiting_tablet_mode=*/false);
     ArrangeWindowsForTabletMode();
   }
@@ -275,7 +218,7 @@ void TabletModeWindowManager::Shutdown() {
   display::Screen::GetScreen()->RemoveObserver(this);
   RemoveWindowCreationObservers();
 
-  ScopedObserveWindowAnimation scoped_observe(GetTopWindow(), this,
+  ScopedObserveWindowAnimation scoped_observe(window_util::GetTopWindow(), this,
                                               /*exiting_tablet_mode=*/true);
   ArrangeWindowsForClamshellMode(carryover_windows_in_splitview,
                                  was_in_overview);

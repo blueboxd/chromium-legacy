@@ -126,6 +126,7 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/event_timing.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/platform/cursors.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -3309,9 +3310,9 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
     int resize_width;
     int resize_height;
     ui::mojom::blink::CursorType expected_cursor;
-  } cursor_tests[] = {{100, 100, MiddlePanningCursor().GetType()},
-                      {1010, 100, MiddlePanningVerticalCursor().GetType()},
-                      {100, 2010, MiddlePanningHorizontalCursor().GetType()}};
+  } cursor_tests[] = {{100, 100, MiddlePanningCursor().type()},
+                      {1010, 100, MiddlePanningVerticalCursor().type()},
+                      {100, 2010, MiddlePanningHorizontalCursor().type()}};
 
   for (const CursorTests current_test : cursor_tests) {
     WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
@@ -3347,7 +3348,7 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
 
     // Even if a plugin tries to change the cursor type, that should be ignored
     // during middle-click autoscroll.
-    web_view->GetChromeClient().SetCursorForPlugin(PointerCursor().GetCursor(),
+    web_view->GetChromeClient().SetCursorForPlugin(PointerCursor(),
                                                    local_frame);
     EXPECT_EQ(current_test.expected_cursor, client.GetLastCursorType());
 
@@ -3359,9 +3360,8 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
     web_view->MainFrameWidget()->HandleInputEvent(
         WebCoalescedInputEvent(mouse_event));
 
-    web_view->GetChromeClient().SetCursorForPlugin(IBeamCursor().GetCursor(),
-                                                   local_frame);
-    EXPECT_EQ(IBeamCursor().GetType(), client.GetLastCursorType());
+    web_view->GetChromeClient().SetCursorForPlugin(IBeamCursor(), local_frame);
+    EXPECT_EQ(IBeamCursor().type(), client.GetLastCursorType());
   }
 
   // Explicitly reset to break dependency on locally scoped client.

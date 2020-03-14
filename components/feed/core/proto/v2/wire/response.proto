@@ -8,6 +8,8 @@ package feedwire;
 
 option optimize_for = LITE_RUNTIME;
 
+import "components/feed/core/proto/v2/wire/feed_response.proto";
+
 // Top level response message.
 message Response {
   // Supported versions of response messages are specified as extensions to
@@ -19,6 +21,5 @@ message Response {
   }
   optional ResponseVersion response_version = 1;
 
-  // Please use CL numbers you own for extension numbers.
-  extensions 1000;  // FeedResponse
+  optional FeedResponse feed_response = 1000;
 }

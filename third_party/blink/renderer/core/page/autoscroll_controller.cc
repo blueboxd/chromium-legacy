@@ -37,6 +37,8 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/cursors.h"
+#include "ui/base/cursor/cursor.h"
 
 namespace blink {
 
@@ -46,9 +48,10 @@ constexpr base::TimeDelta kAutoscrollDelay = base::TimeDelta::FromSecondsD(0.2);
 
 static const int kNoMiddleClickAutoscrollRadius = 15;
 
-static const Cursor& MiddleClickAutoscrollCursor(const gfx::Vector2dF& velocity,
-                                                 bool scroll_vert,
-                                                 bool scroll_horiz) {
+static const ui::Cursor& MiddleClickAutoscrollCursor(
+    const gfx::Vector2dF& velocity,
+    bool scroll_vert,
+    bool scroll_horiz) {
   // At the original click location we draw a 4 arrowed icon. Over this icon
   // there won't be any scroll, So don't change the cursor over this area.
   bool east = velocity.x() < 0;

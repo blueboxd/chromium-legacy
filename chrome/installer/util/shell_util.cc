@@ -1603,8 +1603,8 @@ bool ShellUtil::GetShortcutPath(ShortcutLocation location,
       folder_to_append = InstallUtil::GetChromeAppsShortcutDirName();
       break;
     case SHORTCUT_LOCATION_TASKBAR_PINS:
-      // This directory isn't guaranteed to exist.
-      return base::PathService::Get(base::DIR_TASKBAR_PINS, path);
+      dir_key = base::DIR_TASKBAR_PINS;
+      break;
     case SHORTCUT_LOCATION_APP_SHORTCUTS:
       // TODO(huangs): Move GetAppShortcutsFolder() logic into base_paths_win.
       return GetAppShortcutsFolder(level, path);

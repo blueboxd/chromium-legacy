@@ -14,6 +14,7 @@ import static org.chromium.chrome.test.util.ToolbarTestUtils.BOTTOM_TOOLBAR;
 import static org.chromium.chrome.test.util.ToolbarTestUtils.TAB_SWITCHER_TOOLBAR;
 import static org.chromium.chrome.test.util.ToolbarTestUtils.TAB_SWITCHER_TOOLBAR_MENU;
 import static org.chromium.chrome.test.util.ToolbarTestUtils.TAB_SWITCHER_TOOLBAR_NEW_TAB;
+import static org.chromium.chrome.test.util.ToolbarTestUtils.TAB_SWITCHER_TOOLBAR_NEW_TAB_VARIATION;
 import static org.chromium.chrome.test.util.ToolbarTestUtils.TAB_SWITCHER_TOOLBAR_TAB_SWITCHER_BUTTON;
 import static org.chromium.chrome.test.util.ToolbarTestUtils.TOP_TOOLBAR;
 import static org.chromium.chrome.test.util.ToolbarTestUtils.TOP_TOOLBAR_HOME;
@@ -59,6 +60,9 @@ public class AdaptiveToolbarTest {
     // Params to turn off new tab variation in GTS.
     private static final String NO_NEW_TAB_VARIATION_PARAMS = "force-fieldtrial-params=" +
             "Study.Group:tab_grid_layout_android_new_tab/false";
+    // Params to turn on new tab variation in GTS.
+    private static final String NEW_TAB_VARIATION_PARAMS = "force-fieldtrial-params=" +
+            "Study.Group:tab_grid_layout_android_new_tab/NewTabVariation";
     // clang-format on
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -340,5 +344,60 @@ public class AdaptiveToolbarTest {
         checkToolbarButtonVisibility(
                 TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_TAB_SWITCHER_BUTTON, true);
         checkToolbarVisibility(BOTTOM_TOOLBAR, false);
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID +
+            "<Study", "force-fieldtrials=Study/Group", NEW_TAB_VARIATION_PARAMS})
+    public void testTopToolbar_NewTabVariation() {
+        // clang-format on
+        setupFlagsAndLaunchActivity(false, true);
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        Layout layout = cta.getLayoutManager().getOverviewLayout();
+        assertTrue(layout instanceof StartSurfaceLayout);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(
+                TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB_VARIATION, true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, false);
+
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(
+                TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB_VARIATION, true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, false);
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID +
+            "<Study", "force-fieldtrials=Study/Group", NEW_TAB_VARIATION_PARAMS})
+    public void testTopToolbar_NewTabVariation_IncognitoDisabled() {
+        // clang-format on
+        IncognitoUtils.setEnabledForTesting(false);
+        setupFlagsAndLaunchActivity(false, true);
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        Layout layout = cta.getLayoutManager().getOverviewLayout();
+        assertTrue(layout instanceof StartSurfaceLayout);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(
+                TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB_VARIATION, false);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, true);
+
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(
+                TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB_VARIATION, false);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, true);
     }
 }

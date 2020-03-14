@@ -32,6 +32,7 @@ class ChromeDevToolsSession : public protocol::FrontendChannel {
   ~ChromeDevToolsSession() override;
 
   void HandleCommand(
+      const std::string& method,
       base::span<const uint8_t> message,
       content::DevToolsManagerDelegate::NotHandledCallback callback);
 
@@ -39,14 +40,14 @@ class ChromeDevToolsSession : public protocol::FrontendChannel {
 
  private:
   // protocol::FrontendChannel:
-  void SendProtocolResponse(
+  void sendProtocolResponse(
       int call_id,
       std::unique_ptr<protocol::Serializable> message) override;
-  void SendProtocolNotification(
+  void sendProtocolNotification(
       std::unique_ptr<protocol::Serializable> message) override;
-  void FlushProtocolNotifications() override;
-  void FallThrough(int call_id,
-                   crdtp::span<uint8_t> method,
+  void flushProtocolNotifications() override;
+  void fallThrough(int call_id,
+                   const std::string& method,
                    crdtp::span<uint8_t> message) override;
 
   base::flat_map<int, content::DevToolsManagerDelegate::NotHandledCallback>

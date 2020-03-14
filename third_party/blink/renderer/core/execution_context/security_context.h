@@ -149,10 +149,6 @@ class CORE_EXPORT SecurityContext {
     return feature_policy_.get();
   }
   void SetFeaturePolicy(std::unique_ptr<FeaturePolicy> feature_policy);
-  void AddReportOnlyFeaturePolicy(
-      const ParsedFeaturePolicy& parsed_report_only_header,
-      const ParsedFeaturePolicy& container_policy,
-      const FeaturePolicy* parent_feature_policy);
 
   const DocumentPolicy* GetDocumentPolicy() const {
     return document_policy_.get();

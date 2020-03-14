@@ -276,7 +276,7 @@ Response InspectorLayerTreeAgent::enable() {
   instrumenting_agents_->AddInspectorLayerTreeAgent(this);
   Document* document = inspected_frames_->Root()->GetDocument();
   if (!document)
-    return Response::ServerError("The root frame doesn't have document");
+    return Response::Error("The root frame doesn't have document");
 
   inspected_frames_->Root()->View()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kInspector);
@@ -284,13 +284,13 @@ Response InspectorLayerTreeAgent::enable() {
   LayerTreePainted();
   LayerTreeDidChange();
 
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorLayerTreeAgent::disable() {
   instrumenting_agents_->RemoveInspectorLayerTreeAgent(this);
   snapshot_by_id_.clear();
-  return Response::Success();
+  return Response::OK();
 }
 
 void InspectorLayerTreeAgent::LayerTreeDidChange() {
@@ -365,12 +365,12 @@ Response InspectorLayerTreeAgent::LayerById(const String& layer_id,
   bool ok;
   int id = layer_id.ToInt(&ok);
   if (!ok)
-    return Response::ServerError("Invalid layer id");
+    return Response::Error("Invalid layer id");
 
   result = FindLayerById(RootLayer(), id);
   if (!result)
-    return Response::ServerError("No layer matching given id found");
-  return Response::Success();
+    return Response::Error("No layer matching given id found");
+  return Response::OK();
 }
 
 Response InspectorLayerTreeAgent::compositingReasons(
@@ -379,7 +379,7 @@ Response InspectorLayerTreeAgent::compositingReasons(
     std::unique_ptr<Array<String>>* compositing_reason_ids) {
   const cc::Layer* layer = nullptr;
   Response response = LayerById(layer_id, layer);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
   *compositing_reasons = std::make_unique<protocol::Array<String>>();
   *compositing_reason_ids = std::make_unique<protocol::Array<String>>();
@@ -394,7 +394,7 @@ Response InspectorLayerTreeAgent::compositingReasons(
     }
   }
 
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
@@ -408,7 +408,7 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
                                                       ->GetDocument()
                                                       ->Lifecycle()
                                                       .LifecyclePostponed())
-    return Response::ServerError("Layer does not draw content");
+    return Response::Error("Layer does not draw content");
 
   inspected_frames_->Root()->View()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kInspector);
@@ -417,29 +417,29 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
 
   const cc::Layer* layer = nullptr;
   Response response = LayerById(layer_id, layer);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
   if (!layer->DrawsContent())
-    return Response::ServerError("Layer does not draw content");
+    return Response::Error("Layer does not draw content");
 
   auto picture = layer->GetPicture();
   if (!picture)
-    return Response::ServerError("Layer does not produce picture");
+    return Response::Error("Layer does not produce picture");
 
   auto snapshot = base::MakeRefCounted<PictureSnapshot>(std::move(picture));
   *snapshot_id = String::Number(++last_snapshot_id_);
   bool new_entry = snapshot_by_id_.insert(*snapshot_id, snapshot).is_new_entry;
   DCHECK(new_entry);
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorLayerTreeAgent::loadSnapshot(
     std::unique_ptr<Array<protocol::LayerTree::PictureTile>> tiles,
     String* snapshot_id) {
   if (tiles->empty())
-    return Response::ServerError("Invalid argument, no tiles provided");
+    return Response::Error("Invalid argument, no tiles provided");
   if (tiles->size() > UINT_MAX)
-    return Response::ServerError("Invalid argument, too many tiles provided");
+    return Response::Error("Invalid argument, too many tiles provided");
   wtf_size_t tiles_length = static_cast<wtf_size_t>(tiles->size());
   Vector<scoped_refptr<PictureSnapshot::TilePictureStream>> decoded_tiles;
   decoded_tiles.Grow(tiles_length);
@@ -454,22 +454,22 @@ Response InspectorLayerTreeAgent::loadSnapshot(
   scoped_refptr<PictureSnapshot> snapshot =
       PictureSnapshot::Load(decoded_tiles);
   if (!snapshot)
-    return Response::ServerError("Invalid snapshot format");
+    return Response::Error("Invalid snapshot format");
   if (snapshot->IsEmpty())
-    return Response::ServerError("Empty snapshot");
+    return Response::Error("Empty snapshot");
 
   *snapshot_id = String::Number(++last_snapshot_id_);
   bool new_entry = snapshot_by_id_.insert(*snapshot_id, snapshot).is_new_entry;
   DCHECK(new_entry);
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorLayerTreeAgent::releaseSnapshot(const String& snapshot_id) {
   SnapshotById::iterator it = snapshot_by_id_.find(snapshot_id);
   if (it == snapshot_by_id_.end())
-    return Response::ServerError("Snapshot not found");
+    return Response::Error("Snapshot not found");
   snapshot_by_id_.erase(it);
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorLayerTreeAgent::GetSnapshotById(
@@ -477,9 +477,9 @@ Response InspectorLayerTreeAgent::GetSnapshotById(
     const PictureSnapshot*& result) {
   SnapshotById::iterator it = snapshot_by_id_.find(snapshot_id);
   if (it == snapshot_by_id_.end())
-    return Response::ServerError("Snapshot not found");
+    return Response::Error("Snapshot not found");
   result = it->value.get();
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorLayerTreeAgent::replaySnapshot(const String& snapshot_id,
@@ -489,14 +489,14 @@ Response InspectorLayerTreeAgent::replaySnapshot(const String& snapshot_id,
                                                  String* data_url) {
   const PictureSnapshot* snapshot = nullptr;
   Response response = GetSnapshotById(snapshot_id, snapshot);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
   auto png_data = snapshot->Replay(from_step.fromMaybe(0), to_step.fromMaybe(0),
                                    scale.fromMaybe(1.0));
   if (png_data.IsEmpty())
-    return Response::ServerError("Image encoding failed");
+    return Response::Error("Image encoding failed");
   *data_url = "data:image/png;base64," + Base64Encode(png_data);
-  return Response::Success();
+  return Response::OK();
 }
 
 static void ParseRect(protocol::DOM::Rect* object, FloatRect* rect) {
@@ -512,7 +512,7 @@ Response InspectorLayerTreeAgent::profileSnapshot(
     std::unique_ptr<protocol::Array<protocol::Array<double>>>* out_timings) {
   const PictureSnapshot* snapshot = nullptr;
   Response response = GetSnapshotById(snapshot_id, snapshot);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
   FloatRect rect;
   if (clip_rect.isJust())
@@ -528,7 +528,7 @@ Response InspectorLayerTreeAgent::profileSnapshot(
       out_row->emplace_back(delta.InSecondsF());
     (*out_timings)->emplace_back(std::move(out_row));
   }
-  return Response::Success();
+  return Response::OK();
 }
 
 Response InspectorLayerTreeAgent::snapshotCommandLog(
@@ -536,7 +536,7 @@ Response InspectorLayerTreeAgent::snapshotCommandLog(
     std::unique_ptr<Array<protocol::DictionaryValue>>* command_log) {
   const PictureSnapshot* snapshot = nullptr;
   Response response = GetSnapshotById(snapshot_id, snapshot);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
   protocol::ErrorSupport errors;
   const String& json = snapshot->SnapshotCommandLog()->ToJSONString();
@@ -557,8 +557,9 @@ Response InspectorLayerTreeAgent::snapshotCommandLog(
                                                              &errors);
   auto err = errors.Errors();
   if (err.empty())
-    return Response::Success();
-  return Response::ServerError(std::string(err.begin(), err.end()));
+    return Response::OK();
+  return Response::Error(
+      protocol::StringUtil::fromUTF8(err.data(), err.size()));
 }
 
 }  // namespace blink

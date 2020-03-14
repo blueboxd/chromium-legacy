@@ -59,7 +59,7 @@ js_library("sync_disabled_confirmation") {
 }
 
 group("polymer3_elements") {
-  deps = [ ":sync_confirmation_app_module" ]
+  public_deps = [ ":sync_confirmation_app_module" ]
 }
 
 polymer_modulizer("sync_confirmation_app") {

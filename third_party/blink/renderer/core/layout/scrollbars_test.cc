@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/mojom/cursor_type.mojom-blink.h"
 
 namespace blink {
@@ -210,7 +211,7 @@ class ScrollbarsTest : public SimTest {
         .GetFrame()
         ->GetChromeClient()
         .LastSetCursorForTesting()
-        .GetType();
+        .type();
   }
 
   ScrollbarTheme& GetScrollbarTheme() {

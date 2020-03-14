@@ -31,6 +31,7 @@ js_library("site_settings_page") {
     "..:route",
     "..:router",
     "../site_settings:constants",
+    "../site_settings:site_settings_prefs_browser_proxy",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:load_time_data",
@@ -79,7 +80,7 @@ js_library("site_settings_page.m") {
 import("//tools/polymer/polymer.gni")
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":site_settings_list_module",
     ":site_settings_page_module",
   ]

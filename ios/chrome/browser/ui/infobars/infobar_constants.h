@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_CONSTANTS_H_
 #define IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_CONSTANTS_H_
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 extern const int kInfobarBackgroundColor;
 
@@ -19,5 +19,9 @@ extern const NSTimeInterval kInfobarBannerDefaultPresentationDurationInSeconds;
 // The duration in seconds that a high priority presentation InfobarCoordinator
 // banner will be presented for.
 extern const NSTimeInterval kInfobarBannerLongPresentationDurationInSeconds;
+
+// The overlap from the bottom of the omnibox NamedGuide for which the banner
+// should be laid out.
+extern const CGFloat kInfobarBannerOverlapWithOmnibox;
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_CONSTANTS_H_

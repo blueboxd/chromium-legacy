@@ -369,6 +369,8 @@ class GomaLinkBase(object):
           and not param.startswith('-fthinlto')
           and not param.startswith('-fwhole-program')):
         return [param]
+      if param.startswith('-g'):
+        return [param]
       return None
 
     def process_param(param):

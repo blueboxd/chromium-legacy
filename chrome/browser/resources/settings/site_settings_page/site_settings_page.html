@@ -8,6 +8,7 @@
 <link rel="import" href="../router.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../site_settings/constants.html">
+<link rel="import" href="../site_settings/site_settings_prefs_browser_proxy.html">
 <link rel="import" href="recent_site_permissions.html">
 <link rel="import" href="site_settings_list.html">
 
@@ -40,14 +41,14 @@
     </div>
 
     <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
-      <settings-site-settings-list
+      <settings-site-settings-list id="allSettingsList"
           category-list="[[lists_.all]]"
           focus-config="[[focusConfig]]">
       </settings-site-settings-list>
     </template>
 
     <template is="dom-if" if="[[privacySettingsRedesignEnabled_]]">
-      <settings-site-settings-list
+      <settings-site-settings-list id="basicPermissionsList"
           category-list="[[lists_.permissionsBasic]]"
           focus-config="[[focusConfig]]">
       </settings-site-settings-list>
@@ -56,7 +57,7 @@
         <div>$i18n{siteSettingsPermissionsMore}</div>
       </cr-expand-button>
       <iron-collapse opened="[[permissionsExpanded_]]">
-        <settings-site-settings-list
+        <settings-site-settings-list id="advancedPermissionsList"
             category-list="[[lists_.permissionsAdvanced]]"
             focus-config="[[focusConfig]]">
         </settings-site-settings-list>
@@ -65,7 +66,7 @@
       <div class="settings-box first line-only">
         <h2>$i18n{siteSettingsContent}</h2>
       </div>
-      <settings-site-settings-list
+      <settings-site-settings-list id="basicContentList"
           category-list="[[lists_.contentBasic]]"
           focus-config="[[focusConfig]]">
       </settings-site-settings-list>
@@ -74,7 +75,7 @@
         <div>$i18n{siteSettingsContentMore}</div>
       </cr-expand-button>
       <iron-collapse opened="[[contentExpanded_]]">
-        <settings-site-settings-list
+        <settings-site-settings-list id="advancedContentList"
             category-list="[[lists_.contentAdvanced]]"
             focus-config="[[focusConfig]]">
         </settings-site-settings-list>

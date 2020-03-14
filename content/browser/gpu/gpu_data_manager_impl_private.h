@@ -70,6 +70,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void UpdateDx12VulkanRequestStatus(bool request_continues);
   void UpdateDxDiagNodeRequestStatus(bool request_continues);
   bool Dx12VulkanRequested() const;
+  void OnBrowserThreadsStarted();
 #endif
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info,
                             const base::Optional<gpu::GpuFeatureInfo>&

@@ -281,7 +281,7 @@ void TabGroupEditorBubbleView::UpdateGroup() {
 
   tab_groups::TabGroupVisualData new_data(title_field_->GetText(),
                                           updated_color);
-  tab_group->SetVisualData(new_data);
+  tab_group->SetVisualData(new_data, true);
 }
 
 void TabGroupEditorBubbleView::OnBubbleClose() {

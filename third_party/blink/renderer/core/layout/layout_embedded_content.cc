@@ -309,7 +309,7 @@ void LayoutEmbeddedContent::InvalidatePaint(
 }
 
 CursorDirective LayoutEmbeddedContent::GetCursor(const PhysicalOffset& point,
-                                                 Cursor& cursor) const {
+                                                 ui::Cursor& cursor) const {
   if (Plugin()) {
     // A plugin is responsible for setting the cursor when the pointer is over
     // it.

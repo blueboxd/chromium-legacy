@@ -36,5 +36,5 @@ polymer_modulizer("set_time_dialog") {
 }
 
 group("polymer3_elements") {
-  deps = [ ":set_time_dialog_module" ]
+  public_deps = [ ":set_time_dialog_module" ]
 }

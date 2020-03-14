@@ -70,13 +70,13 @@ Response MemoryHandler::GetBrowserSamplingProfile(
                      .SetSamples(std::move(samples))
                      .SetModules(std::move(modules))
                      .Build();
-  return Response::Success();
+  return Response::OK();
 }
 
 Response MemoryHandler::SetPressureNotificationsSuppressed(
     bool suppressed) {
   base::MemoryPressureListener::SetNotificationsSuppressed(suppressed);
-  return Response::Success();
+  return Response::OK();
 }
 
 Response MemoryHandler::SimulatePressureNotification(
@@ -93,20 +93,19 @@ Response MemoryHandler::SimulatePressureNotification(
 
   // Simulate memory pressure notification in the browser process.
   base::MemoryPressureListener::SimulatePressureNotification(parsed_level);
-  return Response::Success();
+  return Response::OK();
 }
 
 void MemoryHandler::PrepareForLeakDetection(
     std::unique_ptr<PrepareForLeakDetectionCallback> callback) {
   if (leak_detection_callback_) {
     callback->sendFailure(
-        Response::ServerError("Another leak detection in progress"));
+        Response::Error("Another leak detection in progress"));
     return;
   }
   RenderProcessHost* process = RenderProcessHost::FromID(process_host_id_);
   if (!process) {
-    callback->sendFailure(
-        Response::ServerError("No process to detect leaks in"));
+    callback->sendFailure(Response::Error("No process to detect leaks in"));
     return;
   }
 
@@ -127,7 +126,7 @@ void MemoryHandler::OnLeakDetectionComplete(
 
 void MemoryHandler::OnLeakDetectorIsGone() {
   leak_detection_callback_->sendFailure(
-      Response::ServerError("Failed to run leak detection"));
+      Response::Error("Failed to run leak detection"));
   leak_detection_callback_.reset();
   leak_detector_.reset();
 }

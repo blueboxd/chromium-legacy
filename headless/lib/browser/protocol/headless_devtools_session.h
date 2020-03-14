@@ -29,6 +29,7 @@ class HeadlessDevToolsSession : public FrontendChannel {
   ~HeadlessDevToolsSession() override;
 
   void HandleCommand(
+      const std::string& method,
       base::span<const uint8_t> message,
       content::DevToolsManagerDelegate::NotHandledCallback callback);
 
@@ -36,12 +37,12 @@ class HeadlessDevToolsSession : public FrontendChannel {
   void AddHandler(std::unique_ptr<DomainHandler> handler);
 
   // FrontendChannel:
-  void SendProtocolResponse(int call_id,
+  void sendProtocolResponse(int call_id,
                             std::unique_ptr<Serializable> message) override;
-  void SendProtocolNotification(std::unique_ptr<Serializable> message) override;
-  void FlushProtocolNotifications() override;
-  void FallThrough(int call_id,
-                   crdtp::span<uint8_t> method,
+  void sendProtocolNotification(std::unique_ptr<Serializable> message) override;
+  void flushProtocolNotifications() override;
+  void fallThrough(int call_id,
+                   const std::string& method,
                    crdtp::span<uint8_t> message) override;
 
   base::WeakPtr<HeadlessBrowserImpl> browser_;

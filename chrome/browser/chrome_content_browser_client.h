@@ -85,6 +85,12 @@ class ChromeBluetoothDelegate;
 class ChromeHidDelegate;
 class ChromeSerialDelegate;
 
+#if BUILDFLAG(ENABLE_VR)
+namespace vr {
+class ChromeXrIntegrationClient;
+}
+#endif
+
 // Returns the user agent of Chrome.
 std::string GetUserAgent();
 
@@ -656,6 +662,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const content::PepperPluginInfo& plugin_info) override;
 #endif
 
+#if BUILDFLAG(ENABLE_VR)
+  content::XrIntegrationClient* GetXrIntegrationClient() override;
+#endif
+
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);
   static bool HandleWebUIReverse(GURL* url,
@@ -721,6 +731,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<ChromeHidDelegate> hid_delegate_;
 #endif
   std::unique_ptr<ChromeBluetoothDelegate> bluetooth_delegate_;
+
+#if BUILDFLAG(ENABLE_VR)
+  std::unique_ptr<vr::ChromeXrIntegrationClient> xr_integration_client_;
+#endif
 
   // Returned from GetNetworkContextsParentDirectory() but created on the UI
   // thread because it needs to access the Local State prefs.

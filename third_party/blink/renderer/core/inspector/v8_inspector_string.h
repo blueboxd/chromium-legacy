@@ -39,6 +39,18 @@ class CORE_EXPORT StringUtil {
   STATIC_ONLY(StringUtil);
 
  public:
+  static String substring(const String& s, size_t pos, size_t len) {
+    return s.Substring(static_cast<wtf_size_t>(pos),
+                       static_cast<wtf_size_t>(len));
+  }
+  static size_t find(const String& s, const char* needle) {
+    return s.Find(needle);
+  }
+  static size_t find(const String& s, const String& needle) {
+    return s.Find(needle);
+  }
+  static const size_t kNotFound = WTF::kNotFound;
+
   static String fromUTF8(const uint8_t* data, size_t length) {
     return String::FromUTF8(reinterpret_cast<const char*>(data), length);
   }

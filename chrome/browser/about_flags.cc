@@ -3175,6 +3175,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabGroupsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabGroups)},
 
+    {"tab-groups-collapse", flag_descriptions::kTabGroupsCollapseName,
+     flag_descriptions::kTabGroupsCollapseDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kTabGroupsCollapse)},
+
     {"new-tabstrip-animation", flag_descriptions::kNewTabstripAnimationName,
      flag_descriptions::kNewTabstripAnimationDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNewTabstripAnimation)},

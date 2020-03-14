@@ -26,6 +26,7 @@
 #include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
+#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
@@ -4339,6 +4340,33 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
       shell()->web_contents(), first_child.Get(), tree_walker.Get());
   shell()->CloseContents(shell()->web_contents());
   destroyed_watcher.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
+                       RequestingTopLevelElementEnablesWebAccessibility) {
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
+
+  // Ensure accessibility is not enabled before we begin the test.
+  EXPECT_TRUE(content::BrowserAccessibilityStateImpl::GetInstance()
+                  ->GetAccessibilityMode()
+                  .is_mode_off());
+
+  // Request an automation element for the top-level window.
+  Microsoft::WRL::ComPtr<IUIAutomation> uia;
+  ASSERT_HRESULT_SUCCEEDED(CoCreateInstance(CLSID_CUIAutomation, nullptr,
+                                            CLSCTX_INPROC_SERVER,
+                                            IID_IUIAutomation, &uia));
+
+  HWND hwnd = shell()->window()->GetHost()->GetAcceleratedWidget();
+  ASSERT_NE(gfx::kNullAcceleratedWidget, hwnd);
+  Microsoft::WRL::ComPtr<IUIAutomationElement> root;
+  uia->ElementFromHandle(hwnd, &root);
+  ASSERT_NE(nullptr, root.Get());
+
+  // Web content accessibility support should now be enabled.
+  EXPECT_EQ(ui::kAXModeComplete,
+            content::BrowserAccessibilityStateImpl::GetInstance()
+                ->GetAccessibilityMode());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestOffsetsOfSelectionAll) {

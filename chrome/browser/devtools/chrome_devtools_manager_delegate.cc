@@ -118,6 +118,7 @@ void ChromeDevToolsManagerDelegate::Inspect(
 
 void ChromeDevToolsManagerDelegate::HandleCommand(
     content::DevToolsAgentHostClientChannel* channel,
+    const std::string& method,
     base::span<const uint8_t> message,
     NotHandledCallback callback) {
   auto it = sessions_.find(channel);
@@ -128,7 +129,7 @@ void ChromeDevToolsManagerDelegate::HandleCommand(
     NOTREACHED();
     return;
   }
-  it->second->HandleCommand(message, std::move(callback));
+  it->second->HandleCommand(method, message, std::move(callback));
 }
 
 std::string ChromeDevToolsManagerDelegate::GetTargetType(

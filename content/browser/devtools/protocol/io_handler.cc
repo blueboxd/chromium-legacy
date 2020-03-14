@@ -92,7 +92,7 @@ void IOHandler::ReadComplete(std::unique_ptr<ReadCallback> callback,
                              bool base64_encoded,
                              int status) {
   if (status == DevToolsIOContext::Stream::StatusFailure) {
-    callback->sendFailure(Response::ServerError("Read failed"));
+    callback->sendFailure(Response::Error("Read failed"));
     return;
   }
   bool eof = status == DevToolsIOContext::Stream::StatusEOF;
@@ -100,9 +100,8 @@ void IOHandler::ReadComplete(std::unique_ptr<ReadCallback> callback,
 }
 
 Response IOHandler::Close(const std::string& handle) {
-  return io_context_->Close(handle)
-             ? Response::Success()
-             : Response::InvalidParams("Invalid stream handle");
+  return io_context_->Close(handle) ? Response::OK()
+      : Response::InvalidParams("Invalid stream handle");
 }
 
 }  // namespace protocol

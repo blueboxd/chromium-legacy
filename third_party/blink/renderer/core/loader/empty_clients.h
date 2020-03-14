@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/frame/remote_frame_client.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/cursors.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
@@ -55,6 +56,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "ui/base/cursor/cursor.h"
 #include "v8/include/v8.h"
 
 /*
@@ -72,6 +74,10 @@
  Ideally, whenever you change a Client class, you should add a stub here.
  Brittle, yes. Unfortunate, yes. Hopefully temporary.
 */
+
+namespace ui {
+class Cursor;
+}
 
 namespace blink {
 
@@ -196,9 +202,11 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 
   void OpenFileChooser(LocalFrame*, scoped_refptr<FileChooser>) override;
 
-  void SetCursor(const Cursor&, LocalFrame* local_root) override {}
+  void SetCursor(const ui::Cursor&, LocalFrame* local_root) override {}
   void SetCursorOverridden(bool) override {}
-  Cursor LastSetCursorForTesting() const override { return PointerCursor(); }
+  ui::Cursor LastSetCursorForTesting() const override {
+    return PointerCursor();
+  }
 
   void AttachRootLayer(scoped_refptr<cc::Layer>,
                        LocalFrame* local_root) override;

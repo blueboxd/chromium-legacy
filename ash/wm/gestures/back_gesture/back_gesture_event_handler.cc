@@ -7,9 +7,9 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
+#include "ash/keyboard/keyboard_util.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
 #include "ash/shell.h"
@@ -18,14 +18,12 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
@@ -259,13 +257,12 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
       if (back_gesture_affordance_->IsActivated() ||
           (event->type() == ui::ET_SCROLL_FLING_START &&
            event->details().velocity_x() >= kFlingVelocityForGoingBack)) {
-        if (KeyboardController::Get()->IsKeyboardVisible()) {
-          KeyboardController::Get()->HideKeyboard(HideReason::kUser);
-        } else {
+        if (!keyboard_util::CloseKeyboardIfActive()) {
           ActivateUnderneathWindowInSplitViewMode(
               back_start_location_, dragged_from_splitview_divider_);
-          auto* top_window_state =
-              WindowState::Get(TabletModeWindowManager::GetTopWindow());
+          auto* top_window = window_util::GetTopWindow();
+          DCHECK(top_window);
+          auto* top_window_state = WindowState::Get(top_window);
           if (top_window_state && top_window_state->IsFullscreen() &&
               !Shell::Get()->overview_controller()->InOverviewSession()) {
             // For fullscreen ARC apps, show the hotseat and shelf on the first
@@ -294,7 +291,7 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
               RecordEndScenarioType(
                   BackGestureEndScenarioType::kExitFullscreen);
             }
-          } else if (TabletModeWindowManager::ShouldMinimizeTopWindowOnBack()) {
+          } else if (window_util::ShouldMinimizeTopWindowOnBack()) {
             // Complete as minimizing the underneath window.
             top_window_state->Minimize();
             RecordEndScenarioType(
@@ -356,7 +353,7 @@ bool BackGestureEventHandler::CanStartGoingBack(
     return false;
   }
 
-  aura::Window* top_window = TabletModeWindowManager::GetTopWindow();
+  aura::Window* top_window = window_util::GetTopWindow();
   // Do not enable back gesture if MRU window list is empty and it is not in
   // overview mode.
   if (!top_window && !shell->overview_controller()->InOverviewSession())
@@ -388,13 +385,7 @@ bool BackGestureEventHandler::CanStartGoingBack(
 }
 
 void BackGestureEventHandler::SendBackEvent(const gfx::Point& screen_location) {
-  aura::Window* root_window = window_util::GetRootWindowAt(screen_location);
-  ui::KeyEvent press_key_event(ui::ET_KEY_PRESSED, ui::VKEY_BROWSER_BACK,
-                               ui::EF_NONE);
-  ignore_result(root_window->GetHost()->SendEventToSink(&press_key_event));
-  ui::KeyEvent release_key_event(ui::ET_KEY_RELEASED, ui::VKEY_BROWSER_BACK,
-                                 ui::EF_NONE);
-  ignore_result(root_window->GetHost()->SendEventToSink(&release_key_event));
+  window_util::SendBackKeyEvent(window_util::GetRootWindowAt(screen_location));
   RecordEndScenarioType(GetEndScenarioType(back_gesture_start_scenario_type_,
                                            BackGestureEndType::kBack));
 }

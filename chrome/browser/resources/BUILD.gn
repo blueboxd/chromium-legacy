@@ -87,8 +87,6 @@ if (closure_compile) {
 
 if (!is_android) {
   grit("bookmarks_resources") {
-    # The .grd contains references to generated files.
-    source_is_generated = true
     grit_flags = [
       "-E",
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
@@ -117,8 +115,6 @@ if (!is_android) {
   grit("component_extension_resources") {
     source = "component_extension_resources.grd"
 
-    # The .grd contains references to generated files.
-    source_is_generated = true
     grit_flags = [
       "-E",
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
@@ -141,8 +137,6 @@ if (!is_android) {
   }
 
   grit("gaia_auth_host_resources") {
-    # The .grd contains references to generated files.
-    source_is_generated = true
     grit_flags = [
       "-E",
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
@@ -162,8 +156,6 @@ if (!is_android) {
   }
 
   grit("history_resources") {
-    # The .grd contains references to generated files.
-    source_is_generated = true
     grit_flags = [
       "-E",
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
@@ -208,9 +200,6 @@ if (!is_android) {
       "//skia/public/mojom:mojom_js",
     ]
 
-    # The .grd contains references to generated files.
-    source_is_generated = true
-
     grit_flags = [
       "-E",
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
@@ -234,9 +223,6 @@ if (!is_android) {
 
     if (optimize_webui) {
       source = "settings/settings_resources_vulcanized.grd"
-
-      # The .grd contains references to generated files.
-      source_is_generated = true
 
       deps = [
         "//chrome/browser/resources/settings:build",
@@ -265,14 +251,9 @@ if (!is_android) {
     } else {
       source = "downloads/downloads_resources.grd"
 
-      deps = [
-        "//chrome/browser/resources/downloads:polymer3_elements",
-        "//chrome/browser/ui/webui/downloads:mojo_bindings_js",
-      ]
+      deps = [ "//chrome/browser/resources/downloads:polymer3_elements" ]
     }
-
-    # The .grd contains references to generated files.
-    source_is_generated = true
+    deps += [ "//chrome/browser/ui/webui/downloads:mojo_bindings_js" ]
 
     grit_flags = [
       "-E",
@@ -294,10 +275,9 @@ if (is_chromeos) {
   grit("os_settings_resources") {
     deps = [ "//chrome/browser/ui/webui/app_management:mojo_bindings_js" ]
     if (optimize_webui) {
-      source = "settings/os_settings_resources_vulcanized.grd"
-
-      # The .grd contains references to generated files.
+      # Required due to flattenhtml="true" on a generated file.
       source_is_generated = true
+      source = "settings/os_settings_resources_vulcanized.grd"
 
       deps += [ "//chrome/browser/resources/settings/chromeos:build" ]
 
@@ -324,9 +304,6 @@ if (!is_android && !is_chromeos) {
   grit("welcome_resources") {
     source = "welcome/welcome_resources.grd"
 
-    # The .grd contains references to generated files.
-    source_is_generated = true
-
     deps = [ "//chrome/browser/resources/welcome:polymer3_elements" ]
     grit_flags = [
       "-E",
@@ -346,9 +323,6 @@ if (!is_android && !is_chromeos) {
 
 if (enable_extensions) {
   grit("extensions_resources") {
-    # The .grd contains references to generated files.
-    source_is_generated = true
-
     grit_flags = [
       "-E",
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
@@ -387,9 +361,6 @@ if (enable_extensions) {
 
 if (enable_print_preview) {
   grit("print_preview_resources") {
-    # The .grd contains references to generated files.
-    source_is_generated = true
-
     grit_flags = [
       "-E",
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
@@ -397,7 +368,6 @@ if (enable_print_preview) {
 
     if (optimize_webui) {
       source = "print_preview/print_preview_resources_vulcanized.grd"
-
       deps = [ "//chrome/browser/resources/print_preview:build" ]
     } else {
       source = "print_preview/print_preview_resources.grd"
@@ -420,7 +390,6 @@ if (enable_webui_tab_strip) {
     source = "tab_strip/tab_strip_resources.grd"
     defines = chrome_grit_defines
     deps = [ "tab_strip:tab_strip_modules" ]
-    source_is_generated = true
     outputs = [
       "grit/tab_strip_resources.h",
       "grit/tab_strip_resources_map.cc",

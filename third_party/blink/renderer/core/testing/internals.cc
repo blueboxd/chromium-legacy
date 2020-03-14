@@ -163,7 +163,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
-#include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
@@ -186,6 +185,7 @@
 #include "third_party/blink/renderer/platform/wtf/dtoa.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/mojom/cursor_type.mojom-blink.h"
 #include "ui/base/ui_base_features.h"
 #include "v8/include/v8.h"
@@ -2783,28 +2783,28 @@ String Internals::getCurrentCursorInfo() {
   if (!GetFrame())
     return String();
 
-  Cursor cursor =
+  ui::Cursor cursor =
       GetFrame()->GetPage()->GetChromeClient().LastSetCursorForTesting();
 
   StringBuilder result;
   result.Append("type=");
-  result.Append(CursorTypeToString(cursor.GetType()));
-  if (cursor.GetType() == ui::mojom::blink::CursorType::kCustom) {
+  result.Append(CursorTypeToString(cursor.type()));
+  if (cursor.type() == ui::mojom::blink::CursorType::kCustom) {
     result.Append(" hotSpot=");
-    result.AppendNumber(cursor.HotSpot().X());
+    result.AppendNumber(cursor.custom_hotspot().x());
     result.Append(',');
-    result.AppendNumber(cursor.HotSpot().Y());
+    result.AppendNumber(cursor.custom_hotspot().y());
 
-    DCHECK(cursor.GetImage());
-    IntSize size = cursor.GetImage()->Size();
+    SkBitmap bitmap = cursor.custom_bitmap();
+    DCHECK(!bitmap.isNull());
     result.Append(" image=");
-    result.AppendNumber(size.Width());
+    result.AppendNumber(bitmap.width());
     result.Append('x');
-    result.AppendNumber(size.Height());
+    result.AppendNumber(bitmap.height());
   }
-  if (cursor.ImageScaleFactor() != 1) {
+  if (cursor.image_scale_factor() != 1) {
     result.Append(" scale=");
-    result.AppendNumber(cursor.ImageScaleFactor(), 8);
+    result.AppendNumber(cursor.image_scale_factor(), 8);
   }
 
   return result.ToString();

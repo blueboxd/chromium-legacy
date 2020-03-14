@@ -24,7 +24,7 @@ void DevToolsDomainHandler::Wire(UberDispatcher* dispatcher) {
 }
 
 Response DevToolsDomainHandler::Disable() {
-  return Response::Success();
+  return Response::OK();
 }
 
 }  // namespace protocol

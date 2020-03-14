@@ -3,7 +3,7 @@ Tests that InspectorBackendDispatcher is catching incorrect messages.
 {
     error : {
         code : -32700
-        message : "JSON: invalid token at position 0"
+        message : "Message must be a valid JSON"
     }
 }
 -------------------------------------------------------

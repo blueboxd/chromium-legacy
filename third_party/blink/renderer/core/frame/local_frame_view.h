@@ -60,11 +60,14 @@ class Layer;
 enum class PaintHoldingCommitTrigger;
 }
 
+namespace ui {
+class Cursor;
+}
+
 namespace blink {
 class AXObjectCache;
 class ChromeClient;
 class CompositorAnimationTimeline;
-class Cursor;
 class DocumentLifecycle;
 class FloatRect;
 class FloatSize;
@@ -423,7 +426,7 @@ class CORE_EXPORT LocalFrameView final
 
   bool ShouldSetCursor() const;
 
-  void SetCursor(const Cursor&);
+  void SetCursor(const ui::Cursor&);
 
   // FIXME: Remove this method once plugin loading is decoupled from layout.
   void FlushAnyPendingPostLayoutTasks();

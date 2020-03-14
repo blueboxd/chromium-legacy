@@ -79,28 +79,26 @@ ProtocolResponse ParseCacheId(const String& id,
                               String* cache_name) {
   wtf_size_t pipe = id.find('|');
   if (pipe == WTF::kNotFound)
-    return ProtocolResponse::ServerError("Invalid cache id.");
+    return ProtocolResponse::Error("Invalid cache id.");
   *security_origin = id.Substring(0, pipe);
   *cache_name = id.Substring(pipe + 1);
-  return ProtocolResponse::Success();
+  return ProtocolResponse::OK();
 }
 
 ProtocolResponse GetExecutionContext(InspectedFrames* frames,
                                      const String& security_origin,
                                      ExecutionContext** context) {
   LocalFrame* frame = frames->FrameWithSecurityOrigin(security_origin);
-  if (!frame) {
-    String msg = "No frame with origin " + security_origin;
-    return ProtocolResponse::ServerError(msg.Utf8());
-  }
+  if (!frame)
+    return ProtocolResponse::Error("No frame with origin " + security_origin);
 
   blink::Document* document = frame->GetDocument();
   if (!document)
-    return ProtocolResponse::ServerError("No execution context found");
+    return ProtocolResponse::Error("No execution context found");
 
   *context = document->ToExecutionContext();
 
-  return ProtocolResponse::Success();
+  return ProtocolResponse::OK();
 }
 
 ProtocolResponse AssertCacheStorage(
@@ -113,14 +111,14 @@ ProtocolResponse AssertCacheStorage(
 
   // Cache Storage API is restricted to trustworthy origins.
   if (!sec_origin->IsPotentiallyTrustworthy()) {
-    return ProtocolResponse::ServerError(
-        sec_origin->IsPotentiallyTrustworthyErrorMessage().Utf8());
+    return ProtocolResponse::Error(
+        sec_origin->IsPotentiallyTrustworthyErrorMessage());
   }
 
   ExecutionContext* context = nullptr;
   ProtocolResponse response =
       GetExecutionContext(frames, security_origin, &context);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
 
   auto it = caches->find(security_origin);
@@ -135,7 +133,7 @@ ProtocolResponse AssertCacheStorage(
     *result = it->value.get();
   }
 
-  return ProtocolResponse::Success();
+  return ProtocolResponse::OK();
 }
 
 ProtocolResponse AssertCacheStorageAndNameForId(
@@ -147,7 +145,7 @@ ProtocolResponse AssertCacheStorageAndNameForId(
   String security_origin;
   ProtocolResponse response =
       ParseCacheId(cache_id, &security_origin, cache_name);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
   return AssertCacheStorage(security_origin, frames, caches, result);
 }
@@ -353,11 +351,9 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
   }
 
   void SendFailure(const mojom::blink::CacheStorageError& error) {
-    callback_->sendFailure(ProtocolResponse::ServerError(
-        String::Format("Error requesting responses for cache %s : %s",
-                       params_.cache_name.Latin1().c_str(),
-                       CacheStorageErrorString(error))
-            .Utf8()));
+    callback_->sendFailure(ProtocolResponse::Error(String::Format(
+        "Error requesting responses for cache %s : %s",
+        params_.cache_name.Latin1().c_str(), CacheStorageErrorString(error))));
   }
 
   std::unique_ptr<Array<Header>> SerializeHeaders(
@@ -407,12 +403,11 @@ class GetCacheKeysForRequestData {
                std::unique_ptr<GetCacheKeysForRequestData> self,
                mojom::blink::CacheKeysResultPtr result) {
               if (result->is_status()) {
-                self->callback_->sendFailure(ProtocolResponse::ServerError(
-                    String::Format(
+                self->callback_->sendFailure(
+                    ProtocolResponse::Error(String::Format(
                         "Error requesting requests for cache %s: %s",
                         params.cache_name.Latin1().c_str(),
-                        CacheStorageErrorString(result->get_status()))
-                        .Utf8()));
+                        CacheStorageErrorString(result->get_status()))));
               } else {
                 if (result->get_keys().IsEmpty()) {
                   auto array = std::make_unique<protocol::Array<DataEntry>>();
@@ -459,10 +454,8 @@ class CachedResponseFileReaderLoaderClient final
   }
 
   void DidFail(FileErrorCode error) override {
-    callback_->sendFailure(ProtocolResponse::ServerError(
-        String::Format("Unable to read the cached response, error code: %d",
-                       error)
-            .Utf8()));
+    callback_->sendFailure(ProtocolResponse::Error(String::Format(
+        "Unable to read the cached response, error code: %d", error)));
     dispose();
   }
 
@@ -532,7 +525,7 @@ void InspectorCacheStorageAgent::requestCacheNames(
 
   ProtocolResponse response =
       AssertCacheStorage(security_origin, frames_, &caches_, &cache_storage);
-  if (!response.IsSuccess()) {
+  if (!response.isSuccess()) {
     callback->sendFailure(response);
     return;
   }
@@ -572,7 +565,7 @@ void InspectorCacheStorageAgent::requestEntries(
   mojom::blink::CacheStorage* cache_storage = nullptr;
   ProtocolResponse response = AssertCacheStorageAndNameForId(
       cache_id, frames_, &cache_name, &caches_, &cache_storage);
-  if (!response.IsSuccess()) {
+  if (!response.isSuccess()) {
     callback->sendFailure(response);
     return;
   }
@@ -589,11 +582,10 @@ void InspectorCacheStorageAgent::requestEntries(
              std::unique_ptr<RequestEntriesCallback> callback,
              mojom::blink::OpenResultPtr result) {
             if (result->is_status()) {
-              callback->sendFailure(ProtocolResponse::ServerError(
-                  String::Format("Error requesting cache %s: %s",
-                                 params.cache_name.Latin1().c_str(),
-                                 CacheStorageErrorString(result->get_status()))
-                      .Utf8()));
+              callback->sendFailure(ProtocolResponse::Error(String::Format(
+                  "Error requesting cache %s: %s",
+                  params.cache_name.Latin1().c_str(),
+                  CacheStorageErrorString(result->get_status()))));
             } else {
               auto request = std::make_unique<GetCacheKeysForRequestData>(
                   params, std::move(result->get_cache()), std::move(callback));
@@ -616,7 +608,7 @@ void InspectorCacheStorageAgent::deleteCache(
   mojom::blink::CacheStorage* cache_storage = nullptr;
   ProtocolResponse response = AssertCacheStorageAndNameForId(
       cache_id, frames_, &cache_name, &caches_, &cache_storage);
-  if (!response.IsSuccess()) {
+  if (!response.isSuccess()) {
     callback->sendFailure(response);
     return;
   }
@@ -628,10 +620,9 @@ void InspectorCacheStorageAgent::deleteCache(
             if (error == mojom::blink::CacheStorageError::kSuccess) {
               callback->sendSuccess();
             } else {
-              callback->sendFailure(ProtocolResponse::ServerError(
+              callback->sendFailure(ProtocolResponse::Error(
                   String::Format("Error requesting cache names: %s",
-                                 CacheStorageErrorString(error))
-                      .Utf8()));
+                                 CacheStorageErrorString(error))));
             }
           },
           std::move(callback)));
@@ -650,7 +641,7 @@ void InspectorCacheStorageAgent::deleteEntry(
   mojom::blink::CacheStorage* cache_storage = nullptr;
   ProtocolResponse response = AssertCacheStorageAndNameForId(
       cache_id, frames_, &cache_name, &caches_, &cache_storage);
-  if (!response.IsSuccess()) {
+  if (!response.isSuccess()) {
     callback->sendFailure(response);
     return;
   }
@@ -661,11 +652,9 @@ void InspectorCacheStorageAgent::deleteEntry(
              std::unique_ptr<DeleteEntryCallback> callback,
              mojom::blink::OpenResultPtr result) {
             if (result->is_status()) {
-              callback->sendFailure(ProtocolResponse::ServerError(
-                  String::Format("Error requesting cache %s: %s",
-                                 cache_name.Latin1().c_str(),
-                                 CacheStorageErrorString(result->get_status()))
-                      .Utf8()));
+              callback->sendFailure(ProtocolResponse::Error(String::Format(
+                  "Error requesting cache %s: %s", cache_name.Latin1().c_str(),
+                  CacheStorageErrorString(result->get_status()))));
             } else {
               Vector<mojom::blink::BatchOperationPtr> batch_operations;
               batch_operations.push_back(mojom::blink::BatchOperation::New());
@@ -688,11 +677,10 @@ void InspectorCacheStorageAgent::deleteEntry(
                          mojom::blink::CacheStorageVerboseErrorPtr error) {
                         if (error->value !=
                             mojom::blink::CacheStorageError::kSuccess) {
-                          callback->sendFailure(ProtocolResponse::ServerError(
-                              String::Format(
+                          callback->sendFailure(
+                              ProtocolResponse::Error(String::Format(
                                   "Error deleting cache entry: %s",
-                                  CacheStorageErrorString(error->value))
-                                  .Utf8()));
+                                  CacheStorageErrorString(error->value))));
                         } else {
                           callback->sendSuccess();
                         }
@@ -718,7 +706,7 @@ void InspectorCacheStorageAgent::requestCachedResponse(
   mojom::blink::CacheStorage* cache_storage = nullptr;
   ProtocolResponse response = AssertCacheStorageAndNameForId(
       cache_id, frames_, &cache_name, &caches_, &cache_storage);
-  if (!response.IsSuccess()) {
+  if (!response.isSuccess()) {
     callback->sendFailure(response);
     return;
   }
@@ -741,10 +729,9 @@ void InspectorCacheStorageAgent::requestCachedResponse(
           [](std::unique_ptr<RequestCachedResponseCallback> callback,
              mojom::blink::MatchResultPtr result) {
             if (result->is_status()) {
-              callback->sendFailure(ProtocolResponse::ServerError(
-                  String::Format("Unable to read cached response: %s",
-                                 CacheStorageErrorString(result->get_status()))
-                      .Utf8()));
+              callback->sendFailure(ProtocolResponse::Error(String::Format(
+                  "Unable to read cached response: %s",
+                  CacheStorageErrorString(result->get_status()))));
             } else {
               std::unique_ptr<protocol::DictionaryValue> headers =
                   protocol::DictionaryValue::create();

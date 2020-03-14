@@ -66,7 +66,7 @@ void ReportUsageAndQuotaDataOnUIThread(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (code != blink::mojom::QuotaStatusCode::kOk) {
     return callback->sendFailure(
-        Response::ServerError("Quota information is not available"));
+        Response::Error("Quota information is not available"));
   }
 
   auto usageList = std::make_unique<Array<Storage::UsageForType>>();
@@ -268,7 +268,7 @@ void StorageHandler::SetRenderer(int process_host_id,
 Response StorageHandler::Disable() {
   cache_storage_observer_.reset();
   indexed_db_observer_.reset();
-  return Response::Success();
+  return Response::OK();
 }
 
 void StorageHandler::GetCookies(Maybe<std::string> browser_context_id,
@@ -276,7 +276,7 @@ void StorageHandler::GetCookies(Maybe<std::string> browser_context_id,
   StoragePartition* storage_partition = nullptr;
   Response response = StorageHandler::FindStoragePartition(browser_context_id,
                                                            &storage_partition);
-  if (!response.IsSuccess()) {
+  if (!response.isSuccess()) {
     callback->sendFailure(std::move(response));
     return;
   }
@@ -297,7 +297,7 @@ void StorageHandler::SetCookies(
   StoragePartition* storage_partition = nullptr;
   Response response = StorageHandler::FindStoragePartition(browser_context_id,
                                                            &storage_partition);
-  if (!response.IsSuccess()) {
+  if (!response.isSuccess()) {
     callback->sendFailure(std::move(response));
     return;
   }
@@ -322,7 +322,7 @@ void StorageHandler::ClearCookies(
   StoragePartition* storage_partition = nullptr;
   Response response = StorageHandler::FindStoragePartition(browser_context_id,
                                                            &storage_partition);
-  if (!response.IsSuccess()) {
+  if (!response.isSuccess()) {
     callback->sendFailure(std::move(response));
     return;
   }
@@ -387,7 +387,7 @@ void StorageHandler::GetUsageAndQuota(
   GURL origin_url(origin);
   if (!origin_url.is_valid()) {
     return callback->sendFailure(
-        Response::ServerError(origin + " is not a valid URL"));
+        Response::Error(origin + " is not a valid URL"));
   }
 
   storage::QuotaManager* manager = storage_partition_->GetQuotaManager();
@@ -406,7 +406,7 @@ Response StorageHandler::TrackCacheStorageForOrigin(const std::string& origin) {
     return Response::InvalidParams(origin + " is not a valid URL");
 
   GetCacheStorageObserver()->TrackOrigin(url::Origin::Create(origin_url));
-  return Response::Success();
+  return Response::OK();
 }
 
 Response StorageHandler::UntrackCacheStorageForOrigin(
@@ -419,7 +419,7 @@ Response StorageHandler::UntrackCacheStorageForOrigin(
     return Response::InvalidParams(origin + " is not a valid URL");
 
   GetCacheStorageObserver()->UntrackOrigin(url::Origin::Create(origin_url));
-  return Response::Success();
+  return Response::OK();
 }
 
 Response StorageHandler::TrackIndexedDBForOrigin(const std::string& origin) {
@@ -431,7 +431,7 @@ Response StorageHandler::TrackIndexedDBForOrigin(const std::string& origin) {
     return Response::InvalidParams(origin + " is not a valid URL");
 
   GetIndexedDBObserver()->TrackOrigin(url::Origin::Create(origin_url));
-  return Response::Success();
+  return Response::OK();
 }
 
 Response StorageHandler::UntrackIndexedDBForOrigin(const std::string& origin) {
@@ -443,7 +443,7 @@ Response StorageHandler::UntrackIndexedDBForOrigin(const std::string& origin) {
     return Response::InvalidParams(origin + " is not a valid URL");
 
   GetIndexedDBObserver()->UntrackOrigin(url::Origin::Create(origin_url));
-  return Response::Success();
+  return Response::OK();
 }
 
 StorageHandler::CacheStorageObserver*
@@ -498,13 +498,13 @@ Response StorageHandler::FindStoragePartition(
   BrowserContext* browser_context = nullptr;
   Response response =
       BrowserHandler::FindBrowserContext(browser_context_id, &browser_context);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
   *storage_partition =
       BrowserContext::GetDefaultStoragePartition(browser_context);
   if (!*storage_partition)
     return Response::InternalError();
-  return Response::Success();
+  return Response::OK();
 }
 
 }  // namespace protocol

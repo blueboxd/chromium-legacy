@@ -544,7 +544,7 @@ js_library("zoom_levels.m") {
 import("//tools/polymer/polymer.gni")
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":add_site_dialog_module",
     ":all_sites_icons_module",
     ":all_sites_module",

@@ -33,6 +33,7 @@ public class ToolbarTestUtils {
 
     public static final @IdRes int TAB_SWITCHER_TOOLBAR_MENU = R.id.menu_button_wrapper;
     public static final @IdRes int TAB_SWITCHER_TOOLBAR_NEW_TAB = R.id.new_tab_button;
+    public static final @IdRes int TAB_SWITCHER_TOOLBAR_NEW_TAB_VARIATION = R.id.new_tab_view;
     public static final @IdRes int TAB_SWITCHER_TOOLBAR_TAB_SWITCHER_BUTTON =
             R.id.tab_switcher_mode_tab_switcher_button;
 

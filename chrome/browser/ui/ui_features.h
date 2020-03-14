@@ -31,6 +31,8 @@ extern const base::Feature kScrollableTabStrip;
 
 extern const base::Feature kTabGroups;
 
+extern const base::Feature kTabGroupsCollapse;
+
 extern const base::Feature kTabHoverCards;
 extern const char kTabHoverCardsFeatureParameterName[];
 

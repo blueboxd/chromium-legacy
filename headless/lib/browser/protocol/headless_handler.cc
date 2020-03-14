@@ -58,7 +58,7 @@ void OnBeginFrameFinished(
     std::unique_ptr<SkBitmap> bitmap,
     std::string error_message) {
   if (!error_message.empty()) {
-    callback->sendFailure(Response::ServerError(std::move(error_message)));
+    callback->sendFailure(Response::Error(std::move(error_message)));
     return;
   }
   if (!bitmap || bitmap->drawsNothing()) {
@@ -84,11 +84,11 @@ void HeadlessHandler::Wire(UberDispatcher* dispatcher) {
 Response HeadlessHandler::Enable() {
   if (frontend_)
     frontend_->NeedsBeginFramesChanged(true);
-  return Response::Success();
+  return Response::OK();
 }
 
 Response HeadlessHandler::Disable() {
-  return Response::Success();
+  return Response::OK();
 }
 
 void HeadlessHandler::BeginFrame(Maybe<double> in_frame_time_ticks,
@@ -99,7 +99,7 @@ void HeadlessHandler::BeginFrame(Maybe<double> in_frame_time_ticks,
   HeadlessWebContentsImpl* headless_contents =
       HeadlessWebContentsImpl::From(browser_, web_contents_);
   if (!headless_contents->begin_frame_control_enabled()) {
-    callback->sendFailure(Response::ServerError(
+    callback->sendFailure(Response::Error(
         "Command is only supported if BeginFrameControl is enabled."));
     return;
   }
@@ -107,9 +107,9 @@ void HeadlessHandler::BeginFrame(Maybe<double> in_frame_time_ticks,
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kRunAllCompositorStagesBeforeDraw)) {
     callback->sendFailure(
-        Response::ServerError("Command is only supported with "
-                              "--run-all-compositor-stages-before-draw, see "
-                              "https://goo.gl/3zHXhB for more info."));
+        Response::Error("Command is only supported with "
+                        "--run-all-compositor-stages-before-draw, see "
+                        "https://goo.gl/3zHXhB for more info."));
     return;
   }
 

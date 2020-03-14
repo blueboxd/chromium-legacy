@@ -94,14 +94,14 @@ action("generate_graph_tab") {
 
 # Action with a transparent name.
 group("discards_resources_gen") {
-  deps = [
+  public_deps = [
     ":generate_graph_tab",
     ":polymer3_elements",
   ]
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":database_tab_module",
     ":discards_main_module",
     ":discards_tab_module",

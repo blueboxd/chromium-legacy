@@ -134,7 +134,8 @@ class CONTENT_EXPORT DevToolsAgentHost
   virtual bool IsAttached() = 0;
 
   // Sends |message| from |client| to the agent.
-  virtual void DispatchProtocolMessage(DevToolsAgentHostClient* client,
+  // Returns true if the message is dispatched and handled.
+  virtual bool DispatchProtocolMessage(DevToolsAgentHostClient* client,
                                        base::span<const uint8_t> message) = 0;
 
   // Starts inspecting element at position (|x|, |y|) in the frame

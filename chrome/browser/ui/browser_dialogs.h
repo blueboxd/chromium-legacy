@@ -299,6 +299,16 @@ void ShowChromeCleanerRebootPrompt(
 
 #endif  // OS_WIN
 
+// Displays a dialog to notify the user that the extension installation is
+// blocked due to policy. It also show additional information from administrator
+// if it exists.
+void ShowExtensionInstallBlockedDialog(
+    const std::string& extension_name,
+    const base::string16& custom_error_message,
+    const gfx::ImageSkia& icon,
+    content::WebContents* web_contents,
+    base::OnceClosure done_callback);
+
 }  // namespace chrome
 
 void ShowFolderUploadConfirmationDialog(

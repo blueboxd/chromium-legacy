@@ -1307,7 +1307,7 @@ Response NetworkHandler::SetExtraHTTPHeaders(
 
 Response NetworkHandler::CanEmulateNetworkConditions(bool* result) {
   *result = true;
-  return Response::Success();
+  return Response::OK();
 }
 
 Response NetworkHandler::EmulateNetworkConditions(
@@ -1807,7 +1807,7 @@ DispatchResponse NetworkHandler::SetRequestInterception(
       url_loader_interceptor_.reset();
       update_loader_factories_callback_.Run();
     }
-    return Response::Success();
+    return Response::OK();
   }
 
   std::vector<DevToolsURLLoaderInterceptor::Pattern> interceptor_patterns;
@@ -1839,7 +1839,7 @@ DispatchResponse NetworkHandler::SetRequestInterception(
   } else {
     url_loader_interceptor_->SetPatterns(interceptor_patterns, true);
   }
-  return Response::Success();
+  return Response::OK();
 }
 
 void NetworkHandler::ContinueInterceptedRequest(
@@ -1963,7 +1963,7 @@ void NetworkHandler::TakeResponseBodyForInterceptionAsStream(
                        weak_factory_.GetWeakPtr(), std::move(callback)));
     return;
   }
-  callback->sendFailure(Response::ServerError(
+  callback->sendFailure(Response::Error(
       "Network.takeResponseBodyForInterceptionAsStream is only "
       "currently supported with --enable-features=NetworkService"));
 }
@@ -1974,8 +1974,8 @@ void NetworkHandler::OnResponseBodyPipeTaken(
     mojo::ScopedDataPipeConsumerHandle pipe,
     const std::string& mime_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(response.IsSuccess(), pipe.is_valid());
-  if (!response.IsSuccess()) {
+  DCHECK_EQ(response.isSuccess(), pipe.is_valid());
+  if (!response.isSuccess()) {
     callback->sendFailure(std::move(response));
     return;
   }

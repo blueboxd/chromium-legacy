@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
+#include "ui/base/cursor/cursor.h"
 
 namespace ui {
 class Cursor;
@@ -158,9 +159,9 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
       const DateTimeChooserParameters&) override;
   ExternalDateTimeChooser* GetExternalDateTimeChooserForTesting() override;
   void OpenFileChooser(LocalFrame*, scoped_refptr<FileChooser>) override;
-  void SetCursor(const Cursor&, LocalFrame*) override;
+  void SetCursor(const ui::Cursor&, LocalFrame*) override;
   void SetCursorOverridden(bool) override;
-  Cursor LastSetCursorForTesting() const override;
+  ui::Cursor LastSetCursorForTesting() const override;
   void SetEventListenerProperties(LocalFrame*,
                                   cc::EventListenerClass,
                                   cc::EventListenerProperties) override;
@@ -265,7 +266,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   viz::FrameSinkId GetFrameSinkId(LocalFrame*) override;
 
   void RequestDecode(LocalFrame*,
-                     const PaintImage&,
+                     const cc::PaintImage&,
                      base::OnceCallback<void(bool)>) override;
 
   void NotifySwapTime(LocalFrame& frame, ReportTimeCallback callback) override;
@@ -291,7 +292,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
  private:
   bool IsChromeClientImpl() const override { return true; }
 
-  void SetCursor(const ui::Cursor&, LocalFrame*);
+  void SetCursorInternal(const ui::Cursor&, LocalFrame*);
 
   // Returns WebAutofillClient associated with the WebLocalFrame. This takes and
   // returns nullable.
@@ -300,7 +301,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   WebViewImpl* web_view_;  // Weak pointer.
   HeapHashSet<WeakMember<PopupOpeningObserver>> popup_opening_observers_;
   Vector<scoped_refptr<FileChooser>> file_chooser_queue_;
-  Cursor last_set_mouse_cursor_for_testing_;
+  ui::Cursor last_set_mouse_cursor_for_testing_;
   bool cursor_overridden_;
   Member<ExternalDateTimeChooser> external_date_time_chooser_;
   bool did_request_non_empty_tool_tip_;

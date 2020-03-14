@@ -7048,3 +7048,7 @@ crbug.com/1061097 http/tests/security/promise-access-control-allow.htm [ Pass Fa
 crbug.com/1061539 [ Mac ] http/tests/images/document-policy-oversized-images-resize.html [ Pass Failure ]
 crbug.com/1061539 [ Linux ] http/tests/images/document-policy-oversized-images-resize.html [ Pass Failure ]
 crbug.com/1061131 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/middle-click-autoscroll-latching-clicked-node.html [ Pass Timeout ]
+crbug.com/1061131 [ Win ] fast/canvas/toBlob-in-detached-document.html [ Pass Crash ]
+crbug.com/1061131 [ Mac ] fast/canvas/toBlob-in-detached-document.html [ Pass Crash ]
+crbug.com/1061131 [ Linux ] virtual/threaded-no-composited-antialiasing/animations/animationworklet/peek-updated-composited-property-on-main.html [ Pass Failure ]
+crbug.com/1061131 [ Mac ] editing/selection/replaced-boundaries-1.html [ Pass Failure ]

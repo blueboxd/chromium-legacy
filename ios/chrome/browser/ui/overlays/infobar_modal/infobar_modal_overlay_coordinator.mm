@@ -6,6 +6,9 @@
 #import "ios/chrome/browser/ui/overlays/infobar_modal/infobar_modal_overlay_coordinator+modal_configuration.h"
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_positioner.h"
+#import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_transition_driver.h"
 #import "ios/chrome/browser/ui/overlays/infobar_modal/infobar_modal_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator_delegate.h"
@@ -14,9 +17,12 @@
 #error "This file requires ARC support."
 #endif
 
-@interface InfobarModalOverlayCoordinator ()
+@interface InfobarModalOverlayCoordinator () <InfobarModalPositioner>
 // The navigation controller used to display the modal view.
 @property(nonatomic) UINavigationController* modalNavController;
+// The transition delegate used by the coordinator to present the modal UI.
+@property(nonatomic, strong)
+    InfobarModalTransitionDriver* modalTransitionDriver;
 @end
 
 @implementation InfobarModalOverlayCoordinator
@@ -28,13 +34,13 @@
     return;
   [self configureModal];
   self.mediator = self.modalMediator;
+  self.modalTransitionDriver = [[InfobarModalTransitionDriver alloc]
+      initWithTransitionMode:InfobarModalTransitionBase];
+  self.modalTransitionDriver.modalPositioner = self;
   self.modalNavController = [[UINavigationController alloc]
       initWithRootViewController:self.modalViewController];
-  // TODO(crbug.com/1030357): Use custom presentation.
-  self.modalNavController.modalPresentationStyle =
-      UIModalPresentationOverCurrentContext;
-  self.modalNavController.modalTransitionStyle =
-      UIModalTransitionStyleCrossDissolve;
+  self.modalNavController.modalPresentationStyle = UIModalPresentationCustom;
+  self.modalNavController.transitioningDelegate = self.modalTransitionDriver;
   [self.baseViewController presentViewController:self.viewController
                                         animated:animated
                                       completion:^{
@@ -55,6 +61,14 @@
 
 - (UIViewController*)viewController {
   return self.modalNavController;
+}
+
+#pragma mark - InfobarModalPositioner
+
+- (CGFloat)modalHeightForWidth:(CGFloat)width {
+  CGSize layoutBoundsSize = CGSizeMake(width, CGFLOAT_MAX);
+  return [self.modalViewController.view sizeThatFits:layoutBoundsSize].height +
+         CGRectGetHeight(self.modalNavController.navigationBar.bounds);
 }
 
 #pragma mark - Private

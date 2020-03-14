@@ -1408,11 +1408,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   }
 
 #if defined(OS_WIN)
-  // Launch the info collection GPU process to collect DX12 and Vulkan support
-  // information. Not to affect Chrome startup, this is done in a delayed mode,
-  // i.e., 120 seconds after Chrome startup.
-  GpuDataManagerImpl::GetInstance()->RequestDxdiagDx12VulkanGpuInfoIfNeeded(
-      kGpuInfoRequestDx12Vulkan, /*delayed=*/true);
+  GpuDataManagerImpl::GetInstance()->OnBrowserThreadsStarted();
 #endif
 
   if (MediaKeysListenerManager::IsMediaKeysListenerManagerEnabled()) {

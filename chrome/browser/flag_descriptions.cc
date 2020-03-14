@@ -1866,6 +1866,11 @@ const char kTabGroupsDescription[] =
     "Allows users to organize tabs into visually distinct groups, e.g. to "
     "separate tabs associated with different tasks.";
 
+const char kTabGroupsCollapseName[] = "Tab Groups Collapse";
+const char kTabGroupsCollapseDescription[] =
+    "Allows a tab group to be collapsible and expandable, if tab groups are "
+    "enabled.";
+
 const char kTabHoverCardsName[] = "Tab Hover Cards";
 const char kTabHoverCardsDescription[] =
     "Enables a popup containing tab information to be visible when hovering "

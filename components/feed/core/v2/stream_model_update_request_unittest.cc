@@ -65,8 +65,8 @@ TEST(StreamModelUpdateRequestTest, TranslateRealResponse) {
   // tools/generate_test_response_binarypb.sh.
 
   feedwire::Response response = TestWireResponse();
-  feedwire::FeedResponse feed_response =
-      response.GetExtension(feedwire::FeedResponse::feed_response);
+  feedwire::FeedResponse feed_response = response.feed_response();
+
   // TODO(iwells): Make these exactly equal once we aren't using an old
   // response.
   ASSERT_EQ(feed_response.data_operation_size(),

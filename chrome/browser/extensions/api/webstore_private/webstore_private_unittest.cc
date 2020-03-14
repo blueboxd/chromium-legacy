@@ -9,6 +9,7 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/util/values/values_util.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -32,6 +33,17 @@ constexpr char kExtensionManifest[] = R"({
   \"name\" : \"Extension\",
   \"manifest_version\": 3,
   \"version\": \"0.1\"})";
+constexpr char kBlockAllExtensionSettings[] = R"({
+  "*": {
+    "installation_mode":"blocked",
+    "blocked_install_message":"This extension is blocked."
+  }
+})";
+constexpr char kBlockOneExtensionSettings[] = R"({
+  "abcdefghijklmnopabcdefghijklmnop": {
+    "installation_mode":"blocked"
+  }
+})";
 
 constexpr char kAllowedExtensionSettings[] = R"({
   "abcdefghijklmnopabcdefghijklmnop" : {
@@ -243,6 +255,15 @@ class WebstorePrivateBeginInstallWithManifest3Test
         std::make_unique<base::Value>(enable));
   }
 
+  void SetExtensionSettings(const std::string& settings_string) {
+    base::Optional<base::Value> settings =
+        base::JSONReader::Read(settings_string);
+    ASSERT_TRUE(settings);
+    profile()->GetTestingPrefService()->SetManagedPref(
+        pref_names::kExtensionManagement,
+        base::Value::ToUniquePtrValue(std::move(*settings)));
+  }
+
   std::string GenerateArgs(const char* id, const char* manifest) {
     return base::StringPrintf(R"([{"id":"%s", "manifest":"%s"}])", id,
                               manifest);
@@ -254,6 +275,18 @@ class WebstorePrivateBeginInstallWithManifest3Test
                 function->GetResultList()->Get(0, &result));
     EXPECT_EQ("user_cancelled", result->GetString());
     EXPECT_EQ(kWebstoreUserCancelledError, function->GetError());
+  }
+
+  void VerifyBlockedByPolicyFunctionResult(
+      WebstorePrivateBeginInstallWithManifest3Function* function,
+      const base::string16& expected_blocked_message) {
+    const base::Value* result;
+    ASSERT_TRUE(function->GetResultList() &&
+                function->GetResultList()->Get(0, &result));
+    EXPECT_EQ("user_cancelled", result->GetString());
+    EXPECT_EQ(kWebstoreUserCancelledError, function->GetError());
+    EXPECT_EQ(expected_blocked_message,
+              function->GetBlockedByPolicyErrorMessageForTesting());
   }
 
   scoped_refptr<const Extension> CreateExtension(const ExtensionId& id) {
@@ -358,6 +391,45 @@ TEST_F(WebstorePrivateBeginInstallWithManifest3Test,
 
   // Pending list is not changed.
   VerifyPendingList({{kExtensionId, base::Time::Now()}}, profile());
+}
+
+TEST_F(WebstorePrivateBeginInstallWithManifest3Test, BlockedByPolicy) {
+  SetExtensionSettings(kBlockAllExtensionSettings);
+
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
+  auto function =
+      base::MakeRefCounted<WebstorePrivateBeginInstallWithManifest3Function>();
+  function->SetRenderFrameHost(web_contents->GetMainFrame());
+  ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
+
+  api_test_utils::RunFunction(function.get(),
+                              GenerateArgs(kExtensionId, kExtensionManifest),
+                              profile());
+  VerifyBlockedByPolicyFunctionResult(
+      function.get(),
+      base::ASCIIToUTF16(
+          "From your administrator: This extension is blocked."));
+}
+
+TEST_F(WebstorePrivateBeginInstallWithManifest3Test,
+       BlockedByPolicyWithExtensionRequest) {
+  SetExtensionSettings(kBlockOneExtensionSettings);
+  EnableExtensionRequest(true);
+  VerifyPendingList({}, profile());
+
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
+  auto function =
+      base::MakeRefCounted<WebstorePrivateBeginInstallWithManifest3Function>();
+  function->SetRenderFrameHost(web_contents->GetMainFrame());
+  ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
+
+  api_test_utils::RunFunction(function.get(),
+                              GenerateArgs(kExtensionId, kExtensionManifest),
+                              profile());
+  VerifyPendingList({}, profile());
+  VerifyBlockedByPolicyFunctionResult(function.get(), base::string16());
 }
 
 }  // namespace extensions

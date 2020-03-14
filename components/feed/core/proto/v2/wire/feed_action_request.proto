@@ -8,15 +8,11 @@ package feedwire;
 
 option optimize_for = LITE_RUNTIME;
 
-import "components/feed/core/proto/v2/wire/action_request.proto";
 import "components/feed/core/proto/v2/wire/consistency_token.proto";
 import "components/feed/core/proto/v2/wire/feed_action.proto";
 
 // Request to upload new actions to the Actions Endpoint
 message FeedActionRequest {
-  extend ActionRequest {
-    optional FeedActionRequest feed_action_request = 1000;
-  }
   // Data related to recordable actions performed on the client.
   repeated FeedAction feed_action = 1;
   // Token used to write to the same storage.

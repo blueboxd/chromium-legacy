@@ -233,6 +233,12 @@ AXFragmentRootWin* AXFragmentRootWin::GetFragmentRootParentOf(
 }
 
 gfx::NativeViewAccessible AXFragmentRootWin::GetNativeViewAccessible() {
+  // The fragment root is the entry point from the operating system for UI
+  // Automation. Signal observers when we're asked for a platform object on it.
+  for (WinAccessibilityAPIUsageObserver& observer :
+       GetWinAccessibilityAPIUsageObserverList()) {
+    observer.OnUIAutomationUsed();
+  }
   return platform_node_.Get();
 }
 

@@ -25,19 +25,19 @@ Response InspectorIOAgent::resolveBlob(const String& object_id, String* uuid) {
   std::unique_ptr<v8_inspector::StringBuffer> error;
   if (!v8_session_->unwrapObject(&error, ToV8InspectorStringView(object_id),
                                  &value, &context, nullptr))
-    return Response::ServerError(ToCoreString(std::move(error)).Utf8());
+    return Response::Error(ToCoreString(std::move(error)));
 
   if (!V8Blob::HasInstance(value, isolate_))
-    return Response::ServerError("Object id doesn't reference a Blob");
+    return Response::Error("Object id doesn't reference a Blob");
 
   Blob* blob = V8Blob::ToImpl(v8::Local<v8::Object>::Cast(value));
   if (!blob) {
-    return Response::ServerError(
+    return Response::Error(
         "Couldn't convert object with given objectId to Blob");
   }
 
   *uuid = blob->Uuid();
-  return Response::Success();
+  return Response::OK();
 }
 
 }  // namespace blink

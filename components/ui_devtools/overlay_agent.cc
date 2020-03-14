@@ -16,18 +16,18 @@ protocol::Response OverlayAgent::setInspectMode(
     const protocol::String& in_mode,
     protocol::Maybe<protocol::Overlay::HighlightConfig> in_highlightConfig) {
   NOTREACHED();
-  return protocol::Response::Success();
+  return protocol::Response::OK();
 }
 
 protocol::Response OverlayAgent::highlightNode(
     std::unique_ptr<protocol::Overlay::HighlightConfig> highlight_config,
     protocol::Maybe<int> node_id) {
   NOTREACHED();
-  return protocol::Response::Success();
+  return protocol::Response::OK();
 }
 
 protocol::Response OverlayAgent::hideHighlight() {
-  return protocol::Response::Success();
+  return protocol::Response::OK();
 }
 
 }  // namespace ui_devtools

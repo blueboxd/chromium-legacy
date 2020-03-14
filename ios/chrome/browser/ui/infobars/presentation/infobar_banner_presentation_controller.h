@@ -5,12 +5,12 @@
 #ifndef IOS_CHROME_BROWSER_UI_INFOBARS_PRESENTATION_INFOBAR_BANNER_PRESENTATION_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_INFOBARS_PRESENTATION_INFOBAR_BANNER_PRESENTATION_CONTROLLER_H_
 
-#import <UIKit/UIKit.h>
+#import "ios/chrome/browser/ui/overlays/overlay_presentation_controller.h"
 
 @protocol InfobarBannerPositioner;
 
 // InfobarBanner Presentation Controller.
-@interface InfobarBannerPresentationController : UIPresentationController
+@interface InfobarBannerPresentationController : OverlayPresentationController
 
 // Designated initializer. |bannerPositioner| is used to position the
 // InfobarBanner, it can't be nil.

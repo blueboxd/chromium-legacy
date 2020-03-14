@@ -14,9 +14,12 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -106,6 +109,8 @@ void UMABrowsingActivityObserver::LogRenderProcessHostCount() const {
 
 void UMABrowsingActivityObserver::LogBrowserTabCount() const {
   int tab_count = 0;
+  int tab_group_count = 0;
+  int customized_tab_group_count = 0;
   int app_window_count = 0;
   int popup_window_count = 0;
   int tabbed_window_count = 0;
@@ -114,7 +119,20 @@ void UMABrowsingActivityObserver::LogBrowserTabCount() const {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerWindow",
                                 browser->tab_strip_model()->count(), 1, 200,
                                 50);
-    tab_count += browser->tab_strip_model()->count();
+    TabStripModel* const tab_strip_model = browser->tab_strip_model();
+    tab_count += tab_strip_model->count();
+
+    const std::vector<tab_groups::TabGroupId>& groups =
+        tab_strip_model->group_model()->ListTabGroups();
+    tab_group_count += groups.size();
+    for (const tab_groups::TabGroupId& group_id : groups) {
+      const TabGroup* const tab_group =
+          tab_strip_model->group_model()->GetTabGroup(group_id);
+      if (tab_group->IsCustomized() ||
+          !tab_group->visual_data()->title().empty()) {
+        ++customized_tab_group_count;
+      }
+    }
 
     if (browser->window()->IsActive()) {
       // Record how many tabs the active window has open.
@@ -132,6 +150,14 @@ void UMABrowsingActivityObserver::LogBrowserTabCount() const {
   }
   // Record how many tabs total are open (across all windows).
   UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerLoad", tab_count, 1, 200, 50);
+
+  // Record how many tab groups are open across all windows.
+  UMA_HISTOGRAM_COUNTS_100("TabGroups.UserGroupCountPerLoad", tab_group_count);
+
+  // Record how many tab groups with a user-set name or color are open across
+  // all windows.
+  UMA_HISTOGRAM_COUNTS_100("TabGroups.UserCustomizedGroupCountPerLoad",
+                           customized_tab_group_count);
 
   // Record how many windows are open, by type.
   UMA_HISTOGRAM_COUNTS_100("WindowManager.AppWindowCountPerLoad",

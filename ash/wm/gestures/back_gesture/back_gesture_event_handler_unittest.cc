@@ -26,7 +26,6 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
-#include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -189,7 +188,7 @@ TEST_F(BackGestureEventHandlerTestCantGoBack, GoBackInOverviewMode) {
   RegisterBackPressAndRelease(&target_back_press, &target_back_release);
 
   ASSERT_FALSE(WindowState::Get(top_window())->IsMinimized());
-  ASSERT_TRUE(TabletModeWindowManager::ShouldMinimizeTopWindowOnBack());
+  ASSERT_TRUE(window_util::ShouldMinimizeTopWindowOnBack());
   GenerateBackSequence();
   // Should trigger window minimize instead of go back.
   EXPECT_EQ(0, target_back_release.accelerator_count());

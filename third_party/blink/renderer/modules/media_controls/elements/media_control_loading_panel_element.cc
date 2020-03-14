@@ -21,7 +21,6 @@
 
 namespace {
 
-static const char kAnimationIterationCountName[] = "animation-iteration-count";
 static const char kInfinite[] = "infinite";
 
 bool IsInLoadingState(blink::MediaControlsImpl& controls) {
@@ -138,12 +137,14 @@ void MediaControlLoadingPanelElement::CleanupShadowDOM() {
 
 void MediaControlLoadingPanelElement::SetAnimationIterationCount(
     const String& count_value) {
-  mask1_background_->style()->setProperty(GetExecutionContext(),
-                                          kAnimationIterationCountName,
-                                          count_value, "", ASSERT_NO_EXCEPTION);
-  mask2_background_->style()->setProperty(GetExecutionContext(),
-                                          kAnimationIterationCountName,
-                                          count_value, "", ASSERT_NO_EXCEPTION);
+  if (mask1_background_) {
+    mask1_background_->SetInlineStyleProperty(
+        CSSPropertyID::kAnimationIterationCount, count_value);
+  }
+  if (mask2_background_) {
+    mask2_background_->SetInlineStyleProperty(
+        CSSPropertyID::kAnimationIterationCount, count_value);
+  }
 }
 
 void MediaControlLoadingPanelElement::UpdateDisplayState() {

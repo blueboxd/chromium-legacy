@@ -83,13 +83,7 @@ void UpdateServiceInProcess::Update(
 
 UpdateServiceInProcess::~UpdateServiceInProcess() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // Block until prefs write is committed.
-  base::RunLoop runloop;
-  config_->GetPrefService()->CommitPendingWrite(base::BindOnce(
-      [](base::OnceClosure quit_closure) { std::move(quit_closure).Run(); },
-      runloop.QuitWhenIdleClosure()));
-  runloop.Run();
+  config_->GetPrefService()->SchedulePendingLossyWrites();
 }
 
 }  // namespace updater

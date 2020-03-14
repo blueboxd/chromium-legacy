@@ -298,7 +298,7 @@ std::unique_ptr<protocol::DOM::Node> DOMAgentViz::BuildTreeForSurface(
 protocol::Response DOMAgentViz::enable() {
   frame_sink_manager_->AddObserver(this);
   surface_manager_->AddObserver(this);
-  return protocol::Response::Success();
+  return protocol::Response::OK();
 }
 
 protocol::Response DOMAgentViz::disable() {

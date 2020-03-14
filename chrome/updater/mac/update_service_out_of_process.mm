@@ -14,6 +14,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#import "chrome/updater/mac/xpc_service_names.h"
 #import "chrome/updater/server/mac/service_protocol.h"
 #import "chrome/updater/server/mac/update_service_wrappers.h"
 #include "chrome/updater/updater_version.h"
@@ -32,10 +33,8 @@ using base::SysUTF8ToNSString;
 
 - (instancetype)init {
   if ((self = [super init])) {
-    std::string serviceName = MAC_BUNDLE_IDENTIFIER_STRING;
-    serviceName.append(".UpdaterXPCService");
     _xpcConnection.reset([[NSXPCConnection alloc]
-        initWithServiceName:SysUTF8ToNSString(serviceName)]);
+        initWithServiceName:updater::GetGoogleUpdateServiceMachName().get()]);
     _xpcConnection.get().remoteObjectInterface =
         [NSXPCInterface interfaceWithProtocol:@protocol(CRUUpdateChecking)];
 

@@ -51,7 +51,7 @@ protocol::Response TargetHandler::SetRemoteLocations(
         locations) {
   remote_locations_.clear();
   if (!locations)
-    return protocol::Response::Success();
+    return protocol::Response::OK();
 
   for (const auto& location : *locations) {
     remote_locations_.insert(
@@ -62,7 +62,7 @@ protocol::Response TargetHandler::SetRemoteLocations(
       ChromeDevToolsManagerDelegate::GetInstance();
   if (delegate)
     delegate->UpdateDeviceDiscovery();
-  return protocol::Response::Success();
+  return protocol::Response::OK();
 }
 
 protocol::Response TargetHandler::CreateTarget(
@@ -80,7 +80,7 @@ protocol::Response TargetHandler::CreateTarget(
     profile =
         DevToolsBrowserContextManager::GetInstance().GetProfileById(profile_id);
     if (!profile) {
-      return protocol::Response::ServerError(
+      return protocol::Response::Error(
           "Failed to find browser context with id " + profile_id);
     }
   }
@@ -103,7 +103,7 @@ protocol::Response TargetHandler::CreateTarget(
 
   bool explicit_old_window = !new_window.fromMaybe(true);
   if (explicit_old_window && !target_browser) {
-    return protocol::Response::ServerError(
+    return protocol::Response::Error(
         "Failed to open new tab - "
         "no browser is open");
   }
@@ -114,10 +114,10 @@ protocol::Response TargetHandler::CreateTarget(
       create_in_background, target_browser);
   Navigate(&params);
   if (!params.navigated_or_inserted_contents)
-    return protocol::Response::ServerError("Failed to open a new tab");
+    return protocol::Response::Error("Failed to open a new tab");
 
   *out_target_id = content::DevToolsAgentHost::GetOrCreateFor(
                        params.navigated_or_inserted_contents)
                        ->GetId();
-  return protocol::Response::Success();
+  return protocol::Response::OK();
 }

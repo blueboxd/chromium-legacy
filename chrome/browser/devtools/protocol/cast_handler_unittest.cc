@@ -93,7 +93,7 @@ class CastHandlerTest : public ChromeRenderViewHostTestHarness {
 
 TEST_F(CastHandlerTest, SetSinkToUse) {
   sinks_observer_->OnSinksUpdated({sink1, sink2}, {});
-  EXPECT_TRUE(handler_->SetSinkToUse(kSinkName1).IsSuccess());
+  EXPECT_TRUE(handler_->SetSinkToUse(kSinkName1).isSuccess());
 
   const std::string presentation_url("https://example.com/");
   content::PresentationRequest request(content::GlobalFrameRoutingId(),
@@ -154,12 +154,13 @@ TEST_F(CastHandlerTest, StopCasting) {
   sinks_observer_->OnSinksUpdated({sink1, sink2}, {});
   routes_observer_->OnRoutesUpdated({Route1()}, {});
   EXPECT_CALL(*router_, TerminateRoute(kRouteId1));
-  EXPECT_TRUE(handler_->StopCasting(kSinkName1).IsSuccess());
+  EXPECT_TRUE(handler_->StopCasting(kSinkName1).isSuccess());
 }
 
 TEST_F(CastHandlerTest, StopCastingWithInvalidName) {
   sinks_observer_->OnSinksUpdated({sink1, sink2}, {});
   routes_observer_->OnRoutesUpdated({Route1()}, {});
   // Attempting to stop casting to a sink without a route should fail.
-  EXPECT_TRUE(handler_->StopCasting(kSinkName2).IsError());
+  EXPECT_EQ(protocol::Response::kError,
+            handler_->StopCasting(kSinkName2).status());
 }

@@ -9,12 +9,12 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/vr/service/xr_install_helper.h"
 #include "chrome/browser/vr/vr_export.h"
+#include "content/public/browser/xr_install_helper.h"
 
 namespace vr {
 
-class VR_EXPORT ArCoreInstallHelper : public XrInstallHelper {
+class VR_EXPORT ArCoreInstallHelper : public content::XrInstallHelper {
  public:
   ArCoreInstallHelper();
   ~ArCoreInstallHelper() override;
@@ -22,9 +22,10 @@ class VR_EXPORT ArCoreInstallHelper : public XrInstallHelper {
   ArCoreInstallHelper(const ArCoreInstallHelper&) = delete;
   ArCoreInstallHelper& operator=(const ArCoreInstallHelper&) = delete;
 
-  void EnsureInstalled(int render_process_id,
-                       int render_frame_id,
-                       OnInstallFinishedCallback install_callback) override;
+  void EnsureInstalled(
+      int render_process_id,
+      int render_frame_id,
+      base::OnceCallback<void(bool)> install_callback) override;
 
   // Called from Java end.
   void OnRequestInstallSupportedArCoreResult(JNIEnv* env, bool success);
@@ -32,7 +33,7 @@ class VR_EXPORT ArCoreInstallHelper : public XrInstallHelper {
  private:
   void RunInstallFinishedCallback(bool succeeded);
 
-  OnInstallFinishedCallback install_finished_callback_;
+  base::OnceCallback<void(bool)> install_finished_callback_;
   base::android::ScopedJavaGlobalRef<jobject> java_install_utils_;
 };
 

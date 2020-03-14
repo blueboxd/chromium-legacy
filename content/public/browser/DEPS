@@ -6,6 +6,8 @@ include_rules = [
   "+components/viz/common",
   "+components/viz/host",
   "+device/fido",
+  "+device/vr/buildflags",
+  "+device/vr/public/mojom",
   "+services/audio/public",
   "+services/content/public",
   "+services/data_decoder/public",

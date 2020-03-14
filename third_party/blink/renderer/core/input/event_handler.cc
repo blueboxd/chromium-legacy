@@ -97,10 +97,12 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/cursor_data.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/cursors.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -108,7 +110,10 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/windows_keyboard_codes.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/mojom/cursor_type.mojom-blink.h"
 
 namespace blink {
 
@@ -148,6 +153,36 @@ IntPoint GetMiddleSelectionCaretOfPosition(
 bool ContainsEvenAtEdge(const IntRect& rect, const IntPoint& point) {
   return point.X() >= rect.X() && point.X() <= rect.MaxX() &&
          point.Y() >= rect.Y() && point.Y() <= rect.MaxY();
+}
+
+IntPoint DetermineHotSpot(const Image& image,
+                          bool hot_spot_specified,
+                          const IntPoint& specified_hot_spot) {
+  if (image.IsNull())
+    return IntPoint();
+
+  IntRect image_rect = image.Rect();
+
+  // Hot spot must be inside cursor rectangle.
+  if (hot_spot_specified) {
+    if (image_rect.Contains(specified_hot_spot))
+      return specified_hot_spot;
+
+    return IntPoint(clampTo<int>(specified_hot_spot.X(), image_rect.X(),
+                                 image_rect.MaxX() - 1),
+                    clampTo<int>(specified_hot_spot.Y(), image_rect.Y(),
+                                 image_rect.MaxY() - 1));
+  }
+
+  // If hot spot is not specified externally, it can be extracted from some
+  // image formats (e.g. .cur).
+  IntPoint intrinsic_hot_spot;
+  bool image_has_intrinsic_hot_spot = image.GetHotSpot(intrinsic_hot_spot);
+  if (image_has_intrinsic_hot_spot && image_rect.Contains(intrinsic_hot_spot))
+    return intrinsic_hot_spot;
+
+  // If neither is provided, use a default value of (0, 0).
+  return IntPoint();
 }
 
 }  // namespace
@@ -446,7 +481,7 @@ void EventHandler::UpdateCursor() {
   layout_view->HitTest(location, result);
 
   if (LocalFrame* frame = result.InnerNodeFrame()) {
-    base::Optional<Cursor> optional_cursor =
+    base::Optional<ui::Cursor> optional_cursor =
         frame->GetEventHandler().SelectCursor(location, result);
     if (optional_cursor.has_value()) {
       view->SetCursor(optional_cursor.value());
@@ -493,7 +528,7 @@ bool EventHandler::ShouldShowIBeamForNode(const Node* node,
   return HasEditableStyle(*node);
 }
 
-base::Optional<Cursor> EventHandler::SelectCursor(
+base::Optional<ui::Cursor> EventHandler::SelectCursor(
     const HitTestLocation& location,
     const HitTestResult& result) {
   if (scroll_manager_->InResizeMode())
@@ -536,7 +571,7 @@ base::Optional<Cursor> EventHandler::SelectCursor(
   const ComputedStyle* style = layout_object ? layout_object->Style() : nullptr;
 
   if (layout_object) {
-    Cursor override_cursor;
+    ui::Cursor override_cursor;
     switch (layout_object->GetCursor(result.LocalPoint(), override_cursor)) {
       case kSetCursorBasedOnStyle:
         break;
@@ -592,12 +627,21 @@ base::Optional<Cursor> EventHandler::SelectCursor(
 
       // Convert from logical pixels to physical pixels.
       hot_spot.Scale(scale, scale);
-      return Cursor(image, hot_spot_specified, hot_spot, scale);
+
+      ui::Cursor cursor(ui::mojom::blink::CursorType::kCustom);
+      cursor.set_custom_bitmap(
+          image ? image->AsSkBitmapForCurrentFrame(kRespectImageOrientation)
+                : SkBitmap());
+      cursor.set_custom_hotspot(
+          DetermineHotSpot(*image, hot_spot_specified, hot_spot));
+      cursor.set_image_scale_factor(scale);
+      return cursor;
     }
   }
 
   bool horizontal_text = !style || style->IsHorizontalWritingMode();
-  const Cursor& i_beam = horizontal_text ? IBeamCursor() : VerticalTextCursor();
+  const ui::Cursor& i_beam =
+      horizontal_text ? IBeamCursor() : VerticalTextCursor();
 
   switch (style ? style->Cursor() : ECursor::kAuto) {
     case ECursor::kAuto: {
@@ -677,10 +721,10 @@ base::Optional<Cursor> EventHandler::SelectCursor(
   return PointerCursor();
 }
 
-base::Optional<Cursor> EventHandler::SelectAutoCursor(
+base::Optional<ui::Cursor> EventHandler::SelectAutoCursor(
     const HitTestResult& result,
     Node* node,
-    const Cursor& i_beam) {
+    const ui::Cursor& i_beam) {
   if (ShouldShowIBeamForNode(node, result))
     return i_beam;
 
@@ -1061,7 +1105,7 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
     }
     LocalFrameView* view = frame_->View();
     if ((!is_remote_frame || is_portal) && view) {
-      base::Optional<Cursor> optional_cursor =
+      base::Optional<ui::Cursor> optional_cursor =
           SelectCursor(mev.GetHitTestLocation(), mev.GetHitTestResult());
       if (optional_cursor.has_value()) {
         view->SetCursor(optional_cursor.value());

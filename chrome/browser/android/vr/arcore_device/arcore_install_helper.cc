@@ -63,7 +63,7 @@ ArCoreInstallHelper::~ArCoreInstallHelper() {
 void ArCoreInstallHelper::EnsureInstalled(
     int render_process_id,
     int render_frame_id,
-    OnInstallFinishedCallback install_callback) {
+    base::OnceCallback<void(bool)> install_callback) {
   DCHECK(!install_finished_callback_);
   install_finished_callback_ = std::move(install_callback);
 

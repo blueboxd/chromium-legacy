@@ -11,10 +11,13 @@
 #include "base/bind_helpers.h"
 #include "base/numerics/ranges.h"
 #include "build/build_config.h"
+#include "chrome/browser/vr/service/chrome_xr_integration_client.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/xr_install_helper.h"
+#include "content/public/browser/xr_integration_client.h"
 #include "content/public/common/content_features.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/public/cpp/session_mode.h"
@@ -26,10 +29,8 @@
 #include "chrome/browser/vr/service/xr_session_request_consent_manager.h"
 #elif defined(OS_ANDROID)
 #include "chrome/browser/android/vr/gvr_consent_helper.h"
-#include "chrome/browser/android/vr/gvr_install_helper.h"
 #if BUILDFLAG(ENABLE_ARCORE)
 #include "chrome/browser/android/vr/arcore_device/arcore_consent_prompt.h"
-#include "chrome/browser/android/vr/arcore_device/arcore_install_helper.h"
 #endif
 #endif
 
@@ -250,15 +251,20 @@ BrowserXRRuntime::BrowserXRRuntime(
       base::BindOnce(&BrowserXRRuntime::OnDisplayInfoChanged,
                      base::Unretained(this)));
 
+  // TODO(crbug.com/1031622): Convert this to a query for the client off of
+  // ContentBrowserClient once BrowserXrRuntime moves to content.
+  auto* integration_client = ChromeXrIntegrationClient::GetInstance();
+
+  if (integration_client)
+    install_helper_ = integration_client->GetInstallHelper(id_);
+
 #if defined(OS_ANDROID)
   if (id_ == device::mojom::XRDeviceId::GVR_DEVICE_ID) {
     consent_helper_ = std::make_unique<GvrConsentHelper>();
-    install_helper_ = std::make_unique<GvrInstallHelper>();
   }
 #if BUILDFLAG(ENABLE_ARCORE)
   if (id_ == device::mojom::XRDeviceId::ARCORE_DEVICE_ID) {
     consent_helper_ = std::make_unique<ArCoreConsentPrompt>();
-    install_helper_ = std::make_unique<ArCoreInstallHelper>();
   }
 #endif
 #endif
@@ -551,7 +557,7 @@ void BrowserXRRuntime::ShowConsentPrompt(
 void BrowserXRRuntime::EnsureInstalled(
     int render_process_id,
     int render_frame_id,
-    OnInstallFinishedCallback install_callback) {
+    base::OnceCallback<void(bool)> install_callback) {
   // If there's no install helper, then we can assume no install is needed.
   if (!install_helper_) {
     std::move(install_callback).Run(true);

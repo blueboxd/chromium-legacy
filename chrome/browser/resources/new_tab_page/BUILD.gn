@@ -184,7 +184,7 @@ polymer_modulizer("untrusted_iframe") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":app_module",
     ":customize_backgrounds_module",
     ":customize_dialog_module",

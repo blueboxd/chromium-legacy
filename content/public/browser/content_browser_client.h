@@ -29,6 +29,7 @@
 #include "content/public/common/page_visibility_state.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/window_container_type.mojom-forward.h"
+#include "device/vr/buildflags/buildflags.h"
 #include "media/base/video_codecs.h"
 #include "media/cdm/cdm_proxy.h"
 #include "media/mojo/mojom/media_service.mojom-forward.h"
@@ -204,6 +205,7 @@ class URLLoaderRequestInterceptor;
 class VpnServiceProxy;
 class WebContents;
 class WebContentsViewDelegate;
+class XrIntegrationClient;
 struct GlobalFrameRoutingId;
 struct GlobalRequestID;
 struct MainFunctionParams;
@@ -1803,6 +1805,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Chrome's PDF plugin) to specific origins.
   virtual bool ShouldAllowPluginCreation(const url::Origin& embedder_origin,
                                          const PepperPluginInfo& plugin_info);
+#endif
+
+#if BUILDFLAG(ENABLE_VR)
+  // Allows the embedder to provide mechanisms to integrate with WebXR
+  // functionality.
+  virtual XrIntegrationClient* GetXrIntegrationClient();
 #endif
 };
 

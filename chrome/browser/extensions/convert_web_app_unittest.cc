@@ -23,6 +23,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/linked_app_icons.h"
 #include "chrome/common/web_application_info.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/file_handler_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
@@ -30,6 +31,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/file_handler_info.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+#include "extensions/common/manifest_handlers/web_app_file_handler.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
@@ -479,6 +481,61 @@ TEST(ExtensionFromWebApp, FileHandlersAreCorrectlyConverted) {
   // Mime types should contain text/csv and only text/csv
   EXPECT_THAT(file_handler_info[1].types,
               testing::UnorderedElementsAre("text/csv"));
+}
+
+// Tests that |file_handler| on the WebAppManifest is correctly converted
+// to |web_app_file_handlers| on an extension manifest.
+TEST(ExtensionFromWebApp, WebAppFileHandlersAreCorrectlyConverted) {
+  base::ScopedTempDir extensions_dir;
+  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
+
+  WebApplicationInfo web_app;
+  web_app.title = base::ASCIIToUTF16("Graphr");
+  web_app.description = base::ASCIIToUTF16("A magical graphy thing.");
+  web_app.app_url = GURL("https://graphr.n/");
+  web_app.scope = GURL("https://graphr.n");
+
+  {
+    blink::Manifest::FileHandler file_handler;
+    file_handler.action = GURL("https://graphr.n/open-graph/");
+    file_handler.name = base::ASCIIToUTF16("Graph");
+    file_handler.accept[base::ASCIIToUTF16("text/svg+xml")].push_back(
+        base::ASCIIToUTF16(""));
+    file_handler.accept[base::ASCIIToUTF16("text/svg+xml")].push_back(
+        base::ASCIIToUTF16(".svg"));
+    web_app.file_handlers.push_back(file_handler);
+  }
+  {
+    blink::Manifest::FileHandler file_handler;
+    file_handler.action = GURL("https://graphr.n/open-raw/");
+    file_handler.name = base::ASCIIToUTF16("Raw");
+    file_handler.accept[base::ASCIIToUTF16("text/csv")].push_back(
+        base::ASCIIToUTF16(".csv"));
+    web_app.file_handlers.push_back(file_handler);
+  }
+
+  scoped_refptr<Extension> extension = ConvertWebAppToExtension(
+      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), extensions_dir.GetPath(),
+      Extension::NO_FLAGS, Manifest::INTERNAL);
+
+  ASSERT_TRUE(extension.get());
+
+  const apps::FileHandlers file_handlers =
+      *extensions::WebAppFileHandlers::GetWebAppFileHandlers(extension.get());
+
+  EXPECT_EQ(2u, file_handlers.size());
+
+  EXPECT_EQ("https://graphr.n/open-graph/", file_handlers[0].action);
+  EXPECT_EQ(1u, file_handlers[0].accept.size());
+  EXPECT_EQ("text/svg+xml", file_handlers[0].accept[0].mime_type);
+  EXPECT_THAT(file_handlers[0].accept[0].file_extensions,
+              testing::UnorderedElementsAre(".svg"));
+
+  EXPECT_EQ("https://graphr.n/open-raw/", file_handlers[1].action);
+  EXPECT_EQ(1u, file_handlers[1].accept.size());
+  EXPECT_EQ("text/csv", file_handlers[1].accept[0].mime_type);
+  EXPECT_THAT(file_handlers[1].accept[0].file_extensions,
+              testing::UnorderedElementsAre(".csv"));
 }
 
 }  // namespace extensions

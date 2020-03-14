@@ -56,7 +56,11 @@ namespace {
 const char kIconsDirName[] = "icons";
 const char kScopeUrlHandlerId[] = "scope";
 
-std::unique_ptr<base::DictionaryValue> CreateFileHandlersForBookmarkApp(
+bool IsValidFileExtension(const std::string& file_extension) {
+  return !file_extension.empty() && file_extension[0] == '.';
+}
+
+base::Value CreateFileHandlersForBookmarkApp(
     const std::vector<blink::Manifest::FileHandler>& manifest_file_handlers) {
   base::Value file_handlers(base::Value::Type::DICTIONARY);
 
@@ -78,10 +82,7 @@ std::unique_ptr<base::DictionaryValue> CreateFileHandlersForBookmarkApp(
       mime_types.Append(base::Value(type));
       for (const auto& extensionUTF16 : it.second) {
         std::string extension = base::UTF16ToUTF8(extensionUTF16);
-        if (extension.empty())
-          continue;
-
-        if (extension[0] != '.')
+        if (!IsValidFileExtension(extension))
           continue;
 
         // Remove the '.' before appending.
@@ -96,8 +97,40 @@ std::unique_ptr<base::DictionaryValue> CreateFileHandlersForBookmarkApp(
     file_handlers.SetKey(entry.action.spec(), std::move(file_handler));
   }
 
-  return base::DictionaryValue::From(
-      base::Value::ToUniquePtrValue(std::move(file_handlers)));
+  return file_handlers;
+}
+
+base::Value CreateWebAppFileHandlersForBookmarkApp(
+    const std::vector<blink::Manifest::FileHandler>& manifest_file_handlers) {
+  base::Value file_handlers(base::Value::Type::LIST);
+
+  for (const auto& manifest_file_handler : manifest_file_handlers) {
+    base::Value file_handler(base::Value::Type::DICTIONARY);
+    base::Value accept(base::Value::Type::DICTIONARY);
+
+    for (const auto& manifest_accept_entry : manifest_file_handler.accept) {
+      std::string mime_type = base::UTF16ToUTF8(manifest_accept_entry.first);
+      if (mime_type.empty())
+        continue;
+      base::Value file_extensions(base::Value::Type::LIST);
+
+      for (const auto& manifest_file_extension : manifest_accept_entry.second) {
+        std::string file_extension = base::UTF16ToUTF8(manifest_file_extension);
+        if (!IsValidFileExtension(file_extension))
+          continue;
+        file_extensions.Append(base::Value(file_extension));
+      }
+
+      accept.SetKey(std::move(mime_type), std::move(file_extensions));
+    }
+
+    file_handler.SetKey(keys::kWebAppFileHandlerAction,
+                        base::Value(manifest_file_handler.action.spec()));
+    file_handler.SetKey(keys::kWebAppFileHandlerAccept, std::move(accept));
+    file_handlers.Append(std::move(file_handler));
+  }
+
+  return file_handlers;
 }
 
 }  // namespace
@@ -235,9 +268,16 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   root->SetString(keys::kAppDisplayMode,
                   blink::DisplayModeToString(web_app.display_mode));
 
+  // TODO(crbug.com/938103): The app's file handlers are serialized twice here,
+  // as apps::FileHandlerInfo and apps::FileHandler. This is clearly redundant,
+  // but only a temporary measure, until web apps move off Bookmark Apps with
+  // the launch of BMO (at which point the apps::FileHandlerInfo representation
+  // can be removed).
   if (web_app.file_handlers.size() != 0) {
-    root->SetDictionary(keys::kFileHandlers, CreateFileHandlersForBookmarkApp(
-                                                 web_app.file_handlers));
+    root->SetKey(keys::kFileHandlers,
+                 CreateFileHandlersForBookmarkApp(web_app.file_handlers));
+    root->SetKey(keys::kWebAppFileHandlers,
+                 CreateWebAppFileHandlersForBookmarkApp(web_app.file_handlers));
   }
 
   // Add the icons and linked icon information.

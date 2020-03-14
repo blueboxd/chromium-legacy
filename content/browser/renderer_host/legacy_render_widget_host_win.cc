@@ -194,8 +194,8 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
     // When an MSAA client has responded to fake event for this id,
     // only basic accessibility support is enabled. (Full screen reader support
     // is detected later when specific, more advanced APIs are accessed.)
-    for (ui::IAccessible2UsageObserver& observer :
-         ui::GetIAccessible2UsageObserverList()) {
+    for (ui::WinAccessibilityAPIUsageObserver& observer :
+         ui::GetWinAccessibilityAPIUsageObserverList()) {
       observer.OnScreenReaderHoneyPotQueried();
     }
     return static_cast<LRESULT>(0L);
@@ -210,14 +210,6 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
   if ((is_uia_request &&
        ::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) ||
       is_msaa_request) {
-    if (is_uia_request) {
-      // UIA, by design, insulates providers from knowing about the client(s)
-      // asking for information. When UIA interface is requested, the presence
-      // of a full-fledged accessibility technology is assumed and all support
-      // is enabled.
-      BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
-    }
-
     gfx::NativeViewAccessible root =
         GetOrCreateWindowRootAccessible(is_uia_request);
 

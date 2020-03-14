@@ -52,6 +52,7 @@ include_rules = [
     "+cc/paint/display_item_list.h",
     "+cc/paint/paint_canvas.h",
     "+cc/paint/paint_flags.h",
+    "+cc/paint/paint_image.h",
     "+cc/paint/paint_worklet_input.h",
     "+cc/trees/browser_controls_params.h",
     "+cc/trees/layer_tree_host.h",

@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/mojom/cursor_type.mojom-blink.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
@@ -627,7 +628,7 @@ TEST_F(EventHandlerTest, AnchorTextCannotStartSelection) {
                 ->GetEventHandler()
                 .SelectCursor(location, result)
                 .value()
-                .GetType(),
+                .type(),
             ui::mojom::blink::CursorType::kHand);  // A hand signals ability to
                                                    // navigate.
 }
@@ -652,7 +653,7 @@ TEST_F(EventHandlerTest, EditableAnchorTextCanStartSelection) {
           ->GetEventHandler()
           .SelectCursor(location, result)
           .value()
-          .GetType(),
+          .type(),
       ui::mojom::blink::CursorType::kIBeam);  // An I-beam signals editability.
 }
 
@@ -671,7 +672,7 @@ TEST_F(EventHandlerTest, CursorForVerticalResizableTextArea) {
                 ->GetEventHandler()
                 .SelectCursor(location, result)
                 .value()
-                .GetType(),
+                .type(),
             // A north-south resize signals vertical resizability.
             ui::mojom::blink::CursorType::kNorthSouthResize);
 }
@@ -691,7 +692,7 @@ TEST_F(EventHandlerTest, CursorForHorizontalResizableTextArea) {
                 ->GetEventHandler()
                 .SelectCursor(location, result)
                 .value()
-                .GetType(),
+                .type(),
             // An east-west resize signals horizontal resizability.
             ui::mojom::blink::CursorType::kEastWestResize);
 }
@@ -711,7 +712,7 @@ TEST_F(EventHandlerTest, CursorForResizableTextArea) {
                 ->GetEventHandler()
                 .SelectCursor(location, result)
                 .value()
-                .GetType(),
+                .type(),
             // An south-east resize signals both horizontal and
             // vertical resizability.
             ui::mojom::blink::CursorType::kSouthEastResize);
@@ -733,7 +734,7 @@ TEST_F(EventHandlerTest, CursorForRtlResizableTextArea) {
                 ->GetEventHandler()
                 .SelectCursor(location, result)
                 .value()
-                .GetType(),
+                .type(),
             // An south-west resize signals both horizontal and
             // vertical resizability when direction is RTL.
             ui::mojom::blink::CursorType::kSouthWestResize);
@@ -757,7 +758,7 @@ TEST_F(EventHandlerTest, CursorForInlineVerticalWritingMode) {
                 ->GetEventHandler()
                 .SelectCursor(location, result)
                 .value()
-                .GetType(),
+                .type(),
             ui::mojom::blink::CursorType::kSouthEastResize);
 }
 
@@ -779,7 +780,7 @@ TEST_F(EventHandlerTest, CursorForBlockVerticalWritingMode) {
                 ->GetEventHandler()
                 .SelectCursor(location, result)
                 .value()
-                .GetType(),
+                .type(),
             ui::mojom::blink::CursorType::kSouthEastResize);
 }
 
@@ -1598,7 +1599,7 @@ TEST_F(EventHandlerSimTest, CursorStyleBeforeStartDragging) {
                                                      .GetFrame()
                                                      ->GetChromeClient()
                                                      .LastSetCursorForTesting()
-                                                     .GetType());
+                                                     .type());
 }
 
 // Ensure that tap on element in iframe should apply active state.
@@ -2121,9 +2122,9 @@ TEST_F(EventHandlerSimTest, LargeCustomCursorIntersectsViewport) {
     GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
         mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
 
-    const Cursor& cursor =
+    const ui::Cursor& cursor =
         GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
-    EXPECT_EQ(ui::mojom::blink::CursorType::kCustom, cursor.GetType());
+    EXPECT_EQ(ui::mojom::blink::CursorType::kCustom, cursor.type());
   }
 
   // Now, move the cursor so that it intersects the visual viewport. The cursor
@@ -2137,9 +2138,9 @@ TEST_F(EventHandlerSimTest, LargeCustomCursorIntersectsViewport) {
     GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
         mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
 
-    const Cursor& cursor =
+    const ui::Cursor& cursor =
         GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
-    EXPECT_EQ(ui::mojom::blink::CursorType::kPointer, cursor.GetType());
+    EXPECT_EQ(ui::mojom::blink::CursorType::kPointer, cursor.type());
   }
 }
 
@@ -2180,9 +2181,9 @@ TEST_F(EventHandlerSimTest, SmallCustomCursorIntersectsViewport) {
     GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
         mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
 
-    const Cursor& cursor =
+    const ui::Cursor& cursor =
         GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
-    EXPECT_EQ(ui::mojom::blink::CursorType::kCustom, cursor.GetType());
+    EXPECT_EQ(ui::mojom::blink::CursorType::kCustom, cursor.type());
   }
 
   // Now, move the cursor so that it intersects the visual viewport. The cursor
@@ -2197,9 +2198,9 @@ TEST_F(EventHandlerSimTest, SmallCustomCursorIntersectsViewport) {
     GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
         mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
 
-    const Cursor& cursor =
+    const ui::Cursor& cursor =
         GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
-    EXPECT_EQ(ui::mojom::blink::CursorType::kCustom, cursor.GetType());
+    EXPECT_EQ(ui::mojom::blink::CursorType::kCustom, cursor.type());
   }
 }
 

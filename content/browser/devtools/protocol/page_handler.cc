@@ -370,20 +370,20 @@ Response PageHandler::Disable() {
 Response PageHandler::Crash() {
   WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
   if (!web_contents)
-    return Response::ServerError("Not attached to a page");
+    return Response::Error("Not attached to a page");
   if (web_contents->IsCrashed())
-    return Response::ServerError("The target has already crashed");
+    return Response::Error("The target has already crashed");
   if (host_->frame_tree_node()->navigation_request())
-    return Response::ServerError("Page has pending navigations, not killing");
+    return Response::Error("Page has pending navigations, not killing");
   return Response::FallThrough();
 }
 
 Response PageHandler::Close() {
   WebContentsImpl* web_contents = GetWebContents();
   if (!web_contents)
-    return Response::ServerError("Not attached to a page");
+    return Response::Error("Not attached to a page");
   web_contents->DispatchBeforeUnload(false /* auto_cancel */);
-  return Response::Success();
+  return Response::OK();
 }
 
 void PageHandler::Reload(Maybe<bool> bypassCache,
@@ -442,8 +442,7 @@ void PageHandler::Navigate(const std::string& url,
                            std::unique_ptr<NavigateCallback> callback) {
   GURL gurl(url);
   if (!gurl.is_valid()) {
-    callback->sendFailure(
-        Response::ServerError("Cannot navigate to invalid URL"));
+    callback->sendFailure(Response::Error("Cannot navigate to invalid URL"));
     return;
   }
 
@@ -498,8 +497,7 @@ void PageHandler::Navigate(const std::string& url,
   }
 
   if (!frame_tree_node) {
-    callback->sendFailure(
-        Response::ServerError("No frame with given id found"));
+    callback->sendFailure(Response::Error("No frame with given id found"));
     return;
   }
 
@@ -602,7 +600,7 @@ Response PageHandler::GetNavigationHistory(
             .SetTransitionType(TransitionTypeName(entry->GetTransitionType()))
             .Build());
   }
-  return Response::Success();
+  return Response::OK();
 }
 
 Response PageHandler::NavigateToHistoryEntry(int entry_id) {
@@ -614,7 +612,7 @@ Response PageHandler::NavigateToHistoryEntry(int entry_id) {
   for (int i = 0; i != controller.GetEntryCount(); ++i) {
     if (controller.GetEntryAtIndex(i)->GetUniqueID() == entry_id) {
       controller.GoToIndex(i);
-      return Response::Success();
+      return Response::OK();
     }
   }
 
@@ -632,7 +630,7 @@ Response PageHandler::ResetNavigationHistory() {
 
   NavigationController& controller = web_contents->GetController();
   controller.DeleteNavigationEntries(base::BindRepeating(&ReturnTrue));
-  return Response::Success();
+  return Response::OK();
 }
 
 void PageHandler::CaptureSnapshot(
@@ -640,7 +638,7 @@ void PageHandler::CaptureSnapshot(
     std::unique_ptr<CaptureSnapshotCallback> callback) {
   std::string snapshot_format = format.fromMaybe(kMhtml);
   if (snapshot_format != kMhtml) {
-    callback->sendFailure(Response::ServerError("Unsupported snapshot format"));
+    callback->sendFailure(Response::Error("Unsupported snapshot format"));
     return;
   }
   DevToolsMHTMLHelper::Capture(weak_factory_.GetWeakPtr(), std::move(callback));
@@ -660,12 +658,12 @@ void PageHandler::CaptureScreenshot(
   if (clip.isJust()) {
     if (clip.fromJust()->GetWidth() == 0) {
       callback->sendFailure(
-          Response::ServerError("Cannot take screenshot with 0 width."));
+          Response::Error("Cannot take screenshot with 0 width."));
       return;
     }
     if (clip.fromJust()->GetHeight() == 0) {
       callback->sendFailure(
-          Response::ServerError("Cannot take screenshot with 0 height."));
+          Response::Error("Cannot take screenshot with 0 height."));
       return;
     }
   }
@@ -802,7 +800,7 @@ void PageHandler::PrintToPDF(Maybe<bool> landscape,
                              Maybe<bool> prefer_css_page_size,
                              Maybe<String> transfer_mode,
                              std::unique_ptr<PrintToPDFCallback> callback) {
-  callback->sendFailure(Response::ServerError("PrintToPDF is not implemented"));
+  callback->sendFailure(Response::Error("PrintToPDF is not implemented"));
   return;
 }
 
@@ -873,7 +871,7 @@ Response PageHandler::StopScreencast() {
 Response PageHandler::ScreencastFrameAck(int session_id) {
   if (session_id == session_id_)
     --frames_in_flight_;
-  return Response::Success();
+  return Response::OK();
 }
 
 Response PageHandler::HandleJavaScriptDialog(bool accept,
@@ -901,7 +899,7 @@ Response PageHandler::HandleJavaScriptDialog(bool accept,
     }
   }
 
-  return Response::Success();
+  return Response::OK();
 }
 
 Response PageHandler::BringToFront() {
@@ -909,7 +907,7 @@ Response PageHandler::BringToFront() {
   if (wc) {
     wc->Activate();
     wc->Focus();
-    return Response::Success();
+    return Response::OK();
   }
   return Response::InternalError();
 }
@@ -917,7 +915,7 @@ Response PageHandler::BringToFront() {
 Response PageHandler::SetDownloadBehavior(const std::string& behavior,
                                           Maybe<std::string> download_path) {
   if (!allow_set_download_behavior_)
-    return Response::ServerError("Not allowed");
+    return Response::Error("Not allowed");
 
   WebContentsImpl* web_contents = GetWebContents();
   if (!web_contents)
@@ -925,12 +923,12 @@ Response PageHandler::SetDownloadBehavior(const std::string& behavior,
 
   if (behavior == Page::SetDownloadBehavior::BehaviorEnum::Allow &&
       !download_path.isJust())
-    return Response::ServerError("downloadPath not provided");
+    return Response::Error("downloadPath not provided");
 
   if (behavior == Page::SetDownloadBehavior::BehaviorEnum::Default) {
     DevToolsDownloadManagerHelper::RemoveFromWebContents(web_contents);
     download_manager_delegate_ = nullptr;
-    return Response::Success();
+    return Response::OK();
   }
 
   // Override download manager delegate.
@@ -955,14 +953,14 @@ Response PageHandler::SetDownloadBehavior(const std::string& behavior,
     download_helper->SetDownloadPath(download_path.fromJust());
   }
 
-  return Response::Success();
+  return Response::OK();
 }
 
 void PageHandler::GetAppManifest(
     std::unique_ptr<GetAppManifestCallback> callback) {
   WebContentsImpl* web_contents = GetWebContents();
   if (!web_contents || !web_contents->GetManifestManagerHost()) {
-    callback->sendFailure(Response::ServerError("Cannot retrieve manifest"));
+    callback->sendFailure(Response::Error("Cannot retrieve manifest"));
     return;
   }
   web_contents->GetManifestManagerHost()->RequestManifestDebugInfo(
@@ -1117,8 +1115,7 @@ void PageHandler::ScreenshotCaptured(
   }
 
   if (image.IsEmpty()) {
-    callback->sendFailure(
-        Response::ServerError("Unable to capture screenshot"));
+    callback->sendFailure(Response::Error("Unable to capture screenshot"));
     return;
   }
 
@@ -1174,25 +1171,25 @@ Response PageHandler::StopLoading() {
   if (!web_contents)
     return Response::InternalError();
   web_contents->Stop();
-  return Response::Success();
+  return Response::OK();
 }
 
 Response PageHandler::SetWebLifecycleState(const std::string& state) {
   WebContentsImpl* web_contents = GetWebContents();
   if (!web_contents)
-    return Response::ServerError("Not attached to a page");
+    return Response::Error("Not attached to a page");
   if (state == Page::SetWebLifecycleState::StateEnum::Frozen) {
     // TODO(fmeawad): Instead of forcing a visibility change, only allow
     // freezing a page if it was already hidden.
     web_contents->WasHidden();
     web_contents->SetPageFrozen(true);
-    return Response::Success();
+    return Response::OK();
   }
   if (state == Page::SetWebLifecycleState::StateEnum::Active) {
     web_contents->SetPageFrozen(false);
-    return Response::Success();
+    return Response::OK();
   }
-  return Response::ServerError("Unidentified lifecycle state");
+  return Response::Error("Unidentified lifecycle state");
 }
 
 void PageHandler::GetInstallabilityErrors(

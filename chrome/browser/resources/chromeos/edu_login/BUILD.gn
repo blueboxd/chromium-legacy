@@ -90,7 +90,7 @@ polymer_modulizer("edu_login_welcome") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":app_module",
     ":edu_login_button_module",
     ":edu_login_css_module",

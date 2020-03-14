@@ -22,7 +22,8 @@ GvrInstallHelper::~GvrInstallHelper() {
 void GvrInstallHelper::EnsureInstalled(
     int render_process_id,
     int render_frame_id,
-    OnInstallFinishedCallback install_callback) {
+    base::OnceCallback<void(bool)> install_callback) {
+  DVLOG(1) << __func__;
   // Callers should ensure they only prompt for install once.
   DCHECK(!install_finished_callback_);
 

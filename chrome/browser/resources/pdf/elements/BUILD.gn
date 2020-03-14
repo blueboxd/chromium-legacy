@@ -183,7 +183,7 @@ polymer_modulizer("icons") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":icons_module",
     ":shared-vars_module",
     ":viewer-bookmark_module",
@@ -197,7 +197,7 @@ group("polymer3_elements") {
     ":viewer-zoom-toolbar_module",
   ]
   if (is_chromeos) {
-    deps += [
+    public_deps += [
       ":viewer-form-warning_module",
       ":viewer-ink-host_module",
       ":viewer-pen-options_module",

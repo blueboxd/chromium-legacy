@@ -50,7 +50,7 @@ Response BrowserHandler::Disable() {
     }
   }
   contexts_with_overridden_permissions_.clear();
-  return Response::Success();
+  return Response::OK();
 }
 
 void BrowserHandler::Wire(UberDispatcher* dispatcher) {
@@ -67,7 +67,7 @@ Response BrowserHandler::GetVersion(std::string* protocol_version,
   *product = GetContentClient()->browser()->GetProduct();
   *user_agent = GetContentClient()->browser()->GetUserAgent();
   *js_version = V8_VERSION_STRING;
-  return Response::Success();
+  return Response::OK();
 }
 
 namespace {
@@ -183,7 +183,7 @@ Response PermissionDescriptorToPermissionType(
                                    name);
   }
 
-  return Response::Success();
+  return Response::OK();
 }
 
 Response FromProtocolPermissionType(
@@ -239,7 +239,7 @@ Response FromProtocolPermissionType(
   } else {
     return Response::InvalidParams("Unknown permission type: " + type);
   }
-  return Response::Success();
+  return Response::OK();
 }
 
 Response PermissionSettingToPermissionStatus(
@@ -254,7 +254,7 @@ Response PermissionSettingToPermissionStatus(
   } else {
     return Response::InvalidParams("Unknown permission setting: " + setting);
   }
-  return Response::Success();
+  return Response::OK();
 }
 
 }  // namespace
@@ -274,7 +274,7 @@ Response BrowserHandler::GetHistograms(
     (*out_histograms)->emplace_back(Convert(*h, in_delta.fromMaybe(false)));
   }
 
-  return Response::Success();
+  return Response::OK();
 }
 
 // static
@@ -284,21 +284,19 @@ Response BrowserHandler::FindBrowserContext(
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
   if (!delegate)
-    return Response::ServerError(
-        "Browser context management is not supported.");
+    return Response::Error("Browser context management is not supported.");
   if (!browser_context_id.isJust()) {
     *browser_context = delegate->GetDefaultBrowserContext();
     if (*browser_context == nullptr)
-      return Response::ServerError(
-          "Browser context management is not supported.");
-    return Response::Success();
+      return Response::Error("Browser context management is not supported.");
+    return Response::OK();
   }
 
   std::string context_id = browser_context_id.fromJust();
   for (auto* context : delegate->GetBrowserContexts()) {
     if (context->UniqueId() == context_id) {
       *browser_context = context;
-      return Response::Success();
+      return Response::OK();
     }
   }
   return Response::InvalidParams("Failed to find browser context for id " +
@@ -312,19 +310,19 @@ Response BrowserHandler::SetPermission(
     Maybe<std::string> browser_context_id) {
   BrowserContext* browser_context = nullptr;
   Response response = FindBrowserContext(browser_context_id, &browser_context);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
 
   PermissionType type;
   Response parse_response =
       PermissionDescriptorToPermissionType(std::move(permission), &type);
-  if (!parse_response.IsSuccess())
+  if (!parse_response.isSuccess())
     return parse_response;
 
   blink::mojom::PermissionStatus permission_status;
   Response setting_response =
       PermissionSettingToPermissionStatus(setting, &permission_status);
-  if (!setting_response.IsSuccess())
+  if (!setting_response.isSuccess())
     return setting_response;
 
   PermissionControllerImpl* permission_controller =
@@ -346,7 +344,7 @@ Response BrowserHandler::SetPermission(
   }
   contexts_with_overridden_permissions_.insert(
       browser_context_id.fromMaybe(std::string()));
-  return Response::Success();
+  return Response::OK();
 }
 
 Response BrowserHandler::GrantPermissions(
@@ -356,7 +354,7 @@ Response BrowserHandler::GrantPermissions(
     Maybe<std::string> browser_context_id) {
   BrowserContext* browser_context = nullptr;
   Response response = FindBrowserContext(browser_context_id, &browser_context);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
 
   std::vector<PermissionType> internal_permissions;
@@ -364,7 +362,7 @@ Response BrowserHandler::GrantPermissions(
   for (const protocol::Browser::PermissionType& t : *permissions) {
     PermissionType type;
     Response type_response = FromProtocolPermissionType(t, &type);
-    if (!type_response.IsSuccess())
+    if (!type_response.isSuccess())
       return type_response;
     internal_permissions.push_back(type);
   }
@@ -388,20 +386,20 @@ Response BrowserHandler::GrantPermissions(
   }
   contexts_with_overridden_permissions_.insert(
       browser_context_id.fromMaybe(""));
-  return Response::Success();
+  return Response::OK();
 }
 
 Response BrowserHandler::ResetPermissions(
     Maybe<std::string> browser_context_id) {
   BrowserContext* browser_context = nullptr;
   Response response = FindBrowserContext(browser_context_id, &browser_context);
-  if (!response.IsSuccess())
+  if (!response.isSuccess())
     return response;
   PermissionControllerImpl* permission_controller =
       PermissionControllerImpl::FromBrowserContext(browser_context);
   permission_controller->ResetOverridesForDevTools();
   contexts_with_overridden_permissions_.erase(browser_context_id.fromMaybe(""));
-  return Response::Success();
+  return Response::OK();
 }
 
 Response BrowserHandler::GetHistogram(
@@ -418,7 +416,7 @@ Response BrowserHandler::GetHistogram(
   DCHECK(out_histogram);
   *out_histogram = Convert(*in_histogram, in_delta.fromMaybe(false));
 
-  return Response::Success();
+  return Response::OK();
 }
 
 Response BrowserHandler::GetBrowserCommandLine(
@@ -435,16 +433,16 @@ Response BrowserHandler::GetBrowserCommandLine(
       (*arguments)->emplace_back(arg);
 #endif
     }
-    return Response::Success();
+    return Response::OK();
   } else {
-    return Response::ServerError(
+    return Response::Error(
         "Command line not returned because --enable-automation not set.");
   }
 }
 
 Response BrowserHandler::Crash() {
   CHECK(false);
-  return Response::Success();
+  return Response::OK();
 }
 
 Response BrowserHandler::CrashGpuProcess() {
@@ -453,7 +451,7 @@ Response BrowserHandler::CrashGpuProcess() {
                              if (host)
                                host->gpu_service()->Crash();
                            }));
-  return Response::Success();
+  return Response::OK();
 }
 
 }  // namespace protocol

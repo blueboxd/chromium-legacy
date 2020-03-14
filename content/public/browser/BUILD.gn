@@ -4,6 +4,7 @@
 
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
+import("//device/vr/buildflags/buildflags.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//third_party/webrtc/webrtc.gni")
 
@@ -418,6 +419,7 @@ jumbo_source_set("browser_sources") {
     "//components/download/public/common:public",
     "//components/services/storage/public/mojom",
     "//content/public/common:common_sources",
+    "//device/vr/buildflags",
     "//ipc",
     "//media/mojo/mojom",
     "//media/mojo/mojom:remoting",
@@ -504,6 +506,16 @@ jumbo_source_set("browser_sources") {
   if (is_chromeos) {
     sources +=
         [ "chromeos/delegate_to_browser_gpu_service_accelerator_factory.h" ]
+  }
+
+  if (enable_vr) {
+    sources += [
+      "xr_install_helper.h",
+      "xr_integration_client.cc",
+      "xr_integration_client.h",
+    ]
+
+    public_deps += [ "//device/vr/public/mojom" ]
   }
 }
 

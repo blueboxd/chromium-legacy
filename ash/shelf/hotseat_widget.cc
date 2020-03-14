@@ -132,6 +132,10 @@ class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
     return translucent_background_.background_blur();
   }
 
+  bool is_translucent_background_visible_for_test() {
+    return translucent_background_.GetTargetVisibility();
+  }
+
  private:
   void SetParentLayer(ui::Layer* layer);
 
@@ -524,6 +528,10 @@ ShelfView* HotseatWidget::GetShelfView() {
 
 int HotseatWidget::GetHotseatBackgroundBlurForTest() const {
   return delegate_view_->background_blur();
+}
+
+bool HotseatWidget::GetIsTranslucentBackgroundVisibleForTest() const {
+  return delegate_view_->is_translucent_background_visible_for_test();
 }
 
 bool HotseatWidget::IsShowingShelfMenu() const {

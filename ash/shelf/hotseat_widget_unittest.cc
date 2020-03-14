@@ -1880,6 +1880,19 @@ TEST_P(HotseatWidgetTest, NoVisibilityStateUpdateDuringDrag) {
   EXPECT_EQ(0, shelf_state_watcher->state_change_count());
 }
 
+// Tests that when tablet mode has ended, the hotseat background is no longer
+// visible. See crbug/1050383
+TEST_P(HotseatWidgetTest, HotseatBackgroundDisappearsAfterTabletModeEnd) {
+  HotseatWidget* hotseat = GetPrimaryShelf()->hotseat_widget();
+  EXPECT_FALSE(hotseat->GetIsTranslucentBackgroundVisibleForTest());
+
+  TabletModeControllerTestApi().EnterTabletMode();
+  EXPECT_TRUE(hotseat->GetIsTranslucentBackgroundVisibleForTest());
+
+  TabletModeControllerTestApi().LeaveTabletMode();
+  EXPECT_FALSE(hotseat->GetIsTranslucentBackgroundVisibleForTest());
+}
+
 // Tests that popups don't activate the hotseat. (crbug.com/1018266)
 TEST_P(HotseatWidgetTest, HotseatRemainsHiddenIfPopupLaunched) {
   // Go to in-app shelf and extend the hotseat.

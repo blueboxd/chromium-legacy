@@ -30,6 +30,7 @@ class HeadlessDevToolsManagerDelegate
 
   // DevToolsManagerDelegate implementation:
   void HandleCommand(content::DevToolsAgentHostClientChannel* channel,
+                     const std::string& method,
                      base::span<const uint8_t> message,
                      NotHandledCallback callback) override;
   scoped_refptr<content::DevToolsAgentHost> CreateNewTarget(

@@ -193,7 +193,7 @@ class BodyReader : public mojo::DataPipeDrainer::Client {
 
   void CancelWithError(std::string error) {
     for (auto& cb : callbacks_)
-      cb->sendFailure(Response::ServerError(error));
+      cb->sendFailure(Response::Error(error));
     callbacks_.clear();
   }
 
@@ -793,7 +793,7 @@ void InterceptionJob::GetResponseBody(
     std::unique_ptr<GetResponseBodyCallback> callback) {
   std::string error_reason;
   if (!CanGetResponseBody(&error_reason)) {
-    callback->sendFailure(Response::ServerError(std::move(error_reason)));
+    callback->sendFailure(Response::Error(std::move(error_reason)));
     return;
   }
   if (!body_reader_) {
@@ -809,7 +809,7 @@ void InterceptionJob::TakeResponseBodyPipe(
     TakeResponseBodyPipeCallback callback) {
   std::string error_reason;
   if (!CanGetResponseBody(&error_reason)) {
-    std::move(callback).Run(Response::ServerError(std::move(error_reason)),
+    std::move(callback).Run(Response::Error(std::move(error_reason)),
                             mojo::ScopedDataPipeConsumerHandle(),
                             base::EmptyString());
     return;
@@ -827,7 +827,7 @@ void InterceptionJob::ContinueInterceptedRequest(
     std::unique_ptr<ContinueInterceptedRequestCallback> callback) {
   Response response = InnerContinueRequest(std::move(modifications));
   // |this| may be destroyed at this point.
-  if (response.IsSuccess())
+  if (response.isSuccess())
     callback->sendSuccess();
   else
     callback->sendFailure(std::move(response));
@@ -850,15 +850,14 @@ void InterceptionJob::Detach() {
 Response InterceptionJob::InnerContinueRequest(
     std::unique_ptr<Modifications> modifications) {
   if (!waiting_for_resolution_)
-    return Response::ServerError(
-        "Invalid state for continueInterceptedRequest");
+    return Response::Error("Invalid state for continueInterceptedRequest");
   waiting_for_resolution_ = false;
 
   if (state_ == State::kAuthRequired) {
     if (!modifications->auth_challenge_response)
       return Response::InvalidParams("authChallengeResponse required.");
     ProcessAuthResponse(*modifications->auth_challenge_response);
-    return Response::Success();
+    return Response::OK();
   }
   if (modifications->auth_challenge_response)
     return Response::InvalidParams("authChallengeResponse not expected.");
@@ -877,7 +876,7 @@ Response InterceptionJob::InnerContinueRequest(
     }
     client_->OnComplete(status);
     Shutdown();
-    return Response::Success();
+    return Response::OK();
   }
 
   if (modifications->response_headers || modifications->response_body)
@@ -894,7 +893,7 @@ Response InterceptionJob::InnerContinueRequest(
       // TODO(caseq): report error if other modifications are present.
       state_ = State::kRequestSent;
       loader_->FollowRedirect({}, {}, base::nullopt);
-      return Response::Success();
+      return Response::OK();
     }
   }
   if (state_ == State::kRedirectReceived) {
@@ -907,13 +906,13 @@ Response InterceptionJob::InnerContinueRequest(
       headers->AddHeader("location: " + location);
       GURL redirect_url = create_loader_params_->request.url.Resolve(location);
       if (!redirect_url.is_valid())
-        return Response::ServerError("Invalid modified URL");
+        return Response::Error("Invalid modified URL");
       ProcessRedirectByClient(redirect_url);
-      return Response::Success();
+      return Response::OK();
     }
     client_->OnReceiveRedirect(*response_metadata_->redirect_info,
                                std::move(response_metadata_->head));
-    return Response::Success();
+    return Response::OK();
   }
 
   if (body_reader_) {
@@ -922,7 +921,7 @@ Response InterceptionJob::InnerContinueRequest(
 
     // There are read callbacks pending, so let the reader do its job and come
     // back when it's done.
-    return Response::Success();
+    return Response::OK();
   }
 
   if (response_metadata_) {
@@ -937,13 +936,13 @@ Response InterceptionJob::InnerContinueRequest(
     response_metadata_.reset();
     loader_->ResumeReadingBodyFromNet();
     client_receiver_.Resume();
-    return Response::Success();
+    return Response::OK();
   }
 
   DCHECK_EQ(State::kNotStarted, state_);
   ApplyModificationsToRequest(std::move(modifications));
   StartRequest();
-  return Response::Success();
+  return Response::OK();
 }
 
 void InterceptionJob::ApplyModificationsToRequest(
@@ -1067,7 +1066,7 @@ Response InterceptionJob::ProcessResponseOverride(
   }
   ProcessSetCookies(*head->headers, std::move(continue_after_cookies_set));
 
-  return Response::Success();
+  return Response::OK();
 }
 
 void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
@@ -1439,7 +1438,7 @@ void InterceptionJob::OnStartLoadingResponseBody(
     DCHECK_EQ(State::kResponseTaken, state_);
     DCHECK(!body_reader_);
     std::move(pending_response_body_pipe_callback_)
-        .Run(Response::Success(), std::move(body),
+        .Run(Response::OK(), std::move(body),
              response_metadata_->head->mime_type);
     return;
   }

@@ -9,6 +9,7 @@ package feedwire;
 option optimize_for = LITE_RUNTIME;
 
 import "components/feed/core/proto/v2/wire/content_id.proto";
+import "components/feed/core/proto/v2/wire/next_page_token.proto";
 
 // A structure containing client-opaque data relating to a request.
 message Token {
@@ -17,7 +18,7 @@ message Token {
   optional ContentId parent_id = 2;
 
   extensions 1001;  // REDACTED
-  extensions 1002;  // NextPageToken
+  optional NextPageToken next_page_token = 1002;
   extensions 1003;  // InPlaceUpdateToken
 
   reserved 1, 194964015;

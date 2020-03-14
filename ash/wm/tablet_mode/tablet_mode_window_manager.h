@@ -49,13 +49,6 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   TabletModeWindowManager();
   ~TabletModeWindowManager() override;
 
-  // Returns the top window on MRU window list, or null if the list
-  // is empty.
-  static aura::Window* GetTopWindow();
-
-  // Returns whether the top window should be minimized on back action.
-  static bool ShouldMinimizeTopWindowOnBack();
-
   void Init();
 
   // Stops tracking windows and returns them to their clamshell mode state. Work

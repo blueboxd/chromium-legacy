@@ -96,17 +96,6 @@ bool NGLayoutOpportunity::IsBlockDeltaBelowShapes(
   return true;
 }
 
-NGLineLayoutOpportunity NGLayoutOpportunity::ComputeLineLayoutOpportunity(
-    const NGConstraintSpace& space,
-    LayoutUnit line_block_size,
-    LayoutUnit block_delta) const {
-  return NGLineLayoutOpportunity(
-      ComputeLineLeftOffset(space, line_block_size, block_delta),
-      ComputeLineRightOffset(space, line_block_size, block_delta),
-      rect.LineStartOffset(), rect.LineEndOffset(),
-      rect.BlockStartOffset() + block_delta, line_block_size);
-}
-
 LayoutUnit NGLayoutOpportunity::ComputeLineLeftOffset(
     const NGConstraintSpace& space,
     LayoutUnit line_block_size,

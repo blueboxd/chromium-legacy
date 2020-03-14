@@ -146,6 +146,11 @@ bool GpuDataManagerImpl::Dx12VulkanRequested() const {
   base::AutoLock auto_lock(lock_);
   return private_->Dx12VulkanRequested();
 }
+
+void GpuDataManagerImpl::OnBrowserThreadsStarted() {
+  base::AutoLock auto_lock(lock_);
+  private_->OnBrowserThreadsStarted();
+}
 #endif
 
 void GpuDataManagerImpl::UpdateGpuFeatureInfo(

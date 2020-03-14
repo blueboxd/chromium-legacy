@@ -2904,6 +2904,8 @@ jumbo_static_library("ui") {
       "views/extensions/expandable_container_view.h",
       "views/extensions/extension_context_menu_controller.cc",
       "views/extensions/extension_context_menu_controller.h",
+      "views/extensions/extension_install_blocked_dialog_view.cc",
+      "views/extensions/extension_install_blocked_dialog_view.h",
       "views/extensions/extension_install_dialog_view.cc",
       "views/extensions/extension_install_dialog_view.h",
       "views/extensions/extension_installed_bubble_view.cc",

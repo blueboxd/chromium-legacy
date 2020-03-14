@@ -100,7 +100,7 @@ polymer_modulizer("signin_view") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":landing_view_module",
     ":signin_view_module",
     ":welcome_app_module",

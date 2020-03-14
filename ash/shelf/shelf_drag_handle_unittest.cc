@@ -258,6 +258,65 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeNotShownForHiddenShelf) {
   EXPECT_TRUE(drag_handle->ShowingNudge());
 }
 
+// Tests that drag handle show is canceled when the shelf is hidden while the
+// drag handle is scheduled to be shown.
+TEST_F(DragHandleContextualNudgeTest, HidingShelfCancelsDragHandleShow) {
+  GetPrimaryShelf()->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  // Creates a widget that will become maximized in tablet mode.
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+
+  ShelfWidget* const shelf_widget = GetShelfWidget();
+  DragHandle* const drag_handle = shelf_widget->GetDragHandle();
+
+  // The shelf is hidden, so the drag handle nudge should not be shown.
+  EXPECT_TRUE(drag_handle->GetVisible());
+  EXPECT_FALSE(drag_handle->ShowingNudge());
+  EXPECT_FALSE(drag_handle->has_show_drag_handle_timer_for_testing());
+
+  // Swipe up to show the shelf - this should schedule the drag handle nudge.
+  SwipeUpOnShelf();
+
+  EXPECT_TRUE(drag_handle->has_show_drag_handle_timer_for_testing());
+
+  // Hide the shelf, and verify the drag handle show is canceled.
+  SwipeDownOnShelf();
+  EXPECT_FALSE(drag_handle->has_show_drag_handle_timer_for_testing());
+  EXPECT_FALSE(drag_handle->ShowingNudge());
+
+  PrefService* const prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  // Back gesture nudge should be allowed if the shelf is hidden.
+  EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
+      prefs, contextual_tooltip::TooltipType::kBackGesture, nullptr));
+}
+
+// Tests that the drag handle nudge is not hidden when the user extends the
+// hotseat.
+TEST_F(DragHandleContextualNudgeTest,
+       DragHandleNudgeNotHiddenByExtendingHotseat) {
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  // Creates a widget that will become maximized in tablet mode.
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+
+  ShelfWidget* const shelf_widget = GetShelfWidget();
+  DragHandle* const drag_handle = shelf_widget->GetDragHandle();
+
+  ASSERT_TRUE(drag_handle->has_show_drag_handle_timer_for_testing());
+  drag_handle->fire_show_drag_handle_timer_for_testing();
+  EXPECT_TRUE(drag_handle->ShowingNudge());
+
+  // Swipe up to extend the hotseat - verify that the drag handle remain
+  // visible.
+  SwipeUpOnShelf();
+  EXPECT_TRUE(drag_handle->ShowingNudge());
+}
+
 // Tests that the drag handle nudge is horizontally centered in screen, and
 // drawn above the shelf drag handle, even after display bounds are updated.
 TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeBoundsInScreen) {

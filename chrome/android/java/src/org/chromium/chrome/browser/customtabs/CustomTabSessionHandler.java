@@ -19,6 +19,7 @@ import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.SessionHandler;
@@ -29,7 +30,6 @@ import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.NavigationEntry;
 
 import javax.inject.Inject;

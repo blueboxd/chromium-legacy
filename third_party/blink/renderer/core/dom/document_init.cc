@@ -410,7 +410,7 @@ DocumentInit& DocumentInit::WithFramePolicy(
 }
 
 DocumentInit& DocumentInit::WithDocumentPolicy(
-    const DocumentPolicy::FeatureState& document_policy) {
+    const DocumentPolicy::ParsedDocumentPolicy& document_policy) {
   document_policy_ = document_policy;
   return *this;
 }

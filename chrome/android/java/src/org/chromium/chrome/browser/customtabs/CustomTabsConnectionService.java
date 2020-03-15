@@ -14,9 +14,9 @@ import androidx.annotation.Nullable;
 import androidx.browser.customtabs.CustomTabsService;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 
+import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
-import org.chromium.components.embedder_support.util.Origin;
 
 import java.util.List;
 

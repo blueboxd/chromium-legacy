@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.browserservices;
 
-import org.chromium.components.embedder_support.util.Origin;
-
 /**
  * This is a plain-old-data class to store a Digital Asset Link relationship [1].
  *

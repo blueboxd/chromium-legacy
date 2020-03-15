@@ -13,6 +13,7 @@
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="../../settings_shared_css.html">
 <link rel="import" href="../metrics_recorder.html">
+<link rel="import" href="crostini_disk_resize_dialog.html">
 
 <dom-module id="settings-crostini-subpage">
   <template>
@@ -77,18 +78,25 @@
       </cr-link-row>
     </template>
     <template is="dom-if" if="[[showCrostiniDiskResize_]]">
-      <cr-link-row
-          class="hr"
-          label="$i18n{crostiniDiskResizeShowButton}"
-          id="crostini-show-disk-resize"
-          on-click="onShowDiskResizeClick_"
-          role-description="$i18n{subpageArrowRoleDescription}">
-      </cr-link-row>
+      <div class="settings-box hr" id="crostini-disk-resize">
+        <div class="start">
+          $i18n{crostiniDiskResizeLabel}
+        </div>
+        <cr-button on-click="onDiskResizeClick_"
+            aria-labelledby="diskResizeLabel" id="showDiskResizeButton">
+            $i18n{crostiniDiskResizeShowButton}
+        </cr-button>
+      </div>
+      <template is="dom-if" if="[[showDiskResizeDialog_]]" restamp>
+        <settings-crostini-disk-resize-dialog
+            on-close="onDiskResizeDialogClose_">
+        </settings-crostini-disk-resize-dialog>
+      </template>
     </template>
     <template is="dom-if" if="[[showCrostiniMic_]]">
       <settings-toggle-button id="crostini-mic-sharing"
-        pref="{{prefs.crostini.mic_sharing}}"
-        label="$i18n{enableCrostiniMicTitle}">
+          pref="{{prefs.crostini.mic_sharing}}"
+          label="$i18n{enableCrostiniMicTitle}">
       </settings-toggle-button>
     </template>
     <template is="dom-if" if="[[!hideCrostiniUninstall_]]">

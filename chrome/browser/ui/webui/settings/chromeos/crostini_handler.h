@@ -18,7 +18,8 @@ class Profile;
 
 namespace crostini {
 enum class CrostiniResult;
-}
+struct CrostiniDiskInfo;
+}  // namespace crostini
 
 namespace chromeos {
 namespace settings {
@@ -99,6 +100,15 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
   void HandleAddCrostiniPortForward(const base::ListValue* args);
   // Callback of port forwarding requests.
   void OnPortForwardComplete(std::string callback_id, bool success);
+  // Fetches disk info for a VM, can be slow (seconds).
+  void HandleGetCrostiniDiskInfo(const base::ListValue* args);
+  void ResolveGetCrostiniDiskInfoCallback(
+      const std::string& callback_id,
+      std::unique_ptr<crostini::CrostiniDiskInfo> disk_info);
+  // Handles a request to resize a Crostini disk.
+  void HandleResizeCrostiniDisk(const base::ListValue* args);
+  void ResolveResizeCrostiniDiskCallback(const std::string& callback_id,
+                                         bool succeeded);
 
   Profile* profile_;
   // weak_ptr_factory_ should always be last member.

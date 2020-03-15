@@ -15,7 +15,6 @@ android_library("application_java") {
 
 android_library("util_java") {
   sources = [
-    "java/src/org/chromium/components/embedder_support/util/Origin.java",
     "java/src/org/chromium/components/embedder_support/util/UrlConstants.java",
     "java/src/org/chromium/components/embedder_support/util/UrlUtilities.java",
   ]
@@ -211,15 +210,5 @@ android_library("junit_test_support") {
   deps = [
     ":util_java",
     "//third_party/robolectric:robolectric_all_java",
-  ]
-}
-
-junit_binary("components_embedder_support_junit_tests") {
-  sources = [
-    "junit/src/org/chromium/components/embedder_support/util/OriginTest.java",
-  ]
-  deps = [
-    ":util_java",
-    "//base:base_junit_test_support",
   ]
 }

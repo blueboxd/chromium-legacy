@@ -321,18 +321,21 @@ void HTMLFrameOwnerElement::UpdateContainerPolicy(Vector<String>* messages) {
 }
 
 void HTMLFrameOwnerElement::UpdateRequiredPolicy() {
-  const DocumentPolicy::FeatureState self_required_policy =
-      ConstructRequiredPolicy();
   const auto* frame = GetDocument().GetFrame();
   DCHECK(frame);
-  DocumentPolicy::FeatureState new_required_policy;
-  for (const auto& entry : DocumentPolicy::MergeFeatureState(
-           self_required_policy,
-           frame->GetRequiredDocumentPolicy() /* parent required policy */)) {
-    if (!DisabledByOriginTrial(entry.first, &GetDocument()))
-      new_required_policy.insert(entry);
+  DocumentPolicy::FeatureState new_required_policy =
+      DocumentPolicy::MergeFeatureState(
+          ConstructRequiredPolicy(), /* self_required_policy */
+          frame->GetRequiredDocumentPolicy() /* parent_required_policy */);
+
+  // Filter out policies that are disabled by origin trials.
+  frame_policy_.required_document_policy.clear();
+  for (auto i = new_required_policy.begin(), last = new_required_policy.end();
+       i != last;) {
+    if (!DisabledByOriginTrial(i->first, &GetDocument()))
+      frame_policy_.required_document_policy.insert(*i);
+    ++i;
   }
-  frame_policy_.required_document_policy = std::move(new_required_policy);
 
   if (ContentFrame()) {
     frame->Client()->DidChangeFramePolicy(ContentFrame(), frame_policy_);

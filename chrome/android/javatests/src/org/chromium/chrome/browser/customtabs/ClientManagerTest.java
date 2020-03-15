@@ -10,10 +10,6 @@ import android.os.Process;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
-import androidx.browser.customtabs.CustomTabsService;
-import androidx.browser.customtabs.CustomTabsSessionToken;
-import androidx.browser.customtabs.PostMessageServiceConnection;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,13 +21,17 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
-import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+
+import androidx.browser.customtabs.CustomTabsService;
+import androidx.browser.customtabs.CustomTabsSessionToken;
+import androidx.browser.customtabs.PostMessageServiceConnection;
 
 /** Tests for ClientManager. */
 @RunWith(BaseJUnit4ClassRunner.class)

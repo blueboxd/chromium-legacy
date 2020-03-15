@@ -125,7 +125,16 @@ Polymer({
     disableUpgradeButton_: {
       type: Boolean,
       computed: 'or_(installerShowing_, upgraderDialogShowing_)',
-    }
+    },
+
+    /**
+     * Whether the disk resizing dialog is visible or not
+     * @private {boolean}
+     */
+    showDiskResizeDialog_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** settings.RouteOriginBehavior override */
@@ -164,7 +173,6 @@ Polymer({
     this.addFocusConfig_(r.CROSTINI_ANDROID_ADB, '#crostini-enable-arc-adb');
     this.addFocusConfig_(
         r.CROSTINI_PORT_FORWARDING, '#crostini-port-forwarding');
-    this.addFocusConfig_(r.CROSTINI_DISK_RESIZE, '#crostini-disk-resize');
   },
 
   /** @private */
@@ -194,9 +202,13 @@ Polymer({
   },
 
   /** @private */
-  onShowDiskResizeClick_() {
-    settings.Router.getInstance().navigateTo(
-        settings.routes.CROSTINI_DISK_RESIZE);
+  onDiskResizeClick_() {
+    this.showDiskResizeDialog_ = true;
+  },
+
+  /** @private */
+  onDiskResizeDialogClose_() {
+    this.showDiskResizeDialog_ = false;
   },
 
   /**

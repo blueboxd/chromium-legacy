@@ -18,9 +18,26 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
       'requestCrostiniUpgraderDialogStatus',
       'requestCrostiniContainerUpgradeAvailable',
       'addCrostiniPortForward',
+      'getCrostiniDiskInfo',
+      'resizeCrostiniDisk',
     ]);
     this.sharedUsbDevices = [];
     this.removeSharedPathResult = true;
+    this.methodCalls_ = {};
+  }
+
+  getNewPromiseFor(name) {
+    return new Promise((resolve, reject) => {
+      this.methodCalls_[name] = {name, resolve, reject};
+    });
+  }
+
+  async resolvePromise(name, ...args) {
+    await this.methodCalls_[name].resolve(...args);
+  }
+
+  async rejectPromise(name, ...args) {
+    await this.methodCalls_[name].reject(...args);
   }
 
   /** @override */
@@ -100,5 +117,17 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
         'addCrostiniPortForward', vmName, containerName, portNumber,
         protocolIndex, label);
     return Promise.resolve(true);
+  }
+
+  /** @override */
+  getCrostiniDiskInfo(vmName) {
+    this.methodCalled('getCrostiniDiskInfo', vmName);
+    return this.getNewPromiseFor('getCrostiniDiskInfo');
+  }
+
+  /** @override */
+  resizeCrostiniDisk(vmName, newSizeBytes) {
+    this.methodCalled('resizeCrostiniDisk', vmName, newSizeBytes);
+    return this.getNewPromiseFor('resizeCrostiniDisk');
   }
 }

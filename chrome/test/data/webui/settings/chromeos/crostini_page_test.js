@@ -29,6 +29,15 @@ function setCrostiniPrefs(enabled, optional = {}) {
   Polymer.dom.flush();
 }
 
+/**
+ * Checks whether a given element is visible to the user.
+ * @param {!Element} element
+ * @returns {boolean}
+ */
+function isVisible(element) {
+  return !!(element && element.getBoundingClientRect().width > 0);
+}
+
 suite('CrostiniPageTests', function() {
   setup(function() {
     crostiniBrowserProxy = new TestCrostiniBrowserProxy();
@@ -98,6 +107,7 @@ suite('CrostiniPageTests', function() {
         showCrostiniContainerUpgrade: true,
         showCrostiniPortForwarding: true,
         showCrostiniMic: true,
+        showCrostiniDiskResize: true,
       });
 
       const eventPromise = new Promise((resolve) => {
@@ -128,6 +138,7 @@ suite('CrostiniPageTests', function() {
       assertTrue(!!subpage.$$('#container-upgrade'));
       assertTrue(!!subpage.$$('#crostini-port-forwarding'));
       assertTrue(!!subpage.$$('#crostini-mic-sharing'));
+      assertTrue(!!subpage.$$('#crostini-disk-resize'));
     });
 
     test('SharedPaths', async function() {
@@ -403,6 +414,146 @@ suite('CrostiniPageTests', function() {
       assertEquals(
           settings.Router.getInstance().getCurrentRoute(),
           settings.routes.CROSTINI);
+    });
+
+    test('DiskResizeOpensWhenClicked', async function() {
+      assertTrue(!!subpage.$$('#showDiskResizeButton'));
+      subpage.$$('#showDiskResizeButton').click();
+
+      await flushAsync();
+      const dialog = subpage.$$('settings-crostini-disk-resize-dialog');
+      assertTrue(!!dialog);
+      assertEquals(1, crostiniBrowserProxy.getCallCount('getCrostiniDiskInfo'));
+    });
+
+    suite('DiskResize', async function() {
+      let dialog;
+      /**
+       * Helper function to assert that the expected block is visible and the
+       * others are not.
+       * @param {!string} selector
+       */
+      function assertVisibleBlockIs(selector) {
+        const selectors =
+            ['#unsupported', '#resize-block', '#error', '#loading'];
+
+        assertTrue(isVisible(dialog.$$(selector)));
+        selectors.filter(s => s !== selector).forEach(s => {
+          assertFalse(isVisible(dialog.$$(s)));
+        });
+      }
+
+      const ticks = [
+        {label: 'label 0', value: 0, ariaLabel: 'label 0'},
+        {label: 'label 10', value: 10, ariaLabel: 'label 10'},
+        {label: 'label 100', value: 100, ariaLabel: 'label 100'}
+      ];
+      const resizeableData =
+          {succeeded: true, canResize: true, defaultIndex: 2, ticks: ticks};
+
+      setup(async function() {
+        assertTrue(!!subpage.$$('#showDiskResizeButton'));
+        crostiniBrowserProxy.diskInfo = {succeeded: false};
+        subpage.$$('#showDiskResizeButton').click();
+
+        await flushAsync();
+        dialog = subpage.$$('settings-crostini-disk-resize-dialog');
+
+        // We should be on the loading page but unable to kick off a resize yet.
+        assertTrue(!!dialog.$$('#loading'));
+        assertTrue(dialog.$$('#resize').disabled);
+      });
+
+      test('MessageShownIfErrorAndCanRetry', async function() {
+        await crostiniBrowserProxy.resolvePromise(
+            'getCrostiniDiskInfo', {succeeded: false});
+
+        // We failed, should have a retry button.
+        let button = dialog.$$('#retry');
+        assertVisibleBlockIs('#error');
+        assertTrue(isVisible(button));
+        assertTrue(dialog.$$('#resize').disabled);
+        assertFalse(dialog.$$('#cancel').disabled);
+
+        // Back to the loading screen.
+        button.click();
+        await flushAsync();
+        assertVisibleBlockIs('#loading');
+        assertTrue(dialog.$$('#resize').disabled);
+        assertFalse(dialog.$$('#cancel').disabled);
+
+        // And failure page again.
+        await crostiniBrowserProxy.rejectPromise('getCrostiniDiskInfo');
+        button = dialog.$$('#retry');
+        assertTrue(isVisible(button));
+        assertVisibleBlockIs('#error');
+        assertTrue(dialog.$$('#resize').disabled);
+        assertTrue(dialog.$$('#resize').disabled);
+        assertFalse(dialog.$$('#cancel').disabled);
+
+        assertEquals(
+            2, crostiniBrowserProxy.getCallCount('getCrostiniDiskInfo'));
+      });
+
+      test('MessageShownIfCannotResize', async function() {
+        await crostiniBrowserProxy.resolvePromise(
+            'getCrostiniDiskInfo', {succeeded: true, canResize: false});
+        assertVisibleBlockIs('#unsupported');
+        assertTrue(dialog.$$('#resize').disabled);
+        assertFalse(dialog.$$('#cancel').disabled);
+      });
+
+      test('ResizePageShownIfCanResize', async function() {
+        await crostiniBrowserProxy.resolvePromise(
+            'getCrostiniDiskInfo', resizeableData);
+        assertVisibleBlockIs('#resize-block');
+
+        assertEquals(ticks[0].label, dialog.$$('#label-begin').innerText);
+        assertEquals(ticks[2].label, dialog.$$('#label-end').innerText);
+        assertEquals(2, dialog.$$('#diskSlider').value);
+
+        assertFalse(dialog.$$('#resize').disabled);
+        assertFalse(dialog.$$('#cancel').disabled);
+      });
+
+      test('InProgressResizing', async function() {
+        await crostiniBrowserProxy.resolvePromise(
+            'getCrostiniDiskInfo', resizeableData);
+        const button = dialog.$$('#resize');
+        button.click();
+        await flushAsync();
+        assertTrue(button.disabled);
+        assertFalse(isVisible(dialog.$$('#done')));
+        assertTrue(isVisible(dialog.$$('#resizing')));
+        assertFalse(isVisible(dialog.$$('#resize-error')));
+        assertTrue(dialog.$$('#cancel').disabled);
+      });
+
+      test('ErrorResizing', async function() {
+        await crostiniBrowserProxy.resolvePromise(
+            'getCrostiniDiskInfo', resizeableData);
+        const button = dialog.$$('#resize');
+        button.click();
+        await crostiniBrowserProxy.resolvePromise('resizeCrostiniDisk', false);
+        assertFalse(button.disabled);
+        assertFalse(isVisible(dialog.$$('#done')));
+        assertFalse(isVisible(dialog.$$('#resizing')));
+        assertTrue(isVisible(dialog.$$('#resize-error')));
+        assertFalse(dialog.$$('#cancel').disabled);
+      });
+
+      test('SuccessResizing', async function() {
+        await crostiniBrowserProxy.resolvePromise(
+            'getCrostiniDiskInfo', resizeableData);
+        const button = dialog.$$('#resize');
+        button.click();
+        await crostiniBrowserProxy.resolvePromise('resizeCrostiniDisk', true);
+        assertFalse(button.disabled);
+        assertTrue(isVisible(dialog.$$('#done')));
+        assertFalse(isVisible(dialog.$$('#resizing')));
+        assertFalse(isVisible(dialog.$$('#resize-error')));
+        assertFalse(dialog.$$('#cancel').disabled);
+      });
     });
   });
 

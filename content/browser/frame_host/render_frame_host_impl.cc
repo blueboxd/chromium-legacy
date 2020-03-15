@@ -3427,8 +3427,8 @@ void RenderFrameHostImpl::DidSetFramePolicyHeaders(
   if (blink::DocumentPolicy::IsPolicyCompatible(
           frame_tree_node()->effective_frame_policy().required_document_policy,
           document_policy_header)) {
-    document_policy_ =
-        blink::DocumentPolicy::CreateWithHeaderPolicy(document_policy_header);
+    document_policy_ = blink::DocumentPolicy::CreateWithHeaderPolicy(
+        {document_policy_header, {} /* endpoint_map */});
   } else {
     bad_message::ReceivedBadMessage(
         GetProcess(), bad_message::RFH_BAD_DOCUMENT_POLICY_HEADER);

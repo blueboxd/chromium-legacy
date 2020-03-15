@@ -373,7 +373,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   ContentSecurityPolicy* CreateCSP(
       const ResourceResponse&,
       const base::Optional<WebOriginPolicy>& origin_policy);
-  DocumentPolicy::FeatureState CreateDocumentPolicy();
+  DocumentPolicy::ParsedDocumentPolicy CreateDocumentPolicy();
 
   void StartLoadingInternal();
   void FinishedLoading(base::TimeTicks finish_time);
@@ -484,7 +484,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       service_worker_network_provider_;
 
   bool was_blocked_by_document_policy_;
-  DocumentPolicy::FeatureState document_policy_;
+  DocumentPolicy::ParsedDocumentPolicy document_policy_;
 
   Member<ContentSecurityPolicy> content_security_policy_;
   ClientHintsPreferences client_hints_preferences_;

@@ -75,11 +75,16 @@ std::vector<crostini::mojom::DiskSliderTickPtr> GetTicks(
     int64_t max,
     int* out_default_index);
 
+// Requests the disk for |vm_name| to be resized to |size_bytes|.
+// Once complete |callback| is called with true (succeeded resizing) or false
+// for any error.
 void ResizeCrostiniDisk(Profile* profile,
                         std::string vm_name,
                         uint64_t size_bytes,
                         base::OnceCallback<void(bool)> callback);
 
+// Callback provided to Concierge, not intended to be called unless you're
+// crostini_disk or tests.
 void OnResize(
     base::OnceCallback<void(bool)> callback,
     base::Optional<vm_tools::concierge::ResizeDiskImageResponse> response);

@@ -192,7 +192,8 @@ DocumentLoader::DocumentLoader(
     const DocumentPolicy::FeatureState header_required_policy =
         DocumentPolicyParser::Parse(
             response_.HttpHeaderField(http_names::kRequireDocumentPolicy))
-            .value_or(DocumentPolicy::FeatureState{});
+            .value_or(DocumentPolicy::ParsedDocumentPolicy{})
+            .feature_state;
     frame_->SetRequiredDocumentPolicy(DocumentPolicy::MergeFeatureState(
         frame_policy_.required_document_policy, header_required_policy));
   }
@@ -828,30 +829,31 @@ void DocumentLoader::ReplaceWithEmptyDocument() {
                                           "");
 }
 
-DocumentPolicy::FeatureState DocumentLoader::CreateDocumentPolicy() {
+DocumentPolicy::ParsedDocumentPolicy DocumentLoader::CreateDocumentPolicy() {
   // For URLs referring to local content to parent frame, they have no way to
   // specify the document policy they use. If the parent frame requires a
   // document policy on them, use the required policy as effective policy.
   if (url_.IsEmpty() || url_.ProtocolIsAbout() || url_.ProtocolIsData() ||
       url_.ProtocolIs("blob") || url_.ProtocolIs("filesystem"))
-    return frame_policy_.required_document_policy;
+    return {frame_policy_.required_document_policy, {} /* endpoint_map */};
 
   // Assume Document policy feature is enabled so we can check the
   // Required- headers. Will re-validate when we install the new Document.
-  const DocumentPolicy::FeatureState header_policy =
+  const auto parsed_policy =
       DocumentPolicyParser::Parse(
           response_.HttpHeaderField(http_names::kDocumentPolicy))
-          .value_or(DocumentPolicy::FeatureState{});
+          .value_or(DocumentPolicy::ParsedDocumentPolicy{});
 
   if (!DocumentPolicy::IsPolicyCompatible(
-          frame_policy_.required_document_policy, header_policy)) {
+          frame_policy_.required_document_policy,
+          parsed_policy.feature_state)) {
     was_blocked_by_document_policy_ = true;
     // When header policy is less strict than required policy, use required
     // policy to initialize document policy for the document.
-    return frame_policy_.required_document_policy;
+    return {frame_policy_.required_document_policy, {} /* endpoint_map */};
   }
 
-  return header_policy;
+  return parsed_policy;
 }
 
 void DocumentLoader::HandleResponse() {
@@ -1482,13 +1484,14 @@ void DocumentLoader::InstallNewDocument(
 
   // Re-validate Document Policy feature before installing the new document.
   if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(owner_document))
-    document_policy_ = DocumentPolicy::FeatureState{};
+    document_policy_ = DocumentPolicy::ParsedDocumentPolicy{};
 
-  if (document_policy_.contains(
+  if (document_policy_.feature_state.contains(
           mojom::blink::DocumentPolicyFeature::kForceLoadAtTop)) {
-    navigation_scroll_allowed_ =
-        !(document_policy_[mojom::blink::DocumentPolicyFeature::kForceLoadAtTop]
-              .BoolValue());
+    navigation_scroll_allowed_ = !(
+        document_policy_
+            .feature_state[mojom::blink::DocumentPolicyFeature::kForceLoadAtTop]
+            .BoolValue());
   }
 
   DocumentInit init =

@@ -919,11 +919,41 @@
   <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_ERROR" desc="Description for the error when adding an invalid port.">
     Error forwarding port
   </message>
-  <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_TITLE" desc="The title of the settings section on which the user performs Crostini disk management operations such as resizing their disk." meaning="The title of the page where a user performs disk management operations.">
-    Disk resizing &amp; management
+  <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_SHOW_BUTTON" desc="The label of the button/link the user clicks to open the disk resizing dialogue." meaning="The label of the button/link the user clicks to open the disk resizing dialogue.">
+    Change
   </message>
-  <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_SHOW_BUTTON" desc="The label of the button/link which opens up Crostini's disk resizing and management section of settings." meaning="The label of the button/link the user clicks to open the disk management operations page.">
-    Disk resizing &amp; management
+  <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_LABEL" desc="The label on the row in settings for managing Crostini's disk size.">
+    Disk size
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_TITLE" desc="The title of the settings dialogue the user uses to resize the Crostini (AKA Linux (Beta)) Disk.">
+    Resize Linux Disk
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_UNSUPPORTED" desc="The message diusplayed to the user when resizing their Crostini disk isn't supported, explaining a workaround.">
+    Your container doesn't support being resized. To adjust the amount of space that is pre-allocated to Linux (Beta), back up and then restore into a new container.
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_LOADING" desc="The message shown to the user while fetching the data needed to resize their disk.">
+    Loading data, this may take up to a few seconds.
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_ERROR" desc="The message shown to the user when loading data to offer the resize failed. This error is retryable.">
+    Error loading data
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_ERROR_RETRY" desc="The label of the button to retry loading data if the operation previously failed.">
+    Retry
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_CANCEL" desc="The label of the button to close the resize dialogue without making any changes.">
+    Cancel
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_GO_BUTTON" desc="The label of the button to perform the resize operation on the user's Crostini disk">
+    Resize
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_IN_PROGRESS" desc="The message displayed to the user while disk resizing is in progress.">
+    Resizing
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_RESIZING_ERROR" desc="The message displayed to the user when disk resizing failed.">
+    Error resizing disk
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_DONE" desc="The message displayed to the user once disk resizing has completed successfully.">
+    Done
   </message>
   <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_POWERWASH_REQUIRED_SUBLABEL" desc="Sublabel notifying user of powerwash requirement before enabling ARC ADB sideloading.">
     A factory reset of this Chromebook is required to enable ADB debugging. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>

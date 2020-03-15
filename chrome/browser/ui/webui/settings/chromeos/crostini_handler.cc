@@ -13,8 +13,10 @@
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/crostini/crostini_disk.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer.h"
 #include "chrome/browser/chromeos/crostini/crostini_port_forwarder.h"
+#include "chrome/browser/chromeos/crostini/crostini_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
@@ -128,6 +130,14 @@ void CrostiniHandler::RegisterMessages() {
       "addCrostiniPortForward",
       base::BindRepeating(&CrostiniHandler::HandleAddCrostiniPortForward,
                           weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "getCrostiniDiskInfo",
+      base::BindRepeating(&CrostiniHandler::HandleGetCrostiniDiskInfo,
+                          weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "resizeCrostiniDisk",
+      base::BindRepeating(&CrostiniHandler::HandleResizeCrostiniDisk,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CrostiniHandler::OnJavascriptAllowed() {
@@ -223,6 +233,29 @@ base::ListValue UsbDevicesToListValue(
     usb_devices_list.Append(std::move(device_info));
   }
   return usb_devices_list;
+}
+
+base::Value CrostiniDiskInfoToValue(
+    std::unique_ptr<crostini::CrostiniDiskInfo> disk_info) {
+  base::Value disk_value(base::Value::Type::DICTIONARY);
+  if (!disk_info) {
+    disk_value.SetBoolKey("succeeded", false);
+    return disk_value;
+  }
+  disk_value.SetBoolKey("succeeded", true);
+  disk_value.SetBoolKey("canResize", disk_info->can_resize);
+  disk_value.SetBoolKey("isUserChosenSize", disk_info->is_user_chosen_size);
+  disk_value.SetIntKey("defaultIndex", disk_info->default_index);
+  base::Value ticks(base::Value::Type::LIST);
+  for (const auto& tick : disk_info->ticks) {
+    base::Value t(base::Value::Type::DICTIONARY);
+    t.SetDoubleKey("value", static_cast<double>(tick->value));
+    t.SetStringKey("ariaValue", tick->aria_value);
+    t.SetStringKey("label", tick->label);
+    ticks.Append(std::move(t));
+  }
+  disk_value.SetKey("ticks", std::move(ticks));
+  return disk_value;
 }
 }  // namespace
 
@@ -486,6 +519,42 @@ void CrostiniHandler::HandleAddCrostiniPortForward(
 void CrostiniHandler::OnPortForwardComplete(std::string callback_id,
                                             bool success) {
   ResolveJavascriptCallback(base::Value(callback_id), base::Value(success));
+}
+
+void CrostiniHandler::ResolveGetCrostiniDiskInfoCallback(
+    const std::string& callback_id,
+    std::unique_ptr<crostini::CrostiniDiskInfo> disk_info) {
+  ResolveJavascriptCallback(base::Value(std::move(callback_id)),
+                            CrostiniDiskInfoToValue(std::move(disk_info)));
+}
+
+void CrostiniHandler::HandleGetCrostiniDiskInfo(const base::ListValue* args) {
+  AllowJavascript();
+  CHECK_EQ(2U, args->GetList().size());
+  std::string callback_id = args->GetList()[0].GetString();
+  std::string vm_name = args->GetList()[1].GetString();
+  crostini::disk::GetDiskInfo(
+      base::BindOnce(&CrostiniHandler::ResolveGetCrostiniDiskInfoCallback,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback_id)),
+      profile_, std::move(vm_name));
+}
+
+void CrostiniHandler::HandleResizeCrostiniDisk(const base::ListValue* args) {
+  CHECK_EQ(3U, args->GetList().size());
+  std::string callback_id = args->GetList()[0].GetString();
+  std::string vm_name = args->GetList()[1].GetString();
+  double bytes = args->GetList()[2].GetDouble();
+  crostini::disk::ResizeCrostiniDisk(
+      profile_, std::move(vm_name), bytes,
+      base::BindOnce(&CrostiniHandler::ResolveResizeCrostiniDiskCallback,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback_id)));
+}
+
+void CrostiniHandler::ResolveResizeCrostiniDiskCallback(
+    const std::string& callback_id,
+    bool succeeded) {
+  ResolveJavascriptCallback(base::Value(std::move(callback_id)),
+                            base::Value(succeeded));
 }
 
 }  // namespace settings

@@ -869,11 +869,11 @@
       <structure name="IDR_OS_SETTINGS_CROSTINI_ARC_ADB_CONFIRMATION_DIALOG_JS"
                  file="chromeos/crostini_page/crostini_arc_adb_confirmation_dialog.js"
                  type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_CROSTINI_DISK_RESIZE_HTML"
-                 file="chromeos/crostini_page/crostini_disk_resize.html"
+      <structure name="IDR_OS_SETTINGS_CROSTINI_DISK_RESIZE_DIALOG_HTML"
+                 file="chromeos/crostini_page/crostini_disk_resize_dialog.html"
                  type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_CROSTINI_DISK_RESIZE_JS"
-                 file="chromeos/crostini_page/crostini_disk_resize.js"
+      <structure name="IDR_OS_SETTINGS_CROSTINI_DISK_RESIZE_DIALOG_JS"
+                 file="chromeos/crostini_page/crostini_disk_resize_dialog.js"
                  type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_CROSTINI_EXPORT_IMPORT_HTML"
                  file="chromeos/crostini_page/crostini_export_import.html"

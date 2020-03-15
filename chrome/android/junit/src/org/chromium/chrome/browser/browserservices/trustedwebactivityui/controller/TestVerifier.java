@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
 import org.chromium.base.Promise;
-import org.chromium.components.embedder_support.util.Origin;
+import org.chromium.chrome.browser.browserservices.Origin;
 
 import java.util.HashMap;
 import java.util.HashSet;

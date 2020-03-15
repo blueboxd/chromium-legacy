@@ -509,8 +509,11 @@ void ExecutionContext::ReportDocumentPolicyViolation(
 
   // Send the feature policy violation report to any ReportingObservers.
   auto* reporting_context = ReportingContext::From(this);
+  const base::Optional<std::string> endpoint =
+      relevant_document_policy->GetFeatureEndpoint(feature);
+
   reporting_context->QueueReport(
-      report, {relevant_document_policy->GetFeatureEndpoint(feature).c_str()});
+      report, endpoint ? Vector<String>{endpoint->c_str()} : Vector<String>{});
 
   // TODO(iclelland): Report something different in report-only mode
   if (!is_report_only) {

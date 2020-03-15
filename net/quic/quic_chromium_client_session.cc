@@ -102,18 +102,36 @@ void RecordUnexpectedNotGoingAway(Location location) {
                             NUM_LOCATIONS);
 }
 
-void RecordConnectionCloseErrorCode(quic::QuicErrorCode error,
+void RecordConnectionCloseErrorCode(const quic::QuicConnectionCloseFrame& frame,
                                     quic::ConnectionCloseSource source,
                                     const std::string& hostname,
                                     bool handshake_confirmed) {
   bool is_google_host = HasGoogleHost(GURL("https://" + hostname));
   std::string histogram = "Net.QuicSession.ConnectionCloseErrorCode";
 
+  uint64_t error = 0;
   if (source == quic::ConnectionCloseSource::FROM_PEER) {
     histogram += "Server";
+    // When receiving a CONNECTION_CLOSE frame, record error code received on
+    // the wire.
+    switch (frame.close_type) {
+      case quic::GOOGLE_QUIC_CONNECTION_CLOSE:
+        error = frame.quic_error_code;
+        break;
+      case quic::IETF_QUIC_TRANSPORT_CONNECTION_CLOSE:
+        error = frame.transport_error_code;
+        histogram += "IetfTransport";
+        break;
+      case quic::IETF_QUIC_APPLICATION_CONNECTION_CLOSE:
+        error = frame.application_error_code;
+        histogram += "IetfApplication";
+    }
   } else {
+    // When sending a CONNECTION_CLOSE frame, record QuicErrorCode.
     histogram += "Client";
+    error = frame.extracted_error_code;
   }
+
   base::UmaHistogramSparse(histogram, error);
 
   if (handshake_confirmed) {
@@ -1572,11 +1590,12 @@ void QuicChromiumClientSession::OnConnectionClosed(
 
   logger_->OnConnectionClosed(frame, source);
 
-  const quic::QuicErrorCode error = frame.quic_error_code;
+  RecordConnectionCloseErrorCode(frame, source, session_key_.host(),
+                                 OneRttKeysAvailable());
+
+  const quic::QuicErrorCode error = frame.extracted_error_code;
   const std::string& error_details = frame.error_details;
 
-  RecordConnectionCloseErrorCode(error, source, session_key_.host(),
-                                 OneRttKeysAvailable());
   if (source == quic::ConnectionCloseSource::FROM_PEER) {
     if (error == quic::QUIC_PUBLIC_RESET) {
       // is_from_google_server will be true if the received EPID is

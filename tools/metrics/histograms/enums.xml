@@ -54701,6 +54701,38 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="119" label="QUIC_MAX_STREAM_ID_ERROR"/>
   <int value="120" label="QUIC_HTTP_DECODER_ERROR"/>
   <int value="121" label="QUIC_STALE_CONNECTION_CANCELLED"/>
+  <int value="122" label="QUIC_IETF_GQUIC_ERROR_MISSING"/>
+  <int value="123"
+      label="QUIC_WINDOW_UPDATE_RECEIVED_ON_READ_UNIDIRECTIONAL_STREAM"/>
+  <int value="124" label="QUIC_TOO_MANY_BUFFERED_CONTROL_FRAMES"/>
+  <int value="125" label="QUIC_TRANSPORT_INVALID_CLIENT_INDICATION"/>
+  <int value="126" label="QUIC_QPACK_DECOMPRESSION_FAILED"/>
+  <int value="127" label="QUIC_QPACK_ENCODER_STREAM_ERROR"/>
+  <int value="128" label="QUIC_QPACK_DECODER_STREAM_ERROR"/>
+  <int value="129" label="QUIC_STREAM_DATA_BEYOND_CLOSE_OFFSET"/>
+  <int value="130" label="QUIC_STREAM_MULTIPLE_OFFSET"/>
+  <int value="131" label="QUIC_HTTP_FRAME_TOO_LARGE"/>
+  <int value="132" label="QUIC_HTTP_FRAME_ERROR"/>
+  <int value="133" label="QUIC_HTTP_FRAME_UNEXPECTED_ON_SPDY_STREAM"/>
+  <int value="134" label="QUIC_HTTP_FRAME_UNEXPECTED_ON_CONTROL_STREAM"/>
+  <int value="135" label="QUIC_HPACK_INDEX_VARINT_ERROR"/>
+  <int value="136" label="QUIC_HPACK_NAME_LENGTH_VARINT_ERROR"/>
+  <int value="137" label="QUIC_HPACK_VALUE_LENGTH_VARINT_ERROR"/>
+  <int value="138" label="QUIC_HPACK_NAME_TOO_LONG"/>
+  <int value="139" label="QUIC_HPACK_VALUE_TOO_LONG"/>
+  <int value="140" label="QUIC_HPACK_NAME_HUFFMAN_ERROR"/>
+  <int value="141" label="QUIC_HPACK_VALUE_HUFFMAN_ERROR"/>
+  <int value="142" label="QUIC_HPACK_MISSING_DYNAMIC_TABLE_SIZE_UPDATE"/>
+  <int value="143" label="QUIC_HPACK_INVALID_INDEX"/>
+  <int value="144" label="QUIC_HPACK_INVALID_NAME_INDEX"/>
+  <int value="145" label="QUIC_HPACK_DYNAMIC_TABLE_SIZE_UPDATE_NOT_ALLOWED"/>
+  <int value="146"
+      label="QUIC_HPACK_INITIAL_TABLE_SIZE_UPDATE_IS_ABOVE_LOW_WATER_MARK"/>
+  <int value="147"
+      label="QUIC_HPACK_TABLE_SIZE_UPDATE_IS_ABOVE_ACKNOWLEDGED_SETTING"/>
+  <int value="148" label="QUIC_HPACK_TRUNCATED_BLOCK"/>
+  <int value="149" label="QUIC_HPACK_FRAGMENT_TOO_LONG"/>
+  <int value="150" label="QUIC_HPACK_COMPRESSED_HEADER_SIZE_EXCEEDS_LIMIT"/>
 </enum>
 
 <enum name="QuicHandshakeFailureReason">
@@ -54714,6 +54746,25 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="ENCRYPTION_ESTABLISHED"/>
   <int value="2" label="HANDSHAKE_CONFIRMED"/>
   <int value="3" label="FAILED"/>
+</enum>
+
+<enum name="QuicHttp3ErrorCodes">
+  <int value="256" label="H3_NO_ERROR"/>
+  <int value="257" label="H3_GENERAL_PROTOCOL_ERROR"/>
+  <int value="258" label="H3_INTERNAL_ERROR"/>
+  <int value="259" label="H3_STREAM_CREATION_ERROR"/>
+  <int value="260" label="H3_CLOSED_CRITICAL_STREAM"/>
+  <int value="261" label="H3_FRAME_UNEXPECTED"/>
+  <int value="262" label="H3_FRAME_ERROR"/>
+  <int value="263" label="H3_EXCESSIVE_LOAD"/>
+  <int value="264" label="H3_ID_ERROR"/>
+  <int value="265" label="H3_SETTINGS_ERROR"/>
+  <int value="266" label="H3_MISSING_SETTINGS"/>
+  <int value="267" label="H3_REQUEST_REJECTED"/>
+  <int value="268" label="H3_REQUEST_CANCELLED"/>
+  <int value="269" label="H3_REQUEST_INCOMPLETE"/>
+  <int value="271" label="H3_CONNECT_ERROR"/>
+  <int value="272" label="H3_VERSION_FALLBACK"/>
 </enum>
 
 <enum name="QuicInternalErrorLocation">
@@ -54958,6 +55009,22 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="CREATE_OUTGOING_RELIABLE_STREAM"/>
   <int value="4" label="NOTIFY_FACTORY_OF_SESSION_CLOSED_LATER"/>
   <int value="5" label="NOTIFY_FACTORY_OF_SESSION_CLOSED"/>
+</enum>
+
+<enum name="QuicTransportErrorCodes">
+  <int value="0" label="NO_ERROR"/>
+  <int value="1" label="INTERNAL_ERROR"/>
+  <int value="2" label="SERVER_BUSY"/>
+  <int value="3" label="FLOW_CONTROL_ERROR"/>
+  <int value="4" label="STREAM_LIMIT_ERROR"/>
+  <int value="5" label="STREAM_STATE_ERROR"/>
+  <int value="6" label="FINAL_SIZE_ERROR"/>
+  <int value="7" label="FRAME_ENCODING_ERROR"/>
+  <int value="8" label="TRANSPORT_PARAMETER_ERROR"/>
+  <int value="9" label="CONNECTION_ID_LIMIT_ERROR"/>
+  <int value="10" label="PROTOCOL_VIOLATION"/>
+  <int value="11" label="INVALID_TOKEN"/>
+  <int value="13" label="CRYPTO_BUFFER_EXCEEDED"/>
 </enum>
 
 <enum name="QuicWriteStatus">

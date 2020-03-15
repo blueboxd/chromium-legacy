@@ -17,8 +17,9 @@
 
 namespace keyboard {
 
-// Length of the animation to show and hide the keyboard.
-constexpr int kAnimationDurationMs = 200;
+// The virtual keyboard show/hide animation durations.
+constexpr auto kShowAnimationDuration = base::TimeDelta::FromMilliseconds(200);
+constexpr auto kHideAnimationDuration = base::TimeDelta::FromMilliseconds(100);
 
 // Distance the keyboard moves during the animation
 constexpr int kAnimationDistance = 30;
@@ -36,7 +37,7 @@ void ContainerFloatingBehavior::DoHidingAnimation(
     aura::Window* container,
     ::wm::ScopedHidingAnimationSettings* animation_settings) {
   animation_settings->layer_animation_settings()->SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+      kHideAnimationDuration);
   gfx::Transform transform;
   transform.Translate(0, kAnimationDistance);
   container->SetTransform(transform);
@@ -47,8 +48,7 @@ void ContainerFloatingBehavior::DoShowingAnimation(
     aura::Window* container,
     ui::ScopedLayerAnimationSettings* animation_settings) {
   animation_settings->SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
-  animation_settings->SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+  animation_settings->SetTransitionDuration(kShowAnimationDuration);
 
   container->SetTransform(gfx::Transform());
   container->layer()->SetOpacity(1.0);

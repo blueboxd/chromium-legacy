@@ -14,12 +14,12 @@ namespace blink {
 
 // static
 std::unique_ptr<DocumentPolicy> DocumentPolicy::CreateWithHeaderPolicy(
-    const FeatureState& header_policy,
-    const FeatureEndpointMap& endpoint_map) {
+    const ParsedDocumentPolicy& header_policy) {
   DocumentPolicy::FeatureState feature_defaults;
   for (const auto& entry : GetDocumentPolicyFeatureInfoMap())
     feature_defaults.emplace(entry.first, entry.second.default_value);
-  return CreateWithHeaderPolicy(header_policy, endpoint_map, feature_defaults);
+  return CreateWithHeaderPolicy(header_policy.feature_state,
+                                header_policy.endpoint_map, feature_defaults);
 }
 
 namespace {
@@ -137,16 +137,13 @@ PolicyValue DocumentPolicy::GetFeatureValue(
   return internal_feature_state_[static_cast<size_t>(feature)];
 }
 
-const std::string DocumentPolicy::GetFeatureEndpoint(
+const base::Optional<std::string> DocumentPolicy::GetFeatureEndpoint(
     mojom::DocumentPolicyFeature feature) const {
-  if (endpoint_map_.find(feature) != endpoint_map_.end()) {
-    return endpoint_map_.at(feature);
+  auto endpoint_it = endpoint_map_.find(feature);
+  if (endpoint_it != endpoint_map_.end()) {
+    return endpoint_it->second;
   } else {
-    // TODO(crbug.com/993790): Until the parsing of endpoint information
-    // in DocumentPolicyParser is implemented, use default endpoint as temporary
-    // solution to match existing feature policy behavior.
-    // Report to default endpoint if unspecified.
-    return "default";
+    return base::nullopt;
   }
 }
 
@@ -213,4 +210,5 @@ bool DocumentPolicy::IsPolicyCompatible(
   }
   return true;
 }
+
 }  // namespace blink

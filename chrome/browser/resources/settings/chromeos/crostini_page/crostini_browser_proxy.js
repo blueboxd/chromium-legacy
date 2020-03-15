@@ -24,6 +24,15 @@ let CrostiniSharedUsbDevice;
 let CrostiniPortSetting;
 
 /**
+ * @typedef {{succeeded: boolean,
+ *            canResize: boolean,
+ *            isUserChosenSize: boolean,
+ *            defaultIndex: number,
+ *            ticks: !Array}}
+ */
+let CrostiniDiskInfo;
+
+/**
  * @fileoverview A helper object used by the "Linux Apps" (Crostini) section
  * to install and uninstall Crostini.
  */
@@ -117,6 +126,21 @@ cr.define('settings', function() {
      */
     addCrostiniPortForward(
         vmName, containerName, portNumber, protocolIndex, label) {}
+
+    /**
+     * @param {string} vmName Name of the VM to get disk info for.
+     * @return {!Promise<CrostiniDiskInfo>} The requested information.
+     */
+    getCrostiniDiskInfo(vmName) {}
+
+    /**
+     * Resizes a preallocated user-chosen-size Crostini VM disk to the requested
+     * size.
+     * @param {string} vmName Name of the VM to resize.
+     * @param {number} newSizeBytes Size in bytes to resize to.
+     * @return {!Promise<boolean>} Whether resizing succeeded(true) or failed.
+     */
+    resizeCrostiniDisk(vmName, newSizeBytes) {}
   }
 
   /** @implements {settings.CrostiniBrowserProxy} */
@@ -207,6 +231,16 @@ cr.define('settings', function() {
       return cr.sendWithPromise(
           'addCrostiniPortForward', vmName, containerName, portNumber,
           protocolIndex, label);
+    }
+
+    /** @override */
+    getCrostiniDiskInfo(vmName) {
+      return cr.sendWithPromise('getCrostiniDiskInfo', vmName);
+    }
+
+    /** @override */
+    resizeCrostiniDisk(vmName, newSizeBytes) {
+      return cr.sendWithPromise('resizeCrostiniDisk', vmName, newSizeBytes);
     }
   }
 

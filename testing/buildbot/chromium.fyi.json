@@ -7644,13 +7644,6 @@
       },
       {
         "isolate_coverage_data": true,
-        "name": "components_embedder_support_junit_tests",
-        "swarming": {},
-        "test": "components_embedder_support_junit_tests",
-        "test_target": "//components/embedder_support/android:components_embedder_support_junit_tests"
-      },
-      {
-        "isolate_coverage_data": true,
         "name": "components_gcm_driver_junit_tests",
         "swarming": {},
         "test": "components_gcm_driver_junit_tests",

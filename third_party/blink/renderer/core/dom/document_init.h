@@ -175,8 +175,8 @@ class CORE_EXPORT DocumentInit final {
   }
 
   DocumentInit& WithDocumentPolicy(
-      const DocumentPolicy::FeatureState& document_policy);
-  const DocumentPolicy::FeatureState& GetDocumentPolicy() const {
+      const DocumentPolicy::ParsedDocumentPolicy& document_policy);
+  const DocumentPolicy::ParsedDocumentPolicy& GetDocumentPolicy() const {
     return document_policy_;
   }
 
@@ -268,7 +268,7 @@ class CORE_EXPORT DocumentInit final {
   base::Optional<FramePolicy> frame_policy_ = base::nullopt;
 
   // The document policy set via response header.
-  DocumentPolicy::FeatureState document_policy_;
+  DocumentPolicy::ParsedDocumentPolicy document_policy_;
   String report_only_document_policy_header_;
 
   // The claimed URL inside Web Bundle file from which the document is loaded.

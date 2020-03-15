@@ -21,7 +21,16 @@ const char* const kValidPolicies[] = {
     "unoptimized-lossless-images;bpp=1.0",
     "unoptimized-lossless-images;bpp=2",
     "unoptimized-lossless-images;bpp=2.0,no-font-display-late-swap",
-    "no-font-display-late-swap,unoptimized-lossless-images;bpp=2.0"};
+    "no-font-display-late-swap,unoptimized-lossless-images;bpp=2.0",
+    "no-font-display-late-swap;report-to=default,unoptimized-lossless-images;"
+    "bpp=2.0",
+    "no-font-display-late-swap;report-to=default,unoptimized-lossless-images;"
+    "bpp=2.0;report-to=default",
+    "no-font-display-late-swap;report-to=default,unoptimized-lossless-images;"
+    "report-to=default;bpp=2.0",
+    "no-font-display-late-swap;report-to=default,unoptimized-lossless-images;"
+    "report-to=endpoint;bpp=2.0",
+};
 
 const char* const kInvalidPolicies[] = {
     "bad-feature-name", "no-bad-feature-name",
@@ -31,9 +40,13 @@ const char* const kInvalidPolicies[] = {
     "\"font-display-late-swap\"",  // policy member should be token instead of
                                    // string
     "();bpp=2",                    // empty feature token
-    "(font-display-late-swap, unoptimized-lossless-images);bpp=2"  // too many
+    "(font-display-late-swap unoptimized-lossless-images);bpp=2",  // too many
                                                                    // feature
                                                                    // tokens
+    "unoptimized-lossless-images;report-to=default",  // missing param
+    "font-display-late-swap;report-to=\"default\"",   // report-to member should
+                                                      // be token instead of
+                                                      // string
 };
 
 // TODO(chenleihu): find a DocumentPolicyFeature name start with 'f' < c < 'n'
@@ -61,19 +74,36 @@ const std::pair<DocumentPolicy::FeatureState, std::string>
            PolicyValue(1.0)}},
          "font-display-late-swap, unoptimized-lossless-images;bpp=1.0"}};
 
-const std::pair<const char*, DocumentPolicy::FeatureState>
+const std::pair<const char*, DocumentPolicy::ParsedDocumentPolicy>
     kPolicyParseTestCases[] = {
         {"no-font-display-late-swap,unoptimized-lossless-images;bpp=1",
-         {{blink::mojom::DocumentPolicyFeature::kFontDisplay,
-           PolicyValue(false)},
-          {blink::mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages,
-           PolicyValue(1.0)}}},
+         {{{blink::mojom::DocumentPolicyFeature::kFontDisplay,
+            PolicyValue(false)},
+           {blink::mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages,
+            PolicyValue(1.0)}},
+          {} /* endpoint_map */}},
         // White-space is allowed in some positions in structured-header.
         {"no-font-display-late-swap,   unoptimized-lossless-images;bpp=1",
-         {{blink::mojom::DocumentPolicyFeature::kFontDisplay,
-           PolicyValue(false)},
-          {blink::mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages,
-           PolicyValue(1.0)}}}};
+         {{{blink::mojom::DocumentPolicyFeature::kFontDisplay,
+            PolicyValue(false)},
+           {blink::mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages,
+            PolicyValue(1.0)}},
+          {} /* endpoint_map */}},
+        {"no-font-display-late-swap,unoptimized-lossless-images;bpp=1;report-"
+         "to=default",
+         {{{blink::mojom::DocumentPolicyFeature::kFontDisplay,
+            PolicyValue(false)},
+           {blink::mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages,
+            PolicyValue(1.0)}},
+          {{blink::mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages,
+            "default"}}}},
+        {"no-font-display-late-swap;report-to=default,unoptimized-lossless-"
+         "images;bpp=1",
+         {{{blink::mojom::DocumentPolicyFeature::kFontDisplay,
+            PolicyValue(false)},
+           {blink::mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages,
+            PolicyValue(1.0)}},
+          {{blink::mojom::DocumentPolicyFeature::kFontDisplay, "default"}}}}};
 
 const DocumentPolicy::FeatureState kParsedPolicies[] = {
     {},  // An empty policy
@@ -96,11 +126,11 @@ TEST_F(DocumentPolicyParserTest, SerializeAndParse) {
     const base::Optional<std::string> policy_string =
         DocumentPolicy::Serialize(policy);
     ASSERT_TRUE(policy_string.has_value());
-    const base::Optional<DocumentPolicy::FeatureState> reparsed_policy =
+    const base::Optional<DocumentPolicy::ParsedDocumentPolicy> reparsed_policy =
         DocumentPolicyParser::Parse(policy_string.value().c_str());
 
     ASSERT_TRUE(reparsed_policy.has_value());
-    EXPECT_EQ(reparsed_policy.value(), policy);
+    EXPECT_EQ(reparsed_policy.value().feature_state, policy);
   }
 }
 
@@ -113,7 +143,8 @@ TEST_F(DocumentPolicyParserTest, ParseValidPolicy) {
 
 TEST_F(DocumentPolicyParserTest, ParseInvalidPolicy) {
   for (const char* policy : kInvalidPolicies) {
-    EXPECT_EQ(DocumentPolicyParser::Parse(policy), base::nullopt)
+    EXPECT_EQ(DocumentPolicyParser::Parse(policy),
+              base::make_optional(DocumentPolicy::ParsedDocumentPolicy{}))
         << "Should fail to parse " << policy;
   }
 }
@@ -132,7 +163,7 @@ TEST_F(DocumentPolicyParserTest, SerializeResultShouldMatch) {
 TEST_F(DocumentPolicyParserTest, ParseResultShouldMatch) {
   for (const auto& test_case : kPolicyParseTestCases) {
     const char* input = test_case.first;
-    const DocumentPolicy::FeatureState& expected = test_case.second;
+    const DocumentPolicy::ParsedDocumentPolicy& expected = test_case.second;
     const auto result = DocumentPolicyParser::Parse(input);
 
     ASSERT_TRUE(result.has_value());

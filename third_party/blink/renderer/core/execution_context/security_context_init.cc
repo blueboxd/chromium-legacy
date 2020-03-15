@@ -25,6 +25,32 @@
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
+namespace {
+
+// Helper function to filter out features that are not in origin trial in
+// ParsedDocumentPolicy.
+DocumentPolicy::ParsedDocumentPolicy FilterByOriginTrial(
+    const DocumentPolicy::ParsedDocumentPolicy& parsed_policy,
+    SecurityContextInit* init) {
+  DocumentPolicy::ParsedDocumentPolicy filtered_policy;
+  for (auto i = parsed_policy.feature_state.begin(),
+            last = parsed_policy.feature_state.end();
+       i != last;) {
+    if (!DisabledByOriginTrial(i->first, init))
+      filtered_policy.feature_state.insert(*i);
+    ++i;
+  }
+  for (auto i = parsed_policy.endpoint_map.begin(),
+            last = parsed_policy.endpoint_map.end();
+       i != last;) {
+    if (!DisabledByOriginTrial(i->first, init))
+      filtered_policy.endpoint_map.insert(*i);
+    ++i;
+  }
+  return filtered_policy;
+}
+
+}  // namespace
 
 // This is the constructor used by RemoteSecurityContext
 SecurityContextInit::SecurityContextInit()
@@ -278,21 +304,14 @@ void SecurityContextInit::InitializeDocumentPolicy(
   // when origin trial context is not initialized yet.
   // Needs to filter out features that are not in origin trial after
   // we have origin trial information available.
-  for (const auto& entry : initializer.GetDocumentPolicy()) {
-    if (!DisabledByOriginTrial(entry.first, this)) {
-      document_policy_.insert(entry);
-    }
-  }
+  document_policy_ = FilterByOriginTrial(initializer.GetDocumentPolicy(), this);
 
-  base::Optional<DocumentPolicy::FeatureState>
-      report_only_document_policy_header = DocumentPolicyParser::Parse(
+  base::Optional<DocumentPolicy::ParsedDocumentPolicy>
+      report_only_parsed_policy = DocumentPolicyParser::Parse(
           initializer.ReportOnlyDocumentPolicyHeader());
-  if (report_only_document_policy_header) {
-    for (const auto& entry : *report_only_document_policy_header) {
-      if (!DisabledByOriginTrial(entry.first, this)) {
-        report_only_document_policy_.insert(entry);
-      }
-    }
+  if (report_only_parsed_policy) {
+    report_only_document_policy_ =
+        FilterByOriginTrial(*report_only_parsed_policy, this);
   }
 }
 
@@ -414,7 +433,7 @@ std::unique_ptr<DocumentPolicy> SecurityContextInit::CreateDocumentPolicy()
 
 std::unique_ptr<DocumentPolicy>
 SecurityContextInit::CreateReportOnlyDocumentPolicy() const {
-  return report_only_document_policy_.empty()
+  return report_only_document_policy_.feature_state.empty()
              ? nullptr
              : DocumentPolicy::CreateWithHeaderPolicy(
                    report_only_document_policy_);

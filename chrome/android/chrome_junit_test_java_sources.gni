@@ -17,6 +17,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/browserservices/ClearDataDialogResultRecorderTest.java",
   "junit/src/org/chromium/chrome/browser/browserservices/ClientAppBroadcastReceiverTest.java",
   "junit/src/org/chromium/chrome/browser/browserservices/ClientAppDataRegisterTest.java",
+  "junit/src/org/chromium/chrome/browser/browserservices/OriginTest.java",
   "junit/src/org/chromium/chrome/browser/browserservices/SessionDataHolderTest.java",
   "junit/src/org/chromium/chrome/browser/browserservices/TrustedWebActivityClientTest.java",
   "junit/src/org/chromium/chrome/browser/browserservices/permissiondelegation/NotificationChannelPreserverTest.java",

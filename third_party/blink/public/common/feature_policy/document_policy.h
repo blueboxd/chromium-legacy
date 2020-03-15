@@ -70,9 +70,13 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
   using FeatureEndpointMap =
       base::flat_map<mojom::DocumentPolicyFeature, std::string>;
 
+  struct ParsedDocumentPolicy {
+    FeatureState feature_state;
+    FeatureEndpointMap endpoint_map;
+  };
+
   static std::unique_ptr<DocumentPolicy> CreateWithHeaderPolicy(
-      const FeatureState& header_policy,
-      const FeatureEndpointMap& endpoint_map = {});
+      const ParsedDocumentPolicy& header_policy);
 
   // Returns true if the feature is unrestricted (has its default value for the
   // platform)
@@ -92,7 +96,8 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
   PolicyValue GetFeatureValue(mojom::DocumentPolicyFeature feature) const;
 
   // Returns the endpoint the given feature should report to.
-  const std::string GetFeatureEndpoint(
+  // Returns base::nullopt if the endpoint is unspecified for given feature.
+  const base::Optional<std::string> GetFeatureEndpoint(
       mojom::DocumentPolicyFeature feature) const;
 
   // Returns true if the incoming policy is compatible with the given required
@@ -132,6 +137,12 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
 
   DISALLOW_COPY_AND_ASSIGN(DocumentPolicy);
 };
+
+bool inline operator==(const DocumentPolicy::ParsedDocumentPolicy& lhs,
+                       const DocumentPolicy::ParsedDocumentPolicy& rhs) {
+  return std::tie(lhs.feature_state, lhs.endpoint_map) ==
+         std::tie(rhs.feature_state, rhs.endpoint_map);
+}
 
 }  // namespace blink
 

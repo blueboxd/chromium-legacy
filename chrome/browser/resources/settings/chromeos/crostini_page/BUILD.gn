@@ -8,7 +8,7 @@ js_type_check("closure_compile") {
   deps = [
     ":crostini_arc_adb",
     ":crostini_browser_proxy",
-    ":crostini_disk_resize",
+    ":crostini_disk_resize_dialog",
     ":crostini_export_import",
     ":crostini_page",
     ":crostini_port_forwarding",
@@ -41,9 +41,10 @@ js_library("crostini_export_import") {
   ]
 }
 
-js_library("crostini_disk_resize") {
+js_library("crostini_disk_resize_dialog") {
   deps = [
     ":crostini_browser_proxy",
+    "//ui/webui/resources/cr_elements/cr_slider:cr_slider",
     "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }

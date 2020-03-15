@@ -288,10 +288,13 @@ void HTMLIFrameElement::ParseAttribute(
   }
 }
 
+// TODO(crbug.com/993790): Emit error message 'endpoint cannot be specified
+// on iframe attribute.'.
 DocumentPolicy::FeatureState HTMLIFrameElement::ConstructRequiredPolicy()
     const {
   return DocumentPolicyParser::Parse(required_policy_)
-      .value_or(DocumentPolicy::FeatureState{});
+      .value_or(DocumentPolicy::ParsedDocumentPolicy{})
+      .feature_state;
 }
 
 ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(

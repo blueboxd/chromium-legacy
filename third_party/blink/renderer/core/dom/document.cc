@@ -762,7 +762,7 @@ Document::Document(const DocumentInit& initializer,
 
   if (frame_) {
     pending_fp_headers_ = security_initializer.FeaturePolicyHeader();
-    pending_dp_headers_ = initializer.GetDocumentPolicy();
+    pending_dp_headers_ = initializer.GetDocumentPolicy().feature_state;
   }
 
   if (frame_) {

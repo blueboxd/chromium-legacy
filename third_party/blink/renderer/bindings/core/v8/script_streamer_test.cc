@@ -208,8 +208,6 @@ class ScriptStreamingTest : public testing::Test {
 // TODO(crbug.com/939054): Tests are disabled due to flakiness caused by being
 // currently unable to block and wait for the script streaming thread.
 TEST_F(ScriptStreamingTest, DISABLED_CompilingStreamedScript) {
-  return;
-
   // Test that we can successfully compile a streamed script.
   V8TestingScope scope;
   resource_->StartStreaming(loading_task_runner_);

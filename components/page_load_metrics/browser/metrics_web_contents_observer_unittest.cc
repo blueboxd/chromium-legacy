@@ -20,6 +20,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/render_frame_host_test_support.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/base/net_errors.h"
@@ -1401,21 +1402,18 @@ TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_Subresource) {
 
 TEST_F(MetricsWebContentsObserverTest,
        OnLoadedResource_ResourceFromOtherRFHIgnored) {
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL(kDefaultTestUrl));
 
-  // This is a bit of a hack. We want to simulate giving the
-  // MetricsWebContentsObserver a RenderFrameHost from a previously committed
-  // page, to verify that resources for RFHs that don't match the currently
-  // committed RFH are ignored. There isn't a way to hold on to an old RFH (it
-  // gets cleaned up soon after being navigated away from) so instead we use an
-  // RFH from another WebContents, as a way to simulate the desired behavior.
-  std::unique_ptr<content::WebContents> other_web_contents(
-      content::WebContentsTester::CreateTestWebContents(browser_context(),
-                                                        nullptr));
+  content::RenderFrameHost* old_rfh = web_contents()->GetMainFrame();
+  content::LeaveInPendingDeletionState(old_rfh);
+
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL(kDefaultTestUrl2));
+
+  DCHECK(!old_rfh->IsCurrent());
   observer()->ResourceLoadComplete(
-      other_web_contents->GetMainFrame(), content::GlobalRequestID(),
+      old_rfh, content::GlobalRequestID(),
       *CreateResourceLoadInfo(GURL("http://www.other.com/"),
                               network::mojom::RequestDestination::kScript));
 

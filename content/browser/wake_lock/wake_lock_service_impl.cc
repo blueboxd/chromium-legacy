@@ -23,7 +23,8 @@ void WakeLockServiceImpl::GetWakeLock(
     const std::string& description,
     mojo::PendingReceiver<device::mojom::WakeLock> receiver) {
   device::mojom::WakeLockContext* wake_lock_context =
-      web_contents()->GetWakeLockContext();
+      WebContents::FromRenderFrameHost(render_frame_host())
+          ->GetWakeLockContext();
 
   if (!wake_lock_context)
     return;

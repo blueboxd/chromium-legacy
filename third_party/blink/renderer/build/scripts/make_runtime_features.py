@@ -185,7 +185,8 @@ class RuntimeFeatureTestHelpersWriter(BaseRuntimeFeatureWriter):
 
     def _template_inputs(self):
         return {
-            'features': self._features,
+            # The test helpers don't support custom features.
+            'features': self._standard_features,
             'input_files': self._input_files,
             'header_guard': self._header_guard,
         }

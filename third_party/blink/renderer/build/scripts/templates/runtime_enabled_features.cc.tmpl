@@ -14,18 +14,14 @@ namespace blink {
 
 RuntimeEnabledFeatures::Backup::Backup()
   : {% for feature in standard_features -%}
-{% if feature.in_origin_trial %}
-    {{feature.name.to_class_data_member()}}(RuntimeEnabledFeatures::{{feature.name}}EnabledByRuntimeFlag())
-{% else %}
-    {{feature.name.to_class_data_member()}}(RuntimeEnabledFeatures::{{feature.name}}Enabled())
-{% endif %}
+    {{feature.data_member_name}}(RuntimeEnabledFeatures::{{feature.data_member_name}})
     {%- if not loop.last %},
     {%+ endif -%}
     {% endfor %} {}
 
 void RuntimeEnabledFeatures::Backup::Restore() {
   {% for feature in standard_features %}
-  RuntimeEnabledFeatures::Set{{feature.name}}Enabled({{feature.name.to_class_data_member()}});
+  RuntimeEnabledFeatures::{{feature.data_member_name}} = {{feature.data_member_name}};
   {% endfor %}
 }
 

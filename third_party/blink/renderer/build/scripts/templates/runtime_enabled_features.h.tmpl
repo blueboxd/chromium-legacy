@@ -49,7 +49,7 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures {
 
    private:
     {% for feature in standard_features %}
-    bool {{feature.name.to_class_data_member()}};
+    bool {{feature.data_member_name}};
     {% endfor %}
   };
 
@@ -95,6 +95,8 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures {
   {% endfor %}
 
  private:
+  friend class RuntimeEnabledFeaturesTestHelpers;
+
   {% for feature in standard_features %}
   static bool {{feature.data_member_name}};
   {% endfor %}

@@ -33,6 +33,7 @@ bool g_ntp_bubble_enabled = true;
 bool g_ntp_bubble_enabled = false;
 #endif
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
 void ShowSettingsApiBubble(SettingsApiOverrideType type,
                            Browser* browser) {
   ToolbarActionsModel* model = ToolbarActionsModel::Get(browser->profile());
@@ -51,6 +52,7 @@ void ShowSettingsApiBubble(SettingsApiOverrideType type,
   browser->window()->GetExtensionsContainer()->ShowToolbarActionBubbleAsync(
       std::move(bridge));
 }
+#endif
 
 }  // namespace
 
@@ -59,26 +61,22 @@ void SetNtpBubbleEnabledForTesting(bool enabled) {
 }
 
 void MaybeShowExtensionControlledHomeNotification(Browser* browser) {
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
-  return;
-#endif
-
+#if defined(OS_WIN) || defined(OS_MACOSX)
   ShowSettingsApiBubble(BUBBLE_TYPE_HOME_PAGE, browser);
+#endif
 }
 
 void MaybeShowExtensionControlledSearchNotification(
     content::WebContents* web_contents,
     AutocompleteMatch::Type match_type) {
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
-  return;
-#endif
-
+#if defined(OS_WIN) || defined(OS_MACOSX)
   if (AutocompleteMatch::IsSearchType(match_type) &&
       match_type != AutocompleteMatchType::SEARCH_OTHER_ENGINE) {
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
     if (browser)
       ShowSettingsApiBubble(BUBBLE_TYPE_SEARCH_ENGINE, browser);
   }
+#endif
 }
 
 void MaybeShowExtensionControlledNewTabPage(

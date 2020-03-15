@@ -82,7 +82,8 @@ void PlatformVerificationImpl::ChallengePlatform(
         base::MakeRefCounted<chromeos::attestation::PlatformVerificationFlow>();
 
   platform_verification_flow_->ChallengePlatformKey(
-      web_contents(), service_id, challenge,
+      content::WebContents::FromRenderFrameHost(render_frame_host()),
+      service_id, challenge,
       base::Bind(&PlatformVerificationImpl::OnPlatformChallenged,
                  weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 #else

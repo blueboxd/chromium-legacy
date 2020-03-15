@@ -107,9 +107,6 @@ bool BrokerProcess::Init(
         continue;
     }
   }
-  _exit(1);
-  NOTREACHED();
-  return false;
 }
 
 bool BrokerProcess::IsSyscallAllowed(int sysno) const {

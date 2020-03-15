@@ -377,13 +377,6 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
     // No need for us to call the resource cleaner. Skia should do that.
     resource_cleaner.Release().Reset();
   }
-#else
-  // Right now, we only support Chrome OS because we need to use the
-  // |native_pixmap_handle| member of a GpuMemoryBufferHandle.
-  NOTIMPLEMENTED()
-      << "Image decode acceleration is unsupported for this platform";
-  return;
-#endif
 
   // Insert the cache entry in the transfer cache. Note that this section
   // validates several of the IPC parameters: |params.raster_decoder_route_id|,
@@ -441,6 +434,12 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
   }
   DCHECK(notify_gl_state_changed);
   notify_gl_state_changed->RunAndReset();
+#else
+  // Right now, we only support Chrome OS because we need to use the
+  // |native_pixmap_handle| member of a GpuMemoryBufferHandle.
+  NOTIMPLEMENTED()
+      << "Image decode acceleration is unsupported for this platform";
+#endif
 }
 
 void ImageDecodeAcceleratorStub::FinishCompletedDecode(

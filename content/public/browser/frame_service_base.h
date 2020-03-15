@@ -63,6 +63,14 @@ class FrameServiceBase : public Interface, public WebContentsObserver {
   THREAD_CHECKER(thread_checker_);
 
  private:
+  // Disallow calling web_contents() directly from the subclasses to ensure that
+  // tab-level state doesn't get queried or updated when the frame is
+  // not current.
+  // Use WebContents::From(render_frame_host()) instead, but please keep in mind
+  // that the render_frame_host() might not be current. See
+  // RenderFrameHost::IsCurrent for details.
+  using WebContentsObserver::web_contents;
+
   // WebContentsObserver implementation.
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) final {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

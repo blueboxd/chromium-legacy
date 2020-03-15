@@ -37,8 +37,8 @@ void PictureInPictureServiceImpl::StartSession(
     StartSessionCallback callback) {
   gfx::Size window_size;
 
-  WebContentsImpl* web_contents_impl =
-      static_cast<WebContentsImpl*>(web_contents());
+  WebContentsImpl* web_contents_impl = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderFrameHost(render_frame_host()));
 
   auto result = web_contents_impl->EnterPictureInPicture(surface_id.value(),
                                                          natural_size);

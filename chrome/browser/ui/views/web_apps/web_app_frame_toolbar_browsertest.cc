@@ -173,10 +173,8 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, ThemeChange) {
       app_browser()->tab_strip_model()->GetActiveWebContents();
   content::AwaitDocumentOnLoadCompleted(web_contents);
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Avoid dependence on Linux GTK+ Themes appearance setting.
-  return;
-#endif
 
   ToolbarButtonProvider* const toolbar_button_provider =
       browser_view()->toolbar_button_provider();
@@ -204,6 +202,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, ThemeChange) {
 
     EXPECT_EQ(app_menu_button->GetInkDropBaseColor(), original_ink_drop_color);
   }
+#endif
 }
 
 // Test that a tooltip is shown when hovering over a truncated title.

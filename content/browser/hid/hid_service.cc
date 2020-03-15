@@ -59,7 +59,7 @@ void HidService::GetDevices(GetDevicesCallback callback) {
   GetContentClient()
       ->browser()
       ->GetHidDelegate()
-      ->GetHidManager(web_contents())
+      ->GetHidManager(WebContents::FromRenderFrameHost(render_frame_host()))
       ->GetDevices(base::BindOnce(&HidService::FinishGetDevices,
                                   weak_factory_.GetWeakPtr(),
                                   std::move(callback)));
@@ -69,7 +69,8 @@ void HidService::RequestDevice(
     std::vector<blink::mojom::HidDeviceFilterPtr> filters,
     RequestDeviceCallback callback) {
   HidDelegate* delegate = GetContentClient()->browser()->GetHidDelegate();
-  if (!delegate->CanRequestDevicePermission(web_contents(), origin())) {
+  if (!delegate->CanRequestDevicePermission(
+          WebContents::FromRenderFrameHost(render_frame_host()), origin())) {
     std::move(callback).Run(std::vector<device::mojom::HidDeviceInfoPtr>());
     return;
   }
@@ -95,7 +96,7 @@ void HidService::Connect(
   GetContentClient()
       ->browser()
       ->GetHidDelegate()
-      ->GetHidManager(web_contents())
+      ->GetHidManager(WebContents::FromRenderFrameHost(render_frame_host()))
       ->Connect(
           device_guid, std::move(client), std::move(watcher),
           base::BindOnce(&HidService::FinishConnect, weak_factory_.GetWeakPtr(),
@@ -119,7 +120,9 @@ void HidService::FinishGetDevices(
   std::vector<device::mojom::HidDeviceInfoPtr> result;
   HidDelegate* delegate = GetContentClient()->browser()->GetHidDelegate();
   for (auto& device : devices) {
-    if (delegate->HasDevicePermission(web_contents(), origin(), *device))
+    if (delegate->HasDevicePermission(
+            WebContents::FromRenderFrameHost(render_frame_host()), origin(),
+            *device))
       result.push_back(std::move(device));
   }
 

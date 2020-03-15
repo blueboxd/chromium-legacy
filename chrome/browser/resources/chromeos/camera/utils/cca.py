@@ -47,7 +47,7 @@ def build_locale_strings():
 
 def build_mojom_bindings(mojom_bindings):
     pylib = os.path.join(get_chromium_root(),
-                         'mojo/public/tools/bindings/pylib')
+                         'mojo/public/tools/mojom')
     sys.path.insert(0, pylib)
     # pylint: disable=import-error,import-outside-toplevel
     from mojom.parse.parser import Parse
@@ -83,26 +83,28 @@ def build_mojom_bindings(mojom_bindings):
 
     precompile_cmd = [
         generator,
-        '--use_bundled_pylibs',
-        'precompile',
         '-o',
         'build/mojo',
+        '--use_bundled_pylibs',
+        'precompile',
     ]
     run(precompile_cmd)
 
     parse_cmd = [
         generator,
+        '-o',
+        'build/mojo',
         '--use_bundled_pylibs',
         'parse',
         '-d',
         get_chromium_root(),
-        '-o',
-        'build/mojo',
     ] + list(mojom_paths)
     run(parse_cmd)
 
     generate_cmd = [
         generator,
+        '-o',
+        'build/mojo',
         '--use_bundled_pylibs',
         'generate',
         '-d',
@@ -110,8 +112,6 @@ def build_mojom_bindings(mojom_bindings):
         '-I',
         get_chromium_root(),
         '--bytecode_path',
-        'build/mojo',
-        '-o',
         'build/mojo',
         '-g',
         'javascript',

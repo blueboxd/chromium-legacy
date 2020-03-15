@@ -268,6 +268,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderProcessHost* GetProcess() override;
   RenderWidgetHostView* GetView() override;
   RenderFrameHostImpl* GetParent() override;
+  RenderFrameHostImpl* GetMainFrame() override;
   std::vector<RenderFrameHost*> GetFramesInSubtree() override;
   bool IsDescendantOf(RenderFrameHost*) override;
   int GetFrameTreeNodeId() override;
@@ -1431,6 +1432,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void ReportNoBinderForInterface(const std::string& error);
 
+  // Force the RenderFrameHost to be left in pending deletion state instead of
+  // being actually deleted after navigating away:
+  // - Force waiting for unload handler result regardless of whether an
+  //   unload handler is present or not.
+  // - Disable unload timeout monitor.
+  // - Ignore any OnUnloadACK sent by the renderer process.
+  void DoNotDeleteForTesting();
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -2111,8 +2120,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // See |SetIsXrOverlaySetup()|
   bool HasSeenRecentXrOverlaySetup();
 
-  // Follows the GetParent() chain to find and return the main frame.
-  RenderFrameHostImpl* GetMainFrame();
+  bool has_unload_handler() {
+    return has_unload_handler_ || do_not_delete_for_testing_;
+  }
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
@@ -2740,6 +2750,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   base::TimeTicks last_xr_overlay_setup_time_;
 
   std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter_;
+
+  // If true, RenderFrameHost should not be actually deleted and should be left
+  // stuck in pending deletion.
+  bool do_not_delete_for_testing_ = false;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

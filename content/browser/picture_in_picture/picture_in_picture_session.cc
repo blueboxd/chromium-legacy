@@ -94,7 +94,8 @@ void PictureInPictureSession::OnConnectionError() {
 }
 
 WebContentsImpl* PictureInPictureSession::GetWebContentsImpl() {
-  return static_cast<WebContentsImpl*>(service_->web_contents());
+  return static_cast<WebContentsImpl*>(
+      WebContents::FromRenderFrameHost(service_->render_frame_host()));
 }
 
 PictureInPictureWindowControllerImpl& PictureInPictureSession::GetController() {

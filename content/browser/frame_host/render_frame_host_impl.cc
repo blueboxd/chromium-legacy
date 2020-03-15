@@ -1973,7 +1973,7 @@ void RenderFrameHostImpl::DeleteRenderFrame(FrameDeleteIntention intent) {
       // prevent the process from shutting down immediately in the case where
       // this is the last active frame in the process. See
       // https://crbug.com/852204.
-      if (has_unload_handler_) {
+      if (has_unload_handler()) {
         RenderProcessHostImpl* process =
             static_cast<RenderProcessHostImpl*>(GetProcess());
         process->DelayProcessShutdownForUnload(subframe_unload_timeout_);
@@ -1987,7 +1987,7 @@ void RenderFrameHostImpl::DeleteRenderFrame(FrameDeleteIntention intent) {
   }
 
   unload_state_ =
-      has_unload_handler_ ? UnloadState::InProgress : UnloadState::Completed;
+      has_unload_handler() ? UnloadState::InProgress : UnloadState::Completed;
 }
 
 void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
@@ -2654,7 +2654,7 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
     return;
   }
 
-  if (unload_event_monitor_timeout_) {
+  if (unload_event_monitor_timeout_ && !do_not_delete_for_testing_) {
     unload_event_monitor_timeout_->Start(base::TimeDelta::FromMilliseconds(
         RenderViewHostImpl::kUnloadTimeoutMS));
   }
@@ -2871,6 +2871,11 @@ void RenderFrameHostImpl::OnUnloadACK() {
 
   // Ignore spurious unload ack.
   if (!is_waiting_for_unload_ack_)
+    return;
+
+  // Ignore OnUnloadACK if the RenderFrameHost should be left in pending
+  // deletion state.
+  if (do_not_delete_for_testing_)
     return;
 
   DCHECK_EQ(UnloadState::InProgress, unload_state_);
@@ -3270,6 +3275,10 @@ void RenderFrameHostImpl::DisableBeforeUnloadHangMonitorForTesting() {
 
 bool RenderFrameHostImpl::IsBeforeUnloadHangMonitorDisabledForTesting() {
   return !beforeunload_timeout_;
+}
+
+void RenderFrameHostImpl::DoNotDeleteForTesting() {
+  do_not_delete_for_testing_ = true;
 }
 
 bool RenderFrameHostImpl::IsFeatureEnabled(
@@ -4028,7 +4037,7 @@ bool RenderFrameHostImpl::GetSuddenTerminationDisablerState(
     case blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler:
       return has_before_unload_handler_;
     case blink::mojom::SuddenTerminationDisablerType::kUnloadHandler:
-      return has_unload_handler_;
+      return has_unload_handler();
   }
 }
 
@@ -5123,7 +5132,7 @@ void RenderFrameHostImpl::StartPendingDeletionOnSubtree() {
 
       local_ancestor->DeleteRenderFrame(FrameDeleteIntention::kNotMainFrame);
       if (local_ancestor != child) {
-        child->unload_state_ = child->has_unload_handler_
+        child->unload_state_ = child->has_unload_handler()
                                    ? UnloadState::InProgress
                                    : UnloadState::Completed;
       }

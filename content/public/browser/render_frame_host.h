@@ -134,10 +134,21 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // visibility for this frame.
   virtual RenderWidgetHostView* GetView() = 0;
 
-  // Returns the current RenderFrameHost of the parent frame, or nullptr if
-  // there is no parent. The result may be in a different process than the
+  // Returns the parent of this RenderFrameHost, or nullptr if this
+  // RenderFrameHost is the main one and there is no parent.
+  // The result may be in a different process than the
   // current RenderFrameHost.
   virtual RenderFrameHost* GetParent() = 0;
+
+  // Returns the eldest parent of this RenderFrameHost.
+  // Always non-null, but might be equal to |this|.
+  // The result may be in a different process that the current RenderFrameHost.
+  //
+  // NOTE: The result might be different from
+  // WebContents::FromRenderFrameHost(this)->GetMainFrame().
+  // This function (RenderFrameHost::GetMainFrame) is the preferred API in
+  // almost all of the cases. See RenderFrameHost::IsCurrent for the details.
+  virtual RenderFrameHost* GetMainFrame() = 0;
 
   // Returns a vector of all RenderFrameHosts in the subtree rooted at |this|.
   // The results may be in different processes.

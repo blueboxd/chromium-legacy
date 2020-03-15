@@ -963,9 +963,7 @@ TEST_F(MediaDevicesManagerTest, EnumerateDevicesUnplugDefaultDevice) {
 TEST_F(MediaDevicesManagerTest, EnumerateDevicesUnplugCommunicationsDevice) {
   // This test has only significance on Windows devices, since communication
   // devices can only be found on windows.
-#if !defined(OS_WIN)
-  return;
-#endif  // OS_WIN
+#if defined(OS_WIN)
   std::string communications_device_id("fake_device_id_1");
   std::string new_communications_device_id("fake_device_id_2");
 
@@ -1001,15 +999,14 @@ TEST_F(MediaDevicesManagerTest, EnumerateDevicesUnplugCommunicationsDevice) {
   EXPECT_TRUE(
       base::Contains(removed_device_ids_,
                      media::AudioDeviceDescription::kCommunicationsDeviceId));
+#endif  // OS_WIN
 }
 
 TEST_F(MediaDevicesManagerTest,
        EnumerateDevicesUnplugDefaultAndCommunicationsDevice) {
   // This test has only significance on Windows devices, since communication
   // devices can only be found on windows.
-#if !defined(OS_WIN)
-  return;
-#endif  // OS_WIN
+#if defined(OS_WIN)
   // The two device IDs that will be used as 'default' and 'communications'
   // devices.
   std::string target_device_id("fake_device_id_1");
@@ -1052,6 +1049,7 @@ TEST_F(MediaDevicesManagerTest,
   EXPECT_TRUE(
       base::Contains(removed_device_ids_,
                      media::AudioDeviceDescription::kCommunicationsDeviceId));
+#endif  // OS_WIN
 }
 
 TEST_F(MediaDevicesManagerTest, GuessVideoGroupID) {

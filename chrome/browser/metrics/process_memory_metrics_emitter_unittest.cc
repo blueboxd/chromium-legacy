@@ -609,7 +609,6 @@ class ProcessMemoryMetricsEmitterTest
       }
       if (i >= expected.size()) {
         FAIL() << "Unexpected non-total entry.";
-        continue;
       }
       for (const auto& kv : expected[i]) {
         test_ukm_recorder_.ExpectEntryMetric(entry, kv.first, kv.second);

@@ -49,16 +49,6 @@ int GetHttpStatusCode(content::NavigationHandle* navigation_handle) {
   return response_headers->response_code();
 }
 
-content::RenderFrameHost* GetMainFrame(content::RenderFrameHost* rfh) {
-  // Don't use rfh->GetRenderViewHost()->GetMainFrame() here because
-  // RenderViewHost is being deprecated and because in OOPIF,
-  // RenderViewHost::GetMainFrame() returns nullptr for child frames hosted in a
-  // different process from the main frame.
-  while (rfh->GetParent() != nullptr)
-    rfh = rfh->GetParent();
-  return rfh;
-}
-
 UserInitiatedInfo CreateUserInitiatedInfo(
     content::NavigationHandle* navigation_handle,
     PageLoadTracker* committed_load) {
@@ -165,11 +155,12 @@ void MetricsWebContentsObserver::FrameDeleted(content::RenderFrameHost* rfh) {
 void MetricsWebContentsObserver::MediaStartedPlaying(
     const content::WebContentsObserver::MediaPlayerInfo& video_type,
     const content::MediaPlayerId& id) {
-  if (GetMainFrame(id.render_frame_host) != web_contents()->GetMainFrame()) {
-    // Ignore media that starts playing in a document that was navigated away
+  if (!id.render_frame_host->GetMainFrame()->IsCurrent()) {
+    // Ignore media that starts playing in a page that was navigated away
     // from.
     return;
   }
+
   if (committed_load_)
     committed_load_->MediaStartedPlaying(video_type, id.render_frame_host);
 }
@@ -298,10 +289,9 @@ PageLoadTracker* MetricsWebContentsObserver::GetTrackerOrNullForRequest(
     //
     // TODO(crbug.com/738577): use a DocumentId here instead, to eliminate this
     // race.
-    content::RenderFrameHost* main_frame_for_resource =
-        GetMainFrame(render_frame_host_or_null);
-    if (main_frame_for_resource == web_contents()->GetMainFrame())
+    if (render_frame_host_or_null->GetMainFrame()->IsCurrent()) {
       return committed_load_.get();
+    }
   }
   return nullptr;
 }
@@ -408,8 +398,7 @@ void MetricsWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame()) {
     if (committed_load_ && navigation_handle->GetParentFrame() &&
-        GetMainFrame(navigation_handle->GetParentFrame()) ==
-            web_contents()->GetMainFrame()) {
+        navigation_handle->GetParentFrame()->GetMainFrame()->IsCurrent()) {
       committed_load_->DidFinishSubFrameNavigation(navigation_handle);
       committed_load_->metrics_update_dispatcher()->DidFinishSubFrameNavigation(
           navigation_handle);
@@ -691,7 +680,9 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     mojom::DeferredResourceCountsPtr new_deferred_resource_data) {
   // We may receive notifications from frames that have been navigated away
   // from. We simply ignore them.
-  if (GetMainFrame(render_frame_host) != web_contents()->GetMainFrame()) {
+  // TODO(crbug.com/1061060): We should not ignore page timings if the page is
+  // in bfcache.
+  if (!render_frame_host->GetMainFrame()->IsCurrent()) {
     RecordInternalError(ERR_IPC_FROM_WRONG_FRAME);
     return;
   }
@@ -795,7 +786,7 @@ void MetricsWebContentsObserver::OnBrowserFeatureUsage(
     const mojom::PageLoadFeatures& new_features) {
   // Since this call is coming directly from the browser, it should not pass us
   // data from frames that have already been navigated away from.
-  DCHECK_EQ(GetMainFrame(render_frame_host), web_contents()->GetMainFrame());
+  DCHECK(render_frame_host->GetMainFrame()->IsCurrent());
 
   if (!committed_load_) {
     RecordInternalError(ERR_BROWSER_USAGE_WITH_NO_RELEVANT_LOAD);

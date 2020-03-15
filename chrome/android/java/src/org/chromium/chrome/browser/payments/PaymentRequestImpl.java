@@ -152,24 +152,25 @@ public class PaymentRequestImpl
     }
 
     /**
-     * This class is to coordinate the show state of the Payment Handler UI and the Payment
-     * Request UI so that these visibility rules are enforced:
-     * 1. at most one UI is shown at any moment in case the Payment Request UI obstructs the Payment
-     * Handler UI.
-     * 2. Payment Handler UI is prioritized to show over Payment Request UI
+     * This class is to coordinate the show state of a bottom sheet UI (either expandable payment
+     * handler or minimal UI) and the Payment Request UI so that these visibility rules are
+     * enforced:
+     * 1. At most one UI is shown at any moment in case the Payment Request UI obstructs the bottom
+     * sheet.
+     * 2. Bottom sheet is prioritized to show over Payment Request UI
      */
     public class PaymentUisShowStateReconciler {
-        // Whether the Payment Handler UI is showing.
-        private boolean mShowingHandlerUi;
-        // Whether to show the Payment Request UI when the Payment Handler is not being shown.
+        // Whether the bottom sheet is showing.
+        private boolean mShowingBottomSheet;
+        // Whether to show the Payment Request UI when the bottom sheet is not being shown.
         private boolean mShouldShowDialog;
 
         /**
-         * Show the Payment Request UI dialog when Payment Handler UI is hidden, i.e., if Payment
-         * Handler UI is hidden, show the dialog immediately; otherwise, do it on Payment Handler UI
-         * hidden.
+         * Show the Payment Request UI dialog when the bottom sheet is hidden, i.e., if the bottom
+         * sheet hidden, show the dialog immediately; otherwise, show the dialog after the bottom
+         * sheet hides.
          */
-        public void showPaymentRequestDialogWhenNoPaymentHandlerUi() {
+        public void showPaymentRequestDialogWhenNoBottomSheet() {
             mShouldShowDialog = true;
             updatePaymentRequestDialogShowState();
         }
@@ -186,26 +187,21 @@ public class PaymentRequestImpl
             mShouldShowDialog = false;
         }
 
-        /**
-         * A callback invoked when the Payment Handler UI is shown, to enforce the visibility rules.
-         */
-        public void onPaymentHandlerUiShown() {
-            mShowingHandlerUi = true;
+        /** A callback invoked when the bottom sheet is shown, to enforce the visibility rules. */
+        public void onBottomSheetShown() {
+            mShowingBottomSheet = true;
             updatePaymentRequestDialogShowState();
         }
 
-        /**
-         * A callback invoked when the Payment Handler UI is hidden, to enforce the visibility
-         * rules.
-         */
-        public void onPaymentHandlerUiClosed() {
-            mShowingHandlerUi = false;
+        /** A callback invoked when the bottom sheet is hidden, to enforce the visibility rules. */
+        public void onBottomSheetClosed() {
+            mShowingBottomSheet = false;
             updatePaymentRequestDialogShowState();
         }
 
         private void updatePaymentRequestDialogShowState() {
             if (mUI == null) return;
-            mUI.setVisible(!mShowingHandlerUi && mShouldShowDialog);
+            mUI.setVisible(!mShowingBottomSheet && mShouldShowDialog);
         }
     }
 
@@ -1113,6 +1109,9 @@ public class PaymentRequestImpl
      *                       microtransaction UI.
      */
     private void triggerMicrotransactionUi(ChromeActivity chromeActivity) {
+        // Do not show the Payment Request UI dialog even if the minimal UI is suppressed.
+        mPaymentUisShowStateReconciler.onBottomSheetShown();
+
         mMicrotransactionUi = new MicrotransactionCoordinator();
         if (mMicrotransactionUi.show(chromeActivity, chromeActivity.getBottomSheetController(),
                     (PaymentApp) mPaymentMethodsSection.getSelectedItem(),
@@ -1386,7 +1385,7 @@ public class PaymentRequestImpl
 
     @Override
     public void onPaymentHandlerUiClosed() {
-        mPaymentUisShowStateReconciler.onPaymentHandlerUiClosed();
+        mPaymentUisShowStateReconciler.onBottomSheetClosed();
         mPaymentHandlerUi = null;
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
         if (activity != null) activity.getScrim().hideScrim(true);
@@ -1395,7 +1394,7 @@ public class PaymentRequestImpl
     @Override
     public void onPaymentHandlerUiShown() {
         assert mPaymentHandlerUi != null;
-        mPaymentUisShowStateReconciler.onPaymentHandlerUiShown();
+        mPaymentUisShowStateReconciler.onBottomSheetShown();
         // Using an empty scrim observer is to avoid the dismissal of the bottom-sheet on tapping.
         ScrimParams params = ChromeActivity.fromWebContents(mWebContents)
                                      .getBottomSheetController()

@@ -286,7 +286,7 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
 
     /**
      * The top level container of this UI. When needing to call show() or hide(), use {@link
-     * PaymentUisShowStateReconciler}'s showPaymentRequestDialogWhenNoPaymentHandlerUi() and
+     * PaymentUisShowStateReconciler}'s showPaymentRequestDialogWhenNoBottomSheet() and
      * hidePaymentRequestDialog() instead.
      */
     private final DimmingDialog mDialog;
@@ -422,7 +422,7 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
      */
     public void show() {
         mDialog.addBottomSheetView(mRequestView);
-        mPaymentUisShowStateReconciler.showPaymentRequestDialogWhenNoPaymentHandlerUi();
+        mPaymentUisShowStateReconciler.showPaymentRequestDialogWhenNoBottomSheet();
         mClient.getDefaultPaymentInformation(new Callback<PaymentInformation>() {
             @Override
             public void onResult(PaymentInformation result) {
@@ -459,7 +459,7 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
     public void dimBackground() {
         // Intentionally do not add the bottom sheet view to mDialog so that only the scrim part of
         // the dialog will be shown.
-        mPaymentUisShowStateReconciler.showPaymentRequestDialogWhenNoPaymentHandlerUi();
+        mPaymentUisShowStateReconciler.showPaymentRequestDialogWhenNoBottomSheet();
     }
 
     /**
@@ -955,7 +955,7 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
         assert mIsProcessingPayClicked;
         mIsProcessingPayClicked = false;
         changeSpinnerVisibility(false);
-        mPaymentUisShowStateReconciler.showPaymentRequestDialogWhenNoPaymentHandlerUi();
+        mPaymentUisShowStateReconciler.showPaymentRequestDialogWhenNoBottomSheet();
         updatePayButtonEnabled();
     }
 
@@ -977,7 +977,7 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
         assert mIsProcessingPayClicked;
 
         changeSpinnerVisibility(true);
-        mPaymentUisShowStateReconciler.showPaymentRequestDialogWhenNoPaymentHandlerUi();
+        mPaymentUisShowStateReconciler.showPaymentRequestDialogWhenNoBottomSheet();
     }
 
     private void changeSpinnerVisibility(boolean showSpinner) {
@@ -1429,8 +1429,8 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
 
     /**
      * Set the visibility state of the dialog. Use {@link PaymentUisShowStateReconciler}'s
-     * showPaymentRequestDialogWhenNoPaymentHandlerUi() and hidePaymentRequestDialog() instead of
-     * calling this method directly.
+     * showPaymentRequestDialogWhenNoBottomSheet() and hidePaymentRequestDialog() instead of calling
+     * this method directly.
      * @param visible True to show the dialog, false to hide the dialog.
      */
     public void setVisible(boolean visible) {

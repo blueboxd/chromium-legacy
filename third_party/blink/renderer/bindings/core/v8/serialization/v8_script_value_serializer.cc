@@ -185,7 +185,7 @@ void V8ScriptValueSerializer::FinalizeTransfer(
     if (exception_state.HadException())
       return;
 
-    if (RuntimeEnabledFeatures::TransferableStreamsEnabled()) {
+    if (TransferableStreamsEnabled()) {
       // Order matters here, because the order in which streams are added to the
       // |stream_ports_| array must match the indexes which are calculated in
       // WriteDOMObject().
@@ -520,7 +520,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     return true;
   }
   if (wrapper_type_info == V8ReadableStream::GetWrapperTypeInfo() &&
-      RuntimeEnabledFeatures::TransferableStreamsEnabled()) {
+      TransferableStreamsEnabled()) {
     ReadableStream* stream = wrappable->ToImpl<ReadableStream>();
     size_t index = kNotFound;
     if (transferables_)
@@ -544,7 +544,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     return true;
   }
   if (wrapper_type_info == V8WritableStream::GetWrapperTypeInfo() &&
-      RuntimeEnabledFeatures::TransferableStreamsEnabled()) {
+      TransferableStreamsEnabled()) {
     WritableStream* stream = wrappable->ToImpl<WritableStream>();
     size_t index = kNotFound;
     if (transferables_)
@@ -573,7 +573,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     return true;
   }
   if (wrapper_type_info == V8TransformStream::GetWrapperTypeInfo() &&
-      RuntimeEnabledFeatures::TransferableStreamsEnabled()) {
+      TransferableStreamsEnabled()) {
     TransformStream* stream = wrappable->ToImpl<TransformStream>();
     size_t index = kNotFound;
     if (transferables_)
@@ -780,6 +780,11 @@ void* V8ScriptValueSerializer::ReallocateBufferMemory(void* old_buffer,
 
 void V8ScriptValueSerializer::FreeBufferMemory(void* buffer) {
   return WTF::Partitions::BufferFree(buffer);
+}
+
+bool V8ScriptValueSerializer::TransferableStreamsEnabled() const {
+  return RuntimeEnabledFeatures::TransferableStreamsEnabled(
+      ExecutionContext::From(script_state_));
 }
 
 }  // namespace blink

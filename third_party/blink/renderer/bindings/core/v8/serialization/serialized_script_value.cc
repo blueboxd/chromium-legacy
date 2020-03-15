@@ -611,7 +611,7 @@ bool SerializedScriptValue::ExtractTransferables(
         return false;
       }
       transferables.offscreen_canvases.push_back(offscreen_canvas);
-    } else if (RuntimeEnabledFeatures::TransferableStreamsEnabled() &&
+    } else if (TransferableStreamsEnabled() &&
                V8ReadableStream::HasInstance(transferable_object, isolate)) {
       ReadableStream* stream = V8ReadableStream::ToImpl(
           v8::Local<v8::Object>::Cast(transferable_object));
@@ -623,7 +623,7 @@ bool SerializedScriptValue::ExtractTransferables(
         return false;
       }
       transferables.readable_streams.push_back(stream);
-    } else if (RuntimeEnabledFeatures::TransferableStreamsEnabled() &&
+    } else if (TransferableStreamsEnabled() &&
                V8WritableStream::HasInstance(transferable_object, isolate)) {
       WritableStream* stream = V8WritableStream::ToImpl(
           v8::Local<v8::Object>::Cast(transferable_object));
@@ -635,7 +635,7 @@ bool SerializedScriptValue::ExtractTransferables(
         return false;
       }
       transferables.writable_streams.push_back(stream);
-    } else if (RuntimeEnabledFeatures::TransferableStreamsEnabled() &&
+    } else if (TransferableStreamsEnabled() &&
                V8TransformStream::HasInstance(transferable_object, isolate)) {
       TransformStream* stream = V8TransformStream::ToImpl(
           v8::Local<v8::Object>::Cast(transferable_object));
@@ -771,6 +771,11 @@ static_assert(kSerializedScriptValueVersion ==
 
 bool SerializedScriptValue::IsOriginCheckRequired() const {
   return native_file_system_tokens_.size() > 0;
+}
+
+bool SerializedScriptValue::TransferableStreamsEnabled() {
+  return RuntimeEnabledFeatures::TransferableStreamsEnabled(
+      ExecutionContext::From(v8::Isolate::GetCurrent()->GetCurrentContext()));
 }
 
 }  // namespace blink

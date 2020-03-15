@@ -1680,6 +1680,7 @@
     {
       name: "TransferableStreams",
       status: "experimental",
+      origin_trial_feature_name: "RTCInsertableStreams",
       implied_by: ["RTCInsertableStreams"],
     },
     // This is conditionally set if the platform supports translation.

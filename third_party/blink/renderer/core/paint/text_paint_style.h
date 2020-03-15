@@ -24,14 +24,16 @@ struct CORE_EXPORT TextPaintStyle {
   float stroke_width;
   const ShadowList* shadow;
 
-  bool operator==(const TextPaintStyle& other) {
+  bool operator==(const TextPaintStyle& other) const {
     return current_color == other.current_color &&
            fill_color == other.fill_color &&
            stroke_color == other.stroke_color &&
            emphasis_mark_color == other.emphasis_mark_color &&
            stroke_width == other.stroke_width && shadow == other.shadow;
   }
-  bool operator!=(const TextPaintStyle& other) { return !(*this == other); }
+  bool operator!=(const TextPaintStyle& other) const {
+    return !(*this == other);
+  }
 };
 
 }  // namespace blink

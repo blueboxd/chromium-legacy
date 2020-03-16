@@ -21,8 +21,8 @@ namespace component_updater {
 class SSLErrorAssistantComponentInstallerPolicy
     : public ComponentInstallerPolicy {
  public:
-  SSLErrorAssistantComponentInstallerPolicy() {}
-  ~SSLErrorAssistantComponentInstallerPolicy() override {}
+  SSLErrorAssistantComponentInstallerPolicy() = default;
+  ~SSLErrorAssistantComponentInstallerPolicy() override = default;
 
  private:
   // ComponentInstallerPolicy methods:

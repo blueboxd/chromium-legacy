@@ -1897,9 +1897,7 @@ bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
 #if (!defined(OS_LINUX) && !defined(OS_WIN) && !defined(OS_MACOSX)) || \
     defined(OS_CHROMEOS)
   return false;
-#endif  // (!defined(OS_LINUX) && !defined(OS_WIN) && !defined(OS_MACOSX)) ||
-        // defined(OS_CHROMEOS)
-
+#else
   // This option should only be shown for users that have not enabled the Sync
   // Feature and that have server credit cards available.
   if (!sync_service_ || sync_service_->IsSyncFeatureEnabled() ||
@@ -1920,6 +1918,8 @@ bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
 
   // The option should only be shown if the user has not already opted-in.
   return !is_opted_in;
+#endif  // (!defined(OS_LINUX) && !defined(OS_WIN) && !defined(OS_MACOSX)) ||
+        // defined(OS_CHROMEOS)
 }
 
 void PersonalDataManager::OnUserAcceptedCardsFromAccountOption() {

@@ -6,12 +6,13 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_scanning_prompt_controller.h"
-#include "components/bubble/bubble_controller.h"
 
 BluetoothScanningPromptDesktop::BluetoothScanningPromptDesktop(
-    BluetoothScanningPromptController* bluetooth_scanning_prompt_controller)
+    BluetoothScanningPromptController* bluetooth_scanning_prompt_controller,
+    base::OnceClosure&& close_closure)
     : bluetooth_scanning_prompt_controller_(
-          bluetooth_scanning_prompt_controller) {
+          bluetooth_scanning_prompt_controller),
+      close_closure_(std::move(close_closure)) {
   DCHECK(bluetooth_scanning_prompt_controller_);
 }
 
@@ -20,8 +21,8 @@ BluetoothScanningPromptDesktop::~BluetoothScanningPromptDesktop() {
   // requirement that the EventHandler can be destroyed any time after the
   // BluetoothScanningPrompt instance.
   bluetooth_scanning_prompt_controller_->ResetEventHandler();
-  if (bubble_)
-    bubble_->CloseBubble(BUBBLE_CLOSE_FORCED);
+  if (close_closure_)
+    std::move(close_closure_).Run();
 }
 
 void BluetoothScanningPromptDesktop::AddOrUpdateDevice(

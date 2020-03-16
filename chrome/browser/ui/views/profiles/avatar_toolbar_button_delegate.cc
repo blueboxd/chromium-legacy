@@ -18,6 +18,10 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/constants/chromeos_features.h"
+#endif
+
 namespace {
 
 constexpr base::TimeDelta kIdentityAnimationDuration =
@@ -109,13 +113,15 @@ void AvatarToolbarButtonDelegate::Init(AvatarToolbarButton* button,
   }
 
 #if defined(OS_CHROMEOS)
-  // On CrOS this button should only show as badging for Incognito and Guest
-  // sessions. It's only enabled for Incognito where a menu is available for
-  // closing all Incognito windows.
-  DCHECK(state == AvatarToolbarButton::State::kIncognitoProfile ||
-         state == AvatarToolbarButton::State::kGuestSession);
-  avatar_toolbar_button_->SetEnabled(
-      state == AvatarToolbarButton::State::kIncognitoProfile);
+  if (!base::FeatureList::IsEnabled(chromeos::features::kAvatarToolbarButton)) {
+    // On CrOS this button should only show as badging for Incognito and Guest
+    // sessions. It's only enabled for Incognito where a menu is available for
+    // closing all Incognito windows.
+    DCHECK(state == AvatarToolbarButton::State::kIncognitoProfile ||
+           state == AvatarToolbarButton::State::kGuestSession);
+    avatar_toolbar_button_->SetEnabled(
+        state == AvatarToolbarButton::State::kIncognitoProfile);
+  }
 #endif  // !defined(OS_CHROMEOS)
 }
 

@@ -23,12 +23,12 @@ void MarkingVerifier::VerifyObject(HeapObjectHeader* header) {
   }
 }
 
-void MarkingVerifier::Visit(void* object, TraceDescriptor desc) {
+void MarkingVerifier::Visit(const void* object, TraceDescriptor desc) {
   VerifyChild(object, desc.base_object_payload);
 }
 
-void MarkingVerifier::VisitWeak(void* object,
-                                void* object_weak_ref,
+void MarkingVerifier::VisitWeak(const void* object,
+                                const void* object_weak_ref,
                                 TraceDescriptor desc,
                                 WeakCallback callback) {
   // Weak objects should have been cleared at this point. As a consequence, all
@@ -37,8 +37,8 @@ void MarkingVerifier::VisitWeak(void* object,
   VerifyChild(object, desc.base_object_payload);
 }
 
-void MarkingVerifier::VisitBackingStoreStrongly(void* object,
-                                                void**,
+void MarkingVerifier::VisitBackingStoreStrongly(const void* object,
+                                                const void* const*,
                                                 TraceDescriptor desc) {
   if (!object)
     return;
@@ -49,12 +49,12 @@ void MarkingVerifier::VisitBackingStoreStrongly(void* object,
   VerifyChild(object, desc.base_object_payload);
 }
 
-void MarkingVerifier::VisitBackingStoreWeakly(void* object,
-                                              void**,
+void MarkingVerifier::VisitBackingStoreWeakly(const void* object,
+                                              const void* const*,
                                               TraceDescriptor strong_desc,
                                               TraceDescriptor weak_desc,
                                               WeakCallback,
-                                              void*) {
+                                              const void*) {
   if (!object)
     return;
 
@@ -66,7 +66,8 @@ void MarkingVerifier::VisitBackingStoreWeakly(void* object,
   VerifyChild(object, weak_desc.base_object_payload);
 }
 
-void MarkingVerifier::VerifyChild(void* object, void* base_object_payload) {
+void MarkingVerifier::VerifyChild(const void* object,
+                                  const void* base_object_payload) {
   CHECK(object);
   // Verification may check objects that are currently under construction and
   // would require vtable access to figure out their headers. A nullptr in

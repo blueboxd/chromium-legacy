@@ -6,11 +6,12 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_controller.h"
-#include "components/bubble/bubble_controller.h"
 
 BluetoothChooserDesktop::BluetoothChooserDesktop(
-    BluetoothChooserController* bluetooth_chooser_controller)
-    : bluetooth_chooser_controller_(bluetooth_chooser_controller) {
+    BluetoothChooserController* bluetooth_chooser_controller,
+    base::OnceClosure&& close_closure)
+    : bluetooth_chooser_controller_(bluetooth_chooser_controller),
+      close_closure_(std::move(close_closure)) {
   DCHECK(bluetooth_chooser_controller_);
 }
 
@@ -19,8 +20,8 @@ BluetoothChooserDesktop::~BluetoothChooserDesktop() {
   // that the EventHandler can be destroyed any time after the BluetoothChooser
   // instance.
   bluetooth_chooser_controller_->ResetEventHandler();
-  if (bubble_)
-    bubble_->CloseBubble(BUBBLE_CLOSE_FORCED);
+  if (close_closure_)
+    std::move(close_closure_).Run();
 }
 
 void BluetoothChooserDesktop::SetAdapterPresence(AdapterPresence presence) {

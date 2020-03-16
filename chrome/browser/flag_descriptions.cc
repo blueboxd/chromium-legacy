@@ -265,6 +265,10 @@ const char kAutoScreenBrightnessDescription[] =
     "Uses Auto Screen Brightness model to adjust screen brightness based on "
     "ambient light";
 
+const char kAvatarToolbarButtonName[] = "Avatar Toolbar Button";
+const char kAvatarToolbarButtonDescription[] =
+    "Enables the avatar toolbar button and the associated menu";
+
 const char kBackForwardCacheName[] = "Back-forward cache";
 const char kBackForwardCacheDescription[] =
     "Enables back-forward cache. NOTE: this feature is highly experimental and "

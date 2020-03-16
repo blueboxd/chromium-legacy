@@ -74,7 +74,7 @@ class PersistentNode final {
   // Instead we call the constructor with a TraceCallback which knows the
   // type of the most specific child and calls trace directly. See
   // TraceMethodDelegate in Visitor.h for how this is done.
-  void TracePersistentNode(Visitor* visitor) {
+  void TracePersistentNode(Visitor* visitor) const {
     DCHECK(!IsUnused());
     DCHECK(trace_);
     trace_(visitor, self_);

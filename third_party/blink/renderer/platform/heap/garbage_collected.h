@@ -53,7 +53,7 @@ struct TraceDescriptor {
 
  public:
   // The adjusted base pointer of the object that should be traced.
-  void* base_object_payload;
+  const void* base_object_payload;
   // A callback for tracing the object.
   TraceCallback callback;
 };

@@ -24,7 +24,7 @@ class MemoryRegion {
     DCHECK_GT(size, 0u);
   }
 
-  bool Contains(Address addr) const {
+  bool Contains(ConstAddress addr) const {
     return base_ <= addr && addr < (base_ + size_);
   }
 
@@ -73,7 +73,7 @@ class PageMemoryRegion : public MemoryRegion {
                     region_tree);
   }
 
-  BasePage* PageFromAddress(Address address) {
+  BasePage* PageFromAddress(ConstAddress address) {
     DCHECK(Contains(address));
     if (!in_use_[Index(address)])
       return nullptr;
@@ -85,11 +85,11 @@ class PageMemoryRegion : public MemoryRegion {
  private:
   PageMemoryRegion(Address base, size_t, unsigned num_pages, RegionTree*);
 
-  unsigned Index(Address address) const {
+  unsigned Index(ConstAddress address) const {
     DCHECK(Contains(address));
     if (is_large_page_)
       return 0;
-    size_t offset = BlinkPageAddress(address) - Base();
+    size_t offset = BlinkPageAddress(const_cast<Address>(address)) - Base();
     DCHECK_EQ(offset % kBlinkPageSize, 0u);
     return static_cast<unsigned>(offset / kBlinkPageSize);
   }
@@ -112,12 +112,12 @@ class RegionTree {
  public:
   void Add(PageMemoryRegion*);
   void Remove(PageMemoryRegion*);
-  PageMemoryRegion* Lookup(Address);
+  PageMemoryRegion* Lookup(ConstAddress);
 
  private:
   // Using flat_map allows to improve locality to minimize cache misses and
   // balance binary lookup.
-  base::flat_map<Address, PageMemoryRegion*> set_;
+  base::flat_map<ConstAddress, PageMemoryRegion*> set_;
 };
 
 // Representation of the memory used for a Blink heap page.

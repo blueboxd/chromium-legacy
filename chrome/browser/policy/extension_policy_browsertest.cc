@@ -1022,6 +1022,85 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
   }
 }
 
+// Verifies that corrupted non-webstore policy-based extension is automatically
+// repaired (reinstalled) even if hashes file is damaged too.
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
+                       CorruptedNonWebstoreExtensionWithDamagedHashesRepaired) {
+  ignore_content_verifier_.reset();
+  ExtensionRequestInterceptor interceptor;
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const base::FilePath kResourcePath(FILE_PATH_LITERAL("script1.js"));
+
+  extensions::ExtensionService* service = extension_service();
+
+  // Step 1: Setup a policy and force-install an extension.
+  const extensions::Extension* extension =
+      InstallForceListExtension(kGoodCrxId);
+  ASSERT_TRUE(extension);
+
+  // Step 2: Corrupt extension's resource and hashes file.
+  {
+    base::FilePath resource_path = extension->path().Append(kResourcePath);
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    // Temporarily disable extension, we don't want to tackle with resources of
+    // enabled one. Not using command DISABLE_USER_ACTION reason since
+    // force-installed extension may not be disabled by user action.
+    service->DisableExtension(kGoodCrxId,
+                              extensions::disable_reason::DISABLE_RELOAD);
+
+    const std::string kCorruptedContent("// corrupted\n");
+    ASSERT_EQ(kCorruptedContent.size(),
+              static_cast<unsigned>(base::WriteFile(resource_path,
+                                                    kCorruptedContent.data(),
+                                                    kCorruptedContent.size())));
+
+    const std::string kInvalidJson("not a json");
+    ASSERT_EQ(
+        kInvalidJson.size(),
+        static_cast<unsigned>(base::WriteFile(
+            extensions::file_util::GetComputedHashesPath(extension->path()),
+            kInvalidJson.data(), kInvalidJson.size())));
+
+    service->EnableExtension(kGoodCrxId);
+  }
+
+  extensions::TestExtensionRegistryObserver observer(extension_registry());
+
+  // Step 3: Fetch resource to trigger corruption check and wait for content
+  // verify job completion.
+  {
+    extensions::TestContentVerifyJobObserver content_verify_job_observer;
+    content_verify_job_observer.ExpectJobResult(
+        kGoodCrxId, kResourcePath,
+        extensions::TestContentVerifyJobObserver::Result::FAILURE);
+
+    GURL resource_url = extension->GetResourceURL("script1.js");
+    FetchSubresource(browser()->tab_strip_model()->GetActiveWebContents(),
+                     resource_url);
+
+    EXPECT_TRUE(content_verify_job_observer.WaitForExpectedJobs());
+  }
+
+  // Step 4: Check that we are going to reinstall the extension and wait for
+  // extension reinstall.
+  EXPECT_TRUE(service->pending_extension_manager()
+                  ->IsPolicyReinstallForCorruptionExpected(kGoodCrxId));
+  observer.WaitForExtensionWillBeInstalled();
+
+  // Extension was reloaded, old extension object is invalid.
+  extension = extension_registry()->enabled_extensions().GetByID(kGoodCrxId);
+
+  // Step 5: Check that resource has its original contents.
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::FilePath resource_path = extension->path().Append(kResourcePath);
+    std::string contents;
+    ASSERT_TRUE(base::ReadFileToString(resource_path, &contents));
+    EXPECT_EQ("// script1\n", contents);
+  }
+}
+
 // Verifies that corrupted non-webstore policy-based extension is not repaired
 // if there are no computed_hashes.json for it. Note that this behavior will
 // change in the future.

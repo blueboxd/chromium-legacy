@@ -649,7 +649,7 @@ if (is_android) {
     android_manifest_dep = "//chromecast/browser/android:cast_shell_manifest"
 
     min_sdk_version = 21
-    target_sdk_version = 28
+    target_sdk_version = 29
 
     shared_libraries = [ "//chromecast/android:libcast_shell_android" ]
 

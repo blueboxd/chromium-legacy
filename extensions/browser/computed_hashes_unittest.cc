@@ -51,10 +51,14 @@ testing::AssertionResult WriteThenReadComputedHashes(
     return testing::AssertionFailure()
            << "Failed to write computed_hashes.json";
   }
+  extensions::ComputedHashes::Status computed_hashes_status;
   base::Optional<extensions::ComputedHashes> computed_hashes =
-      extensions::ComputedHashes::CreateFromFile(computed_hashes_path);
+      extensions::ComputedHashes::CreateFromFile(computed_hashes_path,
+                                                 &computed_hashes_status);
   if (!computed_hashes)
-    return testing::AssertionFailure() << "Failed to read computed_hashes.json";
+    return testing::AssertionFailure()
+           << "Failed to read computed_hashes.json (status: "
+           << static_cast<int>(computed_hashes_status) << ")";
   *result = std::move(computed_hashes.value());
 
   return testing::AssertionSuccess();

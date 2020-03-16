@@ -279,7 +279,7 @@ class RecoveryComponentInstaller : public update_client::CrxInstaller {
   bool Uninstall() override;
 
  private:
-  ~RecoveryComponentInstaller() override {}
+  ~RecoveryComponentInstaller() override = default;
 
   bool DoInstall(const base::FilePath& unpack_path);
 

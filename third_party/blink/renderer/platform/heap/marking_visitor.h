@@ -32,23 +32,25 @@ class PLATFORM_EXPORT MarkingVisitorCommon : public Visitor {
     kGlobalMarkingWithCompaction,
   };
 
-  void VisitWeak(void*, void*, TraceDescriptor, WeakCallback) final;
-  void VisitBackingStoreStrongly(void*, void**, TraceDescriptor) final;
-  void VisitBackingStoreWeakly(void*,
-                               void**,
+  void VisitWeak(const void*, const void*, TraceDescriptor, WeakCallback) final;
+  void VisitBackingStoreStrongly(const void*,
+                                 const void* const*,
+                                 TraceDescriptor) final;
+  void VisitBackingStoreWeakly(const void*,
+                               const void* const*,
                                TraceDescriptor,
                                TraceDescriptor,
                                WeakCallback,
-                               void*) final;
-  bool VisitEphemeronKeyValuePair(void*,
-                                  void*,
+                               const void*) final;
+  bool VisitEphemeronKeyValuePair(const void*,
+                                  const void*,
                                   EphemeronTracingCallback,
                                   EphemeronTracingCallback) final;
 
   // Used to only mark the backing store when it has been registered for weak
   // processing. In this case, the contents are processed separately using
   // the corresponding traits but the backing store requires marking.
-  void VisitBackingStoreOnly(void*, void**) final;
+  void VisitBackingStoreOnly(const void*, const void* const*) final;
 
   // This callback mechanism is needed to account for backing store objects
   // containing intra-object pointers, all of which must be relocated/rebased
@@ -56,8 +58,8 @@ class PLATFORM_EXPORT MarkingVisitorCommon : public Visitor {
   //
   // For Blink, |HeapLinkedHashSet<>| is currently the only abstraction which
   // relies on this feature.
-  void RegisterBackingStoreCallback(void*, MovingObjectCallback) final;
-  void RegisterWeakCallback(WeakCallback, void*) final;
+  void RegisterBackingStoreCallback(const void*, MovingObjectCallback) final;
+  void RegisterWeakCallback(WeakCallback, const void*) final;
 
   // Flush private segments remaining in visitor's worklists to global pools.
   void FlushCompactionWorklists();
@@ -79,7 +81,7 @@ class PLATFORM_EXPORT MarkingVisitorCommon : public Visitor {
   // marked upon calling.
   bool MarkHeaderNoTracing(HeapObjectHeader*);
 
-  void RegisterBackingStoreReference(void** slot);
+  void RegisterBackingStoreReference(const void* const* slot);
 
   MarkingWorklist::View marking_worklist_;
   WriteBarrierWorklist::View write_barrier_worklist_;
@@ -120,7 +122,7 @@ ALWAYS_INLINE bool MarkingVisitorCommon::MarkHeaderNoTracing(
 template <class Specialized>
 class PLATFORM_EXPORT MarkingVisitorBase : public MarkingVisitorCommon {
  public:
-  void Visit(void* object, TraceDescriptor desc) final;
+  void Visit(const void* object, TraceDescriptor desc) final;
 
   // Unused cross-component visit methods.
   void Visit(const TraceWrapperV8Reference<v8::Value>&) override {}
@@ -135,7 +137,7 @@ class PLATFORM_EXPORT MarkingVisitorBase : public MarkingVisitorCommon {
 };
 
 template <class Specialized>
-inline void MarkingVisitorBase<Specialized>::Visit(void* object,
+inline void MarkingVisitorBase<Specialized>::Visit(const void* object,
                                                    TraceDescriptor desc) {
   DCHECK(object);
   if (desc.base_object_payload == BlinkGC::kNotFullyConstructedObject) {
@@ -184,7 +186,7 @@ class PLATFORM_EXPORT MarkingVisitor
   // is off and on individual objects reachable if they are already marked. The
   // barrier uses the callback function through GcInfo, so it will not inline
   // any templated type-specific code.
-  static void TraceMarkedBackingStore(void* value);
+  static void TraceMarkedBackingStore(const void* value);
 
   MarkingVisitor(ThreadState*, MarkingMode);
   ~MarkingVisitor() override = default;
@@ -192,12 +194,12 @@ class PLATFORM_EXPORT MarkingVisitor
   // Conservatively marks an object if pointed to by Address. The object may
   // be in construction as the scan is conservative without relying on a
   // Trace method.
-  void ConservativelyMarkAddress(BasePage*, Address);
+  void ConservativelyMarkAddress(BasePage*, ConstAddress);
 
   // Marks an object dynamically using any address within its body and adds a
   // tracing callback for processing of the object. The object is not allowed
   // to be in construction.
-  void DynamicallyMarkAddress(Address);
+  void DynamicallyMarkAddress(ConstAddress);
 
   void FlushMarkingWorklists();
 
@@ -206,7 +208,7 @@ class PLATFORM_EXPORT MarkingVisitor
   static bool WriteBarrierSlow(void*);
   static void GenerationalBarrierSlow(Address, ThreadState*);
   static bool MarkValue(void*, BasePage*, ThreadState*);
-  static void TraceMarkedBackingStoreSlow(void*);
+  static void TraceMarkedBackingStoreSlow(const void*);
 };
 
 // static
@@ -255,7 +257,7 @@ ALWAYS_INLINE void MarkingVisitor::GenerationalBarrier(Address slot,
 }
 
 // static
-ALWAYS_INLINE void MarkingVisitor::TraceMarkedBackingStore(void* value) {
+ALWAYS_INLINE void MarkingVisitor::TraceMarkedBackingStore(const void* value) {
   if (!ThreadState::IsAnyIncrementalMarking())
     return;
 

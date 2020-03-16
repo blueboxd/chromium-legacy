@@ -24,7 +24,7 @@ const char UpdaterState::kIsEnterpriseManaged[] = "domainjoined";
 
 UpdaterState::UpdaterState(bool is_machine) : is_machine_(is_machine) {}
 
-UpdaterState::~UpdaterState() {}
+UpdaterState::~UpdaterState() = default;
 
 std::unique_ptr<UpdaterState::Attributes> UpdaterState::GetState(
     bool is_machine) {

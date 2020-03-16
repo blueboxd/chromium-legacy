@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.payments.micro;
+package org.chromium.chrome.browser.payments.minimal;
 
 import android.content.Context;
 
@@ -16,56 +16,50 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
- * Microtransaction coordinator, which owns the component overall, i.e., creates other objects in
+ * Payment minimal UI coordinator, which owns the component overall, i.e., creates other objects in
  * the component and connects them. It decouples the implementation of this component from other
  * components and acts as the point of contact between them. Any code in this component that needs
  * to interact with another component does that through this coordinator.
  */
-public class MicrotransactionCoordinator {
-    private MicrotransactionMediator mMediator;
+public class MinimalUICoordinator {
+    private MinimalUIMediator mMediator;
     private Runnable mHider;
 
-    /** Observer for microtransaction UI being ready for user input. */
+    /** Observer for minimal UI being ready for user input. */
     public interface ReadyObserver {
         /**
-         * Called when the microtransaction UI is ready for user input, i.e., fingerprint scan or
+         * Called when the minimal UI is ready for user input, i.e., fingerprint scan or
          * click on [Pay] button.
          */
         void onReady();
     }
 
-    /** Observer for the confirmation of the microtransaction UI. */
+    /** Observer for the confirmation of the minimal UI. */
     public interface ConfirmObserver {
         /**
-         * Called after the user has confirmed payment in the microtransaction UI.
-         * @param app The app to be used for the microtransaction.
+         * Called after the user has confirmed payment in the minimal UI.
+         * @param app The app to be used for the minimal UI.
          */
         void onConfirmed(PaymentApp app);
     }
 
-    /** Observer for the dismissal of the microtransaction UI. */
+    /** Observer for the dismissal of the minimal UI. */
     public interface DismissObserver {
         /**
-         * Called after the user has dismissed the microtransaction UI by swiping it down or tapping
+         * Called after the user has dismissed the minimal UI by swiping it down or tapping
          * on the scrim behind the UI.
          */
         void onDismissed();
     }
 
-    /**
-     * Observer for the closing of the microtransaction UI after showing the "Payment complete"
-     * message.
-     */
+    /** Observer for the closing of the minimal UI after showing the "Payment complete" message. */
     public interface CompleteAndCloseObserver {
-        /**
-         * Called after the UI has shown the "Payment complete" message and has closed itself.
-         */
+        /** Called after the UI has shown the "Payment complete" message and has closed itself. */
         void onCompletedAndClosed();
     }
 
     /**
-     * Observer for the closing of the microtransaction UI after showing a transaction failure error
-     * message.
+     * Observer for the closing of the minimal UI after showing a transaction failure error message.
      */
     public interface ErrorAndCloseObserver {
         /**
@@ -74,53 +68,52 @@ public class MicrotransactionCoordinator {
         void onErroredAndClosed();
     }
 
-    /** Constructs the microtransaction component coordinator. */
-    public MicrotransactionCoordinator() {}
+    /** Constructs the minimal UI component coordinator. */
+    public MinimalUICoordinator() {}
 
     /**
-     * Shows the microtransaction UI.
+     * Shows the minimal UI.
      *
      * @param chromeActivity  The activity where the UI should be shown.
      * @param app             The app that contains the details to display and can be invoked
      *                        upon user confirmation.
      * @param formatter       Formats the account balance amount according to its currency.
-     * @param total           The total amount and currency for this microtransaction.
+     * @param total           The total amount and currency for this payment.
      * @param readyObserver   The observer to be notified when the UI is ready for user input.
-     * @param confirmObserver The observer to be notified when the user has confirmed the
-     *                        microtransaction.
+     * @param confirmObserver The observer to be notified when the user has confirmed payment.
      * @param dismissObserver The observer to be notified when the user has dismissed the UI.
-     * @return Whether the microtransaction UI was shown. Can be false if the UI was suppressed.
+     * @return Whether the minimal UI was shown. Can be false if the UI was suppressed.
      */
     public boolean show(Context context, BottomSheetController bottomSheetController,
             PaymentApp app, CurrencyFormatter formatter, LineItem total,
             ReadyObserver readyObserver, ConfirmObserver confirmObserver,
             DismissObserver dismissObserver) {
-        assert mMediator == null : "Already showing microtransaction UI";
+        assert mMediator == null : "Already showing minimal UI";
 
         PropertyModel model =
-                new PropertyModel.Builder(MicrotransactionProperties.ALL_KEYS)
-                        .with(MicrotransactionProperties.ACCOUNT_BALANCE,
+                new PropertyModel.Builder(MinimalUIProperties.ALL_KEYS)
+                        .with(MinimalUIProperties.ACCOUNT_BALANCE,
                                 formatter.format(app.accountBalance()))
-                        .with(MicrotransactionProperties.AMOUNT, total.getPrice())
-                        .with(MicrotransactionProperties.CURRENCY, total.getCurrency())
-                        .with(MicrotransactionProperties.IS_PEEK_STATE_ENABLED, true)
-                        .with(MicrotransactionProperties.IS_SHOWING_LINE_ITEMS, true)
-                        .with(MicrotransactionProperties.IS_SHOWING_PROCESSING_SPINNER, false)
-                        .with(MicrotransactionProperties.PAYMENT_APP_ICON, app.getDrawableIcon())
-                        .with(MicrotransactionProperties.PAYMENT_APP_NAME, app.getLabel())
+                        .with(MinimalUIProperties.AMOUNT, total.getPrice())
+                        .with(MinimalUIProperties.CURRENCY, total.getCurrency())
+                        .with(MinimalUIProperties.IS_PEEK_STATE_ENABLED, true)
+                        .with(MinimalUIProperties.IS_SHOWING_LINE_ITEMS, true)
+                        .with(MinimalUIProperties.IS_SHOWING_PROCESSING_SPINNER, false)
+                        .with(MinimalUIProperties.PAYMENT_APP_ICON, app.getDrawableIcon())
+                        .with(MinimalUIProperties.PAYMENT_APP_NAME, app.getLabel())
                         .build();
 
-        mMediator = new MicrotransactionMediator(
+        mMediator = new MinimalUIMediator(
                 context, app, model, readyObserver, confirmObserver, dismissObserver, this::hide);
 
         bottomSheetController.addObserver(mMediator);
 
-        MicrotransactionView view = new MicrotransactionView(context);
+        MinimalUIView view = new MinimalUIView(context);
         view.mToolbarPayButton.setOnClickListener(mMediator);
         view.mContentPayButton.setOnClickListener(mMediator);
 
         PropertyModelChangeProcessor changeProcessor =
-                PropertyModelChangeProcessor.create(model, view, MicrotransactionViewBinder::bind);
+                PropertyModelChangeProcessor.create(model, view, MinimalUIViewBinder::bind);
 
         mHider = () -> {
             mMediator.hide();
@@ -132,7 +125,7 @@ public class MicrotransactionCoordinator {
         return bottomSheetController.requestShowContent(/*content=*/view, /*animate=*/true);
     }
 
-    /** Hides the microtransaction UI. */
+    /** Hides the minimal UI. */
     public void hide() {
         mHider.run();
     }

@@ -64,7 +64,7 @@ class PLATFORM_EXPORT HeapCompact final {
   }
 
   // See |Heap::ShouldRegisterMovingAddress()| documentation.
-  bool ShouldRegisterMovingAddress(Address address);
+  bool ShouldRegisterMovingAddress();
 
   // Slots that are not contained within live objects are filtered. This can
   // happen when the write barrier for in-payload objects triggers but the outer

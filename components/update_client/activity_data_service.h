@@ -34,7 +34,7 @@ class ActivityDataService {
   virtual int GetDaysSinceLastActive(const std::string& id) const = 0;
   virtual int GetDaysSinceLastRollCall(const std::string& id) const = 0;
 
-  virtual ~ActivityDataService() {}
+  virtual ~ActivityDataService() = default;
 };
 
 }  // namespace update_client

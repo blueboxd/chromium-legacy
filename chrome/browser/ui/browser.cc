@@ -162,7 +162,6 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
-#include "components/bubble/bubble_controller.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -1421,44 +1420,26 @@ blink::SecurityStyle Browser::GetSecurityStyle(
 std::unique_ptr<content::BluetoothChooser> Browser::RunBluetoothChooser(
     content::RenderFrameHost* frame,
     const content::BluetoothChooser::EventHandler& event_handler) {
-  std::unique_ptr<BluetoothChooserController> bluetooth_chooser_controller(
-      new BluetoothChooserController(frame, event_handler));
+  auto controller =
+      std::make_unique<BluetoothChooserController>(frame, event_handler);
+  auto* controller_ptr = controller.get();
 
-  std::unique_ptr<BluetoothChooserDesktop> bluetooth_chooser_desktop(
-      new BluetoothChooserDesktop(bluetooth_chooser_controller.get()));
-
-  std::unique_ptr<ChooserBubbleDelegate> chooser_bubble_delegate(
-      new ChooserBubbleDelegate(frame,
-                                std::move(bluetooth_chooser_controller)));
-
-  Browser* browser = chrome::FindBrowserWithWebContents(
-      WebContents::FromRenderFrameHost(frame));
-  BubbleReference bubble_reference = browser->GetBubbleManager()->ShowBubble(
-      std::move(chooser_bubble_delegate));
-  bluetooth_chooser_desktop->set_bubble(std::move(bubble_reference));
-
-  return std::move(bluetooth_chooser_desktop);
+  return std::make_unique<BluetoothChooserDesktop>(
+      controller_ptr,
+      chrome::ShowDeviceChooserDialog(frame, std::move(controller)));
 }
 
 std::unique_ptr<content::BluetoothScanningPrompt>
 Browser::ShowBluetoothScanningPrompt(
     content::RenderFrameHost* frame,
     const content::BluetoothScanningPrompt::EventHandler& event_handler) {
-  auto bluetooth_scanning_prompt_controller =
+  auto controller =
       std::make_unique<BluetoothScanningPromptController>(frame, event_handler);
+  auto* controller_ptr = controller.get();
 
-  auto bluetooth_scanning_prompt_desktop =
-      std::make_unique<BluetoothScanningPromptDesktop>(
-          bluetooth_scanning_prompt_controller.get());
-
-  auto chooser_bubble_delegate = std::make_unique<ChooserBubbleDelegate>(
-      frame, std::move(bluetooth_scanning_prompt_controller));
-
-  BubbleReference bubble_reference =
-      GetBubbleManager()->ShowBubble(std::move(chooser_bubble_delegate));
-  bluetooth_scanning_prompt_desktop->set_bubble(std::move(bubble_reference));
-
-  return std::move(bluetooth_scanning_prompt_desktop);
+  return std::make_unique<BluetoothScanningPromptDesktop>(
+      controller_ptr,
+      chrome::ShowDeviceChooserDialog(frame, std::move(controller)));
 }
 
 void Browser::CreateSmsPrompt(content::RenderFrameHost*,

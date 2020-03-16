@@ -399,7 +399,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
                 }
                  style:UIAlertActionStyleDefault];
 
-  if (base::FeatureList::IsEnabled(kClearSyncedData)) {
+  if (base::FeatureList::IsEnabled(kClearSyncedData) &&
+          ![self authService] -> IsAuthenticatedIdentityManaged()) {
+    DCHECK(clearDataButtonTitle);
     [_alertCoordinator
         addItemWithTitle:clearDataButtonTitle
                   action:^{

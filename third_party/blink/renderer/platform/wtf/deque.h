@@ -146,7 +146,7 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
   void clear();
 
   template <typename VisitorDispatcher, typename A = Allocator>
-  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher);
+  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher) const;
 
   static_assert(!std::is_polymorphic<T>::value ||
                     !VectorTraits<T>::kCanInitializeWithMemset,
@@ -162,6 +162,7 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
 
  protected:
   T** GetBufferSlot() { return buffer_.BufferSlot(); }
+  const T* const* GetBufferSlot() const { return buffer_.BufferSlot(); }
 
  private:
   friend class DequeIteratorBase<T, inlineCapacity, Allocator>;
@@ -677,11 +678,12 @@ inline T* DequeIteratorBase<T, inlineCapacity, Allocator>::Before() const {
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
-Deque<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) {
+Deque<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
   // Bail out for concurrent marking.
   if (visitor->ConcurrentTracingBailOut(
-          {this, [](blink::Visitor* visitor, void* object) {
-             reinterpret_cast<Deque<T, inlineCapacity, Allocator>*>(object)
+          {this, [](blink::Visitor* visitor, const void* object) {
+             reinterpret_cast<const Deque<T, inlineCapacity, Allocator>*>(
+                 object)
                  ->Trace(visitor);
            }}))
     return;

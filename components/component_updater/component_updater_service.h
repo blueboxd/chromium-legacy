@@ -135,7 +135,7 @@ class ComponentUpdateService {
   virtual void MaybeThrottle(const std::string& id,
                              base::OnceClosure callback) = 0;
 
-  virtual ~ComponentUpdateService() {}
+  virtual ~ComponentUpdateService() = default;
 
  private:
   // Returns details about registered component in the |item| parameter. The
@@ -156,7 +156,7 @@ class OnDemandUpdater {
   // away.
   enum class Priority { BACKGROUND = 0, FOREGROUND = 1 };
 
-  virtual ~OnDemandUpdater() {}
+  virtual ~OnDemandUpdater() = default;
 
  private:
   friend class OnDemandTester;

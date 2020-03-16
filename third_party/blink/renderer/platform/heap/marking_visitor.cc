@@ -35,33 +35,31 @@ void MarkingVisitorCommon::FlushCompactionWorklists() {
 }
 
 void MarkingVisitorCommon::RegisterWeakCallback(WeakCallback callback,
-                                                void* object) {
+                                                const void* object) {
   weak_callback_worklist_.Push({callback, object});
 }
 
-void MarkingVisitorCommon::RegisterBackingStoreReference(void** slot) {
+void MarkingVisitorCommon::RegisterBackingStoreReference(
+    const void* const* slot) {
   if (marking_mode_ != kGlobalMarkingWithCompaction)
     return;
-  MovableReference* movable_reference =
-      reinterpret_cast<MovableReference*>(slot);
-  if (Heap().ShouldRegisterMovingAddress(
-          reinterpret_cast<Address>(movable_reference))) {
-    movable_reference_worklist_.Push(movable_reference);
+  if (Heap().ShouldRegisterMovingAddress()) {
+    movable_reference_worklist_.Push(slot);
   }
 }
 
 void MarkingVisitorCommon::RegisterBackingStoreCallback(
-    void* backing,
+    const void* backing,
     MovingObjectCallback callback) {
   if (marking_mode_ != kGlobalMarkingWithCompaction)
     return;
-  if (Heap().ShouldRegisterMovingAddress(reinterpret_cast<Address>(backing))) {
+  if (Heap().ShouldRegisterMovingAddress()) {
     backing_store_callback_worklist_.Push({backing, callback});
   }
 }
 
-void MarkingVisitorCommon::VisitWeak(void* object,
-                                     void* object_weak_ref,
+void MarkingVisitorCommon::VisitWeak(const void* object,
+                                     const void* object_weak_ref,
                                      TraceDescriptor desc,
                                      WeakCallback callback) {
   // Filter out already marked values. The write barrier for WeakMember
@@ -74,9 +72,10 @@ void MarkingVisitorCommon::VisitWeak(void* object,
   RegisterWeakCallback(callback, object_weak_ref);
 }
 
-void MarkingVisitorCommon::VisitBackingStoreStrongly(void* object,
-                                                     void** object_slot,
-                                                     TraceDescriptor desc) {
+void MarkingVisitorCommon::VisitBackingStoreStrongly(
+    const void* object,
+    const void* const* object_slot,
+    TraceDescriptor desc) {
   RegisterBackingStoreReference(object_slot);
   if (!object)
     return;
@@ -85,12 +84,12 @@ void MarkingVisitorCommon::VisitBackingStoreStrongly(void* object,
 
 // All work is registered through RegisterWeakCallback.
 void MarkingVisitorCommon::VisitBackingStoreWeakly(
-    void* object,
-    void** object_slot,
+    const void* object,
+    const void* const* object_slot,
     TraceDescriptor strong_desc,
     TraceDescriptor weak_desc,
     WeakCallback weak_callback,
-    void* weak_callback_parameter) {
+    const void* weak_callback_parameter) {
   RegisterBackingStoreReference(object_slot);
 
   // In case there's no object present, weakness processing is omitted. The GC
@@ -107,8 +106,8 @@ void MarkingVisitorCommon::VisitBackingStoreWeakly(
 }
 
 bool MarkingVisitorCommon::VisitEphemeronKeyValuePair(
-    void* key,
-    void* value,
+    const void* key,
+    const void* value,
     EphemeronTracingCallback key_trace_callback,
     EphemeronTracingCallback value_trace_callback) {
   const bool key_is_dead = key_trace_callback(this, key);
@@ -119,8 +118,9 @@ bool MarkingVisitorCommon::VisitEphemeronKeyValuePair(
   return false;
 }
 
-void MarkingVisitorCommon::VisitBackingStoreOnly(void* object,
-                                                 void** object_slot) {
+void MarkingVisitorCommon::VisitBackingStoreOnly(
+    const void* object,
+    const void* const* object_slot) {
   RegisterBackingStoreReference(object_slot);
   if (!object)
     return;
@@ -200,7 +200,7 @@ void MarkingVisitor::GenerationalBarrierSlow(Address slot,
   }
 }
 
-void MarkingVisitor::TraceMarkedBackingStoreSlow(void* value) {
+void MarkingVisitor::TraceMarkedBackingStoreSlow(const void* value) {
   if (!value)
     return;
 
@@ -225,7 +225,7 @@ MarkingVisitor::MarkingVisitor(ThreadState* state, MarkingMode marking_mode)
   DCHECK(state->CheckThread());
 }
 
-void MarkingVisitor::DynamicallyMarkAddress(Address address) {
+void MarkingVisitor::DynamicallyMarkAddress(ConstAddress address) {
   HeapObjectHeader* const header = HeapObjectHeader::FromInnerAddress(address);
   DCHECK(header);
   DCHECK(!IsInConstruction(header));
@@ -236,7 +236,7 @@ void MarkingVisitor::DynamicallyMarkAddress(Address address) {
 }
 
 void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
-                                               Address address) {
+                                               ConstAddress address) {
 #if DCHECK_IS_ON()
   DCHECK(page->Contains(address));
 #endif

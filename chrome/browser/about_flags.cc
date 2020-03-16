@@ -4972,6 +4972,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"scanning-ui", flag_descriptions::kScanningUIName,
      flag_descriptions::kScanningUIDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kScanningUI)},
+    {"avatar-toolbar-button", flag_descriptions::kAvatarToolbarButtonName,
+     flag_descriptions::kAvatarToolbarButtonDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kAvatarToolbarButton)},
 #endif  // defined(OS_CHROMEOS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

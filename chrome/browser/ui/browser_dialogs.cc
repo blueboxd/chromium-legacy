@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/browser_dialogs.h"
 
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace chrome {
@@ -12,6 +13,15 @@ void RecordDialogCreation(DialogIdentifier identifier) {
   UMA_HISTOGRAM_ENUMERATION("Dialog.Creation", identifier,
                             DialogIdentifier::MAX_VALUE);
 }
+
+#if !defined(TOOLKIT_VIEWS)
+base::OnceClosure ShowDeviceChooserDialog(
+    content::RenderFrameHost* owner,
+    std::unique_ptr<ChooserController> controller) {
+  NOTIMPLEMENTED();
+  return base::DoNothing();
+}
+#endif
 
 }  // namespace chrome
 

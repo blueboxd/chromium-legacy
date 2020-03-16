@@ -15,7 +15,7 @@
         android:layout_centerHorizontal="true"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:padding="@dimen/microtransaction_drag_handle_spacing"
+        android:padding="@dimen/payment_minimal_ui_drag_handle_spacing"
         android:src="@drawable/drag_handlebar"/>
 
     <!-- Payment app icon. -->
@@ -24,11 +24,11 @@
         android:importantForAccessibility="no"
         android:layout_alignParentStart="true"
         android:layout_below="@id/drag_handle"
-        android:layout_height="@dimen/microtransaction_toolbar_icon_size"
-        android:layout_marginBottom="@dimen/microtransaction_app_icon_bottom_spacing"
-        android:layout_marginEnd="@dimen/microtransaction_app_icon_horizontal_spacing"
-        android:layout_marginStart="@dimen/microtransaction_app_icon_horizontal_spacing"
-        android:layout_width="@dimen/microtransaction_toolbar_icon_size"
+        android:layout_height="@dimen/payment_minimal_ui_toolbar_icon_size"
+        android:layout_marginBottom="@dimen/payment_minimal_ui_app_icon_bottom_spacing"
+        android:layout_marginEnd="@dimen/payment_minimal_ui_app_icon_horizontal_spacing"
+        android:layout_marginStart="@dimen/payment_minimal_ui_app_icon_horizontal_spacing"
+        android:layout_width="@dimen/payment_minimal_ui_toolbar_icon_size"
         android:scaleType="centerCrop"/>
 
     <!-- Large status message, e.g., "Not recognized" or "Complete". -->
@@ -39,7 +39,7 @@
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/payment_app_icon"
         android:layout_width="wrap_content"
-        android:paddingTop="@dimen/microtransaction_large_text_vertical_spacing"
+        android:paddingTop="@dimen/payment_minimal_ui_large_text_vertical_spacing"
         android:textAppearance="@style/TextAppearance.TextMedium.Primary"/>
 
     <!-- Payment app name, e.g., "Bob Pay". -->
@@ -50,7 +50,7 @@
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/payment_app_icon"
         android:layout_width="wrap_content"
-        android:paddingTop="@dimen/microtransaction_large_text_vertical_spacing"
+        android:paddingTop="@dimen/payment_minimal_ui_large_text_vertical_spacing"
         android:textAppearance="@style/TextAppearance.TextLarge.Primary"/>
 
     <!-- Small emphasized status message, e.g., "Touch sensor to pay". -->
@@ -60,7 +60,7 @@
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/payment_app_icon"
         android:layout_width="wrap_content"
-        android:paddingTop="@dimen/microtransaction_toolbar_small_status_text_top_spacing"
+        android:paddingTop="@dimen/payment_minimal_ui_toolbar_small_status_text_top_spacing"
         android:textAppearance="@style/TextAppearance.TextSmall.Blue"/>
 
     <!-- Currency label, e.g., "USD". -->
@@ -79,7 +79,7 @@
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/currency"
         android:layout_width="wrap_content"
-        android:paddingStart="@dimen/microtransaction_amount_currency_spacing"
+        android:paddingStart="@dimen/payment_minimal_ui_amount_currency_spacing"
         android:textAppearance="@style/TextAppearance.TextMediumThick.Primary"/>
 
     <!-- Status icon, e.g., the fingerprint icon. -->
@@ -88,10 +88,10 @@
         android:importantForAccessibility="no"
         android:layout_alignParentEnd="true"
         android:layout_below="@id/drag_handle"
-        android:layout_height="@dimen/microtransaction_toolbar_icon_size"
-        android:layout_marginEnd="@dimen/microtransaction_spacing"
-        android:layout_marginStart="@dimen/microtransaction_spacing"
-        android:layout_width="@dimen/microtransaction_toolbar_icon_size"
+        android:layout_height="@dimen/payment_minimal_ui_toolbar_icon_size"
+        android:layout_marginEnd="@dimen/payment_minimal_ui_spacing"
+        android:layout_marginStart="@dimen/payment_minimal_ui_spacing"
+        android:layout_width="@dimen/payment_minimal_ui_toolbar_icon_size"
         android:scaleType="centerCrop"/>
 
     <!-- Processing spinner. -->
@@ -99,10 +99,10 @@
         android:id="@+id/processing_spinner"
         android:layout_alignParentEnd="true"
         android:layout_below="@id/drag_handle"
-        android:layout_height="@dimen/microtransaction_toolbar_icon_size"
-        android:layout_marginEnd="@dimen/microtransaction_spacing"
-        android:layout_marginStart="@dimen/microtransaction_spacing"
-        android:layout_width="@dimen/microtransaction_toolbar_icon_size"/>
+        android:layout_height="@dimen/payment_minimal_ui_toolbar_icon_size"
+        android:layout_marginEnd="@dimen/payment_minimal_ui_spacing"
+        android:layout_marginStart="@dimen/payment_minimal_ui_spacing"
+        android:layout_width="@dimen/payment_minimal_ui_toolbar_icon_size"/>
 
     <!-- "Pay" button. -->
     <org.chromium.ui.widget.ButtonCompat
@@ -110,8 +110,8 @@
         android:layout_alignParentEnd="true"
         android:layout_below="@id/drag_handle"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/microtransaction_spacing"
-        android:layout_marginStart="@dimen/microtransaction_spacing"
+        android:layout_marginEnd="@dimen/payment_minimal_ui_spacing"
+        android:layout_marginStart="@dimen/payment_minimal_ui_spacing"
         android:layout_width="wrap_content"
         android:text="@string/payments_pay_button"
         style="@style/FilledButton.Flat"/>

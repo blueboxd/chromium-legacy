@@ -282,8 +282,6 @@ class BASE_EXPORT PartitionAllocHooks {
   static std::atomic<bool> hooks_enabled_;
 
   // Lock used to synchronize Set*Hooks calls.
-  static subtle::SpinLock set_hooks_lock_;
-
   static std::atomic<AllocationObserverHook*> allocation_observer_hook_;
   static std::atomic<FreeObserverHook*> free_observer_hook_;
 

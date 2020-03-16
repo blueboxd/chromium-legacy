@@ -15,8 +15,8 @@ namespace update_client {
 
 class UpdaterStateTest : public testing::Test {
  public:
-  UpdaterStateTest() {}
-  ~UpdaterStateTest() override {}
+  UpdaterStateTest() = default;
+  ~UpdaterStateTest() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UpdaterStateTest);

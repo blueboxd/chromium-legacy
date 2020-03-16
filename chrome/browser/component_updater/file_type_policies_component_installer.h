@@ -27,8 +27,8 @@ class ComponentUpdateService;
 class FileTypePoliciesComponentInstallerPolicy
     : public ComponentInstallerPolicy {
  public:
-  FileTypePoliciesComponentInstallerPolicy() {}
-  ~FileTypePoliciesComponentInstallerPolicy() override {}
+  FileTypePoliciesComponentInstallerPolicy() = default;
+  ~FileTypePoliciesComponentInstallerPolicy() override = default;
 
  private:
   // The following methods override ComponentInstallerPolicy.

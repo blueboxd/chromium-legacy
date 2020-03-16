@@ -21,7 +21,7 @@ class ComponentUpdaterTimerTest : public testing::Test {
   ComponentUpdaterTimerTest()
       : task_environment_(
             base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {}
-  ~ComponentUpdaterTimerTest() override {}
+  ~ComponentUpdaterTimerTest() override = default;
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;

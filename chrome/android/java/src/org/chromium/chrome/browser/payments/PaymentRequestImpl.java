@@ -32,7 +32,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerUiObserver;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerWebContentsObserver;
-import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator;
+import org.chromium.chrome.browser.payments.minimal.MinimalUICoordinator;
 import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
 import org.chromium.chrome.browser.payments.ui.LineItem;
 import org.chromium.chrome.browser.payments.ui.PaymentInformation;
@@ -472,7 +472,7 @@ public class PaymentRequestImpl
     private List<PaymentApp> mPendingApps = new ArrayList<>();
     private SectionInformation mPaymentMethodsSection;
     private PaymentRequestUI mUI;
-    private MicrotransactionCoordinator mMicrotransactionUi;
+    private MinimalUICoordinator mMinimalUi;
     private Callback<PaymentInformation> mPaymentInformationCallback;
     private PaymentApp mInvokedPaymentApp;
     private PaymentHandlerCoordinator mPaymentHandlerUi;
@@ -993,7 +993,7 @@ public class PaymentRequestImpl
     public void show(boolean isUserGesture, boolean waitForUpdatedDetails) {
         if (mClient == null) return;
 
-        if (mUI != null || mMicrotransactionUi != null) {
+        if (mUI != null || mMinimalUi != null) {
             // Can be triggered only by a compromised renderer. In normal operation, calling show()
             // twice on the same instance of PaymentRequest in JavaScript is rejected at the
             // renderer level.
@@ -1066,8 +1066,8 @@ public class PaymentRequestImpl
             assert !mPaymentMethodsSection.isEmpty();
             assert mUI != null;
 
-            if (isMicrotransactionUiApplicable()) {
-                triggerMicrotransactionUi(chromeActivity);
+            if (isMinimalUiApplicable()) {
+                triggerMinimalUi(chromeActivity);
                 return;
             }
 
@@ -1088,8 +1088,8 @@ public class PaymentRequestImpl
         }
     }
 
-    /** @return Whether the microtransaction UI should be shown. */
-    private boolean isMicrotransactionUiApplicable() {
+    /** @return Whether the minimal UI should be shown. */
+    private boolean isMinimalUiApplicable() {
         if (!mIsUserGestureShow || mPaymentMethodsSection == null
                 || mPaymentMethodsSection.getSize() != 1) {
             return false;
@@ -1104,50 +1104,49 @@ public class PaymentRequestImpl
     }
 
     /**
-     * Triggers the microtransaction UI.
-     * @param chromeActivity The Android activity for the Chrome UI that will host the
-     *                       microtransaction UI.
+     * Triggers the minimal UI.
+     * @param chromeActivity The Android activity for the Chrome UI that will host the minimal UI.
      */
-    private void triggerMicrotransactionUi(ChromeActivity chromeActivity) {
+    private void triggerMinimalUi(ChromeActivity chromeActivity) {
         // Do not show the Payment Request UI dialog even if the minimal UI is suppressed.
         mPaymentUisShowStateReconciler.onBottomSheetShown();
 
-        mMicrotransactionUi = new MicrotransactionCoordinator();
-        if (mMicrotransactionUi.show(chromeActivity, chromeActivity.getBottomSheetController(),
+        mMinimalUi = new MinimalUICoordinator();
+        if (mMinimalUi.show(chromeActivity, chromeActivity.getBottomSheetController(),
                     (PaymentApp) mPaymentMethodsSection.getSelectedItem(),
                     mCurrencyFormatterMap.get(mRawTotal.amount.currency),
-                    mUiShoppingCart.getTotal(), this::onMinimalUIReady,
-                    this::onMicrotransactionUiConfirmed, this::onMicrotransactionUiDismissed)) {
+                    mUiShoppingCart.getTotal(), this::onMinimalUIReady, this::onMinimalUiConfirmed,
+                    this::onMinimalUiDismissed)) {
             mDidRecordShowEvent = true;
             mShouldRecordAbortReason = true;
             mJourneyLogger.setEventOccurred(Event.SHOWN);
             return;
         }
 
-        disconnectFromClientWithDebugMessage(ErrorStrings.MICROTRANSACTION_UI_SUPPRESSED);
+        disconnectFromClientWithDebugMessage(ErrorStrings.MINIMAL_UI_SUPPRESSED);
     }
 
     private void onMinimalUIReady() {
         if (mNativeObserverForTest != null) mNativeObserverForTest.onMinimalUIReady();
     }
 
-    private void onMicrotransactionUiConfirmed(PaymentApp app) {
+    private void onMinimalUiConfirmed(PaymentApp app) {
         mJourneyLogger.recordTransactionAmount(
                 mRawTotal.amount.currency, mRawTotal.amount.value, false /*completed*/);
         app.disableShowingOwnUI();
         onPayClicked(null /* selectedShippingAddress */, null /* selectedShippingOption */, app);
     }
 
-    private void onMicrotransactionUiDismissed() {
+    private void onMinimalUiDismissed() {
         onDismiss();
     }
 
-    private void onMicrotransactionUiErroredAndClosed() {
+    private void onMinimalUiErroredAndClosed() {
         closeClient();
         closeUIAndDestroyNativeObjects();
     }
 
-    private void onMicrotransactionUiCompletedAndClosed() {
+    private void onMinimalUiCompletedAndClosed() {
         if (mClient != null) mClient.onComplete();
         closeClient();
         closeUIAndDestroyNativeObjects();
@@ -1323,8 +1322,8 @@ public class PaymentRequestImpl
 
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     private boolean confirmMinimalUIForTestInternal() {
-        if (mMicrotransactionUi == null) return false;
-        mMicrotransactionUi.confirmForTest();
+        if (mMinimalUi == null) return false;
+        mMinimalUi.confirmForTest();
         return true;
     }
 
@@ -1341,8 +1340,8 @@ public class PaymentRequestImpl
 
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     private boolean dismissMinimalUIForTestInternal() {
-        if (mMicrotransactionUi == null) return false;
-        mMicrotransactionUi.dismissForTest();
+        if (mMinimalUi == null) return false;
+        mMinimalUi.dismissForTest();
         return true;
     }
 
@@ -2265,13 +2264,12 @@ public class PaymentRequestImpl
         PaymentPreferencesUtil.setPaymentAppLastUseDate(
                 selectedPaymentMethod.getIdentifier(), System.currentTimeMillis());
 
-        if (mMicrotransactionUi != null) {
+        if (mMinimalUi != null) {
             if (result == PaymentComplete.FAIL) {
-                mMicrotransactionUi.showErrorAndClose(this::onMicrotransactionUiErroredAndClosed,
-                        R.string.payments_error_message);
+                mMinimalUi.showErrorAndClose(
+                        this::onMinimalUiErroredAndClosed, R.string.payments_error_message);
             } else {
-                mMicrotransactionUi.showCompleteAndClose(
-                        this::onMicrotransactionUiCompletedAndClosed);
+                mMinimalUi.showCompleteAndClose(this::onMinimalUiCompletedAndClosed);
             }
             return;
         }
@@ -2882,10 +2880,10 @@ public class PaymentRequestImpl
     public void onInstrumentDetailsError(String errorMessage) {
         if (mClient == null) return;
         mInvokedPaymentApp = null;
-        if (mMicrotransactionUi != null) {
+        if (mMinimalUi != null) {
             mJourneyLogger.setAborted(AbortReason.ABORTED_BY_USER);
-            mMicrotransactionUi.showErrorAndClose(
-                    this::onMicrotransactionUiErroredAndClosed, R.string.payments_error_message);
+            mMinimalUi.showErrorAndClose(
+                    this::onMinimalUiErroredAndClosed, R.string.payments_error_message);
             return;
         }
 
@@ -2967,9 +2965,9 @@ public class PaymentRequestImpl
      */
     private void closeUIAndDestroyNativeObjects() {
         ensureHideAndResetPaymentHandlerUi();
-        if (mMicrotransactionUi != null) {
-            mMicrotransactionUi.hide();
-            mMicrotransactionUi = null;
+        if (mMinimalUi != null) {
+            mMinimalUi.hide();
+            mMinimalUi = null;
         }
 
         if (mUI != null) {

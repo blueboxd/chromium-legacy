@@ -190,7 +190,6 @@ bool NfcPermissionContextTests::HasActivePrompt(
 
 void NfcPermissionContextTests::AcceptPrompt() {
   return AcceptPrompt(web_contents());
-  base::RunLoop().RunUntilIdle();
 }
 
 void NfcPermissionContextTests::AcceptPrompt(

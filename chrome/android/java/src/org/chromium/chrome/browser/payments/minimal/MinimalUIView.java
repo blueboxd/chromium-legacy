@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.payments.micro;
+package org.chromium.chrome.browser.payments.minimal;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -16,8 +16,8 @@ import androidx.annotation.Nullable;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 
-/** Microtransaction UI. */
-/* package */ class MicrotransactionView implements BottomSheetContent {
+/** Payment minimal UI. */
+/* package */ class MinimalUIView implements BottomSheetContent {
     private final View mContentView;
     private final View mToolbarView;
 
@@ -49,12 +49,12 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 
     /* package */ boolean mIsPeekStateEnabled;
 
-    /* package */ MicrotransactionView(Context context) {
+    /* package */ MinimalUIView(Context context) {
         mContext = context;
         mContentView =
-                LayoutInflater.from(mContext).inflate(R.layout.microtransaction_content, null);
+                LayoutInflater.from(mContext).inflate(R.layout.payment_minimal_ui_content, null);
         mToolbarView =
-                LayoutInflater.from(mContext).inflate(R.layout.microtransaction_toolbar, null);
+                LayoutInflater.from(mContext).inflate(R.layout.payment_minimal_ui_toolbar, null);
 
         mContentPayButton = (Button) mContentView.findViewById(R.id.pay_button);
         mToolbarPayButton = (Button) mToolbarView.findViewById(R.id.pay_button);
@@ -107,8 +107,8 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
     @Override
     @ContentPriority
     public int getPriority() {
-        // If multiple bottom sheets are queued up to be shown, prioritize microtransaction, because
-        // it's triggered by a user gesture, such as a click on <button>Buy this article</button>.
+        // If multiple bottom sheets are queued up to be shown, prioritize payment, because it's
+        // triggered by a user gesture, such as a click on <button>Buy this article</button>.
         return BottomSheetContent.ContentPriority.HIGH;
     }
 

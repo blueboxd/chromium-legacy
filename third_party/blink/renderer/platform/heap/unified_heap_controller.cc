@@ -106,9 +106,9 @@ void UnifiedHeapController::RegisterV8References(
   const bool was_in_atomic_pause = thread_state()->in_atomic_pause();
   if (!was_in_atomic_pause)
     ThreadState::Current()->EnterAtomicPause();
-  for (auto& internal_fields : internal_fields_of_potential_wrappers) {
-    WrapperTypeInfo* wrapper_type_info =
-        reinterpret_cast<WrapperTypeInfo*>(internal_fields.first);
+  for (const auto& internal_fields : internal_fields_of_potential_wrappers) {
+    const WrapperTypeInfo* wrapper_type_info =
+        reinterpret_cast<const WrapperTypeInfo*>(internal_fields.first);
     if (wrapper_type_info->gin_embedder != gin::GinEmbedder::kEmbedderBlink) {
       continue;
     }

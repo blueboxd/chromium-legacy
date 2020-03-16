@@ -238,8 +238,10 @@ class ContentVerifierHashTest
 
   bool HasValidComputedHashes() {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    return ComputedHashes::CreateFromFile(file_util::GetComputedHashesPath(
-               info_->extension_root)) != base::nullopt;
+    ComputedHashes::Status computed_hashes_status;
+    return ComputedHashes::CreateFromFile(
+               file_util::GetComputedHashesPath(info_->extension_root),
+               &computed_hashes_status) != base::nullopt;
   }
 
   bool HasValidVerifiedContents() {

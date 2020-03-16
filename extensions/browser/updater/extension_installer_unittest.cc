@@ -59,7 +59,7 @@ class ExtensionInstallerTest : public ExtensionsTest {
 ExtensionInstallerTest::ExtensionInstallerTest()
     : result_(-1), executed_(false) {}
 
-ExtensionInstallerTest::~ExtensionInstallerTest() {}
+ExtensionInstallerTest::~ExtensionInstallerTest() = default;
 
 void ExtensionInstallerTest::InstallCompleteCallback(const Result& result) {
   result_ = result;

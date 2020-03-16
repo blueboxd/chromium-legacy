@@ -216,7 +216,7 @@ struct HashTraits<P*> : GenericHashTraits<P*> {
   static void ConstructDeletedValue(P*& slot, bool) {
     slot = reinterpret_cast<P*>(-1);
   }
-  static bool IsDeletedValue(P* value) {
+  static bool IsDeletedValue(const P* value) {
     return value == reinterpret_cast<P*>(-1);
   }
 };

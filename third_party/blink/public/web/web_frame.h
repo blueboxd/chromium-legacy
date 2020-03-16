@@ -167,7 +167,7 @@ class BLINK_EXPORT WebFrame {
 
   bool InShadowTree() const { return scope_ == WebTreeScopeType::kShadow; }
 
-  static void TraceFrames(Visitor*, WebFrame*);
+  static void TraceFrames(Visitor*, const WebFrame*);
 
   // Detaches a frame from its parent frame if it has one.
   void DetachFromParent();
@@ -195,7 +195,7 @@ class BLINK_EXPORT WebFrame {
   friend class OpenedFrameTracker;
   friend class WebFrameTest;
 
-  static void TraceFrame(Visitor*, WebFrame*);
+  static void TraceFrame(Visitor*, const WebFrame*);
 #endif
 
   // Removes the given child from this frame.

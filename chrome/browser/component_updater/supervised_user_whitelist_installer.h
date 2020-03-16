@@ -36,7 +36,7 @@ class SupervisedUserWhitelistInstaller {
                           const base::FilePath& large_icon_path,
                           const base::FilePath& whitelist_path)>;
 
-  virtual ~SupervisedUserWhitelistInstaller() {}
+  virtual ~SupervisedUserWhitelistInstaller() = default;
 
   static std::unique_ptr<SupervisedUserWhitelistInstaller> Create(
       ComponentUpdateService* cus,

@@ -26,8 +26,8 @@ class ComponentUpdateService;
 
 class VrAssetsComponentInstallerPolicy : public ComponentInstallerPolicy {
  public:
-  VrAssetsComponentInstallerPolicy() {}
-  ~VrAssetsComponentInstallerPolicy() override {}
+  VrAssetsComponentInstallerPolicy() = default;
+  ~VrAssetsComponentInstallerPolicy() override = default;
 
  private:
   static bool ShouldRegisterVrAssetsComponentOnStartup();

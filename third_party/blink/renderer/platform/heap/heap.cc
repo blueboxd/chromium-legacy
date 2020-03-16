@@ -232,8 +232,8 @@ HeapCompact* ThreadHeap::Compaction() {
   return compaction_.get();
 }
 
-bool ThreadHeap::ShouldRegisterMovingAddress(Address address) {
-  return Compaction()->ShouldRegisterMovingAddress(address);
+bool ThreadHeap::ShouldRegisterMovingAddress() {
+  return Compaction()->ShouldRegisterMovingAddress();
 }
 
 void ThreadHeap::FlushNotFullyConstructedObjects() {
@@ -257,7 +257,8 @@ void ThreadHeap::MarkNotFullyConstructedObjects(MarkingVisitor* visitor) {
   while (not_fully_constructed_worklist_->Pop(WorklistTaskId::MutatorThread,
                                               &item)) {
     BasePage* const page = PageFromObject(item);
-    visitor->ConservativelyMarkAddress(page, reinterpret_cast<Address>(item));
+    visitor->ConservativelyMarkAddress(page,
+                                       reinterpret_cast<ConstAddress>(item));
   }
 }
 
@@ -346,8 +347,9 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
       // callbacks.
       finished = DrainWorklistWithDeadline(
           deadline, previously_not_fully_constructed_worklist_.get(),
-          [visitor](const NotFullyConstructedItem& item) {
-            visitor->DynamicallyMarkAddress(reinterpret_cast<Address>(item));
+          [visitor](NotFullyConstructedItem& item) {
+            visitor->DynamicallyMarkAddress(
+                reinterpret_cast<ConstAddress>(item));
           },
           WorklistTaskId::MutatorThread);
       if (!finished)
@@ -491,7 +493,7 @@ void ThreadHeap::ResetAllocationPointForTesting() {
     arenas_[i]->ResetAllocationPoint();
 }
 
-BasePage* ThreadHeap::LookupPageForAddress(Address address) {
+BasePage* ThreadHeap::LookupPageForAddress(ConstAddress address) {
   if (PageMemoryRegion* region = region_tree_->Lookup(address)) {
     return region->PageFromAddress(address);
   }

@@ -27,14 +27,14 @@ void WrapperTypeInfo::WrapperDestroyed() {
   stats_collector->IncreaseCollectedWrapperCount(1);
 }
 
-void WrapperTypeInfo::Trace(Visitor* visitor, void* impl) const {
+void WrapperTypeInfo::Trace(Visitor* visitor, const void* impl) const {
   switch (wrapper_class_id) {
     case WrapperTypeInfo::kNodeClassId:
     case WrapperTypeInfo::kObjectClassId:
-      visitor->Trace(reinterpret_cast<ScriptWrappable*>(impl));
+      visitor->Trace(reinterpret_cast<const ScriptWrappable*>(impl));
       break;
     case WrapperTypeInfo::kCustomWrappableId:
-      visitor->Trace(reinterpret_cast<CustomWrappable*>(impl));
+      visitor->Trace(reinterpret_cast<const CustomWrappable*>(impl));
       break;
     default:
       NOTREACHED();

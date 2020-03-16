@@ -38,7 +38,7 @@ class HeapCompact::MovableObjectFixups final {
   void AddCompactingPage(BasePage* page);
 
   // Adds a slot for compaction. Filters slots in dead objects.
-  void AddOrFilter(MovableReference* slot);
+  void AddOrFilter(const MovableReference*);
 
   // Relocates a backing store |from| -> |to|.
   void Relocate(Address from, Address to);
@@ -89,7 +89,7 @@ class HeapCompact::MovableObjectFixups final {
 #if DCHECK_IS_ON()
   // The following two collections are used to allow refer back from a slot to
   // an already moved object.
-  HashSet<void*> moved_objects_;
+  HashSet<const void*> moved_objects_;
   HashMap<MovableReference*, MovableReference> interior_slot_to_object_;
 #endif  // DCHECK_IS_ON()
 };
@@ -99,8 +99,9 @@ void HeapCompact::MovableObjectFixups::AddCompactingPage(BasePage* page) {
   relocatable_pages_.insert(page);
 }
 
-void HeapCompact::MovableObjectFixups::AddOrFilter(MovableReference* slot) {
-  MovableReference value = *slot;
+void HeapCompact::MovableObjectFixups::AddOrFilter(
+    const MovableReference* const_slot) {
+  const void* value = *const_slot;
   CHECK(value);
 
   // All slots and values are part of Oilpan's heap.
@@ -111,13 +112,13 @@ void HeapCompact::MovableObjectFixups::AddOrFilter(MovableReference* slot) {
 
   // Slots handling.
   BasePage* const slot_page =
-      heap_->LookupPageForAddress(reinterpret_cast<Address>(slot));
+      heap_->LookupPageForAddress(reinterpret_cast<ConstAddress>(const_slot));
   CHECK(slot_page);
   HeapObjectHeader* const header =
       slot_page->IsLargeObjectPage()
           ? static_cast<LargeObjectPage*>(slot_page)->ObjectHeader()
           : static_cast<NormalPage*>(slot_page)->FindHeaderFromAddress(
-                reinterpret_cast<Address>(slot));
+                reinterpret_cast<ConstAddress>(const_slot));
   CHECK(header);
   // Filter the slot since the object that contains the slot is dead.
   if (!header->IsMarked())
@@ -125,7 +126,7 @@ void HeapCompact::MovableObjectFixups::AddOrFilter(MovableReference* slot) {
 
   // Value handling.
   BasePage* const value_page =
-      heap_->LookupPageForAddress(reinterpret_cast<Address>(value));
+      heap_->LookupPageForAddress(reinterpret_cast<ConstAddress>(value));
   CHECK(value_page);
 
   // The following cases are not compacted and do not require recording:
@@ -142,7 +143,7 @@ void HeapCompact::MovableObjectFixups::AddOrFilter(MovableReference* slot) {
   // dynamic header lookup is required.
   HeapObjectHeader* const value_header =
       static_cast<NormalPage*>(value_page)
-          ->FindHeaderFromAddress(reinterpret_cast<Address>(value));
+          ->FindHeaderFromAddress(reinterpret_cast<ConstAddress>(value));
   CHECK(value_header);
   CHECK(value_header->IsMarked());
 
@@ -151,11 +152,12 @@ void HeapCompact::MovableObjectFixups::AddOrFilter(MovableReference* slot) {
   // times.
   auto fixup_it = fixups_.find(value);
   if (UNLIKELY(fixup_it != fixups_.end())) {
-    CHECK_EQ(slot, fixup_it->value);
+    CHECK_EQ(const_slot, fixup_it->value);
     return;
   }
 
   // Add regular fixup.
+  MovableReference* slot = const_cast<MovableReference*>(const_slot);
   fixups_.insert(value, slot);
 
   // Check whether the slot itself resides on a page that is compacted.
@@ -301,7 +303,7 @@ void HeapCompact::MovableObjectFixups::VerifyUpdatedSlot(
   if (!*slot)
     return;
   BasePage* slot_page =
-      heap_->LookupPageForAddress(reinterpret_cast<Address>(*slot));
+      heap_->LookupPageForAddress(reinterpret_cast<ConstAddress>(*slot));
   // ref_page is null if *slot is pointing to an off-heap region. This may
   // happy if *slot is pointing to an inline buffer of HeapVector with
   // inline capacity.
@@ -373,7 +375,7 @@ void HeapCompact::Initialize(ThreadState* state) {
   force_for_next_gc_ = false;
 }
 
-bool HeapCompact::ShouldRegisterMovingAddress(Address address) {
+bool HeapCompact::ShouldRegisterMovingAddress() {
   return do_compact_;
 }
 
@@ -440,9 +442,9 @@ void HeapCompact::FilterNonLiveSlots() {
   last_fixup_count_for_testing_ = 0;
   MovableReferenceWorklist::View traced_slots(
       heap_->GetMovableReferenceWorklist(), WorklistTaskId::MutatorThread);
-  MovableReference* slot;
+  const MovableReference* slot;
   while (traced_slots.Pop(&slot)) {
-    CHECK(heap_->LookupPageForAddress(reinterpret_cast<Address>(slot)));
+    CHECK(heap_->LookupPageForAddress(reinterpret_cast<ConstAddress>(slot)));
     if (*slot) {
       Fixups().AddOrFilter(slot);
       last_fixup_count_for_testing_++;

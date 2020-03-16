@@ -31,7 +31,7 @@ class PLATFORM_EXPORT ActiveScriptWrappableBase : public GarbageCollectedMixin {
 
   virtual bool IsContextDestroyed() const = 0;
   virtual bool DispatchHasPendingActivity() const = 0;
-  virtual ScriptWrappable* ToScriptWrappable() = 0;
+  virtual const ScriptWrappable* ToScriptWrappable() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ActiveScriptWrappableBase);

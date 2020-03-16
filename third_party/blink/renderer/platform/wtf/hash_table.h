@@ -137,7 +137,7 @@ struct WTF_EXPORT HashTableStats {
   static HashTableStats& instance();
 
   template <typename VisitorDispatcher>
-  void trace(VisitorDispatcher) {}
+  void trace(VisitorDispatcher) const {}
 
  private:
   void RecordCollisionAtCountWithoutLock(int count);
@@ -650,7 +650,16 @@ struct HashTableAddResult final {
 
 template <typename Value, typename Extractor, typename KeyTraits>
 struct HashTableHelper {
-  using Key = typename KeyTraits::TraitType;
+  template <typename T>
+  struct AddConstToPtrType {
+    using type = T;
+  };
+  template <typename T>
+  struct AddConstToPtrType<T*> {
+    using type = const T*;
+  };
+
+  using Key = typename AddConstToPtrType<typename KeyTraits::TraitType>::type;
 
   STATIC_ONLY(HashTableHelper);
   static bool IsEmptyBucket(const Key& key) {
@@ -660,7 +669,7 @@ struct HashTableHelper {
     return KeyTraits::IsDeletedValue(key);
   }
   static bool IsEmptyOrDeletedBucket(const Value& value) {
-    const auto& key = Extractor::Extract(value);
+    const Key& key = Extractor::Extract(value);
     return IsEmptyBucket(key) || IsDeletedBucket(key);
   }
   static bool IsEmptyOrDeletedBucketSafe(const Value& value) {
@@ -847,7 +856,7 @@ class HashTable final
   ValueType** GetBufferSlot() { return &table_; }
 
   template <typename VisitorDispatcher, typename A = Allocator>
-  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher);
+  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher) const;
 
 #if DCHECK_IS_ON()
   void EnterAccessForbiddenScope() {
@@ -2073,7 +2082,8 @@ template <WeakHandlingFlag weakHandlingFlag,
           typename Allocator>
 struct WeakProcessingHashTableHelper {
   STATIC_ONLY(WeakProcessingHashTableHelper);
-  static void Process(const typename Allocator::WeakCallbackInfo&, void*) {}
+  static void Process(const typename Allocator::WeakCallbackInfo&,
+                      const void*) {}
 };
 
 template <typename Key,
@@ -2104,8 +2114,9 @@ struct WeakProcessingHashTableHelper<kWeakHandling,
 
   // Used for purely weak and for weak-and-strong tables (ephemerons).
   static void Process(const typename Allocator::WeakCallbackInfo&,
-                      void* parameter) {
-    HashTableType* table = reinterpret_cast<HashTableType*>(parameter);
+                      const void* parameter) {
+    HashTableType* table =
+        reinterpret_cast<HashTableType*>(const_cast<void*>(parameter));
     // During incremental marking, the table may be freed after the callback has
     // been registered.
     if (!table->table_)
@@ -2140,11 +2151,12 @@ template <typename Key,
 template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    Trace(VisitorDispatcher visitor) {
+    Trace(VisitorDispatcher visitor) const {
   static_assert(WTF::IsWeak<ValueType>::value ||
                     IsTraceableInCollectionTrait<Traits>::value,
                 "Value should not be traced");
-  ValueType* table = AsAtomicPtr(&table_)->load(std::memory_order_relaxed);
+  const ValueType* table =
+      AsAtomicPtr(&table_)->load(std::memory_order_relaxed);
   if (!WTF::IsWeak<ValueType>::value) {
     // Strong HashTable.
     Allocator::template TraceHashTableBackingStrongly<ValueType, HashTable>(

@@ -55,7 +55,7 @@ UpdateContext::UpdateContext(
   }
 }
 
-UpdateContext::~UpdateContext() {}
+UpdateContext::~UpdateContext() = default;
 
 UpdateEngine::UpdateEngine(
     scoped_refptr<Configurator> config,

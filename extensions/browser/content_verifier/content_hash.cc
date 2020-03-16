@@ -140,7 +140,7 @@ ContentHash::TreeHashVerificationResult ContentHash::VerifyTreeHashRoot(
 }
 
 const ComputedHashes& ContentHash::computed_hashes() const {
-  DCHECK(succeeded_ && computed_hashes_);
+  DCHECK(succeeded() && computed_hashes_);
   return *computed_hashes_;
 }
 
@@ -156,15 +156,11 @@ ContentHash::ContentHash(
     const ExtensionId& id,
     const base::FilePath& root,
     ContentVerifierDelegate::VerifierSourceType source_type,
-    std::unique_ptr<const VerifiedContents> verified_contents,
-    std::unique_ptr<const ComputedHashes> computed_hashes)
+    std::unique_ptr<const VerifiedContents> verified_contents)
     : extension_id_(id),
       extension_root_(root),
       source_type_(source_type),
-      verified_contents_(std::move(verified_contents)),
-      computed_hashes_(std::move(computed_hashes)) {
-  succeeded_ = verified_contents_ != nullptr && computed_hashes_ != nullptr;
-}
+      verified_contents_(std::move(verified_contents)) {}
 
 ContentHash::~ContentHash() = default;
 
@@ -281,7 +277,7 @@ void ContentHash::GetComputedHashes(
   }
   scoped_refptr<ContentHash> hash =
       new ContentHash(key.extension_id, key.extension_root, source_type,
-                      std::move(verified_contents), nullptr);
+                      std::move(verified_contents));
   hash->BuildComputedHashes(did_attempt_fetch, /*force_build=*/false,
                             is_cancelled);
   std::move(created_callback).Run(hash, is_cancelled && is_cancelled.Run());
@@ -299,8 +295,8 @@ void ContentHash::DispatchFetchFailure(
       << "Only signed hashes should attempt fetching verified_contents.json";
   RecordFetchResult(false);
   // NOTE: bare new because ContentHash constructor is private.
-  scoped_refptr<ContentHash> content_hash = new ContentHash(
-      extension_id, extension_root, source_type, nullptr, nullptr);
+  scoped_refptr<ContentHash> content_hash =
+      new ContentHash(extension_id, extension_root, source_type, nullptr);
   std::move(created_callback)
       .Run(content_hash, is_cancelled && is_cancelled.Run());
 }
@@ -380,9 +376,6 @@ bool ContentHash::CreateHashes(const base::FilePath& hashes_file,
   UMA_HISTOGRAM_TIMES("ExtensionContentHashFetcher.CreateHashesTime",
                       timer.Elapsed());
 
-  if (result)
-    succeeded_ = true;
-
   return result;
 }
 
@@ -416,14 +409,16 @@ void ContentHash::BuildComputedHashes(bool attempted_fetching_verified_contents,
     // Note: Tolerate for existing implementation.
     // Try to read and initialize the file first. On failure, continue creating.
     base::Optional<ComputedHashes> computed_hashes =
-        ComputedHashes::CreateFromFile(computed_hashes_path);
+        ComputedHashes::CreateFromFile(computed_hashes_path,
+                                       &computed_hashes_status_);
+    DCHECK_EQ(computed_hashes_status_ == ComputedHashes::Status::SUCCESS,
+              computed_hashes.has_value());
     if (!computed_hashes) {
       // TODO(lazyboy): Also create computed_hashes.json in this case. See the
       // comment above about |will_create|.
       // will_create = true;
     } else {
       // Read successful.
-      succeeded_ = true;
       computed_hashes_ =
           std::make_unique<ComputedHashes>(std::move(computed_hashes.value()));
       return;
@@ -440,12 +435,14 @@ void ContentHash::BuildComputedHashes(bool attempted_fetching_verified_contents,
     return;
 
   base::Optional<ComputedHashes> computed_hashes =
-      ComputedHashes::CreateFromFile(computed_hashes_path);
+      ComputedHashes::CreateFromFile(computed_hashes_path,
+                                     &computed_hashes_status_);
+  DCHECK_EQ(computed_hashes_status_ == ComputedHashes::Status::SUCCESS,
+            computed_hashes.has_value());
   if (!computed_hashes)
     return;
 
   // Read successful.
-  succeeded_ = true;
   computed_hashes_ =
       std::make_unique<ComputedHashes>(std::move(computed_hashes.value()));
 }

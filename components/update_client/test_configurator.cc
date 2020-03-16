@@ -53,8 +53,7 @@ TestConfigurator::TestConfigurator(PrefService* pref_service)
               test_shared_loader_factory_,
               base::BindRepeating([](const GURL& url) { return false; }))) {}
 
-TestConfigurator::~TestConfigurator() {
-}
+TestConfigurator::~TestConfigurator() = default;
 
 int TestConfigurator::InitialDelay() const {
   return initial_time_;

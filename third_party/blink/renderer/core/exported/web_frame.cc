@@ -302,7 +302,7 @@ WebFrame::~WebFrame() {
   opened_frame_tracker_.reset(nullptr);
 }
 
-void WebFrame::TraceFrame(Visitor* visitor, WebFrame* frame) {
+void WebFrame::TraceFrame(Visitor* visitor, const WebFrame* frame) {
   if (!frame)
     return;
 
@@ -313,10 +313,10 @@ void WebFrame::TraceFrame(Visitor* visitor, WebFrame* frame) {
   }
 }
 
-void WebFrame::TraceFrames(Visitor* visitor, WebFrame* frame) {
+void WebFrame::TraceFrames(Visitor* visitor, const WebFrame* frame) {
   DCHECK(frame);
   TraceFrame(visitor, frame->parent_);
-  for (WebFrame* child = frame->FirstChild(); child;
+  for (const WebFrame* child = frame->FirstChild(); child;
        child = child->NextSibling())
     TraceFrame(visitor, child);
 }

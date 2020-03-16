@@ -42,8 +42,8 @@ using UpdateClientEvents = update_client::UpdateClient::Observer::Events;
 
 class UpdateServiceTest : public ExtensionUpdateClientBaseTest {
  public:
-  UpdateServiceTest() : ExtensionUpdateClientBaseTest() {}
-  ~UpdateServiceTest() override {}
+  UpdateServiceTest() = default;
+  ~UpdateServiceTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionUpdateClientBaseTest::SetUpCommandLine(command_line);
@@ -373,8 +373,8 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, UninstallExtensionWhileUpdating) {
 class PolicyUpdateServiceTest : public ExtensionUpdateClientBaseTest,
                                 public testing::WithParamInterface<bool> {
  public:
-  PolicyUpdateServiceTest() : ExtensionUpdateClientBaseTest() {}
-  ~PolicyUpdateServiceTest() override {}
+  PolicyUpdateServiceTest() = default;
+  ~PolicyUpdateServiceTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionUpdateClientBaseTest::SetUpCommandLine(command_line);

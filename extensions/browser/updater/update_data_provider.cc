@@ -70,7 +70,7 @@ void InstallUpdateCallback(content::BrowserContext* context,
 UpdateDataProvider::UpdateDataProvider(content::BrowserContext* browser_context)
     : browser_context_(browser_context) {}
 
-UpdateDataProvider::~UpdateDataProvider() {}
+UpdateDataProvider::~UpdateDataProvider() = default;
 
 void UpdateDataProvider::Shutdown() {
   browser_context_ = nullptr;

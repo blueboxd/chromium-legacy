@@ -276,7 +276,7 @@ PermissionService* WakeLock::GetPermissionService() {
 }
 
 void WakeLock::Trace(Visitor* visitor) {
-  for (WakeLockManager* manager : managers_)
+  for (const WakeLockManager* manager : managers_)
     visitor->Trace(manager);
   PageVisibilityObserver::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);

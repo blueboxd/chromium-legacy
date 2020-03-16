@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.payments.micro;
+package org.chromium.chrome.browser.payments.minimal;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -21,11 +21,11 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.payments.PackageManagerDelegate;
 import org.chromium.chrome.browser.payments.PaymentApp;
-import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator.CompleteAndCloseObserver;
-import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator.ConfirmObserver;
-import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator.DismissObserver;
-import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator.ErrorAndCloseObserver;
-import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator.ReadyObserver;
+import org.chromium.chrome.browser.payments.minimal.MinimalUICoordinator.CompleteAndCloseObserver;
+import org.chromium.chrome.browser.payments.minimal.MinimalUICoordinator.ConfirmObserver;
+import org.chromium.chrome.browser.payments.minimal.MinimalUICoordinator.DismissObserver;
+import org.chromium.chrome.browser.payments.minimal.MinimalUICoordinator.ErrorAndCloseObserver;
+import org.chromium.chrome.browser.payments.minimal.MinimalUICoordinator.ReadyObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
@@ -34,12 +34,12 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
- * Microtransaction mediator, which is responsible for the interaction with the backend: the
+ * Payment minimal UI mediator, which is responsible for the interaction with the backend: the
  * coordinator, the fingerprint scanner, and the Payment Request API. It reacts to changes in the
  * backend and updates the model based on that, or receives events from the view and notifies the
  * backend.
  */
-/* package */ class MicrotransactionMediator implements BottomSheetObserver, OnClickListener {
+/* package */ class MinimalUIMediator implements BottomSheetObserver, OnClickListener {
     // 1 second delay to show processing message before showing the completion or error status.
     private static final int PROCESSING_DELAY_MS = 1000;
 
@@ -63,7 +63,7 @@ import org.chromium.ui.modelutil.PropertyModel;
     private boolean mIsSheetOpened;
     private boolean mIsInProcessingState;
 
-    /* package */ MicrotransactionMediator(Context context, PaymentApp app, PropertyModel model,
+    /* package */ MinimalUIMediator(Context context, PaymentApp app, PropertyModel model,
             ReadyObserver readyObserver, ConfirmObserver confirmObserver,
             DismissObserver dismissObserver, Runnable hider) {
         mApp = app;
@@ -81,8 +81,8 @@ import org.chromium.ui.modelutil.PropertyModel;
             mIsFingerprintScanEnabled = mFingerprintManager.isHardwareDetected()
                     && mFingerprintManager.hasEnrolledFingerprints();
             if (mIsFingerprintScanEnabled) {
-                // MicrotransactionMediator cannot implement AuthenticationCallback directly because
-                // the API was added in Android M (API version 21).
+                // MinimalUIMediator cannot implement AuthenticationCallback directly because the
+                // API was added in Android M (API version 21).
                 mFingerprintManager.authenticate(/*crypto=*/null, /*cancel=*/mCancellationSignal,
                         /*flags=*/0, /*callback=*/new AuthenticationCallback() {
                             @Override
@@ -111,18 +111,17 @@ import org.chromium.ui.modelutil.PropertyModel;
                             }
                         }, /*handler=*/null);
 
-                mModel.set(MicrotransactionProperties.STATUS_ICON,
-                        R.drawable.ic_fingerprint_grey500_36dp);
-                mModel.set(MicrotransactionProperties.STATUS_ICON_TINT,
-                        R.color.microtransaction_default_tint);
+                mModel.set(MinimalUIProperties.STATUS_ICON, R.drawable.ic_fingerprint_grey500_36dp);
+                mModel.set(MinimalUIProperties.STATUS_ICON_TINT,
+                        R.color.payment_minimal_ui_default_tint);
             }
         } else {
             mFingerprintManager = null;
             mIsFingerprintScanEnabled = false;
         }
 
-        mModel.set(MicrotransactionProperties.IS_SHOWING_PAY_BUTTON, !mIsFingerprintScanEnabled);
-        mModel.set(MicrotransactionProperties.STATUS_TEXT_RESOURCE,
+        mModel.set(MinimalUIProperties.IS_SHOWING_PAY_BUTTON, !mIsFingerprintScanEnabled);
+        mModel.set(MinimalUIProperties.STATUS_TEXT_RESOURCE,
                 mIsFingerprintScanEnabled ? R.string.payment_touch_sensor_to_pay
                                           : R.string.payment_request_payment_method_section_name);
     }
@@ -144,7 +143,7 @@ import org.chromium.ui.modelutil.PropertyModel;
         mCancellationSignal.cancel();
 
         showEmphasizedStatus(R.string.payment_complete_message, null,
-                R.drawable.ic_done_googblue_36dp, R.color.microtransaction_emphasis_tint);
+                R.drawable.ic_done_googblue_36dp, R.color.payment_minimal_ui_emphasis_tint);
 
         mHandler.postDelayed(() -> {
             mHider.run();
@@ -165,7 +164,7 @@ import org.chromium.ui.modelutil.PropertyModel;
         mCancellationSignal.cancel();
 
         showEmphasizedStatus(errorMessageResourceId, errorMessage, R.drawable.ic_error_googred_36dp,
-                R.color.microtransaction_error_tint);
+                R.color.payment_minimal_ui_error_tint);
 
         mHandler.postDelayed(() -> {
             mHider.run();
@@ -177,18 +176,16 @@ import org.chromium.ui.modelutil.PropertyModel;
         mHandler.removeCallbacksAndMessages(null);
         mCancellationSignal.cancel();
 
-        mModel.set(MicrotransactionProperties.IS_SHOWING_PAY_BUTTON, false);
-        mModel.set(MicrotransactionProperties.STATUS_TEXT, null);
-        mModel.set(MicrotransactionProperties.STATUS_TEXT_RESOURCE,
-                R.string.payments_processing_message);
+        mModel.set(MinimalUIProperties.IS_SHOWING_PAY_BUTTON, false);
+        mModel.set(MinimalUIProperties.STATUS_TEXT, null);
+        mModel.set(MinimalUIProperties.STATUS_TEXT_RESOURCE, R.string.payments_processing_message);
         if (mIsFingerprintScanEnabled) {
+            mModel.set(MinimalUIProperties.STATUS_ICON, R.drawable.ic_fingerprint_grey500_36dp);
             mModel.set(
-                    MicrotransactionProperties.STATUS_ICON, R.drawable.ic_fingerprint_grey500_36dp);
-            mModel.set(MicrotransactionProperties.STATUS_ICON_TINT,
-                    R.color.microtransaction_emphasis_tint);
+                    MinimalUIProperties.STATUS_ICON_TINT, R.color.payment_minimal_ui_emphasis_tint);
         } else {
-            mModel.set(MicrotransactionProperties.IS_SHOWING_PROCESSING_SPINNER, true);
-            mModel.set(MicrotransactionProperties.IS_SHOWING_LINE_ITEMS, false);
+            mModel.set(MinimalUIProperties.IS_SHOWING_PROCESSING_SPINNER, true);
+            mModel.set(MinimalUIProperties.IS_SHOWING_LINE_ITEMS, false);
         }
 
         mIsInProcessingState = true;
@@ -210,33 +207,32 @@ import org.chromium.ui.modelutil.PropertyModel;
         mHandler.removeCallbacksAndMessages(null);
 
         showEmphasizedStatus(errorMessageResourceId, errorMessage, R.drawable.ic_error_googred_36dp,
-                R.color.microtransaction_error_tint);
+                R.color.payment_minimal_ui_error_tint);
 
         mHandler.postDelayed(() -> {
-            mModel.set(MicrotransactionProperties.STATUS_TEXT, null);
-            mModel.set(MicrotransactionProperties.STATUS_TEXT_RESOURCE,
-                    R.string.payment_touch_sensor_to_pay);
-            mModel.set(MicrotransactionProperties.IS_STATUS_EMPHASIZED, false);
+            mModel.set(MinimalUIProperties.STATUS_TEXT, null);
             mModel.set(
-                    MicrotransactionProperties.STATUS_ICON, R.drawable.ic_fingerprint_grey500_36dp);
-            mModel.set(MicrotransactionProperties.STATUS_ICON_TINT,
-                    R.color.microtransaction_default_tint);
+                    MinimalUIProperties.STATUS_TEXT_RESOURCE, R.string.payment_touch_sensor_to_pay);
+            mModel.set(MinimalUIProperties.IS_STATUS_EMPHASIZED, false);
+            mModel.set(MinimalUIProperties.STATUS_ICON, R.drawable.ic_fingerprint_grey500_36dp);
+            mModel.set(
+                    MinimalUIProperties.STATUS_ICON_TINT, R.color.payment_minimal_ui_default_tint);
         }, ERROR_DELAY_MS);
     }
 
     private void showEmphasizedStatus(@Nullable Integer messageResourceId,
             @Nullable CharSequence message, @Nullable Integer iconResourceId,
             @Nullable Integer iconTint) {
-        mModel.set(MicrotransactionProperties.IS_SHOWING_PAY_BUTTON, false);
-        mModel.set(MicrotransactionProperties.STATUS_TEXT, message);
-        mModel.set(MicrotransactionProperties.STATUS_TEXT_RESOURCE, messageResourceId);
-        mModel.set(MicrotransactionProperties.IS_STATUS_EMPHASIZED, true);
-        mModel.set(MicrotransactionProperties.STATUS_ICON, iconResourceId);
-        mModel.set(MicrotransactionProperties.STATUS_ICON_TINT, iconTint);
-        mModel.set(MicrotransactionProperties.IS_SHOWING_PROCESSING_SPINNER, false);
+        mModel.set(MinimalUIProperties.IS_SHOWING_PAY_BUTTON, false);
+        mModel.set(MinimalUIProperties.STATUS_TEXT, message);
+        mModel.set(MinimalUIProperties.STATUS_TEXT_RESOURCE, messageResourceId);
+        mModel.set(MinimalUIProperties.IS_STATUS_EMPHASIZED, true);
+        mModel.set(MinimalUIProperties.STATUS_ICON, iconResourceId);
+        mModel.set(MinimalUIProperties.STATUS_ICON_TINT, iconTint);
+        mModel.set(MinimalUIProperties.IS_SHOWING_PROCESSING_SPINNER, false);
 
         if (!mIsFingerprintScanEnabled) {
-            mModel.set(MicrotransactionProperties.IS_SHOWING_LINE_ITEMS, false);
+            mModel.set(MinimalUIProperties.IS_SHOWING_LINE_ITEMS, false);
         }
     }
 
@@ -244,7 +240,7 @@ import org.chromium.ui.modelutil.PropertyModel;
     @Override
     public void onSheetOpened(@StateChangeReason int reason) {
         mIsSheetOpened = true;
-        mModel.set(MicrotransactionProperties.IS_PEEK_STATE_ENABLED, false);
+        mModel.set(MinimalUIProperties.IS_PEEK_STATE_ENABLED, false);
     }
 
     @Override
@@ -252,14 +248,13 @@ import org.chromium.ui.modelutil.PropertyModel;
 
     @Override
     public void onSheetOffsetChanged(float heightFraction, float offsetPx) {
-        float oldAlpha = mModel.get(MicrotransactionProperties.PAYMENT_APP_NAME_ALPHA);
+        float oldAlpha = mModel.get(MinimalUIProperties.PAYMENT_APP_NAME_ALPHA);
         if (oldAlpha == 1f || !mIsSheetOpened) return;
 
         float newAlpha = heightFraction * 2f;
         if (oldAlpha >= newAlpha) return;
 
-        mModel.set(
-                MicrotransactionProperties.PAYMENT_APP_NAME_ALPHA, newAlpha > 1f ? 1f : newAlpha);
+        mModel.set(MinimalUIProperties.PAYMENT_APP_NAME_ALPHA, newAlpha > 1f ? 1f : newAlpha);
     }
 
     @Override
@@ -270,7 +265,7 @@ import org.chromium.ui.modelutil.PropertyModel;
                 mDismissObserver.onDismissed();
                 break;
             case BottomSheetController.SheetState.FULL:
-                mModel.set(MicrotransactionProperties.PAYMENT_APP_NAME_ALPHA, 1f);
+                mModel.set(MinimalUIProperties.PAYMENT_APP_NAME_ALPHA, 1f);
                 break;
         }
     }
@@ -278,8 +273,8 @@ import org.chromium.ui.modelutil.PropertyModel;
     @Override
     public void onSheetFullyPeeked() {
         // Post to avoid destroying the native JourneyLogger before it has recoreded its events in
-        // tests. JourneyLogger records events after MicrotransactionCoordinator.show() returns,
-        // which can happen after onSheetFullyPeeked().
+        // tests. JourneyLogger records events after MinimalUICoordinator.show() returns, which can
+        // happen after onSheetFullyPeeked().
         mHandler.post(() -> {
             // onSheetFullyPeeked() can be invoked more than once, but mReadyObserver.onReady() is
             // expected to be called at most once.
@@ -295,7 +290,7 @@ import org.chromium.ui.modelutil.PropertyModel;
     // OnClickListener:
     @Override
     public void onClick(View v) {
-        if (!mModel.get(MicrotransactionProperties.IS_SHOWING_PAY_BUTTON)) return;
+        if (!mModel.get(MinimalUIProperties.IS_SHOWING_PAY_BUTTON)) return;
         showProcessingAndNotifyConfirmObserver();
     }
 

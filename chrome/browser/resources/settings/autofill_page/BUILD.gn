@@ -16,6 +16,7 @@ js_type_check("closure_compile") {
     ":credit_card_edit_dialog",
     ":credit_card_list_entry",
     ":password_check",
+    ":password_check_edit_dialog",
     ":password_check_list_item",
     ":password_edit_dialog",
     ":password_list_item",
@@ -101,6 +102,14 @@ js_library("password_check") {
   ]
 }
 
+js_library("password_check_edit_dialog") {
+  deps = [
+    ":password_manager_proxy",
+    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
+}
+
 js_library("password_check_list_item") {
   deps = [
     ":password_manager_proxy",
@@ -181,6 +190,7 @@ js_type_check("closure_compile_module") {
     ":credit_card_edit_dialog.m",
     ":credit_card_list_entry.m",
     ":password_check.m",
+    ":password_check_edit_dialog.m",
     ":password_check_list_item.m",
     ":password_edit_dialog.m",
     ":password_list_item.m",
@@ -275,6 +285,17 @@ js_library("password_check.m") {
     "//ui/webui/resources/js:i18n_behavior.m",
   ]
   extra_deps = [ ":password_check_module" ]
+}
+
+js_library("password_check_edit_dialog.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/autofill_page/password_check_edit_dialog.m.js" ]
+  deps = [
+    ":password_manager_proxy.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+  ]
+  extra_deps = [ ":password_check_edit_dialog_module" ]
 }
 
 js_library("password_check_list_item.m") {
@@ -410,6 +431,7 @@ group("polymer3_elements") {
     ":credit_card_edit_dialog_module",
     ":credit_card_list_entry_module",
     ":modulize",
+    ":password_check_edit_dialog_module",
     ":password_check_list_item_module",
     ":password_check_module",
     ":password_edit_dialog_module",
@@ -485,6 +507,16 @@ polymer_modulizer("password_check") {
     "ui/webui/resources/html/assert.html|assert",
   ]
   namespace_rewrites = settings_namespace_rewrites
+}
+
+polymer_modulizer("password_check_edit_dialog") {
+  js_file = "password_check_edit_dialog.js"
+  html_file = "password_check_edit_dialog.html"
+  html_type = "dom-module"
+  auto_imports = [
+    "ui/webui/resources/html/assert.html|assert",
+    "chrome/browser/resources/settings/autofill_page/password_manager_proxy.html|PasswordManagerImpl,PasswordManagerProxy",
+  ]
 }
 
 polymer_modulizer("password_check_list_item") {

@@ -154,7 +154,7 @@ class MockPingManagerImpl : public PingManager {
 MockPingManagerImpl::MockPingManagerImpl(scoped_refptr<Configurator> config)
     : PingManager(config) {}
 
-MockPingManagerImpl::~MockPingManagerImpl() {}
+MockPingManagerImpl::~MockPingManagerImpl() = default;
 
 void MockPingManagerImpl::SendPing(const Component& component,
                                    Callback callback) {
@@ -222,8 +222,7 @@ UpdateClientTest::UpdateClientTest() {
   PersistedData::RegisterPrefs(pref_->registry());
 }
 
-UpdateClientTest::~UpdateClientTest() {
-}
+UpdateClientTest::~UpdateClientTest() = default;
 
 void UpdateClientTest::RunThreads() {
   runloop_.Run();
@@ -3162,7 +3161,7 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
 
    private:
     MockCrxDownloader() : CrxDownloader(nullptr) {}
-    ~MockCrxDownloader() override {}
+    ~MockCrxDownloader() override = default;
 
     void DoStartDownload(const GURL& url) override {}
   };

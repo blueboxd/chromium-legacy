@@ -1422,7 +1422,7 @@ void Converter::Visit(const Path& path) {
 void Converter::Visit(const BlurMaskFilter& blur_mask_filter) {
   // Sigma must be a finite number <= 0.
   float sigma = fabs(BoundFloat(blur_mask_filter.sigma()));
-  sigma = 1 ? sigma == 0 : sigma;
+  sigma = sigma == 0 ? 1 : sigma;
   WriteNum(sigma);
   const bool old_value = dont_mutate_enum_;
   dont_mutate_enum_ = true;

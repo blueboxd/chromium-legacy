@@ -46,6 +46,7 @@ namespace {
 // This constant controls how many tests are run in a single batch by default.
 const size_t kDefaultTestBatchLimit = 10;
 
+#if !defined(OS_ANDROID)
 void PrintUsage() {
   fprintf(stdout,
           "Runs tests using the gtest framework, each batch of tests being\n"
@@ -125,6 +126,7 @@ bool GetSwitchValueAsInt(const std::string& switch_name, int* result) {
 
   return true;
 }
+#endif
 
 int LaunchUnitTestsInternal(RunTestSuiteCallback run_test_suite,
                             size_t parallel_jobs,
@@ -161,7 +163,6 @@ int LaunchUnitTestsInternal(RunTestSuiteCallback run_test_suite,
       force_single_process) {
     return std::move(run_test_suite).Run();
   }
-#endif
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kHelpFlag)) {
     PrintUsage();
@@ -203,6 +204,7 @@ int LaunchUnitTestsInternal(RunTestSuiteCallback run_test_suite,
   fflush(stdout);
 
   return (success ? 0 : 1);
+#endif
 }
 
 void InitGoogleTestChar(int* argc, char** argv) {

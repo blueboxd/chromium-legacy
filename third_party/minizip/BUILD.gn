@@ -6,7 +6,11 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 
 config("minizip_compiler_flags") {
   if (is_clang) {
-    cflags = [ "-Wno-unused-function" ]
+    cflags = [
+      # mz_zip.c does |UINT_MAX == UINT16_MAX && ...|.
+      "-Wno-unreachable-code",
+      "-Wno-unused-function",
+    ]
 
     if (!is_nacl && (target_cpu == "x86" || target_cpu == "x64")) {
       cflags += [

@@ -152,7 +152,6 @@ class ComponentUpdaterTest : public testing::Test {
   scoped_refptr<TestConfigurator> configurator() const { return config_; }
   base::OnceClosure quit_closure() { return runloop_.QuitClosure(); }
   MockUpdateScheduler& scheduler() { return *scheduler_; }
-  static void ReadyCallback() {}
 
  protected:
   void RunThreads();
@@ -485,9 +484,8 @@ TEST_F(ComponentUpdaterTest, MaybeThrottle) {
   EXPECT_CALL(scheduler(), Stop()).Times(1);
 
   EXPECT_TRUE(component_updater().RegisterComponent(crx_component));
-  component_updater().MaybeThrottle(
-      "jebgalgnebhfojomionfpkfelancnnkf",
-      base::BindOnce(&ComponentUpdaterTest::ReadyCallback));
+  component_updater().MaybeThrottle("jebgalgnebhfojomionfpkfelancnnkf",
+                                    base::BindOnce([]() {}));
 
   RunThreads();
 

@@ -29,7 +29,7 @@
 
 namespace update_client {
 
-ComponentUnpacker::Result::Result() {}
+ComponentUnpacker::Result::Result() = default;
 
 ComponentUnpacker::ComponentUnpacker(const std::vector<uint8_t>& pk_hash,
                                      const base::FilePath& path,
@@ -47,7 +47,7 @@ ComponentUnpacker::ComponentUnpacker(const std::vector<uint8_t>& pk_hash,
       error_(UnpackerError::kNone),
       extended_error_(0) {}
 
-ComponentUnpacker::~ComponentUnpacker() {}
+ComponentUnpacker::~ComponentUnpacker() = default;
 
 void ComponentUnpacker::Unpack(Callback callback) {
   callback_ = std::move(callback);

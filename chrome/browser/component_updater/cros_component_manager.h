@@ -59,7 +59,7 @@ class CrOSComponentManager {
 
   class Delegate {
    public:
-    virtual ~Delegate() {}
+    virtual ~Delegate() = default;
     // Broadcasts a D-Bus signal for a successful component installation.
     virtual void EmitInstalledSignal(const std::string& component) = 0;
   };

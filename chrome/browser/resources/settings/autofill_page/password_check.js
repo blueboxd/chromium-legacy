@@ -67,6 +67,15 @@ Polymer({
 
     /** @private {settings.SyncStatus} */
     syncStatus_: Object,
+
+    /** @private */
+    showPasswordEditDialog_: Boolean,
+
+    /**
+     * The password that the user is interacting with now.
+     * @private {?PasswordManagerProxy.CompromisedCredential}
+     */
+    activePassword_: Object,
   },
 
   /**
@@ -185,13 +194,20 @@ Polymer({
     const target = event.detail.moreActionsButton;
     this.$.moreActionsMenu.showAt(target);
     this.activeDialogAnchor_ = target;
+    this.activePassword_ = event.target.item;
   },
 
   /** @private */
   onMenuEditPasswordClick_() {
-    this.$.moreActionsMenu.close();
-
-    // TODO(crbug.com/1047726) Implement dialog.
+    this.passwordManager_
+        .getPlaintextCompromisedPassword(
+            assert(this.activePassword_),
+            chrome.passwordsPrivate.PlaintextReason.EDIT)
+        .then(compromisedCredential => {
+          this.activePassword_ = compromisedCredential;
+          this.$.moreActionsMenu.close();
+          this.showPasswordEditDialog_ = true;
+        });
   },
 
   /** @private */
@@ -199,6 +215,13 @@ Polymer({
     this.$.moreActionsMenu.close();
 
     // TODO(crbug.com/1047726) Implement dialog.
+  },
+
+  /** @private */
+  onPasswordEditDialogClosed_() {
+    this.showPasswordEditDialog_ = false;
+    cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
+    this.activeDialogAnchor_ = null;
   },
 
   /**

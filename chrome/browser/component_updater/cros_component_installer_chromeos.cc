@@ -205,7 +205,7 @@ CrOSComponentInstaller::CrOSComponentInstaller(
     : metadata_table_(std::move(metadata_table)),
       component_updater_(component_updater) {}
 
-CrOSComponentInstaller::~CrOSComponentInstaller() {}
+CrOSComponentInstaller::~CrOSComponentInstaller() = default;
 
 void CrOSComponentInstaller::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;

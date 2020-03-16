@@ -30,7 +30,7 @@ const char kTestExtensionId[] = "test_app";
 
 class ExtensionDownloaderTest : public ExtensionsTest {
  protected:
-  ExtensionDownloaderTest() {}
+  ExtensionDownloaderTest() = default;
 
   std::unique_ptr<ManifestFetchData> CreateManifestFetchData(
       const GURL& update_url,

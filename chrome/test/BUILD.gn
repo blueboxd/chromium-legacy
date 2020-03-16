@@ -3256,6 +3256,7 @@ test("unit_tests") {
     "../browser/page_load_metrics/observers/third_party_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/ukm_page_load_metrics_observer_unittest.cc",
     "../browser/paint_preview/services/paint_preview_demo_service_unittest.cc",
+    "../browser/paint_preview/services/paint_preview_tab_service_unittest.cc",
     "../browser/password_manager/chrome_password_manager_client_unittest.cc",
     "../browser/password_manager/password_store_x_unittest.cc",
     "../browser/performance_hints/performance_hints_observer_unittest.cc",
@@ -3652,7 +3653,6 @@ test("unit_tests") {
     "//chrome:strings",
     "//chrome/browser/media/router:unittests",
     "//chrome/browser/notifications:unit_tests",
-    "//chrome/browser/paint_preview/services:unit_tests",
     "//chrome/browser/payments:unittests",
     "//chrome/browser/updates/announcement_notification:unit_tests",
     "//chrome/common:test_support",
@@ -3928,7 +3928,6 @@ test("unit_tests") {
       "../browser/media/webrtc/webrtc_event_log_uploader_impl_unittest.cc",
       "../browser/media_galleries/fileapi/native_media_file_util_unittest.cc",
       "../browser/media_galleries/gallery_watch_manager_unittest.cc",
-      "../browser/media_galleries/mac/mtp_device_delegate_impl_mac_unittest.mm",
       "../browser/media_galleries/media_file_system_registry_unittest.cc",
       "../browser/media_galleries/media_galleries_dialog_controller_mock.cc",
       "../browser/media_galleries/media_galleries_dialog_controller_mock.h",
@@ -3937,8 +3936,6 @@ test("unit_tests") {
       "../browser/media_galleries/media_galleries_permission_controller_unittest.cc",
       "../browser/media_galleries/media_galleries_permissions_unittest.cc",
       "../browser/media_galleries/media_galleries_preferences_unittest.cc",
-      "../browser/media_galleries/win/mtp_device_delegate_impl_win_unittest.cc",
-      "../browser/media_galleries/win/mtp_device_object_enumerator_unittest.cc",
       "../browser/memory/enterprise_memory_limit_evaluator_unittest.cc",
       "../browser/memory/swap_thrashing_monitor_delegate_win_unittest.cc",
       "../browser/metrics/desktop_session_duration/desktop_session_duration_tracker_unittest.cc",
@@ -4672,7 +4669,6 @@ test("unit_tests") {
       "../browser/extensions/webstore_installer_unittest.cc",
       "../browser/extensions/zipfile_installer_unittest.cc",
       "../browser/media/cast_transport_host_filter_unittest.cc",
-      "../browser/media_galleries/chromeos/mtp_device_object_enumerator_unittest.cc",
       "../browser/metrics/extensions_metrics_provider_unittest.cc",
       "../browser/notifications/notification_system_observer_unittest.cc",
       "../browser/policy/chrome_extension_policy_migrator_unittest.cc",
@@ -4850,8 +4846,11 @@ test("unit_tests") {
       sources += [ "../browser/extensions/api/mdns/mdns_api_unittest.cc" ]
     }
     if (is_win) {
-      sources +=
-          [ "../browser/extensions/external_registry_loader_win_unittest.cc" ]
+      sources += [
+        "../browser/extensions/external_registry_loader_win_unittest.cc",
+        "../browser/media_galleries/win/mtp_device_delegate_impl_win_unittest.cc",
+        "../browser/media_galleries/win/mtp_device_object_enumerator_unittest.cc",
+      ]
     }
     if (is_chromeos) {
       sources += [
@@ -4861,6 +4860,7 @@ test("unit_tests") {
         "../browser/chromeos/login/easy_unlock/easy_unlock_screenlock_state_handler_unittest.cc",
         "../browser/chromeos/login/easy_unlock/easy_unlock_service_regular_unittest.cc",
         "../browser/extensions/api/file_system/consent_provider_unittest.cc",
+        "../browser/media_galleries/chromeos/mtp_device_object_enumerator_unittest.cc",
         "../browser/ui/webui/about_ui_unittest.cc",
       ]
     } else {
@@ -5358,7 +5358,10 @@ test("unit_tests") {
       sources += [ "../browser/ui/views/hung_plugin_tab_helper_unittest.cc" ]
     }
     if (is_mac) {
-      sources += [ "../browser/ui/views/frame/browser_non_client_frame_view_mac_unittest.mm" ]
+      sources += [
+        "../browser/media_galleries/mac/mtp_device_delegate_impl_mac_unittest.mm",
+        "../browser/ui/views/frame/browser_non_client_frame_view_mac_unittest.mm",
+      ]
     }
     if (!is_chromeos) {
       sources += [

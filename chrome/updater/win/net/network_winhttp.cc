@@ -54,7 +54,7 @@ NetworkFetcherWinHTTP::NetworkFetcherWinHTTP(const HINTERNET& session_handle)
     : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       session_handle_(session_handle) {}
 
-NetworkFetcherWinHTTP::~NetworkFetcherWinHTTP() {}
+NetworkFetcherWinHTTP::~NetworkFetcherWinHTTP() = default;
 
 void NetworkFetcherWinHTTP::Close() {
   request_handle_.reset();

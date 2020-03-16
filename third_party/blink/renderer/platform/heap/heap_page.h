@@ -393,8 +393,8 @@ inline Address BlinkPageAddress(Address address) {
                                    kBlinkPageBaseMask);
 }
 
-inline bool VTableInitialized(void* object_pointer) {
-  return !!(*reinterpret_cast<Address*>(object_pointer));
+inline bool VTableInitialized(const void* object_pointer) {
+  return !!(*reinterpret_cast<const ConstAddress*>(object_pointer));
 }
 
 #if DCHECK_IS_ON()
@@ -461,9 +461,9 @@ class BasePage {
       ThreadState::Statistics::ArenaStatistics* arena_stats) = 0;
 
 #if DCHECK_IS_ON()
-  virtual bool Contains(Address) = 0;
+  virtual bool Contains(ConstAddress) const = 0;
 #endif
-  virtual size_t size() = 0;
+  virtual size_t size() const = 0;
 
   Address GetAddress() const {
     return reinterpret_cast<Address>(const_cast<BasePage*>(this));
@@ -593,7 +593,7 @@ class PLATFORM_EXPORT ObjectStartBitmap {
   // address_maybe_pointing_to_the_middle_of_object. Will search for an object
   // start in decreasing address order.
   Address FindHeader(
-      Address address_maybe_pointing_to_the_middle_of_object) const;
+      ConstAddress address_maybe_pointing_to_the_middle_of_object) const;
 
   inline void SetBit(Address);
   inline void ClearBit(Address);
@@ -637,7 +637,7 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
     return (BlinkPagePayloadSize() - PageHeaderSize()) & ~kAllocationMask;
   }
   Address PayloadEnd() const { return Payload() + PayloadSize(); }
-  bool ContainedInObjectPayload(Address address) const {
+  bool ContainedInObjectPayload(ConstAddress address) const {
     return Payload() <= address && address < PayloadEnd();
   }
 
@@ -658,9 +658,9 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
   // Returns true for the whole |kBlinkPageSize| page that the page is on, even
   // for the header, and the unmapped guard page at the start. That ensures the
   // result can be used to populate the negative page cache.
-  bool Contains(Address) override;
+  bool Contains(ConstAddress) const override;
 #endif
-  size_t size() override { return kBlinkPageSize; }
+  size_t size() const override { return kBlinkPageSize; }
   static constexpr size_t PageHeaderSize() {
     // Compute the amount of padding we have to add to a header to make the size
     // of the header plus the padding a multiple of 8 bytes.
@@ -695,6 +695,9 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
 
   // Object start bitmap of this page.
   ObjectStartBitmap* object_start_bit_map() { return &object_start_bit_map_; }
+  const ObjectStartBitmap* object_start_bit_map() const {
+    return &object_start_bit_map_;
+  }
 
   // Verifies that the object start bitmap only contains a bit iff the object
   // is also reachable through iteration on the page.
@@ -703,14 +706,14 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
   // Uses the object_start_bit_map_ to find an object for a given address. The
   // returned header is either nullptr, indicating that no object could be
   // found, or it is pointing to valid object or free list entry.
-  HeapObjectHeader* ConservativelyFindHeaderFromAddress(Address);
+  HeapObjectHeader* ConservativelyFindHeaderFromAddress(ConstAddress) const;
 
   // Uses the object_start_bit_map_ to find an object for a given address. It is
   // assumed that the address points into a valid heap object. Use the
   // conservative version if that assumption does not hold.
   template <
       HeapObjectHeader::AccessMode = HeapObjectHeader::AccessMode::kNonAtomic>
-  HeapObjectHeader* FindHeaderFromAddress(Address);
+  HeapObjectHeader* FindHeaderFromAddress(ConstAddress) const;
 
   void VerifyMarking() override;
 
@@ -846,7 +849,7 @@ class PLATFORM_EXPORT LargeObjectPage final : public BasePage {
   //   ObjectSize(): PayloadSize() + sizeof(HeapObjectHeader)
   //   size():       ObjectSize() + PageHeaderSize()
 
-  HeapObjectHeader* ObjectHeader() {
+  HeapObjectHeader* ObjectHeader() const {
     Address header_address = GetAddress() + PageHeaderSize();
     return reinterpret_cast<HeapObjectHeader*>(header_address);
   }
@@ -856,18 +859,18 @@ class PLATFORM_EXPORT LargeObjectPage final : public BasePage {
   size_t ObjectSize() const { return object_size_; }
 
   // Returns the size of the page including the header.
-  size_t size() override { return PageHeaderSize() + object_size_; }
+  size_t size() const override { return PageHeaderSize() + object_size_; }
 
   // Returns the payload start of the underlying object.
-  Address Payload() { return ObjectHeader()->Payload(); }
+  Address Payload() const { return ObjectHeader()->Payload(); }
 
   // Returns the payload size of the underlying object.
-  size_t PayloadSize() { return object_size_ - sizeof(HeapObjectHeader); }
+  size_t PayloadSize() const { return object_size_ - sizeof(HeapObjectHeader); }
 
   // Points to the payload end of the underlying object.
-  Address PayloadEnd() { return Payload() + PayloadSize(); }
+  Address PayloadEnd() const { return Payload() + PayloadSize(); }
 
-  bool ContainedInObjectPayload(Address address) {
+  bool ContainedInObjectPayload(ConstAddress address) const {
     return Payload() <= address && address < PayloadEnd();
   }
 
@@ -891,7 +894,7 @@ class PLATFORM_EXPORT LargeObjectPage final : public BasePage {
   // Returns true for any address that is on one of the pages that this large
   // object uses. That ensures that we can use a negative result to populate the
   // negative page cache.
-  bool Contains(Address) override;
+  bool Contains(ConstAddress) const override;
 #endif
 
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
@@ -935,7 +938,7 @@ class PLATFORM_EXPORT BaseArena {
       ThreadState::Statistics::FreeListStatistics*) {}
 
 #if DCHECK_IS_ON()
-  BasePage* FindPageFromAddress(Address);
+  BasePage* FindPageFromAddress(ConstAddress) const;
 #endif
   virtual void ClearFreeLists() {}
   virtual void MakeIterable() {}
@@ -1013,7 +1016,7 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
 
 #if DCHECK_IS_ON()
   bool IsConsistentForGC() override;
-  bool PagesToBeSweptContains(Address);
+  bool PagesToBeSweptContains(ConstAddress) const;
 #endif
 
   Address AllocateObject(size_t allocation_size, size_t gc_info_index);
@@ -1041,7 +1044,7 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
 
   Address CurrentAllocationPoint() const { return current_allocation_point_; }
 
-  bool IsInCurrentAllocationPointRegion(Address address) const {
+  bool IsInCurrentAllocationPointRegion(ConstAddress address) const {
     return HasCurrentAllocationArea() &&
            (CurrentAllocationPoint() <= address) &&
            (address < (CurrentAllocationPoint() + RemainingAllocationSize()));
@@ -1131,7 +1134,7 @@ inline HeapObjectHeader* HeapObjectHeader::FromInnerAddress(
   return page->IsLargeObjectPage()
              ? static_cast<LargeObjectPage*>(page)->ObjectHeader()
              : static_cast<NormalPage*>(page)->FindHeaderFromAddress<mode>(
-                   reinterpret_cast<Address>(const_cast<void*>(address)));
+                   reinterpret_cast<ConstAddress>(address));
 }
 
 inline void HeapObjectHeader::CheckFromPayload(const void* payload) {
@@ -1396,7 +1399,8 @@ NO_SANITIZE_ADDRESS inline void HeapObjectHeader::StoreEncoded(uint16_t bits,
 }
 
 template <HeapObjectHeader::AccessMode mode>
-HeapObjectHeader* NormalPage::FindHeaderFromAddress(Address address) {
+HeapObjectHeader* NormalPage::FindHeaderFromAddress(
+    ConstAddress address) const {
   DCHECK(ContainedInObjectPayload(address));
   DCHECK(!ArenaForNormalPage()->IsInCurrentAllocationPointRegion(address));
   HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(

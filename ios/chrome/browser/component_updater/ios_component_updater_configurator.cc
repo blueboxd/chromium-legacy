@@ -74,7 +74,7 @@ class IOSConfigurator : public update_client::Configurator {
   scoped_refptr<update_client::UnzipperFactory> unzip_factory_;
   scoped_refptr<update_client::PatcherFactory> patch_factory_;
 
-  ~IOSConfigurator() override {}
+  ~IOSConfigurator() override = default;
 };
 
 // Allows the component updater to use non-encrypted communication with the

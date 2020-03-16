@@ -38,6 +38,11 @@ const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
 const base::Feature kAssistPersonalInfo{"AssistPersonalInfo",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Displays the avatar toolbar button and the profile menu.
+// https://crbug.com/1041472
+extern const base::Feature kAvatarToolbarButton{
+    "AvatarToolbarButton", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables more aggressive filtering out of Bluetooth devices with
 // "appearances" that are less likely to be pairable or useful.
 const base::Feature kBluetoothAggressiveAppearanceFilter{

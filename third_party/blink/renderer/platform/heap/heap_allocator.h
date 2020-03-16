@@ -92,7 +92,7 @@ class PLATFORM_EXPORT HeapAllocator {
   static void FreeHashTableBacking(void* address);
   static bool ExpandHashTableBacking(void*, size_t);
 
-  static void TraceBackingStoreIfMarked(void* address) {
+  static void TraceBackingStoreIfMarked(const void* address) {
     // Trace backing store elements only if backing store was marked. The
     // sweeper may be active on the backing store which requires atomic mark bit
     // access. A precise filter is performed in
@@ -153,7 +153,7 @@ class PLATFORM_EXPORT HeapAllocator {
   }
 
   template <typename T, typename Traits>
-  static void Trace(Visitor* visitor, T& t) {
+  static void Trace(Visitor* visitor, const T& t) {
     TraceCollectionIfEnabled<WTF::WeakHandlingTrait<T>::value, T,
                              Traits>::Trace(visitor, &t);
   }
@@ -237,41 +237,44 @@ class PLATFORM_EXPORT HeapAllocator {
 
   template <typename T>
   static void TraceVectorBacking(Visitor* visitor,
-                                 T* backing,
-                                 T** backing_slot) {
+                                 const T* backing,
+                                 const T* const* backing_slot) {
     visitor->TraceBackingStoreStrongly(
-        reinterpret_cast<HeapVectorBacking<T>*>(backing),
-        reinterpret_cast<HeapVectorBacking<T>**>(backing_slot));
+        reinterpret_cast<const HeapVectorBacking<T>*>(backing),
+        reinterpret_cast<const HeapVectorBacking<T>* const*>(backing_slot));
   }
 
   template <typename T, typename HashTable>
   static void TraceHashTableBackingStrongly(Visitor* visitor,
-                                            T* backing,
-                                            T** backing_slot) {
+                                            const T* backing,
+                                            const T* const* backing_slot) {
     visitor->TraceBackingStoreStrongly(
-        reinterpret_cast<HeapHashTableBacking<HashTable>*>(backing),
-        reinterpret_cast<HeapHashTableBacking<HashTable>**>(backing_slot));
+        reinterpret_cast<const HeapHashTableBacking<HashTable>*>(backing),
+        reinterpret_cast<const HeapHashTableBacking<HashTable>* const*>(
+            backing_slot));
   }
 
   template <typename T, typename HashTable>
   static void TraceHashTableBackingWeakly(Visitor* visitor,
-                                          T* backing,
-                                          T** backing_slot,
+                                          const T* backing,
+                                          const T* const* backing_slot,
                                           WeakCallback callback,
-                                          void* parameter) {
+                                          const void* parameter) {
     visitor->TraceBackingStoreWeakly<HashTable>(
-        reinterpret_cast<HeapHashTableBacking<HashTable>*>(backing),
-        reinterpret_cast<HeapHashTableBacking<HashTable>**>(backing_slot),
+        reinterpret_cast<const HeapHashTableBacking<HashTable>*>(backing),
+        reinterpret_cast<const HeapHashTableBacking<HashTable>* const*>(
+            backing_slot),
         callback, parameter);
   }
 
   template <typename T, typename HashTable>
   static void TraceHashTableBackingOnly(Visitor* visitor,
-                                        T* backing,
-                                        T** backing_slot) {
+                                        const T* backing,
+                                        const T* const* backing_slot) {
     visitor->TraceBackingStoreOnly(
-        reinterpret_cast<HeapHashTableBacking<HashTable>*>(backing),
-        reinterpret_cast<HeapHashTableBacking<HashTable>**>(backing_slot));
+        reinterpret_cast<const HeapHashTableBacking<HashTable>*>(backing),
+        reinterpret_cast<const HeapHashTableBacking<HashTable>* const*>(
+            backing_slot));
   }
 
  private:
@@ -317,7 +320,8 @@ class PLATFORM_EXPORT HeapAllocator {
 };
 
 template <typename VisitorDispatcher, typename Value>
-static void TraceListHashSetValue(VisitorDispatcher visitor, Value& value) {
+static void TraceListHashSetValue(VisitorDispatcher visitor,
+                                  const Value& value) {
   // We use the default hash traits for the value in the node, because
   // ListHashSet does not let you specify any specific ones.
   // We don't allow ListHashSet of WeakMember, so we set that one false
@@ -375,7 +379,7 @@ class HeapListHashSetAllocator : public HeapAllocator {
   }
 
   template <typename VisitorDispatcher>
-  static void TraceValue(VisitorDispatcher visitor, Node* node) {
+  static void TraceValue(VisitorDispatcher visitor, const Node* node) {
     TraceListHashSetValue(visitor, node->value_);
   }
 };

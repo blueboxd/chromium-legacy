@@ -220,7 +220,7 @@ class CrxInstaller : public base::RefCountedThreadSafe<CrxInstaller> {
  protected:
   friend class base::RefCountedThreadSafe<CrxInstaller>;
 
-  virtual ~CrxInstaller() {}
+  virtual ~CrxInstaller() = default;
 };
 
 // Defines an interface to handle |action| elements in the update response.
@@ -366,7 +366,7 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
       COMPONENT_UPDATE_DOWNLOADING,
     };
 
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
 
     // Called by the update client when a state change happens.
     // If an |id| is specified, then the event is fired on behalf of the
@@ -445,7 +445,7 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
  protected:
   friend class base::RefCounted<UpdateClient>;
 
-  virtual ~UpdateClient() {}
+  virtual ~UpdateClient() = default;
 };
 
 // Creates an instance of the update client.

@@ -88,7 +88,7 @@ Ecdsa::Ecdsa(int key_version, const base::StringPiece& public_key)
     : pub_key_version_(key_version),
       public_key_(public_key.begin(), public_key.end()) {}
 
-Ecdsa::~Ecdsa() {}
+Ecdsa::~Ecdsa() = default;
 
 std::unique_ptr<Ecdsa> Ecdsa::Create(int key_version,
                                      const base::StringPiece& public_key) {

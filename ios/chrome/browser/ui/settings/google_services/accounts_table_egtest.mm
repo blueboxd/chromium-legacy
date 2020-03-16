@@ -231,6 +231,31 @@ id<GREYMatcher> NoBookmarksLabel() {
       assertWithMatcher:grey_notNil()];
 }
 
+// Tests that signing out from a managed user account clears the user's data.
+- (void)testsSignOutFromManagedAccount {
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeManagedIdentity];
+
+  // Sign In |fakeIdentity|.
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity isManagedAccount:YES];
+
+  // Add a bookmark after sync is initialized.
+  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:kSyncOperationTimeout];
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  [SigninEarlGreyUtilsAppInterface addBookmark:@"http://youtube.com"
+                                     withTitle:@"cats"];
+
+  [SigninEarlGreyUI
+      signOutWithSignOutConfirmation:SignOutConfirmationManagedUser];
+
+  // Open the Bookmarks screen on the Tools menu.
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
+
+  // Assert that there are no bookmarks.
+  [[EarlGrey selectElementWithMatcher:NoBookmarksLabel()]
+      assertWithMatcher:grey_notNil()];
+}
+
 // Tests that the user isn't signed out and the UI is correct when the
 // disconnect is cancelled in the Account Settings screen.
 - (void)testSignInDisconnectCancelled {

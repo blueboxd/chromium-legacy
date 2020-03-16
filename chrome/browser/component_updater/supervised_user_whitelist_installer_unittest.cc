@@ -75,7 +75,7 @@ std::string JsonToString(const base::DictionaryValue& dict) {
 class MockComponentUpdateService : public ComponentUpdateService,
                                    public OnDemandUpdater {
  public:
-  ~MockComponentUpdateService() override {}
+  ~MockComponentUpdateService() override = default;
 
   bool on_demand_update_called() const { return on_demand_update_called_; }
 
@@ -201,7 +201,7 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
   SupervisedUserWhitelistInstallerTest()
       : testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
-  ~SupervisedUserWhitelistInstallerTest() override {}
+  ~SupervisedUserWhitelistInstallerTest() override = default;
 
   void SetUp() override {
     SupervisedUserWhitelistInstaller::RegisterPrefs(local_state_.registry());

@@ -14,7 +14,27 @@
 #include "components/paint_preview/browser/file_manager.h"
 #include "ui/gfx/geometry/rect.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/callback_android.h"
+#include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
+#include "base/logging.h"
+#include "chrome/android/chrome_jni_headers/PaintPreviewTabService_jni.h"
+#endif  // defined(OS_ANDROID)
+
 namespace paint_preview {
+
+namespace {
+
+#if defined(OS_ANDROID)
+void JavaBooleanCallbackAdapter(base::OnceCallback<void(bool)> callback,
+                                PaintPreviewTabService::Status status) {
+  DVLOG(1) << "Capture finished with status: " << status;
+  std::move(callback).Run(status == PaintPreviewTabService::Status::kOk);
+}
+#endif  // defined(OS_ANDROID)
+
+}  // namespace
 
 PaintPreviewTabService::PaintPreviewTabService(
     const base::FilePath& profile_dir,
@@ -24,9 +44,21 @@ PaintPreviewTabService::PaintPreviewTabService(
     : PaintPreviewBaseService(profile_dir,
                               ascii_feature_name,
                               std::move(policy),
-                              is_off_the_record) {}
+                              is_off_the_record) {
+#if defined(OS_ANDROID)
+  JNIEnv* env = base::android::AttachCurrentThread();
+  java_ref_.Reset(Java_PaintPreviewTabService_Constructor(
+      env, reinterpret_cast<intptr_t>(this)));
+#endif  // defined(OS_ANDROID)
+}
 
-PaintPreviewTabService::~PaintPreviewTabService() = default;
+PaintPreviewTabService::~PaintPreviewTabService() {
+#if defined(OS_ANDROID)
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_PaintPreviewTabService_onNativeDestroyed(env, java_ref_);
+  java_ref_.Reset();
+#endif  // defined(OS_ANDROID)
+}
 
 void PaintPreviewTabService::CaptureTab(int tab_id,
                                         content::WebContents* contents,
@@ -39,7 +71,8 @@ void PaintPreviewTabService::CaptureTab(int tab_id,
                      true),
       base::BindOnce(&PaintPreviewTabService::CaptureTabInternal,
                      weak_ptr_factory_.GetWeakPtr(), key,
-                     base::Unretained(contents), std::move(callback)));
+                     contents->GetMainFrame()->GetFrameTreeNodeId(),
+                     std::move(callback)));
 }
 
 void PaintPreviewTabService::TabClosed(int tab_id) {
@@ -49,6 +82,16 @@ void PaintPreviewTabService::TabClosed(int tab_id) {
                                 file_manager->CreateKey(tab_id)));
 }
 
+void PaintPreviewTabService::HasCaptureForTab(int tab_id,
+                                              BooleanCallback callback) {
+  auto file_manager = GetFileManager();
+  GetTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&FileManager::CaptureExists, file_manager,
+                     file_manager->CreateKey(tab_id)),
+      std::move(callback));
+}
+
 void PaintPreviewTabService::AuditArtifacts(
     const std::vector<int>& active_tab_ids) {
   GetTaskRunner()->PostTaskAndReplyWithResult(
@@ -56,14 +99,58 @@ void PaintPreviewTabService::AuditArtifacts(
       base::BindOnce(&PaintPreviewTabService::RunAudit,
                      weak_ptr_factory_.GetWeakPtr(), active_tab_ids));
 }
+#if defined(OS_ANDROID)
+void PaintPreviewTabService::CaptureTab(
+    JNIEnv* env,
+    jint j_tab_id,
+    const base::android::JavaParamRef<jobject>& j_web_contents,
+    const base::android::JavaParamRef<jobject>& j_callback) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  CaptureTab(static_cast<int>(j_tab_id), web_contents,
+             base::BindOnce(
+                 &JavaBooleanCallbackAdapter,
+                 base::BindOnce(
+                     &base::android::RunBooleanCallbackAndroid,
+                     base::android::ScopedJavaGlobalRef<jobject>(j_callback))));
+}
+
+void PaintPreviewTabService::TabClosed(JNIEnv* env, jint j_tab_id) {
+  TabClosed(static_cast<int>(j_tab_id));
+}
+
+void PaintPreviewTabService::HasCaptureForTab(
+    JNIEnv* env,
+    jint j_tab_id,
+    const base::android::JavaParamRef<jobject>& j_callback) {
+  HasCaptureForTab(
+      static_cast<int>(j_tab_id),
+      base::BindOnce(&base::android::RunBooleanCallbackAndroid,
+                     base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
+}
+
+void PaintPreviewTabService::AuditArtifacts(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jintArray>& j_tab_ids) {
+  std::vector<int> tab_ids;
+  base::android::JavaIntArrayToIntVector(env, j_tab_ids, &tab_ids);
+  AuditArtifacts(tab_ids);
+}
+#endif  // defined(OS_ANDROID)
 
 void PaintPreviewTabService::CaptureTabInternal(
     const DirectoryKey& key,
-    content::WebContents* contents,
+    int frame_tree_node_id,
     FinishedCallback callback,
     const base::Optional<base::FilePath>& file_path) {
   if (!file_path.has_value()) {
     std::move(callback).Run(Status::kDirectoryCreationFailed);
+    return;
+  }
+  auto* contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  if (!contents) {
+    std::move(callback).Run(Status::kWebContentsGone);
     return;
   }
   CapturePaintPreview(

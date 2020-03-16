@@ -88,7 +88,7 @@ class TaskScheduler {
 
   TaskScheduler(const TaskScheduler&) = delete;
   TaskScheduler& operator=(const TaskScheduler&) = delete;
-  virtual ~TaskScheduler() {}
+  virtual ~TaskScheduler() = default;
 
   // Identify whether the task is registered or not.
   virtual bool IsTaskRegistered(const wchar_t* task_name) = 0;

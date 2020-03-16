@@ -69,7 +69,7 @@ void UnifiedHeapMarkingVisitor::WriteBarrier(
 void UnifiedHeapMarkingVisitor::WriteBarrier(
     v8::Isolate* isolate,
     const WrapperTypeInfo* wrapper_type_info,
-    void* object) {
+    const void* object) {
   // |object| here is either ScriptWrappable or CustomWrappable.
 
   if (!ThreadState::IsAnyIncrementalMarking())

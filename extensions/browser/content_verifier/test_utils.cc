@@ -4,15 +4,21 @@
 
 #include "extensions/browser/content_verifier/test_utils.h"
 
+#include "base/base64url.h"
 #include "base/bind.h"
+#include "base/files/file_util.h"
+#include "base/json/json_writer.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "crypto/sha2.h"
+#include "crypto/signature_creator.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
+#include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/zip.h"
 
@@ -36,8 +42,9 @@ TestContentVerifySingleJobObserver::WaitForJobFinished() {
   return client_->WaitForJobFinished();
 }
 
-void TestContentVerifySingleJobObserver::WaitForOnHashesReady() {
-  client_->WaitForOnHashesReady();
+ContentHashReader::InitStatus
+TestContentVerifySingleJobObserver::WaitForOnHashesReady() {
+  return client_->WaitForOnHashesReady();
 }
 
 TestContentVerifySingleJobObserver::ObserverClient::ObserverClient(
@@ -72,19 +79,29 @@ void TestContentVerifySingleJobObserver::ObserverClient::JobFinished(
 void TestContentVerifySingleJobObserver::ObserverClient::OnHashesReady(
     const ExtensionId& extension_id,
     const base::FilePath& relative_path,
-    bool success) {
-  if (!content::BrowserThread::CurrentlyOn(creation_thread_)) {
+    const ContentHashReader& hash_reader) {
+  if (content::BrowserThread::CurrentlyOn(creation_thread_))
+    OnHashesReadyOnCreationThread(extension_id, relative_path,
+                                  hash_reader.status());
+  else {
     base::PostTask(
         FROM_HERE, {creation_thread_},
-        base::BindOnce(
-            &TestContentVerifySingleJobObserver::ObserverClient::OnHashesReady,
-            this, extension_id, relative_path, success));
-    return;
+        base::BindOnce(&TestContentVerifySingleJobObserver::ObserverClient::
+                           OnHashesReadyOnCreationThread,
+                       this, extension_id, relative_path,
+                       hash_reader.status()));
   }
+}
+
+void TestContentVerifySingleJobObserver::ObserverClient::
+    OnHashesReadyOnCreationThread(const ExtensionId& extension_id,
+                                  const base::FilePath& relative_path,
+                                  ContentHashReader::InitStatus hashes_status) {
   if (extension_id != extension_id_ || relative_path != relative_path_)
     return;
   EXPECT_FALSE(seen_on_hashes_ready_);
   seen_on_hashes_ready_ = true;
+  hashes_status_ = hashes_status;
   on_hashes_ready_run_loop_.Quit();
 }
 
@@ -96,10 +113,11 @@ TestContentVerifySingleJobObserver::ObserverClient::WaitForJobFinished() {
   return failure_reason_.value_or(ContentVerifyJob::FAILURE_REASON_MAX);
 }
 
-void TestContentVerifySingleJobObserver::ObserverClient::
-    WaitForOnHashesReady() {
+ContentHashReader::InitStatus
+TestContentVerifySingleJobObserver::ObserverClient::WaitForOnHashesReady() {
   // Run() returns immediately if Quit() has already been called.
   on_hashes_ready_run_loop_.Run();
+  return hashes_status_;
 }
 
 // TestContentVerifyJobObserver ------------------------------------------------
@@ -325,6 +343,140 @@ void ContentHashWaiter::CreateContentHash(
 
 namespace content_verifier_test_utils {
 
+// TestExtensionBuilder -------------------------------------------------------
+TestExtensionBuilder::TestExtensionBuilder()
+    : test_content_verifier_key_(crypto::RSAPrivateKey::Create(2048)),
+      // We have to provide explicit extension id in verified_contents.json.
+      extension_id_(32, 'a') {
+  base::CreateDirectory(extension_dir_.UnpackedPath().Append(kMetadataFolder));
+}
+
+TestExtensionBuilder::~TestExtensionBuilder() = default;
+
+void TestExtensionBuilder::WriteManifest() {
+  extension_dir_.WriteManifest(DictionaryBuilder()
+                                   .Set("manifest_version", 2)
+                                   .Set("name", "Test extension")
+                                   .Set("version", "1.0")
+                                   .ToJSON());
+}
+
+void TestExtensionBuilder::WriteResource(
+    base::FilePath::StringType relative_path,
+    std::string contents) {
+  extension_dir_.WriteFile(relative_path, contents);
+  extension_resources_.emplace_back(base::FilePath(std::move(relative_path)),
+                                    std::move(contents));
+}
+
+void TestExtensionBuilder::WriteComputedHashes() {
+  int block_size = extension_misc::kContentVerificationDefaultBlockSize;
+  ComputedHashes::Data computed_hashes_data;
+
+  for (const auto& resource : extension_resources_) {
+    std::vector<std::string> hashes =
+        ComputedHashes::GetHashesForContent(resource.contents, block_size);
+    computed_hashes_data.Add(resource.relative_path, block_size, hashes);
+  }
+
+  ASSERT_TRUE(ComputedHashes(std::move(computed_hashes_data))
+                  .WriteToFile(file_util::GetComputedHashesPath(
+                      extension_dir_.UnpackedPath())));
+}
+
+void TestExtensionBuilder::WriteVerifiedContents() {
+  std::unique_ptr<base::Value> payload = CreateVerifiedContents();
+  std::string payload_value;
+  ASSERT_TRUE(base::JSONWriter::Write(*payload, &payload_value));
+
+  std::string payload_b64;
+  base::Base64UrlEncode(
+      payload_value, base::Base64UrlEncodePolicy::OMIT_PADDING, &payload_b64);
+
+  std::string signature_sha256 = crypto::SHA256HashString("." + payload_b64);
+  std::vector<uint8_t> signature_source(signature_sha256.begin(),
+                                        signature_sha256.end());
+  std::vector<uint8_t> signature_value;
+  ASSERT_TRUE(crypto::SignatureCreator::Sign(
+      test_content_verifier_key_.get(), crypto::SignatureCreator::SHA256,
+      signature_source.data(), signature_source.size(), &signature_value));
+
+  std::string signature_b64;
+  base::Base64UrlEncode(
+      std::string(signature_value.begin(), signature_value.end()),
+      base::Base64UrlEncodePolicy::OMIT_PADDING, &signature_b64);
+
+  std::unique_ptr<base::Value> signatures =
+      ListBuilder()
+          .Append(DictionaryBuilder()
+                      .Set("header",
+                           DictionaryBuilder().Set("kid", "webstore").Build())
+                      .Set("protected", "")
+                      .Set("signature", signature_b64)
+                      .Build())
+          .Build();
+  std::unique_ptr<base::Value> verified_contents =
+      ListBuilder()
+          .Append(DictionaryBuilder()
+                      .Set("description", "treehash per file")
+                      .Set("signed_content",
+                           DictionaryBuilder()
+                               .Set("payload", payload_b64)
+                               .Set("signatures", std::move(signatures))
+                               .Build())
+                      .Build())
+          .Build();
+
+  std::string json;
+  ASSERT_TRUE(base::JSONWriter::Write(*verified_contents, &json));
+
+  base::FilePath verified_contents_path =
+      file_util::GetVerifiedContentsPath(extension_dir_.UnpackedPath());
+  ASSERT_EQ(static_cast<int>(json.size()),
+            base::WriteFile(verified_contents_path, json.data(), json.size()));
+}
+
+std::vector<uint8_t> TestExtensionBuilder::GetTestContentVerifierPublicKey() {
+  std::vector<uint8_t> public_key;
+  test_content_verifier_key_->ExportPublicKey(&public_key);
+  return public_key;
+}
+
+std::unique_ptr<base::Value> TestExtensionBuilder::CreateVerifiedContents() {
+  int block_size = extension_misc::kContentVerificationDefaultBlockSize;
+
+  ListBuilder files;
+  for (const auto& resource : extension_resources_) {
+    base::FilePath::StringType path =
+        base::FilePath(resource.relative_path).value();
+    std::string tree_hash =
+        ContentHash::ComputeTreeHashForContent(resource.contents, block_size);
+
+    std::string tree_hash_b64;
+    base::Base64UrlEncode(tree_hash, base::Base64UrlEncodePolicy::OMIT_PADDING,
+                          &tree_hash_b64);
+
+    files.Append(DictionaryBuilder()
+                     .Set("path", path)
+                     .Set("root_hash", tree_hash_b64)
+                     .Build());
+  }
+
+  return DictionaryBuilder()
+      .Set("item_id", extension_id_)
+      .Set("item_version", "1.0")
+      .Set("content_hashes", ListBuilder()
+                                 .Append(DictionaryBuilder()
+                                             .Set("format", "treehash")
+                                             .Set("block_size", block_size)
+                                             .Set("hash_block_size", block_size)
+                                             .Set("files", files.Build())
+                                             .Build())
+                                 .Build())
+      .Build();
+}
+
+// Other stuff ----------------------------------------------------------------
 scoped_refptr<Extension> UnzipToDirAndLoadExtension(
     const base::FilePath& extension_zip,
     const base::FilePath& unzip_dir) {

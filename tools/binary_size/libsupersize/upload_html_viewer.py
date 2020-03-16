@@ -1,67 +1,100 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Update the Google Cloud Storage bucket hosting the Super Size UI."""
+"""Update the firebase project hosting the Super Size UI."""
 
 from __future__ import division
 
-import argparse
 import os
+import shutil
 import subprocess
+import sys
+import tempfile
 import uuid
 
 
-GS_BUCKET = 'gs://chrome-supersize'
+FIREBASE_PROJECT = 'chrome-supersize'
 
 
-def _SyncStatic():
-  """Upload static files from the static directory."""
+def _FirebaseLogin():
+  """Login into the Firebase CLI"""
+  subprocess.check_call(['firebase', 'login'])
+
+
+def _CheckFirebaseCLI():
+  """Fail with a proper error message, if Firebase CLI is not installed."""
+  if subprocess.call(['firebase', '--version'], stdout=subprocess.DEVNULL) != 0:
+    link = 'https://firebase.google.com/docs/cli#install_the_firebase_cli'
+    raise Exception('Firebase CLI not installed or not on your PATH. Follow '
+                    'the instructions at ' + link + ' to install')
+
+
+def _FirebaseInitProjectDir(project_dir):
+  """Create a firebase.json file that is needed for deployment."""
+  static_dir = os.path.join(project_dir, 'public')
+  with open(os.path.join(project_dir, 'firebase.json'), 'w') as f:
+    f.write("""
+{
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/README*",
+      "**/.*"
+    ]
+  }
+}
+""")
+  return static_dir
+
+
+def _FirebaseDeploy(project_dir):
+  """Deploy the project to firebase hosting."""
+  subprocess.check_call(['firebase', 'deploy', '-P', FIREBASE_PROJECT],
+                        cwd=project_dir)
+
+
+def _CopyStaticFiles(project_static_dir):
+  """Copy over static files from the static directory."""
   static_files = os.path.join(os.path.dirname(__file__), 'static')
-  subprocess.check_call([
-      'gsutil.py', '--', '-m', '-h'
-      'Cache-Control:no-cache', 'rsync', '-r', static_files, GS_BUCKET
-  ])
+  shutil.copytree(static_files, project_static_dir)
 
 
-def _SyncTemplates():
-  """Generate and upload the templates/sw.js file."""
+def _FillInAndCopyTemplates(project_static_dir):
+  """Generate and copy over the templates/sw.js file."""
   template_file = os.path.join(os.path.dirname(__file__), 'templates', 'sw.js')
   cache_hash = uuid.uuid4().hex
 
-  p = subprocess.Popen([
-      'gsutil.py', '--', '-h'
-      'Cache-Control:no-cache', 'cp', '-p', '-', GS_BUCKET + '/sw.js'
-  ],
-                       stdin=subprocess.PIPE)
   with open(template_file, 'r') as in_file:
-    p.communicate(in_file.read().replace('{{cache_hash}}', cache_hash))
+    with open(os.path.join(project_static_dir, 'sw.js'), 'w') as out_file:
+      out_file.write(in_file.read().replace('{{cache_hash}}', cache_hash))
 
 
-def _SetMetaAndPermissions():
-  # sw.js has the wrong type due to being created from a stream
-  subprocess.check_call([
-    'gsutil.py', 'setmeta', '-h', 'Content-Type:application/javascript',
-    '%s/sw.js' % GS_BUCKET
-  ])
-
-  # All files in the root of the bucket are user readable
-  subprocess.check_call(
-      ['gsutil.py', '-m', 'acl', 'ch', '-u', 'AllUsers:R', GS_BUCKET + '/*'])
+def _Prompt(message):
+  """Prompt the user with a message and request affirmative outcome."""
+  choice = input(message + ' [y/N] ').lower()
+  return choice and choice[0] == 'y'
 
 
 def main():
-  parser = argparse.ArgumentParser(description=__doc__)
-  parser.add_argument('--sync', action='store_true', required=True,
-                      help='Sync static and template files to GCS.')
+  message = (
+"""This script deploys the contents of //tools/binary_size/libsupersize/static
+to firebase hosting at chrome-supersize.firebaseapp.com. Please ensure you have
+read the instructions at //tools/binary_size/libsupersize/static/README.md first
+before running this. Are you sure you want to continue?""")
 
-  args = parser.parse_args()
-
-  if args.sync:
-    _SyncStatic()
-    _SyncTemplates()
-    _SetMetaAndPermissions()
+  if _Prompt(message):
+    _CheckFirebaseCLI()
+    _FirebaseLogin()
+    with tempfile.TemporaryDirectory(prefix='firebase-') as project_dir:
+      static_dir = _FirebaseInitProjectDir(project_dir)
+      _CopyStaticFiles(static_dir)
+      _FillInAndCopyTemplates(static_dir)
+      _FirebaseDeploy(project_dir)
+  else:
+    print('Nothing was deployed.')
 
 
 if __name__ == '__main__':

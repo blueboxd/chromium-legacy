@@ -22,6 +22,8 @@
       'stopBulkPasswordCheck',
       'getCompromisedCredentials',
       'getPasswordCheckStatus',
+      'getPlainttextCompromisedPassword',
+      'changeCompromisedCredential',
     ]);
 
     this.actual_ = new autofill_test_util.PasswordManagerExpectations();
@@ -191,4 +193,18 @@
 
   /** @override */
   removePasswordCheckStatusListener(listener) {}
+
+  /** @override */
+  getPlaintextCompromisedPassword(credential, reason) {
+    this.methodCalled('getPlainttextCompromisedPassword');
+    const newCredential = Object.assign({}, credential);
+    newCredential.password = 'this-is-the-password';
+    return Promise.resolve(newCredential);
+  }
+
+  /** @override */
+  changeCompromisedCredential(credential, newPassword) {
+    this.methodCalled('changeCompromisedCredential', {credential, newPassword});
+    return Promise.resolve();
+  }
 }

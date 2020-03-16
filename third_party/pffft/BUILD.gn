@@ -78,9 +78,19 @@ static_library("fftpack") {
   visibility = [ ":*" ]
 }
 
+config("pffft_benchmark_internal_config") {
+  cflags = [
+    # test_pffft.c contains an `exit(1)` following a `break` statement.
+    "-Wno-unreachable-code",
+  ]
+}
+
 executable("pffft_benchmark") {
   testonly = true
-  configs += [ ":common_config" ]
+  configs += [
+    ":common_config",
+    ":pffft_benchmark_internal_config",
+  ]
   sources = [ "src/test_pffft.c" ]
   deps = [
     ":fftpack",

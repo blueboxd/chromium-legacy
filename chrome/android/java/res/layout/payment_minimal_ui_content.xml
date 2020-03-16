@@ -15,10 +15,10 @@
         android:layout_height="wrap_content"
         android:layout_toStartOf="@+id/payment_currency"
         android:layout_width="wrap_content"
-        android:paddingBottom="@dimen/microtransaction_large_text_vertical_spacing"
-        android:paddingEnd="@dimen/microtransaction_spacing"
-        android:paddingStart="@dimen/microtransaction_spacing"
-        android:paddingTop="@dimen/microtransaction_content_top_spacing"
+        android:paddingBottom="@dimen/payment_minimal_ui_large_text_vertical_spacing"
+        android:paddingEnd="@dimen/payment_minimal_ui_spacing"
+        android:paddingStart="@dimen/payment_minimal_ui_spacing"
+        android:paddingTop="@dimen/payment_minimal_ui_content_top_spacing"
         android:textAppearance="@style/TextAppearance.TextMedium.Secondary"
         android:text="@string/payment_request_payment_method_section_name"/>
 
@@ -28,7 +28,7 @@
         android:layout_height="wrap_content"
         android:layout_toStartOf="@+id/payment_amount"
         android:layout_width="wrap_content"
-        android:paddingTop="@dimen/microtransaction_content_top_spacing"
+        android:paddingTop="@dimen/payment_minimal_ui_content_top_spacing"
         android:textAppearance="@style/TextAppearance.TextMedium.Primary"/>
 
     <!-- Bold formatted amount, e.g., "$1.00". -->
@@ -37,9 +37,9 @@
         android:layout_alignParentEnd="true"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:paddingEnd="@dimen/microtransaction_spacing"
-        android:paddingStart="@dimen/microtransaction_amount_currency_spacing"
-        android:paddingTop="@dimen/microtransaction_content_top_spacing"
+        android:paddingEnd="@dimen/payment_minimal_ui_spacing"
+        android:paddingStart="@dimen/payment_minimal_ui_amount_currency_spacing"
+        android:paddingTop="@dimen/payment_minimal_ui_content_top_spacing"
         android:textAppearance="@style/TextAppearance.TextMediumThick.Primary"/>
 
     <!-- Line item separator. -->
@@ -47,9 +47,9 @@
         android:background="@color/divider_bg_color"
         android:id="@+id/line_item_separator"
         android:layout_below="@id/payment_label"
-        android:layout_height="@dimen/microtransaction_separator_width"
-        android:layout_marginEnd="@dimen/microtransaction_spacing"
-        android:layout_marginStart="@dimen/microtransaction_spacing"
+        android:layout_height="@dimen/payment_minimal_ui_separator_width"
+        android:layout_marginEnd="@dimen/payment_minimal_ui_spacing"
+        android:layout_marginStart="@dimen/payment_minimal_ui_spacing"
         android:layout_width="match_parent"/>
 
     <!-- "Account Balance" label. -->
@@ -60,10 +60,10 @@
         android:layout_height="wrap_content"
         android:layout_toStartOf="@+id/account_balance_currency"
         android:layout_width="wrap_content"
-        android:paddingBottom="@dimen/microtransaction_large_text_vertical_spacing"
-        android:paddingEnd="@dimen/microtransaction_spacing"
-        android:paddingStart="@dimen/microtransaction_spacing"
-        android:paddingTop="@dimen/microtransaction_large_text_vertical_spacing"
+        android:paddingBottom="@dimen/payment_minimal_ui_large_text_vertical_spacing"
+        android:paddingEnd="@dimen/payment_minimal_ui_spacing"
+        android:paddingStart="@dimen/payment_minimal_ui_spacing"
+        android:paddingTop="@dimen/payment_minimal_ui_large_text_vertical_spacing"
         android:textAppearance="@style/TextAppearance.TextMedium.Secondary"
         android:text="@string/payment_account_balance"/>
 
@@ -74,7 +74,7 @@
         android:layout_height="wrap_content"
         android:layout_toStartOf="@+id/account_balance"
         android:layout_width="wrap_content"
-        android:paddingTop="@dimen/microtransaction_large_text_vertical_spacing"
+        android:paddingTop="@dimen/payment_minimal_ui_large_text_vertical_spacing"
         android:textAppearance="@style/TextAppearance.TextMedium.Primary"/>
 
     <!-- Bold formatted account balance, e.g., "$18.00". -->
@@ -84,9 +84,9 @@
         android:layout_below="@id/line_item_separator"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:paddingEnd="@dimen/microtransaction_spacing"
-        android:paddingStart="@dimen/microtransaction_amount_currency_spacing"
-        android:paddingTop="@dimen/microtransaction_large_text_vertical_spacing"
+        android:paddingEnd="@dimen/payment_minimal_ui_spacing"
+        android:paddingStart="@dimen/payment_minimal_ui_amount_currency_spacing"
+        android:paddingTop="@dimen/payment_minimal_ui_large_text_vertical_spacing"
         android:textAppearance="@style/TextAppearance.TextMediumThick.Primary"/>
 
     <!-- Status icon, e.g., the fingerprint icon. -->
@@ -95,9 +95,9 @@
         android:importantForAccessibility="no"
         android:layout_below="@id/account_balance_label"
         android:layout_centerHorizontal="true"
-        android:layout_height="@dimen/microtransaction_content_icon_size"
-        android:layout_margin="@dimen/microtransaction_content_icon_spacing"
-        android:layout_width="@dimen/microtransaction_content_icon_size"
+        android:layout_height="@dimen/payment_minimal_ui_content_icon_size"
+        android:layout_margin="@dimen/payment_minimal_ui_content_icon_spacing"
+        android:layout_width="@dimen/payment_minimal_ui_content_icon_size"
         android:scaleType="centerCrop"/>
 
     <!-- Processing spinner. -->
@@ -105,9 +105,9 @@
         android:id="@+id/processing_spinner"
         android:layout_below="@id/account_balance_label"
         android:layout_centerHorizontal="true"
-        android:layout_height="@dimen/microtransaction_content_icon_size"
-        android:layout_margin="@dimen/microtransaction_content_icon_spacing"
-        android:layout_width="@dimen/microtransaction_content_icon_size"/>
+        android:layout_height="@dimen/payment_minimal_ui_content_icon_size"
+        android:layout_margin="@dimen/payment_minimal_ui_content_icon_spacing"
+        android:layout_width="@dimen/payment_minimal_ui_content_icon_size"/>
 
     <!-- Status message, e.g., "Touch sensor to pay". -->
     <TextView
@@ -116,7 +116,7 @@
         android:layout_centerHorizontal="true"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:paddingBottom="@dimen/microtransaction_content_bottom_spacing"
+        android:paddingBottom="@dimen/payment_minimal_ui_content_bottom_spacing"
         android:textAppearance="@style/TextAppearance.TextSmall.Secondary"/>
 
     <!-- "Pay" button. -->
@@ -125,7 +125,7 @@
         android:layout_alignParentEnd="true"
         android:layout_below="@id/account_balance"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/microtransaction_spacing"
+        android:layout_margin="@dimen/payment_minimal_ui_spacing"
         android:layout_width="wrap_content"
         android:text="@string/payments_pay_button"
         style="@style/FilledButton.Flat"/>

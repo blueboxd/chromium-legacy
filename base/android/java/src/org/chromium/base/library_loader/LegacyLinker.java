@@ -36,7 +36,6 @@ class LegacyLinker extends Linker {
     void loadLibraryImplLocked(String library, boolean isFixedAddressPermitted) {
         ensureInitializedLocked();
         assert mState == State.INITIALIZED; // Only one successful call.
-        assert !NativeLibraries.sEnableLinkerTests;
 
         boolean provideRelro = mInBrowserProcess;
         long loadAddress = isFixedAddressPermitted ? mBaseLoadAddress : 0;

@@ -35,9 +35,6 @@ public abstract class PaymentApp extends EditableOption {
      */
     protected boolean mHaveRequestedAutofillData;
 
-    /** Whether the app should be invoked for a microtransaction. */
-    protected boolean mIsMicrotransaction;
-
     /**
      * The interface for listener to payment method, shipping address, and shipping option change
      * events. Note: What the spec calls "payment methods" in the context of a "change event", this

@@ -21,8 +21,8 @@ class ExtensionCache {
   typedef base::Callback<void(const base::FilePath& file_path,
                               bool file_ownership_passed)> PutExtensionCallback;
 
-  ExtensionCache() {}
-  virtual ~ExtensionCache() {}
+  ExtensionCache() = default;
+  virtual ~ExtensionCache() = default;
 
   // Initialize cache in background. The |callback| is called when cache ready.
   // Can be called multiple times. The |callback| can be called immediately if

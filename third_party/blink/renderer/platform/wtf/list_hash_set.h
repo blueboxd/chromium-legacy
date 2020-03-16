@@ -247,7 +247,7 @@ class ListHashSet
   ValueType TakeFirst();
 
   template <typename VisitorDispatcher, typename A = AllocatorArg>
-  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher);
+  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher) const;
 
  protected:
   typename ImplType::ValueType** GetBufferSlot() {
@@ -445,7 +445,7 @@ struct ListHashSetAllocator : public PartitionAllocator {
   bool InPool(Node* node) { return node >= Pool() && node < PastPool(); }
 
   template <typename VisitorDispatcher>
-  static void TraceValue(VisitorDispatcher, Node*) {}
+  static void TraceValue(VisitorDispatcher, const Node*) {}
 
  private:
   Node* Pool() { return reinterpret_cast_ptr<Node*>(pool_); }
@@ -515,7 +515,8 @@ class ListHashSetNode : public ListHashSetNodeBase<ValueArg, AllocatorArg> {
   }
 
   template <typename VisitorDispatcher, typename A = NodeAllocator>
-  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher visitor) {
+  std::enable_if_t<A::kIsGarbageCollected> Trace(
+      VisitorDispatcher visitor) const {
     // The conservative stack scan can find nodes that have been removed
     // from the set and destructed. We don't need to trace these, and it
     // would be wrong to do so, because the class will not expect the trace
@@ -526,8 +527,10 @@ class ListHashSetNode : public ListHashSetNodeBase<ValueArg, AllocatorArg> {
     if (WasAlreadyDestructedSafe())
       return;
     NodeAllocator::TraceValue(visitor, this);
-    visitor->Trace(reinterpret_cast<ListHashSetNode*>(this->next_.GetSafe()));
-    visitor->Trace(reinterpret_cast<ListHashSetNode*>(this->prev_.GetSafe()));
+    visitor->Trace(
+        reinterpret_cast<const ListHashSetNode*>(this->next_.GetSafe()));
+    visitor->Trace(
+        reinterpret_cast<const ListHashSetNode*>(this->prev_.GetSafe()));
   }
 
   ListHashSetNode* Next() const {
@@ -613,7 +616,7 @@ class ListHashSetIterator {
   operator const_iterator() const { return iterator_; }
 
   template <typename VisitorDispatcher>
-  void Trace(VisitorDispatcher visitor) {
+  void Trace(VisitorDispatcher visitor) const {
     iterator_.Trace(visitor);
   }
 
@@ -675,7 +678,7 @@ class ListHashSetConstIterator {
   }
 
   template <typename VisitorDispatcher>
-  void Trace(VisitorDispatcher visitor) {
+  void Trace(VisitorDispatcher visitor) const {
     visitor->Trace(*set_);
     visitor->Trace(position_);
   }
@@ -735,7 +738,7 @@ class ListHashSetReverseIterator {
   operator const_reverse_iterator() const { return iterator_; }
 
   template <typename VisitorDispatcher>
-  void Trace(VisitorDispatcher visitor) {
+  void Trace(VisitorDispatcher visitor) const {
     iterator_.trace(visitor);
   }
 
@@ -797,7 +800,7 @@ class ListHashSetConstReverseIterator {
   }
 
   template <typename VisitorDispatcher>
-  void Trace(VisitorDispatcher visitor) {
+  void Trace(VisitorDispatcher visitor) const {
     visitor->Trace(*set_);
     visitor->Trace(position_);
   }
@@ -1198,7 +1201,7 @@ void ListHashSet<T, inlineCapacity, U, V>::DeleteAllNodes() {
 template <typename T, size_t inlineCapacity, typename U, typename V>
 template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
-ListHashSet<T, inlineCapacity, U, V>::Trace(VisitorDispatcher visitor) {
+ListHashSet<T, inlineCapacity, U, V>::Trace(VisitorDispatcher visitor) const {
   static_assert(!IsWeak<T>::value,
                 "HeapListHashSet does not support weakness, consider using "
                 "HeapLinkedHashSet instead.");

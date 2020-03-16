@@ -364,6 +364,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "avatar-toolbar-button",
+    "owners": [ "droger", "my-chrome-everywhere@google.com" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "back-forward-cache",
     "owners": [ "bfcache-dev" ],
     "expiry_milestone": 83

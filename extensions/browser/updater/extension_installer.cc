@@ -81,6 +81,6 @@ bool ExtensionInstaller::Uninstall() {
   return false;
 }
 
-ExtensionInstaller::~ExtensionInstaller() {}
+ExtensionInstaller::~ExtensionInstaller() = default;
 
 }  // namespace extensions

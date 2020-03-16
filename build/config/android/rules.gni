@@ -679,7 +679,6 @@ if (enable_java_templates) {
   #   enable_chromium_linker: (Optional) Whether to use the Chromium linker.
   #   load_library_from_apk: (Optional) Whether libraries should be loaded from
   #     the APK without uncompressing.
-  #   enable_chromium_linker_tests: (Optional) Whether to run tests.
   #   use_final_fields: True to use final fields. When false, all other
   #       variables must not be set.
   template("write_native_libraries_java") {
@@ -734,10 +733,6 @@ if (enable_java_templates) {
         if (defined(invoker.load_library_from_apk) &&
             invoker.load_library_from_apk) {
           args += [ "--load-library-from-apk" ]
-        }
-        if (defined(invoker.enable_chromium_linker_tests) &&
-            invoker.enable_chromium_linker_tests) {
-          args += [ "--enable-chromium-linker-tests" ]
         }
         if (defined(invoker.use_modern_linker) && invoker.use_modern_linker) {
           args += [ "--use-modern-linker" ]
@@ -2631,11 +2626,7 @@ if (enable_java_templates) {
         !_uses_static_library_synchronized_proguard
     if (_generate_native_libraries_java) {
       write_native_libraries_java("${_template_name}__native_libraries") {
-        forward_variables_from(invoker,
-                               [
-                                 "enable_chromium_linker_tests",
-                                 "main_component_library",
-                               ])
+        forward_variables_from(invoker, [ "main_component_library" ])
         deps = [
           ":${_template_name}__secondary_abi_shared_library_list",
           ":${_template_name}__shared_library_list",
@@ -3402,7 +3393,6 @@ if (enable_java_templates) {
                                "disable_checkdiscard",
                                "disable_r8_outlining",
                                "dist_ijar_path",
-                               "enable_chromium_linker_tests",
                                "enable_multidex",
                                "enable_native_mocks",
                                "generate_buildconfig_java",
@@ -3534,7 +3524,6 @@ if (enable_java_templates) {
                                "data",
                                "data_deps",
                                "deps",
-                               "enable_chromium_linker_tests",
                                "enable_multidex",
                                "failed_manifest_expectation_file",
                                "failed_proguard_expectation_file",

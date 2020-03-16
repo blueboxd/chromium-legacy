@@ -25,6 +25,15 @@ cr.define('settings_passwords_check', function() {
     return passwordsSection;
   }
 
+  function createEditDialog(leakedCredential) {
+    const editDialog =
+        document.createElement('settings-password-check-edit-dialog');
+    editDialog.item = leakedCredential;
+    document.body.appendChild(editDialog);
+    Polymer.dom.flush();
+    return editDialog;
+  }
+
   /**
    * Helper method used to create a compromised list item.
    * @param {!chrome.passwordsPrivate.CompromisedCredential} entry
@@ -942,6 +951,65 @@ cr.define('settings_passwords_check', function() {
       checkPasswordSection.updateList(shuffleArray(leakedPasswords));
       Polymer.dom.flush();
       validateLeakedPasswordsList(checkPasswordSection, leakedPasswords);
+    });
+
+    // Verify edit a password on the edit dialog.
+    test('testEditDialog', function() {
+      passwordManager.data.leakedCredentials = [
+        autofill_test_util.makeCompromisedCredential(
+            'google.com', 'jdoerrie', 'LEAKED'),
+      ];
+      const checkPasswordSection = createCheckPasswordSection();
+
+      return passwordManager.whenCalled('getCompromisedCredentials')
+          .then(() => {
+            Polymer.dom.flush();
+            const listElements = checkPasswordSection.$.leakedPasswordList;
+            const node = listElements.children[1];
+
+            // Open the more actions menu and click 'Edit Password'.
+            node.$.more.click();
+            checkPasswordSection.$.menuEditPassword.click();
+
+            return passwordManager.whenCalled(
+                'getPlainttextCompromisedPassword');
+          })
+          .then(() => {
+            // Verify that the edit dialog has become visible.
+            Polymer.dom.flush();
+            assertTrue(!!checkPasswordSection.$$(
+              'settings-password-check-edit-dialog'));
+          });
+    });
+
+    test('testEditDialogChangePassword', function() {
+      const leakedPassword = autofill_test_util.makeCompromisedCredential(
+          'google.com', 'jdoerrie', 'LEAKED');
+      leakedPassword.password = 'mybirthday';
+      const editDialog = createEditDialog(leakedPassword);
+
+      assertEquals(leakedPassword.password, editDialog.$.passwordInput.value);
+      editDialog.$.passwordInput.value = 'yadhtribym';
+      editDialog.$.save.click();
+
+      return passwordManager.whenCalled('changeCompromisedCredential')
+          .then(({newPassword}) => {
+            assertEquals('yadhtribym', newPassword);
+          });
+    });
+
+    test('testEditDialogCancel', function() {
+      const leakedPassword = autofill_test_util.makeCompromisedCredential(
+          'google.com', 'jdoerrie', 'LEAKED');
+      leakedPassword.password = 'mybirthday';
+      const editDialog = createEditDialog(leakedPassword);
+
+      assertEquals(leakedPassword.password, editDialog.$.passwordInput.value);
+      editDialog.$.passwordInput.value = 'yadhtribym';
+      editDialog.$.cancel.click();
+
+      assertEquals(0,
+                   passwordManager.getCallCount('changeCompromisedCredential'));
     });
   });
   // #cr_define_end

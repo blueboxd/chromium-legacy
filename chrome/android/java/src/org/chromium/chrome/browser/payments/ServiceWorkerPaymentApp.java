@@ -271,7 +271,7 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
             List<PaymentShippingOption> shippingOptions, InstrumentDetailsCallback callback) {
         assert mPaymentHandlerHost != null;
         if (mNeedsInstallation) {
-            assert !mIsMicrotransaction;
+            assert mCanShowOwnUI;
             BitmapDrawable icon = (BitmapDrawable) getDrawableIcon();
             ServiceWorkerPaymentAppBridge.installAndInvokePaymentApp(mWebContents, origin,
                     iframeOrigin, id, new HashSet<>(methodData.values()), total,
@@ -283,7 +283,7 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
             ServiceWorkerPaymentAppBridge.invokePaymentApp(mWebContents, mRegistrationId,
                     mScope.toString(), origin, iframeOrigin, id, new HashSet<>(methodData.values()),
                     total, new HashSet<>(modifiers.values()), paymentOptions, shippingOptions,
-                    mPaymentHandlerHost, mIsMicrotransaction, callback);
+                    mPaymentHandlerHost, mCanShowOwnUI, callback);
         }
     }
 

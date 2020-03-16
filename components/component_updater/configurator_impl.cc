@@ -52,7 +52,7 @@ ConfiguratorImpl::ConfiguratorImpl(
   }
 }
 
-ConfiguratorImpl::~ConfiguratorImpl() {}
+ConfiguratorImpl::~ConfiguratorImpl() = default;
 
 int ConfiguratorImpl::InitialDelay() const {
   if (initial_delay_)

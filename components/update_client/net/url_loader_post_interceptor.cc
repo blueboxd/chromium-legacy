@@ -48,7 +48,7 @@ URLLoaderPostInterceptor::URLLoaderPostInterceptor(
   InitializeWithRequestHandler();
 }
 
-URLLoaderPostInterceptor::~URLLoaderPostInterceptor() {}
+URLLoaderPostInterceptor::~URLLoaderPostInterceptor() = default;
 
 bool URLLoaderPostInterceptor::ExpectRequest(
     std::unique_ptr<RequestMatcher> request_matcher) {

@@ -25,8 +25,7 @@ RequestQueue<T>::RequestQueue(
       start_request_callback_(start_request_callback) {}
 
 template <typename T>
-RequestQueue<T>::~RequestQueue() {
-}
+RequestQueue<T>::~RequestQueue() = default;
 
 template <typename T>
 T* RequestQueue<T>::active_request() {

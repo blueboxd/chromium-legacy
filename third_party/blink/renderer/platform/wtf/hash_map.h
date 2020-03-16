@@ -209,7 +209,8 @@ class HashMap {
   static bool IsValidKey(const IncomingKeyType&);
 
   template <typename VisitorDispatcher, typename A = Allocator>
-  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher visitor) {
+  std::enable_if_t<A::kIsGarbageCollected> Trace(
+      VisitorDispatcher visitor) const {
     impl_.Trace(visitor);
   }
 

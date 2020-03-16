@@ -55,7 +55,9 @@ class ActiveScriptWrappable : public ActiveScriptWrappableBase {
   bool DispatchHasPendingActivity() const final {
     return static_cast<const T*>(this)->HasPendingActivity();
   }
-  ScriptWrappable* ToScriptWrappable() final { return static_cast<T*>(this); }
+  const ScriptWrappable* ToScriptWrappable() const final {
+    return static_cast<const T*>(this);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ActiveScriptWrappable);

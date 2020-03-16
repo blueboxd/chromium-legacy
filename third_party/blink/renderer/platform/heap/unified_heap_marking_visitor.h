@@ -49,7 +49,7 @@ class PLATFORM_EXPORT UnifiedHeapMarkingVisitor
  public:
   // Write barriers for annotating a write during incremental marking.
   static void WriteBarrier(const TraceWrapperV8Reference<v8::Value>&);
-  static void WriteBarrier(v8::Isolate*, const WrapperTypeInfo*, void*);
+  static void WriteBarrier(v8::Isolate*, const WrapperTypeInfo*, const void*);
 
   UnifiedHeapMarkingVisitor(ThreadState*, MarkingMode, v8::Isolate*);
   ~UnifiedHeapMarkingVisitor() override = default;

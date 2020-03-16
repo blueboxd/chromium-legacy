@@ -53,11 +53,9 @@ DeltaUpdateOp* CreateDeltaUpdateOp(const std::string& operation,
   return nullptr;
 }
 
-DeltaUpdateOp::DeltaUpdateOp() {
-}
+DeltaUpdateOp::DeltaUpdateOp() = default;
 
-DeltaUpdateOp::~DeltaUpdateOp() {
-}
+DeltaUpdateOp::~DeltaUpdateOp() = default;
 
 void DeltaUpdateOp::Run(const base::DictionaryValue* command_args,
                         const base::FilePath& input_dir,
@@ -108,11 +106,9 @@ UnpackerError DeltaUpdateOp::CheckHash() {
              : UnpackerError::kDeltaVerificationFailure;
 }
 
-DeltaUpdateOpCopy::DeltaUpdateOpCopy() {
-}
+DeltaUpdateOpCopy::DeltaUpdateOpCopy() = default;
 
-DeltaUpdateOpCopy::~DeltaUpdateOpCopy() {
-}
+DeltaUpdateOpCopy::~DeltaUpdateOpCopy() = default;
 
 UnpackerError DeltaUpdateOpCopy::DoParseArguments(
     const base::DictionaryValue* command_args,
@@ -135,11 +131,9 @@ void DeltaUpdateOpCopy::DoRun(ComponentPatcher::Callback callback) {
     std::move(callback).Run(UnpackerError::kNone, 0);
 }
 
-DeltaUpdateOpCreate::DeltaUpdateOpCreate() {
-}
+DeltaUpdateOpCreate::DeltaUpdateOpCreate() = default;
 
-DeltaUpdateOpCreate::~DeltaUpdateOpCreate() {
-}
+DeltaUpdateOpCreate::~DeltaUpdateOpCreate() = default;
 
 UnpackerError DeltaUpdateOpCreate::DoParseArguments(
     const base::DictionaryValue* command_args,
@@ -168,8 +162,7 @@ DeltaUpdateOpPatch::DeltaUpdateOpPatch(const std::string& operation,
   DCHECK(operation == kBsdiff || operation == kCourgette);
 }
 
-DeltaUpdateOpPatch::~DeltaUpdateOpPatch() {
-}
+DeltaUpdateOpPatch::~DeltaUpdateOpPatch() = default;
 
 UnpackerError DeltaUpdateOpPatch::DoParseArguments(
     const base::DictionaryValue* command_args,

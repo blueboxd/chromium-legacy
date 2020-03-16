@@ -169,6 +169,14 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
                                kNone);
   }
 
+  void StartContentVerifyJob(const Extension& extension,
+                             const base::FilePath& resource_path) {
+    auto verify_job = base::MakeRefCounted<ContentVerifyJob>(
+        extension.id(), extension.version(), extension.path(), resource_path,
+        base::DoNothing());
+    StartJob(verify_job);
+  }
+
   // Returns an extension after extracting and loading it from a .zip file.
   // The extension may be expected to have verified_contents.json in it.
   scoped_refptr<Extension> LoadTestExtensionFromZipPathToTempDir(
@@ -544,6 +552,66 @@ using ContentVerifyJobWithoutSignedHashesUnittest = ContentVerifyJobUnittest;
 // verified_contents.json. Typically these are self-hosted extension, since
 // there is no possibility for them to use private Chrome Web Store key to sign
 // hashes.
+
+// Tests that without verified_contents.json file computes_hashes.json file is
+// loaded correctly and appropriate error is reported when load fails.
+TEST_F(ContentVerifyJobWithoutSignedHashesUnittest, ComputedHashesLoad) {
+  base::ScopedTempDir temp_dir;
+  content_verifier_delegate()->SetVerifierSourceType(
+      ContentVerifierDelegate::VerifierSourceType::UNSIGNED_HASHES);
+
+  // Simple resource to trigger content verify job start and hashes load.
+  const base::FilePath kResourcePath(FILE_PATH_LITERAL("script.js"));
+  const std::string kResourceContents = "console.log('Nothing special');";
+  std::map<base::FilePath, std::string> resource_map = {
+      {kResourcePath, kResourceContents}};
+
+  // Contents of corrupted computed_hashes.json file.
+  const std::string kCorruptedContents = "not a json";
+
+  scoped_refptr<Extension> extension =
+      CreateAndLoadTestExtensionToTempDir(&temp_dir, std::move(resource_map));
+  ASSERT_TRUE(extension);
+  base::FilePath unzipped_path = temp_dir.GetPath();
+
+  {
+    // Case where computed_hashes.json is on its place and correct.
+    TestContentVerifySingleJobObserver observer(extension->id(), kResourcePath);
+    content_verifier()->ClearCacheForTesting();
+    StartContentVerifyJob(*extension, kResourcePath);
+    ContentHashReader::InitStatus hashes_status =
+        observer.WaitForOnHashesReady();
+    EXPECT_EQ(ContentHashReader::InitStatus::SUCCESS, hashes_status);
+  }
+
+  {
+    // Case where computed_hashes.json is corrupted.
+    ASSERT_EQ(
+        static_cast<int>(kCorruptedContents.size()),
+        base::WriteFile(file_util::GetComputedHashesPath(unzipped_path),
+                        kCorruptedContents.data(), kCorruptedContents.size()));
+
+    TestContentVerifySingleJobObserver observer(extension->id(), kResourcePath);
+    content_verifier()->ClearCacheForTesting();
+    StartContentVerifyJob(*extension, kResourcePath);
+    ContentHashReader::InitStatus hashes_status =
+        observer.WaitForOnHashesReady();
+    EXPECT_EQ(ContentHashReader::InitStatus::HASHES_DAMAGED, hashes_status);
+  }
+
+  {
+    // Case where computed_hashes.json doesn't exist.
+    base::DeleteFile(file_util::GetComputedHashesPath(unzipped_path),
+                     false /* recursive */);
+
+    TestContentVerifySingleJobObserver observer(extension->id(), kResourcePath);
+    content_verifier()->ClearCacheForTesting();
+    StartContentVerifyJob(*extension, kResourcePath);
+    ContentHashReader::InitStatus hashes_status =
+        observer.WaitForOnHashesReady();
+    EXPECT_EQ(ContentHashReader::InitStatus::HASHES_MISSING, hashes_status);
+  }
+}
 
 // Tests that extension without verified_contents.json is checked properly.
 TEST_F(ContentVerifyJobWithoutSignedHashesUnittest, UnverifiedExtension) {

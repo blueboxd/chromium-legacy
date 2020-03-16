@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_CROWD_DENY_COMPONENT_INSTALLER_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_CROWD_DENY_COMPONENT_INSTALLER_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "components/component_updater/component_installer.h"
 
@@ -18,8 +22,8 @@ class ComponentUpdateService;
 
 class CrowdDenyComponentInstallerPolicy : public ComponentInstallerPolicy {
  public:
-  CrowdDenyComponentInstallerPolicy() {}
-  ~CrowdDenyComponentInstallerPolicy() override {}
+  CrowdDenyComponentInstallerPolicy() = default;
+  ~CrowdDenyComponentInstallerPolicy() override = default;
 
  private:
   static base::FilePath GetInstalledPath(const base::FilePath& base);

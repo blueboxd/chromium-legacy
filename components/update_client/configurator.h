@@ -146,7 +146,7 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
  protected:
   friend class base::RefCountedThreadSafe<Configurator>;
 
-  virtual ~Configurator() {}
+  virtual ~Configurator() = default;
 };
 
 }  // namespace update_client

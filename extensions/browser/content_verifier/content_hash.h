@@ -122,9 +122,16 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
 
   const ComputedHashes& computed_hashes() const;
 
+  // Returns loading status of hashes.
+  ComputedHashes::Status computed_hashes_status() const {
+    return computed_hashes_status_;
+  }
+
   // Returns whether or not computed_hashes.json (and, if needed,
   // verified_contents.json too) was read correctly and is ready to use.
-  bool succeeded() const { return succeeded_; }
+  bool succeeded() const {
+    return computed_hashes_status_ == ComputedHashes::Status::SUCCESS;
+  }
 
   // If ContentHash creation writes computed_hashes.json, then this returns the
   // FilePaths whose content hash didn't match expected hashes.
@@ -156,8 +163,7 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
   ContentHash(const ExtensionId& id,
               const base::FilePath& root,
               ContentVerifierDelegate::VerifierSourceType source_type,
-              std::unique_ptr<const VerifiedContents> verified_contents,
-              std::unique_ptr<const ComputedHashes> computed_hashes);
+              std::unique_ptr<const VerifiedContents> verified_contents);
   ~ContentHash();
 
   // Step 1/2: verified_contents.json.
@@ -229,7 +235,8 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
   const base::FilePath extension_root_;
   ContentVerifierDelegate::VerifierSourceType source_type_;
 
-  bool succeeded_ = false;
+  ComputedHashes::Status computed_hashes_status_ =
+      ComputedHashes::Status::UNKNOWN;
 
   bool did_attempt_creating_computed_hashes_ = false;
 

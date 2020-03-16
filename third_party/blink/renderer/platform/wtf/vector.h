@@ -574,6 +574,7 @@ class VectorBuffer<T, 0, Allocator> : protected VectorBufferBase<T, Allocator> {
   }
 
   T** BufferSlot() { return &buffer_; }
+  const T* const* BufferSlot() const { return &buffer_; }
 
  protected:
   using Base::size_;
@@ -855,6 +856,7 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
   }
 
   T** BufferSlot() { return &buffer_; }
+  const T* const* BufferSlot() const { return &buffer_; }
 
  protected:
   using Base::size_;
@@ -1294,7 +1296,7 @@ class Vector
   }
 
   template <typename VisitorDispatcher, typename A = Allocator>
-  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher);
+  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher) const;
 
   class GCForbiddenScope {
     STACK_ALLOCATED();
@@ -1309,6 +1311,7 @@ class Vector
   using Base::ClearUnusedSlots;
 
   T** GetBufferSlot() { return Base::BufferSlot(); }
+  const T* const* GetBufferSlot() const { return Base::BufferSlot(); }
 
  private:
   void ExpandCapacity(wtf_size_t new_min_capacity);
@@ -1987,11 +1990,12 @@ inline bool operator!=(const Vector<T, inlineCapacityA, Allocator>& a,
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
-Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) {
+Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
   // Bail out for concurrent marking.
   if (visitor->ConcurrentTracingBailOut(
-          {this, [](blink::Visitor* visitor, void* object) {
-             reinterpret_cast<Vector<T, inlineCapacity, Allocator>*>(object)
+          {this, [](blink::Visitor* visitor, const void* object) {
+             reinterpret_cast<const Vector<T, inlineCapacity, Allocator>*>(
+                 object)
                  ->Trace(visitor);
            }}))
     return;

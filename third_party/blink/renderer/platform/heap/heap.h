@@ -68,17 +68,17 @@ class ProcessHeapReporter;
 class RegionTree;
 
 using MarkingItem = TraceDescriptor;
-using NotFullyConstructedItem = void*;
+using NotFullyConstructedItem = const void*;
 using WeakTableItem = MarkingItem;
 
 struct BackingStoreCallbackItem {
-  void* backing;
+  const void* backing;
   MovingObjectCallback callback;
 };
 
 struct CustomCallbackItem {
   WeakCallback callback;
-  void* parameter;
+  const void* parameter;
 };
 
 using V8Reference = const TraceWrapperV8Reference<v8::Value>*;
@@ -94,7 +94,7 @@ using WeakCallbackWorklist =
 // Using large local segments here (sized 512 entries) to avoid throughput
 // regressions.
 using MovableReferenceWorklist =
-    Worklist<MovableReference*, 256 /* local entries */>;
+    Worklist<const MovableReference*, 256 /* local entries */>;
 using WeakTableWorklist = Worklist<WeakTableItem, 16 /* local entries */>;
 using BackingStoreCallbackWorklist =
     Worklist<BackingStoreCallbackItem, 16 /* local entries */>;
@@ -274,7 +274,7 @@ class PLATFORM_EXPORT ThreadHeap {
 
   // Checks whether we need to register |addr| as a backing store or a slot
   // containing reference to it.
-  bool ShouldRegisterMovingAddress(Address addr);
+  bool ShouldRegisterMovingAddress();
 
   RegionTree* GetRegionTree() { return region_tree_.get(); }
 
@@ -328,7 +328,7 @@ class PLATFORM_EXPORT ThreadHeap {
   // This look-up uses the region search tree and a negative contains cache to
   // provide an efficient mapping from arbitrary addresses to the containing
   // heap-page if one exists.
-  BasePage* LookupPageForAddress(Address);
+  BasePage* LookupPageForAddress(ConstAddress);
 
   HeapCompact* Compaction();
 
@@ -464,7 +464,7 @@ class PLATFORM_EXPORT ThreadHeap {
 
   // No duplicates allowed for ephemeron callbacks. Hence, we use a hashmap
   // with the key being the HashTable.
-  WTF::HashMap<void*, EphemeronCallback> ephemeron_callbacks_;
+  WTF::HashMap<const void*, EphemeronCallback> ephemeron_callbacks_;
 
   std::unique_ptr<HeapCompact> compaction_;
 
@@ -665,8 +665,9 @@ inline void ThreadHeap::SetLastAllocatedRegion(Address start, size_t length) {
 }
 
 template <typename T>
-void Visitor::HandleWeakCell(const WeakCallbackInfo&, void* object) {
-  WeakMember<T>* weak_member = reinterpret_cast<WeakMember<T>*>(object);
+void Visitor::HandleWeakCell(const WeakCallbackInfo&, const void* object) {
+  WeakMember<T>* weak_member =
+      reinterpret_cast<WeakMember<T>*>(const_cast<void*>(object));
   if (weak_member->Get()) {
     if (weak_member->IsHashTableDeletedValue()) {
       // This can happen when weak fields are deleted while incremental marking

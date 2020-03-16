@@ -39,10 +39,10 @@ const char
 const int SubresourceFilterComponentInstallerPolicy::kCurrentRulesetFormat = 1;
 
 SubresourceFilterComponentInstallerPolicy::
-    SubresourceFilterComponentInstallerPolicy() {}
+    SubresourceFilterComponentInstallerPolicy() = default;
 
 SubresourceFilterComponentInstallerPolicy::
-    ~SubresourceFilterComponentInstallerPolicy() {}
+    ~SubresourceFilterComponentInstallerPolicy() = default;
 
 bool SubresourceFilterComponentInstallerPolicy::
     SupportsGroupPolicyEnabledComponentUpdates() const {

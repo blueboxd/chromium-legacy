@@ -76,6 +76,21 @@ bool FileManager::DirectoryExists(const DirectoryKey& key) const {
   return GetPathForKey(key, &path) != StorageType::kNone;
 }
 
+bool FileManager::CaptureExists(const DirectoryKey& key) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  base::FilePath path;
+  StorageType storage_type = GetPathForKey(key, &path);
+  switch (storage_type) {
+    case kDirectory:
+      return base::PathExists(path.AppendASCII(kProtoName));
+    case kZip:
+      return true;
+    case kNone:  // fallthrough;
+    default:
+      return false;
+  }
+}
+
 base::Optional<base::FilePath> FileManager::CreateOrGetDirectory(
     const DirectoryKey& key,
     bool clear) const {

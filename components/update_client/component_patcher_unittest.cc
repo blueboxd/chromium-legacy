@@ -27,7 +27,7 @@ namespace {
 class TestCallback {
  public:
   TestCallback();
-  virtual ~TestCallback() {}
+  virtual ~TestCallback() = default;
   void Set(update_client::UnpackerError error, int extra_code);
 
   update_client::UnpackerError error_;
@@ -72,8 +72,7 @@ ComponentPatcherOperationTest::ComponentPatcherOperationTest()
       base::MakeRefCounted<ReadOnlyTestInstaller>(installed_dir_.GetPath());
 }
 
-ComponentPatcherOperationTest::~ComponentPatcherOperationTest() {
-}
+ComponentPatcherOperationTest::~ComponentPatcherOperationTest() = default;
 
 // Verify that a 'create' delta update operation works correctly.
 TEST_F(ComponentPatcherOperationTest, CheckCreateOperation) {

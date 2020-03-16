@@ -44,8 +44,7 @@ ExtensionCacheImpl::ExtensionCacheImpl(
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-ExtensionCacheImpl::~ExtensionCacheImpl() {
-}
+ExtensionCacheImpl::~ExtensionCacheImpl() = default;
 
 void ExtensionCacheImpl::Start(const base::Closure& callback) {
   if (!cache_ || cache_->is_ready()) {

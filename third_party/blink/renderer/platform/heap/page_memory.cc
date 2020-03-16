@@ -73,7 +73,7 @@ PageMemoryRegion* PageMemoryRegion::Allocate(size_t size,
   return new PageMemoryRegion(base, size, num_pages, region_tree);
 }
 
-PageMemoryRegion* RegionTree::Lookup(Address address) {
+PageMemoryRegion* RegionTree::Lookup(ConstAddress address) {
   auto it = set_.upper_bound(address);
   // This check also covers set_.size() > 0, since for empty vectors it is
   // guaranteed that begin() == end().

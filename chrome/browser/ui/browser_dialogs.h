@@ -20,6 +20,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
+class ChooserController;
 class LoginHandler;
 class Profile;
 struct WebApplicationInfo;
@@ -308,6 +309,13 @@ void ShowExtensionInstallBlockedDialog(
     const gfx::ImageSkia& icon,
     content::WebContents* web_contents,
     base::OnceClosure done_callback);
+
+// Returns a OnceClosure that client code can call to close the device chooser.
+// This OnceClosure references the actual dialog as a WeakPtr, so it's safe to
+// call at any point.
+base::OnceClosure ShowDeviceChooserDialog(
+    content::RenderFrameHost* owner,
+    std::unique_ptr<ChooserController> controller);
 
 }  // namespace chrome
 

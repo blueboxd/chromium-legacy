@@ -154,7 +154,7 @@ void NormalPageArena::CollectFreeListStatistics(
 }
 
 #if DCHECK_IS_ON()
-BasePage* BaseArena::FindPageFromAddress(Address address) {
+BasePage* BaseArena::FindPageFromAddress(ConstAddress address) const {
   for (BasePage* page : swept_pages_) {
     if (page->Contains(address))
       return page;
@@ -643,7 +643,7 @@ bool NormalPageArena::IsConsistentForGC() {
   return true;
 }
 
-bool NormalPageArena::PagesToBeSweptContains(Address address) {
+bool NormalPageArena::PagesToBeSweptContains(ConstAddress address) const {
   for (BasePage* page : unswept_pages_) {
     if (page->Contains(address))
       return true;
@@ -1760,7 +1760,7 @@ void LargeObjectPage::VerifyMarking() {
 }
 
 Address ObjectStartBitmap::FindHeader(
-    Address address_maybe_pointing_to_the_middle_of_object) const {
+    ConstAddress address_maybe_pointing_to_the_middle_of_object) const {
   size_t object_offset =
       address_maybe_pointing_to_the_middle_of_object - offset_;
   size_t object_start_number = object_offset / kAllocationGranularity;
@@ -1783,7 +1783,7 @@ Address ObjectStartBitmap::FindHeader(
 }
 
 HeapObjectHeader* NormalPage::ConservativelyFindHeaderFromAddress(
-    Address address) {
+    ConstAddress address) const {
   if (!ContainedInObjectPayload(address))
     return nullptr;
   if (ArenaForNormalPage()->IsInCurrentAllocationPointRegion(address))
@@ -1826,7 +1826,7 @@ void NormalPage::CollectStatistics(
 }
 
 #if DCHECK_IS_ON()
-bool NormalPage::Contains(Address addr) {
+bool NormalPage::Contains(ConstAddress addr) const {
   Address blink_page_start = RoundToBlinkPageStart(GetAddress());
   // Page is at aligned address plus guard page size.
   DCHECK_EQ(blink_page_start, GetAddress() - kBlinkGuardPageSize);
@@ -1915,7 +1915,7 @@ void LargeObjectPage::CollectStatistics(
 }
 
 #if DCHECK_IS_ON()
-bool LargeObjectPage::Contains(Address object) {
+bool LargeObjectPage::Contains(ConstAddress object) const {
   return RoundToBlinkPageStart(GetAddress()) <= object &&
          object < RoundToBlinkPageEnd(GetAddress() + size());
 }

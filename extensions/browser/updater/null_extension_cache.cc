@@ -8,11 +8,9 @@
 
 namespace extensions {
 
-NullExtensionCache::NullExtensionCache() {
-}
+NullExtensionCache::NullExtensionCache() = default;
 
-NullExtensionCache::~NullExtensionCache() {
-}
+NullExtensionCache::~NullExtensionCache() = default;
 
 void NullExtensionCache::Start(const base::Closure& callback) {
   callback.Run();
@@ -22,8 +20,7 @@ void NullExtensionCache::Shutdown(const base::Closure& callback) {
   callback.Run();
 }
 
-void NullExtensionCache::AllowCaching(const std::string& id) {
-}
+void NullExtensionCache::AllowCaching(const std::string& id) {}
 
 bool NullExtensionCache::GetExtension(const std::string& id,
                                       const std::string& expected_hash,

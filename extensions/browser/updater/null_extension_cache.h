@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_UPDATER_NULL_EXTENSION_CACHE_H_
 #define EXTENSIONS_BROWSER_UPDATER_NULL_EXTENSION_CACHE_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "extensions/browser/updater/extension_cache.h"
 

@@ -305,6 +305,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/page_info/ConnectionInfoPopupTest.java",
   "javatests/src/org/chromium/chrome/browser/page_info/CookieControlsViewTest.java",
   "javatests/src/org/chromium/chrome/browser/page_info/PageInfoControllerTest.java",
+  "javatests/src/org/chromium/chrome/browser/paint_preview/services/PaintPreviewTabServiceTest.java",
   "javatests/src/org/chromium/chrome/browser/partnercustomizations/BasePartnerBrowserCustomizationIntegrationTestRule.java",
   "javatests/src/org/chromium/chrome/browser/partnercustomizations/BasePartnerBrowserCustomizationUnitTestRule.java",
   "javatests/src/org/chromium/chrome/browser/partnercustomizations/PartnerDisableBookmarksEditingUnitTest.java",

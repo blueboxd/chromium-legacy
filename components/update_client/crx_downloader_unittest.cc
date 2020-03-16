@@ -115,7 +115,7 @@ CrxDownloaderTest::CrxDownloaderTest()
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
               &test_url_loader_factory_)) {}
 
-CrxDownloaderTest::~CrxDownloaderTest() {}
+CrxDownloaderTest::~CrxDownloaderTest() = default;
 
 void CrxDownloaderTest::SetUp() {
   num_download_complete_calls_ = 0;

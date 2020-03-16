@@ -550,7 +550,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_InvokePaymentApp(
     const JavaParamRef<jobject>& jpayment_options,
     const JavaParamRef<jobjectArray>& jshipping_options,
     jlong payment_handler_host,
-    jboolean is_microtransaction,
+    jboolean can_show_own_ui,
     const JavaParamRef<jobject>& jcallback) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
@@ -570,7 +570,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_InvokePaymentApp(
   host->set_payment_request_id_for_logs(event_data->payment_request_id);
   host->set_registration_id_for_logs(reg_id);
 
-  // TODO(https://crbug.com/1000432): Pass |is_microtransaction| to the service
+  // TODO(https://crbug.com/1000432): Pass |can_show_own_ui| to the service
   // worker.
   content::PaymentAppProvider::GetInstance()->InvokePaymentApp(
       web_contents->GetBrowserContext(), reg_id, sw_scope_origin,

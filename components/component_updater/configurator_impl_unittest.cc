@@ -21,8 +21,8 @@ const int kDelayOneHour = kDelayOneMinute * 60;
 
 class ComponentUpdaterConfiguratorImplTest : public testing::Test {
  public:
-  ComponentUpdaterConfiguratorImplTest() {}
-  ~ComponentUpdaterConfiguratorImplTest() override {}
+  ComponentUpdaterConfiguratorImplTest() = default;
+  ~ComponentUpdaterConfiguratorImplTest() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ComponentUpdaterConfiguratorImplTest);
@@ -54,7 +54,7 @@ TEST_F(ComponentUpdaterConfiguratorImplTest, FastUpdateWithCustomPolicy) {
   class DefaultCommandLineConfigPolicy
       : public update_client::CommandLineConfigPolicy {
    public:
-    DefaultCommandLineConfigPolicy() {}
+    DefaultCommandLineConfigPolicy() = default;
 
     // update_client::CommandLineConfigPolicy overrides.
     bool BackgroundDownloadsEnabled() const override { return false; }
@@ -76,7 +76,7 @@ TEST_F(ComponentUpdaterConfiguratorImplTest, FastUpdateWithCustomPolicy) {
   class FastUpdateCommandLineConfigurator
       : public DefaultCommandLineConfigPolicy {
    public:
-    FastUpdateCommandLineConfigurator() {}
+    FastUpdateCommandLineConfigurator() = default;
 
     bool FastUpdate() const override { return true; }
   };
@@ -96,7 +96,7 @@ TEST_F(ComponentUpdaterConfiguratorImplTest, InitialDelay) {
   class CommandLineConfigPolicy
       : public update_client::CommandLineConfigPolicy {
    public:
-    CommandLineConfigPolicy() {}
+    CommandLineConfigPolicy() = default;
 
     // update_client::CommandLineConfigPolicy overrides.
     bool BackgroundDownloadsEnabled() const override { return false; }

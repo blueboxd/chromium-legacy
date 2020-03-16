@@ -53,7 +53,7 @@ ComponentInfo::ComponentInfo(const std::string& id,
     : id(id), fingerprint(fingerprint), name(name), version(version) {}
 ComponentInfo::ComponentInfo(const ComponentInfo& other) = default;
 ComponentInfo::ComponentInfo(ComponentInfo&& other) = default;
-ComponentInfo::~ComponentInfo() {}
+ComponentInfo::~ComponentInfo() = default;
 
 CrxUpdateService::CrxUpdateService(scoped_refptr<Configurator> config,
                                    std::unique_ptr<UpdateScheduler> scheduler,

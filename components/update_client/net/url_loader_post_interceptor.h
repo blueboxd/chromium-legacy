@@ -51,7 +51,7 @@ class URLLoaderPostInterceptor {
   class RequestMatcher {
    public:
     virtual bool Match(const std::string& actual) const = 0;
-    virtual ~RequestMatcher() {}
+    virtual ~RequestMatcher() = default;
   };
 
   explicit URLLoaderPostInterceptor(

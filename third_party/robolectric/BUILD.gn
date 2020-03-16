@@ -57,6 +57,7 @@ java_prebuilt("android-all-9-robolectric-4913185-2_java") {
 }
 
 java_prebuilt("android-all-10-robolectric-5803371_java") {
+  skip_jetify = true
   testonly = true
   jar_path = "lib/android-all-10-robolectric-5803371.jar"
 }

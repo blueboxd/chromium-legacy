@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_BLUETOOTH_BLUETOOTH_SCANNING_PROMPT_DESKTOP_H_
 #define CHROME_BROWSER_UI_BLUETOOTH_BLUETOOTH_SCANNING_PROMPT_DESKTOP_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
-#include "components/bubble/bubble_reference.h"
 #include "content/public/browser/bluetooth_scanning_prompt.h"
 
 class BluetoothScanningPromptController;
@@ -17,7 +17,8 @@ class BluetoothScanningPromptController;
 class BluetoothScanningPromptDesktop : public content::BluetoothScanningPrompt {
  public:
   explicit BluetoothScanningPromptDesktop(
-      BluetoothScanningPromptController* bluetooth_scanning_prompt_controller);
+      BluetoothScanningPromptController* bluetooth_scanning_prompt_controller,
+      base::OnceClosure&& close_closure);
   ~BluetoothScanningPromptDesktop() override;
 
   // content::BluetoothScanningPrompt:
@@ -25,17 +26,13 @@ class BluetoothScanningPromptDesktop : public content::BluetoothScanningPrompt {
                          bool should_update_name,
                          const base::string16& device_name) override;
 
-  // Sets a reference to the bubble being displayed so that it can be closed if
-  // this object is destroyed.
-  void set_bubble(base::WeakPtr<BubbleController> bubble) {
-    bubble_ = std::move(bubble);
-  }
-
  private:
   // Weak. DeviceChooserContentView owns it.
   BluetoothScanningPromptController* bluetooth_scanning_prompt_controller_;
 
-  base::WeakPtr<BubbleController> bubble_;
+  // Closes the displayed UI, if there is one. This is used to ensure the UI
+  // closes if this controller is destroyed.
+  base::OnceClosure close_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothScanningPromptDesktop);
 };

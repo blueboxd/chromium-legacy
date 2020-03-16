@@ -198,6 +198,26 @@
    * @param {function(!PasswordManagerProxy.PasswordCheckStatus):void} listener
    */
   removePasswordCheckStatusListener(listener) {}
+
+  /**
+   * Requests the plaintext password for |credential|. |callback| gets invoked
+   * with the same |credential|, whose |password| field will be set.
+   * @param {!PasswordManagerProxy.CompromisedCredential} credential
+   * @param {!chrome.passwordsPrivate.PlaintextReason} reason
+   * @return {!Promise<!PasswordManagerProxy.CompromisedCredential>} A promise
+   *     that resolves to the CompromisedCredential with the password field
+   *     populated.
+   */
+  getPlaintextCompromisedPassword(credential, reason) {}
+
+  /**
+   * Requests to change the password of |credential| to |new_password|.
+   * @param {!PasswordManagerProxy.CompromisedCredential} credential
+   * @param {string} newPassword
+   * @return {!Promise<void>} A promise that resolves when the password is
+   *     updated.
+   */
+  changeCompromisedCredential(credential, newPassword) {}
 }
 
 /** @typedef {chrome.passwordsPrivate.PasswordUiEntry} */
@@ -394,6 +414,22 @@ PasswordManagerProxy.PasswordCheckStatus;
   removePasswordCheckStatusListener(listener) {
     chrome.passwordsPrivate.onPasswordCheckStatusChanged.removeListener(
         listener);
+  }
+
+  /** @override */
+  getPlaintextCompromisedPassword(credential, reason) {
+    return new Promise(resolve => {
+      chrome.passwordsPrivate.getPlaintextCompromisedPassword(
+          credential, reason, resolve);
+    });
+  }
+
+  /** @override */
+  changeCompromisedCredential(credential, newPassword) {
+    return new Promise(resolve => {
+      chrome.passwordsPrivate.changeCompromisedCredential(
+          credential, newPassword, resolve);
+    });
   }
 }
 

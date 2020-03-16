@@ -29,8 +29,7 @@ CrxDownloader::DownloadMetrics::DownloadMetrics()
       error(0),
       downloaded_bytes(-1),
       total_bytes(-1),
-      download_time_ms(0) {
-}
+      download_time_ms(0) {}
 
 // On Windows, the first downloader in the chain is a background downloader,
 // which uses the BITS service.
@@ -54,7 +53,7 @@ CrxDownloader::CrxDownloader(std::unique_ptr<CrxDownloader> successor)
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       successor_(std::move(successor)) {}
 
-CrxDownloader::~CrxDownloader() {}
+CrxDownloader::~CrxDownloader() = default;
 
 void CrxDownloader::set_progress_callback(
     const ProgressCallback& progress_callback) {

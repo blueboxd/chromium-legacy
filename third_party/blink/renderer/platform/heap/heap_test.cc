@@ -708,14 +708,14 @@ class Foo : public Bar {
 
   void Trace(Visitor* visitor) override {
     if (points_to_foo_)
-      visitor->Trace(static_cast<Foo*>(bar_));
+      visitor->Trace(static_cast<const Foo*>(bar_));
     else
       visitor->Trace(bar_);
   }
 
  private:
-  Bar* bar_;
-  bool points_to_foo_;
+  const Bar* bar_;
+  const bool points_to_foo_;
 };
 
 class Bars : public Bar {

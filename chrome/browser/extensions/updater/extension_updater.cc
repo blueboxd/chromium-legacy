@@ -6,7 +6,9 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -113,17 +115,15 @@ ExtensionUpdater::FetchedCRXFile::FetchedCRXFile(
     : info(file),
       file_ownership_passed(file_ownership_passed),
       request_ids(request_ids),
-      callback(callback) {
-}
+      callback(callback) {}
 
 ExtensionUpdater::FetchedCRXFile::FetchedCRXFile()
-    : file_ownership_passed(true) {
-}
+    : file_ownership_passed(true) {}
 
 ExtensionUpdater::FetchedCRXFile::FetchedCRXFile(const FetchedCRXFile& other) =
     default;
 
-ExtensionUpdater::FetchedCRXFile::~FetchedCRXFile() {}
+ExtensionUpdater::FetchedCRXFile::~FetchedCRXFile() = default;
 
 ExtensionUpdater::InProgressCheck::InProgressCheck()
     : install_immediately(false), awaiting_update_service(false) {}

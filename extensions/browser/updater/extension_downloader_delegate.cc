@@ -9,11 +9,9 @@
 
 namespace extensions {
 
-ExtensionDownloaderDelegate::PingResult::PingResult() : did_ping(false) {
-}
+ExtensionDownloaderDelegate::PingResult::PingResult() : did_ping(false) {}
 
-ExtensionDownloaderDelegate::PingResult::~PingResult() {
-}
+ExtensionDownloaderDelegate::PingResult::~PingResult() = default;
 
 ExtensionDownloaderDelegate::FailureData::FailureData()
     : network_error_code(0), fetch_tries(0) {}
@@ -33,8 +31,7 @@ ExtensionDownloaderDelegate::FailureData::FailureData(
 
 ExtensionDownloaderDelegate::FailureData::~FailureData() = default;
 
-ExtensionDownloaderDelegate::~ExtensionDownloaderDelegate() {
-}
+ExtensionDownloaderDelegate::~ExtensionDownloaderDelegate() = default;
 
 void ExtensionDownloaderDelegate::OnExtensionDownloadStageChanged(
     const ExtensionId& id,

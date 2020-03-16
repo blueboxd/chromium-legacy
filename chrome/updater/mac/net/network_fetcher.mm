@@ -259,9 +259,9 @@ class SingleThreadTaskRunner;
 
 namespace updater {
 
-NetworkFetcher::NetworkFetcher() {}
+NetworkFetcher::NetworkFetcher() = default;
 
-NetworkFetcher::~NetworkFetcher() {}
+NetworkFetcher::~NetworkFetcher() = default;
 
 void NetworkFetcher::PostRequest(
     const GURL& url,

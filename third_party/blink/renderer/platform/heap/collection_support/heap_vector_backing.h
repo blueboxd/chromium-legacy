@@ -110,11 +110,11 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
   using Backing = HeapVectorBacking<T, Traits>;
 
  public:
-  static TraceDescriptor GetTraceDescriptor(void* self) {
+  static TraceDescriptor GetTraceDescriptor(const void* self) {
     return {self, TraceTrait<Backing>::Trace};
   }
 
-  static void Trace(Visitor* visitor, void* self) {
+  static void Trace(Visitor* visitor, const void* self) {
     if (visitor->ConcurrentTracingBailOut({self, &Trace}))
       return;
 
@@ -138,7 +138,7 @@ template <typename T, typename Traits>
 struct TraceInCollectionTrait<kNoWeakHandling,
                               blink::HeapVectorBacking<T, Traits>,
                               void> {
-  static bool Trace(blink::Visitor* visitor, void* self) {
+  static bool Trace(blink::Visitor* visitor, const void* self) {
     // HeapVectorBacking does not know the exact size of the vector
     // and just knows the capacity of the vector. Due to the constraint,
     // HeapVectorBacking can support only the following objects:
@@ -166,7 +166,7 @@ struct TraceInCollectionTrait<kNoWeakHandling,
     // IsTraceableInCollectionTrait<Traits>::value but should runtime-assert it.
     DCHECK(IsTraceableInCollectionTrait<Traits>::value);
 
-    T* array = reinterpret_cast<T*>(self);
+    const T* array = reinterpret_cast<const T*>(self);
     blink::HeapObjectHeader* header =
         blink::HeapObjectHeader::FromPayload(self);
     // Use the payload size as recorded by the heap to determine how many
@@ -178,9 +178,9 @@ struct TraceInCollectionTrait<kNoWeakHandling,
     ANNOTATE_CHANGE_SIZE(array, length, 0, length);
 #endif
     if (std::is_polymorphic<T>::value) {
-      char* pointer = reinterpret_cast<char*>(array);
+      const char* pointer = reinterpret_cast<const char*>(array);
       for (unsigned i = 0; i < length; ++i) {
-        char* element = pointer + i * sizeof(T);
+        const char* element = pointer + i * sizeof(T);
         if (blink::VTableInitialized(element)) {
           blink::TraceIfNeeded<
               T, IsTraceableInCollectionTrait<Traits>::value>::Trace(visitor,

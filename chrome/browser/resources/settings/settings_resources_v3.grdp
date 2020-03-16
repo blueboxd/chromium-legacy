@@ -69,7 +69,8 @@
   <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORDS_SHARED_CSS_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/passwords_shared_css.m.js"
            use_base_dir="false"
-           type="BINDATA" />
+           type="BINDATA"
+           preprocess="true" />
   <include name="IDR_SETTINGS_AUTOFILL_PAGE_CREDIT_CARD_EDIT_DIALOG_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/credit_card_edit_dialog.m.js"
            use_base_dir="false"
@@ -95,6 +96,10 @@
            preprocess="true" />
   <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORD_CHECK_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/password_check.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+  <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORD_CHECK_EDIT_DIALOG_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/password_check_edit_dialog.m.js"
            use_base_dir="false"
            type="BINDATA" />
   <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORD_CHECK_LIST_ITEM_M_JS"

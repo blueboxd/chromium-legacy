@@ -28,6 +28,21 @@ using CanonicalRelativePath = content_verifier_utils::CanonicalRelativePath;
 // computed over the files inside an extension.
 class ComputedHashes {
  public:
+  // Status of reading computed hashes from file: either success or error type.
+  enum class Status {
+    // Status is undefined.
+    UNKNOWN,
+
+    // Failed to read file.
+    READ_FAILED,
+
+    // File read successfully, but failed to parse the contents.
+    PARSE_FAILED,
+
+    // No error.
+    SUCCESS,
+  };
+
   // Hashes data for relative paths.
   // System specific path canonicalization is taken care of inside this class.
   class Data {
@@ -90,10 +105,12 @@ class ComputedHashes {
   ComputedHashes& operator=(ComputedHashes&&);
   ~ComputedHashes();
 
-  // Reads computed hashes from the computed_hashes.json file, returns nullopt
-  // upon any failure.
+  // Reads computed hashes from the computed_hashes.json file, stores read
+  // success/failure status to |status|. Returns nullopt upon any failure (i.e.
+  // |status| != Status::SUCCESS).
   static base::Optional<ComputedHashes> CreateFromFile(
-      const base::FilePath& path);
+      const base::FilePath& path,
+      Status* status);
 
   // Computes hashes for files in |extension_root|. Returns nullopt upon any
   // failure. Callback |should_compute_hashes_for| is used to determine whether

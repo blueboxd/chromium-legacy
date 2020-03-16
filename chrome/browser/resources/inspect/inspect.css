@@ -257,6 +257,10 @@ img {
   margin-top: 5px;
 }
 
+.actions {
+  user-select: none;
+}
+
 .action {
   color: rgb(17, 85, 204);
   cursor: pointer;

@@ -116,7 +116,6 @@ std::string GetOSVersion(bool include_android_build_number) {
                       "%d_%d_%d", os_major_version, os_minor_version,
                       os_bugfix_version
 #elif defined(OS_CHROMEOS)
-                      "CrOS "
                       "%d.%d.%d",
                       os_major_version, os_minor_version, os_bugfix_version
 #elif defined(OS_ANDROID)

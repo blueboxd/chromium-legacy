@@ -350,13 +350,14 @@ BrowserGpuChannelHostFactory::EstablishGpuChannelSync() {
 #if defined(OS_ANDROID)
   NOTREACHED();
   return nullptr;
-#endif
+#else
   EstablishGpuChannel(gpu::GpuChannelEstablishedCallback());
 
   if (pending_request_.get())
     pending_request_->Wait();
 
   return gpu_channel_;
+#endif
 }
 
 gpu::GpuMemoryBufferManager*

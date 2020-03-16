@@ -37,7 +37,7 @@ class UpdateDataProviderExtensionsBrowserClient
   explicit UpdateDataProviderExtensionsBrowserClient(
       content::BrowserContext* context)
       : TestExtensionsBrowserClient(context) {}
-  ~UpdateDataProviderExtensionsBrowserClient() override {}
+  ~UpdateDataProviderExtensionsBrowserClient() override = default;
 
   bool IsExtensionEnabled(const std::string& id,
                           content::BrowserContext* context) const override {
@@ -56,8 +56,8 @@ class UpdateDataProviderTest : public ExtensionsTest {
  public:
   using UpdateClientCallback = UpdateDataProvider::UpdateClientCallback;
 
-  UpdateDataProviderTest() {}
-  ~UpdateDataProviderTest() override {}
+  UpdateDataProviderTest() = default;
+  ~UpdateDataProviderTest() override = default;
 
   void SetUp() override {
     SetExtensionsBrowserClient(

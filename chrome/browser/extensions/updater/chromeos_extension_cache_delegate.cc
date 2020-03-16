@@ -20,8 +20,7 @@ ChromeOSExtensionCacheDelegate::ChromeOSExtensionCacheDelegate() {
 
 ChromeOSExtensionCacheDelegate::ChromeOSExtensionCacheDelegate(
     const base::FilePath& cache_dir)
-    : cache_dir_(cache_dir) {
-}
+    : cache_dir_(cache_dir) {}
 
 const base::FilePath& ChromeOSExtensionCacheDelegate::GetCacheDir() const {
   return cache_dir_;

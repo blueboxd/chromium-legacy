@@ -17,6 +17,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/escape.h"
 #include "url/gurl.h"
 
 using base::android::ConvertUTF8ToJavaString;
@@ -76,16 +77,24 @@ InterceptNavigationDelegate::CreateThrottleFor(
 }
 
 InterceptNavigationDelegate::InterceptNavigationDelegate(
-    JNIEnv* env, jobject jdelegate)
-    : weak_jdelegate_(env, jdelegate) {
-}
+    JNIEnv* env,
+    jobject jdelegate,
+    bool escape_external_handler_value)
+    : weak_jdelegate_(env, jdelegate),
+      escape_external_handler_value_(escape_external_handler_value) {}
 
 InterceptNavigationDelegate::~InterceptNavigationDelegate() {
 }
 
 bool InterceptNavigationDelegate::ShouldIgnoreNavigation(
     const NavigationParams& navigation_params) {
-  if (!navigation_params.url().is_valid())
+  NavigationParams navigation_params_to_use(navigation_params);
+  if (escape_external_handler_value_) {
+    navigation_params_to_use.url() =
+        GURL(net::EscapeExternalHandlerValue(navigation_params.url().spec()));
+  }
+
+  if (!navigation_params_to_use.url().is_valid())
     return false;
 
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -95,13 +104,13 @@ bool InterceptNavigationDelegate::ShouldIgnoreNavigation(
     return false;
 
   bool has_user_gesture_carryover =
-      !navigation_params.has_user_gesture() &&
+      !navigation_params_to_use.has_user_gesture() &&
       base::TimeTicks::Now() - last_user_gesture_carryover_timestamp_ <=
           base::TimeDelta::FromSeconds(
               kMaxValidityOfUserGestureCarryoverInSeconds);
 
   ScopedJavaLocalRef<jobject> jobject_params = CreateJavaNavigationParams(
-      env, navigation_params, has_user_gesture_carryover);
+      env, navigation_params_to_use, has_user_gesture_carryover);
 
   return Java_InterceptNavigationDelegate_shouldIgnoreNavigation(
       env, jdelegate, jobject_params);

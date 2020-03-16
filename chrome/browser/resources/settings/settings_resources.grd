@@ -607,7 +607,8 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_PASSWORDS_SHARED_CSS_HTML"
                  file="autofill_page/passwords_shared_css.html"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_SETTINGS_CREDIT_CARD_EDIT_DIALOG_HTML"
                  file="autofill_page/credit_card_edit_dialog.html"
                  type="chrome_html" />
@@ -647,6 +648,12 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_PASSWORD_CHECK_JS"
                  file="autofill_page/password_check.js"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_PASSWORD_CHECK_EDIT_DIALOG_HTML"
+                 file="autofill_page/password_check_edit_dialog.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_PASSWORD_CHECK_EDIT_DIALOG_JS"
+                 file="autofill_page/password_check_edit_dialog.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_PASSWORD_CHECK_LIST_ITEM_HTML"
                  file="autofill_page/password_check_list_item.html"

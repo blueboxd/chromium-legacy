@@ -124,7 +124,7 @@ void RegisterWidevineCdmWithChrome(
 class WidevineCdmComponentInstallerPolicy : public ComponentInstallerPolicy {
  public:
   WidevineCdmComponentInstallerPolicy();
-  ~WidevineCdmComponentInstallerPolicy() override {}
+  ~WidevineCdmComponentInstallerPolicy() override = default;
 
  private:
   // The following methods override ComponentInstallerPolicy.
@@ -153,7 +153,8 @@ class WidevineCdmComponentInstallerPolicy : public ComponentInstallerPolicy {
   DISALLOW_COPY_AND_ASSIGN(WidevineCdmComponentInstallerPolicy);
 };
 
-WidevineCdmComponentInstallerPolicy::WidevineCdmComponentInstallerPolicy() {}
+WidevineCdmComponentInstallerPolicy::WidevineCdmComponentInstallerPolicy() =
+    default;
 
 bool WidevineCdmComponentInstallerPolicy::
     SupportsGroupPolicyEnabledComponentUpdates() const {

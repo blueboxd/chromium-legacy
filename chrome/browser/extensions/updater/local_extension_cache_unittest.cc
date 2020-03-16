@@ -38,8 +38,8 @@ namespace extensions {
 
 class LocalExtensionCacheTest : public testing::Test {
  public:
-  LocalExtensionCacheTest() {}
-  ~LocalExtensionCacheTest() override {}
+  LocalExtensionCacheTest() = default;
+  ~LocalExtensionCacheTest() override = default;
 
   base::FilePath CreateCacheDir() {
     EXPECT_TRUE(cache_dir_.CreateUniqueTempDir());
@@ -67,7 +67,8 @@ class LocalExtensionCacheTest : public testing::Test {
                   size_t size,
                   const base::Time& timestamp) {
     std::string data(size, 0);
-    EXPECT_EQ(base::WriteFile(file, data.data(), data.size()), int(size));
+    EXPECT_EQ(base::WriteFile(file, data.data(), data.size()),
+              static_cast<int>(size));
     EXPECT_TRUE(base::TouchFile(file, timestamp, timestamp));
   }
 
@@ -91,7 +92,8 @@ class LocalExtensionCacheTest : public testing::Test {
         GetExtensionFileName(dir, id, version, hex_hash);
     if (filename)
       *filename = file;
-    EXPECT_EQ(base::WriteFile(file, data.data(), data.size()), int(size));
+    EXPECT_EQ(base::WriteFile(file, data.data(), data.size()),
+              static_cast<int>(size));
     EXPECT_TRUE(base::TouchFile(file, timestamp, timestamp));
 
     return hex_hash;
@@ -177,7 +179,7 @@ TEST_F(LocalExtensionCacheTest, KeepHashed) {
   bool initialized = false;
   cache.Init(true, base::Bind(&SimpleCallback, &initialized));
 
-  // Add three identical extensions with different hash sums
+  // Add three identical extensions with different hash sums.
   const base::Time time = base::Time::Now() - base::TimeDelta::FromDays(1);
   base::FilePath file, file1, file2;
   CreateExtensionFile(cache_dir, kTestExtensionId1, "1.0", 100, time, &file);
@@ -214,7 +216,7 @@ TEST_F(LocalExtensionCacheTest, KeepLatest) {
   bool initialized = false;
   cache.Init(true, base::Bind(&SimpleCallback, &initialized));
 
-  // All extension files are hashed, but have different versions
+  // All extension files are hashed, but have different versions.
   const base::Time time = base::Time::Now() - base::TimeDelta::FromDays(1);
   base::FilePath file1, file21, file22;
   const std::string hash1 = CreateSignedExtensionFile(
@@ -227,13 +229,13 @@ TEST_F(LocalExtensionCacheTest, KeepLatest) {
   content::RunAllTasksUntilIdle();
   ASSERT_TRUE(initialized);
 
-  // Older version should be removed
+  // Older version should be removed.
   EXPECT_FALSE(base::PathExists(file1));
-  // Both newer hashed versions should stay
+  // Both newer hashed versions should stay.
   EXPECT_TRUE(base::PathExists(file21));
   EXPECT_TRUE(base::PathExists(file22));
 
-  // We should be able to lookup only the latest version queries
+  // We should be able to lookup only the latest version queries.
   EXPECT_FALSE(cache.GetExtension(kTestExtensionId1, hash1, NULL, NULL));
   EXPECT_TRUE(cache.GetExtension(kTestExtensionId1, hash21, NULL, NULL));
   EXPECT_TRUE(cache.GetExtension(kTestExtensionId1, hash22, NULL, NULL));
@@ -250,7 +252,7 @@ TEST_F(LocalExtensionCacheTest, Complex) {
   bool initialized = false;
   cache.Init(true, base::Bind(&SimpleCallback, &initialized));
 
-  // Like in KeepHashed test, but with two different versions
+  // Like in KeepHashed test, but with two different versions.
   const base::Time time = base::Time::Now() - base::TimeDelta::FromDays(1);
   base::FilePath file1, file11, file12, file2, file21, file22;
   CreateExtensionFile(cache_dir, kTestExtensionId1, "1.0", 100, time, &file1);
@@ -267,17 +269,17 @@ TEST_F(LocalExtensionCacheTest, Complex) {
   content::RunAllTasksUntilIdle();
   ASSERT_TRUE(initialized);
 
-  // Older and unhashed versions should be removed
+  // Older and unhashed versions should be removed.
   EXPECT_FALSE(base::PathExists(file1));
   EXPECT_FALSE(base::PathExists(file11));
   EXPECT_FALSE(base::PathExists(file12));
   EXPECT_FALSE(base::PathExists(file2));
-  // Newest hashed versions should stay
+  // Newest hashed versions should stay.
   EXPECT_TRUE(base::PathExists(file21));
   EXPECT_TRUE(base::PathExists(file22));
 
   // We should be able to lookup only the latest version queries, both with and
-  // without hash
+  // without hash.
   std::string version;
   EXPECT_TRUE(cache.GetExtension(kTestExtensionId1, "", NULL, &version));
   EXPECT_EQ(version, "2.0");
@@ -287,23 +289,18 @@ TEST_F(LocalExtensionCacheTest, Complex) {
   EXPECT_TRUE(cache.GetExtension(kTestExtensionId1, hash22, NULL, NULL));
 }
 
-static void OnPutExtension(std::unique_ptr<base::RunLoop>* run_loop,
-                           const base::FilePath& file_path,
-                           bool file_ownership_passed) {
-  ASSERT_TRUE(*run_loop);
-  (*run_loop)->Quit();
-}
-
-static void PutExtensionAndWait(LocalExtensionCache& cache,
+static void PutExtensionAndWait(LocalExtensionCache* cache,
                                 const std::string& id,
                                 const std::string& expected_hash,
                                 const base::FilePath& path,
                                 const std::string& version) {
-  std::unique_ptr<base::RunLoop> run_loop;
-  run_loop.reset(new base::RunLoop);
-  cache.PutExtension(id, expected_hash, path, version,
-                     base::Bind(&OnPutExtension, &run_loop));
-  run_loop->Run();
+  base::RunLoop run_loop;
+  cache->PutExtension(
+      id, expected_hash, path, version,
+      base::BindRepeating([](base::RunLoop* run_loop, const base::FilePath&,
+                             bool) { run_loop->Quit(); },
+                          &run_loop));
+  run_loop.Run();
 }
 
 TEST_F(LocalExtensionCacheTest, PutExtensionCases) {
@@ -337,53 +334,53 @@ TEST_F(LocalExtensionCacheTest, PutExtensionCases) {
   const base::FilePath temp_path = temp_dir.GetPath();
   std::string version;
 
-  // Right now we have two files for the first extension
+  // Right now we have two files for the first extension.
   EXPECT_TRUE(base::PathExists(file11));
   EXPECT_TRUE(base::PathExists(file12));
   EXPECT_TRUE(base::PathExists(file2));
   EXPECT_TRUE(base::PathExists(file3));
 
-  // 1. Cache contains an older version
+  // 1. Cache contains an older version.
   base::FilePath temp1;
   CreateExtensionFile(temp_path, kTestExtensionId1, "3.0", 110, time, &temp1);
-  PutExtensionAndWait(cache, kTestExtensionId1, "", temp1, "3.0");
-  // New file added
+  PutExtensionAndWait(&cache, kTestExtensionId1, "", temp1, "3.0");
+  // New file added.
   const base::FilePath unhashed =
       GetExtensionFileName(cache_dir, kTestExtensionId1, "3.0", "");
   EXPECT_TRUE(base::PathExists(unhashed));
-  // Old files removed from cache (kept in the directory though)
+  // Old files removed from cache (kept in the directory though).
   EXPECT_TRUE(cache.GetExtension(kTestExtensionId1, hash11, NULL, &version));
   EXPECT_EQ(version, "3.0");
   EXPECT_TRUE(base::DeleteFile(temp1, false));
 
-  // 2. Cache contains a newer version
+  // 2. Cache contains a newer version.
   base::FilePath temp2;
   CreateExtensionFile(temp_path, kTestExtensionId1, "2.0", 120, time, &temp2);
-  PutExtensionAndWait(cache, kTestExtensionId1, "", temp2, "2.0");
-  // New file skipped
+  PutExtensionAndWait(&cache, kTestExtensionId1, "", temp2, "2.0");
+  // New file skipped.
   EXPECT_FALSE(base::PathExists(
       GetExtensionFileName(cache_dir, kTestExtensionId1, "2.0", "")));
-  // Old file kept
+  // Old file kept.
   EXPECT_TRUE(cache.GetExtension(kTestExtensionId1, "", NULL, &version));
   EXPECT_EQ(version, "3.0");
   EXPECT_TRUE(base::DeleteFile(temp2, false));
 
-  // 3. Cache contains the same version without hash, our file is unhashed
+  // 3. Cache contains the same version without hash, our file is unhashed.
   base::FilePath temp3;
   CreateExtensionFile(temp_path, kTestExtensionId1, "3.0", 130, time, &temp3);
-  PutExtensionAndWait(cache, kTestExtensionId1, "", temp3, "3.0");
+  PutExtensionAndWait(&cache, kTestExtensionId1, "", temp3, "3.0");
   // New file skipped, old file kept
   EXPECT_EQ(base::File(unhashed, base::File::FLAG_READ | base::File::FLAG_OPEN)
                 .GetLength(),
             110);
   EXPECT_TRUE(base::DeleteFile(temp3, false));
 
-  // 4. Cache contains the same version without hash, our file is hashed
+  // 4. Cache contains the same version without hash, our file is hashed.
   base::FilePath temp4;
   const std::string hash3 = CreateSignedExtensionFile(
       temp_path, kTestExtensionId1, "3.0", 140, time, &temp4);
-  PutExtensionAndWait(cache, kTestExtensionId1, hash3, temp4, "3.0");
-  // New file added
+  PutExtensionAndWait(&cache, kTestExtensionId1, hash3, temp4, "3.0");
+  // New file added.
   const base::FilePath hashed =
       GetExtensionFileName(cache_dir, kTestExtensionId1, "3.0", hash3);
   EXPECT_TRUE(base::PathExists(hashed));
@@ -395,37 +392,37 @@ TEST_F(LocalExtensionCacheTest, PutExtensionCases) {
   EXPECT_TRUE(base::DeleteFile(temp4, false));
   EXPECT_TRUE(base::DeleteFile(unhashed, false));
 
-  // 5. Cache contains the same version with hash, our file is unhashed
+  // 5. Cache contains the same version with hash, our file is unhashed.
   base::FilePath temp5;
   CreateExtensionFile(temp_path, kTestExtensionId1, "3.0", 150, time, &temp5);
-  PutExtensionAndWait(cache, kTestExtensionId1, "", temp5, "3.0");
-  // New file skipped
+  PutExtensionAndWait(&cache, kTestExtensionId1, "", temp5, "3.0");
+  // New file skipped.
   EXPECT_FALSE(base::PathExists(unhashed));
-  // Old file kept
+  // Old file kept.
   EXPECT_TRUE(cache.GetExtension(kTestExtensionId1, hash3, NULL, NULL));
   EXPECT_TRUE(base::DeleteFile(temp5, false));
 
-  // 6. Cache contains the same version with hash, our file has the "same" hash
+  // 6. Cache contains the same version with hash, our file has the "same" hash.
   base::FilePath temp6;
   CreateExtensionFile(temp_path, kTestExtensionId1, "3.0", 160, time, &temp6);
-  PutExtensionAndWait(cache, kTestExtensionId1, hash3, temp6, "3.0");
+  PutExtensionAndWait(&cache, kTestExtensionId1, hash3, temp6, "3.0");
   // New file skipped, old file kept
   EXPECT_EQ(base::File(hashed, base::File::FLAG_READ | base::File::FLAG_OPEN)
                 .GetLength(),
             140);
   EXPECT_TRUE(base::DeleteFile(temp6, false));
 
-  // 7. Cache contains the same version with hash, our file is different
+  // 7. Cache contains the same version with hash, our file is different.
   base::FilePath temp7;
   const std::string hash4 = CreateSignedExtensionFile(
       temp_path, kTestExtensionId1, "3.0", 170, time, &temp7);
-  PutExtensionAndWait(cache, kTestExtensionId1, hash4, temp7, "3.0");
-  // New file addded
+  PutExtensionAndWait(&cache, kTestExtensionId1, hash4, temp7, "3.0");
+  // New file added.
   const base::FilePath hashed2 =
       GetExtensionFileName(cache_dir, kTestExtensionId1, "3.0", hash4);
   EXPECT_TRUE(base::PathExists(hashed2));
   EXPECT_TRUE(cache.GetExtension(kTestExtensionId1, hash4, NULL, NULL));
-  // Old file kept
+  // Old file kept.
   EXPECT_TRUE(cache.GetExtension(kTestExtensionId1, hash3, NULL, NULL));
   EXPECT_TRUE(base::DeleteFile(temp7, false));
 }

@@ -97,8 +97,7 @@ ManifestFetchData::ManifestFetchData(const GURL& update_url,
   request_ids_.insert(request_id);
 }
 
-ManifestFetchData::~ManifestFetchData() {
-}
+ManifestFetchData::~ManifestFetchData() = default;
 
 // The format for request parameters in update checks is:
 //

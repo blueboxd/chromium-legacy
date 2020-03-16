@@ -103,17 +103,9 @@ const base::Feature kCrossOriginOpenerPolicy {
 
 // Enables Cross-Origin Embedder Policy (COEP).
 // https://github.com/mikewest/corpp
-// Currently this feature is enabled for all platforms except WebView. It is not
-// possible to distinguish between Android and WebView here, so we enable the
-// feature on Android via finch.
-const base::Feature kCrossOriginEmbedderPolicy {
-  "CrossOriginEmbedderPolicy",
-#if defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+// Currently this feature is enabled for all platforms except WebView.
+const base::Feature kCrossOriginEmbedderPolicy{
+    "CrossOriginEmbedderPolicy", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When kBlockNonSecureExternalRequests is enabled, requests initiated from a
 // pubic network may only target a private network if the initiating context

@@ -247,7 +247,7 @@ void UpdatePathService(const base::FilePath& path) {
 class FlashComponentInstallerPolicy : public ComponentInstallerPolicy {
  public:
   FlashComponentInstallerPolicy();
-  ~FlashComponentInstallerPolicy() override {}
+  ~FlashComponentInstallerPolicy() override = default;
 
  private:
   // The following methods override ComponentInstallerPolicy.
@@ -271,7 +271,7 @@ class FlashComponentInstallerPolicy : public ComponentInstallerPolicy {
   DISALLOW_COPY_AND_ASSIGN(FlashComponentInstallerPolicy);
 };
 
-FlashComponentInstallerPolicy::FlashComponentInstallerPolicy() {}
+FlashComponentInstallerPolicy::FlashComponentInstallerPolicy() = default;
 
 bool FlashComponentInstallerPolicy::SupportsGroupPolicyEnabledComponentUpdates()
     const {

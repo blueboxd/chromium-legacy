@@ -195,7 +195,7 @@ class MemberBase {
     return result;
   }
 
-  static bool IsMemberHashTableDeletedValue(T* t) {
+  static bool IsMemberHashTableDeletedValue(const T* t) {
     return t == reinterpret_cast<T*>(kHashTableDeletedRawValue);
   }
 
@@ -235,7 +235,7 @@ class MemberBase {
   // Thread safe version of Get() for marking visitors.
   // This is used to prevent data races between concurrent marking visitors
   // and writes on the main thread.
-  T* GetSafe() const {
+  const T* GetSafe() const {
     // TOOD(omerkatz): replace this cast with std::atomic_ref (C++20) once it
     // becomes available
     return WTF::AsAtomicPtr(&raw_)->load(std::memory_order_relaxed);

@@ -78,7 +78,7 @@ INSTANTIATE_TEST_SUITE_P(IsForeground, RequestSenderTest, ::testing::Bool());
 RequestSenderTest::RequestSenderTest()
     : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
-RequestSenderTest::~RequestSenderTest() {}
+RequestSenderTest::~RequestSenderTest() = default;
 
 void RequestSenderTest::SetUp() {
   config_ = base::MakeRefCounted<TestConfigurator>();

@@ -43,7 +43,7 @@ class BackingVisitor : public Visitor {
     GCInfo::From(header->GcInfoIndex()).trace(this, header->Payload());
   }
 
-  void Visit(void* obj, TraceDescriptor desc) final {
+  void Visit(const void* obj, TraceDescriptor desc) final {
     EXPECT_TRUE(obj);
     auto** pos = std::find(objects_->begin(), objects_->end(), obj);
     if (objects_->end() != pos)
@@ -56,8 +56,8 @@ class BackingVisitor : public Visitor {
   }
 
   bool VisitEphemeronKeyValuePair(
-      void* key,
-      void* value,
+      const void* key,
+      const void* value,
       EphemeronTracingCallback key_trace_callback,
       EphemeronTracingCallback value_trace_callback) final {
     const bool key_is_dead = key_trace_callback(this, key);
@@ -69,22 +69,23 @@ class BackingVisitor : public Visitor {
   }
 
   // Unused overrides.
-  void VisitWeak(void* object,
-                 void* object_weak_ref,
+  void VisitWeak(const void* object,
+                 const void* object_weak_ref,
                  TraceDescriptor desc,
                  WeakCallback callback) final {}
-  void VisitBackingStoreStrongly(void* object,
-                                 void** object_slot,
+  void VisitBackingStoreStrongly(const void* object,
+                                 const void* const* object_slot,
                                  TraceDescriptor desc) final {}
-  void VisitBackingStoreWeakly(void*,
-                               void**,
+  void VisitBackingStoreWeakly(const void*,
+                               const void* const*,
                                TraceDescriptor,
                                TraceDescriptor,
                                WeakCallback,
-                               void*) final {}
-  void VisitBackingStoreOnly(void*, void**) final {}
-  void RegisterBackingStoreCallback(void* slot, MovingObjectCallback) final {}
-  void RegisterWeakCallback(WeakCallback, void*) final {}
+                               const void*) final {}
+  void VisitBackingStoreOnly(const void*, const void* const*) final {}
+  void RegisterBackingStoreCallback(const void* slot,
+                                    MovingObjectCallback) final {}
+  void RegisterWeakCallback(WeakCallback, const void*) final {}
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
 
  private:

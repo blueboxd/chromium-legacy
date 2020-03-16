@@ -50,6 +50,10 @@ class FileManager : public base::RefCountedThreadSafe<FileManager> {
   // Returns true if the directory for |key| exists.
   bool DirectoryExists(const DirectoryKey& key) const;
 
+  // Returns true if there is a capture for |key| i.e. there exists a proto or
+  // zip file.
+  bool CaptureExists(const DirectoryKey& key) const;
+
   // Creates or gets a subdirectory under |root_directory| for |key| and
   // assigns it to |directory|. The directory will be wiped if |clear| is true.
   // Returns a path on success or nullopt on failure. If the directory was

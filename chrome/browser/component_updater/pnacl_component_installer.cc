@@ -189,8 +189,8 @@ class PnaclComponentInstallerPolicy : public ComponentInstallerPolicy {
   DISALLOW_COPY_AND_ASSIGN(PnaclComponentInstallerPolicy);
 };
 
-PnaclComponentInstallerPolicy::PnaclComponentInstallerPolicy() {}
-PnaclComponentInstallerPolicy::~PnaclComponentInstallerPolicy() {}
+PnaclComponentInstallerPolicy::PnaclComponentInstallerPolicy() = default;
+PnaclComponentInstallerPolicy::~PnaclComponentInstallerPolicy() = default;
 
 bool PnaclComponentInstallerPolicy::SupportsGroupPolicyEnabledComponentUpdates()
     const {

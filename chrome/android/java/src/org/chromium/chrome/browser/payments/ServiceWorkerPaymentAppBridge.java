@@ -325,8 +325,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
      * @param total            The PaymentItem that represents the total cost of the payment.
      * @param modifiers        Payment method specific modifiers to the payment items and the total.
      * @param host             The host of the payment handler.
-     * @param isMicrotrans     Whether the payment handler should be invoked in the microtransaction
-     *                         mode.
+     * @param canShowOwnUI     Whether the payment handler is allowed to show its own UI.
      * @param callback         Called after the payment app is finished running.
      */
     public static void invokePaymentApp(WebContents webContents, long registrationId,
@@ -334,7 +333,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
             Set<PaymentMethodData> methodData, PaymentItem total,
             Set<PaymentDetailsModifier> modifiers, PaymentOptions paymentOptions,
             List<PaymentShippingOption> shippingOptions, PaymentHandlerHost host,
-            boolean isMicrotrans, PaymentApp.InstrumentDetailsCallback callback) {
+            boolean canShowOwnUI, PaymentApp.InstrumentDetailsCallback callback) {
         ThreadUtils.assertOnUiThread();
 
         ServiceWorkerPaymentAppBridgeJni.get().invokePaymentApp(webContents, registrationId,
@@ -342,7 +341,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
                 methodData.toArray(new PaymentMethodData[0]), total,
                 modifiers.toArray(new PaymentDetailsModifier[0]), paymentOptions,
                 shippingOptions.toArray(new PaymentShippingOption[0]),
-                host.getNativePaymentHandlerHost(), isMicrotrans, callback);
+                host.getNativePaymentHandlerHost(), canShowOwnUI, callback);
     }
 
     /**
@@ -664,7 +663,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
                 String paymentRequestId, PaymentMethodData[] methodData, PaymentItem total,
                 PaymentDetailsModifier[] modifiers, PaymentOptions paymentOptions,
                 PaymentShippingOption[] shippingOptions, long nativePaymentHandlerObject,
-                boolean isMicrotrans, PaymentApp.InstrumentDetailsCallback callback);
+                boolean canShowOwnUI, PaymentApp.InstrumentDetailsCallback callback);
         void installAndInvokePaymentApp(WebContents webContents, String topOrigin,
                 String paymentRequestOrigin, String paymentRequestId,
                 PaymentMethodData[] methodData, PaymentItem total,

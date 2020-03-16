@@ -217,30 +217,39 @@ bool ContentVerifyJob::FinishBlock() {
 void ContentVerifyJob::OnHashesReady(
     std::unique_ptr<const ContentHashReader> hash_reader) {
   base::AutoLock auto_lock(lock_);
-  const bool success = hash_reader->succeeded();
   hash_reader_ = std::move(hash_reader);
 
   if (g_ignore_verification_for_tests)
     return;
   scoped_refptr<TestObserver> test_observer = GetTestObserver();
   if (test_observer)
-    test_observer->OnHashesReady(extension_id_, relative_path_, success);
-  if (!success) {
-    if (!hash_reader_->has_content_hashes()) {
+    test_observer->OnHashesReady(extension_id_, relative_path_, *hash_reader_);
+
+  switch (hash_reader_->status()) {
+    case ContentHashReader::InitStatus::HASHES_MISSING: {
       DispatchFailureCallback(MISSING_ALL_HASHES);
       return;
     }
-
-    if (hash_reader_->file_missing_from_verified_contents()) {
+    case ContentHashReader::InitStatus::HASHES_DAMAGED: {
+      DispatchFailureCallback(CORRUPTED_HASHES);
+      return;
+    }
+    case ContentHashReader::InitStatus::NO_HASHES_FOR_NON_EXISTING_RESOURCE: {
       // Ignore verification of non-existent resources.
       scoped_refptr<TestObserver> test_observer = GetTestObserver();
       if (test_observer)
         test_observer->JobFinished(extension_id_, relative_path_, NONE);
       return;
     }
-    DispatchFailureCallback(NO_HASHES_FOR_FILE);
-    return;
+    case ContentHashReader::InitStatus::NO_HASHES_FOR_RESOURCE: {
+      DispatchFailureCallback(NO_HASHES_FOR_FILE);
+      return;
+    }
+    case ContentHashReader::InitStatus::SUCCESS: {
+      // Just proceed with hashes in case of success.
+    }
   }
+  DCHECK_EQ(ContentHashReader::InitStatus::SUCCESS, hash_reader_->status());
 
   DCHECK(!failed_);
 

@@ -119,7 +119,7 @@ class RequestQueue {
 template <typename T>
 class RequestQueue<T>::iterator {
  public:
-  iterator() {}
+  iterator() = default;
 
   T* operator*() { return it_->request.get(); }
   T* operator->() { return it_->request.get(); }

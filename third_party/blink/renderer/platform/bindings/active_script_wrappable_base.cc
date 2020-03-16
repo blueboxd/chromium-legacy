@@ -45,7 +45,8 @@ void ActiveScriptWrappableBase::TraceActiveScriptWrappables(
     if (!active_wrappable->DispatchHasPendingActivity())
       continue;
 
-    ScriptWrappable* script_wrappable = active_wrappable->ToScriptWrappable();
+    const ScriptWrappable* script_wrappable =
+        active_wrappable->ToScriptWrappable();
     visitor->Trace(script_wrappable);
   }
 }

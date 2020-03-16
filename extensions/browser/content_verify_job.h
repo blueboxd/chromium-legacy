@@ -47,6 +47,10 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
     // been fetched yet).
     MISSING_ALL_HASHES,
 
+    // Failed because hashes files exist, but are unreadabale or damaged, and
+    // content verifier was not able to compute new hashes.
+    CORRUPTED_HASHES,
+
     // Failed because this file wasn't found in the list of expected hashes.
     NO_HASHES_FOR_FILE,
 
@@ -91,7 +95,7 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
 
     virtual void OnHashesReady(const ExtensionId& extension_id,
                                const base::FilePath& relative_path,
-                               bool success) = 0;
+                               const ContentHashReader& hash_reader) = 0;
 
    protected:
     virtual ~TestObserver() = default;

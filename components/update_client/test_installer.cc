@@ -20,8 +20,7 @@
 
 namespace update_client {
 
-TestInstaller::TestInstaller() : error_(0), install_count_(0) {
-}
+TestInstaller::TestInstaller() : error_(0), install_count_(0) {}
 
 TestInstaller::~TestInstaller() {
   // The unpack path is deleted unconditionally by the component state code,
@@ -62,11 +61,9 @@ bool TestInstaller::Uninstall() {
 }
 
 ReadOnlyTestInstaller::ReadOnlyTestInstaller(const base::FilePath& install_dir)
-    : install_directory_(install_dir) {
-}
+    : install_directory_(install_dir) {}
 
-ReadOnlyTestInstaller::~ReadOnlyTestInstaller() {
-}
+ReadOnlyTestInstaller::~ReadOnlyTestInstaller() = default;
 
 bool ReadOnlyTestInstaller::GetInstalledFile(const std::string& file,
                                              base::FilePath* installed_file) {

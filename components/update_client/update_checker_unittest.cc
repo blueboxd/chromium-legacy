@@ -164,8 +164,7 @@ INSTANTIATE_TEST_SUITE_P(Parameterized, UpdateCheckerTest, testing::Bool());
 UpdateCheckerTest::UpdateCheckerTest()
     : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
-UpdateCheckerTest::~UpdateCheckerTest() {
-}
+UpdateCheckerTest::~UpdateCheckerTest() = default;
 
 void UpdateCheckerTest::SetUp() {
   is_foreground_ = GetParam();

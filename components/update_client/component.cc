@@ -466,7 +466,7 @@ std::unique_ptr<CrxInstaller::InstallParams> Component::install_params() const {
 Component::State::State(Component* component, ComponentState state)
     : state_(state), component_(*component) {}
 
-Component::State::~State() {}
+Component::State::~State() = default;
 
 void Component::State::Handle(CallbackNextState callback_next_state) {
   DCHECK(thread_checker_.CalledOnValidThread());

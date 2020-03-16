@@ -18,12 +18,16 @@ if (is_linux && !is_chromecast && !use_fuzzing_engine) {
     public_configs = [ ":expat_config" ]
   }
 } else {
-  config("expat_config") {
+  config("expat_public_config") {
     include_dirs = [
       "src/expat/lib",
       "include/expat_config",
     ]
     defines = [ "XML_STATIC" ]
+  }
+  config("expat_internal_config") {
+    # xmlparse.c has some |if (0 && ...)| statements.
+    cflags = [ "-Wno-unreachable-code" ]
   }
 
   static_library("expat") {
@@ -34,7 +38,8 @@ if (is_linux && !is_chromecast && !use_fuzzing_engine) {
       "src/expat/lib/xmltok.c",
     ]
 
-    public_configs = [ ":expat_config" ]
+    public_configs = [ ":expat_public_config" ]
+    configs += [ ":expat_internal_config" ]
 
     # TODO(thakis): Remove this once clang no longer crashes when building
     # libexpat with -Oz.

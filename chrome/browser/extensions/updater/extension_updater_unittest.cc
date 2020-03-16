@@ -260,10 +260,10 @@ class MockService : public TestExtensionService {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       : prefs_(prefs),
         pending_extension_manager_(prefs->profile()),
-        downloader_delegate_override_(NULL),
+        downloader_delegate_override_(nullptr),
         test_shared_url_loader_factory_(url_loader_factory) {}
 
-  ~MockService() override {}
+  ~MockService() override = default;
 
   PendingExtensionManager* pending_extension_manager() override {
     ADD_FAILURE() << "Subclass should override this if it will "
@@ -409,7 +409,7 @@ class ServiceForManifestTests : public MockService {
       : MockService(prefs, url_loader_factory),
         registry_(ExtensionRegistry::Get(profile())) {}
 
-  ~ServiceForManifestTests() override {}
+  ~ServiceForManifestTests() override = default;
 
   PendingExtensionManager* pending_extension_manager() override {
     return &pending_extension_manager_;

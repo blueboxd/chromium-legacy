@@ -179,7 +179,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '506142ad90f3a4d686c6367f4a720f53eeae38af',
+  'v8_revision': '717aa4d9cc63964d6d69ddc87d6d3d22385083a5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -187,11 +187,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'cb9a86a9d8677909988c83ab4076287a96b4d513',
+  'angle_revision': 'd1d96d73bff78a9f02df722896592f3ad9acad89',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '3a50a43df988b2d375a1247073329fb9ad64bca0',
+  'swiftshader_revision': '440fc9959f06c539b09fd2e0d1456971132fd7d1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'cb66c20c237185d95ac742749b2ee7dbe5457669',
+  'devtools_frontend_revision': '496706c9672eea631fefd2a97c34fd75c16895f7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -302,7 +302,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '463c394905997cda256fda9f2980acd99f2de09a',
+  'dawn_revision': '1a56ce54e0703a53b82cce32526ae1935f3122ff',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1239,7 +1239,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '7146ea83c0c464a1506c362a5379ceb8b8b63a85',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '29de50e4d8ee4180e0b4d08b8d958431079bce79',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1515,7 +1515,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f4a3e7498a60b19b46cc27871ea815476972849f',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@18f1a27970050f5d7e936e900022638754b42f7b',
     'condition': 'checkout_src_internal',
   },
 

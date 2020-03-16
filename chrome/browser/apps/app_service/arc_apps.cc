@@ -470,6 +470,18 @@ void ArcApps::LoadIcon(const std::string& app_id,
     LoadPlayStoreIcon(icon_compression, size_hint_in_dip, icon_effects,
                       std::move(callback));
   } else {
+    const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile_);
+    DCHECK(arc_prefs);
+
+    // If the app has been removed, immediately terminate the icon request since
+    // it can't possibly succeed.
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+        arc_prefs->GetApp(app_id);
+    if (!app_info) {
+      std::move(callback).Run(apps::mojom::IconValue::New());
+      return;
+    }
+
     arc_icon_once_loader_.LoadIcon(
         app_id, size_hint_in_dip, icon_compression,
         base::BindOnce(&OnArcAppIconCompletelyLoaded, icon_compression,

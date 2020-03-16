@@ -33312,6 +33312,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="PERSONAL_EMAIL"/>
   <int value="2" label="PERSONAL_ADDRESS"/>
   <int value="3" label="PERSONAL_PHONE_NUMBER"/>
+  <int value="4" label="PERSONAL_NAME"/>
 </enum>
 
 <enum name="IMECommitType">

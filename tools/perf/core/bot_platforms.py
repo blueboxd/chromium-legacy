@@ -454,7 +454,7 @@ ANDROID_GO_WEBVIEW = PerfPlatform(
     run_reference_build=False)
 ANDROID_NEXUS_5 = PerfPlatform(
     'Android Nexus5 Perf', 'Android KOT49H', _ANDROID_NEXUS_5_BENCHMARK_CONFIGS,
-    16, 'android', executables=_ANDROID_NEXUS_5_EXECUTABLE_CONFIGS)
+    8, 'android', executables=_ANDROID_NEXUS_5_EXECUTABLE_CONFIGS)
 ANDROID_NEXUS_5X_WEBVIEW = PerfPlatform(
     'Android Nexus5X WebView Perf', 'Android AOSP MOB30K',
     _ANDROID_NEXUS_5X_WEBVIEW_BENCHMARK_CONFIGS, 16, 'android',

@@ -92,8 +92,7 @@ DOMFloat32Array* XRRigidTransform::matrix() {
     matrix_array_ = transformationMatrixToDOMFloat32Array(*matrix_);
   }
 
-  if (!matrix_array_ || !matrix_array_->View() ||
-      !matrix_array_->View()->Data()) {
+  if (!matrix_array_ || !matrix_array_->Data()) {
     // A page may take the matrix_array_ value and detach it so matrix_array_ is
     // a detached array buffer.  This breaks the inspector, so return null
     // instead.

@@ -462,16 +462,14 @@ TEST_F(SecurityKeyIpcServerTest, SendResponseTimeout) {
               kConnectionTimeoutErrorDeltaMs);
 }
 
+// On macOS, named servers when using ChannelMac are an exclusive resources,
+// and it is not possible to create an instance of a server endpoint while
+// another one exists. Creating the servers in a loop below will flakily fail
+// because the channel shutdown is a series of asynchronous tasks posted on the
+// IO thread, and there is not a way to synchronize it with the test main
+// thread.
+#if !defined(OS_MACOSX)
 TEST_F(SecurityKeyIpcServerTest, CleanupPendingConnection) {
-#if defined(OS_MACOSX)
-  // Named servers when using ChannelMac are an exclusive resources, and it is
-  // not possible to create an instance of a server endpoint while another one
-  // exists. Creating the servers in a loop below will flakily fail because the
-  // channel shutdown is a series of asynchronous tasks posted on the IO
-  // thread, and there is not a way to synchronize it with the test main thread.
-  return;
-#endif  // defined(OS_MACOSX)
-
   // Test that servers correctly close pending OS connections on
   // |server_name|. If multiple servers do remain, the client may happen to
   // connect to the correct server, so create and delete many servers.
@@ -523,6 +521,7 @@ TEST_F(SecurityKeyIpcServerTest, CleanupPendingConnection) {
   // Typically the client will be the one to close the connection.
   fake_ipc_client.CloseIpcConnection();
 }
+#endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
 TEST_F(SecurityKeyIpcServerTest, IpcConnectionFailsFromInvalidSession) {

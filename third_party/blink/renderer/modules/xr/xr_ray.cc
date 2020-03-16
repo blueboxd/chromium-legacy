@@ -142,7 +142,7 @@ DOMFloat32Array* XRRay::matrix() {
   // steps:
   //    Step 1. If the operation IsDetachedBuffer on internal matrix is false,
   //    return transform’s internal matrix.
-  if (!matrix_ || !matrix_->View() || !matrix_->View()->Data()) {
+  if (!matrix_ || !matrix_->Data()) {
     // Returned matrix should represent transformation from ray originating at
     // (0,0,0) with direction (0,0,-1) into ray originating at |origin_| with
     // direction |direction_|.

@@ -263,6 +263,16 @@ class DemoSetupController
   void OnStoreLoaded(policy::CloudPolicyStore* store) override;
   void OnStoreError(policy::CloudPolicyStore* store) override;
 
+  // Keeps track of when downloading demo mode resources begins.
+  base::TimeTicks download_start_time_;
+
+  // Keeps track of when enrolling in enterprise) begins.
+  base::TimeTicks enroll_start_time_;
+
+  // Keeps track of how many times an operator has been required to retry
+  // setup.
+  int num_setup_retries_ = 0;
+
   // Demo mode configuration type that will be setup when Enroll() is called.
   // Should be set explicitly.
   DemoSession::DemoModeConfig demo_config_ = DemoSession::DemoModeConfig::kNone;

@@ -265,7 +265,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
 
   idle_task_status_ = kIdleTaskNotSupported;
   num_rows_completed_ = 0;
-  if (context && context->IsDocument()) {
+  if (context->IsDocument()) {
     parent_frame_task_runner_ =
         context->GetTaskRunner(TaskType::kCanvasBlobSerialization);
   }

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/input_method/assistive_suggester.h"
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -22,6 +23,43 @@ const char kMaxTextBeforeCursorLength = 50;
 const char kKeydown[] = "keydown";
 const char kAssistEmailPrefix[] = "my email is ";
 const char kAssistNamePrefix[] = "my name is ";
+const char kAssistAddressPrefix[] = "my address is ";
+const char kAssistPhoneNumberPrefix[] = "my phone number is ";
+
+// Must match with IMEAssistiveAction in enums.xml
+enum class AssistiveType {
+  kGenericAction = 0,
+  kPersonalEmail = 1,
+  kPersonalAddress = 2,
+  kPersonalPhoneNumber = 3,
+  kPersonalName = 4,
+  kMaxValue = kPersonalName,
+};
+
+void RecordAssitiveConverage(AssistiveType type) {
+  base::UmaHistogramEnumeration("InputMethod.Assistive.Coverage", type);
+}
+
+AssistiveType ProposeAssistiveAction(const std::string& text) {
+  AssistiveType action = AssistiveType::kGenericAction;
+  if (base::EndsWith(text, kAssistEmailPrefix,
+                     base::CompareCase::INSENSITIVE_ASCII)) {
+    action = AssistiveType::kPersonalEmail;
+  }
+  if (base::EndsWith(text, kAssistNamePrefix,
+                     base::CompareCase::INSENSITIVE_ASCII)) {
+    action = AssistiveType::kPersonalName;
+  }
+  if (base::EndsWith(text, kAssistAddressPrefix,
+                     base::CompareCase::INSENSITIVE_ASCII)) {
+    action = AssistiveType::kPersonalAddress;
+  }
+  if (base::EndsWith(text, kAssistPhoneNumberPrefix,
+                     base::CompareCase::INSENSITIVE_ASCII)) {
+    action = AssistiveType::kPersonalPhoneNumber;
+  }
+  return action;
+}
 
 }  // namespace
 
@@ -65,6 +103,21 @@ bool AssistiveSuggester::OnKeyEvent(
   return false;
 }
 
+void AssistiveSuggester::RecordAssitiveCoverageMetrics(const std::string& text,
+                                                       int cursor_pos,
+                                                       int anchor_pos) {
+  int len = static_cast<int>(text.length());
+  if (cursor_pos > 0 && cursor_pos <= len && cursor_pos == anchor_pos &&
+      (cursor_pos == len || base::IsAsciiWhitespace(text[cursor_pos]))) {
+    int start_pos = std::max(0, cursor_pos - kMaxTextBeforeCursorLength);
+    std::string text_before_cursor =
+        text.substr(start_pos, cursor_pos - start_pos);
+    AssistiveType action = ProposeAssistiveAction(text_before_cursor);
+    if (action != AssistiveType::kGenericAction)
+      RecordAssitiveConverage(action);
+  }
+}
+
 bool AssistiveSuggester::OnSurroundingTextChanged(const std::string& text,
                                                   int cursor_pos,
                                                   int anchor_pos) {
@@ -94,8 +147,9 @@ void AssistiveSuggester::Suggest(const std::string& text,
       (cursor_pos == len || base::IsAsciiWhitespace(text[cursor_pos]))) {
     // |text| could be very long, we get at most |kMaxTextBeforeCursorLength|
     // characters before cursor.
-    std::string text_before_cursor = text.substr(
-        std::max(0, cursor_pos - kMaxTextBeforeCursorLength), cursor_pos);
+    int start_pos = std::max(0, cursor_pos - kMaxTextBeforeCursorLength);
+    std::string text_before_cursor =
+        text.substr(start_pos, cursor_pos - start_pos);
     std::string suggestion_text = GetPersonalInfoSuggestion(text_before_cursor);
     if (!suggestion_text.empty()) {
       ShowSuggestion(suggestion_text);
@@ -106,20 +160,37 @@ void AssistiveSuggester::Suggest(const std::string& text,
 
 std::string AssistiveSuggester::GetPersonalInfoSuggestion(
     const std::string& text) {
-  if (base::EndsWith(text, kAssistEmailPrefix,
-                     base::CompareCase::INSENSITIVE_ASCII)) {
+  AssistiveType action = ProposeAssistiveAction(text);
+  if (action == AssistiveType::kGenericAction)
+    return "";
+
+  if (action == AssistiveType::kPersonalEmail) {
     std::string email = profile_->GetProfileUserName();
     return email;
-  }
-  if (base::EndsWith(text, kAssistNamePrefix,
-                     base::CompareCase::INSENSITIVE_ASCII)) {
+  } else {
     auto autofill_profiles = personal_data_manager_->GetProfilesToSuggest();
     if (autofill_profiles.size() > 0) {
       // Currently, we are just picking the first candidate, will improve the
       // strategy in the future.
       auto* data = autofill_profiles[0];
-      auto name = data->GetRawInfo(autofill::ServerFieldType::NAME_FULL);
-      return base::UTF16ToUTF8(name);
+      base::string16 suggestion;
+      switch (action) {
+        case AssistiveType::kPersonalName:
+          suggestion = data->GetRawInfo(autofill::ServerFieldType::NAME_FULL);
+          break;
+        case AssistiveType::kPersonalAddress:
+          suggestion = data->GetRawInfo(
+              autofill::ServerFieldType::ADDRESS_HOME_STREET_ADDRESS);
+          break;
+        case AssistiveType::kPersonalPhoneNumber:
+          suggestion = data->GetRawInfo(
+              autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER);
+          break;
+        default:
+          NOTREACHED();
+          break;
+      }
+      return base::UTF16ToUTF8(suggestion);
     }
   }
   return "";

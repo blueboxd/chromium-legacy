@@ -6738,10 +6738,6 @@ crbug.com/1058073 [ Retina ] accessibility/content-changed-notification-causes-c
 # Sheriff 2020-03-06
 crbug.com/1059262 http/tests/worklet/webexposed/global-interface-listing-paint-worklet.html [ Pass Failure ]
 crbug.com/1059262 virtual/threaded/http/tests/worklet/webexposed/global-interface-listing-paint-worklet.html [ Pass Failure ]
-crbug.com/1059322 [ Mac ] fast/forms/file/file-input-webkitdirectory-key-enter.html [ Pass Failure ]
-crbug.com/1059322 [ Mac ] fast/forms/file/file-input-webkitdirectory-click.html [ Pass Failure ]
-crbug.com/1059322 [ Mac ] fast/forms/file/file-input-webkitdirectory-key-space.html [ Pass Failure ]
-crbug.com/1059322 [ Mac ] fast/forms/file/file-input-click.html [ Pass Failure ]
 crbug.com/1058244 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-rtl-manipulation.html [ Pass Failure ]
 
 # Sheriff 2020-03-08

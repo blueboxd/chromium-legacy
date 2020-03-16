@@ -376,7 +376,7 @@ BUILDERS = {
       'pool': 'chrome.tests.perf',
       'os': 'Android',
       'device_type': 'hammerhead',
-      'device_os': 'KOT49H',
+      'device_os': 'M4B30Z',
       'device_os_flavor': 'google',
     },
   },

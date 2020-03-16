@@ -88,7 +88,7 @@ TextEncoderEncodeIntoResult* TextEncoder::encodeInto(
       TextEncoderEncodeIntoResult::Create();
 
   TextCodec::EncodeIntoResult encode_into_result_data;
-  unsigned char* destination_buffer = destination.View()->View()->Data();
+  unsigned char* destination_buffer = destination.View()->Data();
   if (source.Is8Bit()) {
     encode_into_result_data = codec_->EncodeInto(
         source.Characters8(), source.length(), destination_buffer,

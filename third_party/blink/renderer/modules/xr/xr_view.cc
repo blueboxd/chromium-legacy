@@ -34,8 +34,7 @@ XRSession* XRView::session() const {
 }
 
 DOMFloat32Array* XRView::projectionMatrix() const {
-  if (!projection_matrix_ || !projection_matrix_->View() ||
-      !projection_matrix_->View()->Data()) {
+  if (!projection_matrix_ || !projection_matrix_->Data()) {
     // A page may take the projection matrix value and detach it so
     // projection_matrix_ is a detached array buffer.  This breaks the
     // inspector, so return null instead.

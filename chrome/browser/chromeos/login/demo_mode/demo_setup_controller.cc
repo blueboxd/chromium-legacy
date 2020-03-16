@@ -12,10 +12,12 @@
 #include "base/containers/flat_map.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
@@ -51,6 +53,13 @@ constexpr char kOfflinePolicyDirectoryName[] = "policy";
 constexpr char kOfflineDevicePolicyFileName[] = "device_policy";
 constexpr char kOfflineDeviceLocalAccountPolicyFileName[] =
     "local_account_policy";
+constexpr char kDemoSetupDownloadDurationHistogram[] =
+    "DemoMode.Setup.DownloadDuration";
+constexpr char kDemoSetupEnrollDurationHistogram[] =
+    "DemoMode.Setup.EnrollDuration";
+constexpr char kDemoSetupLoadingDurationHistogram[] =
+    "DemoMode.Setup.LoadingDuration";
+constexpr char kDemoSetupNumRetriesHistogram[] = "DemoMode.Setup.NumRetries";
 
 // Get the DeviceLocalAccountPolicyStore for the account_id.
 policy::CloudPolicyStore* GetDeviceLocalAccountPolicyStore(
@@ -536,6 +545,9 @@ base::FilePath DemoSetupController::GetPreinstalledDemoResourcesPath(
 
 void DemoSetupController::LoadDemoResourcesCrOSComponent() {
   VLOG(1) << "Loading demo resources component";
+
+  download_start_time_ = base::TimeTicks::Now();
+
   if (!demo_resources_)
     demo_resources_ = std::make_unique<DemoResources>(demo_config_);
 
@@ -558,6 +570,11 @@ void DemoSetupController::LoadDemoResourcesCrOSComponent() {
 void DemoSetupController::OnDemoResourcesCrOSComponentLoaded() {
   DCHECK_EQ(demo_config_, DemoSession::DemoModeConfig::kOnline);
 
+  base::TimeDelta download_duration =
+      base::TimeTicks::Now() - download_start_time_;
+  base::UmaHistogramLongTimes100(kDemoSetupDownloadDurationHistogram,
+                                 download_duration);
+
   if (demo_resources_->component_error().value() !=
       component_updater::CrOSComponentManager::Error::NONE) {
     SetupFailed(DemoSetupError::CreateFromComponentError(
@@ -566,6 +583,9 @@ void DemoSetupController::OnDemoResourcesCrOSComponentLoaded() {
   }
 
   VLOG(1) << "Starting online enrollment";
+
+  enroll_start_time_ = base::TimeTicks::Now();
+
   policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
@@ -630,6 +650,14 @@ void DemoSetupController::OnOtherError(
 
 void DemoSetupController::OnDeviceEnrolled() {
   DCHECK_NE(demo_config_, DemoSession::DemoModeConfig::kNone);
+
+  // |enroll_start_time_| is only set for online enrollment.
+  if (!enroll_start_time_.is_null()) {
+    base::TimeDelta enroll_duration =
+        base::TimeTicks::Now() - enroll_start_time_;
+    base::UmaHistogramLongTimes100(kDemoSetupEnrollDurationHistogram,
+                                   enroll_duration);
+  }
 
   // Try to load the policy for the device local account.
   if (demo_config_ == DemoSession::DemoModeConfig::kOffline) {
@@ -732,6 +760,21 @@ void DemoSetupController::OnDeviceLocalAccountPolicyLoaded(
 
 void DemoSetupController::OnDeviceRegistered() {
   VLOG(1) << "Demo mode setup finished successfully.";
+
+  if (demo_config_ == DemoSession::DemoModeConfig::kOnline) {
+    base::TimeDelta loading_duration =
+        base::TimeTicks::Now() - download_start_time_;
+    // A similar metric can be found at OOBE.StepCompletionTime.Demo-setup,
+    // however this is only useful for durations up to three minutes. Demo mode
+    // setup typically takes longer than this, so we use a LONG_TIMES metric
+    // here to capture metrics of up to one hour.
+    base::UmaHistogramLongTimes100(kDemoSetupLoadingDurationHistogram,
+                                   loading_duration);
+  }
+
+  base::UmaHistogramCounts100(kDemoSetupNumRetriesHistogram,
+                              num_setup_retries_);
+
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetInteger(prefs::kDemoModeConfig, static_cast<int>(demo_config_));
   prefs->CommitPendingWrite();
@@ -741,6 +784,7 @@ void DemoSetupController::OnDeviceRegistered() {
 }
 
 void DemoSetupController::SetupFailed(const DemoSetupError& error) {
+  num_setup_retries_++;
   Reset();
   LOG(ERROR) << error.GetDebugDescription();
   if (!on_setup_error_.is_null())

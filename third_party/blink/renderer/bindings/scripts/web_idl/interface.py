@@ -38,7 +38,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                      constants=None,
                      constructors=None,
                      operations=None,
-                     property_accessors=None,
+                     indexed_and_named_properties=None,
                      stringifier=None,
                      iterable=None,
                      maplike=None,
@@ -54,8 +54,8 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             assert constructors is None or isinstance(constructors,
                                                       (list, tuple))
             assert operations is None or isinstance(operations, (list, tuple))
-            assert property_accessors is None or isinstance(
-                property_accessors, PropertyAccessors.IR)
+            assert indexed_and_named_properties is None or isinstance(
+                indexed_and_named_properties, IndexedAndNamedProperties.IR)
             assert stringifier is None or isinstance(stringifier,
                                                      Stringifier.IR)
             assert iterable is None or isinstance(iterable, Iterable)
@@ -106,7 +106,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.operations = list(operations)
             self.operation_groups = []
             self.exposed_constructs = []
-            self.property_accessors = property_accessors
+            self.indexed_and_named_properties = indexed_and_named_properties
             self.stringifier = stringifier
             self.iterable = iterable
             self.maplike = maplike
@@ -168,12 +168,13 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                 owner=self) for operation_group_ir in ir.operation_groups
         ])
         self._exposed_constructs = tuple(ir.exposed_constructs)
-        self._property_accessors = None
-        if ir.property_accessors:
-            operations = filter(lambda x: x.is_property_accessor,
-                                self._operations)
-            self._property_accessors = PropertyAccessors(
-                ir.property_accessors, operations, owner=self)
+        self._indexed_and_named_properties = None
+        if ir.indexed_and_named_properties:
+            operations = filter(
+                lambda x: x.is_indexed_or_named_property_operation,
+                self._operations)
+            self._indexed_and_named_properties = IndexedAndNamedProperties(
+                ir.indexed_and_named_properties, operations, owner=self)
         self._stringifier = None
         if ir.stringifier:
             operations = filter(lambda x: x.is_stringifier, self._operations)
@@ -285,9 +286,9 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             map(lambda ref: ref.target_object, self._exposed_constructs))
 
     @property
-    def property_accessors(self):
-        """Returns a PropertyAccessors or None."""
-        return self._property_accessors
+    def indexed_and_named_properties(self):
+        """Returns a IndexedAndNamedProperties or None."""
+        return self._indexed_and_named_properties
 
     @property
     def stringifier(self):
@@ -315,7 +316,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         return True
 
 
-class PropertyAccessors(WithOwner, WithDebugInfo):
+class IndexedAndNamedProperties(WithOwner, WithDebugInfo):
     """
     Represents a set of indexed/named getter/setter/deleter.
 
@@ -365,7 +366,7 @@ class PropertyAccessors(WithOwner, WithDebugInfo):
                     assert False
 
     def __init__(self, ir, operations, owner):
-        assert isinstance(ir, PropertyAccessors.IR)
+        assert isinstance(ir, IndexedAndNamedProperties.IR)
         assert isinstance(operations, (list, tuple))
         assert all(
             isinstance(operation, Operation) for operation in operations)
@@ -455,9 +456,11 @@ class PropertyAccessors(WithOwner, WithDebugInfo):
 
     def _find_accessor(self, attr):
         for interface in self.owner.inclusive_inherited_interfaces:
-            accessors = interface.property_accessors
-            if accessors and hasattr(accessors, attr):
-                return getattr(accessors, attr)
+            props = interface.indexed_and_named_properties
+            if props:
+                accessor = getattr(props, attr)
+                if accessor:
+                    return accessor
         return None
 
 

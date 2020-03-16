@@ -1604,12 +1604,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const blink::mojom::FrameOwnerProperties& properties);
   void OnForwardResourceTimingToParent(
       const ResourceTimingInfo& resource_timing);
-  void OnAccessibilityChildFrameHitTestResult(
-      int action_request_id,
-      const gfx::Point& point,
-      int child_frame_routing_id,
-      int child_frame_browser_plugin_instance_id,
-      ax::mojom::Event event_to_fire);
   void OnDidStopLoading();
   void OnSelectionChanged(const base::string16& text,
                           uint32_t offset,
@@ -1706,6 +1700,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
 #endif
 
   // mojom::RenderAccessibilityHost:
+  void HandleAXChildFrameHitTestResult(
+      int action_request_id,
+      const gfx::Point& point,
+      int child_frame_routing_id,
+      int child_frame_browser_plugin_instance_id,
+      ax::mojom::Event event_to_fire) override;
   void HandleAXEvents(const std::vector<AXContentTreeUpdate>& updates,
                       const std::vector<ui::AXEvent>& events,
                       int32_t reset_token,

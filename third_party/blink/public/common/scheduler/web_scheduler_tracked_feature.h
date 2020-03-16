@@ -81,9 +81,10 @@ enum class WebSchedulerTrackedFeature {
 
   kRequestedStorageAccessGrant = 37,
   kWebNfc = 38,
+  kWebFileSystem = 39,
 
   // NB: This enum is used in a bitmask, so kMaxValue must be less than 64.
-  kMaxValue = kWebNfc
+  kMaxValue = kWebFileSystem
 };
 
 static_assert(static_cast<uint32_t>(WebSchedulerTrackedFeature::kMaxValue) < 64,

@@ -97,7 +97,9 @@ class TextIteratorTest : public testing::WithParamInterface<bool>,
  protected:
   TextIteratorTest() : ScopedLayoutNGForTest(GetParam()) {}
 
-  bool LayoutNGEnabled() const { return GetParam(); }
+  bool LayoutNGEnabled() const {
+    return RuntimeEnabledFeatures::LayoutNGEnabled();
+  }
 
   template <typename Tree>
   std::string Iterate(const TextIteratorBehavior& = TextIteratorBehavior());

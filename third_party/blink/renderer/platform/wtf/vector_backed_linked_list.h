@@ -91,7 +91,7 @@ class VectorBackedLinkedList {
 
   void swap(VectorBackedLinkedList&);
 
-  bool empty() { return size_ == 0; }
+  bool empty() const { return size_ == 0; }
   wtf_size_t size() const { return size_; }
 
   iterator begin() { return MakeIterator(UsedFirstIndex()); }
@@ -107,10 +107,10 @@ class VectorBackedLinkedList {
     return MakeConstReverseIterator(anchor_index_);
   }
 
-  Value& front() { return nodes_[UsedFirstIndex()].value_; }
-  const Value& front() const { return nodes_[UsedFirstIndex()].value_; }
-  Value& back() { return nodes_[UsedLastIndex()].value_; }
-  const Value& back() const { return nodes_[UsedLastIndex()].value_; }
+  Value& front();
+  const Value& front() const;
+  Value& back();
+  const Value& back() const;
 
   template <typename IncomingValueType>
   iterator insert(const_iterator position, IncomingValueType&& value);
@@ -442,6 +442,30 @@ inline void VectorBackedLinkedList<T>::swap(VectorBackedLinkedList& other) {
 #if DCHECK_IS_ON()
   swap(modifications_, other.modificatoins_);
 #endif
+}
+
+template <typename T>
+T& VectorBackedLinkedList<T>::front() {
+  DCHECK(!empty());
+  return nodes_[UsedFirstIndex()].value_;
+}
+
+template <typename T>
+const T& VectorBackedLinkedList<T>::front() const {
+  DCHECK(!empty());
+  return nodes_[UsedFirstIndex()].value_;
+}
+
+template <typename T>
+T& VectorBackedLinkedList<T>::back() {
+  DCHECK(!empty());
+  return nodes_[UsedLastIndex()].value_;
+}
+
+template <typename T>
+const T& VectorBackedLinkedList<T>::back() const {
+  DCHECK(!empty());
+  return nodes_[UsedLastIndex()].value_;
 }
 
 template <typename T>

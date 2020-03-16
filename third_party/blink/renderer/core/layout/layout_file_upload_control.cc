@@ -35,9 +35,9 @@ namespace blink {
 
 const int kButtonShadowHeight = 2;
 
-LayoutFileUploadControl::LayoutFileUploadControl(HTMLInputElement* input)
+LayoutFileUploadControl::LayoutFileUploadControl(Element* input)
     : LayoutBlockFlow(input) {
-  DCHECK_EQ(input->type(), input_type_names::kFile);
+  DCHECK_EQ(To<HTMLInputElement>(input)->type(), input_type_names::kFile);
 }
 
 LayoutFileUploadControl::~LayoutFileUploadControl() = default;

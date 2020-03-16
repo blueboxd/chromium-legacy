@@ -1001,7 +1001,6 @@ if (!is_ios) {
         "//third_party/blink/web_tests/external/wpt/webdriver/",
         "//third_party/blink/web_tests/VirtualTestSuites",
         "//third_party/blink/web_tests/WebDriverExpectations",
-        "//third_party/pywebsocket/src/mod_pywebsocket/",
         "//third_party/pywebsocket3/src/mod_pywebsocket/",
       ]
       data_deps = [
@@ -1116,7 +1115,6 @@ if (!is_ios) {
       "//third_party/blink/perf_tests/",
       "//third_party/blink/tools/",
       "//third_party/blink/web_tests/",
-      "//third_party/pywebsocket/src/mod_pywebsocket/",
       "//third_party/pywebsocket3/src/mod_pywebsocket/",
     ]
 

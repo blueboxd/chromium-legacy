@@ -215,7 +215,7 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
       web_state_->GetNavigationManager()->GetPendingItem();
   GURL original_pending_url =
       pending_item ? pending_item->GetOriginalRequestURL() : GURL::EmptyGURL();
-  bool is_link_transition = ui::PageTransitionCoreTypeIs(
+  bool is_link_transition = ui::PageTransitionTypeIncludingQualifiersIs(
       request_info.transition_type, ui::PAGE_TRANSITION_LINK);
 
   ChromeBrowserState* browser_state =

@@ -31,11 +31,6 @@ class DataView final : public ArrayBufferView {
   unsigned TypeSize() const override { return 1; }
 
  protected:
-  void Detach() override {
-    ArrayBufferView::Detach();
-    raw_byte_length_ = 0;
-  }
-
  private:
   DataView(ArrayBuffer* buffer, size_t byte_offset, size_t byte_length)
       : ArrayBufferView(buffer, byte_offset), raw_byte_length_(byte_length) {}

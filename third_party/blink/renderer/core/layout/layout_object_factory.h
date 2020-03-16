@@ -54,6 +54,9 @@ class LayoutObjectFactory {
                                           const ComputedStyle&,
                                           LegacyLayout);
   static LayoutBlock* CreateFieldset(Node&, const ComputedStyle&, LegacyLayout);
+  static LayoutBlockFlow* CreateFileUploadControl(Node& node,
+                                                  const ComputedStyle& style,
+                                                  LegacyLayout legacy);
   static LayoutText* CreateText(Node*, scoped_refptr<StringImpl>, LegacyLayout);
   static LayoutTextFragment* CreateTextFragment(Node*,
                                                 StringImpl*,

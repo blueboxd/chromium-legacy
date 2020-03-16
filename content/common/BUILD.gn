@@ -39,7 +39,6 @@ source_set("common") {
   ]
 
   sources = [
-    "accessibility_messages.h",
     "all_messages.h",
     "android/gin_java_bridge_errors.cc",
     "android/gin_java_bridge_errors.h",

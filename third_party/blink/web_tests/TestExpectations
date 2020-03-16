@@ -7049,3 +7049,4 @@ crbug.com/1061131 [ Mac ] editing/selection/replaced-boundaries-1.html [ Pass Fa
 # Sheriff 2020-03-16
 crbug.com/1061029 [ Win ] external/wpt/html/cross-origin-embedder-policy/cache-storage-reporting.https.html [ Pass Failure ]
 crbug.com/1061029 [ Mac ] external/wpt/html/cross-origin-embedder-policy/cache-storage-reporting.https.html [ Pass Failure ]
+crbug.com/1061180 http/tests/loading/onbeforeunload-detach.html [ Pass Failure ]

@@ -32,8 +32,8 @@ namespace plugin_vm {
 
 namespace {
 
-constexpr char kInvalidLicenseNotificationId[] = "plugin-vm-invalid-license";
-constexpr char kInvalidLicenseNotifierId[] = "plugin-vm-invalid-license";
+constexpr char kStartVmFailedNotificationId[] = "plugin-vm-start-vm-failed";
+constexpr char kStartVmFailedNotifierId[] = "plugin-vm-start-vm-failed";
 
 class PluginVmManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
@@ -73,19 +73,42 @@ bool VmIsStopping(vm_tools::plugin_dispatcher::VmState state) {
          state == vm_tools::plugin_dispatcher::VmState::VM_STATE_PAUSING;
 }
 
-void ShowInvalidLicenseNotification(Profile* profile) {
+void ShowStartVmFailedNotification(Profile* profile,
+                                   PluginVmLaunchResult result) {
+  LOG(ERROR) << "Failed to start VM with launch result "
+             << static_cast<int>(result);
+  int title_id;
+  int message_id;
+  switch (result) {
+    default:
+      NOTREACHED();
+      FALLTHROUGH;
+    case PluginVmLaunchResult::kError:
+      title_id = IDS_PLUGIN_VM_START_VM_ERROR_TITLE;
+      message_id = IDS_PLUGIN_VM_START_VM_ERROR_MESSAGE;
+      break;
+    case PluginVmLaunchResult::kInvalidLicense:
+      title_id = IDS_PLUGIN_VM_INVALID_LICENSE_TITLE;
+      message_id = IDS_PLUGIN_VM_INVALID_LICENSE_MESSAGE;
+      break;
+    case PluginVmLaunchResult::kExpiredLicense:
+      title_id = IDS_PLUGIN_VM_EXPIRED_LICENSE_TITLE;
+      message_id = IDS_PLUGIN_VM_INVALID_LICENSE_MESSAGE;
+      break;
+    case PluginVmLaunchResult::kNetworkError:
+      title_id = IDS_PLUGIN_VM_START_VM_ERROR_TITLE;
+      message_id = IDS_PLUGIN_VM_NETWORK_ERROR_MESSAGE;
+      break;
+  }
   std::unique_ptr<message_center::Notification> notification =
       ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
-          kInvalidLicenseNotificationId,
-          l10n_util::GetStringUTF16(
-              IDS_PLUGIN_VM_INVALID_LICENSE_NOTIFICATION_TITLE),
-          l10n_util::GetStringUTF16(
-              IDS_PLUGIN_VM_INVALID_LICENSE_NOTIFICATION_MESSAGE),
+          kStartVmFailedNotificationId, l10n_util::GetStringUTF16(title_id),
+          l10n_util::GetStringUTF16(message_id),
           l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME), GURL(),
           message_center::NotifierId(
               message_center::NotifierType::SYSTEM_COMPONENT,
-              kInvalidLicenseNotifierId),
+              kStartVmFailedNotifierId),
           {}, new message_center::NotificationDelegate(),
           kNotificationPluginVmIcon,
           message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
@@ -374,18 +397,33 @@ void PluginVmManager::StartVm() {
 
 void PluginVmManager::OnStartVm(
     base::Optional<vm_tools::plugin_dispatcher::StartVmResponse> reply) {
-  if (reply &&
-      reply->error() ==
-          vm_tools::plugin_dispatcher::VmErrorCode::VM_ERR_LIC_NOT_VALID) {
-    VLOG(1) << "Failed to start VM due to invalid license.";
-    ShowInvalidLicenseNotification(profile_);
-    LaunchFailed(PluginVmLaunchResult::kInvalidLicense);
-    return;
+  PluginVmLaunchResult result;
+  if (reply) {
+    switch (reply->error()) {
+      case vm_tools::plugin_dispatcher::VmErrorCode::VM_SUCCESS:
+        result = PluginVmLaunchResult::kSuccess;
+        break;
+      case vm_tools::plugin_dispatcher::VmErrorCode::VM_ERR_LIC_NOT_VALID:
+        result = PluginVmLaunchResult::kInvalidLicense;
+        break;
+      case vm_tools::plugin_dispatcher::VmErrorCode::VM_ERR_LIC_EXPIRED:
+        result = PluginVmLaunchResult::kExpiredLicense;
+        break;
+      case vm_tools::plugin_dispatcher::VmErrorCode::
+          VM_ERR_LIC_WEB_PORTAL_UNAVAILABLE:
+        result = PluginVmLaunchResult::kNetworkError;
+        break;
+      default:
+        result = PluginVmLaunchResult::kError;
+        break;
+    }
+  } else {
+    result = PluginVmLaunchResult::kError;
   }
 
-  if (!reply || reply->error()) {
-    LOG(ERROR) << "Failed to start VM.";
-    LaunchFailed();
+  if (result != PluginVmLaunchResult::kSuccess) {
+    ShowStartVmFailedNotification(profile_, result);
+    LaunchFailed(result);
     return;
   }
 

@@ -84,10 +84,10 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
                 or self.is_stringifier)
 
     @property
-    def is_property_accessor(self):
+    def is_indexed_or_named_property_operation(self):
         """
-        Returns True if this is a indexed or named property accessor (one of
-        getter, setter, or deleter).
+        Returns True if this is an indexed or named property special operation
+        (one of getter, setter, or deleter).
         """
         return self.is_getter or self.is_setter or self.is_deleter
 

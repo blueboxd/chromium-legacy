@@ -195,30 +195,46 @@ class SVGResources {
 
 class FilterData final : public GarbageCollected<FilterData> {
  public:
-  /*
-   * The state transitions should follow the following:
-   * Initial->RecordingContent->ReadyToPaint->PaintingFilter->ReadyToPaint
-   *              |     ^                       |     ^
-   *              v     |                       v     |
-   *     RecordingContentCycleDetected     PaintingFilterCycle
-   */
-  enum FilterDataState {
-    kInitial,
-    kRecordingContent,
-    kRecordingContentCycleDetected,
-    kReadyToPaint,
-    kPaintingFilter,
-    kPaintingFilterCycleDetected
-  };
+  FilterData(FilterEffect* last_effect, SVGFilterGraphNodeMap* node_map)
+      : last_effect_(last_effect),
+        node_map_(node_map),
+        state_(kRecordingContent) {}
 
-  FilterData() : state_(kInitial) {}
+  void UpdateStateOnPrepare();
+  bool UpdateStateOnFinish();
+  bool ContentNeedsUpdate() const { return state_ == kRecordingContent; }
+  void UpdateContent(sk_sp<PaintRecord> content);
+  sk_sp<PaintFilter> CreateFilter();
+  FloatRect MapRect(const FloatRect& input_rect) const;
+  // Perform a finegrained invalidation of the filter chain for the
+  // specified filter primitive and attribute. Returns false if no
+  // further invalidation is required, otherwise true.
+  bool Invalidate(SVGFilterPrimitiveStandardAttributes& primitive,
+                  const QualifiedName& attribute);
 
   void Dispose();
 
   void Trace(Visitor*);
 
-  Member<FilterEffect> last_effect;
-  Member<SVGFilterGraphNodeMap> node_map;
+ private:
+  Member<FilterEffect> last_effect_;
+  Member<SVGFilterGraphNodeMap> node_map_;
+
+  /*
+   * The state transitions should follow the following:
+   *
+   * RecordingContent->ReadyToPaint->GeneratingFilter->ReadyToPaint
+   *     |     ^                       |     ^
+   *     v     |                       v     |
+   * RecordingContentCycleDetected   GeneratingFilterCycleDetected
+   */
+  enum FilterDataState {
+    kRecordingContent,
+    kRecordingContentCycleDetected,
+    kReadyToPaint,
+    kGeneratingFilter,
+    kGeneratingFilterCycleDetected
+  };
   FilterDataState state_;
 };
 

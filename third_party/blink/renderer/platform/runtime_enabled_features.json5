@@ -449,6 +449,11 @@
       status: "experimental",
     },
     {
+      name: "CSSMathStyle",
+      status: "experimental",
+      implied_by: ["MathMLCore"],
+    },
+    {
       name: "CSSModules",
       status: "experimental",
     },
@@ -906,7 +911,7 @@
     },
     {
       name: "LayoutNGFragmentItem",
-      implied_by: ["LayoutNGFragmentTraversal"],
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFragmentTraversal"],
     },
     {
       name: "LayoutNGFragmentPaint",

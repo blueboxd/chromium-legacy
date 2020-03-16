@@ -2057,9 +2057,8 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
         ->PreventAssociationWithSpareProcess();
   }
 
-  GetRenderManager()->Init(site_instance.get(),
-                           /*frame_routing_id=*/MSG_ROUTING_NONE,
-                           params.renderer_initiated_creation);
+  GetRenderManager()->InitRoot(site_instance.get(),
+                               params.renderer_initiated_creation);
 
   // blink::FrameTree::setName always keeps |unique_name| empty in case of a
   // main frame - let's do the same thing here.

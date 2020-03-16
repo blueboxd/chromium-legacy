@@ -129,6 +129,23 @@ void CancelSavePackage(base::WeakPtr<SavePackage> save_package,
     save_package->Cancel(user_cancel, false);
 }
 
+const std::string GetMimeTypeForSaveType(SavePageType save_type) {
+  switch (save_type) {
+    case SAVE_PAGE_TYPE_AS_ONLY_HTML:
+    case SAVE_PAGE_TYPE_AS_COMPLETE_HTML:
+      return "text/html";
+    case SAVE_PAGE_TYPE_AS_MHTML:
+      return "multipart/related";
+    case SAVE_PAGE_TYPE_AS_WEB_BUNDLE:
+      return "application/webbundle";
+    case SAVE_PAGE_TYPE_UNKNOWN:
+    case SAVE_PAGE_TYPE_MAX:
+      NOTREACHED();
+      return "";
+  }
+  NOTREACHED();
+}
+
 }  // namespace
 
 const base::FilePath::CharType SavePackage::kDefaultHtmlExtension[] =
@@ -162,7 +179,8 @@ SavePackage::SavePackage(WebContents* web_contents,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK((save_type_ == SAVE_PAGE_TYPE_AS_ONLY_HTML) ||
          (save_type_ == SAVE_PAGE_TYPE_AS_MHTML) ||
-         (save_type_ == SAVE_PAGE_TYPE_AS_COMPLETE_HTML))
+         (save_type_ == SAVE_PAGE_TYPE_AS_COMPLETE_HTML) ||
+         (save_type_ == SAVE_PAGE_TYPE_AS_WEB_BUNDLE))
       << save_type_;
   DCHECK(!saved_main_file_path_.empty() &&
          saved_main_file_path_.value().length() <= kMaxFilePathLength);
@@ -273,9 +291,7 @@ bool SavePackage::Init(
 
   RenderFrameHost* frame_host = web_contents()->GetMainFrame();
   download_manager_->CreateSavePackageDownloadItem(
-      saved_main_file_path_, page_url_,
-      ((save_type_ == SAVE_PAGE_TYPE_AS_MHTML) ? "multipart/related"
-                                               : "text/html"),
+      saved_main_file_path_, page_url_, GetMimeTypeForSaveType(save_type_),
       frame_host->GetProcess()->GetID(), frame_host->GetRoutingID(),
       base::BindOnce(&CancelSavePackage, AsWeakPtr()),
       base::BindOnce(&SavePackage::InitWithDownloadItem, AsWeakPtr(),
@@ -302,7 +318,11 @@ void SavePackage::InitWithDownloadItem(
     MHTMLGenerationParams mhtml_generation_params(saved_main_file_path_);
     web_contents()->GenerateMHTML(
         mhtml_generation_params,
-        base::BindOnce(&SavePackage::OnMHTMLGenerated, this));
+        base::BindOnce(&SavePackage::OnMHTMLOrWebBundleGenerated, this));
+  } else if (save_type_ == SAVE_PAGE_TYPE_AS_WEB_BUNDLE) {
+    web_contents()->GenerateWebBundle(
+        saved_main_file_path_,
+        base::BindOnce(&SavePackage::OnWebBundleGenerated, this));
   } else {
     DCHECK_EQ(SAVE_PAGE_TYPE_AS_ONLY_HTML, save_type_);
     wait_state_ = NET_FILES;
@@ -318,7 +338,7 @@ void SavePackage::InitWithDownloadItem(
   }
 }
 
-void SavePackage::OnMHTMLGenerated(int64_t size) {
+void SavePackage::OnMHTMLOrWebBundleGenerated(int64_t size) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!download_)
     return;
@@ -337,6 +357,16 @@ void SavePackage::OnMHTMLGenerated(int64_t size) {
                        download_, base::BindOnce(&SavePackage::Finish, this))) {
     Finish();
   }
+}
+
+void SavePackage::OnWebBundleGenerated(
+    uint64_t size,
+    data_decoder::mojom::WebBundlerError error) {
+  if (error == data_decoder::mojom::WebBundlerError::kOK)
+    DCHECK_GT(size, 0ULL);
+  else
+    DCHECK_EQ(size, 0ULL);
+  OnMHTMLOrWebBundleGenerated(size);
 }
 
 // On POSIX, the length of |base_name| + |file_name_ext| is further
@@ -706,7 +736,8 @@ void SavePackage::Finish() {
                                 file_manager_, list_of_failed_save_item_ids));
 
   if (download_) {
-    if (save_type_ != SAVE_PAGE_TYPE_AS_MHTML) {
+    if (save_type_ != SAVE_PAGE_TYPE_AS_MHTML &&
+        save_type_ != SAVE_PAGE_TYPE_AS_WEB_BUNDLE) {
       CHECK_EQ(download_->GetState(), download::DownloadItem::IN_PROGRESS);
       download_->DestinationUpdate(
           all_save_items_count_, CurrentSpeed(),
@@ -840,10 +871,11 @@ int64_t SavePackage::CurrentSpeed() const {
 void SavePackage::DoSavingProcess() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (save_type_ != SAVE_PAGE_TYPE_AS_COMPLETE_HTML) {
-    // Save as HTML only or MHTML.
+    // Save as HTML only or MHTML, or Web Bundle.
     DCHECK_EQ(NET_FILES, wait_state_);
     DCHECK((save_type_ == SAVE_PAGE_TYPE_AS_ONLY_HTML) ||
-           (save_type_ == SAVE_PAGE_TYPE_AS_MHTML))
+           (save_type_ == SAVE_PAGE_TYPE_AS_MHTML) ||
+           (save_type_ == SAVE_PAGE_TYPE_AS_WEB_BUNDLE))
         << save_type_;
     if (waiting_item_queue_.size()) {
       DCHECK_EQ(all_save_items_count_, waiting_item_queue_.size());
@@ -1327,7 +1359,9 @@ void SavePackage::OnPathPicked(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK((type == SAVE_PAGE_TYPE_AS_ONLY_HTML) ||
          (type == SAVE_PAGE_TYPE_AS_MHTML) ||
-         (type == SAVE_PAGE_TYPE_AS_COMPLETE_HTML)) << type;
+         (type == SAVE_PAGE_TYPE_AS_COMPLETE_HTML) ||
+         (type == SAVE_PAGE_TYPE_AS_WEB_BUNDLE))
+      << type;
   // Ensure the filename is safe.
   saved_main_file_path_ = final_name;
   // TODO(asanka): This call may block on IO and shouldn't be made

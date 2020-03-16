@@ -373,6 +373,12 @@ virtual/controls-refresh-hc/* [ Skip ]
 ### virtual/form-controls-refresh-disabled/
 virtual/form-controls-refresh-disabled/* [ Skip ]
 
+### virtual/layout_ng_block_frag/
+virtual/layout_ng_block_frag/* [ Skip ]
+
+### virtual/layout_ng_fieldset/
+virtual/layout_ng_fieldset/* [ Skip ]
+
 ### virtual/layout_ng_fragment_traversal/
 virtual/layout_ng_fragment_traversal/* [ Skip ]
 
@@ -463,7 +469,6 @@ svg/zoom/text/zoom-svg-float-border-padding.xml [ Failure ]
 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-transform-changed.html [ Crash ]
 virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/forced-colors-mode-15.html [ Failure ]
 virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/backplate/forced-colors-mode-backplate-07.html [ Failure ]
-virtual/layout_ng_block_frag/external/wpt/css/css-break/hit-test-inline-fragmentation-with-border-radius.html [ Failure ]
 
 
 # 10/27/2019 updates.

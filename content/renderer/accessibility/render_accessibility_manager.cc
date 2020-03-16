@@ -87,6 +87,17 @@ void RenderAccessibilityManager::HandleAccessibilityEvents(
       updates, events, reset_token, std::move(callback));
 }
 
+void RenderAccessibilityManager::HandleChildFrameHitTestResult(
+    int action_request_id,
+    const gfx::Point& point,
+    int child_frame_routing_id,
+    int child_frame_browser_plugin_instance_id,
+    ax::mojom::Event event_to_fire) {
+  GetOrCreateRemoteRenderAccessibilityHost()->HandleAXChildFrameHitTestResult(
+      action_request_id, point, child_frame_routing_id,
+      child_frame_browser_plugin_instance_id, event_to_fire);
+}
+
 void RenderAccessibilityManager::HandleLocationChanges(
     std::vector<mojom::LocationChangesPtr> changes) {
   GetOrCreateRemoteRenderAccessibilityHost()->HandleAXLocationChanges(

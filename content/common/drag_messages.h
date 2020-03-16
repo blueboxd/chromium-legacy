@@ -14,7 +14,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d.h"
 
 #define IPC_MESSAGE_START DragMsgStart

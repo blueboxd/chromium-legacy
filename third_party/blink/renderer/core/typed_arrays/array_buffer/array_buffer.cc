@@ -45,32 +45,9 @@ bool ArrayBuffer::Transfer(ArrayBufferContents& result) {
     return true;
   }
 
-  bool all_views_are_detachable = true;
-  for (ArrayBufferView* i = first_view_; i; i = i->next_view_) {
-    if (!i->IsDetachable())
-      all_views_are_detachable = false;
-  }
+  contents_.Transfer(result);
 
-  if (all_views_are_detachable) {
-    contents_.Transfer(result);
-
-    while (first_view_) {
-      ArrayBufferView* current = first_view_;
-      RemoveView(current);
-      current->Detach();
-    }
-
-    is_detached_ = true;
-  } else {
-    // TODO(https://crbug.com/763038): See original bug at
-    // https://crbug.com/254728. Copying the buffer instead of transferring is
-    // not spec compliant but was added for a WebAudio bug fix. The only time
-    // this branch is taken is when attempting to transfer an AudioBuffer's
-    // channel data ArrayBuffer.
-    contents_.CopyTo(result);
-    if (!result.Data())
-      return false;
-  }
+  is_detached_ = true;
 
   return true;
 }
@@ -100,25 +77,4 @@ bool ArrayBuffer::ShareNonSharedForInternalUse(ArrayBufferContents& result) {
   contents_.ShareNonSharedForInternalUse(result);
   return true;
 }
-
-void ArrayBuffer::AddView(ArrayBufferView* view) {
-  view->buffer_ = this;
-  view->prev_view_ = nullptr;
-  view->next_view_ = first_view_;
-  if (first_view_)
-    first_view_->prev_view_ = view;
-  first_view_ = view;
-}
-
-void ArrayBuffer::RemoveView(ArrayBufferView* view) {
-  DCHECK_EQ(this, view->buffer_.get());
-  if (view->next_view_)
-    view->next_view_->prev_view_ = view->prev_view_;
-  if (view->prev_view_)
-    view->prev_view_->next_view_ = view->next_view_;
-  if (first_view_ == view)
-    first_view_ = view->next_view_;
-  view->prev_view_ = view->next_view_ = nullptr;
-}
-
 }  // namespace blink

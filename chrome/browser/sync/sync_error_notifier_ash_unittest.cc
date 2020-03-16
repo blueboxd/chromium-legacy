@@ -103,6 +103,7 @@ TEST_F(SyncErrorNotifierTest, NoNotificationWhenNoPassphrase) {
 TEST_F(SyncErrorNotifierTest, NoNotificationWhenSyncDisabled) {
   service_.SetPassphraseRequiredForPreferredDataTypes(true);
   service_.SetFirstSetupComplete(false);
+  service_.GetUserSettings()->SetOsSyncFeatureEnabled(false);
   error_notifier_->OnStateChanged(&service_);
   ExpectNotificationShown(false);
 }

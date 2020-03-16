@@ -25,7 +25,9 @@ enum class PluginVmLaunchResult {
   kError = 1,
   kInvalidLicense = 2,
   kVmMissing = 3,
-  kMaxValue = kVmMissing,
+  kExpiredLicense = 4,
+  kNetworkError = 5,
+  kMaxValue = kNetworkError,
 };
 
 // These values are persisted to logs. Entries should not be renumbered and

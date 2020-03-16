@@ -104,7 +104,6 @@ class CORE_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
       ArrayBufferContents::InitializationPolicy);
 
   ArrayBufferContents contents_;
-  ArrayBufferView* first_view_;
   bool is_detached_;
 };
 
@@ -198,8 +197,7 @@ scoped_refptr<ArrayBuffer> ArrayBuffer::CreateShared(
   return base::AdoptRef(new ArrayBuffer(contents));
 }
 
-ArrayBuffer::ArrayBuffer(ArrayBufferContents& contents)
-    : first_view_(nullptr), is_detached_(false) {
+ArrayBuffer::ArrayBuffer(ArrayBufferContents& contents) : is_detached_(false) {
   if (contents.IsShared())
     contents.ShareWith(contents_);
   else

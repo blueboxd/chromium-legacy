@@ -729,6 +729,7 @@ enum CSSSampleId {
     // kRenderSubtree = 653,
     kOriginTrialTestProperty = 654,
     kSubtreeVisibility = 655,
+    kMathStyle = 656,
     // 1. Add new features above this line (don't change the assigned numbers of
     //    the existing items).
     // 2. Run the src/tools/metrics/histograms/update_use_counter_css.py script

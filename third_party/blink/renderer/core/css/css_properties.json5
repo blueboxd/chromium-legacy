@@ -2387,6 +2387,17 @@
       keywords: ["luminance", "alpha"],
       typedom_types: ["Keyword"]
     },
+    // TODO(rbuis): should be moved to high priority later.
+    {
+      name: "math-style",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
+      field_template: "keyword",
+      inherited: true,
+      keywords: ["inline", "display"],
+      typedom_types: ["Keyword"],
+      default_value: "inline",
+      runtime_flag: "CSSMathStyle"
+    },
     {
       name: "max-height",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],

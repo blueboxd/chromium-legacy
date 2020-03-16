@@ -27,8 +27,6 @@
 
 namespace blink {
 
-class HTMLInputElement;
-
 // Each LayoutFileUploadControl contains a LayoutButton (for opening the file
 // chooser), and sufficient space to draw a file icon and filename. The
 // LayoutButton has a shadow node associated with it to receive click/hover
@@ -36,7 +34,7 @@ class HTMLInputElement;
 
 class CORE_EXPORT LayoutFileUploadControl final : public LayoutBlockFlow {
  public:
-  LayoutFileUploadControl(HTMLInputElement*);
+  explicit LayoutFileUploadControl(Element*);
   ~LayoutFileUploadControl() override;
 
   bool IsOfType(LayoutObjectType type) const override {

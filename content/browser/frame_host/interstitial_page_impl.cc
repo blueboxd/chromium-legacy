@@ -602,8 +602,9 @@ RenderViewHostImpl* InterstitialPageImpl::CreateRenderViewHost() {
       SessionStorageNamespaceImpl::Create(dom_storage_context);
 
   // Use the RenderViewHost from our FrameTree.
-  frame_tree_->root()->render_manager()->Init(site_instance.get(),
-                                              MSG_ROUTING_NONE, false);
+  frame_tree_->root()->render_manager()->InitRoot(
+      site_instance.get(),
+      /*renderer_initiated_creation=*/false);
   return frame_tree_->root()->current_frame_host()->render_view_host();
 }
 

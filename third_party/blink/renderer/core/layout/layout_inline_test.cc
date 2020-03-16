@@ -26,7 +26,9 @@ class ParameterizedLayoutInlineTest : public testing::WithParamInterface<bool>,
   ParameterizedLayoutInlineTest() : ScopedLayoutNGForTest(GetParam()) {}
 
  protected:
-  bool LayoutNGEnabled() const { return GetParam(); }
+  bool LayoutNGEnabled() const {
+    return RuntimeEnabledFeatures::LayoutNGEnabled();
+  }
 };
 
 INSTANTIATE_TEST_SUITE_P(All, ParameterizedLayoutInlineTest, testing::Bool());

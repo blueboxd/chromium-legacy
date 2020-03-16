@@ -285,20 +285,23 @@ RenderFrameHostManager::~RenderFrameHostManager() {
   SetRenderFrameHost(std::unique_ptr<RenderFrameHostImpl>());
 }
 
-void RenderFrameHostManager::Init(SiteInstance* site_instance,
-                                  int32_t frame_routing_id,
-                                  bool renderer_initiated_creation) {
-  DCHECK(site_instance);
-  SetRenderFrameHost(CreateRenderFrameHost(site_instance, frame_routing_id,
-                                           renderer_initiated_creation));
+void RenderFrameHostManager::InitRoot(SiteInstance* site_instance,
+                                      bool renderer_initiated_creation) {
+  SetRenderFrameHost(CreateRenderFrameHost(
+      CreateFrameCase::kInitRoot, site_instance,
+      /*frame_routing_id=*/MSG_ROUTING_NONE, renderer_initiated_creation));
+}
 
+void RenderFrameHostManager::InitChild(SiteInstance* site_instance,
+                                       int32_t frame_routing_id) {
+  SetRenderFrameHost(CreateRenderFrameHost(
+      CreateFrameCase::kInitChild, site_instance, frame_routing_id,
+      /*renderer_initiated_creation=*/false));
   // Notify the delegate of the creation of the current RenderFrameHost.
   // Do this only for subframes, as the main frame case is taken care of by
   // WebContentsImpl::Init.
-  if (!frame_tree_node_->IsMainFrame()) {
-    delegate_->NotifySwappedFromRenderManager(nullptr, render_frame_host_.get(),
-                                              false);
-  }
+  delegate_->NotifySwappedFromRenderManager(nullptr, render_frame_host_.get(),
+                                            false);
 }
 
 RenderViewHostImpl* RenderFrameHostManager::current_host() const {
@@ -2049,30 +2052,59 @@ void RenderFrameHostManager::CreateProxiesForNewNamedFrame() {
 
 std::unique_ptr<RenderFrameHostImpl>
 RenderFrameHostManager::CreateRenderFrameHost(
+    CreateFrameCase create_frame_case,
     SiteInstance* site_instance,
     int32_t frame_routing_id,
     bool renderer_initiated_creation) {
-  if (frame_routing_id == MSG_ROUTING_NONE)
-    frame_routing_id = site_instance->GetProcess()->GetNextRoutingID();
-
-  // Create a RVH for main frames, or find the existing one for subframes.
   FrameTree* frame_tree = frame_tree_node_->frame_tree();
+
+  // Only the kInitChild case passes in a frame routing id.
+  DCHECK_EQ(create_frame_case != CreateFrameCase::kInitChild,
+            frame_routing_id == MSG_ROUTING_NONE);
+  if (frame_routing_id == MSG_ROUTING_NONE) {
+    frame_routing_id = site_instance->GetProcess()->GetNextRoutingID();
+  }
+
   scoped_refptr<RenderViewHostImpl> render_view_host =
       frame_tree->GetRenderViewHost(site_instance);
 
-  if (frame_tree_node_->IsMainFrame()) {
-    if (!render_view_host) {
-      render_view_host =
-          frame_tree->CreateRenderViewHost(site_instance, frame_routing_id,
-                                           /*swapped_out=*/false);
-    }
+  switch (create_frame_case) {
+    case CreateFrameCase::kInitChild:
+      DCHECK(!frame_tree_node_->IsMainFrame());
+      // The first RenderFrameHost for a child FrameTreeNode is always in the
+      // same SiteInstance as its parent.
+      DCHECK_EQ(
+          frame_tree_node_->parent()->current_frame_host()->GetSiteInstance(),
+          site_instance);
+      // The RenderViewHost must already exist for the parent's SiteInstance.
+      DCHECK(render_view_host);
+      break;
+    case CreateFrameCase::kInitRoot:
+      DCHECK(frame_tree_node_->IsMainFrame());
+      // The view should not already exist when we are initializing the frame
+      // tree.
+      DCHECK(!render_view_host);
+      break;
+    case CreateFrameCase::kCreateSpeculative:
+      // We create speculative frames both for main frame and subframe
+      // navigations. The view might exist already if the SiteInstance already
+      // has frames hosted in the target process. So we don't check the view.
+      //
+      // A speculative frame should be replacing an existing frame.
+      DCHECK(render_frame_host_);
+      break;
+  }
+  if (!render_view_host) {
+    render_view_host =
+        frame_tree->CreateRenderViewHost(site_instance, frame_routing_id,
+                                         /*swapped_out=*/false);
   }
   CHECK(render_view_host);
 
   return RenderFrameHostFactory::Create(
-      site_instance, render_view_host, frame_tree->render_frame_delegate(),
-      frame_tree, frame_tree_node_, frame_routing_id,
-      renderer_initiated_creation);
+      site_instance, std::move(render_view_host),
+      frame_tree->render_frame_delegate(), frame_tree, frame_tree_node_,
+      frame_routing_id, renderer_initiated_creation);
 }
 
 bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
@@ -2101,7 +2133,7 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
 
   CreateProxiesForNewRenderFrameHost(old_instance, new_instance);
 
-  speculative_render_frame_host_ = CreateRenderFrame(new_instance);
+  speculative_render_frame_host_ = CreateSpeculativeRenderFrame(new_instance);
 
   // If RenderViewHost was created along with the speculative RenderFrameHost,
   // ensure that RenderViewCreated is fired for it.  It is important to do this
@@ -2116,8 +2148,8 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
   return !!speculative_render_frame_host_;
 }
 
-std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
-    SiteInstance* instance) {
+std::unique_ptr<RenderFrameHostImpl>
+RenderFrameHostManager::CreateSpeculativeRenderFrame(SiteInstance* instance) {
   CHECK(instance);
   // This DCHECK is going to be fully removed as part of RenderDocument [1].
   //
@@ -2133,7 +2165,8 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
          render_frame_host_->must_be_replaced() || IsRenderDocumentEnabled());
 
   std::unique_ptr<RenderFrameHostImpl> new_render_frame_host =
-      CreateRenderFrameHost(instance, MSG_ROUTING_NONE,
+      CreateRenderFrameHost(CreateFrameCase::kCreateSpeculative, instance,
+                            /*frame_routing_id=*/MSG_ROUTING_NONE,
                             /*renderer_initiated_creation=*/false);
   DCHECK_EQ(new_render_frame_host->GetSiteInstance(), instance);
 

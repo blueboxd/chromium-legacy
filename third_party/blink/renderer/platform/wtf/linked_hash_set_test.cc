@@ -12,6 +12,8 @@ namespace WTF {
 
 TEST(NewLinkedHashSetTest, Construct) {
   NewLinkedHashSet<int> test;
+  EXPECT_EQ(test.size(), 0u);
+  EXPECT_TRUE(test.IsEmpty());
 }
 
 TEST(NewLinkedHashSetTest, Iterator) {
@@ -19,6 +21,33 @@ TEST(NewLinkedHashSetTest, Iterator) {
   Set set;
   EXPECT_TRUE(set.begin() == set.end());
   EXPECT_TRUE(set.rbegin() == set.rend());
+}
+
+TEST(NewLinkedHashSetTest, FrontAndBack) {
+  using Set = NewLinkedHashSet<int>;
+  Set set;
+  EXPECT_EQ(set.size(), 0u);
+  EXPECT_TRUE(set.IsEmpty());
+
+  set.PrependOrMoveToFirst(1);
+  EXPECT_EQ(set.front(), 1);
+  EXPECT_EQ(set.back(), 1);
+
+  set.insert(2);
+  EXPECT_EQ(set.front(), 1);
+  EXPECT_EQ(set.back(), 2);
+
+  set.AppendOrMoveToLast(3);
+  EXPECT_EQ(set.front(), 1);
+  EXPECT_EQ(set.back(), 3);
+
+  set.PrependOrMoveToFirst(3);
+  EXPECT_EQ(set.front(), 3);
+  EXPECT_EQ(set.back(), 2);
+
+  set.AppendOrMoveToLast(1);
+  EXPECT_EQ(set.front(), 3);
+  EXPECT_EQ(set.back(), 1);
 }
 
 TEST(NewLinkedHashSetTest, Insert) {

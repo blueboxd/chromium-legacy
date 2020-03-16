@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '5609eb6d52568c35cea160f73babf0703d9c132e',
+  'devtools_frontend_revision': 'cb66c20c237185d95ac742749b2ee7dbe5457669',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -286,11 +286,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': 'dd3d91691f1e1dc4c0f42818756cf5e165c8918c',
+  'spv_tools_revision': '7a8f79762c4aafa8679cc653f21995ffa3a5dcd2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_headers_revision': 'dc77030acc9c6fe7ca21fff54c5a9d7b532d7da6',
+  'spv_headers_revision': '30ef660ce2e666f7ae925598b8a267f4da6d33aa',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1277,9 +1277,6 @@ deps = {
   'src/third_party/quic_trace/src':
     Var('chromium_git') + '/external/github.com/google/quic-trace.git' + '@' + '35d364f77a02b283d82dd2f874da61f765c259f4',
 
-  'src/third_party/pywebsocket/src':
-    Var('chromium_git') + '/external/github.com/google/pywebsocket.git' + '@' + '2d7b73c3acbd0f41dcab487ae5c97c6feae06ce2',
-
   'src/third_party/pywebsocket3/src':
     Var('chromium_git') + '/external/github.com/GoogleChromeLabs/pywebsocket3.git' + '@' + '89c9228434100e4dabb19f61d0d4f55625940638',
 
@@ -1518,7 +1515,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@735a9cd7804e86a788edf4f14a1e0407fb78ebd1',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f4a3e7498a60b19b46cc27871ea815476972849f',
     'condition': 'checkout_src_internal',
   },
 

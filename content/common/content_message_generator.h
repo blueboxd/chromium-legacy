@@ -6,11 +6,6 @@
 // NOLINT(build/header_guard)
 
 #include "build/build_config.h"
-#undef CONTENT_COMMON_ACCESSIBILITY_MESSAGES_H_
-#include "content/common/accessibility_messages.h"
-#ifndef CONTENT_COMMON_ACCESSIBILITY_MESSAGES_H_
-#error "Failed to include content/common/accessibility_messages.h"
-#endif
 #undef CONTENT_COMMON_DRAG_MESSAGES_H_
 #include "content/common/drag_messages.h"
 #ifndef CONTENT_COMMON_DRAG_MESSAGES_H_

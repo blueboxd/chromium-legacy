@@ -37,7 +37,8 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/drag_data.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -210,9 +211,10 @@ bool FileInputType::TypeShouldForceLegacyLayout() const {
   return true;
 }
 
-LayoutObject* FileInputType::CreateLayoutObject(const ComputedStyle&,
-                                                LegacyLayout) const {
-  return new LayoutFileUploadControl(&GetElement());
+LayoutObject* FileInputType::CreateLayoutObject(const ComputedStyle& style,
+                                                LegacyLayout legacy) const {
+  return LayoutObjectFactory::CreateFileUploadControl(GetElement(), style,
+                                                      legacy);
 }
 
 InputType::ValueMode FileInputType::GetValueMode() const {

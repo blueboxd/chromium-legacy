@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_mode.h"
 
@@ -68,6 +69,11 @@ class CONTENT_EXPORT RenderAccessibilityManager
       const std::vector<ui::AXEvent>& events,
       int32_t reset_token,
       mojom::RenderAccessibilityHost::HandleAXEventsCallback callback);
+  void HandleChildFrameHitTestResult(int action_request_id,
+                                     const gfx::Point& point,
+                                     int child_frame_routing_id,
+                                     int child_frame_browser_plugin_instance_id,
+                                     ax::mojom::Event event_to_fire);
   void HandleLocationChanges(std::vector<mojom::LocationChangesPtr> changes);
 
  private:

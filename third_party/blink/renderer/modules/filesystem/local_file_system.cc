@@ -47,6 +47,8 @@
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_dispatcher.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -88,6 +90,9 @@ void LocalFileSystem::RequestFileSystem(
       WTF::Bind(&LocalFileSystem::RequestFileSystemCallback,
                 WrapCrossThreadPersistent(this), WrapPersistent(context), type,
                 std::move(callbacks), sync_type));
+  context->GetScheduler()->RegisterStickyFeature(
+      blink::SchedulingPolicy::Feature::kWebFileSystem,
+      {blink::SchedulingPolicy::RecordMetricsForBackForwardCache()});
 }
 
 void LocalFileSystem::RequestFileSystemCallback(

@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
 #include "third_party/blink/renderer/core/svg/svg_filter_element.h"
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
-#include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
 #include "third_party/blink/renderer/platform/graphics/filters/source_graphic.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
@@ -56,20 +55,19 @@ void SVGFilterRecordingContext::Abort() {
 static void PaintFilteredContent(GraphicsContext& context,
                                  const LayoutObject& object,
                                  const DisplayItemClient& display_item_client,
-                                 FilterEffect* effect) {
+                                 FilterData* filter_data) {
   if (DrawingRecorder::UseCachedDrawingIfPossible(context, display_item_client,
                                                   DisplayItem::kSVGFilter))
     return;
 
   DrawingRecorder recorder(context, display_item_client,
                            DisplayItem::kSVGFilter);
-  sk_sp<PaintFilter> image_filter =
-      paint_filter_builder::Build(effect, kInterpolationSpaceSRGB);
+  sk_sp<PaintFilter> image_filter = filter_data->CreateFilter();
   context.Save();
 
   // Clip drawing of filtered image to the minimum required paint rect.
   const FloatRect object_bounds = object.StrokeBoundingBox();
-  const FloatRect paint_rect = effect->MapRect(object_bounds);
+  const FloatRect paint_rect = filter_data->MapRect(object_bounds);
   context.ClipRect(paint_rect);
 
   // Use the union of the pre-image and the post-image as the layer bounds.
@@ -90,12 +88,7 @@ GraphicsContext* SVGFilterPainter::PrepareEffect(
     // If the filterData already exists we do not need to record the content
     // to be filtered. This can occur if the content was previously recorded
     // or we are in a cycle.
-    if (filter_data->state_ == FilterData::kPaintingFilter)
-      filter_data->state_ = FilterData::kPaintingFilterCycleDetected;
-
-    if (filter_data->state_ == FilterData::kRecordingContent)
-      filter_data->state_ = FilterData::kRecordingContentCycleDetected;
-
+    filter_data->UpdateStateOnPrepare();
     return nullptr;
   }
 
@@ -109,14 +102,10 @@ GraphicsContext* SVGFilterPainter::PrepareEffect(
   IntRect source_region = EnclosingIntRect(object.StrokeBoundingBox());
   filter->GetSourceGraphic()->SetSourceRect(source_region);
 
-  auto* filter_data = MakeGarbageCollected<FilterData>();
-  filter_data->last_effect = filter->LastEffect();
-  filter_data->node_map = node_map;
-  DCHECK_EQ(filter_data->state_, FilterData::kInitial);
-
+  auto* filter_data =
+      MakeGarbageCollected<FilterData>(filter->LastEffect(), node_map);
   // TODO(pdr): Can this be moved out of painter?
   client->SetFilterData(filter_data);
-  filter_data->state_ = FilterData::kRecordingContent;
   return recording_context.BeginContent();
 }
 
@@ -135,35 +124,16 @@ void SVGFilterPainter::FinishEffect(
     return;
   }
 
-  // A painting cycle can occur when an FeImage references a source that
-  // makes use of the FeImage itself. This is the first place we would hit
-  // the cycle so we reset the state and continue.
-  if (filter_data->state_ == FilterData::kPaintingFilterCycleDetected) {
-    filter_data->state_ = FilterData::kPaintingFilter;
+  if (!filter_data->UpdateStateOnFinish())
     return;
-  }
-  if (filter_data->state_ == FilterData::kRecordingContentCycleDetected) {
-    filter_data->state_ = FilterData::kRecordingContent;
-    return;
-  }
 
   // Check for RecordingContent here because we may can be re-painting
   // without re-recording the contents to be filtered.
-  if (filter_data->state_ == FilterData::kRecordingContent) {
-    sk_sp<PaintRecord> content = recording_context.EndContent();
-    Filter* filter = filter_data->last_effect->GetFilter();
-    FloatRect bounds = filter->FilterRegion();
-    DCHECK(filter->GetSourceGraphic());
-    paint_filter_builder::BuildSourceGraphic(filter->GetSourceGraphic(),
-                                             std::move(content), bounds);
-    filter_data->state_ = FilterData::kReadyToPaint;
-  }
+  if (filter_data->ContentNeedsUpdate())
+    filter_data->UpdateContent(recording_context.EndContent());
 
-  DCHECK_EQ(filter_data->state_, FilterData::kReadyToPaint);
-  filter_data->state_ = FilterData::kPaintingFilter;
   PaintFilteredContent(recording_context.PaintingContext(), object,
-                       display_item_client, filter_data->last_effect);
-  filter_data->state_ = FilterData::kReadyToPaint;
+                       display_item_client, filter_data);
 }
 
 }  // namespace blink

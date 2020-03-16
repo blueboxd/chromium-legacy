@@ -231,6 +231,7 @@ markerStart
 mask
 maskSourceType
 maskType
+mathStyle
 maxBlockSize
 maxHeight
 maxInlineSize

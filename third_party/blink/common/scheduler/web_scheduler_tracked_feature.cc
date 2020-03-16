@@ -85,6 +85,8 @@ const char* FeatureToString(WebSchedulerTrackedFeature feature) {
       return "requested storage access permission";
     case WebSchedulerTrackedFeature::kWebNfc:
       return "WebNfc";
+    case WebSchedulerTrackedFeature::kWebFileSystem:
+      return "WebFileSystem";
   }
 }
 

@@ -5,9 +5,11 @@
 module content.mojom;
 
 import "content/common/ax_content_tree_update.mojom";
+import "ui/accessibility/ax_enums.mojom";
 import "ui/accessibility/mojom/ax_action_data.mojom";
 import "ui/accessibility/mojom/ax_event.mojom";
 import "ui/accessibility/mojom/ax_relative_bounds.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 struct LocationChanges {
   // ID of the object whose location is changing.
@@ -20,6 +22,20 @@ struct LocationChanges {
 // Interface for accessibility messages sent from the renderer to the browser,
 // implemented by RenderFrameHostImpl in the browser process.
 interface RenderAccessibilityHost {
+  // Method that might be called from the renderer as a response to the call to
+  // the method RenderAccessibility::PerformAction() with a kHitTest action when
+  // the object initially hit has a child frame, to instruct the browser to
+  // request a new hit test using such child frame as the reference point.
+  //
+  // TODO(crbug.com/1060223): Remove this method once we have a way to perform
+  // accessibility hit testing without requiring this message to be sent from an
+  // untrusted renderer to the browser process.
+  HandleAXChildFrameHitTestResult(int32 action_request_id,
+                          gfx.mojom.Point transformed_point,
+                          int32 child_frame_routing_id,
+                          int32 child_frame_plugin_instance_id,
+                          ax.mojom.Event event_to_fire);
+
   // Sent to notify the browser about renderer accessibility events.
   //
   // The browser will respond by invoking the callback specified by the renderer

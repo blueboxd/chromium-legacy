@@ -42269,6 +42269,7 @@ Called by update_use_counter_css.py.-->
   <int value="653" label="render-subtree"/>
   <int value="654" label="origin-trial-test-property"/>
   <int value="655" label="subtree-visibility"/>
+  <int value="656" label="math-style"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -68643,6 +68644,8 @@ Full version information for the fingerprint enum values:
   <int value="35" label="WakeLock"/>
   <int value="36" label="WebShare"/>
   <int value="37" label="RequestedStorageAccessGrant"/>
+  <int value="38" label="WebNfc"/>
+  <int value="39" label="WebFileSystem"/>
 </enum>
 
 <enum name="WebShareMethod">

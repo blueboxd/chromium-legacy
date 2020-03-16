@@ -506,6 +506,12 @@
     "wavy",
     "-webkit-nowrap",
 
+    //
+    // math-style
+    //
+    // inline
+    "display",
+
     // CSS3 Values
     // box-align
     "stretch",

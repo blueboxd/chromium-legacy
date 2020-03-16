@@ -177,14 +177,15 @@ class CONTENT_EXPORT RenderFrameHostManager
   // The delegate pointer must be non-NULL and is not owned by this class. It
   // must outlive this class.
   //
-  // You must call Init() before using this class.
+  // You must call one of the Init*() methods before using this class.
   RenderFrameHostManager(FrameTreeNode* frame_tree_node, Delegate* delegate);
   ~RenderFrameHostManager();
 
-  // For arguments, see WebContentsImpl constructor.
-  void Init(SiteInstance* site_instance,
-            int32_t frame_routing_id,
-            bool renderer_initiated_creation);
+  // Initialize this frame as the root of a new FrameTree.
+  void InitRoot(SiteInstance* site_instance, bool renderer_initiated_creation);
+
+  // Initialize this frame as the child of another frame.
+  void InitChild(SiteInstance* site_instance, int32_t frame_routing_id);
 
   // Returns the currently active RenderFrameHost.
   //
@@ -271,7 +272,7 @@ class CONTENT_EXPORT RenderFrameHostManager
                        SiteInstance* source_site_instance);
 
   // Creates and initializes a RenderFrameHost.
-  std::unique_ptr<RenderFrameHostImpl> CreateRenderFrame(
+  std::unique_ptr<RenderFrameHostImpl> CreateSpeculativeRenderFrame(
       SiteInstance* instance);
 
   // Helper method to create and initialize a RenderFrameProxyHost.
@@ -690,9 +691,25 @@ class CONTENT_EXPORT RenderFrameHostManager
   void CreateOpenerProxiesForFrameTree(SiteInstance* instance,
                                        FrameTreeNode* skip_this_node);
 
-  // Creates a RenderFrameHost and corresponding RenderViewHost if necessary.
+  // The different types of RenderFrameHost creation that can occur.
+  // See CreateRenderFrameHost for how these influence creation.
+  enum class CreateFrameCase {
+    // Adding a child to an existing frame in the tree.
+    kInitChild,
+    // Creating the first frame in a frame tree.
+    kInitRoot,
+    // Preparing to navigate to another frame.
+    kCreateSpeculative,
+  };
+
+  // Creates a RenderFrameHost. This uses an existing a RenderViewHost in the
+  // same SiteInstance if it exists or creates a new one (a new one will only be
+  // created if this is a root or child local root).
+  // TODO(https://crbug.com/1060082): Eliminate or rename
+  // renderer_initiated_creation.
   std::unique_ptr<RenderFrameHostImpl> CreateRenderFrameHost(
-      SiteInstance* instance,
+      CreateFrameCase create_frame_case,
+      SiteInstance* site_instance,
       int32_t frame_routing_id,
       bool renderer_initiated_creation);
 

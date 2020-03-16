@@ -39,7 +39,10 @@
 #include "third_party/blink/renderer/core/svg/svg_tree_scope_resources.h"
 #include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter.h"
 #include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
+#include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
+#include "third_party/blink/renderer/platform/graphics/filters/source_graphic.h"
 
 #if DCHECK_IS_ON()
 #include <stdio.h>
@@ -671,16 +674,81 @@ void SVGResources::ClearMarkers(SVGElement& element,
     marker_resource->RemoveClient(*client);
 }
 
+bool FilterData::UpdateStateOnFinish() {
+  switch (state_) {
+    // A cycle can occur when an FeImage references a source that
+    // makes use of the FeImage itself. This is the first place we
+    // would hit the cycle so we reset the state and continue.
+    case kGeneratingFilterCycleDetected:
+      state_ = kGeneratingFilter;
+      return false;
+    case kRecordingContentCycleDetected:
+      state_ = kRecordingContent;
+      return false;
+    default:
+      return true;
+  }
+}
+
+void FilterData::UpdateStateOnPrepare() {
+  switch (state_) {
+    case kGeneratingFilter:
+      state_ = kGeneratingFilterCycleDetected;
+      break;
+    case kRecordingContent:
+      state_ = kRecordingContentCycleDetected;
+      break;
+    default:
+      break;
+  }
+}
+
+void FilterData::UpdateContent(sk_sp<PaintRecord> content) {
+  DCHECK_EQ(state_, kRecordingContent);
+  Filter* filter = last_effect_->GetFilter();
+  FloatRect bounds = filter->FilterRegion();
+  DCHECK(filter->GetSourceGraphic());
+  paint_filter_builder::BuildSourceGraphic(filter->GetSourceGraphic(),
+                                           std::move(content), bounds);
+  state_ = kReadyToPaint;
+}
+
+sk_sp<PaintFilter> FilterData::CreateFilter() {
+  DCHECK_EQ(state_, kReadyToPaint);
+  state_ = kGeneratingFilter;
+  sk_sp<PaintFilter> image_filter =
+      paint_filter_builder::Build(last_effect_, kInterpolationSpaceSRGB);
+  state_ = kReadyToPaint;
+  return image_filter;
+}
+
+FloatRect FilterData::MapRect(const FloatRect& input_rect) const {
+  DCHECK_EQ(state_, kReadyToPaint);
+  return last_effect_->MapRect(input_rect);
+}
+
+bool FilterData::Invalidate(SVGFilterPrimitiveStandardAttributes& primitive,
+                            const QualifiedName& attribute) {
+  if (state_ != kReadyToPaint)
+    return true;
+  if (FilterEffect* effect = node_map_->EffectForElement(primitive)) {
+    if (!primitive.SetFilterEffectAttribute(effect, attribute))
+      return false;  // No change
+    node_map_->InvalidateDependentEffects(effect);
+  }
+  return true;
+}
+
 void FilterData::Trace(Visitor* visitor) {
-  visitor->Trace(last_effect);
-  visitor->Trace(node_map);
+  visitor->Trace(last_effect_);
+  visitor->Trace(node_map_);
 }
 
 void FilterData::Dispose() {
-  node_map = nullptr;
-  if (last_effect)
-    last_effect->DisposeImageFiltersRecursive();
-  last_effect = nullptr;
+  node_map_ = nullptr;
+  if (last_effect_)
+    last_effect_->DisposeImageFiltersRecursive();
+  last_effect_ = nullptr;
 }
 
 SVGElementResourceClient::SVGElementResourceClient(SVGElement* element)
@@ -728,14 +796,8 @@ void SVGElementResourceClient::ResourceDestroyed(
 void SVGElementResourceClient::FilterPrimitiveChanged(
     SVGFilterPrimitiveStandardAttributes& primitive,
     const QualifiedName& attribute) {
-  if (filter_data_ && filter_data_->state_ == FilterData::kReadyToPaint) {
-    SVGFilterGraphNodeMap* node_map = filter_data_->node_map;
-    if (FilterEffect* effect = node_map->EffectForElement(primitive)) {
-      if (!primitive.SetFilterEffectAttribute(effect, attribute))
-        return;  // No change
-      node_map->InvalidateDependentEffects(effect);
-    }
-  }
+  if (filter_data_ && !filter_data_->Invalidate(primitive, attribute))
+    return;  // No change
   LayoutObject* layout_object = element_->GetLayoutObject();
   if (!layout_object)
     return;

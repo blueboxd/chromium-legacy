@@ -23,7 +23,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
@@ -130,21 +129,7 @@ DWriteFontLookupTableBuilder::FamilyResult::~FamilyResult() = default;
 
 DWriteFontLookupTableBuilder::DWriteFontLookupTableBuilder()
     : font_indexing_timeout_(kFontIndexingTimeoutDefault) {
-  ResetCallbacksAccessTaskRunner();
   InitializeCacheDirectoryFromProfile();
-}
-
-void DWriteFontLookupTableBuilder::ResetCallbacksAccessTaskRunner() {
-  callbacks_access_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner({
-    base::TaskPriority::USER_VISIBLE,
-#if DCHECK_IS_ON()
-        // Needed for DCHECK in DuplicateMemoryRegion() which performs file
-        // operations to detect cache directory.
-        base::MayBlock(),
-#endif
-        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN
-  });
-  DETACH_FROM_SEQUENCE(callbacks_access_sequence_checker_);
 }
 
 void DWriteFontLookupTableBuilder::InitializeCacheDirectoryFromProfile() {
@@ -264,21 +249,17 @@ base::TimeDelta DWriteFontLookupTableBuilder::IndexingTimeout() {
   return font_indexing_timeout_;
 }
 
-void DWriteFontLookupTableBuilder::PostCallbacksImpl() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(callbacks_access_sequence_checker_);
-  for (auto& pending_callback : pending_callbacks_) {
-    pending_callback.task_runner->PostTask(
-        FROM_HERE, base::BindOnce(std::move(pending_callback.mojo_callback),
-                                  DuplicateMemoryRegion()));
-  }
-  pending_callbacks_.clear();
-}
-
 void DWriteFontLookupTableBuilder::PostCallbacks() {
-  callbacks_access_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DWriteFontLookupTableBuilder::PostCallbacksImpl,
-                     base::Unretained(this)));
+  callbacks_task_runner_->StartWithTaskRunner(
+      base::ThreadPool::CreateSequencedTaskRunner({
+#if DCHECK_IS_ON()
+            // Needed for DCHECK in DuplicateMemoryRegion() which performs file
+            // operations to detect cache directory.
+            base::MayBlock(),
+#endif
+            base::TaskPriority::USER_VISIBLE,
+            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN
+      }));
 }
 
 base::FilePath DWriteFontLookupTableBuilder::TableCacheFilePath() {
@@ -311,36 +292,10 @@ DWriteFontLookupTableBuilder::CallbackOnTaskRunner::CallbackOnTaskRunner(
     : task_runner(std::move(runner)), mojo_callback(std::move(callback)) {}
 
 DWriteFontLookupTableBuilder::CallbackOnTaskRunner::CallbackOnTaskRunner(
-    CallbackOnTaskRunner&& other) {
-  task_runner = std::move(other.task_runner);
-  mojo_callback = std::move(other.mojo_callback);
-  other.task_runner = nullptr;
-  other.mojo_callback =
-      blink::mojom::DWriteFontProxy::GetUniqueNameLookupTableCallback();
-}
+    CallbackOnTaskRunner&& other) = default;
 
 DWriteFontLookupTableBuilder::CallbackOnTaskRunner::~CallbackOnTaskRunner() =
     default;
-
-void DWriteFontLookupTableBuilder::QueueShareMemoryRegionWhenReadyImpl(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    blink::mojom::DWriteFontProxy::GetUniqueNameLookupTableCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(callbacks_access_sequence_checker_);
-
-  // Don't queue but post response directly if the table is already ready for
-  // sharing with renderers to cover the condition in which the font table
-  // becomes ready briefly after a renderer asking for
-  // GetUniqueNameLookupTableIfAvailable(), receiving the information that it
-  // wasn't ready. (https://crbug.com/977283)
-  if (font_table_built_.IsSignaled()) {
-    task_runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback),
-                                                    DuplicateMemoryRegion()));
-    return;
-  }
-
-  pending_callbacks_.push_back(
-      CallbackOnTaskRunner(std::move(task_runner), std::move(callback)));
-}
 
 void DWriteFontLookupTableBuilder::QueueShareMemoryRegionWhenReady(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -348,12 +303,15 @@ void DWriteFontLookupTableBuilder::QueueShareMemoryRegionWhenReady(
   TRACE_EVENT0("dwrite,fonts",
                "DWriteFontLookupTableBuilder::QueueShareMemoryRegionWhenReady");
   DCHECK(!HasDWriteUniqueFontLookups());
-  CHECK(callbacks_access_task_runner_);
-  callbacks_access_task_runner_->PostTask(
+
+  // base::Unretained(this) acceptable as bound argument here since
+  // DWriteFontLookupTableBuilder is a singleton instance.
+  callbacks_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &DWriteFontLookupTableBuilder::QueueShareMemoryRegionWhenReadyImpl,
-          base::Unretained(this), std::move(task_runner), std::move(callback)));
+          &DWriteFontLookupTableBuilder::RunPendingCallback,
+          base::Unretained(this),
+          CallbackOnTaskRunner(std::move(task_runner), std::move(callback))));
 }
 
 bool DWriteFontLookupTableBuilder::FontUniqueNameTableReady() {
@@ -361,7 +319,7 @@ bool DWriteFontLookupTableBuilder::FontUniqueNameTableReady() {
                "DWriteFontLookupTableBuilder::FontUniqueNameTableReady");
   DCHECK(base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
   DCHECK(!HasDWriteUniqueFontLookups());
-  return font_table_built_.IsSignaled() && IsFontUniqueNameTableValid();
+  return font_table_built_.IsSet() && IsFontUniqueNameTableValid();
 }
 
 void DWriteFontLookupTableBuilder::
@@ -405,7 +363,7 @@ void DWriteFontLookupTableBuilder::PrepareFontUniqueNameTable() {
                "DWriteFontLookupTableBuilder::PrepareFontUniqueNameTable");
   DCHECK(!HasDWriteUniqueFontLookups());
   // The table must only be built once.
-  DCHECK(!font_table_built_.IsSignaled());
+  DCHECK(!font_table_built_.IsSet());
 
   if (caching_enabled_ && LoadFromFile()) {
     blink::FontUniqueNameTable font_table;
@@ -423,7 +381,7 @@ void DWriteFontLookupTableBuilder::PrepareFontUniqueNameTable() {
           base::TimeTicks::Now() - start_time_table_ready_;
       UMA_HISTOGRAM_MEDIUM_TIMES("DirectWrite.Fonts.Proxy.LookupTableReadyTime",
                                  duration);
-      font_table_built_.Signal();
+      font_table_built_.Set();
       PostCallbacks();
       return;
     }
@@ -629,7 +587,7 @@ void DWriteFontLookupTableBuilder::AppendFamilyResultAndFinalizeIfNeeded(
 
   // If this task's response came late and OnTimeout was called, we
   // do not need the results anymore and the table was already finalized.
-  if (font_table_built_.IsSignaled())
+  if (font_table_built_.IsSet())
     return;
 
   if (!family_result.font_files_with_names.size())
@@ -663,10 +621,18 @@ void DWriteFontLookupTableBuilder::AppendFamilyResultAndFinalizeIfNeeded(
   }
 }
 
+void DWriteFontLookupTableBuilder::RunPendingCallback(
+    CallbackOnTaskRunner pending_callback) {
+  DCHECK(callbacks_task_runner_->RunsTasksInCurrentSequence());
+  pending_callback.task_runner->PostTask(
+      FROM_HERE, base::BindOnce(std::move(pending_callback.mojo_callback),
+                                DuplicateMemoryRegion()));
+}
+
 void DWriteFontLookupTableBuilder::FinalizeFontTable() {
   TRACE_EVENT0("dwrite,fonts",
                "DWriteFontLookupTableBuilder::FinalizeFontTable");
-  DCHECK(!font_table_built_.IsSignaled());
+  DCHECK(!font_table_built_.IsSet());
 
   timeout_callback_.Cancel();
 
@@ -724,7 +690,7 @@ void DWriteFontLookupTableBuilder::FinalizeFontTable() {
                           persist_succeeded);
   }
 
-  font_table_built_.Signal();
+  font_table_built_.Set();
   PostCallbacks();
 
   if (!IsFontUniqueNameTableValid())
@@ -753,7 +719,7 @@ void DWriteFontLookupTableBuilder::FinalizeFontTable() {
 }
 
 void DWriteFontLookupTableBuilder::OnTimeout() {
-  DCHECK(!font_table_built_.IsSignaled());
+  DCHECK(!font_table_built_.IsSet());
   FinalizeFontTable();
 }
 
@@ -769,10 +735,11 @@ void DWriteFontLookupTableBuilder::SetSlowDownIndexingForTestingWithTimeout(
 void DWriteFontLookupTableBuilder::ResetLookupTableForTesting() {
   slow_down_mode_for_testing_ = SlowDownMode::kNoSlowdown;
   font_indexing_timeout_ = kFontIndexingTimeoutDefault;
+  callbacks_task_runner_ =
+      base::MakeRefCounted<base::DeferredSequencedTaskRunner>();
   font_table_memory_ = base::MappedReadOnlyRegion();
   caching_enabled_ = true;
-  ResetCallbacksAccessTaskRunner();
-  font_table_built_.Reset();
+  font_table_built_.UnsafeResetForTesting();
 }
 
 void DWriteFontLookupTableBuilder::ResetStateForTesting() {

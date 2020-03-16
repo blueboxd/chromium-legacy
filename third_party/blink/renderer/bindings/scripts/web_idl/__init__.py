@@ -56,10 +56,10 @@ from .extended_attribute import ExtendedAttributes
 from .function_like import FunctionLike
 from .function_like import OverloadGroup
 from .idl_type import IdlType
+from .interface import IndexedAndNamedProperties
 from .interface import Interface
 from .interface import Iterable
 from .interface import Maplike
-from .interface import PropertyAccessors
 from .interface import Setlike
 from .interface import Stringifier
 from .literal_constant import LiteralConstant

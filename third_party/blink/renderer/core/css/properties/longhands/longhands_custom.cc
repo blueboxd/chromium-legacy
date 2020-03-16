@@ -4088,6 +4088,14 @@ const CSSValue* MaskType::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(svg_style.MaskType());
 }
 
+const CSSValue* MathStyle::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return CSSIdentifierValue::Create(style.MathStyle());
+}
+
 const CSSValue* MaxBlockSize::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,

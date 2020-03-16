@@ -27,12 +27,12 @@ EncodedVideoChunk* EncodedVideoChunk::Create(String type,
   if (duration)
     metadata.duration = base::TimeDelta::FromMicroseconds(duration);
   return MakeGarbageCollected<EncodedVideoChunk>(
-      metadata, ArrayBuffer::Create(data.Bytes(), data.ByteLengthAsSizeT()));
+      metadata, DOMArrayBuffer::Create(data.Bytes(), data.ByteLengthAsSizeT()));
 }
 
 EncodedVideoChunk::EncodedVideoChunk(EncodedVideoMetadata metadata,
-                                     scoped_refptr<ArrayBuffer> buffer)
-    : metadata_(metadata), buffer_(std::move(buffer)) {}
+                                     DOMArrayBuffer* buffer)
+    : metadata_(metadata), buffer_(buffer) {}
 
 String EncodedVideoChunk::type() const {
   return metadata_.key_frame ? "key" : "delta";
@@ -58,7 +58,7 @@ uint64_t EncodedVideoChunk::duration(bool* is_null) const {
 }
 
 DOMArrayBuffer* EncodedVideoChunk::data() const {
-  return DOMArrayBuffer::Create(buffer_);
+  return buffer_;
 }
 
 }  // namespace blink

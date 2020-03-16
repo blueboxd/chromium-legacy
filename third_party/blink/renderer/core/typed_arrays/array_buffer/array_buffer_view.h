@@ -71,16 +71,13 @@ class CORE_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
   virtual size_t ByteLengthAsSizeT() const = 0;
   virtual unsigned TypeSize() const = 0;
 
-  void SetDetachable(bool flag) { is_detachable_ = flag; }
-  bool IsDetachable() const { return is_detachable_; }
   bool IsShared() const { return buffer_ ? buffer_->IsShared() : false; }
 
-  virtual ~ArrayBufferView();
+  virtual ~ArrayBufferView() = default;
 
  protected:
   ArrayBufferView(scoped_refptr<ArrayBuffer>, size_t byte_offset);
 
-  virtual void Detach();
   bool IsDetached() const { return !buffer_ || buffer_->IsDetached(); }
 
  private:
@@ -88,12 +85,8 @@ class CORE_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
   // This is the address of the ArrayBuffer's storage, plus the byte offset.
   void* raw_base_address_;
   size_t raw_byte_offset_;
-  bool is_detachable_;
 
-  friend class ArrayBuffer;
   scoped_refptr<ArrayBuffer> buffer_;
-  ArrayBufferView* prev_view_;
-  ArrayBufferView* next_view_;
 };
 
 }  // namespace blink

@@ -4427,11 +4427,23 @@
   <message name="IDS_PLUGIN_VM_SHUT_DOWN_MENU_ITEM" desc="Text shown in the launcher and shelf context menus for the Plugin VM app to shut it down.">
     Shut down
   </message>
-  <message name="IDS_PLUGIN_VM_INVALID_LICENSE_NOTIFICATION_TITLE" desc="Title in the notification shown when launching the 'Plugin VM' app failed due to an invalid or missing license.">
+  <message name="IDS_PLUGIN_VM_INVALID_LICENSE_TITLE" desc="Title in the notification shown when launching the 'Plugin VM' app failed due to an invalid or missing license.">
     Plugin VM requires a license
   </message>
-  <message name="IDS_PLUGIN_VM_INVALID_LICENSE_NOTIFICATION_MESSAGE" desc="Message in the notification shown when launching the 'Plugin VM' app failed due to an invalid or missing license.">
-    Contact the device admin for your organization
+  <message name="IDS_PLUGIN_VM_EXPIRED_LICENSE_TITLE" desc="Title in the notification shown when launching the 'Plugin VM' app failed due to an expired license.">
+    Plugin VM license has expired
+  </message>
+  <message name="IDS_PLUGIN_VM_INVALID_LICENSE_MESSAGE" desc="Message in the notification shown when launching the 'Plugin VM' app failed due to an invalid, missing, or expired license.">
+    Contact your organization's device administrator
+  </message>
+  <message name="IDS_PLUGIN_VM_START_VM_ERROR_TITLE" desc="Title in the notification shown when launching the 'Plugin VM' app failed due to a network or unknown error.">
+    Couldn't open Plugin VM
+  </message>
+  <message name="IDS_PLUGIN_VM_NETWORK_ERROR_MESSAGE" desc="Message in the notification shown when launching the 'Plugin VM' app failed due to a network error.">
+    Connect to the internet and try again
+  </message>
+  <message name="IDS_PLUGIN_VM_START_VM_ERROR_MESSAGE" desc="Message in the notificataion shown when launching the 'Plugin VM' app failed due to an unknown error.">
+    Something went wrong. Please try again.
   </message>
   <message name="IDS_PLUGIN_VM_REMOVING_NOTIFICATION_IN_PROGRESS_MESSAGE" desc="Message in the notification shown when removing the 'Plugin VM' app.">
     Uninstalling Plugin VM...

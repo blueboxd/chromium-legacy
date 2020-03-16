@@ -27,7 +27,7 @@
 
 namespace plugin_vm {
 
-constexpr char kInvalidLicenseNotificationId[] = "plugin-vm-invalid-license";
+constexpr char kStartVmFailedNotificationId[] = "plugin-vm-start-vm-failed";
 
 class PluginVmManagerTest : public testing::Test {
  public:
@@ -263,7 +263,7 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmInvalidLicense) {
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(VmPluginDispatcherClient().show_vm_called());
 
-  EXPECT_TRUE(display_service_->GetNotification(kInvalidLicenseNotificationId));
+  EXPECT_TRUE(display_service_->GetNotification(kStartVmFailedNotificationId));
 
   histogram_tester_->ExpectUniqueSample(
       kPluginVmLaunchResultHistogram, PluginVmLaunchResult::kInvalidLicense, 1);

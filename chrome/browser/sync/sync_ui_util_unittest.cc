@@ -347,6 +347,9 @@ TEST(SyncUIUtilTest, ShouldShowPassphraseError) {
 TEST(SyncUIUtilTest, ShouldShowPassphraseError_SyncDisabled) {
   syncer::TestSyncService service;
   service.SetFirstSetupComplete(false);
+#if defined(OS_CHROMEOS)
+  service.GetUserSettings()->SetOsSyncFeatureEnabled(false);
+#endif  // defined(OS_CHROMEOS)
   service.SetPassphraseRequiredForPreferredDataTypes(true);
   EXPECT_FALSE(ShouldShowPassphraseError(&service));
 }

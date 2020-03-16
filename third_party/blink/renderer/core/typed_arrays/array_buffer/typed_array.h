@@ -76,10 +76,6 @@ class TypedArray : public ArrayBufferView {
   }
 
  private:
-  void Detach() final {
-    ArrayBufferView::Detach();
-    raw_length_ = 0;
-  }
   // It may be stale after Detach. Use length() instead.
   size_t raw_length_;
 };

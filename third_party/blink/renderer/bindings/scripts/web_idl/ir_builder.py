@@ -20,10 +20,10 @@ from .extended_attribute import ExtendedAttribute
 from .extended_attribute import ExtendedAttributes
 from .idl_type import IdlTypeFactory
 from .includes import Includes
+from .interface import IndexedAndNamedProperties
 from .interface import Interface
 from .interface import Iterable
 from .interface import Maplike
-from .interface import PropertyAccessors
 from .interface import Setlike
 from .interface import Stringifier
 from .literal_constant import LiteralConstant
@@ -115,7 +115,7 @@ class _IRBuilder(object):
         constants = []
         constructors = []
         operations = []
-        property_accessor_operations = []
+        indexed_and_named_property_operations = []
         for member in members:
             if isinstance(member, Attribute.IR):
                 attributes.append(member)
@@ -126,14 +126,15 @@ class _IRBuilder(object):
             elif isinstance(member, Operation.IR):
                 operations.append(member)
                 if member.is_getter or member.is_setter or member.is_deleter:
-                    property_accessor_operations.append(member)
+                    indexed_and_named_property_operations.append(member)
             else:
                 assert False
 
-        property_accessors = None
-        if property_accessor_operations:
-            property_accessors = PropertyAccessors.IR(
-                property_accessor_operations, self._build_debug_info(node))
+        indexed_and_named_properties = None
+        if indexed_and_named_property_operations:
+            indexed_and_named_properties = IndexedAndNamedProperties.IR(
+                indexed_and_named_property_operations,
+                self._build_debug_info(node))
 
         if stringifier:
             operations.append(stringifier.operation)
@@ -149,7 +150,7 @@ class _IRBuilder(object):
             constants=constants,
             constructors=constructors,
             operations=operations,
-            property_accessors=property_accessors,
+            indexed_and_named_properties=indexed_and_named_properties,
             stringifier=stringifier,
             iterable=iterable,
             maplike=maplike,

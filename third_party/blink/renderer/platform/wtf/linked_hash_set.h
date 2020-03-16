@@ -1072,7 +1072,8 @@ class NewLinkedHashSet {
 
   void Swap(NewLinkedHashSet&);
 
-  // TODO(keinakashima): implement size-related functions
+  wtf_size_t size() const { return list_.size(); }
+  bool IsEmpty() const { return list_.empty(); }
 
   const_iterator begin() const { return list_.cbegin(); }
   const_iterator end() const { return list_.cend(); }
@@ -1080,7 +1081,8 @@ class NewLinkedHashSet {
   const_reverse_iterator rbegin() const { return list_.crbegin(); }
   const_reverse_iterator rend() const { return list_.crend(); }
 
-  // TODO(keinakashima): implement front/back
+  const Value& front() const { return list_.front(); }
+  const Value& back() const { return list_.back(); }
 
   const_iterator find(ValuePeekInType) const;
   bool Contains(ValuePeekInType) const;

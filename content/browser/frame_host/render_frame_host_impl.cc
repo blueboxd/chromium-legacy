@@ -121,7 +121,6 @@
 #include "content/browser/webui/web_ui_url_loader_factory_internal.h"
 #include "content/browser/worker_host/dedicated_worker_host.h"
 #include "content/browser/worker_host/shared_worker_service_impl.h"
-#include "content/common/accessibility_messages.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_navigation_policy.h"
@@ -1535,8 +1534,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnDidChangeFramePolicy)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFrameOwnerProperties,
                         OnDidChangeFrameOwnerProperties)
-    IPC_MESSAGE_HANDLER(AccessibilityHostMsg_ChildFrameHitTestResult,
-                        OnAccessibilityChildFrameHitTestResult)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SelectionChanged, OnSelectionChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameDidCallFocus, OnFrameDidCallFocus)
@@ -2289,7 +2286,7 @@ FrameTreeNode* RenderFrameHostImpl::AddChild(
   // Initialize the RenderFrameHost for the new node.  We always create child
   // frames in the same SiteInstance as the current frame, and they can swap to
   // a different one if they navigate away.
-  child->render_manager()->Init(GetSiteInstance(), frame_routing_id, false);
+  child->render_manager()->InitChild(GetSiteInstance(), frame_routing_id);
 
   // Other renderer processes in this BrowsingInstance may need to find out
   // about the new frame.  Create a proxy for the child frame in all
@@ -3875,39 +3872,6 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons(
   controller->GetBackForwardCache().PostTaskToDestroyEvictedFrames();
 }
 
-void RenderFrameHostImpl::OnAccessibilityChildFrameHitTestResult(
-    int action_request_id,
-    const gfx::Point& point,
-    int child_frame_routing_id,
-    int child_frame_browser_plugin_instance_id,
-    ax::mojom::Event event_to_fire) {
-  RenderFrameHostImpl* child_frame = nullptr;
-  if (child_frame_routing_id) {
-    RenderFrameProxyHost* rfph = nullptr;
-    LookupRenderFrameHostOrProxy(GetProcess()->GetID(), child_frame_routing_id,
-                                 &child_frame, &rfph);
-    if (rfph)
-      child_frame = rfph->frame_tree_node()->current_frame_host();
-  } else if (child_frame_browser_plugin_instance_id) {
-    child_frame =
-        static_cast<RenderFrameHostImpl*>(delegate()->GetGuestByInstanceID(
-            this, child_frame_browser_plugin_instance_id));
-  } else {
-    NOTREACHED();
-  }
-
-  if (!child_frame || !child_frame->is_active())
-    return;
-
-  ui::AXActionData action_data;
-  action_data.request_id = action_request_id;
-  action_data.target_point = point;
-  action_data.action = ax::mojom::Action::kHitTest;
-  action_data.hit_test_event_to_fire = event_to_fire;
-
-  child_frame->AccessibilityPerformAction(action_data);
-}
-
 bool RenderFrameHostImpl::HasSeenRecentXrOverlaySetup() {
   static constexpr base::TimeDelta kMaxInterval =
       base::TimeDelta::FromSeconds(1);
@@ -4670,6 +4634,39 @@ void RenderFrameHostImpl::ResourceLoadComplete(
   }
   delegate_->ResourceLoadComplete(this, global_request_id,
                                   std::move(resource_load_info));
+}
+
+void RenderFrameHostImpl::HandleAXChildFrameHitTestResult(
+    int action_request_id,
+    const gfx::Point& point,
+    int child_frame_routing_id,
+    int child_frame_browser_plugin_instance_id,
+    ax::mojom::Event event_to_fire) {
+  RenderFrameHostImpl* child_frame = nullptr;
+  if (child_frame_routing_id) {
+    RenderFrameProxyHost* rfph = nullptr;
+    LookupRenderFrameHostOrProxy(GetProcess()->GetID(), child_frame_routing_id,
+                                 &child_frame, &rfph);
+    if (rfph)
+      child_frame = rfph->frame_tree_node()->current_frame_host();
+  } else if (child_frame_browser_plugin_instance_id) {
+    child_frame =
+        static_cast<RenderFrameHostImpl*>(delegate()->GetGuestByInstanceID(
+            this, child_frame_browser_plugin_instance_id));
+  } else {
+    NOTREACHED();
+  }
+
+  if (!child_frame || !child_frame->is_active())
+    return;
+
+  ui::AXActionData action_data;
+  action_data.request_id = action_request_id;
+  action_data.target_point = point;
+  action_data.action = ax::mojom::Action::kHitTest;
+  action_data.hit_test_event_to_fire = event_to_fire;
+
+  child_frame->AccessibilityPerformAction(action_data);
 }
 
 void RenderFrameHostImpl::HandleAXEvents(

@@ -30,6 +30,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
 #include "net/base/net_errors.h"
+#include "services/data_decoder/public/mojom/web_bundler.mojom.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
 
@@ -162,8 +163,13 @@ class CONTENT_EXPORT SavePackage
       SavePackageDownloadCreatedCallback download_created_callback,
       download::DownloadItemImpl* item);
 
-  // Callback for WebContents::GenerateMHTML().
-  void OnMHTMLGenerated(int64_t size);
+  // Callback for WebContents::GenerateMHTML() and
+  // WebContents::GenerateWebBundle().
+  void OnMHTMLOrWebBundleGenerated(int64_t size);
+
+  // Callback for WebContents::GenerateWebBundle().
+  void OnWebBundleGenerated(uint64_t size,
+                            data_decoder::mojom::WebBundlerError error);
 
   // Notes from Init() above applies here as well.
   void InternalInit();

@@ -231,6 +231,7 @@ All changes to this list should go through Blink's feature review process: http:
     mask
     mask-source-type
     mask-type
+    math-style
     max-block-size
     max-height
     max-inline-size

@@ -21,7 +21,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/common/accessibility_messages.h"
 #include "content/renderer/accessibility/ax_action_target_factory.h"
 #include "content/renderer/accessibility/ax_image_annotator.h"
 #include "content/renderer/accessibility/blink_ax_action_target.h"
@@ -897,9 +896,9 @@ void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point,
           gfx::Vector2d(viewport_offset.x(), viewport_offset.y()) -
           gfx::Rect(rect).OffsetFromOrigin();
     }
-    Send(new AccessibilityHostMsg_ChildFrameHitTestResult(
-        routing_id(), action_request_id, transformed_point,
-        data.child_routing_id, 0, event_to_fire));
+    render_accessibility_manager_->HandleChildFrameHitTestResult(
+        action_request_id, transformed_point, data.child_routing_id, 0,
+        event_to_fire);
     return;
   }
 

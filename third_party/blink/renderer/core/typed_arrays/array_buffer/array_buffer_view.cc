@@ -31,27 +31,10 @@ namespace blink {
 
 ArrayBufferView::ArrayBufferView(scoped_refptr<ArrayBuffer> buffer,
                                  size_t byte_offset)
-    : raw_byte_offset_(byte_offset),
-      is_detachable_(true),
-      buffer_(std::move(buffer)),
-      prev_view_(nullptr),
-      next_view_(nullptr) {
+    : raw_byte_offset_(byte_offset), buffer_(std::move(buffer)) {
   raw_base_address_ =
       buffer_ ? (static_cast<char*>(buffer_->DataMaybeShared()) + byte_offset)
               : nullptr;
-  if (buffer_)
-    buffer_->AddView(this);
-}
-
-ArrayBufferView::~ArrayBufferView() {
-  if (buffer_)
-    buffer_->RemoveView(this);
-}
-
-void ArrayBufferView::Detach() {
-  buffer_ = nullptr;
-  raw_base_address_ = nullptr;
-  raw_byte_offset_ = 0;
 }
 
 const char* ArrayBufferView::TypeName() {

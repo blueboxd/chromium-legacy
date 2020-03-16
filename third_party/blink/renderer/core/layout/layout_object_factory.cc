@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_deprecated_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_fieldset.h"
+#include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_inside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
@@ -143,6 +144,14 @@ LayoutBlock* LayoutObjectFactory::CreateFieldset(Node& node,
   bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGFieldsetEnabled();
   return CreateObject<LayoutBlock, LayoutNGFieldset, LayoutFieldset>(
       node, style, legacy, disable_ng_for_type);
+}
+
+LayoutBlockFlow* LayoutObjectFactory::CreateFileUploadControl(
+    Node& node,
+    const ComputedStyle& style,
+    LegacyLayout legacy) {
+  return CreateObject<LayoutBlockFlow, LayoutNGBlockFlow,
+                      LayoutFileUploadControl>(node, style, legacy);
 }
 
 LayoutText* LayoutObjectFactory::CreateText(Node* node,

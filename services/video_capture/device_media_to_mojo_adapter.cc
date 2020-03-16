@@ -181,12 +181,12 @@ int DeviceMediaToMojoAdapter::max_buffer_pool_buffer_count() {
 
 #if defined(OS_CHROMEOS)
   // On Chrome OS with MIPI cameras running on HAL v3, there can be three
-  // concurrent streams of camera pipeline depth ~6. We allow at most 24 buffers
+  // concurrent streams of camera pipeline depth ~6. We allow at most 30 buffers
   // here to take into account the delay caused by the consumer (e.g. display or
   // video encoder).
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kVideoCaptureUseGpuMemoryBuffer)) {
-    kMaxBufferCount = 24;
+    kMaxBufferCount = 30;
   }
 #endif
 

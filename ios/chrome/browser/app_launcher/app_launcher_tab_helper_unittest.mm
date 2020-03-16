@@ -103,9 +103,7 @@ std::unique_ptr<KeyedService> BuildReadingListModel(
 }
 
 // Test fixture for AppLauncherTabHelper class.
-class AppLauncherTabHelperTest
-    : public PlatformTest,
-      public ::testing::WithParamInterface<ui::PageTransition> {
+class AppLauncherTabHelperTest : public PlatformTest {
  protected:
   AppLauncherTabHelperTest()
       : abuse_detector_([[FakeAppLauncherAbuseDetector alloc] init]),
@@ -127,7 +125,8 @@ class AppLauncherTabHelperTest
                               bool has_user_gesture) WARN_UNUSED_RESULT {
     NSURL* url = [NSURL URLWithString:url_string];
     web::WebStatePolicyDecider::RequestInfo request_info(
-        GetParam(), target_frame_is_main, has_user_gesture);
+        ui::PageTransition::PAGE_TRANSITION_LINK, target_frame_is_main,
+        has_user_gesture);
     return tab_helper_->ShouldAllowRequest([NSURLRequest requestWithURL:url],
                                            request_info);
   }
@@ -167,8 +166,9 @@ class AppLauncherTabHelperTest
     abuse_detector_.policy = is_app_blocked ? ExternalAppLaunchPolicyBlock
                                             : ExternalAppLaunchPolicyAllow;
     ui::PageTransition transition_type =
-        is_link_transition ? ui::PageTransition::PAGE_TRANSITION_LINK
-                           : ui::PageTransition::PAGE_TRANSITION_TYPED;
+        is_link_transition
+            ? ui::PageTransition::PAGE_TRANSITION_LINK
+            : ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT;
 
     NSURL* url = [NSURL
         URLWithString:@"itms-apps://itunes.apple.com/us/app/appname/id123"];
@@ -194,7 +194,7 @@ class AppLauncherTabHelperTest
 };
 
 // Tests that a valid URL launches app.
-TEST_P(AppLauncherTabHelperTest, AbuseDetectorPolicyAllowedForValidUrl) {
+TEST_F(AppLauncherTabHelperTest, AbuseDetectorPolicyAllowedForValidUrl) {
   abuse_detector_.policy = ExternalAppLaunchPolicyAllow;
   EXPECT_FALSE(TestShouldAllowRequest(@"valid://1234",
                                       /*target_frame_is_main=*/true,
@@ -204,7 +204,7 @@ TEST_P(AppLauncherTabHelperTest, AbuseDetectorPolicyAllowedForValidUrl) {
 }
 
 // Tests that a valid URL does not launch app when launch policy is to block.
-TEST_P(AppLauncherTabHelperTest, AbuseDetectorPolicyBlockedForValidUrl) {
+TEST_F(AppLauncherTabHelperTest, AbuseDetectorPolicyBlockedForValidUrl) {
   abuse_detector_.policy = ExternalAppLaunchPolicyBlock;
   EXPECT_FALSE(TestShouldAllowRequest(@"valid://1234",
                                       /*target_frame_is_main=*/true,
@@ -215,7 +215,7 @@ TEST_P(AppLauncherTabHelperTest, AbuseDetectorPolicyBlockedForValidUrl) {
 
 // Tests that a valid URL shows an alert and launches app when launch policy is
 // to prompt and user accepts.
-TEST_P(AppLauncherTabHelperTest, ValidUrlPromptUserAccepts) {
+TEST_F(AppLauncherTabHelperTest, ValidUrlPromptUserAccepts) {
   abuse_detector_.policy = ExternalAppLaunchPolicyPrompt;
   delegate_.simulateUserAcceptingPrompt = YES;
   EXPECT_FALSE(TestShouldAllowRequest(@"valid://1234",
@@ -229,7 +229,7 @@ TEST_P(AppLauncherTabHelperTest, ValidUrlPromptUserAccepts) {
 
 // Tests that a valid URL does not launch app when launch policy is to prompt
 // and user rejects.
-TEST_P(AppLauncherTabHelperTest, ValidUrlPromptUserRejects) {
+TEST_F(AppLauncherTabHelperTest, ValidUrlPromptUserRejects) {
   abuse_detector_.policy = ExternalAppLaunchPolicyPrompt;
   delegate_.simulateUserAcceptingPrompt = NO;
   EXPECT_FALSE(TestShouldAllowRequest(@"valid://1234",
@@ -240,7 +240,7 @@ TEST_P(AppLauncherTabHelperTest, ValidUrlPromptUserRejects) {
 
 // Tests that ShouldAllowRequest only launches apps for App Urls in main frame,
 // or iframe when there was a recent user interaction.
-TEST_P(AppLauncherTabHelperTest, ShouldAllowRequestWithAppUrl) {
+TEST_F(AppLauncherTabHelperTest, ShouldAllowRequestWithAppUrl) {
   NSString* url_string = @"itms-apps://itunes.apple.com/us/app/appname/id123";
   EXPECT_FALSE(TestShouldAllowRequest(url_string, /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
@@ -263,7 +263,7 @@ TEST_P(AppLauncherTabHelperTest, ShouldAllowRequestWithAppUrl) {
 
 // Tests that ShouldAllowRequest always allows requests and does not launch
 // apps for non App Urls.
-TEST_P(AppLauncherTabHelperTest, ShouldAllowRequestWithNonAppUrl) {
+TEST_F(AppLauncherTabHelperTest, ShouldAllowRequestWithNonAppUrl) {
   EXPECT_TRUE(TestShouldAllowRequest(
       @"http://itunes.apple.com/us/app/appname/id123",
       /*target_frame_is_main=*/true, /*has_user_gesture=*/false));
@@ -283,7 +283,7 @@ TEST_P(AppLauncherTabHelperTest, ShouldAllowRequestWithNonAppUrl) {
 }
 
 // Tests that invalid Urls are completely blocked.
-TEST_P(AppLauncherTabHelperTest, InvalidUrls) {
+TEST_F(AppLauncherTabHelperTest, InvalidUrls) {
   EXPECT_FALSE(TestShouldAllowRequest(/*url_string=*/@"",
                                       /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
@@ -295,7 +295,7 @@ TEST_P(AppLauncherTabHelperTest, InvalidUrls) {
 
 // Tests that when the last committed URL is invalid, the URL is only opened
 // when the last committed item is nil.
-TEST_P(AppLauncherTabHelperTest, ValidUrlInvalidCommittedURL) {
+TEST_F(AppLauncherTabHelperTest, ValidUrlInvalidCommittedURL) {
   NSString* url_string = @"itms-apps://itunes.apple.com/us/app/appname/id123";
   web_state_.SetCurrentURL(GURL());
 
@@ -316,7 +316,7 @@ TEST_P(AppLauncherTabHelperTest, ValidUrlInvalidCommittedURL) {
 }
 
 // Tests that URLs with schemes that might be a security risk are blocked.
-TEST_P(AppLauncherTabHelperTest, InsecureUrls) {
+TEST_F(AppLauncherTabHelperTest, InsecureUrls) {
   EXPECT_FALSE(TestShouldAllowRequest(@"app-settings://",
                                       /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
@@ -327,7 +327,7 @@ TEST_P(AppLauncherTabHelperTest, InsecureUrls) {
 // This test is using https://chromeiostesting-dot-u2fdemo.appspot.com URL which
 // is a URL allowed for the purpose of testing, but the test doesn't send any
 // requests to the server.
-TEST_P(AppLauncherTabHelperTest, U2FUrls) {
+TEST_F(AppLauncherTabHelperTest, U2FUrls) {
   // Add required tab helpers for the U2F check.
   TabIdTabHelper::CreateForWebState(&web_state_);
   std::unique_ptr<web::NavigationItem> item = web::NavigationItem::Create();
@@ -362,7 +362,7 @@ TEST_P(AppLauncherTabHelperTest, U2FUrls) {
 }
 
 // Tests that URLs with Chrome Bundle schemes are blocked on iframes.
-TEST_P(AppLauncherTabHelperTest, ChromeBundleUrlScheme) {
+TEST_F(AppLauncherTabHelperTest, ChromeBundleUrlScheme) {
   // Get the test bundle URL Scheme.
   NSString* scheme = [[ChromeAppConstants sharedInstance] getBundleURLScheme];
   NSString* url = [NSString stringWithFormat:@"%@://www.google.com", scheme];
@@ -386,7 +386,7 @@ TEST_P(AppLauncherTabHelperTest, ChromeBundleUrlScheme) {
 // Tests that ShouldAllowRequest updates the reading list correctly for non-link
 // transitions regardless of the app launching success when AppLauncherRefresh
 // flag is enabled.
-TEST_P(AppLauncherTabHelperTest, UpdatingTheReadingList) {
+TEST_F(AppLauncherTabHelperTest, UpdatingTheReadingList) {
   // Update reading list if the transition is not a link transition.
   EXPECT_TRUE(TestReadingListUpdate(/*is_app_blocked=*/true,
                                     /*is_link_transition*/ false,
@@ -409,14 +409,5 @@ TEST_P(AppLauncherTabHelperTest, UpdatingTheReadingList) {
                                     /*expected_read_status*/ false));
   EXPECT_EQ(2U, delegate_.countOfAppsLaunched);
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
-    AppLauncherTabHelperTest,
-    ::testing::Values(ui::PAGE_TRANSITION_LINK,
-                      ui::PAGE_TRANSITION_LINK |
-                          ui::PAGE_TRANSITION_CLIENT_REDIRECT,
-                      ui::PAGE_TRANSITION_LINK |
-                          ui::PAGE_TRANSITION_SERVER_REDIRECT));
 
 }  // namespace

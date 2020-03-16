@@ -69,7 +69,6 @@ class CORE_EXPORT DOMArrayBufferView : public ScriptWrappable {
     return base::checked_cast<unsigned>(View()->ByteLengthAsSizeT());
   }
   unsigned TypeSize() const { return View()->TypeSize(); }
-  void SetDetachable(bool flag) { return View()->SetDetachable(flag); }
   bool IsShared() const { return View()->IsShared(); }
 
   void* BaseAddressMaybeShared() const {

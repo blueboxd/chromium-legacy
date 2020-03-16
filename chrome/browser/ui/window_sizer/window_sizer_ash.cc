@@ -54,7 +54,7 @@ bool WindowSizer::GetBrowserBoundsAsh(gfx::Rect* bounds,
       // For trusted popups (v1 apps and system windows), do not use the last
       // active window bounds, only use saved or default bounds.
       if (!GetSavedWindowBounds(bounds, show_state))
-        *bounds = GetDefaultWindowBoundsAsh(GetDisplayForNewWindow());
+        *bounds = GetDefaultWindowBoundsAsh(browser_, GetDisplayForNewWindow());
       determined = true;
     } else if (state_provider_) {
       // In Ash, prioritize the last saved |show_state|. If you have questions
@@ -76,7 +76,7 @@ bool WindowSizer::GetBrowserBoundsAsh(gfx::Rect* bounds,
       // gets maximized after this method returns. Return a sensible default
       // in order to make restored state visibly different from maximized.
       *show_state = ui::SHOW_STATE_MAXIMIZED;
-      *bounds = GetDefaultWindowBoundsAsh(display);
+      *bounds = GetDefaultWindowBoundsAsh(browser_, display);
       determined = true;
     }
   }
@@ -96,7 +96,7 @@ void WindowSizer::GetTabbedBrowserBoundsAsh(
   bool is_saved_bounds = GetSavedWindowBounds(bounds_in_screen, show_state);
   display::Display display = GetDisplayForNewWindow(*bounds_in_screen);
   if (!is_saved_bounds)
-    *bounds_in_screen = GetDefaultWindowBoundsAsh(display);
+    *bounds_in_screen = GetDefaultWindowBoundsAsh(browser_, display);
 
   if (browser_->is_session_restore()) {
     // Respect display for saved bounds during session restore.
@@ -127,7 +127,15 @@ void WindowSizer::GetTabbedBrowserBoundsAsh(
 }
 
 gfx::Rect WindowSizer::GetDefaultWindowBoundsAsh(
+    const Browser* browser,
     const display::Display& display) {
+  // Let apps set their own default.
+  if (browser && browser->app_controller()) {
+    gfx::Rect bounds = browser->app_controller()->GetDefaultBounds();
+    if (!bounds.IsEmpty())
+      return bounds;
+  }
+
   const gfx::Rect work_area = display.work_area();
   // There should be a 'desktop' border around the window at the left and right
   // side.

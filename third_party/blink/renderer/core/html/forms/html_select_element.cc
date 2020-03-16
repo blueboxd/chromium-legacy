@@ -1152,15 +1152,8 @@ LayoutBox* HTMLSelectElement::AutoscrollBox() {
 }
 
 void HTMLSelectElement::StopAutoscroll() {
-  if (!UsesMenuList() && !IsDisabledFormControl())
-    HandleMouseRelease();
-}
-
-void HTMLSelectElement::HandleMouseRelease() {
-  // We didn't start this click/drag on any options.
-  if (last_on_change_selection_.IsEmpty())
-    return;
-  ListBoxOnChange();
+  if (!IsDisabledFormControl())
+    select_type_->HandleMouseRelease();
 }
 
 void HTMLSelectElement::DefaultEventHandler(Event& event) {

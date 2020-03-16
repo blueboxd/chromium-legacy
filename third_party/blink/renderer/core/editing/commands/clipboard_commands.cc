@@ -373,6 +373,15 @@ ClipboardCommands::GetFragmentFromClipboard(LocalFrame& frame) {
   if (fragment)
     return std::make_pair(fragment, false);
 
+  if (const String markup = frame.GetSystemClipboard()->ReadImageAsImageMarkup(
+          mojom::blink::ClipboardBuffer::kStandard)) {
+    fragment = CreateFragmentFromMarkup(*frame.GetDocument(), markup,
+                                        /* base_url */ "",
+                                        kDisallowScriptingAndPluginContent);
+    DCHECK(fragment);
+    return std::make_pair(fragment, false);
+  }
+
   const String text = frame.GetSystemClipboard()->ReadPlainText();
   if (text.IsEmpty())
     return std::make_pair(fragment, false);

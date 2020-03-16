@@ -47,10 +47,8 @@ SmsFetchRequestHandler::Request::~Request() {
 }
 
 void SmsFetchRequestHandler::Request::OnReceive(
-    const std::string& one_time_code,
-    const std::string& sms) {
+    const std::string& one_time_code) {
   auto response = std::make_unique<chrome_browser_sharing::ResponseMessage>();
-  response->mutable_sms_fetch_response()->set_sms(sms);
   response->mutable_sms_fetch_response()->set_one_time_code(one_time_code);
 
   std::move(respond_callback_).Run(std::move(response));

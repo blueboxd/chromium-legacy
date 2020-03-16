@@ -152,6 +152,12 @@ SkBitmap SystemClipboard::ReadImage(mojom::ClipboardBuffer buffer) {
   return image;
 }
 
+String SystemClipboard::ReadImageAsImageMarkup(
+    mojom::blink::ClipboardBuffer buffer) {
+  SkBitmap bitmap = ReadImage(buffer);
+  return BitmapToImageMarkup(bitmap);
+}
+
 void SystemClipboard::WriteImageWithTag(Image* image,
                                                 const KURL& url,
                                                 const String& title) {

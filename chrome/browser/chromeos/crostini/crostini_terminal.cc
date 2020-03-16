@@ -29,12 +29,8 @@
 #include "ui/base/base_window.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace {
-constexpr gfx::Size TERMINAL_SETTINGS_SIZE(768, 512);
-// The dialog is shifted by the height of the title bar plus a few more pixels.
-constexpr int TERMINAL_SETTINGS_SHIFT_DISTANCE = 47;
 constexpr char kSettingPrefix[] = "/hterm/profiles/default/";
 const size_t kSettingPrefixSize = base::size(kSettingPrefix) - 1;
 }  // namespace
@@ -123,7 +119,7 @@ void LaunchContainerTerminal(Profile* profile,
   ShowContainerTerminal(profile, launch_params, vsh_in_crosh_url, browser);
 }
 
-void LaunchTerminalSettings(Profile* profile, Browser* terminal) {
+void LaunchTerminalSettings(Profile* profile) {
   DCHECK(base::FeatureList::IsEnabled(features::kTerminalSystemApp));
   auto params = web_app::CreateSystemWebAppLaunchParams(
       profile, web_app::SystemAppType::TERMINAL);
@@ -134,34 +130,10 @@ void LaunchTerminalSettings(Profile* profile, Browser* terminal) {
   }
   // Use an app pop window to host the settings page.
   params->disposition = WindowOpenDisposition::NEW_POPUP;
-  // If |terminal| is not set, we open the settings window with the
-  // default bounds and then resize it later.
-  if (!terminal) {
-    terminal = web_app::FindSystemWebAppBrowser(
-        profile, web_app::SystemAppType::TERMINAL);
-  }
-  if (terminal) {
-    const gfx::Rect& bounds = terminal->window()->GetBounds();
-    params->override_bounds.set_origin(
-        gfx::Point(bounds.x() + TERMINAL_SETTINGS_SHIFT_DISTANCE,
-                   bounds.y() + TERMINAL_SETTINGS_SHIFT_DISTANCE));
-    params->override_bounds.set_size(TERMINAL_SETTINGS_SIZE);
-  }
-
-  Browser* browser = web_app::LaunchSystemWebApp(
+  web_app::LaunchSystemWebApp(
       profile, web_app::SystemAppType::TERMINAL,
       GURL(base::StrCat({chrome::kChromeUIUntrustedTerminalURL, path})),
       *params);
-  DCHECK(browser);
-  if (!terminal) {
-    BrowserWindow* window = browser->window();
-    // Make sure the settings window is not maximized/fullscreen.
-    window->Restore();
-
-    gfx::Rect bound = window->GetBounds();
-    bound.set_size(TERMINAL_SETTINGS_SIZE);
-    window->SetBounds(bound);
-  }
 }
 
 void RecordTerminalSettingsChangesUMAs(Profile* profile) {

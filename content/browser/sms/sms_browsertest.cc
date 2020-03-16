@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
   )";
 
   EXPECT_CALL(*mock_provider_ptr, Retrieve()).WillOnce(Invoke([&]() {
-    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello", "");
+    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello");
     ConfirmPrompt();
   }));
 
@@ -204,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOneSmsRequestPerOrigin) {
   EXPECT_CALL(*mock_provider_ptr, Retrieve())
       .WillOnce(Return())
       .WillOnce(Invoke([&]() {
-        mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello", "");
+        mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello");
         ConfirmPrompt();
       }));
 
@@ -284,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest,
     ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                           ukm_loop.QuitClosure());
 
-    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello1", "");
+    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello1");
     ConfirmPrompt();
 
     ukm_loop.Run();
@@ -308,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest,
     ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                           ukm_loop.QuitClosure());
 
-    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello2", "");
+    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello2");
     ConfirmPrompt();
 
     ukm_loop.Run();
@@ -440,7 +440,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsSameOrigin) {
     ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                           ukm_loop.QuitClosure());
 
-    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello1", "");
+    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello1");
     ConfirmPrompt();
 
     ukm_loop.Run();
@@ -464,7 +464,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsSameOrigin) {
     ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                           ukm_loop.QuitClosure());
 
-    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello2", "");
+    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello2");
     ConfirmPrompt();
 
     ukm_loop.Run();
@@ -522,7 +522,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsDifferentOrigin) {
     // capture and evaluation.
     ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                           ukm_loop.QuitClosure());
-    mock_provider_ptr->NotifyReceive(url::Origin::Create(url1), "hello1", "");
+    mock_provider_ptr->NotifyReceive(url::Origin::Create(url1), "hello1");
     ConfirmPrompt();
     ukm_loop.Run();
   }
@@ -538,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsDifferentOrigin) {
     // capture and evaluation.
     ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                           ukm_loop.QuitClosure());
-    mock_provider_ptr->NotifyReceive(url::Origin::Create(url2), "hello2", "");
+    mock_provider_ptr->NotifyReceive(url::Origin::Create(url2), "hello2");
     ConfirmPrompt();
     ukm_loop.Run();
   }
@@ -574,7 +574,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsReceivedAfterTabIsClosed) {
 
   shell()->Close();
 
-  mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello", "");
+  mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello");
 
   ExpectNoOutcomeUKM();
 }
@@ -595,7 +595,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Cancels) {
   ExpectSmsPrompt();
 
   EXPECT_CALL(*mock_provider_ptr, Retrieve()).WillOnce(Invoke([&]() {
-    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello", "");
+    mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello");
     DismissPrompt();
   }));
 
@@ -634,7 +634,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AbortAfterSmsRetrieval) {
 
   EXPECT_CALL(*mock_provider_ptr, Retrieve())
       .WillOnce(Invoke([&mock_provider_ptr, &url]() {
-        mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello", "");
+        mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello");
       }));
 
   EXPECT_TRUE(ExecJs(shell(), R"(

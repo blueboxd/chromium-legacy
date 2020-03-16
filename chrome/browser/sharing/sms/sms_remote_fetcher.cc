@@ -63,7 +63,8 @@ void FetchRemoteSms(
             DCHECK(response);
             DCHECK(response->has_sms_fetch_response());
 
-            std::move(callback).Run(response->sms_fetch_response().sms());
+            std::move(callback).Run(
+                response->sms_fetch_response().one_time_code());
           },
           std::move(callback)));
 }

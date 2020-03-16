@@ -11,8 +11,10 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/null_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "cc/base/math_util.h"
 #include "cc/test/scheduler_test_common.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
@@ -4117,6 +4119,9 @@ TEST_F(DisplayTest, DrawOcclusionWithRoundedCornerDoesOcclude) {
 }
 
 TEST_F(DisplayTest, DrawOcclusionSplit) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kSplitPartiallyOccludedQuads);
+
   SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
@@ -4213,6 +4218,9 @@ TEST_F(DisplayTest, DrawOcclusionSplit) {
 // complexity reduction in visible regions. For more details, see:
 // https://tinyurl.com/RegionComplexityReduction#heading=h.fg95k5w5t791
 TEST_F(DisplayTest, FirstPassVisibleComplexityReduction) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kSplitPartiallyOccludedQuads);
+
   SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;
@@ -4326,6 +4334,9 @@ TEST_F(DisplayTest, FirstPassVisibleComplexityReduction) {
 // since the number of saved fragments would only be 100x100 which is lower than
 // our threshold 128x128.
 TEST_F(DisplayTest, DrawOcclusionSplitDeviceScaleFactorFractional) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kSplitPartiallyOccludedQuads);
+
   SetUpGpuDisplay(RendererSettings());
 
   StubDisplayClient client;

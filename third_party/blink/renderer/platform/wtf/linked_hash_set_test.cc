@@ -108,4 +108,36 @@ TEST(NewLinkedHashSetTest, PrependOrMoveToFirst) {
   EXPECT_EQ(*it, 2);
 }
 
+TEST(NewLinkedHashSetTest, FindAndContains) {
+  using Set = NewLinkedHashSet<int>;
+  Set set;
+  set.insert(2);
+  set.AppendOrMoveToLast(2);
+  set.PrependOrMoveToFirst(1);
+  set.insert(3);
+  set.AppendOrMoveToLast(4);
+  set.insert(5);
+
+  int i = 1;
+  for (auto element : set) {
+    EXPECT_EQ(element, i);
+    i++;
+  }
+
+  Set::const_iterator it = set.find(2);
+  EXPECT_EQ(*it, 2);
+  it = set.find(3);
+  EXPECT_EQ(*it, 3);
+  it = set.find(10);
+  EXPECT_TRUE(it == set.end());
+
+  EXPECT_TRUE(set.Contains(1));
+  EXPECT_TRUE(set.Contains(2));
+  EXPECT_TRUE(set.Contains(3));
+  EXPECT_TRUE(set.Contains(4));
+  EXPECT_TRUE(set.Contains(5));
+
+  EXPECT_FALSE(set.Contains(10));
+}
+
 }  // namespace WTF

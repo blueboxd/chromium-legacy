@@ -29,10 +29,8 @@ class MockObserver : public SmsProvider::Observer {
   MockObserver() = default;
   ~MockObserver() override = default;
 
-  MOCK_METHOD3(OnReceive,
-               bool(const Origin&,
-                    const std::string& one_time_code,
-                    const std::string& sms));
+  MOCK_METHOD2(OnReceive,
+               bool(const Origin&, const std::string& one_time_code));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockObserver);
@@ -84,21 +82,18 @@ class SmsProviderAndroidTest : public RenderViewHostTestHarness {
 
 TEST_F(SmsProviderAndroidTest, Retrieve) {
   std::string test_url = "https://google.com";
-  std::string expected_sms = "Hi\n@google.com #123";
 
-  EXPECT_CALL(*observer(),
-              OnReceive(Origin::Create(GURL(test_url)), _, expected_sms));
+  EXPECT_CALL(*observer(), OnReceive(Origin::Create(GURL(test_url)), "ABC123"));
   provider().Retrieve();
-  TriggerSms(expected_sms);
+  TriggerSms("Hi\n@google.com #ABC123");
 }
 
 TEST_F(SmsProviderAndroidTest, IgnoreBadSms) {
   std::string test_url = "https://google.com";
-  std::string good_sms = "Hi\n@google.com #123";
+  std::string good_sms = "Hi\n@google.com #ABC123";
   std::string bad_sms = "Hi\n@b.com";
 
-  EXPECT_CALL(*observer(),
-              OnReceive(Origin::Create(GURL(test_url)), _, good_sms));
+  EXPECT_CALL(*observer(), OnReceive(Origin::Create(GURL(test_url)), "ABC123"));
 
   provider().Retrieve();
   TriggerSms(bad_sms);
@@ -106,17 +101,15 @@ TEST_F(SmsProviderAndroidTest, IgnoreBadSms) {
 }
 
 TEST_F(SmsProviderAndroidTest, TaskTimedOut) {
-  EXPECT_CALL(*observer(), OnReceive(_, _, _)).Times(0);
+  EXPECT_CALL(*observer(), OnReceive(_, _)).Times(0);
   provider().Retrieve();
   TriggerTimeout();
 }
 
 TEST_F(SmsProviderAndroidTest, OneObserverTwoTasks) {
   std::string test_url = "https://google.com";
-  std::string expected_sms = "Hi\n@google.com #123";
 
-  EXPECT_CALL(*observer(),
-              OnReceive(Origin::Create(GURL(test_url)), _, expected_sms));
+  EXPECT_CALL(*observer(), OnReceive(Origin::Create(GURL(test_url)), "ABC123"));
 
   // Two tasks for when 1 request gets aborted but the task is still triggered.
   provider().Retrieve();
@@ -124,7 +117,7 @@ TEST_F(SmsProviderAndroidTest, OneObserverTwoTasks) {
 
   // First timeout should be ignored.
   TriggerTimeout();
-  TriggerSms(expected_sms);
+  TriggerSms("Hi\n@google.com #ABC123");
 }
 
 }  // namespace content

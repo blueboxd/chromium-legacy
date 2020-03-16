@@ -66,12 +66,10 @@ TEST(SmsFetchRequestHandlerTest, Basic) {
       BindLambdaForTesting([&loop](std::unique_ptr<ResponseMessage> response) {
         EXPECT_TRUE(response->has_sms_fetch_response());
         EXPECT_EQ("123", response->sms_fetch_response().one_time_code());
-        EXPECT_EQ("hello", response->sms_fetch_response().sms());
         loop.Quit();
       }));
 
-  subscriber->OnReceive("123", "hello");
-
+  subscriber->OnReceive("123");
   loop.Run();
 }
 
@@ -91,7 +89,7 @@ TEST(SmsFetchRequestHandlerTest, OutOfOrder) {
       message,
       BindLambdaForTesting([&loop1](std::unique_ptr<ResponseMessage> response) {
         EXPECT_TRUE(response->has_sms_fetch_response());
-        EXPECT_EQ("first", response->sms_fetch_response().sms());
+        EXPECT_EQ("1", response->sms_fetch_response().one_time_code());
         loop1.Quit();
       }));
 
@@ -104,16 +102,14 @@ TEST(SmsFetchRequestHandlerTest, OutOfOrder) {
       message,
       BindLambdaForTesting([&loop2](std::unique_ptr<ResponseMessage> response) {
         EXPECT_TRUE(response->has_sms_fetch_response());
-        EXPECT_EQ("second", response->sms_fetch_response().sms());
+        EXPECT_EQ("2", response->sms_fetch_response().one_time_code());
         loop2.Quit();
       }));
 
-  request2->OnReceive("2", "second");
-
+  request2->OnReceive("2");
   loop2.Run();
 
-  request1->OnReceive("1", "first");
-
+  request1->OnReceive("1");
   loop1.Run();
 }
 

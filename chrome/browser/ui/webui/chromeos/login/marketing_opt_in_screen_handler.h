@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_MARKETING_OPT_IN_SCREEN_HANDLER_H_
 
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace chromeos {
@@ -74,6 +75,12 @@ class MarketingOptInScreenHandler : public BaseScreenHandler,
   void HandleSetA11yNavigationButtonsEnabled(bool enabled);
 
   MarketingOptInScreen* screen_ = nullptr;
+
+  // Timer to record user changed value for the accessibility setting to turn
+  // shelf navigation buttons on in tablet mode. The metric is recorded with 10
+  // second delay to avoid overreporting when the user keeps toggling the
+  // setting value in the screen UI.
+  base::OneShotTimer a11y_nav_buttons_toggle_metrics_reporter_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(MarketingOptInScreenHandler);
 };

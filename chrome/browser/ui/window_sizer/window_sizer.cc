@@ -234,7 +234,7 @@ void WindowSizer::GetDefaultWindowBounds(const display::Display& display,
                                          gfx::Rect* default_bounds) const {
   DCHECK(default_bounds);
 #if defined(OS_CHROMEOS)
-  *default_bounds = GetDefaultWindowBoundsAsh(display);
+  *default_bounds = GetDefaultWindowBoundsAsh(browser_, display);
   return;
 #endif
   gfx::Rect work_area = display.work_area();

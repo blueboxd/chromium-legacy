@@ -224,7 +224,7 @@ class MockSmsReceiver {
 
   // Mock functions:
   async receive() {
-    return {status: this.status_, otp: this.otp_, message: this.message_};
+    return {status: this.status_, otp: this.otp_};
   }
 
   async abort() {}
@@ -232,16 +232,11 @@ class MockSmsReceiver {
   // Resets state of mock SmsReceiver.
   reset() {
     this.otp_ = '';
-    this.message_ = '';
     this.status_ = blink.mojom.SmsStatus.kTimeout;
   }
 
   setOtp(otp) {
     this.otp_ = otp;
-  }
-
-  setMessage(message) {
-    this.message_ = message;
   }
 
   setStatus(status) {

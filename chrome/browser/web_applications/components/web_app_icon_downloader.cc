@@ -166,7 +166,8 @@ void WebAppIconDownloader::DidUpdateFaviconURL(
 void WebAppIconDownloader::CancelDownloads() {
   in_progress_requests_.clear();
   icons_map_.clear();
-  std::move(callback_).Run(/*success=*/false, icons_map_);
+  if (callback_)
+    std::move(callback_).Run(/*success=*/false, icons_map_);
 }
 
 }  // namespace web_app

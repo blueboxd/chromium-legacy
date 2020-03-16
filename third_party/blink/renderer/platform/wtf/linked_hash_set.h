@@ -1082,7 +1082,8 @@ class NewLinkedHashSet {
 
   // TODO(keinakashima): implement front/back
 
-  // TODO(keinakashima): implement find, Contains after implementing iterator
+  const_iterator find(ValuePeekInType) const;
+  bool Contains(ValuePeekInType) const;
 
   // TODO(keinakahsima): implement functions related to insert
   template <typename IncomingValueType>
@@ -1138,6 +1139,21 @@ template <typename T>
 inline void NewLinkedHashSet<T>::Swap(NewLinkedHashSet& other) {
   value_to_index_.swap(other.value_to_index_);
   list_.swap(other.list_);
+}
+
+template <typename T>
+typename NewLinkedHashSet<T>::const_iterator NewLinkedHashSet<T>::find(
+    ValuePeekInType value) const {
+  typename Map::const_iterator it = value_to_index_.find(value);
+
+  if (it == value_to_index_.end())
+    return end();
+  return list_.MakeConstIterator(it->value);
+}
+
+template <typename T>
+bool NewLinkedHashSet<T>::Contains(ValuePeekInType value) const {
+  return value_to_index_.Contains(value);
 }
 
 template <typename T>

@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'a4a42e6d0baa6ff99eb9e66115044b46280bcc7f',
+  'angle_revision': 'cb9a86a9d8677909988c83ab4076287a96b4d513',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '222b156b486b2cf2c4d4242ad06fb914ef12cf13',
+  'devtools_frontend_revision': '5609eb6d52568c35cea160f73babf0703d9c132e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -888,7 +888,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'c48fb8427c8c06ab9b734fc91e5852e62fe27c98',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '8cf12290bab829820fd5e8ef3cf98f3c84a6f2a5',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1339,7 +1339,7 @@ deps = {
   },
 
   'src/third_party/re2/src':
-    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + '572d6abf7f227053a4f8b83381fc4378714a2552',
+    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + 'ca93436e5b1be02f9f4bfca79b8202c400161994',
 
   'src/third_party/r8': {
       'packages': [

@@ -43,4 +43,17 @@ TEST(ClipboardUtilitiesTest, URLToImageMarkupEmbeddedNull) {
           String(kTitleWithNull, sizeof(kTitleWithNull) - 1)));
 }
 
+TEST(ClipboardUtilitiesTest, BitmapToImageMarkupEmpty) {
+  SkBitmap bitmap;
+  EXPECT_TRUE(BitmapToImageMarkup(bitmap).IsNull());
+}
+
+TEST(ClipboardUtilitiesTest, BitmapToImageMarkup) {
+  SkBitmap bitmap;
+  bitmap.allocPixels(SkImageInfo::MakeN32Premul(10, 5));
+  EXPECT_EQ(
+      R"HTML(<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAFCAYAAAB8ZH1oAAAADElEQVQYGWNgGEYAAADNAAGVVebMAAAAAElFTkSuQmCC" alt=""/>)HTML",
+      BitmapToImageMarkup(bitmap));
+}
+
 }  // namespace blink

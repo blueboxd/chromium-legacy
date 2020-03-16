@@ -50,7 +50,7 @@ bool TerminalSystemAppMenuModel::IsCommandIdEnabled(int command_id) const {
 void TerminalSystemAppMenuModel::ExecuteCommand(int command_id,
                                                 int event_flags) {
   if (command_id == IDC_OPTIONS) {
-    crostini::LaunchTerminalSettings(browser()->profile(), browser());
+    crostini::LaunchTerminalSettings(browser()->profile());
     return;
   }
 

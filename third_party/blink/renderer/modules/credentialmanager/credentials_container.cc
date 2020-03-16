@@ -479,8 +479,7 @@ void OnGetAssertionComplete(
 void OnSmsReceive(ScriptPromiseResolver* resolver,
                   base::TimeTicks start_time,
                   mojom::blink::SmsStatus status,
-                  const WTF::String& otp,
-                  const WTF::String& sms) {
+                  const WTF::String& otp) {
   AssertSecurityRequirementsBeforeResponse(
       resolver, RequiredOriginType::kSecureAndSameWithAncestors);
   auto& document =

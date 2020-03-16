@@ -531,7 +531,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("directoryTreeRecentsSubtypeScroll").EnableUnifiedMediaView(),
         TestCase("directoryTreeHorizontalScroll"),
         TestCase("directoryTreeExpandHorizontalScroll"),
-        TestCase("directoryTreeExpandHorizontalScrollRTL"),
+        // Disabled. Fails on internal ChromeOS bot. https://crbug.com/1061821.
+        // TestCase("directoryTreeExpandHorizontalScrollRTL"),
         TestCase("directoryTreeVerticalScroll"),
         TestCase("directoryTreeExpandFolder")));
 

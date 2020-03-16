@@ -20,12 +20,11 @@ enum SmsStatus {
 // associated: there is an origin associated with a request that is multiplexed
 // through one instance on a storage partition.
 interface SmsReceiver {
-  // TODO(crbug.com/1045526): Remove |message| once we stop using nagivator.sms.
   // Retrieves the next SMS message that arrives on the phone that is addressed
   // to the caller's origin.
   // Returns the raw content of the received SMS.
   // |otp|, |message| is only set if status == kSuccess.
-  Receive() => (SmsStatus status, string? otp, string? message);
+  Receive() => (SmsStatus status, string? otp);
   // Aborts the current retrieval process and resolves it with an
   // kAborted SmsStatus.
   Abort();

@@ -359,9 +359,11 @@ Polymer({
       return;
     }
 
+    const enabled = this.$.shelfNavigationButtonsEnabledControl.checked;
     this.set(
         'prefs.settings.a11y.tablet_mode_shelf_nav_buttons_enabled.value',
-        this.$.shelfNavigationButtonsEnabledControl.checked);
+        enabled);
+    chrome.send('recordSelectedShowShelfNavigationButtonValue', [enabled]);
   },
 
   /** @private */

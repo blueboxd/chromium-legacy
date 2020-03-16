@@ -298,6 +298,24 @@ TEST_F(WebAppIconDownloaderTest, PageNavigates) {
   EXPECT_FALSE(downloader.downloads_succeeded());
 }
 
+TEST_F(WebAppIconDownloaderTest, PageNavigatesAfterDownload) {
+  const GURL url("http://www.google.com/icon.png");
+  TestWebAppIconDownloader downloader(web_contents(), {url});
+  downloader.SkipPageFavicons();
+
+  downloader.Start();
+  EXPECT_EQ(1u, downloader.pending_requests());
+
+  downloader.CompleteImageDownload(0, 200, url, {gfx::Size(32, 32)});
+  EXPECT_EQ(0u, downloader.pending_requests());
+  EXPECT_TRUE(downloader.downloads_succeeded());
+
+  // Navigating the renderer after downloads have completed should not crash.
+  content::NavigationSimulator::CreateRendererInitiated(
+      GURL("https://foo.example"), main_rfh())
+      ->Commit();
+}
+
 TEST_F(WebAppIconDownloaderTest, PageNavigatesSameDocument) {
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL("https://foo.example"));

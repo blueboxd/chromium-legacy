@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 
 class Browser;
@@ -137,6 +138,9 @@ class AppBrowserController : public TabStripModelObserver,
   // Gets the url that the app browser controller was created with. Note: This
   // may be empty until the web contents begins navigating.
   const GURL& initial_url() const { return initial_url_; }
+
+  // Returns the default bounds for the app or empty for no defaults.
+  gfx::Rect GetDefaultBounds() const;
 
   // content::WebContentsObserver:
   void DidStartNavigation(content::NavigationHandle* handle) override;

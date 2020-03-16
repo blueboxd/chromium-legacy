@@ -326,8 +326,6 @@ class CORE_EXPORT SerializedScriptValue
 
   void CloneSharedArrayBuffers(SharedArrayBufferArray&);
 
-  static bool TransferableStreamsEnabled();
-
   DataBufferPtr data_buffer_;
   size_t data_buffer_size_ = 0;
 

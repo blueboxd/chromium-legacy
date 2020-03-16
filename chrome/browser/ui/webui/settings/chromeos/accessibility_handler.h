@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_ACCESSIBILITY_HANDLER_H_
 
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
 namespace base {
@@ -38,10 +39,18 @@ class AccessibilityHandler : public ::settings::SettingsPageUIHandler {
   void HandleShowSelectToSpeakSettings(const base::ListValue* args);
   void HandleGetStartupSoundEnabled(const base::ListValue* args);
   void HandleSetStartupSoundEnabled(const base::ListValue* args);
+  void HandleRecordSelectedShowShelfNavigationButtonsValue(
+      const base::ListValue* args);
 
   void OpenExtensionOptionsPage(const char extension_id[]);
 
   Profile* profile_;  // Weak pointer.
+
+  // Timer to record user changed value for the accessibility setting to turn
+  // shelf navigation buttons on in tablet mode. The metric is recorded with 10
+  // second delay to avoid overreporting when the user keeps toggling the
+  // setting value in the screen UI.
+  base::OneShotTimer a11y_nav_buttons_toggle_metrics_reporter_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityHandler);
 };

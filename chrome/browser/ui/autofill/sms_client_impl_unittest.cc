@@ -45,8 +45,7 @@ TEST_F(SmsClientImplTest, SaveOtpOnReceive) {
   sms_client()->Subscribe();
 
   std::string otp = "123";
-  std::string sms = "For: https://www.google.com?otp=" + otp;
-  sms_client()->OnReceive(otp, sms);
+  sms_client()->OnReceive(otp);
 
   EXPECT_EQ(sms_client()->GetOTP(), otp);
 }

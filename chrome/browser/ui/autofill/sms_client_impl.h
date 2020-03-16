@@ -31,8 +31,7 @@ class SmsClientImpl : public SmsClient, public content::SmsFetcher::Subscriber {
   const std::string& GetOTP() const override;
 
   // content::SmsFetcher::Subscriber
-  void OnReceive(const std::string& one_time_code,
-                 const std::string& sms) override;
+  void OnReceive(const std::string& one_time_code) override;
 
   content::SmsFetcher* GetFetcherForTesting();
 

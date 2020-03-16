@@ -38,7 +38,7 @@ class WindowSizer {
   // persistent store or an existing window.
   class StateProvider {
    public:
-    virtual ~StateProvider() {}
+    virtual ~StateProvider() = default;
 
     // Retrieve the persisted bounds of the window. Returns true if there was
     // persisted data to retrieve state information, false otherwise.
@@ -165,8 +165,9 @@ class WindowSizer {
   void GetTabbedBrowserBoundsAsh(gfx::Rect* bounds,
                                  ui::WindowShowState* show_state) const;
 
-  // Returns the default bounds for a browser window on |display|.
-  static gfx::Rect GetDefaultWindowBoundsAsh(const display::Display& display);
+  // Returns the default bounds for a |browser| window on |display|.
+  static gfx::Rect GetDefaultWindowBoundsAsh(const Browser* browser,
+                                             const display::Display& display);
 #endif
 
   // Determine the default show state for the window - not looking at other

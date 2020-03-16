@@ -2312,7 +2312,7 @@
   {
     "name": "files-ng",
     "owners": [ "adanilo", "noel" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 86
   },
   {
     "name": "files-unified-media-view",
@@ -3639,6 +3639,11 @@
     "name": "snapshot-draw-view",
     "owners": [ "//ios/chrome/browser/snapshots/OWNERS" ],
     "expiry_milestone": 85
+  },
+  {
+    "name": "split-partially-occluded-quads",
+    "owners": [ "dcastagna", "sashamcintosh", "gildekel" ],
+    "expiry_milestone": 84
   },
   {
     "name": "split-settings-sync",

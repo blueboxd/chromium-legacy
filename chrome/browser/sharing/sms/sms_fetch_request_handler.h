@@ -42,8 +42,7 @@ class SmsFetchRequestHandler : public SharingMessageHandler {
             SharingMessageHandler::DoneCallback respond_callback);
     ~Request() override;
 
-    void OnReceive(const std::string& one_time_code,
-                   const std::string& sms) override;
+    void OnReceive(const std::string& one_time_code) override;
 
    private:
     SmsFetchRequestHandler* handler_;

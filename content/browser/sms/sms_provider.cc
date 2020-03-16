@@ -38,14 +38,13 @@ void SmsProvider::RemoveObserver(const Observer* observer) {
 void SmsProvider::NotifyReceive(const std::string& sms) {
   base::Optional<SmsParser::Result> result = SmsParser::Parse(sms);
   if (result)
-    NotifyReceive(result->origin, result->one_time_code, sms);
+    NotifyReceive(result->origin, result->one_time_code);
 }
 
 void SmsProvider::NotifyReceive(const url::Origin& origin,
-                                const std::string& one_time_code,
-                                const std::string& sms) {
+                                const std::string& one_time_code) {
   for (Observer& obs : observers_) {
-    bool handled = obs.OnReceive(origin, one_time_code, sms);
+    bool handled = obs.OnReceive(origin, one_time_code);
     if (handled) {
       break;
     }

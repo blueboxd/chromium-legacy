@@ -122,7 +122,7 @@ class Service {
   void AbortRequest() { service_remote_->Abort(); }
 
   void NotifyReceive(const GURL& url, const string& otp) {
-    provider_->NotifyReceive(Origin::Create(url), otp, "");
+    provider_->NotifyReceive(Origin::Create(url), otp);
   }
 
  private:
@@ -173,8 +173,7 @@ TEST_F(SmsServiceTest, Basic) {
   }));
 
   service.MakeRequest(BindLambdaForTesting(
-      [&loop](SmsStatus status, const Optional<string>& otp,
-              const Optional<string>& sms) {
+      [&loop](SmsStatus status, const Optional<string>& otp) {
         EXPECT_EQ(SmsStatus::kSuccess, status);
         EXPECT_EQ("hi", otp.value());
         loop.Quit();
@@ -201,8 +200,7 @@ TEST_F(SmsServiceTest, HandlesMultipleCalls) {
     }));
 
     service.MakeRequest(BindLambdaForTesting(
-        [&loop](SmsStatus status, const Optional<string>& otp,
-                const Optional<string>& sms) {
+        [&loop](SmsStatus status, const Optional<string>& otp) {
           EXPECT_EQ("first", otp.value());
           EXPECT_EQ(SmsStatus::kSuccess, status);
           loop.Quit();
@@ -222,8 +220,7 @@ TEST_F(SmsServiceTest, HandlesMultipleCalls) {
     }));
 
     service.MakeRequest(BindLambdaForTesting(
-        [&loop](SmsStatus status, const Optional<string>& otp,
-                const Optional<string>& sms) {
+        [&loop](SmsStatus status, const Optional<string>& otp) {
           EXPECT_EQ("second", otp.value());
           EXPECT_EQ(SmsStatus::kSuccess, status);
           loop.Quit();
@@ -255,8 +252,7 @@ TEST_F(SmsServiceTest, IgnoreFromOtherOrigins) {
 
   service.MakeRequest(
       BindLambdaForTesting([&sms_status, &response, &sms_loop](
-                               SmsStatus status, const Optional<string>& otp,
-                               const Optional<string>& sms) {
+                               SmsStatus status, const Optional<string>& otp) {
         sms_status = status;
         response = otp;
         sms_loop.Quit();
@@ -292,8 +288,7 @@ TEST_F(SmsServiceTest, ExpectOneReceiveTwo) {
 
   service.MakeRequest(
       BindLambdaForTesting([&sms_status, &response, &sms_loop](
-                               SmsStatus status, const Optional<string>& otp,
-                               const Optional<string>& sms) {
+                               SmsStatus status, const Optional<string>& otp) {
         sms_status = status;
         response = otp;
         sms_loop.Quit();
@@ -329,8 +324,7 @@ TEST_F(SmsServiceTest, AtMostOneSmsRequestPerOrigin) {
 
   service.MakeRequest(
       BindLambdaForTesting([&sms_status1, &response1, &sms1_loop](
-                               SmsStatus status, const Optional<string>& otp,
-                               const Optional<string>& sms) {
+                               SmsStatus status, const Optional<string>& otp) {
         sms_status1 = status;
         response1 = otp;
         sms1_loop.Quit();
@@ -340,8 +334,7 @@ TEST_F(SmsServiceTest, AtMostOneSmsRequestPerOrigin) {
   // one request can be pending per origin per tab.
   service.MakeRequest(
       BindLambdaForTesting([&sms_status2, &response2, &sms2_loop](
-                               SmsStatus status, const Optional<string>& otp,
-                               const Optional<string>& sms) {
+                               SmsStatus status, const Optional<string>& otp) {
         sms_status2 = status;
         response2 = otp;
         sms2_loop.Quit();
@@ -379,8 +372,7 @@ TEST_F(SmsServiceTest, SecondRequestDuringPrompt) {
   // First request.
   service.MakeRequest(
       BindLambdaForTesting([&sms_status1, &response1, &service](
-                               SmsStatus status, const Optional<string>& otp,
-                               const Optional<string>& sms) {
+                               SmsStatus status, const Optional<string>& otp) {
         sms_status1 = status;
         response1 = otp;
         service.ConfirmPrompt();
@@ -389,8 +381,7 @@ TEST_F(SmsServiceTest, SecondRequestDuringPrompt) {
   // Make second request before confirming prompt.
   service.MakeRequest(
       BindLambdaForTesting([&sms_status2, &response2, &sms_loop](
-                               SmsStatus status, const Optional<string>& otp,
-                               const Optional<string>& sms) {
+                               SmsStatus status, const Optional<string>& otp) {
         sms_status2 = status;
         response2 = otp;
         sms_loop.Quit();
@@ -430,10 +421,9 @@ TEST_F(SmsServiceTest, CleansUp) {
   base::RunLoop reload;
 
   service->Receive(base::BindLambdaForTesting(
-      [&reload](SmsStatus status, const Optional<string>& otp,
-                const Optional<string>& sms) {
+      [&reload](SmsStatus status, const Optional<string>& otp) {
         EXPECT_EQ(SmsStatus::kTimeout, status);
-        EXPECT_EQ(base::nullopt, sms);
+        EXPECT_EQ(base::nullopt, otp);
         reload.Quit();
       }));
 
@@ -463,8 +453,7 @@ TEST_F(SmsServiceTest, PromptsDialog) {
   }));
 
   service.MakeRequest(BindLambdaForTesting(
-      [&loop](SmsStatus status, const Optional<string>& otp,
-              const Optional<string>& sms) {
+      [&loop](SmsStatus status, const Optional<string>& otp) {
         EXPECT_EQ("hi", otp.value());
         EXPECT_EQ(SmsStatus::kSuccess, status);
         loop.Quit();
@@ -485,8 +474,7 @@ TEST_F(SmsServiceTest, Cancel) {
   service.CreateSmsPrompt(main_rfh());
 
   service.MakeRequest(BindLambdaForTesting(
-      [&loop](SmsStatus status, const Optional<string>& otp,
-              const Optional<string>& sms) {
+      [&loop](SmsStatus status, const Optional<string>& otp) {
         EXPECT_EQ(SmsStatus::kCancelled, status);
         EXPECT_EQ(base::nullopt, otp);
         loop.Quit();
@@ -515,10 +503,9 @@ TEST_F(SmsServiceTest, CancelForNoDelegate) {
   base::RunLoop loop;
 
   service->Receive(base::BindLambdaForTesting(
-      [&loop](SmsStatus status, const Optional<string>& otp,
-              const Optional<string>& sms) {
+      [&loop](SmsStatus status, const Optional<string>& otp) {
         EXPECT_EQ(SmsStatus::kCancelled, status);
-        EXPECT_EQ(base::nullopt, sms);
+        EXPECT_EQ(base::nullopt, otp);
         loop.Quit();
       }));
 
@@ -535,8 +522,7 @@ TEST_F(SmsServiceTest, Abort) {
   base::RunLoop loop;
 
   service.MakeRequest(BindLambdaForTesting(
-      [&loop](SmsStatus status, const Optional<string>& otp,
-              const Optional<string>& sms) {
+      [&loop](SmsStatus status, const Optional<string>& otp) {
         EXPECT_EQ(SmsStatus::kAborted, status);
         EXPECT_EQ(base::nullopt, otp);
         loop.Quit();
@@ -559,8 +545,7 @@ TEST_F(SmsServiceTest, AbortWhilePrompt) {
   service.CreateSmsPrompt(main_rfh());
 
   service.MakeRequest(BindLambdaForTesting(
-      [&loop](SmsStatus status, const Optional<string>& otp,
-              const Optional<string>& sms) {
+      [&loop](SmsStatus status, const Optional<string>& otp) {
         EXPECT_EQ(SmsStatus::kAborted, status);
         EXPECT_EQ(base::nullopt, otp);
         loop.Quit();
@@ -590,8 +575,7 @@ TEST_F(SmsServiceTest, RequestAfterAbortWhilePrompt) {
     service.CreateSmsPrompt(main_rfh());
 
     service.MakeRequest(BindLambdaForTesting(
-        [&loop](SmsStatus status, const Optional<string>& otp,
-                const Optional<string>& sms) {
+        [&loop](SmsStatus status, const Optional<string>& otp) {
           EXPECT_EQ(SmsStatus::kAborted, status);
           EXPECT_EQ(base::nullopt, otp);
           loop.Quit();
@@ -617,8 +601,7 @@ TEST_F(SmsServiceTest, RequestAfterAbortWhilePrompt) {
     service.CreateSmsPrompt(main_rfh());
 
     service.MakeRequest(BindLambdaForTesting(
-        [&loop](SmsStatus status, const Optional<string>& otp,
-                const Optional<string>& sms) {
+        [&loop](SmsStatus status, const Optional<string>& otp) {
           // Verify that the 2nd request completes successfully after prompt
           // confirmation.
           EXPECT_EQ(SmsStatus::kSuccess, status);
@@ -645,8 +628,7 @@ TEST_F(SmsServiceTest, SecondRequestWhilePrompt) {
   service.CreateSmsPrompt(main_rfh());
 
   service.MakeRequest(BindLambdaForTesting(
-      [&callback_loop1](SmsStatus status, const Optional<string>& otp,
-                        const Optional<string>& sms) {
+      [&callback_loop1](SmsStatus status, const Optional<string>& otp) {
         EXPECT_EQ(SmsStatus::kAborted, status);
         EXPECT_EQ(base::nullopt, otp);
         callback_loop1.Quit();
@@ -662,8 +644,7 @@ TEST_F(SmsServiceTest, SecondRequestWhilePrompt) {
   base::ThreadTaskRunnerHandle::Get()->PostTaskAndReply(
       FROM_HERE, BindLambdaForTesting([&]() {
         service.MakeRequest(BindLambdaForTesting(
-            [&callback_loop2](SmsStatus status, const Optional<string>& otp,
-                              const Optional<string>& sms) {
+            [&callback_loop2](SmsStatus status, const Optional<string>& otp) {
               EXPECT_EQ(SmsStatus::kSuccess, status);
               EXPECT_EQ("hi", otp.value());
               callback_loop2.Quit();
@@ -696,8 +677,7 @@ TEST_F(SmsServiceTest, RecordTimeMetricsForContinueOnSuccess) {
   }));
 
   service.MakeRequest(BindLambdaForTesting(
-      [&loop](SmsStatus status, const Optional<string>& otp,
-              const Optional<string>& sms) { loop.Quit(); }));
+      [&loop](SmsStatus status, const Optional<string>& otp) { loop.Quit(); }));
 
   loop.Run();
 
@@ -722,8 +702,7 @@ TEST_F(SmsServiceTest, RecordMetricsForCancelOnSuccess) {
   }));
 
   service.MakeRequest(BindLambdaForTesting(
-      [&loop](SmsStatus status, const Optional<string>& otp,
-              const Optional<string>& sms) { loop.Quit(); }));
+      [&loop](SmsStatus status, const Optional<string>& otp) { loop.Quit(); }));
 
   loop.Run();
 
@@ -759,10 +738,9 @@ TEST_F(SmsServiceTest, RecordMetricsForNewPage) {
   base::RunLoop reload;
 
   service->Receive(base::BindLambdaForTesting(
-      [&reload](SmsStatus status, const Optional<string>& otp,
-                const Optional<string>& sms) {
+      [&reload](SmsStatus status, const Optional<string>& otp) {
         EXPECT_EQ(SmsStatus::kTimeout, status);
-        EXPECT_EQ(base::nullopt, sms);
+        EXPECT_EQ(base::nullopt, otp);
         reload.Quit();
       }));
 
@@ -800,10 +778,9 @@ TEST_F(SmsServiceTest, RecordMetricsForSamePage) {
   base::RunLoop reload;
 
   service->Receive(base::BindLambdaForTesting(
-      [&reload](SmsStatus status, const Optional<string>& otp,
-                const Optional<string>& sms) {
+      [&reload](SmsStatus status, const Optional<string>& otp) {
         EXPECT_EQ(SmsStatus::kTimeout, status);
-        EXPECT_EQ(base::nullopt, sms);
+        EXPECT_EQ(base::nullopt, otp);
         reload.Quit();
       }));
 
@@ -846,10 +823,9 @@ TEST_F(SmsServiceTest, RecordMetricsForExistingPage) {
   base::RunLoop reload;
 
   service->Receive(base::BindLambdaForTesting(
-      [&reload](SmsStatus status, const Optional<string>& otp,
-                const Optional<string>& sms) {
+      [&reload](SmsStatus status, const Optional<string>& otp) {
         EXPECT_EQ(SmsStatus::kTimeout, status);
-        EXPECT_EQ(base::nullopt, sms);
+        EXPECT_EQ(base::nullopt, otp);
         reload.Quit();
       }));
 

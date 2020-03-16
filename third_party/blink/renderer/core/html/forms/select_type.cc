@@ -611,6 +611,7 @@ class ListBoxSelectType final : public SelectType {
   void DidSetSuggestedOption(HTMLOptionElement* option) override;
   void SelectAll() override;
   void SaveListboxActiveSelection() override;
+  void HandleMouseRelease() override;
 
  private:
   HTMLOptionElement* NextSelectableOptionPageAway(HTMLOptionElement*,
@@ -734,7 +735,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
                     select_->GetLayoutBox()))
       page->GetAutoscrollController().StopAutoscroll();
     else
-      select_->HandleMouseRelease();
+      HandleMouseRelease();
     return false;
   }
 
@@ -1053,6 +1054,13 @@ void ListBoxSelectType::SaveListboxActiveSelection() {
   }
 }
 
+void ListBoxSelectType::HandleMouseRelease() {
+  // We didn't start this click/drag on any options.
+  if (select_->last_on_change_selection_.IsEmpty())
+    return;
+  select_->ListBoxOnChange();
+}
+
 // ============================================================================
 
 SelectType::SelectType(HTMLSelectElement& select) : select_(select) {}
@@ -1108,6 +1116,8 @@ void SelectType::SelectAll() {
 }
 
 void SelectType::SaveListboxActiveSelection() {}
+
+void SelectType::HandleMouseRelease() {}
 
 void SelectType::ShowPopup() {
   NOTREACHED();

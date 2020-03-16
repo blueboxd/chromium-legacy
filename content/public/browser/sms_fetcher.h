@@ -27,11 +27,10 @@ class SmsFetcher {
 
   class Subscriber : public base::CheckedObserver {
    public:
-    // Receive an |sms| and a |one_time_code| from subscribed origin. The
-    // |one_time_code| is parsed from |sms| as an alphanumeric value which the
-    // origin uses to verify the ownership of the phone number.
-    virtual void OnReceive(const std::string& one_time_code,
-                           const std::string& sms) = 0;
+    // Receive a |one_time_code| from subscribed origin. The |one_time_code|
+    // is parsed from |sms| as an alphanumeric value which the origin uses
+    // to verify the ownership of the phone number.
+    virtual void OnReceive(const std::string& one_time_code) = 0;
   };
 
   // Idempotent function that subscribes to incoming SMSes from SmsProvider.

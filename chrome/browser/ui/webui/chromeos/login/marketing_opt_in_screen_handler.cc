@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/chromeos/login/screens/marketing_opt_in_screen.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
@@ -16,6 +17,16 @@
 
 namespace chromeos {
 
+namespace {
+
+void RecordShowShelfNavigationButtonsValueChange(bool enabled) {
+  base::UmaHistogramBoolean(
+      "Accessibility.CrosShelfNavigationButtonsInTabletModeChanged.OOBE",
+      enabled);
+}
+
+}  // namespace
+
 constexpr StaticOobeScreenId MarketingOptInScreenView::kScreenId;
 
 MarketingOptInScreenHandler::MarketingOptInScreenHandler(
@@ -23,7 +34,10 @@ MarketingOptInScreenHandler::MarketingOptInScreenHandler(
     : BaseScreenHandler(kScreenId, js_calls_container) {
 }
 
-MarketingOptInScreenHandler::~MarketingOptInScreenHandler() {}
+MarketingOptInScreenHandler::~MarketingOptInScreenHandler() {
+  if (a11y_nav_buttons_toggle_metrics_reporter_timer_.IsRunning())
+    a11y_nav_buttons_toggle_metrics_reporter_timer_.FireNow();
+}
 
 void MarketingOptInScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
@@ -61,7 +75,10 @@ void MarketingOptInScreenHandler::Show() {
   ShowScreen(kScreenId);
 }
 
-void MarketingOptInScreenHandler::Hide() {}
+void MarketingOptInScreenHandler::Hide() {
+  if (a11y_nav_buttons_toggle_metrics_reporter_timer_.IsRunning())
+    a11y_nav_buttons_toggle_metrics_reporter_timer_.FireNow();
+}
 
 void MarketingOptInScreenHandler::UpdateAllSetButtonVisibility(bool visible) {
   CallJS("login.MarketingOptInScreen.updateAllSetButtonVisibility", visible);
@@ -116,6 +133,9 @@ void MarketingOptInScreenHandler::HandleSetA11yNavigationButtonsEnabled(
   ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
       ash::prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled,
       enabled);
+  a11y_nav_buttons_toggle_metrics_reporter_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(10),
+      base::BindOnce(&RecordShowShelfNavigationButtonsValueChange, enabled));
 }
 
 }  // namespace chromeos

@@ -108,7 +108,7 @@ TEST(SmsRemoteFetcherTest, OneDevice) {
                            chrome_browser_sharing::SharingMessage message,
                            SharingMessageSender::ResponseCallback callback) {
         auto response = std::make_unique<ResponseMessage>();
-        response->mutable_sms_fetch_response()->set_sms("hello");
+        response->mutable_sms_fetch_response()->set_one_time_code("ABC");
         std::move(callback).Run(SharingSendMessageResult::kSuccessful,
                                 std::move(response));
       }));
@@ -117,7 +117,7 @@ TEST(SmsRemoteFetcherTest, OneDevice) {
       &profile, GetOriginForURL("a.com"),
       BindLambdaForTesting([&loop](base::Optional<std::string> result) {
         ASSERT_TRUE(result);
-        ASSERT_EQ("hello", result);
+        ASSERT_EQ("ABC", result);
         loop.Quit();
       }));
 

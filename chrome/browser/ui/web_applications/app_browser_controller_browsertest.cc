@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -34,6 +35,8 @@
 #include "content/public/test/test_utils.h"
 #include "content/public/test/theme_change_waiter.h"
 #include "extensions/browser/extension_registry.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 namespace {
 SkColor GetTabColor(Browser* browser) {
@@ -218,6 +221,19 @@ IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest,
   InstallAndLaunchMockPopup();
   EXPECT_EQ(BrowserList::GetInstance()->size(), 2u);
 }
+
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, InitialBounds) {
+  InstallAndLaunchMockApp();
+  EXPECT_EQ(app_browser_->window()->GetBounds(), gfx::Rect(64, 64, 652, 484));
+  InstallAndLaunchMockPopup();
+  gfx::Rect work_area =
+      display::Screen::GetScreen()->GetDisplayForNewWindows().work_area();
+  int x = (work_area.width() - 768) / 2;
+  int y = (work_area.height() - 512) / 2;
+  EXPECT_EQ(app_browser_->window()->GetBounds(), gfx::Rect(x, y, 768, 512));
+}
+#endif
 
 class AppBrowserControllerChromeUntrustedBrowserTest
     : public InProcessBrowserTest {

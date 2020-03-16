@@ -22,8 +22,7 @@ void SmsClientImpl::Subscribe() {
   fetcher_->Subscribe(origin_, this);
 }
 
-void SmsClientImpl::OnReceive(const std::string& one_time_code,
-                              const std::string& sms) {
+void SmsClientImpl::OnReceive(const std::string& one_time_code) {
   one_time_code_ = one_time_code;
 }
 

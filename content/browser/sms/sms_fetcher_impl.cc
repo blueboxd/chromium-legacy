@@ -66,15 +66,14 @@ void SmsFetcherImpl::Unsubscribe(const url::Origin& origin,
 }
 
 bool SmsFetcherImpl::Notify(const url::Origin& origin,
-                            const std::string& one_time_code,
-                            const std::string& sms) {
+                            const std::string& one_time_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto* subscriber = subscribers_.Pop(origin);
 
   if (!subscriber)
     return false;
 
-  subscriber->OnReceive(one_time_code, sms);
+  subscriber->OnReceive(one_time_code);
 
   return true;
 }
@@ -89,14 +88,13 @@ void SmsFetcherImpl::OnRemote(base::Optional<std::string> sms) {
   if (!result)
     return;
 
-  Notify(result->origin, result->one_time_code, *sms);
+  Notify(result->origin, result->one_time_code);
 }
 
 bool SmsFetcherImpl::OnReceive(const url::Origin& origin,
-                               const std::string& one_time_code,
-                               const std::string& sms) {
+                               const std::string& one_time_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return Notify(origin, one_time_code, sms);
+  return Notify(origin, one_time_code);
 }
 
 bool SmsFetcherImpl::HasSubscribers() {

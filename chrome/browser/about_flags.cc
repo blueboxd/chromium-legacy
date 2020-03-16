@@ -3355,6 +3355,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUsePreferredIntervalForVideoDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kUsePreferredIntervalForVideo)},
 
+    {"split-partially-occluded-quads",
+     flag_descriptions::kSplitPartiallyOccludedQuadsName,
+     flag_descriptions::kSplitPartiallyOccludedQuadsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kSplitPartiallyOccludedQuads)},
+
     {"enable-query-in-omnibox", flag_descriptions::kQueryInOmniboxName,
      flag_descriptions::kQueryInOmniboxDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kQueryInOmnibox)},

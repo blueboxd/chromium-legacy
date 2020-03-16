@@ -202,6 +202,10 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
   event.SetDefaultHandled();
 }
 
+void FileInputType::CustomStyleForLayoutObject(ComputedStyle& style) {
+  style.SetShouldIgnoreOverflowPropertyForInlineBlockBaseline();
+}
+
 bool FileInputType::TypeShouldForceLegacyLayout() const {
   return true;
 }

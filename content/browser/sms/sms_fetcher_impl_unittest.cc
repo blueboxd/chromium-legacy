@@ -41,8 +41,7 @@ class MockSubscriber : public SmsFetcher::Subscriber {
   MockSubscriber() = default;
   ~MockSubscriber() override = default;
 
-  MOCK_METHOD2(OnReceive,
-               void(const std::string& one_time_code, const std::string& sms));
+  MOCK_METHOD1(OnReceive, void(const std::string& one_time_code));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSubscriber);
@@ -84,10 +83,10 @@ TEST_F(SmsFetcherImplTest, ReceiveFromLocalSmsProvider) {
   SmsFetcherImpl fetcher(nullptr, base::WrapUnique(provider()));
 
   EXPECT_CALL(*provider(), Retrieve()).WillOnce(Invoke([&]() {
-    provider()->NotifyReceive(kOrigin, "123", "hello");
+    provider()->NotifyReceive(kOrigin, "123");
   }));
 
-  EXPECT_CALL(subscriber, OnReceive("123", "hello"));
+  EXPECT_CALL(subscriber, OnReceive("123"));
 
   fetcher.Subscribe(kOrigin, &subscriber);
 }
@@ -105,7 +104,7 @@ TEST_F(SmsFetcherImplTest, ReceiveFromRemoteProvider) {
             std::move(callback).Run(sms);
           }));
 
-  EXPECT_CALL(subscriber, OnReceive("123", sms));
+  EXPECT_CALL(subscriber, OnReceive("123"));
 
   fetcher.Subscribe(url::Origin::Create(GURL("https://a.com")), &subscriber);
 }
@@ -121,7 +120,7 @@ TEST_F(SmsFetcherImplTest, RemoteProviderTimesOut) {
             std::move(callback).Run(base::nullopt);
           }));
 
-  EXPECT_CALL(subscriber, OnReceive(_, _)).Times(0);
+  EXPECT_CALL(subscriber, OnReceive(_)).Times(0);
 
   fetcher.Subscribe(url::Origin::Create(GURL("https://a.com")), &subscriber);
 }
@@ -137,7 +136,7 @@ TEST_F(SmsFetcherImplTest, ReceiveFromOtherOrigin) {
             std::move(callback).Run("@b.com #123");
           }));
 
-  EXPECT_CALL(subscriber, OnReceive(_, _)).Times(0);
+  EXPECT_CALL(subscriber, OnReceive(_)).Times(0);
 
   fetcher.Subscribe(url::Origin::Create(GURL("https://a.com")), &subscriber);
 }
@@ -160,7 +159,7 @@ TEST_F(SmsFetcherImplTest, ReceiveFromBothProviders) {
   }));
 
   // Expects subscriber to be notified just once.
-  EXPECT_CALL(subscriber, OnReceive("123", sms));
+  EXPECT_CALL(subscriber, OnReceive("123"));
 
   fetcher.Subscribe(url::Origin::Create(GURL("https://a.com")), &subscriber);
 }
@@ -176,11 +175,11 @@ TEST_F(SmsFetcherImplTest, OneOriginTwoSubscribers) {
   fetcher.Subscribe(kOrigin, &subscriber1);
   fetcher.Subscribe(kOrigin, &subscriber2);
 
-  EXPECT_CALL(subscriber1, OnReceive("123", "foo"));
-  provider()->NotifyReceive(kOrigin, "123", "foo");
+  EXPECT_CALL(subscriber1, OnReceive("123"));
+  provider()->NotifyReceive(kOrigin, "123");
 
-  EXPECT_CALL(subscriber2, OnReceive("456", "bar"));
-  provider()->NotifyReceive(kOrigin, "456", "bar");
+  EXPECT_CALL(subscriber2, OnReceive("456"));
+  provider()->NotifyReceive(kOrigin, "456");
 }
 
 TEST_F(SmsFetcherImplTest, TwoOriginsTwoSubscribers) {
@@ -194,11 +193,11 @@ TEST_F(SmsFetcherImplTest, TwoOriginsTwoSubscribers) {
   fetcher.Subscribe(kOrigin1, &subscriber1);
   fetcher.Subscribe(kOrigin2, &subscriber2);
 
-  EXPECT_CALL(subscriber2, OnReceive("456", "bar"));
-  provider()->NotifyReceive(kOrigin2, "456", "bar");
+  EXPECT_CALL(subscriber2, OnReceive("456"));
+  provider()->NotifyReceive(kOrigin2, "456");
 
-  EXPECT_CALL(subscriber1, OnReceive("123", "foo"));
-  provider()->NotifyReceive(kOrigin1, "123", "foo");
+  EXPECT_CALL(subscriber1, OnReceive("123"));
+  provider()->NotifyReceive(kOrigin1, "123");
 }
 
 TEST_F(SmsFetcherImplTest, SubscribeIsIdempotent) {

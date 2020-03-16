@@ -143,7 +143,6 @@ class CORE_EXPORT HTMLSelectElement final
   void HrInsertedOrRemoved(HTMLHRElement&);
 
   HTMLOptionElement* SpatialNavigationFocusedOption();
-  void HandleMouseRelease();
 
   int ListIndexForOption(const HTMLOptionElement&);
 

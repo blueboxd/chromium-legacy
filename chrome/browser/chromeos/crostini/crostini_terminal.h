@@ -125,7 +125,7 @@ void LaunchContainerTerminal(Profile* profile,
                              const std::vector<std::string>& terminal_args);
 
 // Launches the terminal settings popup window.
-void LaunchTerminalSettings(Profile* profile, Browser* terminal = nullptr);
+void LaunchTerminalSettings(Profile* profile);
 
 // Record which terminal settings have been changed by users.
 void RecordTerminalSettingsChangesUMAs(Profile* profile);

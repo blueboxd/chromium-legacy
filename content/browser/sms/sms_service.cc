@@ -45,7 +45,7 @@ SmsService::SmsService(
 
 SmsService::~SmsService() {
   if (callback_)
-    Process(SmsStatus::kTimeout, base::nullopt, base::nullopt);
+    Process(SmsStatus::kTimeout, base::nullopt);
 }
 
 // static
@@ -69,21 +69,19 @@ void SmsService::Receive(ReceiveCallback callback) {
   WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host());
   if (!web_contents->GetDelegate()) {
-    std::move(callback).Run(SmsStatus::kCancelled, base::nullopt,
-                            base::nullopt);
+    std::move(callback).Run(SmsStatus::kCancelled, base::nullopt);
     return;
   }
 
   if (callback_) {
-    std::move(callback_).Run(SmsStatus::kCancelled, base::nullopt,
-                             base::nullopt);
+    std::move(callback_).Run(SmsStatus::kCancelled, base::nullopt);
     fetcher_->Unsubscribe(origin_, this);
   }
 
   start_time_ = base::TimeTicks::Now();
   callback_ = std::move(callback);
 
-  // |one_time_code_|, |sms_| and prompt are still present from the previous
+  // |one_time_code_| and prompt are still present from the previous
   // request so a new subscription is unnecessary.
   if (prompt_open_) {
     // TODO(crbug.com/1024598): Add UMA histogram.
@@ -93,18 +91,15 @@ void SmsService::Receive(ReceiveCallback callback) {
   fetcher_->Subscribe(origin_, this);
 }
 
-void SmsService::OnReceive(const std::string& one_time_code,
-                           const std::string& sms) {
+void SmsService::OnReceive(const std::string& one_time_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(!one_time_code_);
-  DCHECK(!sms_);
   DCHECK(!start_time_.is_null());
 
   RecordSmsReceiveTime(base::TimeTicks::Now() - start_time_);
 
   one_time_code_ = one_time_code;
-  sms_ = sms;
   receive_time_ = base::TimeTicks::Now();
 
   OpenInfoBar(one_time_code);
@@ -112,7 +107,7 @@ void SmsService::OnReceive(const std::string& one_time_code,
 
 void SmsService::Abort() {
   DCHECK(callback_);
-  Process(SmsStatus::kAborted, base::nullopt, base::nullopt);
+  Process(SmsStatus::kAborted, base::nullopt);
 }
 
 void SmsService::NavigationEntryCommitted(
@@ -137,7 +132,7 @@ void SmsService::OpenInfoBar(const std::string& one_time_code) {
   WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host());
   if (!web_contents->GetDelegate()) {
-    Process(SmsStatus::kCancelled, base::nullopt, base::nullopt);
+    Process(SmsStatus::kCancelled, base::nullopt);
     return;
   }
 
@@ -149,11 +144,10 @@ void SmsService::OpenInfoBar(const std::string& one_time_code) {
 }
 
 void SmsService::Process(blink::mojom::SmsStatus status,
-                         base::Optional<std::string> one_time_code,
-                         base::Optional<std::string> sms) {
+                         base::Optional<std::string> one_time_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(callback_);
-  std::move(callback_).Run(status, one_time_code, sms);
+  std::move(callback_).Run(status, one_time_code);
   CleanUp();
 }
 
@@ -161,7 +155,6 @@ void SmsService::OnConfirm() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(one_time_code_);
-  DCHECK(sms_);
   DCHECK(!receive_time_.is_null());
   RecordContinueOnSuccessTime(base::TimeTicks::Now() - receive_time_);
 
@@ -172,7 +165,7 @@ void SmsService::OnConfirm() {
     CleanUp();
     return;
   }
-  Process(SmsStatus::kSuccess, one_time_code_, sms_);
+  Process(SmsStatus::kSuccess, one_time_code_);
 }
 
 void SmsService::OnCancel() {
@@ -189,7 +182,7 @@ void SmsService::OnCancel() {
     CleanUp();
     return;
   }
-  Process(SmsStatus::kCancelled, base::nullopt, base::nullopt);
+  Process(SmsStatus::kCancelled, base::nullopt);
 }
 
 void SmsService::CleanUp() {
@@ -198,7 +191,6 @@ void SmsService::CleanUp() {
   // upon prompt confirmation.
   if (!prompt_open_) {
     one_time_code_.reset();
-    sms_.reset();
     receive_time_ = base::TimeTicks();
   }
   start_time_ = base::TimeTicks();

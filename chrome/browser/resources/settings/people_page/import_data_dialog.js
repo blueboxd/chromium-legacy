@@ -70,6 +70,16 @@ Polymer({
     });
   },
 
+  /**
+   * @param {string} name
+   * @param {string} profileName
+   * @return {string}
+   * @private
+   */
+  getProfileDisplayName_(name, profileName) {
+    return profileName ? `${name} - ${profileName}` : name;
+  },
+
   /** @private */
   prefsChanged_() {
     if (this.selected_ == undefined || this.prefs == undefined) {

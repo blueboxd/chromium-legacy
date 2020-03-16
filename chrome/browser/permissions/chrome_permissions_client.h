@@ -47,6 +47,10 @@ class ChromePermissionsClient : public permissions::PermissionsClient {
       base::WeakPtr<permissions::PermissionPromptAndroid> prompt) override;
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
   int MapToJavaDrawableId(int resource_id) override;
+#else
+  std::unique_ptr<permissions::PermissionPrompt> CreatePrompt(
+      content::WebContents* web_contents,
+      permissions::PermissionPrompt::Delegate* delegate) override;
 #endif
 
  private:

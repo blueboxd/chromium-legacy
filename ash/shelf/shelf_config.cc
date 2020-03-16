@@ -234,6 +234,14 @@ int ShelfConfig::hotseat_size() const {
   return is_dense_ ? 48 : 56;
 }
 
+int ShelfConfig::shelf_drag_handle_centering_size() const {
+  const session_manager::SessionState session_state =
+      Shell::Get()->session_controller()->GetSessionState();
+  return session_state == session_manager::SessionState::ACTIVE
+             ? in_app_shelf_size()
+             : 28;
+}
+
 int ShelfConfig::hotseat_bottom_padding() const {
   return 8;
 }
@@ -462,7 +470,11 @@ gfx::Tween::Type ShelfConfig::DimAnimationTween() const {
 }
 
 gfx::Size ShelfConfig::DragHandleSize() const {
-  return gfx::Size(80, 4);
+  const session_manager::SessionState session_state =
+      Shell::Get()->session_controller()->GetSessionState();
+  return session_state == session_manager::SessionState::ACTIVE
+             ? gfx::Size(80, 4)
+             : gfx::Size(120, 4);
 }
 
 void ShelfConfig::UpdateConfigForAccessibilityState() {

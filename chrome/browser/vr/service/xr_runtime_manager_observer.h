@@ -7,7 +7,7 @@
 
 #include "base/observer_list_types.h"
 #include "chrome/browser/vr/vr_export.h"
-#include "device/vr/public/mojom/vr_service.mojom.h"
+#include "device/vr/public/mojom/vr_service.mojom-forward.h"
 
 namespace vr {
 

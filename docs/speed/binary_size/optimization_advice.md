@@ -265,7 +265,7 @@ Practical advice:
    * Try adding [-assumenosideeffects] rules to strip out unwanted calls
      (equivalent to adding @RemovableInRelease annotations).
  * Consider removing all resources via `strip_resources = true`.
- * Remove specific drawables via `resource_blacklist_regex`.
+ * Remove specific drawables via `resource_exclusion_regex`.
 
 [-whyareyoukeeping]: https://r8-docs.preemptive.com/#keep-rules
 [-assumenosideeffects]: https://r8-docs.preemptive.com/#general-rules

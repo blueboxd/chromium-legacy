@@ -56,13 +56,14 @@ _JETIFY_SCRIPT_PATH = os.path.join(build_utils.DIR_SOURCE_ROOT, 'third_party',
                                    'jetifier-standalone')
 
 # Pngs that we shouldn't convert to webp. Please add rationale when updating.
-_PNG_WEBP_BLACKLIST_PATTERN = re.compile('|'.join([
+_PNG_WEBP_EXCLUSION_PATTERN = re.compile('|'.join([
     # Crashes on Galaxy S5 running L (https://crbug.com/807059).
     r'.*star_gray\.png',
     # Android requires pngs for 9-patch images.
     r'.*\.9\.png',
     # Daydream requires pngs for icon files.
-    r'.*daydream_icon_.*\.png']))
+    r'.*daydream_icon_.*\.png'
+]))
 
 
 def _ParseArgs(args):
@@ -123,18 +124,18 @@ def _ParseArgs(args):
       'only used for apks under test.')
 
   input_opts.add_argument(
-      '--shared-resources-whitelist',
-      help='An R.txt file acting as a whitelist for resources that should be '
-           'non-final and have their package ID changed at runtime in R.java. '
-           'Implies and overrides --shared-resources.')
+      '--shared-resources-allowlist',
+      help='An R.txt file acting as a allowlist for resources that should be '
+      'non-final and have their package ID changed at runtime in R.java. '
+      'Implies and overrides --shared-resources.')
 
   input_opts.add_argument(
-      '--shared-resources-whitelist-locales',
+      '--shared-resources-allowlist-locales',
       default='[]',
       help='Optional GN-list of locales. If provided, all strings corresponding'
       ' to this locale list will be kept in the final output for the '
-      'resources identified through --shared-resources-whitelist, even '
-      'if --locale-whitelist is being used.')
+      'resources identified through --shared-resources-allowlist, even '
+      'if --locale-allowlist is being used.')
 
   input_opts.add_argument(
       '--use-resource-ids-path',
@@ -172,20 +173,22 @@ def _ParseArgs(args):
       '--manifest-package', help='Package name of the AndroidManifest.xml.')
 
   input_opts.add_argument(
-      '--locale-whitelist',
+      '--locale-allowlist',
       default='[]',
       help='GN list of languages to include. All other language configs will '
-          'be stripped out. List may include a combination of Android locales '
-          'or Chrome locales.')
-
-  input_opts.add_argument('--resource-blacklist-regex', default='',
-                          help='Do not include matching drawables.')
+      'be stripped out. List may include a combination of Android locales '
+      'or Chrome locales.')
 
   input_opts.add_argument(
-      '--resource-blacklist-exceptions',
+      '--resource-exclusion-regex',
+      default='',
+      help='Do not include matching drawables.')
+
+  input_opts.add_argument(
+      '--resource-exclusion-exceptions',
       default='[]',
-      help='GN list of globs that say which blacklisted images to include even '
-           'when --resource-blacklist-regex is set.')
+      help='GN list of globs that say which excluded images to include even '
+      'when --resource-exclusion-regex is set.')
 
   input_opts.add_argument('--png-to-webp', action='store_true',
                           help='Convert png files to webp format.')
@@ -249,11 +252,11 @@ def _ParseArgs(args):
 
   resource_utils.HandleCommonOptions(options)
 
-  options.locale_whitelist = build_utils.ParseGnList(options.locale_whitelist)
-  options.shared_resources_whitelist_locales = build_utils.ParseGnList(
-      options.shared_resources_whitelist_locales)
-  options.resource_blacklist_exceptions = build_utils.ParseGnList(
-      options.resource_blacklist_exceptions)
+  options.locale_allowlist = build_utils.ParseGnList(options.locale_allowlist)
+  options.shared_resources_allowlist_locales = build_utils.ParseGnList(
+      options.shared_resources_allowlist_locales)
+  options.resource_exclusion_exceptions = build_utils.ParseGnList(
+      options.resource_exclusion_exceptions)
   options.extra_main_r_text_files = build_utils.ParseGnList(
       options.extra_main_r_text_files)
 
@@ -349,18 +352,18 @@ def _RenameLocaleResourceDirs(resource_dirs, path_info):
             os.path.relpath(path2, resource_dir))
 
 
-def _ToAndroidLocales(locale_whitelist, support_zh_hk):
+def _ToAndroidLocales(locale_allowlist, support_zh_hk):
   """Converts the list of Chrome locales to Android config locale qualifiers.
 
   Args:
-    locale_whitelist: A list of Chromium locale names.
+    locale_allowlist: A list of Chromium locale names.
     support_zh_hk: True if we need to support zh-HK by duplicating
       the zh-TW strings.
   Returns:
     A set of matching Android config locale qualifier names.
   """
   ret = set()
-  for locale in locale_whitelist:
+  for locale in locale_allowlist:
     locale = resource_utils.ToAndroidLocaleName(locale)
     if locale is None or ('-' in locale and '-r' not in locale):
       raise Exception('Unsupported Chromium locale name: %s' % locale)
@@ -373,7 +376,7 @@ def _ToAndroidLocales(locale_whitelist, support_zh_hk):
   # native side behavior where we use zh-TW resources when the locale is set to
   # zh-HK. See https://crbug.com/780847.
   if support_zh_hk:
-    assert not any('HK' in l for l in locale_whitelist), (
+    assert not any('HK' in l for l in locale_allowlist), (
         'Remove special logic if zh-HK is now supported (crbug.com/780847).')
     ret.add('zh-rHK')
   return set(ret)
@@ -494,30 +497,30 @@ https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README
       f.write(msg)
 
 
-def _CreateKeepPredicate(resource_blacklist_regex,
-                         resource_blacklist_exceptions):
+def _CreateKeepPredicate(resource_exclusion_regex,
+                         resource_exclusion_exceptions):
   """Return a predicate lambda to determine which resource files to keep.
 
   Args:
-    resource_blacklist_regex: A regular expression describing all resources
+    resource_exclusion_regex: A regular expression describing all resources
       to exclude, except if they are mip-maps, or if they are listed
-      in |resource_blacklist_exceptions|.
-    resource_blacklist_exceptions: A list of glob patterns corresponding
-      to exceptions to the |resource_blacklist_regex|.
+      in |resource_exclusion_exceptions|.
+    resource_exclusion_exceptions: A list of glob patterns corresponding
+      to exceptions to the |resource_exclusion_regex|.
   Returns:
     A lambda that takes a path, and returns true if the corresponding file
     must be kept.
   """
   predicate = lambda path: os.path.basename(path)[0] != '.'
-  if resource_blacklist_regex == '':
+  if resource_exclusion_regex == '':
     # Do not extract dotfiles (e.g. ".gitkeep"). aapt ignores them anyways.
     return predicate
 
   # A simple predicate that only removes (returns False for) paths covered by
-  # the blacklist regex or listed as exceptions.
+  # the exclusion regex or listed as exceptions.
   return lambda path: (
-      not re.search(resource_blacklist_regex, path) or
-      build_utils.MatchesGlob(path, resource_blacklist_exceptions))
+      not re.search(resource_exclusion_regex, path) or
+      build_utils.MatchesGlob(path, resource_exclusion_exceptions))
 
 
 def _ConvertToWebP(webp_binary, png_files, path_info):
@@ -534,8 +537,9 @@ def _ConvertToWebP(webp_binary, png_files, path_info):
         os.path.relpath(png_path, original_dir),
         os.path.relpath(webp_path, original_dir))
 
-  pool.map(convert_image, [f for f in png_files
-                           if not _PNG_WEBP_BLACKLIST_PATTERN.match(f[0])])
+  pool.map(
+      convert_image,
+      [f for f in png_files if not _PNG_WEBP_EXCLUSION_PATTERN.match(f[0])])
   pool.close()
   pool.join()
 
@@ -719,8 +723,8 @@ def _RemoveUnwantedLocalizedStrings(dep_subdirs, options):
     dep_subdirs: List of resource dependency directories.
     options: Command-line options namespace.
   """
-  if (not options.locale_whitelist
-      and not options.shared_resources_whitelist_locales):
+  if (not options.locale_allowlist
+      and not options.shared_resources_allowlist_locales):
     # Keep everything, there is nothing to do.
     return
 
@@ -737,23 +741,23 @@ def _RemoveUnwantedLocalizedStrings(dep_subdirs, options):
   all_locales = set(locale_to_files_map)
 
   # Set A: wanted locales, either all of them or the
-  # list provided by --locale-whitelist.
+  # list provided by --locale-allowlist.
   wanted_locales = all_locales
-  if options.locale_whitelist:
-    wanted_locales = _ToAndroidLocales(options.locale_whitelist,
+  if options.locale_allowlist:
+    wanted_locales = _ToAndroidLocales(options.locale_allowlist,
                                        options.support_zh_hk)
 
   # Set B: shared resources locales, which is either set A
-  # or the list provided by --shared-resources-whitelist-locales
+  # or the list provided by --shared-resources-allowlist-locales
   shared_resources_locales = wanted_locales
-  shared_names_whitelist = set()
-  if options.shared_resources_whitelist_locales:
-    shared_names_whitelist = set(
+  shared_names_allowlist = set()
+  if options.shared_resources_allowlist_locales:
+    shared_names_allowlist = set(
         resource_utils.GetRTxtStringResourceNames(
-            options.shared_resources_whitelist))
+            options.shared_resources_allowlist))
 
     shared_resources_locales = _ToAndroidLocales(
-        options.shared_resources_whitelist_locales, options.support_zh_hk)
+        options.shared_resources_allowlist_locales, options.support_zh_hk)
 
   # Remove any file that belongs to a locale not covered by
   # either A or B.
@@ -767,14 +771,14 @@ def _RemoveUnwantedLocalizedStrings(dep_subdirs, options):
   for locale in shared_resources_locales - wanted_locales:
     for path in locale_to_files_map[locale]:
       resource_utils.FilterAndroidResourceStringsXml(
-          path, lambda x: x in shared_names_whitelist)
+          path, lambda x: x in shared_names_allowlist)
 
   # For any locale in A but not in B, only keep the strings
   # that are _not_ from shared resources in the file.
   for locale in wanted_locales - shared_resources_locales:
     for path in locale_to_files_map[locale]:
       resource_utils.FilterAndroidResourceStringsXml(
-          path, lambda x: x not in shared_names_whitelist)
+          path, lambda x: x not in shared_names_allowlist)
 
 
 def _PackageApk(options, build):
@@ -800,9 +804,9 @@ def _PackageApk(options, build):
   # Create a function that selects which resource files should be packaged
   # into the final output. Any file that does not pass the predicate will
   # be removed below.
-  logging.debug('Applying file-based blacklist')
-  keep_predicate = _CreateKeepPredicate(options.resource_blacklist_regex,
-                                        options.resource_blacklist_exceptions)
+  logging.debug('Applying file-based exclusions')
+  keep_predicate = _CreateKeepPredicate(options.resource_exclusion_regex,
+                                        options.resource_exclusion_exceptions)
   png_paths = []
   for directory in dep_subdirs:
     for f in _IterFiles(directory):
@@ -1080,7 +1084,7 @@ def main(args):
       temp_dir=path, keep_files=bool(debug_temp_resources_dir)) as build:
     manifest_package_name = _PackageApk(options, build)
 
-    # If --shared-resources-whitelist is used, the all resources listed in
+    # If --shared-resources-allowlist is used, the all resources listed in
     # the corresponding R.txt file will be non-final, and an onResourcesLoaded()
     # will be generated to adjust them at runtime.
     #
@@ -1090,9 +1094,9 @@ def main(args):
     # Otherwise, all resources will be final, and no method will be generated.
     #
     rjava_build_options = resource_utils.RJavaBuildOptions()
-    if options.shared_resources_whitelist:
+    if options.shared_resources_allowlist:
       rjava_build_options.ExportSomeResources(
-          options.shared_resources_whitelist)
+          options.shared_resources_allowlist)
       rjava_build_options.GenerateOnResourcesLoaded()
     elif options.shared_resources or options.app_as_shared_lib:
       rjava_build_options.ExportAllResources()

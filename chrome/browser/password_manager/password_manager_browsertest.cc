@@ -2463,10 +2463,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, ChangePwd1AccountStored) {
   EXPECT_TRUE(prompt_observer->IsUpdatePromptShownAutomatically());
 
   // We emulate that the user clicks "Update" button.
-  const autofill::PasswordForm& pending_credentials =
-      ManagePasswordsUIController::FromWebContents(WebContents())
-          ->GetPendingPassword();
-  prompt_observer->AcceptUpdatePrompt(pending_credentials);
+  prompt_observer->AcceptUpdatePrompt();
 
   WaitForPasswordStore();
   CheckThatCredentialsStored("temp", "new_pw");
@@ -2515,9 +2512,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWithAutofillDisabled,
   // expected.
   EXPECT_TRUE(prompt_observer->IsUpdatePromptShownAutomatically());
 
-  const autofill::PasswordForm stored_form =
-      password_store->stored_passwords().begin()->second[0];
-  prompt_observer->AcceptUpdatePrompt(stored_form);
+  prompt_observer->AcceptUpdatePrompt();
   WaitForPasswordStore();
   CheckThatCredentialsStored("temp", "new_pw");
 }
@@ -2631,9 +2626,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsUpdatePromptShownAutomatically());
 
-  const autofill::PasswordForm stored_form =
-      password_store->stored_passwords().begin()->second[0];
-  prompt_observer->AcceptUpdatePrompt(stored_form);
+  prompt_observer->AcceptUpdatePrompt();
   WaitForPasswordStore();
   CheckThatCredentialsStored("temp", "new_pw");
 }
@@ -3146,9 +3139,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   // The new password "new_pw" is used, so update prompt is expected.
   EXPECT_TRUE(prompt_observer->IsUpdatePromptShownAutomatically());
 
-  const autofill::PasswordForm stored_form =
-      password_store->stored_passwords().begin()->second[0];
-  prompt_observer->AcceptUpdatePrompt(stored_form);
+  prompt_observer->AcceptUpdatePrompt();
 
   WaitForPasswordStore();
   CheckThatCredentialsStored("temp", "new_pw");
@@ -3800,9 +3791,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_TRUE(prompt_observer->IsUpdatePromptShownAutomatically());
 
   // Check that the password is updated correctly if the user clicks Update.
-  const autofill::PasswordForm& stored_form =
-      password_store->stored_passwords().begin()->second[0];
-  prompt_observer->AcceptUpdatePrompt(stored_form);
+  prompt_observer->AcceptUpdatePrompt();
 
   WaitForPasswordStore();
   // The stored credential has been updated with the new password.

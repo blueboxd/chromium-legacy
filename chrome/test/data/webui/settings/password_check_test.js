@@ -321,22 +321,17 @@ cr.define('settings_passwords_check', function() {
           .then(() => passwordManager.whenCalled('startBulkPasswordCheck'));
     });
 
-    // Test verifies that 'Try again' visible and working when users encounter a
+    // Test verifies that 'Try again' is hidden when users encounter a
     // no-saved-passwords error.
-    test('testShowRetryAfterNoPasswordsError', function() {
+    test('testHideRetryAfterNoPasswordsError', function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.NO_PASSWORDS);
       const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus')
           .then(() => {
-            assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
-            expectEquals(
-                section.i18n('checkPasswordsAgainAfterError'),
-                section.$.controlPasswordCheckButton.innerText);
-            section.$.controlPasswordCheckButton.click();
-          })
-          .then(() => passwordManager.whenCalled('startBulkPasswordCheck'));
+            expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
+          });
     });
 
     // Test verifies that 'Try again' visible and working when users encounter a

@@ -94,7 +94,7 @@ template("chrome_bundle") {
     proguard_enabled = !is_java_debug
     enable_language_splits = true
     extra_modules = _extra_modules
-    system_image_locale_whitelist = android_apk_locales
+    system_image_locale_allowlist = android_apk_locales
     is_multi_abi = _is_multi_abi
 
     # NOTE: Only sign bundle for official builds since this is very slow.

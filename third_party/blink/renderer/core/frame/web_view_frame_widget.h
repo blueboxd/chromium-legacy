@@ -39,9 +39,18 @@ class WebWidgetClient;
 // https://goo.gl/7yVrnb.
 class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
  public:
-  explicit WebViewFrameWidget(util::PassKey<WebFrameWidget>,
-                              WebWidgetClient&,
-                              WebViewImpl&);
+  WebViewFrameWidget(
+      util::PassKey<WebFrameWidget>,
+      WebWidgetClient&,
+      WebViewImpl&,
+      CrossVariantMojoAssociatedRemote<
+          mojom::blink::FrameWidgetHostInterfaceBase> frame_widget_host,
+      CrossVariantMojoAssociatedReceiver<mojom::blink::FrameWidgetInterfaceBase>
+          frame_widget,
+      CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
+          widget_host,
+      CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
+          widget);
   ~WebViewFrameWidget() override;
 
   // WebWidget overrides:

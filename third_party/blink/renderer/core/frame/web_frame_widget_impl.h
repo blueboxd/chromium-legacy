@@ -70,7 +70,17 @@ class WebFrameWidgetImpl;
 class WebFrameWidgetImpl final : public WebFrameWidgetBase,
                                  public PageWidgetEventHandler {
  public:
-  explicit WebFrameWidgetImpl(util::PassKey<WebFrameWidget>, WebWidgetClient&);
+  WebFrameWidgetImpl(
+      util::PassKey<WebFrameWidget>,
+      WebWidgetClient&,
+      CrossVariantMojoAssociatedRemote<
+          mojom::blink::FrameWidgetHostInterfaceBase> frame_widget_host,
+      CrossVariantMojoAssociatedReceiver<mojom::blink::FrameWidgetInterfaceBase>
+          frame_widget,
+      CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
+          widget_host,
+      CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
+          widget);
   ~WebFrameWidgetImpl() override;
 
   // WebWidget functions:

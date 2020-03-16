@@ -27,6 +27,7 @@
 #include "chrome/browser/permissions/grouped_permission_infobar_delegate_android.h"
 #else
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -192,5 +193,12 @@ ChromePermissionsClient::GetJavaObject() {
 
 int ChromePermissionsClient::MapToJavaDrawableId(int resource_id) {
   return ResourceMapper::MapToJavaDrawableId(resource_id);
+}
+#else
+std::unique_ptr<permissions::PermissionPrompt>
+ChromePermissionsClient::CreatePrompt(
+    content::WebContents* web_contents,
+    permissions::PermissionPrompt::Delegate* delegate) {
+  return CreatePermissionPrompt(web_contents, delegate);
 }
 #endif

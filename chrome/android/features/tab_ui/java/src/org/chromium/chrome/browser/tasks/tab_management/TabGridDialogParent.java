@@ -66,8 +66,6 @@ public class TabGridDialogParent
     private final FrameLayout.LayoutParams mContainerParams;
     private final ViewGroup mParent;
     private final int mToolbarHeight;
-    private final int mParentViewHeight;
-    private final int mParentViewWidth;
     private final int mUngroupBarHeight;
     private final float mTabGridCardPadding;
     private PopupWindow mPopupWindow;
@@ -93,8 +91,6 @@ public class TabGridDialogParent
     private AnimatorListenerAdapter mHideDialogAnimationListener;
     private int mSideMargin;
     private int mTopMargin;
-    private int mParentViewCurrentHeight;
-    private int mParentViewCurrentWidth;
     private int mOrientation;
     private int mUngroupBarStatus = UngroupBarStatus.HIDE;
     private int mUngroupBarBackgroundColorResourceId = R.color.tab_grid_dialog_background_color;
@@ -113,9 +109,6 @@ public class TabGridDialogParent
                 (int) context.getResources().getDimension(R.dimen.bottom_sheet_peek_height);
         mContainerParams = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        // Parent view height and width when in portrait mode.
-        mParentViewHeight = Math.max(mParent.getHeight(), mParent.getWidth());
-        mParentViewWidth = Math.min(mParent.getHeight(), mParent.getWidth());
 
         mComponentCallbacks = new ComponentCallbacks() {
             @Override
@@ -526,15 +519,11 @@ public class TabGridDialogParent
                     (int) context.getResources().getDimension(R.dimen.tab_grid_dialog_side_margin);
             mTopMargin =
                     (int) context.getResources().getDimension(R.dimen.tab_grid_dialog_top_margin);
-            mParentViewCurrentHeight = mParentViewHeight;
-            mParentViewCurrentWidth = mParentViewWidth;
         } else {
             mSideMargin =
                     (int) context.getResources().getDimension(R.dimen.tab_grid_dialog_top_margin);
             mTopMargin =
                     (int) context.getResources().getDimension(R.dimen.tab_grid_dialog_side_margin);
-            mParentViewCurrentWidth = mParentViewHeight;
-            mParentViewCurrentHeight = mParentViewWidth;
         }
         mContainerParams.setMargins(mSideMargin, mTopMargin, mSideMargin, mTopMargin);
         mOrientation = orientation;
@@ -643,8 +632,8 @@ public class TabGridDialogParent
         // Get the status bar height as offset.
         Rect parentRect = new Rect();
         mParent.getGlobalVisibleRect(parentRect);
-        return new Rect(mSideMargin, mTopMargin + parentRect.top,
-                mParentViewCurrentWidth - mSideMargin, mParentViewCurrentHeight - mTopMargin);
+        return new Rect(mSideMargin, mTopMargin + parentRect.top, mParent.getWidth() - mSideMargin,
+                mParent.getHeight() - mTopMargin + parentRect.top);
     }
 
     /**

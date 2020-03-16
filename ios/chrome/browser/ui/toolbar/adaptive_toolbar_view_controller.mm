@@ -104,16 +104,11 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
   [self addLongPressGestureToView:self.view.toolsMenuButton];
 
   [self updateLayoutBasedOnTraitCollection];
-
-  [self.adaptiveToolbarViewControllerDelegate
-      userInterfaceStyleChangedForViewController:self];
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
   [self updateLayoutBasedOnTraitCollection];
-  [self.adaptiveToolbarViewControllerDelegate
-      userInterfaceStyleChangedForViewController:self];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -222,12 +217,6 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
 
 - (void)setIsNTP:(BOOL)isNTP {
   _isNTP = isNTP;
-}
-
-- (void)setSearchIcon:(UIImage*)searchIcon {
-  if (base::FeatureList::IsEnabled(kToolbarNewTabButton))
-    return;
-  [self.view.searchButton setImage:searchIcon forState:UIControlStateNormal];
 }
 
 #pragma mark - NewTabPageControllerDelegate
@@ -387,13 +376,7 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
   } else if (sender == self.view.shareButton) {
     base::RecordAction(base::UserMetricsAction("MobileToolbarShareMenu"));
   } else if (sender == self.view.searchButton) {
-    if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {
-      base::RecordAction(
-          base::UserMetricsAction("MobileToolbarNewTabShortcut"));
-    } else {
-      base::RecordAction(
-          base::UserMetricsAction("MobileToolbarOmniboxShortcut"));
-    }
+    base::RecordAction(base::UserMetricsAction("MobileToolbarNewTabShortcut"));
   } else {
     NOTREACHED();
   }

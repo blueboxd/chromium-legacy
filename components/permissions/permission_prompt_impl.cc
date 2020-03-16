@@ -2,20 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
 #include "components/permissions/permission_prompt.h"
+#include "components/permissions/permissions_client.h"
 
 namespace permissions {
 
-#if !defined(OS_ANDROID)
-// TODO(crbug.com/1025609): //components/permissions does not have a
-// PermissionPrompt::Create() implementation for desktop platforms, so we define
-// one here.
+// TODO(crbug.com/1025609): Move the desktop permission prompt implementations
+// into //components/permissions.
 std::unique_ptr<PermissionPrompt> PermissionPrompt::Create(
     content::WebContents* web_contents,
     Delegate* delegate) {
-  return nullptr;
+  return PermissionsClient::Get()->CreatePrompt(web_contents, delegate);
 }
-#endif
 
 }  // namespace permissions

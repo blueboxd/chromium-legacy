@@ -85,7 +85,7 @@ using signin_metrics::PromoAction;
                          browser:browser
                      accessPoint:accessPoint
                      promoAction:PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO
-                    signinIntent:SigninIntentAddAccount];
+                    signinIntent:AddAccountSigninIntentAddSecondaryAccount];
 }
 
 + (instancetype)
@@ -99,7 +99,7 @@ using signin_metrics::PromoAction;
                          browser:browser
                      accessPoint:accessPoint
                      promoAction:promoAction
-                    signinIntent:SigninIntentReauth];
+                    signinIntent:AddAccountSigninIntentReauthPrimaryAccount];
 }
 
 - (void)dealloc {

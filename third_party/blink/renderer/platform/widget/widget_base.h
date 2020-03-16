@@ -6,6 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WIDGET_WIDGET_BASE_H_
 
 #include "base/time/time.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace cc {
@@ -21,10 +25,14 @@ class WidgetBaseClient;
 // class. For simplicity purposes this class will be a member of those classes.
 // It will eventually host compositing, input and emulation. See design doc:
 // https://docs.google.com/document/d/10uBnSWBaitGsaROOYO155Wb83rjOPtrgrGTrQ_pcssY/edit?ts=5e3b26f7
-class PLATFORM_EXPORT WidgetBase {
+class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget {
  public:
-  explicit WidgetBase(WidgetBaseClient* client);
-  virtual ~WidgetBase();
+  WidgetBase(
+      WidgetBaseClient* client,
+      CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>
+          widget_host,
+      CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget);
+  ~WidgetBase() override;
 
   // Set the current compositor hosts.
   void SetCompositorHosts(cc::LayerTreeHost*, cc::AnimationHost*);
@@ -41,6 +49,8 @@ class PLATFORM_EXPORT WidgetBase {
   cc::LayerTreeHost* layer_tree_host_ = nullptr;
   cc::AnimationHost* animation_host_ = nullptr;
   WidgetBaseClient* client_;
+  mojo::AssociatedRemote<mojom::blink::WidgetHost> widget_host_;
+  mojo::AssociatedReceiver<mojom::blink::Widget> receiver_;
 };
 
 }  // namespace blink

@@ -12,8 +12,6 @@ import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.net.Uri;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.Process;
 import android.provider.Browser;
 import android.util.SparseArray;
@@ -23,6 +21,7 @@ import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
+import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -43,15 +42,12 @@ public class QrCodeScanMediator implements Camera.PreviewCallback {
     /** Interface used for notifying in the event of navigation to a URL. */
     public interface NavigationObserver { void onNavigation(); }
 
-    /** Interface for creating and navigation to a new tab for a given URL. */
-    public interface TabCreator { void createNewTab(String url); }
-
     private final Context mContext;
     private final PropertyModel mPropertyModel;
-    private final BarcodeDetector mDetector;
     private final NavigationObserver mNavigationObserver;
-    private final Handler mMainThreadHandler;
     private final AndroidPermissionDelegate mPermissionDelegate;
+
+    private BarcodeDetector mDetector;
 
     /**
      * The QrCodeScanMediator constructor.
@@ -66,9 +62,11 @@ public class QrCodeScanMediator implements Camera.PreviewCallback {
         mPermissionDelegate = new ActivityAndroidPermissionDelegate(
                 new WeakReference<Activity>((Activity) mContext));
         updatePermissionSettings();
-        mDetector = new BarcodeDetector.Builder(context).build();
         mNavigationObserver = observer;
-        mMainThreadHandler = new Handler(Looper.getMainLooper());
+
+        // Set detector to null until it gets initialized asynchronously.
+        mDetector = null;
+        initBarcodeDetectorAsync();
     }
 
     /** Returns whether the user has granted camera permissions. */
@@ -142,6 +140,10 @@ public class QrCodeScanMediator implements Camera.PreviewCallback {
      */
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
+        if (mDetector == null) {
+            return;
+        }
+
         ByteBuffer buffer = ByteBuffer.allocate(data.length);
         buffer.put(data);
         Frame frame =
@@ -164,11 +166,8 @@ public class QrCodeScanMediator implements Camera.PreviewCallback {
             return;
         }
 
-        /** Tab creation should happen on the main thread. */
-        mMainThreadHandler.post(() -> {
-            openUrl(firstCode.rawValue);
-            mNavigationObserver.onNavigation();
-        });
+        openUrl(firstCode.rawValue);
+        mNavigationObserver.onNavigation();
     }
 
     private void openUrl(String url) {
@@ -182,5 +181,19 @@ public class QrCodeScanMediator implements Camera.PreviewCallback {
                         .putExtra(ShortcutHelper.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
         IntentHandler.addTrustedIntentExtras(intent);
         mContext.startActivity(intent);
+    }
+
+    private void initBarcodeDetectorAsync() {
+        new AsyncTask<BarcodeDetector>() {
+            @Override
+            protected BarcodeDetector doInBackground() {
+                return new BarcodeDetector.Builder(mContext).build();
+            }
+
+            @Override
+            protected void onPostExecute(BarcodeDetector detector) {
+                mDetector = detector;
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 }

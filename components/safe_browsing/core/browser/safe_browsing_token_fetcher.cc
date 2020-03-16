@@ -21,8 +21,7 @@ namespace safe_browsing {
 
 namespace {
 
-// TODO(crbug.com/1041912): Finalize the API scope.
-const char kAPIScope[] = "";
+const char kAPIScope[] = "https://www.googleapis.com/auth/chrome-safe-browsing";
 
 const int kTimeoutDelaySeconds = 5 * 60;
 

@@ -85,10 +85,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText([pageString stringByAppendingString:@"\n"])];
   [ChromeEarlGrey waitForPageToFinishLoading];
-  GREYAssertTrue(visitCounter == 2 || visitCounter == 1,
-                 @"The page should have been loaded once (if already "
-                 @"prerendered) or twice, but was loaded %d times",
-                 visitCounter);
   static int visitCountBeforePrerender = visitCounter;
   [[self class] closeAllTabs];
   [ChromeEarlGrey openNewTab];

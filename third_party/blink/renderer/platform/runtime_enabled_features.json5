@@ -94,11 +94,6 @@
       valid_type: "bool",
     },
 
-    // Set to true to have customised {feature}Enabled() method implementation.
-    custom: {
-      valid_type: "bool",
-    },
-
     // Feature policy IDL extended attribute (see crrev.com/2247923004).
     feature_policy: {
     },

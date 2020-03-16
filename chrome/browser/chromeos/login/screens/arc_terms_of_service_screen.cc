@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/profiles/profile.h"
@@ -81,6 +82,8 @@ void ArcTermsOfServiceScreen::OnSkip() {
 }
 
 void ArcTermsOfServiceScreen::OnAccept(bool review_arc_settings) {
+  base::UmaHistogramBoolean("OOBE.ArcTermsOfServiceScreen.ReviewFollowingSetup",
+                            review_arc_settings);
   if (review_arc_settings) {
     Profile* const profile = ProfileManager::GetActiveUserProfile();
     CHECK(profile);

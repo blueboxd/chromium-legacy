@@ -15,8 +15,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "components/paint_preview/browser/compositor_utils.h"
 #include "components/paint_preview/browser/paint_preview_base_service.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
@@ -28,17 +30,49 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace paint_preview {
+
 namespace {
 
+std::pair<base::UnguessableToken, std::unique_ptr<HitTester>> BuildHitTester(
+    const PaintPreviewFrameProto& proto) {
+  std::pair<base::UnguessableToken, std::unique_ptr<HitTester>> out(
+      base::UnguessableToken::Deserialize(proto.embedding_token_high(),
+                                          proto.embedding_token_low()),
+      std::make_unique<HitTester>());
+  out.second->Build(proto);
+  return out;
+}
+
+base::flat_map<base::UnguessableToken, std::unique_ptr<HitTester>>
+BuildHitTesters(const PaintPreviewProto& proto) {
+  std::vector<std::pair<base::UnguessableToken, std::unique_ptr<HitTester>>>
+      hit_testers;
+  hit_testers.reserve(proto.subframes_size() + 1);
+  hit_testers.push_back(BuildHitTester(proto.root_frame()));
+  for (const auto& frame_proto : proto.subframes())
+    hit_testers.push_back(BuildHitTester(frame_proto));
+
+  return base::flat_map<base::UnguessableToken, std::unique_ptr<HitTester>>(
+      std::move(hit_testers));
+}
+
+base::FilePath ToFilePath(base::StringPiece path_str) {
+#if defined(OS_WIN)
+  return base::FilePath(base::UTF8ToUTF16(path_str));
+#else
+  return base::FilePath(path_str);
+#endif
+}
+
 base::flat_map<base::UnguessableToken, base::File> CreateFileMapFromProto(
-    const paint_preview::PaintPreviewProto& proto) {
+    const PaintPreviewProto& proto) {
   std::vector<std::pair<base::UnguessableToken, base::File>> entries;
   entries.reserve(1 + proto.subframes_size());
   base::UnguessableToken root_frame_id = base::UnguessableToken::Deserialize(
       proto.root_frame().embedding_token_high(),
       proto.root_frame().embedding_token_low());
   base::File root_frame_skp_file =
-      base::File(base::FilePath(proto.root_frame().file_path()),
+      base::File(ToFilePath(proto.root_frame().file_path()),
                  base::File::FLAG_OPEN | base::File::FLAG_READ);
 
   // We can't composite anything with an invalid SKP file path for the root
@@ -49,7 +83,7 @@ base::flat_map<base::UnguessableToken, base::File> CreateFileMapFromProto(
   entries.emplace_back(std::move(root_frame_id),
                        std::move(root_frame_skp_file));
   for (const auto& subframe : proto.subframes()) {
-    base::File frame_skp_file(base::FilePath(subframe.file_path()),
+    base::File frame_skp_file(ToFilePath(subframe.file_path()),
                               base::File::FLAG_OPEN | base::File::FLAG_READ);
 
     // Skip this frame if it doesn't have a valid SKP file path.
@@ -95,12 +129,20 @@ PrepareCompositeRequest(const paint_preview::PaintPreviewProto& proto) {
   begin_composite_request->proto = std::move(read_only_proto.value());
   return begin_composite_request;
 }
+
 }  // namespace
 
 PlayerCompositorDelegate::PlayerCompositorDelegate(
     PaintPreviewBaseService* paint_preview_service,
-    const DirectoryKey& key)
+    const DirectoryKey& key,
+    bool skip_service_launch)
     : paint_preview_service_(paint_preview_service) {
+  if (skip_service_launch) {
+    paint_preview_service_->GetCapturedPaintPreviewProto(
+        key, base::BindOnce(&PlayerCompositorDelegate::OnProtoAvailable,
+                            weak_factory_.GetWeakPtr()));
+    return;
+  }
   paint_preview_compositor_service_ =
       paint_preview_service_->StartCompositorService(base::BindOnce(
           &PlayerCompositorDelegate::OnCompositorServiceDisconnected,
@@ -132,6 +174,11 @@ void PlayerCompositorDelegate::OnProtoAvailable(
     // TODO(crbug.com/1021590): Handle initialization errors.
     return;
   }
+  hit_testers_ = BuildHitTesters(*proto);
+
+  if (!paint_preview_compositor_client_)
+    return;
+
   paint_preview_compositor_client_->SetRootFrameUrl(
       GURL(proto->metadata().url()));
 
@@ -141,7 +188,6 @@ void PlayerCompositorDelegate::OnProtoAvailable(
       base::BindOnce(&PrepareCompositeRequest, *proto),
       base::BindOnce(&PlayerCompositorDelegate::SendCompositeRequest,
                      weak_factory_.GetWeakPtr()));
-  // TODO(crbug.com/1019883): Initialize the HitTester class.
 }
 
 void PlayerCompositorDelegate::SendCompositeRequest(
@@ -176,10 +222,14 @@ void PlayerCompositorDelegate::RequestBitmap(
       frame_guid, clip_rect, scale_factor, std::move(callback));
 }
 
-void PlayerCompositorDelegate::OnClick(const base::UnguessableToken& frame_guid,
-                                       int x,
-                                       int y) {
-  // TODO(crbug.com/1019883): Handle url clicks with the HitTester class.
+std::vector<const GURL*> PlayerCompositorDelegate::OnClick(
+    const base::UnguessableToken& frame_guid,
+    const gfx::Rect& rect) {
+  std::vector<const GURL*> urls;
+  auto it = hit_testers_.find(frame_guid);
+  if (it != hit_testers_.end())
+    it->second->HitTest(rect, &urls);
+  return urls;
 }
 
 PlayerCompositorDelegate::~PlayerCompositorDelegate() = default;

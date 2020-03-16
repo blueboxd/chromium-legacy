@@ -121,7 +121,15 @@ class WPTGitHub(object):
             'head': remote_branch_name,
             'base': 'master',
         }
-        response = self.request(path, method='POST', body=body)
+        try:
+            response = self.request(path, method='POST', body=body)
+        except urllib2.HTTPError as e:
+            _log.error(e.reason)
+            if e.code == 422:
+                _log.error('Please check if branch already exists; If so, '
+                           'please remove the PR description and '
+                           'delete the branch')
+            raise GitHubError(201, e.code, 'create PR branch %s' % remote_branch_name)
 
         if response.status_code != 201:
             raise GitHubError(201, response.status_code, 'create PR')

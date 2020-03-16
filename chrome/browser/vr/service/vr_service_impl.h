@@ -18,7 +18,7 @@
 #include "chrome/browser/vr/service/xr_consent_prompt_level.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "device/vr/public/mojom/vr_service.mojom.h"
+#include "device/vr/public/mojom/vr_service.mojom-forward.h"
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"

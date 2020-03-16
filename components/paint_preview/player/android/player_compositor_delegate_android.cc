@@ -185,10 +185,19 @@ void PlayerCompositorDelegateAndroid::OnClick(
     const JavaParamRef<jobject>& j_frame_guid,
     jint j_x,
     jint j_y) {
-  PlayerCompositorDelegate::OnClick(
+  auto res = PlayerCompositorDelegate::OnClick(
       base::android::UnguessableTokenAndroid::FromJavaUnguessableToken(
           env, j_frame_guid),
-      j_x, j_y);
+      gfx::Rect(static_cast<int>(j_x), static_cast<int>(j_y), 1U, 1U));
+  if (res.empty())
+    return;
+  if (res.size() == 1U) {
+    Java_PlayerCompositorDelegateImpl_onLinkClicked(
+        env, java_ref_,
+        base::android::ConvertUTF8ToJavaString(env, res[0]->spec()));
+    return;
+  }
+  // TODO(crbug/1061435): Resolve cases where there are multiple links.
 }
 
 void PlayerCompositorDelegateAndroid::Destroy(JNIEnv* env) {

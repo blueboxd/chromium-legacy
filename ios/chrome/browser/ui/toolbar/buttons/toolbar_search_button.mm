@@ -50,13 +50,8 @@ const CGFloat kSpotlightHeight = 36.0f;
   AddSameCenterConstraints(self, spotlightView);
   [spotlightView.heightAnchor constraintEqualToConstant:kSpotlightHeight]
       .active = YES;
-  if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {
-    [spotlightView.widthAnchor constraintEqualToConstant:kSpotlightHeight]
-        .active = YES;
-  } else {
-    [self.widthAnchor constraintEqualToAnchor:spotlightView.widthAnchor]
-        .active = YES;
-  }
+  [spotlightView.widthAnchor constraintEqualToConstant:kSpotlightHeight]
+      .active = YES;
   self.spotlightView = spotlightView;
 }
 

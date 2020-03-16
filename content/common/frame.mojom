@@ -37,6 +37,7 @@ import "third_party/blink/public/mojom/frame/navigation_initiator.mojom";
 import "third_party/blink/public/mojom/loader/resource_load_info.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
+import "third_party/blink/public/mojom/page/widget.mojom";
 import "third_party/blink/public/mojom/portal/portal.mojom";
 import "third_party/blink/public/mojom/referrer.mojom";
 import "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom";
@@ -330,6 +331,12 @@ struct CreateNewWindowReply {
   // Initial properties for the main frame RenderWidget.
   VisualProperties visual_properties;
 
+  // The communication interfaces for the WebFrameWidget in blink.
+  pending_associated_remote<blink.mojom.FrameWidgetHost> frame_widget_host;
+  pending_associated_receiver<blink.mojom.FrameWidget> frame_widget;
+  pending_associated_remote<blink.mojom.WidgetHost> widget_host;
+  pending_associated_receiver<blink.mojom.Widget> widget;
+
   DocumentScopedInterfaceBundle main_frame_interface_bundle;
 
   // Duplicated from CreateNewWindowParams because legacy code.
@@ -388,11 +395,15 @@ interface FrameHost {
 
   // Similar to CreateNewWindow, except used for sub-widgets, like <select>
   // dropdowns.
-  [Sync] CreateNewWidget(pending_remote<Widget> widget)
+  [Sync] CreateNewWidget(pending_remote<Widget> widget,
+         pending_associated_receiver<blink.mojom.WidgetHost> blink_widget_host,
+         pending_associated_remote<blink.mojom.Widget> blink_widget)
       => (int32 routing_id);
 
   // Similar to CreateNewWidget except the widget is a full screen window.
-  [Sync] CreateNewFullscreenWidget(pending_remote<Widget> widget)
+  [Sync] CreateNewFullscreenWidget(pending_remote<Widget> widget,
+         pending_associated_receiver<blink.mojom.WidgetHost> blink_widget_host,
+         pending_associated_remote<blink.mojom.Widget> blink_widget)
       => (int32 routing_id);
 
   // Creates and returns a KeepAliveHandle.

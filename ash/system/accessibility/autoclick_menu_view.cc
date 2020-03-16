@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/system/accessibility/floating_menu_button.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "base/metrics/histogram_macros.h"
@@ -31,106 +32,8 @@ namespace {
 const int kPanelPositionButtonSize = 36;
 const int kPanelPositionButtonPadding = 14;
 const int kSeparatorHeight = 16;
-const SkColor kAutoclickMenuButtonIconColorActive = SkColorSetRGB(32, 33, 36);
 
 }  // namespace
-
-// A button used in the Automatic clicks on-screen menu. The button is
-// togglable.
-class AutoclickMenuButton : public TopShortcutButton {
- public:
-  AutoclickMenuButton(views::ButtonListener* listener,
-                      const gfx::VectorIcon& icon,
-                      int accessible_name_id,
-                      int size = kTrayItemSize,
-                      bool draw_highlight = true)
-      : TopShortcutButton(listener, accessible_name_id),
-        icon_(&icon),
-        size_(size),
-        draw_highlight_(draw_highlight) {
-    EnableCanvasFlippingForRTLUI(false);
-    SetPreferredSize(gfx::Size(size_, size_));
-    UpdateImage();
-  }
-
-  ~AutoclickMenuButton() override = default;
-
-  // views::Button:
-  const char* GetClassName() const override { return "AutoclickMenuButton"; }
-
-  // Set the vector icon shown in a circle.
-  void SetVectorIcon(const gfx::VectorIcon& icon) {
-    icon_ = &icon;
-    UpdateImage();
-  }
-
-  // Change the toggle state.
-  void SetToggled(bool toggled) {
-    toggled_ = toggled;
-    UpdateImage();
-    SchedulePaint();
-  }
-
-  bool IsToggled() { return toggled_; }
-
-  // TopShortcutButton:
-  void PaintButtonContents(gfx::Canvas* canvas) override {
-    if (draw_highlight_) {
-      gfx::Rect rect(GetContentsBounds());
-      cc::PaintFlags flags;
-      flags.setAntiAlias(true);
-      flags.setColor(AshColorProvider::Get()->GetControlsLayerColor(
-          toggled_
-              ? AshColorProvider::ControlsLayerType::kActiveControlBackground
-              : AshColorProvider::ControlsLayerType::kInactiveControlBackground,
-          AshColorProvider::AshColorMode::kDark));
-      flags.setStyle(cc::PaintFlags::kFill_Style);
-      canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), size_ / 2, flags);
-    }
-
-    views::ImageButton::PaintButtonContents(canvas);
-  }
-
-  gfx::Size CalculatePreferredSize() const override {
-    return gfx::Size(size_, size_);
-  }
-
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    if (!GetEnabled())
-      return;
-    TopShortcutButton::GetAccessibleNodeData(node_data);
-    node_data->role = ax::mojom::Role::kToggleButton;
-    node_data->SetCheckedState(toggled_ ? ax::mojom::CheckedState::kTrue
-                                        : ax::mojom::CheckedState::kFalse);
-  }
-
-  void SetId(AutoclickMenuView::ButtonId id) {
-    views::View::SetID(static_cast<int>(id));
-  }
-
- private:
-  void UpdateImage() {
-    const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kIconPrimary,
-        AshColorProvider::AshColorMode::kDark);
-    SetImage(views::Button::STATE_NORMAL,
-             gfx::CreateVectorIcon(
-                 *icon_,
-                 toggled_ ? kAutoclickMenuButtonIconColorActive : icon_color));
-    SetImage(views::Button::STATE_DISABLED,
-             gfx::CreateVectorIcon(
-                 *icon_,
-                 toggled_ ? kAutoclickMenuButtonIconColorActive : icon_color));
-  }
-
-  const gfx::VectorIcon* icon_;
-  // True if the button is currently toggled.
-  bool toggled_ = false;
-  int size_;
-  const bool draw_highlight_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutoclickMenuButton);
-};
 
 // ------ AutoclickMenuBubbleView  ------ //
 
@@ -153,43 +56,49 @@ const char* AutoclickMenuBubbleView::GetClassName() const {
 AutoclickMenuView::AutoclickMenuView(AutoclickEventType type,
                                      AutoclickMenuPosition position)
     : left_click_button_(
-          new AutoclickMenuButton(this,
-                                  kAutoclickLeftClickIcon,
-                                  IDS_ASH_AUTOCLICK_OPTION_LEFT_CLICK)),
+          new FloatingMenuButton(this,
+                                 kAutoclickLeftClickIcon,
+                                 IDS_ASH_AUTOCLICK_OPTION_LEFT_CLICK,
+                                 false /* flip_for_rtl */)),
       right_click_button_(
-          new AutoclickMenuButton(this,
-                                  kAutoclickRightClickIcon,
-                                  IDS_ASH_AUTOCLICK_OPTION_RIGHT_CLICK)),
+          new FloatingMenuButton(this,
+                                 kAutoclickRightClickIcon,
+                                 IDS_ASH_AUTOCLICK_OPTION_RIGHT_CLICK,
+                                 false /* flip_for_rtl */)),
       double_click_button_(
-          new AutoclickMenuButton(this,
-                                  kAutoclickDoubleClickIcon,
-                                  IDS_ASH_AUTOCLICK_OPTION_DOUBLE_CLICK)),
+          new FloatingMenuButton(this,
+                                 kAutoclickDoubleClickIcon,
+                                 IDS_ASH_AUTOCLICK_OPTION_DOUBLE_CLICK,
+                                 false /* flip_for_rtl */)),
       drag_button_(
-          new AutoclickMenuButton(this,
-                                  kAutoclickDragIcon,
-                                  IDS_ASH_AUTOCLICK_OPTION_DRAG_AND_DROP)),
-      scroll_button_(new AutoclickMenuButton(this,
-                                             kAutoclickScrollIcon,
-                                             IDS_ASH_AUTOCLICK_OPTION_SCROLL)),
-      pause_button_(
-          new AutoclickMenuButton(this,
-                                  kAutoclickPauseIcon,
-                                  IDS_ASH_AUTOCLICK_OPTION_NO_ACTION)),
+          new FloatingMenuButton(this,
+                                 kAutoclickDragIcon,
+                                 IDS_ASH_AUTOCLICK_OPTION_DRAG_AND_DROP,
+                                 false /* flip_for_rtl */)),
+      scroll_button_(new FloatingMenuButton(this,
+                                            kAutoclickScrollIcon,
+                                            IDS_ASH_AUTOCLICK_OPTION_SCROLL,
+                                            false /* flip_for_rtl */)),
+      pause_button_(new FloatingMenuButton(this,
+                                           kAutoclickPauseIcon,
+                                           IDS_ASH_AUTOCLICK_OPTION_NO_ACTION,
+                                           false /* flip_for_rtl */)),
       position_button_(
-          new AutoclickMenuButton(this,
-                                  kAutoclickPositionBottomLeftIcon,
-                                  IDS_ASH_AUTOCLICK_OPTION_CHANGE_POSITION,
-                                  kPanelPositionButtonSize,
-                                  false /* no highlight */)) {
+          new FloatingMenuButton(this,
+                                 kAutoclickPositionBottomLeftIcon,
+                                 IDS_ASH_AUTOCLICK_OPTION_CHANGE_POSITION,
+                                 false /* flip_for_rtl */,
+                                 kPanelPositionButtonSize,
+                                 false /* no highlight */)) {
   // Set view IDs for testing.
-  left_click_button_->SetId(ButtonId::kLeftClick);
-  right_click_button_->SetId(ButtonId::kRightClick);
-  double_click_button_->SetId(ButtonId::kDoubleClick);
-  drag_button_->SetId(ButtonId::kDragAndDrop);
-  pause_button_->SetId(ButtonId::kPause);
-  position_button_->SetId(ButtonId::kPosition);
+  left_click_button_->SetId(static_cast<int>(ButtonId::kLeftClick));
+  right_click_button_->SetId(static_cast<int>(ButtonId::kRightClick));
+  double_click_button_->SetId(static_cast<int>(ButtonId::kDoubleClick));
+  drag_button_->SetId(static_cast<int>(ButtonId::kDragAndDrop));
+  pause_button_->SetId(static_cast<int>(ButtonId::kPause));
+  position_button_->SetId(static_cast<int>(ButtonId::kPosition));
   if (scroll_button_)
-    scroll_button_->SetId(ButtonId::kScroll);
+    scroll_button_->SetId(static_cast<int>(ButtonId::kScroll));
 
   std::unique_ptr<views::BoxLayout> layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), 0);

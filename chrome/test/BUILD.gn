@@ -3991,6 +3991,9 @@ test("unit_tests") {
       # Urgent discarding from performance_manager isn't supported on Android.
       "../browser/performance_manager/graph/policies/urgent_page_discarding_policy_unittest.cc",
 
+      # Background tab loading from performance_manager isn't supported on Android.
+      "../browser/performance_manager/graph/policies/background_tab_loading_policy_unittest.cc",
+
       # Android does not use the Message Center notification system.
       "../browser/notifications/notification_ui_manager_unittest.cc",
       "../browser/platform_util_unittest.cc",

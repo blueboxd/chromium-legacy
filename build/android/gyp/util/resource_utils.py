@@ -340,26 +340,26 @@ def GetRTxtStringResourceNames(r_txt_path):
   })
 
 
-def GenerateStringResourcesWhitelist(module_r_txt_path, whitelist_r_txt_path):
-  """Generate a whitelist of string resource IDs.
+def GenerateStringResourcesAllowList(module_r_txt_path, allowlist_r_txt_path):
+  """Generate a allowlist of string resource IDs.
 
   Args:
     module_r_txt_path: Input base module R.txt path.
-    whitelist_r_txt_path: Input whitelist R.txt path.
+    allowlist_r_txt_path: Input allowlist R.txt path.
   Returns:
     A dictionary mapping numerical resource IDs to the corresponding
     string resource names. The ID values are taken from string resources in
-    |module_r_txt_path| that are also listed by name in |whitelist_r_txt_path|.
+    |module_r_txt_path| that are also listed by name in |allowlist_r_txt_path|.
   """
-  whitelisted_names = {
+  allowlisted_names = {
       entry.name
-      for entry in _ParseTextSymbolsFile(whitelist_r_txt_path)
+      for entry in _ParseTextSymbolsFile(allowlist_r_txt_path)
       if entry.resource_type == 'string'
   }
   return {
       int(entry.value, 0): entry.name
       for entry in _ParseTextSymbolsFile(module_r_txt_path)
-      if entry.resource_type == 'string' and entry.name in whitelisted_names
+      if entry.resource_type == 'string' and entry.name in allowlisted_names
   }
 
 
@@ -376,21 +376,21 @@ class RJavaBuildOptions:
   """
   def __init__(self):
     self.has_constant_ids = True
-    self.resources_whitelist = None
+    self.resources_allowlist = None
     self.has_on_resources_loaded = False
     self.export_const_styleable = False
 
   def ExportNoResources(self):
     """Make all resource IDs final, and don't generate a method."""
     self.has_constant_ids = True
-    self.resources_whitelist = None
+    self.resources_allowlist = None
     self.has_on_resources_loaded = False
     self.export_const_styleable = False
 
   def ExportAllResources(self):
     """Make all resource IDs non-final in the R.java file."""
     self.has_constant_ids = False
-    self.resources_whitelist = None
+    self.resources_allowlist = None
 
   def ExportSomeResources(self, r_txt_file_path):
     """Only select specific resource IDs to be non-final.
@@ -401,7 +401,7 @@ class RJavaBuildOptions:
         will be final.
     """
     self.has_constant_ids = True
-    self.resources_whitelist = _GetRTxtResourceNames(r_txt_file_path)
+    self.resources_allowlist = _GetRTxtResourceNames(r_txt_file_path)
 
   def ExportAllStyleables(self):
     """Make all styleable constants non-final, even non-resources ones.
@@ -436,12 +436,12 @@ class RJavaBuildOptions:
     elif not self.has_constant_ids:
       # Every resource is non-final
       return False
-    elif not self.resources_whitelist:
-      # No whitelist means all IDs are non-final.
+    elif not self.resources_allowlist:
+      # No allowlist means all IDs are non-final.
       return True
     else:
       # Otherwise, only those in the
-      return entry.name not in self.resources_whitelist
+      return entry.name not in self.resources_allowlist
 
 
 def CreateRJavaFiles(srcjar_dir,

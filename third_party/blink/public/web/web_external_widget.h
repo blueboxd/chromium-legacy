@@ -6,6 +6,8 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_EXTERNAL_WIDGET_H_
 
 #include "cc/layers/layer.h"
+#include "third_party/blink/public/mojom/page/widget.mojom-shared.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/web/web_external_widget_client.h"
 #include "third_party/blink/public/web/web_widget.h"
 
@@ -23,7 +25,10 @@ class WebExternalWidget : public WebWidget {
   // |debug_url| provides the return value for WebWidget::GetURLForDebugTrace.
   BLINK_EXPORT static std::unique_ptr<WebExternalWidget> Create(
       WebExternalWidgetClient* client,
-      const WebURL& debug_url);
+      const WebURL& debug_url,
+      CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>
+          widget_host,
+      CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget);
 
   virtual ~WebExternalWidget() = default;
 

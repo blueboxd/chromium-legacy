@@ -215,7 +215,19 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
       DetectedValue::USER_PROVIDED_EXPIRATION_DATE) {
     upload_decision_metrics_ |=
         AutofillMetrics::USER_REQUESTED_TO_PROVIDE_EXPIRATION_DATE;
+#if defined(OS_IOS)
+    // iOS should always provide a valid expiration date when attempting to
+    // upload a Saved Card. Calling LogSaveCardRequestExpirationDateReasonMetric
+    // would trigger a DCHECK.
+    if (!(base::FeatureList::IsEnabled(
+              features::kAutofillSaveCardInfobarEditSupport) &&
+          base::FeatureList::IsEnabled(kIOSInfobarUIReboot))) {
+      // Remove once both flags are deleted.
+      LogSaveCardRequestExpirationDateReasonMetric();
+    }
+#else
     LogSaveCardRequestExpirationDateReasonMetric();
+#endif
     should_request_expiration_date_from_user_ = true;
   }
 

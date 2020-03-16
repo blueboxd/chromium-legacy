@@ -48,18 +48,6 @@ void GetNewTab(Browser* browser, content::WebContents** web_contents) {
 }
 #endif  // !defined(OS_CHROMEOS)
 
-class PasswordSyncActiveChecker : public SingleClientStatusChangeChecker {
- public:
-  explicit PasswordSyncActiveChecker(syncer::ProfileSyncService* service)
-      : SingleClientStatusChangeChecker(service) {}
-  ~PasswordSyncActiveChecker() override = default;
-
-  // SingleClientStatusChangeChecker.
-  bool IsExitConditionSatisfied(std::ostream* os) override {
-    return service()->GetActiveDataTypes().Has(syncer::PASSWORDS);
-  }
-};
-
 // This test fixture is similar to SingleClientPasswordsSyncTest, but it also
 // sets up all the necessary test hooks etc for PasswordManager code (like
 // PasswordManagerBrowserTestBase), to allow for integration tests covering

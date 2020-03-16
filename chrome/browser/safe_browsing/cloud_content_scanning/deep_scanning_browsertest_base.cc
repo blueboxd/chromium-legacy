@@ -83,6 +83,9 @@ void DeepScanningBrowserTestBase::TearDownOnMainThread() {
   SetWaitPolicy(DelayDeliveryUntilVerdictValues::DELAY_NONE);
   SetAllowPasswordProtectedFilesPolicy(
       AllowPasswordProtectedFilesValues::ALLOW_UPLOADS_AND_DOWNLOADS);
+  SetBlockUnsupportedFileTypesPolicy(
+      BlockUnsupportedFiletypesValues::BLOCK_UNSUPPORTED_FILETYPES_NONE);
+  SetUnsafeEventsReportingPolicy(false);
 }
 
 void DeepScanningBrowserTestBase::SetDlpPolicy(
@@ -113,6 +116,11 @@ void DeepScanningBrowserTestBase::SetBlockUnsupportedFileTypesPolicy(
     BlockUnsupportedFiletypesValues state) {
   g_browser_process->local_state()->SetInteger(
       prefs::kBlockUnsupportedFiletypes, state);
+}
+
+void DeepScanningBrowserTestBase::SetUnsafeEventsReportingPolicy(bool report) {
+  g_browser_process->local_state()->SetBoolean(
+      prefs::kUnsafeEventsReportingEnabled, report);
 }
 
 void DeepScanningBrowserTestBase::SetUpDelegate() {

@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_ADD_ACCOUNT_SIGNIN_ADD_ACCOUNT_SIGNIN_MEDIATOR_H_
 
 #import "components/signin/public/base/signin_metrics.h"
+#import "ios/chrome/browser/ui/authentication/signin/add_account_signin/add_account_signin_enums.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_enums.h"
 
 @class ChromeIdentity;
@@ -22,14 +23,15 @@ class IdentityManager;
 
 // Shows alert modal dialog and interrupts sign-in operation.
 // |error| is the error to be displayed.
-- (void)addAccountSigninMediatorFailedWith:(NSError*)error;
+- (void)addAccountSigninMediatorFailedWithError:(NSError*)error;
 
 // Completes the sign-in operation.
 // |signinResult| is the state of sign-in at add account flow completion.
 // |identity| is the identity of the added account.
-- (void)addAccountSigninMediatorFinishedWith:
+- (void)addAccountSigninMediatorFinishedWithSigninResult:
             (SigninCoordinatorResult)signinResult
-                                    identity:(ChromeIdentity*)identity;
+                                                identity:
+                                                    (ChromeIdentity*)identity;
 
 @end
 
@@ -48,12 +50,12 @@ class IdentityManager;
 @property(nonatomic, weak) id<AddAccountSigninMediatorDelegate> delegate;
 
 // Handles the sign-in operation.
-// |signinIntent| specifies the sign-in intent, either adding an account or
-// reauthentication. |accessPoint| is the view where the sign-in button was
-// displayed. |promoAction| is promo button used to trigger the sign-in.
-- (void)handleSigninIntent:(SigninIntent)signinIntent
-               accessPoint:(signin_metrics::AccessPoint)accessPoint
-               promoAction:(signin_metrics::PromoAction)promoAction;
+// |signinIntent| is the add account sign-in flow intent.
+// |accessPoint| is the view where the sign-in button was displayed.
+// |promoAction| is promo button used to trigger the sign-in.
+- (void)handleSigninWithIntent:(AddAccountSigninIntent)addAccountSigninIntent
+                   accessPoint:(signin_metrics::AccessPoint)accessPoint
+                   promoAction:(signin_metrics::PromoAction)promoAction;
 
 @end
 

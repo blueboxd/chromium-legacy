@@ -104,6 +104,12 @@ base::android::ScopedJavaLocalRef<jobject> PermissionsClient::GetJavaObject() {
 int PermissionsClient::MapToJavaDrawableId(int resource_id) {
   return 0;
 }
+#else
+std::unique_ptr<PermissionPrompt> PermissionsClient::CreatePrompt(
+    content::WebContents* web_contents,
+    PermissionPrompt::Delegate* delegate) {
+  return nullptr;
+}
 #endif
 
 }  // namespace permissions

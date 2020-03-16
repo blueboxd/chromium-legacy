@@ -6321,14 +6321,6 @@ crbug.com/963183 http/tests/devtools/jump-to-previous-editing-location.js [ Pass
 # Sheriff 2020-01-09
 crbug.com/1040270 http/tests/devtools/elements/styles-1/disable-property-workingcopy-update.js [ Pass Timeout ]
 
-# Popup and no-opener may crash WPTs: crrev.com/c/1984306
-crbug.com/1040059 external/wpt/html/cross-origin-opener-policy/iframe-popup-same-origin-to-unsafe-none.https.html [ Pass Crash ]
-crbug.com/1040059 external/wpt/html/cross-origin-opener-policy/iframe-popup-same-origin-to-same-origin.https.html [ Pass Crash ]
-crbug.com/1040059 external/wpt/html/cross-origin-opener-policy/iframe-popup-same-origin-allow-popups-to-same-origin.https.html [ Pass Crash ]
-crbug.com/1040059 external/wpt/html/cross-origin-opener-policy/iframe-popup-unsafe-none-to-same-origin.https.html [ Pass Crash ]
-crbug.com/1040059 external/wpt/html/cross-origin-opener-policy/iframe-popup-same-origin-allow-popups-to-same-origin-allow-popups.https.html [ Pass Crash ]
-crbug.com/1040059 external/wpt/html/cross-origin-opener-policy/popup-redirect-cache.https.html [ Pass Crash ]
-
 # COOP timeout failure.
 crbug.com/1046698 external/wpt/html/cross-origin-opener-policy/coep-blob-popup.https.html [ Timeout ]
 
@@ -6556,10 +6548,6 @@ crbug.com/944449 virtual/threaded/external/wpt/scroll-animations/animation-with-
 
 # Sheriff 2020-02-10
 crbug.com/1050306 [ Fuchsia ] virtual/gpu/fast/canvas/canvas-filter-frameless-document.html [ Crash Pass Timeout ]
-
-# Imperative Shadow DOM Slot API - WIP
-crbug.com/869308 external/wpt/shadow-dom/slots-imperative-slot-api.tentative.html [ Failure ]
-crbug.com/869308 virtual/web-components-v0-disabled/external/wpt/shadow-dom/slots-imperative-slot-api.tentative.html [ Failure ]
 
 # Swiftshader issue.
 crbug.com/1048149 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-non-integer-innerwidth.html [ Crash Timeout ]
@@ -7003,9 +6991,9 @@ crbug.com/1060175 [ Win ] wpt_internal/storage/estimate-usage-details-filesystem
 crbug.com/1060175 [ Win ] wpt_internal/virtual-scroller/large-child-comment.html [ Pass Failure ]
 crbug.com/1060175 [ Win ] wpt_internal/webxr/xr_view_projection_detached.https.html [ Pass Failure ]
 
-# Temporarily disable to land https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2090785
-crbug.com/1011811 third_party/blink/web_tests/http/tests/devtools/changes/changes-sidebar.js [ Pass Failure ]
-crbug.com/1011811 third_party/blink/web_tests/http/tests/devtools/search/search-in-static.js [ Pass Failure ]
+# Temporarily disable to land https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2097337
+crbug.com/1011811 http/tests/devtools/changes/changes-sidebar.js [ Pass Failure ]
+crbug.com/1011811 http/tests/devtools/search/search-in-static.js [ Pass Failure ]
 
 # Sheriff 2020-03-12
 crbug.com/1060175 [ Mac ] css3/calc/simple-calcs-prefixed.html [ Pass Timeout ]
@@ -7052,3 +7040,5 @@ crbug.com/1061131 [ Mac ] editing/selection/replaced-boundaries-1.html [ Pass Fa
 crbug.com/1061029 [ Win ] external/wpt/html/cross-origin-embedder-policy/cache-storage-reporting.https.html [ Pass Failure ]
 crbug.com/1061029 [ Mac ] external/wpt/html/cross-origin-embedder-policy/cache-storage-reporting.https.html [ Pass Failure ]
 crbug.com/1061180 http/tests/loading/onbeforeunload-detach.html [ Pass Failure ]
+crbug.com/1060175 [ Linux ] http/tests/security/promise-access-control-allow.html [ Pass Failure Timeout ]
+crbug.com/1060175 [ Win ] http/tests/security/promise-access-control-allow.html [ Pass Failure Timeout ]

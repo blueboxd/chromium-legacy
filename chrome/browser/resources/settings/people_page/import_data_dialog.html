@@ -65,10 +65,7 @@
               on-change="onBrowserProfileSelectionChange_">
             <template is="dom-repeat" items="[[browserProfiles_]]">
               <option value="[[item.index]]">
-                [[item.name]]
-                <span hidden$="[[!item.profileName]]">
-                  - [[item.profileName]]
-                </span>
+                [[getProfileDisplayName_(item.name, item.profileName)]]
               </option>
             </template>
           </select>

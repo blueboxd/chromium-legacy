@@ -34,6 +34,7 @@ void CookieControlsServiceBridge::UpdateServiceIfNecessary() {
 void CookieControlsServiceBridge::HandleCookieControlsToggleChanged(
     JNIEnv* env,
     jboolean checked) {
+  UpdateServiceIfNecessary();
   service_->HandleCookieControlsToggleChanged(checked);
 }
 

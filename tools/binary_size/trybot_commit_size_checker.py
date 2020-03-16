@@ -27,7 +27,7 @@ _FOR_TESTING_LOG = 'for_test_log'
 _DEX_SYMBOLS_LOG = 'dex_symbols_log'
 _SIZEDIFF_FILENAME = 'supersize_diff.sizediff'
 _HTML_REPORT_BASE_URL = (
-    'https://storage.googleapis.com/chrome-supersize/viewer.html?load_url=')
+    'https://chrome-supersize.firebaseapp.com/viewer.html?load_url=')
 _MAX_DEX_METHOD_COUNT_INCREASE = 50
 _MAX_NORMALIZED_INCREASE = 16 * 1024
 _MAX_PAK_INCREASE = 1024
@@ -207,7 +207,14 @@ def _GuessMappingFilename(results_dir, apk_name):
   return None
 
 
-def _GenerateBinarySizePluginDetails(metrics):
+def _CreateTigerViewerUrl(apk_name, sizediff_path):
+  ret = _HTML_REPORT_BASE_URL + sizediff_path
+  if 'Public' not in apk_name:
+    ret += '&authenticate=1'
+  return ret
+
+
+def _GenerateBinarySizePluginDetails(apk_name, metrics):
   binary_size_listings = []
   for delta, log_name in metrics:
     listing = {
@@ -230,7 +237,8 @@ def _GenerateBinarySizePluginDetails(metrics):
   binary_size_extras = [
       {
           'text': 'APK Breakdown',
-          'url': _HTML_REPORT_BASE_URL + '{{' + _SIZEDIFF_FILENAME + '}}',
+          'url': _CreateTigerViewerUrl(apk_name,
+                                       '{{' + _SIZEDIFF_FILENAME + '}}')
       },
   ]
 
@@ -351,6 +359,8 @@ https://chromium.googlesource.com/chromium/src/+/master/docs/speed/binary_size/a
     status_code = 0
 
   summary = '<br>' + checks_text.replace('\n', '<br>')
+  supersize_url = _CreateTigerViewerUrl(args.apk_name,
+                                        '{{' + _SIZEDIFF_FILENAME + '}}')
   links_json = [
       {
           'name': 'Binary Size Details',
@@ -378,13 +388,14 @@ https://chromium.googlesource.com/chromium/src/+/master/docs/speed/binary_size/a
       },
       {
           'name': 'SuperSize HTML Diff',
-          'url': _HTML_REPORT_BASE_URL + '{{' + _SIZEDIFF_FILENAME + '}}',
+          'url': supersize_url,
       },
   ]
   # Remove empty diffs (Mutable Constants, Dex Method, ...).
   links_json = [o for o in links_json if o.get('lines') or o.get('url')]
 
-  binary_size_plugin_json = _GenerateBinarySizePluginDetails(metrics)
+  binary_size_plugin_json = _GenerateBinarySizePluginDetails(
+      args.apk_name, metrics)
 
   results_json = {
       'status_code': status_code,

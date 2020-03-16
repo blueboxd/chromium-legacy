@@ -66,9 +66,9 @@ app_hooks_impl = "java/src/org/chromium/chrome/browser/AppHooksImpl.java"
 _chrome_version_java_file = "$target_gen_dir/templates/org/chromium/chrome/browser/ChromeVersionConstants.java"
 
 # Exclude it from JNI registration if VR is not enabled.
-chrome_jni_sources_blacklist = []
+chrome_jni_sources_exclusions = []
 if (!enable_vr) {
-  chrome_jni_sources_blacklist += [ "//chrome/android/features/vr/java/src/org/chromium/chrome/browser/vr/VrModuleProvider.java" ]
+  chrome_jni_sources_exclusions += [ "//chrome/android/features/vr/java/src/org/chromium/chrome/browser/vr/VrModuleProvider.java" ]
 }
 chrome_jni_registration_header =
     "$root_build_dir/gen/chrome/browser/android/chrome_jni_registration.h"
@@ -225,6 +225,7 @@ android_library("chrome_java") {
     ":chrome_public_android_manifest",
     ":chrome_public_apk_template_resources",
     ":chrome_version_constants",
+    ":critical_persisted_tab_data_proto_java",
     ":partner_location_descriptor_proto_java",
     ":update_proto_java",
     ":usage_stats_proto_java",
@@ -628,6 +629,11 @@ java_group("chrome_android_java_switches") {
 proto_java_library("partner_location_descriptor_proto_java") {
   proto_path = "java/src/org/chromium/chrome/browser/omnibox/geo"
   sources = [ "$proto_path/partner_location_descriptor.proto" ]
+}
+
+proto_java_library("critical_persisted_tab_data_proto_java") {
+  proto_path = "java/src/org/chromium/chrome/browser/tab/state/proto"
+  sources = [ "$proto_path/critical_persisted_tab_data.proto" ]
 }
 
 proto_java_library("update_proto_java") {
@@ -1245,7 +1251,7 @@ if (current_toolchain == default_toolchain) {
   generate_jni_registration("chrome_jni_registration") {
     targets = [ ":chrome_public_base_module_java" ]
     header_output = chrome_jni_registration_header
-    sources_blacklist = chrome_jni_sources_blacklist
+    sources_exclusions = chrome_jni_sources_exclusions
   }
 
   # The test apks do not use chromium linker, but using manual JNI registration
@@ -1254,7 +1260,7 @@ if (current_toolchain == default_toolchain) {
     testonly = true
     targets = [ ":chrome_public_base_module_java_for_test" ]
     header_output = chrome_jni_for_test_registration_header
-    sources_blacklist = chrome_jni_sources_blacklist
+    sources_exclusions = chrome_jni_sources_exclusions
   }
 
   # This template instantiates targets responsible for generating pak
@@ -1804,15 +1810,15 @@ template("monochrome_public_apk_or_module_tmpl") {
     android_manifest_dep = ":${target_name}__android_manifest"
 
     if (public_android_sdk && !_is_trichrome) {
-      # Resource whitelist used when generating R.java files and causes
+      # Resource allowlist used when generating R.java files and causes
       # only the webview subset of resources to be marked as non-final.
       # Strings in this target will also be kept in the base apk rather than placed in the language splits.
-      shared_resources_whitelist_target =
+      shared_resources_allowlist_target =
           "//android_webview:system_webview_no_weblayer_apk"
 
       # Ensure the localized resources for all locales are used, even when
-      # a smaller set is specified through aapt_locale_whitelist.
-      shared_resources_whitelist_locales = locales
+      # a smaller set is specified through aapt_locale_allowlist.
+      shared_resources_allowlist_locales = locales
     }
 
     deps = [ "//chrome/android:app_hooks_java" ]

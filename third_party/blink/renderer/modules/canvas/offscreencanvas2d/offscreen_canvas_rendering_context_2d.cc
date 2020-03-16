@@ -42,15 +42,15 @@ class OffscreenFontCache {
     }
   }
 
-  void AddFont(String name, blink::Font font) {
+  void AddFont(String name, blink::FontDescription font) {
     fonts_resolved_.insert(name, font);
     auto add_result = font_lru_list_.PrependOrMoveToFirst(name);
     DCHECK(add_result.is_new_entry);
     PruneLocalFontCache(kHardMaxCachedFonts);
   }
 
-  blink::Font* GetFont(String name) {
-    HashMap<String, blink::Font>::iterator i = fonts_resolved_.find(name);
+  blink::FontDescription* GetFont(String name) {
+    auto i = fonts_resolved_.find(name);
     if (i != fonts_resolved_.end()) {
       auto add_result = font_lru_list_.PrependOrMoveToFirst(name);
       DCHECK(!add_result.is_new_entry);
@@ -60,7 +60,7 @@ class OffscreenFontCache {
   }
 
  private:
-  HashMap<String, blink::Font> fonts_resolved_;
+  HashMap<String, blink::FontDescription> fonts_resolved_;
   LinkedHashSet<String> font_lru_list_;
 };
 
@@ -399,7 +399,7 @@ void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
   base::TimeTicks start_time = base::TimeTicks::Now();
   OffscreenFontCache& font_cache = GetOffscreenFontCache();
 
-  Font* cached_font = font_cache.GetFont(new_font);
+  FontDescription* cached_font = font_cache.GetFont(new_font);
   if (cached_font) {
     ModifiableState().SetFont(*cached_font, Host()->GetFontSelector());
   } else {
@@ -423,10 +423,8 @@ void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
     FontDescription desc =
         FontStyleResolver::ComputeFont(*style, Host()->GetFontSelector());
 
-    Font font = Font(desc);
-
-    font_cache.AddFont(new_font, font);
-    ModifiableState().SetFont(font, Host()->GetFontSelector());
+    font_cache.AddFont(new_font, desc);
+    ModifiableState().SetFont(desc, Host()->GetFontSelector());
   }
   ModifiableState().SetUnparsedFont(new_font);
   if (bernoulli_distribution_(random_generator_)) {

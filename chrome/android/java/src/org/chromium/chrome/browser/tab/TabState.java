@@ -299,7 +299,7 @@ public class TabState {
         }
     }
 
-    private static byte[] getContentStateByteArray(ByteBuffer buffer) {
+    public static byte[] getContentStateByteArray(ByteBuffer buffer) {
         byte[] contentsStateBytes = new byte[buffer.limit()];
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             buffer.rewind();
@@ -333,7 +333,7 @@ public class TabState {
     }
 
     /** Returns an object representing the state of the Tab's WebContents. */
-    private static WebContentsState getWebContentsState(TabImpl tab) {
+    public static WebContentsState getWebContentsState(TabImpl tab) {
         if (tab.getFrozenContentsState() != null) return tab.getFrozenContentsState();
 
         // Native call returns null when buffer allocation needed to serialize the state failed.
@@ -346,7 +346,7 @@ public class TabState {
     }
 
     /** Returns an ByteBuffer representing the state of the Tab's WebContents. */
-    private static ByteBuffer getWebContentsStateAsByteBuffer(TabImpl tab) {
+    protected static ByteBuffer getWebContentsStateAsByteBuffer(TabImpl tab) {
         LoadUrlParams pendingLoadParams = tab.getPendingLoadParams();
         if (pendingLoadParams == null) {
             return getContentsStateAsByteBuffer(tab);

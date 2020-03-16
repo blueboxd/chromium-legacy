@@ -14199,6 +14199,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileToolbarOmniboxShortcut">
+  <obsolete>Deprecated as of 3/2020</obsolete>
   <owner>gambard@chromium.org</owner>
   <description>
     User pressed the omnibox shortcut on the toolbar. iOS only.
@@ -14215,6 +14216,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileToolbarSearchButtonTapped">
+  <obsolete>Deprecate as of 3/2020</obsolete>
   <owner>stkhapugin@chromium.org</owner>
   <owner>rkgibson@chromium.org</owner>
   <description>
@@ -14250,6 +14252,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileToolbarShowSearchMenu">
+  <obsolete>Deprecated as of 3/2020</obsolete>
   <owner>gambard@chromium.org</owner>
   <description>
     User long pressed the 'Search' button to displayed the associated menu.

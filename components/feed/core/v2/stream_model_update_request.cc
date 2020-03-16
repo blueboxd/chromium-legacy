@@ -74,9 +74,8 @@ bool TranslateFeature(feedwire::Feature* feature,
 
     *(result->content.mutable_content_id()) =
         result->stream_structure.content_id();
-    // TODO(iwells): We need the frame bytes.
-    // result->content
-    //   .set_allocated_frame(wire_content->release_xsurface_frame());
+    result->content.set_allocated_frame(
+        wire_content->mutable_xsurface_content()->release_xsurface_output());
     result->has_content = true;
   }
   return true;
@@ -91,9 +90,8 @@ base::Optional<feedstore::StreamSharedState> TranslateSharedState(
 
   feedstore::StreamSharedState shared_state;
   *shared_state.mutable_content_id() = std::move(content_id);
-  // TODO(iwells): We need the render data bytes.
-  // shared_state.set_allocated_shared_state_data(
-  //   wire_shared_state->release_shared_state_data());
+  shared_state.set_allocated_shared_state_data(
+      wire_shared_state->mutable_xsurface_container()->release_render_data());
   return shared_state;
 }
 

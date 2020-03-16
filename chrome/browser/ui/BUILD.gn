@@ -1111,6 +1111,7 @@ jumbo_static_library("ui") {
       "pdf/chrome_pdf_web_contents_helper_client.h",
       "permission_bubble/chooser_bubble_delegate.cc",
       "permission_bubble/chooser_bubble_delegate.h",
+      "permission_bubble/permission_prompt.h",
       "sad_tab.cc",
       "sad_tab.h",
       "sad_tab_helper.cc",

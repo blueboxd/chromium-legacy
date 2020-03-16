@@ -1195,15 +1195,16 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
 
   // The new frame is initialized with |device_scale| as the device scale
   // factor.
-  mojom::CreateFrameWidgetParams widget_params;
-  widget_params.routing_id = kProxyRoutingId + 2;
-  widget_params.visual_properties = test_visual_properties;
+  mojom::CreateFrameWidgetParamsPtr widget_params =
+      mojom::CreateFrameWidgetParams::New();
+  widget_params->routing_id = kProxyRoutingId + 2;
+  widget_params->visual_properties = test_visual_properties;
   RenderFrameImpl::CreateFrame(
       routing_id, std::move(stub_interface_provider),
       std::move(stub_browser_interface_broker), kProxyRoutingId,
       MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
       base::UnguessableToken::Create(), replication_state,
-      compositor_deps_.get(), &widget_params,
+      compositor_deps_.get(), std::move(widget_params),
       blink::mojom::FrameOwnerProperties::New(),
       /*has_committed_real_load=*/true);
   TestRenderFrame* provisional_frame =

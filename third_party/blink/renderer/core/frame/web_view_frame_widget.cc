@@ -10,10 +10,23 @@
 
 namespace blink {
 
-WebViewFrameWidget::WebViewFrameWidget(util::PassKey<WebFrameWidget>,
-                                       WebWidgetClient& client,
-                                       WebViewImpl& web_view)
-    : WebFrameWidgetBase(client),
+WebViewFrameWidget::WebViewFrameWidget(
+    util::PassKey<WebFrameWidget>,
+    WebWidgetClient& client,
+    WebViewImpl& web_view,
+    CrossVariantMojoAssociatedRemote<mojom::blink::FrameWidgetHostInterfaceBase>
+        frame_widget_host,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::FrameWidgetInterfaceBase>
+        frame_widget,
+    CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
+        widget_host,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
+        widget)
+    : WebFrameWidgetBase(client,
+                         std::move(frame_widget_host),
+                         std::move(frame_widget),
+                         std::move(widget_host),
+                         std::move(widget)),
       web_view_(&web_view),
       self_keep_alive_(PERSISTENT_FROM_HERE, this) {
   web_view_->SetWebFrameWidget(this);

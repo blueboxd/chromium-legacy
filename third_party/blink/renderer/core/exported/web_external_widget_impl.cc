@@ -10,13 +10,25 @@ namespace blink {
 
 std::unique_ptr<WebExternalWidget> WebExternalWidget::Create(
     WebExternalWidgetClient* client,
-    const blink::WebURL& debug_url) {
-  return std::make_unique<WebExternalWidgetImpl>(client, debug_url);
+    const blink::WebURL& debug_url,
+    CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
+        widget_host,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
+        widget) {
+  return std::make_unique<WebExternalWidgetImpl>(
+      client, debug_url, std::move(widget_host), std::move(widget));
 }
 
-WebExternalWidgetImpl::WebExternalWidgetImpl(WebExternalWidgetClient* client,
-                                             const WebURL& debug_url)
-    : client_(client), debug_url_(debug_url) {
+WebExternalWidgetImpl::WebExternalWidgetImpl(
+    WebExternalWidgetClient* client,
+    const WebURL& debug_url,
+    CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
+        widget_host,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
+        widget)
+    : client_(client),
+      debug_url_(debug_url),
+      widget_base_(this, std::move(widget_host), std::move(widget)) {
   DCHECK(client_);
 }
 

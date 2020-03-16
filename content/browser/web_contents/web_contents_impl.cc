@@ -3011,24 +3011,32 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
 void WebContentsImpl::CreateNewWidget(
     int32_t render_process_id,
     int32_t widget_route_id,
-    mojo::PendingRemote<mojom::Widget> widget) {
+    mojo::PendingRemote<mojom::Widget> widget,
+    mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost> blink_widget_host,
+    mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget) {
   CreateNewWidget(render_process_id, widget_route_id, /*is_fullscreen=*/false,
-                  std::move(widget));
+                  std::move(widget), std::move(blink_widget_host),
+                  std::move(blink_widget));
 }
 
 void WebContentsImpl::CreateNewFullscreenWidget(
     int32_t render_process_id,
     int32_t widget_route_id,
-    mojo::PendingRemote<mojom::Widget> widget) {
+    mojo::PendingRemote<mojom::Widget> widget,
+    mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost> blink_widget_host,
+    mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget) {
   CreateNewWidget(render_process_id, widget_route_id, /*is_fullscreen=*/true,
-                  std::move(widget));
+                  std::move(widget), std::move(blink_widget_host),
+                  std::move(blink_widget));
 }
 
 void WebContentsImpl::CreateNewWidget(
     int32_t render_process_id,
     int32_t route_id,
     bool is_fullscreen,
-    mojo::PendingRemote<mojom::Widget> widget) {
+    mojo::PendingRemote<mojom::Widget> widget,
+    mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost> blink_widget_host,
+    mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget) {
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id);
   // A message to create a new widget can only come from an active process for
   // this WebContentsImpl instance. If any other process sends the request,
@@ -3041,6 +3049,9 @@ void WebContentsImpl::CreateNewWidget(
   RenderWidgetHostImpl* widget_host = new RenderWidgetHostImpl(
       this, process, route_id, std::move(widget), IsHidden(),
       std::make_unique<FrameTokenMessageQueue>());
+
+  widget_host->BindWidgetInterfaces(std::move(blink_widget_host),
+                                    std::move(blink_widget));
   RenderWidgetHostViewBase* widget_view =
       static_cast<RenderWidgetHostViewBase*>(
           view_->CreateViewForChildWidget(widget_host));

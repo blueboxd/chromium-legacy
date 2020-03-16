@@ -125,14 +125,15 @@ class AddAccountSigninMediatorTest : public PlatformTest {
 TEST_F(AddAccountSigninMediatorTest, AddAccountIntent) {
   // Verify that completion was called with success state.
   [[mediator_delegate_ expect]
-      addAccountSigninMediatorFinishedWith:SigninCoordinatorResultSuccess
-                                  identity:fake_identity_];
+      addAccountSigninMediatorFinishedWithSigninResult:
+          SigninCoordinatorResultSuccess
+                                              identity:fake_identity_];
 
   [mediator_
-      handleSigninIntent:SigninIntentAddAccount
-             accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
-             promoAction:signin_metrics::PromoAction::
-                             PROMO_ACTION_WITH_DEFAULT];
+      handleSigninWithIntent:AddAccountSigninIntentAddSecondaryAccount
+                 accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
+                 promoAction:signin_metrics::PromoAction::
+                                 PROMO_ACTION_WITH_DEFAULT];
   [identity_interaction_manager_ addAccountViewControllerDidTapSignIn];
 
   // Account added.
@@ -145,15 +146,17 @@ TEST_F(AddAccountSigninMediatorTest, AddAccountIntent) {
 TEST_F(AddAccountSigninMediatorTest, AddAccountIntentWithUserCancel) {
   // Verify that completion was called with canceled result state.
   [[mediator_delegate_ expect]
-      addAccountSigninMediatorFinishedWith:SigninCoordinatorResultCanceledByUser
-                                  identity:nil];
-  [[mediator_delegate_ reject] addAccountSigninMediatorFailedWith:[OCMArg any]];
+      addAccountSigninMediatorFinishedWithSigninResult:
+          SigninCoordinatorResultCanceledByUser
+                                              identity:nil];
+  [[mediator_delegate_ reject]
+      addAccountSigninMediatorFailedWithError:[OCMArg any]];
 
   [mediator_
-      handleSigninIntent:SigninIntentAddAccount
-             accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
-             promoAction:signin_metrics::PromoAction::
-                             PROMO_ACTION_WITH_DEFAULT];
+      handleSigninWithIntent:AddAccountSigninIntentAddSecondaryAccount
+                 accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
+                 promoAction:signin_metrics::PromoAction::
+                                 PROMO_ACTION_WITH_DEFAULT];
   [identity_interaction_manager_ addAccountViewControllerDidTapCancel];
 
   // No account is present.
@@ -168,13 +171,14 @@ TEST_F(AddAccountSigninMediatorTest,
        AddAccountIntentWithErrorHandledByMediator) {
   // Verify that completion was called with canceled result state and an error
   // is shown.
-  [[mediator_delegate_ expect] addAccountSigninMediatorFailedWith:[OCMArg any]];
+  [[mediator_delegate_ expect]
+      addAccountSigninMediatorFailedWithError:[OCMArg any]];
 
   [mediator_
-      handleSigninIntent:SigninIntentAddAccount
-             accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
-             promoAction:signin_metrics::PromoAction::
-                             PROMO_ACTION_WITH_DEFAULT];
+      handleSigninWithIntent:AddAccountSigninIntentAddSecondaryAccount
+                 accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
+                 promoAction:signin_metrics::PromoAction::
+                                 PROMO_ACTION_WITH_DEFAULT];
   [identity_interaction_manager_
       addAccountViewControllerDidThrowUnhandledError];
 
@@ -193,15 +197,17 @@ TEST_F(AddAccountSigninMediatorTest,
 TEST_F(AddAccountSigninMediatorTest, ReauthIntentWithUserCancel) {
   // Verify that completion was called with canceled result state.
   [[mediator_delegate_ expect]
-      addAccountSigninMediatorFinishedWith:SigninCoordinatorResultCanceledByUser
-                                  identity:nil];
-  [[mediator_delegate_ reject] addAccountSigninMediatorFailedWith:[OCMArg any]];
+      addAccountSigninMediatorFinishedWithSigninResult:
+          SigninCoordinatorResultCanceledByUser
+                                              identity:nil];
+  [[mediator_delegate_ reject]
+      addAccountSigninMediatorFailedWithError:[OCMArg any]];
 
   [mediator_
-      handleSigninIntent:SigninIntentReauth
-             accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
-             promoAction:signin_metrics::PromoAction::
-                             PROMO_ACTION_WITH_DEFAULT];
+      handleSigninWithIntent:AddAccountSigninIntentReauthPrimaryAccount
+                 accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
+                 promoAction:signin_metrics::PromoAction::
+                                 PROMO_ACTION_WITH_DEFAULT];
   [identity_interaction_manager_ addAccountViewControllerDidTapCancel];
 
   // No account is present.
@@ -215,13 +221,14 @@ TEST_F(AddAccountSigninMediatorTest, ReauthIntentWithUserCancel) {
 TEST_F(AddAccountSigninMediatorTest, ReauthIntentWithErrorHandledByMediator) {
   // Verify that completion was called with canceled result state and an error
   // is shown.
-  [[mediator_delegate_ expect] addAccountSigninMediatorFailedWith:[OCMArg any]];
+  [[mediator_delegate_ expect]
+      addAccountSigninMediatorFailedWithError:[OCMArg any]];
 
   [mediator_
-      handleSigninIntent:SigninIntentReauth
-             accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
-             promoAction:signin_metrics::PromoAction::
-                             PROMO_ACTION_WITH_DEFAULT];
+      handleSigninWithIntent:AddAccountSigninIntentReauthPrimaryAccount
+                 accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
+                 promoAction:signin_metrics::PromoAction::
+                                 PROMO_ACTION_WITH_DEFAULT];
   [identity_interaction_manager_
       addAccountViewControllerDidThrowUnhandledError];
 

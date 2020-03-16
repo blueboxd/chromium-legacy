@@ -12,6 +12,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/common/input/web_gesture_device.h"
+#include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -49,10 +50,20 @@ struct IntrinsicSizingInfo;
 class CORE_EXPORT WebFrameWidgetBase
     : public GarbageCollected<WebFrameWidgetBase>,
       public WebFrameWidget,
-      public WidgetBaseClient {
+      public WidgetBaseClient,
+      public mojom::blink::FrameWidget {
  public:
-  explicit WebFrameWidgetBase(WebWidgetClient&);
-  virtual ~WebFrameWidgetBase();
+  WebFrameWidgetBase(
+      WebWidgetClient&,
+      CrossVariantMojoAssociatedRemote<
+          mojom::blink::FrameWidgetHostInterfaceBase> frame_widget_host,
+      CrossVariantMojoAssociatedReceiver<mojom::blink::FrameWidgetInterfaceBase>
+          frame_widget,
+      CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
+          widget_host,
+      CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
+          widget);
+  ~WebFrameWidgetBase() override;
 
   WebWidgetClient* Client() const { return client_; }
   WebLocalFrameImpl* LocalRootImpl() const { return local_root_; }
@@ -107,7 +118,6 @@ class CORE_EXPORT WebFrameWidgetBase
   void DragSourceEndedAt(const gfx::PointF& point_in_viewport,
                          const gfx::PointF& screen_point,
                          WebDragOperation) override;
-  void DragSourceSystemDragEnded() override;
   void SendOverscrollEventFromImplSide(
       const gfx::Vector2dF& overscroll_delta,
       cc::ElementId scroll_latched_element_id) override;
@@ -142,6 +152,9 @@ class CORE_EXPORT WebFrameWidgetBase
 
   // WidgetBaseClient methods.
   void DispatchRafAlignedInput(base::TimeTicks frame_time) override;
+
+  // mojom::blink::FrameWidget methods.
+  void DragSourceSystemDragEnded() override;
 
   // Image decode functionality.
   void RequestDecode(const PaintImage&, base::OnceCallback<void(bool)>);
@@ -288,7 +301,7 @@ class CORE_EXPORT WebFrameWidgetBase
 
   // Base functionality all widgets have. This is a member as to avoid
   // complicated inheritance structures.
-  WidgetBase widget_base_{this};
+  WidgetBase widget_base_;
 
  private:
   void CancelDrag();
@@ -319,6 +332,9 @@ class CORE_EXPORT WebFrameWidgetBase
 
   std::unique_ptr<TaskRunnerTimer<WebFrameWidgetBase>>
       request_animation_after_delay_timer_;
+
+  mojo::AssociatedRemote<mojom::blink::FrameWidgetHost> frame_widget_host_;
+  mojo::AssociatedReceiver<mojom::blink::FrameWidget> receiver_;
 
   friend class WebViewImpl;
 };

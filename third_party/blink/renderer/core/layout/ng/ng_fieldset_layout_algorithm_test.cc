@@ -38,7 +38,8 @@ class NGFieldsetLayoutAlgorithmTest
   MinMaxSizes RunComputeMinMaxSizes(NGBlockNode node) {
     NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
         WritingMode::kHorizontalTb, TextDirection::kLtr,
-        LogicalSize(LayoutUnit(), LayoutUnit()));
+        LogicalSize(LayoutUnit(), LayoutUnit()), false,
+        node.CreatesNewFormattingContext());
     NGFragmentGeometry fragment_geometry =
         CalculateInitialMinMaxFragmentGeometry(space, node);
 

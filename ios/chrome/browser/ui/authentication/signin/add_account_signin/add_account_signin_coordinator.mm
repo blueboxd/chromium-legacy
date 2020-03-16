@@ -30,25 +30,19 @@ using signin_metrics::PromoAction;
 
 // Coordinator to display modal alerts to the user.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
-
 // Coordinator that handles the sign-in UI flow.
 @property(nonatomic, strong) SigninCoordinator* userSigninCoordinator;
-
 // Mediator that handles sign-in state.
 @property(nonatomic, strong) AddAccountSigninMediator* mediator;
-
 // Manager that handles interactions to add identities.
 @property(nonatomic, strong)
     ChromeIdentityInteractionManager* identityInteractionManager;
-
 // View where the sign-in button was displayed.
 @property(nonatomic, assign) AccessPoint accessPoint;
-
 // Promo button used to trigger the sign-in.
 @property(nonatomic, assign) PromoAction promoAction;
-
-// Intent when the user begins a sign-in flow.
-@property(nonatomic, assign) SigninIntent signinIntent;
+// Add account sign-in intent.
+@property(nonatomic, assign, readonly) AddAccountSigninIntent signinIntent;
 
 @end
 
@@ -60,7 +54,8 @@ using signin_metrics::PromoAction;
                                    browser:(Browser*)browser
                                accessPoint:(AccessPoint)accessPoint
                                promoAction:(PromoAction)promoAction
-                              signinIntent:(SigninIntent)signinIntent {
+                              signinIntent:
+                                  (AddAccountSigninIntent)signinIntent {
   self = [super initWithBaseViewController:viewController browser:browser];
   if (self) {
     _signinIntent = signinIntent;
@@ -74,6 +69,12 @@ using signin_metrics::PromoAction;
 
 - (void)interruptWithAction:(SigninCoordinatorInterruptAction)action
                  completion:(ProceduralBlock)completion {
+  if (self.userSigninCoordinator) {
+    [self.userSigninCoordinator interruptWithAction:action
+                                         completion:completion];
+    return;
+  }
+
   DCHECK(self.identityInteractionManager);
   switch (action) {
     case SigninCoordinatorInterruptActionNoDismiss:
@@ -114,9 +115,9 @@ using signin_metrics::PromoAction;
                                              ->GetPrefs()
                          identityManager:identityManager];
   self.mediator.delegate = self;
-  [self.mediator handleSigninIntent:self.signinIntent
-                        accessPoint:self.accessPoint
-                        promoAction:self.promoAction];
+  [self.mediator handleSigninWithIntent:self.signinIntent
+                            accessPoint:self.accessPoint
+                            promoAction:self.promoAction];
 }
 
 - (void)stop {
@@ -149,13 +150,13 @@ using signin_metrics::PromoAction;
 
 #pragma mark - AddAccountSigninMediatorDelegate
 
-- (void)addAccountSigninMediatorFailedWith:(NSError*)error {
+- (void)addAccountSigninMediatorFailedWithError:(NSError*)error {
   DCHECK(error);
   __weak AddAccountSigninCoordinator* weakSelf = self;
   ProceduralBlock dismissAction = ^{
-    [weakSelf addAccountSigninMediatorFinishedWith:
+    [weakSelf addAccountSigninMediatorFinishedWithSigninResult:
                   SigninCoordinatorResultCanceledByUser
-                                          identity:nil];
+                                                      identity:nil];
   };
 
   self.alertCoordinator =
@@ -163,31 +164,35 @@ using signin_metrics::PromoAction;
   [self.alertCoordinator start];
 }
 
-- (void)addAccountSigninMediatorFinishedWith:
+- (void)addAccountSigninMediatorFinishedWithSigninResult:
             (SigninCoordinatorResult)signinResult
-                                    identity:(ChromeIdentity*)identity {
+                                                identity:
+                                                    (ChromeIdentity*)identity {
+  self.identityInteractionManager = nil;
   switch (self.signinIntent) {
-    case SigninIntentReauth: {
-      // Show the user consent screen to finish the sign-in operation.
-      [self handleUserConsentForIdentity:identity];
-      return;
+    case AddAccountSigninIntentReauthPrimaryAccount: {
+      [self presentUserConsentWithIdentity:identity];
+      break;
     }
-    case SigninIntentAddAccount: {
+    case AddAccountSigninIntentAddSecondaryAccount: {
+      [self addAccountDoneWithSigninResult:signinResult identity:identity];
       break;
     }
   }
-
-  // Cleaning up and calling the |signinCompletion| should be done last.
-  self.identityInteractionManager = nil;
-  DCHECK(!self.alertCoordinator);
-  DCHECK(!self.userSigninCoordinator);
-
-  [self runCompletionCallbackWithSigninResult:signinResult identity:identity];
 }
 
 #pragma mark - Private
 
-- (void)handleUserConsentForIdentity:(ChromeIdentity*)identity {
+// Runs callback completion on finishing the add account flow.
+- (void)addAccountDoneWithSigninResult:(SigninCoordinatorResult)signinResult
+                              identity:(ChromeIdentity*)identity {
+  DCHECK(!self.alertCoordinator);
+  DCHECK(!self.userSigninCoordinator);
+  [self runCompletionCallbackWithSigninResult:signinResult identity:identity];
+}
+
+// Presents the user consent screen with |identity| pre-selected.
+- (void)presentUserConsentWithIdentity:(ChromeIdentity*)identity {
   // The UserSigninViewController is presented on top of the currently displayed
   // view controller.
   self.userSigninCoordinator = [SigninCoordinator
@@ -197,11 +202,14 @@ using signin_metrics::PromoAction;
                                          identity:identity
                                       accessPoint:self.accessPoint
                                       promoAction:self.promoAction];
-  self.userSigninCoordinator.signinCompletion =
-      ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
-        // TODO(crbug.com/971989): Needs implementation.
-        NOTIMPLEMENTED();
-      };
+
+  __weak AddAccountSigninCoordinator* weakSelf = self;
+  self.userSigninCoordinator.signinCompletion = ^(
+      SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
+    [weakSelf.userSigninCoordinator stop];
+    weakSelf.userSigninCoordinator = nil;
+    [weakSelf addAccountDoneWithSigninResult:signinResult identity:identity];
+  };
   [self.userSigninCoordinator start];
 }
 

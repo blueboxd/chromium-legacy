@@ -89,8 +89,7 @@ std::string GetHistogramSuffixForSafetyTipStatus(
     case security_state::SafetyTipStatus::kLookalikeIgnored:
       return "SafetyTip_LookalikeIgnored";
     case security_state::SafetyTipStatus::kBadKeyword:
-      NOTREACHED();
-      return std::string();
+      return "SafetyTip_BadKeyword";
   }
   NOTREACHED();
   return std::string();

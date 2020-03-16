@@ -272,7 +272,16 @@ WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
   WebLocalFrame* web_frame =
       WebLocalFrame::CreateMainFrame(web_view_, this, nullptr, nullptr);
   // The created WebFrameWidget is owned by the |web_frame|.
-  WebFrameWidget::CreateForMainFrame(this, web_frame);
+  WebFrameWidget::CreateForMainFrame(
+      this, web_frame,
+      blink::CrossVariantMojoAssociatedRemote<
+          blink::mojom::FrameWidgetHostInterfaceBase>(),
+      blink::CrossVariantMojoAssociatedReceiver<
+          blink::mojom::FrameWidgetInterfaceBase>(),
+      blink::CrossVariantMojoAssociatedRemote<
+          blink::mojom::WidgetHostInterfaceBase>(),
+      blink::CrossVariantMojoAssociatedReceiver<
+          blink::mojom::WidgetInterfaceBase>());
 
   // The WebFrame created here was already attached to the Page as its
   // main frame, and the WebFrameWidget has been initialized, so we can call

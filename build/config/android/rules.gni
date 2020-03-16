@@ -302,7 +302,7 @@ if (enable_java_templates) {
   # Variables
   #   targets: List of .build_config supported targets to provide java sources.
   #   header_output: Path to the generated .h file (optional).
-  #   sources_blacklist: List of .java files that should be skipped. (optional)
+  #   sources_exclusions: List of .java files that should be skipped. (optional)
   #   namespace: Registration functions will be wrapped into this. (optional)
   #   require_native_mocks: Enforce that any native calls using
   #     org.chromium.base.annotations.NativeMethods must have a mock set
@@ -318,7 +318,7 @@ if (enable_java_templates) {
   #   generate_jni_registration("chrome_jni_registration") {
   #     targets = [ ":chrome_public_apk" ]
   #     header_output = "$target_gen_dir/$target_name.h"
-  #     sources_blacklist = [
+  #     sources_exclusions = [
   #       "//path/to/Exception.java",
   #     ]
   #   }
@@ -379,10 +379,10 @@ if (enable_java_templates) {
         ]
       }
 
-      if (defined(invoker.sources_blacklist)) {
-        _rebase_sources_blacklist =
-            rebase_path(invoker.sources_blacklist, root_build_dir)
-        args += [ "--sources-blacklist=$_rebase_sources_blacklist" ]
+      if (defined(invoker.sources_exclusions)) {
+        _rebase_sources_exclusions =
+            rebase_path(invoker.sources_exclusions, root_build_dir)
+        args += [ "--sources-exclusions=$_rebase_sources_exclusions" ]
       }
 
       if (defined(invoker.namespace)) {
@@ -1129,6 +1129,9 @@ if (enable_java_templates) {
       if (defined(invoker.deps)) {
         possible_config_deps = invoker.deps
       }
+    }
+    java_header_group("${target_name}__header") {
+      forward_variables_from(invoker, [ "deps" ])
     }
     group(target_name) {
       forward_variables_from(invoker, "*")
@@ -2048,14 +2051,14 @@ if (enable_java_templates) {
   #   jni_registration_header: If specified, causes the
   #     ${target_name}__final_jni target to additionally output a
   #     header file to this path for use with manual JNI registration.
-  #   jni_sources_blacklist: List of source path to exclude from the
+  #   jni_sources_exclusions: List of source path to exclude from the
   #     final_jni step.
-  #   aapt_locale_whitelist: If set, all locales not in this list will be
+  #   aapt_locale_allowlist: If set, all locales not in this list will be
   #     stripped from resources.arsc.
-  #   resource_blacklist_regex: Causes all drawable images matching the regex to
+  #   resource_exclusion_regex: Causes all drawable images matching the regex to
   #     be excluded (mipmaps are still included).
-  #   resource_blacklist_exceptions: A list of globs used when
-  #     resource_blacklist_regex is set. Files that match this whitelist will
+  #   resource_exclusion_exceptions: A list of globs used when
+  #     resource_exclusion_regex is set. Files that match this list will
   #     still be included.
   #   shared_resources: True if this is a runtime shared library APK, like
   #     the system_webview_apk target. Ensures that its resources can be
@@ -2064,7 +2067,7 @@ if (enable_java_templates) {
   #     also serve as a runtime shared library, like the monochrome_public_apk
   #     target. Ensures that the resources are usable both by the APK running
   #     as an application, or by another process that loads it at runtime.
-  #   shared_resources_whitelist_target: Optional name of a target specifying
+  #   shared_resources_allowlist_target: Optional name of a target specifying
   #     an input R.txt file that lists the resources that can be exported
   #     by the APK when shared_resources or app_as_shared_lib is defined.
   #   uncompress_shared_libraries: True if shared libraries should be stored
@@ -2358,11 +2361,11 @@ if (enable_java_templates) {
     }
 
     if (_is_static_library_provider) {
-      _shared_resources_whitelist_target = _resource_ids_provider_dep
+      _shared_resources_allowlist_target = _resource_ids_provider_dep
       disable_checkdiscard = true
-    } else if (defined(invoker.shared_resources_whitelist_target)) {
-      _shared_resources_whitelist_target =
-          invoker.shared_resources_whitelist_target
+    } else if (defined(invoker.shared_resources_allowlist_target)) {
+      _shared_resources_allowlist_target =
+          invoker.shared_resources_allowlist_target
     }
 
     _uses_static_library = defined(invoker.static_library_provider)
@@ -2434,16 +2437,16 @@ if (enable_java_templates) {
       _android_sdk_dep = "//third_party/android_sdk:android_sdk_java"
     }
 
-    if (defined(_shared_resources_whitelist_target)) {
-      _whitelist_gen_dir =
-          get_label_info(_shared_resources_whitelist_target, "target_gen_dir")
-      _whitelist_target_name =
-          get_label_info(_shared_resources_whitelist_target, "name")
-      _whitelist_r_txt_path =
-          "${_whitelist_gen_dir}/${_whitelist_target_name}" +
+    if (defined(_shared_resources_allowlist_target)) {
+      _allowlist_gen_dir =
+          get_label_info(_shared_resources_allowlist_target, "target_gen_dir")
+      _allowlist_target_name =
+          get_label_info(_shared_resources_allowlist_target, "name")
+      _allowlist_r_txt_path =
+          "${_allowlist_gen_dir}/${_allowlist_target_name}" +
           "__compile_resources_R.txt"
-      _whitelist_deps =
-          "${_shared_resources_whitelist_target}__compile_resources"
+      _allowlist_deps =
+          "${_shared_resources_allowlist_target}__compile_resources"
     }
 
     if (_short_resource_paths) {
@@ -2459,7 +2462,7 @@ if (enable_java_templates) {
     compile_resources(_compile_resources_target) {
       forward_variables_from(invoker,
                              [
-                               "aapt_locale_whitelist",
+                               "aapt_locale_allowlist",
                                "app_as_shared_lib",
                                "failed_manifest_expectation_file",
                                "manifest_package",
@@ -2469,11 +2472,11 @@ if (enable_java_templates) {
                                "package_name",
                                "png_to_webp",
                                "r_java_root_package_name",
-                               "resource_blacklist_exceptions",
-                               "resource_blacklist_regex",
+                               "resource_exclusion_exceptions",
+                               "resource_exclusion_regex",
                                "resources_config_path",
                                "shared_resources",
-                               "shared_resources_whitelist_locales",
+                               "shared_resources_allowlist_locales",
                                "short_resource_paths",
                                "strip_resource_names",
                                "support_zh_hk",
@@ -2569,11 +2572,11 @@ if (enable_java_templates) {
         arsc_output = _arsc_resources_path
       }
 
-      if (defined(_shared_resources_whitelist_target)) {
+      if (defined(_shared_resources_allowlist_target)) {
         # Used to ensure that the WebView resources are properly shared
         # (i.e. are non-final and with package ID 0).
-        shared_resources_whitelist = _whitelist_r_txt_path
-        deps += [ _whitelist_deps ]
+        shared_resources_allowlist = _allowlist_r_txt_path
+        deps += [ _allowlist_deps ]
       }
     }
     _srcjar_deps += [ ":$_compile_resources_target" ]
@@ -2722,8 +2725,8 @@ if (enable_java_templates) {
         if (defined(invoker.jni_registration_header)) {
           header_output = invoker.jni_registration_header
         }
-        if (defined(invoker.jni_sources_blacklist)) {
-          sources_blacklist = invoker.jni_sources_blacklist
+        if (defined(invoker.jni_sources_exclusions)) {
+          sources_exclusions = invoker.jni_sources_exclusions
         }
       }
       _srcjar_deps += [ ":${_template_name}__final_jni" ]
@@ -2845,9 +2848,9 @@ if (enable_java_templates) {
 
       uncompress_shared_libraries = _uncompress_shared_libraries
 
-      if (defined(_whitelist_r_txt_path) && _is_bundle_module) {
+      if (defined(_allowlist_r_txt_path) && _is_bundle_module) {
         # Used to write the file path to the target's .build_config only.
-        base_whitelist_rtxt_path = _whitelist_r_txt_path
+        base_allowlist_rtxt_path = _allowlist_r_txt_path
       }
     }
 
@@ -3373,7 +3376,7 @@ if (enable_java_templates) {
     android_apk_or_module(target_name) {
       forward_variables_from(invoker,
                              [
-                               "aapt_locale_whitelist",
+                               "aapt_locale_allowlist",
                                "additional_jar_files",
                                "alternative_android_sdk_dep",
                                "android_manifest",
@@ -3402,7 +3405,7 @@ if (enable_java_templates) {
                                "jacoco_never_instrument",
                                "javac_args",
                                "jni_registration_header",
-                               "jni_sources_blacklist",
+                               "jni_sources_exclusions",
                                "keystore_name",
                                "keystore_password",
                                "keystore_path",
@@ -3428,8 +3431,8 @@ if (enable_java_templates) {
                                "proguard_enabled",
                                "proguard_jar_path",
                                "r_java_root_package_name",
-                               "resource_blacklist_exceptions",
-                               "resource_blacklist_regex",
+                               "resource_exclusion_exceptions",
+                               "resource_exclusion_regex",
                                "resource_ids_provider_dep",
                                "resources_config_path",
                                "require_native_mocks",
@@ -3439,8 +3442,8 @@ if (enable_java_templates) {
                                "skip_jetify",
                                "shared_libraries",
                                "shared_resources",
-                               "shared_resources_whitelist_locales",
-                               "shared_resources_whitelist_target",
+                               "shared_resources_allowlist_locales",
+                               "shared_resources_allowlist_target",
                                "short_resource_paths",
                                "sources",
                                "srcjar_deps",
@@ -3493,8 +3496,8 @@ if (enable_java_templates) {
     } else {
       assert(!defined(invoker.app_as_shared_lib))
       assert(!defined(invoker.shared_resources))
-      assert(!defined(invoker.shared_resources_whitelist_target))
-      assert(!defined(invoker.shared_resources_whitelist_locales))
+      assert(!defined(invoker.shared_resources_allowlist_target))
+      assert(!defined(invoker.shared_resources_allowlist_locales))
       assert(!defined(invoker.build_hooks_android_impl_deps))
       assert(defined(invoker.base_module_target))
       assert(!defined(invoker.bundle_target))
@@ -3511,7 +3514,7 @@ if (enable_java_templates) {
     android_apk_or_module(target_name) {
       forward_variables_from(invoker,
                              [
-                               "aapt_locale_whitelist",
+                               "aapt_locale_allowlist",
                                "additional_jar_files",
                                "alternative_android_sdk_dep",
                                "android_manifest",
@@ -3534,7 +3537,7 @@ if (enable_java_templates) {
                                "jacoco_never_instrument",
                                "javac_args",
                                "jni_registration_header",
-                               "jni_sources_blacklist",
+                               "jni_sources_exclusions",
                                "load_library_from_apk",
                                "loadable_modules",
                                "product_config_java_packages",
@@ -3554,8 +3557,8 @@ if (enable_java_templates) {
                                "proguard_configs",
                                "proguard_enabled",
                                "proguard_jar_path",
-                               "resource_blacklist_exceptions",
-                               "resource_blacklist_regex",
+                               "resource_exclusion_exceptions",
+                               "resource_exclusion_regex",
                                "resource_ids_provider_dep",
                                "resources_config_path",
                                "secondary_abi_loadable_modules",
@@ -3563,8 +3566,8 @@ if (enable_java_templates) {
                                "secondary_native_lib_placeholders",
                                "shared_libraries",
                                "shared_resources",
-                               "shared_resources_whitelist_locales",
-                               "shared_resources_whitelist_target",
+                               "shared_resources_allowlist_locales",
+                               "shared_resources_allowlist_target",
                                "short_resource_paths",
                                "srcjar_deps",
                                "static_library_provider",
@@ -4362,7 +4365,7 @@ if (enable_java_templates) {
   #      such that they are extracted upon install. Libraries prefixed with
   #      "crazy." are never compressed.
   #
-  #    system_image_locale_whitelist: List of locales that should be included
+  #    system_image_locale_allowlist: List of locales that should be included
   #      on system APKs generated from this bundle.
   #
   #    static_library_provider: Specifies a single target that this target will
@@ -4766,7 +4769,7 @@ if (enable_java_templates) {
 
       if (_enable_language_splits) {
         args += [
-          "--base-whitelist-rtxt-path=@FileArg(" + "${_rebased_base_module_build_config}:deps_info:base_whitelist_rtxt_path)",
+          "--base-allowlist-rtxt-path=@FileArg(" + "${_rebased_base_module_build_config}:deps_info:base_allowlist_rtxt_path)",
           "--base-module-rtxt-path=@FileArg(" +
               "${_rebased_base_module_build_config}:deps_info:r_text_path)",
         ]
@@ -4855,9 +4858,9 @@ if (enable_java_templates) {
         "--key-name",
         _keystore_name,
       ]
-      if (defined(invoker.system_image_locale_whitelist)) {
+      if (defined(invoker.system_image_locale_allowlist)) {
         args += [
-          "--system-image-locales=${invoker.system_image_locale_whitelist}",
+          "--system-image-locales=${invoker.system_image_locale_allowlist}",
         ]
       }
       if (defined(invoker.command_line_flags_file)) {

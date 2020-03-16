@@ -51,10 +51,10 @@ template("chrome_common_shared_library") {
     export_java_symbols = _export_java_symbols
     export_feature_registrations = true
     if (_generate_partitions) {
-      export_symbol_whitelist_files = []
+      export_symbol_allowlist_files = []
       foreach(_module_desc, invoker.module_descs) {
         if (defined(_module_desc.native_entrypoints)) {
-          export_symbol_whitelist_files += [ _module_desc.native_entrypoints ]
+          export_symbol_allowlist_files += [ _module_desc.native_entrypoints ]
         }
       }
     }

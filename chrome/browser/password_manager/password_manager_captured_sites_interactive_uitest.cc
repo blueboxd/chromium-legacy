@@ -101,10 +101,7 @@ class CapturedSitesPasswordManagerBrowserTest
   bool UpdatePassword() override {
     BubbleObserver bubble_observer(WebContents());
     if (bubble_observer.IsUpdatePromptAvailable()) {
-      const autofill::PasswordForm& pending_credentials =
-          ManagePasswordsUIController::FromWebContents(WebContents())
-              ->GetPendingPassword();
-      bubble_observer.AcceptUpdatePrompt(pending_credentials);
+      bubble_observer.AcceptUpdatePrompt();
       PasswordManagerBrowserTestBase::WaitForPasswordStore(browser());
       // Hide the Update Password Prompt UI.
       TabDialogs::FromWebContents(WebContents())->HideManagePasswordsBubble();

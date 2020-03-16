@@ -715,6 +715,8 @@ component("ash") {
     "system/accessibility/autoclick_scroll_view.h",
     "system/accessibility/dictation_button_tray.cc",
     "system/accessibility/dictation_button_tray.h",
+    "system/accessibility/floating_menu_button.cc",
+    "system/accessibility/floating_menu_button.h",
     "system/accessibility/select_to_speak_tray.cc",
     "system/accessibility/select_to_speak_tray.h",
     "system/accessibility/tray_accessibility.cc",

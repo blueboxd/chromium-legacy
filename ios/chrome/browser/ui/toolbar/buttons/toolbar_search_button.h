@@ -7,6 +7,7 @@
 
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 
+// TODO(crbug.com/974751): Rename this as the button is no longer for search.
 // Toolbar button used to display the search button with a pill-shaped
 // background view which is also used as the spotlight view.
 @interface ToolbarSearchButton : ToolbarButton

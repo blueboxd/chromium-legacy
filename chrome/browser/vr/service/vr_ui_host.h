@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_VR_SERVICE_VR_UI_HOST_H_
 
 #include "chrome/browser/vr/vr_export.h"
-#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
+#include "device/vr/public/mojom/isolated_xr_service.mojom-forward.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 

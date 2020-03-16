@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/vr/vr_base_export.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "device/vr/public/mojom/vr_service.mojom.h"
+#include "device/vr/public/mojom/vr_service.mojom-forward.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 

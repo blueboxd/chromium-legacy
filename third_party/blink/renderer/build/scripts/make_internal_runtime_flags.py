@@ -56,7 +56,6 @@ class InternalRuntimeFlagsWriter(
         return {
             'features': self._features,
             'input_files': self._input_files,
-            'standard_features': self._standard_features,
         }
 
     @template_expander.use_jinja('templates/internal_runtime_flags.h.tmpl')
@@ -65,7 +64,6 @@ class InternalRuntimeFlagsWriter(
             'features': self._features,
             'feature_sets': self._feature_sets(),
             'input_files': self._input_files,
-            'standard_features': self._standard_features,
             'header_guard': self._header_guard,
         }
 

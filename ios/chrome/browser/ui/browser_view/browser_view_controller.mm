@@ -141,6 +141,7 @@
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/named_guide_util.h"
 #import "ios/chrome/browser/ui/util/page_animation_util.h"
@@ -929,6 +930,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (_broadcasting == broadcasting)
     return;
   _broadcasting = broadcasting;
+
+  if (IsMultiwindowSupported()) {
+    // TODO(crbug.com/1060653): fix fullscreen.
+    return;
+  }
+
   // TODO(crbug.com/790886): Use the Browser's broadcaster once Browsers are
   // supported.
   FullscreenController* fullscreenController =
@@ -1193,7 +1200,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Keyboard shouldn't overlay the ecoutez window, so dismiss find in page and
   // dismiss the keyboard.
   [self.dispatcher closeFindInPage];
-  [self.textZoomHandler hideTextZoom];
+  [self.textZoomHandler closeTextZoom];
   [[self viewForWebState:self.currentWebState] endEditing:NO];
 
   // Ensure that voice search objects are created.
@@ -1279,7 +1286,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       [_ntpCoordinatorsForWebStates[webState] dismissModals];
     }
     [self.dispatcher closeFindInPage];
-    [self.textZoomHandler hideTextZoom];
+    [self.textZoomHandler closeTextZoom];
   }
 
   [self.dispatcher dismissPopupMenuAnimated:NO];
@@ -1667,7 +1674,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (ShouldShowCompactToolbar(previousTraitCollection) !=
       ShouldShowCompactToolbar()) {
     [self.dispatcher hideFindUI];
-    [self.textZoomHandler hideTextZoom];
+    [self.textZoomHandler hideTextZoomUI];
   }
 
   // Update the toolbar visibility.
@@ -2338,7 +2345,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (!self.inNewTabAnimation) {
     // Hide findbar.  |updateToolbar| will restore the findbar later.
     [self.dispatcher hideFindUI];
-    [self.textZoomHandler hideTextZoom];
+    [self.textZoomHandler hideTextZoomUI];
 
     // Make new content visible, resizing it first as the orientation may
     // have changed from the last time it was displayed.
@@ -2439,6 +2446,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self.primaryToolbarCoordinator showPrerenderingAnimation];
 
   [self.dispatcher showFindUIIfActive];
+  [self.textZoomHandler showTextZoomUIIfActive];
 
   BOOL hideToolbar = NO;
   if (webState) {
@@ -4218,7 +4226,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Remove the find bar for now.
   [self.dispatcher hideFindUI];
-  [self.textZoomHandler hideTextZoom];
+  [self.textZoomHandler hideTextZoomUI];
 }
 
 - (void)webStateList:(WebStateList*)webStateList
@@ -4485,7 +4493,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // Hide UI accessories such as find bar and first visit overlays
     // for welcome page.
     [self.dispatcher hideFindUI];
-    [self.textZoomHandler hideTextZoom];
+    [self.textZoomHandler hideTextZoomUI];
     [self.infobarContainerCoordinator hideContainer:YES];
   }
 }

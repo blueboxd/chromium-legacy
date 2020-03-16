@@ -97,7 +97,7 @@
                atIndex:(int)atIndex {
   DCHECK_EQ(self.webStateList, webStateList);
   if (atIndex == webStateList->active_index()) {
-    [self.commandHandler hideTextZoom];
+    [self.commandHandler closeTextZoom];
   }
 }
 
@@ -106,7 +106,7 @@
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
                      reason:(ActiveWebStateChangeReason)reason {
-  [self.commandHandler hideTextZoom];
+  [self.commandHandler closeTextZoom];
 }
 
 #pragma mark - TextZoomHandler
@@ -137,7 +137,7 @@
 
 - (void)webState:(web::WebState*)webState
     didFinishNavigation:(web::NavigationContext*)navigation {
-  [self.commandHandler hideTextZoom];
+  [self.commandHandler closeTextZoom];
 }
 
 @end

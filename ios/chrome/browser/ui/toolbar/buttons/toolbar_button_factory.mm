@@ -168,33 +168,22 @@
   return bookmarkButton;
 }
 
+// TODO(crbug.com/974751): Rename this as the button is no longer for search.
 - (ToolbarButton*)searchButton {
-  UIImage* buttonImage = nil;
-  if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {
-    buttonImage = [UIImage imageNamed:@"toolbar_new_tab_page"];
-  } else {
-    buttonImage = [UIImage imageNamed:@"toolbar_search"];
-  }
+  UIImage* buttonImage = [UIImage imageNamed:@"toolbar_new_tab_page"];
   ToolbarSearchButton* searchButton =
       [ToolbarSearchButton toolbarButtonWithImage:buttonImage];
 
   [searchButton addTarget:self.actionHandler
                    action:@selector(searchAction:)
          forControlEvents:UIControlEventTouchUpInside];
-  if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {
-    BOOL isIncognito = self.style == INCOGNITO;
+  BOOL isIncognito = self.style == INCOGNITO;
 
-    [self configureButton:searchButton width:kAdaptiveToolbarButtonWidth];
+  [self configureButton:searchButton width:kAdaptiveToolbarButtonWidth];
 
-    searchButton.accessibilityLabel = l10n_util::GetNSString(
-        isIncognito ? IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB
-                    : IDS_IOS_TOOLS_MENU_NEW_TAB);
-  } else {
-    [self configureButton:searchButton width:kSearchButtonWidth];
-
-    searchButton.accessibilityLabel =
-        l10n_util::GetNSString(IDS_IOS_TOOLBAR_SEARCH);
-  }
+  searchButton.accessibilityLabel =
+      l10n_util::GetNSString(isIncognito ? IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB
+                                         : IDS_IOS_TOOLS_MENU_NEW_TAB);
 
   searchButton.accessibilityIdentifier = kToolbarSearchButtonIdentifier;
 

@@ -85,12 +85,12 @@ def _CreateInfo(aar_file):
   return data
 
 
-def _PerformExtract(aar_file, output_dir, name_whitelist):
+def _PerformExtract(aar_file, output_dir, name_allowlist):
   with build_utils.TempDir() as tmp_dir:
     tmp_dir = os.path.join(tmp_dir, 'staging')
     os.mkdir(tmp_dir)
     build_utils.ExtractAll(
-        aar_file, path=tmp_dir, predicate=name_whitelist.__contains__)
+        aar_file, path=tmp_dir, predicate=name_allowlist.__contains__)
     # Write a breadcrumb so that SuperSize can attribute files back to the .aar.
     with open(os.path.join(tmp_dir, 'source.info'), 'w') as f:
       f.write('source={}\n'.format(aar_file))

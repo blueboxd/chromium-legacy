@@ -7,14 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-// Intent when the user begins a sign-in flow.
-typedef NS_ENUM(NSUInteger, SigninIntent) {
-  // Sign-in through the add account flow.
-  SigninIntentAddAccount,
-  // Sign-in through the reauthentication flow.
-  SigninIntentReauth,
-};
-
 // Sign-in result returned Sign-in result.
 typedef NS_ENUM(NSUInteger, SigninCoordinatorResult) {
   // Sign-in has been canceled by the user or by another reason.

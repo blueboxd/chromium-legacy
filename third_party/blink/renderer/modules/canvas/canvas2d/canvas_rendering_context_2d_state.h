@@ -78,7 +78,7 @@ class CanvasRenderingContext2DState final
     return clip_list_.GetCurrentClipPath();
   }
 
-  void SetFont(const Font&, FontSelector*);
+  void SetFont(const FontDescription&, FontSelector*);
   const Font& GetFont();
   const FontDescription& GetFontDescription() const;
   bool HasRealizedFont() const { return realized_font_; }

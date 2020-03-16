@@ -73,7 +73,7 @@ class TestMd5Check(unittest.TestCase):
           output_paths=output_paths,
           force=force,
           pass_changes=(expected_changes or added_or_modified_only) is not None,
-          track_subpaths_whitelist=zip_paths if track_subentries else None)
+          track_subpaths_allowlist=zip_paths if track_subentries else None)
       self.assertEqual(should_call, self.called, message)
       if expected_changes:
         description = self.changes.DescribeDifference()

@@ -64,6 +64,8 @@
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
+#import "ios/chrome/browser/web/features.h"
+#import "ios/chrome/browser/web/font_size_tab_helper.h"
 #import "ios/chrome/browser/web/print_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
@@ -583,7 +585,7 @@
 
   if (self.viewController.toolbarAccessoryPresenter.isPresenting) {
     self.nextToolbarCoordinator = self.findBarCoordinator;
-    [self hideTextZoom];
+    [self closeTextZoom];
     return;
   }
 
@@ -769,14 +771,14 @@
     [self openFindInPage];
     self.nextToolbarCoordinator = nil;
   } else if (self.nextToolbarCoordinator == self.textZoomCoordinator) {
-    [self showTextZoom];
+    [self openTextZoom];
     self.nextToolbarCoordinator = nil;
   }
 }
 
 #pragma mark - TextZoomCommands
 
-- (void)showTextZoom {
+- (void)openTextZoom {
   self.textZoomCoordinator = [[TextZoomCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser];
@@ -793,7 +795,37 @@
   [self.textZoomCoordinator start];
 }
 
-- (void)hideTextZoom {
+- (void)closeTextZoom {
+  if (!base::FeatureList::IsEnabled(web::kWebPageTextAccessibility)) {
+    return;
+  }
+
+  web::WebState* currentWebState =
+      self.browser->GetWebStateList()->GetActiveWebState();
+  if (currentWebState) {
+    FontSizeTabHelper* fontSizeTabHelper =
+        FontSizeTabHelper::FromWebState(currentWebState);
+    fontSizeTabHelper->SetTextZoomUIActive(false);
+  }
+  [self.textZoomCoordinator stop];
+}
+
+- (void)showTextZoomUIIfActive {
+  web::WebState* currentWebState =
+      self.browser->GetWebStateList()->GetActiveWebState();
+  if (!currentWebState) {
+    return;
+  }
+
+  FontSizeTabHelper* fontSizeTabHelper =
+      FontSizeTabHelper::FromWebState(currentWebState);
+  if (fontSizeTabHelper && fontSizeTabHelper->IsTextZoomUIActive() &&
+      !self.textZoomCoordinator.presenter.isPresenting) {
+    [self.textZoomCoordinator start];
+  }
+}
+
+- (void)hideTextZoomUI {
   [self.textZoomCoordinator stop];
 }
 

@@ -12,6 +12,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -30,7 +31,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
-import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
@@ -42,12 +42,11 @@ public final class WebApkActivityTest {
     private static final String TEST_WEBAPK_ID =
             WebApkConstants.WEBAPK_ID_PREFIX + TEST_WEBAPK_PACKAGE_NAME;
 
+    @Rule
     public final WebApkActivityTestRule mActivityTestRule = new WebApkActivityTestRule();
-    public final NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
 
     @Before
     public void setUp() {
-        WebApkUpdateManager.setUpdatesEnabledForTesting(false);
         mActivityTestRule.getEmbeddedTestServerRule().setServerUsesHttps(true);
 
         // WebAPK is not installed. Ensure that WebappRegistry#unregisterOldWebapps() does not

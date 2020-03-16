@@ -412,10 +412,10 @@ def main(args):
     final_dex_inputs = _IntermediateDexFilePathsFromInputJars(
         options.class_inputs, options.incremental_dir)
     output_paths += final_dex_inputs
-    track_subpaths_whitelist = options.class_inputs
+    track_subpaths_allowlist = options.class_inputs
   else:
     final_dex_inputs = list(options.class_inputs)
-    track_subpaths_whitelist = None
+    track_subpaths_allowlist = None
   final_dex_inputs += options.dex_inputs
 
   dex_cmd = [
@@ -435,7 +435,7 @@ def main(args):
       input_paths=input_paths,
       input_strings=dex_cmd + [bool(options.incremental_dir)],
       pass_changes=True,
-      track_subpaths_whitelist=track_subpaths_whitelist)
+      track_subpaths_allowlist=track_subpaths_allowlist)
 
 
 if __name__ == '__main__':

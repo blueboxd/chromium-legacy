@@ -7,6 +7,7 @@
 #include <sstream>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -78,49 +79,44 @@ void ClearSyncDateField(std::vector<std::unique_ptr<PasswordForm>>* forms) {
   }
 }
 
-sync_pb::PasswordSpecifics SpecificsFromPassword(
+sync_pb::PasswordSpecificsData SpecificsDataFromPasswordForm(
     const autofill::PasswordForm& password_form) {
-  sync_pb::PasswordSpecifics specifics;
-  sync_pb::PasswordSpecificsData* password_data =
-      specifics.mutable_client_only_encrypted_data();
-  password_data->set_scheme(static_cast<int>(password_form.scheme));
-  password_data->set_signon_realm(password_form.signon_realm);
-  password_data->set_origin(password_form.origin.spec());
-  password_data->set_action(password_form.action.spec());
-  password_data->set_username_element(
+  sync_pb::PasswordSpecificsData password_data;
+  password_data.set_scheme(static_cast<int>(password_form.scheme));
+  password_data.set_signon_realm(password_form.signon_realm);
+  password_data.set_origin(password_form.origin.spec());
+  password_data.set_action(password_form.action.spec());
+  password_data.set_username_element(
       base::UTF16ToUTF8(password_form.username_element));
-  password_data->set_password_element(
+  password_data.set_password_element(
       base::UTF16ToUTF8(password_form.password_element));
-  password_data->set_username_value(
+  password_data.set_username_value(
       base::UTF16ToUTF8(password_form.username_value));
-  password_data->set_password_value(
+  password_data.set_password_value(
       base::UTF16ToUTF8(password_form.password_value));
-  password_data->set_date_last_used(
+  password_data.set_date_last_used(
       password_form.date_last_used.ToDeltaSinceWindowsEpoch().InMicroseconds());
-  password_data->set_date_created(
+  password_data.set_date_created(
       password_form.date_created.ToDeltaSinceWindowsEpoch().InMicroseconds());
-  password_data->set_blacklisted(password_form.blacklisted_by_user);
-  password_data->set_type(static_cast<int>(password_form.type));
-  password_data->set_times_used(password_form.times_used);
-  password_data->set_display_name(
-      base::UTF16ToUTF8(password_form.display_name));
-  password_data->set_avatar_url(password_form.icon_url.spec());
-  password_data->set_federation_url(
+  password_data.set_blacklisted(password_form.blacklisted_by_user);
+  password_data.set_type(static_cast<int>(password_form.type));
+  password_data.set_times_used(password_form.times_used);
+  password_data.set_display_name(base::UTF16ToUTF8(password_form.display_name));
+  password_data.set_avatar_url(password_form.icon_url.spec());
+  password_data.set_federation_url(
       password_form.federation_origin.opaque()
           ? std::string()
           : password_form.federation_origin.Serialize());
-  return specifics;
+  return password_data;
 }
 
 sync_pb::EntitySpecifics EncryptPasswordSpecifics(
-    const sync_pb::PasswordSpecifics& unencrypted_specifics,
+    const sync_pb::PasswordSpecificsData& password_data,
     const std::string& passphrase,
     const syncer::KeyDerivationParams& key_derivation_params) {
   std::unique_ptr<syncer::CryptographerImpl> cryptographer =
       syncer::CryptographerImpl::FromSingleKeyForTesting(passphrase,
                                                          key_derivation_params);
-  const sync_pb::PasswordSpecificsData& password_data =
-      unencrypted_specifics.client_only_encrypted_data();
   sync_pb::EntitySpecifics encrypted_specifics;
   encrypted_specifics.mutable_password()
       ->mutable_unencrypted_metadata()
@@ -130,7 +126,6 @@ sync_pb::EntitySpecifics EncryptPasswordSpecifics(
       encrypted_specifics.mutable_password()->mutable_encrypted());
   DCHECK(result);
   return encrypted_specifics;
-  return sync_pb::EntitySpecifics();
 }
 
 std::string GetClientTag(const sync_pb::PasswordSpecificsData& password_data) {
@@ -317,20 +312,44 @@ void InjectEncryptedServerPassword(
     const std::string& encryption_passphrase,
     const syncer::KeyDerivationParams& key_derivation_params,
     fake_server::FakeServer* fake_server) {
+  InjectEncryptedServerPassword(SpecificsDataFromPasswordForm(form),
+                                encryption_passphrase, key_derivation_params,
+                                fake_server);
+}
+
+void InjectEncryptedServerPassword(
+    const sync_pb::PasswordSpecificsData& password_data,
+    const std::string& encryption_passphrase,
+    const syncer::KeyDerivationParams& key_derivation_params,
+    fake_server::FakeServer* fake_server) {
   DCHECK(fake_server);
-  const sync_pb::PasswordSpecifics unencrypted_specifics =
-      SpecificsFromPassword(form);
   const sync_pb::EntitySpecifics encrypted_specifics = EncryptPasswordSpecifics(
-      unencrypted_specifics, encryption_passphrase, key_derivation_params);
+      password_data, encryption_passphrase, key_derivation_params);
   fake_server->InjectEntity(
       syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
-          /*non_unique_name=*/"encrypted",
-          GetClientTag(unencrypted_specifics.client_only_encrypted_data()),
+          /*non_unique_name=*/"encrypted", GetClientTag(password_data),
           encrypted_specifics,
           /*creation_time=*/0, /*last_modified_time=*/0));
 }
 
+void InjectKeystoreEncryptedServerPassword(
+    const sync_pb::PasswordSpecificsData& password_data,
+    fake_server::FakeServer* fake_server) {
+  InjectEncryptedServerPassword(
+      password_data, base::Base64Encode(fake_server->GetKeystoreKeys().back()),
+      syncer::KeyDerivationParams::CreateForPbkdf2(), fake_server);
+}
+
 }  // namespace passwords_helper
+
+PasswordSyncActiveChecker::PasswordSyncActiveChecker(
+    syncer::ProfileSyncService* service)
+    : SingleClientStatusChangeChecker(service) {}
+PasswordSyncActiveChecker::~PasswordSyncActiveChecker() = default;
+
+bool PasswordSyncActiveChecker::IsExitConditionSatisfied(std::ostream* os) {
+  return service()->GetActiveDataTypes().Has(syncer::PASSWORDS);
+}
 
 SamePasswordFormsChecker::SamePasswordFormsChecker()
     : MultiClientStatusChangeChecker(

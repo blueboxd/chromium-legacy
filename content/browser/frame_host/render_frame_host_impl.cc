@@ -1920,12 +1920,18 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
     DCHECK(!rwhv->IsShowing());
   }
 
-  if (GetLocalRenderWidgetHost()) {
+  if (auto* rwh = GetLocalRenderWidgetHost()) {
     params->widget_params = mojom::CreateFrameWidgetParams::New();
     params->widget_params->routing_id =
         GetLocalRenderWidgetHost()->GetRoutingID();
     params->widget_params->visual_properties =
         GetLocalRenderWidgetHost()->GetInitialVisualProperties();
+
+    std::tie(params->widget_params->widget_host,
+             params->widget_params->widget) = rwh->BindNewWidgetInterfaces();
+    std::tie(params->widget_params->frame_widget_host,
+             params->widget_params->frame_widget) =
+        rwh->BindNewFrameWidgetInterfaces();
   }
 
   // TODO(https://crbug.com/1006814): Remove this.
@@ -4409,6 +4415,26 @@ void RenderFrameHostImpl::CreateNewWindow(
   main_frame->BindBrowserInterfaceBrokerReceiver(
       browser_interface_broker.InitWithNewPipeAndPassReceiver());
 
+  mojo::PendingAssociatedRemote<blink::mojom::FrameWidget> blink_frame_widget;
+  mojo::PendingAssociatedReceiver<blink::mojom::FrameWidget>
+      blink_frame_widget_receiver =
+          blink_frame_widget.InitWithNewEndpointAndPassReceiver();
+
+  mojo::PendingAssociatedRemote<blink::mojom::FrameWidgetHost>
+      blink_frame_widget_host;
+  mojo::PendingAssociatedReceiver<blink::mojom::FrameWidgetHost>
+      blink_frame_widget_host_receiver =
+          blink_frame_widget_host.InitWithNewEndpointAndPassReceiver();
+
+  mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget;
+  mojo::PendingAssociatedReceiver<blink::mojom::Widget> blink_widget_receiver =
+      blink_widget.InitWithNewEndpointAndPassReceiver();
+
+  mojo::PendingAssociatedRemote<blink::mojom::WidgetHost> blink_widget_host;
+  mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
+      blink_widget_host_receiver =
+          blink_widget_host.InitWithNewEndpointAndPassReceiver();
+
   // TODO(danakj): The main frame's RenderWidgetHost has no RenderWidgetHostView
   // yet here. It seems like it should though? In the meantime we send some
   // nonsense with a semi-valid but incorrect ScreenInfo (it needs a
@@ -4417,6 +4443,11 @@ void RenderFrameHostImpl::CreateNewWindow(
   VisualProperties visual_properties;
   main_frame->GetLocalRenderWidgetHost()->GetScreenInfo(
       &visual_properties.screen_info);
+  main_frame->GetLocalRenderWidgetHost()->BindFrameWidgetInterfaces(
+      std::move(blink_frame_widget_host_receiver),
+      std::move(blink_frame_widget));
+  main_frame->GetLocalRenderWidgetHost()->BindWidgetInterfaces(
+      std::move(blink_widget_host_receiver), std::move(blink_widget));
 
   bool wait_for_debugger =
       devtools_instrumentation::ShouldWaitForDebuggerInWindowOpen();
@@ -4424,6 +4455,9 @@ void RenderFrameHostImpl::CreateNewWindow(
       main_frame->GetRenderViewHost()->GetRoutingID(),
       main_frame->GetRoutingID(),
       main_frame->GetLocalRenderWidgetHost()->GetRoutingID(), visual_properties,
+      std::move(blink_frame_widget_host),
+      std::move(blink_frame_widget_receiver), std::move(blink_widget_host),
+      std::move(blink_widget_receiver),
       mojom::DocumentScopedInterfaceBundle::New(
           std::move(main_frame_interface_provider_info),
           std::move(browser_interface_broker)),
@@ -4504,20 +4538,26 @@ void RenderFrameHostImpl::AdoptPortal(
 
 void RenderFrameHostImpl::CreateNewWidget(
     mojo::PendingRemote<mojom::Widget> widget,
+    mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost> blink_widget_host,
+    mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget,
     CreateNewWidgetCallback callback) {
   int32_t widget_route_id = GetProcess()->GetNextRoutingID();
   std::move(callback).Run(widget_route_id);
   delegate_->CreateNewWidget(GetProcess()->GetID(), widget_route_id,
-                             std::move(widget));
+                             std::move(widget), std::move(blink_widget_host),
+                             std::move(blink_widget));
 }
 
 void RenderFrameHostImpl::CreateNewFullscreenWidget(
     mojo::PendingRemote<mojom::Widget> widget,
+    mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost> blink_widget_host,
+    mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget,
     CreateNewFullscreenWidgetCallback callback) {
   int32_t widget_route_id = GetProcess()->GetNextRoutingID();
   std::move(callback).Run(widget_route_id);
-  delegate_->CreateNewFullscreenWidget(GetProcess()->GetID(), widget_route_id,
-                                       std::move(widget));
+  delegate_->CreateNewFullscreenWidget(
+      GetProcess()->GetID(), widget_route_id, std::move(widget),
+      std::move(blink_widget_host), std::move(blink_widget));
 }
 
 void RenderFrameHostImpl::IssueKeepAliveHandle(

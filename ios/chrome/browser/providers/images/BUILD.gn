@@ -11,7 +11,6 @@ source_set("images") {
     "resources:download_drivium",
     "//base",
     "//ios/chrome/app/theme",
-    "//ios/chrome/browser/ui/toolbar/buttons/resources:toolbar_search",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/images",
     "//ui/base",

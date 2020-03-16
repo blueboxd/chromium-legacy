@@ -21,7 +21,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.test.MockCertVerifierRuleAndroid;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.common.ContentSwitches;
@@ -32,8 +31,7 @@ import org.chromium.webapk.lib.common.WebApkConstants;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class WebApkIntegrationTest {
-    public final ChromeActivityTestRule<WebApkActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(WebApkActivity.class);
+    public final WebApkActivityTestRule mActivityTestRule = new WebApkActivityTestRule();
 
     public final NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
 
@@ -53,7 +51,6 @@ public class WebApkIntegrationTest {
 
     @Before
     public void setUp() {
-        WebApkUpdateManager.setUpdatesEnabledForTesting(false);
         mActivityTestRule.getEmbeddedTestServerRule().setServerUsesHttps(true);
         Uri mapToUri =
                 Uri.parse(mActivityTestRule.getEmbeddedTestServerRule().getServer().getURL("/"));

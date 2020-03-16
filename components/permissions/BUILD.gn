@@ -61,6 +61,8 @@ source_set("permissions") {
       "//components/permissions/android:jni_headers",
       "//ui/android",
     ]
+  } else {
+    sources += [ "permission_prompt_impl.cc" ]
   }
 }
 
@@ -103,7 +105,6 @@ source_set("unit_tests") {
     "permission_manager_unittest.cc",
     "permission_request_manager_unittest.cc",
     "permission_uma_util_unittest.cc",
-    "test/test_permission_prompt_impl.cc",
   ]
   deps = [
     ":permissions",

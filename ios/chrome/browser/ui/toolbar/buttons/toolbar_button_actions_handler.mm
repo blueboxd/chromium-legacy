@@ -59,20 +59,14 @@
 }
 
 - (void)searchAction:(id)sender {
-  base::RecordAction(
-      base::UserMetricsAction("MobileToolbarSearchButtonTapped"));
   [self.dispatcher closeFindInPage];
-  if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {
-    UIView* senderView = base::mac::ObjCCastStrict<UIView>(sender);
-    CGPoint center = [senderView.superview convertPoint:senderView.center
-                                                 toView:nil];
-    OpenNewTabCommand* command =
-        [OpenNewTabCommand commandWithIncognito:self.incognito
-                                    originPoint:center];
-    [self.dispatcher openURLInNewTab:command];
-  } else {
-    [self.dispatcher focusOmniboxFromSearchButton];
-  }
+  UIView* senderView = base::mac::ObjCCastStrict<UIView>(sender);
+  CGPoint center = [senderView.superview convertPoint:senderView.center
+                                               toView:nil];
+  OpenNewTabCommand* command =
+      [OpenNewTabCommand commandWithIncognito:self.incognito
+                                  originPoint:center];
+  [self.dispatcher openURLInNewTab:command];
 }
 
 - (void)cancelOmniboxFocusAction {

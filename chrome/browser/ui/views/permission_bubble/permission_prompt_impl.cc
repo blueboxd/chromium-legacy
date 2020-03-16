@@ -9,15 +9,15 @@
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_bubble_view.h"
 #include "components/permissions/permission_request_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 
-// static
-std::unique_ptr<permissions::PermissionPrompt>
-permissions::PermissionPrompt::Create(content::WebContents* web_contents,
-                                      Delegate* delegate) {
+std::unique_ptr<permissions::PermissionPrompt> CreatePermissionPrompt(
+    content::WebContents* web_contents,
+    permissions::PermissionPrompt::Delegate* delegate) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser) {
     DLOG(WARNING) << "Permission prompt suppressed because the WebContents is "

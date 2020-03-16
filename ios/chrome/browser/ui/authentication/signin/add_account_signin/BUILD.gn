@@ -9,6 +9,7 @@ source_set("add_account_signin") {
   sources = [
     "add_account_signin_coordinator.h",
     "add_account_signin_coordinator.mm",
+    "add_account_signin_enums.h",
     "add_account_signin_mediator.h",
     "add_account_signin_mediator.mm",
   ]

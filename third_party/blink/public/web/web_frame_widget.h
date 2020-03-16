@@ -31,6 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_WIDGET_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_WIDGET_H_
 
+#include "third_party/blink/public/mojom/page/widget.mojom-shared.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
@@ -51,12 +53,26 @@ class WebFrameWidget : public WebWidget {
   // RenderView/WebView, for a new local main frame.
   BLINK_EXPORT static WebFrameWidget* CreateForMainFrame(
       WebWidgetClient*,
-      WebLocalFrame* main_frame);
+      WebLocalFrame* main_frame,
+      CrossVariantMojoAssociatedRemote<mojom::FrameWidgetHostInterfaceBase>
+          frame_widget_host,
+      CrossVariantMojoAssociatedReceiver<mojom::FrameWidgetInterfaceBase>
+          frame_widget,
+      CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>
+          widget_host,
+      CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget);
   // Makes a WebFrameWidget that wraps a WebLocalFrame that is not a main frame,
   // providing a WebWidget to interact with the child local root frame.
   BLINK_EXPORT static WebFrameWidget* CreateForChildLocalRoot(
       WebWidgetClient*,
-      WebLocalFrame* local_root);
+      WebLocalFrame* local_root,
+      CrossVariantMojoAssociatedRemote<mojom::FrameWidgetHostInterfaceBase>
+          frame_widget_host,
+      CrossVariantMojoAssociatedReceiver<mojom::FrameWidgetInterfaceBase>
+          frame_widget,
+      CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>
+          widget_host,
+      CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget);
 
   // Returns the local root of this WebFrameWidget.
   virtual WebLocalFrame* LocalRoot() const = 0;

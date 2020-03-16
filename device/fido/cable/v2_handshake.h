@@ -21,6 +21,12 @@
 namespace device {
 namespace cablev2 {
 
+// NonceAndEID contains both the random nonce chosen for an advert, as well as
+// the EID that was generated from it.
+typedef std::pair<std::array<uint8_t, device::kCableNonceSize>,
+                  std::array<uint8_t, device::kCableEphemeralIdSize>>
+    NonceAndEID;
+
 // kP256PointSize is the number of bytes in an X9.62 encoding of a P-256 point.
 constexpr size_t kP256PointSize = 65;
 
@@ -102,8 +108,7 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<std::unique_ptr<Crypter>> RespondToHandshake(
     // See |HandshakeInitiator| comments about these first three arguments.
     base::span<const uint8_t, 32> psk_gen_key,
-    base::span<const uint8_t, 8> nonce,
-    base::span<const uint8_t, kCableEphemeralIdSize> expected_eid,
+    const NonceAndEID& nonce_and_eid,
     // identity, if not nullptr, specifies that this is a paired handshake and
     // contains the long-term identity key for this authenticator.
     const EC_KEY* identity,

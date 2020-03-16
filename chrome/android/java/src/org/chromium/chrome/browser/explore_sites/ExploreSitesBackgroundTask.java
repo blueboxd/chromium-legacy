@@ -42,7 +42,7 @@ public class ExploreSitesBackgroundTask extends NativeBackgroundTask {
 
     @VisibleForTesting
     protected Profile getProfile() {
-        if (mProfile == null) mProfile = Profile.getLastUsedProfile();
+        if (mProfile == null) mProfile = Profile.getLastUsedRegularProfile();
         return mProfile;
     }
 

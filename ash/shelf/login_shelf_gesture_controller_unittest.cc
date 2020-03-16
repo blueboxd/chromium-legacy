@@ -11,6 +11,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 
 namespace ash {
 
@@ -129,6 +130,230 @@ TEST_F(LoginShelfGestureControllerTest,
   EXPECT_FALSE(
       GetPrimaryShelf()->shelf_widget()->GetDragHandle()->GetVisible());
   EXPECT_FALSE(GetLoginScreenGestureController());
+}
+
+TEST_F(LoginShelfGestureControllerTest, DragHandleAndNudgeAnimate) {
+  NotifySessionStateChanged(session_manager::SessionState::OOBE);
+  EXPECT_FALSE(
+      GetPrimaryShelf()->shelf_widget()->GetDragHandle()->GetVisible());
+  EXPECT_FALSE(GetLoginScreenGestureController());
+
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Enter tablet mode and create a scoped login shelf gesture handler,
+  // and verify that makes the drag handle visible.
+  auto fling_handler = std::make_unique<TestLoginShelfFlingHandler>();
+  EXPECT_TRUE(fling_handler->gesture_detection_active());
+
+  DragHandle* const drag_handle =
+      GetPrimaryShelf()->shelf_widget()->GetDragHandle();
+  EXPECT_TRUE(drag_handle->GetVisible());
+
+  ASSERT_TRUE(GetLoginScreenGestureController());
+  ASSERT_TRUE(GetPrimaryShelf()
+                  ->shelf_widget()
+                  ->login_shelf_gesture_controller_for_testing()
+                  ->nudge_for_testing());
+  views::Widget* const nudge_widget = GetGestureContextualNudge()->GetWidget();
+  EXPECT_TRUE(nudge_widget->IsVisible());
+
+  base::OneShotTimer* animation_timer =
+      GetLoginScreenGestureController()->nudge_animation_timer_for_testing();
+  // The nudge and drag handler should start animating with a delay.
+  ASSERT_TRUE(animation_timer->IsRunning());
+  EXPECT_FALSE(drag_handle->layer()->GetAnimator()->is_animating());
+  EXPECT_FALSE(nudge_widget->GetLayer()->GetAnimator()->is_animating());
+
+  animation_timer->FireNow();
+
+  EXPECT_TRUE(drag_handle->GetVisible());
+  EXPECT_TRUE(drag_handle->layer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(nudge_widget->GetLayer()->GetAnimator()->is_animating());
+
+  EXPECT_EQ(drag_handle->layer()->GetTargetTransform(),
+            nudge_widget->GetLayer()->GetTargetTransform());
+
+  EXPECT_FALSE(animation_timer->IsRunning());
+
+  // Once the animations complete, the drag handle and the nudge should be at
+  // the original position, and another animation should be scheduled.
+  drag_handle->layer()->GetAnimator()->StopAnimating();
+  nudge_widget->GetLayer()->GetAnimator()->StopAnimating();
+
+  EXPECT_EQ(drag_handle->layer()->GetTargetTransform(),
+            nudge_widget->GetLayer()->GetTargetTransform());
+  EXPECT_EQ(gfx::Transform(), nudge_widget->GetLayer()->GetTargetTransform());
+
+  ASSERT_TRUE(animation_timer->IsRunning());
+  // Verify that another animation is scheduled once the second set of
+  // animations completes.
+  animation_timer->FireNow();
+
+  EXPECT_TRUE(drag_handle->layer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(nudge_widget->GetLayer()->GetAnimator()->is_animating());
+  drag_handle->layer()->GetAnimator()->StopAnimating();
+  nudge_widget->GetLayer()->GetAnimator()->StopAnimating();
+  EXPECT_TRUE(animation_timer->IsRunning());
+}
+
+TEST_F(LoginShelfGestureControllerTest, TappingNudgeWidgetStopsAnimations) {
+  NotifySessionStateChanged(session_manager::SessionState::OOBE);
+  EXPECT_FALSE(
+      GetPrimaryShelf()->shelf_widget()->GetDragHandle()->GetVisible());
+  EXPECT_FALSE(GetLoginScreenGestureController());
+
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Enter tablet mode and create a scoped login shelf gesture handler,
+  // and verify that makes the drag handle visible.
+  auto fling_handler = std::make_unique<TestLoginShelfFlingHandler>();
+  EXPECT_TRUE(fling_handler->gesture_detection_active());
+
+  DragHandle* const drag_handle =
+      GetPrimaryShelf()->shelf_widget()->GetDragHandle();
+  EXPECT_TRUE(drag_handle->GetVisible());
+
+  ASSERT_TRUE(GetLoginScreenGestureController());
+  views::Widget* const nudge_widget = GetGestureContextualNudge()->GetWidget();
+  EXPECT_TRUE(nudge_widget->IsVisible());
+
+  // Start the animation.
+  base::OneShotTimer* animation_timer =
+      GetLoginScreenGestureController()->nudge_animation_timer_for_testing();
+  ASSERT_TRUE(animation_timer->IsRunning());
+  animation_timer->FireNow();
+
+  EXPECT_TRUE(drag_handle->layer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(nudge_widget->GetLayer()->GetAnimator()->is_animating());
+
+  // Tapping the contextual nudge should schedule an animation to the original
+  // position.
+  GetEventGenerator()->GestureTapAt(
+      nudge_widget->GetWindowBoundsInScreen().CenterPoint());
+
+  EXPECT_EQ(drag_handle->layer()->GetTargetTransform(),
+            nudge_widget->GetLayer()->GetTargetTransform());
+  EXPECT_EQ(gfx::Transform(), nudge_widget->GetLayer()->GetTargetTransform());
+
+  // Once the "stop" animation finishes, no further animation should be
+  // scheduled.
+  drag_handle->layer()->GetAnimator()->StopAnimating();
+  nudge_widget->GetLayer()->GetAnimator()->StopAnimating();
+
+  EXPECT_EQ(drag_handle->layer()->GetTargetTransform(),
+            nudge_widget->GetLayer()->GetTargetTransform());
+  EXPECT_EQ(gfx::Transform(), nudge_widget->GetLayer()->GetTargetTransform());
+
+  EXPECT_FALSE(animation_timer->IsRunning());
+}
+
+TEST_F(LoginShelfGestureControllerTest,
+       TappingNudgeWidgetCancelsInitialScheduledAnimations) {
+  NotifySessionStateChanged(session_manager::SessionState::OOBE);
+  EXPECT_FALSE(
+      GetPrimaryShelf()->shelf_widget()->GetDragHandle()->GetVisible());
+  EXPECT_FALSE(GetLoginScreenGestureController());
+
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Enter tablet mode and create a scoped login shelf gesture handler,
+  // and verify that makes the drag handle visible.
+  auto fling_handler = std::make_unique<TestLoginShelfFlingHandler>();
+  EXPECT_TRUE(fling_handler->gesture_detection_active());
+
+  DragHandle* const drag_handle =
+      GetPrimaryShelf()->shelf_widget()->GetDragHandle();
+  EXPECT_TRUE(drag_handle->GetVisible());
+
+  ASSERT_TRUE(GetLoginScreenGestureController());
+  views::Widget* const nudge_widget = GetGestureContextualNudge()->GetWidget();
+  EXPECT_TRUE(nudge_widget->IsVisible());
+
+  base::OneShotTimer* animation_timer =
+      GetLoginScreenGestureController()->nudge_animation_timer_for_testing();
+  ASSERT_TRUE(animation_timer->IsRunning());
+
+  // Tap the contextual nudge before the nudge animation is scheduled - that
+  // should stop the animation timer.
+  GetEventGenerator()->GestureTapAt(
+      nudge_widget->GetWindowBoundsInScreen().CenterPoint());
+
+  EXPECT_FALSE(animation_timer->IsRunning());
+
+  // The stop nudge animation could still be run.
+  drag_handle->layer()->GetAnimator()->StopAnimating();
+  nudge_widget->GetLayer()->GetAnimator()->StopAnimating();
+
+  EXPECT_EQ(drag_handle->layer()->GetTargetTransform(),
+            nudge_widget->GetLayer()->GetTargetTransform());
+  EXPECT_EQ(gfx::Transform(), nudge_widget->GetLayer()->GetTargetTransform());
+
+  drag_handle->layer()->GetAnimator()->StopAnimating();
+  nudge_widget->GetLayer()->GetAnimator()->StopAnimating();
+  EXPECT_FALSE(animation_timer->IsRunning());
+}
+
+TEST_F(LoginShelfGestureControllerTest,
+       TappingNudgeWidgetCancelsSecondScheduledAnimations) {
+  NotifySessionStateChanged(session_manager::SessionState::OOBE);
+  EXPECT_FALSE(
+      GetPrimaryShelf()->shelf_widget()->GetDragHandle()->GetVisible());
+  EXPECT_FALSE(GetLoginScreenGestureController());
+
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Enter tablet mode and create a scoped login shelf gesture handler,
+  // and verify that makes the drag handle visible.
+  auto fling_handler = std::make_unique<TestLoginShelfFlingHandler>();
+  EXPECT_TRUE(fling_handler->gesture_detection_active());
+
+  DragHandle* const drag_handle =
+      GetPrimaryShelf()->shelf_widget()->GetDragHandle();
+  EXPECT_TRUE(drag_handle->GetVisible());
+
+  ASSERT_TRUE(GetLoginScreenGestureController());
+  views::Widget* const nudge_widget = GetGestureContextualNudge()->GetWidget();
+  EXPECT_TRUE(nudge_widget->IsVisible());
+
+  // Run the first nudge animation sequence.
+  base::OneShotTimer* animation_timer =
+      GetLoginScreenGestureController()->nudge_animation_timer_for_testing();
+  ASSERT_TRUE(animation_timer->IsRunning());
+  animation_timer->FireNow();
+  drag_handle->layer()->GetAnimator()->StopAnimating();
+  nudge_widget->GetLayer()->GetAnimator()->StopAnimating();
+  EXPECT_TRUE(animation_timer->IsRunning());
+
+  // Tap the contextual nudge before the nudge animation is scheduled - that
+  // should stop the animation timer.
+  GetEventGenerator()->GestureTapAt(
+      nudge_widget->GetWindowBoundsInScreen().CenterPoint());
+
+  EXPECT_FALSE(animation_timer->IsRunning());
+
+  // The stop nudge animation could still be run.
+  drag_handle->layer()->GetAnimator()->StopAnimating();
+  nudge_widget->GetLayer()->GetAnimator()->StopAnimating();
+
+  EXPECT_EQ(drag_handle->layer()->GetTargetTransform(),
+            nudge_widget->GetLayer()->GetTargetTransform());
+  EXPECT_EQ(gfx::Transform(), nudge_widget->GetLayer()->GetTargetTransform());
+
+  drag_handle->layer()->GetAnimator()->StopAnimating();
+  nudge_widget->GetLayer()->GetAnimator()->StopAnimating();
+  EXPECT_FALSE(animation_timer->IsRunning());
 }
 
 TEST_F(LoginShelfGestureControllerTest,

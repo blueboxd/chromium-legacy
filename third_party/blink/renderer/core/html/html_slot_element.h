@@ -110,7 +110,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   static const AtomicString& UserAgentDefaultSlotName();
 
   // For imperative Shadow DOM distribution APIs
-  void assign(HeapVector<Member<Node>> nodes);
+  void assign(HeapVector<Member<Node>> nodes, ExceptionState&);
   const HeapHashSet<Member<Node>>& AssignedNodesCandidate() const {
     return assigned_nodes_candidates_;
   }

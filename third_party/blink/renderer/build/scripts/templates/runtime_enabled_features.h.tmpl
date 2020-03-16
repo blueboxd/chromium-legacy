@@ -48,7 +48,7 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures {
     void Restore();
 
    private:
-    {% for feature in standard_features %}
+    {% for feature in features %}
     bool {{feature.data_member_name}};
     {% endfor %}
   };
@@ -62,13 +62,9 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures {
 
   {% for feature in features %}
   {% if not feature.in_origin_trial %}
-  {% if feature.custom %}
-  static bool {{feature.name}}Enabled();
-  {% else %}
   static void Set{{feature.name}}Enabled(bool enabled) { {{feature.data_member_name}} = enabled; }
   static bool {{feature.name}}Enabled() { return {{feature.enabled_condition}}; }
   static bool {{feature.name}}Enabled(const FeatureContext*) { return {{feature.enabled_condition}}; }
-  {% endif %}
 
   {% endif %}
   {% endfor %}
@@ -84,12 +80,8 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures {
   // feature is enabled in a given context.
 
   {% for feature in origin_trial_controlled_features %}
-  {% if feature.custom %}
-  static bool {{feature.name}}EnabledByRuntimeFlag();
-  {% else %}
   static void Set{{feature.name}}Enabled(bool enabled) { {{feature.data_member_name}} = enabled; }
   static bool {{feature.name}}EnabledByRuntimeFlag() { return {{feature.enabled_condition}}; }
-  {% endif %}
   static bool {{feature.name}}Enabled(const FeatureContext*);
 
   {% endfor %}
@@ -97,7 +89,7 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures {
  private:
   friend class RuntimeEnabledFeaturesTestHelpers;
 
-  {% for feature in standard_features %}
+  {% for feature in features %}
   static bool {{feature.data_member_name}};
   {% endfor %}
 };

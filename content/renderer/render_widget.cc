@@ -600,8 +600,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragLeave, OnDragTargetDragLeave)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDrop, OnDragTargetDrop)
     IPC_MESSAGE_HANDLER(DragMsg_SourceEnded, OnDragSourceEnded)
-    IPC_MESSAGE_HANDLER(DragMsg_SourceSystemDragEnded,
-                        OnDragSourceSystemDragEnded)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -2313,14 +2311,6 @@ void RenderWidget::OnDragSourceEnded(const gfx::PointF& client_point,
 
   frame_widget->DragSourceEndedAt(ConvertWindowPointToViewport(client_point),
                                   screen_point, op);
-}
-
-void RenderWidget::OnDragSourceSystemDragEnded() {
-  blink::WebFrameWidget* frame_widget = GetFrameWidget();
-  if (!frame_widget)
-    return;
-
-  frame_widget->DragSourceSystemDragEnded();
 }
 
 void RenderWidget::ShowVirtualKeyboardOnElementFocus() {

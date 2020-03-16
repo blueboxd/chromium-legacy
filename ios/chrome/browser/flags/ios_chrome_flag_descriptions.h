@@ -331,11 +331,6 @@ extern const char kSyncSandboxDescription[];
 extern const char kToolbarContainerName[];
 extern const char kToolbarContainerDescription[];
 
-// Title and description for the flag to enable the new tab button in the
-// toolbar.
-extern const char kToolbarNewTabButtonName[];
-extern const char kToolbarNewTabButtonDescription[];
-
 // Title and description for the flag to enable the Messages UI for Translate
 // Infobars.
 extern const char kTranslateInfobarMessagesUIName[];

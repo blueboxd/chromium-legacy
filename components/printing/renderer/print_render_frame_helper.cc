@@ -700,7 +700,16 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
       web_view, &frame_client, nullptr, nullptr);
 
   blink::WebWidgetClient web_widget_client;
-  blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, frame);
+  blink::WebFrameWidget::CreateForMainFrame(
+      &web_widget_client, frame,
+      blink::CrossVariantMojoAssociatedRemote<
+          blink::mojom::FrameWidgetHostInterfaceBase>(),
+      blink::CrossVariantMojoAssociatedReceiver<
+          blink::mojom::FrameWidgetInterfaceBase>(),
+      blink::CrossVariantMojoAssociatedRemote<
+          blink::mojom::WidgetHostInterfaceBase>(),
+      blink::CrossVariantMojoAssociatedReceiver<
+          blink::mojom::WidgetInterfaceBase>());
   web_view->DidAttachLocalMainFrame();
 
   base::Value html(
@@ -938,7 +947,16 @@ void PrepareFrameAndViewForPrint::CopySelection(
   blink::WebLocalFrame* main_frame =
       blink::WebLocalFrame::CreateMainFrame(web_view, this, nullptr, nullptr);
   frame_.Reset(main_frame);
-  blink::WebFrameWidget::CreateForMainFrame(this, main_frame);
+  blink::WebFrameWidget::CreateForMainFrame(
+      this, main_frame,
+      blink::CrossVariantMojoAssociatedRemote<
+          blink::mojom::FrameWidgetHostInterfaceBase>(),
+      blink::CrossVariantMojoAssociatedReceiver<
+          blink::mojom::FrameWidgetInterfaceBase>(),
+      blink::CrossVariantMojoAssociatedRemote<
+          blink::mojom::WidgetHostInterfaceBase>(),
+      blink::CrossVariantMojoAssociatedReceiver<
+          blink::mojom::WidgetInterfaceBase>());
   web_view->DidAttachLocalMainFrame();
   node_to_print_.Reset();
 

@@ -195,15 +195,14 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
     [_sceneState addObserver:self];
     // The window is necessary very early in the app/scene lifecycle, so it
     // should be created right away.
-    if (!self.sceneState.window) {
-      DCHECK(!IsMultiwindowSupported())
-          << "The window must be created by the scene delegate";
+    // When multiwindow is supported, the window is created by SceneDelegate,
+    // and fetched by SceneState from UIScene's windows.
+    if (!IsMultiwindowSupported() && !self.sceneState.window) {
       self.sceneState.window = [[ChromeOverlayWindow alloc]
           initWithFrame:[[UIScreen mainScreen] bounds]];
-
-      _appURLLoadingService = new AppUrlLoadingService();
-      _appURLLoadingService->SetDelegate(self);
     }
+    _appURLLoadingService = new AppUrlLoadingService();
+    _appURLLoadingService->SetDelegate(self);
   }
   return self;
 }
@@ -260,6 +259,13 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
     return;
   }
 
+  DCHECK(self.mainController);
+  if (IsMultiwindowSupported()) {
+    // TODO(crbug.com/1012697): This should probably be the only code path for
+    // multiwindow and non-multiwindow cases.
+    [self startUpChromeUIPostCrash:NO needRestoration:NO];
+  }
+
   self.hasInitializedUI = YES;
 }
 
@@ -270,6 +276,8 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
                  needRestoration:(BOOL)needsRestoration {
   DCHECK(!self.browserViewWrangler);
   DCHECK(self.appURLLoadingService);
+  DCHECK(self.mainController);
+  DCHECK(self.mainController.mainBrowserState);
 
   self.browserViewWrangler = [[BrowserViewWrangler alloc]
              initWithBrowserState:self.mainController.mainBrowserState
@@ -337,7 +345,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   TabModel* otrTabModel = self.incognitoInterface.tabModel;
 
   // Enables UI initializations to query the keyWindow's size.
-  [self.mainController.window makeKeyAndVisible];
+  [self.sceneState.window makeKeyAndVisible];
 
   // Lazy init of mainCoordinator.
   [self.mainCoordinator start];

@@ -61,19 +61,22 @@ class TabletModeTransitionTest : public UIPerformanceTest {
   DISALLOW_COPY_AND_ASSIGN(TabletModeTransitionTest);
 };
 
-// TODO(http://crbug.com/1057864): Disabled due to flakiness.
-IN_PROC_BROWSER_TEST_F(TabletModeTransitionTest, DISABLED_EnterExit) {
+IN_PROC_BROWSER_TEST_F(TabletModeTransitionTest, EnterExit) {
   // Activate the first window. The top window is the only window which animates
   // and is the one we should check to see if the tablet animation has finished.
   Browser* browser = BrowserList::GetInstance()->GetLastActive();
   aura::Window* browser_window = browser->window()->GetNativeWindow();
+  ash::ShellTestApi shell_test_api;
 
-  ash::ShellTestApi().SetTabletModeEnabledForTest(
-      true, /*wait_for_completion=*/false);
-  ash::ShellTestApi().WaitForWindowFinishAnimating(browser_window);
+  auto waiter =
+      shell_test_api.CreateWaiterForFinishingWindowAnimation(browser_window);
+  shell_test_api.SetTabletModeEnabledForTest(true,
+                                             /*wait_for_completion=*/false);
+  std::move(waiter).Run();
 
-  ash::ShellTestApi().SetTabletModeEnabledForTest(
-      false, /*wait_for_completion=*/false);
-  EXPECT_TRUE(browser_window->layer()->GetAnimator()->is_animating());
-  ash::ShellTestApi().WaitForWindowFinishAnimating(browser_window);
+  waiter =
+      shell_test_api.CreateWaiterForFinishingWindowAnimation(browser_window);
+  shell_test_api.SetTabletModeEnabledForTest(false,
+                                             /*wait_for_completion=*/false);
+  std::move(waiter).Run();
 }

@@ -50,6 +50,7 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/infobars/core/infobar_feature.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -2867,6 +2868,17 @@ TEST_F(CreditCardSaveManagerTest,
 
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_RequestExpirationDateViaExpDateFixFlow) {
+#if defined(OS_IOS)
+  // iOS should always provide a valid expiration date when attempting to
+  // upload a Saved Card due to the Messages SaveCard modal. The manager
+  // shouldn't handle expired dates.
+  if ((base::FeatureList::IsEnabled(
+           features::kAutofillSaveCardInfobarEditSupport) &&
+       base::FeatureList::IsEnabled(kIOSInfobarUIReboot))) {
+    return;
+  }
+#endif
+
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableExpirationDate);
   // Create, fill and submit an address form in order to establish a recent
@@ -2910,6 +2922,17 @@ TEST_F(CreditCardSaveManagerTest,
 
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_RequestExpirationDateIfOnlyMonthMissing) {
+#if defined(OS_IOS)
+  // iOS should always provide a valid expiration date when attempting to
+  // upload a Saved Card due to the Messages SaveCard modal. The manager
+  // shouldn't handle expired dates.
+  if ((base::FeatureList::IsEnabled(
+           features::kAutofillSaveCardInfobarEditSupport) &&
+       base::FeatureList::IsEnabled(kIOSInfobarUIReboot))) {
+    return;
+  }
+#endif
+
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableExpirationDate);
   // Create, fill and submit an address form in order to establish a recent
@@ -2953,6 +2976,17 @@ TEST_F(CreditCardSaveManagerTest,
 
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_RequestExpirationDateIfOnlyYearMissing) {
+#if defined(OS_IOS)
+  // iOS should always provide a valid expiration date when attempting to
+  // upload a Saved Card due to the Messages SaveCard modal. The manager
+  // shouldn't handle expired dates.
+  if ((base::FeatureList::IsEnabled(
+           features::kAutofillSaveCardInfobarEditSupport) &&
+       base::FeatureList::IsEnabled(kIOSInfobarUIReboot))) {
+    return;
+  }
+#endif
+
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableExpirationDate);
   // Create, fill and submit an address form in order to establish a recent
@@ -2996,6 +3030,17 @@ TEST_F(CreditCardSaveManagerTest,
 
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_RequestExpirationDateIfExpirationDateInputIsExpired) {
+#if defined(OS_IOS)
+  // iOS should always provide a valid expiration date when attempting to
+  // upload a Saved Card due to the Messages SaveCard modal. The manager
+  // shouldn't handle expired dates.
+  if ((base::FeatureList::IsEnabled(
+           features::kAutofillSaveCardInfobarEditSupport) &&
+       base::FeatureList::IsEnabled(kIOSInfobarUIReboot))) {
+    return;
+  }
+#endif
+
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableExpirationDate);
   // Create, fill and submit an address form in order to establish a recent
@@ -3040,6 +3085,17 @@ TEST_F(CreditCardSaveManagerTest,
 TEST_F(
     CreditCardSaveManagerTest,
     UploadCreditCard_RequestExpirationDateIfExpirationDateInputIsTwoDigitAndExpired) {
+#if defined(OS_IOS)
+  // iOS should always provide a valid expiration date when attempting to
+  // upload a Saved Card due to the Messages SaveCard modal. The manager
+  // shouldn't handle expired dates.
+  if ((base::FeatureList::IsEnabled(
+           features::kAutofillSaveCardInfobarEditSupport) &&
+       base::FeatureList::IsEnabled(kIOSInfobarUIReboot))) {
+    return;
+  }
+#endif
+
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableExpirationDate);
   // Create, fill and submit an address form in order to establish a recent

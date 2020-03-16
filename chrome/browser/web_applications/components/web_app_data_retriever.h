@@ -15,7 +15,7 @@
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
-#include "chrome/common/chrome_render_frame.mojom.h"
+#include "chrome/common/chrome_render_frame.mojom-forward.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 

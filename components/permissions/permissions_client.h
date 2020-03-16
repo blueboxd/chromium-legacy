@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/permission_prompt.h"
 #include "components/permissions/permission_util.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/origin.h"
@@ -132,6 +133,13 @@ class PermissionsClient {
   // Converts the given chromium |resource_id| (e.g. IDR_INFOBAR_TRANSLATE) to
   // an Android drawable resource ID. Returns 0 if a mapping wasn't found.
   virtual int MapToJavaDrawableId(int resource_id);
+#else
+  // Creates a permission prompt.
+  // TODO(crbug.com/1025609): Move the desktop permission prompt implementation
+  // into //components/permissions and remove this.
+  virtual std::unique_ptr<PermissionPrompt> CreatePrompt(
+      content::WebContents* web_contents,
+      PermissionPrompt::Delegate* delegate);
 #endif
 };
 

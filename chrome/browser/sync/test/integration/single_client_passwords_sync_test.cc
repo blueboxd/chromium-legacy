@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/base64.h"
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -17,9 +16,7 @@
 #include "components/password_manager/core/browser/sync/password_sync_bridge.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
-#include "components/sync/base/time.h"
 #include "components/sync/driver/profile_sync_service.h"
-#include "components/sync/syncable/directory_cryptographer.h"
 #include "content/public/test/test_launcher.h"
 
 namespace {
@@ -40,42 +37,10 @@ using testing::IsEmpty;
 const syncer::SyncFirstSetupCompleteSource kSetSourceFromTest =
     syncer::SyncFirstSetupCompleteSource::BASIC_FLOW;
 
-syncer::KeyParams KeystoreKeyParams(const std::vector<uint8_t>& key) {
-  return {syncer::KeyDerivationParams::CreateForPbkdf2(),
-          base::Base64Encode(key)};
-}
-
-sync_pb::PasswordSpecifics EncryptPasswordSpecifics(
-    const syncer::KeyParams& key_params,
-    const sync_pb::PasswordSpecificsData& password_data) {
-  syncer::DirectoryCryptographer cryptographer;
-  cryptographer.AddKey(key_params);
-
-  sync_pb::PasswordSpecifics encrypted_specifics;
-  encrypted_specifics.mutable_unencrypted_metadata()->set_url(
-      password_data.signon_realm());
-  bool result = cryptographer.Encrypt(password_data,
-                                      encrypted_specifics.mutable_encrypted());
-  DCHECK(result);
-  return encrypted_specifics;
-}
-
-class PasswordSyncActiveChecker : public SingleClientStatusChangeChecker {
- public:
-  explicit PasswordSyncActiveChecker(syncer::ProfileSyncService* service)
-      : SingleClientStatusChangeChecker(service) {}
-  ~PasswordSyncActiveChecker() override = default;
-
-  // SingleClientStatusChangeChecker.
-  bool IsExitConditionSatisfied(std::ostream* os) override {
-    return service()->GetActiveDataTypes().Has(syncer::PASSWORDS);
-  }
-};
-
 class SingleClientPasswordsSyncTest : public SyncTest {
  public:
   SingleClientPasswordsSyncTest() : SyncTest(SINGLE_CLIENT) {}
-  ~SingleClientPasswordsSyncTest() override {}
+  ~SingleClientPasswordsSyncTest() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientPasswordsSyncTest);
@@ -251,7 +216,7 @@ class SingleClientPasswordsWithAccountStorageSyncTest : public SyncTest {
                                   kEnablePasswordsAccountStorage},
         /*disabled_features=*/{});
   }
-  ~SingleClientPasswordsWithAccountStorageSyncTest() override {}
+  ~SingleClientPasswordsWithAccountStorageSyncTest() override = default;
 
   void SetUpInProcessBrowserTestFixture() override {
     test_signin_client_factory_ =
@@ -264,34 +229,7 @@ class SingleClientPasswordsWithAccountStorageSyncTest : public SyncTest {
 #endif  // defined(OS_CHROMEOS)
     SyncTest::SetUpOnMainThread();
 
-    AddKeystoreNigoriToFakeServer();
-  }
-
-  void AddKeystoreNigoriToFakeServer() {
-    const std::vector<std::vector<uint8_t>>& keystore_keys =
-        GetFakeServer()->GetKeystoreKeys();
-    ASSERT_TRUE(keystore_keys.size() == 1);
-    const syncer::KeyParams key_params =
-        KeystoreKeyParams(keystore_keys.back());
-
-    sync_pb::NigoriSpecifics nigori;
-    nigori.set_keybag_is_frozen(true);
-    nigori.set_keystore_migration_time(1U);
-    nigori.set_encrypt_everything(false);
-    nigori.set_passphrase_type(sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
-
-    syncer::DirectoryCryptographer cryptographer;
-    ASSERT_TRUE(cryptographer.AddKey(key_params));
-    ASSERT_TRUE(cryptographer.AddNonDefaultKey(key_params));
-    ASSERT_TRUE(cryptographer.GetKeys(nigori.mutable_encryption_keybag()));
-
-    syncer::DirectoryCryptographer keystore_cryptographer;
-    ASSERT_TRUE(keystore_cryptographer.AddKey(key_params));
-    ASSERT_TRUE(keystore_cryptographer.EncryptString(
-        cryptographer.GetDefaultNigoriKeyData(),
-        nigori.mutable_keystore_decryptor_token()));
-
-    encryption_helper::SetNigoriInFakeServer(GetFakeServer(), nigori);
+    encryption_helper::SetKeystoreNigoriInFakeServer(GetFakeServer());
   }
 
   void AddTestPasswordToFakeServer() {
@@ -305,29 +243,11 @@ class SingleClientPasswordsWithAccountStorageSyncTest : public SyncTest {
     // Other data.
     password_data.set_password_value("password_value");
 
-    fake_server_->InjectEntity(
-        syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
-            /*non_unique_name=*/"encrypted", /*client_tag=*/
-            password_manager::PasswordSyncBridge::ComputeClientTagForTesting(
-                password_data),
-            CreateSpecifics(password_data),
-            /*creation_time=*/syncer::TimeToProtoTime(base::Time::Now()),
-            /*last_modified_time=*/syncer::TimeToProtoTime(base::Time::Now())));
+    passwords_helper::InjectKeystoreEncryptedServerPassword(password_data,
+                                                            GetFakeServer());
   }
 
  private:
-  sync_pb::EntitySpecifics CreateSpecifics(
-      const sync_pb::PasswordSpecificsData& password_data) const {
-    const syncer::KeyParams key_params =
-        KeystoreKeyParams(GetFakeServer()->GetKeystoreKeys().back());
-
-    sync_pb::EntitySpecifics specifics;
-    *specifics.mutable_password() =
-        EncryptPasswordSpecifics(key_params, password_data);
-
-    return specifics;
-  }
-
   base::test::ScopedFeatureList feature_list_;
 
   secondary_account_helper::ScopedSigninClientFactory

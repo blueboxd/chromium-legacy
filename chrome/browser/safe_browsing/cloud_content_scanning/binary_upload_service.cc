@@ -242,6 +242,9 @@ void BinaryUploadService::OnGetRequestData(Request* request,
                      weakptr_factory_.GetWeakPtr(), request));
   upload_request->Start();
   active_uploads_[request] = std::move(upload_request);
+
+  WebUIInfoSingleton::GetInstance()->AddToDeepScanRequests(
+      request->deep_scanning_request());
 }
 
 void BinaryUploadService::OnUploadComplete(Request* request,
@@ -329,6 +332,9 @@ void BinaryUploadService::FinishRequest(Request* request,
                                         Result result,
                                         DeepScanningClientResponse response) {
   RecordRequestMetrics(request, result, response);
+
+  // We add the request here in case we never actually uploaded anything, so it
+  // wasn't added in OnGetRequestData
   WebUIInfoSingleton::GetInstance()->AddToDeepScanRequests(
       request->deep_scanning_request());
   WebUIInfoSingleton::GetInstance()->AddToDeepScanResponses(

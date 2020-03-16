@@ -87,6 +87,38 @@ class AdTaggingBrowserTest : public SubresourceFilterBrowserTest {
     return CreateDocWrittenFrameImpl(adapter, true /* ad_script */);
   }
 
+  // Creates a frame and aborts the initial load with a doc.write. Returns after
+  // navigation has completed.
+  content::RenderFrameHost* CreateFrameWithDocWriteAbortedLoad(
+      const content::ToRenderFrameHost& adapter) {
+    return CreateFrameWithDocWriteAbortedLoadImpl(adapter,
+                                                  false /* ad_script */);
+  }
+
+  // Creates a frame and aborts the initial load with a doc.write. The script
+  // creating the frame is an ad script. Returns after navigation has completed.
+  content::RenderFrameHost* CreateFrameWithDocWriteAbortedLoadFromAdScript(
+      const content::ToRenderFrameHost& adapter) {
+    return CreateFrameWithDocWriteAbortedLoadImpl(adapter,
+                                                  true /* ad_script */);
+  }
+
+  // Creates a frame and aborts the initial load with a window.stop. Returns
+  // after navigation has completed.
+  content::RenderFrameHost* CreateFrameWithWindowStopAbortedLoad(
+      const content::ToRenderFrameHost& adapter) {
+    return CreateFrameWithWindowStopAbortedLoadImpl(adapter,
+                                                    false /* ad_script */);
+  }
+
+  // Creates a frame and aborts the initial load with a window.stop. The script
+  // creating the frame is an ad script. Returns after navigation has completed.
+  content::RenderFrameHost* CreateFrameWithWindowStopAbortedLoadFromAdScript(
+      const content::ToRenderFrameHost& adapter) {
+    return CreateFrameWithWindowStopAbortedLoadImpl(adapter,
+                                                    true /* ad_script */);
+  }
+
   // Given a RenderFrameHost, navigates the page to the given |url| and waits
   // for the navigation to complete before returning.
   void NavigateFrame(content::RenderFrameHost* render_frame_host,
@@ -109,6 +141,14 @@ class AdTaggingBrowserTest : public SubresourceFilterBrowserTest {
       bool ad_script);
 
   content::RenderFrameHost* CreateDocWrittenFrameImpl(
+      const content::ToRenderFrameHost& adapter,
+      bool ad_script);
+
+  content::RenderFrameHost* CreateFrameWithDocWriteAbortedLoadImpl(
+      const content::ToRenderFrameHost& adapter,
+      bool ad_script);
+
+  content::RenderFrameHost* CreateFrameWithWindowStopAbortedLoadImpl(
       const content::ToRenderFrameHost& adapter,
       bool ad_script);
 
@@ -155,6 +195,48 @@ content::RenderFrameHost* AdTaggingBrowserTest::CreateDocWrittenFrameImpl(
   navigation_observer.Wait();
   EXPECT_TRUE(navigation_observer.last_navigation_succeeded())
       << navigation_observer.last_net_error_code();
+  return content::FrameMatchingPredicate(
+      web_contents, base::BindRepeating(&content::FrameMatchesName, name));
+}
+
+content::RenderFrameHost*
+AdTaggingBrowserTest::CreateFrameWithDocWriteAbortedLoadImpl(
+    const content::ToRenderFrameHost& adapter,
+    bool ad_script) {
+  content::RenderFrameHost* rfh = adapter.render_frame_host();
+  std::string name = GetUniqueFrameName();
+  std::string script =
+      base::StringPrintf("%s('%s');",
+                         ad_script ? "createAdFrameWithDocWriteAbortedLoad"
+                                   : "createFrameWithDocWriteAbortedLoad",
+                         name.c_str());
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(rfh);
+  content::TestNavigationObserver navigation_observer(web_contents, 1);
+  EXPECT_TRUE(content::ExecuteScript(rfh, script));
+  navigation_observer.Wait();
+  EXPECT_FALSE(navigation_observer.last_navigation_succeeded());
+  return content::FrameMatchingPredicate(
+      web_contents, base::BindRepeating(&content::FrameMatchesName, name));
+}
+
+content::RenderFrameHost*
+AdTaggingBrowserTest::CreateFrameWithWindowStopAbortedLoadImpl(
+    const content::ToRenderFrameHost& adapter,
+    bool ad_script) {
+  content::RenderFrameHost* rfh = adapter.render_frame_host();
+  std::string name = GetUniqueFrameName();
+  std::string script =
+      base::StringPrintf("%s('%s');",
+                         ad_script ? "createAdFrameWithWindowStopAbortedLoad"
+                                   : "createFrameWithWindowStopAbortedLoad",
+                         name.c_str());
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(rfh);
+  content::TestNavigationObserver navigation_observer(web_contents, 1);
+  EXPECT_TRUE(content::ExecuteScript(rfh, script));
+  navigation_observer.Wait();
+  EXPECT_FALSE(navigation_observer.last_navigation_succeeded());
   return content::FrameMatchingPredicate(
       web_contents, base::BindRepeating(&content::FrameMatchesName, name));
 }
@@ -326,6 +408,76 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, SameOriginFrameTagging) {
   content::RenderFrameHost* ad_frame =
       CreateDocWrittenFrameFromAdScript(GetWebContents());
   EXPECT_TRUE(*observer.GetIsAdSubframe(ad_frame->GetFrameTreeNodeId()));
+}
+
+// Test that frames with an aborted initial load due to a doc.write are still
+// correctly tagged as ads or not.
+IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
+                       FramesWithDocWriteAbortedLoad_StillCorrectlyTagged) {
+  TestSubresourceFilterObserver observer(web_contents());
+
+  // Main frame.
+  ui_test_utils::NavigateToURL(browser(), GetURL("frame_factory.html"));
+
+  // Vanilla child.
+  content::RenderFrameHost* vanilla_frame_with_aborted_load =
+      CreateFrameWithDocWriteAbortedLoad(GetWebContents());
+  // We expect an empty Optional<bool> as no successful subframe navigation
+  // occurred and it is not set as an ad frame.
+  EXPECT_FALSE(observer
+                   .GetIsAdSubframe(
+                       vanilla_frame_with_aborted_load->GetFrameTreeNodeId())
+                   .has_value());
+
+  // Child created by ad script.
+  content::RenderFrameHost* ad_frame_with_aborted_load =
+      CreateFrameWithDocWriteAbortedLoadFromAdScript(GetWebContents());
+  EXPECT_TRUE(*observer.GetIsAdSubframe(
+      ad_frame_with_aborted_load->GetFrameTreeNodeId()));
+
+  // Child with ad parent.
+  content::RenderFrameHost* ad_frame = CreateSrcFrameFromAdScript(
+      GetWebContents(), GetURL("frame_factory.html"));
+  content::RenderFrameHost* child_frame_of_ad_with_aborted_load =
+      CreateFrameWithDocWriteAbortedLoad(ad_frame);
+  EXPECT_TRUE(*observer.GetIsAdSubframe(ad_frame->GetFrameTreeNodeId()));
+  EXPECT_TRUE(*observer.GetIsAdSubframe(
+      child_frame_of_ad_with_aborted_load->GetFrameTreeNodeId()));
+}
+
+// Test that frames with an aborted initial load due to a window.stop are still
+// correctly tagged as ads or not.
+IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
+                       FramesWithWindowStopAbortedLoad_StillCorrectlyTagged) {
+  TestSubresourceFilterObserver observer(web_contents());
+
+  // Main frame.
+  ui_test_utils::NavigateToURL(browser(), GetURL("frame_factory.html"));
+
+  // Vanilla child.
+  content::RenderFrameHost* vanilla_frame_with_aborted_load =
+      CreateFrameWithWindowStopAbortedLoad(GetWebContents());
+  // We expect an empty Optional<bool> as no successful subframe navigation
+  // occurred and it is not set as an ad frame.
+  EXPECT_FALSE(observer
+                   .GetIsAdSubframe(
+                       vanilla_frame_with_aborted_load->GetFrameTreeNodeId())
+                   .has_value());
+
+  // Child created by ad script.
+  content::RenderFrameHost* ad_frame_with_aborted_load =
+      CreateFrameWithWindowStopAbortedLoadFromAdScript(GetWebContents());
+  EXPECT_TRUE(*observer.GetIsAdSubframe(
+      ad_frame_with_aborted_load->GetFrameTreeNodeId()));
+
+  // Child with ad parent.
+  content::RenderFrameHost* ad_frame = CreateSrcFrameFromAdScript(
+      GetWebContents(), GetURL("frame_factory.html"));
+  content::RenderFrameHost* child_frame_of_ad_with_aborted_load =
+      CreateFrameWithWindowStopAbortedLoad(ad_frame);
+  EXPECT_TRUE(*observer.GetIsAdSubframe(ad_frame->GetFrameTreeNodeId()));
+  EXPECT_TRUE(*observer.GetIsAdSubframe(
+      child_frame_of_ad_with_aborted_load->GetFrameTreeNodeId()));
 }
 
 void ExpectWindowOpenUkmEntry(const ukm::TestUkmRecorder& ukm_recorder,

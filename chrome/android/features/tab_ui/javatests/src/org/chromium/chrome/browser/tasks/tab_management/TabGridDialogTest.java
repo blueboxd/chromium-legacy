@@ -35,11 +35,13 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.e
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.getSwipeToDismissAction;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.isShowingPopupTabList;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.mergeAllNormalTabsToAGroup;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyShowingPopupTabList;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabStripFaviconCount;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.support.test.espresso.Espresso;
 import android.support.test.espresso.contrib.RecyclerViewActions;
@@ -452,6 +454,43 @@ public class TabGridDialogTest {
         verifyTabSwitcherCardCount(cta, 0);
     }
 
+    @Test
+    @MediumTest
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
+    public void testSelectionEditorPosition() throws InterruptedException {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        View parentView = cta.getCompositorViewHolder();
+        createTabs(cta, false, 3);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 3);
+
+        // Create a tab group.
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Verify the size and position of TabGridDialog in portrait mode.
+        openDialogFromTabSwitcherAndVerify(cta, 3);
+        checkPopupPosition(cta, true, true);
+
+        // Verify the size and position of TabSelectionEditor in portrait mode.
+        openSelectionEditorAndVerify(cta, 3);
+        checkPopupPosition(cta, false, true);
+
+        // Verify the size and position of TabSelectionEditor in landscape mode.
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+        CriteriaHelper.pollUiThread(() -> parentView.getHeight() < parentView.getWidth());
+        checkPopupPosition(cta, false, false);
+
+        // Verify the size and position of TabGridDialog in landscape mode.
+        mSelectionEditorRobot.actionRobot.clickToolbarNavigationButton();
+        mSelectionEditorRobot.resultRobot.verifyTabSelectionEditorIsHidden();
+        assertTrue(isDialogShowing(cta));
+        checkPopupPosition(cta, true, false);
+
+        // Reset orientation.
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_PORTRAIT);
+    }
+
     private void openDialogFromTabSwitcherAndVerify(ChromeTabbedActivity cta, int tabCount) {
         clickFirstCardFromTabSwitcher(cta);
         CriteriaHelper.pollInstrumentationThread(() -> isDialogShowing(cta));
@@ -599,5 +638,33 @@ public class TabGridDialogTest {
                 .verifyToolbarSelectionTextWithResourceId(
                         R.string.tab_selection_editor_toolbar_select_tabs)
                 .verifyAdapterHasItemCount(count);
+    }
+
+    private void checkPopupPosition(
+            ChromeTabbedActivity cta, boolean isDialog, boolean isPortrait) {
+        // If isDialog is true, we are checking the position of TabGridDialog; otherwise we are
+        // checking the position of TabSelectionEditor.
+        int contentViewId = isDialog ? R.id.dialog_container_view : R.id.selectable_list;
+        int smallMargin =
+                (int) cta.getResources().getDimension(R.dimen.tab_grid_dialog_side_margin);
+        int largeMargin = (int) cta.getResources().getDimension(R.dimen.tab_grid_dialog_top_margin);
+        int topMargin = isPortrait ? largeMargin : smallMargin;
+        int sideMargin = isPortrait ? smallMargin : largeMargin;
+        View parentView = cta.getCompositorViewHolder();
+        Rect parentRect = new Rect();
+        parentView.getGlobalVisibleRect(parentRect);
+
+        onView(withId(contentViewId))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .check((v, e) -> {
+                    int[] location = new int[2];
+                    v.getLocationOnScreen(location);
+                    // Check the position.
+                    assertEquals(sideMargin, location[0]);
+                    assertEquals(topMargin + parentRect.top, location[1]);
+                    // Check the size.
+                    assertEquals(parentView.getHeight() - 2 * topMargin, v.getHeight());
+                    assertEquals(parentView.getWidth() - 2 * sideMargin, v.getWidth());
+                });
     }
 }

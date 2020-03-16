@@ -490,6 +490,62 @@ TEST_F(IsolatedPrerenderTabHelperTest, LimitedNumberOfPrefetches) {
   EXPECT_EQ(RequestCount(), 0);
 }
 
+TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingNotStartedWhileInvisible) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kPrefetchSRPNavigationPredictions_HTMLOnly);
+
+  web_contents()->WasHidden();
+
+  GURL doc_url("https://www.google.com/search?q=cats");
+  GURL prediction_url("https://www.cat-food.com/");
+
+  MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
+
+  EXPECT_EQ(RequestCount(), 0);
+}
+
+TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingPausedWhenInvisible) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kPrefetchSRPNavigationPredictions_HTMLOnly);
+
+  GURL doc_url("https://www.google.com/search?q=cats");
+  GURL prediction_url_1("https://www.cat-food.com/");
+  GURL prediction_url_2("https://www.dogs-r-dumb.com/");
+
+  MakeNavigationPrediction(web_contents(), doc_url,
+                           {prediction_url_1, prediction_url_2});
+  VerifyCommonRequestState(prediction_url_1);
+
+  // When hidden, the current prefetch is allowed to finish.
+  web_contents()->WasHidden();
+  VerifyCommonRequestState(prediction_url_1);
+  MakeResponseAndWait(net::HTTP_OK, net::OK, kHTMLMimeType, {}, kHTMLBody);
+
+  // But no more prefetches should start when hidden.
+  EXPECT_EQ(RequestCount(), 0);
+}
+
+TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingRestartedWhenVisible) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kPrefetchSRPNavigationPredictions_HTMLOnly);
+
+  web_contents()->WasHidden();
+
+  GURL doc_url("https://www.google.com/search?q=cats");
+  GURL prediction_url("https://www.cat-food.com/");
+
+  MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
+
+  EXPECT_EQ(RequestCount(), 0);
+
+  web_contents()->WasShown();
+
+  VerifyCommonRequestState(prediction_url);
+}
+
 TEST_F(IsolatedPrerenderTabHelperTest, ServiceWorkerRegistered) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(

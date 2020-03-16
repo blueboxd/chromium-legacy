@@ -1076,10 +1076,20 @@ TEST_F(AutoclickTest, ConfirmationDialogShownWhenDisablingFeature) {
   Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
   AccessibilityFeatureDisableDialog* dialog =
       GetAutoclickController()->GetDisableDialogForTesting();
-  EXPECT_TRUE(dialog);
+  ASSERT_TRUE(dialog);
 
   // Canceling the dialog will cause the feature to continue to be enabled.
   dialog->CancelDialog();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(GetAutoclickController()->GetDisableDialogForTesting());
+  EXPECT_TRUE(Shell::Get()->accessibility_controller()->autoclick_enabled());
+  EXPECT_TRUE(GetAutoclickController()->IsEnabled());
+
+  // Disable it again and close the dialog; the feature stays enabled.
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
+  dialog = GetAutoclickController()->GetDisableDialogForTesting();
+  ASSERT_TRUE(dialog);
+  dialog->GetWidget()->Close();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetAutoclickController()->GetDisableDialogForTesting());
   EXPECT_TRUE(Shell::Get()->accessibility_controller()->autoclick_enabled());
@@ -1089,7 +1099,7 @@ TEST_F(AutoclickTest, ConfirmationDialogShownWhenDisablingFeature) {
   // disable the feature.
   Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
   dialog = GetAutoclickController()->GetDisableDialogForTesting();
-  EXPECT_TRUE(dialog);
+  ASSERT_TRUE(dialog);
   dialog->AcceptDialog();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetAutoclickController()->GetDisableDialogForTesting());

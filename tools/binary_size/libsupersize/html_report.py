@@ -293,7 +293,7 @@ def Run(args, parser):
       '    gsutil.py cp -a public-read {1} gs://chrome-supersize/oneoffs/'
       '{2}.ndjson',
       '  to view at:',
-      '    https://storage.googleapis.com/chrome-supersize/viewer.html'
+      '    https://chrome-supersize.firebaseapp.com/viewer.html'
       '?load_url=oneoffs/{2}.ndjson',
   ]
   supersize_path = os.path.relpath(os.path.join(

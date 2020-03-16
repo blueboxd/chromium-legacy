@@ -37,6 +37,8 @@ class AccessibilityFeatureDisableDialog : public views::DialogDelegateView {
  private:
   const base::string16 window_title_;
 
+  base::OnceClosure on_cancel_callback_;
+
   base::WeakPtrFactory<AccessibilityFeatureDisableDialog> weak_ptr_factory_{
       this};
 

@@ -10,11 +10,9 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/input_method/ime_native_window.h"
-#include "chrome/browser/ui/input_method/ime_window.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "extensions/browser/extension_icon_image.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -26,6 +24,7 @@ class WebView;
 
 namespace ui {
 
+class ImeWindow;
 class ImeWindowFrameView;
 
 // The views implementation for the IME window UI.

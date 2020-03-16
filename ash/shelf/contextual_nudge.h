@@ -52,7 +52,6 @@ class ASH_EXPORT ContextualNudge : public views::BubbleDialogDelegateView {
   void UpdateAnchorRect(const gfx::Rect& rect);
 
   // BubbleDialogDelegateView:
-  gfx::Size CalculatePreferredSize() const override;
   ui::LayerType GetLayerType() const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 

@@ -262,19 +262,19 @@ scoped_refptr<gl::GLShareGroup> VizMainImpl::GetShareGroup() {
 void VizMainImpl::ExitProcess(bool immediately) {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
 
-  // Close mojom::VizMain bindings first so the browser can't try to reconnect.
-  receiver_.reset();
-
   if (!gpu_init_->gpu_info().in_process_gpu && immediately) {
     // Atomically shut down GPU process to make it faster and simpler.
     base::Process::TerminateCurrentProcessImmediately(/*exit_code=*/0);
     return;
   }
 
+  // Close mojom::VizMain bindings first so the browser can't try to reconnect.
+  receiver_.reset();
+
   if (viz_compositor_thread_runner_) {
-    // OOP-D requires destroying RootCompositorFrameSinkImpls on the compositor
-    // thread while the GPU thread is still running to avoid deadlock. Quit GPU
-    // thread TaskRunner after cleanup on compositor thread is finished.
+    // Destroy RootCompositorFrameSinkImpls on the compositor while the GPU
+    // thread is still running to avoid deadlock. Quit GPU thread TaskRunner
+    // after cleanup on compositor thread is finished.
     viz_compositor_thread_runner_->CleanupForShutdown(base::BindOnce(
         &Delegate::QuitMainMessageLoop, base::Unretained(delegate_)));
   } else {

@@ -82,9 +82,6 @@ class BaseRuntimeFeatureWriter(json5_generator.Writer):
             feature['status_type'] = "dict" if isinstance(
                 feature['status'], dict) else "str"
 
-        self._standard_features = [
-            feature for feature in self._features if not feature['custom']
-        ]
         self._origin_trial_features = [
             feature for feature in self._features if feature['in_origin_trial']
         ]
@@ -158,7 +155,6 @@ class RuntimeFeatureWriter(BaseRuntimeFeatureWriter):
             'feature_sets': self._feature_sets(),
             'platforms': self._platforms(),
             'input_files': self._input_files,
-            'standard_features': self._standard_features,
             'origin_trial_controlled_features': self._origin_trial_features,
             'header_guard': self._header_guard,
         }
@@ -185,8 +181,7 @@ class RuntimeFeatureTestHelpersWriter(BaseRuntimeFeatureWriter):
 
     def _template_inputs(self):
         return {
-            # The test helpers don't support custom features.
-            'features': self._standard_features,
+            'features': self._features,
             'input_files': self._input_files,
             'header_guard': self._header_guard,
         }

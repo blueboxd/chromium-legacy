@@ -51,18 +51,21 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
   ~SubresourceFilterAgentUnderTest() override = default;
 
   MOCK_METHOD0(GetDocumentURL, GURL());
-  MOCK_METHOD0(OnSetSubresourceFilterForCommittedLoadCalled, void());
-  MOCK_METHOD0(SignalFirstSubresourceDisallowedForCommittedLoad, void());
+  MOCK_METHOD0(OnSetSubresourceFilterForCurrentDocumentCalled, void());
+  MOCK_METHOD0(SignalFirstSubresourceDisallowedForCurrentDocument, void());
   MOCK_METHOD1(SendDocumentLoadStatistics,
                void(const mojom::DocumentLoadStatistics&));
   MOCK_METHOD0(SendFrameIsAdSubframe, void());
 
-  bool IsMainFrame() override { return true; }
+  bool IsMainFrame() override { return is_main_frame_; }
+  void SetIsMainFrame(bool value) { is_main_frame_ = value; }
 
-  void SetSubresourceFilterForCommittedLoad(
+  bool HasDocumentLoader() override { return true; }
+
+  void SetSubresourceFilterForCurrentDocument(
       std::unique_ptr<blink::WebDocumentSubresourceFilter> filter) override {
     last_injected_filter_ = std::move(filter);
-    OnSetSubresourceFilterForCommittedLoadCalled();
+    OnSetSubresourceFilterForCurrentDocumentCalled();
   }
 
   bool IsAdSubframe() override { return is_ad_subframe_; }
@@ -79,11 +82,24 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
     return std::move(last_injected_filter_);
   }
 
+  void SetParentActivationState(mojom::ActivationLevel level) {
+    mojom::ActivationState state;
+    state.activation_level = level;
+    parent_activation_state_ = state;
+  }
+
   using SubresourceFilterAgent::ActivateForNextCommittedLoad;
 
  private:
+  mojom::ActivationState GetParentActivationState(
+      content::RenderFrame*) override {
+    return parent_activation_state_;
+  }
+
   std::unique_ptr<blink::WebDocumentSubresourceFilter> last_injected_filter_;
   bool is_ad_subframe_ = false;
+  bool is_main_frame_ = true;
+  mojom::ActivationState parent_activation_state_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterAgentUnderTest);
 };
@@ -161,22 +177,22 @@ class SubresourceFilterAgentTest : public ::testing::Test {
   void FinishLoad() { agent_as_rfo()->DidFinishLoad(); }
 
   void ExpectSubresourceFilterGetsInjected() {
-    EXPECT_CALL(*agent(), GetDocumentURL());
-    EXPECT_CALL(*agent(), OnSetSubresourceFilterForCommittedLoadCalled());
+    EXPECT_CALL(*agent(), GetDocumentURL()).Times(::testing::Between(1, 2));
+    EXPECT_CALL(*agent(), OnSetSubresourceFilterForCurrentDocumentCalled());
   }
 
   void ExpectNoSubresourceFilterGetsInjected() {
     EXPECT_CALL(*agent(), GetDocumentURL()).Times(::testing::AtLeast(0));
-    EXPECT_CALL(*agent(), OnSetSubresourceFilterForCommittedLoadCalled())
+    EXPECT_CALL(*agent(), OnSetSubresourceFilterForCurrentDocumentCalled())
         .Times(0);
   }
 
   void ExpectSignalAboutFirstSubresourceDisallowed() {
-    EXPECT_CALL(*agent(), SignalFirstSubresourceDisallowedForCommittedLoad());
+    EXPECT_CALL(*agent(), SignalFirstSubresourceDisallowedForCurrentDocument());
   }
 
   void ExpectNoSignalAboutFirstSubresourceDisallowed() {
-    EXPECT_CALL(*agent(), SignalFirstSubresourceDisallowedForCommittedLoad())
+    EXPECT_CALL(*agent(), SignalFirstSubresourceDisallowedForCurrentDocument())
         .Times(0);
   }
 
@@ -531,6 +547,22 @@ TEST_F(SubresourceFilterAgentTest,
   filter->ReportDisallowedLoad();
 }
 
+TEST_F(SubresourceFilterAgentTest, FailedInitialLoad_FilterInjectedOnFailure) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetTestRulesetToDisallowURLsWithPathSuffix("somethingNotMatched"));
+
+  agent()->SetIsMainFrame(false);
+  agent()->SetParentActivationState(mojom::ActivationLevel::kEnabled);
+
+  ExpectNoSubresourceFilterGetsInjected();
+  EXPECT_CALL(*agent(), GetDocumentURL())
+      .WillRepeatedly(::testing::Return(GURL("about:blank")));
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kEnabled);
+
+  ExpectSubresourceFilterGetsInjected();
+  agent_as_rfo()->DidFailProvisionalLoad();
+}
+
 TEST_F(SubresourceFilterAgentTest,
        DryRun_IsAssociatedWithAdSubframeforDocumentOrDedicatedWorker) {
   ASSERT_NO_FATAL_FAILURE(
@@ -573,7 +605,7 @@ TEST_F(SubresourceFilterAgentTest, DryRun_SendsFrameIsAdSubframe) {
       .WillOnce(::testing::Return(GURL("about:blank")));
   agent_as_rfo()->DidCreateNewDocument();
   EXPECT_CALL(*agent(), GetDocumentURL())
-      .WillOnce(::testing::Return(GURL("about:blank")));
+      .WillRepeatedly(::testing::Return(GURL("about:blank")));
   agent_as_rfo()->DidCreateNewDocument();
 }
 

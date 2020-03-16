@@ -7,7 +7,7 @@
 
 #include "base/containers/flat_map.h"
 #include "chrome/browser/vr/vr_export.h"
-#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
+#include "device/vr/public/mojom/isolated_xr_service.mojom-forward.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_provider.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"

@@ -30,5 +30,5 @@ interface HTMLSlotElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString name;
     [ImplementedAs=AssignedNodesForBinding] sequence<Node> assignedNodes(optional AssignedNodesOptions options = {});
     [ImplementedAs=AssignedElementsForBinding] sequence<Element> assignedElements(optional AssignedNodesOptions options = {});
-    [RuntimeEnabled=ManualSlotting] void assign(sequence<Node> nodes);
+    [RuntimeEnabled=ManualSlotting, RaisesException] void assign(sequence<Node> nodes);
 };

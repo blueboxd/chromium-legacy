@@ -7,11 +7,17 @@
 
 @protocol TextZoomCommands <NSObject>
 
-// Shows the Text Zoom UI.
-- (void)showTextZoom;
+// Sets Text Zoom to active and shows the Text Zoom UI.
+- (void)openTextZoom;
 
-// Dismisses the Text Zoom UI.
-- (void)hideTextZoom;
+// Dismisses the Text Zoom UI and deactivates Text Zoom.
+- (void)closeTextZoom;
+
+// Shows the Text Zoom UI if Text Zoom is active.
+- (void)showTextZoomUIIfActive;
+
+// Hides the Text Zoom UI but does not deactivate Text Zoom.
+- (void)hideTextZoomUI;
 
 @end
 

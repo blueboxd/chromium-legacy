@@ -104,8 +104,17 @@ FloatRect NormalizeRect(const IntRect& to_normalize, const IntRect& base_rect) {
 
 // WebFrameWidget ------------------------------------------------------------
 
-WebFrameWidget* WebFrameWidget::CreateForMainFrame(WebWidgetClient* client,
-                                                   WebLocalFrame* main_frame) {
+WebFrameWidget* WebFrameWidget::CreateForMainFrame(
+    WebWidgetClient* client,
+    WebLocalFrame* main_frame,
+    CrossVariantMojoAssociatedRemote<mojom::blink::FrameWidgetHostInterfaceBase>
+        mojo_frame_widget_host,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::FrameWidgetInterfaceBase>
+        mojo_frame_widget,
+    CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
+        mojo_widget_host,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
+        mojo_widget) {
   DCHECK(client) << "A valid WebWidgetClient must be supplied.";
   DCHECK(!main_frame->Parent());  // This is the main frame.
 
@@ -122,14 +131,24 @@ WebFrameWidget* WebFrameWidget::CreateForMainFrame(WebWidgetClient* client,
   // caller needs to release by calling Close().
   // TODO(dcheng): Remove the special bridge class for main frame widgets.
   auto* widget = MakeGarbageCollected<WebViewFrameWidget>(
-      util::PassKey<WebFrameWidget>(), *client, web_view_impl);
+      util::PassKey<WebFrameWidget>(), *client, web_view_impl,
+      std::move(mojo_frame_widget_host), std::move(mojo_frame_widget),
+      std::move(mojo_widget_host), std::move(mojo_widget));
   widget->BindLocalRoot(*main_frame);
   return widget;
 }
 
 WebFrameWidget* WebFrameWidget::CreateForChildLocalRoot(
     WebWidgetClient* client,
-    WebLocalFrame* local_root) {
+    WebLocalFrame* local_root,
+    CrossVariantMojoAssociatedRemote<mojom::blink::FrameWidgetHostInterfaceBase>
+        mojo_frame_widget_host,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::FrameWidgetInterfaceBase>
+        mojo_frame_widget,
+    CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
+        mojo_widget_host,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
+        mojo_widget) {
   DCHECK(client) << "A valid WebWidgetClient must be supplied.";
   DCHECK(local_root->Parent());  // This is not the main frame.
   // Frames whose direct ancestor is a remote frame are local roots. Verify this
@@ -140,14 +159,29 @@ WebFrameWidget* WebFrameWidget::CreateForChildLocalRoot(
   // Note: this isn't a leak, as the object has a self-reference that the
   // caller needs to release by calling Close().
   auto* widget = MakeGarbageCollected<WebFrameWidgetImpl>(
-      util::PassKey<WebFrameWidget>(), *client);
+      util::PassKey<WebFrameWidget>(), *client,
+      std::move(mojo_frame_widget_host), std::move(mojo_frame_widget),
+      std::move(mojo_widget_host), std::move(mojo_widget));
   widget->BindLocalRoot(*local_root);
   return widget;
 }
 
-WebFrameWidgetImpl::WebFrameWidgetImpl(util::PassKey<WebFrameWidget>,
-                                       WebWidgetClient& client)
-    : WebFrameWidgetBase(client),
+WebFrameWidgetImpl::WebFrameWidgetImpl(
+    util::PassKey<WebFrameWidget>,
+    WebWidgetClient& client,
+    CrossVariantMojoAssociatedRemote<mojom::blink::FrameWidgetHostInterfaceBase>
+        frame_widget_host,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::FrameWidgetInterfaceBase>
+        frame_widget,
+    CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
+        widget_host,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
+        widget)
+    : WebFrameWidgetBase(client,
+                         std::move(frame_widget_host),
+                         std::move(frame_widget),
+                         std::move(widget_host),
+                         std::move(widget)),
       self_keep_alive_(PERSISTENT_FROM_HERE, this) {}
 
 WebFrameWidgetImpl::~WebFrameWidgetImpl() = default;

@@ -141,6 +141,10 @@ class HardwareDisplayPlaneManager {
   std::vector<uint64_t> GetFormatModifiers(uint32_t crtc_id,
                                            uint32_t format) const;
 
+  // Cache the most updated connectors found in DRM resources. This needs to be
+  // called whenever a DRM hotplug event is received via UDEV.
+  void ResetConnectorsCache(const ScopedDrmResourcesPtr& resources);
+
  protected:
   struct ConnectorProperties {
     uint32_t id;

@@ -28,6 +28,7 @@ class DeepScanningBrowserTestBase : public InProcessBrowserTest {
       AllowPasswordProtectedFilesValues state);
   void SetBlockUnsupportedFileTypesPolicy(
       BlockUnsupportedFiletypesValues state);
+  void SetUnsafeEventsReportingPolicy(bool report);
 
   // Sets up a FakeDeepScanningDialogDelegate to use this class's StatusCallback
   // and EncryptionStatusCallback. Also sets up a test DM token.

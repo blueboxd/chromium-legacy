@@ -254,8 +254,14 @@ bool PagePopupFeaturesClient::IsEnabled(Document*,
 
 // WebPagePopupImpl ----------------------------------------------------------
 
-WebPagePopupImpl::WebPagePopupImpl(WebPagePopupClient* client)
-    : web_page_popup_client_(client) {
+WebPagePopupImpl::WebPagePopupImpl(
+    WebPagePopupClient* client,
+    CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
+        widget_host,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
+        widget)
+    : web_page_popup_client_(client),
+      widget_base_(this, std::move(widget_host), std::move(widget)) {
   DCHECK(client);
 }
 
@@ -642,7 +648,12 @@ WebRect WebPagePopupImpl::WindowRectInScreen() const {
 
 // WebPagePopup ----------------------------------------------------------------
 
-WebPagePopup* WebPagePopup::Create(WebPagePopupClient* client) {
+WebPagePopup* WebPagePopup::Create(
+    WebPagePopupClient* client,
+    CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
+        widget_host,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
+        widget) {
   CHECK(client);
   // A WebPagePopupImpl instance usually has two references.
   //  - One owned by the instance itself. It represents the visible widget.
@@ -650,7 +661,8 @@ WebPagePopup* WebPagePopup::Create(WebPagePopupClient* client) {
   //    WebPagePopupImpl to close.
   // We need them because the closing operation is asynchronous and the widget
   // can be closed while the WebViewImpl is unaware of it.
-  auto popup = base::AdoptRef(new WebPagePopupImpl(client));
+  auto popup = base::AdoptRef(
+      new WebPagePopupImpl(client, std::move(widget_host), std::move(widget)));
   popup->AddRef();
   return popup.get();
 }

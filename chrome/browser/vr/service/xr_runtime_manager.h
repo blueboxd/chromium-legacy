@@ -20,7 +20,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #include "chrome/browser/vr/service/xr_runtime_manager_observer.h"
-#include "device/vr/public/mojom/vr_service.mojom.h"
+#include "device/vr/public/mojom/vr_service.mojom-forward.h"
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 

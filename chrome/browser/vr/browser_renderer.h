@@ -13,8 +13,8 @@
 #include "chrome/browser/vr/graphics_delegate.h"
 #include "chrome/browser/vr/scheduler_browser_renderer_interface.h"
 #include "chrome/browser/vr/vr_export.h"
-#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
-#include "device/vr/public/mojom/vr_service.mojom.h"
+#include "device/vr/public/mojom/isolated_xr_service.mojom-forward.h"
+#include "device/vr/public/mojom/vr_service.mojom-forward.h"
 #include "device/vr/util/sliding_average.h"
 
 namespace base {

@@ -124,11 +124,7 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 }
 
 - (void)showSearchButtonPopup {
-  if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {
-    base::RecordAction(base::UserMetricsAction("MobileToolbarShowNewTabMenu"));
-  } else {
-    base::RecordAction(base::UserMetricsAction("MobileToolbarShowSearchMenu"));
-  }
+  base::RecordAction(base::UserMetricsAction("MobileToolbarShowNewTabMenu"));
   [self presentPopupOfType:PopupMenuTypeSearch
             fromNamedGuide:kSearchButtonGuide];
 }

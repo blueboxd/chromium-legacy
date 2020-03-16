@@ -16,7 +16,7 @@ Bugs and feature requests are tracked in crbug under:
 
 Per-Milestone Binary Size Breakdowns:
 
- * https://storage.googleapis.com/chrome-supersize/index.html
+ * https://chrome-supersize.firebaseapp.com/chrome-supersize/index.html
 
 [TOC]
 
@@ -245,7 +245,7 @@ tools/binary_size/supersize archive chrome.size --elf-file out/Release/chrome -v
 ### Usage: html_report
 
 Creates an `.ndjson` (newline-delimited JSON) file that the
-[SuperSize viewer](https://storage.googleapis.com/chrome-supersize/viewer.html)
+[SuperSize viewer](https://chrome-supersize.firebaseapp.com/viewer.html)
 is able to load.
 
 Example Usage:

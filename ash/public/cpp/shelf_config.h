@@ -72,6 +72,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // Size of the hotseat, which contains the scrollable shelf in tablet mode.
   int hotseat_size() const;
 
+  // The shelf size within which the drag handle should be centered.
+  int shelf_drag_handle_centering_size() const;
+
   // The size of the gap between the hotseat and shelf when the hotseat is
   // extended.
   int hotseat_bottom_padding() const;

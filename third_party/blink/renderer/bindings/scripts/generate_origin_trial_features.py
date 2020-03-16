@@ -100,6 +100,8 @@ def origin_trial_features_info(info_provider, reader, idl_filenames,
 
         # If this interface is a mixin, we don't generate V8 bindings code for
         # it.
+        # TODO(crbug.com/1061995): This incorrectly ignores includes in the
+        # mixin idl like "SomeInterface includes MixinInterface".
         if interface.is_mixin:
             continue
 

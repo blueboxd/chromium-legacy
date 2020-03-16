@@ -32,6 +32,7 @@ constexpr wgpu::TextureUsage kUsage =
 SkiaOutputDeviceDawn::SkiaOutputDeviceDawn(
     DawnContextProvider* context_provider,
     gfx::AcceleratedWidget widget,
+    gfx::SurfaceOrigin origin,
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : SkiaOutputDevice(/*need_swap_semaphore=*/false,
@@ -39,7 +40,14 @@ SkiaOutputDeviceDawn::SkiaOutputDeviceDawn(
                        did_swap_buffer_complete_callback),
       context_provider_(context_provider),
       widget_(widget) {
+  capabilities_.output_surface_origin = origin;
+  capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.supports_post_sub_buffer = false;
+
+  capabilities_.sk_color_type = kSurfaceColorType;
+  capabilities_.gr_backend_format =
+      context_provider_->GetGrContext()->defaultBackendFormat(
+          kSurfaceColorType, GrRenderable::kYes);
 }
 
 SkiaOutputDeviceDawn::~SkiaOutputDeviceDawn() = default;
@@ -85,12 +93,15 @@ SkSurface* SkiaOutputDeviceDawn::BeginPaint() {
   GrBackendRenderTarget backend_target(
       size_.width(), size_.height(), /*sampleCnt=*/0, /*stencilBits=*/0, info);
   DCHECK(backend_target.isValid());
+  // LegacyFontHost will get LCD text and skia figures out what type to use.
+  SkSurfaceProps surface_props(/*flags=*/0,
+                               SkSurfaceProps::kLegacyFontHost_InitType);
   sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
       context_provider_->GetGrContext(), backend_target,
       capabilities_.output_surface_origin == gfx::SurfaceOrigin::kTopLeft
           ? kTopLeft_GrSurfaceOrigin
           : kBottomLeft_GrSurfaceOrigin,
-      kSurfaceColorType, sk_color_space_, /*surfaceProps=*/nullptr);
+      kSurfaceColorType, sk_color_space_, &surface_props);
   return sk_surface_.get();
 }
 

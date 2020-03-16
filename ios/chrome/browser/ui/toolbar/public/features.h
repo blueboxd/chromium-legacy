@@ -12,6 +12,4 @@
 // Feature to change tab switcher position and remove bookmark button.
 extern const base::Feature kChangeTabSwitcherPosition;
 
-extern const base::Feature kToolbarNewTabButton;
-
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_PUBLIC_FEATURES_H_

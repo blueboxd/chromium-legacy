@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/ime/ime_window_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/input_method/ime_window.h"
 #include "chrome/browser/ui/views/ime/ime_window_frame_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/image/image.h"

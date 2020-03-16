@@ -37,6 +37,10 @@ bool GetServerNigori(fake_server::FakeServer* fake_server,
 void SetNigoriInFakeServer(fake_server::FakeServer* fake_server,
                            const sync_pb::NigoriSpecifics& nigori);
 
+// Given a |fake_server|, sets the Nigori instance stored in it to a standard
+// Keystore Nigori.
+void SetKeystoreNigoriInFakeServer(fake_server::FakeServer* fake_server);
+
 // Given a |nigori| with CUSTOM_PASSPHRASE passphrase type, initializes the
 // given |cryptographer| with the key described in it. Since the key inside the
 // Nigori is encrypted (by design), the provided |passphrase| will be used to

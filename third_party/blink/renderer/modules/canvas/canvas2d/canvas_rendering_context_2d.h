@@ -269,7 +269,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   TaskRunnerTimer<CanvasRenderingContext2D> try_restore_context_event_timer_;
 
   FilterOperations filter_operations_;
-  HashMap<String, Font> fonts_resolved_using_current_style_;
+  HashMap<String, FontDescription> fonts_resolved_using_current_style_;
   bool should_prune_local_font_cache_;
   LinkedHashSet<String> font_lru_list_;
 

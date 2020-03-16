@@ -140,6 +140,10 @@ template("chrome_public_common_apk_or_module_tmpl") {
 
   target(_target_type, target_name) {
     forward_variables_from(invoker, "*")
+    if (defined(shared_resources_whitelist_target)) {
+      shared_resources_allowlist_target = shared_resources_whitelist_target
+      shared_resources_allowlist_locales = shared_resources_whitelist_locales
+    }
 
     if (_is_trichrome) {
       min_sdk_version = 29
@@ -153,14 +157,14 @@ template("chrome_public_common_apk_or_module_tmpl") {
     target_sdk_version = android_sdk_version
 
     # Match drawables, but not mipmaps.
-    resource_blacklist_regex = "drawable[^/]*-xxxhdpi"
+    resource_exclusion_regex = "drawable[^/]*-xxxhdpi"
     if (min_sdk_version >= 21) {
       # Resources used by AndroidManifest.xml only for pre-21.
-      resource_blacklist_regex += "|app_single_page_icon"
+      resource_exclusion_regex += "|app_single_page_icon"
     }
 
     # Exception rationale in https://crbug.com/691733.
-    resource_blacklist_exceptions = [
+    resource_exclusion_exceptions = [
       "*shadow*",  # Combination of gradient & transparency cause pixelation.
       "*.9.*",  # Most nine-patches contain shadows.
       "*ic_file_download_white*",  # Bottom edge seems misaligned.
@@ -196,15 +200,15 @@ template("chrome_public_common_apk_or_module_tmpl") {
       native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
       native_lib_version_rule = "//build/util:chrome_version_json"
     }
-    if (!defined(aapt_locale_whitelist)) {
+    if (!defined(aapt_locale_allowlist)) {
       if (target_type == "android_apk") {
         # For APKs, do not include the resource strings files from our
         # omitted locale list in order to save size.
-        aapt_locale_whitelist = android_apk_locales
+        aapt_locale_allowlist = android_apk_locales
       } else {
         # For bundles, only include resource strings files from our full
         # locale list, but nothing more.
-        aapt_locale_whitelist = locales
+        aapt_locale_allowlist = locales
 
         # zh_hk is supported in Android bundles.
         support_zh_hk = false

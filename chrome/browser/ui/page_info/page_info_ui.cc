@@ -747,7 +747,6 @@ PageInfoUI::CreateSafetyTipSecurityDescription(
     case security_state::SafetyTipStatus::kBadKeyword:
       // Keyword safety tips are only used to collect metrics for now and are
       // not visible to the user, so don't affect Page Info.
-      NOTREACHED();
       break;
 
     case security_state::SafetyTipStatus::kNone:

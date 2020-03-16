@@ -179,11 +179,19 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
       SessionStorageNamespace* session_storage_namespace) override;
   void CreateNewWidget(int32_t render_process_id,
                        int32_t route_id,
-                       mojo::PendingRemote<mojom::Widget> widget) override;
+                       mojo::PendingRemote<mojom::Widget> widget,
+                       mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
+                           blink_widget_host,
+                       mojo::PendingAssociatedRemote<blink::mojom::Widget>
+                           blink_widget) override;
   void CreateNewFullscreenWidget(
       int32_t render_process_id,
       int32_t route_id,
-      mojo::PendingRemote<mojom::Widget> widget) override;
+      mojo::PendingRemote<mojom::Widget> widget,
+      mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
+          blink_widget_host,
+      mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget)
+      override;
   void ShowCreatedWindow(int process_id,
                          int route_id,
                          WindowOpenDisposition disposition,

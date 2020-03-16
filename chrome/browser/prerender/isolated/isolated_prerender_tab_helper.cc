@@ -100,6 +100,22 @@ void IsolatedPrerenderTabHelper::DidFinishNavigation(
   page_ = std::make_unique<CurrentPageLoad>();
 }
 
+void IsolatedPrerenderTabHelper::OnVisibilityChanged(
+    content::Visibility visibility) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!base::FeatureList::IsEnabled(
+          features::kPrefetchSRPNavigationPredictions_HTMLOnly)) {
+    return;
+  }
+
+  // Start prefetching if the tab has become visible and prefetching is
+  // inactive. Hidden and occluded visibility is ignored here so that pending
+  // prefetches can finish.
+  if (visibility == content::Visibility::VISIBLE && !PrefetchingActive())
+    Prefetch();
+}
+
 std::unique_ptr<PrefetchedMainframeResponseContainer>
 IsolatedPrerenderTabHelper::TakePrefetchResponse(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -132,6 +148,13 @@ void IsolatedPrerenderTabHelper::Prefetch() {
           IsolatedPrerenderMaximumNumberOfPrefetches().value()) {
     return;
   }
+
+  if (web_contents()->GetVisibility() != content::Visibility::VISIBLE) {
+    // |OnVisibilityChanged| will restart prefetching when the tab becomes
+    // visible again.
+    return;
+  }
+
   page_->num_prefetches_attempted++;
 
   GURL url = page_->urls_to_prefetch[0];

@@ -85,8 +85,10 @@ TEST_F(RenderFrameHostImplTest, CreateFullscreenWidget) {
   mojo::PendingRemote<mojom::Widget> widget;
   std::unique_ptr<MockWidgetImpl> widget_impl =
       std::make_unique<MockWidgetImpl>(widget.InitWithNewPipeAndPassReceiver());
-  main_test_rfh()->CreateNewFullscreenWidget(std::move(widget),
-                                             base::DoNothing());
+  main_test_rfh()->CreateNewFullscreenWidget(
+      std::move(widget),
+      mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>(),
+      mojo::PendingAssociatedRemote<blink::mojom::Widget>(), base::DoNothing());
 }
 
 }  // namespace content

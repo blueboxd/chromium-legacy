@@ -718,11 +718,19 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool HasSeenRecentScreenOrientationChange() override;
   void CreateNewWidget(int32_t render_process_id,
                        int32_t route_id,
-                       mojo::PendingRemote<mojom::Widget> widget) override;
+                       mojo::PendingRemote<mojom::Widget> widget,
+                       mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
+                           blink_widget_host,
+                       mojo::PendingAssociatedRemote<blink::mojom::Widget>
+                           blink_widget) override;
   void CreateNewFullscreenWidget(
       int32_t render_process_id,
       int32_t widget_route_id,
-      mojo::PendingRemote<mojom::Widget> widget) override;
+      mojo::PendingRemote<mojom::Widget> widget,
+      mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
+          blink_widget_host,
+      mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget)
+      override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
@@ -1478,10 +1486,14 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // current navigation entry is in the NavigationController at this point.
 
   // Helper for CreateNewWidget/CreateNewFullscreenWidget.
-  void CreateNewWidget(int32_t render_process_id,
-                       int32_t route_id,
-                       bool is_fullscreen,
-                       mojo::PendingRemote<mojom::Widget> widget);
+  void CreateNewWidget(
+      int32_t render_process_id,
+      int32_t route_id,
+      bool is_fullscreen,
+      mojo::PendingRemote<mojom::Widget> widget,
+      mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
+          blink_widget_host,
+      mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget);
 
   // Helper for ShowCreatedWidget/ShowCreatedFullscreenWidget.
   void ShowCreatedWidget(int process_id,

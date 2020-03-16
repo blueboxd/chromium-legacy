@@ -213,6 +213,8 @@
 /syzygy
 /syzygy/binaries
 /tsan/
+/turbine/src
+/turbine/*.jar
 /ub-uiautomator/lib
 /usb_ids
 /usrsctp/usrsctplib

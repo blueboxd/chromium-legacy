@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_base_switches.h"
+#include "components/sync/base/time.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/engine/sync_engine_switches.h"
@@ -18,6 +19,40 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace encryption_helper {
+
+namespace {
+
+sync_pb::NigoriSpecifics BuildKeystoreNigoriSpecifics(
+    const std::string& passphrase) {
+  syncer::KeyDerivationParams key_derivation_params =
+      syncer::KeyDerivationParams::CreateForPbkdf2();
+
+  std::unique_ptr<syncer::CryptographerImpl> cryptographer =
+      syncer::CryptographerImpl::FromSingleKeyForTesting(passphrase,
+                                                         key_derivation_params);
+  cryptographer->EmplaceKey(passphrase, key_derivation_params);
+
+  sync_pb::NigoriSpecifics specifics;
+  EXPECT_TRUE(cryptographer->Encrypt(cryptographer->ToProto().key_bag(),
+                                     specifics.mutable_encryption_keybag()));
+
+  std::string serialized_keystore_decryptor =
+      cryptographer->ExportDefaultKey().SerializeAsString();
+
+  std::unique_ptr<syncer::CryptographerImpl> keystore_cryptographer =
+      syncer::CryptographerImpl::FromSingleKeyForTesting(passphrase,
+                                                         key_derivation_params);
+  EXPECT_TRUE(keystore_cryptographer->EncryptString(
+      serialized_keystore_decryptor,
+      specifics.mutable_keystore_decryptor_token()));
+
+  specifics.set_passphrase_type(sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
+  specifics.set_keystore_migration_time(
+      syncer::TimeToProtoTime(base::Time::Now()));
+  return specifics;
+}
+
+}  // namespace
 
 bool GetServerNigori(fake_server::FakeServer* fake_server,
                      sync_pb::NigoriSpecifics* nigori) {
@@ -150,6 +185,14 @@ void SetNigoriInFakeServer(fake_server::FakeServer* fake_server,
   sync_pb::EntitySpecifics nigori_entity_specifics;
   *nigori_entity_specifics.mutable_nigori() = nigori;
   fake_server->ModifyEntitySpecifics(nigori_entity_id, nigori_entity_specifics);
+}
+
+void SetKeystoreNigoriInFakeServer(fake_server::FakeServer* fake_server) {
+  const std::vector<std::vector<uint8_t>>& keystore_keys =
+      fake_server->GetKeystoreKeys();
+  ASSERT_EQ(keystore_keys.size(), 1u);
+  const std::string passphrase = base::Base64Encode(keystore_keys.back());
+  SetNigoriInFakeServer(fake_server, BuildKeystoreNigoriSpecifics(passphrase));
 }
 
 }  // namespace encryption_helper

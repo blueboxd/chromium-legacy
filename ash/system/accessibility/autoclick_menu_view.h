@@ -11,7 +11,7 @@
 
 namespace ash {
 
-class AutoclickMenuButton;
+class FloatingMenuButton;
 
 // View for the Automatic Clicks menu bubble, which holds the Automatic Clicks
 // Menu.
@@ -59,13 +59,13 @@ class AutoclickMenuView : public views::View, public views::ButtonListener {
 
  private:
   // Unowned. Owned by views hierarchy.
-  AutoclickMenuButton* left_click_button_;
-  AutoclickMenuButton* right_click_button_;
-  AutoclickMenuButton* double_click_button_;
-  AutoclickMenuButton* drag_button_;
-  AutoclickMenuButton* scroll_button_ = nullptr;
-  AutoclickMenuButton* pause_button_;
-  AutoclickMenuButton* position_button_;
+  FloatingMenuButton* left_click_button_;
+  FloatingMenuButton* right_click_button_;
+  FloatingMenuButton* double_click_button_;
+  FloatingMenuButton* drag_button_;
+  FloatingMenuButton* scroll_button_ = nullptr;
+  FloatingMenuButton* pause_button_;
+  FloatingMenuButton* position_button_;
 
   // The most recently selected event_type_ excluding kNoAction. This is used
   // when the pause button is selected in order to unpause and reset to the

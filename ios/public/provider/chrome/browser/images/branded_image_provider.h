@@ -50,10 +50,6 @@ class BrandedImageProvider {
   // on Download Manager UI.
   virtual UIImage* GetDownloadGoogleDriveImage();
 
-  // Returns the 28pt x 28pt image to use for the "Search" icon in the toolbar.
-  virtual UIImage* GetToolbarSearchIcon(SearchEngineIcon type,
-                                        bool dark_version);
-
   // Returns the 30pt x 30pt image to use for the fallback icon for answers in
   // the omnibox popup and in the omnibox as the default search engine icon.
   virtual UIImage* GetOmniboxAnswerIcon();

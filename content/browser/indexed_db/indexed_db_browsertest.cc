@@ -372,7 +372,6 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, Bug941965Test) {
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, NegativeDBSchemaVersion) {
-  return;
   const GURL database_open_url = GetTestUrl("indexeddb", "database_test.html");
   const url::Origin origin = url::Origin::Create(database_open_url);
   // Create the database.

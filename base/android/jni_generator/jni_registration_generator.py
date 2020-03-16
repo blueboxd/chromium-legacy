@@ -550,7 +550,7 @@ def main(argv):
       help='Path to output srcjar for GEN_JNI.java (Or J/N.java if proxy'
       ' hash is enabled).')
   arg_parser.add_argument(
-      '--sources-blacklist',
+      '--sources-exclusions',
       default=[],
       help='A list of Java files which should be ignored '
       'by the parser.')
@@ -595,7 +595,7 @@ def main(argv):
     # Skip generated files, since the GN targets do not declare any deps.
     java_file_paths.extend(
         p for p in build_utils.ReadSourcesList(f)
-        if p.startswith('..') and p not in args.sources_blacklist)
+        if p.startswith('..') and p not in args.sources_exclusions)
   _Generate(
       java_file_paths,
       args.srcjar_path,

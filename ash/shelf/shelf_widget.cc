@@ -384,9 +384,12 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
 void ShelfWidget::DelegateView::UpdateDragHandle(bool update_color) {
   if (update_color) {
     if (Shell::Get()->session_controller()->IsUserSessionBlocked()) {
-      // For login shelf, let the drag handle match control buttons background.
+      const bool is_oobe =
+          Shell::Get()->session_controller()->GetSessionState() ==
+          session_manager::SessionState::OOBE;
+      // For login shelf, let the drag handle match the login shelf nudge color.
       drag_handle_->SetColorAndOpacity(
-          ShelfConfig::Get()->GetShelfControlButtonColor(), 1.0f);
+          is_oobe ? gfx::kGoogleGrey700 : gfx::kGoogleGrey100, 1.0f);
     } else {
       const AshColorProvider::RippleAttributes ripple_attributes =
           AshColorProvider::Get()->GetRippleAttributes(
@@ -453,7 +456,9 @@ void ShelfWidget::DelegateView::Layout() {
   // bottom shelf (either in tablet mode, or on login/lock screen)
   gfx::Rect drag_handle_bounds = GetLocalBounds();
   drag_handle_bounds.Inset(
-      0, drag_handle_bounds.height() - ShelfConfig::Get()->in_app_shelf_size(),
+      0,
+      drag_handle_bounds.height() -
+          ShelfConfig::Get()->shelf_drag_handle_centering_size(),
       0, 0);
   drag_handle_bounds.ClampToCenteredSize(ShelfConfig::Get()->DragHandleSize());
 
@@ -1027,11 +1032,6 @@ void ShelfWidget::OnGestureEvent(ui::GestureEvent* event) {
   gfx::Point location_in_screen(event->location());
   ::wm::ConvertPointToScreen(GetNativeWindow(), &location_in_screen);
   event_in_screen.set_location(location_in_screen);
-
-  if (HandleLoginShelfGestureEvent(event_in_screen)) {
-    event->StopPropagation();
-    return;
-  }
 
   // Tap on in-app shelf should show a contextual nudge for in-app to home
   // gesture.

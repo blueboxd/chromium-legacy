@@ -37,5 +37,7 @@ message Content {
   reserved 2;
 }
 
-// No fields used yet.
-message XSurfaceContent {}
+// Opaque data to for rendering a piece of content.
+message XSurfaceContent {
+  optional bytes xsurface_output = 1;
+}

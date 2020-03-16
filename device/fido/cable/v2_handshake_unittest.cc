@@ -17,8 +17,8 @@ class CableV2HandshakeTest : public ::testing::Test {
  public:
   CableV2HandshakeTest() {
     std::fill(psk_gen_key_.begin(), psk_gen_key_.end(), 0);
-    std::fill(nonce_.begin(), nonce_.end(), 1);
-    std::fill(eid_.begin(), eid_.end(), 2);
+    std::fill(nonce_and_eid_.first.begin(), nonce_and_eid_.first.end(), 1);
+    std::fill(nonce_and_eid_.second.begin(), nonce_and_eid_.second.end(), 2);
 
     p256_key_.reset(EC_KEY_new_by_curve_name(NID_X9_62_prime256v1));
     const EC_GROUP* group = EC_KEY_get0_group(p256_key_.get());
@@ -32,8 +32,7 @@ class CableV2HandshakeTest : public ::testing::Test {
 
  protected:
   std::array<uint8_t, 32> psk_gen_key_;
-  std::array<uint8_t, 8> nonce_;
-  std::array<uint8_t, kCableEphemeralIdSize> eid_;
+  NonceAndEID nonce_and_eid_;
   bssl::UniquePtr<EC_KEY> p256_key_;
   std::array<uint8_t, kP256PointSize> p256_public_key_;
 };
@@ -72,12 +71,13 @@ TEST_F(CableV2HandshakeTest, OneTimeQRHandshake) {
 
   for (const bool use_correct_key : {false, true}) {
     HandshakeInitiator initiator(
-        use_correct_key ? psk_gen_key_ : wrong_psk_gen_key, nonce_, eid_,
+        use_correct_key ? psk_gen_key_ : wrong_psk_gen_key,
+        nonce_and_eid_.first, nonce_and_eid_.second,
         /*peer_identity=*/base::nullopt);
     std::vector<uint8_t> message = initiator.BuildInitialMessage();
     std::vector<uint8_t> response;
     base::Optional<std::unique_ptr<Crypter>> response_crypter(
-        RespondToHandshake(psk_gen_key_, nonce_, eid_, /*identity=*/nullptr,
+        RespondToHandshake(psk_gen_key_, nonce_and_eid_, /*identity=*/nullptr,
                            /*pairing_data=*/nullptr, message, &response));
     ASSERT_EQ(response_crypter.has_value(), use_correct_key);
     if (!use_correct_key) {
@@ -103,12 +103,13 @@ TEST_F(CableV2HandshakeTest, PairingQRHandshake) {
   pairing.v2->peer_identity = p256_public_key_;
   pairing.v2->peer_name = "Unittest";
 
-  HandshakeInitiator initiator(psk_gen_key_, nonce_, eid_,
+  HandshakeInitiator initiator(psk_gen_key_, nonce_and_eid_.first,
+                               nonce_and_eid_.second,
                                /*peer_identity=*/base::nullopt);
   std::vector<uint8_t> message = initiator.BuildInitialMessage();
   std::vector<uint8_t> response;
   base::Optional<std::unique_ptr<Crypter>> response_crypter(
-      RespondToHandshake(psk_gen_key_, nonce_, eid_, /*identity=*/nullptr,
+      RespondToHandshake(psk_gen_key_, nonce_and_eid_, /*identity=*/nullptr,
                          &pairing, message, &response));
   ASSERT_TRUE(response_crypter.has_value());
   base::Optional<std::pair<std::unique_ptr<Crypter>,
@@ -136,11 +137,12 @@ TEST_F(CableV2HandshakeTest, PairedHandshake) {
   for (const bool use_correct_key : {false, true}) {
     SCOPED_TRACE(use_correct_key);
 
-    HandshakeInitiator initiator(psk_gen_key_, nonce_, eid_, p256_public_key_);
+    HandshakeInitiator initiator(psk_gen_key_, nonce_and_eid_.first,
+                                 nonce_and_eid_.second, p256_public_key_);
     std::vector<uint8_t> message = initiator.BuildInitialMessage();
     std::vector<uint8_t> response;
     base::Optional<std::unique_ptr<Crypter>> response_crypter(
-        RespondToHandshake(psk_gen_key_, nonce_, eid_,
+        RespondToHandshake(psk_gen_key_, nonce_and_eid_,
                            use_correct_key ? p256_key_.get() : wrong_key.get(),
                            /*pairing=*/nullptr, message, &response));
     ASSERT_EQ(response_crypter.has_value(), use_correct_key);

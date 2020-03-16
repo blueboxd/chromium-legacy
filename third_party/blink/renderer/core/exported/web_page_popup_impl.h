@@ -151,7 +151,12 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   AXObject* RootAXObject() override;
   void SetWindowRect(const IntRect&) override;
 
-  explicit WebPagePopupImpl(WebPagePopupClient*);
+  WebPagePopupImpl(
+      WebPagePopupClient*,
+      CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
+          widget_host,
+      CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
+          widget);
   void DestroyPage();
   void SetRootLayer(scoped_refptr<cc::Layer>);
 
@@ -176,7 +181,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
   // Base functionality all widgets have. This is a member as to avoid
   // complicated inheritance structures.
-  WidgetBase widget_base_{this};
+  WidgetBase widget_base_;
 
   friend class WebPagePopup;
   friend class PagePopupChromeClient;

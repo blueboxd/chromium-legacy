@@ -250,17 +250,18 @@ void WebUIInfoSingleton::ClearReportingEvents() {
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-int WebUIInfoSingleton::AddToDeepScanRequests(
+void WebUIInfoSingleton::AddToDeepScanRequests(
     const DeepScanningClientRequest& request) {
   if (!HasListener())
-    return -1;
+    return;
 
-  for (auto* webui_listener : webui_instances_)
-    webui_listener->NotifyDeepScanRequestJsListener(request);
+  if (deep_scan_requests_.find(request.request_token()) ==
+      deep_scan_requests_.end()) {
+    for (auto* webui_listener : webui_instances_)
+      webui_listener->NotifyDeepScanRequestJsListener(request);
+  }
 
-  deep_scan_requests_.push_back(request);
-
-  return pg_pings_.size() - 1;
+  deep_scan_requests_[request.request_token()] = request;
 }
 
 void WebUIInfoSingleton::AddToDeepScanResponses(
@@ -277,9 +278,8 @@ void WebUIInfoSingleton::AddToDeepScanResponses(
 }
 
 void WebUIInfoSingleton::ClearDeepScans() {
-  std::vector<DeepScanningClientRequest>().swap(deep_scan_requests_);
-  std::map<std::string, std::pair<std::string, DeepScanningClientResponse>>()
-      .swap(deep_scan_responses_);
+  DeepScanningRequestMap().swap(deep_scan_requests_);
+  StatusAndDeepScanningResponseMap().swap(deep_scan_responses_);
 }
 #endif
 void WebUIInfoSingleton::RegisterWebUIInstance(SafeBrowsingUIHandler* webui) {
@@ -1823,16 +1823,13 @@ void SafeBrowsingUIHandler::GetLogMessages(const base::ListValue* args) {
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 void SafeBrowsingUIHandler::GetDeepScanRequests(const base::ListValue* args) {
-  const std::vector<DeepScanningClientRequest>& requests =
-      WebUIInfoSingleton::GetInstance()->deep_scan_requests();
-
   base::ListValue pings_sent;
-  for (size_t request_index = 0; request_index < requests.size();
-       request_index++) {
+  for (const auto& token_and_request :
+       WebUIInfoSingleton::GetInstance()->deep_scan_requests()) {
     base::ListValue ping_entry;
-    ping_entry.Append(base::Value(int(request_index)));
+    ping_entry.Append(base::Value(token_and_request.first));
     ping_entry.Append(
-        base::Value(SerializeDeepScanningRequest(requests[request_index])));
+        base::Value(SerializeDeepScanningRequest(token_and_request.second)));
     pings_sent.Append(std::move(ping_entry));
   }
 
@@ -1843,9 +1840,8 @@ void SafeBrowsingUIHandler::GetDeepScanRequests(const base::ListValue* args) {
 }
 
 void SafeBrowsingUIHandler::GetDeepScanResponses(const base::ListValue* args) {
-  const std::map<std::string,
-                 std::pair<std::string, DeepScanningClientResponse>>
-      responses = WebUIInfoSingleton::GetInstance()->deep_scan_responses();
+  const WebUIInfoSingleton::StatusAndDeepScanningResponseMap& responses =
+      WebUIInfoSingleton::GetInstance()->deep_scan_responses();
 
   base::ListValue responses_sent;
   for (const auto& token_and_status_and_response : responses) {

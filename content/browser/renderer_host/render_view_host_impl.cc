@@ -354,6 +354,11 @@ bool RenderViewHostImpl::CreateRenderView(
     main_rfh->BindBrowserInterfaceBrokerReceiver(
         params->main_frame_interface_bundle->browser_interface_broker
             .InitWithNewPipeAndPassReceiver());
+
+    std::tie(params->widget_host, params->widget) =
+        main_rfh->GetRenderWidgetHost()->BindNewWidgetInterfaces();
+    std::tie(params->frame_widget_host, params->frame_widget) =
+        main_rfh->GetRenderWidgetHost()->BindNewFrameWidgetInterfaces();
   }
   params->session_storage_namespace_id =
       delegate_->GetSessionStorageNamespace(instance_.get())->id();

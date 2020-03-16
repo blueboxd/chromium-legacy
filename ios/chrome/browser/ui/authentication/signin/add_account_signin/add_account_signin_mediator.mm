@@ -23,10 +23,8 @@ using signin_metrics::PromoAction;
 // The coordinator's manager that handles interactions to add identities.
 @property(nonatomic, weak)
     ChromeIdentityInteractionManager* identityInteractionManager;
-
 // The Browser state's user-selected preferences.
 @property(nonatomic, assign) PrefService* prefService;
-
 // The Browser state's identity manager.
 @property(nonatomic, assign) signin::IdentityManager* identityManager;
 
@@ -51,15 +49,15 @@ using signin_metrics::PromoAction;
   return self;
 }
 
-- (void)handleSigninIntent:(SigninIntent)signinIntent
-               accessPoint:(AccessPoint)accessPoint
-               promoAction:(PromoAction)promoAction {
+- (void)handleSigninWithIntent:(AddAccountSigninIntent)signinIntent
+                   accessPoint:(AccessPoint)accessPoint
+                   promoAction:(PromoAction)promoAction {
   switch (signinIntent) {
-    case SigninIntentAddAccount: {
+    case AddAccountSigninIntentAddSecondaryAccount: {
       [self addAccount];
       break;
     }
-    case SigninIntentReauth: {
+    case AddAccountSigninIntentReauthPrimaryAccount: {
       signin_metrics::LogSigninAccessPointStarted(accessPoint, promoAction);
       [self reauthenticate];
       break;
@@ -92,10 +90,9 @@ using signin_metrics::PromoAction;
   return SigninCoordinatorResultSuccess;
 }
 
-// Handles the reauthentication operation for a user from the screen to enter
-// credentials with the primary account email pre-entered to the user consent
-// flow. In the case of a sign-in error will display a modal alert and abort the
-// reauth flow.
+// Handles the add account operation for a user. User account will be
+// automatically populated using the primary user account. In the case of a
+// sign-in error will display a modal alert and abort adding an account.
 - (void)reauthenticate {
   CoreAccountInfo accountInfo = self.identityManager->GetPrimaryAccountInfo();
 
@@ -134,12 +131,13 @@ using signin_metrics::PromoAction;
   switch (signinResult) {
     case SigninCoordinatorResultSuccess:
     case SigninCoordinatorResultCanceledByUser: {
-      [self.delegate addAccountSigninMediatorFinishedWith:signinResult
-                                                 identity:identity];
+      [self.delegate
+          addAccountSigninMediatorFinishedWithSigninResult:signinResult
+                                                  identity:identity];
       break;
     }
     case SigninCoordinatorResultInterrupted: {
-      [self.delegate addAccountSigninMediatorFailedWith:error];
+      [self.delegate addAccountSigninMediatorFailedWithError:error];
       break;
     }
   }

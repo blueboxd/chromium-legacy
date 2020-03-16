@@ -1404,8 +1404,10 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   // Non-owning pointer that is self-referencing and destroyed by calling
   // Close(). The RenderViewImpl has a RenderWidget already, but not a
   // WebFrameWidget, which is now attached here.
-  auto* web_frame_widget =
-      blink::WebFrameWidget::CreateForMainFrame(render_widget.get(), web_frame);
+  auto* web_frame_widget = blink::WebFrameWidget::CreateForMainFrame(
+      render_widget.get(), web_frame, std::move(params->frame_widget_host),
+      std::move(params->frame_widget), std::move(params->widget_host),
+      std::move(params->widget));
 
   render_widget->InitForMainFrame(std::move(show_callback), web_frame_widget,
                                   params->visual_properties.screen_info);
@@ -1445,7 +1447,7 @@ void RenderFrameImpl::CreateFrame(
     const base::UnguessableToken& devtools_frame_token,
     const FrameReplicationState& replicated_state,
     CompositorDependencies* compositor_deps,
-    const mojom::CreateFrameWidgetParams* widget_params,
+    mojom::CreateFrameWidgetParamsPtr widget_params,
     blink::mojom::FrameOwnerPropertiesPtr frame_owner_properties,
     bool has_committed_real_load) {
   // TODO(danakj): Split this method into two pieces. The first block makes a
@@ -1567,7 +1569,11 @@ void RenderFrameImpl::CreateFrame(
     // Close(). The RenderViewImpl has a RenderWidget already, but not a
     // WebFrameWidget, which is now attached here.
     auto* web_frame_widget = blink::WebFrameWidget::CreateForMainFrame(
-        render_widget.get(), web_frame);
+        render_widget.get(), web_frame,
+        std::move(widget_params->frame_widget_host),
+        std::move(widget_params->frame_widget),
+        std::move(widget_params->widget_host),
+        std::move(widget_params->widget));
 
     render_widget->InitForMainFrame(
         RenderWidget::ShowCallback(), web_frame_widget,
@@ -1613,7 +1619,11 @@ void RenderFrameImpl::CreateFrame(
     // WebFrameWidget, *not* the RenderWidget of the MainFrame, which is
     // accessible from the RenderViewImpl.
     auto* web_frame_widget = blink::WebFrameWidget::CreateForChildLocalRoot(
-        render_widget.get(), web_frame);
+        render_widget.get(), web_frame,
+        std::move(widget_params->frame_widget_host),
+        std::move(widget_params->frame_widget),
+        std::move(widget_params->widget_host),
+        std::move(widget_params->widget));
 
     // Adds a reference on RenderWidget, making it self-referencing. So it
     // will not be destroyed by scoped_refptr unless Close() has been called
@@ -2023,10 +2033,20 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
   mojo::PendingReceiver<mojom::Widget> widget_channel_receiver =
       widget_channel.InitWithNewPipeAndPassReceiver();
 
+  mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget;
+  mojo::PendingAssociatedReceiver<blink::mojom::Widget> blink_widget_receiver =
+      blink_widget.InitWithNewEndpointAndPassReceiver();
+
+  mojo::PendingAssociatedRemote<blink::mojom::WidgetHost> blink_widget_host;
+  mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
+      blink_widget_host_receiver =
+          blink_widget_host.InitWithNewEndpointAndPassReceiver();
+
   // Synchronous IPC to obtain a routing id for the fullscreen widget.
   int32_t fullscreen_widget_routing_id = MSG_ROUTING_NONE;
   if (!GetFrameHost()->CreateNewFullscreenWidget(
-          std::move(widget_channel), &fullscreen_widget_routing_id)) {
+          std::move(widget_channel), std::move(blink_widget_host_receiver),
+          std::move(blink_widget), &fullscreen_widget_routing_id)) {
     return nullptr;
   }
   RenderWidget::ShowCallback show_callback =
@@ -2037,7 +2057,8 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
       fullscreen_widget_routing_id, std::move(show_callback),
       GetLocalRootRenderWidget()->compositor_deps(),
       GetLocalRootRenderWidget()->GetOriginalScreenInfo(), plugin,
-      std::move(main_frame_url), std::move(widget_channel_receiver));
+      std::move(main_frame_url), std::move(widget_channel_receiver),
+      std::move(blink_widget_host), std::move(blink_widget_receiver));
   // TODO(nick): The show() handshake seems like unnecessary complexity here,
   // since there's no real delay between CreateFullscreenWidget and
   // ShowCreatedFullscreenWidget. Would it be simpler to have the

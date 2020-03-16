@@ -97,6 +97,11 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
                 mNativePlayerCompositorDelegate, frameGuid, point.x, point.y);
     }
 
+    @CalledByNative
+    public void onLinkClicked(String url) {
+        // TODO(crbug/1061434): Handle navigation to provided URL.
+    }
+
     void destroy() {
         if (mNativePlayerCompositorDelegate == 0) {
             return;

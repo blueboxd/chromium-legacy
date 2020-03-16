@@ -105,6 +105,7 @@ mojom("mojom_platform") {
     "page/display_cutout.mojom",
     "page/page.mojom",
     "page/spatial_navigation.mojom",
+    "page/widget.mojom",
     "payments/payment_app.mojom",
     "peerconnection/peer_connection_tracker.mojom",
     "permissions/permission.mojom",

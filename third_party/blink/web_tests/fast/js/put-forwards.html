@@ -65,14 +65,15 @@
         var element = document.createElement("div");
         var descriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "style");
 
+        const exceptionString = "exception";
         Object.defineProperty(element, "style", {
             get: function () {
-                throw "exception";
+                throw exceptionString;
             },
             set: descriptor.set
         });
 
-        assert_throws(null, () => element.style = "color: green");
+        assert_throws_exactly(exceptionString, () => element.style = "color: green");
     }, "Exception propagation from getter of [PutForwards] attribute");
 
     test(() => {
@@ -80,14 +81,15 @@
         var element_style = element.style;
         var descriptor = Object.getOwnPropertyDescriptor(CSSStyleDeclaration.prototype, "cssText");
 
+        const exceptionString = "exception";
         Object.defineProperty(element_style, "cssText", {
             get: descriptor.get,
             set: function (v) {
-                throw "exception";
+                throw exceptionString;
             }
         });
 
-        assert_throws(null, () => element.style = "color: green");
+        assert_throws_exactly(exceptionString, () => element.style = "color: green");
     }, "Exception propagation from setter of [PutForwards] target attribute");
 
     test(() => {

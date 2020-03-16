@@ -13,6 +13,3 @@
 
 const base::Feature kChangeTabSwitcherPosition{
     "kChangeTabSwitcherPosition", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kToolbarNewTabButton{"ToolbarNewTabButton",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};

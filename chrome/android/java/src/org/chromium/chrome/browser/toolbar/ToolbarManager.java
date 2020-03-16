@@ -1643,8 +1643,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
             mToolbar.onTabOrModelChanged();
 
-            if (tab != null && tab.getWebContents() != null
-                    && tab.getWebContents().isLoadingToDifferentDocument()) {
+            if (tab != null) {
                 mToolbar.onNavigatedToDifferentPage();
             }
 

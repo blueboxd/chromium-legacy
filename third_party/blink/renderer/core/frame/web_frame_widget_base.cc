@@ -67,8 +67,20 @@ STATIC_ASSERT_ENUM(kDragOperationEvery, kWebDragOperationEvery);
 
 bool WebFrameWidgetBase::ignore_input_events_ = false;
 
-WebFrameWidgetBase::WebFrameWidgetBase(WebWidgetClient& client)
-    : client_(&client) {}
+WebFrameWidgetBase::WebFrameWidgetBase(
+    WebWidgetClient& client,
+    CrossVariantMojoAssociatedRemote<mojom::blink::FrameWidgetHostInterfaceBase>
+        frame_widget_host,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::FrameWidgetInterfaceBase>
+        frame_widget,
+    CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
+        widget_host,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
+        widget)
+    : widget_base_(this, std::move(widget_host), std::move(widget)),
+      client_(&client),
+      frame_widget_host_(std::move(frame_widget_host)),
+      receiver_(this, std::move(frame_widget)) {}
 
 WebFrameWidgetBase::~WebFrameWidgetBase() = default;
 

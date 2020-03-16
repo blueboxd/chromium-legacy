@@ -22,9 +22,11 @@ from util import java_cpp_utils
 #
 # This script can parse .idl files however, at present it ignores special
 # rules such as [cpp_enum_prefix_override="ax_attr"].
-ENUM_FIXED_TYPE_WHITELIST = ['char', 'unsigned char',
-  'short', 'unsigned short',
-  'int', 'int8_t', 'int16_t', 'int32_t', 'uint8_t', 'uint16_t']
+ENUM_FIXED_TYPE_ALLOWLIST = [
+    'char', 'unsigned char', 'short', 'unsigned short', 'int', 'int8_t',
+    'int16_t', 'int32_t', 'uint8_t', 'uint16_t'
+]
+
 
 class EnumDefinition(object):
   def __init__(self, original_enum_name=None, class_name_override=None,
@@ -61,9 +63,9 @@ class EnumDefinition(object):
     assert self.class_name
     assert self.enum_package
     assert self.entries
-    if self.fixed_type and self.fixed_type not in ENUM_FIXED_TYPE_WHITELIST:
-      raise Exception('Fixed type %s for enum %s not whitelisted.' %
-          (self.fixed_type, self.class_name))
+    if self.fixed_type and self.fixed_type not in ENUM_FIXED_TYPE_ALLOWLIST:
+      raise Exception('Fixed type %s for enum %s not in allowlist.' %
+                      (self.fixed_type, self.class_name))
 
   def _AssignEntryIndices(self):
     # Enums, if given no value, are given the value of the previous enum + 1.

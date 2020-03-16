@@ -200,22 +200,6 @@ class PageTitleChecker : public StatusChangeChecker,
   DISALLOW_COPY_AND_ASSIGN(PageTitleChecker);
 };
 
-class PasswordsDataTypeActiveChecker : public SingleClientStatusChangeChecker {
- public:
-  explicit PasswordsDataTypeActiveChecker(syncer::ProfileSyncService* service)
-      : SingleClientStatusChangeChecker(service) {}
-  ~PasswordsDataTypeActiveChecker() override {}
-
-  // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied(std::ostream* os) override {
-    *os << "Waiting for PASSWORDS to become active";
-    return service()->GetActiveDataTypes().Has(syncer::PASSWORDS);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PasswordsDataTypeActiveChecker);
-};
-
 class SingleClientNigoriSyncTestWithUssTests
     : public SyncTest,
       public testing::WithParamInterface<bool> {
@@ -603,7 +587,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
       GetBrowser(0)->tab_strip_model()->GetActiveWebContents());
   EXPECT_TRUE(title_checker.Wait());
 
-  EXPECT_TRUE(PasswordsDataTypeActiveChecker(GetSyncService(0)).Wait());
+  EXPECT_TRUE(PasswordSyncActiveChecker(GetSyncService(0)).Wait());
   EXPECT_FALSE(GetSyncService(0)
                    ->GetUserSettings()
                    ->IsTrustedVaultKeyRequiredForPreferredDataTypes());

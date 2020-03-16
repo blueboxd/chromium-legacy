@@ -164,11 +164,11 @@ Polymer({
       case CheckState.CANCELED:
       case CheckState.OFFLINE:
       case CheckState.SIGNED_OUT:
-      case CheckState.NO_PASSWORDS:
       case CheckState.OTHER_ERROR:
       case CheckState.TOO_MANY_PASSWORDS:
         this.passwordManager_.startBulkPasswordCheck();
         return;
+      case CheckState.NO_PASSWORDS:
       case CheckState.TOO_MANY_PASSWORDS_AND_QUOTA_LIMIT:
       case CheckState.QUOTA_LIMIT:
     }
@@ -353,11 +353,11 @@ Polymer({
       case CheckState.RUNNING:
       case CheckState.OFFLINE:
       case CheckState.SIGNED_OUT:
-      case CheckState.NO_PASSWORDS:
       case CheckState.OTHER_ERROR:
         return false;
       case CheckState.TOO_MANY_PASSWORDS:
         return !this.suppressesCheckupLink_();
+      case CheckState.NO_PASSWORDS:
       case CheckState.TOO_MANY_PASSWORDS_AND_QUOTA_LIMIT:
       case CheckState.QUOTA_LIMIT:
         return true;

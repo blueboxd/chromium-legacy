@@ -93,7 +93,7 @@ def _ParseArgs(args):
       help='Optional path to the base module\'s R.txt file, only used with '
       'language split dimension.')
   parser.add_argument(
-      '--base-whitelist-rtxt-path',
+      '--base-allowlist-rtxt-path',
       help='Optional path to an R.txt file, string resources '
       'listed there _and_ in --base-module-rtxt-path will '
       'be kept in the base bundle module, even if language'
@@ -140,17 +140,17 @@ def _ParseArgs(args):
         parser.error('Invalid split dimension "%s" (expected one of: %s)' % (
             dim, ', '.join(x.lower() for x in _ALL_SPLIT_DIMENSIONS)))
 
-  # As a special case, --base-whitelist-rtxt-path can be empty to indicate
-  # that the module doesn't need such a whitelist. That's because it is easier
+  # As a special case, --base-allowlist-rtxt-path can be empty to indicate
+  # that the module doesn't need such a allowlist. That's because it is easier
   # to check this condition here than through GN rules :-(
-  if options.base_whitelist_rtxt_path == '':
+  if options.base_allowlist_rtxt_path == '':
     options.base_module_rtxt_path = None
 
-  # Check --base-module-rtxt-path and --base-whitelist-rtxt-path usage.
+  # Check --base-module-rtxt-path and --base-allowlist-rtxt-path usage.
   if options.base_module_rtxt_path:
-    if not options.base_whitelist_rtxt_path:
+    if not options.base_allowlist_rtxt_path:
       parser.error(
-          '--base-module-rtxt-path requires --base-whitelist-rtxt-path')
+          '--base-module-rtxt-path requires --base-allowlist-rtxt-path')
     if 'language' not in options.split_dimensions:
       parser.error('--base-module-rtxt-path is only valid with '
                    'language-based splits.')
@@ -304,18 +304,18 @@ def _SplitModuleForAssetTargeting(src_module_zip, tmp_dir, split_dimensions):
     return tmp_zip
 
 
-def _GenerateBaseResourcesWhitelist(base_module_rtxt_path,
-                                    base_whitelist_rtxt_path):
-  """Generate a whitelist of base master resource ids.
+def _GenerateBaseResourcesAllowList(base_module_rtxt_path,
+                                    base_allowlist_rtxt_path):
+  """Generate a allowlist of base master resource ids.
 
   Args:
     base_module_rtxt_path: Path to base module R.txt file.
-    base_whitelist_rtxt_path: Path to base whitelist R.txt file.
+    base_allowlist_rtxt_path: Path to base allowlist R.txt file.
   Returns:
     list of resource ids.
   """
-  ids_map = resource_utils.GenerateStringResourcesWhitelist(
-      base_module_rtxt_path, base_whitelist_rtxt_path)
+  ids_map = resource_utils.GenerateStringResourcesAllowList(
+      base_module_rtxt_path, base_allowlist_rtxt_path)
   return ids_map.keys()
 
 
@@ -394,8 +394,8 @@ def main(args):
 
     base_master_resource_ids = None
     if options.base_module_rtxt_path:
-      base_master_resource_ids = _GenerateBaseResourcesWhitelist(
-          options.base_module_rtxt_path, options.base_whitelist_rtxt_path)
+      base_master_resource_ids = _GenerateBaseResourcesAllowList(
+          options.base_module_rtxt_path, options.base_allowlist_rtxt_path)
 
     bundle_config = _GenerateBundleConfigJson(
         options.uncompressed_assets, options.compress_shared_libraries,

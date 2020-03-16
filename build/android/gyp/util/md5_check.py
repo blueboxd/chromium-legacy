@@ -29,7 +29,7 @@ def CallAndWriteDepfileIfStale(on_stale_md5,
                                output_paths=None,
                                force=False,
                                pass_changes=False,
-                               track_subpaths_whitelist=None,
+                               track_subpaths_allowlist=None,
                                depfile_deps=None):
   """Wraps CallAndRecordIfStale() and writes a depfile if applicable.
 
@@ -58,7 +58,7 @@ def CallAndWriteDepfileIfStale(on_stale_md5,
       output_paths=output_paths,
       force=force,
       pass_changes=pass_changes,
-      track_subpaths_whitelist=track_subpaths_whitelist)
+      track_subpaths_allowlist=track_subpaths_allowlist)
 
   # Write depfile even when inputs have not changed to ensure build correctness
   # on bots that build with & without patch, and the patch changes the depfile
@@ -75,7 +75,7 @@ def CallAndRecordIfStale(function,
                          output_paths=None,
                          force=False,
                          pass_changes=False,
-                         track_subpaths_whitelist=None):
+                         track_subpaths_allowlist=None):
   """Calls function if outputs are stale.
 
   Outputs are considered stale if:
@@ -96,7 +96,7 @@ def CallAndRecordIfStale(function,
     force: Whether to treat outputs as missing regardless of whether they
       actually are.
     pass_changes: Whether to pass a Changes instance to |function|.
-    track_subpaths_whitelist: Relevant only when pass_changes=True. List of .zip
+    track_subpaths_allowlist: Relevant only when pass_changes=True. List of .zip
       files from |input_paths| to make subpath information available for.
   """
   assert record_path or output_paths
@@ -112,11 +112,11 @@ def CallAndRecordIfStale(function,
   new_metadata = _Metadata(track_entries=pass_changes or PRINT_EXPLANATIONS)
   new_metadata.AddStrings(input_strings)
 
-  zip_whitelist = set(track_subpaths_whitelist or [])
+  zip_allowlist = set(track_subpaths_allowlist or [])
   for path in input_paths:
     # It's faster to md5 an entire zip file than it is to just locate & hash
     # its central directory (which is what this used to do).
-    if path in zip_whitelist:
+    if path in zip_allowlist:
       entries = _ExtractZipEntries(path)
       new_metadata.AddZipFile(path, entries)
     else:

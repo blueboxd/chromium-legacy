@@ -163,13 +163,13 @@ template("system_webview_apk_or_module_tmpl") {
       native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
     }
 
-    aapt_locale_whitelist = locales
+    aapt_locale_allowlist = locales
 
     # Match drawables, but not mipmaps.
-    resource_blacklist_regex = "drawable[^/]*-xxxhdpi"
+    resource_exclusion_regex = "drawable[^/]*-xxxhdpi"
 
     # Exception rationale in https://crbug.com/691733.
-    resource_blacklist_exceptions = [
+    resource_exclusion_exceptions = [
       "*shadow*",  # Combination of gradient & transparency cause pixelation.
       "*.9.*",  # Most nine-patches contain shadows.
     ]

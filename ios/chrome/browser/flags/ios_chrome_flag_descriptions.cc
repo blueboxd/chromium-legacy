@@ -380,11 +380,6 @@ const char kToolbarContainerDescription[] =
     "When enabled, the toolbars and their fullscreen animations will be "
     "managed by the toolbar container coordinator rather than BVC.";
 
-const char kToolbarNewTabButtonName[] =
-    "Enable New Tab button in the bottom toolbar";
-const char kToolbarNewTabButtonDescription[] =
-    "When enabled, the bottom toolbar middle button opens a new tab";
-
 const char kTranslateInfobarMessagesUIName[] =
     "Enable Translate Infobar Messages UI";
 const char kTranslateInfobarMessagesUIDescription[] =

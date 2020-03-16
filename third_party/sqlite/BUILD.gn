@@ -6,6 +6,9 @@ import("//build/config/dcheck_always_on.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/protobuf/proto_library.gni")
+import("//third_party/sqlite/sqlite_chromium_configuration_flags.gni")
+import("//third_party/sqlite/sqlite_common_configuration_flags.gni")
+import("//third_party/sqlite/sqlite_dev_configuration_flags.gni")
 
 # Compile-time options passed to SQLite.
 #
@@ -19,93 +22,16 @@ import("//third_party/protobuf/proto_library.gni")
 # The vast majority of the macros here are documented at
 # https://www.sqlite.org/compile.html
 config("common_sqlite3_compile_options") {
-  defines = [
+  # Start with the configuration flags which are also baked into the SQLite
+  # source when the amalgamation is generated. These are the same for all
+  # platforms.
+  defines = sqlite_common_configuration_flags
+
+  # The flags not baked in, but common for all platforms.
+  defines += [
     # Skip writing transaction rollback journals on f2fs.
     # f2fs tends to be used on Android, and may be used on ChromeOS.
     "SQLITE_ENABLE_BATCH_ATOMIC_WRITE",
-
-    "SQLITE_ENABLE_FTS3",
-
-    # New unicode61 tokenizer with built-in tables.
-    "SQLITE_DISABLE_FTS3_UNICODE",
-
-    # Chrome does not enable fts4, disable extra code.
-    "SQLITE_DISABLE_FTS4_DEFERRED",
-    "SQLITE_ENABLE_ICU",
-
-    # Defaults the secure_delete pragma to 1.
-    #
-    # This causes SQLite to overwrite all deleted information with zeroes,
-    # trading additional I/O for better privacy guarantees.
-    "SQLITE_SECURE_DELETE",
-
-    # TODO(pwnall): SQLite adds mutexes to protect structures which cross
-    # threads. In theory Chrome should be able to turn this to "2" which
-    # should give a slight speed boost. "2" is safe as long as a single
-    # connection is not used by more than one thread at a time.
-    "SQLITE_THREADSAFE=1",
-
-    # SQLite can spawn threads to sort in parallel if configured
-    # appropriately.  Chrome doesn't configure SQLite for that, and would
-    # prefer to control distribution to worker threads.
-    "SQLITE_MAX_WORKER_THREADS=0",
-
-    # Allow 256MB mmap footprint per connection.  Should not be too open-ended
-    # as that could cause memory fragmentation.  50MB encompasses the 99th
-    # percentile of Chrome databases in the wild.
-    # TODO(pwnall): A 64-bit-specific value could be 1G or more.
-    # TODO(pwnall): Figure out if exceeding this is costly.
-    "SQLITE_MAX_MMAP_SIZE=268435456",
-
-    # The default POSIX permissions for a newly created SQLite database.
-    #
-    # If unspecified, this defaults to 0644. All the data stored by Chrome is
-    # private, so our databases use stricter settings.
-    "SQLITE_DEFAULT_FILE_PERMISSIONS=0600",
-
-    # Needed by the SQL MemoryDumpProvider.
-    #
-    # Setting this to 1 is needed to collect the information reported by
-    # sqlite3_status64(SQLITE_STATUS_MEMORY_USED). Without this setting, the API
-    # still exists, but does not work as promised.
-    "SQLITE_DEFAULT_MEMSTATUS=1",
-
-    # Must match sql::Database::kDefaultPageSize.
-    "SQLITE_DEFAULT_PAGE_SIZE=4096",
-
-    # By default SQLite pre-allocates 100 pages of pcache data, which will not
-    # be released until the handle is closed.  This is contrary to Chrome's
-    # memory-usage goals.
-    "SQLITE_DEFAULT_PCACHE_INITSZ=0",
-
-    # Some defines can affect the amalgamation. Those should be added to
-    # scripts/generate_amalgamation.sh, and the amalgamation re-generated.
-    # Usually this involves disabling features which include keywords or
-    # syntax, for instance SQLITE_OMIT_VIRTUALTABLE omits the virtual table
-    # syntax entirely. Missing an item usually results in syntax working but
-    # execution failing. Review:
-    #   patched/src/parse.py
-    #   patched/tool/mkkeywordhash.c
-
-    # The flags below are recommended in the SQLite documentation.
-    "SQLITE_LIKE_DOESNT_MATCH_BLOBS",
-    "SQLITE_OMIT_DEPRECATED",
-    "SQLITE_OMIT_PROGRESS_CALLBACK",
-    "SQLITE_OMIT_SHARED_CACHE",
-    "SQLITE_USE_ALLOCA",
-
-    # Chrome does not use sqlite3_column_decltype().
-    "SQLITE_OMIT_DECLTYPE",
-
-    # Chrome does not use sqlite3_{enable_}load_extension().
-    # Asides from giving us fairly minor code savings, this option disables code
-    # that breaks our method for renaming SQLite's exported symbols. Last,
-    # there's a tiny security benefit to knowing that WebSQL can't possibly
-    # reach extension loading code.
-    "SQLITE_OMIT_LOAD_EXTENSION",
-
-    # Uses isnan() in the C99 standard library.
-    "SQLITE_HAVE_ISNAN",
 
     # Forces SQLite to only store temporary data in memory.
     #
@@ -179,89 +105,18 @@ config("common_sqlite3_compile_options") {
   }
 }
 
-# These options remove SQLite features that we don't need in Chrome.
-# Note that some defines affect amalgamation. Please make sure that this
-# list of options is in sync with build flags for Chromium in
-# scripts/generate_amalgamation.sh.
+# These options add SQLite features that we need in Chrome.
 config("chromium_sqlite3_compile_options") {
   configs = [ ":common_sqlite3_compile_options" ]
 
-  defines = [
-    # Chrome doesn't use the ANALYZE SQLite extension.
-    #
-    # ANALYZE [1] is non-standard, and currently performs a table scan to
-    # update statistics used by the query planner. Chrome uses straightforward
-    # database schemas which do not require the level of fine tuning provided
-    # by ANALYZE, and we generally cannot afford the I/O cost of the required
-    # table scans.
-    #
-    # [1] https://www.sqlite.org/lang_analyze.html
-    "SQLITE_OMIT_ANALYZE",
-
-    # Chrome initializes SQLite manually in //sql/connection.cc.
-    "SQLITE_OMIT_AUTOINIT",
-
-    # Chrome calls sqlite3_reset() correctly to reset prepared statements.
-    "SQLITE_OMIT_AUTORESET",
-
-    # Chromium does not use sqlite3_{get,free}_table().
-    # Chrome doesn't use sqlite3_compileoption_{used,get}().
-    "SQLITE_OMIT_COMPILEOPTION_DIAGS",
-
-    # Chrome doesn't ship the SQLite shell, so command auto-completion is not
-    # needed. Chrome developers who build the SQLite shell living at
-    # //third_party/sqlite:sqlite_shell for diagnostic purposes will have to
-    # live without auto-completion.
-    "SQLITE_OMIT_COMPLETE",
-
-    # EXPLAIN's output is not stable across releases [1], so it should not be
-    # used in Chrome. Skipping the EXPLAIN machinery also results in
-    # non-trivial binary savings.
-    #
-    # [1] https://www.sqlite.org/lang_explain.html
-    "SQLITE_OMIT_EXPLAIN",
-
-    # Chrome does not use sqlite3_{get,free}_table().
-    "SQLITE_OMIT_GET_TABLE",
-
-    # Chrome already depends on malloc being very efficient, so we disable
-    # SQLite's arena allocator.
-    "SQLITE_DEFAULT_LOOKASIDE=0,0",
-    "SQLITE_OMIT_LOOKASIDE",
-
-    # Chrome doesn't use TCL variables.
-    "SQLITE_OMIT_TCL_VARIABLE",
-
-    # The REINDEX statemnt is only useful if a collation sequence's definition
-    # changes [1]. Chrome never defines its own collation sequences [2, 3], so
-    # it never needs to call REINDEX.
-    #
-    # [1] https://www.sqlite.org/lang_reindex.html
-    # [2] https://www.sqlite.org/datatype3.html#collating_sequences
-    # [3] https://www.sqlite.org/c3ref/create_collation.html
-    "SQLITE_OMIT_REINDEX",
-
-    # Chrome doesn't use sqlite3_{profile,trace}().
-    "SQLITE_OMIT_TRACE",
-
-    # Chrome doesn't use UPSERT.
-    "SQLITE_OMIT_UPSERT",
-
-    # Chrome doesn't use window functions in SQL.
-    "SQLITE_OMIT_WINDOWFUNC",
-  ]
+  defines = sqlite_chromium_configuration_flags
 }
 
 # These options add SQLite features that we need in developer tools.
-# Note that some defines affect amalgamation. Please make sure that this
-# list of options is in sync with build flags for dev version in
-# scripts/generate_amalgamation.sh.
 config("dev_sqlite3_compile_options") {
   configs = [ ":common_sqlite3_compile_options" ]
 
-  defines = [
-    "SQLITE_ENABLE_EXPLAIN_COMMENTS",
-  ]
+  defines = sqlite_dev_configuration_flags
 }
 
 config("sqlite_warnings") {
@@ -313,14 +168,14 @@ component("chromium_sqlite3") {
   public = [ "sqlite3.h" ]
 
   sources = [
-    "amalgamation/sqlite3.h",
     "sqlite3_shim.c",
+    "src/amalgamation/sqlite3.h",
   ]
 
   inputs = [
     # This file is #included into sqlite3_shim.c, which injects Chrome-specific
     # definitions into the SQLite amalgamation code.
-    "amalgamation/sqlite3.c",
+    "src/amalgamation/sqlite3.c",
   ]
 
   cflags = []
@@ -355,8 +210,8 @@ component("chromium_sqlite3") {
   }
 
   include_dirs = [
-    ".",  # sqlite3.h here must override the one in amalgamation/.
-    "amalgamation",
+    ".",  # sqlite3.h here must override the one in src/amalgamation/.
+    "src/amalgamation",
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
@@ -390,14 +245,14 @@ component("dev_sqlite3") {
   public = [ "dev/sqlite3.h" ]
 
   sources = [
-    "amalgamation_dev/sqlite3.h",
     "dev/sqlite3_shim.c",
+    "src/amalgamation_dev/sqlite3.h",
   ]
 
   inputs = [
     # This file is #included into sqlite3_shim.c, which injects Chrome-specific
     # definitions into the SQLite amalgamation code.
-    "amalgamation_dev/sqlite3.c",
+    "src/amalgamation_dev/sqlite3.c",
   ]
 
   cflags = []
@@ -433,7 +288,7 @@ component("dev_sqlite3") {
 
   include_dirs = [
     "dev",  # sqlite3.h here must override the one in amalgamation_dev/.
-    "amalgamation_dev",
+    "src/amalgamation_dev",
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]

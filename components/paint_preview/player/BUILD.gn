@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD - style license that can be
 # found in the LICENSE file.
 
-import("//build/config/android/rules.gni")
-
 source_set("player") {
   sources = [
     "player_compositor_delegate.cc",
@@ -23,4 +21,21 @@ source_set("player") {
 
   public_deps =
       [ "//components/services/paint_preview_compositor/public/mojom" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [ "player_compositor_delegate_unittest.cc" ]
+
+  deps = [
+    ":player",
+    "//base",
+    "//base/test:test_support",
+    "//components/paint_preview/browser",
+    "//components/paint_preview/common",
+    "//components/paint_preview/common/proto",
+    "//ui/gfx/geometry",
+    "//url",
+  ]
 }

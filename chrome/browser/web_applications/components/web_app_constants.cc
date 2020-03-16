@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 
 #include "base/compiler_specific.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 
 namespace web_app {
 

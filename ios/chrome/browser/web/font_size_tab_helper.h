@@ -47,6 +47,14 @@ class FontSizeTabHelper : public web::WebStateObserver,
   // the default zoom level.)
   bool CanUserResetZoom() const;
 
+  // Returns true if the Text Zoom process is currently active.
+  bool IsTextZoomUIActive() const;
+
+  // Marks the Text Zoom process as active or not.  This method does not
+  // directly show or hide the UI.  It simply acts as a marker for whether or
+  // not the UI should be displayed when possible.
+  void SetTextZoomUIActive(bool active);
+
   // Remove any stored zoom levels from the provided |PrefService|.
   static void ClearUserZoomPrefs(PrefService* pref_service);
 
@@ -87,6 +95,9 @@ class FontSizeTabHelper : public web::WebStateObserver,
 
   // WebState this tab helper is attached to.
   web::WebState* web_state_ = nullptr;
+
+  // Whether the Text Zoom UI is active
+  bool text_zoom_ui_active_ = false;
 
   WEB_STATE_USER_DATA_KEY_DECL();
 

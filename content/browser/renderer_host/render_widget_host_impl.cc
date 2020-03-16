@@ -530,6 +530,53 @@ void RenderWidgetHostImpl::Init() {
     view_->OnRenderWidgetInit();
 }
 
+std::pair<mojo::PendingAssociatedRemote<blink::mojom::WidgetHost>,
+          mojo::PendingAssociatedReceiver<blink::mojom::Widget>>
+RenderWidgetHostImpl::BindNewWidgetInterfaces() {
+  // This API may get called on a RenderWidgetHostImpl from a
+  // reused RenderViewHostImpl so we need to ensure old channels are dropped.
+  blink_widget_host_receiver_.reset();
+  blink_widget_.reset();
+  return std::make_pair(
+      blink_widget_host_receiver_.BindNewEndpointAndPassRemote(),
+      blink_widget_.BindNewEndpointAndPassReceiver());
+}
+
+void RenderWidgetHostImpl::BindWidgetInterfaces(
+    mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost> widget_host,
+    mojo::PendingAssociatedRemote<blink::mojom::Widget> widget) {
+  // This API may get called on a RenderWidgetHostImpl from a
+  // reused RenderViewHostImpl so we need to ensure old channels are dropped.
+  blink_widget_host_receiver_.reset();
+  blink_widget_.reset();
+  blink_widget_host_receiver_.Bind(std::move(widget_host));
+  blink_widget_.Bind(std::move(widget));
+}
+
+std::pair<mojo::PendingAssociatedRemote<blink::mojom::FrameWidgetHost>,
+          mojo::PendingAssociatedReceiver<blink::mojom::FrameWidget>>
+RenderWidgetHostImpl::BindNewFrameWidgetInterfaces() {
+  // This API may get called on a RenderWidgetHostImpl from a
+  // reused RenderViewHostImpl so we need to ensure old channels are dropped.
+  blink_frame_widget_host_receiver_.reset();
+  blink_frame_widget_.reset();
+  return std::make_pair(
+      blink_frame_widget_host_receiver_.BindNewEndpointAndPassRemote(),
+      blink_frame_widget_.BindNewEndpointAndPassReceiver());
+}
+
+void RenderWidgetHostImpl::BindFrameWidgetInterfaces(
+    mojo::PendingAssociatedReceiver<blink::mojom::FrameWidgetHost>
+        frame_widget_host,
+    mojo::PendingAssociatedRemote<blink::mojom::FrameWidget> frame_widget) {
+  // This API may get called on a RenderWidgetHostImpl from a
+  // reused RenderViewHostImpl so we need to ensure old channels are dropped.
+  blink_frame_widget_host_receiver_.reset();
+  blink_frame_widget_.reset();
+  blink_frame_widget_host_receiver_.Bind(std::move(frame_widget_host));
+  blink_frame_widget_.Bind(std::move(frame_widget));
+}
+
 void RenderWidgetHostImpl::InitForFrame() {
   DCHECK(process_->IsInitializedAndNotDead());
   renderer_initialized_ = true;
@@ -1674,7 +1721,11 @@ void RenderWidgetHostImpl::DragSourceEndedAt(
 }
 
 void RenderWidgetHostImpl::DragSourceSystemDragEnded() {
-  Send(new DragMsg_SourceSystemDragEnded(GetRoutingID()));
+  // TODO(dtapuska): Remove this null check once all of the Drag IPCs
+  // come over the mojo channels. It will be guaranteed that this
+  // will be non-null.
+  if (blink_frame_widget_)
+    blink_frame_widget_->DragSourceSystemDragEnded();
 }
 
 void RenderWidgetHostImpl::FilterDropData(DropData* drop_data) {

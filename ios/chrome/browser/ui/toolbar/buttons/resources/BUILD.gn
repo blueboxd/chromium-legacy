@@ -42,15 +42,6 @@ imageset("toolbar_stop") {
   ]
 }
 
-imageset("toolbar_search") {
-  sources = [
-    "toolbar_search.imageset/Contents.json",
-    "toolbar_search.imageset/toolbar_search.png",
-    "toolbar_search.imageset/toolbar_search@2x.png",
-    "toolbar_search.imageset/toolbar_search@3x.png",
-  ]
-}
-
 imageset("toolbar_bookmark_active") {
   sources = [
     "toolbar_bookmark_active.imageset/Contents.json",

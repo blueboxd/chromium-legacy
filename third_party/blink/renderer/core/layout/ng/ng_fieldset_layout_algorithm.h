@@ -12,6 +12,7 @@
 
 namespace blink {
 
+enum class NGBreakStatus;
 class NGBlockBreakToken;
 class NGConstraintSpace;
 
@@ -28,6 +29,15 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
       const MinMaxSizesInput&) const override;
 
  private:
+  NGBreakStatus LayoutChildren();
+  NGBreakStatus LayoutLegend(
+      NGBlockNode& legend,
+      scoped_refptr<const NGBlockBreakToken> legend_break_token);
+  NGBreakStatus LayoutFieldsetContent(
+      NGBlockNode& fieldset_content,
+      scoped_refptr<const NGBlockBreakToken> content_break_token,
+      const LogicalSize adjusted_padding_box_size);
+
   const NGConstraintSpace CreateConstraintSpaceForLegend(
       NGBlockNode legend,
       LogicalSize available_size,
@@ -38,7 +48,30 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
       LogicalSize padding_box_size,
       LayoutUnit block_offset);
 
+  const WritingMode writing_mode_;
+
   const NGBoxStrut border_padding_;
+  NGBoxStrut borders_;
+  NGBoxStrut padding_;
+
+  // The border and padding after adjusting to ensure that the leading border
+  // and padding are only applied to the first fragment.
+  NGBoxStrut adjusted_border_padding_;
+
+  // The result of borders_ after positioning the fieldset's legend element.
+  NGBoxStrut borders_with_legend_;
+
+  LayoutUnit block_start_padding_edge_;
+  LayoutUnit intrinsic_block_size_;
+  LogicalSize border_box_size_;
+
+  // If true, this indicates the block_start_padding_edge_ had changed from its
+  // initial value during the current layout pass.
+  bool block_start_padding_edge_adjusted_ = false;
+
+  // If true, this indicates that either the entire legend or part of the
+  // legend needs to be laid out during the current layout pass.
+  bool legend_needs_layout_ = false;
 };
 
 }  // namespace blink

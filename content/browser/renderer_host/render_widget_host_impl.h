@@ -61,6 +61,7 @@
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
+#include "third_party/blink/public/mojom/page/widget.mojom.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_base_types.h"
@@ -148,7 +149,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       public RenderProcessHostObserver,
       public SyntheticGestureController::Delegate,
       public IPC::Listener,
-      public RenderFrameMetadataProvider::Observer {
+      public RenderFrameMetadataProvider::Observer,
+      public blink::mojom::FrameWidgetHost,
+      public blink::mojom::WidgetHost {
  public:
   // |routing_id| must not be MSG_ROUTING_NONE.
   // If this object outlives |delegate|, DetachDelegate() must be called when
@@ -294,6 +297,27 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // just need to be attached to it. Used for window.open, <select> dropdown
   // menus, and other times when the renderer initiates creating an object.
   void Init();
+
+  // Allocate and bind new widget interfaces.
+  std::pair<mojo::PendingAssociatedRemote<blink::mojom::WidgetHost>,
+            mojo::PendingAssociatedReceiver<blink::mojom::Widget>>
+  BindNewWidgetInterfaces();
+
+  // Bind the provided widget interfaces.
+  void BindWidgetInterfaces(
+      mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost> widget_host,
+      mojo::PendingAssociatedRemote<blink::mojom::Widget> widget);
+
+  // Allocate and bind new frame widget interfaces.
+  std::pair<mojo::PendingAssociatedRemote<blink::mojom::FrameWidgetHost>,
+            mojo::PendingAssociatedReceiver<blink::mojom::FrameWidget>>
+  BindNewFrameWidgetInterfaces();
+
+  // Bind the provided frame widget interfaces.
+  void BindFrameWidgetInterfaces(
+      mojo::PendingAssociatedReceiver<blink::mojom::FrameWidgetHost>
+          frame_widget_host,
+      mojo::PendingAssociatedRemote<blink::mojom::FrameWidget> frame_widget);
 
   // Initializes a RenderWidgetHost that is attached to a RenderFrameHost.
   void InitForFrame();
@@ -1242,6 +1266,16 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   std::unique_ptr<PeakGpuMemoryTracker> scroll_peak_gpu_mem_tracker_;
 
   InputRouterImpl::RequestMouseLockCallback request_mouse_callback_;
+
+  // If this is initialized with a frame this member will be valid and
+  // can be used to send messages directly to blink.
+  mojo::AssociatedReceiver<blink::mojom::FrameWidgetHost>
+      blink_frame_widget_host_receiver_{this};
+  mojo::AssociatedRemote<blink::mojom::FrameWidget> blink_frame_widget_;
+
+  mojo::AssociatedReceiver<blink::mojom::WidgetHost>
+      blink_widget_host_receiver_{this};
+  mojo::AssociatedRemote<blink::mojom::Widget> blink_widget_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_{this};
 

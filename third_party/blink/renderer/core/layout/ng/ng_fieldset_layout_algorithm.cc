@@ -22,11 +22,23 @@ namespace blink {
 NGFieldsetLayoutAlgorithm::NGFieldsetLayoutAlgorithm(
     const NGLayoutAlgorithmParams& params)
     : NGLayoutAlgorithm(params),
+      writing_mode_(ConstraintSpace().GetWritingMode()),
       border_padding_(params.fragment_geometry.border +
                       params.fragment_geometry.padding) {
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
   container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
+
+  borders_ = container_builder_.Borders();
+  padding_ = container_builder_.Padding();
+  border_box_size_ = container_builder_.InitialBorderBoxSize();
+  block_start_padding_edge_ = borders_.block_start;
+
+  // Leading border and padding should only apply to the first fragment. We
+  // don't adjust the value of border_padding_ itself so that it can be used
+  // when calculating the block size of the last fragment.
+  adjusted_border_padding_ = border_padding_;
+  AdjustForFragmentation(BreakToken(), &adjusted_border_padding_);
 }
 
 scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
@@ -43,17 +55,6 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   // with the actual fieldset contents. Since scrollbars are handled by the
   // anonymous child box, and since padding is inside the scrollport, padding
   // also needs to be handled by the anonymous child.
-  NGBoxStrut borders = container_builder_.Borders();
-  NGBoxStrut padding = container_builder_.Padding();
-  LogicalSize border_box_size = container_builder_.InitialBorderBoxSize();
-  const auto writing_mode = ConstraintSpace().GetWritingMode();
-  LayoutUnit block_start_padding_edge = borders.block_start;
-
-  // Leading border and padding should only apply to the first fragment. We
-  // don't adjust the value of border_padding_ itself so that it can be used
-  // when calculating the block size of the last fragment.
-  NGBoxStrut adjusted_border_padding(border_padding_);
-  AdjustForFragmentation(BreakToken(), &adjusted_border_padding);
 
   if (ConstraintSpace().HasBlockFragmentation()) {
     container_builder_.SetHasBlockFragmentation();
@@ -66,6 +67,63 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
       container_builder_.SetIsInitialColumnBalancingPass();
   }
 
+  // TODO(almaher): Handle all break status cases.
+  NGBreakStatus break_status = LayoutChildren();
+  DCHECK_EQ(break_status, NGBreakStatus::kContinue);
+
+  intrinsic_block_size_ =
+      ClampIntrinsicBlockSize(ConstraintSpace(), Node(),
+                              adjusted_border_padding_, intrinsic_block_size_);
+  LayoutUnit consumed_block_size =
+      BreakToken() ? BreakToken()->ConsumedBlockSize() : LayoutUnit();
+
+  // Recompute the block-axis size now that we know our content size.
+  border_box_size_.block_size =
+      ComputeBlockSizeForFragment(ConstraintSpace(), Style(), border_padding_,
+                                  intrinsic_block_size_ + consumed_block_size);
+
+  // The above computation utility knows nothing about fieldset weirdness. The
+  // legend may eat from the available content box block size. Make room for
+  // that if necessary.
+  // Note that in size containment, we have to consider sizing as if we have no
+  // contents, with the conjecture being that legend is part of the contents.
+  // Thus, only do this adjustment if we do not contain size.
+  if (!Node().ShouldApplySizeContainment()) {
+    LayoutUnit minimum_border_box_block_size;
+    if (legend_needs_layout_) {
+      minimum_border_box_block_size =
+          borders_with_legend_.BlockSum() + padding_.BlockSum();
+    }
+    // Similar to how we add the consumed block size to the intrinsic
+    // block size when calculating border_box_size_.block_size, we also need to
+    // do so when the fieldset is adjusted to encompass the legend.
+    border_box_size_.block_size =
+        std::max(border_box_size_.block_size,
+                 minimum_border_box_block_size + consumed_block_size);
+  }
+
+  // TODO(almaher): end border and padding may overflow the parent
+  // fragmentainer, and we should avoid that.
+  LayoutUnit block_size = border_box_size_.block_size - consumed_block_size;
+
+  container_builder_.SetIsFieldsetContainer();
+  if (ConstraintSpace().HasKnownFragmentainerBlockSize()) {
+    FinishFragmentation(
+        ConstraintSpace(), BreakToken(), block_size, intrinsic_block_size_,
+        FragmentainerSpaceAtBfcStart(ConstraintSpace()), &container_builder_);
+  } else {
+    container_builder_.SetIntrinsicBlockSize(intrinsic_block_size_);
+    container_builder_.SetBlockSize(block_size);
+  }
+
+  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), borders_with_legend_,
+                        &container_builder_)
+      .Run();
+
+  return container_builder_.ToBoxFragment();
+}
+
+NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutChildren() {
   scoped_refptr<const NGBlockBreakToken> legend_break_token;
   scoped_refptr<const NGBlockBreakToken> content_break_token;
   bool has_seen_all_children = false;
@@ -92,179 +150,149 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   }
 
   NGBlockNode legend = Node().GetRenderedLegend();
-  bool legend_break = false;
-  bool block_start_padding_edge_adjusted = false;
-  bool legend_needs_layout =
+  legend_needs_layout_ =
       legend && (legend_break_token || !IsResumingLayout(BreakToken()));
 
-  if (legend_needs_layout) {
-    // Lay out the legend. While the fieldset container normally ignores its
-    // padding, the legend is laid out within what would have been the content
-    // box had the fieldset been a regular block with no weirdness.
-    LogicalSize content_box_size =
-        ShrinkAvailableSize(border_box_size, adjusted_border_padding);
-    LogicalSize percentage_size = CalculateChildPercentageSize(
-        ConstraintSpace(), Node(), content_box_size);
-    NGBoxStrut legend_margins = ComputeMarginsFor(
-        legend.Style(), percentage_size.inline_size,
-        ConstraintSpace().GetWritingMode(), ConstraintSpace().Direction());
-
-    if (legend_break_token)
-      legend_margins.block_start = LayoutUnit();
-
-    LogicalOffset legend_offset;
-    scoped_refptr<const NGLayoutResult> result;
-    LayoutUnit block_offset = legend_margins.block_start;
-    do {
-      auto legend_space = CreateConstraintSpaceForLegend(
-          legend, content_box_size, percentage_size, block_offset);
-      result = legend.Layout(legend_space, legend_break_token.get());
-
-      // TODO(layout-dev): Handle abortions caused by block fragmentation.
-      DCHECK_EQ(result->Status(), NGLayoutResult::kSuccess);
-
-      const auto& physical_fragment = result->PhysicalFragment();
-      legend_break = physical_fragment.BreakToken();
-
-      // We have already adjusted the legend block offset, no need to adjust
-      // again.
-      if (block_offset != legend_margins.block_start)
-        break;
-
-      LayoutUnit legend_margin_box_block_size =
-          NGFragment(writing_mode, physical_fragment).BlockSize() +
-          legend_margins.BlockSum();
-      LayoutUnit space_left =
-          borders.block_start - legend_margin_box_block_size;
-      if (space_left > LayoutUnit()) {
-        // If the border is the larger one, though, it will stay put at the
-        // border-box block-start edge of the fieldset. Then it's the legend
-        // that needs to be pushed. We'll center the margin box in this case, to
-        // make sure that both margins remain within the area occupied by the
-        // border also after adjustment.
-        block_offset += space_left / 2;
-        if (ConstraintSpace().HasBlockFragmentation())
-          continue;
-      } else {
-        // If the legend is larger than the width of the fieldset block-start
-        // border, the actual padding edge of the fieldset will be moved
-        // accordingly. This will be the block-start offset for the fieldset
-        // contents anonymous box.
-        block_start_padding_edge = legend_margin_box_block_size;
-        block_start_padding_edge_adjusted = true;
-      }
-      break;
-    } while (true);
-
-    // If the margin box of the legend is at least as tall as the fieldset
-    // block-start border width, it will start at the block-start border edge
-    // of the fieldset. As a paint effect, the block-start border will be
-    // pushed so that the center of the border will be flush with the center
-    // of the border-box of the legend.
-    // TODO(mstensho): inline alignment
-    legend_offset = LogicalOffset(
-        adjusted_border_padding.inline_start + legend_margins.inline_start,
-        block_offset);
-
-    container_builder_.AddResult(*result, legend_offset);
+  if (legend_needs_layout_) {
+    // TODO(almaher): Handle all break status cases.
+    NGBreakStatus break_status = LayoutLegend(legend, legend_break_token);
+    DCHECK_EQ(break_status, NGBreakStatus::kContinue);
   }
 
-  NGBoxStrut borders_with_legend = borders;
-  borders_with_legend.block_start = block_start_padding_edge;
+  borders_with_legend_ = borders_;
+  borders_with_legend_.block_start = block_start_padding_edge_;
   LogicalSize adjusted_padding_box_size =
-      ShrinkAvailableSize(border_box_size, borders_with_legend);
+      ShrinkAvailableSize(border_box_size_, borders_with_legend_);
   if ((IsResumingLayout(content_break_token.get())) ||
-      (!block_start_padding_edge_adjusted && IsResumingLayout(BreakToken()))) {
-    borders_with_legend.block_start = LayoutUnit();
+      (!block_start_padding_edge_adjusted_ && IsResumingLayout(BreakToken()))) {
+    borders_with_legend_.block_start = LayoutUnit();
   }
-  LayoutUnit intrinsic_block_size = borders_with_legend.BlockSum();
+  intrinsic_block_size_ = borders_with_legend_.BlockSum();
 
   // Proceed with normal fieldset children (excluding the rendered legend). They
   // all live inside an anonymous child box of the fieldset container.
   auto fieldset_content = Node().GetFieldsetContent();
   if (fieldset_content && (content_break_token || !has_seen_all_children)) {
-    auto child_space = CreateConstraintSpaceForFieldsetContent(
-        fieldset_content, adjusted_padding_box_size,
-        borders_with_legend.block_start);
-    auto result =
-        fieldset_content.Layout(child_space, content_break_token.get());
-
-    // TODO(layout-dev): Handle abortions caused by block fragmentation.
-    DCHECK_EQ(result->Status(), NGLayoutResult::kSuccess);
-
-    NGBreakStatus break_status = NGBreakStatus::kContinue;
-    if (ConstraintSpace().HasBlockFragmentation()) {
-      LayoutUnit block_offset =
-          ConstraintSpace().FragmentainerOffsetAtBfc() + intrinsic_block_size;
-      break_status = BreakBeforeChildIfNeeded(
-          ConstraintSpace(), fieldset_content, *result.get(), block_offset,
-          /*has_container_separation*/ true, &container_builder_);
-    }
-
-    if (break_status == NGBreakStatus::kContinue) {
-      container_builder_.AddResult(*result, borders_with_legend.StartOffset());
-      intrinsic_block_size +=
-          NGFragment(writing_mode, result->PhysicalFragment()).BlockSize();
-      container_builder_.SetHasSeenAllChildren();
-    }
+    // TODO(almaher): Handle all break status cases.
+    NGBreakStatus break_status = LayoutFieldsetContent(
+        fieldset_content, content_break_token, adjusted_padding_box_size);
+    DCHECK_EQ(break_status, NGBreakStatus::kContinue);
   }
 
   if (!fieldset_content) {
     container_builder_.SetHasSeenAllChildren();
     // There was no anonymous child to provide the padding, so we have to add it
     // ourselves.
-    intrinsic_block_size += padding.BlockSum();
+    intrinsic_block_size_ += padding_.BlockSum();
   }
 
-  intrinsic_block_size = ClampIntrinsicBlockSize(
-      ConstraintSpace(), Node(), adjusted_border_padding, intrinsic_block_size);
-  LayoutUnit consumed_block_size =
-      BreakToken() ? BreakToken()->ConsumedBlockSize() : LayoutUnit();
+  return NGBreakStatus::kContinue;
+}
 
-  // Recompute the block-axis size now that we know our content size.
-  border_box_size.block_size =
-      ComputeBlockSizeForFragment(ConstraintSpace(), Style(), border_padding_,
-                                  intrinsic_block_size + consumed_block_size);
+NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutLegend(
+    NGBlockNode& legend,
+    scoped_refptr<const NGBlockBreakToken> legend_break_token) {
+  // Lay out the legend. While the fieldset container normally ignores its
+  // padding, the legend is laid out within what would have been the content
+  // box had the fieldset been a regular block with no weirdness.
+  LogicalSize content_box_size =
+      ShrinkAvailableSize(border_box_size_, adjusted_border_padding_);
+  LogicalSize percentage_size =
+      CalculateChildPercentageSize(ConstraintSpace(), Node(), content_box_size);
+  NGBoxStrut legend_margins = ComputeMarginsFor(
+      legend.Style(), percentage_size.inline_size,
+      ConstraintSpace().GetWritingMode(), ConstraintSpace().Direction());
 
-  // The above computation utility knows nothing about fieldset weirdness. The
-  // legend may eat from the available content box block size. Make room for
-  // that if necessary.
-  // Note that in size containment, we have to consider sizing as if we have no
-  // contents, with the conjecture being that legend is part of the contents.
-  // Thus, only do this adjustment if we do not contain size.
-  if (!Node().ShouldApplySizeContainment()) {
-    LayoutUnit minimum_border_box_block_size;
-    if (legend_needs_layout) {
-      minimum_border_box_block_size =
-          borders_with_legend.BlockSum() + padding.BlockSum();
+  if (legend_break_token)
+    legend_margins.block_start = LayoutUnit();
+
+  LogicalOffset legend_offset;
+  scoped_refptr<const NGLayoutResult> result;
+  LayoutUnit block_offset = legend_margins.block_start;
+  do {
+    auto legend_space = CreateConstraintSpaceForLegend(
+        legend, content_box_size, percentage_size, block_offset);
+    result = legend.Layout(legend_space, legend_break_token.get());
+
+    // TODO(layout-dev): Handle abortions caused by block fragmentation.
+    DCHECK_EQ(result->Status(), NGLayoutResult::kSuccess);
+
+    const auto& physical_fragment = result->PhysicalFragment();
+
+    // We have already adjusted the legend block offset, no need to adjust
+    // again.
+    if (block_offset != legend_margins.block_start)
+      break;
+
+    LayoutUnit legend_margin_box_block_size =
+        NGFragment(writing_mode_, physical_fragment).BlockSize() +
+        legend_margins.BlockSum();
+    LayoutUnit space_left = borders_.block_start - legend_margin_box_block_size;
+    if (space_left > LayoutUnit()) {
+      // If the border is the larger one, though, it will stay put at the
+      // border-box block-start edge of the fieldset. Then it's the legend
+      // that needs to be pushed. We'll center the margin box in this case, to
+      // make sure that both margins remain within the area occupied by the
+      // border also after adjustment.
+      block_offset += space_left / 2;
+      if (ConstraintSpace().HasBlockFragmentation())
+        continue;
+    } else {
+      // If the legend is larger than the width of the fieldset block-start
+      // border, the actual padding edge of the fieldset will be moved
+      // accordingly. This will be the block-start offset for the fieldset
+      // contents anonymous box.
+      block_start_padding_edge_ = legend_margin_box_block_size;
+      block_start_padding_edge_adjusted_ = true;
     }
-    // Similar to how we add the consumed block size to the intrinsic
-    // block size when calculating border_box_size.block_size, we also need to
-    // do so when the fieldset is adjusted to encompass the legend.
-    border_box_size.block_size =
-        std::max(border_box_size.block_size,
-                 minimum_border_box_block_size + consumed_block_size);
+    break;
+  } while (true);
+
+  // If the margin box of the legend is at least as tall as the fieldset
+  // block-start border width, it will start at the block-start border edge
+  // of the fieldset. As a paint effect, the block-start border will be
+  // pushed so that the center of the border will be flush with the center
+  // of the border-box of the legend.
+  // TODO(mstensho): inline alignment
+  legend_offset = LogicalOffset(
+      adjusted_border_padding_.inline_start + legend_margins.inline_start,
+      block_offset);
+
+  container_builder_.AddResult(*result, legend_offset);
+
+  return NGBreakStatus::kContinue;
+}
+
+NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutFieldsetContent(
+    NGBlockNode& fieldset_content,
+    scoped_refptr<const NGBlockBreakToken> content_break_token,
+    const LogicalSize adjusted_padding_box_size) {
+  auto child_space = CreateConstraintSpaceForFieldsetContent(
+      fieldset_content, adjusted_padding_box_size,
+      borders_with_legend_.block_start);
+  auto result = fieldset_content.Layout(child_space, content_break_token.get());
+
+  // TODO(layout-dev): Handle abortions caused by block fragmentation.
+  DCHECK_EQ(result->Status(), NGLayoutResult::kSuccess);
+
+  NGBreakStatus break_status = NGBreakStatus::kContinue;
+  if (ConstraintSpace().HasBlockFragmentation()) {
+    LayoutUnit block_offset =
+        ConstraintSpace().FragmentainerOffsetAtBfc() + intrinsic_block_size_;
+    break_status = BreakBeforeChildIfNeeded(
+        ConstraintSpace(), fieldset_content, *result.get(), block_offset,
+        /*has_container_separation*/ true, &container_builder_);
   }
 
-  // TODO(almaher): end border and padding may overflow the parent
-  // fragmentainer, and we should avoid that.
-  LayoutUnit block_size = border_box_size.block_size - consumed_block_size;
-
-  container_builder_.SetIsFieldsetContainer();
-  if (ConstraintSpace().HasKnownFragmentainerBlockSize()) {
-    FinishFragmentation(
-        ConstraintSpace(), BreakToken(), block_size, intrinsic_block_size,
-        FragmentainerSpaceAtBfcStart(ConstraintSpace()), &container_builder_);
-  } else {
-    container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
-    container_builder_.SetBlockSize(block_size);
+  if (break_status == NGBreakStatus::kContinue) {
+    container_builder_.AddResult(*result, borders_with_legend_.StartOffset());
+    intrinsic_block_size_ +=
+        NGFragment(writing_mode_, result->PhysicalFragment()).BlockSize();
+    container_builder_.SetHasSeenAllChildren();
   }
 
-  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), borders_with_legend,
-                        &container_builder_)
-      .Run();
-
-  return container_builder_.ToBoxFragment();
+  // TODO(almaher): return break_status
+  return NGBreakStatus::kContinue;
 }
 
 base::Optional<MinMaxSizes> NGFieldsetLayoutAlgorithm::ComputeMinMaxSizes(

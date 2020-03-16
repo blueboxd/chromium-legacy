@@ -179,6 +179,11 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
   // Sets opacity of login shelf buttons to be consistent with shelf icons.
   void SetLoginShelfButtonOpacity(float target_opacity);
 
+  // Handles shelf widget gesture events for login shelf, if login shelf view is
+  // visible. Returns whether the gesture was handled (the gesture will not be
+  // handled if the login shelf view is hidden).
+  bool HandleLoginShelfGestureEvent(const ui::GestureEvent& event_in_screen);
+
   // Internal implementation detail. Do not expose outside of tests.
   ShelfView* shelf_view_for_testing() const {
     return hotseat_widget()->GetShelfView();
@@ -208,11 +213,6 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
 
   // Shows shelf widget if IsVisible() returns false.
   void ShowIfHidden();
-
-  // Handles shelf widget gesture events for login shelf, if login shelf view is
-  // visible. Returns whether the gesture was handled (the gesture will not be
-  // handled if the login shelf view is hidden).
-  bool HandleLoginShelfGestureEvent(const ui::GestureEvent& event_in_screen);
 
   ShelfView* GetShelfView();
   const ShelfView* GetShelfView() const;

@@ -7,6 +7,7 @@
 #include "base/numerics/math_constants.h"
 #include "content/public/browser/gpu_utils.h"
 #include "content/public/common/gpu_stream_constants.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 

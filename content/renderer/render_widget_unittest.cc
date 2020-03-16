@@ -274,7 +274,15 @@ class RenderWidgetUnittest : public testing::Test {
     web_local_frame_ = blink::WebLocalFrame::CreateMainFrame(
         web_view_, &web_frame_client_, nullptr, nullptr);
     web_frame_widget_ = blink::WebFrameWidget::CreateForMainFrame(
-        widget_.get(), web_local_frame_);
+        widget_.get(), web_local_frame_,
+        blink::CrossVariantMojoAssociatedRemote<
+            blink::mojom::FrameWidgetHostInterfaceBase>(),
+        blink::CrossVariantMojoAssociatedReceiver<
+            blink::mojom::FrameWidgetInterfaceBase>(),
+        blink::CrossVariantMojoAssociatedRemote<
+            blink::mojom::WidgetHostInterfaceBase>(),
+        blink::CrossVariantMojoAssociatedReceiver<
+            blink::mojom::WidgetInterfaceBase>());
     widget_->Init(web_frame_widget_, ScreenInfo());
     web_view_->DidAttachLocalMainFrame();
   }
@@ -321,7 +329,11 @@ class RenderWidgetExternalWidgetUnittest : public testing::Test {
  public:
   void SetUp() override {
     external_web_widget_ = blink::WebExternalWidget::Create(
-        &mock_web_external_widget_client_, blink::WebURL());
+        &mock_web_external_widget_client_, blink::WebURL(),
+        blink::CrossVariantMojoAssociatedRemote<
+            blink::mojom::WidgetHostInterfaceBase>(),
+        blink::CrossVariantMojoAssociatedReceiver<
+            blink::mojom::WidgetInterfaceBase>());
 
     widget_ = std::make_unique<InteractiveRenderWidget>(&compositor_deps_);
     widget_->Init(external_web_widget_.get(), ScreenInfo());

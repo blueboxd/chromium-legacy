@@ -51,7 +51,7 @@ function canvas_fallback_test(element, expected) {
     context.clearRect(0, 0, 400, 400);
     context.rect(0, 0, 100, 100);
     if (expected) {
-      assert_throws(expected, function() {
+      assert_throws_dom(expected, function() {
         context.addHitRegion({ control : element });
       });
     } else {
@@ -60,12 +60,10 @@ function canvas_fallback_test(element, expected) {
   }, element.id);
 }
 
-const NotSupportedError = { name : 'NotSupportedError' };
-
-canvas_fallback_test(document.getElementById('button_is_not_descendant_of_canvas'), NotSupportedError);
-canvas_fallback_test(document.querySelector('canvas'), NotSupportedError);
+canvas_fallback_test(document.getElementById('button_is_not_descendant_of_canvas'), "NotSupportedError");
+canvas_fallback_test(document.querySelector('canvas'), "NotSupportedError");
 canvas_fallback_test(document.getElementById('a'));
-canvas_fallback_test(document.getElementById('a_with_image'), NotSupportedError);
+canvas_fallback_test(document.getElementById('a_with_image'), "NotSupportedError");
 canvas_fallback_test(document.getElementById('button'));
 canvas_fallback_test(document.getElementById('checkbox'));
 canvas_fallback_test(document.getElementById('radio'));

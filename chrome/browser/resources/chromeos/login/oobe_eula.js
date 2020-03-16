@@ -114,6 +114,7 @@ Polymer({
   onFrameLoad_() {
     this.acceptButtonDisabled = false;
     this.eulaLoadingScreenShown = false;
+    this.$.eulaDialog.scrollToBottom();
   },
 
   /**

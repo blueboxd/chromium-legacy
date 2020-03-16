@@ -161,16 +161,16 @@ class VizMainImpl : public mojom::VizMain,
   std::unique_ptr<gpu::GpuInit> gpu_init_;
   std::unique_ptr<GpuServiceImpl> gpu_service_;
 
-  // This is created for OOP-D only. It allows the display compositor to use
-  // InProcessCommandBuffer to send GPU commands to the GPU thread from the
-  // compositor thread. This must outlive |viz_compositor_thread_runner_|.
+  // Allows the display compositor to use InProcessCommandBuffer to send GPU
+  // commands to the GPU thread from the compositor thread. This must outlive
+  // |viz_compositor_thread_runner_|.
   std::unique_ptr<gpu::CommandBufferTaskExecutor> task_executor_;
 
   // If the gpu service is not yet ready then we stash pending
   // FrameSinkManagerParams.
   mojom::FrameSinkManagerParamsPtr pending_frame_sink_manager_params_;
 
-  // Runs the VizCompositorThread for the display compositor with OOP-D.
+  // Runs the VizCompositorThread for the display compositor.
   std::unique_ptr<VizCompositorThreadRunnerImpl>
       viz_compositor_thread_runner_impl_;
   // Note under Android WebView where VizCompositorThreadRunner is not created

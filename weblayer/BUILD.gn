@@ -127,7 +127,6 @@ source_set("weblayer_lib_base") {
     "browser/navigation_impl.h",
     "browser/permissions/permission_decision_auto_blocker_factory.cc",
     "browser/permissions/permission_decision_auto_blocker_factory.h",
-    "browser/permissions/permission_prompt_impl.cc",
     "browser/permissions/weblayer_permissions_client.cc",
     "browser/permissions/weblayer_permissions_client.h",
     "browser/persistence/browser_persistence_common.cc",

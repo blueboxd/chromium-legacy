@@ -1586,7 +1586,8 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
 #else
     output_device_ = std::make_unique<SkiaOutputDeviceDawn>(
         dawn_context_provider_, dependency_->GetSurfaceHandle(),
-        memory_tracker_.get(), did_swap_buffer_complete_callback_);
+        gfx::SurfaceOrigin::kTopLeft, memory_tracker_.get(),
+        did_swap_buffer_complete_callback_);
 #endif
   }
 #endif

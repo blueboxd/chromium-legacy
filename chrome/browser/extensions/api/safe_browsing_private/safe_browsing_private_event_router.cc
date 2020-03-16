@@ -659,6 +659,12 @@ void SafeBrowsingPrivateEventRouter::SetCloudPolicyClientForTesting(
   client_ = client;
 }
 
+void SafeBrowsingPrivateEventRouter::SetBinaryUploadServiceForTesting(
+    safe_browsing::BinaryUploadService* binary_upload_service) {
+  DCHECK_EQ(nullptr, binary_upload_service_);
+  binary_upload_service_ = binary_upload_service;
+}
+
 void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClient() {
   // If already initialized, do nothing.
   if (client_) {

@@ -173,14 +173,16 @@ bool FontFaceSetDocument::ResolveFontStyle(const String& font_string,
 
   style->SetFontDescription(default_font_description);
 
-  style->GetFont().Update(style->GetFont().GetFontSelector());
-
   GetDocument()->UpdateActiveStyle();
   GetDocument()->EnsureStyleResolver().ComputeFont(
       *GetDocument()->documentElement(), style.get(), *parsed_style);
 
   font = style->GetFont();
-  font.Update(GetFontSelector());
+
+  // StyleResolver::ComputeFont() should have set the document's FontSelector
+  // to |style|.
+  DCHECK_EQ(font.GetFontSelector(), GetFontSelector());
+
   return true;
 }
 

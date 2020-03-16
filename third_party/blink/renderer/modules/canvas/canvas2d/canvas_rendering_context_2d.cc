@@ -517,8 +517,7 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
   scoped_refptr<ComputedStyle> font_style;
   const ComputedStyle* computed_style = canvas()->EnsureComputedStyle();
   if (computed_style) {
-    HashMap<String, Font>::iterator i =
-        fonts_resolved_using_current_style_.find(new_font);
+    auto i = fonts_resolved_using_current_style_.find(new_font);
     if (i != fonts_resolved_using_current_style_.end()) {
       auto add_result = font_lru_list_.PrependOrMoveToFirst(new_font);
       DCHECK(!add_result.is_new_entry);
@@ -539,7 +538,6 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
           element_font_description.SpecifiedSize());
 
       font_style->SetFontDescription(element_font_description);
-      font_style->GetFont().Update(font_style->GetFont().GetFontSelector());
       canvas()->GetDocument().EnsureStyleResolver().ComputeFont(
           *canvas(), font_style.get(), *parsed_style);
 
@@ -549,14 +547,13 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
           font_style->GetFont().GetFontDescription());
       final_description.SetComputedSize(final_description.SpecifiedSize());
       final_description.SetAdjustedSize(final_description.SpecifiedSize());
-      Font final_font(final_description);
 
-      fonts_resolved_using_current_style_.insert(new_font, final_font);
+      fonts_resolved_using_current_style_.insert(new_font, final_description);
       auto add_result = font_lru_list_.PrependOrMoveToFirst(new_font);
       DCHECK(add_result.is_new_entry);
       PruneLocalFontCache(canvas_font_cache->HardMaxFonts());  // hard limit
       should_prune_local_font_cache_ = true;  // apply soft limit
-      ModifiableState().SetFont(final_font, Host()->GetFontSelector());
+      ModifiableState().SetFont(final_description, Host()->GetFontSelector());
     }
   } else {
     Font resolved_font;
@@ -569,8 +566,7 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
     FontDescription final_description(resolved_font.GetFontDescription());
     final_description.SetComputedSize(final_description.SpecifiedSize());
     final_description.SetAdjustedSize(final_description.SpecifiedSize());
-    Font final_font(final_description);
-    ModifiableState().SetFont(final_font, Host()->GetFontSelector());
+    ModifiableState().SetFont(final_description, Host()->GetFontSelector());
   }
 
   // The parse succeeded.

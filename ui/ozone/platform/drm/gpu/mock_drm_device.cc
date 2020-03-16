@@ -100,6 +100,8 @@ MockDrmDevice::MockDrmDevice(std::unique_ptr<GbmDevice> gbm_device)
   plane_manager_ = std::make_unique<HardwareDisplayPlaneManagerLegacy>(this);
 }
 
+MockDrmDevice::~MockDrmDevice() = default;
+
 // static
 ScopedDrmPropertyBlobPtr MockDrmDevice::AllocateInFormatsBlob(
     uint32_t id,
@@ -145,10 +147,8 @@ bool MockDrmDevice::InitializeStateWithResult(
     const std::vector<PlaneProperties>& plane_properties,
     const std::map<uint32_t, std::string>& property_names,
     bool use_atomic) {
-  crtc_properties_ = crtc_properties;
-  connector_properties_ = connector_properties;
-  plane_properties_ = plane_properties;
-  property_names_ = property_names;
+  UpdateState(crtc_properties, connector_properties, plane_properties,
+              property_names);
   if (use_atomic) {
     plane_manager_ = std::make_unique<HardwareDisplayPlaneManagerAtomic>(this);
   } else {
@@ -158,7 +158,16 @@ bool MockDrmDevice::InitializeStateWithResult(
   return plane_manager_->Initialize();
 }
 
-MockDrmDevice::~MockDrmDevice() = default;
+void MockDrmDevice::UpdateState(
+    const std::vector<CrtcProperties>& crtc_properties,
+    const std::vector<ConnectorProperties>& connector_properties,
+    const std::vector<PlaneProperties>& plane_properties,
+    const std::map<uint32_t, std::string>& property_names) {
+  crtc_properties_ = crtc_properties;
+  connector_properties_ = connector_properties;
+  plane_properties_ = plane_properties;
+  property_names_ = property_names;
+}
 
 ScopedDrmResourcesPtr MockDrmDevice::GetResources() {
   ScopedDrmResourcesPtr resources(DrmAllocator<drmModeRes>());

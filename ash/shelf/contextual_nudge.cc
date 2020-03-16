@@ -12,18 +12,12 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace ash {
 namespace {
-
-// Shelf item tooltip height.
-constexpr int kTooltipHeight = 18;
-
-// The maximum width of the tooltip bubble.  Borrowed the value from
-// ash/tooltip/tooltip_controller.cc
-constexpr int kTooltipMaxWidth = 250;
 
 views::BubbleBorder::Arrow GetArrowForPosition(
     ContextualNudge::Position position) {
@@ -49,8 +43,8 @@ ContextualNudge::ContextualNudge(views::View* anchor,
                                       views::BubbleBorder::NO_ASSETS),
       tap_callback_(tap_callback) {
   set_color(SK_ColorTRANSPARENT);
-  set_margins(margins);
   set_close_on_deactivate(false);
+  set_margins(gfx::Insets());
   set_accept_events(!tap_callback.is_null());
   SetCanActivate(false);
   set_adjust_if_offscreen(false);
@@ -73,6 +67,7 @@ ContextualNudge::ContextualNudge(views::View* anchor,
   label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   label_->SetEnabledColor(text_color);
   label_->SetBackgroundColor(SK_ColorTRANSPARENT);
+  label_->SetBorder(views::CreateEmptyBorder(margins));
 
   views::BubbleDialogDelegateView::CreateBubble(this);
 
@@ -85,12 +80,6 @@ ContextualNudge::~ContextualNudge() = default;
 
 void ContextualNudge::UpdateAnchorRect(const gfx::Rect& rect) {
   SetAnchorRect(rect);
-}
-
-gfx::Size ContextualNudge::CalculatePreferredSize() const {
-  const gfx::Size size = BubbleDialogDelegateView::CalculatePreferredSize();
-  return gfx::Size(std::min(size.width(), kTooltipMaxWidth),
-                   std::max(size.height(), kTooltipHeight));
 }
 
 ui::LayerType ContextualNudge::GetLayerType() const {

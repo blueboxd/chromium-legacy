@@ -36,7 +36,6 @@ source_set("buttons") {
     "resources:toolbar_forward",
     "resources:toolbar_new_tab_page",
     "resources:toolbar_reload",
-    "resources:toolbar_search",
     "resources:toolbar_share",
     "resources:toolbar_stop",
     "resources:toolbar_switcher",

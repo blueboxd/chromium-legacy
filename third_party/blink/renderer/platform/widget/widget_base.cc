@@ -4,11 +4,20 @@
 
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
 
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/renderer/platform/widget/widget_base_client.h"
 
 namespace blink {
 
-WidgetBase::WidgetBase(WidgetBaseClient* client) : client_(client) {}
+WidgetBase::WidgetBase(
+    WidgetBaseClient* client,
+    CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>
+        widget_host,
+    CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget)
+    : client_(client),
+      widget_host_(std::move(widget_host)),
+      receiver_(this, std::move(widget)) {}
 
 WidgetBase::~WidgetBase() = default;
 

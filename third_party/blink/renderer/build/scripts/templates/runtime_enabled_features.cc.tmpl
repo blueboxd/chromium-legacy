@@ -13,14 +13,14 @@
 namespace blink {
 
 RuntimeEnabledFeatures::Backup::Backup()
-  : {% for feature in standard_features -%}
+  : {% for feature in features -%}
     {{feature.data_member_name}}(RuntimeEnabledFeatures::{{feature.data_member_name}})
     {%- if not loop.last %},
     {%+ endif -%}
     {% endfor %} {}
 
 void RuntimeEnabledFeatures::Backup::Restore() {
-  {% for feature in standard_features %}
+  {% for feature in features %}
   RuntimeEnabledFeatures::{{feature.data_member_name}} = {{feature.data_member_name}};
   {% endfor %}
 }
@@ -67,7 +67,7 @@ void RuntimeEnabledFeatures::SetFeatureEnabledFromString(
     const char* name;
     bool* setting;
   } kFeatures[] = {
-  {% for feature in standard_features %}
+  {% for feature in features %}
     {"{{feature.name}}", &{{feature.data_member_name}}},
   {% endfor %}
   };
@@ -100,7 +100,7 @@ bool RuntimeEnabledFeatures::{{feature.name}}Enabled(const FeatureContext* conte
 
 {% endfor %}
 
-{% for feature in standard_features %}
+{% for feature in features %}
 {% if feature.status_type == 'str' %}
 bool RuntimeEnabledFeatures::{{feature.data_member_name}} = {{'true' if feature.status == 'stable' else 'false'}};
 {% endif %}
@@ -109,7 +109,7 @@ bool RuntimeEnabledFeatures::{{feature.data_member_name}} = {{'true' if feature.
 // Platform-dependent features
 {% for platform in platforms %}
 #if defined(OS_{{platform | upper}})
-{% for feature in standard_features %}
+{% for feature in features %}
 {% if feature.status_type == 'dict' %}
 bool RuntimeEnabledFeatures::{{feature.data_member_name}} = {{'true' if feature.status[platform] == 'stable' else 'false'}};
 {% endif %}
@@ -124,7 +124,7 @@ bool RuntimeEnabledFeatures::{{feature.data_member_name}} = {{'true' if feature.
  !defined(OS_{{platform | upper}})
 {%- endfor %}
 
-{% for feature in standard_features %}
+{% for feature in features %}
 {% if feature.status_type == 'dict' %}
 bool RuntimeEnabledFeatures::{{feature.data_member_name}} = {{'true' if feature.status['default'] == 'stable' else 'false'}};
 {% endif %}

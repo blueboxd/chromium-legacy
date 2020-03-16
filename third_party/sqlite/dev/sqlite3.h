@@ -12,7 +12,7 @@
 // other SQLite libraries loaded by the system libraries. This only matters when
 // using the component build, where our SQLite's symbols are visible to the
 // dynamic library loader.
-#include "third_party/sqlite/amalgamation_dev/rename_exports.h"
-#include "third_party/sqlite/amalgamation_dev/sqlite3.h"
+#include "third_party/sqlite/src/amalgamation_dev/rename_exports.h"
+#include "third_party/sqlite/src/amalgamation_dev/sqlite3.h"
 
 #endif  // THIRD_PARTY_SQLITE_DEV_SQLITE3_H_

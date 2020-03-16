@@ -60,7 +60,7 @@ template("trichrome_library_apk_tmpl") {
       # and/or inlining bugs.
       disable_r8_outlining = true
       if (defined(invoker.webview_target) && defined(invoker.chrome_target)) {
-        shared_resources_whitelist_locales = locales
+        shared_resources_allowlist_locales = locales
         static_library_dependent_targets = [
           {
             name = invoker.webview_target

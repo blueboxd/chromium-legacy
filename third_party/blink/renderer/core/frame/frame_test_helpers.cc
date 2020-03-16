@@ -240,15 +240,23 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
     widget_client = std::make_unique<TestWebWidgetClient>();
     // TODO(dcheng): The main frame widget currently has a special case.
     // Eliminate this once WebView is no longer a WebWidget.
-    WebFrameWidget* frame_widget =
-        WebFrameWidget::CreateForMainFrame(widget_client.get(), frame);
+    WebFrameWidget* frame_widget = WebFrameWidget::CreateForMainFrame(
+        widget_client.get(), frame,
+        CrossVariantMojoAssociatedRemote<mojom::FrameWidgetHostInterfaceBase>(),
+        CrossVariantMojoAssociatedReceiver<mojom::FrameWidgetInterfaceBase>(),
+        CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>(),
+        CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
     // The WebWidget requires the compositor to be set before it is used.
     frame_widget->SetCompositorHosts(widget_client->layer_tree_host(),
                                      widget_client->animation_host());
   } else if (frame->Parent()->IsWebRemoteFrame()) {
     widget_client = std::make_unique<TestWebWidgetClient>();
-    WebFrameWidget* frame_widget =
-        WebFrameWidget::CreateForChildLocalRoot(widget_client.get(), frame);
+    WebFrameWidget* frame_widget = WebFrameWidget::CreateForChildLocalRoot(
+        widget_client.get(), frame,
+        CrossVariantMojoAssociatedRemote<mojom::FrameWidgetHostInterfaceBase>(),
+        CrossVariantMojoAssociatedReceiver<mojom::FrameWidgetInterfaceBase>(),
+        CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>(),
+        CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
     // The WebWidget requires the compositor to be set before it is used.
     frame_widget->SetCompositorHosts(widget_client->layer_tree_host(),
                                      widget_client->animation_host());
@@ -286,8 +294,12 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
   std::unique_ptr<TestWebWidgetClient> owned_widget_client;
   widget_client =
       CreateDefaultClientIfNeeded(widget_client, owned_widget_client);
-  WebFrameWidget* frame_widget =
-      WebFrameWidget::CreateForChildLocalRoot(widget_client, frame);
+  WebFrameWidget* frame_widget = WebFrameWidget::CreateForChildLocalRoot(
+      widget_client, frame,
+      CrossVariantMojoAssociatedRemote<mojom::FrameWidgetHostInterfaceBase>(),
+      CrossVariantMojoAssociatedReceiver<mojom::FrameWidgetInterfaceBase>(),
+      CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>(),
+      CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
   // The WebWidget requires the compositor to be set before it is used.
   frame_widget->SetCompositorHosts(widget_client->layer_tree_host(),
                                    widget_client->animation_host());
@@ -349,8 +361,12 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
       web_widget_client, owned_test_web_widget_client_);
   // TODO(dcheng): The main frame widget currently has a special case.
   // Eliminate this once WebView is no longer a WebWidget.
-  WebFrameWidget* widget =
-      blink::WebFrameWidget::CreateForMainFrame(test_web_widget_client_, frame);
+  WebFrameWidget* widget = blink::WebFrameWidget::CreateForMainFrame(
+      test_web_widget_client_, frame,
+      CrossVariantMojoAssociatedRemote<mojom::FrameWidgetHostInterfaceBase>(),
+      CrossVariantMojoAssociatedReceiver<mojom::FrameWidgetInterfaceBase>(),
+      CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>(),
+      CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
   // The WebWidget requires the compositor to be set before it is used.
   widget->SetCompositorHosts(test_web_widget_client_->layer_tree_host(),
                              test_web_widget_client_->animation_host());

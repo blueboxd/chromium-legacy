@@ -50,9 +50,6 @@ IPC_MESSAGE_ROUTED3(DragMsg_SourceEnded,
                     gfx::PointF /* screen_pt */,
                     blink::WebDragOperation /* drag_operation */)
 
-// Notifies the renderer that the system DoDragDrop call has ended.
-IPC_MESSAGE_ROUTED0(DragMsg_SourceSystemDragEnded)
-
 // Messages sent from the renderer to the browser.
 
 // Used to tell the parent the user started dragging in the content area. The

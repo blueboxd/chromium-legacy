@@ -112,7 +112,7 @@ const CGFloat kDividerWidth = 1;
                   forState:UIControlStateNormal];
     _closeButton.accessibilityIdentifier = kTextZoomCloseButtonID;
     [_closeButton addTarget:self.commandHandler
-                     action:@selector(hideTextZoom)
+                     action:@selector(closeTextZoom)
            forControlEvents:UIControlEventTouchUpInside];
   }
   return _closeButton;

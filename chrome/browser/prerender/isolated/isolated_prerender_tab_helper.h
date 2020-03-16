@@ -51,6 +51,7 @@ class IsolatedPrerenderTabHelper
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
 
   // Takes ownership of a prefetched response by URL, if one if available.
   std::unique_ptr<PrefetchedMainframeResponseContainer> TakePrefetchResponse(

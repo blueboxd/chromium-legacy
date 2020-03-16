@@ -92,9 +92,9 @@ class BubbleObserver {
   // checks that the prompt is no longer available afterwards.
   void AcceptSavePrompt() const;
 
-  // Expecting that the prompt is shown, update |form| with the password from
-  // observed form. Checks that the prompt is no longer visible afterwards.
-  void AcceptUpdatePrompt(const autofill::PasswordForm& form) const;
+  // Expecting that the prompt is available, updates the password. At the end,
+  // checks that the prompt is no longer visible afterwards.
+  void AcceptUpdatePrompt() const;
 
   // Returns once the account chooser pops up or it's already shown.
   // |web_contents| must be the custom one returned by

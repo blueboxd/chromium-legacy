@@ -519,8 +519,12 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   {
     // Copy the steps done from WebViewHelper::InitializeWithOpener() to set up
     // the appropriate pointers!
-    WebFrameWidget* widget =
-        blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, frame);
+    WebFrameWidget* widget = blink::WebFrameWidget::CreateForMainFrame(
+        &web_widget_client, frame,
+        CrossVariantMojoAssociatedRemote<mojom::FrameWidgetHostInterfaceBase>(),
+        CrossVariantMojoAssociatedReceiver<mojom::FrameWidgetInterfaceBase>(),
+        CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>(),
+        CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
     widget->SetCompositorHosts(web_widget_client.layer_tree_host(),
                                web_widget_client.animation_host());
     web_view->DidAttachLocalMainFrame();
@@ -2692,7 +2696,12 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
   WebLocalFrame* local_frame = WebLocalFrame::CreateMainFrame(
       web_view, &web_frame_client, nullptr, nullptr);
   web_frame_client.Bind(local_frame);
-  blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, local_frame);
+  blink::WebFrameWidget::CreateForMainFrame(
+      &web_widget_client, local_frame,
+      CrossVariantMojoAssociatedRemote<mojom::FrameWidgetHostInterfaceBase>(),
+      CrossVariantMojoAssociatedReceiver<mojom::FrameWidgetInterfaceBase>(),
+      CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>(),
+      CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
 
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),

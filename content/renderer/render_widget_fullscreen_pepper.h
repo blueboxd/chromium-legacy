@@ -14,6 +14,7 @@
 #include "content/renderer/pepper/fullscreen_container.h"
 #include "content/renderer/render_widget.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "third_party/blink/public/mojom/page/widget.mojom.h"
 #include "third_party/blink/public/web/web_external_widget.h"
 #include "third_party/blink/public/web/web_external_widget_client.h"
 #include "url/gurl.h"
@@ -42,7 +43,9 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
       const ScreenInfo& screen_info,
       PepperPluginInstanceImpl* plugin,
       const blink::WebURL& local_main_frame_url,
-      mojo::PendingReceiver<mojom::Widget> widget_receiver);
+      mojo::PendingReceiver<mojom::Widget> widget_receiver,
+      mojo::PendingAssociatedRemote<blink::mojom::WidgetHost> blink_widget_host,
+      mojo::PendingAssociatedReceiver<blink::mojom::Widget> blink_widget);
 
   // pepper::FullscreenContainer API.
   void Destroy() override;
@@ -62,6 +65,8 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
       CompositorDependencies* compositor_deps,
       PepperPluginInstanceImpl* plugin,
       mojo::PendingReceiver<mojom::Widget> widget_receiver,
+      mojo::PendingAssociatedRemote<blink::mojom::WidgetHost> blink_widget_host,
+      mojo::PendingAssociatedReceiver<blink::mojom::Widget> blink_widget,
       blink::WebURL main_frame_url);
   ~RenderWidgetFullscreenPepper() override;
 

@@ -51,7 +51,7 @@ function canvas_fallback_test(element, expected) {
     context.clearRect(0, 0, 400, 400);
     context.rect(0, 0, 100, 100);
     if (expected) {
-      assert_throws(expected, function() {
+      assert_throws_dom(expected, function() {
         context.addHitRegion({ control : element });
       });
     } else {
@@ -60,16 +60,14 @@ function canvas_fallback_test(element, expected) {
   }, element.id);
 }
 
-const NotSupportedError = { name : 'NotSupportedError' };
-
-canvas_fallback_test(document.getElementById('input_image_button'), NotSupportedError);
-canvas_fallback_test(document.getElementById('empty_select'), NotSupportedError);
+canvas_fallback_test(document.getElementById('input_image_button'), "NotSupportedError");
+canvas_fallback_test(document.getElementById('empty_select'), "NotSupportedError");
 canvas_fallback_test(document.getElementById('select_size_greater_than_1'));
 canvas_fallback_test(document.getElementById('select_multiple'));
-canvas_fallback_test(document.getElementById('option_with_select'), NotSupportedError);
+canvas_fallback_test(document.getElementById('option_with_select'), "NotSupportedError");
 canvas_fallback_test(document.getElementById('option_with_select_multiple'));
 canvas_fallback_test(document.getElementById('option_with_select_size_greater_than_1'));
-canvas_fallback_test(document.getElementById('p'), NotSupportedError);
+canvas_fallback_test(document.getElementById('p'), "NotSupportedError");
 canvas_fallback_test(document.getElementById('p_with_tabindex'));
 
 </script>

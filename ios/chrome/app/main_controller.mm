@@ -124,8 +124,10 @@
 #include "ios/chrome/browser/ui/history/history_coordinator.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/main/scene_controller_guts.h"
+#import "ios/chrome/browser/ui/main/scene_delegate.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
+#include "ios/chrome/browser/ui/util/multi_window_support.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
@@ -442,6 +444,22 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   // Register all providers before calling any Chromium code.
   [ProviderRegistration registerProviders];
+
+  if (@available(iOS 13, *)) {
+    if (IsMultiwindowSupported()) {
+      // Subscribe for scene connection and disconnection notifications.
+      [[NSNotificationCenter defaultCenter]
+          addObserver:self
+             selector:@selector(sceneWillConnect:)
+                 name:UISceneWillConnectNotification
+               object:nil];
+      [[NSNotificationCenter defaultCenter]
+          addObserver:self
+             selector:@selector(sceneDidActivate:)
+                 name:UISceneDidActivateNotification
+               object:nil];
+    }
+  }
 }
 
 - (void)startUpBrowserBackgroundInitialization {
@@ -602,6 +620,15 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   BOOL needRestore =
       [self startUpBeforeFirstWindowCreatedAndPrepareForRestorationPostCrash:
                 postCrashLaunch];
+
+  if (@available(iOS 13, *)) {
+    if (IsMultiwindowSupported()) {
+      // The rest of the startup sequence is handled by the Scenes and in
+      // response to notifications.
+      return;
+    }
+  }
+
   [self.sceneController startUpChromeUIPostCrash:postCrashLaunch
                                  needRestoration:needRestore];
   [self startUpAfterFirstWindowCreated];
@@ -648,6 +675,30 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       triggerSystemPromptForNewUser:YES];
 }
 
+#pragma mark - Scene notifications
+
+// Handler for UISceneWillConnectNotification.
+- (void)sceneWillConnect:(NSNotification*)notification {
+  DCHECK(IsMultiwindowSupported());
+  if (@available(iOS 13, *)) {
+    UIWindowScene* scene =
+        base::mac::ObjCCastStrict<UIWindowScene>(notification.object);
+    SceneDelegate* sceneDelegate =
+        base::mac::ObjCCastStrict<SceneDelegate>(scene.delegate);
+    self.sceneController = sceneDelegate.sceneController;
+    sceneDelegate.sceneController.mainController = self;
+  }
+}
+
+// Handler for UISceneDidActivateNotification.
+- (void)sceneDidActivate:(NSNotification*)notification {
+  DCHECK(IsMultiwindowSupported());
+  if (@available(iOS 13, *)) {
+    if (UIApplication.sharedApplication.connectedScenes.count == 1) {
+      [self startUpAfterFirstWindowCreated];
+    }
+  }
+}
 
 #pragma mark - Property implementation.
 

@@ -113,6 +113,11 @@ class MockDrmDevice : public DrmDevice {
       const std::map<uint32_t, std::string>& property_names,
       bool use_atomic);
 
+  void UpdateState(const std::vector<CrtcProperties>& crtc_properties,
+                   const std::vector<ConnectorProperties>& connector_properties,
+                   const std::vector<PlaneProperties>& plane_properties,
+                   const std::map<uint32_t, std::string>& property_names);
+
   void RunCallbacks();
 
   void SetPropertyBlob(ScopedDrmPropertyBlobPtr blob);

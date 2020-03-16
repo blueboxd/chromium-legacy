@@ -171,13 +171,33 @@ const HeapVector<Member<Element>> HTMLSlotElement::AssignedElementsForBinding(
   return elements;
 }
 
-void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes) {
-  if (SupportsAssignment())
-    ContainingShadowRoot()->GetSlotAssignment().SetNeedsAssignmentRecalc();
+void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes,
+                             ExceptionState& exception_state) {
+  if (!SupportsAssignment() || !ContainingShadowRoot()->IsManualSlotting()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotAllowedError,
+        "This shadow root does not support manual slot assignment.");
+    return;
+  }
+
   assigned_nodes_candidates_.clear();
+  auto* host = OwnerShadowHost();
+  bool has_invalid_node = false;
   for (auto& node : nodes) {
+    if (node->parentNode() != host) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotAllowedError,
+          "Node:  '" + node->nodeName() +
+              "' is invalid for manual slot assignment.");
+      assigned_nodes_candidates_.clear();
+      has_invalid_node = true;
+      break;
+    }
     assigned_nodes_candidates_.insert(node);
   }
+
+  if (!has_invalid_node)
+    ContainingShadowRoot()->GetSlotAssignment().SetNeedsAssignmentRecalc();
 }
 
 void HTMLSlotElement::AppendAssignedNode(Node& host_child) {

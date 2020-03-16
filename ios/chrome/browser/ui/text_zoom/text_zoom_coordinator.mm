@@ -14,6 +14,8 @@
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_presenter.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#import "ios/chrome/browser/web/font_size_tab_helper.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/colors/dynamic_color_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 
@@ -30,7 +32,7 @@
 @property(nonatomic, strong) TextZoomMediator* mediator;
 
 // Allows simplified access to the TextZoomCommands handler.
-@property(nonatomic, readonly) id<TextZoomCommands> textZoomCommandHandler;
+@property(nonatomic) id<TextZoomCommands> textZoomCommandHandler;
 
 @end
 
@@ -41,6 +43,9 @@
 - (void)start {
   DCHECK(self.browser);
   DCHECK(self.browserState);
+
+  self.textZoomCommandHandler = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), TextZoomCommands);
 
   self.mediator = [[TextZoomMediator alloc]
       initWithWebStateList:self.browser->GetWebStateList()
@@ -53,11 +58,31 @@
   self.textZoomViewController.zoomHandler = self.mediator;
   self.mediator.consumer = self.textZoomViewController;
 
-  [self showAnimated:YES];
+  DCHECK(self.currentWebState);
+  FontSizeTabHelper* helper =
+      FontSizeTabHelper::FromWebState(self.currentWebState);
+  // If Text Zoom UI is already active, just reshow it
+  if (helper->IsTextZoomUIActive()) {
+    [self showAnimated:NO];
+  } else {
+    helper->SetTextZoomUIActive(true);
+    [self showAnimated:YES];
+  }
 }
 
 - (void)stop {
-  [self.presenter dismissAnimated:YES];
+  // If the Text Zoom UI is still active, the dismiss should be unanimated,
+  // because the UI will be brought back later.
+  BOOL animated;
+  if (self.currentWebState) {
+    FontSizeTabHelper* helper =
+        FontSizeTabHelper::FromWebState(self.currentWebState);
+    animated = helper && !helper->IsTextZoomUIActive();
+  } else {
+    animated = YES;
+  }
+
+  [self.presenter dismissAnimated:animated];
   self.textZoomViewController = nil;
 
   [self.mediator disconnect];
@@ -79,9 +104,10 @@
 
 #pragma mark - Private
 
-- (id<TextZoomCommands>)textZoomCommandHandler {
-  return HandlerForProtocol(self.browser->GetCommandDispatcher(),
-                            TextZoomCommands);
+- (web::WebState*)currentWebState {
+  return self.browser->GetWebStateList()
+             ? self.browser->GetWebStateList()->GetActiveWebState()
+             : nullptr;
 }
 
 @end

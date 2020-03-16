@@ -18,9 +18,10 @@ enum class GpuMode {
   HARDWARE_VULKAN,
   // The GPU process is running for SwiftShader WebGL.
   SWIFTSHADER,
-  // The GPU process is running for the display compositor (OOP-D only).
+  // The GPU process is running for the display compositor.
   DISPLAY_COMPOSITOR,
-  // The GPU process is disabled and won't start (not OOP-D only).
+  // The GPU process is disabled and won't start. This is only used on Windows
+  // when GPU acceleration and SwiftShader are both disabled.
   DISABLED,
 };
 

@@ -653,6 +653,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/common",
+    "//components/infobars/core:feature_flags",
     "//components/leveldb_proto",
     "//components/os_crypt",
     "//components/os_crypt:test_support",

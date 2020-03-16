@@ -1732,10 +1732,10 @@ const char kShowOverdrawFeedbackDescription[] =
     "Visualize overdraw by color-coding elements based on if they have other "
     "elements drawn underneath.";
 
-const char kSkiaRendererName[] = "Skia API for OOP-D compositing";
+const char kSkiaRendererName[] = "Skia API for compositing";
 const char kSkiaRendererDescription[] =
     "If enabled, the display compositor will use Skia as the graphics API "
-    "instead of OpenGL ES. Requires Viz Display Compositor (OOP-D).";
+    "instead of OpenGL ES.";
 
 const char kHistoryManipulationIntervention[] =
     "History Manipulation Intervention";
@@ -1852,24 +1852,25 @@ const char kTabEngagementReportingDescription[] =
 
 const char kTabGridLayoutAndroidName[] = "Tab Grid Layout";
 const char kTabGridLayoutAndroidDescription[] =
-    "Allows users to see their tabs in a grid layout in the tab switcher.";
+    "Allows users to see their tabs in a grid layout in the tab switcher on "
+    "phones.";
 
 const char kTabGroupsAndroidName[] = "Tab Groups";
 const char kTabGroupsAndroidDescription[] =
-    "Allows users to create groups to better organize their tabs.";
+    "Allows users to create groups to better organize their tabs on phones.";
 
 const char kTabGroupsContinuationAndroidName[] = "Tab Groups Continuation";
 const char kTabGroupsContinuationAndroidDescription[] =
-    "Allows users to access continuation features in Tab Group.";
+    "Allows users to access continuation features in Tab Group on phones.";
 
 const char kTabGroupsUiImprovementsAndroidName[] = "Tab Groups UI Improvements";
 const char kTabGroupsUiImprovementsAndroidDescription[] =
-    "Allows users to access new features in Tab Group UI.";
+    "Allows users to access new features in Tab Group UI on phones.";
 
 const char kTabToGTSAnimationAndroidName[] = "Enable Tab-to-GTS Animation";
 const char kTabToGTSAnimationAndroidDescription[] =
     "Allows users to see an animation when entering or leaving the "
-    "Grid Tab Switcher.";
+    "Grid Tab Switcher on phones.";
 
 const char kTabGroupsName[] = "Tab Groups";
 const char kTabGroupsDescription[] =

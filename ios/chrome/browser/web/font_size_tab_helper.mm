@@ -198,6 +198,14 @@ bool FontSizeTabHelper::CanUserResetZoom() const {
          new_multiplier.value() != GetCurrentUserZoomMultiplier();
 }
 
+bool FontSizeTabHelper::IsTextZoomUIActive() const {
+  return text_zoom_ui_active_;
+}
+
+void FontSizeTabHelper::SetTextZoomUIActive(bool active) {
+  text_zoom_ui_active_ = active;
+}
+
 int FontSizeTabHelper::GetFontSize() const {
   // Multiply by 100 as the web property needs a percentage.
   return SystemSuggestedFontSizeMultiplier() * GetCurrentUserZoomMultiplier() *

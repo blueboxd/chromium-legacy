@@ -253,9 +253,10 @@ void CanvasRenderingContext2DState::ClipPath(
     has_complex_clip_ = true;
 }
 
-void CanvasRenderingContext2DState::SetFont(const Font& font,
-                                            FontSelector* selector) {
-  font_ = font;
+void CanvasRenderingContext2DState::SetFont(
+    const FontDescription& font_description,
+    FontSelector* selector) {
+  font_ = Font(font_description);
   font_.Update(selector);
   realized_font_ = true;
   if (selector)

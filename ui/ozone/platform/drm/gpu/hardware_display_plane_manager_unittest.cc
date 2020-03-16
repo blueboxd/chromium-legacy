@@ -45,6 +45,7 @@ constexpr uint32_t kDegammaLutPropId = 1006;
 constexpr uint32_t kDegammaLutSizePropId = 1007;
 constexpr uint32_t kOutFencePtrPropId = 1008;
 
+constexpr uint32_t kCrtcIdPropId = 2000;
 constexpr uint32_t kTypePropId = 3010;
 constexpr uint32_t kInFormatsPropId = 3011;
 constexpr uint32_t kPlaneCtmId = 3012;
@@ -125,7 +126,7 @@ void HardwareDisplayPlaneManagerTest::InitializeDrmState(
 
   std::vector<ui::MockDrmDevice::ConnectorProperties> connector_properties(1);
   std::map<uint32_t, std::string> connector_property_names = {
-      {2000, "CRTC_ID"},
+      {kCrtcIdPropId, "CRTC_ID"},
   };
   for (size_t i = 0; i < connector_properties.size(); ++i) {
     connector_properties[i].id = kConnectorIdBase + i;
@@ -255,6 +256,52 @@ uint64_t HardwareDisplayPlaneManagerTest::GetPlanePropertyValue(
 
 using HardwareDisplayPlaneManagerLegacyTest = HardwareDisplayPlaneManagerTest;
 using HardwareDisplayPlaneManagerAtomicTest = HardwareDisplayPlaneManagerTest;
+
+TEST_P(HardwareDisplayPlaneManagerTest, ResettingConnectorCache) {
+  const int connector_and_crtc_count = 3;
+  InitializeDrmState(/*crtc_count=*/connector_and_crtc_count,
+                     /*planes_per_crtc=*/1);
+
+  // Create 3 connectors, kConnectorIdBase + 0/1/2
+  std::vector<ui::MockDrmDevice::ConnectorProperties> connector_properties(
+      connector_and_crtc_count);
+  for (size_t i = 0; i < connector_and_crtc_count; ++i) {
+    connector_properties[i].id = kConnectorIdBase + i;
+    connector_properties[i].properties.push_back(
+        {/* .id = */ kCrtcIdPropId, /* .value = */ 0});
+  }
+
+  fake_drm_->InitializeState(crtc_properties_, connector_properties,
+                             plane_properties_, property_names_,
+                             /*use_atomic=*/true);
+
+  constexpr uint32_t kFrameBuffer = 2;
+  ui::HardwareDisplayPlaneList state;
+  // Check all 3 connectors exist
+  for (size_t i = 0; i < connector_and_crtc_count; ++i) {
+    EXPECT_TRUE(fake_drm_->plane_manager()->Modeset(
+        crtc_properties_[i].id, kFrameBuffer, connector_properties[i].id,
+        kDefaultMode, state));
+  }
+
+  // Replace last connector and update state.
+  connector_properties[connector_and_crtc_count - 1].id = kConnectorIdBase + 3;
+  fake_drm_->UpdateState(crtc_properties_, connector_properties,
+                         plane_properties_, property_names_);
+  fake_drm_->plane_manager()->ResetConnectorsCache(fake_drm_->GetResources());
+
+  EXPECT_TRUE(fake_drm_->plane_manager()->Modeset(
+      crtc_properties_[0].id, kFrameBuffer, kConnectorIdBase, kDefaultMode,
+      state));
+  EXPECT_TRUE(fake_drm_->plane_manager()->Modeset(
+      crtc_properties_[1].id, kFrameBuffer, kConnectorIdBase + 1, kDefaultMode,
+      state));
+  // TODO(markyacoub): Add a test that fails for kConnectorIdBase +2 when atomic
+  // modeset is enabled.
+  EXPECT_TRUE(fake_drm_->plane_manager()->Modeset(
+      crtc_properties_[2].id, kFrameBuffer, kConnectorIdBase + 3, kDefaultMode,
+      state));
+}
 
 TEST_P(HardwareDisplayPlaneManagerLegacyTest, Modeset) {
   InitializeDrmState(/*crtc_count=*/1, /*planes_per_crtc=*/1);

@@ -194,6 +194,9 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
 
   void SetCloudPolicyClientForTesting(policy::CloudPolicyClient* client);
 
+  void SetBinaryUploadServiceForTesting(
+      safe_browsing::BinaryUploadService* binary_upload_service);
+
  protected:
   // Callback to report safe browsing event through real-time reporting channel,
   // if the browser is authorized to do so. Declared as protected to be called

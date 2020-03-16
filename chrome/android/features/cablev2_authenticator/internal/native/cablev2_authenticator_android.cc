@@ -12,6 +12,7 @@
 #include "components/cbor/writer.h"
 #include "components/device_event_log/device_event_log.h"
 #include "crypto/aead.h"
+#include "crypto/random.h"
 #include "device/fido/authenticator_get_info_response.h"
 #include "device/fido/authenticator_supported_options.h"
 #include "device/fido/cable/cable_discovery_data.h"
@@ -25,7 +26,6 @@
 #include "third_party/boringssl/src/include/openssl/ecdh.h"
 #include "third_party/boringssl/src/include/openssl/hkdf.h"
 #include "third_party/boringssl/src/include/openssl/obj.h"
-#include "third_party/boringssl/src/include/openssl/rand.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
 // This "header" is actually contains several function definitions and thus can
@@ -35,6 +35,11 @@
 using device::fido_parsing_utils::CopyCBORBytestring;
 
 namespace {
+
+// TODO: this string is currently in the protocol, and saved in the
+// desktop's prefs, but not otherwise surfaced. See if we can get a better
+// value for it.
+constexpr char kDeviceName[] = "Android phone";
 
 // Defragmenter accepts CTAP2 message fragments and reassembles them.
 // See
@@ -123,17 +128,24 @@ class Defragmenter {
 
 // AuthenticatorState contains the keys for a caBLE v2 authenticator.
 struct AuthenticatorState {
-  device::CableEidGeneratorKey eid_gen_key;
-  device::CablePskGeneratorKey psk_gen_key;
+  // pairing_data contains long-term keys, and information that is potentially
+  // sent to peers during QR pairing. The |v2| member of this structure will be
+  // populated.
+  device::CableDiscoveryData pairing_data;
+  // identity_key is the long-term signing key.
   bssl::UniquePtr<EC_KEY> identity_key;
 
-  std::pair<std::array<uint8_t, device::kCableNonceSize>,
-            std::array<uint8_t, device::kCableEphemeralIdSize>>
-      pairing_nonce_and_eid;
-  base::Optional<std::pair<std::array<uint8_t, device::kCableNonceSize>,
-                           std::array<uint8_t, device::kCableEphemeralIdSize>>>
-      qr_nonce_and_eid;
-  base::Optional<device::CableDiscoveryData> qr_discovery_data;
+  // pairing_advert contains information about the BLE advert that is sent based
+  // on the long-term keys.
+  device::cablev2::NonceAndEID pairing_advert;
+
+  // If doing a QR pairing, the following two members will be present.
+
+  // qr_advert contains information about the BLE advert that is sent based on
+  // QR pairing keys.
+  base::Optional<device::cablev2::NonceAndEID> qr_advert;
+  // qr_psk_gen_key contains the PSK generating key derived from the QR secret.
+  base::Optional<device::CablePskGeneratorKey> qr_psk_gen_key;
 };
 
 // Client represents the state of a single BLE peer.
@@ -188,12 +200,37 @@ class Client {
           return false;
         }
 
+        // The handshake is prefixed with the EID that the peer is responding
+        // to. This allows us to handle the case where we have started
+        // advertising for a QR code, but the desktop is already paired and is
+        // connecting based on long-term keys.
+        device::CableEidArray requested_eid;
+        if (!device::fido_parsing_utils::ExtractArray(message->second, 0,
+                                                      &requested_eid)) {
+          return false;
+        }
+
         base::Optional<std::unique_ptr<device::cablev2::Crypter>>
-            handshake_result = device::cablev2::RespondToHandshake(
-                auth_state_->qr_discovery_data->v2->psk_gen_key,
-                auth_state_->qr_nonce_and_eid->first,
-                auth_state_->qr_nonce_and_eid->second, /*identity=*/nullptr,
-                /*pairing_data=*/nullptr, message->second, &response);
+            handshake_result;
+        if (requested_eid == auth_state_->pairing_advert.second) {
+          handshake_result = device::cablev2::RespondToHandshake(
+              auth_state_->pairing_data.v2->psk_gen_key,
+              auth_state_->pairing_advert, auth_state_->identity_key.get(),
+              /*pairing_data=*/nullptr, message->second, &response);
+        } else if (auth_state_->qr_advert.has_value() &&
+                   requested_eid == auth_state_->qr_advert->second) {
+          // TODO: QR handshakes currently always send pairing data, but it's
+          // optional in the protocol.
+          handshake_result = device::cablev2::RespondToHandshake(
+              *auth_state_->qr_psk_gen_key, *auth_state_->qr_advert,
+              /*identity=*/nullptr, &auth_state_->pairing_data, message->second,
+              &response);
+        } else {
+          FIDO_LOG(ERROR) << "Peer is connecting to unknown EID "
+                          << base::HexEncode(requested_eid);
+          return false;
+        }
+
         if (!handshake_result) {
           FIDO_LOG(ERROR) << "Handshake failed";
           return false;
@@ -358,14 +395,24 @@ class CableInterface {
     if (!ParseState(state_bytes)) {
       GenerateFreshStateAndStore();
     }
+
+    // At this point, the version two pairing data has been established, either
+    // because it was parsed from the state, or because it was freshly generated
+    // and saved.
+    DCHECK(auth_state_.pairing_data.v2.has_value());
+    DCHECK(auth_state_.identity_key);
+
+    StartAdvertising(auth_state_.pairing_data.v2->eid_gen_key,
+                     &auth_state_.pairing_advert);
   }
 
   void Stop() {
     ble_handler_.Reset();
     clients_.clear();
     known_mtus_.clear();
-    auth_state_.qr_nonce_and_eid.reset();
-    auth_state_.qr_discovery_data.reset();
+    auth_state_.identity_key.reset();
+    auth_state_.qr_advert.reset();
+    auth_state_.qr_psk_gen_key.reset();
     env_ = nullptr;
   }
 
@@ -386,33 +433,11 @@ class CableInterface {
 
     uint8_t qr_secret[device::kCableQRSecretSize];
     memcpy(qr_secret, qr_secret_str.data(), sizeof(qr_secret));
-    auth_state_.qr_discovery_data.emplace(qr_secret);
+    const device::CableDiscoveryData discovery_data(qr_secret);
+    auth_state_.qr_psk_gen_key.emplace(discovery_data.v2->psk_gen_key);
 
-    std::array<uint8_t, device::kCableNonceSize> nonce;
-    RAND_bytes(nonce.data(), nonce.size());
-
-    uint8_t eid_plaintext[AES_BLOCK_SIZE];
-    static_assert(sizeof(eid_plaintext) == AES_BLOCK_SIZE,
-                  "EIDs are not AES blocks");
-    AES_KEY key;
-    CHECK(
-        AES_set_encrypt_key(
-            auth_state_.qr_discovery_data->v2->eid_gen_key.data(),
-            /*bits=*/8 * auth_state_.qr_discovery_data->v2->eid_gen_key.size(),
-            &key) == 0);
-    memcpy(eid_plaintext, nonce.data(), nonce.size());
-    memset(eid_plaintext + nonce.size(), 0,
-           sizeof(eid_plaintext) - nonce.size());
-
-    std::array<uint8_t, AES_BLOCK_SIZE> eid;
-    AES_encrypt(/*in=*/eid_plaintext, /*out=*/eid.data(), &key);
-
-    auth_state_.qr_nonce_and_eid.emplace(nonce, eid);
-
-    base::android::ScopedJavaLocalRef<jbyteArray> jbytes(
-        env_, env_->NewByteArray(sizeof(eid)));
-    env_->SetByteArrayRegion(jbytes.obj(), 0, eid.size(), (jbyte*)eid.data());
-    Java_BLEHandler_sendBLEAdvert(env_, ble_handler_, jbytes);
+    StartAdvertising(discovery_data.v2->eid_gen_key,
+                     &auth_state_.qr_advert.emplace());
   }
 
   void RecordClientMTU(uint64_t client_adr, uint16_t mtu_bytes) {
@@ -471,11 +496,32 @@ class CableInterface {
   friend struct base::DefaultSingletonTraits<CableInterface>;
   CableInterface() = default;
 
-  bssl::UniquePtr<EC_KEY> P256KeyFromSeed(base::span<const uint8_t, 32> seed) {
-    bssl::UniquePtr<EC_GROUP> p256(
-        EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1));
-    return bssl::UniquePtr<EC_KEY>(
-        EC_KEY_derive_from_secret(p256.get(), seed.data(), seed.size()));
+  void StartAdvertising(const device::CableEidGeneratorKey& eid_gen_key,
+                        device::cablev2::NonceAndEID* out_nonce_and_eid) {
+    std::array<uint8_t, device::kCableNonceSize> nonce;
+    crypto::RandBytes(nonce);
+
+    uint8_t eid_plaintext[device::kCableEphemeralIdSize];
+    static_assert(sizeof(eid_plaintext) == AES_BLOCK_SIZE,
+                  "EIDs are not AES blocks");
+    AES_KEY key;
+    CHECK(AES_set_encrypt_key(eid_gen_key.data(),
+                              /*bits=*/8 * eid_gen_key.size(), &key) == 0);
+    memcpy(eid_plaintext, nonce.data(), nonce.size());
+    static_assert(sizeof(nonce) < sizeof(eid_plaintext), "Nonces too large");
+    memset(eid_plaintext + nonce.size(), 0,
+           sizeof(eid_plaintext) - nonce.size());
+
+    std::array<uint8_t, AES_BLOCK_SIZE> eid;
+    AES_encrypt(/*in=*/eid_plaintext, /*out=*/eid.data(), &key);
+
+    out_nonce_and_eid->first = nonce;
+    out_nonce_and_eid->second = eid;
+
+    base::android::ScopedJavaLocalRef<jbyteArray> jbytes(
+        env_, env_->NewByteArray(sizeof(eid)));
+    env_->SetByteArrayRegion(jbytes.obj(), 0, eid.size(), (jbyte*)eid.data());
+    Java_BLEHandler_sendBLEAdvert(env_, ble_handler_, jbytes);
   }
 
   bool ParseState(const base::android::JavaParamRef<jbyteArray>& state_bytes) {
@@ -493,28 +539,38 @@ class CableInterface {
     }
 
     const cbor::Value::MapValue& state_map(state->GetMap());
+    device::CableDiscoveryData::V2Data& pairing_data =
+        auth_state_.pairing_data.v2.emplace();
     std::array<uint8_t, 32> identity_key_seed;
-    if (!CopyCBORBytestring(&auth_state_.eid_gen_key, state_map, 1) ||
-        !CopyCBORBytestring(&auth_state_.psk_gen_key, state_map, 2) ||
+    if (!CopyCBORBytestring(&pairing_data.eid_gen_key, state_map, 1) ||
+        !CopyCBORBytestring(&pairing_data.psk_gen_key, state_map, 2) ||
         !CopyCBORBytestring(&identity_key_seed, state_map, 3)) {
       return false;
     }
 
     auth_state_.identity_key = P256KeyFromSeed(identity_key_seed);
+    pairing_data.peer_identity.emplace(
+        X962PublicKeyOf(auth_state_.identity_key.get()));
+    pairing_data.peer_name.emplace(kDeviceName);
     return true;
   }
 
   void GenerateFreshStateAndStore() {
-    RAND_bytes(auth_state_.eid_gen_key.data(), auth_state_.eid_gen_key.size());
-    RAND_bytes(auth_state_.psk_gen_key.data(), auth_state_.psk_gen_key.size());
+    device::CableDiscoveryData::V2Data& pairing_data =
+        auth_state_.pairing_data.v2.emplace();
+    crypto::RandBytes(pairing_data.eid_gen_key);
+    crypto::RandBytes(pairing_data.psk_gen_key);
 
     std::array<uint8_t, 32> identity_key_seed;
-    RAND_bytes(identity_key_seed.data(), identity_key_seed.size());
+    crypto::RandBytes(identity_key_seed);
     auth_state_.identity_key = P256KeyFromSeed(identity_key_seed);
+    pairing_data.peer_identity.emplace(
+        X962PublicKeyOf(auth_state_.identity_key.get()));
+    pairing_data.peer_name.emplace(kDeviceName);
 
     cbor::Value::MapValue map;
-    map.emplace(1, cbor::Value(auth_state_.eid_gen_key));
-    map.emplace(2, cbor::Value(auth_state_.psk_gen_key));
+    map.emplace(1, cbor::Value(pairing_data.eid_gen_key));
+    map.emplace(2, cbor::Value(pairing_data.psk_gen_key));
     map.emplace(3, cbor::Value(identity_key_seed));
 
     base::Optional<std::vector<uint8_t>> bytes =
@@ -526,6 +582,25 @@ class CableInterface {
     env_->SetByteArrayRegion(jbytes.obj(), 0, bytes->size(),
                              (jbyte*)bytes->data());
     Java_BLEHandler_setState(env_, ble_handler_, jbytes);
+  }
+
+  static bssl::UniquePtr<EC_KEY> P256KeyFromSeed(
+      base::span<const uint8_t, 32> seed) {
+    bssl::UniquePtr<EC_GROUP> p256(
+        EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1));
+    return bssl::UniquePtr<EC_KEY>(
+        EC_KEY_derive_from_secret(p256.get(), seed.data(), seed.size()));
+  }
+
+  static device::CableAuthenticatorIdentityKey X962PublicKeyOf(
+      const EC_KEY* ec_key) {
+    device::CableAuthenticatorIdentityKey ret;
+    CHECK_EQ(ret.size(),
+             EC_POINT_point2oct(EC_KEY_get0_group(ec_key),
+                                EC_KEY_get0_public_key(ec_key),
+                                POINT_CONVERSION_UNCOMPRESSED, ret.data(),
+                                ret.size(), /*ctx=*/nullptr));
+    return ret;
   }
 
   JNIEnv* env_ = nullptr;

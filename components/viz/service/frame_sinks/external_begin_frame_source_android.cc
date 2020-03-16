@@ -27,9 +27,6 @@ void ExternalBeginFrameSourceAndroid::OnVSync(
     const base::android::JavaParamRef<jobject>& obj,
     jlong time_micros,
     jlong period_micros) {
-  // TODO(ericrk): This logic is ported from window_android.cc. Once OOP-D
-  // conversion is complete, we can delete the logic there.
-
   // Warning: It is generally unsafe to manufacture TimeTicks values. The
   // following assumption is being made, AND COULD EASILY BREAK AT ANY TIME:
   // Upstream, Java code is providing "System.nanos() / 1000," and this is the

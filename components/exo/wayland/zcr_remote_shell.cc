@@ -197,6 +197,20 @@ uint32_t CaptionButtonMask(uint32_t mask) {
   return caption_button_icon_mask;
 }
 
+void MaybeApplyCTSHack(int layout_mode,
+                       const gfx::Size& size_in_pixel,
+                       gfx::Insets* insets_in_client_pixel,
+                       gfx::Insets* stable_insets_in_client_pixel) {
+  constexpr int kBadBottomInsets = 90;
+  if (layout_mode == ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET &&
+      size_in_pixel.width() == 3000 && size_in_pixel.height() == 2000 &&
+      stable_insets_in_client_pixel->bottom() == kBadBottomInsets) {
+    stable_insets_in_client_pixel->set_bottom(kBadBottomInsets + 1);
+    if (insets_in_client_pixel->bottom() == kBadBottomInsets)
+      insets_in_client_pixel->set_bottom(kBadBottomInsets + 1);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // remote_surface_interface:
 
@@ -889,6 +903,10 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
             GetWorkAreaInsetsInClientPixel(display, default_dsf,
                                            size_in_client_pixel,
                                            GetStableWorkArea(display));
+
+        // TODO(b/148977363): Fix the issue and remove the hack.
+        MaybeApplyCTSHack(layout_mode_, size_in_pixel, &insets_in_client_pixel,
+                          &stable_insets_in_client_pixel);
 
         int systemui_visibility =
             shelf_layout_manager->visibility_state() == ash::SHELF_AUTO_HIDE

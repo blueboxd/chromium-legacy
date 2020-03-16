@@ -230,6 +230,28 @@ std::vector<uint64_t> HardwareDisplayPlaneManager::GetFormatModifiers(
   return std::vector<uint64_t>();
 }
 
+void HardwareDisplayPlaneManager::ResetConnectorsCache(
+    const ScopedDrmResourcesPtr& resources) {
+  connectors_props_.clear();
+
+  for (int i = 0; i < resources->count_connectors; ++i) {
+    ConnectorProperties state_props;
+    state_props.id = resources->connectors[i];
+
+    ScopedDrmObjectPropertyPtr props(drm_->GetObjectProperties(
+        resources->connectors[i], DRM_MODE_OBJECT_CONNECTOR));
+    if (!props) {
+      PLOG(ERROR) << "Failed to get Connector properties for connector="
+                  << state_props.id;
+      continue;
+    }
+    GetDrmPropertyForName(drm_, props.get(), "CRTC_ID", &state_props.crtc_id);
+    DCHECK(!drm_->is_atomic() || state_props.crtc_id.id);
+
+    connectors_props_.emplace_back(std::move(state_props));
+  }
+}
+
 bool HardwareDisplayPlaneManager::SetColorMatrix(
     uint32_t crtc_id,
     const std::vector<float>& color_matrix) {
@@ -323,22 +345,7 @@ bool HardwareDisplayPlaneManager::InitializeCrtcState() {
     return false;
   }
 
-  for (int i = 0; i < resources->count_connectors; ++i) {
-    ConnectorProperties state_props;
-    state_props.id = resources->connectors[i];
-
-    ScopedDrmObjectPropertyPtr props(drm_->GetObjectProperties(
-        resources->connectors[i], DRM_MODE_OBJECT_CONNECTOR));
-    if (!props) {
-      PLOG(ERROR) << "Failed to get Connector properties for connector="
-                  << state_props.id;
-      continue;
-    }
-    GetDrmPropertyForName(drm_, props.get(), "CRTC_ID", &state_props.crtc_id);
-    DCHECK(!drm_->is_atomic() || state_props.crtc_id.id);
-
-    connectors_props_.emplace_back(std::move(state_props));
-  }
+  ResetConnectorsCache(resources);
 
   unsigned int num_crtcs_with_out_fence_ptr = 0;
 

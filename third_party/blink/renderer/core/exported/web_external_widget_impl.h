@@ -16,8 +16,13 @@ namespace blink {
 class WebExternalWidgetImpl : public WebExternalWidget,
                               public WidgetBaseClient {
  public:
-  WebExternalWidgetImpl(WebExternalWidgetClient* client,
-                        const WebURL& debug_url);
+  WebExternalWidgetImpl(
+      WebExternalWidgetClient* client,
+      const WebURL& debug_url,
+      CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
+          widget_host,
+      CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
+          widget);
   ~WebExternalWidgetImpl() override;
 
   // WebWidget overrides:
@@ -41,7 +46,7 @@ class WebExternalWidgetImpl : public WebExternalWidget,
   WebExternalWidgetClient* const client_;
   const WebURL debug_url_;
   WebSize size_;
-  WidgetBase widget_base_{this};
+  WidgetBase widget_base_;
 };
 
 }  // namespace blink

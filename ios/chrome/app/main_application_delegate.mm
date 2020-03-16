@@ -20,6 +20,7 @@
 #import "ios/chrome/app/main_application_delegate_testing.h"
 #import "ios/chrome/app/main_controller.h"
 #import "ios/chrome/browser/ui/main/scene_controller.h"
+#import "ios/chrome/browser/ui/main/scene_delegate.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #include "ios/chrome/browser/ui/util/multi_window_support.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -129,6 +130,21 @@
     self.sceneState.activationLevel = SceneActivationLevelForegroundInactive;
   }
 
+  if (@available(iOS 13, *)) {
+    if (IsMultiwindowSupported()) {
+      [[NSNotificationCenter defaultCenter]
+          addObserver:self
+             selector:@selector(sceneWillConnect:)
+                 name:UISceneWillConnectNotification
+               object:nil];
+      [[NSNotificationCenter defaultCenter]
+          addObserver:self
+             selector:@selector(sceneDidEnterBackground:)
+                 name:UISceneDidEnterBackgroundNotification
+               object:nil];
+    }
+  }
+
   return requiresHandling;
 }
 
@@ -197,6 +213,59 @@
     return;
 
   [_memoryHelper handleMemoryPressure];
+}
+
+#pragma mark - Scenes lifecycle
+
+- (NSInteger)foregroundSceneCount {
+  DCHECK(IsMultiwindowSupported());
+  if (@available(iOS 13, *)) {
+    NSInteger foregroundSceneCount = 0;
+    for (UIScene* scene in UIApplication.sharedApplication.connectedScenes) {
+      if ((scene.activationState == UISceneActivationStateForegroundInactive) ||
+          (scene.activationState == UISceneActivationStateForegroundActive)) {
+        foregroundSceneCount++;
+      }
+    }
+    return foregroundSceneCount;
+  }
+  return 0;
+}
+
+- (void)sceneWillConnect:(NSNotification*)notification {
+  DCHECK(IsMultiwindowSupported());
+  if (@available(iOS 13, *)) {
+    UIWindowScene* scene = (UIWindowScene*)notification.object;
+    SceneDelegate* sceneDelegate = (SceneDelegate*)scene.delegate;
+    SceneController* sceneController = sceneDelegate.sceneController;
+
+    _tabSwitcherProtocol = sceneController;
+    _tabOpener = sceneController;
+    _appNavigation = sceneController;
+
+    // TODO(crbug.com/1060645): This should be called later, or this flow should
+    // be changed completely.
+    if (self.foregroundSceneCount == 0) {
+      [_appState applicationWillEnterForeground:UIApplication.sharedApplication
+                                metricsMediator:_metricsMediator
+                                   memoryHelper:_memoryHelper
+                                      tabOpener:_tabOpener
+                                  appNavigation:_appNavigation];
+    }
+  }
+}
+
+- (void)sceneDidEnterBackground:(NSNotification*)notification {
+  DCHECK(IsMultiwindowSupported());
+  if (@available(iOS 13, *)) {
+    // When the first scene enters foreground, update the app state.
+    if (self.foregroundSceneCount == 0) {
+      [_appState applicationDidEnterBackground:UIApplication.sharedApplication
+                                  memoryHelper:_memoryHelper
+                       incognitoContentVisible:self.sceneController
+                                                   .incognitoContentVisible];
+    }
+  }
 }
 
 #pragma mark Downloading Data in the Background

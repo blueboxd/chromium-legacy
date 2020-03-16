@@ -62,8 +62,7 @@ void AudioServiceAudioProcessorProxy::OnStartDump(base::File dump_file) {
   } else {
     // Post the file close to avoid blocking the main thread.
     worker_pool::PostTask(
-        FROM_HERE,
-        {base::ThreadPool(), base::TaskPriority::LOWEST, base::MayBlock()},
+        FROM_HERE, {base::TaskPriority::LOWEST, base::MayBlock()},
         CrossThreadBindOnce([](base::File) {}, std::move(dump_file)));
   }
 }

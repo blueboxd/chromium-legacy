@@ -1904,6 +1904,10 @@ template("ios_xcuitest_test_runner_bundle") {
              "-f=xml1",
              "-o=" + rebase_path(_output_name, root_build_dir),
            ] + rebase_path(sources, root_build_dir)
+
+    if (ios_use_goma_rbe) {
+      deps = [ "//build/config/ios:copy_xctrunner_app" ]
+    }
   }
 
   ios_info_plist(_info_plist_target) {
@@ -1932,6 +1936,10 @@ template("ios_xcuitest_test_runner_bundle") {
     sources = [ "$_xctrunner_path/PkgInfo" ]
 
     outputs = [ "{{bundle_contents_dir}}/PkgInfo" ]
+
+    if (ios_use_goma_rbe) {
+      deps = [ "//build/config/ios:copy_xctrunner_app" ]
+    }
   }
 
   _xctest_bundle = invoker.xctest_bundle
@@ -1961,6 +1969,10 @@ template("ios_xcuitest_test_runner_bundle") {
       ":$_pkginfo_bundle",
       ":$_xctest_bundle",
     ]
+
+    if (ios_use_goma_rbe) {
+      deps = [ "//build/config/ios:copy_xctrunner_app" ]
+    }
   }
 }
 

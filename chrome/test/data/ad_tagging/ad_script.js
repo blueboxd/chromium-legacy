@@ -34,3 +34,27 @@ async function createDocWrittenAdFrame(name, base_url) {
   frame.contentDocument.write(doc_text);
   frame.contentDocument.close();
 }
+
+function createAdFrameWithDocWriteAbortedLoad(name) {
+  let frame = document.createElement('iframe');
+  frame.name = name;
+
+  // slow takes 100 seconds to load, plenty of time to overwrite the
+  // provisional load.
+  frame.src = '/slow?100';
+  document.body.appendChild(frame);
+  frame.contentDocument.open();
+  frame.contentDocument.write('<html><head></head><body></body></html>');
+  frame.contentDocument.close();
+}
+
+function createAdFrameWithWindowStopAbortedLoad(name) {
+  let frame = document.createElement('iframe');
+  frame.name = name;
+
+  // slow takes 100 seconds to load, plenty of time to overwrite the
+  // provisional load.
+  frame.src = '/slow?100';
+  document.body.appendChild(frame);
+  frame.contentWindow.stop();
+}

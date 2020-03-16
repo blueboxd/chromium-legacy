@@ -94,7 +94,6 @@ class WindowAnimationWaiter : public ui::LayerAnimationObserver {
       ui::LayerAnimationSequence* sequence) override {}
 
   void Wait() {
-    DCHECK(animator_->is_animating());
     run_loop_.Run();
   }
 

@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 
 import org.junit.Assert;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.util.ScalableTimeout;
@@ -25,6 +27,21 @@ public class WebApkActivityTestRule extends ChromeActivityTestRule<WebApkActivit
 
     public WebApkActivityTestRule() {
         super(WebApkActivity.class);
+    }
+
+    @Override
+    public Statement apply(final Statement base, Description description) {
+        Statement webApkUpdateManagerStatement = new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                WebApkUpdateManager.setUpdatesEnabledForTesting(false);
+
+                base.evaluate();
+
+                WebApkUpdateManager.setUpdatesEnabledForTesting(true);
+            }
+        };
+        return super.apply(webApkUpdateManagerStatement, description);
     }
 
     /**

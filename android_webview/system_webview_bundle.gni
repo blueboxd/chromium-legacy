@@ -10,7 +10,7 @@ template("system_webview_bundle") {
     command_line_flags_file = "webview-command-line"
     proguard_enabled = !is_java_debug
     enable_language_splits = true
-    system_image_locale_whitelist = locales
+    system_image_locale_allowlist = locales
     is_multi_abi =
         android_64bit_target_cpu && (!defined(invoker.include_64_bit_webview) ||
                                      invoker.include_64_bit_webview) &&

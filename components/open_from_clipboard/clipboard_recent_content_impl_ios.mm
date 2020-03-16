@@ -167,12 +167,39 @@ NSData* WeakMD5FromPasteboardData(NSString* string,
   // be checked after a reboot.
   // See radar://21833556 for more information.
   BOOL deviceRebooted = [self clipboardContentAge] >= [self uptime];
-  if (!deviceRebooted) {
-    NSInteger changeCount = [UIPasteboard generalPasteboard].changeCount;
-    bool changeCountChanged = changeCount != self.lastPasteboardChangeCount;
-    return changeCountChanged;
+
+  // On iOS 13, there is a bug where every time a UITextField is opened, the
+  // changeCount increases by 2. Thus, if the difference in counts is even,
+  // it is unknown whether there is a real change or the user just focused some
+  // UITextFields.
+  // See radar://7619972 or crbug.com/1058487 for more information.
+  NSInteger changeCount = [UIPasteboard generalPasteboard].changeCount;
+  BOOL changeCountChanged = changeCount != self.lastPasteboardChangeCount;
+  if (@available(iOS 13, *)) {
+    // No-op. This should be if !available(13), but that is not supported.
+  } else {
+    if (!deviceRebooted) {
+      return changeCountChanged;
+    }
   }
 
+  // If there was no reboot, and the number hasn't changed, the pasteboard
+  // definitely hasn't changed.
+  if (!deviceRebooted && !changeCountChanged) {
+    return NO;
+  }
+
+  // If there was no reboot and the size of the change is odd , the pasteboard
+  // definitely has changed.
+  BOOL changeCountIncreasedIsOdd =
+      (changeCount - self.lastPasteboardChangeCount) % 2 != 0;
+  if (!deviceRebooted && changeCountIncreasedIsOdd) {
+    return YES;
+  }
+
+  // Otherwise, it is unknown whether or not there was a real change, so
+  // fallback to looking at the MD5.
+  self.lastPasteboardChangeCount = changeCount;
   BOOL md5Changed =
       ![[self getCurrentMD5] isEqualToData:self.lastPasteboardEntryMD5];
   return md5Changed;

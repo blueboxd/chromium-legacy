@@ -51,7 +51,7 @@ function canvas_fallback_test(element, expected) {
     context.clearRect(0, 0, 400, 400);
     context.rect(0, 0, 100, 100);
     if (expected) {
-      assert_throws(expected, function() {
+      assert_throws_dom(expected, function() {
         context.addHitRegion({ control : element });
       });
     } else {
@@ -59,8 +59,6 @@ function canvas_fallback_test(element, expected) {
     }
   }, element.id);
 }
-
-const NotSupportedError = { name : 'NotSupportedError' };
 
 canvas_fallback_test(document.querySelector('canvas table'));
 canvas_fallback_test(document.querySelector('canvas tr'));

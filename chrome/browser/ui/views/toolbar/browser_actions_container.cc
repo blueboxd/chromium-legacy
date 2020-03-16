@@ -15,7 +15,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/ranges.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"

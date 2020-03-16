@@ -320,8 +320,7 @@ HandshakeInitiator::ProcessResponse(base::span<const uint8_t> response) {
 
 base::Optional<std::unique_ptr<Crypter>> RespondToHandshake(
     base::span<const uint8_t, 32> psk_gen_key,
-    base::span<const uint8_t, 8> nonce,
-    base::span<const uint8_t, kCableEphemeralIdSize> expected_eid,
+    const NonceAndEID& nonce_and_eid,
     const EC_KEY* identity,
     const CableDiscoveryData* pairing_data,
     base::span<const uint8_t> in,
@@ -339,8 +338,8 @@ base::Optional<std::unique_ptr<Crypter>> RespondToHandshake(
     return base::nullopt;
   }
 
-  if (eid.size() != expected_eid.size() ||
-      memcmp(eid.data(), expected_eid.data(), eid.size()) != 0) {
+  if (eid.size() != nonce_and_eid.second.size() ||
+      memcmp(eid.data(), nonce_and_eid.second.data(), eid.size()) != 0) {
     return base::nullopt;
   }
 
@@ -356,7 +355,7 @@ base::Optional<std::unique_ptr<Crypter>> RespondToHandshake(
   std::array<uint8_t, 32> psk;
   HKDF(psk.data(), psk.size(), EVP_sha256(), psk_gen_key.data(),
        psk_gen_key.size(),
-       /*salt=*/nonce.data(), nonce.size(),
+       /*salt=*/nonce_and_eid.first.data(), nonce_and_eid.first.size(),
        /*info=*/nullptr, 0);
 
   noise.MixKeyAndHash(psk);

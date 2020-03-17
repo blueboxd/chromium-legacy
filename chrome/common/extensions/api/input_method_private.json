@@ -77,7 +77,59 @@
           "spellCheck": {"type": "boolean", "description": "Whether the text field wants spell-check."},
           "shouldDoLearning": {"type": "boolean", "description": "Whether text entered into the text field should be used to improve typing suggestions for the user."},
           "focusReason": {"$ref": "FocusReason", "description": "How the text field was focused"},
-	  "hasBeenPassword": {"type": "boolean", "description": "Whether the text field has ever been a password field."}
+          "hasBeenPassword": {"type": "boolean", "description": "Whether the text field has ever been a password field."}
+        }
+      },
+      {
+        "id": "InputMethodSettings",
+        "type": "object",
+        "description": "User preference settings for a specific input method. Japanese input methods are not included because they are managed separately by Mozc module.",
+        "properties": {
+          "autoCorrectionLevelPK": { "type": "integer", "optional": true, "description": "The level of auto correction for physical keyboard (0: Off, 1: Modest, 2: Aggressive)."},
+          "autoCorrectionLevelVK": { "type": "integer", "optional": true, "description": "The level of auto correction for virtual keyboard (0: Off, 1: Modest, 2: Aggressive)."},
+          "enableCapitalizationPK": { "type": "boolean", "optional": true, "description": "Whether to enable auto capitalization for physical keyboard."},
+          "enableCapitalizationVK": { "type": "boolean", "optional": true, "description": "Whether enable auto capitalization for virtual keyboard."},
+          "enableCompletion": { "type": "boolean", "optional": true, "description": "Whether to enable auto completion."},
+          "enableDoubleSpacePeriod": { "type": "boolean", "optional": true, "description": "Whether to auto transform double spaces to type period."},
+          "enableGestureTyping": { "type": "boolean", "optional": true, "description": "Whether to enable gesture typing."},
+          "enablePrediction": { "type": "boolean", "optional": true, "description": "Whether to enable word prediction."},
+          "enableSoundOnKeypress": { "type": "boolean", "optional": true, "description": "Whether to enable sound on keypress."},
+          "koreanEnableSyllableInput": { "type": "boolean", "optional": true, "description": "Whether input one syllable at a time in korean input method."},
+          "koreanKeyboardLayout": { "type": "string", "optional": true, "description": "The layout for korean keyboard."},
+          "koreanShowHangulCandidate": { "type": "boolean", "optional": true, "description": "Whether to show hangul candidates in korean input method."},
+          "pinyinChinesePunctuation": { "type": "boolean", "optional": true, "description": "Whether to use Chinese punctuations in pinyin."},
+          "pinyinDefaultChinese": {
+            "type": "boolean",
+            "optional": true,
+            "description": "User can use shortcuts to switch between Chinese and English quickly when using pinyin, this flag indicates whether the default language is Chinese."
+          },
+          "pinyinEnableFuzzy": { "type": "boolean", "optional": true, "description": "Whether to enable fuzzy pinyin."},
+          "pinyinEnableLowerPaging": { "type": "boolean", "optional": true, "description": "Whether to enable using ','/'.' to page up/down the candidates in pinyin."},
+          "pinyinEnableUpperPaging": { "type": "boolean", "optional": true, "description": "Whether to enable using '-'/'=' to page up/down the candidates in pinyin."},
+          "pinyinFullWidthCharacter": { "type": "boolean", "optional": true, "description": "Whether to output full width letters and digits in pinyin."},
+          "pinyinFuzzyConfig": {
+            "type": "object",
+            "optional": true,
+            "description": "The configuration of which fuzzy pairs are enable.",
+            "properties": {
+              "an_ang": {"type": "boolean", "optional": true, "description": "Whether to enable an_ang fuzzy"},
+              "c_ch": {"type": "boolean", "optional": true, "description": "Whether to enable c_ch fuzzy"},
+              "en_eng": {"type": "boolean", "optional": true, "description": "Whether to enable en_eng fuzzy"},
+              "f_h": {"type": "boolean", "optional": true, "description": "Whether to enable f_h fuzzy"},
+              "ian_iang": {"type": "boolean", "optional": true, "description": "Whether to enable ian_iang fuzzy"},
+              "in_ing": {"type": "boolean", "optional": true, "description": "Whether to enable in_ing fuzzy"},
+              "k_g": {"type": "boolean", "optional": true, "description": "Whether to enable k_g fuzzy"},
+              "l_n": {"type": "boolean", "optional": true, "description": "Whether to enable l_n fuzzy"},
+              "r_l": {"type": "boolean", "optional": true, "description": "Whether to enable r_l fuzzy"},
+              "s_sh": {"type": "boolean", "optional": true, "description": "Whether to enable s_sh fuzzy"},
+              "uan_uang": {"type": "boolean", "optional": true, "description": "Whether to enable uan_uang fuzzy"},
+              "z_zh": {"type": "boolean", "optional": true, "description": "Whether to enable z_zh fuzzy"}
+            }
+          },
+          "xkbLayout": { "type": "string", "optional": true, "description": "The xkb keyboard (system provided keyboard) layout."},
+          "zhuyinLayout": { "type": "string", "optional": true, "description": "The layout of zhuyin keyboard."},
+          "zhuyinPageSize": { "type": "integer", "optional": true, "description": "The page size of zhuyin candidate page."},
+          "zhuyinSelectionKeys": { "type": "string", "optional": true, "description": "The keys used to select candidates in zhuyin."}
         }
       }
     ],
@@ -342,7 +394,7 @@
       }, {
         "name": "hideInputView",
         "type": "function",
-        "description": "Shows the input view window. If the input view window is already hidden, this function will do nothing.",
+        "description": "Hides the input view window. If the input view window is already hidden, this function will do nothing.",
         "parameters": [
           {
             "type": "function",
@@ -424,9 +476,9 @@
           }
         ]
       }, {
-        "name": "getSetting",
+        "name": "getSettings",
         "type": "function",
-        "description": "Gets the current value of a setting for a particular input method",
+        "description": "Gets the current values of all settings for a particular input method",
         "parameters": [
           {
             "name": "engineID",
@@ -434,28 +486,23 @@
             "description": "The ID of the engine (e.g. 'zh-t-i0-pinyin', 'xkb:us::eng')"
           },
           {
-            "name": "key",
-            "type": "string",
-            "description": "The setting to get"
-          },
-          {
             "type": "function",
             "name": "callback",
-            "description": "Callback to receive the setting",
+            "description": "Callback to receive the settings",
             "parameters": [
               {
-                "name": "setting",
-                "type": "any",
+                "name": "settings",
+                "$ref": "InputMethodSettings",
                 "optional": true,
-                "description": "The value for the requested setting, or null if there's no value"
+                "description": "The requested setting, or null if there's no value"
               }
             ]
           }
         ]
       }, {
-        "name": "setSetting",
+        "name": "setSettings",
         "type": "function",
-        "description": "Sets the value of a setting for a particular input method",
+        "description": "Sets the value of all settings for a particular input method",
         "parameters": [
           {
             "name": "engineID",
@@ -463,14 +510,9 @@
             "description": "The ID of the engine (e.g. 'zh-t-i0-pinyin', 'xkb:us::eng')"
           },
           {
-            "name": "key",
-            "type": "string",
-            "description": "The setting to set"
-          },
-          {
-            "name": "value",
-            "type": "any",
-            "description": "The new value of the setting"
+            "name": "settings",
+            "$ref": "InputMethodSettings",
+            "description": "The settings to set"
           },
           {
             "type": "function",
@@ -670,16 +712,11 @@
             "description": "ID of the engine that changed"
           },
           {
-            "name": "key",
-            "type": "string",
-            "description": "The setting that changed"
-          },
-          {
-            "name": "value",
-            "type": "any",
-            "description": "The new value of the setting"
-	  }
-	]
+            "name": "settings",
+            "$ref": "InputMethodSettings",
+            "description": "The new settings"
+          }
+        ]
       }, {
         "name": "onScreenProjectionChanged",
         "type": "function",
@@ -687,7 +724,7 @@
         "parameters": [
           {
             "name": "isProjected",
-	    "type": "boolean",
+            "type": "boolean",
             "description": "Whether the screen is projected."
           }
         ]

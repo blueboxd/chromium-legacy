@@ -48,17 +48,17 @@ The associated data pattern would look like this:
 
     class Pokemon {
       ...
-      class Data {
+      struct Data {
         virtual ~Data();
       };
       map<Key, unique_ptr<Data>> user_data_;
       ...
     };
-  
+
     class PokemonNurse::PokemonData : public Pokemon::Data {
       Time last_checkup_;
     };
-  
+
     bool PokemonNurse::NeedsCheckup(Pokemon* p) {
       if (!p->user_data_[PokemonNurse::kDataKey])
         p->user_data_[PokemonNurse::kDataKey] = make_unique<PokemonData>();
@@ -72,34 +72,36 @@ aware of the per-Pokemon data belonging to PokemonNurse.
 
 ## Use this pattern when:
 
-* You have a central class C, and many places in your code want to store some
-  data for each instance of C.
-* C can't directly contain your data for layering or code structure reasons.
-* The data being stored is ephemeral and your consumer classes don't care about
-  its lifetime.
+*   You have a central class C, and many places in your code want to store some
+    data for each instance of C.
+*   C can't directly contain your data for layering or code structure reasons.
+*   The data being stored is ephemeral and your consumer classes don't care
+    about its lifetime.
 
 ## Don't use this pattern when:
 
-* The data being stored must expose any behavior other than a destructor to the
-  central class; in that case, you need a richer pattern than this one.
-* The data being stored has a complex lifetime.
-* Deleting the data being stored has side effects.
-* There might be a very large amount of associated data entries; in that case,
-  a domain-specific data model will provide better efficiency.
-* The central class C and the consumer classes are close enough that it would
-  make sense for C to store the data directly.
+*   The data being stored must expose any behavior other than a destructor to
+    the central class; in that case, you need a richer pattern than this one.
+*   The data being stored has a complex lifetime.
+*   Deleting the data being stored has side effects.
+*   There might be a very large amount (thousands) of associated data entries
+    for a particular client class; in that case, a domain-specific data model
+    will provide better efficiency.
+*   The central class C and the consumer classes are close enough that it would
+    make sense for C to store the data directly.
 
 ## Alternatives / See also:
 
-* Storing data for consumer classes directly on the object of class C.
-* Having the consumer store a map between objects of class C and the consumer's
-  C-specific data.
+*   Storing data for consumer classes directly on the object of class C.
+*   Having the consumer store a map between objects of class C and the
+    consumer's C-specific data.
 
 ## How to use this pattern in Chromium:
 
 The two most commonly-used instances of this pattern in Chromium are
-[SupportsUserData] (especially [WebContentsUserData]) and [KeyedService]
-(usually via [BrowserContextKeyedServiceFactory]).
+[SupportsUserData] (especially [WebContentsUserData] and [WebStateUserData]) and
+[KeyedService] (usually via [BrowserContextKeyedServiceFactory] and
+[BrowserStateKeyedServiceFactory]).
 
 ### SupportsUserData
 
@@ -163,8 +165,9 @@ provides a way to store data associated with a Profile. For example, if you
 were creating a UserNicenessController, you might do:
 
     class UserNicenessData : public KeyedService {
+     public:
       static UserNicenessData* FromProfile(Profile* profile);
-      int niceness_;
+      int niceness;
 
       // Maybe also:
       //   void Shutdown() override;
@@ -186,7 +189,7 @@ were creating a UserNicenessController, you might do:
     }
 
     // in code somewhere:
-    UserNicenessData::FromProfile(profile)->niceness_++;
+    UserNicenessData::FromProfile(profile)->niceness++;
 
 Any code that needs the UserNicenessData for a given Profile can call
 `UserNicenessData::FromProfile`, and KeyedService and
@@ -212,3 +215,4 @@ attaches a KeyedService to a [BrowserState].
 [SupportsUserData]: https://chromium.googlesource.com/chromium/src/+/HEAD/base/supports_user_data.h
 [TabHelper]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/tab_helpers.md
 [WebContentsUserData]: https://chromium.googlesource.com/chromium/src/+/HEAD/content/public/browser/web_contents_user_data.h
+[WebStateUserData]: https://chromium.googlesource.com/chromium/src/+/HEAD/ios/web/public/web_state_user_data.h

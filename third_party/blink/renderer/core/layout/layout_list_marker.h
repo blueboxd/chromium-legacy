@@ -78,6 +78,9 @@ class CORE_EXPORT LayoutListMarker : public LayoutBox {
   void WillBeDestroyed() override;
 
  private:
+  void ComputeIntrinsicLogicalWidths(
+      LayoutUnit& min_logical_width,
+      LayoutUnit& max_logical_width) const override;
   void ComputePreferredLogicalWidths() override;
 
   void Paint(const PaintInfo&) const override;
@@ -101,7 +104,7 @@ class CORE_EXPORT LayoutListMarker : public LayoutBox {
   bool IsText() const { return !IsImage(); }
 
   LayoutUnit GetWidthOfText(ListStyleCategory) const;
-  void UpdateMargins();
+  void UpdateMargins(LayoutUnit marker_inline_size);
   void UpdateContent();
 
   void StyleWillChange(StyleDifference,

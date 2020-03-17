@@ -48,6 +48,10 @@ crbug.com/1048761 external/wpt/infrastructure/server/http2-context.sub.h2.any.sh
 crbug.com/1048761 external/wpt/infrastructure/server/http2-context.sub.h2.any.worker.html [ Skip ]
 crbug.com/1048761 external/wpt/infrastructure/server/wpt-server-http.sub.html [ Skip ]
 
+# Favicon is not supported by run_web_tests.
+external/wpt/fetch/metadata/favicon.https.sub.html [ Skip ]
+virtual/omt-worker-fetch/external/wpt/fetch/metadata/favicon.https.sub.html [ Skip ]
+
 crbug.com/807686 crbug.com/24182 jquery/manipulation.html [ Timeout Pass ]
 
 # The following tests need to remove the assumption that user activation isvirtual/text-antialias/firstline/capitalize-transform.html
@@ -95,8 +99,7 @@ external/wpt/css/compositing/root-element-background-transparency.html [ Failure
 crbug.com/665058 http/tests/local/drag-over-remote-content.html [ Crash Timeout ]
 crbug.com/771003 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
 
-crbug.com/1050826 external/wpt/mixed-content/gen/top.http-rp/opt-in/object-tag/cross-https.swap-scheme.https.html [ Timeout ]
-crbug.com/1050826 external/wpt/mixed-content/gen/top.http-rp/opt-in/object-tag/same-https.swap-scheme.https.html [ Timeout ]
+crbug.com/1050826 external/wpt/mixed-content/gen/top.http-rp/opt-in/object-tag.https.html [ Timeout ]
 
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
 # TODO(lukasza, alexmos): Burn down this list.
@@ -1518,8 +1521,6 @@ virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/text/* [ Skip ]
 # Flexbox in NG
 #
 # Fail in NG flex, pass in legacy flex.
-crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/hittest-overlapping-margin.html [ Failure ]
-crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/hittest-overlapping-order.html [ Failure ]
 crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/quirks-auto-block-size-with-percentage-item.html [ Pass Failure ]
 crbug.com/846557 [ Mac ] virtual/layout_ng_flex_box/css3/flexbox/button.html [ Failure ]
 
@@ -2818,6 +2819,7 @@ crbug.com/604875 external/wpt/css/css-images/tiled-gradients.html [ Failure ]
 crbug.com/808834 [ Linux ] external/wpt/css/css-pseudo/first-letter-001.html [ Failure ]
 crbug.com/808834 [ Win ] external/wpt/css/css-pseudo/first-letter-001.html [ Failure ]
 
+crbug.com/932343 external/wpt/css/css-pseudo/selection-text-shadow-016.html [ Failure ]
 
 crbug.com/723741 virtual/threaded/http/tests/devtools/tracing/idle-callback.js [ Failure Crash Pass Timeout ]
 
@@ -3618,10 +3620,6 @@ crbug.com/626703 external/wpt/css/css-scoping/shadow-directionality-002.tentativ
 crbug.com/626703 external/wpt/css/css-scoping/shadow-directionality-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/screen-orientation/orientation-reading.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/browsing-the-web/unloading-documents/prompt-and-unload-script-closeable.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-animations/CSSAnimation-effect.tentative.html [ Timeout ]
-crbug.com/626703 virtual/threaded/external/wpt/css/css-animations/CSSAnimation-effect.tentative.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-animations/event-dispatch.tentative.html [ Timeout ]
-crbug.com/626703 virtual/threaded/external/wpt/css/css-animations/event-dispatch.tentative.html [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=x-cp1251 [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=utf8 [ Timeout ]
 crbug.com/626703 external/wpt/css/css-transforms/transform-box/view-box-mutation.html [ Failure ]
@@ -4152,42 +4150,12 @@ crbug.com/457718 external/wpt/css/css-pseudo/marker-font-variant-numeric-normal.
 crbug.com/457718 external/wpt/css/css-pseudo/marker-list-style-position.html [ Failure ]
 
 # iframe tests time out if the request is blocked as mixed content.
-crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/iframe-tag/cross-http-downgrade.downgrade.https.html [ Timeout ]
-crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/iframe-tag/cross-http-downgrade.no-redirect.https.html [ Timeout ]
-crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/iframe-tag/cross-https.downgrade.https.html [ Timeout ]
-crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/iframe-tag/same-http-downgrade.downgrade.https.html [ Timeout ]
-crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/iframe-tag/same-http-downgrade.no-redirect.https.html [ Timeout ]
-crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/iframe-tag/same-https.downgrade.https.html [ Timeout ]
-crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/unset/iframe-tag/cross-http-downgrade.downgrade.https.html [ Timeout ]
-crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/unset/iframe-tag/cross-http-downgrade.no-redirect.https.html [ Timeout ]
-crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/unset/iframe-tag/cross-https.downgrade.https.html [ Timeout ]
-crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/unset/iframe-tag/same-http-downgrade.downgrade.https.html [ Timeout ]
-crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/unset/iframe-tag/same-http-downgrade.no-redirect.https.html [ Timeout ]
-crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/unset/iframe-tag/same-https.downgrade.https.html [ Timeout ]
-crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/top.meta/unset/iframe-tag/cross-http-downgrade.downgrade.https.html [ Timeout ]
-crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/top.meta/unset/iframe-tag/cross-http-downgrade.no-redirect.https.html [ Timeout ]
-crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/top.meta/unset/iframe-tag/cross-https.downgrade.https.html [ Timeout ]
-crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/top.meta/unset/iframe-tag/same-http-downgrade.downgrade.https.html [ Timeout ]
-crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/top.meta/unset/iframe-tag/same-http-downgrade.no-redirect.https.html [ Timeout ]
-crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/top.meta/unset/iframe-tag/same-https.downgrade.https.html [ Timeout ]
-crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/iframe-tag/cross-http-downgrade.downgrade.https.html [ Timeout ]
-crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/iframe-tag/cross-http-downgrade.no-redirect.https.html [ Timeout ]
-crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/iframe-tag/cross-https.downgrade.https.html [ Timeout ]
-crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/iframe-tag/same-http-downgrade.downgrade.https.html [ Timeout ]
-crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/iframe-tag/same-http-downgrade.no-redirect.https.html [ Timeout ]
-crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/iframe-tag/same-https.downgrade.https.html [ Timeout ]
-crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/unset/iframe-tag/cross-http-downgrade.downgrade.https.html [ Timeout ]
-crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/unset/iframe-tag/cross-http-downgrade.no-redirect.https.html [ Timeout ]
-crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/unset/iframe-tag/cross-https.downgrade.https.html [ Timeout ]
-crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/unset/iframe-tag/same-http-downgrade.downgrade.https.html [ Timeout ]
-crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/unset/iframe-tag/same-http-downgrade.no-redirect.https.html [ Timeout ]
-crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/unset/iframe-tag/same-https.downgrade.https.html [ Timeout ]
-crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/top.meta/unset/iframe-tag/cross-http-downgrade.downgrade.https.html [ Timeout ]
-crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/top.meta/unset/iframe-tag/cross-http-downgrade.no-redirect.https.html [ Timeout ]
-crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/top.meta/unset/iframe-tag/cross-https.downgrade.https.html [ Timeout ]
-crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/top.meta/unset/iframe-tag/same-http-downgrade.downgrade.https.html [ Timeout ]
-crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/top.meta/unset/iframe-tag/same-http-downgrade.no-redirect.https.html [ Timeout ]
-crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/top.meta/unset/iframe-tag/same-https.downgrade.https.html [ Timeout ]
+crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/iframe-tag.https.html [ Timeout ]
+crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/unset/iframe-tag.https.html [ Timeout ]
+crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/top.meta/unset/iframe-tag.https.html [ Timeout ]
+crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/iframe-tag.https.html [ Timeout ]
+crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/unset/iframe-tag.https.html [ Timeout ]
+crbug.com/1001374 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/top.meta/unset/iframe-tag.https.html [ Timeout ]
 
 # Different results on try bots and CQ, skipped to unblock wpt import.
 crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-default-css.html [ Skip ]
@@ -6623,18 +6591,8 @@ crbug.com/1006759 http/tests/devtools/elements/styles-1/edit-value-url-with-colo
 crbug.com/1006759 http/tests/devtools/sources/css-outline-dialog.js [ Skip ]
 
 #Mixed content autoupgrades make these tests not applicable, since they check for mixed content audio/video
-crbug.com/1025274 external/wpt/mixed-content/gen/top.meta/unset/audio-tag/cross-http.keep-scheme.https.html [ Failure ]
-crbug.com/1025274 external/wpt/mixed-content/gen/top.meta/unset/audio-tag/cross-http.no-redirect.https.html [ Failure ]
-crbug.com/1025274 external/wpt/mixed-content/gen/top.meta/unset/audio-tag/cross-http.swap-scheme.https.html [ Failure ]
-crbug.com/1025274 external/wpt/mixed-content/gen/top.meta/unset/audio-tag/same-http.keep-scheme.https.html [ Failure ]
-crbug.com/1025274 external/wpt/mixed-content/gen/top.meta/unset/audio-tag/same-http.no-redirect.https.html [ Failure ]
-crbug.com/1025274 external/wpt/mixed-content/gen/top.meta/unset/audio-tag/same-http.swap-scheme.https.html [ Failure ]
-crbug.com/1025274 external/wpt/mixed-content/gen/top.meta/unset/video-tag/cross-http.keep-scheme.https.html [ Failure ]
-crbug.com/1025274 external/wpt/mixed-content/gen/top.meta/unset/video-tag/cross-http.no-redirect.https.html [ Failure ]
-crbug.com/1025274 external/wpt/mixed-content/gen/top.meta/unset/video-tag/cross-http.swap-scheme.https.html [ Failure ]
-crbug.com/1025274 external/wpt/mixed-content/gen/top.meta/unset/video-tag/same-http.keep-scheme.https.html [ Failure ]
-crbug.com/1025274 external/wpt/mixed-content/gen/top.meta/unset/video-tag/same-http.no-redirect.https.html [ Failure ]
-crbug.com/1025274 external/wpt/mixed-content/gen/top.meta/unset/video-tag/same-http.swap-scheme.https.html [ Failure ]
+crbug.com/1025274 external/wpt/mixed-content/gen/top.meta/unset/audio-tag.https.html [ Failure ]
+crbug.com/1025274 external/wpt/mixed-content/gen/top.meta/unset/video-tag.https.html [ Failure ]
 crbug.com/1025274 http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Failure ]
 
 #Mixed content autoupgrade tests that can be re-enabled once image autoupgrades launch

@@ -15,6 +15,10 @@ namespace autofill {
 class PersonalDataManager;
 }  // namespace autofill
 
+namespace password_manager {
+class PasswordManagerClient;
+}
+
 namespace autofill_assistant {
 class AccessTokenFetcher;
 class WebsiteLoginFetcher;
@@ -46,6 +50,10 @@ class Client {
 
   // Returns the current active personal data manager.
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
+
+  // Return the password manager client for the current WebContents.
+  virtual password_manager::PasswordManagerClient*
+  GetPasswordManagerClient() = 0;
 
   // Returns the currently active login fetcher.
   virtual WebsiteLoginFetcher* GetWebsiteLoginFetcher() = 0;

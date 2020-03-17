@@ -220,7 +220,6 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/settings/clear_browsing_data_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/controlled_button_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/controlled_radio_button_tests.m.js",
-    "$root_gen_dir/chrome/test/data/webui/settings/default_browser_browsertest.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/downloads_page_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/dropdown_menu_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/edit_dictionary_page_test.m.js",
@@ -255,7 +254,6 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/settings/test_about_page_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_metrics_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/sync_test_util.m.js",
-    "$root_gen_dir/chrome/test/data/webui/settings/system_page_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_extension_control_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_languages_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/test_lifetime_browser_proxy.m.js",
@@ -279,6 +277,12 @@ js2gtest("browser_tests_js_webui") {
     data += [
       "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_searchable_drop_down_tests.m.js",
       "$root_gen_dir/chrome/test/data/webui/settings/passwords_section_test_cros.m.js",
+    ]
+  } else {
+    data += [
+      "$root_gen_dir/chrome/test/data/webui/settings/default_browser_browsertest.m.js",
+      "$root_gen_dir/chrome/test/data/webui/settings/import_data_dialog_test.m.js",
+      "$root_gen_dir/chrome/test/data/webui/settings/system_page_tests.m.js",
     ]
   }
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]

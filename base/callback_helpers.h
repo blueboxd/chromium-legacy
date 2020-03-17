@@ -93,6 +93,8 @@ RepeatingCallback<void(Args...)> AdaptCallbackForRepeating(
 
 // ScopedClosureRunner is akin to std::unique_ptr<> for Closures. It ensures
 // that the Closure is executed no matter how the current scope exits.
+// If you are looking for "ScopedCallback", "CallbackRunner", or
+// "CallbackScoper" this is the class you want.
 class BASE_EXPORT ScopedClosureRunner {
  public:
   ScopedClosureRunner();

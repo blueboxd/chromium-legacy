@@ -68,7 +68,7 @@ void AXVirtualView::AddChildView(std::unique_ptr<AXVirtualView> view) {
   DCHECK(view);
   if (view->virtual_parent_view_ == this)
     return;  // Already a child of this virtual view.
-  AddChildViewAt(std::move(view), GetChildCount());
+  AddChildViewAt(std::move(view), int{children_.size()});
 }
 
 void AXVirtualView::AddChildViewAt(std::unique_ptr<AXVirtualView> view,
@@ -82,7 +82,7 @@ void AXVirtualView::AddChildViewAt(std::unique_ptr<AXVirtualView> view,
                                          "AXVirtualView parent. Call "
                                          "RemoveChildView first.";
   DCHECK_GE(index, 0);
-  DCHECK_LE(index, GetChildCount());
+  DCHECK_LE(index, int{children_.size()});
 
   view->virtual_parent_view_ = this;
   children_.insert(children_.begin() + index, std::move(view));
@@ -94,10 +94,10 @@ void AXVirtualView::AddChildViewAt(std::unique_ptr<AXVirtualView> view,
 
 void AXVirtualView::ReorderChildView(AXVirtualView* view, int index) {
   DCHECK(view);
-  if (index >= GetChildCount())
+  if (index >= int{children_.size()})
     return;
   if (index < 0)
-    index = GetChildCount() - 1;
+    index = int{children_.size()} - 1;
 
   DCHECK_EQ(view->virtual_parent_view_, this);
   if (children_[index].get() == view)
@@ -240,15 +240,36 @@ const ui::AXNodeData& AXVirtualView::GetData() const {
 }
 
 int AXVirtualView::GetChildCount() {
-  return static_cast<int>(children_.size());
+  int count = 0;
+  for (const std::unique_ptr<AXVirtualView>& child : children_) {
+    if (child->IsIgnored()) {
+      count += child->GetChildCount();
+      continue;
+    }
+    count++;
+  }
+  return count;
 }
 
 gfx::NativeViewAccessible AXVirtualView::ChildAtIndex(int index) {
   DCHECK_GE(index, 0) << "Child indices should be greater or equal to 0.";
   DCHECK_LT(index, GetChildCount())
       << "Child indices should be less than the child count.";
-  if (index >= 0 && index < GetChildCount())
-    return children_[index]->GetNativeObject();
+  int i = 0;
+  for (const std::unique_ptr<AXVirtualView>& child : children_) {
+    if (child->IsIgnored()) {
+      if (index - i < child->GetChildCount()) {
+        gfx::NativeViewAccessible result = child->ChildAtIndex(index - i);
+        if (result)
+          return result;
+      }
+      i += child->GetChildCount();
+      continue;
+    }
+    if (i == index)
+      return child->GetNativeObject();
+    i++;
+  }
   return nullptr;
 }
 
@@ -267,8 +288,11 @@ gfx::NativeViewAccessible AXVirtualView::GetParent() {
   if (parent_view_)
     return parent_view_->GetNativeObject();
 
-  if (virtual_parent_view_)
+  if (virtual_parent_view_) {
+    if (virtual_parent_view_->IsIgnored())
+      return virtual_parent_view_->GetParent();
     return virtual_parent_view_->GetNativeObject();
+  }
 
   // This virtual view hasn't been added to a parent view yet.
   return nullptr;
@@ -291,8 +315,21 @@ gfx::Rect AXVirtualView::GetBoundsRect(
 }
 
 gfx::NativeViewAccessible AXVirtualView::HitTestSync(int x, int y) {
-  // TODO(nektar): Implement.
-  return GetNativeObject();
+  if (custom_data_.relative_bounds.bounds.Contains(static_cast<float>(x),
+                                                   static_cast<float>(y))) {
+    if (!IsIgnored())
+      return GetNativeObject();
+  }
+
+  // Check if the point is within any of the virtual children of this view.
+  // AXVirtualView's HitTestSync is a recursive function that will return the
+  // deepest child, since it does not support relative bounds.
+  for (const std::unique_ptr<AXVirtualView>& child : children_) {
+    gfx::NativeViewAccessible result = child->HitTestSync(x, y);
+    if (result)
+      return result;
+  }
+  return nullptr;
 }
 
 gfx::NativeViewAccessible AXVirtualView::GetFocus() {
@@ -342,6 +379,18 @@ gfx::AcceleratedWidget AXVirtualView::GetTargetForNativeAccessibilityEvent() {
     return HWNDForView(GetOwnerView());
 #endif
   return gfx::kNullAcceleratedWidget;
+}
+
+bool AXVirtualView::IsIgnored() const {
+  const ui::AXNodeData& node_data = GetData();
+
+  // According to the ARIA spec, the node should not be ignored if it is
+  // focusable. This is to ensure that the focusable node is both understandable
+  // and operable.
+  if (node_data.HasState(ax::mojom::State::kFocusable))
+    return false;
+
+  return node_data.IsIgnored();
 }
 
 bool AXVirtualView::HandleAccessibleAction(

@@ -18,6 +18,7 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/installer.h"
 #include "chrome/updater/persisted_data.h"
+#include "chrome/updater/prefs.h"
 #include "chrome/updater/registration_data.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/crx_update_item.h"
@@ -77,8 +78,14 @@ void UpdateServiceInProcess::Update(
     Priority priority,
     base::RepeatingCallback<void(UpdateState)> state_update,
     base::OnceCallback<void(Result)> done) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(crbug.com/1059020): Implement.
   NOTREACHED();
+}
+
+void UpdateServiceInProcess::Uninitialize() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  PrefsCommitPendingWrites(config_->GetPrefService());
 }
 
 UpdateServiceInProcess::~UpdateServiceInProcess() {

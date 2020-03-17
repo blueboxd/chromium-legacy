@@ -50,7 +50,6 @@ class ClearBrowsingDataHandlerBrowserTest
         web_ui(), browser()->profile());
     handler_->AllowJavascriptForTesting();
     handler_->RegisterMessages();
-    ASSERT_TRUE(https_server()->Start());
   }
 
   void TearDownOnMainThread() override { handler_.reset(); }

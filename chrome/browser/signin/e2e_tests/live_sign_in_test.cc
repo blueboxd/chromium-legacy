@@ -6,6 +6,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/e2e_tests/live_test.h"
 #include "chrome/browser/signin/e2e_tests/test_accounts_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
+#include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -33,20 +35,26 @@ namespace test {
 // IdentityManager observer allowing to wait for sign out events for several
 // accounts.
 // Counts both token removals and token persistent errors as sign out events.
-class SignOutTestObserver : public IdentityManager::Observer {
+class SignOutTestObserver : public IdentityManager::Observer,
+                            public AccountReconcilor::Observer {
  public:
-  explicit SignOutTestObserver(IdentityManager* identity_manager)
-      : identity_manager_(identity_manager) {
+  explicit SignOutTestObserver(IdentityManager* identity_manager,
+                               AccountReconcilor* reconcilor)
+      : identity_manager_(identity_manager), reconcilor_(reconcilor) {
     identity_manager_->AddObserver(this);
+    reconcilor_->AddObserver(this);
   }
-  ~SignOutTestObserver() override { identity_manager_->RemoveObserver(this); }
+  ~SignOutTestObserver() override {
+    identity_manager_->RemoveObserver(this);
+    reconcilor_->RemoveObserver(this);
+  }
 
+  // IdentityManager::Observer:
   void OnRefreshTokenRemovedForAccount(
       const CoreAccountId& account_id) override {
     ++signed_out_accounts_;
     QuitIfConditionIsSatisfied();
   }
-
   void OnErrorStateOfRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info,
       const GoogleServiceAuthError& error) override {
@@ -55,6 +63,16 @@ class SignOutTestObserver : public IdentityManager::Observer {
 
     ++signed_out_accounts_;
     QuitIfConditionIsSatisfied();
+  }
+
+  // AccountReconcilor::Observer:
+  // TODO(https://crbug.com/1051864): Remove this obsever method once the bug is
+  // fixed.
+  void OnStateChanged(signin_metrics::AccountReconcilorState state) override {
+    if (state == signin_metrics::ACCOUNT_RECONCILOR_OK) {
+      // This will trigger cookie update if accounts are stale.
+      identity_manager_->GetAccountsInCookieJar();
+    }
   }
 
   void WaitForRefreshTokenRemovedForAccounts(int expected_accounts) {
@@ -70,6 +88,7 @@ class SignOutTestObserver : public IdentityManager::Observer {
   }
 
   signin::IdentityManager* identity_manager_;
+  AccountReconcilor* reconcilor_;
   base::RunLoop run_loop_;
   int signed_out_accounts_ = 0;
   int expected_accounts_ = -1;
@@ -135,7 +154,8 @@ class LiveSignInTest : public signin::test::LiveTest {
     base::RunLoop cookie_update_loop;
     observer.SetOnAccountsInCookieUpdatedCallback(
         cookie_update_loop.QuitClosure());
-    SignOutTestObserver sign_out_observer(identity_manager());
+    SignOutTestObserver sign_out_observer(identity_manager(),
+                                          account_reconcilor());
     AddTabAtIndex(0, GaiaUrls::GetInstance()->service_logout_url(),
                   ui::PageTransition::PAGE_TRANSITION_TYPED);
     cookie_update_loop.Run();
@@ -148,6 +168,10 @@ class LiveSignInTest : public signin::test::LiveTest {
 
   syncer::SyncService* sync_service() {
     return ProfileSyncServiceFactory::GetForProfile(browser()->profile());
+  }
+
+  AccountReconcilor* account_reconcilor() {
+    return AccountReconcilorFactory::GetForProfile(browser()->profile());
   }
 };
 
@@ -287,7 +311,8 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_TurnOffSync) {
   base::RunLoop primary_account_cleared_loop;
   observer.SetOnPrimaryAccountClearedCallback(
       primary_account_cleared_loop.QuitClosure());
-  SignOutTestObserver sign_out_observer(identity_manager());
+  SignOutTestObserver sign_out_observer(identity_manager(),
+                                        account_reconcilor());
   auto* settings_tab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(content::ExecuteScript(
       settings_tab,
@@ -350,8 +375,8 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_CancelSync) {
   base::RunLoop cookie_update_loop;
   observer.SetOnAccountsInCookieUpdatedCallback(
       cookie_update_loop.QuitClosure());
-  SignOutTestObserver sign_out_observer(identity_manager());
-
+  SignOutTestObserver sign_out_observer(identity_manager(),
+                                        account_reconcilor());
   login_ui_test_utils::CancelSyncConfirmationDialog(
       browser(), base::TimeDelta::FromSeconds(3));
 

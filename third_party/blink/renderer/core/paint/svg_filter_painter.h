@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class DisplayItemClient;
+class FilterData;
 class LayoutObject;
 class LayoutSVGResourceFilter;
 
@@ -26,9 +26,6 @@ class SVGFilterRecordingContext {
 
   GraphicsContext* BeginContent();
   sk_sp<PaintRecord> EndContent();
-  void Abort();
-
-  GraphicsContext& PaintingContext() const { return initial_context_; }
 
  private:
   std::unique_ptr<PaintController> paint_controller_;
@@ -43,13 +40,9 @@ class SVGFilterPainter {
  public:
   SVGFilterPainter(LayoutSVGResourceFilter& filter) : filter_(filter) {}
 
-  // Returns the context that should be used to paint the filter contents, or
-  // null if the content should not be recorded.
-  GraphicsContext* PrepareEffect(const LayoutObject&,
-                                 SVGFilterRecordingContext&);
-  void FinishEffect(const LayoutObject&,
-                    const DisplayItemClient&,
-                    SVGFilterRecordingContext&);
+  // Returns the FilterData for the filter effect, or null if the
+  // filter is invalid.
+  FilterData* PrepareEffect(const LayoutObject&);
 
  private:
   LayoutSVGResourceFilter& filter_;

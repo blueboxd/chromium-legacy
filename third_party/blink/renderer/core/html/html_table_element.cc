@@ -288,13 +288,13 @@ static bool GetBordersFromFrameAttributeValue(const AtomicString& value,
     border_top = true;
   else if (EqualIgnoringASCIICase(value, "below"))
     border_bottom = true;
-  else if (DeprecatedEqualIgnoringCase(value, "hsides"))
+  else if (EqualIgnoringASCIICase(value, "hsides"))
     border_top = border_bottom = true;
-  else if (DeprecatedEqualIgnoringCase(value, "vsides"))
+  else if (EqualIgnoringASCIICase(value, "vsides"))
     border_left = border_right = true;
-  else if (DeprecatedEqualIgnoringCase(value, "lhs"))
+  else if (EqualIgnoringASCIICase(value, "lhs"))
     border_left = true;
-  else if (DeprecatedEqualIgnoringCase(value, "rhs"))
+  else if (EqualIgnoringASCIICase(value, "rhs"))
     border_right = true;
   else if (EqualIgnoringASCIICase(value, "box") ||
            EqualIgnoringASCIICase(value, "border"))
@@ -427,11 +427,11 @@ void HTMLTableElement::ParseAttribute(
     rules_attr_ = kUnsetRules;
     if (EqualIgnoringASCIICase(params.new_value, "none"))
       rules_attr_ = kNoneRules;
-    else if (DeprecatedEqualIgnoringCase(params.new_value, "groups"))
+    else if (EqualIgnoringASCIICase(params.new_value, "groups"))
       rules_attr_ = kGroupsRules;
-    else if (DeprecatedEqualIgnoringCase(params.new_value, "rows"))
+    else if (EqualIgnoringASCIICase(params.new_value, "rows"))
       rules_attr_ = kRowsRules;
-    else if (DeprecatedEqualIgnoringCase(params.new_value, "cols"))
+    else if (EqualIgnoringASCIICase(params.new_value, "cols"))
       rules_attr_ = kColsRules;
     else if (EqualIgnoringASCIICase(params.new_value, "all"))
       rules_attr_ = kAllRules;

@@ -5269,6 +5269,27 @@
             ]
         }
     ],
+    "StorageServiceOutOfProcess": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Unsandboxed_BeforeSandboxAvailable",
+                    "enable_features": [
+                        "StorageServiceOutOfProcess"
+                    ],
+                    "disable_features": [
+                        "StorageServiceSandbox"
+                    ]
+                }
+            ]
+        }
+    ],
     "SubresourceRedirect": [
         {
             "platforms": [

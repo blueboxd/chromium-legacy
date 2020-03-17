@@ -23,7 +23,8 @@ void MockTpmChallengeKey::EnableFake() {
 
 void MockTpmChallengeKey::FakeBuildResponseSuccess(
     TpmChallengeKeyCallback callback) {
-  std::move(callback).Run(TpmChallengeKeyResult::MakeResult("response"));
+  std::move(callback).Run(
+      TpmChallengeKeyResult::MakeChallengeResponse("response"));
 }
 
 }  // namespace attestation

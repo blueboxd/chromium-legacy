@@ -106,6 +106,12 @@ void CrostiniUpgrader::StatusTracker::SetStatusRunningUI(int progress_percent) {
   } else {
     upgrader_->OnRestoreProgress(progress_percent);
   }
+  if (has_notified_start_)
+    return;
+  for (auto& observer : upgrader_->upgrader_observers_) {
+    observer.OnBackupMaybeStarted(/*did_start=*/true);
+  }
+  has_notified_start_ = true;
 }
 
 void CrostiniUpgrader::StatusTracker::SetStatusDoneUI() {
@@ -123,6 +129,9 @@ void CrostiniUpgrader::StatusTracker::SetStatusCancelledUI() {
     upgrader_->OnBackup(CrostiniResult::SUCCESS, base::nullopt);
   } else {
     upgrader_->OnRestore(CrostiniResult::SUCCESS);
+  }
+  for (auto& observer : upgrader_->upgrader_observers_) {
+    observer.OnBackupMaybeStarted(/*did_start=*/false);
   }
 }
 
@@ -150,8 +159,8 @@ void CrostiniUpgrader::Backup(const ContainerId& container_id,
   }
   base::FilePath default_path =
       CrostiniExportImport::GetForProfile(profile_)->GetDefaultBackupPath();
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&base::PathExists, default_path),
       base::BindOnce(&CrostiniUpgrader::OnBackupPathChecked,
                      weak_ptr_factory_.GetWeakPtr(), container_id, web_contents,
@@ -282,8 +291,8 @@ void CrostiniUpgrader::Restore(const ContainerId& container_id,
         container_id, web_contents, MakeFactory());
     return;
   }
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&base::PathExists, *backup_path_),
       base::BindOnce(&CrostiniUpgrader::OnRestorePathChecked,
                      weak_ptr_factory_.GetWeakPtr(), container_id, web_contents,

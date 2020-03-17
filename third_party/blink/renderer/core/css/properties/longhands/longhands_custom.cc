@@ -5880,12 +5880,9 @@ const CSSValue* StrokeWidth::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  const Length& length = svg_style.StrokeWidth().length();
-  if (length.IsFixed()) {
-    return CSSNumericLiteralValue::Create(length.Value(),
-                                          CSSPrimitiveValue::UnitType::kPixels);
-  }
-  return CSSValue::Create(length, style.EffectiveZoom());
+  // We store the unzoomed stroke-width value using ConvertUnzoomedLength().
+  // Don't apply zoom here either.
+  return CSSValue::Create(svg_style.StrokeWidth().length(), 1);
 }
 
 const CSSValue* SubtreeVisibility::CSSValueFromComputedStyleInternal(

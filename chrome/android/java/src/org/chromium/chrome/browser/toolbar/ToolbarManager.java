@@ -227,6 +227,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
     private int mCurrentOrientation;
 
+    private Supplier<Boolean> mCanAnimateNativeBrowserControls;
+
     /**
      * Runnable for the home and search accelerator button when Start Surface home page is enabled.
      */
@@ -544,21 +546,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                     updateButtonStatus();
                 }
             }
-
-            @Override
-            public void onBrowserControlsOffsetChanged(Tab tab, int topControlsOffsetY,
-                    int bottomControlsOffsetY, int contentOffsetY, int topControlsMinHeightOffset,
-                    int bottomControlsMinHeightOffset) {
-                // For now, this is only useful for the offline indicator v2 feature.
-                if (ChromeFeatureList.isInitialized()
-                        && !ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_INDICATOR_V2)) {
-                    return;
-                }
-
-                // Controls need to be offset to match the composited layer, which is
-                // anchored at the bottom of the controls container.
-                setControlContainerTopMargin(getToolbarExtraYOffset());
-            }
         };
 
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
@@ -592,6 +579,43 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             @Override
             public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
                 if (mFindToolbarManager != null) mFindToolbarManager.hideToolbar();
+            }
+
+            @Override
+            public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
+                    int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
+                // For now, this is only useful for the offline indicator v2 feature.
+                if (ChromeFeatureList.isInitialized()
+                        && !ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_INDICATOR_V2)) {
+                    return;
+                }
+
+                // If the browser controls can't be animated, we shouldn't listen for the offset
+                // changes.
+                if (!mCanAnimateNativeBrowserControls.get()) return;
+
+                // Controls need to be offset to match the composited layer, which is
+                // anchored at the bottom of the controls container.
+                setControlContainerTopMargin(getToolbarExtraYOffset());
+            }
+
+            @Override
+            public void onTopControlsHeightChanged(
+                    int topControlsHeight, int topControlsMinHeight) {
+                // For now, this is only useful for the offline indicator v2 feature.
+                if (ChromeFeatureList.isInitialized()
+                        && !ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_INDICATOR_V2)) {
+                    return;
+                }
+
+                // If the browser controls can be animated, we shouldn't set the extra offset here.
+                // Instead, that should happen when the animation starts (i.e. we get new offsets)
+                // to prevent the Android view from jumping before the animation starts.
+                if (mCanAnimateNativeBrowserControls.get()) return;
+
+                // Controls need to be offset to match the composited layer, which is
+                // anchored at the bottom of the controls container.
+                setControlContainerTopMargin(getToolbarExtraYOffset());
             }
         };
         mFullscreenManager.addListener(mFullscreenListener);
@@ -1545,6 +1569,16 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     public void onDeferredStartup(final long activityCreationTimeMs, final String activityName) {
         recordStartupHistograms(activityCreationTimeMs, activityName);
         mLocationBar.onDeferredStartup();
+    }
+
+    /**
+     * Set a supplier that will provide a boolean indicating whether the browser controls in native
+     * can be animated. E.g. true if the current tab is user interactable.
+     * @param canAnimateNativeBrowserControlsSupplier The boolean supplier.
+     */
+    public void setCanAnimateNativeBrowserControlsSupplier(
+            Supplier<Boolean> canAnimateNativeBrowserControlsSupplier) {
+        mCanAnimateNativeBrowserControls = canAnimateNativeBrowserControlsSupplier;
     }
 
     /**

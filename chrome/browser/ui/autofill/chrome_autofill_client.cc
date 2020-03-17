@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/autofill/payments/credit_card_scanner_controller.h"
-#include "chrome/browser/ui/autofill/sms_client_impl.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
@@ -137,10 +136,6 @@ signin::IdentityManager* ChromeAutofillClient::GetIdentityManager() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   return IdentityManagerFactory::GetForProfile(profile->GetOriginalProfile());
-}
-
-SmsClient* ChromeAutofillClient::GetSmsClient() {
-  return sms_client_.get();
 }
 
 FormDataImporter* ChromeAutofillClient::GetFormDataImporter() {
@@ -639,7 +634,6 @@ ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
           GetPersonalDataManager(),
           Profile::FromBrowserContext(web_contents->GetBrowserContext())
               ->IsOffTheRecord())),
-      sms_client_(std::make_unique<SmsClientImpl>(web_contents)),
       form_data_importer_(std::make_unique<FormDataImporter>(
           this,
           payments_client_.get(),

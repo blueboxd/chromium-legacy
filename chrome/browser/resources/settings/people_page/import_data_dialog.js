@@ -131,7 +131,8 @@ Polymer({
 
   /** @private */
   onActionButtonTap_() {
-    const checkboxes = this.shadowRoot.querySelectorAll('settings-checkbox');
+    const checkboxes = /** @type {!NodeList<!SettingsCheckboxElement>} */ (
+        this.shadowRoot.querySelectorAll('settings-checkbox'));
     if (this.isImportFromFileSelected_()) {
       this.browserProxy_.importFromBookmarksFile();
     } else {

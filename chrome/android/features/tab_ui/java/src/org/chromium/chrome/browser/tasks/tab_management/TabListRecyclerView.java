@@ -29,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -233,6 +234,30 @@ class TabListRecyclerView
 
     void setShadowTopMargin(int shadowTopMargin) {
         mShadowTopMargin = shadowTopMargin;
+
+        if (mShadowImageView != null && getParent() instanceof FrameLayout) {
+            final ViewGroup.MarginLayoutParams layoutParams =
+                    ((ViewGroup.MarginLayoutParams) mShadowImageView.getLayoutParams());
+            layoutParams.topMargin = shadowTopMargin;
+            mShadowImageView.setLayoutParams(layoutParams);
+
+            // Wait for a layout and set the shadow visibility using the newly computed scroll
+            // offset in case the new layout requires us to toggle the shadow visibility. E.g. the
+            // height increases and the grid isn't scrolled anymore.
+            mShadowImageView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                        int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    final int scrollOffset = computeVerticalScrollOffset();
+                    if (scrollOffset == 0) {
+                        setShadowVisibility(false);
+                    } else if (scrollOffset > 0) {
+                        setShadowVisibility(true);
+                    }
+                    v.removeOnLayoutChangeListener(this);
+                }
+            });
+        }
     }
 
     /**
@@ -544,5 +569,10 @@ class TabListRecyclerView
     public boolean isReorderAction(int action) {
         return action == R.id.move_tab_left || action == R.id.move_tab_right
                 || action == R.id.move_tab_up || action == R.id.move_tab_down;
+    }
+
+    @VisibleForTesting
+    ImageView getShadowImageViewForTesting() {
+        return mShadowImageView;
     }
 }

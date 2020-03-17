@@ -17,42 +17,12 @@ WebAppFileHandlerManager::WebAppFileHandlerManager(Profile* profile)
 
 WebAppFileHandlerManager::~WebAppFileHandlerManager() = default;
 
-const std::vector<apps::FileHandlerInfo>*
-WebAppFileHandlerManager::GetAllFileHandlers(const AppId& app_id) {
-  // Return cached FileHandlerInfo if present.
-  auto it = file_handler_infos_.find(app_id);
-  if (it != file_handler_infos_.end())
-    return &it->second;
-
+const apps::FileHandlers* WebAppFileHandlerManager::GetAllFileHandlers(
+    const AppId& app_id) {
   WebAppRegistrar* web_app_registrar = registrar()->AsWebAppRegistrar();
   DCHECK(web_app_registrar);
-  const WebApp* web_app = web_app_registrar->GetAppById(app_id);
 
-  const apps::FileHandlers& file_handlers = web_app->file_handlers();
-  std::vector<apps::FileHandlerInfo> file_handler_infos;
-
-  for (const auto& file_handler : file_handlers) {
-    apps::FileHandlerInfo info;
-    info.id = file_handler.action.spec();
-    info.include_directories = false;
-    info.verb = apps::file_handler_verbs::kOpenWith;
-
-    for (const auto& accept_entry : file_handler.accept) {
-      info.types.insert(accept_entry.mime_type);
-      info.extensions.insert(accept_entry.file_extensions.begin(),
-                             accept_entry.file_extensions.end());
-    }
-
-    file_handler_infos.push_back(std::move(info));
-  }
-
-  // The transformed data is stored in a map so that we can give a pointer to
-  // the data to web_file_tasks, as they don't want the call to GetFileHandlers
-  // to involve a copy.
-  std::vector<apps::FileHandlerInfo>& apps_file_handler_infos =
-      file_handler_infos_[app_id];
-  apps_file_handler_infos = std::move(file_handler_infos);
-  return &apps_file_handler_infos;
+  return &web_app_registrar->GetAppById(app_id)->file_handlers();
 }
 
 }  // namespace web_app

@@ -7,7 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsobject.h"
-#include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/views/apps/app_window_native_widget_mac.h"
 #import "chrome/browser/ui/views/apps/native_app_window_frame_view_mac.h"
@@ -168,7 +168,7 @@ void ChromeNativeAppWindowViewsMac::Restore() {
 void ChromeNativeAppWindowViewsMac::FlashFrame(bool flash) {
   Profile* profile =
       Profile::FromBrowserContext(app_window()->browser_context());
-  AppShimHost* shim_host = apps::ExtensionAppShimHandler::Get()->FindHost(
+  AppShimHost* shim_host = apps::AppShimManager::Get()->FindHost(
       profile, app_window()->extension_id());
   if (!shim_host)
     return;

@@ -16,6 +16,16 @@
 namespace chromeos {
 namespace quick_answers {
 
+// Interaction with the consent-view (used for logging).
+enum class ConsentInteractionType {
+  // When user clicks on the "grant-consent" button.
+  kAccept = 0,
+  // When user clicks on the "manage-settings" button.
+  kManageSettings = 1,
+  // When user otherwise dismisses or ignores the consent-view.
+  kDismiss = 2
+};
+
 // The status of loading quick answers.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.

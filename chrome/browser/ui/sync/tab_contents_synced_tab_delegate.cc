@@ -130,13 +130,7 @@ TabContentsSyncedTabDelegate::GetBlockedNavigations() const {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   SupervisedUserNavigationObserver* navigation_observer =
       SupervisedUserNavigationObserver::FromWebContents(web_contents_);
-
-  // TODO(crbug.com/1061427): If the profile is supervised,
-  // |navigation_observer| should always be non-null. Investigate why some users
-  // run into null pointers here and ultimately replace the condition below with
-  // a DCHECK. This is a workaround to avoid reported crashes.
-  if (!navigation_observer)
-    return nullptr;
+  DCHECK(navigation_observer);
 
   return &navigation_observer->blocked_navigations();
 #else
@@ -151,16 +145,8 @@ bool TabContentsSyncedTabDelegate::ShouldSync(
           GetWindowId()) == nullptr)
     return false;
 
-  if (ProfileIsSupervised()) {
-    const auto* blocked_navigations = GetBlockedNavigations();
-
-    // TODO(crbug.com/1061427): If the profile is supervised,
-    // |blocked_navigations| should always be non-null. Investigate why some
-    // users run into null pointers here and ultimately replace the condition
-    // below with a DCHECK. This is a workaround to avoid reported crashes.
-    if (blocked_navigations && !blocked_navigations->empty())
-      return true;
-  }
+  if (ProfileIsSupervised() && !GetBlockedNavigations()->empty())
+    return true;
 
   if (IsInitialBlankNavigation())
     return false;  // This deliberately ignores a new pending entry.

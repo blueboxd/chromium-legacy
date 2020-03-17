@@ -61,7 +61,7 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
       int32_t routing_id,
       const base::UnguessableToken& devtool_request_id,
       const network::URLLoaderCompletionStatus& status) override;
-  void LogRapporSampleForCrossOriginFetchFromContentScript3(
+  void LogCrossOriginFetchFromContentScript3(
       const std::string& isolated_world_host) override;
 
  private:

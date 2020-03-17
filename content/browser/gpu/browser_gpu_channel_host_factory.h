@@ -38,6 +38,11 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   gpu::GpuChannelHost* GetGpuChannel();
   int GetGpuChannelId() { return gpu_client_id_; }
 
+  // Close the channel if there is no usage other usage of the channel.
+  // Note this is different from |CloseChannel| as this can be called at
+  // any point. The next EstablishGpuChannel will simply return a new channel.
+  void MaybeCloseChannel();
+
   // Closes the channel to the GPU process. This should be called before the IO
   // thread stops.
   void CloseChannel();

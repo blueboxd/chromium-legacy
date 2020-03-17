@@ -521,6 +521,10 @@ class CONTENT_EXPORT RenderFrameHostManager
     UNRELATED,
     // A SiteInstance in the same browsing instance as the current.
     RELATED,
+    // A pre-existing SiteInstance that might or might not be in the same
+    // browsing instance as the current. Only used when |existing_site_instance|
+    // is specified.
+    PREEXISTING,
   };
 
   enum class AttachToInnerDelegateState {
@@ -540,7 +544,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   struct CONTENT_EXPORT SiteInstanceDescriptor {
     explicit SiteInstanceDescriptor(content::SiteInstance* site_instance)
         : existing_site_instance(site_instance),
-          relation(SiteInstanceRelation::UNRELATED) {}
+          relation(SiteInstanceRelation::PREEXISTING) {}
 
     SiteInstanceDescriptor(BrowserContext* browser_context,
                            GURL dest_url,
@@ -556,8 +560,8 @@ class CONTENT_EXPORT RenderFrameHostManager
     // be used with |dest_url| to resolve the site URL.
     BrowserContext* browser_context;
 
-    // In case |existing_site_instance| is null, specify how the new site is
-    // related to the current BrowsingInstance.
+    // Specifies how the new site is related to the current BrowsingInstance.
+    // This is PREEXISTING iff |existing_site_instance| is defined.
     SiteInstanceRelation relation;
   };
 
@@ -574,7 +578,15 @@ class CONTENT_EXPORT RenderFrameHostManager
   // be created (even if we are in a process model that doesn't usually swap).
   // This forces a process swap and severs script connections with existing
   // tabs.  Cases where this can happen include transitions between WebUI and
-  // regular web pages. |dest_site_instance| may be null.
+  // regular web pages.
+  //
+  // |source_instance| is the SiteInstance of the frame that initiated the
+  // navigation. |current_instance| is the SiteInstance of the frame that is
+  // currently navigating. |destination_instance| is a predetermined
+  // SiteInstance that will be used for |destination_effective_url| if not
+  // null - we will swap BrowsingInstances if it's in a different
+  // BrowsingInstance than the current one.
+  //
   // If there is no current NavigationEntry, then |current_is_view_source_mode|
   // should be the same as |dest_is_view_source_mode|.
   //
@@ -585,12 +597,16 @@ class CONTENT_EXPORT RenderFrameHostManager
   ShouldSwapBrowsingInstance ShouldSwapBrowsingInstancesForNavigation(
       const GURL& current_effective_url,
       bool current_is_view_source_mode,
-      SiteInstance* destination_site_instance,
+      SiteInstanceImpl* source_instance,
+      SiteInstanceImpl* current_instance,
+      SiteInstance* destination_instance,
       const GURL& destination_effective_url,
       bool destination_is_view_source_mode,
+      ui::PageTransition transition,
       bool is_failure,
       bool is_reload,
-      bool cross_origin_opener_policy_mismatch) const;
+      bool cross_origin_opener_policy_mismatch,
+      bool was_server_redirect);
 
   // Returns the SiteInstance to use for the navigation.
   scoped_refptr<SiteInstance> GetSiteInstanceForNavigation(
@@ -652,6 +668,12 @@ class CONTENT_EXPORT RenderFrameHostManager
   bool IsBrowsingInstanceSwapAllowedForPageTransition(
       ui::PageTransition transition,
       const GURL& dest_url);
+
+  // Returns true if we can use |source_instance| for |dest_url|.
+  bool CanUseSourceSiteInstance(const GURL& dest_url,
+                                SiteInstance* source_instance,
+                                bool was_server_redirect,
+                                bool is_failure);
 
   // Converts a SiteInstanceDescriptor to the actual SiteInstance it describes.
   // If a |candidate_instance| is provided (is not nullptr) and it matches the

@@ -19,5 +19,4 @@ dictionary ScrollTimelineOptions {
         DOMString startScrollOffset = "auto";
         DOMString endScrollOffset = "auto";
         (double or ScrollTimelineAutoKeyword) timeRange = "auto";
-        FillMode fill = "none";
 };

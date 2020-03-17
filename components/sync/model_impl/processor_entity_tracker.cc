@@ -12,14 +12,10 @@
 
 namespace syncer {
 
-ProcessorEntityTracker::ProcessorEntityTracker(ModelType type) {
-  InitializeMetadata(type);
-}
-
 ProcessorEntityTracker::ProcessorEntityTracker(
+    const sync_pb::ModelTypeState& model_type_state,
     std::map<std::string, std::unique_ptr<sync_pb::EntityMetadata>>
-        metadata_map,
-    const sync_pb::ModelTypeState& model_type_state)
+        metadata_map)
     : model_type_state_(model_type_state) {
   DCHECK(model_type_state.initial_sync_done());
   for (auto& kv : metadata_map) {
@@ -194,11 +190,6 @@ bool ProcessorEntityTracker::HasLocalChanges() const {
 
 size_t ProcessorEntityTracker::size() const {
   return entities_.size();
-}
-
-void ProcessorEntityTracker::InitializeMetadata(ModelType type) {
-  model_type_state_.mutable_progress_marker()->set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(type));
 }
 
 std::vector<const ProcessorEntity*>

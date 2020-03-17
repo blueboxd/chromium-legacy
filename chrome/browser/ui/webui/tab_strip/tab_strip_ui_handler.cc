@@ -471,8 +471,8 @@ base::DictionaryValue TabStripUIHandler::GetTabGroupData(TabGroup* group) {
   base::DictionaryValue visual_data_dict;
   visual_data_dict.SetString("title", visual_data->title());
 
-  bool is_dark_frame =
-      color_utils::IsDark(embedder_->GetColor(ThemeProperties::COLOR_FRAME));
+  bool is_dark_frame = color_utils::IsDark(
+      embedder_->GetColor(ThemeProperties::COLOR_FRAME_ACTIVE));
   const tab_groups::TabGroupColor tab_group_color =
       tab_groups::GetTabGroupColorSet().at(visual_data->color());
   const SkColor group_color = is_dark_frame ? tab_group_color.dark_theme_color
@@ -522,8 +522,8 @@ void TabStripUIHandler::HandleGetThemeColors(const base::ListValue* args) {
   // the WebUI can use the CSS variables to color the tab strip
   base::DictionaryValue colors;
   colors.SetString("--tabstrip-background-color",
-                   color_utils::SkColorToRgbaString(
-                       embedder_->GetColor(ThemeProperties::COLOR_FRAME)));
+                   color_utils::SkColorToRgbaString(embedder_->GetColor(
+                       ThemeProperties::COLOR_FRAME_ACTIVE)));
   colors.SetString("--tabstrip-tab-background-color",
                    color_utils::SkColorToRgbaString(
                        embedder_->GetColor(ThemeProperties::COLOR_TOOLBAR)));

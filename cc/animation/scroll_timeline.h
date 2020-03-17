@@ -39,7 +39,6 @@ class CC_ANIMATION_EXPORT ScrollTimeline : public AnimationTimeline {
                  base::Optional<double> start_scroll_offset,
                  base::Optional<double> end_scroll_offset,
                  double time_range,
-                 KeyframeModel::FillMode fill,
                  int animation_timeline_id);
 
   static scoped_refptr<ScrollTimeline> Create(
@@ -47,8 +46,7 @@ class CC_ANIMATION_EXPORT ScrollTimeline : public AnimationTimeline {
       ScrollDirection direction,
       base::Optional<double> start_scroll_offset,
       base::Optional<double> end_scroll_offset,
-      double time_range,
-      KeyframeModel::FillMode fill);
+      double time_range);
 
   // Create a copy of this ScrollTimeline intended for the impl thread in the
   // compositor.
@@ -112,10 +110,6 @@ class CC_ANIMATION_EXPORT ScrollTimeline : public AnimationTimeline {
   // value based on a 'time range'. See the implementation of CurrentTime or the
   // spec for details.
   double time_range_;
-
-  // Determines whether the timeline is active when the scroll offset is outside
-  // the range defined by |start_scroll_offset_| and |end_scroll_offset_|.
-  KeyframeModel::FillMode fill_;
 };
 
 inline ScrollTimeline* ToScrollTimeline(AnimationTimeline* timeline) {

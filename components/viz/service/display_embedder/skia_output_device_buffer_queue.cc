@@ -249,9 +249,7 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
     gpu::MemoryTracker* memory_tracker,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
     uint32_t shared_image_usage)
-    : SkiaOutputDevice(false /*need_swap_semaphore */,
-                       memory_tracker,
-                       did_swap_buffer_complete_callback),
+    : SkiaOutputDevice(memory_tracker, did_swap_buffer_complete_callback),
       dependency_(deps),
       gl_surface_(std::move(gl_surface)),
       supports_async_swap_(gl_surface_->SupportsAsyncSwap()),
@@ -615,23 +613,19 @@ bool SkiaOutputDeviceBufferQueue::Reshape(const gfx::Size& size,
   return true;
 }
 
-SkSurface* SkiaOutputDeviceBufferQueue::BeginPaint() {
+SkSurface* SkiaOutputDeviceBufferQueue::BeginPaint(
+    std::vector<GrBackendSemaphore>* end_semaphores) {
   if (!current_image_)
     current_image_ = GetNextImage();
   if (!current_image_->sk_surface())
     current_image_->BeginWriteSkia();
+  *end_semaphores = current_image_->TakeEndWriteSkiaSemaphores();
   return current_image_->sk_surface();
 }
 
-void SkiaOutputDeviceBufferQueue::EndPaint(
-    const GrBackendSemaphore& semaphore) {
+void SkiaOutputDeviceBufferQueue::EndPaint() {
   DCHECK(current_image_);
   current_image_->EndWriteSkia();
-}
-
-std::vector<GrBackendSemaphore>
-SkiaOutputDeviceBufferQueue::TakeEndPaintSemaphores() {
-  return current_image_->TakeEndWriteSkiaSemaphores();
 }
 
 }  // namespace viz

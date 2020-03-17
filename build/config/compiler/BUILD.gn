@@ -1526,12 +1526,6 @@ config("default_warnings") {
         cflags_c += [
           # TODO(https://crbug.com/995993): Clean up and enable.
           "-Wno-implicit-fallthrough",
-
-          # TODO(https://crbug.com/1054220): Clean up, enable.
-          "-Wno-pointer-to-int-cast",
-
-          # TODO(https://crbug.com/1054220): remove -Wno-microsoft-cast after pinned Clang contains change moving warning to -Wpointer-to-int-cast
-          "-Wno-microsoft-cast",
         ]
       }
     }

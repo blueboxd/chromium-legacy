@@ -53,24 +53,10 @@ TEST_F(PreviewsServiceTest, TestLitePageNotEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {previews::features::kPreviews} /* enabled features */,
-      {data_reduction_proxy::features::
-           kDataReductionProxyDecidesTransform} /* disabled features */);
+      {} /* disabled features */);
   blacklist::BlacklistData::AllowedTypesAndVersions allowed_types_and_versions =
       PreviewsService::GetAllowedPreviews();
   EXPECT_EQ(allowed_types_and_versions.find(
-                static_cast<int>(previews::PreviewsType::LITE_PAGE)),
-            allowed_types_and_versions.end());
-}
-
-TEST_F(PreviewsServiceTest, TestLitePageProxyDecidesTransform) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {previews::features::kPreviews,
-       data_reduction_proxy::features::kDataReductionProxyDecidesTransform},
-      {});
-  blacklist::BlacklistData::AllowedTypesAndVersions allowed_types_and_versions =
-      PreviewsService::GetAllowedPreviews();
-  EXPECT_NE(allowed_types_and_versions.find(
                 static_cast<int>(previews::PreviewsType::LITE_PAGE)),
             allowed_types_and_versions.end());
 }

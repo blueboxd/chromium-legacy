@@ -63,6 +63,8 @@ class DemoSetupControllerTestHelper {
     run_loop_->Quit();
   }
 
+  void IncrementSetupProgress(const bool complete) {}
+
   // Wait until the setup result arrives (either OnSetupError or OnSetupSuccess
   // is called), returns true when the result matches with |expected|.
   bool WaitResult(bool expected) {
@@ -159,7 +161,10 @@ TEST_F(DemoSetupControllerTest, OfflineSuccess) {
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
-                     base::Unretained(helper_.get())));
+                     base::Unretained(helper_.get())),
+      base::BindRepeating(
+          &DemoSetupControllerTestHelper::IncrementSetupProgress,
+          base::Unretained(helper_.get())));
 
   EXPECT_TRUE(helper_->WaitResult(true));
   EXPECT_EQ("", GetDeviceRequisition());
@@ -184,7 +189,10 @@ TEST_F(DemoSetupControllerTest, OfflineDeviceLocalAccountPolicyStoreFailed) {
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
-                     base::Unretained(helper_.get())));
+                     base::Unretained(helper_.get())),
+      base::BindRepeating(
+          &DemoSetupControllerTestHelper::IncrementSetupProgress,
+          base::Unretained(helper_.get())));
 
   EXPECT_TRUE(helper_->WaitResult(false));
   EXPECT_TRUE(helper_->RequiresPowerwash());
@@ -204,7 +212,10 @@ TEST_F(DemoSetupControllerTest, OfflineInvalidDeviceLocalAccountPolicyBlob) {
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
-                     base::Unretained(helper_.get())));
+                     base::Unretained(helper_.get())),
+      base::BindRepeating(
+          &DemoSetupControllerTestHelper::IncrementSetupProgress,
+          base::Unretained(helper_.get())));
 
   EXPECT_TRUE(helper_->WaitResult(false));
   EXPECT_TRUE(helper_->RequiresPowerwash());
@@ -229,7 +240,10 @@ TEST_F(DemoSetupControllerTest, OfflineErrorDefault) {
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
-                     base::Unretained(helper_.get())));
+                     base::Unretained(helper_.get())),
+      base::BindRepeating(
+          &DemoSetupControllerTestHelper::IncrementSetupProgress,
+          base::Unretained(helper_.get())));
 
   EXPECT_TRUE(helper_->WaitResult(false));
   EXPECT_FALSE(helper_->RequiresPowerwash());
@@ -255,7 +269,10 @@ TEST_F(DemoSetupControllerTest, OfflineErrorPowerwashRequired) {
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
-                     base::Unretained(helper_.get())));
+                     base::Unretained(helper_.get())),
+      base::BindRepeating(
+          &DemoSetupControllerTestHelper::IncrementSetupProgress,
+          base::Unretained(helper_.get())));
 
   EXPECT_TRUE(helper_->WaitResult(false));
   EXPECT_TRUE(helper_->RequiresPowerwash());
@@ -270,7 +287,10 @@ TEST_F(DemoSetupControllerTest, OnlineSuccess) {
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
-                     base::Unretained(helper_.get())));
+                     base::Unretained(helper_.get())),
+      base::BindRepeating(
+          &DemoSetupControllerTestHelper::IncrementSetupProgress,
+          base::Unretained(helper_.get())));
 
   EXPECT_TRUE(helper_->WaitResult(true));
   EXPECT_EQ("", GetDeviceRequisition());
@@ -284,7 +304,10 @@ TEST_F(DemoSetupControllerTest, OnlineErrorDefault) {
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
-                     base::Unretained(helper_.get())));
+                     base::Unretained(helper_.get())),
+      base::BindRepeating(
+          &DemoSetupControllerTestHelper::IncrementSetupProgress,
+          base::Unretained(helper_.get())));
 
   EXPECT_TRUE(helper_->WaitResult(false));
   EXPECT_FALSE(helper_->RequiresPowerwash());
@@ -300,7 +323,10 @@ TEST_F(DemoSetupControllerTest, OnlineErrorPowerwashRequired) {
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
-                     base::Unretained(helper_.get())));
+                     base::Unretained(helper_.get())),
+      base::BindRepeating(
+          &DemoSetupControllerTestHelper::IncrementSetupProgress,
+          base::Unretained(helper_.get())));
 
   EXPECT_TRUE(helper_->WaitResult(false));
   EXPECT_TRUE(helper_->RequiresPowerwash());
@@ -319,7 +345,10 @@ TEST_F(DemoSetupControllerTest, OnlineComponentError) {
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
-                     base::Unretained(helper_.get())));
+                     base::Unretained(helper_.get())),
+      base::BindRepeating(
+          &DemoSetupControllerTestHelper::IncrementSetupProgress,
+          base::Unretained(helper_.get())));
 
   EXPECT_TRUE(helper_->WaitResult(false));
   EXPECT_FALSE(helper_->RequiresPowerwash());
@@ -334,7 +363,10 @@ TEST_F(DemoSetupControllerTest, EnrollTwice) {
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
-                     base::Unretained(helper_.get())));
+                     base::Unretained(helper_.get())),
+      base::BindRepeating(
+          &DemoSetupControllerTestHelper::IncrementSetupProgress,
+          base::Unretained(helper_.get())));
 
   EXPECT_TRUE(helper_->WaitResult(false));
   EXPECT_FALSE(helper_->RequiresPowerwash());
@@ -349,7 +381,10 @@ TEST_F(DemoSetupControllerTest, EnrollTwice) {
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
-                     base::Unretained(helper_.get())));
+                     base::Unretained(helper_.get())),
+      base::BindRepeating(
+          &DemoSetupControllerTestHelper::IncrementSetupProgress,
+          base::Unretained(helper_.get())));
 
   EXPECT_TRUE(helper_->WaitResult(true));
   EXPECT_EQ("", GetDeviceRequisition());

@@ -267,7 +267,7 @@ class SynchronousPairingRegistry : public PairingRegistry {
   // Runs tasks synchronously instead of posting them to |task_runner|.
   void PostTask(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
                 const base::Location& from_here,
-                const base::Closure& task) override;
+                base::OnceClosure task) override;
 };
 
 }  // namespace protocol

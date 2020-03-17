@@ -16,6 +16,7 @@ import argparse
 import collections
 import contextlib
 import filecmp
+import hashlib
 import logging
 import multiprocessing.pool
 import os
@@ -195,6 +196,8 @@ def _ParseArgs(args):
 
   input_opts.add_argument('--webp-binary', default='',
                           help='Path to the cwebp binary.')
+  input_opts.add_argument(
+      '--webp-cache-dir', help='The directory to store webp image cache.')
 
   input_opts.add_argument(
       '--no-xml-namespaces',
@@ -523,22 +526,53 @@ def _CreateKeepPredicate(resource_exclusion_regex,
       build_utils.MatchesGlob(path, resource_exclusion_exceptions))
 
 
-def _ConvertToWebP(webp_binary, png_files, path_info):
+def _ConvertToWebP(webp_binary, png_files, path_info, webp_cache_dir):
   pool = multiprocessing.pool.ThreadPool(10)
-  def convert_image(png_path_tuple):
-    png_path, original_dir = png_path_tuple
+
+  build_utils.MakeDirectory(webp_cache_dir)
+
+  cwebp_version = subprocess.check_output([webp_binary, '-version']).rstrip()
+  cwebp_arguments = ['-mt', '-quiet', '-m', '6', '-q', '100', '-lossless']
+
+  def cal_sha1(png_path):
+    with open(png_path, 'rb') as f:
+      png_content = f.read()
+
+      sha1_hex = hashlib.sha1(png_content).hexdigest()
+      return sha1_hex
+
+  def get_converted_image(png_path_dir_tuple):
+    png_path, original_dir = png_path_dir_tuple
+    sha1_hash = cal_sha1(png_path)
+
+    webp_cache_path = os.path.join(
+        webp_cache_dir, '{}-{}-{}'.format(sha1_hash, cwebp_version,
+                                          ''.join(cwebp_arguments)))
     # No need to add an extension, android can load images fine without them.
     webp_path = os.path.splitext(png_path)[0]
-    args = [webp_binary, png_path, '-mt', '-quiet', '-m', '6', '-q', '100',
-        '-lossless', '-o', webp_path]
-    subprocess.check_call(args)
+
+    if os.path.exists(webp_cache_path):
+      os.link(webp_cache_path, webp_path)
+    else:
+      # We place the generated webp image to webp_path, instead of in the
+      # webp_cache_dir to avoid concurrency issues.
+      args = [webp_binary, png_path] + cwebp_arguments + ['-o', webp_path]
+      subprocess.check_call(args)
+
+      try:
+        os.link(webp_path, webp_cache_path)
+      except OSError:
+        # Because of concurrent run, a webp image may already exists in
+        # webp_cache_path.
+        pass
+
     os.remove(png_path)
     path_info.RegisterRename(
         os.path.relpath(png_path, original_dir),
         os.path.relpath(webp_path, original_dir))
 
   pool.map(
-      convert_image,
+      get_converted_image,
       [f for f in png_files if not _PNG_WEBP_EXCLUSION_PATTERN.match(f[0])])
   pool.close()
   pool.join()
@@ -816,7 +850,8 @@ def _PackageApk(options, build):
         png_paths.append((f, directory))
   if png_paths and options.png_to_webp:
     logging.debug('Converting png->webp')
-    _ConvertToWebP(options.webp_binary, png_paths, path_info)
+    _ConvertToWebP(options.webp_binary, png_paths, path_info,
+                   options.webp_cache_dir)
   logging.debug('Applying drawable transformations')
   for directory in dep_subdirs:
     _MoveImagesToNonMdpiFolders(directory, path_info)

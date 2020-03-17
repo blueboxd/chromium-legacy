@@ -1025,7 +1025,7 @@ void WebViewImpl::EnableTapHighlightAtPoint(
     const GestureEventWithHitTestResults& targeted_tap_event) {
   Node* touch_node = BestTapNode(targeted_tap_event);
   GetPage()->GetLinkHighlight().SetTapHighlight(touch_node);
-  UpdateLifecycle(WebWidget::LifecycleUpdate::kAll,
+  UpdateLifecycle(WebLifecycleUpdate::kAll,
                   DocumentUpdateReason::kTapHighlight);
 }
 
@@ -1377,11 +1377,10 @@ void WebViewImpl::ResizeViewWhileAnchored(
 
   fullscreen_controller_->UpdateSize();
 
-  // Update lifecyle phases immediately to recalculate the minimum scale limit
+  // Update lifecycle phases immediately to recalculate the minimum scale limit
   // for rotation anchoring, and to make sure that no lifecycle states are
   // stale if this WebView is embedded in another one.
-  UpdateLifecycle(WebWidget::LifecycleUpdate::kAll,
-                  DocumentUpdateReason::kSizeChange);
+  UpdateLifecycle(WebLifecycleUpdate::kAll, DocumentUpdateReason::kSizeChange);
 }
 
 void WebViewImpl::ResizeWithBrowserControls(
@@ -1595,7 +1594,7 @@ WebViewImpl::GetBeginMainFrameMetrics() {
       .GetBeginMainFrameMetrics();
 }
 
-void WebViewImpl::UpdateLifecycle(WebWidget::LifecycleUpdate requested_update,
+void WebViewImpl::UpdateLifecycle(WebLifecycleUpdate requested_update,
                                   DocumentUpdateReason reason) {
   TRACE_EVENT0("blink", "WebViewImpl::updateAllLifecyclePhases");
   if (!MainFrameImpl())
@@ -1606,7 +1605,7 @@ void WebViewImpl::UpdateLifecycle(WebWidget::LifecycleUpdate requested_update,
 
   PageWidgetDelegate::UpdateLifecycle(
       *AsView().page, *MainFrameImpl()->GetFrame(), requested_update, reason);
-  if (requested_update != WebWidget::LifecycleUpdate::kAll)
+  if (requested_update != WebLifecycleUpdate::kAll)
     return;
 
   // There is no background color for non-composited WebViews (eg printing).
@@ -2720,7 +2719,7 @@ void WebViewImpl::EnablePreferredSizeChangedMode() {
   // We need to ensure |UpdatePreferredSize| gets called. If a layout is needed,
   // force an update here which will call |DidUpdateMainFrameLayout|.
   if (MainFrameWidget()) {
-    MainFrameWidget()->UpdateLifecycle(WebWidget::LifecycleUpdate::kLayout,
+    MainFrameWidget()->UpdateLifecycle(WebLifecycleUpdate::kLayout,
                                        DocumentUpdateReason::kSizeChange);
   }
 

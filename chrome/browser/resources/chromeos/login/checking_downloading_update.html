@@ -44,8 +44,7 @@
     <link rel="stylesheet" href="checking_downloading_update.css">
     <oobe-dialog hidden="[[!checkingForUpdate]]"
         title-key="checkingForUpdates"
-        aria-live="polite" id="checking-for-updates-dialog" footer-shrinkable
-        full-screen-dialog>
+        aria-live="polite" id="checking-for-updates-dialog" footer-shrinkable>
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
       </hd-iron-icon>
@@ -70,7 +69,7 @@
         title-key="updatingScreenTitle"
         hidden="[[isCheckingOrUpdateCompleted_(checkingForUpdate,
                                                updateCompleted)]]"
-        aria-live="polite" full-screen-dialog>
+        aria-live="polite">
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
       </hd-iron-icon>
@@ -97,7 +96,7 @@
 
     <oobe-dialog footer-shrinkable id="update-complete-dialog"
         hidden="[[!updateCompleted]]" subtitle-key="updateCompeletedMsg"
-        aria-live="polite" full-screen-dialog>
+        aria-live="polite">
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
       </hd-iron-icon>

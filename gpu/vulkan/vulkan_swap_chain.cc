@@ -392,10 +392,11 @@ VkSemaphore VulkanSwapChain::ScopedWrite::TakeBeginSemaphore() {
   return semaphore;
 }
 
-void VulkanSwapChain::ScopedWrite::SetEndSemaphore(VkSemaphore semaphore) {
+VkSemaphore VulkanSwapChain::ScopedWrite::GetEndSemaphore() {
   DCHECK(end_semaphore_ == VK_NULL_HANDLE);
-  DCHECK(semaphore != VK_NULL_HANDLE);
-  end_semaphore_ = semaphore;
+  end_semaphore_ =
+      CreateSemaphore(swap_chain_->device_queue_->GetVulkanDevice());
+  return end_semaphore_;
 }
 
 VulkanSwapChain::ImageData::ImageData() = default;

@@ -191,9 +191,6 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
         installed_scripts_manager,
     mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
     base::TimeTicks time_origin) {
-  DCHECK_EQ(creation_params->off_main_thread_fetch_option,
-            OffMainThreadWorkerScriptFetchOption::kEnabled);
-
 #if DCHECK_IS_ON()
   // If the script is being loaded via script streaming, the script is not yet
   // loaded.

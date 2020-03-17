@@ -125,9 +125,9 @@ void ApkWebAppInstaller::OnWebAppCreated(const GURL& app_url,
     return;
   }
 
-  // Otherwise, insert this web app into the extensions ID map so it is not
-  // removed automatically. TODO(crbug.com/910008): have a less bad way of doing
-  // this.
+  // Otherwise, insert this web app into the externally installed ID map so it
+  // is not removed automatically. TODO(crbug.com/910008): have a less bad way
+  // of doing this.
   web_app::ExternallyInstalledWebAppPrefs(profile_->GetPrefs())
       .Insert(app_url, app_id, web_app::ExternalInstallSource::kArc);
   CompleteInstallation(app_id, code);

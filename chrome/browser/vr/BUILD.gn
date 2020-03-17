@@ -309,15 +309,6 @@ component("vr_common") {
     deps += [ ":vr_ui" ]
   }
 
-  if (!is_android) {
-    sources += [
-      "service/isolated_device_provider.cc",
-      "service/isolated_device_provider.h",
-      "service/vr_ui_host.cc",
-      "service/vr_ui_host.h",
-    ]
-  }
-
   defines = [ "VR_IMPLEMENTATION" ]
 
   if (!use_command_buffer) {

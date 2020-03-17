@@ -284,6 +284,7 @@ class AccountReconcilor : public KeyedService,
   void OnAddAccountToCookieCompleted(const CoreAccountId& account_id,
                                      const GoogleServiceAuthError& error);
   void OnSetAccountsInCookieCompleted(signin::SetAccountsInCookieResult result);
+  void OnLogOutFromCookieCompleted(const GoogleServiceAuthError& error);
 
   // Lock related methods.
   void IncrementLockCount();
@@ -343,6 +344,7 @@ class AccountReconcilor : public KeyedService,
   // Used during reconcile action.
   std::vector<CoreAccountId> add_to_cookie_;  // Progress of AddAccount calls.
   bool set_accounts_in_progress_;             // Progress of SetAccounts calls.
+  bool log_out_in_progress_;                  // Progress of LogOut calls.
   bool chrome_accounts_changed_;
 
   // Used for the Lock.

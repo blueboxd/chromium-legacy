@@ -280,7 +280,7 @@ bool HTMLAnchorElement::draggable() const {
   const AtomicString& value = FastGetAttribute(html_names::kDraggableAttr);
   if (EqualIgnoringASCIICase(value, "true"))
     return true;
-  if (DeprecatedEqualIgnoringCase(value, "false"))
+  if (EqualIgnoringASCIICase(value, "false"))
     return false;
   return FastHasAttribute(html_names::kHrefAttr);
 }

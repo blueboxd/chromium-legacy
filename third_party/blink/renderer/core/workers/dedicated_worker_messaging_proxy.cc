@@ -5,8 +5,10 @@
 #include "third_party/blink/renderer/core/workers/dedicated_worker_messaging_proxy.h"
 
 #include <memory>
+#include "base/feature_list.h"
 #include "base/optional.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
@@ -53,9 +55,6 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     return;
   }
 
-  OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option =
-      creation_params->off_main_thread_fetch_option;
-
   InitializeWorkerThread(
       std::move(creation_params),
       CreateBackingThreadStartupData(GetExecutionContext()->GetIsolate()));
@@ -67,25 +66,19 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     // destination, and inside settings."
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kClassicDedicatedWorker);
-    switch (off_main_thread_fetch_option) {
-      case OffMainThreadWorkerScriptFetchOption::kEnabled: {
-        auto* resource_timing_notifier =
-            WorkerResourceTimingNotifierImpl::CreateForOutsideResourceFetcher(
-                *GetExecutionContext());
-        GetWorkerThread()->FetchAndRunClassicScript(
-            script_url, outside_settings_object.CopyData(),
-            resource_timing_notifier, stack_id);
-        break;
-      }
-      case OffMainThreadWorkerScriptFetchOption::kDisabled:
-        // Legacy code path (to be deprecated, see https://crbug.com/835717):
-        GetWorkerThread()->EvaluateClassicScript(
-            script_url, source_code, nullptr /* cached_meta_data */, stack_id);
-        break;
+    if (base::FeatureList::IsEnabled(features::kPlzDedicatedWorker)) {
+      auto* resource_timing_notifier =
+          WorkerResourceTimingNotifierImpl::CreateForOutsideResourceFetcher(
+              *GetExecutionContext());
+      GetWorkerThread()->FetchAndRunClassicScript(
+          script_url, outside_settings_object.CopyData(),
+          resource_timing_notifier, stack_id);
+    } else {
+      // Legacy code path (to be deprecated, see https://crbug.com/835717):
+      GetWorkerThread()->EvaluateClassicScript(
+          script_url, source_code, nullptr /* cached_meta_data */, stack_id);
     }
   } else if (options->type() == "module") {
-    DCHECK_EQ(off_main_thread_fetch_option,
-              OffMainThreadWorkerScriptFetchOption::kEnabled);
     // "module: Fetch a module worker script graph given url, outside settings,
     // destination, the value of the credentials member of options, and inside
     // settings."

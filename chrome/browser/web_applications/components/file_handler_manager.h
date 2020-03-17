@@ -16,7 +16,7 @@
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/app_shortcut_observer.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
-#include "components/services/app_service/public/cpp/file_handler_info.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/mojom/web_launch/file_handling_expiry.mojom-forward.h"
 
@@ -89,8 +89,7 @@ class FileHandlerManager : public AppRegistrarObserver {
   // Gets all enabled file handlers for |app_id|. |nullptr| if the app has no
   // enabled file handlers. Note: The lifetime of the file handlers are tied to
   // the app they belong to.
-  const std::vector<apps::FileHandlerInfo>* GetEnabledFileHandlers(
-      const AppId& app_id);
+  const apps::FileHandlers* GetEnabledFileHandlers(const AppId& app_id);
 
   // Determines whether file handling is allowed for |app_id|. This is true if
   // the app has a valid origin trial token for the file handling API or if the
@@ -107,8 +106,7 @@ class FileHandlerManager : public AppRegistrarObserver {
   // Gets all file handlers for |app_id|. |nullptr| if the app has no file
   // handlers.
   // Note: The lifetime of the file handlers are tied to the app they belong to.
-  virtual const std::vector<apps::FileHandlerInfo>* GetAllFileHandlers(
-      const AppId& app_id) = 0;
+  virtual const apps::FileHandlers* GetAllFileHandlers(const AppId& app_id) = 0;
 
  private:
   static bool disable_automatic_file_handler_cleanup_for_testing_;
@@ -143,14 +141,6 @@ class FileHandlerManager : public AppRegistrarObserver {
 
   DISALLOW_COPY_AND_ASSIGN(FileHandlerManager);
 };
-
-// Compute the set of file extensions specified in |file_handlers|.
-std::set<std::string> GetFileExtensionsFromFileHandlers(
-    const std::vector<apps::FileHandlerInfo>& file_handlers);
-
-// Compute the set of mime types specified in |file_handlers|.
-std::set<std::string> GetMimeTypesFromFileHandlers(
-    const std::vector<apps::FileHandlerInfo>& file_handlers);
 
 }  // namespace web_app
 

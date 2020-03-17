@@ -2523,11 +2523,6 @@ class WebAppPictureInPictureWindowControllerBrowserTest
     web_app::WebAppControllerBrowserTest::SetUpCommandLine(command_line);
   }
 
-  void SetUpOnMainThread() override {
-    web_app::WebAppControllerBrowserTest::SetUpOnMainThread();
-    ASSERT_TRUE(https_server()->Start());
-  }
-
   GURL main_url() {
     return https_server()->GetURL(
         "/extensions/auto_picture_in_picture/main.html");

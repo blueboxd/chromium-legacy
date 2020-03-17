@@ -34,7 +34,7 @@ namespace protocol {
 //  - Limit CPU usage to 50%.
 class CaptureScheduler : public VideoFeedbackStub {
  public:
-  explicit CaptureScheduler(const base::Closure& capture_closure);
+  explicit CaptureScheduler(const base::RepeatingClosure& capture_closure);
   ~CaptureScheduler() override;
 
   // Starts the scheduler.
@@ -76,7 +76,7 @@ class CaptureScheduler : public VideoFeedbackStub {
   // new frame.
   void CaptureNextFrame();
 
-  base::Closure capture_closure_;
+  base::RepeatingClosure capture_closure_;
 
   const base::TickClock* tick_clock_;
 

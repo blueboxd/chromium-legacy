@@ -4,8 +4,10 @@
 
 #include "third_party/blink/renderer/modules/webtransport/outgoing_stream.h"
 
+#include <string.h>
 #include <utility>
 
+#include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/numerics/safe_conversions.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
@@ -90,6 +92,27 @@ class OutgoingStream::UnderlyingSink final : public UnderlyingSinkBase {
  private:
   const Member<OutgoingStream> outgoing_stream_;
 };
+
+OutgoingStream::CachedDataBuffer::CachedDataBuffer(v8::Isolate* isolate,
+                                                   const uint8_t* data,
+                                                   size_t length)
+    : isolate_(isolate), length_(length) {
+  // We use the BufferPartition() allocator here to allow big enough
+  // allocations, and to do proper accounting of the used memory. If
+  // BufferPartition() will ever not be able to provide big enough allocations,
+  // e.g. because bigger ArrayBuffers get supported, then we have to switch to
+  // another allocator, e.g. the ArrayBuffer allocator.
+  buffer_ = reinterpret_cast<uint8_t*>(
+      WTF::Partitions::BufferPartition()->Alloc(length, "OutgoingStream"));
+  memcpy(buffer_, data, length);
+  isolate_->AdjustAmountOfExternalAllocatedMemory(static_cast<int64_t>(length));
+}
+
+OutgoingStream::CachedDataBuffer::~CachedDataBuffer() {
+  WTF::Partitions::BufferPartition()->Free(buffer_);
+  isolate_->AdjustAmountOfExternalAllocatedMemory(
+      -static_cast<int64_t>(length_));
+}
 
 OutgoingStream::OutgoingStream(ScriptState* script_state,
                                WebTransportCloseProxy* close_proxy,
@@ -257,8 +280,8 @@ ScriptPromise OutgoingStream::WriteOrCacheData(ScriptState* script_state,
   }
 
   DCHECK(!cached_data_);
-  cached_data_ =
-      ArrayBuffer::Create(data.data() + written, data.size() - written);
+  cached_data_ = std::make_unique<CachedDataBuffer>(
+      script_state->GetIsolate(), data.data() + written, data.size() - written);
   DCHECK_EQ(offset_, 0u);
   write_watcher_.ArmOrNotify();
   write_promise_resolver_ =
@@ -272,15 +295,15 @@ ScriptPromise OutgoingStream::WriteOrCacheData(ScriptState* script_state,
 void OutgoingStream::WriteCachedData() {
   DVLOG(1) << "OutgoingStream::WriteCachedData() this=" << this;
 
-  auto data = base::make_span(static_cast<uint8_t*>(cached_data_->Data()),
-                              cached_data_->ByteLengthAsSizeT())
+  auto data = base::make_span(static_cast<uint8_t*>(cached_data_->data()),
+                              cached_data_->length())
                   .subspan(offset_);
   size_t written = WriteDataSynchronously(data);
 
   if (written == data.size()) {
     ScriptState::Scope scope(script_state_);
 
-    cached_data_ = nullptr;
+    cached_data_.reset();
     offset_ = 0;
     write_promise_resolver_->Resolve();
     write_promise_resolver_ = nullptr;
@@ -288,7 +311,7 @@ void OutgoingStream::WriteCachedData() {
   }
 
   if (!data_pipe_) {
-    cached_data_ = nullptr;
+    cached_data_.reset();
     offset_ = 0;
 
     return;
@@ -377,7 +400,7 @@ void OutgoingStream::ResetPipe() {
   close_watcher_.Cancel();
   data_pipe_.reset();
   if (cached_data_)
-    cached_data_ = nullptr;
+    cached_data_.reset();
 }
 
 void OutgoingStream::Dispose() {

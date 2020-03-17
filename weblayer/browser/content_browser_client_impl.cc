@@ -236,6 +236,10 @@ ContentBrowserClientImpl::GetWebContentsViewDelegate(
   return new WebContentsViewDelegateImpl(web_contents);
 }
 
+bool ContentBrowserClientImpl::CanShutdownGpuProcessNowOnIOThread() {
+  return true;
+}
+
 content::DevToolsManagerDelegate*
 ContentBrowserClientImpl::GetDevToolsManagerDelegate() {
 #if defined(OS_ANDROID)

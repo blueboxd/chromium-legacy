@@ -359,6 +359,8 @@ Polymer({
 
   /** @private */
   onRunSafetyCheckClick_: function() {
+    settings.HatsBrowserProxyImpl.getInstance().tryShowSurvey();
+
     this.runSafetyCheck_();
     this.focusParent_();
   },

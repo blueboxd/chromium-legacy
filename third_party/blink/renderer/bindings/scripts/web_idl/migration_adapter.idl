@@ -8,8 +8,6 @@
 // and the *.idl files get updated to be spec conformant, almost all (if not
 // really all) the followings will be gone.
 
-dictionary Dictionary {};
-
 typedef EventHandlerNonNull? EventHandler;
 
 typedef DOMMatrix DOMMatrixConstructor;

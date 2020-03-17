@@ -7,12 +7,14 @@ package org.chromium.base.task;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.annotations.RemovableInRelease;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 
 import javax.annotation.concurrent.GuardedBy;
 
@@ -23,15 +25,25 @@ import javax.annotation.concurrent.GuardedBy;
  */
 @JNINamespace("base")
 public class PostTask {
-    private static final Object sLock = new Object();
+    private static final Object sPreNativeTaskRunnerLock = new Object();
+    @GuardedBy("sPreNativeTaskRunnerLock")
     private static List<TaskRunnerImpl> sPreNativeTaskRunners = new ArrayList<>();
-    private static final Executor sPrenativeThreadPoolExecutor = new ChromeThreadPoolExecutor();
-    private static Executor sPrenativeThreadPoolExecutorOverride;
-    private static TaskExecutor sTaskExecutors[] = getInitialTaskExecutors();
 
-    private static TaskExecutor[] getInitialTaskExecutors() {
-        TaskExecutor taskExecutors[] = new TaskExecutor[TaskTraits.MAX_EXTENSION_ID + 1];
-        taskExecutors[0] = new DefaultTaskExecutor();
+    // Volatile is sufficient for synchronization here since we never need to read-write. This is a
+    // one-way switch (outside of testing) and volatile makes writes to it immediately visible to
+    // other threads.
+    private static volatile boolean sNativeInitialized;
+    private static final Executor sPrenativeThreadPoolExecutor = new ChromeThreadPoolExecutor();
+    private static volatile Executor sPrenativeThreadPoolExecutorOverride;
+
+    // We really only need volatile here, but volatile semantics can't be applied to members of an
+    // array. AtomicReferenceArray #get and #set are equivalent to volatile read/writes.
+    private static AtomicReferenceArray<TaskExecutor> sTaskExecutors = getInitialTaskExecutors();
+
+    private static AtomicReferenceArray<TaskExecutor> getInitialTaskExecutors() {
+        AtomicReferenceArray<TaskExecutor> taskExecutors =
+                new AtomicReferenceArray<>(TaskTraits.MAX_EXTENSION_ID + 1);
+        taskExecutors.set(0, new DefaultTaskExecutor());
         return taskExecutors;
     }
 
@@ -40,9 +52,7 @@ public class PostTask {
      * @return The TaskRunner for the specified TaskTraits.
      */
     public static TaskRunner createTaskRunner(TaskTraits taskTraits) {
-        synchronized (sLock) {
-            return getTaskExecutorForTraits(taskTraits).createTaskRunner(taskTraits);
-        }
+        return getTaskExecutorForTraits(taskTraits).createTaskRunner(taskTraits);
     }
 
     /**
@@ -52,9 +62,7 @@ public class PostTask {
      * @return The TaskRunner for the specified TaskTraits.
      */
     public static SequencedTaskRunner createSequencedTaskRunner(TaskTraits taskTraits) {
-        synchronized (sLock) {
-            return getTaskExecutorForTraits(taskTraits).createSequencedTaskRunner(taskTraits);
-        }
+        return getTaskExecutorForTraits(taskTraits).createSequencedTaskRunner(taskTraits);
     }
 
     /**
@@ -63,9 +71,7 @@ public class PostTask {
      * @return The TaskRunner for the specified TaskTraits.
      */
     public static SingleThreadTaskRunner createSingleThreadTaskRunner(TaskTraits taskTraits) {
-        synchronized (sLock) {
-            return getTaskExecutorForTraits(taskTraits).createSingleThreadTaskRunner(taskTraits);
-        }
+        return getTaskExecutorForTraits(taskTraits).createSingleThreadTaskRunner(taskTraits);
     }
 
     /**
@@ -82,15 +88,13 @@ public class PostTask {
      * @param delay The delay in milliseconds before the task can be run.
      */
     public static void postDelayedTask(TaskTraits taskTraits, Runnable task, long delay) {
-        synchronized (sLock) {
-            if (sPreNativeTaskRunners != null || taskTraits.mIsChoreographerFrame) {
-                getTaskExecutorForTraits(taskTraits).postDelayedTask(taskTraits, task, delay);
-            } else {
-                TaskTraits postedTraits = taskTraits.withExplicitDestination();
-                PostTaskJni.get().postDelayedTask(postedTraits.mPriority, postedTraits.mMayBlock,
-                        postedTraits.mUseThreadPool, postedTraits.mExtensionId,
-                        postedTraits.mExtensionData, task, delay);
-            }
+        if (!sNativeInitialized || taskTraits.mIsChoreographerFrame) {
+            getTaskExecutorForTraits(taskTraits).postDelayedTask(taskTraits, task, delay);
+        } else {
+            TaskTraits postedTraits = taskTraits.withExplicitDestination();
+            PostTaskJni.get().postDelayedTask(postedTraits.mPriority, postedTraits.mMayBlock,
+                    postedTraits.mUseThreadPool, postedTraits.mExtensionId,
+                    postedTraits.mExtensionData, task, delay);
         }
     }
 
@@ -108,11 +112,7 @@ public class PostTask {
      * @param task The task to be run with the specified traits.
      */
     public static void runOrPostTask(TaskTraits taskTraits, Runnable task) {
-        TaskExecutor taskExecutor;
-        synchronized (sLock) {
-            taskExecutor = getTaskExecutorForTraits(taskTraits);
-        }
-        if (taskExecutor.canRunTaskImmediately(taskTraits)) {
+        if (getTaskExecutorForTraits(taskTraits).canRunTaskImmediately(taskTraits)) {
             task.run();
         } else {
             postTask(taskTraits, task);
@@ -182,12 +182,10 @@ public class PostTask {
      * @param taskExecutor The TaskExecutor to be registered. Must not equal zero.
      */
     public static void registerTaskExecutor(int extensionId, TaskExecutor taskExecutor) {
-        synchronized (sLock) {
-            assert extensionId != 0;
-            assert extensionId <= TaskTraits.MAX_EXTENSION_ID;
-            assert sTaskExecutors[extensionId] == null;
-            sTaskExecutors[extensionId] = taskExecutor;
-        }
+        assert extensionId != 0;
+        assert extensionId <= TaskTraits.MAX_EXTENSION_ID;
+        assert sTaskExecutors.get(extensionId) == null;
+        sTaskExecutors.set(extensionId, taskExecutor);
     }
 
     /**
@@ -196,30 +194,24 @@ public class PostTask {
      * @param executor The Executor to use for pre-native thread pool tasks.
      */
     public static void setPrenativeThreadPoolExecutorForTesting(Executor executor) {
-        synchronized (sLock) {
-            sPrenativeThreadPoolExecutorOverride = executor;
-        }
+        sPrenativeThreadPoolExecutorOverride = executor;
     }
 
     /**
      * Clears an override set by setPrenativeThreadPoolExecutorOverrideForTesting.
      */
     public static void resetPrenativeThreadPoolExecutorForTesting() {
-        synchronized (sLock) {
-            sPrenativeThreadPoolExecutorOverride = null;
-        }
+        sPrenativeThreadPoolExecutorOverride = null;
     }
 
     /**
      * @return The current Executor that PrenativeThreadPool tasks should run on.
      */
     static Executor getPrenativeThreadPoolExecutor() {
-        synchronized (sLock) {
-            if (sPrenativeThreadPoolExecutorOverride != null) {
-                return sPrenativeThreadPoolExecutorOverride;
-            }
-            return sPrenativeThreadPoolExecutor;
+        if (sPrenativeThreadPoolExecutorOverride != null) {
+            return sPrenativeThreadPoolExecutorOverride;
         }
+        return sPrenativeThreadPoolExecutor;
     }
 
     /**
@@ -231,37 +223,46 @@ public class PostTask {
      * @return If the taskRunner got registered as pre-native.
      */
     static boolean registerPreNativeTaskRunner(TaskRunnerImpl taskRunner) {
-        synchronized (sLock) {
-            if (sPreNativeTaskRunners != null) {
-                sPreNativeTaskRunners.add(taskRunner);
-                return true;
-            }
+        synchronized (sPreNativeTaskRunnerLock) {
+            if (sPreNativeTaskRunners == null) return false;
+            sPreNativeTaskRunners.add(taskRunner);
+            return true;
         }
-        return false;
     }
 
-    @GuardedBy("sLock")
     private static TaskExecutor getTaskExecutorForTraits(TaskTraits traits) {
-        return sTaskExecutors[traits.mExtensionId];
+        return sTaskExecutors.get(traits.mExtensionId);
     }
 
     @CalledByNative
     private static void onNativeSchedulerReady() {
-        synchronized (sLock) {
-            List<TaskRunnerImpl> preNativeTaskRunners = sPreNativeTaskRunners;
+        assert !sNativeInitialized;
+        sNativeInitialized = true;
+        List<TaskRunnerImpl> preNativeTaskRunners;
+        synchronized (sPreNativeTaskRunnerLock) {
+            preNativeTaskRunners = sPreNativeTaskRunners;
             sPreNativeTaskRunners = null;
-            for (TaskRunnerImpl taskRunner : preNativeTaskRunners) {
-                taskRunner.initNativeTaskRunner();
-            }
+        }
+        for (TaskRunnerImpl taskRunner : preNativeTaskRunners) {
+            taskRunner.initNativeTaskRunner();
         }
     }
 
     // This is here to make C++ tests work.
     @CalledByNative
-    private static void onNativeSchedulerShutdown() {
-        synchronized (sLock) {
+    private static void onNativeSchedulerShutdownForTesting() {
+        onNativeSchedulerShutdownForTestingImpl();
+    }
+
+    @RemovableInRelease
+    private static void onNativeSchedulerShutdownForTestingImpl() {
+        synchronized (sPreNativeTaskRunnerLock) {
             sPreNativeTaskRunners = new ArrayList<>();
-            sTaskExecutors = getInitialTaskExecutors();
+        }
+        sNativeInitialized = false;
+        sTaskExecutors.set(0, new DefaultTaskExecutor());
+        for (int i = 1; i < sTaskExecutors.length(); ++i) {
+            sTaskExecutors.set(i, null);
         }
     }
 

@@ -32,10 +32,16 @@ enum class TpmChallengeKeyResultCode {
   kExtensionNotWhitelistedError = 15,
   kChallengeBadBase64Error = 16,
   kDeviceWebBasedAttestationNotOobeError = 17,
-  kMaxValue = kDeviceWebBasedAttestationNotOobeError,
+  kGetPublicKeyFailedError = 18,
+  kMaxValue = kGetPublicKeyFailedError,
 };
 
-// If |result_code| is success then |data| contains a challenge response.
+// If |IsSuccess| returns false, |result_code| contains error code and
+// |public_key| and |challenge_response| are empty.
+// Otherwise, if the object was returned from
+// |TpmChallengeKeySubtle::PrepareKey|, the |public_key| is filled. If the
+// object was returned from |TpmChallengeKey::BuildResponse| or
+// |TpmChallengeKeySubtle::SignChallenge|, the |challenge_response| is filled.
 struct TpmChallengeKeyResult {
   static const char kDevicePolicyDisabledErrorMsg[];
   static const char kSignChallengeFailedErrorMsg[];
@@ -54,15 +60,20 @@ struct TpmChallengeKeyResult {
   static const char kExtensionNotWhitelistedErrorMsg[];
   static const char kChallengeBadBase64ErrorMsg[];
   static const char kDeviceWebBasedAttestationNotOobeErrorMsg[];
+  static const char kGetPublicKeyFailedErrorMsg[];
 
-  static TpmChallengeKeyResult MakeResult(const std::string& success_result);
+  static TpmChallengeKeyResult MakeChallengeResponse(
+      const std::string& challenge_response);
+  static TpmChallengeKeyResult MakePublicKey(const std::string& public_key);
+  static TpmChallengeKeyResult MakeSuccess();
   static TpmChallengeKeyResult MakeError(TpmChallengeKeyResultCode error_code);
 
   const char* GetErrorMessage() const;
   bool IsSuccess() const;
 
   TpmChallengeKeyResultCode result_code = TpmChallengeKeyResultCode::kSuccess;
-  std::string data;
+  std::string public_key;
+  std::string challenge_response;
 };
 
 }  // namespace attestation

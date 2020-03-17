@@ -38,6 +38,7 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
     const gpu::GpuPreferences& gpu_preferences,
     const gpu::GpuDriverBugWorkarounds& workarounds,
     DXGI_FORMAT decoder_output_format,
+    TextureSelector::HDRMode hdr_output_mode,
     MediaLog* media_log) {
   bool supports_nv12_decode_swap_chain =
       gl::DirectCompositionSurfaceWin::IsDecodeSwapChainSupported();
@@ -45,28 +46,75 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
 
   VideoPixelFormat output_pixel_format;
   DXGI_FORMAT output_dxgi_format;
+  base::Optional<gfx::ColorSpace> output_color_space;
 
   // TODO(liberato): add other options here, like "copy to rgb" for NV12.
-  // However, those require a pbuffer TextureWrapper implementation.
   switch (decoder_output_format) {
-    case DXGI_FORMAT_NV12:
+    case DXGI_FORMAT_NV12: {
       MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder producing NV12";
       output_pixel_format = PIXEL_FORMAT_NV12;
       output_dxgi_format = DXGI_FORMAT_NV12;
+      // Leave |output_color_space| the same, since we'll bind either the
+      // original or the copy.  Downstream will handle it, either in the shaders
+      // or in the overlay, if needed.
+      output_color_space.reset();
       break;
-    case DXGI_FORMAT_P010:
-      MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder producing FP16";
+    }
+    case DXGI_FORMAT_P010: {
+      MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder producing P010";
       output_pixel_format = PIXEL_FORMAT_ARGB;
-      output_dxgi_format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-      // DXGI_FORMAT_B8G8R8A8_UNORM is also an okay choice, if we don't want to
-      // use fp16.
-      // TODO(liberato): Pick this better.
+
+      // TODO(liberato): handle case where we bind P010 directly (see dxva).
+
+      // Note that all of this should be handled later; we really don't know
+      // enough about how this decoded frame will be used.  For example, we have
+      // no idea if we should downsample while converting for display, or even
+      // if it will be displayed on an HDR or SDR monitor, if there's more than
+      // one.  However, to hide latency, we guess and do the conversion now.  If
+      // the decoded frame is sampled by the web, then converting it might even
+      // be the wrong thing to do; it's not unreasonable that it's expecting the
+      // original data.
+      //
+      // In the future, consider just binding the P010 or NV12 texture directly,
+      // and let the consumer figure out what to do with it.
+
+      // Assume that we want HDR if it's supported by the display, and if we're
+      // using an 11.1-capable device.
+      // TODO(liberato): Get the context and ask it.
+      const bool is_d3d_11_1 = true;
+      if (!is_d3d_11_1 || hdr_output_mode == HDRMode::kSDROnly) {
+        // SDR output, so just use 8 bit and sRGB.
+        MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder: 8 bit sRGB";
+        output_dxgi_format = DXGI_FORMAT_B8G8R8A8_UNORM;
+        output_color_space = gfx::ColorSpace::CreateSRGB();
+      } else {
+        // Will (may) be displayed in HDR, so switch to a high precision format.
+        // For full screen, we might want 10 bit unorm instead of fp16.
+        MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder: fp16 bit scRGBLinear";
+        output_dxgi_format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+        output_color_space = gfx::ColorSpace::CreateSCRGBLinear();
+
+        // TODO(liberato): Handle HLG, if we can get the input color space.
+        // The rough outline looks something like this:
+#if 0
+        if (hlg) {
+        video_context1->VideoProcessorSetStreamColorSpace1(
+        d3d11_processor_.Get(), 0,
+        DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_LEFT_P2020);
+    video_context1->VideoProcessorSetOutputColorSpace1(
+        d3d11_processor_.Get(), DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020);
+    dx11_converter_output_color_space_ = color_space.GetAsFullRangeRGB();
+  }
+#endif
+      }
       break;
-    default:
+    }
+    default: {
       // TODO(tmathmeyer) support other profiles in the future.
       MEDIA_LOG(INFO, media_log)
           << "D3D11VideoDecoder does not support " << decoder_output_format;
       return nullptr;
+    }
   }
 
   // If we're trying to produce an output texture that's different from what
@@ -77,13 +125,22 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
   if (base::FeatureList::IsEnabled(kD3D11VideoDecoderAlwaysCopy))
     needs_texture_copy = true;
 
+  MEDIA_LOG(INFO, media_log)
+      << "D3D11VideoDecoder output color space: "
+      << (output_color_space ? output_color_space->ToString()
+                             : "(same as input)");
+
   if (needs_texture_copy) {
     MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder is copying textures";
     return std::make_unique<CopyTextureSelector>(
         output_pixel_format, decoder_output_format, output_dxgi_format,
+        output_color_space,
         supports_nv12_decode_swap_chain);  // TODO(tmathmeyer) false always?
   } else {
     MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder is binding textures";
+    // Binding can't change the color space.  The consumer has to do it, if they
+    // want to.
+    DCHECK(!output_color_space);
     return std::make_unique<TextureSelector>(output_pixel_format,
                                              output_dxgi_format,
                                              supports_nv12_decode_swap_chain);
@@ -98,6 +155,17 @@ std::unique_ptr<Texture2DWrapper> TextureSelector::CreateTextureWrapper(
   // TODO(liberato): If the output format is rgb, then create a pbuffer wrapper.
   return std::make_unique<DefaultTexture2DWrapper>(size, OutputDXGIFormat());
 }
+
+CopyTextureSelector::CopyTextureSelector(
+    VideoPixelFormat pixfmt,
+    DXGI_FORMAT input_dxgifmt,
+    DXGI_FORMAT output_dxgifmt,
+    base::Optional<gfx::ColorSpace> output_color_space,
+    bool supports_swap_chain)
+    : TextureSelector(pixfmt, output_dxgifmt, supports_swap_chain),
+      output_color_space_(std::move(output_color_space)) {}
+
+CopyTextureSelector::~CopyTextureSelector() = default;
 
 std::unique_ptr<Texture2DWrapper> CopyTextureSelector::CreateTextureWrapper(
     ComD3D11Device device,
@@ -130,7 +198,7 @@ std::unique_ptr<Texture2DWrapper> CopyTextureSelector::CreateTextureWrapper(
   return std::make_unique<CopyingTexture2DWrapper>(
       size, std::make_unique<DefaultTexture2DWrapper>(size, OutputDXGIFormat()),
       std::make_unique<VideoProcessorProxy>(video_device, device_context),
-      out_texture);
+      out_texture, output_color_space_);
 }
 
 }  // namespace media

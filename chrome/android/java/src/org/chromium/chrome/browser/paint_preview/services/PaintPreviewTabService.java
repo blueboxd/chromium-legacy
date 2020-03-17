@@ -9,7 +9,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
@@ -38,11 +37,13 @@ public class PaintPreviewTabService implements NativePaintPreviewServiceProvider
         }
 
         /**
-         * TODO(crbug/1061190): this may be inconsistent in some cases. If it fails to capture we
-         * should look at alternative triggering mechanisms.
+         * TODO(crbug/1061190): Ideally we would use {@link TabObserver#onHidden(Tab, int)};
+         * however, that was flaky due to renderers being killed before capture was completed. For
+         * now we will use {@link TabObserver#onPageLoadFinished(Tab, String)}, but this should be
+         * revisted.
          */
         @Override
-        public void onHidden(Tab tab, @TabHidingType int hidingType) {
+        public void onPageLoadFinished(Tab tab, String url) {
             if (qualifiesForCapture(tab)) {
                 mTabService.captureTab(tab, success -> {
                     if (!success) {
@@ -94,7 +95,7 @@ public class PaintPreviewTabService implements NativePaintPreviewServiceProvider
     /**
      * Should be called when all tabs are restored. Registers a {@link TabModelSelectorTabObserver}
      * for the regular to capture and delete paint previews as needed. Audits restored tabs to
-     * remove any failed deletions. deletions.
+     * remove any failed deletions.
      * @param tabModelSelector the TabModelSelector for the activity.
      */
     public void onRestoreCompleted(TabModelSelector tabModelSelector) {

@@ -62,6 +62,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/kerberos_accounts_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/parental_controls_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/plugin_vm_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
@@ -226,8 +227,8 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   // AddOsLocalizedStrings must be added after AddBrowserLocalizedStrings
   // as repeated keys used by the OS strings should override the same keys
   // that may be used in the Browser string provider.
-  OsSettingsLocalizedStringsProvider::AddOsLocalizedStrings(
-      html_source, profile, web_ui->GetWebContents());
+  OsSettingsLocalizedStringsProviderFactory::GetForProfile(profile)
+      ->AddOsLocalizedStrings(html_source, profile);
 
   auto plural_string_handler = std::make_unique<PluralStringHandler>();
   plural_string_handler->AddLocalizedString("profileLabel",

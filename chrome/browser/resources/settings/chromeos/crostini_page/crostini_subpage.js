@@ -135,6 +135,12 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /** @private {boolean} */
+    showCrostiniMicSharingDialog_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** settings.RouteOriginBehavior override */
@@ -245,6 +251,21 @@ Polymer({
   onPortForwardingClick_: function() {
     settings.Router.getInstance().navigateTo(
         settings.routes.CROSTINI_PORT_FORWARDING);
+  },
+
+  /**
+   * Shows a dialog when adjusting mic settings.
+   * TODO(danielng): We should only show the dialog if termina is running and
+   * the settings change to be different to the current state of termina.
+   * @private
+   */
+  onMicSharingChange_: function() {
+    this.showCrostiniMicSharingDialog_ = true;
+  },
+
+  /** @private */
+  onCrostiniMicSharingDialogClose_: function() {
+    this.showCrostiniMicSharingDialog_ = false;
   },
 
   /**

@@ -37,15 +37,14 @@
 // TestInterfaceConstructor.idl), otherwise overload resolution check string is
 // extremely long and triggers a lint warning (line length).
 interface TestInterfaceConstructor2 {
-    // 2 constructors with same type length, to test overload resolution
+    // 3 constructors with same type length, to test overload resolution
     constructor(DOMString stringArg);
-    constructor(Dictionary dictionaryArg);
+    constructor(object objectArg);
     constructor(sequence<sequence<DOMString>> stringSequenceSequenceArg);
     constructor(
         TestInterfaceEmpty testInterfaceEmptyArg,
         long longArg,
         [DefaultValue=Undefined] optional DOMString defaultUndefinedOptionalStringArg,
         optional DOMString defaultNullStringOptionalStringArg = null,
-        [DefaultValue=Undefined] optional Dictionary defaultUndefinedOptionalDictionaryArg,
         optional DOMString optionalStringArg);
 };

@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_COOKIE_STORE_COOKIE_STORE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_COOKIE_STORE_COOKIE_STORE_H_
 
-#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/site_for_cookies.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink-forward.h"
@@ -15,6 +14,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -139,8 +139,8 @@ class CookieStore final : public EventTargetWithInlineData,
   // This receiver is set up on-demand, when the cookie store has at least one
   // change event listener. If all the listeners are unregistered, the receiver
   // is torn down.
-  mojo::Receiver<network::mojom::blink::CookieChangeListener>
-      change_listener_receiver_{this};
+  HeapMojoReceiver<network::mojom::blink::CookieChangeListener>
+      change_listener_receiver_;
 
   // Default for cookie_url in CookieStoreGetOptions.
   //

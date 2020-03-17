@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/sessions/core/session_command.h"
@@ -906,11 +907,17 @@ bool SessionService::ShouldTrackBrowser(Browser* browser) const {
   if (browser->profile() != profile())
     return false;
 #if defined(OS_CHROMEOS)
-  // Do not track Crostini apps because they will be dead upon restoring the
-  // browser session since VMs do not automatically restart on session restore.
-  if (crostini::CrostiniAppIdFromAppName(browser->app_name())) {
+  // Do not track Crostini apps or terminal.  Apps will fail since VMs are not
+  // restarted on restore, and we don't want terminal to force the VM to start.
+  if (crostini::CrostiniAppIdFromAppName(browser->app_name()) ||
+      web_app::GetAppIdFromApplicationName(browser->app_name()) ==
+          crostini::GetTerminalId()) {
     return false;
   }
+
+  // Don't track custom_tab browser. It doesn't need to be restored.
+  if (browser->is_type_custom_tab())
+    return false;
 #endif
   // Never track app popup windows that do not have a trusted source (i.e.
   // popup windows spawned by an app). If this logic changes, be sure to also
@@ -918,12 +925,6 @@ bool SessionService::ShouldTrackBrowser(Browser* browser) const {
   if (browser->deprecated_is_app() && !browser->is_trusted_source()) {
     return false;
   }
-
-  // Don't track custom_tab browser. It doesn't need to be restored.
-#if defined(OS_CHROMEOS)
-  if (browser->is_type_custom_tab())
-    return false;
-#endif
 
   return ShouldRestoreWindowOfType(WindowTypeForBrowserType(browser->type()));
 }

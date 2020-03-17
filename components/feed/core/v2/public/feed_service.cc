@@ -75,12 +75,14 @@ FeedService::FeedService(
     std::unique_ptr<RefreshTaskScheduler> refresh_task_scheduler,
     PrefService* profile_prefs,
     PrefService* local_state,
+    leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
     signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     const std::string& api_key)
     : delegate_(std::move(delegate)),
       refresh_task_scheduler_(std::move(refresh_task_scheduler)) {
+  (void)proto_database_provider;  // TODO(harringtond): Use this.
   stream_delegate_ = std::make_unique<StreamDelegateImpl>(local_state);
   network_delegate_ = std::make_unique<NetworkDelegateImpl>(delegate_.get());
   feed_network_ = std::make_unique<FeedNetworkImpl>(

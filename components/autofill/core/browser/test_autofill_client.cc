@@ -269,8 +269,4 @@ ukm::TestUkmRecorder* TestAutofillClient::GetTestUkmRecorder() {
   return &test_ukm_recorder_;
 }
 
-SmsClient* TestAutofillClient::GetSmsClient() {
-  return &mock_sms_client_;
-}
-
 }  // namespace autofill

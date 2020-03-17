@@ -163,6 +163,10 @@ void UpdateServiceOutOfProcess::Update(const std::string& app_id,
                                    reply:reply];
 }
 
+void UpdateServiceOutOfProcess::Uninitialize() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
 UpdateServiceOutOfProcess::~UpdateServiceOutOfProcess() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }

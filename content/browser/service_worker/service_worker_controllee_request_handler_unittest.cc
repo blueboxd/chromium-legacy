@@ -112,8 +112,8 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
         context()->storage(), version_->script_url(), {} /* headers */,
         "I'm a body", "I'm a meta data"));
     version_->script_cache_map()->SetResources(records);
-    version_->SetMainScriptHttpResponseInfo(
-        EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
+    version_->SetMainScriptResponse(
+        EmbeddedWorkerTestHelper::CreateMainScriptResponse());
 
     // An empty host.
     remote_endpoints_.emplace_back();

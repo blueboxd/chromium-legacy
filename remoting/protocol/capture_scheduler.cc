@@ -44,7 +44,8 @@ namespace remoting {
 namespace protocol {
 
 // We assume that the number of available cores is constant.
-CaptureScheduler::CaptureScheduler(const base::Closure& capture_closure)
+CaptureScheduler::CaptureScheduler(
+    const base::RepeatingClosure& capture_closure)
     : capture_closure_(capture_closure),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       capture_timer_(new base::OneShotTimer()),

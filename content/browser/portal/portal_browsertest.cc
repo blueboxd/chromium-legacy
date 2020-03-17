@@ -87,13 +87,15 @@ class PortalBrowserTest : public ContentBrowserTest {
     navigation_observer.set_wait_event(
         TestNavigationObserver::WaitEvent::kNavigationFinished);
     navigation_observer.StartWatchingNewWebContents();
-    EXPECT_TRUE(ExecJs(
-        main_frame, JsReplace("{"
-                              "  let portal = document.createElement('portal');"
-                              "  portal.src = $1;"
-                              "  document.body.appendChild(portal);"
-                              "}",
-                              portal_url)));
+    EXPECT_TRUE(
+        ExecJs(main_frame,
+               JsReplace("{"
+                         "  let portal = document.createElement('portal');"
+                         "  portal.src = $1;"
+                         "  document.body.appendChild(portal);"
+                         "}",
+                         portal_url),
+               EXECUTE_SCRIPT_NO_USER_GESTURE));
     Portal* portal = portal_created_observer.WaitUntilPortalCreated();
     navigation_observer.StopWatchingNewWebContents();
 
@@ -1717,6 +1719,35 @@ IN_PROC_BROWSER_TEST_F(
   ExecuteScriptAsync(main_frame,
                      "document.querySelector('portal').activate();");
   nav_observer.Wait();
+}
+
+// Ensure portal activations respect navigation precedence. If there is an
+// ongoing browser initiated navigation, then a portal activation without user
+// activation cannot proceed.
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NavigationPrecedence) {
+  GURL main_url1(embedded_test_server()->GetURL("portal.test", "/title1.html"));
+  GURL main_url2(embedded_test_server()->GetURL("portal.test", "/title2.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url1));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url2));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  GURL portal_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  CreatePortalToUrl(web_contents_impl, portal_url);
+
+  TestNavigationManager pending_back_navigation(web_contents_impl, main_url1);
+  ASSERT_TRUE(web_contents_impl->GetController().CanGoBack());
+  web_contents_impl->GetController().GoBack();
+  EXPECT_TRUE(pending_back_navigation.WaitForRequestStart());
+
+  EXPECT_EQ("reject", EvalJs(main_frame,
+                             "document.querySelector('portal').activate().then("
+                             "    () => 'resolve', () => 'reject');",
+                             EXECUTE_SCRIPT_NO_USER_GESTURE));
+
+  pending_back_navigation.WaitForNavigationFinished();
+  EXPECT_TRUE(pending_back_navigation.was_successful());
 }
 
 IN_PROC_BROWSER_TEST_F(PortalBrowserTest, CallCreateProxyAndAttachPortalTwice) {

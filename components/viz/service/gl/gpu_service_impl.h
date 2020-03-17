@@ -197,6 +197,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void DidCreateContextSuccessfully() override;
   void DidCreateOffscreenContext(const GURL& active_url) override;
   void DidDestroyChannel(int client_id) override;
+  void DidDestroyAllChannels() override;
   void DidDestroyOffscreenContext(const GURL& active_url) override;
   void DidLoseContext(bool offscreen,
                       gpu::error::ContextLostReason reason,

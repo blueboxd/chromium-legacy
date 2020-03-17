@@ -9,18 +9,6 @@
 namespace data_reduction_proxy {
 namespace features {
 
-// Enables a new version of the data reduction proxy protocol where the server
-// decides if a server-generated preview should be served. The previous
-// version required the client to make this decision. The new protocol relies
-// on updates primarily to the Chrome-Proxy-Accept-Transform header.
-const base::Feature kDataReductionProxyDecidesTransform{
-    "DataReductionProxyDecidesTransform",
-#if defined(OS_ANDROID)
-    base::FEATURE_ENABLED_BY_DEFAULT
-#else   // !defined(OS_ANDROID)
-    base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // defined(OS_ANDROID)
-};
 
 // Enables the data saver promo for low memory Android devices.
 const base::Feature kDataReductionProxyLowMemoryDevicePromo{

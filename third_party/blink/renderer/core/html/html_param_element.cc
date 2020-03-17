@@ -50,7 +50,7 @@ bool HTMLParamElement::IsURLParameter(const String& name) {
   return EqualIgnoringASCIICase(name, "code") ||
          EqualIgnoringASCIICase(name, "data") ||
          EqualIgnoringASCIICase(name, "movie") ||
-         DeprecatedEqualIgnoringCase(name, "src") ||
+         EqualIgnoringASCIICase(name, "src") ||
          EqualIgnoringASCIICase(name, "url");
 }
 

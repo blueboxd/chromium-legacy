@@ -4,6 +4,8 @@
 
 #include "media/gpu/windows/d3d11_video_processor_proxy.h"
 
+#include "ui/gfx/color_space_win.h"
+
 namespace media {
 
 VideoProcessorProxy::~VideoProcessorProxy() {}
@@ -59,6 +61,41 @@ HRESULT VideoProcessorProxy::CreateVideoProcessorInputView(
   return video_device_->CreateVideoProcessorInputView(
       input_texture, processor_enumerator_.Get(), input_view_descriptor,
       input_view);
+}
+
+void VideoProcessorProxy::SetStreamColorSpace(
+    const gfx::ColorSpace& color_space) {
+  ComD3D11VideoContext1 video_context1;
+
+  // Try to use the 11.1 interface if possible, else use 11.0.
+  if (FAILED(video_context_.As(&video_context1))) {
+    // Note that if we have an HDR context but no 11.1 device, then this will
+    // likely not work.
+    auto d3d11_color_space =
+        gfx::ColorSpaceWin::GetD3D11ColorSpace(color_space);
+    video_context_->VideoProcessorSetStreamColorSpace(video_processor_.Get(), 0,
+                                                      &d3d11_color_space);
+  } else {
+    video_context1->VideoProcessorSetStreamColorSpace1(
+        video_processor_.Get(), 0,
+        gfx::ColorSpaceWin::GetDXGIColorSpace(color_space));
+  }
+}
+
+void VideoProcessorProxy::SetOutputColorSpace(
+    const gfx::ColorSpace& color_space) {
+  ComD3D11VideoContext1 video_context1;
+  if (FAILED(video_context_.As(&video_context1))) {
+    // Hopefully, |color_space| is supported, but that's not our problem.
+    auto d3d11_color_space =
+        gfx::ColorSpaceWin::GetD3D11ColorSpace(color_space);
+    video_context_->VideoProcessorSetOutputColorSpace(video_processor_.Get(),
+                                                      &d3d11_color_space);
+  } else {
+    video_context1->VideoProcessorSetOutputColorSpace1(
+        video_processor_.Get(),
+        gfx::ColorSpaceWin::GetDXGIColorSpace(color_space));
+  }
 }
 
 HRESULT VideoProcessorProxy::VideoProcessorBlt(

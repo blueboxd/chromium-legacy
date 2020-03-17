@@ -88,6 +88,10 @@ extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 // Controls whether the real time URL lookup is enabled.
 extern const base::Feature kRealTimeUrlLookupEnabled;
 
+// Controls whether the real time URL lookup is enabled for Enhanced Protection
+// users.
+extern const base::Feature kRealTimeUrlLookupEnabledForEP;
+
 // Controls whether the GAIA-keyed real time URL lookup is enabled.
 extern const base::Feature kRealTimeUrlLookupEnabledWithToken;
 

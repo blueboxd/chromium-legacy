@@ -5621,6 +5621,69 @@ TEST_F(AXPositionTest, AsValidPosition) {
   EXPECT_TRUE(tree_position->IsNullPosition());
 }
 
+TEST_F(AXPositionTest, AsValidPositionInDescendantOfEmptyObject) {
+  g_ax_embedded_object_behavior = AXEmbeddedObjectBehavior::kExposeCharacter;
+
+  // ++1 kRootWebArea
+  // ++++2 kButton
+  // ++++++3 kStaticText "3.14" ignored
+  // ++++++++4 kInlineTextBox "3.14" ignored
+  AXNodeData root_1;
+  AXNodeData button_2;
+  AXNodeData static_text_3;
+  AXNodeData inline_box_4;
+
+  root_1.id = 1;
+  button_2.id = 2;
+  static_text_3.id = 3;
+  inline_box_4.id = 4;
+
+  root_1.role = ax::mojom::Role::kRootWebArea;
+  root_1.child_ids = {button_2.id};
+
+  button_2.role = ax::mojom::Role::kButton;
+  button_2.child_ids = {static_text_3.id};
+
+  static_text_3.role = ax::mojom::Role::kStaticText;
+  static_text_3.SetName("3.14");
+  static_text_3.child_ids = {inline_box_4.id};
+
+  inline_box_4.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_4.SetName("3.14");
+
+  SetTree(CreateAXTree({root_1, button_2, static_text_3, inline_box_4}));
+
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      GetTreeID(), inline_box_4.id, 3, ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  EXPECT_TRUE(text_position->IsTextPosition());
+  EXPECT_TRUE(text_position->IsValid());
+  EXPECT_EQ(*text_position, *text_position->AsValidPosition());
+
+  TestPositionType tree_position =
+      AXNodePosition::CreateTreePosition(GetTreeID(), inline_box_4.id, 0);
+  ASSERT_NE(nullptr, tree_position);
+  EXPECT_TRUE(tree_position->IsTreePosition());
+  EXPECT_TRUE(tree_position->IsValid());
+  EXPECT_EQ(*tree_position, *tree_position->AsValidPosition());
+
+  static_text_3.AddState(ax::mojom::State::kIgnored);
+  inline_box_4.AddState(ax::mojom::State::kIgnored);
+  AXTreeUpdate update;
+  update.nodes = {static_text_3, inline_box_4};
+  ASSERT_TRUE(GetTree()->Unserialize(update));
+
+  EXPECT_FALSE(text_position->IsValid());
+  text_position = text_position->AsValidPosition();
+  EXPECT_TRUE(text_position->IsValid());
+  EXPECT_EQ(1, text_position->text_offset());
+
+  EXPECT_FALSE(tree_position->IsValid());
+  tree_position = tree_position->AsValidPosition();
+  EXPECT_TRUE(tree_position->IsValid());
+  EXPECT_EQ(0, tree_position->child_index());
+}
+
 TEST_F(AXPositionTest, CreateNextCharacterPosition) {
   TestPositionType text_position = AXNodePosition::CreateTextPosition(
       GetTreeID(), inline_box1_.id, 4 /* text_offset */,

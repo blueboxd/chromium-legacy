@@ -76,9 +76,6 @@ using ScopedPrinterChangeHandle =
 // route instead).
 class PRINTING_EXPORT XPSModule {
  public:
-  // Returns true if OpenXPS printing is supported.
-  static bool IsOpenXpsCapable();
-
   // All the other methods can ONLY be called after a successful call to Init.
   // Init can be called many times and by multiple threads.
   static bool Init();

@@ -90,6 +90,7 @@ Polymer({
       if (behavior.onBeforeShow)
         behavior.onBeforeShow.call(this);
     });
+    this.$['checking-downloading-update'].onBeforeShow();
   },
 
   onBackClicked_() {

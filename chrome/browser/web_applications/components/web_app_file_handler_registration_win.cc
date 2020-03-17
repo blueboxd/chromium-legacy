@@ -4,15 +4,12 @@
 
 #include "chrome/browser/web_applications/components/web_app_file_handler_registration_win.h"
 
-#include <algorithm>
 #include <iterator>
 #include <set>
 #include <string>
 
-#include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,45 +21,17 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/web_applications/chrome_pwa_launcher/chrome_pwa_launcher_util.h"
 #include "chrome/browser/web_applications/components/web_app_file_handler_registration.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut_win.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/shell_util.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
 #include "net/base/filename_util.h"
 
 namespace {
-
-// Returns the app-specific-launcher filename to be used for |app_name|.
-base::FilePath GetAppSpecificLauncherFilename(const base::string16& app_name) {
-  // Remove any characters that are illegal in Windows filenames.
-  base::string16 sanitized_app_name =
-      web_app::internals::GetSanitizedFileName(app_name).value();
-
-  // On Windows 7, where the launcher has no file extension, replace any '.'
-  // characters with '_' to prevent a portion of the filename from being
-  // interpreted as its extension.
-  const bool is_win_7 = base::win::GetVersion() == base::win::Version::WIN7;
-  if (is_win_7)
-    base::ReplaceChars(sanitized_app_name, L".", L"_", &sanitized_app_name);
-
-  // If |sanitized_app_name| is a reserved filename, prepend '_' to allow its
-  // use as the launcher filename (e.g. "nul" => "_nul"). Prepending is
-  // preferred over appending in order to handle filenames containing '.', as
-  // Windows' logic for checking reserved filenames views characters after '.'
-  // as file extensions, and only the pre-file-extension portion is checked for
-  // legitimacy (e.g. "nul_" is allowed, but "nul.a_" is not).
-  if (net::IsReservedNameOnWindows(sanitized_app_name))
-    sanitized_app_name = L"_" + sanitized_app_name;
-
-  // On Windows 8+, add .exe extension. On Windows 7, where an app's display
-  // name in the Open With menu can't be set programmatically, omit the
-  // extension to use the launcher filename as the app's display name.
-  if (!is_win_7)
-    return base::FilePath(sanitized_app_name).AddExtension(L"exe");
-  return base::FilePath(sanitized_app_name);
-}
 
 // Returns true if the app with id |app_id| is currently installed in one or
 // more profiles, excluding |curr_profile|, and has its web_app launcher
@@ -122,11 +91,42 @@ base::string16 GetAppNameExtensionForProfile(
 
 namespace web_app {
 
-const base::FilePath::StringPieceType kLastBrowserFile(
-    FILE_PATH_LITERAL("Last Browser"));
-
 bool ShouldRegisterFileHandlersWithOs() {
   return true;
+}
+
+// Returns the app-specific-launcher filename to be used for |app_name|.
+base::FilePath GetAppSpecificLauncherFilename(const base::string16& app_name) {
+  // Remove any characters that are illegal in Windows filenames.
+  base::FilePath::StringType sanitized_app_name =
+      web_app::internals::GetSanitizedFileName(app_name).value();
+
+  // On Windows 7, where the launcher has no file extension, replace any '.'
+  // characters with '_' to prevent a portion of the filename from being
+  // interpreted as its extension.
+  const bool is_win_7 = base::win::GetVersion() == base::win::Version::WIN7;
+  if (is_win_7) {
+    base::ReplaceChars(sanitized_app_name, FILE_PATH_LITERAL("."),
+                       FILE_PATH_LITERAL("_"), &sanitized_app_name);
+  }
+
+  // If |sanitized_app_name| is a reserved filename, prepend '_' to allow its
+  // use as the launcher filename (e.g. "nul" => "_nul"). Prepending is
+  // preferred over appending in order to handle filenames containing '.', as
+  // Windows' logic for checking reserved filenames views characters after '.'
+  // as file extensions, and only the pre-file-extension portion is checked for
+  // legitimacy (e.g. "nul_" is allowed, but "nul.a_" is not).
+  if (net::IsReservedNameOnWindows(sanitized_app_name))
+    sanitized_app_name.insert(0, 1, FILE_PATH_LITERAL('_'));
+
+  // On Windows 8+, add .exe extension. On Windows 7, where an app's display
+  // name in the Open With menu can't be set programmatically, omit the
+  // extension to use the launcher filename as the app's display name.
+  if (!is_win_7) {
+    return base::FilePath(sanitized_app_name)
+        .AddExtension(FILE_PATH_LITERAL("exe"));
+  }
+  return base::FilePath(sanitized_app_name);
 }
 
 // See https://docs.microsoft.com/en-us/windows/win32/com/-progid--key for
@@ -210,8 +210,7 @@ void ReRegisterFileHandlersWithOs(
 void RegisterFileHandlersWithOs(const AppId& app_id,
                                 const std::string& app_name,
                                 Profile* profile,
-                                const std::set<std::string>& file_extensions,
-                                const std::set<std::string>& mime_types) {
+                                const apps::FileHandlers& file_handlers) {
   base::string16 app_name_extension;
   base::FilePath only_profile_with_app_installed;
   // Determine if there is exactly one other profile with the
@@ -220,12 +219,14 @@ void RegisterFileHandlersWithOs(const AppId& app_id,
                                             &only_profile_with_app_installed))
     app_name_extension = GetAppNameExtensionForProfile(profile->GetPath());
 
+  std::set<std::string> file_extensions =
+      apps::GetFileExtensionsFromFileHandlers(file_handlers);
   std::set<base::string16> file_extensions16;
-  // Copy |file_extensions| to a string16 set in O(n) time by hinting that
-  // the appended elements should go at the end of the set.
-  std::transform(file_extensions.begin(), file_extensions.end(),
-                 std::inserter(file_extensions16, file_extensions16.end()),
-                 [](const std::string& ext) { return base::UTF8ToUTF16(ext); });
+  for (const auto& file_extension : file_extensions) {
+    // The file extensions in apps::FileHandler include a '.' prefix, which must
+    // be removed.
+    file_extensions16.insert(base::UTF8ToUTF16(file_extension.substr(1)));
+  }
 
   base::ThreadPool::PostTask(
       FROM_HERE,
@@ -299,20 +300,6 @@ void UnregisterFileHandlersWithOs(const AppId& app_id, Profile* profile) {
         file_associations_and_app_name.file_associations, remaining_prog_id,
         base::string16());
   }
-}
-
-void UpdateChromeExePath(const base::FilePath& user_data_dir) {
-  DCHECK(!user_data_dir.empty());
-  base::FilePath chrome_exe_path;
-  if (!base::PathService::Get(base::FILE_EXE, &chrome_exe_path))
-    return;
-  const base::FilePath::StringType& chrome_exe_path_str =
-      chrome_exe_path.value();
-  DCHECK(!chrome_exe_path_str.empty());
-  base::WriteFile(
-      user_data_dir.Append(kLastBrowserFile),
-      reinterpret_cast<const char*>(chrome_exe_path_str.data()),
-      chrome_exe_path_str.size() * sizeof(base::FilePath::CharType));
 }
 
 }  // namespace web_app

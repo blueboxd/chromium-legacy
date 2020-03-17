@@ -2058,6 +2058,9 @@ extern const char kShowTouchHudDescription[];
 extern const char kSmartDimModelV3Name[];
 extern const char kSmartDimModelV3Description[];
 
+extern const char kSmartDimNewMlAgentName[];
+extern const char kSmartDimNewMlAgentDescription[];
+
 extern const char kSmartTextSelectionName[];
 extern const char kSmartTextSelectionDescription[];
 

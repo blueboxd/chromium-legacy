@@ -37,12 +37,9 @@ interface TestInterfaceConstructor {
         double doubleArg,
         DOMString stringArg,
         TestInterfaceEmpty testInterfaceEmptyArg,
-        Dictionary dictionaryArg,
         sequence<DOMString> sequenceStringArg,
-        sequence<Dictionary> sequenceDictionaryArg,
         sequence<(long or TestDictionary)> sequenceLongOrTestDictionaryArg,
         optional USVString? optionalUSVStringArg,
-        optional Dictionary optionalDictionaryArg,
         [DefaultValue=Undefined] optional TestInterfaceEmpty optionalTestInterfaceEmptyArg);
     [CallWith=(ScriptState,ExecutionContext,Document), RaisesException, MeasureAs=TestFeature]
     constructor(DOMString arg, optional DOMString optArg);

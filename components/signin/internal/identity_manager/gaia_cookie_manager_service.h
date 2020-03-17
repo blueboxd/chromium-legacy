@@ -74,6 +74,8 @@ class GaiaCookieManagerService
   typedef base::OnceCallback<void(const CoreAccountId&,
                                   const GoogleServiceAuthError&)>
       AddAccountToCookieCompletedCallback;
+  typedef base::OnceCallback<void(const GoogleServiceAuthError&)>
+      LogOutFromCookieCompletedCallback;
 
   typedef base::RepeatingCallback<void(const std::vector<gaia::ListedAccount>&,
                                        const std::vector<gaia::ListedAccount>&,
@@ -106,12 +108,16 @@ class GaiaCookieManagerService
     void RunAddAccountToCookieCompletedCallback(
         const CoreAccountId& account_id,
         const GoogleServiceAuthError& error);
+    void RunLogOutFromCookieCompletedCallback(
+        const GoogleServiceAuthError& error);
 
     static GaiaCookieRequest CreateAddAccountRequest(
         const CoreAccountId& account_id,
         gaia::GaiaSource source,
         AddAccountToCookieCompletedCallback callback);
-    static GaiaCookieRequest CreateLogOutRequest(gaia::GaiaSource source);
+    static GaiaCookieRequest CreateLogOutRequest(
+        gaia::GaiaSource source,
+        LogOutFromCookieCompletedCallback callback);
     static GaiaCookieRequest CreateListAccountsRequest();
     static GaiaCookieRequest CreateSetAccountsRequest(
         gaia::MultiloginMode mode,
@@ -145,6 +151,7 @@ class GaiaCookieManagerService
         set_accounts_in_cookie_completed_callback_;
     AddAccountToCookieCompletedCallback
         add_account_to_cookie_completed_callback_;
+    LogOutFromCookieCompletedCallback log_out_from_cookie_completed_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(GaiaCookieRequest);
   };
@@ -259,7 +266,8 @@ class GaiaCookieManagerService
   void CancelAll();
 
   // Signout all accounts.
-  void LogOutAllAccounts(gaia::GaiaSource source);
+  void LogOutAllAccounts(gaia::GaiaSource source,
+                         LogOutFromCookieCompletedCallback callback);
 
   // Call observers when setting accounts in cookie completes.
   void SignalSetAccountsComplete(signin::SetAccountsInCookieResult result);
@@ -315,6 +323,9 @@ class GaiaCookieManagerService
   void SignalAddToCookieComplete(
       const base::circular_deque<GaiaCookieRequest>::iterator& request,
       const GoogleServiceAuthError& error);
+
+  // Calls the LogOutFromCookie completion callback.
+  void SignalLogOutComplete(const GoogleServiceAuthError& error);
 
   // Marks the list account being staled, and for iOS only, it triggers to fetch
   // the list of accounts (on iOS there is no OnCookieChange() notification).

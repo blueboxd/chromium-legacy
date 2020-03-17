@@ -620,14 +620,8 @@ crbug.com/950552 [ linux intel mesa_lt_19.1.2 ] conformance2/textures/misc/tex-b
 # Linux only.
 crbug.com/905006 [ linux nvidia ] conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html [ Failure ]
 
-# Linux Multi-vendor failures.
-crbug.com/618447 [ linux amd ] deqp/functional/gles3/texturespecification/random_teximage2d_2d.html [ RetryOnFailure ]
-crbug.com/662644 [ linux amd ] conformance2/rendering/clipping-wide-points.html [ Failure ]
-
 # Linux NVIDIA
 # This test is flaky both with and without ANGLE.
-crbug.com/618447 [ linux nvidia ] deqp/functional/gles3/texturespecification/random_teximage2d_2d.html [ RetryOnFailure ]
-crbug.com/618447 [ linux nvidia ] deqp/functional/gles3/texturespecification/random_teximage2d_cube.html [ RetryOnFailure ]
 crbug.com/709351 [ linux nvidia ] conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html [ Failure ]
 crbug.com/905003 [ linux nvidia ] conformance2/textures/misc/integer-cubemap-specification-order-bug.html [ Failure ]
 crbug.com/680278 [ opengl linux nvidia ] conformance2/rendering/framebuffer-texture-level1.html [ Failure ]
@@ -694,6 +688,7 @@ crbug.com/658832 [ linux amd ] deqp/functional/gles3/framebufferblit/default_fra
 crbug.com/483282 [ linux amd ] conformance2/glsl3/vector-dynamic-indexing.html [ Failure ]
 crbug.com/483282 [ no-angle linux amd ] conformance2/reading/read-pixels-pack-parameters.html [ Failure ]
 crbug.com/483282 [ no-angle linux amd ] conformance2/textures/misc/tex-unpack-params.html [ Failure ]
+crbug.com/662644 [ linux amd ] conformance2/rendering/clipping-wide-points.html [ Failure ]
 
 # TODO(kbr): re-enable after next conformance roll. crbug.com/736499
 # crbug.com/633022 [ linux amd ] conformance2/extensions/ext-color-buffer-float.html [ Failure ]

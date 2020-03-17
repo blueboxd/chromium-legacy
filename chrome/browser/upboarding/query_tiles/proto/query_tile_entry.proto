@@ -31,7 +31,7 @@ message QueryTileEntry {
   string display_text = 3;
 
   // Counterpart of |display_text| for accessibility purposes.
-  string accessiblity_text = 4;
+  string accessibility_text = 4;
 
   // A list of image metadatas.
   repeated ImageMetadata image_metadatas = 5;

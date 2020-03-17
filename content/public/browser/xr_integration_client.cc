@@ -9,8 +9,17 @@
 
 namespace content {
 
-std::unique_ptr<content::XrInstallHelper> XrIntegrationClient::GetInstallHelper(
+std::unique_ptr<XrInstallHelper> XrIntegrationClient::GetInstallHelper(
     device::mojom::XRDeviceId device_id) {
   return nullptr;
 }
+
+#if !defined(OS_ANDROID)
+std::unique_ptr<VrUiHost> XrIntegrationClient::CreateVrUiHost(
+    device::mojom::XRDeviceId device_id,
+    mojo::PendingRemote<device::mojom::XRCompositorHost> compositor) {
+  return nullptr;
+}
+#endif
+
 }  // namespace content

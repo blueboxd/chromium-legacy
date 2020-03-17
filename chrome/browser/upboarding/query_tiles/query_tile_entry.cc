@@ -29,8 +29,7 @@ bool QueryTileEntry::operator==(const QueryTileEntry& other) const {
   return id == other.id && query_text == other.query_text &&
          display_text == other.display_text &&
          accessibility_text == other.accessibility_text &&
-         image_metadatas.size() == other.image_metadatas.size() &&
-         children.size() == other.children.size();
+         image_metadatas == other.image_metadatas && children == other.children;
 }
 
 }  // namespace upboarding

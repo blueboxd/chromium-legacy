@@ -325,9 +325,9 @@ class PDFiumEngine : public PDFEngine,
       size_t page_index,
       size_t num_of_pages) const;
 
-  void GetAllScreenRectsUnion(const std::vector<PDFiumRange>& rect_range,
-                              const pp::Point& offset_point,
-                              std::vector<pp::Rect>* rect_vector) const;
+  std::vector<pp::Rect> GetAllScreenRectsUnion(
+      const std::vector<PDFiumRange>& rect_range,
+      const pp::Point& offset_point) const;
 
   void UpdateTickMarks();
 

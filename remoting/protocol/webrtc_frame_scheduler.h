@@ -26,7 +26,7 @@ class WebrtcFrameScheduler {
   // Starts the scheduler. |capture_callback| will be called whenever a new
   // frame should be captured.
   virtual void Start(WebrtcDummyVideoEncoderFactory* video_encoder_factory,
-                     const base::Closure& capture_callback) = 0;
+                     const base::RepeatingClosure& capture_callback) = 0;
 
   // Pause and resumes the scheduler.
   virtual void Pause(bool pause) = 0;

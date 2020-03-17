@@ -115,6 +115,30 @@ TEST(NewLinkedHashSetTest, Insert) {
   EXPECT_TRUE(it == set.end());
 }
 
+TEST(NewLinkedHashSetTest, InsertBefore) {
+  using Set = NewLinkedHashSet<int>;
+  Set set;
+
+  set.InsertBefore(1, 1);
+  set.InsertBefore(10, 3);
+  set.InsertBefore(3, 2);
+  set.InsertBefore(10, 5);
+  set.InsertBefore(5, 4);
+
+  Set::const_iterator it = set.begin();
+  EXPECT_EQ(*it, 1);
+  ++it;
+  EXPECT_EQ(*it, 2);
+  ++it;
+  EXPECT_EQ(*it, 3);
+  ++it;
+  EXPECT_EQ(*it, 4);
+  ++it;
+  EXPECT_EQ(*it, 5);
+  ++it;
+  EXPECT_TRUE(it == set.end());
+}
+
 TEST(NewLinkedHashSetTest, AppendOrMoveToLast) {
   using Set = NewLinkedHashSet<int>;
   Set set;

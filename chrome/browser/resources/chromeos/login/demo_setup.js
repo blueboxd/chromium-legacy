@@ -13,6 +13,12 @@ Polymer({
   behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
+    /** Percentage of progress completed in Demo Mode setup. */
+    progressPercentage_: {
+      type: Number,
+      value: 0,
+    },
+
     /** Error message displayed on demoSetupErrorDialog screen. */
     errorMessage_: {
       type: String,
@@ -33,6 +39,15 @@ Polymer({
         return ['demoSetupProgressDialog', 'demoSetupErrorDialog'];
       },
     },
+
+    /** Feature flag to display progress bar instead of spinner during setup. */
+    showProgressBarInDemoModeSetup_: {
+      type: Boolean,
+      readonly: true,
+      value() {
+        return loadTimeData.getBoolean('showProgressBarInDemoModeSetup');
+      }
+    }
   },
 
   /** Resets demo setup flow to the initial screen and starts setup. */
@@ -44,6 +59,21 @@ Polymer({
   /** Called after resources are updated. */
   updateLocalizedContent() {
     this.i18nUpdateLocale();
+  },
+
+  /**
+   * Called when the progress bar needs to be incremented. Every time progress
+   * is incremented, remaining progress is halved.
+   * @param {boolean} complete Set to true if progress is complete
+   */
+  incrementSetupProgress(complete) {
+    const maxPercentage = 100;
+    if (complete) {
+      this.progressPercentage_ = maxPercentage;
+    } else {
+      const remaining = maxPercentage - this.progressPercentage_;
+      this.progressPercentage_ += remaining / 2;
+    }
   },
 
   /** Called when demo mode setup succeeded. */

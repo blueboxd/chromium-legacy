@@ -189,9 +189,8 @@ mojo::Remote<storage::mojom::StorageService>& GetStorageServiceRemote() {
         DCHECK(!data_dir.empty())
             << "Storage Service sandboxing requires a root data directory.";
         mojo::PendingRemote<storage::mojom::Directory> directory;
-        base::CreateSequencedTaskRunner({base::MayBlock(),
-                                         base::TaskPriority::USER_VISIBLE,
-                                         base::ThreadPool()})
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
             ->PostTask(
                 FROM_HERE,
                 base::BindOnce(&BindStorageServiceFilesystemImpl, data_dir,

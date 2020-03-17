@@ -252,7 +252,7 @@ android_library("content_shell_browsertests_java") {
     "//base:base_java",
     "//content/public/android:content_java",
     "//testing/android/native_test:native_test_java",
-    "//third_party/android_deps:com_android_support_support_compat_java",
+    "//third_party/android_deps:androidx_core_core_java",
     "//ui/android:ui_java",
   ]
   sources = [ "browsertests/src/org/chromium/content_shell/browsertests/ContentShellBrowserTestActivity.java" ]

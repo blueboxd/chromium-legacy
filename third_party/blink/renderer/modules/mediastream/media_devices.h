@@ -68,8 +68,8 @@ class MODULES_EXPORT MediaDevices final
   void ContextDestroyed() override;
 
   // mojom::blink::MediaDevicesListener implementation.
-  void OnDevicesChanged(mojom::blink::MediaDeviceType,
-                        Vector<mojom::blink::MediaDeviceInfoPtr>) override;
+  void OnDevicesChanged(MediaDeviceType,
+                        const Vector<WebMediaDeviceInfo>&) override;
 
   // Callback for testing only.
   using EnumerateDevicesTestCallback =
@@ -110,7 +110,7 @@ class MODULES_EXPORT MediaDevices final
   void StopObserving();
   void Dispose();
   void DevicesEnumerated(ScriptPromiseResolver*,
-                         Vector<Vector<mojom::blink::MediaDeviceInfoPtr>>,
+                         const Vector<Vector<WebMediaDeviceInfo>>&,
                          Vector<mojom::blink::VideoInputDeviceCapabilitiesPtr>,
                          Vector<mojom::blink::AudioInputDeviceCapabilitiesPtr>);
   void OnDispatcherHostConnectionError();

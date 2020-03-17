@@ -1916,7 +1916,8 @@ TEST_F(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
   http_info.headers->AddHeader(kOriginTrial + kFeature2Token1);
   http_info.headers->AddHeader(kOriginTrial + kFeature2Token2);
   http_info.headers->AddHeader(kOriginTrial + kFeature3ExpiredToken);
-  version->SetMainScriptHttpResponseInfo(http_info);
+  version->SetMainScriptResponse(
+      std::make_unique<ServiceWorkerVersion::MainScriptResponse>(http_info));
   ASSERT_TRUE(version->origin_trial_tokens());
   const blink::TrialTokenValidator::FeatureToTokensMap& tokens =
       *version->origin_trial_tokens();
@@ -2003,7 +2004,8 @@ TEST_F(ServiceWorkerStorageDiskTest, ScriptResponseTime) {
   http_info.headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
   http_info.response_time = base::Time::FromJsTime(19940123);
-  version->SetMainScriptHttpResponseInfo(http_info);
+  version->SetMainScriptResponse(
+      std::make_unique<ServiceWorkerVersion::MainScriptResponse>(http_info));
   EXPECT_TRUE(version->main_script_response_);
   EXPECT_EQ(http_info.response_time,
             version->script_response_time_for_devtools_);

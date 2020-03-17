@@ -155,6 +155,7 @@ class DemoSetupController
   // Demo mode setup callbacks.
   using OnSetupSuccess = base::OnceClosure;
   using OnSetupError = base::OnceCallback<void(const DemoSetupError&)>;
+  using OnIncrementSetupProgress = base::RepeatingCallback<void(bool)>;
   using HasPreinstalledDemoResourcesCallback = base::OnceCallback<void(bool)>;
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
@@ -193,8 +194,11 @@ class DemoSetupController
   // performed and it should be set with set_enrollment_type() before calling
   // Enroll(). |on_setup_success| will be called when enrollment finishes
   // successfully. |on_setup_error| will be called when enrollment finishes with
-  // an error.
-  void Enroll(OnSetupSuccess on_setup_success, OnSetupError on_setup_error);
+  // an error. |update_setup_progress| will be called when enrollment progress
+  // is updated.
+  void Enroll(OnSetupSuccess on_setup_success,
+              OnSetupError on_setup_error,
+              const OnIncrementSetupProgress& increment_setup_progress);
 
   // Tries to mount the preinstalled offline resources necessary for offline
   // Demo Mode.
@@ -253,6 +257,9 @@ class DemoSetupController
   // is completed. This is the last step of demo mode setup flow.
   void OnDeviceRegistered();
 
+  // Increments setup progress percentage for UI.
+  void IncrementSetupProgress(bool complete);
+
   // Finish the flow with an error.
   void SetupFailed(const DemoSetupError& error);
 
@@ -284,6 +291,9 @@ class DemoSetupController
 
   // Path at which to mount preinstalled offline demo resources for tests.
   base::FilePath preinstalled_offline_resources_path_for_tests_;
+
+  // Callback to call when setup progress is updated.
+  OnIncrementSetupProgress increment_setup_progress_;
 
   // Callback to call when enrollment finishes with an error.
   OnSetupError on_setup_error_;

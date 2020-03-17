@@ -11,7 +11,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_TEST_DICTIONARY_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_TEST_DICTIONARY_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/double_or_double_or_null_sequence.h"
 #include "third_party/blink/renderer/bindings/core/v8/double_or_double_sequence.h"
 #include "third_party/blink/renderer/bindings/core/v8/double_or_string.h"
@@ -93,12 +92,6 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
     return create_member_;
   }
   inline void setCreateMember(bool);
-
-  bool hasDictionaryMember() const { return !dictionary_member_.IsUndefinedOrNull(); }
-  Dictionary dictionaryMember() const {
-    return dictionary_member_;
-  }
-  void setDictionaryMember(Dictionary);
 
   bool hasDomStringTreatNullAsEmptyStringMember() const { return !dom_string_treat_null_as_empty_string_member_.IsNull(); }
   const String& domStringTreatNullAsEmptyStringMember() const {
@@ -507,7 +500,6 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool boolean_member_;
   Member<V8VoidCallbackFunction> callback_function_member_;
   bool create_member_;
-  Dictionary dictionary_member_;
   String dom_string_treat_null_as_empty_string_member_;
   double double_or_null_member_;
   DoubleOrDoubleOrNullSequence double_or_null_or_double_or_null_sequence_member_;

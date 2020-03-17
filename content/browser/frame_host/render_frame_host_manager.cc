@@ -1267,12 +1267,16 @@ ShouldSwapBrowsingInstance
 RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     const GURL& current_effective_url,
     bool current_is_view_source_mode,
-    SiteInstance* destination_site_instance,
+    SiteInstanceImpl* source_instance,
+    SiteInstanceImpl* current_instance,
+    SiteInstance* destination_instance,
     const GURL& destination_effective_url,
     bool destination_is_view_source_mode,
+    ui::PageTransition transition,
     bool is_failure,
     bool is_reload,
-    bool cross_origin_opener_policy_mismatch) const {
+    bool cross_origin_opener_policy_mismatch,
+    bool was_server_redirect) {
   // A subframe must stay in the same BrowsingInstance as its parent.
   if (!frame_tree_node_->IsMainFrame())
     return ShouldSwapBrowsingInstance::kNo_NotMainFrame;
@@ -1293,8 +1297,8 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
 
   // If new_entry already has a SiteInstance, assume it is correct.  We only
   // need to force a swap if it is in a different BrowsingInstance.
-  if (destination_site_instance) {
-    bool should_swap = !destination_site_instance->IsRelatedSiteInstance(
+  if (destination_instance) {
+    bool should_swap = !destination_instance->IsRelatedSiteInstance(
         render_frame_host_->GetSiteInstance());
     if (should_swap) {
       return ShouldSwapBrowsingInstance::kYes;
@@ -1377,6 +1381,12 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   if (current_is_view_source_mode != destination_is_view_source_mode)
     return ShouldSwapBrowsingInstance::kYes;
 
+  // If we haven't used the current SiteInstance but the destination is a
+  // view-source URL, we should force a BrowsingInstance swap so that we won't
+  // reuse the current SiteInstance.
+  if (!current_instance->HasSite() && destination_is_view_source_mode)
+    return ShouldSwapBrowsingInstance::kYes;
+
   // If the target URL's origin was dynamically isolated, and the isolation
   // wouldn't apply in the current BrowsingInstance, see if this navigation can
   // safely swap to a new BrowsingInstance where this isolation would take
@@ -1386,6 +1396,26 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   // possible (e.g., when there are no existing script references).
   if (ShouldSwapBrowsingInstancesForDynamicIsolation(
           render_frame_host_.get(), destination_effective_url)) {
+    return ShouldSwapBrowsingInstance::kYes;
+  }
+
+  // If this is a cross-site navigation, we may be able to force a
+  // BrowsingInstance swap to avoid unneeded process sharing. This is done for
+  // certain main frame browser-initiated navigations where we can't use
+  // |source_instance| and we don't need to preserve scripting
+  // relationship for it (for isolated error pages).
+  // See https://crbug.com/803367.
+  bool is_for_isolated_error_page =
+      is_failure && SiteIsolationPolicy::IsErrorPageIsolationEnabled(
+                        frame_tree_node_->IsMainFrame());
+  if (current_instance->HasSite() &&
+      !IsCurrentlySameSite(render_frame_host_.get(),
+                           destination_effective_url) &&
+      !CanUseSourceSiteInstance(destination_effective_url, source_instance,
+                                was_server_redirect, is_failure) &&
+      !is_for_isolated_error_page &&
+      IsBrowsingInstanceSwapAllowedForPageTransition(
+          transition, destination_effective_url)) {
     return ShouldSwapBrowsingInstance::kYes;
   }
 
@@ -1456,10 +1486,11 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
 
   ShouldSwapBrowsingInstance force_swap_result =
       ShouldSwapBrowsingInstancesForNavigation(
-          current_effective_url, current_is_view_source_mode, dest_instance,
+          current_effective_url, current_is_view_source_mode, source_instance,
+          static_cast<SiteInstanceImpl*>(current_instance), dest_instance,
           SiteInstanceImpl::GetEffectiveURL(browser_context, dest_url),
-          dest_is_view_source_mode, is_failure, is_reload,
-          cross_origin_opener_policy_mismatch);
+          dest_is_view_source_mode, transition, is_failure, is_reload,
+          cross_origin_opener_policy_mismatch, was_server_redirect);
   bool force_swap = force_swap_result == ShouldSwapBrowsingInstance::kYes;
   if (!force_swap) {
     render_frame_host_->set_browsing_instance_not_swapped_reason(
@@ -1469,6 +1500,8 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
       dest_url, source_instance, current_instance, dest_instance, transition,
       is_failure, dest_is_restore, dest_is_view_source_mode, force_swap,
       was_server_redirect);
+  DCHECK(new_instance_descriptor.relation != SiteInstanceRelation::UNRELATED ||
+         force_swap);
 
   scoped_refptr<SiteInstance> new_instance =
       ConvertToSiteInstance(new_instance_descriptor, candidate_instance);
@@ -1584,6 +1617,11 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     bool dest_is_view_source_mode,
     bool force_browsing_instance_swap,
     bool was_server_redirect) {
+  // Note that this function should return SiteInstance with
+  // SiteInstanceRelation::UNRELATED relation to |current_instance| iff
+  // |force_browsing_instance_swap| is true. All cases that result in an
+  // unrelated SiteInstance should return Yes_ForceSwap or Yes_ProactiveSwap in
+  // ShouldSwapBrowsingInstancesForNavigation.
   SiteInstanceImpl* current_instance_impl =
       static_cast<SiteInstanceImpl*>(current_instance);
   NavigationControllerImpl& controller =
@@ -1687,23 +1725,6 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
                                     SiteInstanceRelation::RELATED);
     }
 
-    // View-source URLs must use a new SiteInstance and BrowsingInstance.
-    // TODO(nasko): This is the same condition as later in the function. This
-    // should be taken into account when refactoring this method as part of
-    // http://crbug.com/123007.
-    if (dest_is_view_source_mode) {
-      return SiteInstanceDescriptor(browser_context, dest_url,
-                                    SiteInstanceRelation::UNRELATED);
-    }
-
-    // If we are navigating from a blank SiteInstance to a WebUI, make sure we
-    // create a new SiteInstance.
-    if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
-            browser_context, dest_url)) {
-      return SiteInstanceDescriptor(browser_context, dest_url,
-                                    SiteInstanceRelation::UNRELATED);
-    }
-
     // Normally the "site" on the SiteInstance is set lazily when the load
     // actually commits. This is to support better process sharing in case
     // the site redirects to some other site: we want to use the destination
@@ -1724,69 +1745,16 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     return SiteInstanceDescriptor(current_instance_impl);
   }
 
-  // Otherwise, only create a new SiteInstance for a cross-process navigation.
-
-  // TODO(creis): Once we intercept links and script-based navigations, we
-  // will be able to enforce that all entries in a SiteInstance actually have
-  // the same site, and it will be safe to compare the URL against the
-  // SiteInstance's site, as follows:
-  // const GURL& current_url = current_instance_impl->site();
-  // For now, though, we're in a hybrid model where you only switch
-  // SiteInstances if you type in a cross-site URL.  This means we have to
-  // compare the entry's URL to the last committed entry's URL.
-  NavigationEntry* current_entry = controller.GetLastCommittedEntry();
-  if (delegate_->GetInterstitialForRenderManager()) {
-    // The interstitial is currently the last committed entry, but we want to
-    // compare against the last non-interstitial entry.
-    current_entry = controller.GetEntryAtOffset(-1);
-  }
-
-  // View-source URLs must use a new SiteInstance and BrowsingInstance.
-  // We don't need a swap when going from view-source to a debug URL like
-  // chrome://crash, however.
-  // TODO(creis): Refactor this method so this duplicated code isn't needed.
-  // See http://crbug.com/123007.
-  if (current_entry &&
-      current_entry->IsViewSourceMode() != dest_is_view_source_mode &&
-      !IsRendererDebugURL(dest_url)) {
-    return SiteInstanceDescriptor(browser_context, dest_url,
-                                  SiteInstanceRelation::UNRELATED);
-  }
-
-  // Use the source SiteInstance in case of data URLs, about:srcdoc pages and
-  // about:blank pages because the content is then controlled and/or scriptable
-  // by the source SiteInstance.
-  //
-  // One exception to this is when these URLs are reached via a server redirect.
-  // Normally, redirects to data: or about: URLs are disallowed as
-  // net::ERR_UNSAFE_REDIRECT, but extensions can still redirect arbitrary
-  // requests to those URLs using webRequest or declarativeWebRequest API (for
-  // an example, see NavigationInitiatedByCrossSiteSubframeRedirectedTo... test
-  // cases in the ChromeNavigationBrowserTest test suite.  For such data: URL
-  // redirects, the content is controlled by the extension (rather than by the
-  // |source_instance|), so we don't use the |source_instance| for data: URLs if
-  // there was a server redirect.
-  bool can_use_source_instance_for_dest_url =
-      IsDataOrAbout(dest_url) &&
-      (!was_server_redirect || !dest_url.SchemeIs(url::kDataScheme));
-  if (can_use_source_instance_for_dest_url && source_instance &&
-      IsSiteInstanceCompatibleWithErrorIsolation(
-          source_instance, frame_tree_node_->IsMainFrame(), is_failure)) {
+  // Check if we should use |source_instance|, such as for about:blank and data:
+  // URLs.
+  if (CanUseSourceSiteInstance(dest_url, source_instance, was_server_redirect,
+                               is_failure)) {
     return SiteInstanceDescriptor(source_instance);
   }
 
   // Use the current SiteInstance for same site navigations.
   if (IsCurrentlySameSite(render_frame_host_.get(), dest_url))
     return SiteInstanceDescriptor(render_frame_host_->GetSiteInstance());
-
-  // At this point, |dest_url| corresponds to a cross-site navigation.  See if
-  // we can swap BrowsingInstances to avoid unneeded process sharing.  This is
-  // done for certain main frame browser-initiated navigations. See
-  // https://crbug.com/803367.
-  if (IsBrowsingInstanceSwapAllowedForPageTransition(transition, dest_url)) {
-    return SiteInstanceDescriptor(browser_context, dest_url,
-                                  SiteInstanceRelation::UNRELATED);
-  }
 
   // Shortcut some common cases for reusing an existing frame's SiteInstance.
   // There are several reasons for this:
@@ -1895,8 +1863,12 @@ scoped_refptr<SiteInstance> RenderFrameHostManager::ConvertToSiteInstance(
 
   // Note: If the |candidate_instance| matches the descriptor, it will already
   // be set to |descriptor.existing_site_instance|.
-  if (descriptor.existing_site_instance)
+  if (descriptor.existing_site_instance) {
+    DCHECK_EQ(descriptor.relation, SiteInstanceRelation::PREEXISTING);
     return descriptor.existing_site_instance;
+  } else {
+    DCHECK_NE(descriptor.relation, SiteInstanceRelation::PREEXISTING);
+  }
 
   // Note: If the |candidate_instance| matches the descriptor,
   // GetRelatedSiteInstance will return it.
@@ -1915,6 +1887,30 @@ scoped_refptr<SiteInstance> RenderFrameHostManager::ConvertToSiteInstance(
   return SiteInstance::CreateForURL(
       delegate_->GetControllerForRenderManager().GetBrowserContext(),
       descriptor.dest_url);
+}
+
+bool RenderFrameHostManager::CanUseSourceSiteInstance(
+    const GURL& dest_url,
+    SiteInstance* source_instance,
+    bool was_server_redirect,
+    bool is_failure) {
+  // We use the source SiteInstance in case of data URLs, about:srcdoc pages and
+  // about:blank pages because the content is then controlled and/or scriptable
+  // by the source SiteInstance.
+  //
+  // One exception to this is when these URLs are reached via a server redirect.
+  // Normally, redirects to data: or about: URLs are disallowed as
+  // net::ERR_UNSAFE_REDIRECT, but extensions can still redirect arbitrary
+  // requests to those URLs using webRequest or declarativeWebRequest API (for
+  // an example, see NavigationInitiatedByCrossSiteSubframeRedirectedTo... test
+  // cases in the ChromeNavigationBrowserTest test suite.  For such data: URL
+  // redirects, the content is controlled by the extension (rather than by the
+  // |source_instance|), so we don't use the |source_instance| for data: URLs if
+  // there was a server redirect.
+  return source_instance && IsDataOrAbout(dest_url) &&
+         (!was_server_redirect || !dest_url.SchemeIs(url::kDataScheme)) &&
+         IsSiteInstanceCompatibleWithErrorIsolation(
+             source_instance, frame_tree_node_->IsMainFrame(), is_failure);
 }
 
 bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,

@@ -335,6 +335,13 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
                                  builtin_administrator_name);
   registration_data.SetStringKey(kKeyIsAdJoinedUser, is_ad_joined_user);
 
+  // Send device resource ID if available as part of the enrollment payload.
+  // Enrollment backend should not assume that this will always be available.
+  base::string16 user_device_resource_id = GetUserDeviceResourceId(sid);
+  if (!user_device_resource_id.empty()) {
+    registration_data.SetStringKey("resource_id", user_device_resource_id);
+  }
+
   std::string registration_data_str;
   if (!base::JSONWriter::Write(registration_data, &registration_data_str)) {
     LOGFN(ERROR) << "JSONWriter::Write(registration_data)";
@@ -440,6 +447,18 @@ base::string16 GetUserPasswordLsaStoreKey(const base::string16& sid) {
   DCHECK(sid.size());
 
   return kUserPasswordLsaStoreKeyPrefix + sid;
+}
+
+base::string16 GetUserDeviceResourceId(const base::string16& sid) {
+  wchar_t known_resource_id[512];
+  ULONG known_resource_id_size = base::size(known_resource_id);
+  HRESULT hr = GetUserProperty(sid, kRegUserDeviceResourceId, known_resource_id,
+                               &known_resource_id_size);
+
+  if (SUCCEEDED(hr) && known_resource_id_size > 0)
+    return base::string16(known_resource_id, known_resource_id_size - 1);
+
+  return base::string16();
 }
 
 // GoogleMdmEnrollmentStatusForTesting ////////////////////////////////////////

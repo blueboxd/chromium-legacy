@@ -8,8 +8,11 @@ java_binary("java_deobfuscate") {
   main_class = "org.chromium.build.FlushingReTrace"
   sources = [ "java/org/chromium/build/FlushingReTrace.java" ]
   deps = [ "//third_party/proguard:retrace_java" ]
+
+  # Use the checked-in copy of the wrapper script & .jar rather than the built
+  # one to simplify usage of the tool.
   data = [
-    "$root_build_dir/lib.java/build/android/stacktrace/java_deobfuscate.jar",
-    "$root_build_dir/bin/java_deobfuscate",
+    "java_deobfuscate.py",
+    "java_deobfuscate.jar",
   ]
 }

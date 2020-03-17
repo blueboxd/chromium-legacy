@@ -25,6 +25,11 @@ class LayoutNGMixin : public Base {
 
   void Paint(const PaintInfo&) const override;
 
+  bool NodeAtPoint(HitTestResult&,
+                   const HitTestLocation&,
+                   const PhysicalOffset& accumulated_offset,
+                   HitTestAction) override;
+
   bool IsLayoutNGObject() const final { return true; }
 
   const NGPhysicalBoxFragment* CurrentFragment() const final;

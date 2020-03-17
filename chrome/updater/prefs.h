@@ -13,6 +13,11 @@ namespace updater {
 
 std::unique_ptr<PrefService> CreatePrefService();
 
+// Commits prefs changes to storage. This function should only be called
+// when the changes must be written immediately, for instance, during program
+// shutdown. The function must be called in the scope of a task executor.
+void PrefsCommitPendingWrites(PrefService* pref_service);
+
 }  // namespace updater
 
 #endif  // CHROME_UPDATER_PREFS_H_

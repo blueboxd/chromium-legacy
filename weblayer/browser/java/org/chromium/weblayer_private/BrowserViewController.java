@@ -5,7 +5,6 @@
 package org.chromium.weblayer_private;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.os.RemoteException;
 import android.util.AndroidRuntimeException;
 import android.view.View;
@@ -21,8 +20,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
-import org.chromium.ui.modaldialog.ModalDialogProperties;
-import org.chromium.ui.modaldialog.SimpleModalDialogController;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -225,40 +222,5 @@ public final class BrowserViewController
     public boolean dismissTabModalOverlay() {
         return mModalDialogManager.dismissActiveDialogOfType(
                 ModalDialogType.TAB, DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE);
-    }
-
-    /**
-     * Asks the user to confirm a page reload on a POSTed page.
-     */
-    public void showRepostFormWarningDialog() {
-        ModalDialogProperties.Controller dialogController =
-                new SimpleModalDialogController(mModalDialogManager, (Integer dismissalCause) -> {
-                    WebContents webContents = mTab == null ? null : mTab.getWebContents();
-                    if (webContents == null) return;
-                    switch (dismissalCause) {
-                        case DialogDismissalCause.POSITIVE_BUTTON_CLICKED:
-                            webContents.getNavigationController().continuePendingReload();
-                            break;
-                        default:
-                            webContents.getNavigationController().cancelPendingReload();
-                            break;
-                    }
-                });
-
-        Resources resources = mWindowAndroid.getContext().get().getResources();
-        PropertyModel dialogModel =
-                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
-                        .with(ModalDialogProperties.CONTROLLER, dialogController)
-                        .with(ModalDialogProperties.TITLE, resources,
-                                R.string.http_post_warning_title)
-                        .with(ModalDialogProperties.MESSAGE, resources, R.string.http_post_warning)
-                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
-                                R.string.http_post_warning_resend)
-                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
-                                R.string.cancel)
-                        .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
-                        .build();
-
-        mModalDialogManager.showDialog(dialogModel, ModalDialogManager.ModalDialogType.TAB, true);
     }
 }

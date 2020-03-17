@@ -19,6 +19,7 @@ struct ContainerId;
 
 class CrostiniUpgraderUIObserver {
  public:
+  virtual void OnBackupMaybeStarted(bool did_start) {}
   virtual void OnBackupProgress(int percent) = 0;
   virtual void OnBackupSucceeded(bool was_cancelled) = 0;
   virtual void OnBackupFailed() = 0;

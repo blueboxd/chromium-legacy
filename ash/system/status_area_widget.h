@@ -69,8 +69,7 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   void CalculateTargetBounds() override;
   gfx::Rect GetTargetBounds() const override;
   void UpdateLayout(bool animate) override;
-
-  void UpdateTargetBoundsForGesture();
+  void UpdateTargetBoundsForGesture(int shelf_position) override;
 
   // Sets system tray visibility. Shows or hides widget if needed.
   void SetSystemTrayVisibility(bool visible);

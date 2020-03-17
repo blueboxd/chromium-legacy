@@ -132,6 +132,11 @@ bool WebStateList::IsMutating() const {
   return locked_;
 }
 
+bool WebStateList::IsBatchInProgress() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return batch_operation_in_progress_;
+}
+
 web::WebState* WebStateList::GetActiveWebState() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (active_index_ != kInvalidIndex)
@@ -451,6 +456,10 @@ void WebStateList::RemoveObserver(WebStateListObserver* observer) {
 void WebStateList::PerformBatchOperation(
     base::OnceCallback<void(WebStateList*)> operation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  DCHECK(!batch_operation_in_progress_);
+  base::AutoReset<bool> lock(&batch_operation_in_progress_, /*locked=*/true);
+
   for (auto& observer : observers_)
     observer.WillBeginBatchOperation(this);
   if (!operation.is_null())

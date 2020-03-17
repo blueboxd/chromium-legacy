@@ -30,21 +30,51 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/paint/svg_mask_painter.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
 namespace blink {
 
+static void PaintFilteredContent(GraphicsContext& context,
+                                 const LayoutObject& object,
+                                 const DisplayItemClient& display_item_client,
+                                 FilterData* filter_data) {
+  if (DrawingRecorder::UseCachedDrawingIfPossible(context, display_item_client,
+                                                  DisplayItem::kSVGFilter))
+    return;
+
+  DrawingRecorder recorder(context, display_item_client,
+                           DisplayItem::kSVGFilter);
+  sk_sp<PaintFilter> image_filter = filter_data->CreateFilter();
+  context.Save();
+
+  // Clip drawing of filtered image to the minimum required paint rect.
+  const FloatRect object_bounds = object.StrokeBoundingBox();
+  const FloatRect paint_rect = filter_data->MapRect(object_bounds);
+  context.ClipRect(paint_rect);
+
+  // Use the union of the pre-image and the post-image as the layer bounds.
+  const FloatRect layer_bounds = UnionRect(object_bounds, paint_rect);
+  context.BeginLayer(1, SkBlendMode::kSrcOver, &layer_bounds, kColorFilterNone,
+                     std::move(image_filter));
+  context.EndLayer();
+  context.Restore();
+}
+
 ScopedSVGPaintState::~ScopedSVGPaintState() {
-  if (filter_) {
+  if (filter_data_ && filter_data_->UpdateStateOnFinish()) {
     DCHECK(SVGResourcesCache::CachedResourcesForLayoutObject(object_));
     DCHECK(
-        SVGResourcesCache::CachedResourcesForLayoutObject(object_)->Filter() ==
-        filter_);
+        SVGResourcesCache::CachedResourcesForLayoutObject(object_)->Filter());
     DCHECK(filter_recording_context_);
-    SVGFilterPainter(*filter_).FinishEffect(object_, display_item_client_,
-                                            *filter_recording_context_);
 
+    if (filter_data_->ContentNeedsUpdate())
+      filter_data_->UpdateContent(filter_recording_context_->EndContent());
+
+    PaintFilteredContent(paint_info_.context, object_, display_item_client_,
+                         filter_data_);
     // Reset the paint info after the filter effect has been completed.
     filter_paint_info_ = nullptr;
+    filter_data_ = nullptr;
   }
 
   if (masker_) {
@@ -53,7 +83,7 @@ ScopedSVGPaintState::~ScopedSVGPaintState() {
         SVGResourcesCache::CachedResourcesForLayoutObject(object_)->Masker() ==
         masker_);
     SVGMaskPainter(*masker_).FinishEffect(object_, display_item_client_,
-                                          GetPaintInfo().context);
+                                          paint_info_.context);
   }
 }
 
@@ -158,23 +188,23 @@ static bool HasReferenceFilterOnly(const ComputedStyle& style) {
 bool ScopedSVGPaintState::ApplyFilterIfNecessary(SVGResources* resources) {
   if (!resources)
     return !HasReferenceFilterOnly(object_.StyleRef());
-
   LayoutSVGResourceFilter* filter = resources->Filter();
   if (!filter)
     return true;
+  filter->ClearInvalidationMask();
   filter_recording_context_ =
       std::make_unique<SVGFilterRecordingContext>(GetPaintInfo().context);
-  filter_ = filter;
-  GraphicsContext* filter_context = SVGFilterPainter(*filter).PrepareEffect(
-      object_, *filter_recording_context_);
-  if (!filter_context)
+  filter_data_ = SVGFilterPainter(*filter).PrepareEffect(object_);
+  // If we have no filter data (== the filter was invalid) or if we
+  // don't need to update the source graphics, we can short-circuit
+  // here.
+  if (!filter_data_ || !filter_data_->ContentNeedsUpdate())
     return false;
-
   // Because the filter needs to cache its contents we replace the context
   // during filtering with the filter's context.
+  GraphicsContext* filter_context = filter_recording_context_->BeginContent();
   filter_paint_info_ =
       std::make_unique<PaintInfo>(*filter_context, paint_info_);
-
   // Because we cache the filter contents and do not invalidate on paint
   // invalidation rect changes, we need to paint the entire filter region
   // so elements outside the initial paint (due to scrolling, etc) paint.

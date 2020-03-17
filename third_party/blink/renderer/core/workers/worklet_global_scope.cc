@@ -71,7 +71,6 @@ WorkletGlobalScope::WorkletGlobalScope(
           // TODO(tzik): Assign an Agent for Worklets after
           // NonMainThreadScheduler gets ready to run microtasks.
           agent,
-          creation_params->off_main_thread_fetch_option,
           creation_params->global_scope_name,
           creation_params->parent_devtools_token,
           creation_params->v8_cache_options,

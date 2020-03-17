@@ -18,7 +18,6 @@ js_modulizer("modulize") {
     "clear_browsing_data_test.js",
     "controlled_button_tests.js",
     "controlled_radio_button_tests.js",
-    "default_browser_browsertest.js",
     "downloads_page_test.js",
     "dropdown_menu_tests.js",
     "edit_dictionary_page_test.js",
@@ -54,7 +53,6 @@ js_modulizer("modulize") {
     "startup_urls_page_test.js",
     "sync_test_util.js",
     "test_about_page_browser_proxy.js",
-    "system_page_tests.js",
     "test_extension_control_browser_proxy.js",
     "test_languages_browser_proxy.js",
     "test_lifetime_browser_proxy.js",
@@ -74,6 +72,12 @@ js_modulizer("modulize") {
   }
   if (is_chromeos) {
     input_files += [ "passwords_section_test_cros.js" ]
+  } else {
+    input_files += [
+      "default_browser_browsertest.js",
+      "import_data_dialog_test.js",
+      "system_page_tests.js",
+    ]
   }
   namespace_rewrites = settings_namespace_rewrites + test_namespace_rewrites + [
                          "autofill_test_util.PasswordSectionElementFactory|PasswordSectionElementFactory",

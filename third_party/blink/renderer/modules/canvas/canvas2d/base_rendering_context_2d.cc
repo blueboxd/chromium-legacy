@@ -1665,7 +1665,7 @@ ImageData* BaseRenderingContext2D::getImageData(
         "Buffer size exceeds maximum heap object size.");
     return nullptr;
   }
-  DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(contents);
+  DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(std::move(contents));
 
   ImageData* imageData = ImageData::Create(
       image_data_rect.Size(),

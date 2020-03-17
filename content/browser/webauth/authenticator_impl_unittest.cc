@@ -2488,6 +2488,99 @@ TEST_F(AuthenticatorContentBrowserClientTest,
   RunTestCases(kTests);
 }
 
+TEST_F(AuthenticatorContentBrowserClientTest, BlockedAttestation) {
+  NavigateAndCommit(GURL("https://foo.example.com"));
+
+  static constexpr struct {
+    const char* domains;
+    AttestationConveyancePreference attestation;
+    IndividualAttestation individual_attestation;
+    AttestationType result;
+  } kTests[] = {
+      // Empty or nonsense parameter doesn't block anything.
+      {
+          "",
+          AttestationConveyancePreference::DIRECT,
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationType::U2F,
+      },
+      {
+          " ,,   ,, ",
+          AttestationConveyancePreference::DIRECT,
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationType::U2F,
+      },
+      // Direct listing of domain blocks...
+      {
+          "foo.example.com",
+          AttestationConveyancePreference::DIRECT,
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationType::NONE,
+      },
+      // ... unless attestation is permitted by policy.
+      {
+          "foo.example.com",
+          AttestationConveyancePreference::DIRECT,
+          IndividualAttestation::REQUESTED,
+          AttestationType::U2F,
+      },
+      // Additional stuff in the string doesn't break the blocking.
+      {
+          "other,foo.example.com,,nonsenseXYZ123",
+          AttestationConveyancePreference::DIRECT,
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationType::NONE,
+      },
+      // The whole domain can be blocked.
+      {
+          "(*.)example.com",
+          AttestationConveyancePreference::DIRECT,
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationType::NONE,
+      },
+      // Policy again overrides
+      {
+          "(*.)example.com",
+          AttestationConveyancePreference::DIRECT,
+          IndividualAttestation::REQUESTED,
+          AttestationType::U2F,
+      },
+      // Trying to block everything doesn't work.
+      {
+          "(*.)",
+          AttestationConveyancePreference::DIRECT,
+          IndividualAttestation::NOT_REQUESTED,
+          AttestationType::U2F,
+      },
+  };
+
+  int test_num = 0;
+  for (const auto& test : kTests) {
+    SCOPED_TRACE(test_num++);
+    SCOPED_TRACE(test.domains);
+
+    std::map<std::string, std::string> params;
+    params.emplace("domains", test.domains);
+
+    base::test::ScopedFeatureList scoped_feature_list_;
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        device::kWebAuthAttestationBlockList, params);
+
+    const std::vector<TestCase> kTestCase = {
+        {
+            test.attestation,
+            test.individual_attestation,
+            AttestationConsent::GRANTED,
+            AuthenticatorStatus::SUCCESS,
+            test.result,
+            "",
+        },
+    };
+
+    RunTestCases(kTestCase);
+  }
+}
+
 TEST_F(AuthenticatorContentBrowserClientTest,
        MakeCredentialRequestStartedCallback) {
   NavigateAndCommit(GURL(kTestOrigin1));

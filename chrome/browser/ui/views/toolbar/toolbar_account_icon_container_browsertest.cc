@@ -14,7 +14,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 
-// TODO(crbug.com/932818): Clean this and the same code in ukm_browsertest.
+// TODO(crbug.com/1061637): Clean this and the same code in ukm_browsertest.
 // Maybe move them to InProcessBrowserTest.
 namespace {
 

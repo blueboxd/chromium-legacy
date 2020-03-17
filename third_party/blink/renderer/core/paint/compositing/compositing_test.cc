@@ -250,8 +250,8 @@ class CompositingSimTest : public PaintTestConfigurations, public SimTest {
   }
 
   void UpdateAllLifecyclePhasesExceptPaint() {
-    WebView().MainFrameWidget()->UpdateLifecycle(
-        WebWidget::LifecycleUpdate::kPrePaint, DocumentUpdateReason::kTest);
+    WebView().MainFrameWidget()->UpdateLifecycle(WebLifecycleUpdate::kPrePaint,
+                                                 DocumentUpdateReason::kTest);
   }
 
   cc::PropertyTrees* GetPropertyTrees() {

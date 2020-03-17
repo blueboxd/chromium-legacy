@@ -44,6 +44,7 @@ import './incompatible_applications_page/incompatible_applications_page.m.js';
 
 // <if expr="not chromeos">
 import './default_browser_page/default_browser_page.m.js';
+import './people_page/import_data_dialog.m.js';
 import './system_page/system_page.m.js';
 // </if>
 
@@ -63,6 +64,7 @@ export {IncompatibleApplication, IncompatibleApplicationsBrowserProxyImpl} from 
 // <if expr="not chromeos">
 export {DefaultBrowserBrowserProxyImpl} from './default_browser_page/default_browser_browser_proxy.m.js';
 export {SystemPageBrowserProxyImpl} from './system_page/system_page_browser_proxy.m.js';
+export {ImportDataBrowserProxyImpl, ImportDataStatus} from './people_page/import_data_browser_proxy.m.js';
 // </if>
 
 // <if expr="chromeos">

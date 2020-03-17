@@ -155,12 +155,18 @@ class CONTENT_EXPORT ServiceWorkerVersion
   };
 
   // Contains a subset of the main script's response information.
-  struct MainScriptResponse {
+  struct CONTENT_EXPORT MainScriptResponse {
+    // TODO(crbug.com/1060076): Replace this constructor with a constructor
+    // that takes a URLResponseHead.
+    explicit MainScriptResponse(const net::HttpResponseInfo& http_info);
+    ~MainScriptResponse();
+
     base::Time response_time;
     base::Time last_modified;
-    // This is used for all responses sent back from a service worker, as
+    // These are used for all responses sent back from a service worker, as
     // effective security of these responses is equivalent to that of the
     // service worker.
+    scoped_refptr<net::HttpResponseHeaders> headers;
     net::SSLInfo ssl_info;
   };
 
@@ -490,9 +496,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void SetDevToolsAttached(bool attached);
 
-  // Sets the HttpResponseInfo used to load the main script.
-  // TODO(bashi): Make this method take MainScriptResponse.
-  void SetMainScriptHttpResponseInfo(const net::HttpResponseInfo& http_info);
+  // Sets the response information used to load the main script.
+  void SetMainScriptResponse(std::unique_ptr<MainScriptResponse> response);
   const MainScriptResponse* GetMainScriptResponse();
 
   // Simulate ping timeout. Should be used for tests-only.

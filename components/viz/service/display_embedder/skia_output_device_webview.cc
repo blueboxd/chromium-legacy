@@ -22,8 +22,7 @@ SkiaOutputDeviceWebView::SkiaOutputDeviceWebView(
     scoped_refptr<gl::GLSurface> gl_surface,
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(/*need_swap_semaphore=*/false,
-                       memory_tracker,
+    : SkiaOutputDevice(memory_tracker,
                        std::move(did_swap_buffer_complete_callback)),
       context_state_(context_state),
       gl_surface_(std::move(gl_surface)) {
@@ -85,7 +84,8 @@ void SkiaOutputDeviceWebView::SwapBuffers(
                     std::move(latency_info));
 }
 
-SkSurface* SkiaOutputDeviceWebView::BeginPaint() {
+SkSurface* SkiaOutputDeviceWebView::BeginPaint(
+    std::vector<GrBackendSemaphore>* end_semaphores) {
   DCHECK(sk_surface_);
 
   unsigned int fbo = gl_surface_->GetBackingFramebufferObject();
@@ -97,7 +97,7 @@ SkSurface* SkiaOutputDeviceWebView::BeginPaint() {
   return sk_surface_.get();
 }
 
-void SkiaOutputDeviceWebView::EndPaint(const GrBackendSemaphore& semaphore) {}
+void SkiaOutputDeviceWebView::EndPaint() {}
 
 void SkiaOutputDeviceWebView::InitSkiaSurface(unsigned int fbo) {
   last_frame_buffer_object_ = fbo;

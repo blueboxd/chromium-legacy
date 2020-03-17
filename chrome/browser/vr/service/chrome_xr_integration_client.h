@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/util/type_safety/pass_key.h"
+#include "build/build_config.h"
 #include "content/public/browser/xr_integration_client.h"
-#include "device/vr/public/mojom/vr_service.mojom-forward.h"
 
 class ChromeContentBrowserClient;
 
@@ -27,6 +27,13 @@ class ChromeXrIntegrationClient : public content::XrIntegrationClient {
   // XrIntegrationClient
   std::unique_ptr<content::XrInstallHelper> GetInstallHelper(
       device::mojom::XRDeviceId device_id) override;
+
+  // The only class that we have which implements VrUiHost is Win-only.
+#if defined(OS_WIN)
+  std::unique_ptr<content::VrUiHost> CreateVrUiHost(
+      device::mojom::XRDeviceId device_id,
+      mojo::PendingRemote<device::mojom::XRCompositorHost> compositor) override;
+#endif
 
   // TODO(1031622): Once all consumers have been moved to content/, this should
   // be removed, and those consumers should be updated to get this instance from

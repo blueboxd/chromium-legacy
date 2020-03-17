@@ -113,7 +113,7 @@ void NavigationControllerImpl::GoToIndex(int index) {
 }
 
 void NavigationControllerImpl::Reload() {
-  web_contents()->GetController().Reload(content::ReloadType::NORMAL, true);
+  web_contents()->GetController().Reload(content::ReloadType::NORMAL, false);
 }
 
 void NavigationControllerImpl::Stop() {

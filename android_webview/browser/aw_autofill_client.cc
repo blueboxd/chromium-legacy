@@ -77,10 +77,6 @@ autofill::FormDataImporter* AwAutofillClient::GetFormDataImporter() {
   return nullptr;
 }
 
-autofill::SmsClient* AwAutofillClient::GetSmsClient() {
-  return nullptr;
-}
-
 autofill::payments::PaymentsClient* AwAutofillClient::GetPaymentsClient() {
   return nullptr;
 }

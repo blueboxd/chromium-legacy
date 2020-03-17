@@ -476,13 +476,13 @@ class WebView {
   // PaintCanvas being supplied by another (composited) WebView.
   //
   // Before calling PaintContent(), the caller must ensure the lifecycle of the
-  // widget's frame is clean by calling UpdateLifecycle(LifecycleUpdate::All).
-  // It is okay to call paint multiple times once the lifecycle is clean,
-  // assuming no other changes are made to the WebWidget (e.g., once
-  // events are processed, it should be assumed that another call to
-  // UpdateLifecycle is warranted before painting again). Paints starting from
-  // the main LayoutView's property tree state, thus ignoring any transient
-  // transormations (e.g. pinch-zoom, dev tools emulation, etc.).
+  // widget's frame is clean by calling
+  // UpdateLifecycle(WebLifecycleUpdate::All). It is okay to call paint multiple
+  // times once the lifecycle is clean, assuming no other changes are made to
+  // the WebWidget (e.g., once events are processed, it should be assumed that
+  // another call to UpdateLifecycle is warranted before painting again). Paints
+  // starting from the main LayoutView's property tree state, thus ignoring any
+  // transient transormations (e.g. pinch-zoom, dev tools emulation, etc.).
   //
   // The painting will be performed without applying the DevicePixelRatio as
   // scaling is expected to already be applied to the PaintCanvas by the

@@ -117,9 +117,10 @@
       }
 
       iron-icon[icon='cr:error'] {
-        @apply --cr-icon-height-width;
         --iron-icon-fill-color: var(--settings-error-color);
+        height: var(--cr-icon-size);
         margin-inline-end: 8px;
+        width: var(--cr-icon-size);
       }
 
       .name-with-error-list[disabled] {

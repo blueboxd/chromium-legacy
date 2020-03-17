@@ -45,13 +45,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   void GetProperties(
       const std::string& userhash,
       const std::string& service_path,
-      const network_handler::DictionaryResultCallback& callback,
+      network_handler::DictionaryResultCallback callback,
       const network_handler::ErrorCallback& error_callback) override;
 
   void GetManagedProperties(
       const std::string& userhash,
       const std::string& service_path,
-      const network_handler::DictionaryResultCallback& callback,
+      network_handler::DictionaryResultCallback callback,
       const network_handler::ErrorCallback& error_callback) override;
 
   void SetProperties(
@@ -137,7 +137,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   friend class ProhibitedTechnologiesHandlerTest;
 
   struct Policies;
-  typedef base::Callback<void(
+  typedef base::OnceCallback<void(
       const std::string& service_path,
       std::unique_ptr<base::DictionaryValue> properties)>
       GetDevicePropertiesCallback;
@@ -160,14 +160,14 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   // Sends the response to the caller of GetManagedProperties.
   void SendManagedProperties(
       const std::string& userhash,
-      const network_handler::DictionaryResultCallback& callback,
+      network_handler::DictionaryResultCallback callback,
       const network_handler::ErrorCallback& error_callback,
       const std::string& service_path,
       std::unique_ptr<base::DictionaryValue> shill_properties);
 
   // Sends the response to the caller of GetProperties.
   void SendProperties(const std::string& userhash,
-                      const network_handler::DictionaryResultCallback& callback,
+                      network_handler::DictionaryResultCallback callback,
                       const network_handler::ErrorCallback& error_callback,
                       const std::string& service_path,
                       std::unique_ptr<base::DictionaryValue> shill_properties);

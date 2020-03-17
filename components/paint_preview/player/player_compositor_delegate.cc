@@ -17,6 +17,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "components/paint_preview/browser/compositor_utils.h"
@@ -182,9 +183,8 @@ void PlayerCompositorDelegate::OnProtoAvailable(
   paint_preview_compositor_client_->SetRootFrameUrl(
       GURL(proto->metadata().url()));
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&PrepareCompositeRequest, *proto),
       base::BindOnce(&PlayerCompositorDelegate::SendCompositeRequest,
                      weak_factory_.GetWeakPtr()));

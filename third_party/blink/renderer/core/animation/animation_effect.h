@@ -72,6 +72,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
     virtual ~EventDelegate() = default;
     virtual bool RequiresIterationEvents(const AnimationEffect&) = 0;
     virtual void OnEventCondition(const AnimationEffect&, Timing::Phase) = 0;
+    virtual bool IsTransitionEventDelegate() const { return false; }
     virtual void Trace(Visitor* visitor) {}
   };
 
@@ -103,6 +104,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   const Timing& SpecifiedTiming() const { return timing_; }
   void UpdateSpecifiedTiming(const Timing&);
   EventDelegate* GetEventDelegate() { return event_delegate_; }
+  void SetEventDelegate(EventDelegate* delegate) { event_delegate_ = delegate; }
 
   EffectTiming* getTiming() const;
   ComputedEffectTiming* getComputedTiming() const;

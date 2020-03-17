@@ -109,7 +109,7 @@ void ClientVideoDispatcher::OnPacketDone(
   while (!pending_frames_.empty() && pending_frames_.front().done) {
     VideoAck ack_message;
     ack_message.set_frame_id(pending_frames_.front().frame_id);
-    message_pipe()->Send(&ack_message, base::Closure());
+    message_pipe()->Send(&ack_message, {});
     pending_frames_.pop_front();
   }
 }

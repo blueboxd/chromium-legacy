@@ -125,7 +125,9 @@ class ServiceWorkerObjectHostTest : public testing::Test {
     records.push_back(storage::mojom::ServiceWorkerResourceRecord::New(
         10, version_->script_url(), 100));
     version_->script_cache_map()->SetResources(records);
-    version_->SetMainScriptHttpResponseInfo(net::HttpResponseInfo());
+    version_->SetMainScriptResponse(
+        std::make_unique<ServiceWorkerVersion::MainScriptResponse>(
+            net::HttpResponseInfo()));
     version_->set_fetch_handler_existence(
         ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
     version_->SetStatus(ServiceWorkerVersion::INSTALLING);

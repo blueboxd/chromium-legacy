@@ -26,7 +26,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
@@ -52,7 +51,6 @@ namespace {
 // The following values should match those in
 // DataReductionProxyConfigServiceClientTest.config_:
 const char kSuccessOrigin[] = "https://origin.net:443";
-const char kSuccessFallback[] = "fallback.net:80";
 const char kSuccessSessionKey[] = "SecretSessionKey";
 
 // The following values should match those in
@@ -367,35 +365,6 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 #endif
 }
 
-// Tests that the config is read successfully on the first attempt, and secure
-// proxies are not used if the secure proxy check fails later after some time.
-TEST_F(DataReductionProxyConfigServiceClientTest,
-       RemoteConfigSuccessWithDelayedSecureCheckFail) {
-  Init();
-  AddMockSuccess();
-  SetDataReductionProxyEnabled(true, true);
-  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
-  config_client()->RetrieveConfig();
-  RunUntilIdle();
-  VerifyRemoteSuccess(true);
-#if defined(OS_ANDROID)
-  EXPECT_FALSE(config_client()->foreground_fetch_pending());
-#endif
-
-  std::vector<DataReductionProxyServer> http_proxies;
-  http_proxies.push_back(DataReductionProxyServer(net::ProxyServer::FromURI(
-      kSuccessOrigin, net::ProxyServer::SCHEME_HTTP)));
-  http_proxies.push_back(DataReductionProxyServer(net::ProxyServer::FromURI(
-      kSuccessFallback, net::ProxyServer::SCHEME_HTTP)));
-
-  // Secure check failed.
-  TestingPrefServiceSimple test_prefs;
-  test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  NetworkPropertiesManager manager(base::DefaultClock::GetInstance(),
-                                   &test_prefs);
-  manager.SetIsSecureProxyDisallowedByCarrier(true);
-  VerifyRemoteSuccess(false);
-}
 
 // Tests that the config is read successfully on the second attempt.
 TEST_F(DataReductionProxyConfigServiceClientTest,
@@ -516,19 +485,6 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   RunUntilIdle();
   VerifyRemoteSuccess(true);
 
-  std::vector<DataReductionProxyServer> http_proxies;
-  http_proxies.push_back(DataReductionProxyServer(net::ProxyServer::FromURI(
-      kSuccessOrigin, net::ProxyServer::SCHEME_HTTP)));
-  http_proxies.push_back(DataReductionProxyServer(net::ProxyServer::FromURI(
-      kSuccessFallback, net::ProxyServer::SCHEME_HTTP)));
-
-  // Secure check failed.
-  TestingPrefServiceSimple test_prefs;
-  test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  NetworkPropertiesManager manager(base::DefaultClock::GetInstance(),
-                                   &test_prefs);
-  manager.SetIsSecureProxyDisallowedByCarrier(true);
-  VerifyRemoteSuccess(false);
 }
 
 // Verifies that fetching the remote config has no effect if the config client

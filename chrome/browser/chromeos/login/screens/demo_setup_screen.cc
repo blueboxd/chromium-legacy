@@ -61,10 +61,17 @@ void DemoSetupScreen::StartEnrollment() {
   DCHECK(DemoSetupController::IsOobeDemoSetupFlowInProgress());
   DemoSetupController* demo_controller =
       WizardController::default_controller()->demo_setup_controller();
-  demo_controller->Enroll(base::BindOnce(&DemoSetupScreen::OnSetupSuccess,
-                                         weak_ptr_factory_.GetWeakPtr()),
-                          base::BindOnce(&DemoSetupScreen::OnSetupError,
-                                         weak_ptr_factory_.GetWeakPtr()));
+  demo_controller->Enroll(
+      base::BindOnce(&DemoSetupScreen::OnSetupSuccess,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&DemoSetupScreen::OnSetupError,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&DemoSetupScreen::IncrementSetupProgress,
+                          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DemoSetupScreen::IncrementSetupProgress(bool complete) {
+  view_->IncrementSetupProgress(complete);
 }
 
 void DemoSetupScreen::OnSetupError(

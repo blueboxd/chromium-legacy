@@ -55,6 +55,8 @@ class AccountsCookieMutator {
   typedef base::OnceCallback<void(const CoreAccountId& account_id,
                                   const GoogleServiceAuthError& error)>
       AddAccountToCookieCompletedCallback;
+  typedef base::OnceCallback<void(const GoogleServiceAuthError& error)>
+      LogOutFromCookieCompletedCallback;
 
   // Adds an account identified by |account_id| to the cookie responsible for
   // tracking the list of logged-in Google sessions across the web.
@@ -121,7 +123,9 @@ class AccountsCookieMutator {
 #endif
 
   // Remove all accounts from the Gaia cookie.
-  virtual void LogOutAllAccounts(gaia::GaiaSource source) = 0;
+  virtual void LogOutAllAccounts(
+      gaia::GaiaSource source,
+      LogOutFromCookieCompletedCallback completion_callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountsCookieMutator);

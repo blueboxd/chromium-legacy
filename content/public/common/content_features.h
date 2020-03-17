@@ -137,6 +137,7 @@ CONTENT_EXPORT extern const base::Feature kStorageServiceSandbox;
 CONTENT_EXPORT extern const base::Feature kStrictOriginIsolation;
 CONTENT_EXPORT extern const base::Feature kSyntheticPointerActions;
 CONTENT_EXPORT extern const base::Feature kTimerThrottlingForHiddenFrames;
+CONTENT_EXPORT extern const base::Feature kTopLevelAwait;
 CONTENT_EXPORT extern const base::Feature kTouchpadAsyncPinchEvents;
 CONTENT_EXPORT extern const base::Feature kTouchpadOverscrollHistoryNavigation;
 CONTENT_EXPORT extern const base::Feature kTrustedDOMTypes;

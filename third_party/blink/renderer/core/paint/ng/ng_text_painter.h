@@ -44,6 +44,14 @@ class CORE_EXPORT NGTextPainter : public TextPainterBase {
              const TextPaintStyle&,
              DOMNodeId);
 
+  void PaintSelectedText(unsigned start_offset,
+                         unsigned end_offset,
+                         unsigned length,
+                         const TextPaintStyle& text_style,
+                         const TextPaintStyle& selection_style,
+                         const PhysicalRect& selection_rect,
+                         DOMNodeId node_id);
+
  private:
   template <PaintInternalStep step>
   void PaintInternalFragment(unsigned from, unsigned to, DOMNodeId node_id);

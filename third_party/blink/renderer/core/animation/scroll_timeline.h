@@ -45,8 +45,7 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
                  ScrollDirection,
                  CSSPrimitiveValue*,
                  CSSPrimitiveValue*,
-                 double,
-                 Timing::FillMode);
+                 double);
 
   // AnimationTimeline implementation.
   bool IsScrollTimeline() const override { return true; }
@@ -65,7 +64,6 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   String startScrollOffset();
   String endScrollOffset();
   void timeRange(DoubleOrScrollTimelineAutoKeyword&);
-  String fill();
 
   // Returns the Node that should actually have the ScrollableArea (if one
   // exists). This can differ from |scrollSource| when |scroll_source_| is the
@@ -74,7 +72,6 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   Node* ResolvedScrollSource() const { return resolved_scroll_source_; }
 
   ScrollDirection GetOrientation() const { return orientation_; }
-  Timing::FillMode GetFillMode() const { return fill_; }
 
   void GetCurrentAndMaxOffset(const LayoutBox*,
                               double& current_offset,
@@ -115,7 +112,6 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   Member<CSSPrimitiveValue> start_scroll_offset_;
   Member<CSSPrimitiveValue> end_scroll_offset_;
   double time_range_;
-  Timing::FillMode fill_;
 };
 
 template <>

@@ -48,11 +48,6 @@ autofill::payments::PaymentsClient* AutofillClientImpl::GetPaymentsClient() {
   return nullptr;
 }
 
-autofill::SmsClient* AutofillClientImpl::GetSmsClient() {
-  NOTREACHED();
-  return nullptr;
-}
-
 autofill::StrikeDatabase* AutofillClientImpl::GetStrikeDatabase() {
   NOTREACHED();
   return nullptr;

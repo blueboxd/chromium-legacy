@@ -1242,6 +1242,9 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.cc_unittests.filter',
         ],
+        'swarming': {
+          'shards': 2,
+        },
       },
       'components_unittests': {
         'args': [
@@ -2531,6 +2534,22 @@
       },
     },
 
+    'gpu_webgl_conformance_swangle_passthrough_telemetry_tests': {
+      'webgl_conformance_swangle_passthrough': {
+        'telemetry_test_name': 'webgl_conformance',
+        'args': [
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--use-gl=angle --use-angle=swiftshader --use-cmd-decoder=passthrough --force_high_performance_gpu',
+          # We are only interested in running a 'smoketest' to test swangle
+          # integration, not the full conformance suite.
+          '--test-filter=conformance/rendering/gl-drawelements.html',
+        ],
+        'swarming': {
+          'shards': 1,
+        },
+      },
+    },
+
     'gpu_webgl_conformance_telemetry_tests': {
       'webgl_conformance': {
         'chromeos_args': [
@@ -2602,13 +2621,7 @@
     'gpu_webgpu_integration_isolated_scripts': {
       'webgpu_blink_web_tests': {
         'name': 'webgpu_blink_web_tests',
-        'args': [
-          '--additional-driver-flag=--enable-unsafe-webgpu',
-          '--driver-logging',
-          '--ignore-default-expectations',
-          '--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations',
-          '--isolated-script-test-filter=wpt_internal/webgpu/*',
-        ],
+        'args': [ '--driver-logging' ],
         'win_args': [ '--additional-driver-flag=--disable-gpu-sandbox' ],
         'win64_args': [ '--target=Release_x64' ],
         'mac_args': [
@@ -2626,7 +2639,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'isolate_name': 'blink_web_tests',
+        'isolate_name': 'webgpu_blink_web_tests',
       },
     },
 
@@ -4122,6 +4135,7 @@
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_swangle_passthrough_telemetry_tests',
     ],
 
     'gpu_angle_perf_smoke_isolated_scripts_and_test_buildbucket_api_gpu_use_cases': [
@@ -4283,6 +4297,7 @@
       'gpu_webgl2_conformance_validating_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_validating_telemetry_tests',
+      'gpu_webgl_conformance_swangle_passthrough_telemetry_tests',
     ],
 
     'gpu_fyi_optional_linux_telemetry_tests': [
@@ -4295,6 +4310,7 @@
       'gpu_common_and_optional_telemetry_tests',
       'gpu_webgl2_conformance_validating_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_swangle_passthrough_telemetry_tests',
       # Not currently running
       # gpu_webgl2_conformance_gl_passthrough_telemetry_tests here due
       # to concerns about machine capacity.

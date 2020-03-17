@@ -134,13 +134,12 @@ void SafetyCheckHandler::HandlePerformSafetyCheck(const base::ListValue* args) {
 void SafetyCheckHandler::HandleGetParentRanDisplayString(
     const base::ListValue* args) {
   const base::Value* callback_id;
+  double timestampRanDouble;
   CHECK(args->Get(0, &callback_id));
+  CHECK(args->GetDouble(1, &timestampRanDouble));
 
-  // TODO(crbug.com/1015841): Construct string stating when safety check ran
-  // and send it back to JS.
   ResolveJavascriptCallback(
-      *callback_id, base::Value(l10n_util::GetStringUTF16(
-                        IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER)));
+      *callback_id, base::Value(GetStringForParentRan(timestampRanDouble)));
 }
 
 void SafetyCheckHandler::CheckUpdates() {
@@ -175,6 +174,12 @@ void SafetyCheckHandler::CheckPasswords() {
   observed_leak_check_.RemoveAll();
   observed_leak_check_.Add(leak_service_);
   passwords_delegate_->StartPasswordCheck();
+  // In the case of no passwords, there is no state transition and no callback.
+  // Because of that, it is necessary to check the state synchronously.
+  if (leak_service_->state() !=
+      password_manager::BulkLeakCheckService::State::kRunning) {
+    OnStateChanged(leak_service_->state());
+  }
 }
 
 void SafetyCheckHandler::CheckExtensions() {
@@ -404,6 +409,62 @@ base::string16 SafetyCheckHandler::GetStringForExtensions(
       return l10n_util::GetPluralStringFUTF16(
           IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BLOCKLISTED_ON_ADMIN,
           reenabled_admin.value());
+  }
+}
+
+base::string16 SafetyCheckHandler::GetStringForParentRan(double timestamp_ran) {
+  return SafetyCheckHandler::GetStringForParentRan(timestamp_ran,
+                                                   base::Time::Now());
+}
+
+base::string16 SafetyCheckHandler::GetStringForParentRan(
+    double timestamp_ran,
+    base::Time system_time) {
+  const base::Time timeRan = base::Time::FromJsTime(timestamp_ran);
+  base::Time::Exploded timeRanExploded;
+  timeRan.LocalExplode(&timeRanExploded);
+
+  base::Time::Exploded systemTimeExploded;
+  system_time.LocalExplode(&systemTimeExploded);
+
+  const base::Time timeYesterday = system_time - base::TimeDelta::FromDays(1);
+  base::Time::Exploded timeYesterdayExploded;
+  timeYesterday.LocalExplode(&timeYesterdayExploded);
+
+  const auto timeDiff = system_time - timeRan;
+  if (timeRanExploded.year == systemTimeExploded.year &&
+      timeRanExploded.month == systemTimeExploded.month &&
+      timeRanExploded.day_of_month == systemTimeExploded.day_of_month) {
+    // Safety check ran today.
+    const int timeDiffInMinutes = timeDiff.InMinutes();
+    if (timeDiffInMinutes == 0) {
+      return l10n_util::GetStringUTF16(
+          IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER);
+    } else if (timeDiffInMinutes < 60) {
+      return l10n_util::GetPluralStringFUTF16(
+          IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER_MINS,
+          timeDiffInMinutes);
+    } else {
+      return l10n_util::GetPluralStringFUTF16(
+          IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER_HOURS,
+          timeDiffInMinutes / 60);
+    }
+  } else if (timeRanExploded.year == timeYesterdayExploded.year &&
+             timeRanExploded.month == timeYesterdayExploded.month &&
+             timeRanExploded.day_of_month ==
+                 timeYesterdayExploded.day_of_month) {
+    // Safety check ran yesterday.
+    return l10n_util::GetStringUTF16(
+        IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER_YESTERDAY);
+  } else {
+    // Safety check ran longer ago than yesterday.
+    // TODO(crbug.com/1015841): While a minor issue, this is not be the ideal
+    // way to calculate the days passed since safety check ran. For example,
+    // <48 h might still be 2 days ago.
+    const int timeDiffInDays = timeDiff.InDays();
+    return l10n_util::GetPluralStringFUTF16(
+        IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER_DAYS,
+        timeDiffInDays);
   }
 }
 

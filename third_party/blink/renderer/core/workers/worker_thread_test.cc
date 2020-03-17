@@ -386,8 +386,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
 
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(
-          KURL("http://fake.url/"), mojom::ScriptType::kClassic,
-          OffMainThreadWorkerScriptFetchOption::kDisabled,
+          KURL("http://fake.url/"), mojom::blink::ScriptType::kClassic,
           "fake global scope name", "fake user agent",
           nullptr /* web_worker_fetch_context */, headers,
           network::mojom::ReferrerPolicy::kDefault, security_origin_.get(),

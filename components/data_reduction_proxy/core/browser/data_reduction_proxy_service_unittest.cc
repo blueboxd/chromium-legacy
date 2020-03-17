@@ -21,7 +21,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -212,10 +211,6 @@ TEST_F(DataReductionProxyServiceTest,
   DataReductionProxyService* service =
       drp_test_context->data_reduction_proxy_service();
 
-  NetworkPropertiesManager network_properties_manager(
-      base::DefaultClock::GetInstance(), prefs());
-  service->config()->SetNetworkPropertiesManagerForTesting(
-      &network_properties_manager);
   service->config()->UpdateConfigForTesting(true, true, true);
 
   auto proxy_server1 = net::ProxyServer::FromPacString("PROXY foo");
@@ -238,10 +233,6 @@ TEST_F(DataReductionProxyServiceTest,
   drp_test_context->SetDataReductionProxyEnabled(true);
   DataReductionProxyService* service =
       drp_test_context->data_reduction_proxy_service();
-  NetworkPropertiesManager network_properties_manager(
-      base::DefaultClock::GetInstance(), prefs());
-  service->config()->SetNetworkPropertiesManagerForTesting(
-      &network_properties_manager);
   service->config()->UpdateConfigForTesting(true, true, true);
 
   auto core_proxy_server = net::ProxyServer::FromPacString("PROXY foo");
@@ -265,10 +256,6 @@ TEST_F(DataReductionProxyServiceTest, TestCustomProxyConfigProperties) {
   drp_test_context->SetDataReductionProxyEnabled(true);
   DataReductionProxyService* service =
       drp_test_context->data_reduction_proxy_service();
-  NetworkPropertiesManager network_properties_manager(
-      base::DefaultClock::GetInstance(), prefs());
-  service->config()->SetNetworkPropertiesManagerForTesting(
-      &network_properties_manager);
   service->config()->UpdateConfigForTesting(true, true, true);
 
   mojo::Remote<network::mojom::CustomProxyConfigClient> client_remote;

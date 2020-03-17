@@ -147,7 +147,7 @@ DOMArrayBuffer* FileReaderLoader::ArrayBufferResult() {
                                   SafeCast<size_t>(bytes_loaded_));
   }
 
-  array_buffer_result_ = DOMArrayBuffer::Create(raw_data_);
+  array_buffer_result_ = DOMArrayBuffer::Create(std::move(raw_data_));
   DCHECK_EQ(raw_data_.DataLength(), 0u);
   raw_data_.Reset();
   return array_buffer_result_;

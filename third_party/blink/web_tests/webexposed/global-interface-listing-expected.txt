@@ -7869,7 +7869,6 @@ interface ScriptProcessorNode : AudioNode
 interface ScrollTimeline : AnimationTimeline
     attribute @@toStringTag
     getter endScrollOffset
-    getter fill
     getter orientation
     getter scrollSource
     getter startScrollOffset

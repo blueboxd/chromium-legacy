@@ -40,8 +40,7 @@ class TestScrollTimeline : public ScrollTimeline {
                        ScrollTimeline::Vertical,
                        start_scroll_offset,
                        end_scroll_offset,
-                       100.0,
-                       Timing::FillMode::NONE),
+                       100.0),
         next_service_scheduled_(false) {}
 
   void ScheduleServiceOnNextFrame() override {
@@ -108,23 +107,45 @@ TEST_F(ScrollTimelineTest,
   ScrollTimeline* scroll_timeline =
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
 
-  bool current_time_is_null = false;
+  bool current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 5),
                                    mojom::blink::ScrollType::kProgrammatic);
-  scroll_timeline->currentTime(current_time_is_null);
-  EXPECT_TRUE(current_time_is_null);
+  double current_time = scroll_timeline->currentTime(current_time_is_null);
+  EXPECT_FALSE(current_time_is_null);
+  EXPECT_EQ(current_time, 0);
+  EXPECT_EQ("before", scroll_timeline->phase());
+
+  current_time_is_null = true;
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 10),
+                                   mojom::blink::ScrollType::kProgrammatic);
+  current_time = scroll_timeline->currentTime(current_time_is_null);
+  EXPECT_FALSE(current_time_is_null);
+  EXPECT_EQ(current_time, 0);
+  EXPECT_EQ("active", scroll_timeline->phase());
 
   current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 50),
                                    mojom::blink::ScrollType::kProgrammatic);
-  scroll_timeline->currentTime(current_time_is_null);
+  current_time = scroll_timeline->currentTime(current_time_is_null);
   EXPECT_FALSE(current_time_is_null);
+  EXPECT_EQ(current_time, 50);
+  EXPECT_EQ("active", scroll_timeline->phase());
 
-  current_time_is_null = false;
+  current_time_is_null = true;
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 90),
+                                   mojom::blink::ScrollType::kProgrammatic);
+  current_time = scroll_timeline->currentTime(current_time_is_null);
+  EXPECT_FALSE(current_time_is_null);
+  EXPECT_EQ(current_time, time_range.GetAsDouble());
+  EXPECT_EQ("after", scroll_timeline->phase());
+
+  current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 100),
                                    mojom::blink::ScrollType::kProgrammatic);
   scroll_timeline->currentTime(current_time_is_null);
-  EXPECT_TRUE(current_time_is_null);
+  EXPECT_FALSE(current_time_is_null);
+  EXPECT_EQ(current_time, time_range.GetAsDouble());
+  EXPECT_EQ("after", scroll_timeline->phase());
   EXPECT_TRUE(scroll_timeline->IsActive());
 }
 
@@ -156,28 +177,29 @@ TEST_F(ScrollTimelineTest,
   ScrollTimeline* scroll_timeline =
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
 
-  bool current_time_is_null = false;
+  bool current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 20),
                                    mojom::blink::ScrollType::kProgrammatic);
-  EXPECT_EQ(scroll_timeline->phase(), "before");
-  scroll_timeline->currentTime(current_time_is_null);
-  EXPECT_TRUE(current_time_is_null);
-  EXPECT_TRUE(scroll_timeline->IsActive());
+  double current_time = scroll_timeline->currentTime(current_time_is_null);
+  EXPECT_FALSE(current_time_is_null);
+  EXPECT_EQ(0, current_time);
+  EXPECT_EQ("before", scroll_timeline->phase());
 
-  current_time_is_null = false;
+  current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 60),
                                    mojom::blink::ScrollType::kProgrammatic);
-  EXPECT_EQ(scroll_timeline->phase(), "before");
-  scroll_timeline->currentTime(current_time_is_null);
-  EXPECT_TRUE(current_time_is_null);
-  EXPECT_TRUE(scroll_timeline->IsActive());
+  current_time = scroll_timeline->currentTime(current_time_is_null);
+  EXPECT_FALSE(current_time_is_null);
+  EXPECT_EQ(0, current_time);
+  EXPECT_EQ("before", scroll_timeline->phase());
 
-  current_time_is_null = false;
+  current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 100),
                                    mojom::blink::ScrollType::kProgrammatic);
-  EXPECT_EQ(scroll_timeline->phase(), "after");
-  scroll_timeline->currentTime(current_time_is_null);
-  EXPECT_TRUE(current_time_is_null);
+  current_time = scroll_timeline->currentTime(current_time_is_null);
+  EXPECT_FALSE(current_time_is_null);
+  EXPECT_EQ(time_range.GetAsDouble(), current_time);
+  EXPECT_EQ("after", scroll_timeline->phase());
   EXPECT_TRUE(scroll_timeline->IsActive());
 }
 
@@ -297,7 +319,7 @@ TEST_F(ScrollTimelineTest, AttachOrDetachAnimationWithNullScrollSource) {
   Persistent<ScrollTimeline> scroll_timeline =
       MakeGarbageCollected<ScrollTimeline>(
           &GetDocument(), scroll_source, ScrollTimeline::Block,
-          start_scroll_offset, end_scroll_offset, 100, Timing::FillMode::NONE);
+          start_scroll_offset, end_scroll_offset, 100);
 
   // Sanity checks.
   ASSERT_EQ(scroll_timeline->scrollSource(), nullptr);

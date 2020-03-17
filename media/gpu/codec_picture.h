@@ -42,8 +42,10 @@ class MEDIA_GPU_EXPORT CodecPicture
   }
 
   // Populate with an unspecified colorspace by default.
-  VideoColorSpace get_colorspace() const { return colorspace_; }
-  void set_colorspace(VideoColorSpace colorspace) { colorspace_ = colorspace; }
+  const VideoColorSpace& get_colorspace() const { return colorspace_; }
+  void set_colorspace(const VideoColorSpace& colorspace) {
+    colorspace_ = colorspace;
+  }
 
  protected:
   friend class base::RefCountedThreadSafe<CodecPicture>;

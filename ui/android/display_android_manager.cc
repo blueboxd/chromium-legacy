@@ -5,6 +5,7 @@
 #include "ui/android/display_android_manager.h"
 
 #include <jni.h>
+#include <initializer_list>
 #include <map>
 
 #include "base/android/jni_android.h"
@@ -92,12 +93,11 @@ void DisplayAndroidManager::DoUpdateDisplay(display::Display* display,
         gfx::ColorSpace::CreateDisplayP3D65(), gfx::BufferFormat::RGBA_8888};
     if (features::IsDynamicColorGamutEnabled()) {
       auto srgb = gfx::ColorSpace::CreateSRGB();
-      display_color_spaces.SetOutputColorSpaceAndBufferFormat(
-          gfx::ContentColorUsage::kSRGB, true /* needs_alpha */, srgb,
-          gfx::BufferFormat::RGBA_8888);
-      display_color_spaces.SetOutputColorSpaceAndBufferFormat(
-          gfx::ContentColorUsage::kSRGB, false /* needs_alpha */, srgb,
-          gfx::BufferFormat::RGBA_8888);
+      for (auto needs_alpha : {true, false}) {
+        display_color_spaces.SetOutputColorSpaceAndBufferFormat(
+            gfx::ContentColorUsage::kSRGB, needs_alpha, srgb,
+            gfx::BufferFormat::RGBA_8888);
+      }
     }
     display->set_color_spaces(display_color_spaces);
   } else {

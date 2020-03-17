@@ -120,6 +120,13 @@ base::stack<AXNode*> AXNodePosition::GetAncestorAnchors() const {
   return anchors;
 }
 
+AXNode* AXNodePosition::GetLowestUnignoredAncestor() const {
+  if (!GetAnchor())
+    return nullptr;
+
+  return GetAnchor()->GetUnignoredParent();
+}
+
 void AXNodePosition::AnchorParent(AXTreeID* tree_id,
                                   AXNode::AXID* parent_id) const {
   DCHECK(tree_id);

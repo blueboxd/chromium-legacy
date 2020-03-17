@@ -51,20 +51,6 @@
 
 namespace content {
 
-namespace {
-
-// A renderer-initiated navigation should be ignored iff a) there is an ongoing
-// request b) which is browser initiated and c) the renderer request is not
-// user-initiated.
-bool ShouldIgnoreIncomingRendererRequest(
-    NavigationRequest* ongoing_navigation_request,
-    bool has_user_gesture) {
-  return ongoing_navigation_request &&
-         ongoing_navigation_request->browser_initiated() && !has_user_gesture;
-}
-
-}  // namespace
-
 struct NavigatorImpl::NavigationMetricsData {
   NavigationMetricsData(base::TimeTicks start_time,
                         GURL url,
@@ -109,6 +95,17 @@ void NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
         url, root_node->current_url().possibly_invalid_spec());
     CHECK(0);
   }
+}
+
+// A renderer-initiated navigation should be ignored iff a) there is an ongoing
+// request b) which is browser initiated and c) the renderer request is not
+// user-initiated.
+// static
+bool NavigatorImpl::ShouldIgnoreIncomingRendererRequest(
+    const NavigationRequest* ongoing_navigation_request,
+    bool has_user_gesture) {
+  return ongoing_navigation_request &&
+         ongoing_navigation_request->browser_initiated() && !has_user_gesture;
 }
 
 NavigatorDelegate* NavigatorImpl::GetDelegate() {

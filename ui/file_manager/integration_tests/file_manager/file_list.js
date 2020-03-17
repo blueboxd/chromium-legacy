@@ -338,7 +338,6 @@
     // Check: selected state of last item.
     chrome.test.assertTrue('selected' in item.attributes);
 
-
     // Select and delete first item.
     await remoteCall.waitAndClickElement(
         appId, '#file-list [file-name="photos"]');
@@ -360,5 +359,33 @@
 
     // Check: selected state of first item.
     chrome.test.assertTrue('selected' in item.attributes);
+  };
+
+  /**
+   * Tests that user can rename a file/folder after using "select all" without
+   * having selected any file previously.
+   */
+  testcase.fileListRenameFromSelectAll = async () => {
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
+
+    // Select all the files.
+    const ctrlA = ['#file-list', 'a', true, false, false];
+    await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlA);
+
+    // Check: the file-list should be selected.
+    await remoteCall.waitForElement(appId, '#file-list li[selected]');
+
+    // Wait and click on "selection menu button".
+    await remoteCall.waitAndClickElement(
+        appId, '#selection-menu-button:not([hidden])');
+
+    // Wait and click on rename menu item.
+    await remoteCall.waitAndClickElement(
+        appId, '[command="#rename"]:not([hidden]):not([disabled])');
+
+    // Check: the renaming text input should be shown in the file list.
+    const textInput = '#file-list .table-row[renaming] input.rename';
+    await remoteCall.waitForElement(appId, textInput);
   };
 })();

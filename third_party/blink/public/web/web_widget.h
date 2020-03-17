@@ -46,6 +46,7 @@
 #include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/public/web/web_hit_test_result.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
+#include "third_party/blink/public/web/web_lifecycle_update.h"
 #include "third_party/blink/public/web/web_range.h"
 
 namespace cc {
@@ -135,9 +136,8 @@ class WebWidget {
   // non-composited WebViews).
   // |reason| must be used to indicate the source of the
   // update for the purposes of metrics gathering.
-  enum class LifecycleUpdate { kLayout, kPrePaint, kAll };
   virtual void UpdateAllLifecyclePhases(DocumentUpdateReason reason) {
-    UpdateLifecycle(LifecycleUpdate::kAll, reason);
+    UpdateLifecycle(WebLifecycleUpdate::kAll, reason);
   }
 
   // UpdateLifecycle is used to update to a specific lifestyle phase, as given
@@ -145,7 +145,7 @@ class WebWidget {
   // UpdateAllLifecyclePhases.
   // |reason| must be used to indicate the source of the
   // update for the purposes of metrics gathering.
-  virtual void UpdateLifecycle(LifecycleUpdate requested_update,
+  virtual void UpdateLifecycle(WebLifecycleUpdate requested_update,
                                DocumentUpdateReason reason) {}
 
   // Called to inform the WebWidget of a change in theme.

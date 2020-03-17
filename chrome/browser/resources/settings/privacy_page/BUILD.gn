@@ -83,6 +83,7 @@ js_library("privacy_page_browser_proxy") {
 js_library("privacy_page") {
   deps = [
     ":privacy_page_browser_proxy",
+    "..:hats_browser_proxy",
     "..:metrics_browser_proxy",
     "..:page_visibility",
     "..:route",

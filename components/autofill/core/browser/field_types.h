@@ -280,9 +280,6 @@ enum HtmlFieldType {
   // Universal Payment Interface - Virtual Payment Address.
   HTML_TYPE_UPI_VPA,
 
-  // Phone number verification one-time-codes.
-  HTML_TYPE_ONE_TIME_CODE,
-
   // Non-standard autocomplete types.
   HTML_TYPE_UNRECOGNIZED,
 };

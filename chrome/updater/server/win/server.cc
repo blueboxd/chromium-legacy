@@ -85,7 +85,9 @@ HRESULT UpdaterImpl::Update(const base::char16* app_id) {
 }
 
 HRESULT UpdaterImpl::UpdateAll(IUpdaterObserver* observer) {
-  return E_NOTIMPL;
+  if (observer)
+    observer->OnComplete(11);
+  return S_OK;
 }
 
 ComServer::ComServer()

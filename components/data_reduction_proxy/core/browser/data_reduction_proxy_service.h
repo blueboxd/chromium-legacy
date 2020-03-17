@@ -49,7 +49,6 @@ class DataReductionProxyConfig;
 class DataReductionProxyConfigServiceClient;
 class DataReductionProxyRequestOptions;
 class DataReductionProxySettings;
-class NetworkPropertiesManager;
 
 // Contains and initializes all Data Reduction Proxy objects that have a
 // lifetime based on the UI thread.
@@ -125,11 +124,6 @@ class DataReductionProxyService
   void SetSettingsForTesting(DataReductionProxySettings* settings) {
     settings_ = settings;
   }
-
-  // Notifies |this| that the user has requested to clear the browser
-  // cache. This method is not called if only a subset of site entries are
-  // cleared.
-  void OnCacheCleared(const base::Time start, const base::Time end);
 
   // When triggering previews, prevent long term black list rules. Virtual for
   // testing.
@@ -271,11 +265,6 @@ class DataReductionProxyService
 
   // The production channel of this build.
   const std::string channel_;
-
-  // Created on the UI thread. Guaranteed to be destroyed on IO thread if the
-  // IO thread is still available at the time of destruction. If the IO thread
-  // is unavailable, then the destruction will happen on the UI thread.
-  std::unique_ptr<NetworkPropertiesManager> network_properties_manager_;
 
   // Dictionary of save-data savings estimates by origin.
   const base::Optional<base::Value> save_data_savings_estimate_dict_;

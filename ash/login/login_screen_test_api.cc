@@ -18,6 +18,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "base/run_loop.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 
 namespace ash {
@@ -41,6 +42,14 @@ bool IsLoginShelfViewButtonShown(int button_view_id) {
   views::View* button_view = shelf_view->GetViewByID(button_view_id);
 
   return button_view && button_view->GetVisible();
+}
+
+views::View* GetShutDownButton() {
+  LoginShelfView* shelf_view = GetLoginShelfView();
+  if (!shelf_view)
+    return nullptr;
+
+  return shelf_view->GetViewByID(LoginShelfView::kShutdown);
 }
 
 }  // anonymous namespace
@@ -239,4 +248,30 @@ bool LoginScreenTestApi::IsOobeDialogVisible() {
   return lock_contents_test.IsOobeDialogVisible();
 }
 
+// static
+base::string16 LoginScreenTestApi::GetShutDownButtonLabel() {
+  views::View* button = GetShutDownButton();
+  if (!button)
+    return base::string16();
+
+  return static_cast<views::LabelButton*>(button)->GetText();
+}
+
+// static
+gfx::Rect LoginScreenTestApi::GetShutDownButtonTargetBounds() {
+  views::View* button = GetShutDownButton();
+  if (!button)
+    return gfx::Rect();
+
+  return button->layer()->GetTargetBounds();
+}
+
+// static
+gfx::Rect LoginScreenTestApi::GetShutDownButtonMirroredBounds() {
+  views::View* button = GetShutDownButton();
+  if (!button)
+    return gfx::Rect();
+
+  return button->GetMirroredBounds();
+}
 }  // namespace ash

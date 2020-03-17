@@ -58,7 +58,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandler {
   // |callback| and |error_callback|, in class description above.
   virtual void GetDeviceProperties(
       const std::string& device_path,
-      const network_handler::DictionaryResultCallback& callback,
+      network_handler::DictionaryResultCallback callback,
       const network_handler::ErrorCallback& error_callback) const = 0;
 
   // Sets the value of property |name| on device with id |device_path| to

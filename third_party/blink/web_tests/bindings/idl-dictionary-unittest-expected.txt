@@ -172,15 +172,6 @@ PASS dictionaryTest.set({eventTargetOrNullMember: []}) threw exception TypeError
 PASS dictionaryTest.set({eventTargetOrNullMember: {}}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member eventTargetOrNullMember is not of type EventTarget..
 
 
-Test for passing Dictionary (not IDL dictionary)
-PASS properties.foo is "x"
-PASS properties.bar is "y"
-PASS properties.baz is undefined.
-PASS properties is {}
-PASS dictionaryTest.set({dictionaryMember: 42}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': The dictionary provided is neither undefined, null nor an Object..
-PASS dictionaryTest.set({dictionaryMember: 'foo'}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': The dictionary provided is neither undefined, null nor an Object..
-
-
 Test for derived dictionary
 PASS derived.longMember is undefined.
 PASS derived.longMemberWithDefault is 42

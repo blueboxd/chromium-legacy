@@ -21,7 +21,6 @@ namespace blink {
 class InternalDictionary;
 class InternalDictionaryDerived;
 class InternalDictionaryDerivedDerived;
-class ScriptState;
 
 class DictionaryTest : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -34,9 +33,6 @@ class DictionaryTest : public ScriptWrappable {
   void set(const InternalDictionary*);
   // Sets each member of the given TestDictionary from fields
   InternalDictionary* get();
-  // Returns properties of the latest |dictionaryMember| which was set via
-  // set().
-  ScriptValue getDictionaryMemberProperties(ScriptState*);
 
   void setDerived(const InternalDictionaryDerived*);
   InternalDictionaryDerived* getDerived();

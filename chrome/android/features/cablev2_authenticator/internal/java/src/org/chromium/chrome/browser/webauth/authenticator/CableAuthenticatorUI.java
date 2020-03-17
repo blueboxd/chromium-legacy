@@ -8,6 +8,7 @@ import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -30,19 +31,16 @@ import java.lang.ref.WeakReference;
  */
 public class CableAuthenticatorUI
         extends Fragment implements OnClickListener, QRScanDialog.Callback {
-    private BLEHandler mBleHandler;
     private AndroidPermissionDelegate mPermissionDelegate;
+    private CableAuthenticator mAuthenticator;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final Context context = getContext();
-        mBleHandler = new BLEHandler();
-        if (!mBleHandler.start()) {
-            // TODO: handle the case where exporting the GATT server fails.
-        }
         mPermissionDelegate = new ActivityAndroidPermissionDelegate(
                 new WeakReference<Activity>((Activity) context));
+        mAuthenticator = new CableAuthenticator(getContext(), this);
     }
 
     @Override
@@ -105,7 +103,7 @@ public class CableAuthenticatorUI
      */
     @Override
     public void onQRCode(String value) {
-        mBleHandler.onQRCode(value);
+        mAuthenticator.onQRCode(value);
     }
 
     /**
@@ -125,6 +123,12 @@ public class CableAuthenticatorUI
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mBleHandler.close();
+        mAuthenticator.close();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        mAuthenticator.onActivityResult(requestCode, resultCode, data);
     }
 }

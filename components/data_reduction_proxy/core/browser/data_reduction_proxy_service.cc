@@ -25,7 +25,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
-#include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -88,8 +87,8 @@ DataReductionProxyService::DataReductionProxyService(
   std::unique_ptr<DataReductionProxyMutableConfigValues> mutable_config =
       std::make_unique<DataReductionProxyMutableConfigValues>();
   raw_mutable_config = mutable_config.get();
-  config_ = std::make_unique<DataReductionProxyConfig>(
-      network_connection_tracker_, std::move(mutable_config));
+  config_ =
+      std::make_unique<DataReductionProxyConfig>(std::move(mutable_config));
   request_options_ = std::make_unique<DataReductionProxyRequestOptions>(
       client_, config_.get());
   request_options_->Init();
@@ -113,15 +112,11 @@ DataReductionProxyService::DataReductionProxyService(
                             base::Unretained(this)));
   }
 
-  network_properties_manager_ = std::make_unique<NetworkPropertiesManager>(
-      base::DefaultClock::GetInstance(), prefs);
 
   // It is safe to use base::Unretained here, since it gets executed
   // synchronously on the UI thread, and |this| outlives the caller (since the
   // caller is owned by |this|.
-  config_->Initialize(
-      url_loader_factory_,
-      network_properties_manager_.get(), user_agent);
+  config_->Initialize(url_loader_factory_, user_agent);
   if (config_client_)
     config_client_->Initialize(url_loader_factory_);
 
@@ -209,7 +204,6 @@ void DataReductionProxyService::OnRTTOrThroughputEstimatesComputed(
     int32_t downstream_throughput_kbps) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   http_rtt_ = http_rtt;
-  config_->OnRTTOrThroughputEstimatesComputed(http_rtt);
 }
 
 void DataReductionProxyService::Shutdown() {
@@ -277,11 +271,6 @@ void DataReductionProxyService::SetProxyPrefs(bool enabled, bool at_startup) {
   }
 }
 
-void DataReductionProxyService::OnCacheCleared(const base::Time start,
-                                               const base::Time end) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  network_properties_manager_->DeleteHistory();
-}
 
 net::EffectiveConnectionType
 DataReductionProxyService::GetEffectiveConnectionType() const {
@@ -375,8 +364,6 @@ void DataReductionProxyService::DeleteBrowsingHistory(const base::Time& start,
   db_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&DBDataOwner::DeleteBrowsingHistory,
                                 db_data_owner_->GetWeakPtr(), start, end));
-
-  network_properties_manager_->DeleteHistory();
 }
 
 base::WeakPtr<DataReductionProxyService>
@@ -422,9 +409,7 @@ void DataReductionProxyService::SetDependenciesForTesting(
     std::unique_ptr<DataReductionProxyRequestOptions> request_options,
     std::unique_ptr<DataReductionProxyConfigServiceClient> config_client) {
   config_ = std::move(config);
-  config_->Initialize(
-      url_loader_factory_,
-      network_properties_manager_.get(), std::string());
+  config_->Initialize(url_loader_factory_, std::string());
 
   request_options_ = std::move(request_options);
   request_options_->SetUpdateHeaderCallback(

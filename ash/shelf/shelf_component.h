@@ -26,6 +26,12 @@ class ASH_EXPORT ShelfComponent {
   // calculated target bounds. The change should be animated if |animate| is
   // true.
   virtual void UpdateLayout(bool animate) = 0;
+
+  // Updates this component's target bounds according to a gesture that
+  // is currently being performed. The |shelf_position| parameter is the
+  // new position of the shelf, its x position if it's vertical or its y
+  // position if it's horizontal.
+  virtual void UpdateTargetBoundsForGesture(int shelf_position) = 0;
 };
 
 }  // namespace ash

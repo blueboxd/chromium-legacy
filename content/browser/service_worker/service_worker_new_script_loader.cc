@@ -224,7 +224,9 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
     if (response_head->network_accessed)
       version_->embedded_worker()->OnNetworkAccessedForScriptLoad();
 
-    version_->SetMainScriptHttpResponseInfo(*response_info);
+    version_->SetMainScriptResponse(
+        std::make_unique<ServiceWorkerVersion::MainScriptResponse>(
+            *response_info));
   }
 
   network_loader_state_ = LoaderState::kWaitingForBody;

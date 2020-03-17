@@ -875,6 +875,9 @@ public class MediaNotificationManager {
 
     private static boolean shouldIgnoreMediaNotificationInfo(
             MediaNotificationInfo oldInfo, MediaNotificationInfo newInfo) {
+        // If we don't have actions then we shouldn't display the notification.
+        if (newInfo.mediaSessionActions.isEmpty()) return true;
+
         return newInfo.equals(oldInfo)
                 || ((newInfo.isPaused && oldInfo != null && newInfo.tabId != oldInfo.tabId));
     }

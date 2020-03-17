@@ -89,8 +89,7 @@ class ASH_EXPORT ShelfNavigationWidget : public ShelfComponent,
   void CalculateTargetBounds() override;
   gfx::Rect GetTargetBounds() const override;
   void UpdateLayout(bool animate) override;
-
-  void UpdateTargetBoundsForGesture();
+  void UpdateTargetBoundsForGesture(int shelf_position) override;
 
  private:
   class Delegate;

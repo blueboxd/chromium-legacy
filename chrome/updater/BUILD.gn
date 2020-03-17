@@ -179,6 +179,7 @@ if (is_win || is_mac) {
 
     sources = [
       "persisted_data_unittest.cc",
+      "prefs_unittest.cc",
       "run_all_unittests.cc",
       "updater_unittest.cc",
     ]

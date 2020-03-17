@@ -493,15 +493,15 @@ std::vector<FrameSenderConfig> CastRtpStream::GetSupportedConfigs() {
 
 void CastRtpStream::Start(int32_t stream_id,
                           const FrameSenderConfig& config,
-                          const base::Closure& start_callback,
-                          const base::Closure& stop_callback,
+                          base::OnceClosure start_callback,
+                          base::OnceClosure stop_callback,
                           const ErrorCallback& error_callback) {
   DCHECK(!start_callback.is_null());
   DCHECK(!stop_callback.is_null());
   DCHECK(!error_callback.is_null());
 
   DVLOG(1) << "CastRtpStream::Start = " << (is_audio_ ? "audio" : "video");
-  stop_callback_ = stop_callback;
+  stop_callback_ = std::move(stop_callback);
   error_callback_ = error_callback;
 
   if (track_.IsNull()) {
@@ -530,7 +530,7 @@ void CastRtpStream::Start(int32_t stream_id,
         base::Bind(&CastRtpStream::DidEncounterError,
                    weak_factory_.GetWeakPtr()));
   }
-  start_callback.Run();
+  std::move(start_callback).Run();
 }
 
 void CastRtpStream::Stop() {

@@ -85,6 +85,9 @@ class WebStateList {
   // Returns true if the list is currently mutating.
   bool IsMutating() const;
 
+  // Returns true if a batch operation is in progress.
+  bool IsBatchInProgress() const;
+
   // Returns the currently active WebState or null if there is none.
   web::WebState* GetActiveWebState() const;
 
@@ -275,6 +278,9 @@ class WebStateList {
   // mutating. The lock is managed by LockForMutation() method (and released
   // by the returned base::AutoReset<bool>).
   bool locked_ = false;
+
+  // Lock to prevent nesting batched operations.
+  bool batch_operation_in_progress_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

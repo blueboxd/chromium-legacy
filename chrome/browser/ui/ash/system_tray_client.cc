@@ -277,6 +277,7 @@ void SystemTrayClient::ShowAccessibilitySettings() {
 void SystemTrayClient::ShowGestureEducationHelp() {
   chrome::ScopedTabbedBrowserDisplayer displayer(
       ProfileManager::GetActiveUserProfile());
+  base::RecordAction(base::UserMetricsAction("ShowGestureEducationHelp"));
   ShowSingletonTab(displayer.browser(),
                    GURL(chrome::kChromeOSGestureEducationHelpURL));
 }

@@ -634,18 +634,14 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
   delegate_->UpdateOpaqueBackground();
 }
 
-void ShelfNavigationWidget::UpdateTargetBoundsForGesture() {
-  const gfx::Point shelf_origin =
-      shelf_->shelf_widget()->GetTargetBounds().origin();
+void ShelfNavigationWidget::UpdateTargetBoundsForGesture(int shelf_position) {
   if (shelf_->IsHorizontalAlignment()) {
     if (!Shell::Get()->IsInTabletMode() ||
         !chromeos::switches::ShouldShowShelfHotseat()) {
-      target_bounds_.set_y(shelf_origin.y() +
-                           ShelfConfig::Get()->button_spacing());
+      target_bounds_.set_y(shelf_position);
     }
   } else {
-    target_bounds_.set_x(shelf_origin.x() +
-                         ShelfConfig::Get()->button_spacing());
+    target_bounds_.set_x(shelf_position);
   }
 }
 

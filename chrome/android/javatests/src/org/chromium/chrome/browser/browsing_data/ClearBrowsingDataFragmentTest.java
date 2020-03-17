@@ -490,6 +490,7 @@ public class ClearBrowsingDataFragmentTest {
     @Test
     @MediumTest
     @Feature({"SiteEngagement"})
+    @DisabledTest(message = "crbug.com/999361")
     public void testImportantSitesDialog() throws Exception {
         // Sign in.
         SigninTestUtil.addAndSignInTestAccount();

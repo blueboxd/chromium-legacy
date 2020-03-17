@@ -120,54 +120,52 @@ PairingRegistry::Pairing PairingRegistry::CreatePairing(
 }
 
 void PairingRegistry::GetPairing(const std::string& client_id,
-                                 const GetPairingCallback& callback) {
+                                 GetPairingCallback callback) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  GetPairingCallback wrapped_callback = base::Bind(
-      &PairingRegistry::InvokeGetPairingCallbackAndScheduleNext,
-      this, callback);
-  base::Closure request = base::Bind(
-      &PairingRegistry::DoLoad, this, client_id, wrapped_callback);
-  ServiceOrQueueRequest(request);
+  GetPairingCallback wrapped_callback =
+      base::BindOnce(&PairingRegistry::InvokeGetPairingCallbackAndScheduleNext,
+                     this, base::Passed(std::move(callback)));
+  ServiceOrQueueRequest(
+      base::BindOnce(&PairingRegistry::DoLoad, this, client_id,
+                     base::Passed(std::move(wrapped_callback))));
 }
 
-void PairingRegistry::GetAllPairings(
-    const GetAllPairingsCallback& callback) {
+void PairingRegistry::GetAllPairings(GetAllPairingsCallback callback) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  GetAllPairingsCallback wrapped_callback = base::Bind(
-      &PairingRegistry::InvokeGetAllPairingsCallbackAndScheduleNext,
-      this, callback);
-  GetAllPairingsCallback sanitize_callback = base::Bind(
-      &PairingRegistry::SanitizePairings,
-      this, wrapped_callback);
-  base::Closure request = base::Bind(
-      &PairingRegistry::DoLoadAll, this, sanitize_callback);
-  ServiceOrQueueRequest(request);
+  GetAllPairingsCallback wrapped_callback = base::BindOnce(
+      &PairingRegistry::InvokeGetAllPairingsCallbackAndScheduleNext, this,
+      base::Passed(std::move(callback)));
+  GetAllPairingsCallback sanitize_callback =
+      base::BindOnce(&PairingRegistry::SanitizePairings, this,
+                     base::Passed(std::move(wrapped_callback)));
+  ServiceOrQueueRequest(
+      base::BindOnce(&PairingRegistry::DoLoadAll, this,
+                     base::Passed(std::move(sanitize_callback))));
 }
 
-void PairingRegistry::DeletePairing(
-    const std::string& client_id, const DoneCallback& callback) {
+void PairingRegistry::DeletePairing(const std::string& client_id,
+                                    DoneCallback callback) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  DoneCallback wrapped_callback = base::Bind(
-      &PairingRegistry::InvokeDoneCallbackAndScheduleNext,
-      this, callback);
-  base::Closure request = base::Bind(
-      &PairingRegistry::DoDelete, this, client_id, wrapped_callback);
-  ServiceOrQueueRequest(request);
+  DoneCallback wrapped_callback =
+      base::BindOnce(&PairingRegistry::InvokeDoneCallbackAndScheduleNext, this,
+                     base::Passed(std::move(callback)));
+  ServiceOrQueueRequest(
+      base::BindOnce(&PairingRegistry::DoDelete, this, client_id,
+                     base::Passed(std::move(wrapped_callback))));
 }
 
-void PairingRegistry::ClearAllPairings(
-    const DoneCallback& callback) {
+void PairingRegistry::ClearAllPairings(DoneCallback callback) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  DoneCallback wrapped_callback = base::Bind(
-      &PairingRegistry::InvokeDoneCallbackAndScheduleNext,
-      this, callback);
-  base::Closure request = base::Bind(
-      &PairingRegistry::DoDeleteAll, this, wrapped_callback);
-  ServiceOrQueueRequest(request);
+  DoneCallback wrapped_callback =
+      base::BindOnce(&PairingRegistry::InvokeDoneCallbackAndScheduleNext, this,
+                     base::Passed(std::move(callback)));
+  ServiceOrQueueRequest(
+      base::BindOnce(&PairingRegistry::DoDeleteAll, this,
+                     base::Passed(std::move(wrapped_callback))));
 }
 
 PairingRegistry::~PairingRegistry() = default;
@@ -175,90 +173,89 @@ PairingRegistry::~PairingRegistry() = default;
 void PairingRegistry::PostTask(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const base::Location& from_here,
-    const base::Closure& task) {
-  task_runner->PostTask(from_here, task);
+    base::OnceClosure task) {
+  task_runner->PostTask(from_here, std::move(task));
 }
 
 void PairingRegistry::AddPairing(const Pairing& pairing) {
-  DoneCallback wrapped_callback = base::Bind(
-      &PairingRegistry::InvokeDoneCallbackAndScheduleNext,
-      this, DoneCallback());
-  base::Closure request = base::Bind(
-      &PairingRegistry::DoSave, this, pairing, wrapped_callback);
-  ServiceOrQueueRequest(request);
+  DoneCallback wrapped_callback =
+      base::BindOnce(&PairingRegistry::InvokeDoneCallbackAndScheduleNext, this,
+                     DoneCallback());
+  ServiceOrQueueRequest(
+      base::BindOnce(&PairingRegistry::DoSave, this, pairing,
+                     base::Passed(std::move(wrapped_callback))));
 }
 
-void PairingRegistry::DoLoadAll(
-    const protocol::PairingRegistry::GetAllPairingsCallback& callback) {
+void PairingRegistry::DoLoadAll(GetAllPairingsCallback callback) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
 
   std::unique_ptr<base::ListValue> pairings = delegate_->LoadAll();
-  PostTask(caller_task_runner_, FROM_HERE, base::Bind(callback,
-                                                      base::Passed(&pairings)));
+  PostTask(caller_task_runner_, FROM_HERE,
+           base::BindOnce(std::move(callback), base::Passed(&pairings)));
 }
 
-void PairingRegistry::DoDeleteAll(
-    const protocol::PairingRegistry::DoneCallback& callback) {
+void PairingRegistry::DoDeleteAll(DoneCallback callback) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
 
   bool success = delegate_->DeleteAll();
-  PostTask(caller_task_runner_, FROM_HERE, base::Bind(callback, success));
+  PostTask(caller_task_runner_, FROM_HERE,
+           base::BindOnce(std::move(callback), success));
 }
 
-void PairingRegistry::DoLoad(
-    const std::string& client_id,
-    const protocol::PairingRegistry::GetPairingCallback& callback) {
+void PairingRegistry::DoLoad(const std::string& client_id,
+                             GetPairingCallback callback) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
 
   Pairing pairing = delegate_->Load(client_id);
-  PostTask(caller_task_runner_, FROM_HERE, base::Bind(callback, pairing));
+  PostTask(caller_task_runner_, FROM_HERE,
+           base::BindOnce(std::move(callback), pairing));
 }
 
-void PairingRegistry::DoSave(
-    const protocol::PairingRegistry::Pairing& pairing,
-    const protocol::PairingRegistry::DoneCallback& callback) {
+void PairingRegistry::DoSave(const Pairing& pairing, DoneCallback callback) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
 
   bool success = delegate_->Save(pairing);
-  PostTask(caller_task_runner_, FROM_HERE, base::Bind(callback, success));
+  PostTask(caller_task_runner_, FROM_HERE,
+           base::BindOnce(std::move(callback), success));
 }
 
-void PairingRegistry::DoDelete(
-    const std::string& client_id,
-    const protocol::PairingRegistry::DoneCallback& callback) {
+void PairingRegistry::DoDelete(const std::string& client_id,
+                               DoneCallback callback) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
 
   bool success = delegate_->Delete(client_id);
-  PostTask(caller_task_runner_, FROM_HERE, base::Bind(callback, success));
+  PostTask(caller_task_runner_, FROM_HERE,
+           base::BindOnce(std::move(callback), success));
 }
 
-void PairingRegistry::InvokeDoneCallbackAndScheduleNext(
-    const DoneCallback& callback, bool success) {
+void PairingRegistry::InvokeDoneCallbackAndScheduleNext(DoneCallback callback,
+                                                        bool success) {
   // CreatePairing doesn't have a callback, so the callback can be null.
-  if (!callback.is_null())
-    callback.Run(success);
+  if (callback)
+    std::move(callback).Run(success);
 
   pending_requests_.pop();
   ServiceNextRequest();
 }
 
 void PairingRegistry::InvokeGetPairingCallbackAndScheduleNext(
-    const GetPairingCallback& callback, Pairing pairing) {
-  callback.Run(pairing);
+    GetPairingCallback callback,
+    Pairing pairing) {
+  std::move(callback).Run(pairing);
   pending_requests_.pop();
   ServiceNextRequest();
 }
 
 void PairingRegistry::InvokeGetAllPairingsCallbackAndScheduleNext(
-    const GetAllPairingsCallback& callback,
+    GetAllPairingsCallback callback,
     std::unique_ptr<base::ListValue> pairings) {
-  callback.Run(std::move(pairings));
+  std::move(callback).Run(std::move(pairings));
   pending_requests_.pop();
   ServiceNextRequest();
 }
 
 void PairingRegistry::SanitizePairings(
-    const GetAllPairingsCallback& callback,
+    GetAllPairingsCallback callback,
     std::unique_ptr<base::ListValue> pairings) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
@@ -286,12 +283,12 @@ void PairingRegistry::SanitizePairings(
     sanitized_pairings->Append(sanitized_pairing.ToValue());
   }
 
-  callback.Run(std::move(sanitized_pairings));
+  std::move(callback).Run(std::move(sanitized_pairings));
 }
 
-void PairingRegistry::ServiceOrQueueRequest(const base::Closure& request) {
+void PairingRegistry::ServiceOrQueueRequest(base::OnceClosure request) {
   bool servicing_request = !pending_requests_.empty();
-  pending_requests_.push(request);
+  pending_requests_.emplace(std::move(request));
   if (!servicing_request) {
     ServiceNextRequest();
   }
@@ -301,7 +298,8 @@ void PairingRegistry::ServiceNextRequest() {
   if (pending_requests_.empty())
     return;
 
-  PostTask(delegate_task_runner_, FROM_HERE, pending_requests_.front());
+  PostTask(delegate_task_runner_, FROM_HERE,
+           std::move(pending_requests_.front()));
 }
 
 }  // namespace protocol

@@ -190,6 +190,17 @@ cr.define('settings', function() {
         },
         readOnly: true,
       },
+
+      /**
+       * True if the privacy settings redesign feature is enabled.
+       * @private
+       */
+      privacySettingsRedesignEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
+        }
+      },
     },
 
     listeners: {
@@ -371,6 +382,17 @@ cr.define('settings', function() {
      */
     onMigrateCreditCardsClick_() {
       this.paymentsManager_.migrateCreditCards();
+    },
+
+    /**
+     * Records changes made to the "Allow sites to check if you have payment
+     * methods saved" setting to a histogram.
+     * @private
+     */
+    onCanMakePaymentChange_() {
+      settings.MetricsBrowserProxyImpl.getInstance()
+          .recordSettingsPageHistogram(
+              settings.PrivacyElementInteractions.PAYMENT_METHOD);
     },
 
     /**

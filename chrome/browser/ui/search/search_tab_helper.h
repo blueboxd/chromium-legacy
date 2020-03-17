@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/search/chrome_colors/chrome_colors_service.h"
 #include "chrome/browser/search/instant_service_observer.h"
+#include "chrome/browser/ui/omnibox/omnibox_tab_helper.h"
 #include "chrome/browser/ui/search/search_ipc_router.h"
 #include "chrome/common/search.mojom-forward.h"
 #include "chrome/common/search/instant_types.h"
@@ -41,7 +42,6 @@ struct LoadCommittedDetails;
 class AutocompleteController;
 class GURL;
 class InstantService;
-class OmniboxView;
 class Profile;
 class SearchIPCRouterTest;
 class SearchSuggestService;
@@ -54,18 +54,10 @@ class SearchTabHelper : public content::WebContentsObserver,
                         public InstantServiceObserver,
                         public SearchIPCRouter::Delegate,
                         public ui::SelectFileDialog::Listener,
-                        public AutocompleteControllerDelegate {
+                        public AutocompleteControllerDelegate,
+                        public OmniboxTabHelper::Observer {
  public:
   ~SearchTabHelper() override;
-
-  // Invoked when the omnibox input state is changed in some way that might
-  // affect the search mode.
-  void OmniboxInputStateChanged();
-
-  // Called to indicate that the omnibox focus state changed with the given
-  // |reason|.
-  void OmniboxFocusChanged(OmniboxFocusState state,
-                           OmniboxFocusChangeReason reason);
 
   // Called when the tab corresponding to |this| instance is activated.
   void OnTabActivated();
@@ -175,12 +167,14 @@ class SearchTabHelper : public content::WebContentsObserver,
   // Overridden from AutocompleteControllerDelegate:
   void OnResultChanged(bool default_match_changed) override;
 
+  // Overridden from OmniboxTabHelper::Observer:
+  void OnOmniboxInputStateChanged() override;
+  void OnOmniboxFocusChanged(OmniboxFocusState state,
+                             OmniboxFocusChangeReason reason) override;
+
   void OnBitmapFetched(int match_index,
                        const std::string& image_url,
                        const SkBitmap& bitmap);
-
-  OmniboxView* GetOmniboxView();
-  const OmniboxView* GetOmniboxView() const;
 
   Profile* profile() const;
 

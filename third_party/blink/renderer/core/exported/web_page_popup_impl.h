@@ -124,7 +124,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   void SetCompositorHosts(cc::LayerTreeHost*, cc::AnimationHost*) override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
   void BeginFrame(base::TimeTicks last_frame_time) override;
-  void UpdateLifecycle(LifecycleUpdate requested_update,
+  void UpdateLifecycle(WebLifecycleUpdate requested_update,
                        DocumentUpdateReason reason) override;
   void Resize(const WebSize&) override;
   void Close() override;

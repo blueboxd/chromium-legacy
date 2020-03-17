@@ -53,7 +53,7 @@ public class TabUma extends EmptyTabObserver implements UserData {
     // Counter of tab shows (as per onShow()) for all tabs.
     private static long sAllTabsShowCount;
 
-    private final @TabCreationState int mTabCreationState;
+    private @TabCreationState int mTabCreationState;
 
     // Timestamp when this tab was last shown.
     private long mLastShownTimestamp = -1;
@@ -70,28 +70,28 @@ public class TabUma extends EmptyTabObserver implements UserData {
 
     private TabModelSelectorObserver mNewTabObserver;
 
-    static TabUma create(Tab tab, @TabCreationState int creationState) {
-        TabUma tabUma = tab.getUserDataHost().getUserData(USER_DATA_KEY);
-        if (tabUma != null) tabUma.removeObservers(tab);
-
-        return tab.getUserDataHost().setUserData(USER_DATA_KEY, new TabUma(tab, creationState));
+    /**
+     * Creates {@link TabUma} instance optionally. Creates one only when tab creation type
+     * is non-null.
+     */
+    static void createForTab(Tab tab) {
+        assert tab.getUserDataHost().getUserData(USER_DATA_KEY) == null;
+        @TabCreationState
+        Integer creationState = ((TabImpl) tab).getCreationState();
+        if (creationState != null) {
+            tab.getUserDataHost().setUserData(USER_DATA_KEY, new TabUma(tab, creationState));
+        }
     }
 
     /**
      * Constructs a new UMA tracker for a specific tab.
-     * @param Tab The Tab being monitored for stats.
+     * @param tab Tab this UMA tracker is created for.
      * @param creationState In what state the tab was created.
      */
     private TabUma(Tab tab, @TabCreationState int creationState) {
-        mTabCreationState = creationState;
-
         mLastTabStateChangeMillis = System.currentTimeMillis();
+        mTabCreationState = creationState;
         switch (mTabCreationState) {
-            case TabCreationState.FROZEN_ON_RESTORE_FAILED:
-                // A previous TabUma should have reported an active tab state. Initialize but avoid
-                // recording this as a state change.
-                mLastTabState = TAB_STATE_ACTIVE;
-            // Fall through
             case TabCreationState.LIVE_IN_FOREGROUND:
                 updateTabState(TAB_STATE_ACTIVE);
                 break;
@@ -177,6 +177,8 @@ public class TabUma extends EmptyTabObserver implements UserData {
         mLastTabStateChangeMillis = now;
         mLastTabState = newState;
     }
+
+    // TabObserver
 
     @Override
     public void onShown(Tab tab, @TabSelectionType int selectionType) {
@@ -264,8 +266,6 @@ public class TabUma extends EmptyTabObserver implements UserData {
         updateTabState(TAB_STATE_ACTIVE);
     }
 
-    // TabObserver
-
     @Override
     public void onHidden(Tab tab, @TabHidingType int type) {
         if (type == TabHidingType.ACTIVITY_HIDDEN) {
@@ -286,11 +286,10 @@ public class TabUma extends EmptyTabObserver implements UserData {
         }
 
         recordNumBackgroundTabsOpened();
-        removeObservers(tab);
-    }
-
-    private void removeObservers(Tab tab) {
-        if (mNewTabObserver != null) TabModelSelector.from(tab).removeObserver(mNewTabObserver);
+        if (mNewTabObserver != null) {
+            TabModelSelector.from(tab).removeObserver(mNewTabObserver);
+            mNewTabObserver = null;
+        }
         tab.removeObserver(this);
     }
 
@@ -299,13 +298,23 @@ public class TabUma extends EmptyTabObserver implements UserData {
         mRestoreStartedAtMillis = SystemClock.elapsedRealtime();
     }
 
+    @Override
+    public void onRestoreFailed(Tab tab) {
+        assert mRestoreStartedAtMillis == -1;
+        if (mLastTabState == TAB_STATE_ACTIVE) {
+            mTabCreationState = TabCreationState.LIVE_IN_FOREGROUND;
+        } else {
+            mTabCreationState = TabCreationState.LIVE_IN_BACKGROUND;
+        }
+    }
+
     /** Called when the corresponding tab starts a page load. */
     @Override
     public void onPageLoadStarted(Tab tab, String url) {
         recordNumBackgroundTabsOpened();
     }
 
-    /** Called when the correspoding tab completes a page load. */
+    /** Called when the corresponding tab completes a page load. */
     @Override
     public void onPageLoadFinished(Tab tab, String url) {
         // Record only tab restores that the user became aware of. If the restore is triggered
@@ -320,7 +329,7 @@ public class TabUma extends EmptyTabObserver implements UserData {
         mRestoreStartedAtMillis = -1;
     }
 
-    /** Called when the correspoding tab fails a page load. */
+    /** Called when the corresponding tab fails a page load. */
     @Override
     public void onPageLoadFailed(Tab tab, int errorCode) {
         if (mRestoreStartedAtMillis != -1 && mLastShownTimestamp >= mRestoreStartedAtMillis) {
@@ -330,7 +339,7 @@ public class TabUma extends EmptyTabObserver implements UserData {
         mRestoreStartedAtMillis = -1;
     }
 
-    /** Called when the renderer of the correspoding tab crashes. */
+    /** Called when the renderer of the corresponding tab crashes. */
     @Override
     public void onCrash(Tab tab) {
         if (mRestoreStartedAtMillis != -1) {

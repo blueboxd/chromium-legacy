@@ -1014,6 +1014,13 @@ void GpuProcessHost::DidCreateContextSuccessfully() {
 #endif
 }
 
+void GpuProcessHost::MaybeShutdownGpuProcess() {
+  if (!in_process_ &&
+      GetContentClient()->browser()->CanShutdownGpuProcessNowOnIOThread()) {
+    delete this;
+  }
+}
+
 #if defined(OS_WIN)
 void GpuProcessHost::DidUpdateOverlayInfo(
     const gpu::OverlayInfo& overlay_info) {

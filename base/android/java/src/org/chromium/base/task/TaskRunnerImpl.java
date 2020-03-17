@@ -40,16 +40,21 @@ public class TaskRunnerImpl implements TaskRunner {
     private final TaskTraits mTaskTraits;
     private final String mTraceEvent;
     private final @TaskRunnerType int mTaskRunnerType;
-    private final Object mLock = new Object();
-    @GuardedBy("mLock")
-    private long mNativeTaskRunnerAndroid;
-    @GuardedBy("mLock")
-    private boolean mDidOneTimeInitialization;
+    // Volatile is sufficient for synchronization here since we never need to read-write and
+    // volatile makes writes to it immediately visible to other threads.
+    // When |mNativeTaskRunnerAndroid| is set, native has been initialized and pre-native tasks have
+    // been migrated to the native task runner.
+    private volatile long mNativeTaskRunnerAndroid;
     protected final Runnable mRunPreNativeTaskClosure = this::runPreNativeTask;
 
+    private final Object mPreNativeTaskLock = new Object();
+    @GuardedBy("mPreNativeTaskLock")
+    private boolean mDidOneTimeInitialization;
     @Nullable
+    @GuardedBy("mPreNativeTaskLock")
     private LinkedList<Runnable> mPreNativeTasks;
     @Nullable
+    @GuardedBy("mPreNativeTaskLock")
     private List<Pair<Runnable, Long>> mPreNativeDelayedTasks;
 
     private static class TaskRunnerCleaner extends WeakReference<TaskRunnerImpl> {
@@ -124,9 +129,14 @@ public class TaskRunnerImpl implements TaskRunner {
 
     @Override
     public void postDelayedTask(Runnable task, long delay) {
-        synchronized (mLock) {
+        // Lock-free path when native is initialized.
+        if (mNativeTaskRunnerAndroid != 0) {
+            TaskRunnerImplJni.get().postDelayedTask(mNativeTaskRunnerAndroid, task, delay);
+            return;
+        }
+        synchronized (mPreNativeTaskLock) {
             oneTimeInitialization();
-            if (mPreNativeTasks == null) {
+            if (mNativeTaskRunnerAndroid != 0) {
                 TaskRunnerImplJni.get().postDelayedTask(mNativeTaskRunnerAndroid, task, delay);
                 return;
             }
@@ -149,14 +159,14 @@ public class TaskRunnerImpl implements TaskRunner {
         // by derived classes (eg. SingleThreadTaskRunner) until it is moved there, as TaskRunner
         // has no notion of belonging to a thread.
         assert !getClass().equals(TaskRunnerImpl.class);
-        synchronized (mLock) {
+        synchronized (mPreNativeTaskLock) {
             oneTimeInitialization();
-            if (mNativeTaskRunnerAndroid == 0) return null;
-            return TaskRunnerImplJni.get().belongsToCurrentThread(mNativeTaskRunnerAndroid);
         }
+        if (mNativeTaskRunnerAndroid == 0) return null;
+        return TaskRunnerImplJni.get().belongsToCurrentThread(mNativeTaskRunnerAndroid);
     }
 
-    @GuardedBy("mLock")
+    @GuardedBy("mPreNativeTaskLock")
     private void oneTimeInitialization() {
         if (mDidOneTimeInitialization) return;
         mDidOneTimeInitialization = true;
@@ -184,7 +194,7 @@ public class TaskRunnerImpl implements TaskRunner {
     protected void runPreNativeTask() {
         try (TraceEvent te = TraceEvent.scoped(mTraceEvent)) {
             Runnable task;
-            synchronized (mLock) {
+            synchronized (mPreNativeTaskLock) {
                 if (mPreNativeTasks == null) return;
                 task = mPreNativeTasks.poll();
             }
@@ -208,38 +218,39 @@ public class TaskRunnerImpl implements TaskRunner {
      * it.
      */
     /* package */ void initNativeTaskRunner() {
-        synchronized (mLock) {
-            assert mNativeTaskRunnerAndroid == 0;
-            mNativeTaskRunnerAndroid = TaskRunnerImplJni.get().init(mTaskRunnerType,
-                    mTaskTraits.mPriority, mTaskTraits.mMayBlock, mTaskTraits.mUseThreadPool,
-                    mTaskTraits.mExtensionId, mTaskTraits.mExtensionData);
-            synchronized (sCleaners) {
-                sCleaners.add(new TaskRunnerCleaner(this));
+        long nativeTaskRunnerAndroid = TaskRunnerImplJni.get().init(mTaskRunnerType,
+                mTaskTraits.mPriority, mTaskTraits.mMayBlock, mTaskTraits.mUseThreadPool,
+                mTaskTraits.mExtensionId, mTaskTraits.mExtensionData);
+        synchronized (mPreNativeTaskLock) {
+            if (mPreNativeTasks != null) {
+                for (Runnable task : mPreNativeTasks) {
+                    TaskRunnerImplJni.get().postDelayedTask(nativeTaskRunnerAndroid, task, 0);
+                }
+                mPreNativeTasks = null;
             }
-            migratePreNativeTasksToNative();
+            if (mPreNativeDelayedTasks != null) {
+                for (Pair<Runnable, Long> task : mPreNativeDelayedTasks) {
+                    TaskRunnerImplJni.get().postDelayedTask(
+                            nativeTaskRunnerAndroid, task.first, task.second);
+                }
+                mPreNativeDelayedTasks = null;
+            }
+
+            // mNativeTaskRunnerAndroid is volatile and setting this indicates we've have migrated
+            // all pre-native tasks and are ready to use the native Task Runner.
+            assert mNativeTaskRunnerAndroid == 0;
+            mNativeTaskRunnerAndroid = nativeTaskRunnerAndroid;
         }
+        synchronized (sCleaners) {
+            sCleaners.add(new TaskRunnerCleaner(this));
+        }
+
         // Destroying GC'd task runners here isn't strictly necessary, but the performance of
         // initNativeTaskRunner() isn't critical, and calling the function more often will help
         // prevent any potential build-up of orphaned native task runners.
         destroyGarbageCollectedTaskRunners();
     }
 
-    @GuardedBy("mLock")
-    private void migratePreNativeTasksToNative() {
-        if (mPreNativeTasks != null) {
-            for (Runnable task : mPreNativeTasks) {
-                TaskRunnerImplJni.get().postDelayedTask(mNativeTaskRunnerAndroid, task, 0);
-            }
-            mPreNativeTasks = null;
-        }
-        if (mPreNativeDelayedTasks != null) {
-            for (Pair<Runnable, Long> task : mPreNativeDelayedTasks) {
-                TaskRunnerImplJni.get().postDelayedTask(
-                        mNativeTaskRunnerAndroid, task.first, task.second);
-            }
-            mPreNativeDelayedTasks = null;
-        }
-    }
 
     @NativeMethods
     interface Natives {

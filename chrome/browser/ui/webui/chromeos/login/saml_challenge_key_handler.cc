@@ -152,7 +152,7 @@ void SamlChallengeKeyHandler::ReturnResult(
   }
 
   std::string encoded_result_data;
-  base::Base64Encode(result.data, &encoded_result_data);
+  base::Base64Encode(result.challenge_response, &encoded_result_data);
 
   js_result.SetKey(kSuccessField, base::Value(result.IsSuccess()));
   js_result.SetKey(kResponseField, base::Value(encoded_result_data));

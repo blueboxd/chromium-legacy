@@ -91,6 +91,12 @@ KeyParams KeystoreKeyParams(const std::vector<uint8_t>& key) {
           base::Base64Encode(key)};
 }
 
+KeyParams TrustedVaultKeyParams(const std::string& key) {
+  std::string encoded_key;
+  base::Base64Encode(key, &encoded_key);
+  return {syncer::KeyDerivationParams::CreateForPbkdf2(), encoded_key};
+}
+
 std::string ComputeKeyName(const KeyParams& key_params) {
   std::string key_name;
   syncer::Nigori::CreateByDerivation(key_params.derivation_params,
@@ -693,6 +699,138 @@ IN_PROC_BROWSER_TEST_F(
                   ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
   EXPECT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
   EXPECT_TRUE(sync_ui_util::ShouldShowSyncKeysMissingError(GetSyncService(0)));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientNigoriWithWebApiTest,
+    ShouldRemotelyTransitFromTrustedVaultToKeystorePassphrase) {
+  const std::string kTestEncryptionKey = "testpassphrase1";
+
+  const GURL retrieval_url =
+      GetTrustedVaultRetrievalURL(*embedded_test_server(), kTestEncryptionKey);
+
+  // Mimic the account being already using a trusted vault passphrase.
+  encryption_helper::SetNigoriInFakeServer(
+      GetFakeServer(), BuildTrustedVaultNigoriSpecifics({kTestEncryptionKey}));
+
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(GetSyncService(0)
+                  ->GetUserSettings()
+                  ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
+  ASSERT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
+  ASSERT_TRUE(sync_ui_util::ShouldShowSyncKeysMissingError(GetSyncService(0)));
+
+  // Mimic opening a web page where the user can interact with the retrieval
+  // flow.
+  sync_ui_util::OpenTabForSyncKeyRetrievalWithURLForTesting(GetBrowser(0),
+                                                            retrieval_url);
+  ASSERT_THAT(GetBrowser(0)->tab_strip_model()->GetActiveWebContents(),
+              NotNull());
+
+  // Wait until the title changes to "OK" via Javascript, which indicates
+  // completion.
+  PageTitleChecker title_checker(
+      /*expected_title=*/"OK",
+      GetBrowser(0)->tab_strip_model()->GetActiveWebContents());
+  ASSERT_TRUE(title_checker.Wait());
+
+  // Mimic remote transition to keystore passphrase.
+  const std::vector<std::vector<uint8_t>>& keystore_keys =
+      GetFakeServer()->GetKeystoreKeys();
+  ASSERT_THAT(keystore_keys, SizeIs(1));
+  const KeyParams kKeystoreKeyParams = KeystoreKeyParams(keystore_keys.back());
+  const KeyParams kTrustedVaultKeyParams =
+      TrustedVaultKeyParams(kTestEncryptionKey);
+  SetNigoriInFakeServer(
+      GetFakeServer(),
+      BuildKeystoreNigoriSpecifics(
+          /*keybag_keys_params=*/{kTrustedVaultKeyParams, kKeystoreKeyParams},
+          /*keystore_decryptor_params*/ {kKeystoreKeyParams},
+          /*keystore_key_params=*/kKeystoreKeyParams));
+
+  // Ensure that client can decrypt with both |kTrustedVaultKeyParams| and
+  // |kKeystoreKeyParams|.
+  const autofill::PasswordForm password_form1 =
+      passwords_helper::CreateTestPasswordForm(1);
+  const autofill::PasswordForm password_form2 =
+      passwords_helper::CreateTestPasswordForm(2);
+
+  passwords_helper::InjectEncryptedServerPassword(
+      password_form1, kKeystoreKeyParams.password,
+      kKeystoreKeyParams.derivation_params, GetFakeServer());
+  passwords_helper::InjectEncryptedServerPassword(
+      password_form2, kTrustedVaultKeyParams.password,
+      kTrustedVaultKeyParams.derivation_params, GetFakeServer());
+
+  EXPECT_TRUE(PasswordFormsChecker(0, {password_form1, password_form2}).Wait());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientNigoriWithWebApiTest,
+    ShouldRemotelyTransitFromTrustedVaultToCustomPassphrase) {
+  const std::string kTestEncryptionKey = "testpassphrase1";
+
+  const GURL retrieval_url =
+      GetTrustedVaultRetrievalURL(*embedded_test_server(), kTestEncryptionKey);
+
+  // Mimic the account being already using a trusted vault passphrase.
+  encryption_helper::SetNigoriInFakeServer(
+      GetFakeServer(), BuildTrustedVaultNigoriSpecifics({kTestEncryptionKey}));
+
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(GetSyncService(0)
+                  ->GetUserSettings()
+                  ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
+  ASSERT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
+  ASSERT_TRUE(sync_ui_util::ShouldShowSyncKeysMissingError(GetSyncService(0)));
+
+  // Mimic opening a web page where the user can interact with the retrieval
+  // flow.
+  sync_ui_util::OpenTabForSyncKeyRetrievalWithURLForTesting(GetBrowser(0),
+                                                            retrieval_url);
+  ASSERT_THAT(GetBrowser(0)->tab_strip_model()->GetActiveWebContents(),
+              NotNull());
+
+  // Wait until the title changes to "OK" via Javascript, which indicates
+  // completion.
+  PageTitleChecker title_checker(
+      /*expected_title=*/"OK",
+      GetBrowser(0)->tab_strip_model()->GetActiveWebContents());
+  ASSERT_TRUE(title_checker.Wait());
+
+  // Mimic remote transition to custom passphrase.
+  const KeyParams kCustomPassphraseKeyParams = {
+      syncer::KeyDerivationParams::CreateForPbkdf2(), "passphrase"};
+  const KeyParams kTrustedVaultKeyParams =
+      TrustedVaultKeyParams(kTestEncryptionKey);
+  SetNigoriInFakeServer(GetFakeServer(),
+                        CreateCustomPassphraseNigori(kCustomPassphraseKeyParams,
+                                                     kTrustedVaultKeyParams));
+
+  EXPECT_TRUE(
+      PassphraseRequiredStateChecker(GetSyncService(1), /*desired_state=*/true)
+          .Wait());
+  EXPECT_TRUE(GetSyncService(1)->GetUserSettings()->SetDecryptionPassphrase(
+      kCustomPassphraseKeyParams.password));
+  EXPECT_TRUE(
+      PassphraseRequiredStateChecker(GetSyncService(1), /*desired_state=*/false)
+          .Wait());
+
+  // Ensure that client can decrypt with both |kTrustedVaultKeyParams| and
+  // |kCustomPassphraseKeyParams|.
+  const autofill::PasswordForm password_form1 =
+      passwords_helper::CreateTestPasswordForm(1);
+  const autofill::PasswordForm password_form2 =
+      passwords_helper::CreateTestPasswordForm(2);
+
+  passwords_helper::InjectEncryptedServerPassword(
+      password_form1, kCustomPassphraseKeyParams.password,
+      kCustomPassphraseKeyParams.derivation_params, GetFakeServer());
+  passwords_helper::InjectEncryptedServerPassword(
+      password_form2, kTrustedVaultKeyParams.password,
+      kTrustedVaultKeyParams.derivation_params, GetFakeServer());
+
+  EXPECT_TRUE(PasswordFormsChecker(0, {password_form1, password_form2}).Wait());
 }
 
 // Same as SingleClientNigoriWithWebApiTest but does NOT override

@@ -38,8 +38,9 @@ class SkiaOutputDeviceOffscreen : public SkiaOutputDevice {
                      std::vector<ui::LatencyInfo> latency_info) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
-  SkSurface* BeginPaint() override;
-  void EndPaint(const GrBackendSemaphore& semaphore) override;
+  SkSurface* BeginPaint(
+      std::vector<GrBackendSemaphore>* end_semaphores) override;
+  void EndPaint() override;
 
  protected:
   scoped_refptr<gpu::SharedContextState> context_state_;

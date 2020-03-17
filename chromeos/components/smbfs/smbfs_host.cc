@@ -57,6 +57,18 @@ SmbFsHost::SmbFsHost(
 
 SmbFsHost::~SmbFsHost() = default;
 
+void SmbFsHost::Unmount(SmbFsHost::UnmountCallback callback) {
+  mount_point_->Unmount(base::BindOnce(
+      &SmbFsHost::OnUnmountDone, base::Unretained(this), std::move(callback)));
+}
+
+void SmbFsHost::OnUnmountDone(SmbFsHost::UnmountCallback callback,
+                              chromeos::MountError result) {
+  LOG_IF(ERROR, result != chromeos::MountError::MOUNT_ERROR_NONE)
+      << "Could not unmount smbfs share: " << static_cast<int>(result);
+  std::move(callback).Run(result);
+}
+
 void SmbFsHost::OnDisconnect() {
   // Ensure only one disconnection event occurs.
   smbfs_.reset();

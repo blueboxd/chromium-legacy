@@ -81,6 +81,15 @@ class DateTimeLocalPicker extends HTMLElement {
             this.hasSelectedDate) {
           window.pagePopupController.setValue(this.selectedValue);
         }
+        // Stop the native scrolling behavior; the Time picker needs to manage
+        // its own scroll position.
+        event.preventDefault();
+        break;
+      case 'Home':
+      case 'End':
+        // Prevent an attempt to scroll to the end of
+        // of an infinitely looping time picker column.
+        event.preventDefault();
         break;
     }
   };

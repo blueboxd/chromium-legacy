@@ -56,11 +56,6 @@ AXObjectCache* AXObjectCache::Create(Document& document) {
   return create_function_(document);
 }
 
-AXObjectCache::AXObjectCache(Document& document)
-    : ExecutionContextLifecycleObserver(document.GetExecutionContext()) {}
-
-AXObjectCache::~AXObjectCache() = default;
-
 namespace {
 
 typedef HashSet<String, CaseFoldingHash> ARIAWidgetSet;
@@ -139,10 +134,6 @@ bool AXObjectCache::IsInsideFocusableElementOrARIAWidget(const Node& node) {
     cur_node = cur_node->parentNode();
   } while (cur_node && !IsA<HTMLBodyElement>(node));
   return false;
-}
-
-void AXObjectCache::Trace(Visitor* visitor) {
-  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

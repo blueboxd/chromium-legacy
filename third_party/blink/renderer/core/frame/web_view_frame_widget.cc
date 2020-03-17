@@ -106,7 +106,7 @@ WebViewFrameWidget::GetBeginMainFrameMetrics() {
   return web_view_->GetBeginMainFrameMetrics();
 }
 
-void WebViewFrameWidget::UpdateLifecycle(LifecycleUpdate requested_update,
+void WebViewFrameWidget::UpdateLifecycle(WebLifecycleUpdate requested_update,
                                          DocumentUpdateReason reason) {
   web_view_->UpdateLifecycle(requested_update, reason);
 }

@@ -64,7 +64,9 @@ class AccountsCookieMutatorImpl : public AccountsCookieMutator {
   void ForceTriggerOnCookieChange() override;
 #endif
 
-  void LogOutAllAccounts(gaia::GaiaSource source) override;
+  void LogOutAllAccounts(
+      gaia::GaiaSource source,
+      LogOutFromCookieCompletedCallback completion_callback) override;
 
  private:
   class MultiloginHelperWrapper : public SetAccountsInCookieTask {

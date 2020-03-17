@@ -234,8 +234,7 @@ def method_context(interface, method, component_info, is_visible=True):
         'has_exception_state':
         is_raises_exception or is_check_security_for_receiver or any(
             argument for argument in arguments
-            if (argument.idl_type.name == 'SerializedScriptValue' or
-                argument_conversion_needs_exception_state(method, argument))),
+            if argument_conversion_needs_exception_state(method, argument)),
         'has_optional_argument_without_default_value':
         any(True for argument_context in argument_contexts
             if argument_context['is_optional_without_default_value']),
@@ -383,7 +382,7 @@ def argument_context(interface, method, argument, index, is_visible=True):
         idl_type.is_callback_interface,
         # FIXME: Remove generic 'Dictionary' special-casing
         'is_dictionary':
-        idl_type.is_dictionary or idl_type.base_type == 'Dictionary',
+        idl_type.is_dictionary,
         'is_explicit_nullable':
         idl_type.is_explicit_nullable,
         'is_nullable':
@@ -446,10 +445,7 @@ def cpp_value(interface, method, number_of_arguments):
         cpp_arguments.append('*impl')
     for argument in arguments:
         variable_name = NameStyleConverter(argument.name).to_snake_case()
-        if argument.idl_type.base_type == 'SerializedScriptValue':
-            cpp_arguments.append('std::move(%s)' % variable_name)
-        else:
-            cpp_arguments.append(variable_name)
+        cpp_arguments.append(variable_name)
 
     # If a method returns an IDL dictionary or union type, the return value is
     # passed as an argument to impl classes.
@@ -518,47 +514,11 @@ def v8_value_to_local_cpp_variadic_value(argument, index):
     }
 
 
-def v8_value_to_local_cpp_ssv_value(extended_attributes, idl_type, v8_value,
-                                    variable_name, for_storage):
-    this_cpp_type = idl_type.cpp_type_args(
-        extended_attributes=extended_attributes, raw_type=True)
-
-    storage_policy = 'kForStorage' if for_storage else 'kNotForStorage'
-    arguments = ', '.join([
-        'info.GetIsolate()', v8_value,
-        '{ssv}::SerializeOptions({ssv}::{storage_policy})', 'exception_state'
-    ])
-    cpp_expression_format = 'NativeValueTraits<{ssv}>::NativeValue(%s)' % arguments
-    this_cpp_value = cpp_expression_format.format(
-        ssv='SerializedScriptValue', storage_policy=storage_policy)
-
-    return {
-        'assign_expression': this_cpp_value,
-        'check_expression': 'exception_state.HadException()',
-        'cpp_type': this_cpp_type,
-        'cpp_name': variable_name,
-        'declare_variable': False,
-    }
-
-
 def v8_value_to_local_cpp_value(interface_name, method, argument, index):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     name = NameStyleConverter(argument.name).to_snake_case()
     v8_value = 'info[{index}]'.format(index=index)
-
-    # History.pushState and History.replaceState are explicitly specified as
-    # serializing the value for storage. The default is to not serialize for
-    # storage. See https://html.spec.whatwg.org/C/#dom-history-pushstate
-    if idl_type.name == 'SerializedScriptValue':
-        for_storage = (interface_name == 'History'
-                       and method.name in ('pushState', 'replaceState'))
-        return v8_value_to_local_cpp_ssv_value(
-            extended_attributes,
-            idl_type,
-            v8_value,
-            name,
-            for_storage=for_storage)
 
     if argument.is_variadic:
         return v8_value_to_local_cpp_variadic_value(argument, index)

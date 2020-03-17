@@ -171,7 +171,9 @@ public class ReparentingTask implements UserData {
      * @param tabDelegateFactory  The new delegate factory this tab should be using.
      */
     private void attach(WindowAndroid window, TabDelegateFactory tabDelegateFactory) {
-        assert TabImpl.isDetached(mTab);
+        // Assert that the tab is currently in detached state.
+        assert mTab.getWebContents() == null
+                || mTab.getWebContents().getTopLevelNativeWindow() == null;
         mTab.updateAttachment(window, tabDelegateFactory);
         ReparentingTaskJni.get().attachTab(mTab.getWebContents());
     }

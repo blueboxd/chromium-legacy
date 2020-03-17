@@ -78,7 +78,7 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
     } else if (EqualIgnoringASCIICase(value, "bottom")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kVerticalAlign, CSSValueID::kBottom);
-    } else if (DeprecatedEqualIgnoringCase(value, "baseline")) {
+    } else if (EqualIgnoringASCIICase(value, "baseline")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kVerticalAlign, CSSValueID::kBaseline);
     } else {
@@ -90,7 +90,7 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
         EqualIgnoringASCIICase(value, "center")) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
                                               CSSValueID::kWebkitCenter);
-    } else if (DeprecatedEqualIgnoringCase(value, "absmiddle")) {
+    } else if (EqualIgnoringASCIICase(value, "absmiddle")) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
                                               CSSValueID::kCenter);
     } else if (EqualIgnoringASCIICase(value, "left")) {

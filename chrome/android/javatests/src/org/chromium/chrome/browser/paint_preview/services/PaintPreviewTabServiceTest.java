@@ -86,8 +86,6 @@ public class PaintPreviewTabServiceTest {
             mPaintPreviewTabService.onRestoreCompleted(mTabModelSelector);
             mTab.loadUrl(new LoadUrlParams(url));
         });
-        // This will hide mTab so that a capture occurs.
-        mActivityTestRule.loadUrlInNewTab(url);
 
         int tabId = mTab.getId();
         Success ok = new Success();

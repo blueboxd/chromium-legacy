@@ -1543,8 +1543,9 @@ bool GaiaScreenHandler::BuildUserContextForGaiaSignIn(
       extension_provided_client_cert_usage_observer_->ClientCertsWereUsed()) {
     scoped_refptr<net::X509Certificate> saml_client_cert;
     std::vector<ChallengeResponseKey::SignatureAlgorithm> signature_algorithms;
+    std::string extension_id;
     if (!extension_provided_client_cert_usage_observer_->GetOnlyUsedClientCert(
-            &saml_client_cert, &signature_algorithms)) {
+            &saml_client_cert, &signature_algorithms, &extension_id)) {
       *error_message = l10n_util::GetStringUTF8(
           IDS_CHALLENGE_RESPONSE_AUTH_MULTIPLE_CLIENT_CERTS_ERROR);
       return false;
@@ -1556,6 +1557,7 @@ bool GaiaScreenHandler::BuildUserContextForGaiaSignIn(
           IDS_CHALLENGE_RESPONSE_AUTH_INVALID_CLIENT_CERT_ERROR);
       return false;
     }
+    challenge_response_key.set_extension_id(extension_id);
     user_context->GetMutableChallengeResponseKeys()->push_back(
         challenge_response_key);
   } else {

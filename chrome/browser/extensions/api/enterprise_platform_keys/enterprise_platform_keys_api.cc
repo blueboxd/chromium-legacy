@@ -308,7 +308,7 @@ void EnterprisePlatformKeysChallengeMachineKeyFunction::OnChallengedKey(
     const chromeos::attestation::TpmChallengeKeyResult& result) {
   if (result.IsSuccess()) {
     Respond(ArgumentList(api_epk::ChallengeMachineKey::Results::Create(
-        VectorFromString(result.data))));
+        VectorFromString(result.challenge_response))));
   } else {
     Respond(Error(result.GetErrorMessage()));
   }
@@ -342,7 +342,7 @@ void EnterprisePlatformKeysChallengeUserKeyFunction::OnChallengedKey(
     const chromeos::attestation::TpmChallengeKeyResult& result) {
   if (result.IsSuccess()) {
     Respond(ArgumentList(api_epk::ChallengeUserKey::Results::Create(
-        VectorFromString(result.data))));
+        VectorFromString(result.challenge_response))));
   } else {
     Respond(Error(result.GetErrorMessage()));
   }

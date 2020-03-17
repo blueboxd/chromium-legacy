@@ -394,12 +394,19 @@ void VideoRendererAlgorithm::EnqueueFrame(scoped_refptr<VideoFrame> frame) {
   }
 
   std::vector<base::TimeTicks> wall_clock_times;
+  base::TimeDelta wallclock_duration;
   wall_clock_time_cb_.Run(media_timestamps, &wall_clock_times);
   ready_frame.start_time = wall_clock_times[0];
-  if (frame_duration_calculator_.count())
+  if (frame_duration_calculator_.count()) {
     ready_frame.end_time = ready_frame.start_time + average_frame_duration_;
-  else if (wall_clock_times.size() > 1u)
+    wallclock_duration = average_frame_duration_;
+  } else if (wall_clock_times.size() > 1u) {
     ready_frame.end_time = wall_clock_times[1];
+    wallclock_duration = ready_frame.end_time - ready_frame.start_time;
+  }
+
+  ready_frame.frame->metadata()->SetTimeDelta(
+      VideoFrameMetadata::WALLCLOCK_FRAME_DURATION, wallclock_duration);
 
   // The vast majority of cases should always append to the back, but in rare
   // circumstance we get out of order timestamps, http://crbug.com/386551.

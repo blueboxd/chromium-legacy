@@ -923,7 +923,7 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     flush_info.fFlags = kNone_GrFlushFlags;
 
     auto end_paint_semaphores =
-        scoped_output_device_paint_->GetEndPaintSemaphores();
+        scoped_output_device_paint_->TakeEndPaintSemaphores();
 
     end_paint_semaphores.insert(
         end_paint_semaphores.end(),
@@ -932,8 +932,6 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
         std::make_move_iterator(
             scoped_promise_image_access.end_semaphores().end()));
 
-    if (output_device_->need_swap_semaphore())
-      end_paint_semaphores.emplace_back();
     // update the size and data pointer
     flush_info.fNumSemaphores = end_paint_semaphores.size();
     flush_info.fSignalSemaphores = end_paint_semaphores.data();
@@ -952,11 +950,6 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
       // TODO(penghuang): handle vulkan device lost.
       DLOG(ERROR) << "output_sk_surface()->flush() failed.";
       return false;
-    }
-    if (output_device_->need_swap_semaphore()) {
-      auto& semaphore = end_paint_semaphores.back();
-      DCHECK(semaphore.isInitialized());
-      scoped_output_device_paint_->set_semaphore(std::move(semaphore));
     }
   }
   ReleaseFenceSyncAndPushTextureUpdates(sync_fence_release);

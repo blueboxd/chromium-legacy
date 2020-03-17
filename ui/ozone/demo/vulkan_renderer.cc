@@ -294,14 +294,8 @@ void VulkanRenderer::RenderFrame() {
       vkCmdEndRenderPass(recorder.handle());
     }
     VkSemaphore begin_semaphore = scoped_write.TakeBeginSemaphore();
-    VkSemaphoreCreateInfo vk_semaphore_create_info = {
-        VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
-    VkSemaphore end_semaphore;
-    CHECK(vkCreateSemaphore(device_queue_->GetVulkanDevice(),
-                            &vk_semaphore_create_info, nullptr /* pAllocator */,
-                            &end_semaphore) == VK_SUCCESS);
+    VkSemaphore end_semaphore = scoped_write.GetEndSemaphore();
     CHECK(command_buffer.Submit(1, &begin_semaphore, 1, &end_semaphore));
-    scoped_write.SetEndSemaphore(end_semaphore);
     device_queue_->GetFenceHelper()->EnqueueSemaphoreCleanupForSubmittedWork(
         begin_semaphore);
   }

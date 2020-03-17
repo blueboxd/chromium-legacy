@@ -99,6 +99,7 @@ class ClientAndroid : public Client,
   std::string GetAccountEmailAddress() override;
   AccessTokenFetcher* GetAccessTokenFetcher() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
+  password_manager::PasswordManagerClient* GetPasswordManagerClient() override;
   WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
   std::string GetServerUrl() override;
   std::string GetLocale() override;
@@ -141,6 +142,7 @@ class ClientAndroid : public Client,
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
   std::unique_ptr<Controller> controller_;
   std::unique_ptr<WebsiteLoginFetcher> website_login_fetcher_;
+  password_manager::PasswordManagerClient* password_manager_client_;
 
   // True if Start() was called. This turns on the tracking of dropouts.
   bool started_ = false;

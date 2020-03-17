@@ -101,6 +101,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       network::mojom::CredentialsMode) override;
+  bool IsOffMainThreadScriptFetchDisabled() override;
 
   // Called by the bindings (dedicated_worker_global_scope.idl).
   const String name() const;

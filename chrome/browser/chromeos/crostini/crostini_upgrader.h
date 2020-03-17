@@ -104,6 +104,7 @@ class CrostiniUpgrader : public KeyedService,
                                       const base::string16& message) override;
 
    private:
+    bool has_notified_start_ = false;
     base::WeakPtr<CrostiniUpgrader> upgrader_;
   };
   friend class StatusTracker;

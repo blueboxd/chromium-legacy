@@ -4,8 +4,12 @@
 
 #include "chrome/updater/prefs.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "chrome/updater/util.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -28,6 +32,15 @@ std::unique_ptr<PrefService> CreatePrefService() {
   update_client::RegisterPrefs(pref_registry.get());
 
   return pref_service_factory.Create(pref_registry);
+}
+
+void PrefsCommitPendingWrites(PrefService* pref_service) {
+  // Waits in the run loop until pending writes complete.
+  base::RunLoop runloop;
+  pref_service->CommitPendingWrite(base::BindOnce(
+      [](base::OnceClosure quit_closure) { std::move(quit_closure).Run(); },
+      runloop.QuitWhenIdleClosure()));
+  runloop.Run();
 }
 
 }  // namespace updater

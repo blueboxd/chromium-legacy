@@ -45,9 +45,6 @@ class NetworkDeviceHandlerTest : public testing::Test {
 
     success_callback_ = base::Bind(&NetworkDeviceHandlerTest::SuccessCallback,
                                    base::Unretained(this));
-    properties_success_callback_ =
-        base::Bind(&NetworkDeviceHandlerTest::PropertiesSuccessCallback,
-                   base::Unretained(this));
     string_success_callback_ =
         base::Bind(&NetworkDeviceHandlerTest::StringSuccessCallback,
                    base::Unretained(this));
@@ -104,7 +101,10 @@ class NetworkDeviceHandlerTest : public testing::Test {
   void GetDeviceProperties(const std::string& device_path,
                            const std::string& expected_result) {
     network_device_handler_->GetDeviceProperties(
-        device_path, properties_success_callback_, error_callback_);
+        device_path,
+        base::BindOnce(&NetworkDeviceHandlerTest::PropertiesSuccessCallback,
+                       base::Unretained(this)),
+        error_callback_);
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(expected_result, result_);
   }
@@ -126,7 +126,6 @@ class NetworkDeviceHandlerTest : public testing::Test {
   std::unique_ptr<NetworkDeviceHandler> network_device_handler_;
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
   base::Closure success_callback_;
-  network_handler::DictionaryResultCallback properties_success_callback_;
   network_handler::StringResultCallback string_success_callback_;
   network_handler::ErrorCallback error_callback_;
   std::unique_ptr<base::DictionaryValue> properties_;
@@ -136,10 +135,7 @@ class NetworkDeviceHandlerTest : public testing::Test {
 };
 
 TEST_F(NetworkDeviceHandlerTest, GetDeviceProperties) {
-  network_device_handler_->GetDeviceProperties(
-      kDefaultWifiDevicePath, properties_success_callback_, error_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kResultSuccess, result_);
+  GetDeviceProperties(kDefaultWifiDevicePath, kResultSuccess);
   std::string type;
   properties_->GetString(shill::kTypeProperty, &type);
   EXPECT_EQ(shill::kTypeWifi, type);
@@ -155,11 +151,8 @@ TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
   EXPECT_EQ(kResultSuccess, result_);
 
   // GetDeviceProperties should return the value set by SetDeviceProperty.
-  network_device_handler_->GetDeviceProperties(kDefaultCellularDevicePath,
-                                               properties_success_callback_,
-                                               error_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kResultSuccess, result_);
+  GetDeviceProperties(kDefaultCellularDevicePath, kResultSuccess);
+
   int interval = 0;
   EXPECT_TRUE(properties_->GetIntegerWithoutPathExpansion(
       shill::kScanIntervalProperty, &interval));
@@ -172,11 +165,8 @@ TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kResultSuccess, result_);
 
-  network_device_handler_->GetDeviceProperties(kDefaultCellularDevicePath,
-                                               properties_success_callback_,
-                                               error_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kResultSuccess, result_);
+  GetDeviceProperties(kDefaultCellularDevicePath, kResultSuccess);
+
   EXPECT_TRUE(properties_->GetIntegerWithoutPathExpansion(
       shill::kScanIntervalProperty, &interval));
   EXPECT_EQ(2, interval);
@@ -209,11 +199,8 @@ TEST_F(NetworkDeviceHandlerTest, CellularAllowRoaming) {
   base::RunLoop().RunUntilIdle();
 
   // Roaming should be enabled now.
-  network_device_handler_->GetDeviceProperties(kDefaultCellularDevicePath,
-                                               properties_success_callback_,
-                                               error_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kResultSuccess, result_);
+  GetDeviceProperties(kDefaultCellularDevicePath, kResultSuccess);
+
   bool allow_roaming;
   EXPECT_TRUE(properties_->GetBooleanWithoutPathExpansion(
       shill::kCellularAllowRoamingProperty, &allow_roaming));
@@ -223,11 +210,8 @@ TEST_F(NetworkDeviceHandlerTest, CellularAllowRoaming) {
   base::RunLoop().RunUntilIdle();
 
   // Roaming should be disable again.
-  network_device_handler_->GetDeviceProperties(kDefaultCellularDevicePath,
-                                               properties_success_callback_,
-                                               error_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kResultSuccess, result_);
+  GetDeviceProperties(kDefaultCellularDevicePath, kResultSuccess);
+
   EXPECT_TRUE(properties_->GetBooleanWithoutPathExpansion(
       shill::kCellularAllowRoamingProperty, &allow_roaming));
   EXPECT_FALSE(allow_roaming);

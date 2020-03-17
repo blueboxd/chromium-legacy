@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_icon_manager.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registry_controller.h"
@@ -56,7 +57,6 @@ class WebAppMigrationManager {
   void OnWebAppIconsWritten(bool success);
 
   void MigrateBookmarkAppInstallSource(const AppId& app_id, WebApp* web_app);
-  void MigrateBookmarkAppFileHandlers(const AppId& app_id, WebApp* web_app);
   bool CanMigrateBookmarkApp(const AppId& app_id) const;
   std::unique_ptr<WebApp> MigrateBookmarkApp(const AppId& app_id);
   void MigrateBookmarkAppsRegistry();
@@ -74,6 +74,7 @@ class WebAppMigrationManager {
   extensions::BookmarkAppRegistrar bookmark_app_registrar_;
   extensions::BookmarkAppRegistryController bookmark_app_registry_controller_;
   extensions::BookmarkAppIconManager bookmark_app_icon_manager_;
+  extensions::BookmarkAppFileHandlerManager bookmark_app_file_handler_manager_;
 
   AbstractWebAppDatabaseFactory* const database_factory_;
   WebAppIconManager* const web_app_icon_manager_;

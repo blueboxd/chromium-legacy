@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 
 #include "base/feature_list.h"
-#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -63,7 +62,7 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
       ThemeService::GetThemeProviderForProfile(profile);
   html_source->AddString("frameColor",
                          color_utils::SkColorToRgbaString(
-                             tp.GetColor(ThemeProperties::COLOR_FRAME)));
+                             tp.GetColor(ThemeProperties::COLOR_FRAME_ACTIVE)));
 
   html_source->AddBoolean(
       "showDemoOptions",

@@ -28,8 +28,7 @@ CreateAnimationAndPaintWorkletThread(
     std::unique_ptr<AnimationAndPaintWorkletThread> thread) {
   thread->Start(
       std::make_unique<GlobalScopeCreationParams>(
-          document->Url(), mojom::ScriptType::kModule,
-          OffMainThreadWorkerScriptFetchOption::kEnabled, "Worklet",
+          document->Url(), mojom::blink::ScriptType::kModule, "Worklet",
           document->UserAgent(), nullptr /* web_worker_fetch_context */,
           Vector<CSPHeaderAndType>(), document->GetReferrerPolicy(),
           document->GetSecurityOrigin(), document->IsSecureContext(),

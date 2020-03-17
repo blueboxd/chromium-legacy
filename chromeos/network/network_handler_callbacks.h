@@ -33,9 +33,9 @@ typedef base::RepeatingCallback<void(
     std::unique_ptr<base::DictionaryValue> error_data)>
     ErrorCallback;
 
-typedef base::Callback<
-  void(const std::string& service_path,
-       const base::DictionaryValue& dictionary)> DictionaryResultCallback;
+typedef base::OnceCallback<void(const std::string& service_path,
+                                const base::DictionaryValue& dictionary)>
+    DictionaryResultCallback;
 
 typedef base::Callback<void(const std::string& string_result)>
     StringResultCallback;
@@ -83,7 +83,7 @@ void ShillErrorCallbackFunction(const std::string& error_name,
 // the DBus Dictionary callback into one that calls the error callback
 // if |call_status| != DBUS_METHOD_CALL_SUCCESS.
 COMPONENT_EXPORT(CHROMEOS_NETWORK)
-void GetPropertiesCallback(const DictionaryResultCallback& callback,
+void GetPropertiesCallback(DictionaryResultCallback callback,
                            const ErrorCallback& error_callback,
                            const std::string& path,
                            DBusMethodCallStatus call_status,

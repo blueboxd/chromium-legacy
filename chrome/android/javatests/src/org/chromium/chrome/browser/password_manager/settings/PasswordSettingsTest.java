@@ -104,7 +104,7 @@ import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.sync.ModelType;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -620,8 +620,8 @@ public class PasswordSettingsTest {
         // Add a password entry, because the link is only displayed if the password list is not
         // empty.
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
-        ChromeSigninController.get().setSignedInAccountName("Test Account");
         overrideProfileSyncService(false, false);
+        SigninTestUtil.addAndSignInTestAccount();
 
         final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
                 InstrumentationRegistry.getInstrumentation(), PasswordSettings.class.getName());
@@ -642,8 +642,8 @@ public class PasswordSettingsTest {
         // Add a password entry, because the link is only displayed if the password list is not
         // empty.
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
-        ChromeSigninController.get().setSignedInAccountName("Test Account");
         overrideProfileSyncService(false, true);
+        SigninTestUtil.addAndSignInTestAccount();
 
         final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
                 InstrumentationRegistry.getInstrumentation(), PasswordSettings.class.getName());
@@ -664,8 +664,8 @@ public class PasswordSettingsTest {
         // Add a password entry, because the link is only displayed if the password list is not
         // empty.
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
-        ChromeSigninController.get().setSignedInAccountName("Test Account");
         overrideProfileSyncService(true, true);
+        SigninTestUtil.addAndSignInTestAccount();
 
         final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
                 InstrumentationRegistry.getInstrumentation(), PasswordSettings.class.getName());

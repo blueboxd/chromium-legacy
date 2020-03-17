@@ -5,7 +5,7 @@
 #include "chrome/browser/vr/service/isolated_device_provider.h"
 
 #include "base/bind.h"
-#include "chrome/browser/vr/service/vr_ui_host.h"
+#include "chrome/browser/vr/service/chrome_xr_integration_client.h"
 #include "chrome/browser/vr/service/xr_device_service.h"
 
 namespace {
@@ -39,9 +39,15 @@ void IsolatedVRDeviceProvider::OnDeviceAdded(
     device::mojom::XRDeviceId device_id) {
   add_device_callback_.Run(device_id, nullptr, std::move(device));
 
-  auto ui_host =
-      (*VRUiHost::GetFactory())(device_id, std::move(compositor_host));
-  ui_host_map_.insert(std::make_pair(device_id, std::move(ui_host)));
+  auto* integration_client = ChromeXrIntegrationClient::GetInstance();
+  if (!integration_client)
+    return;
+
+  // It's perfectly valid to insert nullptr, and doing so avoids the extra move
+  // if we were to do an assignment/check to avoid inserting it.
+  ui_host_map_.insert(
+      std::make_pair(device_id, integration_client->CreateVrUiHost(
+                                    device_id, std::move(compositor_host))));
 }
 
 void IsolatedVRDeviceProvider::OnDeviceRemoved(device::mojom::XRDeviceId id) {

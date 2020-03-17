@@ -5,12 +5,15 @@
 #ifndef CHROME_UPDATER_WIN_UPDATE_SERVICE_OUT_OF_PROCESS_H_
 #define CHROME_UPDATER_WIN_UPDATE_SERVICE_OUT_OF_PROCESS_H_
 
+#include <wrl/implements.h>
+
 #include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
+#include "chrome/updater/server/win/updater_idl.h"
 #include "chrome/updater/update_service.h"
 
 namespace base {
@@ -22,6 +25,23 @@ enum class Error;
 }  // namespace update_client
 
 namespace updater {
+
+// This class implements the IUpdater interface and exposes it as a COM object.
+class UpdaterObserverImpl
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          IUpdaterObserver> {
+ public:
+  UpdaterObserverImpl() = default;
+  UpdaterObserverImpl(const UpdaterObserverImpl&) = delete;
+  UpdaterObserverImpl& operator=(const UpdaterObserverImpl&) = delete;
+
+  // Overrides for IUpdaterObserver.
+  IFACEMETHODIMP OnComplete(int error_code) override;
+
+ private:
+  ~UpdaterObserverImpl() override = default;
+};
 
 using StateChangeCallback =
     base::RepeatingCallback<void(updater::UpdateService::UpdateState)>;
@@ -47,6 +67,7 @@ class UpdateServiceOutOfProcess : public UpdateService {
               Priority priority,
               StateChangeCallback state_update,
               base::OnceCallback<void(Result)> done) override;
+  void Uninitialize() override;
 
  private:
   UpdateServiceOutOfProcess();

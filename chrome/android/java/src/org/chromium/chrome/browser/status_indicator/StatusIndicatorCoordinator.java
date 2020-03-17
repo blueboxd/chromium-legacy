@@ -54,10 +54,15 @@ public class StatusIndicatorCoordinator {
      * @param statusBarColorWithoutStatusIndicatorSupplier A supplier that will get the status bar
      *                                                     color without taking the status indicator
      *                                                     into account.
+     * @param canAnimateNativeBrowserControls Will supply a boolean meaning whether the native
+     *                                        browser controls can be animated. This will be false
+     *                                        where we can't have a reliable cc::BCOM instance, e.g.
+     *                                        tab switcher.
      */
     public StatusIndicatorCoordinator(Activity activity, ResourceManager resourceManager,
             ChromeFullscreenManager fullscreenManager,
-            Supplier<Integer> statusBarColorWithoutStatusIndicatorSupplier) {
+            Supplier<Integer> statusBarColorWithoutStatusIndicatorSupplier,
+            Supplier<Boolean> canAnimateNativeBrowserControls) {
         // TODO(crbug.com/1005843): Create this view lazily if/when we need it. This is a task for
         // when we have the public API figured out. First, we should avoid inflating the view here
         // in case it's never used.
@@ -72,8 +77,8 @@ public class StatusIndicatorCoordinator {
         PropertyModelChangeProcessor.create(model,
                 new StatusIndicatorViewBinder.ViewHolder(root, mSceneLayer),
                 StatusIndicatorViewBinder::bind);
-        mMediator = new StatusIndicatorMediator(
-                model, fullscreenManager, statusBarColorWithoutStatusIndicatorSupplier);
+        mMediator = new StatusIndicatorMediator(model, fullscreenManager,
+                statusBarColorWithoutStatusIndicatorSupplier, canAnimateNativeBrowserControls);
         resourceManager.getDynamicResourceLoader().registerResource(
                 root.getId(), root.getResourceAdapter());
         root.addOnLayoutChangeListener(mMediator);

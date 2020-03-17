@@ -131,6 +131,7 @@ js_type_check("settings_resources") {
   deps = [
     ":extension_control_browser_proxy",
     ":global_scroll_target_behavior",
+    ":hats_browser_proxy",
     ":lifetime_browser_proxy",
     ":metrics_browser_proxy",
     ":open_window_proxy",
@@ -156,6 +157,11 @@ js_library("global_scroll_target_behavior") {
     ":router",
     "//ui/webui/resources/js:cr",
   ]
+}
+
+js_library("hats_browser_proxy") {
+  deps = [ "//ui/webui/resources/js:cr" ]
+  externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
 js_library("lifetime_browser_proxy") {

@@ -35,7 +35,7 @@ namespace vr {
 
 class XRRuntimeManager;
 class XRRuntimeManagerTest;
-class BrowserXRRuntime;
+class BrowserXRRuntimeImpl;
 
 // Browser process implementation of the VRService mojo interface. Instantiated
 // through Mojo once the user loads a page containing WebXR.
@@ -73,7 +73,7 @@ class VRServiceImpl : public device::mojom::VRService,
   // it.
   void OnInlineSessionDisconnected(mojo::RemoteSetElementId session_id);
 
-  // Notifications/calls from BrowserXRRuntime:
+  // Notifications/calls from BrowserXRRuntimeImpl:
   void OnExitPresent();
   void OnVisibilityStateChanged(
       device::mojom::XRVisibilityState visibility_state);
@@ -134,7 +134,8 @@ class VRServiceImpl : public device::mojom::VRService,
   // has already been granted), then it will directly call
   // EnsureRuntimeInstalled. DoRequestSession will continue with OnInline or
   // OnImmersive SessionCreated depending on the type of session created.
-  void ShowConsentPrompt(SessionRequestData request, BrowserXRRuntime* runtime);
+  void ShowConsentPrompt(SessionRequestData request,
+                         BrowserXRRuntimeImpl* runtime);
 
   void OnConsentResult(SessionRequestData request,
                        XrConsentPromptLevel consent_level,
@@ -144,7 +145,7 @@ class VRServiceImpl : public device::mojom::VRService,
                           ContentSetting setting_value);
 
   void EnsureRuntimeInstalled(SessionRequestData request,
-                              BrowserXRRuntime* runtime);
+                              BrowserXRRuntimeImpl* runtime);
   void OnInstallResult(SessionRequestData request_data, bool install_succeeded);
 
   void DoRequestSession(SessionRequestData request);

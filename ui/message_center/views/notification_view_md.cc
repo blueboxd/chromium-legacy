@@ -44,6 +44,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/radio_button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
@@ -343,6 +344,8 @@ NotificationButtonMD::NotificationButtonMD(
   SetBorder(views::CreateEmptyBorder(kActionButtonPadding));
   SetMinSize(kActionButtonMinSize);
   SetFocusForPlatform();
+
+  views::InstallRectHighlightPathGenerator(this);
 }
 
 NotificationButtonMD::~NotificationButtonMD() = default;
@@ -378,8 +381,6 @@ NotificationInputContainerMD::NotificationInputContainerMD(
   SetInkDropMode(InkDropMode::ON);
   set_ink_drop_visible_opacity(1);
 
-  ink_drop_container_->SetPaintToLayer();
-  ink_drop_container_->layer()->SetFillsBoundsOpaquely(false);
   AddChildView(ink_drop_container_);
 
   textfield_->set_controller(this);
@@ -395,6 +396,8 @@ NotificationInputContainerMD::NotificationInputContainerMD(
   button_->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   OnAfterUserAction(textfield_);
   AddChildView(button_);
+
+  views::InstallRectHighlightPathGenerator(this);
 }
 
 NotificationInputContainerMD::~NotificationInputContainerMD() = default;
@@ -408,21 +411,22 @@ void NotificationInputContainerMD::AnimateBackground(const ui::Event& event) {
   AnimateInkDrop(views::InkDropState::ACTION_PENDING, located_event);
 }
 
-void NotificationInputContainerMD::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+void NotificationInputContainerMD::AddLayerBeneathView(ui::Layer* layer) {
+  // When a ink drop layer is added it is stacked between the textfield/button
+  // and the parent (|this|). Since the ink drop is opaque, we have to paint the
+  // textfield/button on their own layers in otherwise they remain painted on
+  // |this|'s layer which would be covered by the ink drop.
   textfield_->SetPaintToLayer();
   textfield_->layer()->SetFillsBoundsOpaquely(false);
   button_->SetPaintToLayer();
   button_->layer()->SetFillsBoundsOpaquely(false);
-  ink_drop_container_->AddInkDropLayer(ink_drop_layer);
-  InstallInkDropMask(ink_drop_layer);
+  ink_drop_container_->AddLayerBeneathView(layer);
 }
 
-void NotificationInputContainerMD::RemoveInkDropLayer(
-    ui::Layer* ink_drop_layer) {
+void NotificationInputContainerMD::RemoveLayerBeneathView(ui::Layer* layer) {
+  ink_drop_container_->RemoveLayerBeneathView(layer);
   textfield_->DestroyLayer();
   button_->DestroyLayer();
-  ResetInkDropMask();
-  ink_drop_container_->RemoveInkDropLayer(ink_drop_layer);
 }
 
 std::unique_ptr<views::InkDropRipple>
@@ -506,6 +510,42 @@ class NotificationInkDropImpl : public views::InkDropImpl {
 // NotificationViewMD
 // ////////////////////////////////////////////////////////////
 
+class NotificationViewMD::NotificationViewMDPathGenerator
+    : public views::HighlightPathGenerator {
+ public:
+  NotificationViewMDPathGenerator() = default;
+  NotificationViewMDPathGenerator(const NotificationViewMDPathGenerator&) =
+      delete;
+  NotificationViewMDPathGenerator& operator=(
+      const NotificationViewMDPathGenerator&) = delete;
+
+  // views::HighlightPathGenerator:
+  base::Optional<RoundRect> GetRoundRect(const gfx::RectF& rect) override {
+    RoundRect round_rect;
+    round_rect.bounds = rect;
+    if (!preferred_size_.IsEmpty())
+      round_rect.bounds.set_size(gfx::SizeF(preferred_size_));
+    round_rect.corner_radius = gfx::RoundedCornersF(
+        top_radius_, top_radius_, bottom_radius_, bottom_radius_);
+    return round_rect;
+  }
+
+  void set_top_radius(int val) { top_radius_ = val; }
+  void set_bottom_radius(int val) { bottom_radius_ = val; }
+  void set_preferred_size(const gfx::Size& val) { preferred_size_ = val; }
+
+ private:
+  int top_radius_ = 0;
+  int bottom_radius_ = 0;
+
+  // This custom PathGenerator is used for the ink drop clipping bounds. By
+  // setting |preferred_size_| we set the correct clip bounds in
+  // GetRoundRect(). This is needed as the correct bounds for the ink drop are
+  // required before a Layout() on the view is run. See
+  // http://crbug.com/915222.
+  gfx::Size preferred_size_;
+};
+
 void NotificationViewMD::CreateOrUpdateViews(const Notification& notification) {
   left_content_count_ = 0;
 
@@ -534,8 +574,6 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
 
   set_ink_drop_visible_opacity(1);
 
-  ink_drop_container_->SetPaintToLayer();
-  ink_drop_container_->layer()->SetFillsBoundsOpaquely(false);
   AddChildView(ink_drop_container_);
 
   control_buttons_view_ =
@@ -600,11 +638,33 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
   // - To make it look similar to ArcNotificationContentView::EventForwarder.
   AddPreTargetHandler(click_activator_.get());
 
+  auto highlight_path_generator =
+      std::make_unique<NotificationViewMDPathGenerator>();
+  highlight_path_generator_ = highlight_path_generator.get();
+  views::HighlightPathGenerator::Install(this,
+                                         std::move(highlight_path_generator));
+
   UpdateCornerRadius(kNotificationCornerRadius, kNotificationCornerRadius);
 }
 
 NotificationViewMD::~NotificationViewMD() {
   RemovePreTargetHandler(click_activator_.get());
+}
+
+void NotificationViewMD::AddLayerBeneathView(ui::Layer* layer) {
+  GetInkDrop()->AddObserver(this);
+  for (auto* child : GetChildrenForLayerAdjustment()) {
+    child->SetPaintToLayer();
+    child->layer()->SetFillsBoundsOpaquely(false);
+  }
+  ink_drop_container_->AddLayerBeneathView(layer);
+}
+
+void NotificationViewMD::RemoveLayerBeneathView(ui::Layer* layer) {
+  ink_drop_container_->RemoveLayerBeneathView(layer);
+  for (auto* child : GetChildrenForLayerAdjustment())
+    child->DestroyLayer();
+  GetInkDrop()->RemoveObserver(this);
 }
 
 void NotificationViewMD::Layout() {
@@ -635,10 +695,6 @@ void NotificationViewMD::Layout() {
 
   // The animation is needed to run inside of the border.
   ink_drop_container_->SetBoundsRect(GetLocalBounds());
-  if (ink_drop_layer_)
-    ink_drop_layer_->SetBounds(GetContentsBounds());
-  if (ink_drop_mask_)
-    ink_drop_mask_->layer()->SetBounds(GetContentsBounds());
 }
 
 void NotificationViewMD::OnFocus() {
@@ -705,6 +761,11 @@ void NotificationViewMD::OnGestureEvent(ui::GestureEvent* event) {
     return;
   }
   MessageView::OnGestureEvent(event);
+}
+
+void NotificationViewMD::PreferredSizeChanged() {
+  highlight_path_generator_->set_preferred_size(GetPreferredSize());
+  MessageView::PreferredSizeChanged();
 }
 
 void NotificationViewMD::UpdateWithNotification(
@@ -1319,8 +1380,8 @@ void NotificationViewMD::UpdateCornerRadius(int top_radius, int bottom_radius) {
   action_buttons_row_->SetBackground(views::CreateBackgroundFromPainter(
       std::make_unique<NotificationBackgroundPainter>(
           0, bottom_radius, kActionsRowBackgroundColor)));
-  top_radius_ = top_radius;
-  bottom_radius_ = bottom_radius;
+  highlight_path_generator_->set_top_radius(top_radius);
+  highlight_path_generator_->set_bottom_radius(bottom_radius);
 }
 
 NotificationControlButtonsView* NotificationViewMD::GetControlButtonsView()
@@ -1397,32 +1458,6 @@ void NotificationViewMD::RemoveBackgroundAnimation() {
   AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
 }
 
-void NotificationViewMD::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  GetInkDrop()->AddObserver(this);
-  header_row_->SetPaintToLayer();
-  header_row_->layer()->SetFillsBoundsOpaquely(false);
-  block_all_button_->SetPaintToLayer();
-  block_all_button_->layer()->SetFillsBoundsOpaquely(false);
-  dont_block_button_->SetPaintToLayer();
-  dont_block_button_->layer()->SetFillsBoundsOpaquely(false);
-  settings_done_button_->SetPaintToLayer();
-  settings_done_button_->layer()->SetFillsBoundsOpaquely(false);
-  ink_drop_container_->AddInkDropLayer(ink_drop_layer);
-  ink_drop_layer_ = ink_drop_layer;
-  InstallNotificationInkDropMask();
-}
-
-void NotificationViewMD::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  header_row_->DestroyLayer();
-  block_all_button_->DestroyLayer();
-  dont_block_button_->DestroyLayer();
-  settings_done_button_->DestroyLayer();
-  ink_drop_mask_.reset();
-  ink_drop_container_->RemoveInkDropLayer(ink_drop_layer);
-  GetInkDrop()->RemoveObserver(this);
-  ink_drop_layer_ = nullptr;
-}
-
 std::unique_ptr<views::InkDrop> NotificationViewMD::CreateInkDrop() {
   return std::make_unique<NotificationInkDropImpl>(this, size());
 }
@@ -1434,22 +1469,14 @@ std::unique_ptr<views::InkDropRipple> NotificationViewMD::CreateInkDropRipple()
       GetInkDropBaseColor(), ink_drop_visible_opacity());
 }
 
-void NotificationViewMD::InstallNotificationInkDropMask() {
-  SkPath path;
-  SkScalar radii[8] = {top_radius_,    top_radius_,    top_radius_,
-                       top_radius_,    bottom_radius_, bottom_radius_,
-                       bottom_radius_, bottom_radius_};
-  gfx::Rect rect(GetPreferredSize());
-  path.addRoundRect(gfx::RectToSkRect(rect), radii);
-  ink_drop_mask_ = std::make_unique<views::PathInkDropMask>(size(), path);
-  ink_drop_layer_->SetMaskLayer(ink_drop_mask_->layer());
+std::vector<views::View*> NotificationViewMD::GetChildrenForLayerAdjustment()
+    const {
+  return {header_row_, block_all_button_, dont_block_button_,
+          settings_done_button_};
 }
 
 std::unique_ptr<views::InkDropMask> NotificationViewMD::CreateInkDropMask()
     const {
-  // We don't use this as we need access to the |ink_drop_mask_|.
-  // See crbug.com/915222.
-  NOTREACHED();
   return nullptr;
 }
 

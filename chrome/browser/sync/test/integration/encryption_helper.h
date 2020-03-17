@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
@@ -57,9 +58,12 @@ sync_pb::EntitySpecifics GetEncryptedBookmarkEntitySpecifics(
     const sync_pb::BookmarkSpecifics& specifics,
     const KeyParams& key_params);
 
-// Creates a NigoriSpecifics that describes encryption using a custom passphrase
-// with the given key parameters.
-sync_pb::NigoriSpecifics CreateCustomPassphraseNigori(const KeyParams& params);
+// Creates a NigoriSpecifics that describes encryption using a custom
+// passphrase with the given |passphrase_key_params|. If |old_key_params| is
+// presented, |encryption_keybag| will also contain keys derived from it.
+sync_pb::NigoriSpecifics CreateCustomPassphraseNigori(
+    const KeyParams& passphrase_key_params,
+    const base::Optional<KeyParams>& old_key_params = base::nullopt);
 
 }  // namespace encryption_helper
 

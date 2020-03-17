@@ -23,7 +23,7 @@
 class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
  public:
   // The interface through which the AppShimHostBootstrap registers itself
-  // with the ExtensionAppShimHandler.
+  // with the AppShimManager.
   class Client {
    public:
     // Invoked by the AppShimHostBootstrap when a shim process has connected to

@@ -494,12 +494,15 @@ bool DemoSetupController::IsOfflineEnrollment() const {
   return demo_config_ == DemoSession::DemoModeConfig::kOffline;
 }
 
-void DemoSetupController::Enroll(OnSetupSuccess on_setup_success,
-                                 OnSetupError on_setup_error) {
+void DemoSetupController::Enroll(
+    OnSetupSuccess on_setup_success,
+    OnSetupError on_setup_error,
+    const OnIncrementSetupProgress& increment_setup_progress) {
   DCHECK_NE(demo_config_, DemoSession::DemoModeConfig::kNone)
       << "Demo config needs to be explicitly set before calling Enroll()";
   DCHECK(!enrollment_helper_);
 
+  increment_setup_progress_ = increment_setup_progress;
   on_setup_success_ = std::move(on_setup_success);
   on_setup_error_ = std::move(on_setup_error);
 
@@ -574,6 +577,7 @@ void DemoSetupController::OnDemoResourcesCrOSComponentLoaded() {
       base::TimeTicks::Now() - download_start_time_;
   base::UmaHistogramLongTimes100(kDemoSetupDownloadDurationHistogram,
                                  download_duration);
+  IncrementSetupProgress(/*complete=*/false);
 
   if (demo_resources_->component_error().value() !=
       component_updater::CrOSComponentManager::Error::NONE) {
@@ -658,6 +662,7 @@ void DemoSetupController::OnDeviceEnrolled() {
     base::UmaHistogramLongTimes100(kDemoSetupEnrollDurationHistogram,
                                    enroll_duration);
   }
+  IncrementSetupProgress(/*complete=*/false);
 
   // Try to load the policy for the device local account.
   if (demo_config_ == DemoSession::DemoModeConfig::kOffline) {
@@ -759,6 +764,8 @@ void DemoSetupController::OnDeviceLocalAccountPolicyLoaded(
 }
 
 void DemoSetupController::OnDeviceRegistered() {
+  IncrementSetupProgress(/*complete=*/true);
+
   VLOG(1) << "Demo mode setup finished successfully.";
 
   if (demo_config_ == DemoSession::DemoModeConfig::kOnline) {
@@ -781,6 +788,11 @@ void DemoSetupController::OnDeviceRegistered() {
   Reset();
   if (!on_setup_success_.is_null())
     std::move(on_setup_success_).Run();
+}
+
+void DemoSetupController::IncrementSetupProgress(bool complete) {
+  if (!increment_setup_progress_.is_null())
+    increment_setup_progress_.Run(complete);
 }
 
 void DemoSetupController::SetupFailed(const DemoSetupError& error) {

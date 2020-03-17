@@ -90,7 +90,7 @@ void ShillErrorCallbackFunction(const std::string& error_name,
   error_callback.Run(error_name, std::move(error_data));
 }
 
-void GetPropertiesCallback(const DictionaryResultCallback& callback,
+void GetPropertiesCallback(DictionaryResultCallback callback,
                            const ErrorCallback& error_callback,
                            const std::string& path,
                            DBusMethodCallStatus call_status,
@@ -101,7 +101,7 @@ void GetPropertiesCallback(const DictionaryResultCallback& callback,
     RunErrorCallback(
         error_callback, path, kDBusFailedError, kDBusFailedErrorMessage);
   } else if (!callback.is_null()) {
-    callback.Run(path, value);
+    std::move(callback).Run(path, value);
   }
 }
 

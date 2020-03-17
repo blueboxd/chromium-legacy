@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/login/localized_values_builder.h"
 
 namespace chromeos {
@@ -51,6 +52,10 @@ void DemoSetupScreenHandler::OnSetupFailed(
              DemoSetupController::DemoSetupError::RecoveryMethod::kPowerwash);
 }
 
+void DemoSetupScreenHandler::IncrementSetupProgress(bool complete) {
+  CallJS("login.DemoSetupScreen.incrementSetupProgress", complete);
+}
+
 void DemoSetupScreenHandler::OnSetupSucceeded() {
   CallJS("login.DemoSetupScreen.onSetupSucceeded");
 }
@@ -67,6 +72,13 @@ void DemoSetupScreenHandler::DeclareLocalizedValues(
                IDS_OOBE_DEMO_SETUP_ERROR_SCREEN_RETRY_BUTTON_LABEL);
   builder->Add("demoSetupErrorScreenPowerwashButtonLabel",
                IDS_LOCAL_STATE_ERROR_POWERWASH_BUTTON);
+}
+
+void DemoSetupScreenHandler::GetAdditionalParameters(
+    base::DictionaryValue* parameters) {
+  parameters->SetBoolKey(
+      "showProgressBarInDemoModeSetup",
+      base::FeatureList::IsEnabled(features::kShowProgressBarInDemoModeSetup));
 }
 
 }  // namespace chromeos

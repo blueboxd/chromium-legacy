@@ -75,6 +75,7 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   void CalculateTargetBounds() override;
   gfx::Rect GetTargetBounds() const override;
   void UpdateLayout(bool animate) override;
+  void UpdateTargetBoundsForGesture(int shelf_position) override;
 
   // TODO(manucornet): Remove this method once all the hotseat layout
   // code has moved to this class.

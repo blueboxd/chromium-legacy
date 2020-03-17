@@ -43,7 +43,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
       v8::Isolate*,
       scoped_refptr<SecurityOrigin> origin,
       Agent* agent,
-      OffMainThreadWorkerScriptFetchOption,
       const String& name,
       const base::UnguessableToken& parent_devtools_token,
       V8CacheOptions,
@@ -144,11 +143,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
-  OffMainThreadWorkerScriptFetchOption GetOffMainThreadWorkerScriptFetchOption()
-      const {
-    return off_main_thread_fetch_option_;
-  }
-
   void ApplySandboxFlags(SandboxFlags mask);
 
   void SetDefersLoadingForResourceFetchers(bool defers);
@@ -194,7 +188,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   SecurityContext security_context_;
 
-  const OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option_;
   const String name_;
   const base::UnguessableToken parent_devtools_token_;
 

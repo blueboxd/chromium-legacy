@@ -71,8 +71,9 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
 #endif
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
-  SkSurface* BeginPaint() override;
-  void EndPaint(const GrBackendSemaphore& semaphore) override;
+  SkSurface* BeginPaint(
+      std::vector<GrBackendSemaphore>* end_semaphores) override;
+  void EndPaint() override;
 
  private:
   // Used as callback for SwapBuffersAsync and PostSubBufferAsync to finish

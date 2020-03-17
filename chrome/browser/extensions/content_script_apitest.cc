@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
@@ -45,6 +46,7 @@
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/features.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -873,8 +875,27 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ExecuteScriptBypassingSandbox) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
+class ContentScriptWithLegacyCorsBehaviorApiTest : public ContentScriptApiTest {
+ public:
+  ContentScriptWithLegacyCorsBehaviorApiTest() {
+    // TODO(lukasza): https://crbug.com/1061567: Migrate tests related to
+    // cross-origin requests from content scripts into the
+    // CrossOriginReadBlockingExtensionTest suite (which already covers test
+    // matrix of various enabled/disabled features).
+    //
+    // Affected tests:
+    // - ContentScriptApiTest.CrossOriginXhr
+    scoped_feature_list_.InitAndDisableFeature(
+        network::features::kCorbAllowlistAlsoAppliesToOorCors);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 // Tests the cross-origin access of content scripts.
-IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, CrossOriginXhr) {
+IN_PROC_BROWSER_TEST_F(ContentScriptWithLegacyCorsBehaviorApiTest,
+                       CrossOriginXhr) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   TestExtensionDir test_dir;

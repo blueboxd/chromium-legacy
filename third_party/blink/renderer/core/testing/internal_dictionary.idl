@@ -31,7 +31,6 @@ dictionary InternalDictionary {
     (double or DOMString) doubleOrStringMember;
     sequence<(double or DOMString)> doubleOrStringSequenceMember;
     EventTarget? eventTargetOrNullMember = null;
-    Dictionary dictionaryMember;
     (InternalEnum or sequence<InternalEnum>) internalEnumOrInternalEnumSequenceMember;
     any anyMember;
     TestCallback callbackFunctionMember;

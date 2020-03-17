@@ -6,18 +6,18 @@
 # communicating with app_shim processes on Mac.
 source_set("app_shim") {
   sources = [
-    "app_shim_handler_delegate_mac.cc",
-    "app_shim_handler_delegate_mac.h",
     "app_shim_host_bootstrap_mac.cc",
     "app_shim_host_bootstrap_mac.h",
     "app_shim_host_mac.cc",
     "app_shim_host_mac.h",
     "app_shim_listener.h",
     "app_shim_listener.mm",
+    "app_shim_manager_mac.cc",
+    "app_shim_manager_mac.h",
     "app_shim_termination_manager.cc",
     "app_shim_termination_manager.h",
-    "extension_app_shim_handler_mac.cc",
-    "extension_app_shim_handler_mac.h",
+    "extension_app_shim_manager_delegate_mac.cc",
+    "extension_app_shim_manager_delegate_mac.h",
     "mach_bootstrap_acceptor.cc",
     "mach_bootstrap_acceptor.h",
   ]

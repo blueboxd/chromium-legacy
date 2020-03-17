@@ -68,6 +68,21 @@ def ComputeExtensionsList(extensions_list, data):
 
           extensions_list[key] = current_extension
 
+def ToUtf8(data):
+  """Ensures all the values in |data| are encoded as UTF-8.
+
+  Expects |data| to be a list of dict objects.
+
+  Args:
+    data: the data to be converted to UTF-8.
+
+  Yields:
+    A list of dict objects whose values have been encoded as UTF-8.
+  """
+  for entry in data:
+    for prop, value in entry.iteritems():
+      entry[prop] = unicode(value).encode('utf-8')
+    yield entry
 
 def DictToList(data, key_name='id'):
   """Converts a dict into a list.
@@ -125,7 +140,7 @@ def ExtensionListAsCsv(extensions_list, csv_filename, sort_column='name'):
     csv_filename: the name of the CSV file to save
     sort_column: the name of the column by which to sort the data
   """
-  flattened_list = list(Flatten(DictToList(extensions_list)))
+  flattened_list = [x for x in ToUtf8(Flatten(DictToList(extensions_list)))]
   fieldnames = flattened_list[0].keys() if flattened_list else []
 
   desired_column_order = [

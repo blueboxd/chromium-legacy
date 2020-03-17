@@ -1482,10 +1482,9 @@ def resolution_tests_methods(effective_overloads):
     # • a record type
     # ...
     try:
-        method = next(
-            method for idl_type, method in idl_types_methods
-            if idl_type.is_callback_interface or idl_type.is_dictionary
-            or idl_type.name == 'Dictionary' or idl_type.is_record_type)
+        method = next(method for idl_type, method in idl_types_methods
+                      if idl_type.is_callback_interface
+                      or idl_type.is_dictionary or idl_type.is_record_type)
         test = '%s->IsObject()' % cpp_value
         yield test, method
     except StopIteration:
@@ -1618,8 +1617,7 @@ def constructor_context(interface, constructor):
         'has_exception_state':
         is_constructor_raises_exception
         or any(argument for argument in constructor.arguments
-               if argument.idl_type.name == 'SerializedScriptValue'
-               or argument.idl_type.v8_conversion_needs_exception_state),
+               if argument.idl_type.v8_conversion_needs_exception_state),
         'has_optional_argument_without_default_value':
         any(True for argument_context in argument_contexts
             if argument_context['is_optional_without_default_value']),

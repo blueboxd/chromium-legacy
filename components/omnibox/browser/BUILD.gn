@@ -315,7 +315,7 @@ if (is_android) {
       "//components/embedder_support/android:util_java",
       "//components/security_state/core:security_state_enums_java",
       "//content/public/android:content_java",
-      "//third_party/android_deps:com_android_support_support_compat_java",
+      "//third_party/android_deps:androidx_core_core_java",
     ]
 
     srcjar_deps = [ ":browser_java_enums_srcjar" ]

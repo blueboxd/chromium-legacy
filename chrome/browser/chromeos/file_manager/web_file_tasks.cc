@@ -18,8 +18,8 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/webui_url_constants.h"
+#include "extensions/browser/api/file_handlers/app_file_handler_util.h"
 #include "extensions/browser/entry_info.h"
-#include "extensions/common/manifest_handlers/file_handler_info.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
@@ -52,9 +52,9 @@ void FindWebTasks(Profile* profile,
     if (!file_handlers)
       continue;
 
-    std::vector<extensions::FileHandlerMatch> matches =
-        extensions::app_file_handler_util::MatchesFromFileHandlersForEntries(
-            *file_handlers, entries);
+    std::vector<extensions::app_file_handler_util::WebAppFileHandlerMatch>
+        matches = extensions::app_file_handler_util::
+            MatchesFromWebAppFileHandlersForEntries(*file_handlers, entries);
 
     if (matches.empty())
       continue;
@@ -65,7 +65,7 @@ void FindWebTasks(Profile* profile,
     bool is_generic_handler = true;
 
     for (size_t i = 0; i < matches.size(); ++i) {
-      if (IsGoodMatchFileHandler(*matches[i].handler, entries)) {
+      if (IsGoodMatchAppsFileHandler(matches[i].file_handler(), entries)) {
         best_index = i;
         is_generic_handler = false;
         break;
@@ -76,11 +76,11 @@ void FindWebTasks(Profile* profile,
 
     result_list->push_back(FullTaskDescriptor(
         TaskDescriptor(app_id, file_tasks::TASK_TYPE_WEB_APP,
-                       matches[best_index].handler->id),
+                       matches[best_index].file_handler().action.spec()),
         registrar.GetAppShortName(app_id),
         extensions::api::file_manager_private::Verb::VERB_OPEN_WITH, icon_url,
         /* is_default=*/false, is_generic_handler,
-        matches[best_index].matched_file_extension));
+        matches[best_index].matched_file_extension()));
   }
 }
 

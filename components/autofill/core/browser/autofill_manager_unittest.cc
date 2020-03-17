@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -372,7 +371,6 @@ class AutofillManagerTest : public testing::Test {
         autofill_manager_.get(), autofill_driver_.get(),
         /*call_parent_methods=*/false);
     autofill_manager_->SetExternalDelegate(external_delegate_.get());
-    sms_client_ = autofill_client_.GetMockSmsClient();
 
     // Initialize the TestPersonalDataManager with some default data.
     CreateTestAutofillProfiles();
@@ -634,7 +632,6 @@ class AutofillManagerTest : public testing::Test {
   TestPersonalDataManager personal_data_;
   std::unique_ptr<MockAutocompleteHistoryManager> autocomplete_history_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  MockSmsClient* sms_client_;
 
  private:
   int ToHistogramSample(AutofillMetrics::CardUploadDecisionMetric metric) {
@@ -8260,54 +8257,6 @@ TEST_P(OnFocusOnFormFieldTest, CreditCardSuggestions_Ablation) {
   FormsSeen(forms);
 
   autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1], gfx::RectF());
-  CheckNoSuggestionsAvailableOnFieldFocus();
-}
-
-TEST_P(OnFocusOnFormFieldTest, OneTimeCodeSuggestion) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kAutofillSmsReceiver);
-
-  FormData form;
-  form.name = ASCIIToUTF16("MyForm");
-  form.url = GURL("https://myform.com/form.html");
-  form.action = GURL("https://myform.com/submit.html");
-
-  EXPECT_CALL(*sms_client_, Subscribe).Times(1);
-  std::string otp = "123";
-  ON_CALL(*sms_client_, GetOTP()).WillByDefault(testing::ReturnRef(otp));
-
-  FormFieldData field;
-  test::CreateTestFormField("One Time Code", "onetimecode", "", "text", &field);
-  field.autocomplete_attribute = "one-time-code";
-  form.fields.push_back(field);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-
-  autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[0], gfx::RectF());
-  CheckSuggestionsAvailableIfScreenReaderRunning();
-}
-
-TEST_P(OnFocusOnFormFieldTest, OneTimeCodeNoSuggestion) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kAutofillSmsReceiver);
-
-  FormData form;
-  form.name = ASCIIToUTF16("MyForm");
-  form.url = GURL("https://myform.com/form.html");
-  form.action = GURL("https://myform.com/submit.html");
-
-  EXPECT_CALL(*sms_client_, Subscribe).Times(1);
-  std::string empty_otp;
-  ON_CALL(*sms_client_, GetOTP()).WillByDefault(testing::ReturnRef(empty_otp));
-
-  FormFieldData field;
-  test::CreateTestFormField("One Time Code", "onetimecode", "", "text", &field);
-  field.autocomplete_attribute = "one-time-code";
-  form.fields.push_back(field);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-
-  autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[0], gfx::RectF());
   CheckNoSuggestionsAvailableOnFieldFocus();
 }
 

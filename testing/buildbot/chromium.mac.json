@@ -8347,6 +8347,7 @@
         },
         "name": "blink_web_tests",
         "results_handler": "layout tests",
+        "shards": 25,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

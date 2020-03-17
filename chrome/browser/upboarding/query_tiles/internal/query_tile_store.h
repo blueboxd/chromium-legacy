@@ -39,7 +39,7 @@ class QueryTileStore : public Store<QueryTileEntry> {
   ~QueryTileStore() override;
 
   QueryTileStore(const QueryTileStore& other) = delete;
-  QueryTileStore& operator=(QueryTileStore& other) = delete;
+  QueryTileStore& operator=(const QueryTileStore& other) = delete;
 
  private:
   using KeyEntryVector = std::vector<std::pair<std::string, QueryTileEntry>>;
@@ -49,7 +49,7 @@ class QueryTileStore : public Store<QueryTileEntry> {
   // Store<QueryTileEntry> implementation.
   void InitAndLoad(LoadCallback callback) override;
   void Update(const std::string& key,
-              const QueryTileEntry& node,
+              const QueryTileEntry& entry,
               UpdateCallback callback) override;
   void Delete(const std::string& key, DeleteCallback callback) override;
 

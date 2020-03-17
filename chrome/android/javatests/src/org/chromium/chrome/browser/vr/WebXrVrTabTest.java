@@ -23,7 +23,6 @@ import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -73,8 +72,8 @@ public class WebXrVrTabTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_SVR)
-    @CommandLineFlags.Add({"enable-features=WebXR"})
-    public void testPoseDataUnfocusedTab_WebXr() {
+            @CommandLineFlags.Add({"enable-features=WebXR"})
+            public void testPoseDataUnfocusedTab_WebXr() {
         testPoseDataUnfocusedTabImpl("webxr_test_pose_data_unfocused_tab", mWebXrVrTestFramework);
     }
 
@@ -97,12 +96,8 @@ public class WebXrVrTabTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
-    @CommandLineFlags
-            .Add({"enable-features=WebXR"})
-            @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O_MR1,
-                    message = "Flaky on P, crbug.com/1060672")
-            public void
-            testPermissionsInOtherTab() throws InterruptedException {
+            @CommandLineFlags.Add({"enable-features=WebXR"})
+            public void testPermissionsInOtherTab() throws InterruptedException {
         testPermissionsInOtherTabImpl(false /* incognito */);
     }
 

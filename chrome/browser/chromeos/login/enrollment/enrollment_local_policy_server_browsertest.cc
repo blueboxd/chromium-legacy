@@ -788,12 +788,8 @@ class EnrollmentRecoveryTest : public EnrollmentLocalPolicyServerBase {
 };
 
 // TODO(https://crbug.com/995784): Slow on MSAN builds.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_Success DISABLED_Success
-#else
-#define MAYBE_Success Success
-#endif
-IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, MAYBE_Success) {
+// TODO(https://crbug.com/1062248): Flakey on linux-chromeos-dbg
+IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, DISABLED_Success) {
   test::SkipToEnrollmentOnRecovery();
 
   ASSERT_TRUE(StartupUtils::IsDeviceRegistered());
@@ -819,12 +815,8 @@ IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, MAYBE_Success) {
 }
 
 // TODO(https://crbug.com/995784): Slow on MSAN builds.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_DifferentDomain DISABLED_DifferentDomain
-#else
-#define MAYBE_DifferentDomain DifferentDomain
-#endif
-IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, MAYBE_DifferentDomain) {
+// TODO(https://crbug.com/1062248): Flakey on linux-chromeos-dbg
+IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, DISABLED_DifferentDomain) {
   test::SkipToEnrollmentOnRecovery();
 
   ASSERT_TRUE(StartupUtils::IsDeviceRegistered());

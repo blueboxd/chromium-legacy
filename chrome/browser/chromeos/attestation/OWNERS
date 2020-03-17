@@ -7,3 +7,5 @@ bartfab@chromium.org
 per-file *tpm_challenge_key*=pmarko@chromium.org
 per-file *tpm_challenge_key*=emaxx@chromium.org
 per-file *tpm_challenge_key*=drcrash@chromium.org
+
+# COMPONENT: OS>Systems>Security

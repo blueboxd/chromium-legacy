@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -94,6 +95,15 @@ void Calculator::TaskOrEventFinishedOnUIThread(
   if (execution_finish_time - queue_time >= kJankThreshold) {
     GetQueueAndExecutionJanksOnUIThread().emplace_back(queue_time,
                                                        execution_finish_time);
+    // Emit a trace event to highlight large janky slices.
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+        "latency", "Large UI Jank", TRACE_ID_LOCAL(g_num_large_ui_janks_),
+        queue_time);
+    TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+        "latency", "Large UI Jank", TRACE_ID_LOCAL(g_num_large_ui_janks_),
+        execution_finish_time);
+    g_num_large_ui_janks_++;
+
     if (execution_finish_time - execution_start_time >= kJankThreshold) {
       GetExecutionJanksOnUIThread().emplace_back(execution_start_time,
                                                  execution_finish_time);
@@ -115,6 +125,15 @@ void Calculator::TaskOrEventFinishedOnIOThread(
     base::AutoLock lock(io_thread_lock_);
     queue_and_execution_janks_on_io_thread_.emplace_back(queue_time,
                                                          execution_finish_time);
+    // Emit a trace event to highlight large janky slices.
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+        "latency", "Large IO Jank", TRACE_ID_LOCAL(g_num_large_io_janks_),
+        queue_time);
+    TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+        "latency", "Large IO Jank", TRACE_ID_LOCAL(g_num_large_io_janks_),
+        execution_finish_time);
+    g_num_large_io_janks_++;
+
     if (execution_finish_time - execution_start_time >= kJankThreshold) {
       execution_janks_on_io_thread_.emplace_back(execution_start_time,
                                                  execution_finish_time);

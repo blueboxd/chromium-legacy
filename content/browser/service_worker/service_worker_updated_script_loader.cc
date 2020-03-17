@@ -342,7 +342,8 @@ int ServiceWorkerUpdatedScriptLoader::WillWriteInfo(
   DCHECK(info);
 
   if (resource_type_ == blink::mojom::ResourceType::kServiceWorker) {
-    version_->SetMainScriptHttpResponseInfo(*info);
+    version_->SetMainScriptResponse(
+        std::make_unique<ServiceWorkerVersion::MainScriptResponse>(*info));
   }
 
   auto response = ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(

@@ -6,11 +6,17 @@ suite('CrSettingsCookiesPageTest', function() {
   /** @type {TestSiteSettingsPrefsBrowserProxy} */
   let siteSettingsBrowserProxy;
 
+  /** @type {settings.TestMetricsBrowserProxy} */
+  let testMetricsBrowserProxy;
+
   /** @type {SettingsSecurityPageElement} */
   let page;
 
   /** @type {Element} */
   let clearOnExit;
+
+  /** @type {Element} */
+  let networkPrediction;
 
   /** @type {Element} */
   let allowAll;
@@ -25,6 +31,8 @@ suite('CrSettingsCookiesPageTest', function() {
   let blockAll;
 
   setup(function() {
+    testMetricsBrowserProxy = new TestMetricsBrowserProxy();
+    settings.MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
     siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
     settings.SiteSettingsPrefsBrowserProxyImpl.instance_ =
         siteSettingsBrowserProxy;
@@ -44,6 +52,7 @@ suite('CrSettingsCookiesPageTest', function() {
     blockThirdParty = page.$$('#blockThirdParty');
     blockAll = page.$$('#blockAll');
     clearOnExit = page.$$('#clearOnExit');
+    networkPrediction = page.$$('#networkPrediction');
   });
 
   teardown(function() {
@@ -182,5 +191,20 @@ suite('CrSettingsCookiesPageTest', function() {
     assertTrue(blockThirdParty.checked);
     assertFalse(clearOnExit.checked);
     assertFalse(clearOnExit.disabled);
+  });
+
+  test('ElementVisibility', async function() {
+    await test_util.flushTasks();
+    assertTrue(test_util.isChildVisible(page, '#clearOnExit'));
+    assertTrue(test_util.isChildVisible(page, '#doNotTrack'));
+    assertTrue(test_util.isChildVisible(page, '#networkPrediction'));
+  });
+
+  test('NetworkPredictionClickRecorded', async function() {
+    networkPrediction.click();
+    const result =
+        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
+    assertEquals(
+        settings.PrivacyElementInteractions.NETWORK_PREDICTION, result);
   });
 });

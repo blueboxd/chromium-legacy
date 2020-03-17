@@ -38,10 +38,10 @@ SkColor IncreaseLightness(SkColor color, double percent) {
 // color IDs.  This converts from normal to incognito IDs where they exist.
 int GetIncognitoId(int id) {
   switch (id) {
-    case TP::COLOR_FRAME:
-      return TP::COLOR_FRAME_INCOGNITO;
+    case TP::COLOR_FRAME_ACTIVE:
+      return TP::COLOR_FRAME_ACTIVE_INCOGNITO;
     case TP::COLOR_FRAME_INACTIVE:
-      return TP::COLOR_FRAME_INCOGNITO_INACTIVE;
+      return TP::COLOR_FRAME_INACTIVE_INCOGNITO;
     case TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE:
       return TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO;
     case TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE:
@@ -245,8 +245,8 @@ SkColor ThemeHelper::GetDefaultColor(
   // For backward compat with older themes, some newer colors are generated from
   // older ones if they are missing.
   const auto get_frame_color = [this, incognito, theme_supplier](bool active) {
-    return this->GetColor(active ? TP::COLOR_FRAME : TP::COLOR_FRAME_INACTIVE,
-                          incognito, theme_supplier);
+    return GetColor(active ? TP::COLOR_FRAME_ACTIVE : TP::COLOR_FRAME_INACTIVE,
+                    incognito, theme_supplier);
   };
   switch (id) {
     case TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE:

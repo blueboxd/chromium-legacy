@@ -5793,8 +5793,8 @@ TEST_F(WebViewTest, RootLayerAttachment) {
   // Do a lifecycle update that includes compositing but not paint. Hit test
   // events are an example of a real case where this occurs
   // (see: WebViewTest::ClientTapHandling).
-  web_view->MainFrameWidget()->UpdateLifecycle(
-      WebFrameWidget::LifecycleUpdate::kPrePaint, DocumentUpdateReason::kTest);
+  web_view->MainFrameWidget()->UpdateLifecycle(WebLifecycleUpdate::kPrePaint,
+                                               DocumentUpdateReason::kTest);
 
   // Layers (including the root layer) should not be attached until the paint
   // lifecycle phase.
@@ -5802,8 +5802,8 @@ TEST_F(WebViewTest, RootLayerAttachment) {
   EXPECT_FALSE(layer_tree_host->root_layer());
 
   // Do a full lifecycle update and ensure that the root layer has been added.
-  web_view->MainFrameWidget()->UpdateLifecycle(
-      WebFrameWidget::LifecycleUpdate::kAll, DocumentUpdateReason::kTest);
+  web_view->MainFrameWidget()->UpdateLifecycle(WebLifecycleUpdate::kAll,
+                                               DocumentUpdateReason::kTest);
   EXPECT_TRUE(layer_tree_host->root_layer());
 }
 

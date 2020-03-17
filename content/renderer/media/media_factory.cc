@@ -147,6 +147,11 @@ void PostContextProviderToCallback(
                      unwanted_context_provider));
 }
 
+void LogRoughness(int size, base::TimeDelta duration, double roughness) {
+  double fps = size / duration.InSecondsF();
+  DVLOG(1) << "Video playback roughness: " << roughness << " FPS: " << fps;
+}
+
 }  // namespace
 
 namespace content {
@@ -266,7 +271,7 @@ std::unique_ptr<blink::WebVideoFrameSubmitter> MediaFactory::CreateSubmitter(
         base::BindRepeating(
             &PostContextProviderToCallback,
             RenderThreadImpl::current()->GetCompositorMainThreadTaskRunner()),
-        settings, use_sync_primitives);
+        base::BindRepeating(LogRoughness), settings, use_sync_primitives);
   }
 
   DCHECK(*video_frame_compositor_task_runner);

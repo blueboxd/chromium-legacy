@@ -403,8 +403,7 @@ class ConnectionTest : public testing::Test,
           received_frames + 1);
       EXPECT_EQ(
           client_video_renderer_.GetVideoStub()->received_packets().size(), 0U);
-      client_video_renderer_.GetFrameConsumer()->set_on_frame_callback(
-          base::Closure());
+      client_video_renderer_.GetFrameConsumer()->set_on_frame_callback({});
     } else {
       EXPECT_EQ(
           client_video_renderer_.GetFrameConsumer()->received_frames().size(),
@@ -412,8 +411,7 @@ class ConnectionTest : public testing::Test,
       EXPECT_EQ(
           client_video_renderer_.GetVideoStub()->received_packets().size(),
           received_frames + 1);
-      client_video_renderer_.GetVideoStub()->set_on_frame_callback(
-          base::Closure());
+      client_video_renderer_.GetVideoStub()->set_on_frame_callback({});
     }
   }
 
@@ -428,8 +426,7 @@ class ConnectionTest : public testing::Test,
     client_video_renderer_.GetFrameStatsConsumer()->set_on_stats_callback(
         base::Bind(&base::RunLoop::Quit, base::Unretained(&run_loop)));
     run_loop.Run();
-    client_video_renderer_.GetFrameStatsConsumer()->set_on_stats_callback(
-        base::Closure());
+    client_video_renderer_.GetFrameStatsConsumer()->set_on_stats_callback({});
 
     EXPECT_FALSE(client_video_renderer_.GetFrameStatsConsumer()
                      ->received_stats()

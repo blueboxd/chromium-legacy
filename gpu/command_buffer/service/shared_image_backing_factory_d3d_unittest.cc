@@ -401,7 +401,9 @@ class SharedImageBackingFactoryD3DTest
  protected:
   GrContext* gr_context() const { return context_state_->gr_context(); }
 
-  void CheckSkiaPixels(const Mailbox& mailbox, const gfx::Size& size) const {
+  void CheckSkiaPixels(const Mailbox& mailbox,
+                       const gfx::Size& size,
+                       const std::vector<uint8_t> expected_color) const {
     auto skia_representation =
         shared_image_representation_factory_->ProduceSkia(mailbox,
                                                           context_state_);
@@ -438,10 +440,10 @@ class SharedImageBackingFactoryD3DTest
     for (int i = 0; i < num_pixels; i++) {
       // Compare the pixel values.
       const uint8_t* pixel = dst_pixels.data() + (i * 4);
-      EXPECT_EQ(pixel[0], 0);
-      EXPECT_EQ(pixel[1], 255);
-      EXPECT_EQ(pixel[2], 0);
-      EXPECT_EQ(pixel[3], 255);
+      EXPECT_EQ(pixel[0], expected_color[0]);
+      EXPECT_EQ(pixel[1], expected_color[1]);
+      EXPECT_EQ(pixel[2], expected_color[2]);
+      EXPECT_EQ(pixel[3], expected_color[3]);
     }
   }
 
@@ -505,7 +507,7 @@ TEST_F(SharedImageBackingFactoryD3DTest, GL_SkiaGL) {
   scoped_access.reset();
   gl_representation.reset();
 
-  CheckSkiaPixels(mailbox, size);
+  CheckSkiaPixels(mailbox, size, {0, 255, 0, 255});
 
   factory_ref.reset();
 }
@@ -583,7 +585,7 @@ TEST_F(SharedImageBackingFactoryD3DTest, Dawn_SkiaGL) {
     queue.Submit(1, &commands);
   }
 
-  CheckSkiaPixels(mailbox, size);
+  CheckSkiaPixels(mailbox, size, {0, 255, 0, 255});
 
   // Shut down Dawn
   device = wgpu::Device();
@@ -591,7 +593,249 @@ TEST_F(SharedImageBackingFactoryD3DTest, Dawn_SkiaGL) {
 
   factory_ref.reset();
 }
+
+// 1. Draw a color to texture through GL
+// 2. Do not call SetCleared so we can test Dawn Lazy clear
+// 3. Begin render pass in Dawn, but do not do anything
+// 4. Verify through CheckSkiaPixel that GL drawn color not seen
+TEST_F(SharedImageBackingFactoryD3DTest, GL_Dawn_Skia_UnclearTexture) {
+  if (!IsD3DSharedImageSupported())
+    return;
+
+  // Create a backing using mailbox.
+  auto mailbox = Mailbox::GenerateForSharedImage();
+  const auto format = viz::ResourceFormat::RGBA_8888;
+  const gfx::Size size(1, 1);
+  const auto color_space = gfx::ColorSpace::CreateSRGB();
+  const uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY |
+                         SHARED_IMAGE_USAGE_WEBGPU;
+  const gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
+  auto backing = shared_image_factory_->CreateSharedImage(
+      mailbox, format, surface_handle, size, color_space, usage,
+      false /* is_thread_safe */);
+  ASSERT_NE(backing, nullptr);
+
+  GLenum expected_target = GL_TEXTURE_2D;
+  std::unique_ptr<SharedImageRepresentationFactoryRef> factory_ref =
+      shared_image_manager_.Register(std::move(backing),
+                                     memory_type_tracker_.get());
+  {
+    // Create a SharedImageRepresentationGLTexture.
+    auto gl_representation =
+        shared_image_representation_factory_->ProduceGLTexturePassthrough(
+            mailbox);
+    EXPECT_EQ(expected_target,
+              gl_representation->GetTexturePassthrough()->target());
+
+    std::unique_ptr<SharedImageRepresentationGLTexturePassthrough::ScopedAccess>
+        gl_scoped_access = gl_representation->BeginScopedAccess(
+            GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM,
+            SharedImageRepresentation::AllowUnclearedAccess::kYes);
+    EXPECT_TRUE(gl_scoped_access);
+
+    // Create an FBO.
+    GLuint fbo = 0;
+    gl::GLApi* api = gl::g_current_gl_context;
+    api->glGenFramebuffersEXTFn(1, &fbo);
+    api->glBindFramebufferEXTFn(GL_FRAMEBUFFER, fbo);
+
+    // Attach the texture to FBO.
+    api->glFramebufferTexture2DEXTFn(
+        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        gl_representation->GetTexturePassthrough()->target(),
+        gl_representation->GetTexturePassthrough()->service_id(), 0);
+
+    // Set the clear color to green.
+    api->glClearColorFn(0.0f, 1.0f, 0.0f, 1.0f);
+    api->glClearFn(GL_COLOR_BUFFER_BIT);
+
+    // Don't call SetCleared, we want to see if Dawn will lazy clear the texture
+    EXPECT_FALSE(factory_ref->IsCleared());
+  }
+
+  // Create a Dawn D3D12 device
+  dawn_native::Instance instance;
+  instance.DiscoverDefaultAdapters();
+
+  std::vector<dawn_native::Adapter> adapters = instance.GetAdapters();
+  auto adapter_it = std::find_if(
+      adapters.begin(), adapters.end(), [](dawn_native::Adapter adapter) {
+        return adapter.GetBackendType() == dawn_native::BackendType::D3D12;
+      });
+  ASSERT_NE(adapter_it, adapters.end());
+
+  wgpu::Device device = wgpu::Device::Acquire(adapter_it->CreateDevice());
+  DawnProcTable procs = dawn_native::GetProcs();
+  dawnProcSetProcs(&procs);
+  {
+    auto dawn_representation =
+        shared_image_representation_factory_->ProduceDawn(mailbox,
+                                                          device.Get());
+    ASSERT_TRUE(dawn_representation);
+
+    auto dawn_scoped_access = dawn_representation->BeginScopedAccess(
+        WGPUTextureUsage_OutputAttachment,
+        SharedImageRepresentation::AllowUnclearedAccess::kYes);
+    ASSERT_TRUE(dawn_scoped_access);
+
+    wgpu::Texture texture =
+        wgpu::Texture::Acquire(dawn_scoped_access->texture());
+    wgpu::RenderPassColorAttachmentDescriptor color_desc;
+    color_desc.attachment = texture.CreateView();
+    color_desc.resolveTarget = nullptr;
+    color_desc.loadOp = wgpu::LoadOp::Load;
+    color_desc.storeOp = wgpu::StoreOp::Store;
+
+    wgpu::RenderPassDescriptor renderPassDesc;
+    renderPassDesc.colorAttachmentCount = 1;
+    renderPassDesc.colorAttachments = &color_desc;
+    renderPassDesc.depthStencilAttachment = nullptr;
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDesc);
+    pass.EndPass();
+    wgpu::CommandBuffer commands = encoder.Finish();
+
+    wgpu::Queue queue = device.CreateQueue();
+    queue.Submit(1, &commands);
+  }
+
+  // Check skia pixels returns black since texture was lazy cleared in Dawn
+  EXPECT_TRUE(factory_ref->IsCleared());
+  CheckSkiaPixels(mailbox, size, {0, 0, 0, 0});
+
+  // Shut down Dawn
+  device = wgpu::Device();
+  dawnProcSetProcs(nullptr);
+
+  factory_ref.reset();
+}
+
+// 1. Draw  a color to texture through Dawn
+// 2. Set the renderpass storeOp = Clear
+// 3. Texture in Dawn will stay as uninitialized
+// 3. Expect skia to fail to access the texture because texture is not
+// initialized
+TEST_F(SharedImageBackingFactoryD3DTest, UnclearDawn_SkiaFails) {
+  if (!IsD3DSharedImageSupported())
+    return;
+
+  // Create a backing using mailbox.
+  auto mailbox = Mailbox::GenerateForSharedImage();
+  const auto format = viz::ResourceFormat::RGBA_8888;
+  const gfx::Size size(1, 1);
+  const auto color_space = gfx::ColorSpace::CreateSRGB();
+  const uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY |
+                         SHARED_IMAGE_USAGE_WEBGPU;
+  const gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
+  auto backing = shared_image_factory_->CreateSharedImage(
+      mailbox, format, surface_handle, size, color_space, usage,
+      false /* is_thread_safe */);
+  ASSERT_NE(backing, nullptr);
+
+  std::unique_ptr<SharedImageRepresentationFactoryRef> factory_ref =
+      shared_image_manager_.Register(std::move(backing),
+                                     memory_type_tracker_.get());
+
+  // Create dawn device
+  dawn_native::Instance instance;
+  instance.DiscoverDefaultAdapters();
+
+  std::vector<dawn_native::Adapter> adapters = instance.GetAdapters();
+  auto adapter_it = std::find_if(
+      adapters.begin(), adapters.end(), [](dawn_native::Adapter adapter) {
+        return adapter.GetBackendType() == dawn_native::BackendType::D3D12;
+      });
+  ASSERT_NE(adapter_it, adapters.end());
+
+  wgpu::Device device = wgpu::Device::Acquire(adapter_it->CreateDevice());
+  DawnProcTable procs = dawn_native::GetProcs();
+  dawnProcSetProcs(&procs);
+  {
+    auto dawn_representation =
+        shared_image_representation_factory_->ProduceDawn(mailbox,
+                                                          device.Get());
+    ASSERT_TRUE(dawn_representation);
+
+    auto dawn_scoped_access = dawn_representation->BeginScopedAccess(
+        WGPUTextureUsage_OutputAttachment,
+        SharedImageRepresentation::AllowUnclearedAccess::kYes);
+    ASSERT_TRUE(dawn_scoped_access);
+
+    wgpu::Texture texture =
+        wgpu::Texture::Acquire(dawn_scoped_access->texture());
+    wgpu::RenderPassColorAttachmentDescriptor color_desc;
+    color_desc.attachment = texture.CreateView();
+    color_desc.resolveTarget = nullptr;
+    color_desc.loadOp = wgpu::LoadOp::Clear;
+    color_desc.storeOp = wgpu::StoreOp::Clear;
+    color_desc.clearColor = {0, 255, 0, 255};
+
+    wgpu::RenderPassDescriptor renderPassDesc;
+    renderPassDesc.colorAttachmentCount = 1;
+    renderPassDesc.colorAttachments = &color_desc;
+    renderPassDesc.depthStencilAttachment = nullptr;
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDesc);
+    pass.EndPass();
+    wgpu::CommandBuffer commands = encoder.Finish();
+
+    wgpu::Queue queue = device.CreateQueue();
+    queue.Submit(1, &commands);
+  }
+
+  // Shut down Dawn
+  device = wgpu::Device();
+  dawnProcSetProcs(nullptr);
+
+  EXPECT_FALSE(factory_ref->IsCleared());
+
+  // Produce skia representation
+  auto skia_representation = shared_image_representation_factory_->ProduceSkia(
+      mailbox, context_state_);
+  ASSERT_NE(skia_representation, nullptr);
+
+  // Expect BeginScopedReadAccess to fail because sharedImage is uninitialized
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
+      scoped_read_access =
+          skia_representation->BeginScopedReadAccess(nullptr, nullptr);
+  EXPECT_EQ(scoped_read_access, nullptr);
+}
 #endif  // BUILDFLAG(USE_DAWN)
 
+// Test that Skia trying to access uninitialized SharedImage will fail
+TEST_F(SharedImageBackingFactoryD3DTest, SkiaAccessFirstFails) {
+  if (!IsD3DSharedImageSupported())
+    return;
+
+  // Create a mailbox.
+  auto mailbox = Mailbox::GenerateForSharedImage();
+  const auto format = viz::ResourceFormat::RGBA_8888;
+  const gfx::Size size(1, 1);
+  const auto color_space = gfx::ColorSpace::CreateSRGB();
+  const uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY;
+  const gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
+  auto backing = shared_image_factory_->CreateSharedImage(
+      mailbox, format, surface_handle, size, color_space, usage,
+      false /* is_thread_safe */);
+  ASSERT_NE(backing, nullptr);
+
+  std::unique_ptr<SharedImageRepresentationFactoryRef> factory_ref =
+      shared_image_manager_.Register(std::move(backing),
+                                     memory_type_tracker_.get());
+
+  // Produce skia representation
+  auto skia_representation = shared_image_representation_factory_->ProduceSkia(
+      mailbox, context_state_);
+  ASSERT_NE(skia_representation, nullptr);
+  EXPECT_FALSE(skia_representation->IsCleared());
+
+  // Expect BeginScopedReadAccess to fail because sharedImage is uninitialized
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
+      scoped_read_access =
+          skia_representation->BeginScopedReadAccess(nullptr, nullptr);
+  EXPECT_EQ(scoped_read_access, nullptr);
+}
 }  // anonymous namespace
 }  // namespace gpu

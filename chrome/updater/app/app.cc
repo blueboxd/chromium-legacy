@@ -37,6 +37,8 @@ int App::Run() {
     runloop.Run();
   }
 
+  Uninitialize();
+
   // Shutting down the thread pool involves joining threads.
   base::ThreadPoolInstance::Get()->Shutdown();
   return exit_code;
@@ -45,7 +47,5 @@ int App::Run() {
 void App::Shutdown(int exit_code) {
   std::move(quit_).Run(exit_code);
 }
-
-void App::Initialize() {}
 
 }  // namespace updater

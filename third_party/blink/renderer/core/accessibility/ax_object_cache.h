@@ -46,15 +46,12 @@ class LayoutRect;
 class LineLayoutItem;
 class LocalFrameView;
 
-class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache>,
-                                  public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(AXObjectCache);
-
+class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
  public:
   static AXObjectCache* Create(Document&);
 
-  virtual ~AXObjectCache();
-  void Trace(Visitor*) override;
+  virtual ~AXObjectCache() = default;
+  virtual void Trace(Visitor*) {}
 
   virtual void Dispose() = 0;
 
@@ -152,7 +149,7 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache>,
 
  private:
   friend class AXObjectCacheBase;
-  AXObjectCache(Document&);
+  AXObjectCache() = default;
 
   static AXObjectCacheCreateFunction create_function_;
   DISALLOW_COPY_AND_ASSIGN(AXObjectCache);

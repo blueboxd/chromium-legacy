@@ -232,7 +232,7 @@ bool IsRootEditableElementWithCounting(const Element& element) {
   auto user_modify = style->UserModify();
   const AtomicString& ce_value =
       element.FastGetAttribute(html_names::kContenteditableAttr);
-  if (ce_value.IsNull() || DeprecatedEqualIgnoringCase(ce_value, "false")) {
+  if (ce_value.IsNull() || EqualIgnoringASCIICase(ce_value, "false")) {
     if (user_modify == EUserModify::kReadWritePlaintextOnly) {
       UseCounter::Count(doc, WebFeature::kPlainTextEditingEffective);
       UseCounter::Count(doc, WebFeature::kWebKitUserModifyPlainTextEffective);
@@ -5651,7 +5651,7 @@ SpellcheckAttributeState Element::GetSpellcheckAttributeState() const {
   if (EqualIgnoringASCIICase(value, "true") ||
       EqualIgnoringASCIICase(value, ""))
     return kSpellcheckAttributeTrue;
-  if (DeprecatedEqualIgnoringCase(value, "false"))
+  if (EqualIgnoringASCIICase(value, "false"))
     return kSpellcheckAttributeFalse;
 
   return kSpellcheckAttributeDefault;

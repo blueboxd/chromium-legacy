@@ -61,14 +61,17 @@ DefaultTexture2DWrapper::DefaultTexture2DWrapper(const gfx::Size& size,
 
 DefaultTexture2DWrapper::~DefaultTexture2DWrapper() = default;
 
-bool DefaultTexture2DWrapper::ProcessTexture(ComD3D11Texture2D texture,
-                                             size_t array_slice,
-                                             MailboxHolderArray* mailbox_dest) {
+bool DefaultTexture2DWrapper::ProcessTexture(
+    ComD3D11Texture2D texture,
+    size_t array_slice,
+    const gfx::ColorSpace& input_color_space,
+    MailboxHolderArray* mailbox_dest,
+    gfx::ColorSpace* output_color_space) {
   // TODO(liberato): When |gpu_resources_| is a SB<>, it's okay to post and
   // forget this call.  It will still be ordered properly with respect to any
   // access on the gpu main thread.
   // TODO(liberato): Would be nice if SB<> knew how to post and reply, so that
-  // we could get the error code back.
+  // we could get the error code back eventually, and fail later with it.
   auto result = gpu_resources_->PushNewTexture(std::move(texture), array_slice);
   if (!result.IsOk())
     return false;
@@ -77,6 +80,9 @@ bool DefaultTexture2DWrapper::ProcessTexture(ComD3D11Texture2D texture,
   // case we don't use all the planes.
   for (size_t i = 0; i < VideoFrame::kMaxPlanes; i++)
     (*mailbox_dest)[i] = mailbox_holders_[i];
+
+  // We're just binding, so the output and output color spaces are the same.
+  *output_color_space = input_color_space;
 
   return true;
 }

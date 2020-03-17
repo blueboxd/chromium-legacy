@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 cr.define('settings', function() {
   /**
    * An object describing a source browser profile that may be imported.
@@ -17,13 +21,13 @@ cr.define('settings', function() {
    *   autofillFormData: boolean,
    * }}
    */
-  let BrowserProfile;
+  /* #export */ let BrowserProfile;
 
   /**
    * @enum {string}
    * These string values must be kept in sync with the C++ ImportDataHandler.
    */
-  const ImportDataStatus = {
+  /* #export */ const ImportDataStatus = {
     INITIAL: 'initial',
     IN_PROGRESS: 'inProgress',
     SUCCEEDED: 'succeeded',
@@ -31,7 +35,7 @@ cr.define('settings', function() {
   };
 
   /** @interface */
-  class ImportDataBrowserProxy {
+  /* #export */ class ImportDataBrowserProxy {
     /**
      * Returns the source profiles available for importing from other browsers.
      * @return {!Promise<!Array<!settings.BrowserProfile>>}
@@ -52,10 +56,8 @@ cr.define('settings', function() {
     importFromBookmarksFile() {}
   }
 
-  /**
-   * @implements {settings.ImportDataBrowserProxy}
-   */
-  class ImportDataBrowserProxyImpl {
+  /** @implements {settings.ImportDataBrowserProxy} */
+  /* #export */ class ImportDataBrowserProxyImpl {
     /** @override */
     initializeImportDialog() {
       return cr.sendWithPromise('initializeImportDialog');

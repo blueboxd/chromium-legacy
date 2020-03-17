@@ -43,13 +43,13 @@ void HTMLUListElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == html_names::kTypeAttr) {
-    if (DeprecatedEqualIgnoringCase(value, "disc")) {
+    if (EqualIgnoringASCIICase(value, "disc")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kListStyleType, CSSValueID::kDisc);
     } else if (EqualIgnoringASCIICase(value, "circle")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kListStyleType, CSSValueID::kCircle);
-    } else if (DeprecatedEqualIgnoringCase(value, "square")) {
+    } else if (EqualIgnoringASCIICase(value, "square")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kListStyleType, CSSValueID::kSquare);
     } else if (EqualIgnoringASCIICase(value, "none")) {

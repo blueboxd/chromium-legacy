@@ -1984,17 +1984,13 @@ bool NGBoxFragmentPainter::HitTestChildren(
       RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
     return HitTestFloatingChildren(hit_test, box_fragment_, accumulated_offset);
   }
-  if (box_fragment_.CanTraverse()) {
-    if (hit_test.action == kHitTestFloat) {
-      return box_fragment_.HasFloatingDescendantsForPaint() &&
-             HitTestFloatingChildren(hit_test, box_fragment_,
-                                     accumulated_offset);
-    }
-    return HitTestBlockChildren(*hit_test.result, hit_test.location,
-                                accumulated_offset, hit_test.action);
+
+  if (hit_test.action == kHitTestFloat) {
+    return box_fragment_.HasFloatingDescendantsForPaint() &&
+           HitTestFloatingChildren(hit_test, box_fragment_, accumulated_offset);
   }
-  NOTREACHED();
-  return false;
+  return HitTestBlockChildren(*hit_test.result, hit_test.location,
+                              accumulated_offset, hit_test.action);
 }
 
 bool NGBoxFragmentPainter::HitTestChildren(
@@ -2023,6 +2019,14 @@ bool NGBoxFragmentPainter::HitTestBlockChildren(
       continue;
 
     const PhysicalOffset child_offset = accumulated_offset + child.offset;
+
+    if (block_child.IsPaintedAtomically()) {
+      if (HitTestAllPhasesInFragment(block_child, hit_test_location,
+                                     child_offset, &result))
+        return true;
+
+      continue;
+    }
 
     if (NodeAtPointInFragment(block_child, hit_test_location, child_offset,
                               action, &result)) {

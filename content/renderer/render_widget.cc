@@ -1253,7 +1253,7 @@ void RenderWidget::UpdateVisualState() {
   blink::DocumentUpdateReason lifecycle_reason =
       record_main_frame_metrics ? blink::DocumentUpdateReason::kBeginMainFrame
                                 : blink::DocumentUpdateReason::kTest;
-  GetWebWidget()->UpdateLifecycle(WebWidget::LifecycleUpdate::kAll,
+  GetWebWidget()->UpdateLifecycle(blink::WebLifecycleUpdate::kAll,
                                   lifecycle_reason);
   GetWebWidget()->SetSuppressFrameRequestsWorkaroundFor704763Only(false);
 

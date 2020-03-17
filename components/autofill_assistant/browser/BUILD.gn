@@ -264,6 +264,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser:test_support",
+    "//components/password_manager/core/browser:test_support",
     "//components/strings:components_strings_grit",
     "//content/test:test_support",
     "//testing/gmock",

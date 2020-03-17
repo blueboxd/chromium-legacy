@@ -152,8 +152,9 @@ std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
       kDefaultSize, media::EmptyExtraData(),
       media::EncryptionScheme::kUnencrypted);
   if (gpu_factories->IsDecoderConfigSupported(kImplementation, config) ==
-      media::GpuVideoAcceleratorFactories::Supported::kFalse)
+      media::GpuVideoAcceleratorFactories::Supported::kFalse) {
     return nullptr;
+  }
 
   // Synchronously verify that the decoder can be initialized.
   std::unique_ptr<RTCVideoDecoderAdapter> rtc_video_decoder_adapter =
@@ -220,6 +221,10 @@ int32_t RTCVideoDecoderAdapter::InitDecode(
 
   base::AutoLock auto_lock(lock_);
   UMA_HISTOGRAM_BOOLEAN("Media.RTCVideoDecoderInitDecodeSuccess", !has_error_);
+  if (!has_error_) {
+    UMA_HISTOGRAM_BOOLEAN("Media.RTCVideoDecoderProfile",
+                          GuessVideoCodecProfile(format_));
+  }
   return has_error_ ? WEBRTC_VIDEO_CODEC_UNINITIALIZED : WEBRTC_VIDEO_CODEC_OK;
 }
 

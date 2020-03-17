@@ -47,8 +47,8 @@ AutofillBubbleHandlerImpl::AutofillBubbleHandlerImpl(
 
 AutofillBubbleHandlerImpl::~AutofillBubbleHandlerImpl() = default;
 
-// TODO(crbug.com/932818): Clean up this two functions and add helper for shared
-// code.
+// TODO(crbug.com/1061633): Clean up this two functions and add helper for
+// shared code.
 SaveCardBubbleView* AutofillBubbleHandlerImpl::ShowSaveCreditCardBubble(
     content::WebContents* web_contents,
     SaveCardBubbleController* controller,

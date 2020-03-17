@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_CSS_TRANSITION_H_
 
 #include "third_party/blink/renderer/core/animation/animation.h"
+#include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
@@ -36,6 +37,13 @@ class CORE_EXPORT CSSTransition : public Animation {
   // display:none must update the play state.
   // https://drafts.csswg.org/css-transitions-2/#requirements-on-pending-style-changes
   String playState() const override;
+
+  // Effects associated with a CSSTransition use an event delegate to queue
+  // transition events triggered from changes to the timing phase of an
+  // animation. This override ensures that an event delegate is associated with
+  // the new effect, or that the transition is properly ended|canceled in the
+  // case of a null effect.
+  void setEffect(AnimationEffect* effect) override;
 
  private:
   PropertyHandle transition_property_;

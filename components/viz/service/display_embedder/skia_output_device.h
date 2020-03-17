@@ -43,26 +43,21 @@ class SkiaOutputDevice {
   // A helper class for defining a BeginPaint() and EndPaint() scope.
   class ScopedPaint {
    public:
-    explicit ScopedPaint(SkiaOutputDevice* device)
-        : device_(device), sk_surface_(device->BeginPaint()) {
-      DCHECK(sk_surface_);
-    }
-    ~ScopedPaint() { device_->EndPaint(semaphore_); }
+    explicit ScopedPaint(SkiaOutputDevice* device);
+    ~ScopedPaint();
 
     SkSurface* sk_surface() const { return sk_surface_; }
-    void set_semaphore(const GrBackendSemaphore& semaphore) {
-      DCHECK(!semaphore_.isInitialized());
-      semaphore_ = semaphore;
-    }
 
-    std::vector<GrBackendSemaphore> GetEndPaintSemaphores(void) {
-      return device_->TakeEndPaintSemaphores();
+    std::vector<GrBackendSemaphore> TakeEndPaintSemaphores() {
+      std::vector<GrBackendSemaphore> semaphores;
+      semaphores.swap(end_semaphores_);
+      return semaphores;
     }
 
    private:
+    std::vector<GrBackendSemaphore> end_semaphores_;
     SkiaOutputDevice* const device_;
     SkSurface* const sk_surface_;
-    GrBackendSemaphore semaphore_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedPaint);
   };
@@ -73,7 +68,6 @@ class SkiaOutputDevice {
       base::RepeatingCallback<void(gpu::SwapBuffersCompleteParams,
                                    const gfx::Size& pixel_size)>;
   SkiaOutputDevice(
-      bool need_swap_semaphore,
       gpu::MemoryTracker* memory_tracker,
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
   virtual ~SkiaOutputDevice();
@@ -126,7 +120,6 @@ class SkiaOutputDevice {
   virtual void EnsureBackbuffer();
   virtual void DiscardBackbuffer();
 
-  bool need_swap_semaphore() const { return need_swap_semaphore_; }
   bool is_emulated_rgbx() const { return is_emulated_rgbx_; }
 
  protected:
@@ -145,13 +138,11 @@ class SkiaOutputDevice {
   };
 
   // Begin paint the back buffer.
-  virtual SkSurface* BeginPaint() = 0;
+  virtual SkSurface* BeginPaint(
+      std::vector<GrBackendSemaphore>* end_semaphores) = 0;
 
   // End paint the back buffer.
-  virtual void EndPaint(const GrBackendSemaphore& semaphore) = 0;
-
-  // Get End paint semaphore buffer.
-  virtual std::vector<GrBackendSemaphore> TakeEndPaintSemaphores();
+  virtual void EndPaint() = 0;
 
   // Helper method for SwapBuffers() and PostSubBuffer(). It should be called
   // at the beginning of SwapBuffers() and PostSubBuffer() implementations
@@ -165,7 +156,6 @@ class SkiaOutputDevice {
 
   OutputSurface::Capabilities capabilities_;
 
-  const bool need_swap_semaphore_;
   uint64_t swap_id_ = 0;
   DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
 

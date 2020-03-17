@@ -149,7 +149,7 @@ class MessagePipeConnectionTester::MessageSender
       for (int p = 0; p < message_size_; ++p) {
         message->mutable_data()[0] = static_cast<char>(i + p);
       }
-      pipe_->Send(message.get(), base::Closure());
+      pipe_->Send(message.get(), {});
       sent_messages_.push_back(std::move(message));
     }
   }

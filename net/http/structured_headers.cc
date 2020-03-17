@@ -291,7 +291,6 @@ class StructuredHeaderParser {
       } else {
         parameters.emplace_back(std::move(*name), std::move(value));
       }
-      SkipWhitespaces();
     }
     return parameters;
   }

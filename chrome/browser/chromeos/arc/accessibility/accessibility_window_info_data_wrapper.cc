@@ -78,14 +78,12 @@ void AccessibilityWindowInfoDataWrapper::PopulateAXState(
     ui::AXNodeData* out_data) const {
   // ARC++ window states are not reflected in ax::mojom::State, and for the
   // most part aren't needed.
-  // Focusable in Android simply means a node within the window is focusable.
-  // Since the window itself is not focusable in Android, it doesn't make sense
-  // to include Focusable as an AXState.
 }
 
 void AccessibilityWindowInfoDataWrapper::Serialize(
     ui::AXNodeData* out_data) const {
-  if (!tree_source_->GetRoot())
+  AccessibilityInfoDataWrapper* root = tree_source_->GetRoot();
+  if (!root)
     return;
 
   AccessibilityInfoDataWrapper::Serialize(out_data);
@@ -95,6 +93,16 @@ void AccessibilityWindowInfoDataWrapper::Serialize(
   if (GetProperty(mojom::AccessibilityWindowStringProperty::TITLE, &title)) {
     out_data->SetName(title);
     out_data->SetNameFrom(ax::mojom::NameFrom::kTitle);
+  }
+
+  if (root->GetId() == GetId()) {
+    // Make the root window of each ARC task modal
+    out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kModal, true);
+
+    // Focusable in Android simply means a node within the window is focusable.
+    // The window itself is not focusable in Android, but ChromeVox sets the
+    // focus to the entire window, explicitly specify this.
+    out_data->AddState(ax::mojom::State::kFocusable);
   }
 
   // Not all properties are currently used in Chrome Accessibility.

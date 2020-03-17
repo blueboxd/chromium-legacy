@@ -25,9 +25,7 @@ SkiaOutputDeviceOffscreen::SkiaOutputDeviceOffscreen(
     bool has_alpha,
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(false /*need_swap_semaphore */,
-                       memory_tracker,
-                       did_swap_buffer_complete_callback),
+    : SkiaOutputDevice(memory_tracker, did_swap_buffer_complete_callback),
       context_state_(context_state),
       has_alpha_(has_alpha) {
   capabilities_.uses_default_gl_framebuffer = false;
@@ -120,7 +118,8 @@ void SkiaOutputDeviceOffscreen::DiscardBackbuffer() {
   }
 }
 
-SkSurface* SkiaOutputDeviceOffscreen::BeginPaint() {
+SkSurface* SkiaOutputDeviceOffscreen::BeginPaint(
+    std::vector<GrBackendSemaphore>* end_semaphores) {
   DCHECK(backend_texture_.isValid());
   if (!sk_surface_) {
     // LegacyFontHost will get LCD text and skia figures out what type to use.
@@ -137,7 +136,6 @@ SkSurface* SkiaOutputDeviceOffscreen::BeginPaint() {
   return sk_surface_.get();
 }
 
-void SkiaOutputDeviceOffscreen::EndPaint(const GrBackendSemaphore& semaphore) {
-}
+void SkiaOutputDeviceOffscreen::EndPaint() {}
 
 }  // namespace viz

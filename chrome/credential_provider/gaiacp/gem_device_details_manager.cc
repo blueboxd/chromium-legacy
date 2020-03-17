@@ -115,11 +115,8 @@ HRESULT GemDeviceDetailsManager::UploadDeviceDetails(
   request_dict_->SetKey(kMacAddressParameterName,
                         std::move(mac_address_value_list));
 
-  wchar_t known_resource_id[512];
-  ULONG known_resource_id_size = base::size(known_resource_id);
-  hr = GetUserProperty(sid, kRegUserDeviceResourceId, known_resource_id,
-                       &known_resource_id_size);
-  if (SUCCEEDED(hr) && known_resource_id_size > 0) {
+  base::string16 known_resource_id = GetUserDeviceResourceId(sid);
+  if (!known_resource_id.empty()) {
     request_dict_->SetStringKey(
         kUploadDeviceDetailsRequestDeviceResourceIdParameterName,
         base::UTF16ToUTF8(known_resource_id));

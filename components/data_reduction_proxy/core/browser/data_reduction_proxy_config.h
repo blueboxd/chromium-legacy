@@ -35,31 +35,27 @@ class ProxyServer;
 namespace data_reduction_proxy {
 
 class DataReductionProxyConfigValues;
-class NetworkPropertiesManager;
 struct DataReductionProxyTypeInfo;
 
 
 // Central point for holding the Data Reduction Proxy configuration.
 // This object lives on the IO thread and all of its methods are expected to be
 // called from there.
-class DataReductionProxyConfig
-    : public network::NetworkConnectionTracker::NetworkConnectionObserver {
+class DataReductionProxyConfig {
  public:
   // The caller must ensure that all parameters remain alive for the lifetime
   // of the |DataReductionProxyConfig| instance, with the exception of
   // |config_values| which is owned by |this|. |config_values| contains the Data
   // Reduction Proxy configuration values.
-  DataReductionProxyConfig(
-      network::NetworkConnectionTracker* network_connection_tracker,
+  explicit DataReductionProxyConfig(
       std::unique_ptr<DataReductionProxyConfigValues> config_values);
-  ~DataReductionProxyConfig() override;
+  virtual ~DataReductionProxyConfig();
 
   // Performs initialization on the IO thread.
   // |url_loader_factory| is the network::URLLoaderFactory instance used for
   // making URL requests. The requests disable the use of proxies.
   void Initialize(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      NetworkPropertiesManager* manager,
       const std::string& user_agent);
 
   // Sets the proxy configs, enabling or disabling the proxy according to
@@ -98,25 +94,6 @@ class DataReductionProxyConfig
   // Called when a new client config has been fetched.
   void OnNewClientConfigFetched();
 
-  void SetNetworkPropertiesManagerForTesting(NetworkPropertiesManager* manager);
-
-  // Returns the network properties manager which manages whether a given data
-  // saver proxy is currently allowed or not.
-  const NetworkPropertiesManager& GetNetworkPropertiesManager() const;
-
-#if defined(OS_CHROMEOS)
-  // Enables getting the network id asynchronously when
-  // GatherEstimatesForNextConnectionType(). This should always be called in
-  // production, because getting the network id involves a blocking call to
-  // recv() in AddressTrackerLinux, and the IO thread should never be blocked.
-  // TODO(https://crbug.com/821607): Remove after the bug is resolved.
-  void EnableGetNetworkIdAsynchronously();
-#endif  // defined(OS_CHROMEOS)
-  // Called when there is a change in the HTTP RTT estimate.
-  void OnRTTOrThroughputEstimatesComputed(base::TimeDelta http_rtt);
-
-  // Returns the current HTTP RTT estimate.
-  base::Optional<base::TimeDelta> GetHttpRttEstimate() const;
 
   // Updates the Data Reduction Proxy configurator with the current config.
   void UpdateConfigForTesting(bool enabled,
@@ -125,9 +102,6 @@ class DataReductionProxyConfig
 
  protected:
   virtual base::TimeTicks GetTicksNow() const;
-
-  // Returns the ID of the current network by calling the platform APIs.
-  virtual std::string GetCurrentNetworkID() const;
 
  private:
   friend class MockDataReductionProxyConfig;
@@ -149,20 +123,6 @@ class DataReductionProxyConfig
     NETWORK_QUALITY_AT_LAST_QUERY_NOT_SLOW
   };
 
-  // Provides a mechanism for an external object to force |this| to refresh
-  // the Data Reduction Proxy configuration from |config_values_| and apply to
-  // |configurator_|. Used by the Data Reduction Proxy config service client.
-  void ReloadConfig();
-
-  // network::NetworkConnectionTracker::NetworkConnectionObserver:
-  void OnConnectionChanged(network::mojom::ConnectionType type) override;
-
-  // Invoked to continue network changed handling after the network id is
-  // retrieved. If |get_network_id_asynchronously_| is set, the network id is
-  // fetched on the worker thread. Otherwise, OnNetworkChanged calls this
-  // directly. This is a workaround for https://crbug.com/821607 where
-  // net::GetWifiSSID() call gets stuck.
-  void ContinueNetworkChanged(const std::string& network_id);
 
 
   // Checks if all configured data reduction proxies are in the retry map.
@@ -177,42 +137,16 @@ class DataReductionProxyConfig
                           bool is_https,
                           base::TimeDelta* min_retry_delay) const;
 
-
-  // Checks if the current network has captive portal, and handles the result.
-  // If the captive portal probe was blocked on the current network, disables
-  // the use of secure proxies.
-  void HandleCaptivePortal();
-
-  // Returns true if the current network has captive portal. Virtualized for
-  // testing.
-  virtual bool GetIsCaptivePortal() const;
-
   bool unreachable_;
   bool enabled_by_user_;
 
   // Contains the configuration data being used.
   std::unique_ptr<DataReductionProxyConfigValues> config_values_;
 
-#if defined(OS_CHROMEOS)
-  // Whether the network id should be obtained on a worker thread.
-  bool get_network_id_asynchronously_ = false;
-#endif
 
-  // Watches for network connection changes.
-  network::NetworkConnectionTracker* network_connection_tracker_;
 
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;
-
-  // The current connection type.
-  network::mojom::ConnectionType connection_type_;
-
-  // Should be accessed only on the IO thread. Guaranteed to be non-null during
-  // the lifetime of |this| if accessed on the IO thread.
-  NetworkPropertiesManager* network_properties_manager_;
-
-  // Current HTTP RTT estimate.
-  base::Optional<base::TimeDelta> http_rtt_;
 
   base::WeakPtrFactory<DataReductionProxyConfig> weak_factory_{this};
 

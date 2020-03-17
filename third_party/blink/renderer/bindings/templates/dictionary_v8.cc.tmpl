@@ -101,11 +101,6 @@ void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_value, {
     {{declare_enum_validation_variable(member.enum_values) | trim | indent}}
     if (!IsValidEnum({{member.cpp_value}}, kValidValues, base::size(kValidValues), "{{member.enum_type}}", exception_state))
       return;
-    {% elif member.is_deprecated_dictionary %}
-    if (!{{member.cpp_value}}.IsObject()) {
-      exception_state.ThrowTypeError("member {{member.name}} is not an object.");
-      return;
-    }
     {% endif %}
     impl->{{member.setter_name}}({{member.cpp_value}});
   }

@@ -9,16 +9,27 @@ import android.annotation.SuppressLint;
 
 import androidx.annotation.WorkerThread;
 
+import org.junit.Assert;
+
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninPreferencesManager;
+import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.metrics.SigninAccessPoint;
+import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Utility class for test signin functionality.
@@ -41,7 +52,6 @@ public final class SigninTestUtil {
         sAccountManager = new FakeAccountManagerDelegate(
                 FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
         AccountManagerFacade.overrideAccountManagerFacadeForTests(sAccountManager);
-        resetSigninState();
     }
 
     /**
@@ -49,18 +59,29 @@ public final class SigninTestUtil {
      */
     @WorkerThread
     public static void tearDownAuthForTest() {
+        if (getCurrentAccount() != null) {
+            signOut();
+        }
         for (AccountHolder accountHolder : sAddedAccounts) {
             sAccountManager.removeAccountHolderBlocking(accountHolder);
         }
         sAddedAccounts.clear();
-        resetSigninState();
+
+        // TODO(https://crbug.com/1046412): Remove this.
+        // Clear cached signed account name.
+        ChromeSigninController.get().setSignedInAccountName(null);
+
+        SigninPreferencesManager.getInstance().clearAccountsStateSharedPrefsForTesting();
     }
 
     /**
      * Returns the currently signed in account.
      */
     public static Account getCurrentAccount() {
-        return ChromeSigninController.get().getSignedInUser();
+        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            return CoreAccountInfo.getAndroidAccountFrom(
+                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo());
+        });
     }
 
     /**
@@ -87,9 +108,45 @@ public final class SigninTestUtil {
      */
     public static Account addAndSignInTestAccount() {
         Account account = addTestAccount(DEFAULT_ACCOUNT);
-        ChromeSigninController.get().setSignedInAccountName(DEFAULT_ACCOUNT);
-        seedAccounts();
+        signIn(account);
         return account;
+    }
+
+    /**
+     * Sign into an account. Account should be added by {@link #addTestAccount} first.
+     */
+    public static void signIn(Account account) {
+        CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            SigninManager signinManager = IdentityServicesProvider.get().getSigninManager();
+            signinManager.onFirstRunCheckDone(); // Allow sign-in
+            signinManager.signIn(
+                    SigninAccessPoint.UNKNOWN, account, new SigninManager.SignInCallback() {
+                        @Override
+                        public void onSignInComplete() {
+                            ProfileSyncService.get().setFirstSetupComplete(
+                                    SyncFirstSetupCompleteSource.BASIC_FLOW);
+                            callbackHelper.notifyCalled();
+                        }
+
+                        @Override
+                        public void onSignInAborted() {
+                            Assert.fail("Sign-in was aborted");
+                        }
+                    });
+        });
+        try {
+            callbackHelper.waitForFirst();
+        } catch (TimeoutException e) {
+            throw new RuntimeException("Timed out waiting for callback", e);
+        }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(account.name,
+                    IdentityServicesProvider.get()
+                            .getIdentityManager()
+                            .getPrimaryAccountInfo()
+                            .getEmail());
+        });
     }
 
     private static void seedAccounts() {
@@ -106,15 +163,18 @@ public final class SigninTestUtil {
         });
     }
 
-    /**
-     * Should be called at setUp and tearDown so that the signin state is not leaked across tests.
-     * The setUp call is implicit inside the constructor.
-     */
-    public static void resetSigninState() {
-        // Clear cached signed account name and accounts list.
-        ChromeSigninController.get().setSignedInAccountName(null);
-
-        SigninPreferencesManager.getInstance().clearAccountsStateSharedPrefsForTesting();
+    private static void signOut() {
+        ThreadUtils.assertOnBackgroundThread();
+        CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            IdentityServicesProvider.get().getSigninManager().signOut(
+                    SignoutReason.SIGNOUT_TEST, callbackHelper::notifyCalled, false);
+        });
+        try {
+            callbackHelper.waitForFirst();
+        } catch (TimeoutException e) {
+            throw new RuntimeException("Timed out waiting for callback", e);
+        }
     }
 
     private SigninTestUtil() {}

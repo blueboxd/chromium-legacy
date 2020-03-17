@@ -28,9 +28,7 @@ SkiaOutputDeviceVulkan::SkiaOutputDeviceVulkan(
     gpu::SurfaceHandle surface_handle,
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(true /*need_swap_semaphore */,
-                       memory_tracker,
-                       did_swap_buffer_complete_callback),
+    : SkiaOutputDevice(memory_tracker, did_swap_buffer_complete_callback),
       context_provider_(context_provider),
       surface_handle_(surface_handle) {
   if (!CreateVulkanSurface()) {
@@ -139,7 +137,8 @@ void SkiaOutputDeviceVulkan::PostSubBuffer(
   FinishSwapBuffers(result, image_size, std::move(latency_info));
 }
 
-SkSurface* SkiaOutputDeviceVulkan::BeginPaint() {
+SkSurface* SkiaOutputDeviceVulkan::BeginPaint(
+    std::vector<GrBackendSemaphore>* end_semaphores) {
   DCHECK(vulkan_surface_);
   DCHECK(!scoped_write_);
 
@@ -198,10 +197,15 @@ SkSurface* SkiaOutputDeviceVulkan::BeginPaint() {
     auto result = sk_surface->wait(1, &semaphore);
     DCHECK(result);
   }
+
+  GrBackendSemaphore end_semaphore;
+  end_semaphore.initVulkan(scoped_write_->GetEndSemaphore());
+  end_semaphores->push_back(std::move(end_semaphore));
+
   return sk_surface.get();
 }
 
-void SkiaOutputDeviceVulkan::EndPaint(const GrBackendSemaphore& semaphore) {
+void SkiaOutputDeviceVulkan::EndPaint() {
   DCHECK(scoped_write_);
 
   auto& sk_surface =
@@ -212,8 +216,6 @@ void SkiaOutputDeviceVulkan::EndPaint(const GrBackendSemaphore& semaphore) {
   if (!backend.getVkImageInfo(&vk_image_info))
     NOTREACHED() << "Failed to get the image info.";
   scoped_write_->set_image_layout(vk_image_info.fImageLayout);
-  if (semaphore.isInitialized())
-    scoped_write_->SetEndSemaphore(semaphore.vkSemaphore());
   scoped_write_.reset();
 #if DCHECK_IS_ON()
   image_modified_ = true;

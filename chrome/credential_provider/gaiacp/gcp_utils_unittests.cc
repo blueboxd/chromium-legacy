@@ -449,8 +449,10 @@ TEST(Enroll, EnrollToGoogleMdmIfNeeded_NotEnabled) {
 // 7. Serial Number.
 // 8. Machine Guid.
 // 9. Is ADJoined User.
+// 10 Device resource Id.
 class GcpEnrollmentArgsTest
     : public ::testing::TestWithParam<std::tuple<const char*,
+                                                 const char*,
                                                  const char*,
                                                  const char*,
                                                  const char*,
@@ -482,6 +484,7 @@ TEST_P(GcpEnrollmentArgsTest, EnrollToGoogleMdmIfNeeded_MissingArgs) {
   base::string16 machine_guid16 =
       base::UTF8ToUTF16(base::StringPrintf("%s", machine_guid));
   const char* is_user_ad_joined = std::get<8>(GetParam());
+  const char* device_resource_id = std::get<9>(GetParam());
   FakeOSUserManager fake_os_user_manager;
 
   bool should_succeed = (email && email[0]) && (id_token && id_token[0]) &&
@@ -512,6 +515,13 @@ TEST_P(GcpEnrollmentArgsTest, EnrollToGoogleMdmIfNeeded_MissingArgs) {
   SetMachineGuidForTesting(machine_guid16);
   GoogleRegistrationDataForTesting g_registration_data(serial_number16);
 
+  if (device_resource_id) {
+    base::string16 sid16 = base::UTF8ToUTF16(base::StringPrintf("%s", sid));
+    HRESULT hr = SetUserProperty(sid16, kRegUserDeviceResourceId,
+                                 base::UTF8ToUTF16(device_resource_id));
+    EXPECT_TRUE(SUCCEEDED(hr));
+  }
+
   // EnrollToGoogleMdmIfNeeded() should fail if any field is missing.
   if (should_succeed) {
     ASSERT_EQ(S_OK, EnrollToGoogleMdmIfNeeded(properties));
@@ -531,7 +541,8 @@ INSTANTIATE_TEST_SUITE_P(
                        ::testing::Values("domain", "", nullptr),
                        ::testing::Values("serial_number"),
                        ::testing::Values("machine_guid"),
-                       ::testing::Values("true", "false")));
+                       ::testing::Values("true", "false"),
+                       ::testing::Values("device_resource_id", "")));
 
 INSTANTIATE_TEST_SUITE_P(
     GcpRegistrationHardwareIds,
@@ -544,6 +555,7 @@ INSTANTIATE_TEST_SUITE_P(
                        ::testing::Values("domain"),
                        ::testing::Values("serial_number", ""),
                        ::testing::Values("machine_guid", ""),
-                       ::testing::Values("true")));
+                       ::testing::Values("true"),
+                       ::testing::Values("device_resource_id", "")));
 
 }  // namespace credential_provider

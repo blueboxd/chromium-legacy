@@ -57,8 +57,7 @@ void ThreadedWorkletMessagingProxy::Initialize(
 
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(
-          document->Url(), mojom::ScriptType::kModule,
-          OffMainThreadWorkerScriptFetchOption::kEnabled, global_scope_name,
+          document->Url(), mojom::blink::ScriptType::kModule, global_scope_name,
           document->UserAgent(),
           document->GetFrame()->Client()->CreateWorkerFetchContext(),
           csp->Headers(), document->GetReferrerPolicy(),

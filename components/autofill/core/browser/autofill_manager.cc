@@ -42,7 +42,6 @@
 #include "components/autofill/core/browser/autofill_browser_util.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
@@ -64,7 +63,6 @@
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
-#include "components/autofill/core/browser/sms_client.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -1914,10 +1912,6 @@ void AutofillManager::OnFormsParsed(
         card_form = true;
       } else if (IsAddressForm(field->Type().group())) {
         address_form = true;
-      } else if (field->Type().html_type() == HTML_TYPE_ONE_TIME_CODE &&
-                 !field->IsPasswordInputElement() &&
-                 IsAutofillSmsReceiverEnabled()) {
-        client_->GetSmsClient()->Subscribe();
       }
     }
     if (card_form) {
@@ -2402,23 +2396,6 @@ void AutofillManager::GetAvailableSuggestions(
   // TODO(rogerm): Early exit here on !driver()->RendererIsAvailable()?
   // We skip populating autofill data, but might generate warnings and or
   // signin promo to show over the unavailable renderer. That seems a mistake.
-
-  if (context->focused_field &&
-      context->focused_field->Type().html_type() == HTML_TYPE_ONE_TIME_CODE &&
-      !context->focused_field->IsPasswordInputElement() &&
-      IsAutofillSmsReceiverEnabled()) {
-    const std::string& one_time_code = client_->GetSmsClient()->GetOTP();
-    if (!one_time_code.empty()) {
-      std::vector<Suggestion> otps{1};
-      Suggestion* otp = &otps.back();
-      otp->value = base::UTF8ToUTF16(one_time_code);
-      otp->match = Suggestion::SUBSTRING_MATCH;
-      otp->frontend_id = POPUP_ITEM_ID_ONE_TIME_CODE;
-      *suggestions = std::move(otps);
-      context->is_autofill_available = true;
-      return;
-    }
-  }
 
   if (!is_autofill_possible || !driver()->RendererIsAvailable() ||
       !got_autofillable_form)

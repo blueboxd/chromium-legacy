@@ -818,6 +818,13 @@ const char kShowIcons[]                     = "show-icons";
 
 // Runs un-installation steps that were done by chrome first-run.
 const char kUninstall[]                     = "uninstall";
+
+// Specifies the version of the Progressive-Web-App launcher that launched
+// Chrome, used to determine whether to update all launchers.
+// NOTE: changing this switch requires adding legacy handling for the previous
+// method, as older PWA launchers still using this switch will rely on Chrome to
+// update them to use the new method.
+const char kPwaLauncherVersion[] = "pwa-launcher-version";
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)

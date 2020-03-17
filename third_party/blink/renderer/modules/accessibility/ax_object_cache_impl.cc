@@ -129,8 +129,7 @@ AXObjectCache* AXObjectCacheImpl::Create(Document& document) {
 }
 
 AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
-    : AXObjectCacheBase(document),
-      document_(document),
+    : document_(document),
       modification_count_(0),
       validation_message_axid_(0),
       relation_cache_(std::make_unique<AXRelationCache>(this)),
@@ -1905,8 +1904,6 @@ void AXObjectCacheImpl::DidFinishLifecycleUpdate(const LocalFrameView& view) {
     PostNotificationsAfterLayout(document);
   }
 }
-
-void AXObjectCacheImpl::ContextDestroyed() {}
 
 void AXObjectCacheImpl::Trace(Visitor* visitor) {
   visitor->Trace(document_);

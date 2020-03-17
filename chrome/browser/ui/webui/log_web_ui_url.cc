@@ -10,13 +10,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/url_constants.h"
-#include "extensions/buildflags/buildflags.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/common/extensions/extension_constants.h"
-#include "extensions/common/constants.h"
-#endif
 
 namespace webui {
 

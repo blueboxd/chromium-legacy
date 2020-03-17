@@ -18,8 +18,8 @@
 #include "build/branding_buildflags.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/content/app/crash_switches.h"
-#include "content/public/common/content_descriptors.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
+#include "services/service_manager/embedder/descriptors.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 
 namespace crash_reporter {

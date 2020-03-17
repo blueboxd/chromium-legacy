@@ -48,8 +48,6 @@ class WebAppUninstallBrowserTest : public WebAppControllerBrowserTest {
 // Tests that app windows are restored in a tab if the app is uninstalled.
 IN_PROC_BROWSER_TEST_P(WebAppUninstallBrowserTest,
                        RestoreAppWindowForUninstalledApp) {
-  ASSERT_TRUE(https_server()->Start());
-
   const GURL app_url = GetSecureAppURL();
   const AppId app_id = InstallPWA(app_url);
 
@@ -80,7 +78,6 @@ IN_PROC_BROWSER_TEST_P(WebAppUninstallBrowserTest,
 // Check that uninstalling a PWA with a window opened doesn't crash.
 IN_PROC_BROWSER_TEST_P(WebAppUninstallBrowserTest,
                        UninstallPwaWithWindowOpened) {
-  ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const GURL app_url = GetSecureAppURL();
@@ -97,7 +94,6 @@ IN_PROC_BROWSER_TEST_P(WebAppUninstallBrowserTest,
 // PWAs moved to tabbed browsers should not get closed when uninstalled.
 IN_PROC_BROWSER_TEST_P(WebAppUninstallBrowserTest,
                        UninstallPwaWithWindowMovedToTab) {
-  ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const GURL app_url = GetSecureAppURL();

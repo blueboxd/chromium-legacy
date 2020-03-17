@@ -6,71 +6,47 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
-#include "base/test/scoped_path_override.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/test/test_timeouts.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/web_applications/components/web_app_shortcut_win.h"
+#include "chrome/browser/web_applications/chrome_pwa_launcher/chrome_pwa_launcher_util.h"
 #include "chrome/browser/web_applications/test/test_file_handler_manager.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace web_app {
+namespace {
 
-class UpdateChromeExePathTest : public testing::Test {
- protected:
-  UpdateChromeExePathTest() : user_data_dir_override_(chrome::DIR_USER_DATA) {}
-
-  void SetUp() override {
-    ASSERT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_));
-    ASSERT_FALSE(user_data_dir_.empty());
-    last_browser_file_ = user_data_dir_.Append(kLastBrowserFile);
+apps::FileHandlers GetFileHandlersWithFileExtensions(
+    const std::vector<std::string>& file_extensions) {
+  apps::FileHandlers file_handlers;
+  for (const auto& file_extension : file_extensions) {
+    apps::FileHandler file_handler;
+    apps::FileHandler::AcceptEntry accept_entry;
+    accept_entry.file_extensions.insert(file_extension);
+    file_handler.accept.push_back(accept_entry);
+    file_handlers.push_back(file_handler);
   }
-
-  static base::FilePath GetCurrentExePath() {
-    base::FilePath current_exe_path;
-    EXPECT_TRUE(base::PathService::Get(base::FILE_EXE, &current_exe_path));
-    return current_exe_path;
-  }
-
-  base::FilePath GetLastBrowserPathFromFile() const {
-    std::string last_browser_file_data;
-    EXPECT_TRUE(
-        base::ReadFileToString(last_browser_file_, &last_browser_file_data));
-    base::FilePath::StringPieceType last_browser_path(
-        reinterpret_cast<const base::FilePath::CharType*>(
-            last_browser_file_data.data()),
-        last_browser_file_data.size() / sizeof(base::FilePath::CharType));
-    return base::FilePath(last_browser_path);
-  }
-
-  const base::FilePath& user_data_dir() const { return user_data_dir_; }
-
- private:
-  // Redirect |chrome::DIR_USER_DATA| to a temporary directory during testing.
-  base::ScopedPathOverride user_data_dir_override_;
-
-  base::FilePath user_data_dir_;
-  base::FilePath last_browser_file_;
-};
-
-TEST_F(UpdateChromeExePathTest, UpdateChromeExePath) {
-  UpdateChromeExePath(user_data_dir());
-  EXPECT_EQ(GetLastBrowserPathFromFile(), GetCurrentExePath());
+  return file_handlers;
 }
+
+}  // namespace
+
+namespace web_app {
 
 constexpr char kAppName[] = "app name";
 
@@ -84,10 +60,14 @@ class WebAppFileHandlerRegistrationWinTest : public testing::Test {
         registry_override_.OverrideRegistry(HKEY_LOCAL_MACHINE));
     ASSERT_NO_FATAL_FAILURE(
         registry_override_.OverrideRegistry(HKEY_CURRENT_USER));
-    // Until the CL to create the PWA launcher is submitted, create it by
-    // hand. TODO(davidbienvenu): Remove this once cl/1815220 lands.
-    base::File pwa_launcher(GetChromePwaLauncherPath(),
-                            base::File::FLAG_CREATE);
+
+    // Create a mock chrome_pwa_launcher.exe in a mock Chrome version directory,
+    // where the file-registration code expects it to be.
+    const base::FilePath pwa_launcher_path = GetChromePwaLauncherPath();
+    ASSERT_TRUE(temp_version_dir_.Set(pwa_launcher_path.DirName()));
+    ASSERT_TRUE(
+        base::File(pwa_launcher_path, base::File::FLAG_CREATE).IsValid());
+
     testing_profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(testing_profile_manager_->SetUp());
@@ -107,10 +87,6 @@ class WebAppFileHandlerRegistrationWinTest : public testing::Test {
     return testing_profile_manager_.get();
   }
   const AppId& app_id() const { return app_id_; }
-
-  const std::set<std::string>& file_extensions() const {
-    return file_extensions_;
-  }
 
   // Returns true if Chrome extension with AppId |app_id| has its corresponding
   // prog_id registered in Windows registry to handle files with extension
@@ -140,9 +116,11 @@ class WebAppFileHandlerRegistrationWinTest : public testing::Test {
     base::FilePath expected_app_launcher_path =
         CreateDataDirectoryAndGetLauncherPathForApp(profile, app_id(),
                                                     sanitized_app_name);
+    apps::FileHandlers file_handlers =
+        GetFileHandlersWithFileExtensions({".txt", ".doc"});
 
-    RegisterFileHandlersWithOs(app_id(), app_name, profile, file_extensions(),
-                               /*mime_types=*/{});
+    RegisterFileHandlersWithOs(app_id(), app_name, profile, file_handlers);
+
     base::ThreadPoolInstance::Get()->FlushForTesting();
     base::FilePath registered_app_path = ShellUtil::GetApplicationPathForProgId(
         GetProgIdForApp(profile->GetPath(), app_id()));
@@ -186,12 +164,12 @@ class WebAppFileHandlerRegistrationWinTest : public testing::Test {
 
  private:
   registry_util::RegistryOverrideManager registry_override_;
+  base::ScopedTempDir temp_version_dir_;
   content::BrowserTaskEnvironment task_environment_{
       content::BrowserTaskEnvironment::IO_MAINLOOP};
   TestingProfile* profile_ = nullptr;
   std::unique_ptr<TestingProfileManager> testing_profile_manager_;
   const AppId app_id_ = "app_id";
-  const std::set<std::string> file_extensions_ = {"txt", "doc"};
 };
 
 // Test various attributes of ProgIds returned by GetAppIdForApp.
@@ -385,17 +363,16 @@ TEST_F(WebAppFileHandlerRegistrationWinTest, UnregisterFileHandlersForWebApp) {
 
 // Test that invalid file name characters in app_name are replaced with '_'.
 TEST_F(WebAppFileHandlerRegistrationWinTest, AppNameWithInvalidChars) {
-  std::set<std::string> file_extensions({"txt"});
-
   // '*' is an invalid char in Windows file names, so it should be replaced
   // with '_'.
   std::string app_name("app*name");
   base::FilePath app_specific_launcher_path =
       CreateDataDirectoryAndGetLauncherPathForApp(profile(), app_id(),
                                                   "app_name");
+  apps::FileHandlers file_handlers =
+      GetFileHandlersWithFileExtensions({".txt"});
 
-  RegisterFileHandlersWithOs(app_id(), app_name, profile(), file_extensions,
-                             /*mime_types=*/{});
+  RegisterFileHandlersWithOs(app_id(), app_name, profile(), file_handlers);
 
   base::ThreadPoolInstance::Get()->FlushForTesting();
   base::FilePath registered_app_path = ShellUtil::GetApplicationPathForProgId(
@@ -408,15 +385,14 @@ TEST_F(WebAppFileHandlerRegistrationWinTest, AppNameWithInvalidChars) {
 // Test that an app name that is a reserved filename on Windows has '_'
 // prepended to it when used as a filename for its launcher.
 TEST_F(WebAppFileHandlerRegistrationWinTest, AppNameIsReservedFilename) {
-  std::set<std::string> file_extensions({"txt"});
-
   // "con" is a reserved filename on Windows, so it should have '_' prepended.
   std::string app_name("con");
   base::FilePath app_specific_launcher_path =
       CreateDataDirectoryAndGetLauncherPathForApp(profile(), app_id(), "_con");
+  apps::FileHandlers file_handlers =
+      GetFileHandlersWithFileExtensions({".txt"});
 
-  RegisterFileHandlersWithOs(app_id(), app_name, profile(), file_extensions,
-                             /*mime_types=*/{});
+  RegisterFileHandlersWithOs(app_id(), app_name, profile(), file_handlers);
 
   base::ThreadPoolInstance::Get()->FlushForTesting();
   base::FilePath registered_app_path = ShellUtil::GetApplicationPathForProgId(
@@ -429,8 +405,6 @@ TEST_F(WebAppFileHandlerRegistrationWinTest, AppNameIsReservedFilename) {
 // Test that an app name containing '.' characters has them replaced with '_' on
 // Windows 7 when used as a filename for its launcher.
 TEST_F(WebAppFileHandlerRegistrationWinTest, AppNameContainsDot) {
-  std::set<std::string> file_extensions({"txt"});
-
   // "some.app.name" should become "some_app_name" on Windows 7.
   std::string app_name("some.app.name");
   base::FilePath app_specific_launcher_path =
@@ -438,9 +412,10 @@ TEST_F(WebAppFileHandlerRegistrationWinTest, AppNameContainsDot) {
           profile(), app_id(),
           base::win::GetVersion() > base::win::Version::WIN7 ? "some.app.name"
                                                              : "some_app_name");
+  apps::FileHandlers file_handlers =
+      GetFileHandlersWithFileExtensions({".txt"});
 
-  RegisterFileHandlersWithOs(app_id(), app_name, profile(), file_extensions,
-                             /*mime_types=*/{});
+  RegisterFileHandlersWithOs(app_id(), app_name, profile(), file_handlers);
 
   base::ThreadPoolInstance::Get()->FlushForTesting();
   base::FilePath registered_app_path = ShellUtil::GetApplicationPathForProgId(

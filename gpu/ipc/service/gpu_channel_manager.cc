@@ -317,6 +317,9 @@ void GpuChannelManager::RemoveChannel(int client_id) {
 
   delegate_->DidDestroyChannel(client_id);
   gpu_channels_.erase(client_id);
+  if (gpu_channels_.empty()) {
+    delegate_->DidDestroyAllChannels();
+  }
 }
 
 GpuChannel* GpuChannelManager::LookupChannel(int32_t client_id) const {

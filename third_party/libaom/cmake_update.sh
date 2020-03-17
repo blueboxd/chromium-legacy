@@ -125,7 +125,7 @@ trap '{
 
 all_platforms="-DCONFIG_SIZE_LIMIT=1"
 all_platforms+=" -DDECODE_HEIGHT_LIMIT=16384 -DDECODE_WIDTH_LIMIT=16384"
-all_platforms+=" -DCONFIG_AV1_ENCODER=0"
+all_platforms+=" -DCONFIG_AV1_ENCODER=1"
 all_platforms+=" -DCONFIG_LOWBITDEPTH=1"
 all_platforms+=" -DCONFIG_MAX_DECODE_PROFILE=0"
 all_platforms+=" -DCONFIG_NORMAL_TILE_MODE=1"

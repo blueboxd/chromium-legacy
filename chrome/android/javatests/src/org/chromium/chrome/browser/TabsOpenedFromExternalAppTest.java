@@ -38,8 +38,6 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
@@ -749,48 +747,5 @@ public class TabsOpenedFromExternalAppTest {
                 () -> mActivityTestRule.getActivity().onBackPressed());
         CriteriaHelper.pollUiThread(Criteria.equals(1,
                 () -> mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount()));
-    }
-
-    /**
-     * Tests that a Weblite url from an external app uses the lite_url param when Data Reduction
-     * Proxy previews are being used.
-     */
-    @Test
-    @MediumTest
-    @CommandLineFlags.Add("enable-spdy-proxy-auth")
-    @EnableFeatures(
-            {"DataReductionProxyDecidesTransform", "DataReductionProxyEnabledWithNetworkService"})
-    public void
-    testLaunchWebLiteURL() {
-        mActivityTestRule.startMainActivityOnBlankPage();
-
-        String url = mTestServer.getURL("/chrome/test/data/android/about.html");
-
-        // Launch a first URL from an app.
-        launchUrlFromExternalApp(
-                "http://googleweblight.com/i?u=" + url, url, EXTERNAL_APP_1_ID, false, null);
-
-        Assert.assertEquals("Selected tab is not on the right URL.", url,
-                mActivityTestRule.getActivity().getActivityTab().getUrlString());
-    }
-
-    /**
-     * Tests that a Weblite url from an external app does not use the lite_url param when Data
-     * Reduction Proxy previews are not being used.
-     */
-    @Test
-    @MediumTest
-    @CommandLineFlags.Add("enable-spdy-proxy-auth")
-    @DisableFeatures("DataReductionProxyDecidesTransform")
-    public void testLaunchWebLiteURLNoPreviews() {
-        mActivityTestRule.startMainActivityOnBlankPage();
-
-        String url = "http://googleweblight.com/i?u=chrome/test/data/android/about.html";
-
-        // Launch a first URL from an app.
-        launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, false, null);
-
-        Assert.assertEquals("Selected tab is not on the right URL.", url,
-                mActivityTestRule.getActivity().getActivityTab().getUrlString());
     }
 }

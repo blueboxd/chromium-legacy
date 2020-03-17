@@ -497,7 +497,7 @@ void BrowserTestBase::SetUp() {
     spawned_test_server_.reset();
   }
 
-  base::PostTaskAndroid::SignalNativeSchedulerShutdown();
+  base::PostTaskAndroid::SignalNativeSchedulerShutdownForTesting();
   BrowserTaskExecutor::Shutdown();
 
   // Normally the BrowserMainLoop does this during shutdown but on Android we

@@ -48,6 +48,7 @@
 #include "components/drive/drive_api_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/file_handler_info.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
 #include "extensions/browser/entry_info.h"
@@ -515,6 +516,41 @@ bool IsGoodMatchFileHandler(const apps::FileHandlerInfo& file_handler_info,
   // If text/* file handler matches with unsupported text mime type, we don't
   // regard it as good match.
   if (file_handler_info.types.count("text/*")) {
+    for (const auto& entry : entries) {
+      if (blink::IsUnsupportedTextMimeType(entry.mime_type))
+        return false;
+    }
+  }
+
+  // We consider it a good match if no directories are selected.
+  for (const auto& entry : entries) {
+    if (entry.is_directory)
+      return false;
+  }
+  return true;
+}
+
+bool IsGoodMatchAppsFileHandler(
+    const apps::FileHandler& file_handler,
+    const std::vector<extensions::EntryInfo>& entries) {
+  // TODO(crbug.com/938103): Duplicates functionality from
+  // FileHandlerManager::GetMimeTypesFromFileHandlers and
+  // ::GetFileExtensionsFromFileHandlers.
+  std::set<std::string> mime_types;
+  std::set<std::string> file_extensions;
+  for (const auto& accept_entry : file_handler.accept) {
+    mime_types.insert(accept_entry.mime_type);
+    file_extensions.insert(accept_entry.file_extensions.begin(),
+                           accept_entry.file_extensions.end());
+  }
+
+  if (mime_types.count("*") || mime_types.count("*/*") ||
+      file_extensions.count("*"))
+    return false;
+
+  // If a "text/*" file handler matches with an unsupported text MIME type, we
+  // don't regard it as a good match.
+  if (mime_types.count("text/*")) {
     for (const auto& entry : entries) {
       if (blink::IsUnsupportedTextMimeType(entry.mime_type))
         return false;

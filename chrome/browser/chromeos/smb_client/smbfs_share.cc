@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/smb_client/smbfs_share.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -58,12 +59,18 @@ SmbFsShare::SmbFsShare(Profile* profile,
 }
 
 SmbFsShare::~SmbFsShare() {
-  Unmount();
+  Unmount(base::DoNothing());
 }
 
 void SmbFsShare::Mount(SmbFsShare::MountCallback callback) {
   DCHECK(!mounter_);
   DCHECK(!host_);
+
+  if (unmount_pending_) {
+    LOG(WARNING) << "Cannot mount a shared that is being unmounted";
+    std::move(callback).Run(SmbMountResult::kMountExists);
+    return;
+  }
 
   // TODO(amistry): Come up with a scheme for consistent mount paths between
   // sessions.
@@ -80,11 +87,33 @@ void SmbFsShare::Mount(SmbFsShare::MountCallback callback) {
                                  base::Unretained(this), std::move(callback)));
 }
 
-void SmbFsShare::Unmount() {
+void SmbFsShare::Remount(const MountOptions& options,
+                         SmbFsShare::MountCallback callback) {
+  if (IsMounted() || unmount_pending_) {
+    std::move(callback).Run(SmbMountResult::kMountExists);
+    return;
+  }
+
+  options_ = options;
+
+  Mount(std::move(callback));
+}
+
+void SmbFsShare::Unmount(SmbFsShare::UnmountCallback callback) {
+  if (unmount_pending_) {
+    LOG(WARNING) << "Cannot unmount a shared that is being unmounted";
+    std::move(callback).Run(chromeos::MountError::MOUNT_ERROR_INTERNAL);
+    return;
+  }
+
+  unmount_pending_ = true;
+
   // Cancel any pending mount request.
   mounter_.reset();
 
   if (!host_) {
+    LOG(WARNING) << "Cannot unmount as the share is already unmounted";
+    std::move(callback).Run(chromeos::MountError::MOUNT_ERROR_PATH_NOT_MOUNTED);
     return;
   }
 
@@ -98,7 +127,23 @@ void SmbFsShare::Unmount() {
   bool success = mount_points->RevokeFileSystem(mount_id_);
   CHECK(success);
 
+  // Get cros-disks to unmount cleanly. In the process it will kill smbfs which
+  // may result in OnDisconnected() being called, but reentrant calls to
+  // Unmount() will be aborted as unmount_pending_ == true.
+  host_->Unmount(base::BindOnce(&SmbFsShare::OnUnmountDone,
+                                base::Unretained(this), std::move(callback)));
+}
+
+void SmbFsShare::OnUnmountDone(SmbFsShare::UnmountCallback callback,
+                               chromeos::MountError result) {
   host_.reset();
+
+  // Must do this *after* destroying SmbFsHost so that reentrant calls to
+  // Unmount() exit early.
+  unmount_pending_ = false;
+
+  // Callback to SmbService::OnSuspendUnmountDone().
+  std::move(callback).Run(result);
 }
 
 void SmbFsShare::OnMountDone(MountCallback callback,
@@ -129,7 +174,7 @@ void SmbFsShare::OnMountDone(MountCallback callback,
 }
 
 void SmbFsShare::OnDisconnected() {
-  Unmount();
+  Unmount(base::DoNothing());
 }
 
 void SmbFsShare::SetMounterCreationCallbackForTest(

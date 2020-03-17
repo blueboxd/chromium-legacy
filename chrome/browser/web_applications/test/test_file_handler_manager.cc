@@ -13,34 +13,32 @@ TestFileHandlerManager::TestFileHandlerManager(Profile* profile)
 
 TestFileHandlerManager::~TestFileHandlerManager() = default;
 
-const std::vector<apps::FileHandlerInfo>*
-TestFileHandlerManager::GetAllFileHandlers(const AppId& app_id) {
+const apps::FileHandlers* TestFileHandlerManager::GetAllFileHandlers(
+    const AppId& app_id) {
   if (!base::Contains(file_handlers_, app_id))
     return nullptr;
 
   return &file_handlers_[app_id];
 }
 
-void TestFileHandlerManager::InstallFileHandler(
-    const AppId& app_id,
-    const GURL& action,
-    std::vector<std::string> accepts,
-    bool enable) {
+void TestFileHandlerManager::InstallFileHandler(const AppId& app_id,
+                                                const GURL& action,
+                                                const AcceptMap& accept,
+                                                bool enable) {
   if (!base::Contains(file_handlers_, app_id))
-    file_handlers_[app_id] = std::vector<apps::FileHandlerInfo>();
+    file_handlers_[app_id] = apps::FileHandlers();
 
-  apps::FileHandlerInfo info;
-  info.id = action.spec();
-  info.verb = apps::file_handler_verbs::kOpenWith;
+  apps::FileHandler file_handler;
+  file_handler.action = action;
 
-  for (const auto& accept : accepts) {
-    if (accept[0] == '.')
-      info.extensions.insert(accept.substr(1));
-    else
-      info.types.insert(accept);
+  for (const auto& it : accept) {
+    apps::FileHandler::AcceptEntry accept_entry;
+    accept_entry.mime_type = it.first;
+    accept_entry.file_extensions = it.second;
+    file_handler.accept.push_back(accept_entry);
   }
 
-  file_handlers_[app_id].push_back(info);
+  file_handlers_[app_id].push_back(file_handler);
 
   if (enable)
     EnableAndRegisterOsFileHandlers(app_id);

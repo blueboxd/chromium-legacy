@@ -6,7 +6,7 @@ include_rules = [
   "+chrome/android/features/autofill_assistant/jni_headers",
   "+chrome/android/features/dev_ui",
   "+chrome/android/modules",
-  "+chrome/android/public/profiles/jni_headers",
+  "+chrome/browser/profiles/android/jni_headers",
   "+chrome/android/test_support_jni_headers",
   "+chrome/app",
   "+chrome/credential_provider/common",

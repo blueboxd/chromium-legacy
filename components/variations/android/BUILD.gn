@@ -8,7 +8,7 @@ android_library("variations_java") {
   deps = [
     "//base:base_java",
     "//base:jni_java",
-    "//third_party/android_deps:com_android_support_support_core_utils_java",
+    "//third_party/android_deps:androidx_legacy_legacy_support_core_utils_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   sources = [

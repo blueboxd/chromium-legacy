@@ -20,8 +20,7 @@ bool ShouldRegisterFileHandlersWithOs() {
 void RegisterFileHandlersWithOs(const AppId& app_id,
                                 const std::string& app_name,
                                 Profile* profile,
-                                const std::set<std::string>& file_extensions,
-                                const std::set<std::string>& mime_types) {
+                                const apps::FileHandlers& file_handlers) {
   DCHECK(ShouldRegisterFileHandlersWithOs());
   // Stub function for OS's which don't register file handlers with the OS.
 }

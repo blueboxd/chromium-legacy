@@ -45,6 +45,7 @@ class UpdateServiceOutOfProcess : public UpdateService {
               Priority priority,
               StateChangeCallback state_update,
               base::OnceCallback<void(Result)> done) override;
+  void Uninitialize() override;
 
  private:
   SEQUENCE_CHECKER(sequence_checker_);

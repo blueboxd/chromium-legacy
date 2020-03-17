@@ -45,6 +45,14 @@ struct FileHandler {
 };
 using FileHandlers = std::vector<FileHandler>;
 
+// Get a set of all MIME types supported by any of |file_handlers|.
+std::set<std::string> GetMimeTypesFromFileHandlers(
+    const FileHandlers& file_handlers);
+
+// Get a set of all file extensions supported by any of |file_handlers|.
+std::set<std::string> GetFileExtensionsFromFileHandlers(
+    const FileHandlers& file_handlers);
+
 // For logging and debug purposes.
 std::ostream& operator<<(std::ostream& out,
                          const FileHandler::AcceptEntry& accept_entry);

@@ -44,9 +44,6 @@ constexpr base::FilePath::CharType kIconChecksumFileExt[] =
 constexpr base::FilePath::CharType kChromeProxyExecutable[] =
     FILE_PATH_LITERAL("chrome_proxy.exe");
 
-constexpr base::FilePath::CharType kChromePwaLauncherExecutable[] =
-    FILE_PATH_LITERAL("chrome_pwa_launcher.exe");
-
 // Calculates checksum of an icon family using MD5.
 // The checksum is derived from all of the icons in the family.
 void GetImageCheckSum(const gfx::ImageFamily& image, base::MD5Digest* digest) {
@@ -358,12 +355,6 @@ base::FilePath GetChromeProxyPath() {
   base::FilePath chrome_dir;
   CHECK(base::PathService::Get(base::DIR_EXE, &chrome_dir));
   return chrome_dir.Append(kChromeProxyExecutable);
-}
-
-base::FilePath GetChromePwaLauncherPath() {
-  base::FilePath chrome_dir;
-  CHECK(base::PathService::Get(base::DIR_EXE, &chrome_dir));
-  return chrome_dir.Append(kChromePwaLauncherExecutable);
 }
 
 namespace internals {

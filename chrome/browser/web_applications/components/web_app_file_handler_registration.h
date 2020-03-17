@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_FILE_HANDLER_REGISTRATION_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_FILE_HANDLER_REGISTRATION_H_
 
-#include <set>
 #include <string>
 
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
 
 class Profile;
 
@@ -29,8 +29,7 @@ bool ShouldRegisterFileHandlersWithOs();
 void RegisterFileHandlersWithOs(const AppId& app_id,
                                 const std::string& app_name,
                                 Profile* profile,
-                                const std::set<std::string>& file_extensions,
-                                const std::set<std::string>& mime_types);
+                                const apps::FileHandlers& file_handlers);
 
 // Undo the file extensions registration for the PWA with specified |app_id|.
 // If a shim app was required, also removes the shim app.

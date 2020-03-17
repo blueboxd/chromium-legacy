@@ -108,8 +108,11 @@ void AccountsCookieMutatorImpl::ForceTriggerOnCookieChange() {
 }
 #endif
 
-void AccountsCookieMutatorImpl::LogOutAllAccounts(gaia::GaiaSource source) {
-  gaia_cookie_manager_service_->LogOutAllAccounts(source);
+void AccountsCookieMutatorImpl::LogOutAllAccounts(
+    gaia::GaiaSource source,
+    LogOutFromCookieCompletedCallback completion_callback) {
+  gaia_cookie_manager_service_->LogOutAllAccounts(
+      source, std::move(completion_callback));
 }
 
 }  // namespace signin

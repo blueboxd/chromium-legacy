@@ -170,7 +170,10 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
   class BackingBuffer : public VectorBuffer<T, INLINE_CAPACITY, Allocator> {
    private:
     using Base = VectorBuffer<T, INLINE_CAPACITY, Allocator>;
+    using Base::BufferSafe;
     using Base::size_;
+
+    friend class Deque;
 
    public:
     BackingBuffer() : Base() {}
@@ -692,9 +695,9 @@ Deque<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
                 "Heap allocated Deque should not use inline buffer");
   static_assert(Allocator::kIsGarbageCollected,
                 "Garbage collector must be enabled.");
-  DCHECK(buffer_.HasOutOfLineBuffer() || IsEmpty());
-  Allocator::TraceVectorBacking(visitor, buffer_.Buffer(),
-                                buffer_.BufferSlot());
+  const T* buffer = buffer_.BufferSafe();
+  DCHECK(!buffer || BackingBuffer::IsOutOfLineBuffer(&buffer_, buffer));
+  Allocator::TraceVectorBacking(visitor, buffer, buffer_.BufferSlot());
 }
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>

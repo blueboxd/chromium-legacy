@@ -2389,12 +2389,20 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   shell()->LoadURL(GURL("javascript:document.title='msg'"));
   ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
+  scoped_refptr<SiteInstance> orig_site_instance(
+      shell()->web_contents()->GetSiteInstance());
   // Crash the renderer of the view-source page.
   RenderProcessHostWatcher crash_observer(
       shell()->web_contents(),
       RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   EXPECT_TRUE(NavigateToURLAndExpectNoCommit(shell(), GURL(kChromeUICrashURL)));
   crash_observer.Wait();
+
+  // We should not change SiteInstance and BrowsingInstance on navigations to
+  // RendererDebug URLs.
+  auto* new_site_instance = shell()->web_contents()->GetSiteInstance();
+  EXPECT_EQ(orig_site_instance, new_site_instance);
+  EXPECT_TRUE(orig_site_instance->IsRelatedSiteInstance(new_site_instance));
 }
 
 // Ensure that renderer-side debug URLs don't take effect on crashed renderers.

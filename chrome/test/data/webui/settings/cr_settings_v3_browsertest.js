@@ -138,6 +138,22 @@ TEST_F('CrSettingsExtensionControlledIndicatorV3Test', 'All', function() {
   mocha.run();
 });
 
+GEN('#if !defined(OS_CHROMEOS)');
+
+// eslint-disable-next-line no-var
+var CrSettingsImportDataDialogV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/import_data_dialog_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsImportDataDialogV3Test', 'All', function() {
+  mocha.run();
+});
+
+GEN('#endif  // !defined(OS_CHROMEOS)');
+
 GEN('#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 
 // eslint-disable-next-line no-var

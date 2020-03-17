@@ -398,8 +398,8 @@ bool HTMLLinkElement::HasLegalLinkAttribute(const QualifiedName& name) const {
 
 const QualifiedName& HTMLLinkElement::SubResourceAttributeName() const {
   // If the link element is not css, ignore it.
-  if (DeprecatedEqualIgnoringCase(FastGetAttribute(html_names::kTypeAttr),
-                                  "text/css")) {
+  if (EqualIgnoringASCIICase(FastGetAttribute(html_names::kTypeAttr),
+                             "text/css")) {
     // FIXME: Add support for extracting links of sub-resources which
     // are inside style-sheet such as @import, @font-face, url(), etc.
     return html_names::kHrefAttr;

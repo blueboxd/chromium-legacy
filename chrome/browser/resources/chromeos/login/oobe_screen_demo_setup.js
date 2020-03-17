@@ -8,7 +8,8 @@
 
 login.createScreen('DemoSetupScreen', 'demo-setup', function() {
   return {
-    EXTERNAL_API: ['onSetupSucceeded', 'onSetupFailed'],
+    EXTERNAL_API:
+        ['incrementSetupProgress', 'onSetupSucceeded', 'onSetupFailed'],
 
     /**
      * Demo setup module.
@@ -35,6 +36,15 @@ login.createScreen('DemoSetupScreen', 'demo-setup', function() {
     /** @override */
     onBeforeShow() {
       this.demoSetupModule_.reset();
+    },
+
+    /**
+     * Called when the progress bar needs updating with a new percentage value.
+     * @param {number} percentage Number in range 0-100 denoting progress
+     * percentage.
+     */
+    incrementSetupProgress(complete) {
+      this.demoSetupModule_.incrementSetupProgress(complete);
     },
 
     /** Called when demo mode setup succeeded. */

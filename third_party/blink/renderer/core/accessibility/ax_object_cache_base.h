@@ -24,13 +24,13 @@ class AXObject;
 // new public API methods or similar) and remove this class.
 class CORE_EXPORT AXObjectCacheBase : public AXObjectCache {
  public:
-  ~AXObjectCacheBase() override;
+  ~AXObjectCacheBase() override = default;
 
   virtual AXObject* Get(const Node*) = 0;
   virtual AXObject* GetOrCreate(LayoutObject*) = 0;
 
  protected:
-  AXObjectCacheBase(Document&);
+  AXObjectCacheBase() = default;
   DISALLOW_COPY_AND_ASSIGN(AXObjectCacheBase);
 };
 

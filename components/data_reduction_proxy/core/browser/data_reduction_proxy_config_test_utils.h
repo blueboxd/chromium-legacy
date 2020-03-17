@@ -56,34 +56,18 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 
   base::TimeTicks GetTicksNow() const override;
 
-  // Sets if the captive portal probe has been blocked for the current network.
-  void SetIsCaptivePortal(bool is_captive_portal);
 
-  void SetConnectionTypeForTesting(
-      network::mojom::ConnectionType connection_type) {
-    connection_type_ = connection_type;
-  }
 
   void SetShouldAddDefaultProxyBypassRules(bool add_default_proxy_bypass_rules);
-
-  std::string GetCurrentNetworkID() const override;
-
-  void SetCurrentNetworkID(const std::string& network_id);
 
   using DataReductionProxyConfig::UpdateConfigForTesting;
 
  private:
-  bool GetIsCaptivePortal() const override;
 
   const base::TickClock* tick_clock_;
 
   base::Optional<size_t> previous_attempt_counts_;
 
-  base::Optional<std::string> current_network_id_;
-
-  // Set to true if the captive portal probe for the current network has been
-  // blocked.
-  bool is_captive_portal_;
 
   // True if the default bypass rules should be added. Should be set to false
   // when fetching resources from an embedded test server running on localhost.

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,6 +37,11 @@ syncer::SyncService* GetSyncService(Profile* profile) {
   if (ProfileSyncServiceFactory::HasSyncService(profile))
     return ProfileSyncServiceFactory::GetForProfile(profile);
   return nullptr;
+}
+
+void RecordUmaReviewFollowingSetup(bool value) {
+  base::UmaHistogramBoolean("OOBE.SyncConsentScreen.ReviewFollowingSetup",
+                            value);
 }
 
 }  // namespace
@@ -110,6 +116,7 @@ void SyncConsentScreen::OnStateChanged(syncer::SyncService* sync) {
 void SyncConsentScreen::OnContinueAndReview(
     const std::vector<int>& consent_description,
     const int consent_confirmation) {
+  RecordUmaReviewFollowingSetup(true);
   RecordConsent(CONSENT_GIVEN, consent_description, consent_confirmation);
   profile_->GetPrefs()->SetBoolean(prefs::kShowSyncSettingsOnSessionStart,
                                    true);
@@ -119,6 +126,7 @@ void SyncConsentScreen::OnContinueAndReview(
 void SyncConsentScreen::OnContinueWithDefaults(
     const std::vector<int>& consent_description,
     const int consent_confirmation) {
+  RecordUmaReviewFollowingSetup(false);
   RecordConsent(CONSENT_GIVEN, consent_description, consent_confirmation);
   exit_callback_.Run();
 }

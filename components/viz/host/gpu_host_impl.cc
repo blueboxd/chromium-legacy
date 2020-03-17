@@ -206,6 +206,8 @@ void GpuHostImpl::EstablishGpuChannel(int client_id,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT0("gpu", "GpuHostImpl::EstablishGpuChannel");
 
+  shutdown_timeout_.Stop();
+
   // If GPU features are already blacklisted, no need to establish the channel.
   if (!delegate_->GpuAccessAllowed()) {
     DVLOG(1) << "GPU blacklisted, refusing to open a GPU channel.";
@@ -454,6 +456,22 @@ void GpuHostImpl::DidDestroyOffscreenContext(const GURL& url) {
 void GpuHostImpl::DidDestroyChannel(int32_t client_id) {
   TRACE_EVENT0("gpu", "GpuHostImpl::DidDestroyChannel");
   client_id_to_shader_cache_.erase(client_id);
+}
+
+void GpuHostImpl::DidDestroyAllChannels() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!channel_requests_.empty())
+    return;
+  constexpr base::TimeDelta kShutDownTimeout = base::TimeDelta::FromSeconds(10);
+  shutdown_timeout_.Start(FROM_HERE, kShutDownTimeout,
+                          base::BindOnce(&GpuHostImpl::MaybeShutdownGpuProcess,
+                                         base::Unretained(this)));
+}
+
+void GpuHostImpl::MaybeShutdownGpuProcess() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(channel_requests_.empty());
+  delegate_->MaybeShutdownGpuProcess();
 }
 
 void GpuHostImpl::DidLoseContext(bool offscreen,

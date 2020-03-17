@@ -38,9 +38,13 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
 import org.chromium.chrome.browser.notifications.ForegroundServiceUtils;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.media_session.mojom.MediaSessionAction;
 import org.chromium.services.media_session.MediaMetadata;
 
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Common test fixtures for MediaNotificationManager JUnit tests.
@@ -48,6 +52,8 @@ import java.util.concurrent.TimeUnit;
 public class MediaNotificationManagerTestBase {
     private static final int NOTIFICATION_ID = 0;
     static final String NOTIFICATION_GROUP_NAME = "group-name";
+    static final Set<Integer> DEFAULT_ACTIONS =
+            Stream.of(MediaSessionAction.PLAY).collect(Collectors.toSet());
     Context mMockContext;
     MockListenerService mService;
     MediaNotificationListener mListener;
@@ -109,6 +115,7 @@ public class MediaNotificationManagerTestBase {
                         .setMetadata(new MediaMetadata("title", "artist", "album"))
                         .setOrigin("https://example.com")
                         .setListener(mListener)
+                        .setMediaSessionActions(DEFAULT_ACTIONS)
                         .setId(getNotificationId());
 
         doNothing().when(getManager()).onServiceStarted(any(ListenerService.class));

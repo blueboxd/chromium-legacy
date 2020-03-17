@@ -50,7 +50,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
 
     private static final String UNICODE_PLAY_CHARACTER = "\u25B6";
     @VisibleForTesting
-    static final int HIDE_NOTIFICATION_DELAY_MILLIS = 1000;
+    static final int HIDE_NOTIFICATION_DELAY_MILLIS = 2500;
 
     private Tab mTab;
     @VisibleForTesting

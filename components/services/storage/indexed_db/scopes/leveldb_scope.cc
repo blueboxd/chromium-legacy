@@ -495,8 +495,9 @@ bool LevelDBScope::IsRangeEmpty(const EmptyRange& range) {
   const leveldb::Comparator* const comparator = level_db_->comparator();
 
   it->Seek(range.first);
-  leveldb::Status s = it->status();
-  return !s.ok() || !it->Valid() ||
+  DCHECK(!it->Valid() || it->status().ok())
+      << "leveldb::Iterator::Valid() should imply an OK status";
+  return !it->Valid() ||
          !IsKeyBeforeEndOfRange(comparator, it->key(), range.second, true);
 }
 

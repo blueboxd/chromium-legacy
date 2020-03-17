@@ -267,7 +267,6 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/modaldialog/ModalDialogManager.java",
     "java/src/org/chromium/ui/modaldialog/ModalDialogManagerHolder.java",
     "java/src/org/chromium/ui/modaldialog/ModalDialogProperties.java",
-    "java/src/org/chromium/ui/modaldialog/SimpleModalDialogController.java",
     "java/src/org/chromium/ui/modelutil/ForwardingListObservable.java",
     "java/src/org/chromium/ui/modelutil/LayoutViewBuilder.java",
     "java/src/org/chromium/ui/modelutil/LazyConstructionPropertyMcp.java",

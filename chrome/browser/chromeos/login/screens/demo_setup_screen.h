@@ -43,6 +43,9 @@ class DemoSetupScreen : public BaseScreen {
  private:
   void StartEnrollment();
 
+  // Increments setup progress percentage for UI.
+  void IncrementSetupProgress(bool complete);
+
   // Called when the setup flow finished with error.
   void OnSetupError(const DemoSetupController::DemoSetupError& error);
 

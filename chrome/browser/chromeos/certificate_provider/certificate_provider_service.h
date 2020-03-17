@@ -102,7 +102,8 @@ class CertificateProviderService : public KeyedService {
    public:
     // Called when a sign request gets successfully completed.
     virtual void OnSignCompleted(
-        const scoped_refptr<net::X509Certificate>& certificate) {}
+        const scoped_refptr<net::X509Certificate>& certificate,
+        const std::string& extension_id) {}
   };
 
   // |SetDelegate| must be called exactly once directly after construction.
@@ -179,14 +180,14 @@ class CertificateProviderService : public KeyedService {
       net::SSLPrivateKey::SignCallback callback);
 
   // Looks up the certificate identified by |subject_public_key_info|. If any
-  // extension is currently providing such a certificate, fills
-  // *|supported_algorithms| with the algorithms supported for that certificate
-  // and returns true. Values used for |supported_algorithms| are TLS 1.3
-  // SignatureSchemes. See net::SSLPrivateKey for details. If no extension is
-  // currently providing such a certificate, returns false.
-  bool GetSupportedAlgorithmsBySpki(
-      const std::string& subject_public_key_info,
-      std::vector<uint16_t>* supported_algorithms);
+  // extension is currently providing such a certificate, fills |extension_id|,
+  // fills *|supported_algorithms| with the algorithms supported for that
+  // certificate, and returns true. Values used for |supported_algorithms| are
+  // TLS 1.3 SignatureSchemes. See net::SSLPrivateKey for details. If no
+  // extension is currently providing such a certificate, returns false.
+  bool LookUpSpki(const std::string& subject_public_key_info,
+                  std::vector<uint16_t>* supported_algorithms,
+                  std::string* extension_id);
 
   // Aborts all signature requests and related PIN dialogs that are associated
   // with the authentication of the given user.

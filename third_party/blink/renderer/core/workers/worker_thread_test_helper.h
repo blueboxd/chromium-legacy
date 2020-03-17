@@ -96,6 +96,7 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
       network::mojom::CredentialsMode) override {
     NOTREACHED();
   }
+  bool IsOffMainThreadScriptFetchDisabled() override { return true; }
 
   void ExceptionThrown(ErrorEvent*) override {}
 };
@@ -124,8 +125,7 @@ class WorkerThreadForTest : public WorkerThread {
         {"contentSecurityPolicy",
          network::mojom::ContentSecurityPolicyType::kReport}};
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-        script_url, mojom::ScriptType::kClassic,
-        OffMainThreadWorkerScriptFetchOption::kDisabled,
+        script_url, mojom::blink::ScriptType::kClassic,
         "fake global scope name", "fake user agent",
         nullptr /* web_worker_fetch_context */, headers,
         network::mojom::ReferrerPolicy::kDefault, security_origin,

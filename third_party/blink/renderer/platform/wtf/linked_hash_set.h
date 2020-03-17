@@ -1092,9 +1092,14 @@ class NewLinkedHashSet {
   const_iterator find(ValuePeekInType) const;
   bool Contains(ValuePeekInType) const;
 
-  // TODO(keinakahsima): implement functions related to insert
   template <typename IncomingValueType>
   AddResult insert(IncomingValueType&&);
+
+  // If |value| already exists in the set, nothing happens.
+  // If |before_value| doesn't exist in the set, appends |value|.
+  template <typename IncomingValueType>
+  AddResult InsertBefore(ValuePeekInType before_value,
+                         IncomingValueType&& value);
 
   template <typename IncomingValueType>
   AddResult AppendOrMoveToLast(IncomingValueType&&);
@@ -1111,11 +1116,17 @@ class NewLinkedHashSet {
     value_to_index_.clear();
     list_.clear();
   }
+
   // TODO(keinakashima): implement Trace
 
  private:
+  enum class MoveType {
+    kMoveIfValueExists,
+    kDontMove,
+  };
+
   template <typename IncomingValueType>
-  AddResult InsertOrMoveBefore(const_iterator, IncomingValueType&&);
+  AddResult InsertOrMoveBefore(const_iterator, IncomingValueType&&, MoveType);
 
   HashMap<Value, wtf_size_t> value_to_index_;
   VectorBackedLinkedList<Value> list_;
@@ -1174,32 +1185,34 @@ template <typename T>
 template <typename IncomingValueType>
 typename NewLinkedHashSet<T>::AddResult NewLinkedHashSet<T>::insert(
     IncomingValueType&& value) {
-  typename Map::AddResult result = value_to_index_.insert(value, kNotFound);
+  return InsertOrMoveBefore(end(), std::forward<IncomingValueType>(value),
+                            MoveType::kDontMove);
+}
 
-  if (result.is_new_entry) {
-    const_iterator stored_position_iterator =
-        list_.insert(list_.end(), std::forward<IncomingValueType>(value));
-    result.stored_value->value = stored_position_iterator.GetIndex();
-    return AddResult(stored_position_iterator.Get(), true);
-  }
-
-  wtf_size_t index = result.stored_value->value;
-  const_iterator stored_position_iterator = list_.MakeConstIterator(index);
-  return AddResult(stored_position_iterator.Get(), false);
+template <typename T>
+template <typename IncomingValueType>
+typename NewLinkedHashSet<T>::AddResult NewLinkedHashSet<T>::InsertBefore(
+    ValuePeekInType before_value,
+    IncomingValueType&& value) {
+  return InsertOrMoveBefore(find(before_value),
+                            std::forward<IncomingValueType>(value),
+                            MoveType::kDontMove);
 }
 
 template <typename T>
 template <typename IncomingValueType>
 typename NewLinkedHashSet<T>::AddResult NewLinkedHashSet<T>::AppendOrMoveToLast(
     IncomingValueType&& value) {
-  return InsertOrMoveBefore(end(), std::forward<IncomingValueType>(value));
+  return InsertOrMoveBefore(end(), std::forward<IncomingValueType>(value),
+                            MoveType::kMoveIfValueExists);
 }
 
 template <typename T>
 template <typename IncomingValueType>
 typename NewLinkedHashSet<T>::AddResult
 NewLinkedHashSet<T>::PrependOrMoveToFirst(IncomingValueType&& value) {
-  return InsertOrMoveBefore(begin(), std::forward<IncomingValueType>(value));
+  return InsertOrMoveBefore(begin(), std::forward<IncomingValueType>(value),
+                            MoveType::kMoveIfValueExists);
 }
 
 template <typename T>
@@ -1231,7 +1244,8 @@ template <typename T>
 template <typename IncomingValueType>
 typename NewLinkedHashSet<T>::AddResult NewLinkedHashSet<T>::InsertOrMoveBefore(
     const_iterator position,
-    IncomingValueType&& value) {
+    IncomingValueType&& value,
+    MoveType type) {
   typename Map::AddResult result = value_to_index_.insert(value, kNotFound);
 
   if (result.is_new_entry) {
@@ -1243,6 +1257,9 @@ typename NewLinkedHashSet<T>::AddResult NewLinkedHashSet<T>::InsertOrMoveBefore(
 
   const_iterator stored_position_iterator =
       list_.MakeConstIterator(result.stored_value->value);
+  if (type == MoveType::kDontMove)
+    return AddResult(stored_position_iterator.Get(), false);
+
   const_iterator moved_position_iterator =
       list_.MoveTo(stored_position_iterator, position);
   return AddResult(moved_position_iterator.Get(), false);

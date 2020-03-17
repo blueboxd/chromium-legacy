@@ -206,6 +206,12 @@ CryptotokenPrivateCanAppIdGetAttestationFunction::Run() {
     return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
   }
 
+  // If the origin is blocked, reject attestation.
+  if (device::DoesMatchWebAuthAttestationBlockedDomains(
+          url::Origin::Create(origin_url))) {
+    return RespondNow(OneArgument(std::make_unique<base::Value>(false)));
+  }
+
   // If prompting is disabled, allow attestation because that is the historical
   // behavior.
   if (!base::FeatureList::IsEnabled(

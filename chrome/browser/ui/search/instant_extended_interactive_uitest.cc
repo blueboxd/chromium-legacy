@@ -12,9 +12,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
+#include "chrome/browser/ui/omnibox/omnibox_tab_helper.h"
 #include "chrome/browser/ui/search/instant_test_base.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
-#include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -66,13 +66,13 @@ class InstantExtendedTest : public InProcessBrowserTest,
   }
 
   void FocusOmnibox() {
-    // If the omnibox already has focus, just notify SearchTabHelper.
+    // If the omnibox already has focus, just notify OmniboxTabHelper.
     if (omnibox()->model()->has_focus()) {
       content::WebContents* active_tab =
           instant_browser()->tab_strip_model()->GetActiveWebContents();
-      SearchTabHelper::FromWebContents(active_tab)
-          ->OmniboxFocusChanged(OMNIBOX_FOCUS_VISIBLE,
-                                OMNIBOX_FOCUS_CHANGE_EXPLICIT);
+      OmniboxTabHelper::FromWebContents(active_tab)
+          ->OnFocusChanged(OMNIBOX_FOCUS_VISIBLE,
+                           OMNIBOX_FOCUS_CHANGE_EXPLICIT);
     } else {
       instant_browser()->window()->GetLocationBar()->FocusLocation(false);
     }

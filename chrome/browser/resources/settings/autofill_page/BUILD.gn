@@ -21,6 +21,7 @@ js_type_check("closure_compile") {
     ":password_edit_dialog",
     ":password_list_item",
     ":password_manager_proxy",
+    ":password_remove_confirmation_dialog",
     ":passwords_section",
     ":payments_list",
     ":payments_section",
@@ -66,7 +67,7 @@ js_library("payments_section") {
   deps = [
     ":credit_card_edit_dialog",
     ":payments_list",
-    "../people_page:sync_browser_proxy",
+    "..:metrics_browser_proxy",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:load_time_data",
@@ -103,6 +104,14 @@ js_library("password_check") {
 }
 
 js_library("password_check_edit_dialog") {
+  deps = [
+    ":password_manager_proxy",
+    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
+}
+
+js_library("password_remove_confirmation_dialog") {
   deps = [
     ":password_manager_proxy",
     "//ui/webui/resources/js:assert",
@@ -195,6 +204,7 @@ js_type_check("closure_compile_module") {
     ":password_edit_dialog.m",
     ":password_list_item.m",
     ":password_manager_proxy.m",
+    ":password_remove_confirmation_dialog.m",
     ":passwords_export_dialog.m",
     ":passwords_section.m",
     ":payments_list.m",
@@ -319,6 +329,17 @@ js_library("password_edit_dialog.m") {
   extra_deps = [ ":password_edit_dialog_module" ]
 }
 
+js_library("password_remove_confirmation_dialog.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/autofill_page/password_remove_confirmation_dialog.m.js" ]
+  deps = [
+    ":password_manager_proxy.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+  ]
+  extra_deps = [ ":password_remove_confirmation_dialog_module" ]
+}
+
 js_library("password_list_item.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/autofill_page/password_list_item.m.js" ]
   deps = [
@@ -392,6 +413,7 @@ js_library("payments_section.m") {
     ":autofill_section.m",
     ":credit_card_edit_dialog.m",
     ":payments_list.m",
+    "..:metrics_browser_proxy.m",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:cr.m",
@@ -436,6 +458,7 @@ group("polymer3_elements") {
     ":password_check_module",
     ":password_edit_dialog_module",
     ":password_list_item_module",
+    ":password_remove_confirmation_dialog_module",
     ":passwords_export_dialog_module",
     ":passwords_section_module",
     ":passwords_shared_css_module",
@@ -552,6 +575,17 @@ polymer_modulizer("passwords_export_dialog") {
   auto_imports = settings_auto_imports + [ "chrome/browser/resources/settings/autofill_page/password_manager_proxy.html|PasswordManagerImpl, PasswordManagerProxy" ]
 }
 
+polymer_modulizer("password_remove_confirmation_dialog") {
+  js_file = "password_remove_confirmation_dialog.js"
+  html_file = "password_remove_confirmation_dialog.html"
+  html_type = "dom-module"
+  auto_imports = [
+    "chrome/browser/resources/settings/autofill_page/password_manager_proxy.html|PasswordManagerImpl,PasswordManagerProxy",
+    "ui/webui/resources/html/assert.html|assert",
+  ]
+  namespace_rewrites = settings_namespace_rewrites
+}
+
 polymer_modulizer("passwords_section") {
   js_file = "passwords_section.js"
   html_file = "passwords_section.html"
@@ -592,6 +626,7 @@ polymer_modulizer("payments_section") {
   html_type = "dom-module"
   auto_imports = settings_auto_imports + [
                    "chrome/browser/resources/settings/autofill_page/autofill_section.html|AutofillManager",
+                   "chrome/browser/resources/settings/metrics_browser_proxy.html|MetricsBrowserProxyImpl,PrivacyElementInteractions",
                    "ui/webui/resources/html/assert.html|assert",
                    "ui/webui/resources/html/cr.html|addSingletonGetter",
                  ]

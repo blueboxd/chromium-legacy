@@ -410,8 +410,6 @@ class AXPosition {
 
   // Returns true if this is a valid position, e.g. the child_index_ or
   // text_offset_ is within a valid range.
-  // TODO (crbug.com/1059111): We need to properly handle the case when the
-  // position is in the ignored child of an empty object.
   bool IsValid() const {
     switch (kind_) {
       case AXPositionKind::NULL_POSITION:
@@ -423,9 +421,10 @@ class AXPosition {
       case AXPositionKind::TREE_POSITION:
         return GetAnchor() &&
                (child_index_ == BEFORE_TEXT ||
-                (child_index_ >= 0 && child_index_ <= AnchorChildCount()));
+                (child_index_ >= 0 && child_index_ <= AnchorChildCount())) &&
+               !IsInDescendantOfEmptyObject();
       case AXPositionKind::TEXT_POSITION:
-        if (!GetAnchor())
+        if (!GetAnchor() || IsInDescendantOfEmptyObject())
           return false;
 
         // For performance reasons we skip any validation of the text offset
@@ -1003,8 +1002,6 @@ class AXPosition {
 
   // If the position is not valid, we return a new valid position that is
   // closest to the original position if possible, or a null position otherwise.
-  // TODO(crbug.com/1059111): We need to properly handle the case when the
-  // position is in the ignored child of an empty object.
   AXPositionInstance AsValidPosition() const {
     AXPositionInstance position = Clone();
     switch (position->kind_) {
@@ -1014,6 +1011,21 @@ class AXPosition {
       case AXPositionKind::TREE_POSITION: {
         if (!position->GetAnchor())
           return CreateNullPosition();
+
+        if (GetAnchor()->IsIgnored()) {
+          // In this class, we define the empty object as one whose all
+          // descendants are ignored. Its content is replaced by the empty
+          // object character (string of length 1). Its underlying content is
+          // not exposed. A position on an ignored descendant of an empty object
+          // is invalid. To make it valid we move the position from its ignored
+          // descendant to the empty object node itself.
+          AXNodeType* empty_object_node = GetEmptyObjectAncestorNode();
+          if (empty_object_node) {
+            return CreateTreePosition(
+                position->tree_id(), GetAnchorID(empty_object_node),
+                position->child_index() == BEFORE_TEXT ? BEFORE_TEXT : 0);
+          }
+        }
 
         if (position->child_index_ == BEFORE_TEXT)
           return position;
@@ -1028,14 +1040,34 @@ class AXPosition {
         if (!position->GetAnchor())
           return CreateNullPosition();
 
+        if (GetAnchor()->IsIgnored()) {
+          // This is needed because an empty object as defined in this class can
+          // have ignored descendants that should not be exposed. See comment
+          // above in similar implementation for AXPositionKind::TREE_POSITION.
+          AXNodeType* empty_object_node = GetEmptyObjectAncestorNode();
+          if (empty_object_node) {
+            // We set the |text_offset_| to either 0 or 1 here because the
+            // MaxTextOffset of an empty object is 1 (the empty object
+            // character, a string of length 1). If the invalid position was
+            // already at the start of the node, we set it to 0.
+            return CreateTextPosition(position->tree_id(),
+                                      GetAnchorID(empty_object_node),
+                                      position->text_offset() > 0 ? 1 : 0,
+                                      ax::mojom::TextAffinity::kDownstream);
+          }
+        }
+
         if (position->text_offset_ <= 0) {
           // 0 is always a valid offset, so skip calling MaxTextOffset in that
           // case.
           position->text_offset_ = 0;
+          position->affinity_ = ax::mojom::TextAffinity::kDownstream;
         } else {
           int max_text_offset = position->MaxTextOffset();
-          if (position->text_offset_ > max_text_offset)
+          if (position->text_offset_ > max_text_offset) {
             position->text_offset_ = max_text_offset;
+            position->affinity_ = ax::mojom::TextAffinity::kDownstream;
+          }
         }
         break;
       }
@@ -3020,6 +3052,45 @@ class AXPosition {
            !IsInTextObject() && !IsIframe(GetRole());
   }
 
+  bool IsInDescendantOfEmptyObject() const {
+    if (g_ax_embedded_object_behavior ==
+            AXEmbeddedObjectBehavior::kSuppressCharacter ||
+        IsNullPosition()) {
+      return false;
+    }
+
+    // Empty objects can only have ignored descendants. If the node is not
+    // ignored, it can't be a descendant of an empty object.
+    if (!GetAnchor()->IsIgnored() || !GetEmptyObjectAncestorNode())
+      return false;
+
+    return true;
+  }
+
+  AXNodeType* GetEmptyObjectAncestorNode() const {
+    if (g_ax_embedded_object_behavior ==
+            AXEmbeddedObjectBehavior::kSuppressCharacter ||
+        !GetAnchor()) {
+      return nullptr;
+    }
+
+    // The first unignored ancestor is necessarily the empty object if this node
+    // is the descendant of an empty object.
+    AXNodeType* ancestor_node = GetLowestUnignoredAncestor();
+
+    if (!ancestor_node)
+      return nullptr;
+
+    AXPositionInstance position = CreateTextPosition(
+        tree_id_, GetAnchorID(ancestor_node), 0 /* text_offset */,
+        ax::mojom::TextAffinity::kDownstream);
+
+    if (position && position->IsEmptyObjectReplacedByCharacter())
+      return ancestor_node;
+
+    return nullptr;
+  }
+
   void swap(AXPosition& other) {
     std::swap(kind_, other.kind_);
     std::swap(tree_id_, other.tree_id_);
@@ -3166,6 +3237,7 @@ class AXPosition {
   virtual int AnchorUnignoredChildCount() const = 0;
   virtual int AnchorIndexInParent() const = 0;
   virtual base::stack<AXNodeType*> GetAncestorAnchors() const = 0;
+  virtual AXNodeType* GetLowestUnignoredAncestor() const = 0;
   virtual void AnchorParent(AXTreeID* tree_id, int32_t* parent_id) const = 0;
   virtual AXNodeType* GetNodeInTree(AXTreeID tree_id,
                                     int32_t node_id) const = 0;

@@ -88,11 +88,6 @@ class DataReductionProxySettingsAndroid {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
-  base::android::ScopedJavaLocalRef<jstring> MaybeRewriteWebliteUrl(
-      JNIEnv* env,
-      const base::android::JavaRef<jobject>& obj,
-      const base::android::JavaRef<jstring>& url);
-
   base::android::ScopedJavaLocalRef<jstring> GetTokenForAuthChallenge(
       JNIEnv* env,
       jobject obj,

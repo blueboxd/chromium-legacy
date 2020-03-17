@@ -297,6 +297,13 @@ void BrowserStatusMonitor::OnTabReplaced(TabStripModel* tab_strip_model,
   UpdateAppItemState(new_contents, false /*remove*/);
   UpdateBrowserItemState();
 
+  if (browser && IsV1AppInShelf(browser) &&
+      multi_user_util::IsProfileFromActiveUser(browser->profile())) {
+    launcher_controller_->SetV1AppStatus(
+        web_app::GetAppIdFromApplicationName(browser->app_name()),
+        ash::STATUS_RUNNING);
+  }
+
   if (tab_strip_model->GetActiveWebContents() == new_contents)
     SetShelfIDForBrowserWindowContents(browser, new_contents);
 

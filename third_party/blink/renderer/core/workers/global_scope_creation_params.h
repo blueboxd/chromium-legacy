@@ -32,10 +32,6 @@ namespace blink {
 
 class WorkerClients;
 
-// TODO(nhiroki): Remove this option after off-the-main-thread worker script
-// fetch is enabled for all worker types (https://crbug.com/835717).
-enum class OffMainThreadWorkerScriptFetchOption { kDisabled, kEnabled };
-
 // GlobalScopeCreationParams contains parameters for initializing
 // WorkerGlobalScope or WorkletGlobalScope.
 struct CORE_EXPORT GlobalScopeCreationParams final {
@@ -45,7 +41,6 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   GlobalScopeCreationParams(
       const KURL& script_url,
       mojom::ScriptType script_type,
-      OffMainThreadWorkerScriptFetchOption,
       const String& global_scope_name,
       const String& user_agent,
       scoped_refptr<WebWorkerFetchContext>,
@@ -85,7 +80,6 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   KURL script_url;
 
   mojom::ScriptType script_type;
-  OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option;
 
   String global_scope_name;
   String user_agent;

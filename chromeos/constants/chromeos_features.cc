@@ -276,6 +276,10 @@ const base::Feature kShowBluetoothDeviceBattery{
 const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Shows the progress bar during Demo Mode setup.
+const base::Feature kShowProgressBarInDemoModeSetup{
+    "ShowProgressBarInDemoModeSetup", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Uses the smart dim component updater to provide smart dim model and
 // preprocessor configuration.
 const base::Feature kSmartDimNewMlAgent{"SmartDimNewMlAgent",

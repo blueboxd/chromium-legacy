@@ -20,8 +20,8 @@ android_library("java") {
     "//services/media_session/public/cpp/android:media_session_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_collection_collection_java",
+    "//third_party/android_deps:androidx_core_core_java",
     "//third_party/android_deps:androidx_mediarouter_mediarouter_java",
-    "//third_party/android_deps:com_android_support_support_compat_java",
     "//third_party/android_media:android_media_java",
   ]
   sources = [

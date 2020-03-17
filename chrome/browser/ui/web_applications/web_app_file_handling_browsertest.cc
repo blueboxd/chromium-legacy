@@ -190,8 +190,6 @@ class WebAppFileHandlingBrowserTest : public WebAppFileHandlingTestBase {
 
 IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest,
                        LaunchConsumerIsNotTriggeredWithNoFiles) {
-  ASSERT_TRUE(https_server()->Start());
-
   InstallFileHandlingPWA();
   content::WebContents* web_contents =
       LaunchWithFiles(app_id(), GetSecureAppURL(), {});
@@ -200,8 +198,6 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest,
                        PWAsCanReceiveFileLaunchParams) {
-  ASSERT_TRUE(https_server()->Start());
-
   InstallFileHandlingPWA();
   base::FilePath test_file_path = NewTestFilePath(FILE_PATH_LITERAL("txt"));
   content::WebContents* web_contents = LaunchWithFiles(
@@ -215,8 +211,6 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest,
                        PWAsCanReceiveFileLaunchParamsInTab) {
-  ASSERT_TRUE(https_server()->Start());
-
   InstallFileHandlingPWA();
   base::FilePath test_file_path = NewTestFilePath(FILE_PATH_LITERAL("txt"));
   content::WebContents* web_contents =
@@ -231,8 +225,6 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest,
                        PWAsDispatchOnCorrectFileHandlingURL) {
-  ASSERT_TRUE(https_server()->Start());
-
   InstallFileHandlingPWA();
 
   // Test that file handler dispatches correct URL based on file extension.
@@ -266,7 +258,6 @@ class WebAppFileHandlingOriginTrialBrowserTest
 
   void SetUpOnMainThread() override {
     WebAppFileHandlingTestBase::SetUpOnMainThread();
-    ASSERT_TRUE(https_server()->Start());
   }
 
   void SetUpInterceptorNavigateToAppAndMaybeWait() {

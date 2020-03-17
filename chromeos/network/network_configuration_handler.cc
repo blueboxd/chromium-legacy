@@ -246,7 +246,7 @@ void NetworkConfigurationHandler::RemoveObserver(
 
 void NetworkConfigurationHandler::GetShillProperties(
     const std::string& service_path,
-    const network_handler::DictionaryResultCallback& callback,
+    network_handler::DictionaryResultCallback callback,
     const network_handler::ErrorCallback& error_callback) {
   NET_LOG(DEBUG) << "GetShillProperties: " << service_path;
 
@@ -259,14 +259,14 @@ void NetworkConfigurationHandler::GetShillProperties(
     // Provide properties from NetworkState.
     base::DictionaryValue dictionary;
     network_state->GetStateProperties(&dictionary);
-    callback.Run(service_path, dictionary);
+    std::move(callback).Run(service_path, dictionary);
     return;
   }
   ShillServiceClient::Get()->GetProperties(
       dbus::ObjectPath(service_path),
       base::BindOnce(&NetworkConfigurationHandler::GetPropertiesCallback,
-                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback,
-                     service_path));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     error_callback, service_path));
 }
 
 void NetworkConfigurationHandler::SetShillProperties(
@@ -563,7 +563,7 @@ void NetworkConfigurationHandler::SetNetworkProfileCompleted(
 }
 
 void NetworkConfigurationHandler::GetPropertiesCallback(
-    const network_handler::DictionaryResultCallback& callback,
+    network_handler::DictionaryResultCallback callback,
     const network_handler::ErrorCallback& error_callback,
     const std::string& service_path,
     DBusMethodCallStatus call_status,
@@ -598,7 +598,8 @@ void NetworkConfigurationHandler::GetPropertiesCallback(
     }
   }
 
-  callback.Run(service_path, base::Value::AsDictionaryValue(properties_copy));
+  std::move(callback).Run(service_path,
+                          base::Value::AsDictionaryValue(properties_copy));
 }
 
 void NetworkConfigurationHandler::SetPropertiesSuccessCallback(

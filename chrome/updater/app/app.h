@@ -29,9 +29,12 @@ class App : public base::RefCountedThreadSafe<App> {
 
  private:
   // Implementations of App can override this to perform work on the main
-  // sequence while blocking is still allowed. The default implementation does
-  // nothing.
-  virtual void Initialize();
+  // sequence while blocking is still allowed.
+  virtual void Initialize() {}
+
+  // Called on the main sequence while blocking is allowed and before
+  // shutting down the thread pool.
+  virtual void Uninitialize() {}
 
   // Concrete implementations of App can execute their first task in this
   // method. It is called on the main sequence. Blocking is not allowed. It may

@@ -332,9 +332,9 @@ TEST_F(AnimationHostTest, LayerTreeMutatorUpdateReflectsScrollAnimations) {
 
   // Create scroll timeline that links scroll animation and worklet animation
   // together. Use timerange so that we have 1:1 time & scroll mapping.
-  auto scroll_timeline = ScrollTimeline::Create(
-      element_id, ScrollTimeline::ScrollDown, base::nullopt, base::nullopt, 100,
-      KeyframeModel::FillMode::NONE);
+  auto scroll_timeline =
+      ScrollTimeline::Create(element_id, ScrollTimeline::ScrollDown,
+                             base::nullopt, base::nullopt, 100);
 
   // Create a worklet animation that is bound to the scroll timeline.
   scoped_refptr<WorkletAnimation> worklet_animation(

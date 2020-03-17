@@ -54,7 +54,7 @@ class X11ScreenOzone : public PlatformScreen,
 
   // Overridden from ui::XDisplayManager::Delegate:
   void OnXDisplayListUpdated() override;
-  float GetXDisplayScaleFactor() override;
+  float GetXDisplayScaleFactor() const override;
 
   gfx::Point GetCursorLocation() const;
 

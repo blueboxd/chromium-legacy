@@ -125,8 +125,8 @@ class VisualViewportTest : public testing::Test,
   }
 
   void UpdateAllLifecyclePhasesExceptPaint() {
-    WebView()->MainFrameWidget()->UpdateLifecycle(
-        WebWidget::LifecycleUpdate::kPrePaint, DocumentUpdateReason::kTest);
+    WebView()->MainFrameWidget()->UpdateLifecycle(WebLifecycleUpdate::kPrePaint,
+                                                  DocumentUpdateReason::kTest);
   }
 
   PaintArtifactCompositor* paint_artifact_compositor() {

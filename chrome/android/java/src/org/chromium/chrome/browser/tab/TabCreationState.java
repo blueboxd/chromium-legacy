@@ -14,13 +14,11 @@ import java.lang.annotation.RetentionPolicy;
  * distinguish reasons for a tab to be restored upon first display.
  */
 @IntDef({TabCreationState.LIVE_IN_FOREGROUND, TabCreationState.LIVE_IN_BACKGROUND,
-        TabCreationState.FROZEN_ON_RESTORE, TabCreationState.FROZEN_FOR_LAZY_LOAD,
-        TabCreationState.FROZEN_ON_RESTORE_FAILED})
+        TabCreationState.FROZEN_ON_RESTORE, TabCreationState.FROZEN_FOR_LAZY_LOAD})
 @Retention(RetentionPolicy.SOURCE)
 public @interface TabCreationState {
     int LIVE_IN_FOREGROUND = 0;
     int LIVE_IN_BACKGROUND = 1;
     int FROZEN_ON_RESTORE = 2;
     int FROZEN_FOR_LAZY_LOAD = 3;
-    int FROZEN_ON_RESTORE_FAILED = 4;
 }

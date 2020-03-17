@@ -205,7 +205,8 @@ class SecurityTokenSamlTest : public OobeBaseTest {
       &mixin_host_, &gaia_mixin_,
       /*client_cert_authorities=*/{GetClientCertCaName()}};
   TestCertificateProviderExtensionLoginScreenMixin
-      cert_provider_extension_mixin_{&mixin_host_, &device_state_mixin_};
+      cert_provider_extension_mixin_{&mixin_host_, &device_state_mixin_,
+                                     /*load_extension_immediately=*/true};
   int pin_dialog_shown_count_ = 0;
   base::RunLoop* pin_dialog_shown_run_loop_ = nullptr;
   base::WeakPtrFactory<SecurityTokenSamlTest> weak_factory_{this};

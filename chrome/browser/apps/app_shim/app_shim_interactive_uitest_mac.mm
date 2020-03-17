@@ -27,7 +27,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_listener.h"
-#include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -80,7 +80,7 @@ class AppShimInteractiveTest : public extensions::PlatformAppBrowserTest {
 };
 
 // Watches for an app shim to connect.
-class WindowedAppShimLaunchObserver : public apps::ExtensionAppShimHandler {
+class WindowedAppShimLaunchObserver : public apps::AppShimManager {
  public:
   WindowedAppShimLaunchObserver(const std::string& app_id)
       : app_mode_id_(app_id),
@@ -104,7 +104,7 @@ class WindowedAppShimLaunchObserver : public apps::ExtensionAppShimHandler {
   // AppShimHandler:
   void OnShimProcessConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap) override {
-    ExtensionAppShimHandler::OnShimProcessConnected(std::move(bootstrap));
+    AppShimManager::OnShimProcessConnected(std::move(bootstrap));
     observed_ = true;
     if (run_loop_.get())
       run_loop_->Quit();
@@ -116,12 +116,12 @@ class WindowedAppShimLaunchObserver : public apps::ExtensionAppShimHandler {
       bool recreate_shims,
       apps::ShimLaunchedCallback launch_callback,
       apps::ShimTerminatedCallback terminated_callback) override {
-    ExtensionAppShimHandler::OnShimLaunchRequested(
-        host, recreate_shims, std::move(launch_callback),
-        std::move(terminated_callback));
+    AppShimManager::OnShimLaunchRequested(host, recreate_shims,
+                                          std::move(launch_callback),
+                                          std::move(terminated_callback));
   }
   void OnShimProcessDisconnected(AppShimHost* host) override {
-    ExtensionAppShimHandler::OnShimProcessDisconnected(host);
+    AppShimManager::OnShimProcessDisconnected(host);
     observed_ = true;
     if (run_loop_.get())
       run_loop_->Quit();
@@ -238,7 +238,7 @@ NSString* GetBundleID(const base::FilePath& shim_path) {
 bool HasAppShimHost(Profile* profile, const std::string& app_id) {
   return g_browser_process->platform_part()
       ->app_shim_listener()
-      ->extension_app_shim_handler()
+      ->app_shim_manager()
       ->FindHost(profile, app_id);
 }
 

@@ -4,21 +4,16 @@
 
 #include "chrome/renderer/v8_unwinder.h"
 
+#include <algorithm>
 #include <memory>
-#include <string>
-
-#include "base/strings/strcat.h"
+#include <utility>
 
 namespace {
 
 class V8Module : public base::ModuleCache::Module {
  public:
-  V8Module(const v8::MemoryRange& memory_range,
-           const std::string& build_id,
-           const std::string& descriptor)
-      : memory_range_(memory_range),
-        build_id_(build_id),
-        descriptor_(descriptor) {}
+  explicit V8Module(const v8::MemoryRange& memory_range)
+      : memory_range_(memory_range) {}
 
   V8Module(const V8Module&) = delete;
   V8Module& operator=(const V8Module&) = delete;
@@ -28,10 +23,14 @@ class V8Module : public base::ModuleCache::Module {
     return reinterpret_cast<uintptr_t>(memory_range_.start);
   }
 
-  std::string GetId() const override { return build_id_; }
+  std::string GetId() const override {
+    // We don't want to distinguish V8 code by memory region so we use the same
+    // synthetic build id for all V8Modules.
+    return V8Unwinder::kV8CodeRangeBuildId;
+  }
 
   base::FilePath GetDebugBasename() const override {
-    return base::FilePath().AppendASCII(base::StrCat({"V8 ", descriptor_}));
+    return base::FilePath().AppendASCII("V8 Code Range");
   }
 
   size_t GetSize() const override { return memory_range_.length_in_bytes; }
@@ -40,31 +39,101 @@ class V8Module : public base::ModuleCache::Module {
 
  private:
   const v8::MemoryRange memory_range_;
-  const std::string build_id_;
-  const std::string descriptor_;
+};
+
+// Heterogeneous comparator for MemoryRanges and Modules. Compares on both
+// base address and size because the module sizes can be updated while the
+// base address remains the same.
+struct MemoryRangeModuleCompare {
+  bool operator()(const v8::MemoryRange& range,
+                  const base::ModuleCache::Module* module) const {
+    return std::make_pair(reinterpret_cast<uintptr_t>(range.start),
+                          range.length_in_bytes) <
+           std::make_pair(module->GetBaseAddress(), module->GetSize());
+  }
+
+  bool operator()(const base::ModuleCache::Module* module,
+                  const v8::MemoryRange& range) const {
+    return std::make_pair(module->GetBaseAddress(), module->GetSize()) <
+           std::make_pair(reinterpret_cast<uintptr_t>(range.start),
+                          range.length_in_bytes);
+  }
+
+  bool operator()(const v8::MemoryRange& a, const v8::MemoryRange& b) const {
+    return std::make_pair(a.start, a.length_in_bytes) <
+           std::make_pair(b.start, b.length_in_bytes);
+  }
 };
 
 }  // namespace
 
-V8Unwinder::V8Unwinder(const v8::UnwindState& unwind_state)
-    : unwind_state_(unwind_state) {}
+V8Unwinder::V8Unwinder(v8::Isolate* isolate)
+    : isolate_(isolate), js_entry_stubs_(isolate->GetJSEntryStubs()) {}
 
 V8Unwinder::~V8Unwinder() = default;
 
-void V8Unwinder::AddInitialModules(base::ModuleCache* module_cache) {
-  std::vector<std::unique_ptr<const base::ModuleCache::Module>> modules;
-  modules.emplace_back(std::make_unique<V8Module>(
-      unwind_state_.embedded_code_range, kV8EmbeddedCodeRangeBuildId,
-      "Embedded Code Range"));
-  modules.emplace_back(std::make_unique<V8Module>(
-      unwind_state_.code_range, kV8CodeRangeBuildId, "Code Range"));
-  for (const std::unique_ptr<const base::ModuleCache::Module>& module : modules)
-    v8_modules_.insert(module.get());
-  module_cache->UpdateNonNativeModules({}, std::move(modules));
+// IMPORTANT NOTE: to avoid deadlock this function must not invoke any
+// non-reentrant code that is also invoked by the target thread. In particular,
+// no heap allocation or deallocation is permitted, including indirectly via use
+// of DCHECK/CHECK or other logging statements.
+void V8Unwinder::OnStackCapture() {
+  required_code_ranges_capacity_ =
+      CopyCodePages(code_ranges_.capacity(), code_ranges_.buffer());
+  code_ranges_.SetSize(
+      std::min(required_code_ranges_capacity_, code_ranges_.capacity()));
+}
+
+void V8Unwinder::UpdateModules(base::ModuleCache* module_cache) {
+  MemoryRangeModuleCompare less_than;
+
+  std::vector<std::unique_ptr<const base::ModuleCache::Module>> new_modules;
+  std::vector<const base::ModuleCache::Module*> defunct_modules;
+
+  // Identify defunct modules and create new modules seen since the last
+  // sample. Code ranges provided by V8 are in sorted order.
+  v8::MemoryRange* const code_ranges_start = code_ranges_.buffer();
+  v8::MemoryRange* const code_ranges_end =
+      code_ranges_start + code_ranges_.size();
+  DCHECK(std::is_sorted(code_ranges_start, code_ranges_end, less_than));
+  v8::MemoryRange* range_it = code_ranges_start;
+  auto modules_it = modules_.begin();
+  while (range_it != code_ranges_end && modules_it != modules_.end()) {
+    if (less_than(*range_it, *modules_it)) {
+      new_modules.push_back(std::make_unique<V8Module>(*range_it));
+      modules_.insert(modules_it, new_modules.back().get());
+      ++range_it;
+    } else if (less_than(*modules_it, *range_it)) {
+      defunct_modules.push_back(*modules_it);
+      modules_it = modules_.erase(modules_it);
+    } else {
+      // The range already has a module, so there's nothing to do.
+      ++range_it;
+      ++modules_it;
+    }
+  }
+
+  while (range_it != code_ranges_end) {
+    new_modules.push_back(std::make_unique<V8Module>(*range_it));
+    modules_.insert(modules_it, new_modules.back().get());
+    ++range_it;
+  }
+
+  while (modules_it != modules_.end()) {
+    defunct_modules.push_back(*modules_it);
+    modules_it = modules_.erase(modules_it);
+  }
+
+  module_cache->UpdateNonNativeModules(defunct_modules, std::move(new_modules));
+  code_ranges_.ExpandCapacityIfNecessary(required_code_ranges_capacity_);
 }
 
 bool V8Unwinder::CanUnwindFrom(const base::Frame* current_frame) const {
-  return v8_modules_.find(current_frame->module) != v8_modules_.end();
+  const base::ModuleCache::Module* module = current_frame->module;
+  if (!module)
+    return false;
+  const auto loc = modules_.find(module);
+  DCHECK(loc == modules_.end() || *loc == module);
+  return loc != modules_.end();
 }
 
 base::UnwindResult V8Unwinder::TryUnwind(
@@ -81,10 +150,15 @@ base::UnwindResult V8Unwinder::TryUnwind(
       base::RegisterContextFramePointer(thread_context));
 
   if (!v8::Unwinder::TryUnwindV8Frames(
-          unwind_state_, &register_state,
-          reinterpret_cast<const void*>(stack_top))) {
+          js_entry_stubs_, code_ranges_.size(), code_ranges_.buffer(),
+          &register_state, reinterpret_cast<const void*>(stack_top))) {
     return base::UnwindResult::ABORTED;
   }
+
+  const uintptr_t prev_stack_pointer =
+      base::RegisterContextStackPointer(thread_context);
+  DCHECK_GT(reinterpret_cast<uintptr_t>(register_state.sp), prev_stack_pointer);
+  DCHECK_LT(reinterpret_cast<uintptr_t>(register_state.sp), stack_top);
 
   base::RegisterContextInstructionPointer(thread_context) =
       reinterpret_cast<uintptr_t>(register_state.pc);
@@ -101,11 +175,41 @@ base::UnwindResult V8Unwinder::TryUnwind(
   return base::UnwindResult::UNRECOGNIZED_FRAME;
 }
 
-// Synthetic build ids to use for V8 modules. The difference is in the digit
-// after the leading 5's.
-// clang-format off
-const char V8Unwinder::kV8EmbeddedCodeRangeBuildId[] =
-    "5555555507284E1E874EFA4EB754964B999";
+size_t V8Unwinder::CopyCodePages(size_t capacity, v8::MemoryRange* code_pages) {
+  return isolate_->CopyCodePages(capacity, code_pages);
+}
+
+// Synthetic build id to use for V8 modules.
 const char V8Unwinder::kV8CodeRangeBuildId[] =
-    "5555555517284E1E874EFA4EB754964B999";
-// clang-format on
+    "5555555507284E1E874EFA4EB754964B999";
+
+V8Unwinder::MemoryRanges::MemoryRanges()
+    : capacity_(v8::Isolate::kMinCodePagesBufferSize),
+      size_(0),
+      ranges_(std::make_unique<v8::MemoryRange[]>(capacity_)) {}
+
+V8Unwinder::MemoryRanges::MemoryRanges::~MemoryRanges() = default;
+
+void V8Unwinder::MemoryRanges::SetSize(size_t size) {
+  // DCHECKing size_ <= capacity_ is deferred to size() because the DCHECK may
+  // heap allocate.
+  size_ = size;
+}
+
+void V8Unwinder::MemoryRanges::ExpandCapacityIfNecessary(
+    size_t required_capacity) {
+  if (required_capacity > capacity_) {
+    while (required_capacity > capacity_)
+      capacity_ *= 2;
+    auto new_ranges = std::make_unique<v8::MemoryRange[]>(capacity_);
+    std::copy(buffer(), buffer() + size_, new_ranges.get());
+    ranges_ = std::move(new_ranges);
+  }
+}
+
+bool V8Unwinder::ModuleCompare::operator()(
+    const base::ModuleCache::Module* a,
+    const base::ModuleCache::Module* b) const {
+  return std::make_pair(a->GetBaseAddress(), a->GetSize()) <
+         std::make_pair(b->GetBaseAddress(), b->GetSize());
+}

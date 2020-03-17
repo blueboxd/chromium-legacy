@@ -156,9 +156,10 @@ void HandleSignatureKeyChallenge(
   }
 
   std::vector<uint16_t> supported_ssl_algorithms;
-  if (!certificate_provider_service->GetSupportedAlgorithmsBySpki(
+  std::string extension_id_ignored;
+  if (!certificate_provider_service->LookUpSpki(
           challenge_request_data.public_key_spki_der(),
-          &supported_ssl_algorithms)) {
+          &supported_ssl_algorithms, &extension_id_ignored)) {
     std::move(response_sender)
         .Run(dbus::ErrorResponse::FromMethodCall(method_call, DBUS_ERROR_FAILED,
                                                  "Key is unavailable"));

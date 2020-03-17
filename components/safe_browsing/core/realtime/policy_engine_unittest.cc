@@ -34,8 +34,8 @@ class RealTimePolicyEngineTest : public PlatformTest {
         pref_service_.registry());
   }
 
-  bool IsUserOptedIn() {
-    return RealTimePolicyEngine::IsUserOptedIn(&pref_service_);
+  bool IsUserMbbOptedIn() {
+    return RealTimePolicyEngine::IsUserMbbOptedIn(&pref_service_);
   }
 
   bool CanPerformFullURLLookup(bool is_off_the_record) {
@@ -141,23 +141,60 @@ TEST_F(RealTimePolicyEngineTest,
 
 TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookup_DisabledUserOptin) {
-  ASSERT_FALSE(IsUserOptedIn());
+  ASSERT_FALSE(IsUserMbbOptedIn());
 }
 
 TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_EnabledUserOptin) {
   pref_service_.SetUserPref(
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
       std::make_unique<base::Value>(true));
-  ASSERT_TRUE(IsUserOptedIn());
+  ASSERT_TRUE(IsUserMbbOptedIn());
 }
 
 TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookup_EnhancedProtection) {
   base::test::ScopedFeatureList feature_list;
   pref_service_.SetBoolean(prefs::kSafeBrowsingEnhanced, true);
-  ASSERT_FALSE(IsUserOptedIn());
+  ASSERT_FALSE(CanPerformFullURLLookup(/* is_off_the_record */ false));
   feature_list.InitAndEnableFeature(kEnhancedProtection);
-  ASSERT_TRUE(IsUserOptedIn());
+  ASSERT_TRUE(CanPerformFullURLLookup(/* is_off_the_record */ false));
+}
+
+TEST_F(RealTimePolicyEngineTest,
+       TestCanPerformFullURLLookup_RTLookupForEpDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  pref_service_.SetBoolean(prefs::kSafeBrowsingEnhanced, true);
+  feature_list.InitWithFeatures(
+      /* enabled_features */ {kEnhancedProtection},
+      /* disabled_features */ {kRealTimeUrlLookupEnabledForEP});
+  EXPECT_FALSE(CanPerformFullURLLookup(/* is_off_the_record */ false));
+}
+
+TEST_F(RealTimePolicyEngineTest,
+       TestCanPerformFullURLLookup_NonEpUsersEnabledWhenRTLookupForEpDisabled) {
+  base::test::ScopedFeatureList feature_list;
+#if defined(OS_ANDROID)
+  int system_memory_size = base::SysInfo::AmountOfPhysicalMemoryMB();
+  int memory_size_lower_threshold = system_memory_size - 1;
+  feature_list.InitWithFeaturesAndParameters(
+      /* enabled_features */ {{kRealTimeUrlLookupEnabled,
+                               {{kRealTimeUrlLookupMemoryLowerThresholdMb,
+                                 base::NumberToString(
+                                     memory_size_lower_threshold)}}},
+                              {kRealTimeUrlLookupEnabledWithToken, {}}},
+      /* disabled_features */ {kRealTimeUrlLookupEnabledForEP});
+#else
+  feature_list.InitWithFeatures(
+      /* enabled_features */ {kRealTimeUrlLookupEnabled,
+                              kRealTimeUrlLookupEnabledWithToken},
+      /* disabled_features */ {kRealTimeUrlLookupEnabledForEP});
+#endif
+  pref_service_.SetUserPref(
+      unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
+      std::make_unique<base::Value>(true));
+
+  // kRealTimeUrlLookupEnabledForEP should only control EP users.
+  EXPECT_TRUE(CanPerformFullURLLookup(/* is_off_the_record */ false));
 }
 
 TEST_F(RealTimePolicyEngineTest,
@@ -191,7 +228,6 @@ TEST_F(RealTimePolicyEngineTest,
   EXPECT_FALSE(CanPerformFullURLLookupWithToken(/* is_off_the_record */ false,
                                                 &sync_service));
 
-
   // History sync is disabled.
   sync_service.GetUserSettings()->SetSelectedTypes(
       /* sync_everything */ false, {});
@@ -209,24 +245,7 @@ TEST_F(RealTimePolicyEngineTest,
 TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookupWithToken_EnhancedProtection) {
   base::test::ScopedFeatureList feature_list;
-#if defined(OS_ANDROID)
-  int system_memory_size = base::SysInfo::AmountOfPhysicalMemoryMB();
-  int memory_size_lower_threshold = system_memory_size - 1;
-  feature_list.InitWithFeaturesAndParameters(
-      /* enabled_features */ {{kRealTimeUrlLookupEnabled,
-                               {{kRealTimeUrlLookupMemoryLowerThresholdMb,
-                                 base::NumberToString(
-                                     memory_size_lower_threshold)}}},
-                              {kRealTimeUrlLookupEnabledWithToken, {}},
-                              {kEnhancedProtection, {}}},
-      /* disabled_features */ {});
-#else
-  feature_list.InitWithFeatures(
-      /* enabled_features */ {kRealTimeUrlLookupEnabled,
-                              kRealTimeUrlLookupEnabledWithToken,
-                              kEnhancedProtection},
-      /* disabled_features */ {});
-#endif
+  feature_list.InitAndEnableFeature(kEnhancedProtection);
   syncer::TestSyncService sync_service;
   // Only enhanced protection is on.
   pref_service_.SetBoolean(prefs::kSafeBrowsingEnhanced, true);

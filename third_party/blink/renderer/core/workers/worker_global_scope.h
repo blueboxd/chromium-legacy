@@ -192,6 +192,10 @@ class CORE_EXPORT WorkerGlobalScope
   TrustedTypePolicyFactory* GetTrustedTypes() const override;
   TrustedTypePolicyFactory* trustedTypes() const { return GetTrustedTypes(); }
 
+  // TODO(https://crbug.com/835717): Remove this function after dedicated
+  // workers support off-the-main-thread script fetch by default.
+  virtual bool IsOffMainThreadScriptFetchDisabled() { return false; }
+
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                     WorkerThread*,

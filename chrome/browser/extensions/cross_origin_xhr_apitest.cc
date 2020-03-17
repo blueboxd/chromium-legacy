@@ -2,19 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "net/dns/mock_host_resolver.h"
+#include "services/network/public/cpp/features.h"
 
 const base::FilePath::CharType kFtpDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
 
 class CrossOriginXHR : public extensions::ExtensionApiTest {
  public:
+  CrossOriginXHR() {
+    // TODO(lukasza): https://crbug.com/1061567: Migrate tests related to
+    // content scripts into the CrossOriginReadBlockingExtensionTest suite
+    // (where it is easier to separately tweak test case expectations based on
+    // the enabled features + where a big subset of the allowlisting/corb/etc
+    // test matrix is covered already).
+    //
+    // Affected tests (note that some of the tests do not need to be migrated if
+    // they are already redundant wrt the coverage provided by the
+    // CrossOriginReadBlockingExtensionTest suite):
+    // - CrossOriginXHR.AllURLs
+    //   - domainOne
+    //   - domainTwo
+    // - CrossOriginXHR.ContentScript
+    //   - allowedOrigin
+    //   - allowedSubdomain
+    //   - noSubdomain
+    scoped_feature_list_.InitAndDisableFeature(
+        network::features::kCorbAllowlistAlsoAppliesToOorCors);
+  }
+
   void SetUpOnMainThread() override {
     extensions::ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*.com", "127.0.0.1");
     ASSERT_TRUE(StartEmbeddedTestServer());
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(CrossOriginXHR, BackgroundPage) {

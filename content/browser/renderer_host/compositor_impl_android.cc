@@ -44,8 +44,8 @@
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/viz_utils.h"
 #include "components/viz/host/host_display_client.h"
-#include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/surface_utils.h"
+#include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/compositor_dependencies_android.h"
@@ -161,7 +161,7 @@ void CreateContextProviderAfterGpuChannelEstablished(
   }
 
   gpu::GpuChannelEstablishFactory* factory =
-      BrowserMainLoop::GetInstance()->gpu_channel_establish_factory();
+      BrowserGpuChannelHostFactory::instance();
 
   int32_t stream_id = kGpuStreamIdDefault;
   gpu::SchedulingPriority stream_priority = kGpuStreamPriorityUI;
@@ -241,11 +241,9 @@ void Compositor::CreateContextProvider(
     gpu::SharedMemoryLimits shared_memory_limits,
     ContextProviderCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserMainLoop::GetInstance()
-      ->gpu_channel_establish_factory()
-      ->EstablishGpuChannel(base::BindOnce(
-          &CreateContextProviderAfterGpuChannelEstablished, handle, attributes,
-          shared_memory_limits, std::move(callback)));
+  BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
+      base::BindOnce(&CreateContextProviderAfterGpuChannelEstablished, handle,
+                     attributes, shared_memory_limits, std::move(callback)));
 }
 
 // static
@@ -277,6 +275,8 @@ CompositorImpl::~CompositorImpl() {
   DetachRootWindow();
   // Clean-up any surface references.
   SetSurface(nullptr, false);
+
+  BrowserGpuChannelHostFactory::instance()->MaybeCloseChannel();
 }
 
 void CompositorImpl::DetachRootWindow() {
@@ -561,11 +561,8 @@ void CompositorImpl::HandlePendingLayerTreeFrameSinkRequest() {
     return;
 
   DCHECK(surface_handle_ != gpu::kNullSurfaceHandle);
-  BrowserMainLoop::GetInstance()
-      ->gpu_channel_establish_factory()
-      ->EstablishGpuChannel(
-          base::BindOnce(&CompositorImpl::OnGpuChannelEstablished,
-                         weak_factory_.GetWeakPtr()));
+  BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(base::BindOnce(
+      &CompositorImpl::OnGpuChannelEstablished, weak_factory_.GetWeakPtr()));
 }
 
 void CompositorImpl::OnGpuChannelEstablished(
@@ -594,7 +591,7 @@ void CompositorImpl::OnGpuChannelEstablished(
   DCHECK_NE(surface_handle_, gpu::kNullSurfaceHandle);
 
   gpu::GpuChannelEstablishFactory* factory =
-      BrowserMainLoop::GetInstance()->gpu_channel_establish_factory();
+      BrowserGpuChannelHostFactory::instance();
 
   int32_t stream_id = kGpuStreamIdDefault;
   gpu::SchedulingPriority stream_priority = kGpuStreamPriorityUI;
@@ -828,9 +825,8 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   // Create LayerTreeFrameSink with the browser end of CompositorFrameSink.
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
   params.compositor_task_runner = task_runner;
-  params.gpu_memory_buffer_manager = BrowserMainLoop::GetInstance()
-                                         ->gpu_channel_establish_factory()
-                                         ->GetGpuMemoryBufferManager();
+  params.gpu_memory_buffer_manager =
+      BrowserGpuChannelHostFactory::instance()->GetGpuMemoryBufferManager();
   params.pipes.compositor_frame_sink_associated_remote = std::move(sink_remote);
   params.pipes.client_receiver = std::move(client_receiver);
   params.client_name = kBrowser;

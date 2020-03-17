@@ -17,6 +17,27 @@ FileHandler::AcceptEntry::~AcceptEntry() = default;
 FileHandler::AcceptEntry::AcceptEntry(const AcceptEntry& accept_entry) =
     default;
 
+std::set<std::string> GetMimeTypesFromFileHandlers(
+    const FileHandlers& file_handlers) {
+  std::set<std::string> mime_types;
+  for (const auto& file_handler : file_handlers) {
+    for (const auto& accept_entry : file_handler.accept)
+      mime_types.insert(accept_entry.mime_type);
+  }
+  return mime_types;
+}
+
+std::set<std::string> GetFileExtensionsFromFileHandlers(
+    const FileHandlers& file_handlers) {
+  std::set<std::string> file_extensions;
+  for (const auto& file_handler : file_handlers) {
+    for (const auto& accept_entry : file_handler.accept)
+      file_extensions.insert(accept_entry.file_extensions.begin(),
+                             accept_entry.file_extensions.end());
+  }
+  return file_extensions;
+}
+
 std::ostream& operator<<(std::ostream& out,
                          const FileHandler::AcceptEntry& accept_entry) {
   out << "mime_type: " << accept_entry.mime_type << " file_extensions:";

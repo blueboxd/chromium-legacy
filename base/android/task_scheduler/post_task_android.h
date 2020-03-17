@@ -20,7 +20,7 @@ class BASE_EXPORT PostTaskAndroid {
 
   // Signals that the C++ PostTask APIs have shutdown. Needed to make unit tests
   // that repeatedly create and destroy the scheduler work.
-  static void SignalNativeSchedulerShutdown();
+  static void SignalNativeSchedulerShutdownForTesting();
 
   static TaskTraits CreateTaskTraits(
       JNIEnv* env,

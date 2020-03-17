@@ -225,6 +225,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   base::TimeDelta GetStartTime();
 
   MOCK_METHOD1(DecryptorAttached, void(bool));
+
   // Pipeline::Client overrides.
   void OnError(PipelineStatus status) override;
   void OnEnded() override;

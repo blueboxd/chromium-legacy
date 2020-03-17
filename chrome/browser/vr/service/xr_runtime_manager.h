@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/vr/service/browser_xr_runtime_impl.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #include "chrome/browser/vr/service/xr_runtime_manager_observer.h"
 #include "device/vr/public/mojom/vr_service.mojom-forward.h"
@@ -30,7 +31,7 @@ class VRDeviceProvider;
 
 namespace vr {
 
-class BrowserXRRuntime;
+// class BrowserXRRuntimeImpl;
 class XRRuntimeManagerTest;
 
 // Singleton used to provide the platform's XR Runtimes to VRServiceImpl
@@ -70,21 +71,21 @@ class XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
   void AddService(VRServiceImpl* service);
   void RemoveService(VRServiceImpl* service);
 
-  BrowserXRRuntime* GetRuntime(device::mojom::XRDeviceId id);
+  BrowserXRRuntimeImpl* GetRuntime(device::mojom::XRDeviceId id);
   bool HasRuntime(device::mojom::XRDeviceId id);
-  BrowserXRRuntime* GetRuntimeForOptions(
+  BrowserXRRuntimeImpl* GetRuntimeForOptions(
       device::mojom::XRSessionOptions* options);
 
   // Gets the system default immersive-vr runtime if available.
-  BrowserXRRuntime* GetImmersiveVrRuntime();
+  BrowserXRRuntimeImpl* GetImmersiveVrRuntime();
 
   // Gets the system default immersive-ar runtime if available.
-  BrowserXRRuntime* GetImmersiveArRuntime();
+  BrowserXRRuntimeImpl* GetImmersiveArRuntime();
 
   // Gets the runtime matching a currently-active immersive session, if any.
   // This is either the VR or AR runtime, or null if there's no matching
   // runtime or if there's no active immersive session.
-  BrowserXRRuntime* GetCurrentlyPresentingImmersiveRuntime();
+  BrowserXRRuntimeImpl* GetCurrentlyPresentingImmersiveRuntime();
 
   device::mojom::VRDisplayInfoPtr GetCurrentVRDisplayInfo(
       VRServiceImpl* service);
@@ -133,9 +134,10 @@ class XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
   ProviderList providers_;
 
   // XRRuntimes are owned by their providers, each correspond to a
-  // BrowserXRRuntime that is owned by XRRuntimeManager.
-  using DeviceRuntimeMap = base::small_map<
-      std::map<device::mojom::XRDeviceId, std::unique_ptr<BrowserXRRuntime>>>;
+  // BrowserXRRuntimeImpl that is owned by XRRuntimeManager.
+  using DeviceRuntimeMap =
+      base::small_map<std::map<device::mojom::XRDeviceId,
+                               std::unique_ptr<BrowserXRRuntimeImpl>>>;
   DeviceRuntimeMap runtimes_;
 
   bool providers_initialized_ = false;

@@ -5,6 +5,8 @@
 #ifndef CHROME_UPDATER_WIN_SETUP_SETUP_UTIL_H_
 #define CHROME_UPDATER_WIN_SETUP_SETUP_UTIL_H_
 
+#include <guiddef.h>
+
 namespace base {
 class CommandLine;
 }  // namespace base
@@ -22,8 +24,8 @@ base::string16 GetComServerClsidRegistryPath();
 base::string16 GetComServiceClsid();
 base::string16 GetComServiceClsidRegistryPath();
 base::string16 GetComServiceAppidRegistryPath();
-base::string16 GetComIidRegistryPath();
-base::string16 GetComTypeLibRegistryPath();
+base::string16 GetComIidRegistryPath(REFIID iid);
+base::string16 GetComTypeLibRegistryPath(REFIID iid);
 
 }  // namespace updater
 

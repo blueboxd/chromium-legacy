@@ -3,14 +3,12 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<!-- The background of the top-view must be opaque, otherwise it bleeds through to the
-     cc::Layer that mirrors the contents of the top-view. -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFc9c9c9"
+    android:background="@android:color/transparent"
     android:orientation="horizontal">
     <ImageButton
         tools:ignore="ContentDescription"
@@ -18,7 +16,8 @@
         android:layout_width="15dp"
         android:layout_height="match_parent"
         android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp" />
+        android:layout_marginRight="5dp"
+        android:background="@android:color/transparent" />
 
     <TextView
         android:id="@+id/url_text"

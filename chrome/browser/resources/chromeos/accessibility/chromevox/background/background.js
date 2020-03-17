@@ -21,7 +21,6 @@ goog.require('DesktopAutomationHandler');
 goog.require('DownloadHandler');
 goog.require('FindHandler');
 goog.require('GestureCommandHandler');
-goog.require('LanguageSwitching');
 goog.require('LiveRegions');
 goog.require('MathHandler');
 goog.require('MediaAutomationHandler');
@@ -145,7 +144,6 @@ Background = class extends ChromeVoxState {
     CommandHandler.init();
     FindHandler.init();
     DownloadHandler.init();
-    LanguageSwitching.init();
     PhoneticData.init();
     UserAnnotationHandler.init();
 

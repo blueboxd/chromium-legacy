@@ -53,6 +53,20 @@ cr.define('settings_passwords_check', function() {
         element.offsetParent !== null;  // Considers parents hiding |element|.
   }
 
+
+  /**
+   * Helper method used to create a remove password confirmation dialog.
+   * @param {!chrome.passwordsPrivate.CompromisedCredential} entry
+   */
+  function createRemovePasswordDialog(entry) {
+    const element =
+        document.createElement('settings-password-remove-confirmation-dialog');
+    element.item = entry;
+    document.body.appendChild(element);
+    Polymer.dom.flush();
+    return element;
+  }
+
   /**
    * Helper method used to randomize array.
    * @param {!Array<!chrome.passwordsPrivate.CompromisedCredential>} array
@@ -413,6 +427,21 @@ cr.define('settings_passwords_check', function() {
             listElement.$.more.click();
             assertTrue(menu.open);
           });
+    });
+
+    // Test verifies that clicking remove button is calling proper
+    // proxy function.
+    test('testRemovePasswordConfirmationDialog', function() {
+      const entry = autofill_test_util.makeCompromisedCredential(
+                    'one.com', 'test4', 'LEAKED', 0);
+      const removeDialog = createRemovePasswordDialog(entry);
+      removeDialog.$.remove.click();
+      return passwordManager.whenCalled('removeCompromisedCredential')
+        .then(({id, username, formattedOrigin}) => {
+          assertEquals(0 , id);
+          assertEquals('test4', username);
+          assertEquals('one.com', formattedOrigin);
+        });
     });
 
     // A changing status is immediately reflected in title, icon and banner.

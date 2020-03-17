@@ -38,6 +38,10 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       RenderFrameHostImpl* render_frame_host,
       const GURL& url);
 
+  static bool ShouldIgnoreIncomingRendererRequest(
+      const NavigationRequest* ongoing_navigation_request,
+      bool has_user_gesture);
+
   // Navigator implementation.
   NavigatorDelegate* GetDelegate() override;
   NavigationController* GetController() override;

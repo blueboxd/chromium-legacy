@@ -45,13 +45,11 @@ class CreateShortcutBrowserTest : public WebAppControllerBrowserTest {
     CHECK(provider);
     return provider->registry_controller();
   }
-
 };
 
 IN_PROC_BROWSER_TEST_P(CreateShortcutBrowserTest,
                        CreateShortcutForInstallableSite) {
   base::UserActionTester user_action_tester;
-  ASSERT_TRUE(https_server()->Start());
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
 
   AppId app_id = InstallShortcutAppForCurrentUrl();
@@ -65,8 +63,6 @@ IN_PROC_BROWSER_TEST_P(CreateShortcutBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(CreateShortcutBrowserTest,
                        CanInstallOverTabShortcutApp) {
-  ASSERT_TRUE(https_server()->Start());
-
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
   InstallShortcutAppForCurrentUrl();
 
@@ -81,8 +77,6 @@ IN_PROC_BROWSER_TEST_P(CreateShortcutBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(CreateShortcutBrowserTest,
                        CannotInstallOverWindowShortcutApp) {
-  ASSERT_TRUE(https_server()->Start());
-
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
   AppId app_id = InstallShortcutAppForCurrentUrl();
   // Change launch container to open in window.

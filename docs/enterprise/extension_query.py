@@ -135,7 +135,7 @@ def ExtensionListAsCsv(extensions_list, csv_filename, sort_column='name'):
 
   ordered_fieldnames.extend(
       [x for x in desired_column_order if x not in ordered_fieldnames])
-  with open(csv_filename, mode='w') as csv_file:
+  with open(csv_filename, mode='w', encoding='utf-8') as csv_file:
     writer = csv.DictWriter(csv_file, fieldnames=ordered_fieldnames)
     writer.writeheader()
     for row in sorted(flattened_list, key=lambda ext: ext[sort_column]):

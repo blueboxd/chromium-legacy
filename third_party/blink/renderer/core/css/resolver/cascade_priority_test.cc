@@ -206,6 +206,20 @@ TEST(CascadePriorityTest, Generation) {
   EXPECT_LT(CascadePriority(ua, 2), CascadePriority(author, 3));
 }
 
+TEST(CascadePriorityTest, GenerationOverwrite) {
+  CascadePriority ua(CascadeOrigin::kUserAgent);
+
+  for (int8_t g = 0; g < 16; ++g) {
+    ua = CascadePriority(ua, g);
+    EXPECT_EQ(g, ua.GetGeneration());
+  }
+
+  for (int8_t g = 15; g >= 0; --g) {
+    ua = CascadePriority(ua, g);
+    EXPECT_EQ(g, ua.GetGeneration());
+  }
+}
+
 TEST(CascadePriorityTest, PositionEncoding) {
   // Test 0b0, 0b1, 0b11, 0b111, etc.
   uint32_t pos = 0;

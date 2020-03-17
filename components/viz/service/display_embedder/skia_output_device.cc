@@ -15,12 +15,19 @@
 
 namespace viz {
 
+SkiaOutputDevice::ScopedPaint::ScopedPaint(SkiaOutputDevice* device)
+    : device_(device), sk_surface_(device->BeginPaint(&end_semaphores_)) {
+  DCHECK(sk_surface_);
+}
+SkiaOutputDevice::ScopedPaint::~ScopedPaint() {
+  DCHECK(end_semaphores_.empty());
+  device_->EndPaint();
+}
+
 SkiaOutputDevice::SkiaOutputDevice(
-    bool need_swap_semaphore,
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
-    : need_swap_semaphore_(need_swap_semaphore),
-      did_swap_buffer_complete_callback_(
+    : did_swap_buffer_complete_callback_(
           std::move(did_swap_buffer_complete_callback)),
       memory_type_tracker_(
           std::make_unique<gpu::MemoryTypeTracker>(memory_tracker)) {}
@@ -132,10 +139,6 @@ void SkiaOutputDevice::SwapInfo::CallFeedback() {
         gfx::PresentationFeedback(params_.swap_response.timings.swap_start,
                                   /*interval=*/base::TimeDelta(), flags));
   }
-}
-
-std::vector<GrBackendSemaphore> SkiaOutputDevice::TakeEndPaintSemaphores() {
-  return std::vector<GrBackendSemaphore>();
 }
 
 }  // namespace viz

@@ -13,7 +13,6 @@
 #include <algorithm>
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_configuration.h"
@@ -102,12 +101,9 @@ static void Constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   double double_arg;
   V8StringResource<> string_arg;
   TestInterfaceEmpty* test_interface_empty_arg;
-  Dictionary dictionary_arg;
   Vector<String> sequence_string_arg;
-  Vector<Dictionary> sequence_dictionary_arg;
   HeapVector<LongOrTestDictionary> sequence_long_or_test_dictionary_arg;
   V8StringResource<kTreatNullAndUndefinedAsNullString> optional_usv_string_arg;
-  Dictionary optional_dictionary_arg;
   TestInterfaceEmpty* optional_test_interface_empty_arg;
   int num_args_passed = info.Length();
   while (num_args_passed > 0) {
@@ -129,32 +125,20 @@ static void Constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  if (!info[3]->IsNullOrUndefined() && !info[3]->IsObject()) {
-    exception_state.ThrowTypeError("parameter 4 ('dictionaryArg') is not an object.");
-    return;
-  }
-  dictionary_arg = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), info[3], exception_state);
+  sequence_string_arg = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), info[3], exception_state);
   if (exception_state.HadException())
     return;
 
-  sequence_string_arg = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), info[4], exception_state);
+  sequence_long_or_test_dictionary_arg = NativeValueTraits<IDLSequence<LongOrTestDictionary>>::NativeValue(info.GetIsolate(), info[4], exception_state);
   if (exception_state.HadException())
     return;
 
-  sequence_dictionary_arg = NativeValueTraits<IDLSequence<Dictionary>>::NativeValue(info.GetIsolate(), info[5], exception_state);
-  if (exception_state.HadException())
-    return;
-
-  sequence_long_or_test_dictionary_arg = NativeValueTraits<IDLSequence<LongOrTestDictionary>>::NativeValue(info.GetIsolate(), info[6], exception_state);
-  if (exception_state.HadException())
-    return;
-
-  if (UNLIKELY(num_args_passed <= 7)) {
+  if (UNLIKELY(num_args_passed <= 5)) {
     ExecutionContext* execution_context = ToExecutionContext(
         info.NewTarget().As<v8::Object>()->CreationContext());
     Document& document = *Document::From(ToExecutionContext(
         info.NewTarget().As<v8::Object>()->CreationContext()));
-    TestInterfaceConstructor* impl = TestInterfaceConstructor::Create(script_state, execution_context, document, double_arg, string_arg, test_interface_empty_arg, dictionary_arg, sequence_string_arg, sequence_dictionary_arg, sequence_long_or_test_dictionary_arg, exception_state);
+    TestInterfaceConstructor* impl = TestInterfaceConstructor::Create(script_state, execution_context, document, double_arg, string_arg, test_interface_empty_arg, sequence_string_arg, sequence_long_or_test_dictionary_arg, exception_state);
     if (exception_state.HadException()) {
       return;
     }
@@ -163,21 +147,13 @@ static void Constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
     V8SetReturnValue(info, wrapper);
     return;
   }
-  optional_usv_string_arg = NativeValueTraits<IDLUSVStringOrNull>::NativeValue(info.GetIsolate(), info[7], exception_state);
+  optional_usv_string_arg = NativeValueTraits<IDLUSVStringOrNull>::NativeValue(info.GetIsolate(), info[5], exception_state);
   if (exception_state.HadException())
     return;
 
-  if (!info[8]->IsNullOrUndefined() && !info[8]->IsObject()) {
-    exception_state.ThrowTypeError("parameter 9 ('optionalDictionaryArg') is not an object.");
-    return;
-  }
-  optional_dictionary_arg = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), info[8], exception_state);
-  if (exception_state.HadException())
-    return;
-
-  optional_test_interface_empty_arg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[9]);
+  optional_test_interface_empty_arg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[6]);
   if (!optional_test_interface_empty_arg) {
-    exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(9, "TestInterfaceEmpty"));
+    exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(6, "TestInterfaceEmpty"));
     return;
   }
 
@@ -185,7 +161,7 @@ static void Constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
       info.NewTarget().As<v8::Object>()->CreationContext());
   Document& document = *Document::From(ToExecutionContext(
       info.NewTarget().As<v8::Object>()->CreationContext()));
-  TestInterfaceConstructor* impl = TestInterfaceConstructor::Create(script_state, execution_context, document, double_arg, string_arg, test_interface_empty_arg, dictionary_arg, sequence_string_arg, sequence_dictionary_arg, sequence_long_or_test_dictionary_arg, optional_usv_string_arg, optional_dictionary_arg, optional_test_interface_empty_arg, exception_state);
+  TestInterfaceConstructor* impl = TestInterfaceConstructor::Create(script_state, execution_context, document, double_arg, string_arg, test_interface_empty_arg, sequence_string_arg, sequence_long_or_test_dictionary_arg, optional_usv_string_arg, optional_test_interface_empty_arg, exception_state);
   if (exception_state.HadException()) {
     return;
   }
@@ -281,7 +257,7 @@ static void Constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
 static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exception_state(info.GetIsolate(), ExceptionState::kConstructionContext, "TestInterfaceConstructor");
-  switch (std::min(10, info.Length())) {
+  switch (std::min(7, info.Length())) {
     case 0:
       if (true) {
         test_interface_constructor_v8_internal::Constructor1(info);
@@ -306,25 +282,19 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
         return;
       }
       break;
+    case 5:
+      if (true) {
+        test_interface_constructor_v8_internal::Constructor2(info);
+        return;
+      }
+      break;
+    case 6:
+      if (true) {
+        test_interface_constructor_v8_internal::Constructor2(info);
+        return;
+      }
+      break;
     case 7:
-      if (true) {
-        test_interface_constructor_v8_internal::Constructor2(info);
-        return;
-      }
-      break;
-    case 8:
-      if (true) {
-        test_interface_constructor_v8_internal::Constructor2(info);
-        return;
-      }
-      break;
-    case 9:
-      if (true) {
-        test_interface_constructor_v8_internal::Constructor2(info);
-        return;
-      }
-      break;
-    case 10:
       if (true) {
         test_interface_constructor_v8_internal::Constructor2(info);
         return;
@@ -332,7 +302,7 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
       break;
     default:
       if (info.Length() >= 0) {
-        exception_state.ThrowTypeError(ExceptionMessages::InvalidArity("[0, 1, 2, 3, 7, 8, 9, 10]", info.Length()));
+        exception_state.ThrowTypeError(ExceptionMessages::InvalidArity("[0, 1, 2, 3, 5, 6, 7]", info.Length()));
         return;
       }
       exception_state.ThrowTypeError(ExceptionMessages::NotEnoughArguments(0, info.Length()));

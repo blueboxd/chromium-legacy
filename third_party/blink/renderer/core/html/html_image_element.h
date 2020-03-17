@@ -177,6 +177,10 @@ class CORE_EXPORT HTMLImageElement final
     return is_legacy_format_or_unoptimized_image_;
   }
 
+  // Keeps track of whether the image comes from an ad.
+  void SetIsAdRelated() { is_ad_related_ = true; }
+  bool IsAdRelated() const override { return is_ad_related_; }
+
  protected:
   // Controls how an image element appears in the layout. See:
   // https://html.spec.whatwg.org/C/#image-request
@@ -257,6 +261,8 @@ class CORE_EXPORT HTMLImageElement final
 
   std::unique_ptr<LazyLoadImageObserver::VisibleLoadTimeMetrics>
       visible_load_time_metrics_;
+
+  bool is_ad_related_ = false;
 };
 
 }  // namespace blink

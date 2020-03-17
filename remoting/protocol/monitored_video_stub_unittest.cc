@@ -57,13 +57,13 @@ TEST_F(MonitoredVideoStubTest, OnChannelConnected) {
   // finishes, so we expect to see at most one transition to not ready.
   EXPECT_CALL(*this, OnVideoChannelStatus(false)).Times(AtMost(1));
 
-  monitor_->ProcessVideoPacket(std::move(packet_), base::Closure());
+  monitor_->ProcessVideoPacket(std::move(packet_), {});
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(MonitoredVideoStubTest, OnChannelDisconnected) {
   EXPECT_CALL(*this, OnVideoChannelStatus(true));
-  monitor_->ProcessVideoPacket(std::move(packet_), base::Closure());
+  monitor_->ProcessVideoPacket(std::move(packet_), {});
 
   base::RunLoop run_loop;
   EXPECT_CALL(*this, OnVideoChannelStatus(false))
@@ -79,8 +79,8 @@ TEST_F(MonitoredVideoStubTest, OnChannelStayConnected) {
   // finishes, so we expect to see at most one transition to not ready.
   EXPECT_CALL(*this, OnVideoChannelStatus(false)).Times(AtMost(1));
 
-  monitor_->ProcessVideoPacket(std::move(packet_), base::Closure());
-  monitor_->ProcessVideoPacket(std::move(packet_), base::Closure());
+  monitor_->ProcessVideoPacket(std::move(packet_), {});
+  monitor_->ProcessVideoPacket(std::move(packet_), {});
   base::RunLoop().RunUntilIdle();
 }
 
@@ -89,7 +89,7 @@ TEST_F(MonitoredVideoStubTest, OnChannelStayDisconnected) {
   EXPECT_CALL(*this, OnVideoChannelStatus(true)).Times(1);
   EXPECT_CALL(*this, OnVideoChannelStatus(false)).Times(1);
 
-  monitor_->ProcessVideoPacket(std::move(packet_), base::Closure());
+  monitor_->ProcessVideoPacket(std::move(packet_), {});
 
   task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),

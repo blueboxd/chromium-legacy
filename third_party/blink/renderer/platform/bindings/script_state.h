@@ -75,7 +75,7 @@ class V8PerContextData;
 // all V8 proxy objects that have references to the ScriptState are destructed.
 class PLATFORM_EXPORT ScriptState final : public GarbageCollected<ScriptState> {
  public:
-  class Scope {
+  class Scope final {
     STACK_ALLOCATED();
 
    public:
@@ -92,6 +92,32 @@ class PLATFORM_EXPORT ScriptState final : public GarbageCollected<ScriptState> {
 
    private:
     v8::HandleScope handle_scope_;
+    v8::Local<v8::Context> context_;
+  };
+
+  // Use EscapableScope if you have to return a v8::Local to an outer scope.
+  // See v8::EscapableHandleScope.
+  class EscapableScope final {
+    STACK_ALLOCATED();
+
+   public:
+    // You need to make sure that scriptState->context() is not empty before
+    // creating a Scope.
+    explicit EscapableScope(ScriptState* script_state)
+        : handle_scope_(script_state->GetIsolate()),
+          context_(script_state->GetContext()) {
+      DCHECK(script_state->ContextIsValid());
+      context_->Enter();
+    }
+
+    ~EscapableScope() { context_->Exit(); }
+
+    v8::Local<v8::Value> Escape(v8::Local<v8::Value> value) {
+      return handle_scope_.Escape(value);
+    }
+
+   private:
+    v8::EscapableHandleScope handle_scope_;
     v8::Local<v8::Context> context_;
   };
 

@@ -46,6 +46,11 @@ std::pair<std::string, Item> Param(std::string key, std::string value) {
   return std::make_pair(key, Item(value));
 }
 
+std::pair<std::string, Item> ByteSequenceParam(std::string key,
+                                               std::string value) {
+  return std::make_pair(key, Item(value, Item::kByteSequenceType));
+}
+
 std::pair<std::string, Item> TokenParam(std::string key, std::string value) {
   return std::make_pair(key, Token(value));
 }
@@ -568,6 +573,48 @@ const struct ListTestCase {
      base::nullopt},
     {"empty item parameterised list", "text/html,,text/plain;q=0.5",
      base::nullopt},
+    // Parameterized inner lists
+    {"parameterised basic list of lists",
+     "(1;a=1.0 2), (42 43)",
+     {{{{{Integer(1L), {DoubleParam("a", 1.0)}}, {Integer(2L), {}}}, {}},
+       {{{Integer(42L), {}}, {Integer(43L), {}}}, {}}}}},
+    {"parameters on inner members",
+     "(1;a=1.0 2;b=c), (42;d=?0 43;e=:Zmdo:)",
+     {{{{{Integer(1L), {DoubleParam("a", 1.0)}},
+         {Integer(2L), {TokenParam("b", "c")}}},
+        {}},
+       {{{Integer(42L), {BooleanParam("d", false)}},
+         {Integer(43L), {ByteSequenceParam("e", "fgh")}}},
+        {}}}}},
+    {"parameters on inner lists",
+     "(1 2);a=1.0, (42 43);b=?0",
+     {{{{{Integer(1L), {}}, {Integer(2L), {}}}, {DoubleParam("a", 1.0)}},
+       {{{Integer(42L), {}}, {Integer(43L), {}}},
+        {BooleanParam("b", false)}}}}},
+    {"default true values for parameters on inner list members",
+     "(1;a 2), (42 43;b)",
+     {{{{{Integer(1L), {BooleanParam("a", true)}}, {Integer(2L), {}}}, {}},
+       {{{Integer(42L), {}}, {Integer(43L), {BooleanParam("b", true)}}}, {}}}}},
+    {"default true values for parameters on inner lists",
+     "(1 2);a, (42 43);b",
+     {{{{{Integer(1L), {}}, {Integer(2L), {}}}, {BooleanParam("a", true)}},
+       {{{Integer(42L), {}}, {Integer(43L), {}}}, {BooleanParam("b", true)}}}}},
+    {"extra whitespace before semicolon in parameters on inner list member",
+     "(a;b ;c b)", base::nullopt},
+    {"extra whitespace between parameters on inner list member",
+     "(a;b; c b)",
+     {{{{{Token("a"), {BooleanParam("b", true), BooleanParam("c", true)}},
+         {Token("b"), {}}},
+        {}}}},
+     "(a;b;c b)"},
+    {"extra whitespace before semicolon in parameters on inner list",
+     "(a b);c ;d, (e)", base::nullopt},
+    {"extra whitespace between parameters on inner list",
+     "(a b);c; d, (e)",
+     {{{{{Token("a"), {}}, {Token("b"), {}}},
+        {BooleanParam("c", true), BooleanParam("d", true)}},
+       {{{Token("e"), {}}}, {}}}},
+     "(a b);c;d, (e)"},
 };
 
 // For Structured Headers Draft 15
@@ -682,8 +729,14 @@ const struct DictionaryTestCase {
      {Dictionary{{{"a", {Token("b"), {Param("c", 1)}}},
                   {"d", {Token("e"), {Param("f", 2), Param("g", 3)}}}}}},
      "a=b;c=1, d=e;f=2;g=3"},
-    {"trailing comma parameterised list", "a=b; q=1.0,", base::nullopt},
-    {"empty item parameterised list", "a=b; q=1.0,,c=d", base::nullopt},
+    {"trailing comma parameterised dict", "a=b; q=1.0,", base::nullopt},
+    {"empty item parameterised dict", "a=b; q=1.0,,c=d", base::nullopt},
+    {"parameterised inner list member dict",
+     "a=(\"1\";b=1;c=?0 \"2\");d=\"e\"",
+     {Dictionary{{{"a",
+                   {{{Item("1"), {Param("b", 1), BooleanParam("c", false)}},
+                     {Item("2"), {}}},
+                    {Param("d", "e")}}}}}}},
 };
 }  // namespace
 

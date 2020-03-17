@@ -652,8 +652,6 @@ def setter_expression(interface, attribute, context):
             handler_type = 'kOnBeforeUnloadEventHandler'
         arguments.append('JSEventHandler::CreateOrNull(' + 'v8_value, ' +
                          'JSEventHandler::HandlerType::' + handler_type + ')')
-    elif idl_type.base_type == 'SerializedScriptValue':
-        arguments.append('std::move(cpp_value)')
     else:
         arguments.append('cpp_value')
     if context['is_setter_raises_exception']:

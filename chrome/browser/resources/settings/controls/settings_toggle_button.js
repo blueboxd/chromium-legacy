@@ -94,6 +94,7 @@ Polymer({
    * @private
    */
   onLearnMoreClicked_(e) {
+    e.stopPropagation();
     this.fire('learn-more-clicked');
   },
 

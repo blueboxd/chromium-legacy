@@ -16,9 +16,9 @@
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
 #include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/metrics/metrics_helper.h"
-#include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
+#include "content/public/browser/browser_xr_runtime.h"
 #include "content/public/browser/webvr_service_provider.h"
 #include "device/vr/android/gvr/gvr_delegate_provider_factory.h"
 #include "device/vr/android/gvr/gvr_device.h"
@@ -36,8 +36,8 @@ namespace vr {
 namespace {
 
 void SetInlineVrEnabled(XRRuntimeManager& runtime_manager, bool enable) {
-  runtime_manager.ForEachRuntime([enable](BrowserXRRuntime* runtime) {
-    runtime->GetRuntime()->SetInlinePosesEnabled(enable);
+  runtime_manager.ForEachRuntime([enable](content::BrowserXRRuntime* runtime) {
+    runtime->SetInlinePosesEnabled(enable);
   });
 }
 
@@ -243,12 +243,12 @@ std::unique_ptr<VrCoreInfo> VrShellDelegate::MakeVrCoreInfo(JNIEnv* env) {
       Java_VrShellDelegate_getVrCoreInfo(env, j_vr_shell_delegate_)));
 }
 
-void VrShellDelegate::OnRuntimeAdded(vr::BrowserXRRuntime* runtime) {
+void VrShellDelegate::OnRuntimeAdded(content::BrowserXRRuntime* runtime) {
   if (vr_shell_) {
     // See comment in VrShellDelegate::SetDelegate. This handles the case where
     // VrShell is created before the device code is initialized (like when
     // entering VR browsing on a non-webVR page).
-    runtime->GetRuntime()->SetInlinePosesEnabled(false);
+    runtime->SetInlinePosesEnabled(false);
   }
 }
 

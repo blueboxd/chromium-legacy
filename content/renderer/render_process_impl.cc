@@ -37,6 +37,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "services/service_manager/embedder/switches.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "v8/include/v8.h"
 
@@ -139,6 +140,9 @@ RenderProcessImpl::RenderProcessImpl()
   SetV8FlagIfFeature(features::kWebAssemblySimd, "--experimental-wasm-simd");
   SetV8FlagIfNotFeature(features::kWebAssemblySimd,
                         "--no-experimental-wasm-simd");
+
+  SetV8FlagIfFeature(blink::features::kTopLevelAwait,
+                     "--harmony-top-level-await");
 
   if (base::FeatureList::IsEnabled(features::kWebAssemblyThreads)) {
     constexpr char kFlags[] =

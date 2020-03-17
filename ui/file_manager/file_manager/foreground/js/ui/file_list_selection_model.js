@@ -33,10 +33,16 @@ class FileListSelectionModel extends cr.ui.ListSelectionModel {
     super.selectAll();
     // Force change event when selecting all but with only 1 item, to update the
     // UI with select mode.
-    if (this.isCheckSelectMode_ && this.selectedIndexes.length == 1) {
+    if (this.isCheckSelectMode_ && this.selectedIndexes.length === 1) {
       const e = new Event('change');
       e.changes = [];
       this.dispatchEvent(e);
+
+      // If force lead index when there is no lead, because doesn't make sense
+      // to not have lead when there is selection.
+      if (this.leadIndex < 0) {
+        this.leadIndex = this.selectedIndexes[0];
+      }
     }
   }
 

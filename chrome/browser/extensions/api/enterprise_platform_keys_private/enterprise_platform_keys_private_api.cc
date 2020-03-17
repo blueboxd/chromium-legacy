@@ -124,7 +124,7 @@ void EnterprisePlatformKeysPrivateChallengeMachineKeyFunction::OnChallengedKey(
     const chromeos::attestation::TpmChallengeKeyResult& result) {
   if (result.IsSuccess()) {
     std::string encoded_response;
-    base::Base64Encode(result.data, &encoded_response);
+    base::Base64Encode(result.challenge_response, &encoded_response);
     Respond(ArgumentList(
         api_epkp::ChallengeMachineKey::Results::Create(encoded_response)));
   } else {
@@ -169,7 +169,7 @@ void EnterprisePlatformKeysPrivateChallengeUserKeyFunction::OnChallengedKey(
     const chromeos::attestation::TpmChallengeKeyResult& result) {
   if (result.IsSuccess()) {
     std::string encoded_response;
-    base::Base64Encode(result.data, &encoded_response);
+    base::Base64Encode(result.challenge_response, &encoded_response);
     Respond(ArgumentList(
         api_epkp::ChallengeUserKey::Results::Create(encoded_response)));
   } else {

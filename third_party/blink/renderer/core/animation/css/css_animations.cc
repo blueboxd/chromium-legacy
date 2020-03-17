@@ -450,6 +450,19 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
   CalculateAnimationActiveInterpolations(update, animating_element);
 }
 
+AnimationEffect::EventDelegate* CSSAnimations::CreateEventDelegate(
+    Element* element,
+    const PropertyHandle& property_handle,
+    AnimationEffect::EventDelegate* old_event_delegate) {
+  CSSAnimations::TransitionEventDelegate* old_transition_delegate =
+      DynamicTo<CSSAnimations::TransitionEventDelegate>(old_event_delegate);
+  Timing::Phase previous_phase =
+      old_transition_delegate ? old_transition_delegate->getPreviousPhase()
+                              : Timing::kPhaseNone;
+  return MakeGarbageCollected<TransitionEventDelegate>(element, property_handle,
+                                                       previous_phase);
+}
+
 void CSSAnimations::SnapshotCompositorKeyframes(
     Element& element,
     CSSAnimationUpdate& update,

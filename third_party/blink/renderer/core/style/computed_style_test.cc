@@ -9,6 +9,8 @@
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_gradient_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
@@ -632,6 +634,39 @@ TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
     EXPECT_EQ(Color::kBlack,
               style->VisitedDependentColor(GetCSSPropertyColor()));
   }
+}
+
+TEST(ComputedStyleTest, StrokeWidthZoomAndCalc) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_ =
+      std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
+
+  const ComputedStyle* initial = &ComputedStyle::InitialStyle();
+
+  StyleResolverState state(dummy_page_holder_->GetDocument(),
+                           *dummy_page_holder_->GetDocument().documentElement(),
+                           initial, initial);
+
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  style->SetEffectiveZoom(1.5);
+  state.SetStyle(style);
+
+  auto* calc_value =
+      CSSMathFunctionValue::Create(CSSMathExpressionNumericLiteral::Create(
+          CSSNumericLiteralValue::Create(10,
+                                         CSSPrimitiveValue::UnitType::kNumber),
+          true));
+
+  To<Longhand>(GetCSSPropertyStrokeWidth()).ApplyValue(state, *calc_value);
+  auto* computed_value =
+      To<Longhand>(GetCSSPropertyStrokeWidth())
+          .CSSValueFromComputedStyleInternal(*style, style->SvgStyle(),
+                                             nullptr /* layout_object */,
+                                             false /* allow_visited_style */);
+  ASSERT_TRUE(computed_value);
+  auto* numeric_value = DynamicTo<CSSNumericLiteralValue>(computed_value);
+  ASSERT_TRUE(numeric_value);
+  EXPECT_TRUE(numeric_value->IsPx());
+  EXPECT_EQ(10, numeric_value->DoubleValue());
 }
 
 }  // namespace blink

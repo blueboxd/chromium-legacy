@@ -14,6 +14,7 @@ import android.bluetooth.BluetoothGattServer;
 import android.bluetooth.BluetoothGattServerCallback;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.AdvertiseData;
 import android.bluetooth.le.AdvertiseSettings;
@@ -35,6 +36,7 @@ import java.io.Closeable;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -77,6 +79,9 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
      */
     private final HashMap<Long, byte[][]> mPendingFragments;
     private final HashMap<Long, Integer> mKnownMtus;
+    private final Context mContext;
+    private final BluetoothManager mManager;
+    private final CableAuthenticator mAuthenticator;
 
     /**
      * Android's BLE callbacks may happen on arbitrary threads. In order to
@@ -90,9 +95,12 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
     private BluetoothGattDescriptor mCccd;
     private BluetoothGattCharacteristic mStatusChar;
 
-    BLEHandler() {
+    BLEHandler(CableAuthenticator authenticator) {
         mPendingFragments = new HashMap<Long, byte[][]>();
         mKnownMtus = new HashMap<Long, Integer>();
+        mContext = ContextUtils.getApplicationContext();
+        mManager = (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
+        mAuthenticator = authenticator;
     }
 
     /**
@@ -102,9 +110,8 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
      * @return true if successful and false on error.
      */
     public boolean start() {
-        Context context = ContextUtils.getApplicationContext();
         SharedPreferences prefs =
-                context.getSharedPreferences(STATE_FILE_NAME, Context.MODE_PRIVATE);
+                mContext.getSharedPreferences(STATE_FILE_NAME, Context.MODE_PRIVATE);
         byte[] stateBytes = null;
         try {
             stateBytes = Base64.decode(prefs.getString(STATE_VALUE_NAME, ""), Base64.DEFAULT);
@@ -139,9 +146,7 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
                         BluetoothGattCharacteristic.PERMISSION_READ
                                 | BluetoothGattCharacteristic.PERMISSION_WRITE));
 
-        BluetoothManager manager =
-                (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
-        mServer = manager.openGattServer(context, this);
+        mServer = mManager.openGattServer(mContext, this);
         if (!mServer.addService(cableService)) {
             Log.i(TAG, "addService failed");
             return false;
@@ -240,17 +245,7 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
                         mServer.sendResponse(device, requestId, status, 0, null);
                     }
                     if (responseFragments != null && responseFragments.length > 0) {
-                        Log.i(TAG,
-                                "onCharacteristicWriteRequest sending "
-                                        + hex(responseFragments[0]));
-                        mStatusChar.setValue(responseFragments[0]);
-                        mServer.notifyCharacteristicChanged(device, mStatusChar, /*confirm=*/false);
-
-                        if (responseFragments.length > 1) {
-                            mPendingFragments.put(client,
-                                    Arrays.copyOfRange(
-                                            responseFragments, 1, responseFragments.length));
-                        }
+                        sendNotification(device, responseFragments);
                     }
                 });
                 break;
@@ -263,6 +258,44 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
                     mServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, 0, null);
                 }
         }
+    }
+
+    /**
+     * Triggers a notification on the fidoStatus characteristic to the given device.
+     */
+    public void sendNotification(BluetoothDevice device, byte[][] fragments) {
+        Log.i(TAG, "onCharacteristicWriteRequest sending " + hex(fragments[0]));
+        Long client = addressToLong(device.getAddress());
+        assert !mPendingFragments.containsKey(client);
+
+        mStatusChar.setValue(fragments[0]);
+        mServer.notifyCharacteristicChanged(device, mStatusChar, /*confirm=*/false);
+        if (fragments.length > 1) {
+            mPendingFragments.put(client, Arrays.copyOfRange(fragments, 1, fragments.length));
+        }
+    }
+
+    /**
+     * Like sendNotification(BluetoothDevice, byte[][]), but for a client ID passed from native
+     * code.
+     */
+    @CalledByNative
+    public void sendNotification(long client, byte[][] fragments) {
+        String addr = longToAddress(client);
+        Log.i(TAG, "sendNotification to " + addr);
+        List<BluetoothDevice> devices = mManager.getConnectedDevices(BluetoothProfile.GATT);
+        BluetoothDevice device = null;
+        for (int i = 0; i < devices.size(); i++) {
+            if (addr.equals(devices.get(i).getAddress())) {
+                device = devices.get(i);
+                break;
+            }
+        }
+        if (device == null) {
+            Log.i(TAG, "can't find connected device " + addr);
+            return;
+        }
+        sendNotification(device, fragments);
     }
 
     /**
@@ -318,6 +351,20 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
         // https://developer.android.com/reference/android/bluetooth/BluetoothDevice.html#getAddress()
         // for the format of the address string.
         return Long.valueOf(address.replace(":", ""), 16);
+    }
+
+    // longToAddress is the inverse operation to addressToLong.
+    private static String longToAddress(long addr) {
+        char[] result = new char[17];
+        for (int i = 0; i < 6; i++) {
+            int v = (int) ((addr >>> ((5 - i) * 8)) & 0xFF);
+            result[i * 3] = HEX_CHARS[v >>> 4];
+            result[i * 3 + 1] = HEX_CHARS[v & 0x0F];
+            if (i < 5) {
+                result[i * 3 + 2] = ':';
+            }
+        }
+        return new String(result);
     }
 
     @Override
@@ -445,14 +492,30 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
     public void setState(byte[] newState) {
         assert mTaskRunner.belongsToCurrentThread();
 
-        Context context = ContextUtils.getApplicationContext();
         SharedPreferences prefs =
-                context.getSharedPreferences(STATE_FILE_NAME, Context.MODE_PRIVATE);
+                mContext.getSharedPreferences(STATE_FILE_NAME, Context.MODE_PRIVATE);
         Log.i(TAG, "Writing updated state");
         prefs.edit()
                 .putString(STATE_VALUE_NAME,
                         Base64.encodeToString(newState, Base64.NO_WRAP | Base64.NO_PADDING))
                 .apply();
+    }
+
+    /**
+     * Called by native code to process a makeCredential request.
+     */
+    @CalledByNative
+    void makeCredential(long client) {
+        mAuthenticator.makeCredential(client);
+    }
+
+    /**
+     * Called by CableAuthenticator to notify native code of an attestation response to a
+     * makeCredential request.
+     */
+    public void onAuthenticatorAttestationResponse(long client, int ctapStatus) {
+        mTaskRunner.postTask(
+                () -> BLEHandlerJni.get().onAuthenticatorAttestationResponse(client, ctapStatus));
     }
 
     @NativeMethods
@@ -478,5 +541,9 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
          * Called to alert the C++ code that a GATT client wrote data.
          */
         byte[][] write(long client, byte[] data);
+        /**
+         * Called to alert native code of a response to a makeCredential request.
+         */
+        void onAuthenticatorAttestationResponse(long client, int ctapStatus);
     }
 }

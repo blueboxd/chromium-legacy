@@ -72,7 +72,6 @@ class BrowserNonClientFrameViewMacBrowserTest
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewMacBrowserTest, TitleUpdates) {
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 
-  ASSERT_TRUE(https_server()->Start());
   const GURL app_url = GetInstallableAppURL();
   const web_app::AppId app_id = InstallPWA(app_url);
   Browser* const browser = LaunchWebAppBrowser(app_id);

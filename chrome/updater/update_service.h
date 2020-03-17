@@ -105,6 +105,10 @@ class UpdateService {
           state_update,
       base::OnceCallback<void(Result)> done) = 0;
 
+  // Provides a way to commit data or clean up resources before the task
+  // scheduler is shutting down.
+  virtual void Uninitialize() = 0;
+
  protected:
   UpdateService() = default;
 };

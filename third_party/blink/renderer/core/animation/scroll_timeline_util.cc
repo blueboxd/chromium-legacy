@@ -53,7 +53,7 @@ scoped_refptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
 
   return CompositorScrollTimeline::Create(
       element_id, orientation, start_scroll_offset, end_scroll_offset,
-      time_range.GetAsDouble(), scroll_timeline->GetFillMode());
+      time_range.GetAsDouble());
 }
 
 base::Optional<CompositorElementId> GetCompositorScrollElementId(

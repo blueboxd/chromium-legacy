@@ -126,8 +126,13 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
       base::RepeatingCallback<void(ui::AXNodeData*)> callback);
   void UnsetPopulateDataCallback();
 
-  // ui::AXPlatformNodeDelegate. Note that some of these functions have
-  // Mac-specific implementations in ax_virtual_view_mac.mm.
+  // ui::AXPlatformNodeDelegate. Note that
+  // - Some of these functions have Mac-specific implementations in
+  //   ax_virtual_view_mac.mm.
+  // - GetChildCount(), ChildAtIndex(), and GetParent() are used by assistive
+  //   technologies to access the unignored accessibility tree, which doesn't
+  //   necessarily reflect the internal descendant tree. (An ignored node means
+  //   that the node should not be exposed to the platform.)
   const ui::AXNodeData& GetData() const override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
@@ -152,6 +157,10 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
 
   // Gets or creates a wrapper suitable for use with tree sources.
   AXVirtualViewWrapper* GetOrCreateWrapper(views::AXAuraObjCache* cache);
+
+  // Returns true if this node is ignored and should be hidden from the
+  // accessibility tree. This does not impact the node's descendants.
+  bool IsIgnored() const;
 
   // Handle a request from assistive technology to perform an action on this
   // virtual view. Returns true on success, but note that the success/failure is

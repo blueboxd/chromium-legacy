@@ -44,6 +44,7 @@ class CONTENT_EXPORT BrowserAccessibilityPosition
   int AnchorUnignoredChildCount() const override;
   int AnchorIndexInParent() const override;
   base::stack<BrowserAccessibility*> GetAncestorAnchors() const override;
+  BrowserAccessibility* GetLowestUnignoredAncestor() const override;
   void AnchorParent(AXTreeID* tree_id,
                     ui::AXNode::AXID* parent_id) const override;
   BrowserAccessibility* GetNodeInTree(AXTreeID tree_id,

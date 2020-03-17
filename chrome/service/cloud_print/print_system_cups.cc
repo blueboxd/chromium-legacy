@@ -259,8 +259,8 @@ class PrinterWatcherCUPS
   // PrintSystem::PrinterWatcher implementation.
   bool StartWatching(PrintSystem::PrinterWatcher::Delegate* delegate) override {
     scoped_refptr<printing::PrintBackend> print_backend(
-        printing::PrintBackend::CreateInstance(nullptr,
-                                               /*locale=*/std::string()));
+        printing::PrintBackend::CreateInstanceForCloudPrint(
+            /*print_backend_settings=*/nullptr));
     crash_keys::ScopedPrinterInfo crash_key(
         print_backend->GetPrinterDriverInfo(printer_name_));
     if (delegate_)
@@ -463,8 +463,8 @@ void PrintSystemCUPS::AddPrintServer(const std::string& url) {
   backend_settings.SetInteger(kCUPSEncryption, cups_encryption_);
 
   PrintServerInfoCUPS print_server;
-  print_server.backend = printing::PrintBackend::CreateInstance(
-      &backend_settings, /*locale=*/std::string());
+  print_server.backend =
+      printing::PrintBackend::CreateInstanceForCloudPrint(&backend_settings);
   print_server.url = GURL(url.c_str());
 
   print_servers_.push_back(print_server);

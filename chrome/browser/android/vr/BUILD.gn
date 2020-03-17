@@ -76,6 +76,8 @@ static_library("vr_android") {
       "arcore_device/ar_renderer.cc",
       "arcore_device/ar_renderer.h",
       "arcore_device/arcore.h",
+      "arcore_device/arcore_anchor_manager.cc",
+      "arcore_device/arcore_anchor_manager.h",
       "arcore_device/arcore_consent_prompt.cc",
       "arcore_device/arcore_consent_prompt.h",
       "arcore_device/arcore_device.cc",

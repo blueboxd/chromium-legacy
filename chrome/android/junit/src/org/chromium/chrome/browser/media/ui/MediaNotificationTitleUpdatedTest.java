@@ -177,10 +177,12 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
         mTabHolder.simulateNavigation("https://example.com/", false);
         mTabHolder.simulateMediaSessionStateChanged(true, false);
         mTabHolder.simulateMediaSessionMetadataChanged(new MediaMetadata("title2", "", ""));
+        mTabHolder.simulateMediaSessionActionsChanged(DEFAULT_ACTIONS);
         advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title2", getDisplayedTitle());
 
         mTabHolder.simulateNavigation("https://example1.com/", false);
+        mTabHolder.simulateMediaSessionActionsChanged(DEFAULT_ACTIONS);
         advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title1", getDisplayedTitle());
     }
@@ -190,10 +192,12 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
         mTabHolder.simulateNavigation("https://example.com/", false);
         mTabHolder.simulateMediaSessionStateChanged(true, false);
         mTabHolder.simulateMediaSessionMetadataChanged(new MediaMetadata("title2", "", ""));
+        mTabHolder.simulateMediaSessionActionsChanged(DEFAULT_ACTIONS);
         advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title2", getDisplayedTitle());
 
         mTabHolder.simulateNavigation("https://example.com/foo.html", false);
+        mTabHolder.simulateMediaSessionActionsChanged(DEFAULT_ACTIONS);
         advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title1", getDisplayedTitle());
     }
@@ -203,10 +207,12 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
         mTabHolder.simulateNavigation("https://example.com/", false);
         mTabHolder.simulateMediaSessionStateChanged(true, false);
         mTabHolder.simulateMediaSessionMetadataChanged(new MediaMetadata("title2", "", ""));
+        mTabHolder.simulateMediaSessionActionsChanged(DEFAULT_ACTIONS);
         advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title2", getDisplayedTitle());
 
         mTabHolder.simulateNavigation("https://example.com/#1", true);
+        mTabHolder.simulateMediaSessionActionsChanged(DEFAULT_ACTIONS);
         advanceTimeByMillis(THROTTLE_MILLIS);
         assertEquals("title2", getDisplayedTitle());
     }

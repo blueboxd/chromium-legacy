@@ -276,8 +276,17 @@ int ViewAXPlatformNodeDelegate::GetChildCount() {
   if (IsLeaf())
     return 0;
 
-  if (!virtual_children().empty())
-    return int{virtual_children().size()};
+  if (!virtual_children().empty()) {
+    int count = 0;
+    for (const std::unique_ptr<AXVirtualView>& child : virtual_children()) {
+      if (child->IsIgnored()) {
+        count += child->GetChildCount();
+        continue;
+      }
+      count++;
+    }
+    return count;
+  }
 
   const auto child_widgets_result = GetChildWidgets();
   if (child_widgets_result.is_tab_modal_showing) {
@@ -296,8 +305,24 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(int index) {
     return nullptr;
 
   size_t child_index = size_t{index};
-  if (!virtual_children().empty())
-    return virtual_children()[child_index]->GetNativeObject();
+  if (!virtual_children().empty()) {
+    int i = 0;
+    for (const std::unique_ptr<AXVirtualView>& child : virtual_children()) {
+      if (child->IsIgnored()) {
+        if (index - i < child->GetChildCount()) {
+          gfx::NativeViewAccessible result = child->ChildAtIndex(index - i);
+          if (result)
+            return result;
+        }
+        i += child->GetChildCount();
+        continue;
+      }
+      if (i == index)
+        return child->GetNativeObject();
+      i++;
+    }
+    return nullptr;
+  }
 
   // If this is a root view, our widget might have child widgets. Include
   const auto child_widgets_result = GetChildWidgets();
@@ -548,7 +573,7 @@ void ViewAXPlatformNodeDelegate::GetViewsInGroupForSet(
             ViewAXPlatformNodeDelegate* ax_delegate =
                 static_cast<ViewAXPlatformNodeDelegate*>(&view_accessibility);
             if (ax_delegate)
-              is_ignored = is_ignored || ax_delegate->GetData().IsIgnored();
+              is_ignored = is_ignored || ax_delegate->IsIgnored();
             return is_ignored;
           }),
       views_in_group->end());

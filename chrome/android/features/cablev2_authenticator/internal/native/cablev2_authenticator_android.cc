@@ -13,12 +13,19 @@
 #include "components/device_event_log/device_event_log.h"
 #include "crypto/aead.h"
 #include "crypto/random.h"
+#include "device/fido/attestation_object.h"
+#include "device/fido/attestation_statement.h"
+#include "device/fido/authenticator_data.h"
 #include "device/fido/authenticator_get_info_response.h"
+#include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/authenticator_supported_options.h"
 #include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/cable/v2_handshake.h"
+#include "device/fido/ec_public_key.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
+#include "device/fido/fido_test_data.h"
+#include "device/fido/fido_transport_protocol.h"
 #include "third_party/boringssl/src/include/openssl/aes.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
@@ -28,10 +35,19 @@
 #include "third_party/boringssl/src/include/openssl/obj.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
-// This "header" is actually contains several function definitions and thus can
+// These "headers" actually contain several function definitions and thus can
 // only be included once across Chromium.
 #include "chrome/android/features/cablev2_authenticator/internal/jni_headers/BLEHandler_jni.h"
 
+using device::AttestationObject;
+using device::AttestedCredentialData;
+using device::AuthenticatorData;
+using device::AuthenticatorMakeCredentialResponse;
+using device::CtapDeviceResponseCode;
+using device::CtapRequestCommand;
+using device::ECPublicKey;
+using device::FidoTransportProtocol;
+using device::NoneAttestationStatement;
 using device::fido_parsing_utils::CopyCBORBytestring;
 
 namespace {
@@ -151,8 +167,17 @@ struct AuthenticatorState {
 // Client represents the state of a single BLE peer.
 class Client {
  public:
-  Client(uint16_t mtu, const AuthenticatorState* auth_state)
-      : mtu_(mtu), auth_state_(auth_state) {}
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+    virtual void OnMakeCredential(uint64_t client_addr) = 0;
+  };
+
+  Client(uint64_t addr,
+         uint16_t mtu,
+         const AuthenticatorState* auth_state,
+         Delegate* delegate)
+      : addr_(addr), mtu_(mtu), auth_state_(auth_state), delegate_(delegate) {}
 
   bool Process(
       base::span<const uint8_t> fragment,
@@ -162,6 +187,24 @@ class Client {
       return false;
     }
     return true;
+  }
+
+  base::Optional<std::vector<std::vector<uint8_t>>> EncryptAndFragment(
+      base::span<uint8_t> data) {
+    std::vector<uint8_t> encrypted_data =
+        device::fido_parsing_utils::Materialize(data);
+    if (!crypter_->Encrypt(&encrypted_data)) {
+      FIDO_LOG(ERROR) << "Failed to encrypt response";
+      return base::nullopt;
+    }
+    std::vector<std::vector<uint8_t>> fragments;
+    if (!Fragment(static_cast<uint8_t>(device::FidoBleDeviceCommand::kMsg),
+                  encrypted_data, &fragments)) {
+      FIDO_LOG(ERROR) << "Failed to fragment response of length "
+                      << encrypted_data.size();
+      return base::nullopt;
+    }
+    return fragments;
   }
 
  private:
@@ -299,8 +342,8 @@ class Client {
               return false;
             }
 
-            // TODO: display to GMSCore's WebAuthn API to handle this message.
-            return false;
+            delegate_->OnMakeCredential(addr_);
+            return true;
           }
 
           default:
@@ -370,17 +413,19 @@ class Client {
     return true;
   }
 
+  const uint64_t addr_;
   const uint16_t mtu_;
   const AuthenticatorState* const auth_state_;
   State state_ = State::kHandshake;
   Defragmenter defrag_;
   std::unique_ptr<device::cablev2::Crypter> crypter_;
+  Delegate* delegate_;
 };
 
 // CableInterface is a singleton that receives events from BLEHandler.java:
 // the code that interfaces to Android's BLE stack. All calls into this
 // object happen on a single thread.
-class CableInterface {
+class CableInterface : public Client::Delegate {
  public:
   static CableInterface* GetInstance() {
     return base::Singleton<CableInterface>::get();
@@ -454,7 +499,10 @@ class CableInterface {
       if (mtu == 0) {
         mtu = 512;
       }
-      it = clients_.emplace(client_addr, new Client(mtu, &auth_state_)).first;
+      it = clients_
+               .emplace(client_addr,
+                        new Client(client_addr, mtu, &auth_state_, this))
+               .first;
     }
     Client* const client = it->second.get();
 
@@ -490,6 +538,80 @@ class CableInterface {
     }
 
     return ret;
+  }
+
+  void OnMakeCredential(uint64_t client_addr) override {
+    // TODO: pass request parameters to the Java side
+    Java_BLEHandler_makeCredential(env_, ble_handler_, client_addr);
+  }
+
+  void OnMakeCredentialResponse(uint64_t client_addr, uint32_t ctap_status) {
+    DCHECK_LE(ctap_status, 0xFFu);
+    auto it = clients_.find(client_addr);
+    if (it == clients_.end()) {
+      FIDO_LOG(ERROR) << "unknown client " << client_addr;
+      return;
+    }
+
+    std::vector<uint8_t> response = {base::checked_cast<uint8_t>(ctap_status)};
+    if (ctap_status == static_cast<uint8_t>(CtapDeviceResponseCode::kSuccess)) {
+      // TODO: pass response parameters from the Java side.
+      AuthenticatorMakeCredentialResponse dummy_response(
+          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
+          AttestationObject(
+              AuthenticatorData(
+                  device::fido_parsing_utils::CreateSHA256Hash("example.com"),
+                  static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation) |
+                      static_cast<uint8_t>(
+                          AuthenticatorData::Flag::kTestOfUserPresence) |
+                      static_cast<uint8_t>(
+                          AuthenticatorData::Flag::kTestOfUserVerification),
+                  std::array<uint8_t, 4>{0},
+                  AttestedCredentialData(
+                      std::array<uint8_t, device::kAaguidLength>{0},
+                      /*credential_id_length=*/std::array<uint8_t, 2>{0, 16},
+                      std::vector<uint8_t>(16, 'a'),
+                      ECPublicKey::ExtractFromU2fRegistrationResponse(
+                          device::fido_parsing_utils::kEs256,
+                          device::test_data::kTestU2fRegisterResponse))),
+              std::make_unique<NoneAttestationStatement>()));
+
+      std::vector<uint8_t> ctap_response = AsCTAPStyleCBORBytes(dummy_response);
+      response.insert(response.end(), ctap_response.begin(),
+                      ctap_response.end());
+    }
+
+    base::Optional<std::vector<std::vector<uint8_t>>> response_fragments =
+        it->second->EncryptAndFragment(response);
+    if (!response_fragments) {
+      FIDO_LOG(ERROR) << "EncryptAndFragment() failed for " << client_addr;
+      return;
+    }
+
+    base::android::ScopedJavaLocalRef<jclass> byte_array_class(
+        env_, env_->FindClass("[B"));
+    if (!response_fragments) {
+      base::android::ScopedJavaLocalRef<jobjectArray> ret(
+          env_, env_->NewObjectArray(0, byte_array_class.obj(), nullptr));
+      NOTREACHED();
+      return;
+    }
+
+    base::android::ScopedJavaLocalRef<jobjectArray> jresponse_fragments(
+        env_, env_->NewObjectArray(response_fragments->size(),
+                                   byte_array_class.obj(), nullptr));
+    for (size_t i = 0; i < response_fragments->size(); i++) {
+      const std::vector<uint8_t>& fragment = response_fragments->at(i);
+
+      base::android::ScopedJavaLocalRef<jbyteArray> jbytes(
+          env_, env_->NewByteArray(fragment.size()));
+      env_->SetByteArrayRegion(jbytes.obj(), 0, fragment.size(),
+                               reinterpret_cast<const jbyte*>(fragment.data()));
+      env_->SetObjectArrayElement(jresponse_fragments.obj(), i, jbytes.obj());
+    }
+
+    Java_BLEHandler_sendNotification(env_, ble_handler_, client_addr,
+                                     jresponse_fragments);
   }
 
  private:
@@ -646,4 +768,12 @@ static base::android::ScopedJavaLocalRef<jobjectArray> JNI_BLEHandler_Write(
     jlong client,
     const base::android::JavaParamRef<jbyteArray>& data) {
   return CableInterface::GetInstance()->Write(client, data);
+}
+
+static void JNI_BLEHandler_OnAuthenticatorAttestationResponse(
+    JNIEnv* env,
+    jlong client,
+    jint ctap_status) {
+  return CableInterface::GetInstance()->OnMakeCredentialResponse(client,
+                                                                 ctap_status);
 }

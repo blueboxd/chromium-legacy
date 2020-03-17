@@ -3,308 +3,280 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Provides language switching services for ChromeVox, which
- * uses language detection information to automatically change the ChromeVox
- * output voice.
+ * @fileoverview Provides language-switching services for ChromeVox, which
+ * uses language detection information to automatically change the TTS voice.
+ * Please note: we use the term 'locale' to refer to language codes e.g.
+ * 'en-US'. For more information on locales:
+ * https://en.wikipedia.org/wiki/Locale_(computer_software)
  */
 
 goog.provide('LanguageSwitching');
 
-/**
- * The UI language of the browser. This corresponds to the system language
- * set by the user. Behind the scenes, the getUIlanguage() API retrieves the
- * locale that was passed from the browser to the renderer via the --lang
- * command line flag.
- * @private {string}
- */
-LanguageSwitching.browserUILanguage_ =
-    chrome.i18n.getUILanguage().toLowerCase();
+goog.require('StringUtil');
 
-/**
- * The current output language. Initialize to the language of the browser or
- * empty string if the former is unavailable.
- * @private {string}
- */
-LanguageSwitching.currentLanguage_ = LanguageSwitching.browserUILanguage_ || '';
-
-/**
- * Confidence threshold to meet before assigning sub-node language.
- * @const
- * @private {number}
- */
-LanguageSwitching.PROBABILITY_THRESHOLD_ = 0.9;
-
-/**
- * Stores whether or not ChromeVox sub-node language switching is enabled.
- * Set to false as default, as sub-node language detection is still
- * experimental.
- * @private {boolean}
- */
-LanguageSwitching.sub_node_switching_enabled_ = false;
-
-/**
- * An array of all available TTS voices.
- * @type {!Array<!TtsVoice>}
- * @private
- */
-LanguageSwitching.availableVoices_ = [];
-
-/**
- * Initialization function for language switching.
- */
-LanguageSwitching.init = function() {
-  // Enable sub-node language switching if feature flag is enabled.
-  chrome.commandLinePrivate.hasSwitch(
-      'enable-experimental-accessibility-chromevox-sub-node-language-' +
-          'switching',
-      function(enabled) {
-        LanguageSwitching.sub_node_switching_enabled_ = enabled;
+LanguageSwitching = class {
+  /** @private */
+  constructor() {
+    /**
+     * @const
+     * @private {string}
+     */
+    LanguageSwitching.BROWSER_UI_LOCALE_ =
+        chrome.i18n.getUILanguage().toLowerCase();
+    /** @private {string} */
+    this.currentLocale_ = LanguageSwitching.BROWSER_UI_LOCALE_ || '';
+    /**
+     * Confidence threshold to meet before assigning sub-node language.
+     * @const
+     * @private {number}
+     */
+    LanguageSwitching.PROBABILITY_THRESHOLD_ = 0.9;
+    /**
+     * Set to false as default, since sub-node language detection is still
+     * experimental.
+     * @private {boolean}
+     */
+    this.subNodeSwitchingEnabled_ = false;
+    /** @private {!Array<!TtsVoice>} */
+    this.availableVoices_ = [];
+    chrome.commandLinePrivate.hasSwitch(
+        'enable-experimental-accessibility-chromevox-sub-node-language-' +
+            'switching',
+        (enabled) => {
+          this.subNodeSwitchingEnabled_ = enabled;
+        });
+    const setAvailableVoices = () => {
+      chrome.tts.getVoices((voices) => {
+        this.availableVoices_ = voices || [];
       });
-
-  // Ensure that availableVoices_ is set and stays updated.
-  function setAvailableVoices() {
-    chrome.tts.getVoices(function(voices) {
-      LanguageSwitching.availableVoices_ = voices || [];
-    });
-  }
-  setAvailableVoices();
-  if (window.speechSynthesis) {
-    window.speechSynthesis.addEventListener(
-        'voiceschanged', setAvailableVoices, /* useCapture */ false);
-  }
-};
-
-/**
- * Main language switching function.
- * Cut up string attribute value into multiple spans with different
- * languages. Ranges and associated language information are returned by the
- * languageAnnotationsForStringAttribute() function.
- * @param {AutomationNode} node
- * @param {string} stringAttribute The string attribute for which we want to
- * get a language annotation.
- * @param {function(string, string)} appendStringWithLanguage
- * A callback that appends outputString to the output buffer in newLanguage.
- */
-LanguageSwitching.assignLanguagesForStringAttribute = function(
-    node, stringAttribute, appendStringWithLanguage) {
-  if (!node) {
-    return;
+    };
+    setAvailableVoices();
+    if (window.speechSynthesis) {
+      window.speechSynthesis.addEventListener(
+          'voiceschanged', setAvailableVoices, /* useCapture */ false);
+    }
   }
 
-  const stringAttributeValue = node[stringAttribute];
-  if (!stringAttributeValue) {
-    return;
-  }
-
-  let languageAnnotation;
-  // Quick note:
-  // The decideNewLanguage function, which contains the core language switching
-  // logic, is setup to prefer sub-node switching if the detected language's
-  // probability exceeds the PROBABILITY_THRESHOLD_; otherwise node-level
-  // switching will be used as a fallback.
-  if (LanguageSwitching.sub_node_switching_enabled_) {
-    languageAnnotation =
-        node.languageAnnotationForStringAttribute(stringAttribute);
-  } else {
-    const nodeLevelLanguageData = {};
-    // Ensure that we span the entire stringAttributeValue.
-    nodeLevelLanguageData.startIndex = 0;
-    nodeLevelLanguageData.endIndex = stringAttributeValue.length;
-    nodeLevelLanguageData.language = '';
-    nodeLevelLanguageData.probability = 0;
-    languageAnnotation = [nodeLevelLanguageData];
-  }
-
-  // If no language annotation is found, append entire stringAttributeValue to
-  // buffer and default to the browser UI language.
-  if (!languageAnnotation || languageAnnotation.length === 0) {
-    appendStringWithLanguage(
-        stringAttributeValue, LanguageSwitching.browserUILanguage_);
-    return;
-  }
-
-  // Split output based on language annotation.
-  // Each object in languageAnnotation contains a language, probability,
-  // and start/end indices that define a substring of stringAttributeValue.
-  for (let i = 0; i < languageAnnotation.length; ++i) {
-    const speechProps = new Output.SpeechProperties();
-    const startIndex = languageAnnotation[i].startIndex;
-    const endIndex = languageAnnotation[i].endIndex;
-    const language = languageAnnotation[i].language.toLowerCase();
-    const probability = languageAnnotation[i].probability;
-
-    let outputString = LanguageSwitching.buildOutputString(
-        stringAttributeValue, startIndex, endIndex);
-    const newLanguage =
-        LanguageSwitching.decideNewLanguage(node, language, probability);
-    let displayLanguage = '';
-
-    if (LanguageSwitching.didLanguageSwitch(newLanguage)) {
-      LanguageSwitching.currentLanguage_ = newLanguage;
-      // Get human-readable language in |newLanguage|.
-      displayLanguage = chrome.accessibilityPrivate.getDisplayNameForLocale(
-          newLanguage /* Language code to translate */,
-          newLanguage /* Target language code */);
-      // Prepend the human-readable language to outputString.
-      outputString =
-          Msgs.getMsg('language_switch', [displayLanguage, outputString]);
+  /**
+   * Main entry point for language switching logic. Routes arguments to either
+   * |atNodeLevel_| or |atSubNodeLevel_| depending on which kind of language
+   * switching the user has specified.
+   * @param {AutomationNode} node
+   * @param {string} stringAttribute The string attribute whose value we want
+   * to output.
+   * @param {function(string, string)} appendWithLocaleCallback
+   */
+  assignLocalesAndAppend(node, stringAttribute, appendWithLocaleCallback) {
+    if (!node || !node[stringAttribute]) {
+      return;
     }
 
-    if (LanguageSwitching.hasVoiceForLanguage(newLanguage)) {
-      appendStringWithLanguage(newLanguage, outputString);
+    const text = node[stringAttribute];
+    if (this.subNodeSwitchingEnabled_) {
+      this.atSubNodeLevel_(
+          text, node, stringAttribute, appendWithLocaleCallback);
     } else {
-      // Translate |newLanguage| into human-readable string in the UI language.
-      displayLanguage = chrome.accessibilityPrivate.getDisplayNameForLocale(
-          newLanguage /* Language code to translate */,
-          LanguageSwitching.browserUILanguage_ /* Target language code */);
+      this.atNodeLevel_(text, node, appendWithLocaleCallback);
+    }
+  }
+
+  /**
+   * Assigns one locale to the entirety of |text|.
+   * @param {string} text The text we want to append.
+   * @param {!AutomationNode} node
+   * @param {function(string, string)} appendWithLocaleCallback
+   * @private
+   */
+  atNodeLevel_(text, node, appendWithLocaleCallback) {
+    this.processText_(text, node, appendWithLocaleCallback);
+  }
+
+  /**
+   * Assigns one or more locales to disjoint spans of |text|.
+   * @param {string} text The text we want to append.
+   * @param {!AutomationNode} node
+   * @param {function(string, string)} appendWithLocaleCallback
+   * @private
+   */
+  atSubNodeLevel_(text, node, stringAttribute, appendWithLocaleCallback) {
+    const languageAnnotation =
+        node.languageAnnotationForStringAttribute(stringAttribute);
+    if (!languageAnnotation || languageAnnotation.length === 0) {
+      appendWithLocaleCallback(text, LanguageSwitching.BROWSER_UI_LOCALE_);
+      return;
+    }
+
+    for (const langSpan of languageAnnotation) {
+      this.processText_(text, node, appendWithLocaleCallback, langSpan);
+    }
+  }
+
+  /**
+   * This method does the following:
+   * 1. Computes output locale.
+   * 2. Computes |outputString|
+   * 3. Calls |appendWithLocaleCallback|
+   * @param {string} text
+   * @param {!AutomationNode} node The AutomationNode that owns |text|. Used
+   * for context.
+   * @param {function(string, string)} appendWithLocaleCallback
+   * @param {!{
+   *    language: string,
+   *    startIndex: number,
+   *    endIndex: number,
+   *    probability: number}=} opt_langSpan
+   * @private
+   */
+  processText_(text, node, appendWithLocaleCallback, opt_langSpan) {
+    let startIndex = 0;
+    let endIndex = text.length;
+    let subNodeLocale = '';
+    let subNodeProbability = 0;
+    if (opt_langSpan) {
+      startIndex = opt_langSpan.startIndex;
+      endIndex = opt_langSpan.endIndex;
+      subNodeLocale = opt_langSpan.language.toLowerCase();
+      subNodeProbability = opt_langSpan.probability;
+    }
+
+    const nodeLocale = node.detectedLanguage || node.language || '';
+    const newLocale =
+        this.computeNewLocale_(nodeLocale, subNodeLocale, subNodeProbability);
+    let outputString =
+        StringUtil.getUnicodeSubstring_(text, startIndex, endIndex);
+    const shouldUpdate = this.shouldUpdateLocale_(newLocale);
+    if (this.hasVoiceForLocale_(newLocale)) {
+      this.setCurrentLocale_(newLocale);
+      if (shouldUpdate) {
+        // Prepend the human-readable locale to |outputString|.
+        const displayLanguage =
+            chrome.accessibilityPrivate.getDisplayNameForLocale(
+                newLocale /* Locale to translate */,
+                newLocale /* Target locale */);
+        outputString =
+            Msgs.getMsg('language_switch', [displayLanguage, outputString]);
+      }
+    } else {
+      // Alert the user that no voice is available for |newLocale|.
+      this.setCurrentLocale_(LanguageSwitching.BROWSER_UI_LOCALE_);
+      const displayLanguage =
+          chrome.accessibilityPrivate.getDisplayNameForLocale(
+              newLocale /* Locale to translate */,
+              LanguageSwitching.BROWSER_UI_LOCALE_ /* Target locale */);
       outputString =
           Msgs.getMsg('voice_unavailable_for_language', [displayLanguage]);
-      // Alert the user that we have no available voice for the language.
-      appendStringWithLanguage(
-          LanguageSwitching.browserUILanguage_, outputString);
+    }
+
+    appendWithLocaleCallback(outputString, this.currentLocale_);
+  }
+
+  /**
+   * Use the following priority rankings:
+   * 1. |subNodeLocale|, if we are confident in its accuracy.
+   * 2. |nodeLocale|.
+   * 3. |BROWSER_UI_LOCALE_|.
+   * @param {string} nodeLocale
+   * @param {string} subNodeLocale
+   * @param {number} subNodeProbability
+   * @return {string}
+   * @private
+   */
+  computeNewLocale_(nodeLocale, subNodeLocale, subNodeProbability) {
+    if (subNodeProbability > LanguageSwitching.PROBABILITY_THRESHOLD_) {
+      return subNodeLocale;
+    }
+
+    nodeLocale = nodeLocale.toLowerCase();
+    if (LanguageSwitching.isValidLocale_(nodeLocale)) {
+      return nodeLocale;
+    }
+
+    return LanguageSwitching.BROWSER_UI_LOCALE_;
+  }
+
+  // TODO(akihiroota): http://crbug.com/1061222
+  /**
+   * Only compares the language components of each locale.
+   * Note: Locale validation is the responsibility of the caller.
+   * Ex: 'fr-fr' and 'fr-ca' have the same language component, but different
+   * country components. We would return false in the above case. Ex: 'fr-ca'
+   * and 'en-ca' have different language components, but the same country
+   * components. We would return true in the above case.
+   * @param {string} newLocale
+   * @return {boolean}
+   * @private
+   */
+  shouldUpdateLocale_(newLocale) {
+    const newComponents = newLocale.split('-');
+    const currentComponents = this.currentLocale_.split('-');
+    return newComponents[0] !== currentComponents[0];
+  }
+
+  /**
+   * @param {string} targetLocale
+   * @return {boolean}
+   * @private
+   */
+  hasVoiceForLocale_(targetLocale) {
+    const components = targetLocale.split('-');
+    if (!components || components.length === 0) {
+      return false;
+    }
+
+    const targetLanguage = components[0];
+    for (const voice of this.availableVoices_) {
+      const candidateLanguage = voice.lang.toLowerCase().split('-')[0];
+      if (candidateLanguage === targetLanguage) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * @param {string} locale
+   * @private
+   */
+  setCurrentLocale_(locale) {
+    if (LanguageSwitching.isValidLocale_(locale)) {
+      this.currentLocale_ = locale;
     }
   }
-};
 
-/**
- * Run error checks on language data and decide new output language.
- * @param {!AutomationNode} node
- * @param {string} subNodeLanguage
- * @param {number} probability
- * @return {string}
- */
-LanguageSwitching.decideNewLanguage = function(
-    node, subNodeLanguage, probability) {
-  // Use the following priority rankings when deciding language.
-  // 1. Sub-node language. If we can detect sub-node language with a high
-  // enough probability of accuracy, then we should use it.
-  // 2. Node-level detected language.
-  // 3. Author-provided language. This language is also assigned at the node
-  // level.
-  // 4. UI language of the browser. This is the language the user has chosen to
-  // display their content in.
+  // =============== Static Methods ==============
 
-  // Use subNodeLanguage if probability exceeds threshold.
-  if (probability > LanguageSwitching.PROBABILITY_THRESHOLD_) {
-    return subNodeLanguage;
-  }
-
-  let nodeLevelLanguage = node.detectedLanguage || node.language;
-  // We do not have enough information to make a confident language assignment,
-  // so we fall back on the UI language of the browser.
-  if (!nodeLevelLanguage) {
-    return LanguageSwitching.browserUILanguage_;
-  }
-
-  nodeLevelLanguage = nodeLevelLanguage.toLowerCase();
-
-  if (LanguageSwitching.isValidLanguageCode(nodeLevelLanguage)) {
-    return nodeLevelLanguage;
-  }
-
-  return LanguageSwitching.browserUILanguage_;
-};
-
-/**
- * Returns a unicode-aware substring of |text| from startIndex to endIndex.
- * @param {string} text
- * @param {number} startIndex
- * @param {number} endIndex
- * @return {string}
- */
-LanguageSwitching.buildOutputString = function(text, startIndex, endIndex) {
-  let result = '';
-  const textSymbolArray = [...text];
-  for (let i = startIndex; i < endIndex; ++i) {
-    result += textSymbolArray[i];
-  }
-  return result;
-};
-
-// TODO(akihiroota): Some languages may have the same language code, but be
-// distinctly different. For example, there are some dialects of Chinese that
-// are very different from each other. For these cases, comparing just the
-// language components is not enough to differentiate the languages.
-/**
- * Returns true if newLanguage is different than current language.
- * Only compares the language components of the language code.
- * Note: Language code validation is the responsibility of the caller. This
- * function assumes valid language codes.
- * Ex: 'fr-fr' and 'fr-ca' have the same language component, but different
- * locales. We would return false in the above case. Ex: 'fr-ca' and 'en-ca' are
- * different language components, but same locales. We would return true in the
- * above case.
- * @param {string} newLanguage The language for current output.
- * @return {boolean}
- */
-LanguageSwitching.didLanguageSwitch = function(newLanguage) {
-  // Compare language components of current and new language codes.
-  const newLanguageComponents = newLanguage.split('-');
-  const currentLanguageComponents =
-      LanguageSwitching.currentLanguage_.split('-');
-  if (newLanguageComponents[0] !== currentLanguageComponents[0]) {
-    return true;
-  }
-  return false;
-};
-
-/**
- * Runs validation on language code and returns true if it's properly formatted.
- * @param {string} languageCode
- * @return {boolean}
- */
-LanguageSwitching.isValidLanguageCode = function(languageCode) {
-  // There are five possible components of a language code. See link for more
-  // details: http://userguide.icu-project.org/locale
-  // The TTS Engine handles parsing language codes, but it needs to have a
-  // valid language component for the engine not to crash.
-  // For example, given the language code 'en-US', 'en' is the language
-  // component.
-  const langComponentArray = languageCode.split('-');
-  if (!langComponentArray || (langComponentArray.length === 0)) {
-    return false;
-  }
-
-  // The language component should have length of either two or three.
-  if (langComponentArray[0].length !== 2 &&
-      langComponentArray[0].length !== 3) {
-    return false;
-  }
-
-  // Use the accessibilityPrivate.getDisplayNameForLocale() API to validate
-  // language code. If the language code is invalid, then this API returns an
-  // empty string.
-  if (chrome.accessibilityPrivate.getDisplayNameForLocale(
-          languageCode, languageCode) === '') {
-    return false;
-  }
-
-  return true;
-};
-
-/**
- * Returns true if there is a tts voice that supports the given languageCode.
- * This function is not responsible for deciding the proper output voice, it
- * simply tells us if output in |languageCode| is possible.
- * @param {string} languageCode
- * @return {boolean}
- */
-LanguageSwitching.hasVoiceForLanguage = function(languageCode) {
-  // Extract language from languageCode.
-  const languageCodeComponents = languageCode.split('-');
-  if (!languageCodeComponents || (languageCodeComponents.length === 0)) {
-    return false;
-  }
-  const language = languageCodeComponents[0];
-  for (let i = 0; i < LanguageSwitching.availableVoices_.length; ++i) {
-    // Note: availableVoices_[i].lang is always in the form of
-    // 'language-region'. See link for documentation on chrome.tts api:
-    // https://developer.chrome.com/apps/tts#type-TtsVoice
-    const candidateLanguage =
-        LanguageSwitching.availableVoices_[i].lang.toLowerCase().split('-')[0];
-    if (language === candidateLanguage) {
-      return true;
+  /**
+   * Creates a singleton instance of LanguageSwitching.
+   * @private
+   */
+  static init() {
+    if (LanguageSwitching.instance_ !== undefined) {
+      console.error(
+          'LanguageSwitching is a singleton, can only call |init| once');
+      return;
     }
+
+    LanguageSwitching.instance_ = new LanguageSwitching();
   }
-  return false;
+
+  /**
+   * @return {!LanguageSwitching}
+   */
+  static get instance() {
+    if (!LanguageSwitching.instance_) {
+      LanguageSwitching.init();
+    }
+    return LanguageSwitching.instance_;
+  }
+
+  /**
+   * @param {string} locale
+   * @return {boolean}
+   * @private
+   */
+  static isValidLocale_(locale) {
+    return chrome.accessibilityPrivate.getDisplayNameForLocale(
+               locale, locale) !== '';
+  }
 };

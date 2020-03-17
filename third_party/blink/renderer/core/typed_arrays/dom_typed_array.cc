@@ -20,8 +20,8 @@
 
 namespace blink {
 
-template <typename TypedArray, typename V8TypedArray>
-v8::Local<v8::Value> DOMTypedArray<TypedArray, V8TypedArray>::Wrap(
+template <typename T, typename V8TypedArray, bool clamped>
+v8::Local<v8::Value> DOMTypedArray<T, V8TypedArray, clamped>::Wrap(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creation_context) {
   DCHECK(!DOMDataStore::ContainsWrapper(this, isolate));
@@ -68,34 +68,24 @@ DEFINE_DOMTYPEDARRAY_TRAITS(DOMBigUint64Array, V8BigUint64Array);
 DEFINE_DOMTYPEDARRAY_TRAITS(DOMFloat32Array, V8Float32Array);
 DEFINE_DOMTYPEDARRAY_TRAITS(DOMFloat64Array, V8Float64Array);
 
-template <typename TypedArray, typename V8TypedArray>
+template <typename T, typename V8TypedArray, bool clamped>
 const WrapperTypeInfo*
-DOMTypedArray<TypedArray, V8TypedArray>::GetWrapperTypeInfo() const {
+DOMTypedArray<T, V8TypedArray, clamped>::GetWrapperTypeInfo() const {
   return DOMTypedArrayTraits<
-      DOMTypedArray<TypedArray, V8TypedArray>>::Type::GetWrapperTypeInfo();
+      DOMTypedArray<T, V8TypedArray, clamped>>::Type::GetWrapperTypeInfo();
 }
 
+template class CORE_TEMPLATE_EXPORT DOMTypedArray<int8_t, v8::Int8Array>;
+template class CORE_TEMPLATE_EXPORT DOMTypedArray<int16_t, v8::Int16Array>;
+template class CORE_TEMPLATE_EXPORT DOMTypedArray<int32_t, v8::Int32Array>;
+template class CORE_TEMPLATE_EXPORT DOMTypedArray<uint8_t, v8::Uint8Array>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<TypedArray<int8_t>, v8::Int8Array>;
-template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<TypedArray<int16_t>, v8::Int16Array>;
-template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<TypedArray<int32_t>, v8::Int32Array>;
-template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<TypedArray<uint8_t>, v8::Uint8Array>;
-template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<TypedArray<uint8_t, /*clamped=*/true>, v8::Uint8ClampedArray>;
-template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<TypedArray<uint16_t>, v8::Uint16Array>;
-template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<TypedArray<uint32_t>, v8::Uint32Array>;
-template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<TypedArray<int64_t>, v8::BigInt64Array>;
-template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<TypedArray<uint64_t>, v8::BigUint64Array>;
-template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<TypedArray<float>, v8::Float32Array>;
-template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<TypedArray<double>, v8::Float64Array>;
+    DOMTypedArray<uint8_t, v8::Uint8ClampedArray, /*clamped=*/true>;
+template class CORE_TEMPLATE_EXPORT DOMTypedArray<uint16_t, v8::Uint16Array>;
+template class CORE_TEMPLATE_EXPORT DOMTypedArray<uint32_t, v8::Uint32Array>;
+template class CORE_TEMPLATE_EXPORT DOMTypedArray<int64_t, v8::BigInt64Array>;
+template class CORE_TEMPLATE_EXPORT DOMTypedArray<uint64_t, v8::BigUint64Array>;
+template class CORE_TEMPLATE_EXPORT DOMTypedArray<float, v8::Float32Array>;
+template class CORE_TEMPLATE_EXPORT DOMTypedArray<double, v8::Float64Array>;
 
 }  // namespace blink

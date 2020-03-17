@@ -294,7 +294,7 @@ void HTMLElement::CollectStyleForPresentationAttribute(
           style, CSSPropertyID::kWebkitLineBreak, CSSValueID::kAfterWhiteSpace);
       UseCounter::Count(GetDocument(),
                         WebFeature::kContentEditablePlainTextOnly);
-    } else if (DeprecatedEqualIgnoringCase(value, "false")) {
+    } else if (EqualIgnoringASCIICase(value, "false")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kWebkitUserModify, CSSValueID::kReadOnly);
     }
@@ -308,7 +308,7 @@ void HTMLElement::CollectStyleForPresentationAttribute(
           style, CSSPropertyID::kWebkitUserDrag, CSSValueID::kElement);
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kUserSelect,
                                               CSSValueID::kNone);
-    } else if (DeprecatedEqualIgnoringCase(value, "false")) {
+    } else if (EqualIgnoringASCIICase(value, "false")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kWebkitUserDrag, CSSValueID::kNone);
     }
@@ -890,9 +890,9 @@ void HTMLElement::ApplyAlignmentAttributeToStyle(
   CSSValueID float_value = CSSValueID::kInvalid;
   CSSValueID vertical_align_value = CSSValueID::kInvalid;
 
-  if (DeprecatedEqualIgnoringCase(alignment, "absmiddle")) {
+  if (EqualIgnoringASCIICase(alignment, "absmiddle")) {
     vertical_align_value = CSSValueID::kMiddle;
-  } else if (DeprecatedEqualIgnoringCase(alignment, "absbottom")) {
+  } else if (EqualIgnoringASCIICase(alignment, "absbottom")) {
     vertical_align_value = CSSValueID::kBottom;
   } else if (EqualIgnoringASCIICase(alignment, "left")) {
     float_value = CSSValueID::kLeft;
@@ -935,7 +935,7 @@ String HTMLElement::contentEditable() const {
     return "inherit";
   if (value.IsEmpty() || EqualIgnoringASCIICase(value, "true"))
     return "true";
-  if (DeprecatedEqualIgnoringCase(value, "false"))
+  if (EqualIgnoringASCIICase(value, "false"))
     return "false";
   if (EqualIgnoringASCIICase(value, "plaintext-only"))
     return "plaintext-only";
@@ -947,7 +947,7 @@ void HTMLElement::setContentEditable(const String& enabled,
                                      ExceptionState& exception_state) {
   if (EqualIgnoringASCIICase(enabled, "true"))
     setAttribute(html_names::kContenteditableAttr, "true");
-  else if (DeprecatedEqualIgnoringCase(enabled, "false"))
+  else if (EqualIgnoringASCIICase(enabled, "false"))
     setAttribute(html_names::kContenteditableAttr, "false");
   else if (EqualIgnoringASCIICase(enabled, "plaintext-only"))
     setAttribute(html_names::kContenteditableAttr, "plaintext-only");
@@ -1026,8 +1026,7 @@ TranslateAttributeMode HTMLElement::GetTranslateAttributeMode() const {
 
   if (value == g_null_atom)
     return kTranslateAttributeInherit;
-  if (DeprecatedEqualIgnoringCase(value, "yes") ||
-      EqualIgnoringASCIICase(value, ""))
+  if (EqualIgnoringASCIICase(value, "yes") || EqualIgnoringASCIICase(value, ""))
     return kTranslateAttributeYes;
   if (EqualIgnoringASCIICase(value, "no"))
     return kTranslateAttributeNo;
@@ -1335,7 +1334,7 @@ bool HTMLElement::ParseColorWithLegacyRules(const String& attribute_value,
   String color_string = attribute_value.StripWhiteSpace();
 
   // "transparent" doesn't apply a color either.
-  if (DeprecatedEqualIgnoringCase(color_string, "transparent"))
+  if (EqualIgnoringASCIICase(color_string, "transparent"))
     return false;
 
   // If the string is a 3/6-digit hex color or a named CSS color, use that.
@@ -1433,7 +1432,7 @@ bool HTMLElement::MatchesReadWritePseudoClass() const {
     if (value.IsEmpty() || EqualIgnoringASCIICase(value, "true") ||
         EqualIgnoringASCIICase(value, "plaintext-only"))
       return true;
-    if (DeprecatedEqualIgnoringCase(value, "false"))
+    if (EqualIgnoringASCIICase(value, "false"))
       return false;
     // All other values should be treated as "inherit".
   }

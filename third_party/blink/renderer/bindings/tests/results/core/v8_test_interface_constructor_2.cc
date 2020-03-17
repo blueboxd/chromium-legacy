@@ -13,9 +13,9 @@
 #include <algorithm>
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_configuration.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_test_interface_empty.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -87,16 +87,12 @@ static void Constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   ExceptionState exception_state(info.GetIsolate(), ExceptionState::kConstructionContext, "TestInterfaceConstructor2");
 
-  Dictionary dictionary_arg;
-  if (!info[0]->IsNullOrUndefined() && !info[0]->IsObject()) {
-    exception_state.ThrowTypeError("parameter 1 ('dictionaryArg') is not an object.");
-    return;
-  }
-  dictionary_arg = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), info[0], exception_state);
+  ScriptValue object_arg;
+  object_arg = NativeValueTraits<IDLObject>::NativeValue(info.GetIsolate(), info[0], exception_state);
   if (exception_state.HadException())
     return;
 
-  TestInterfaceConstructor2* impl = TestInterfaceConstructor2::Create(dictionary_arg);
+  TestInterfaceConstructor2* impl = TestInterfaceConstructor2::Create(object_arg);
   v8::Local<v8::Object> wrapper = info.Holder();
   wrapper = impl->AssociateWithWrapper(info.GetIsolate(), V8TestInterfaceConstructor2::GetWrapperTypeInfo(), wrapper);
   V8SetReturnValue(info, wrapper);
@@ -127,7 +123,6 @@ static void Constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
   int32_t long_arg;
   V8StringResource<> default_undefined_optional_string_arg;
   V8StringResource<> default_null_string_optional_string_arg;
-  Dictionary default_undefined_optional_dictionary_arg;
   V8StringResource<> optional_string_arg;
   int num_args_passed = info.Length();
   while (num_args_passed > 0) {
@@ -156,26 +151,18 @@ static void Constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
   } else {
     default_null_string_optional_string_arg = nullptr;
   }
-  if (!info[4]->IsNullOrUndefined() && !info[4]->IsObject()) {
-    exception_state.ThrowTypeError("parameter 5 ('defaultUndefinedOptionalDictionaryArg') is not an object.");
-    return;
-  }
-  default_undefined_optional_dictionary_arg = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), info[4], exception_state);
-  if (exception_state.HadException())
-    return;
-
-  if (UNLIKELY(num_args_passed <= 5)) {
-    TestInterfaceConstructor2* impl = TestInterfaceConstructor2::Create(test_interface_empty_arg, long_arg, default_undefined_optional_string_arg, default_null_string_optional_string_arg, default_undefined_optional_dictionary_arg);
+  if (UNLIKELY(num_args_passed <= 4)) {
+    TestInterfaceConstructor2* impl = TestInterfaceConstructor2::Create(test_interface_empty_arg, long_arg, default_undefined_optional_string_arg, default_null_string_optional_string_arg);
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->AssociateWithWrapper(info.GetIsolate(), V8TestInterfaceConstructor2::GetWrapperTypeInfo(), wrapper);
     V8SetReturnValue(info, wrapper);
     return;
   }
-  optional_string_arg = info[5];
+  optional_string_arg = info[4];
   if (!optional_string_arg.Prepare())
     return;
 
-  TestInterfaceConstructor2* impl = TestInterfaceConstructor2::Create(test_interface_empty_arg, long_arg, default_undefined_optional_string_arg, default_null_string_optional_string_arg, default_undefined_optional_dictionary_arg, optional_string_arg);
+  TestInterfaceConstructor2* impl = TestInterfaceConstructor2::Create(test_interface_empty_arg, long_arg, default_undefined_optional_string_arg, default_null_string_optional_string_arg, optional_string_arg);
   v8::Local<v8::Object> wrapper = info.Holder();
   wrapper = impl->AssociateWithWrapper(info.GetIsolate(), V8TestInterfaceConstructor2::GetWrapperTypeInfo(), wrapper);
   V8SetReturnValue(info, wrapper);
@@ -183,7 +170,7 @@ static void Constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
 static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exception_state(info.GetIsolate(), ExceptionState::kConstructionContext, "TestInterfaceConstructor2");
-  switch (std::min(6, info.Length())) {
+  switch (std::min(5, info.Length())) {
     case 1:
       if (info[0]->IsArray()) {
         test_interface_constructor_2_v8_internal::Constructor3(info);
@@ -195,10 +182,6 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
       }
       if (exception_state.HadException()) {
         exception_state.RethrowV8Exception(exception_state.GetException());
-        return;
-      }
-      if (info[0]->IsObject()) {
-        test_interface_constructor_2_v8_internal::Constructor2(info);
         return;
       }
       if (true) {
@@ -225,12 +208,6 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
       }
       break;
     case 5:
-      if (true) {
-        test_interface_constructor_2_v8_internal::Constructor4(info);
-        return;
-      }
-      break;
-    case 6:
       if (true) {
         test_interface_constructor_2_v8_internal::Constructor4(info);
         return;

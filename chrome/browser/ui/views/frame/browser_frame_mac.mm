@@ -7,7 +7,7 @@
 #import "base/mac/foundation_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
-#include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -38,10 +38,10 @@
 namespace {
 
 AppShimHost* GetHostForBrowser(Browser* browser) {
-  auto* shim_handler = apps::ExtensionAppShimHandler::Get();
-  if (!shim_handler)
+  auto* shim_manager = apps::AppShimManager::Get();
+  if (!shim_manager)
     return nullptr;
-  return shim_handler->GetHostForRemoteCocoaBrowser(browser);
+  return shim_manager->GetHostForRemoteCocoaBrowser(browser);
 }
 
 bool ShouldHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {

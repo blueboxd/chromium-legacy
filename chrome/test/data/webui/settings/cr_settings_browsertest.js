@@ -84,6 +84,7 @@ CrSettingsCookiesPageTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_util.js',
     '../test_browser_proxy.js',
+    'test_metrics_browser_proxy.js',
     'test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
     'cookies_page_test.js',
@@ -451,6 +452,7 @@ CrSettingsPaymentsSectionTest.prototype = {
     '../test_browser_proxy.js',
     'passwords_and_autofill_fake_data.js',
     'sync_test_util.js',
+    'test_metrics_browser_proxy.js',
     'test_sync_browser_proxy.js',
     '../test_util.js',
     'payments_section_test.js',
@@ -1031,6 +1033,39 @@ GEN('#endif');
 
 /**
  * Test fixture for
+ * chrome/browser/resources/settings/privacy_page/privacy_page.html.
+ * with features::kPrivacySettingsRedesign enabled.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsPrivacyPageRedesignTest() {}
+
+CrSettingsPrivacyPageRedesignTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
+
+  featureList: {enabled: ['features::kPrivacySettingsRedesign']},
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_util.js',
+    '../test_browser_proxy.js',
+    'test_hats_browser_proxy.js',
+    'privacy_page_test.js',
+  ]),
+};
+
+TEST_F(
+    'CrSettingsPrivacyPageRedesignTest', 'HappinessTrackingSurveysTests',
+    function() {
+      settings_privacy_page.registerHappinessTrackingSurveysTests();
+      mocha.run();
+    });
+
+/**
+ * Test fixture for
  * chrome/browser/resources/settings/clear_browsing_data_dialog/
  *     clear_browsing_data_dialog.html.
  * @constructor
@@ -1088,7 +1123,9 @@ CrSettingsSafetyCheckPageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
     'safety_check_page_test.js',
+    'test_hats_browser_proxy.js',
   ]),
 };
 

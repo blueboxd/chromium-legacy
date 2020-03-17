@@ -3682,6 +3682,28 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Extensions.CrossOriginFetchFromContentScript3">
+  <owner>lukasza@chromium.org</owner>
+  <summary>
+    This UKM event is logged when an extension which triggers a cross-origin
+    CORS-mode request from a content script if such a request results would be
+    allowed by CORB, but potentially blocked by CORS. The source-id URL
+    associated with the UKM event identifies the extension initiating such
+    request.
+
+    Note that this data is only gathered if the
+    CorbAllowlistAlsoAppliesToOorCors feature is disabled. Also note that this
+    data is not gathered for extensions that are already on the allowlist.
+  </summary>
+  <metric name="EventHappened" enum="Boolean">
+    <summary>
+      Always true - introduced to have non-zero number of metrics which should
+      make it easier to work with queries / dashboards for the overall
+      CrossOriginFetchFromContentScript3 event.
+    </summary>
+  </metric>
+</event>
+
 <event name="FontMatchAttempts">
   <owner>caraitto@chromium.org</owner>
   <owner>pauljensen@chromium.org</owner>

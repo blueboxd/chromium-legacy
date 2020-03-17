@@ -963,8 +963,8 @@ void TokenPreloadScanner::ScanCommon(
             token.GetAttributeItem(html_names::kHttpEquivAttr);
         if (equiv_attribute) {
           String equiv_attribute_value(equiv_attribute->Value());
-          if (DeprecatedEqualIgnoringCase(equiv_attribute_value,
-                                          "content-security-policy")) {
+          if (EqualIgnoringASCIICase(equiv_attribute_value,
+                                     "content-security-policy")) {
             *is_csp_meta_tag = true;
           } else if (EqualIgnoringASCIICase(equiv_attribute_value,
                                             "accept-ch")) {

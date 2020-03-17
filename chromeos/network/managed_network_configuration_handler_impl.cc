@@ -183,7 +183,7 @@ void ManagedNetworkConfigurationHandlerImpl::RemoveObserver(
 void ManagedNetworkConfigurationHandlerImpl::GetManagedProperties(
     const std::string& userhash,
     const std::string& service_path,
-    const network_handler::DictionaryResultCallback& callback,
+    network_handler::DictionaryResultCallback callback,
     const network_handler::ErrorCallback& error_callback) {
   if (!GetPoliciesForUser(userhash) || !GetPoliciesForUser(std::string())) {
     InvokeErrorCallback(service_path, error_callback, kPoliciesNotInitialized);
@@ -192,19 +192,19 @@ void ManagedNetworkConfigurationHandlerImpl::GetManagedProperties(
   NET_LOG_USER("GetManagedProperties", service_path);
   network_configuration_handler_->GetShillProperties(
       service_path,
-      base::Bind(
+      base::BindOnce(
           &ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback,
           weak_ptr_factory_.GetWeakPtr(),
-          base::Bind(
+          base::BindOnce(
               &ManagedNetworkConfigurationHandlerImpl::SendManagedProperties,
-              weak_ptr_factory_.GetWeakPtr(), userhash, callback,
+              weak_ptr_factory_.GetWeakPtr(), userhash, std::move(callback),
               error_callback)),
       error_callback);
 }
 
 void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
     const std::string& userhash,
-    const network_handler::DictionaryResultCallback& callback,
+    network_handler::DictionaryResultCallback callback,
     const network_handler::ErrorCallback& error_callback,
     const std::string& service_path,
     std::unique_ptr<base::DictionaryValue> shill_properties) {
@@ -265,7 +265,7 @@ void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
                                     user_settings, active_settings.get(),
                                     profile));
   SetManagedActiveProxyValues(guid, augmented_properties.get());
-  callback.Run(service_path, *augmented_properties);
+  std::move(callback).Run(service_path, *augmented_properties);
 }
 
 // GetProperties
@@ -273,23 +273,24 @@ void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
 void ManagedNetworkConfigurationHandlerImpl::GetProperties(
     const std::string& userhash,
     const std::string& service_path,
-    const network_handler::DictionaryResultCallback& callback,
+    network_handler::DictionaryResultCallback callback,
     const network_handler::ErrorCallback& error_callback) {
   NET_LOG_USER("GetProperties", service_path);
   network_configuration_handler_->GetShillProperties(
       service_path,
-      base::Bind(
+      base::BindOnce(
           &ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback,
           weak_ptr_factory_.GetWeakPtr(),
-          base::Bind(&ManagedNetworkConfigurationHandlerImpl::SendProperties,
-                     weak_ptr_factory_.GetWeakPtr(), userhash, callback,
-                     error_callback)),
+          base::BindOnce(
+              &ManagedNetworkConfigurationHandlerImpl::SendProperties,
+              weak_ptr_factory_.GetWeakPtr(), userhash, std::move(callback),
+              error_callback)),
       error_callback);
 }
 
 void ManagedNetworkConfigurationHandlerImpl::SendProperties(
     const std::string& userhash,
-    const network_handler::DictionaryResultCallback& callback,
+    network_handler::DictionaryResultCallback callback,
     const network_handler::ErrorCallback& error_callback,
     const std::string& service_path,
     std::unique_ptr<base::DictionaryValue> shill_properties) {
@@ -306,7 +307,7 @@ void ManagedNetworkConfigurationHandlerImpl::SendProperties(
       onc::TranslateShillServiceToONCPart(*shill_properties, onc_source,
                                           &onc::kNetworkWithStateSignature,
                                           network_state));
-  callback.Run(service_path, *onc_network);
+  std::move(callback).Run(service_path, *onc_network);
 }
 
 // SetProperties
@@ -1088,7 +1089,8 @@ void ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback(
       !shill_properties_copy->GetStringWithoutPathExpansion(
           shill::kDeviceProperty, &device_path) ||
       device_path.empty()) {
-    send_callback.Run(service_path, std::move(shill_properties_copy));
+    std::move(send_callback)
+        .Run(service_path, std::move(shill_properties_copy));
     return;
   }
 
@@ -1096,20 +1098,19 @@ void ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback(
   // modified) |shill_properties| to |send_callback|.
   std::unique_ptr<base::DictionaryValue> shill_properties_copy_error_copy(
       shill_properties_copy->DeepCopy());
+  auto repeating_send_callback =
+      base::AdaptCallbackForRepeating(std::move(send_callback));
   network_device_handler_->GetDeviceProperties(
       device_path,
-      base::Bind(&ManagedNetworkConfigurationHandlerImpl::
-                     GetDevicePropertiesSuccess,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 service_path,
-                 base::Passed(&shill_properties_copy),
-                 send_callback),
-      base::Bind(&ManagedNetworkConfigurationHandlerImpl::
-                     GetDevicePropertiesFailure,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 service_path,
-                 base::Passed(&shill_properties_copy_error_copy),
-                 send_callback));
+      base::BindOnce(
+          &ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesSuccess,
+          weak_ptr_factory_.GetWeakPtr(), service_path,
+          base::Passed(&shill_properties_copy), repeating_send_callback),
+      base::Bind(
+          &ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesFailure,
+          weak_ptr_factory_.GetWeakPtr(), service_path,
+          base::Passed(&shill_properties_copy_error_copy),
+          repeating_send_callback));
 }
 
 void ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesSuccess(
@@ -1120,7 +1121,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesSuccess(
     const base::DictionaryValue& device_properties) {
   // Create a "Device" dictionary in |network_properties|.
   network_properties->SetKey(shill::kDeviceProperty, device_properties.Clone());
-  send_callback.Run(service_path, std::move(network_properties));
+  std::move(send_callback).Run(service_path, std::move(network_properties));
 }
 
 void ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesFailure(
@@ -1130,7 +1131,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesFailure(
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Error getting device properties", service_path);
-  send_callback.Run(service_path, std::move(network_properties));
+  std::move(send_callback).Run(service_path, std::move(network_properties));
 }
 
 

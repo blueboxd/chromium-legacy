@@ -57,10 +57,6 @@ std::unique_ptr<previews::RegexpList> GetDenylistRegexpsForDeferAllScript() {
 
 // Returns true if previews can be shown for |type|.
 bool IsPreviewsTypeEnabled(previews::PreviewsType type) {
-  bool server_previews_enabled =
-      previews::params::ArePreviewsAllowed() &&
-      base::FeatureList::IsEnabled(
-          data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
   switch (type) {
     case previews::PreviewsType::OFFLINE:
       return previews::params::IsOfflinePreviewsEnabled();
@@ -69,7 +65,7 @@ bool IsPreviewsTypeEnabled(previews::PreviewsType type) {
     case previews::PreviewsType::LITE_PAGE_REDIRECT:
       return previews::params::IsLitePageServerPreviewsEnabled();
     case previews::PreviewsType::LITE_PAGE:
-      return server_previews_enabled;
+      return false;
     case previews::PreviewsType::NOSCRIPT:
       return previews::params::IsNoScriptPreviewsEnabled();
     case previews::PreviewsType::RESOURCE_LOADING_HINTS:

@@ -10,7 +10,18 @@
           icon1x="oobe-32:computer" icon2x="oobe-64:computer">
       </hd-iron-icon>
       <div slot="footer" class="flex layout vertical center center-justified">
-        <paper-spinner-lite id="spinner" dir="ltr" active></paper-spinner-lite>
+        <div hidden$="[[showProgressBarInDemoModeSetup_]]">
+          <paper-spinner-lite id="spinner" dir="ltr"
+              active></paper-spinner-lite>
+        </div>
+        <div hidden$="[[!showProgressBarInDemoModeSetup_]]">
+          <!-- TODO(josephkimsh): Confirm UI input for progress bar and
+            accompanying text. -->
+          <!-- Paper progress is indeterminate when percentage is 0. -->
+          <paper-progress indeterminate="[[!progressPercentage_]]"
+              value="[[progressPercentage_]]"></paper-progress>
+          <span>Starting up Demo Mode...</span>
+        </div>
       </div>
     </oobe-dialog>
 

@@ -9,13 +9,15 @@
 #include "chrome/browser/vr/vr_export.h"
 #include "device/vr/public/mojom/vr_service.mojom-forward.h"
 
-namespace vr {
-
+namespace content {
 class BrowserXRRuntime;
+}
+
+namespace vr {
 
 class VR_EXPORT XRRuntimeManagerObserver : public base::CheckedObserver {
  public:
-  virtual void OnRuntimeAdded(vr::BrowserXRRuntime* runtime) = 0;
+  virtual void OnRuntimeAdded(content::BrowserXRRuntime* runtime) = 0;
 };
 
 }  // namespace vr

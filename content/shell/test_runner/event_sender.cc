@@ -2882,7 +2882,7 @@ std::unique_ptr<WebInputEvent> EventSender::TransformScreenToWidgetCoordinates(
 }
 
 void EventSender::UpdateLifecycleToPrePaint() {
-  widget()->UpdateLifecycle(blink::WebWidget::LifecycleUpdate::kPrePaint,
+  widget()->UpdateLifecycle(blink::WebLifecycleUpdate::kPrePaint,
                             blink::DocumentUpdateReason::kTest);
 }
 

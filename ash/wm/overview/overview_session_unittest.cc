@@ -309,8 +309,7 @@ class OverviewSessionTest : public MultiDisplayOverviewAndSplitViewTest {
   void CheckOverviewEnterExitHistogram(const char* trace,
                                        std::vector<int>&& enter_counts,
                                        std::vector<int>&& exit_counts) {
-    DCHECK(!base::Contains(trace_names_, trace)) << trace;
-    trace_names_.push_back(trace);
+    CheckForDuplicateTraceName(trace);
     {
       SCOPED_TRACE(trace + std::string(".Enter"));
       CheckOverviewHistogram("Ash.Overview.AnimationSmoothness.Enter",
@@ -344,6 +343,14 @@ class OverviewSessionTest : public MultiDisplayOverviewAndSplitViewTest {
   }
   static bool is_ui_shown(ExitWarningHandler* ewh) { return !!ewh->widget_; }
 
+ protected:
+  void CheckForDuplicateTraceName(const char* trace) {
+    DCHECK(!base::Contains(trace_names_, trace)) << trace;
+    trace_names_.push_back(trace);
+  }
+
+  base::HistogramTester histograms_;
+
  private:
   void CheckOverviewHistogram(const char* histogram,
                               std::vector<int>&& counts) {
@@ -363,7 +370,6 @@ class OverviewSessionTest : public MultiDisplayOverviewAndSplitViewTest {
 
   std::unique_ptr<ShelfViewTestAPI> shelf_view_test_api_;
   std::vector<std::string> trace_names_;
-  base::HistogramTester histograms_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewSessionTest);
 };
@@ -3839,6 +3845,31 @@ class SplitViewOverviewSessionTest : public OverviewSessionTest {
 
   void EndSplitView() { split_view_controller()->EndSplitView(); }
 
+  void CheckWindowResizingPerformanceHistograms(
+      const char* trace,
+      int with_empty_overview_grid,
+      int max_latency_with_empty_overview_grid,
+      int with_nonempty_overview_grid,
+      int max_latency_with_nonempty_overview_grid) {
+    CheckForDuplicateTraceName(trace);
+    SCOPED_TRACE(trace);
+
+    histograms_.ExpectTotalCount(
+        "Ash.SplitViewResize.PresentationTime.ClamshellMode.SingleWindow",
+        with_empty_overview_grid);
+    histograms_.ExpectTotalCount(
+        "Ash.SplitViewResize.PresentationTime.MaxLatency.ClamshellMode."
+        "SingleWindow",
+        max_latency_with_empty_overview_grid);
+    histograms_.ExpectTotalCount(
+        "Ash.SplitViewResize.PresentationTime.ClamshellMode.WithOverview",
+        with_nonempty_overview_grid);
+    histograms_.ExpectTotalCount(
+        "Ash.SplitViewResize.PresentationTime.MaxLatency.ClamshellMode."
+        "WithOverview",
+        max_latency_with_nonempty_overview_grid);
+  }
+
  protected:
   aura::Window* CreateWindow(const gfx::Rect& bounds) {
     aura::Window* window = CreateTestWindowInShellWithDelegate(
@@ -5996,7 +6027,12 @@ TEST_P(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
   // resize the window and overview at the same time.
   ui::test::EventGenerator generator1(Shell::GetPrimaryRootWindow(),
                                       window1.get());
-  generator1.DragMouseBy(50, 50);
+  generator1.PressLeftButton();
+  CheckWindowResizingPerformanceHistograms("BeforeResizingWindow1", 0, 0, 0, 0);
+  generator1.MoveMouseBy(50, 50);
+  CheckWindowResizingPerformanceHistograms("WhileResizingWindow1", 0, 0, 1, 0);
+  generator1.ReleaseLeftButton();
+  CheckWindowResizingPerformanceHistograms("AfterResizingWindow1", 0, 0, 1, 1);
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_NE(GetGridBounds(), overview_full_bounds);
@@ -6013,6 +6049,7 @@ TEST_P(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
   ui::test::EventGenerator generator2(Shell::GetPrimaryRootWindow(),
                                       window2.get());
   generator2.DragMouseBy(50, 50);
+  CheckWindowResizingPerformanceHistograms("AfterResizingWindow2", 0, 0, 1, 1);
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
@@ -6022,6 +6059,7 @@ TEST_P(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
   ui::test::EventGenerator generator3(Shell::GetPrimaryRootWindow(),
                                       window3.get());
   generator3.DragMouseBy(50, 50);
+  CheckWindowResizingPerformanceHistograms("AfterResizingWindow3", 0, 0, 1, 1);
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
@@ -6031,7 +6069,39 @@ TEST_P(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
   ui::test::EventGenerator generator4(Shell::GetPrimaryRootWindow(),
                                       window4.get());
   generator4.DragMouseBy(50, 50);
+  CheckWindowResizingPerformanceHistograms("AfterResizingWindow4", 0, 0, 1, 1);
   EXPECT_FALSE(overview_controller()->InOverviewSession());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+}
+
+// Test closing the split view window while resizing it.
+TEST_P(SplitViewOverviewSessionInClamshellTest,
+       CloseWindowWhileResizingItTest) {
+  UpdateDisplay("600x400");
+  const gfx::Rect bounds(400, 400);
+  std::unique_ptr<aura::Window> split_view_window(
+      CreateWindowWithHitTestComponent(HTRIGHT, bounds));
+  std::unique_ptr<aura::Window> overview_window(CreateWindow(bounds));
+  ToggleOverview();
+  DragWindowTo(GetOverviewItemForWindow(split_view_window.get()),
+               gfx::PointF(0.f, 0.f));
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     split_view_window.get());
+  generator.PressLeftButton();
+  CheckWindowResizingPerformanceHistograms("AfterPressingMouseButton", 0, 0, 0,
+                                           0);
+  generator.MoveMouseBy(50, 50);
+  CheckWindowResizingPerformanceHistograms("WhileResizing", 0, 0, 1, 0);
+  split_view_window.reset();
+  CheckWindowResizingPerformanceHistograms("AfterClosing", 0, 0, 1, 1);
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+  generator.ReleaseLeftButton();
+  CheckWindowResizingPerformanceHistograms("AfterReleasingMouseButton", 0, 0, 1,
+                                           1);
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }
 
@@ -6207,9 +6277,13 @@ TEST_P(SplitViewOverviewSessionInClamshellTest,
 // the same before and after changing the display orientation in clamshell mode.
 TEST_P(SplitViewOverviewSessionInClamshellTest, DisplayOrientationChangeTest) {
   UpdateDisplay("600x400");
-  std::unique_ptr<aura::Window> window(
-      CreateWindowWithHitTestComponent(HTRIGHT, gfx::Rect(400, 400)));
-  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  const gfx::Rect bounds(400, 400);
+  std::unique_ptr<aura::Window> split_view_window(
+      CreateWindowWithHitTestComponent(HTRIGHT, bounds));
+  std::unique_ptr<aura::Window> overview_window(CreateWindow(bounds));
+  ToggleOverview();
+  split_view_controller()->SnapWindow(split_view_window.get(),
+                                      SplitViewController::LEFT);
   const auto test_many_orientation_changes =
       [this](const std::string& description) {
         SCOPED_TRACE(description);
@@ -6238,7 +6312,8 @@ TEST_P(SplitViewOverviewSessionInClamshellTest, DisplayOrientationChangeTest) {
   test_many_orientation_changes("centered divider");
   EXPECT_EQ(split_view_controller()->GetDefaultDividerPosition(),
             split_view_controller()->divider_position());
-  ui::test::EventGenerator(Shell::GetPrimaryRootWindow(), window.get())
+  ui::test::EventGenerator(Shell::GetPrimaryRootWindow(),
+                           split_view_window.get())
       .DragMouseBy(50, 50);
   EXPECT_NE(split_view_controller()->GetDefaultDividerPosition(),
             split_view_controller()->divider_position());
@@ -6976,6 +7051,45 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   EXPECT_EQ(window2.get(), split_view_controller2->left_window());
   EXPECT_EQ(root_windows[1], window2->GetRootWindow());
   EXPECT_TRUE(InOverviewSession());
+}
+
+// Verify that window resizing performance is recorded to the correct histogram
+// depending on whether the overview grid is empty.
+TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
+       WindowResizingPerformanceHistogramsTest) {
+  UpdateDisplay("800x600,800x600");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+  const gfx::Rect bounds_within_root1(0, 0, 400, 400);
+  const gfx::Rect bounds_within_root2(800, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(
+      CreateWindowWithHitTestComponent(HTRIGHT, bounds_within_root1));
+  std::unique_ptr<aura::Window> window2(
+      CreateWindowWithHitTestComponent(HTRIGHT, bounds_within_root2));
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow(bounds_within_root2);
+  ToggleOverview();
+  SplitViewController::Get(root_windows[0])
+      ->SnapWindow(window1.get(), SplitViewController::LEFT);
+  SplitViewController::Get(root_windows[1])
+      ->SnapWindow(window2.get(), SplitViewController::LEFT);
+  // Resize |window1|, which is in split view with an empty overview grid.
+  ui::test::EventGenerator generator1(root_windows[0], window1.get());
+  generator1.PressLeftButton();
+  CheckWindowResizingPerformanceHistograms("BeforeResizingWindow1", 0, 0, 0, 0);
+  generator1.MoveMouseBy(50, 50);
+  CheckWindowResizingPerformanceHistograms("WhileResizingWindow1", 1, 0, 0, 0);
+  generator1.ReleaseLeftButton();
+  CheckWindowResizingPerformanceHistograms("AfterResizingWindow1", 1, 1, 0, 0);
+  // Resize |window2|, which is in split view with a nonempty overview grid.
+  Shell::Get()->cursor_manager()->SetDisplay(
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
+  ui::test::EventGenerator generator2(root_windows[1], window2.get());
+  generator2.PressLeftButton();
+  CheckWindowResizingPerformanceHistograms("BeforeResizingWindow2", 1, 1, 0, 0);
+  generator2.MoveMouseBy(50, 50);
+  CheckWindowResizingPerformanceHistograms("WhileResizingWindow2", 1, 1, 1, 0);
+  generator2.ReleaseLeftButton();
+  CheckWindowResizingPerformanceHistograms("AfterResizingWindow2", 1, 1, 1, 1);
 }
 
 // Verify that |SplitViewController::CanSnapWindow| checks that the minimum size

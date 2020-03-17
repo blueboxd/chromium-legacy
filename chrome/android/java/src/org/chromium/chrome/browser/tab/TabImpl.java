@@ -140,6 +140,8 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
      */
     private @Nullable @TabLaunchType Integer mLaunchTypeAtCreation;
 
+    private @Nullable @TabCreationState Integer mCreationState;
+
     /**
      * Navigation state of the WebContents as returned by nativeGetContentsStateAsByteBuffer(),
      * stored to be inflated on demand using unfreezeContents(). If this is not null, there is no
@@ -743,7 +745,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
      * Certain functionalities will not work until it is attached to an activity
      * with {@link ReparentingTask#finish}.
      */
-    public static boolean isDetached(Tab tab) {
+    static boolean isDetached(Tab tab) {
         if (tab.getWebContents() == null) return true;
         // Should get WindowAndroid from WebContents since the one from |getWindowAndroid()|
         // is always non-null even when the tab is in detached state. See the comment in |detach()|.
@@ -814,21 +816,20 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
      * @param initiallyHidden Only used if {@code webContents} is {@code null}.  Determines
      *        whether or not the newly created {@link WebContents} will be hidden or not.
      * @param tabState State containing information about this Tab, if it was persisted.
-     * @param unfreeze Whether there should be an attempt to restore state at the end of
-     *        the initialization.
      */
     void initialize(Tab parent, @Nullable @TabCreationState Integer creationState,
             LoadUrlParams loadUrlParams, WebContents webContents,
             @Nullable TabDelegateFactory delegateFactory, boolean initiallyHidden,
-            TabState tabState, boolean unfreeze) {
+            TabState tabState) {
         try {
             TraceEvent.begin("Tab.initialize");
 
             mLaunchTypeAtCreation = mLaunchType;
+            mCreationState = creationState;
             mPendingLoadParams = loadUrlParams;
             if (loadUrlParams != null) mUrl = new GURL(loadUrlParams.getUrl());
 
-            TabHelpers.initTabHelpers(this, parent, creationState);
+            TabHelpers.initTabHelpers(this, parent);
 
             if (tabState != null) restoreFieldsFromState(tabState);
 
@@ -838,11 +839,8 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             RevenueStats.getInstance().tabCreated(this);
 
             // If there is a frozen WebContents state or a pending lazy load, don't create a new
-            // WebContents.
-            if (getFrozenContentsState() != null || getPendingLoadParams() != null) {
-                if (unfreeze) unfreezeContents();
-                return;
-            }
+            // WebContents. Restoring will be done when showing the tab in the foreground.
+            if (getFrozenContentsState() != null || getPendingLoadParams() != null) return;
 
             boolean creatingWebContents = webContents == null;
             if (creatingWebContents) {
@@ -867,6 +865,12 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             for (TabObserver observer : mObservers) observer.onInitialized(this, tabState);
             TraceEvent.end("Tab.initialize");
         }
+    }
+
+    @Nullable
+    @TabCreationState
+    Integer getCreationState() {
+        return mCreationState;
     }
 
     /**
@@ -1391,11 +1395,10 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     private final void restoreIfNeeded() {
         try {
             TraceEvent.begin("Tab.restoreIfNeeded");
-            if (isFrozen() && mFrozenContentsState != null) {
-                // Restore is needed for a tab that is loaded for the first time. WebContents will
-                // be restored from a saved state.
-                unfreezeContents();
-            } else if (!needsReload()) {
+            // Restore is needed for a tab that is loaded for the first time. WebContents will
+            // be restored from a saved state.
+            if ((isFrozen() && mFrozenContentsState != null && !unfreezeContents())
+                    || !needsReload()) {
                 return;
             }
 
@@ -1412,21 +1415,21 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
      * frozen with a saved TabState, and NOT if it was frozen for a lazy load.
      * @return Whether or not the restoration was successful.
      */
-    private void unfreezeContents() {
+    private boolean unfreezeContents() {
+        boolean restored = true;
         try {
             TraceEvent.begin("Tab.unfreezeContents");
             assert mFrozenContentsState != null;
 
             WebContents webContents =
                     mFrozenContentsState.restoreContentsFromByteBuffer(isHidden());
-            boolean failedToRestore = false;
             if (webContents == null) {
                 // State restore failed, just create a new empty web contents as that is the best
                 // that can be done at this point. TODO(jcivelli) http://b/5910521 - we should show
                 // an error page instead of a blank page in that case (and the last loaded URL).
                 webContents = WebContentsFactory.createWebContents(isIncognito(), isHidden());
-                TabUma.create(this, TabCreationState.FROZEN_ON_RESTORE_FAILED);
-                failedToRestore = true;
+                for (TabObserver observer : mObservers) observer.onRestoreFailed(this);
+                restored = false;
             }
             View compositorView = getActivity().getCompositorViewHolder();
             webContents.setSize(compositorView.getWidth(), compositorView.getHeight());
@@ -1434,13 +1437,14 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             mFrozenContentsState = null;
             initWebContents(webContents);
 
-            if (failedToRestore) {
+            if (!restored) {
                 String url = mUrl.getSpec().isEmpty() ? UrlConstants.NTP_URL : mUrl.getSpec();
                 loadUrl(new LoadUrlParams(url, PageTransition.GENERATED));
             }
         } finally {
             TraceEvent.end("Tab.unfreezeContents");
         }
+        return restored;
     }
 
     private boolean isCustomTab() {

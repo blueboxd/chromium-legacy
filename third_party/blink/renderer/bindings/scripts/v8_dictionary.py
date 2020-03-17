@@ -159,7 +159,6 @@ def member_context(_, member, component_info):
     v8_value = snake_case_name + "_value"
     has_value_or_default = snake_case_name + "_has_value_or_default"
     getter_name = getter_name_for_dictionary_member(member)
-    is_deprecated_dictionary = unwrapped_idl_type.name == 'Dictionary'
     runtime_features = component_info['runtime_enabled_features']
 
     return {
@@ -191,14 +190,12 @@ def member_context(_, member, component_info):
         idl_type.base_type,
         'is_callback_function_type':
         idl_type.is_callback_function,
-        'is_deprecated_dictionary':
-        is_deprecated_dictionary,
         'is_interface_type':
-        idl_type.is_interface_type and not is_deprecated_dictionary,
+        idl_type.is_interface_type,
         'is_nullable':
         idl_type.is_nullable,
         'is_object':
-        unwrapped_idl_type.name == 'Object' or is_deprecated_dictionary,
+        unwrapped_idl_type.name == 'Object',
         'is_string_type':
         idl_type.preprocessed_type.is_string_type,
         'is_required':
@@ -306,8 +303,6 @@ def member_impl_context(member, interfaces_info, header_includes,
         if idl_type.name == 'Object':
             return '!({0}_.IsEmpty() || {0}_.IsNull() || {0}_.IsUndefined())'.format(
                 cpp_name)
-        if idl_type.name == 'Dictionary':
-            return '!%s_.IsUndefinedOrNull()' % cpp_name
         return '%s_' % cpp_name
 
     cpp_default_value = None

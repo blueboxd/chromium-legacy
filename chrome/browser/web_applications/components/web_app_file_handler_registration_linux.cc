@@ -46,8 +46,7 @@ bool ShouldRegisterFileHandlersWithOs() {
 void RegisterFileHandlersWithOs(const AppId& app_id,
                                 const std::string& app_name,
                                 Profile* profile,
-                                const std::set<std::string>& file_extensions,
-                                const std::set<std::string>& mime_types) {
+                                const apps::FileHandlers& file_handlers) {
   UpdateFileHandlerRegistrationInOs(app_id, profile);
 }
 

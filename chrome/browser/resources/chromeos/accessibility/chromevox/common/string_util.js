@@ -68,6 +68,22 @@ StringUtil = class {
     }
     return offset - 1;
   }
+
+  /**
+   * Returns a unicode-aware substring of |text|.
+   * @param {string} text
+   * @param {number} startIndex
+   * @param {number} endIndex
+   * @return {string}
+   */
+  static getUnicodeSubstring_(text, startIndex, endIndex) {
+    let result = '';
+    const textSymbolArray = [...text];
+    for (let i = startIndex; i < endIndex; ++i) {
+      result += textSymbolArray[i];
+    }
+    return result;
+  }
 };
 
 

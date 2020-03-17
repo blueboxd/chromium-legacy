@@ -508,6 +508,10 @@ void CompositorFrameReporter::ReportEventLatencyHistograms() const {
   for (const EventMetrics& event_metrics : events_metrics_) {
     base::TimeDelta total_latency =
         frame_termination_time_ - event_metrics.time_stamp();
+    const auto trace_id = TRACE_ID_LOCAL(&event_metrics);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP1(
+        "cc,input", "EventLatency", trace_id, event_metrics.time_stamp(),
+        "event", event_metrics.GetTypeName());
     const int type_index = static_cast<int>(event_metrics.type());
     STATIC_HISTOGRAM_POINTER_GROUP(
         GetEventLatencyHistogramName(event_metrics), type_index,
@@ -518,6 +522,41 @@ void CompositorFrameReporter::ReportEventLatencyHistograms() const {
             kEventLatencyHistogramMin, kEventLatencyHistogramMax,
             kEventLatencyHistogramBucketCount,
             base::HistogramBase::kUmaTargetedHistogramFlag));
+
+    // Report the breakdowns.
+    // It is possible for an event to arrive in the compositor in the middle of
+    // a frame (e.g. the browser received the event *after* renderer received a
+    // begin-impl, and the event reached the compositor before that frame
+    // ended). To handle such cases, find the first stage that happens after the
+    // event's arrival in the browser.
+    // TODO(mohsen): Report the breakdowns in UMA too.
+    size_t index = 0;
+    for (; index < stage_history_.size(); ++index) {
+      const auto& stage = stage_history_[index];
+      if (stage.start_time > event_metrics.time_stamp()) {
+        TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+            "cc,input", "BrowserToRendererCompositor", trace_id,
+            event_metrics.time_stamp());
+        TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+            "cc,input", "BrowserToRendererCompositor", trace_id,
+            stage.start_time);
+        break;
+      }
+    }
+
+    for (; index < stage_history_.size(); ++index) {
+      const auto& stage = stage_history_[index];
+      if (stage.stage_type == StageType::kTotalLatency)
+        break;
+      TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+          "cc,input", GetStageName(static_cast<int>(stage.stage_type)),
+          trace_id, stage.start_time);
+      TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+          "cc,input", GetStageName(static_cast<int>(stage.stage_type)),
+          trace_id, stage.end_time);
+    }
+    TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+        "cc,input", "EventLatency", trace_id, frame_termination_time_);
   }
 }
 

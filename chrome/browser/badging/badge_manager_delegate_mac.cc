@@ -5,7 +5,7 @@
 #include "chrome/browser/badging/badge_manager_delegate_mac.h"
 
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
-#include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -25,13 +25,13 @@ void BadgeManagerDelegateMac::OnAppBadgeUpdated(const web_app::AppId& app_id) {
 
 void BadgeManagerDelegateMac::SetAppBadgeLabel(const std::string& app_id,
                                                const std::string& badge_label) {
-  auto* shim_handler = apps::ExtensionAppShimHandler::Get();
-  if (!shim_handler)
+  auto* shim_manager = apps::AppShimManager::Get();
+  if (!shim_manager)
     return;
 
   // On macOS all app instances share a dock icon, so we only need to set the
   // badge label once.
-  AppShimHost* shim_host = shim_handler->FindHost(profile(), app_id);
+  AppShimHost* shim_host = shim_manager->FindHost(profile(), app_id);
   if (!shim_host)
     return;
 

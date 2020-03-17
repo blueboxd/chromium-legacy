@@ -407,7 +407,9 @@ class VectorBufferBase {
     DCHECK_LE(new_capacity,
               Allocator::template MaxElementCountInBackingStore<T>());
     size_t size_to_allocate = AllocationSize(new_capacity);
-    buffer_ = Allocator::template AllocateVectorBacking<T>(size_to_allocate);
+    AsAtomicPtr(&buffer_)->store(
+        Allocator::template AllocateVectorBacking<T>(size_to_allocate),
+        std::memory_order_relaxed);
     capacity_ = static_cast<wtf_size_t>(size_to_allocate / sizeof(T));
   }
 
@@ -446,7 +448,7 @@ class VectorBufferBase {
   }
 
   void MoveBufferInto(VectorBufferBase& other) {
-    other.buffer_ = buffer_;
+    AsAtomicPtr(&other.buffer_)->store(buffer_, std::memory_order_relaxed);
     other.capacity_ = capacity_;
   }
 
@@ -479,6 +481,10 @@ class VectorBufferBase {
 
   bool IsHashTableDeletedValue() const {
     return buffer_ == reinterpret_cast<T*>(-1);
+  }
+
+  const T* BufferSafe() const {
+    return AsAtomicPtr(&buffer_)->load(std::memory_order_relaxed);
   }
 
   T* buffer_;
@@ -540,7 +546,7 @@ class VectorBuffer<T, 0, Allocator> : protected VectorBufferBase<T, Allocator> {
   }
 
   void ResetBufferPointer() {
-    buffer_ = nullptr;
+    AsAtomicPtr(&buffer_)->store(nullptr, std::memory_order_relaxed);
     capacity_ = 0;
   }
 
@@ -570,14 +576,20 @@ class VectorBuffer<T, 0, Allocator> : protected VectorBufferBase<T, Allocator> {
   bool HasOutOfLineBuffer() const {
     // When inlineCapacity is 0 we have an out of line buffer if we have a
     // buffer.
-    return Buffer();
+    return IsOutOfLineBuffer(this, Buffer());
   }
 
   T** BufferSlot() { return &buffer_; }
   const T* const* BufferSlot() const { return &buffer_; }
 
  protected:
+  using Base::BufferSafe;
+
   using Base::size_;
+
+  static bool IsOutOfLineBuffer(const VectorBuffer* vector, const T* buffer) {
+    return buffer;
+  }
 
  private:
   using Base::buffer_;
@@ -649,7 +661,7 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
   }
 
   void ResetBufferPointer() {
-    buffer_ = InlineBuffer();
+    AsAtomicPtr(&buffer_)->store(InlineBuffer(), std::memory_order_relaxed);
     capacity_ = inlineCapacity;
   }
 
@@ -851,15 +863,19 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
   using Base::Buffer;
   using Base::capacity;
 
-  bool HasOutOfLineBuffer() const {
-    return Buffer() && Buffer() != InlineBuffer();
-  }
+  bool HasOutOfLineBuffer() const { return IsOutOfLineBuffer(this, Buffer()); }
 
   T** BufferSlot() { return &buffer_; }
   const T* const* BufferSlot() const { return &buffer_; }
 
  protected:
+  using Base::BufferSafe;
+
   using Base::size_;
+
+  static bool IsOutOfLineBuffer(const VectorBuffer* vector, const T* buffer) {
+    return buffer && buffer != vector->InlineBuffer();
+  }
 
  private:
   using Base::buffer_;
@@ -1332,11 +1348,12 @@ class Vector
 
   void ReallocateBuffer(wtf_size_t);
 
-  using Base::size_;
-  using Base::Buffer;
-  using Base::SwapVectorBuffer;
   using Base::AllocateBuffer;
   using Base::AllocationSize;
+  using Base::Buffer;
+  using Base::BufferSafe;
+  using Base::size_;
+  using Base::SwapVectorBuffer;
 };
 
 //
@@ -2003,23 +2020,23 @@ Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
   static_assert(Allocator::kIsGarbageCollected,
                 "Garbage collector must be enabled.");
 
-  if (this->HasOutOfLineBuffer()) {
-    Allocator::TraceVectorBacking(visitor, Buffer(), Base::BufferSlot());
+  const T* buffer = BufferSafe();
+  if (Base::IsOutOfLineBuffer(this, buffer)) {
+    Allocator::TraceVectorBacking(visitor, buffer, Base::BufferSlot());
   } else {
     // We should not visit inline buffers, but we still need to register the
     // slot for heap compaction. So, we pass nullptr to this method.
     Allocator::TraceVectorBacking(visitor, static_cast<T*>(nullptr),
                                   Base::BufferSlot());
-    if (!Buffer())
+    if (!buffer)
       return;
     // Inline buffer requires tracing immediately.
-    const T* buffer_begin = Buffer();
-    const T* buffer_end = Buffer() + size();
+    const T* buffer_begin = buffer;
+    const T* buffer_end = buffer + size();
     if (IsTraceableInCollectionTrait<VectorTraits<T>>::value) {
       for (const T* buffer_entry = buffer_begin; buffer_entry != buffer_end;
            buffer_entry++) {
-        Allocator::template Trace<T, VectorTraits<T>>(
-            visitor, *const_cast<T*>(buffer_entry));
+        Allocator::template Trace<T, VectorTraits<T>>(visitor, *buffer_entry);
       }
     }
   }

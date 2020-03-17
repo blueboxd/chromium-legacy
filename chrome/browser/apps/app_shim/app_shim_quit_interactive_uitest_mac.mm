@@ -15,7 +15,7 @@
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_listener.h"
-#include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -58,9 +58,9 @@ class AppShimQuitTest : public PlatformAppBrowserTest {
     ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
     ASSERT_EQ(1u, [[NSApp windows] count]);
 
-    handler_ = g_browser_process->platform_part()
+    manager_ = g_browser_process->platform_part()
                    ->app_shim_listener()
-                   ->extension_app_shim_handler();
+                   ->app_shim_manager();
 
     // Attach a host for the app.
     extensions::ExtensionRegistry* registry =
@@ -102,7 +102,7 @@ class AppShimQuitTest : public PlatformAppBrowserTest {
   }
 
   base::FilePath app_path_;
-  ExtensionAppShimHandler* handler_;
+  AppShimManager* manager_;
   std::string extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimQuitTest);
@@ -125,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(AppShimQuitTest, QuitWithKeyEvent) {
   // This will time out if the event above does not terminate Chrome.
   RunUntilBrowserProcessQuits();
 
-  EXPECT_FALSE(handler_->FindHost(profile(), extension_id_));
+  EXPECT_FALSE(manager_->FindHost(profile(), extension_id_));
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
 }
 

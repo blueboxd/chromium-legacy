@@ -164,35 +164,26 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     // TODO (sarakato): Add proper fix once cause of invalid node is known.
     if (!IsValid(root)) {
       return;
-    } else if (root->IsNode()) {
-      android_focused_id_ = root_id_;
     } else {
-      std::vector<AccessibilityInfoDataWrapper*> children;
-      root->GetChildren(&children);
-      for (const AccessibilityInfoDataWrapper* child : children) {
-        if (child->IsNode()) {
-          int32_t child_id = child->GetId();
-          DCHECK(IsRootOfNodeTree(child_id));
-          android_focused_id_ = child_id;
-          break;
-        }
-      }
+      android_focused_id_ = root_id_;
     }
   }
 
-  AXNodeInfoData* focused_node =
-      android_focused_id_.has_value()
-          ? GetFromId(*android_focused_id_)->GetNode()
-          : nullptr;
+  AccessibilityInfoDataWrapper* focused_node =
+      android_focused_id_.has_value() ? GetFromId(*android_focused_id_)
+                                      : nullptr;
 
   // Ensure that the focused node correctly gets focus.
-  while (android_focused_id_.has_value() && android_focused_id_ != root_id_ &&
-         !IsImportantInAndroid(focused_node)) {
-    AccessibilityInfoDataWrapper* parent =
-        GetFromId(parent_map_[*android_focused_id_]);
-    if (parent && parent->IsNode()) {
+  while (focused_node) {
+    bool focusable_node = focused_node->IsNode() &&
+                          !IsImportantInAndroid(focused_node->GetNode());
+    bool root_window = focused_node->GetId() == root_id_;
+    if (!focusable_node && !root_window)
+      break;
+    AccessibilityInfoDataWrapper* parent = GetParent(focused_node);
+    if (parent) {
       android_focused_id_ = parent->GetId();
-      focused_node = parent->GetNode();
+      focused_node = parent;
     } else {
       break;
     }
@@ -205,7 +196,8 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
 
   event_bundle.events.emplace_back();
   ui::AXEvent& event = event_bundle.events.back();
-  event.event_type = ToAXEvent(event_data->event_type, focused_node);
+  event.event_type = ToAXEvent(
+      event_data->event_type, focused_node ? focused_node->GetNode() : nullptr);
   event.id = event_data->source_id;
 
   if ((event_data->event_type == AXEventType::WINDOW_CONTENT_CHANGED ||

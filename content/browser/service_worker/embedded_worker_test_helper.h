@@ -95,7 +95,8 @@ class EmbeddedWorkerTestHelper {
 
   TestBrowserContext* browser_context() { return browser_context_.get(); }
 
-  static net::HttpResponseInfo CreateHttpResponseInfo();
+  static std::unique_ptr<ServiceWorkerVersion::MainScriptResponse>
+  CreateMainScriptResponse();
 
   URLLoaderFactoryGetter* url_loader_factory_getter() {
     return url_loader_factory_getter_.get();

@@ -295,10 +295,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_batch_writer_flush_after_mtu_probe,
           true)
 
-// If true, QuicConnection will check MTU_DISCOVERY_FRAME in
-// nonretransmittable_frames to see if a packet is a MTU probe.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_better_mtu_packet_check, true)
-
 // If true, neuter unencrypted control frames in
 // QuicUnackedPacketMap::NeuterUnencryptedPackets.
 QUIC_FLAG(bool,

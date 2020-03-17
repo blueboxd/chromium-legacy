@@ -8,6 +8,7 @@
 
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
@@ -88,9 +89,8 @@ void SizeStatCalculator::PerformCalculation() {
 
   int64_t* total_size = new int64_t(0);
   int64_t* available_size = new int64_t(0);
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&GetSizeStatBlocking, my_files_path, total_size,
                  available_size),
       base::Bind(&SizeStatCalculator::OnGetSizeStat,
@@ -115,9 +115,8 @@ void MyFilesSizeCalculator::PerformCalculation() {
   const base::FilePath android_files_path =
       base::FilePath(file_manager::util::GetAndroidFilesPath());
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&MyFilesSizeCalculator::ComputeLocalFilesSize,
                      base::Unretained(this), my_files_path, android_files_path),
       base::BindOnce(&MyFilesSizeCalculator::OnGetMyFilesSize,
@@ -274,9 +273,8 @@ void AppsSizeCalculator::UpdateAppsSize() {
   const base::FilePath extensions_path =
       profile_->GetPath().AppendASCII("Extensions");
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&base::ComputeDirectorySize, extensions_path),
       base::BindOnce(&AppsSizeCalculator::OnGetAppsSize,
                      weak_ptr_factory_.GetWeakPtr()));

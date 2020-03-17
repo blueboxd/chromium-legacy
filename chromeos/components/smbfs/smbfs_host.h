@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -42,9 +43,16 @@ class COMPONENT_EXPORT(SMBFS) SmbFsHost {
     return mount_point_->mount_path();
   }
 
+  using UnmountCallback = base::OnceCallback<void(chromeos::MountError)>;
+  void Unmount(UnmountCallback callback);
+
  private:
   // Mojo disconnection handler.
   void OnDisconnect();
+
+  // Called after cros-disks has attempted to unmount the share.
+  void OnUnmountDone(SmbFsHost::UnmountCallback callback,
+                     chromeos::MountError result);
 
   const std::unique_ptr<chromeos::disks::MountPoint> mount_point_;
   Delegate* const delegate_;

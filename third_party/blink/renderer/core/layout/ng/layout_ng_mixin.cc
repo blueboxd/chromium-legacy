@@ -45,6 +45,20 @@ void LayoutNGMixin<Base>::Paint(const PaintInfo& paint_info) const {
     NGBoxFragmentPainter(*fragment).Paint(paint_info);
 }
 
+template <typename Base>
+bool LayoutNGMixin<Base>::NodeAtPoint(HitTestResult& result,
+                                      const HitTestLocation& hit_test_location,
+                                      const PhysicalOffset& accumulated_offset,
+                                      HitTestAction action) {
+  if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
+    DCHECK_EQ(Base::PhysicalFragmentCount(), 1u);
+    return NGBoxFragmentPainter(*fragment).NodeAtPoint(
+        result, hit_test_location, accumulated_offset, action);
+  }
+
+  return false;
+}
+
 // The current fragment from the last layout cycle for this box.
 // When pre-NG layout calls functions of this block flow, fragment and/or
 // LayoutResult are required to compute the result.

@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/macros.h"
+#include "ui/gfx/geometry/rect.h"
 
 class AccountId;
 
@@ -34,6 +35,9 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static int GetUsersCount();
   static bool RemoveUser(const AccountId& account_id);
   static bool IsOobeDialogVisible();
+  static base::string16 GetShutDownButtonLabel();
+  static gfx::Rect GetShutDownButtonTargetBounds();
+  static gfx::Rect GetShutDownButtonMirroredBounds();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(LoginScreenTestApi);

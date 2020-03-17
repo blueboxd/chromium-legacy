@@ -42,29 +42,27 @@
 }
 
 - (void)checkForUpdatesWithReply:(void (^_Nullable)(int rc))reply {
-  _service->UpdateAll(base::BindOnce(
-      [](base::mac::ScopedBlock<void (^)(int)> xpcReplyBlock,
-         update_client::Error error) {
+  base::OnceCallback<void(updater::UpdateService::Result)> cb =
+      base::BindOnce(base::RetainBlock(^(updater::UpdateService::Result error) {
         VLOG(0) << "UpdateAll complete: error = " << static_cast<int>(error);
-        xpcReplyBlock.get()(static_cast<int>(error));
-      },
-      base::mac::ScopedBlock<void (^)(int)>(reply)));
+        reply(static_cast<int>(error));
+      }));
+
+  _service->UpdateAll(base::BindOnce(std::move(cb)));
 }
 
 - (void)checkForUpdateWithAppID:(NSString* _Nonnull)appID
                        priority:(CRUPriorityWrapper* _Nonnull)priority
                     updateState:(CRUUpdateStateObserver* _Nonnull)updateState
                           reply:(void (^_Nullable)(int rc))reply {
+  base::OnceCallback<void(updater::UpdateService::Result)> cb =
+      base::BindOnce(base::RetainBlock(^(updater::UpdateService::Result error) {
+        VLOG(0) << "Update complete: error = " << static_cast<int>(error);
+        reply(static_cast<int>(error));
+      }));
+
   _service->Update(base::SysNSStringToUTF8(appID), [priority priority],
-                   [updateState callback],
-                   base::BindOnce(
-                       [](base::mac::ScopedBlock<void (^)(int)> xpcReplyBlock,
-                          update_client::Error error) {
-                         VLOG(1) << "Update complete: error = "
-                                 << static_cast<int>(error);
-                         xpcReplyBlock.get()(static_cast<int>(error));
-                       },
-                       base::mac::ScopedBlock<void (^)(int)>(reply)));
+                   [updateState callback], base::BindOnce(std::move(cb)));
 }
 
 - (void)registerForUpdatesWithAppId:(NSString* _Nullable)appId
@@ -81,15 +79,15 @@
   request.existence_checker_path =
       base::FilePath(base::SysNSStringToUTF8(existenceCheckerPath));
 
-  _service->RegisterApp(
-      request, base::BindOnce(
-                   [](base::mac::ScopedBlock<void (^)(int)> xpcReplyBlock,
-                      const updater::RegistrationResponse& response) {
-                     VLOG(0) << "Registration complete: error = "
-                             << response.status_code;
-                     xpcReplyBlock.get()(response.status_code);
-                   },
-                   base::mac::ScopedBlock<void (^)(int)>(reply)));
+  base::OnceCallback<void(const updater::RegistrationResponse&)> cb =
+      base::BindOnce(
+          base::RetainBlock(^(const updater::RegistrationResponse& response) {
+            VLOG(0) << "Registration complete: status code = "
+                    << response.status_code;
+            reply(response.status_code);
+          }));
+
+  _service->RegisterApp(request, base::BindOnce(std::move(cb)));
 }
 
 @end

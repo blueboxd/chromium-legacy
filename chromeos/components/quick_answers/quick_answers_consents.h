@@ -14,6 +14,8 @@ class PrefService;
 namespace chromeos {
 namespace quick_answers {
 
+enum class ConsentInteractionType;
+
 // Tracks whether quick answers consent should be shown and records impression
 // count and duration when there is a interaction with the consent (shown,
 // accepted and dismissed).
@@ -30,17 +32,17 @@ class QuickAnswersConsent {
   virtual void StartConsent();
   // Marks the consent as accepted and records the impression duration. Virtual
   // for testing.
-  virtual void AcceptConsent();
+  virtual void AcceptConsent(ConsentInteractionType interaction);
   // The consent is dismissed by users. Records the impression duration. Virtual
   // for testing.
   virtual void DismissConsent();
   // Whether the consent should be shown (based on consent state, impression
   // count and impression duration). Virtual for testing.
   virtual bool ShouldShowConsent() const;
-  // Whether users have granted the consent.
-  bool HasConsented() const;
 
  private:
+  // Whether users have granted the consent.
+  bool HasConsented() const;
   // Whether the consent has been seen by users for |kImpressionCap| times.
   bool HasReachedImpressionCap() const;
   // Whether the consent has been seen by users for |kDurationCap| seconds.

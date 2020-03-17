@@ -187,7 +187,7 @@ void X11ScreenOzone::OnXDisplayListUpdated() {
   gfx::SetFontRenderParamsDeviceScaleFactor(scale_factor);
 }
 
-float X11ScreenOzone::GetXDisplayScaleFactor() {
+float X11ScreenOzone::GetXDisplayScaleFactor() const {
   return GetDeviceScaleFactor();
 }
 

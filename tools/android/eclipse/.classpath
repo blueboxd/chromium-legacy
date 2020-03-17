@@ -86,8 +86,6 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="chrome/android/modules/test_dummy/provider/java/src"/>
     <classpathentry kind="src" path="chrome/android/modules/test_dummy/public/java/src"/>
     <classpathentry kind="src" path="chrome/android/native_java_unittests/src"/>
-    <classpathentry kind="src" path="chrome/android/public/crypto/java/src"/>
-    <classpathentry kind="src" path="chrome/android/public/profiles/java/src"/>
     <classpathentry kind="src" path="chrome/android/third_party/compositor_animator/java/src"/>
     <classpathentry kind="src" path="chrome/android/webapk/libs/client/junit/src"/>
     <classpathentry kind="src" path="chrome/android/webapk/libs/client/src"/>
@@ -98,7 +96,9 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="chrome/android/webapk/shell_apk/javatests/src"/>
     <classpathentry kind="src" path="chrome/android/webapk/shell_apk/junit/src"/>
     <classpathentry kind="src" path="chrome/android/webapk/shell_apk/src"/>
+    <classpathentry kind="src" path="chrome/browser/android/crypto/java/src"/>
     <classpathentry kind="src" path="chrome/browser/android/lifecycle/java/src"/>
+    <classpathentry kind="src" path="chrome/browser/profiles/android/java/src"/>
     <classpathentry kind="src" path="chrome/browser/android/metrics/javatests/src"/>
     <classpathentry kind="src" path="chrome/browser/android/thin_webview/internal/java/src"/>
     <classpathentry kind="src" path="chrome/browser/android/thin_webview/java/src"/>

@@ -12,11 +12,12 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_manager.h"
 #include "chrome/browser/vr/model/capturing_state_model.h"
-#include "chrome/browser/vr/service/browser_xr_runtime.h"
-#include "chrome/browser/vr/service/vr_ui_host.h"
 #include "components/bubble/bubble_manager.h"
 #include "components/permissions/permission_request_manager.h"
+#include "content/public/browser/browser_xr_runtime.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/xr_integration_client.h"
+#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/geolocation_config.mojom.h"
@@ -27,20 +28,15 @@ class VRBrowserRendererThreadWin;
 
 // Concrete implementation of VRBrowserRendererHost, part of the "browser"
 // component. Used on the browser's main thread.
-class VRUiHostImpl : public VRUiHost,
+class VRUiHostImpl : public content::VrUiHost,
                      public permissions::PermissionRequestManager::Observer,
-                     public BrowserXRRuntimeObserver,
+                     public content::BrowserXRRuntime::Observer,
                      public BubbleManager::BubbleManagerObserver,
                      public DesktopMediaPickerManager::DialogObserver {
  public:
   VRUiHostImpl(device::mojom::XRDeviceId device_id,
                mojo::PendingRemote<device::mojom::XRCompositorHost> compositor);
   ~VRUiHostImpl() override;
-
-  // Factory for use with VRUiHost::{Set,Get}Factory
-  static std::unique_ptr<VRUiHost> Create(
-      device::mojom::XRDeviceId device_id,
-      mojo::PendingRemote<device::mojom::XRCompositorHost> compositor);
 
  private:
   // This class manages the transience of each of a CapturingStateModel's flags.
@@ -71,7 +67,7 @@ class VRUiHostImpl : public VRUiHost,
     CapturingStateModel* active_capture_state_model_;  // Not owned.
   };
 
-  // BrowserXRRuntimeObserver implementation.
+  // content::BrowserXRRuntime::Observer implementation.
   void SetWebXRWebContents(content::WebContents* contents) override;
   void SetVRDisplayInfo(device::mojom::VRDisplayInfoPtr display_info) override;
   void SetFramesThrottled(bool throttled) override;

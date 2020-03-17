@@ -228,8 +228,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
   // dummy values. They will be updated after worker script fetch on the worker
   // thread.
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-      script_request_url, script_type,
-      OffMainThreadWorkerScriptFetchOption::kEnabled, name, user_agent,
+      script_request_url, script_type, name, user_agent,
       std::move(web_worker_fetch_context), outside_csp_headers,
       outside_settings_object->GetReferrerPolicy(),
       outside_settings_object->GetSecurityOrigin(), constructor_secure_context,

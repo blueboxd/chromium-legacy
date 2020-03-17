@@ -40,7 +40,6 @@ class WebContents;
 namespace autofill {
 
 class AutofillPopupControllerImpl;
-class SmsClient;
 
 // Chrome implementation of AutofillClient.
 class ChromeAutofillClient
@@ -64,7 +63,6 @@ class ChromeAutofillClient
   signin::IdentityManager* GetIdentityManager() override;
   FormDataImporter* GetFormDataImporter() override;
   payments::PaymentsClient* GetPaymentsClient() override;
-  SmsClient* GetSmsClient() override;
   StrikeDatabase* GetStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
@@ -187,7 +185,6 @@ class ChromeAutofillClient
   base::string16 GetAccountHolderName();
 
   std::unique_ptr<payments::PaymentsClient> payments_client_;
-  std::unique_ptr<SmsClient> sms_client_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
   CardUnmaskPromptControllerImpl unmask_controller_;

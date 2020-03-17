@@ -6,47 +6,17 @@
 
 #include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
-#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_view.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 
 namespace blink {
 
-namespace {
-
-class DataView final : public ArrayBufferView {
- public:
-  static scoped_refptr<DataView> Create(ArrayBuffer* buffer,
-                                        size_t byte_offset,
-                                        size_t byte_length) {
-    base::CheckedNumeric<size_t> checked_max = byte_offset;
-    checked_max += byte_length;
-    CHECK_LE(checked_max.ValueOrDie(), buffer->ByteLengthAsSizeT());
-    return base::AdoptRef(new DataView(buffer, byte_offset, byte_length));
-  }
-
-  size_t ByteLengthAsSizeT() const override {
-    return !IsDetached() ? raw_byte_length_ : 0;
-  }
-  ViewType GetType() const override { return kTypeDataView; }
-  unsigned TypeSize() const override { return 1; }
-
- protected:
- private:
-  DataView(ArrayBuffer* buffer, size_t byte_offset, size_t byte_length)
-      : ArrayBufferView(buffer, byte_offset), raw_byte_length_(byte_length) {}
-
-  // It may be stale after Detach. Use ByteLengthAsSizeT instead.
-  size_t raw_byte_length_;
-};
-
-}  // anonymous namespace
-
 DOMDataView* DOMDataView::Create(DOMArrayBufferBase* buffer,
                                  size_t byte_offset,
                                  size_t byte_length) {
-  scoped_refptr<DataView> data_view =
-      DataView::Create(buffer->Buffer(), byte_offset, byte_length);
-  return MakeGarbageCollected<DOMDataView>(data_view, buffer);
+  base::CheckedNumeric<size_t> checked_max = byte_offset;
+  checked_max += byte_length;
+  CHECK_LE(checked_max.ValueOrDie(), buffer->ByteLengthAsSizeT());
+  return MakeGarbageCollected<DOMDataView>(buffer, byte_offset, byte_length);
 }
 
 v8::Local<v8::Value> DOMDataView::Wrap(v8::Isolate* isolate,

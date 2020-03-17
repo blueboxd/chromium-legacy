@@ -49,6 +49,10 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
   void FireFocusAfterMenuClose() override;
 
   // ui::AXPlatformNodeDelegate
+  // Note that, for parents of virtual views, GetChildCount() and ChildAtIndex()
+  // present to assistive technologies the unignored accessibility subtree,
+  // which doesn't necessarily reflect the internal descendant tree. (An ignored
+  // node means that the node should not be exposed to the platform.)
   const ui::AXNodeData& GetData() const override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;

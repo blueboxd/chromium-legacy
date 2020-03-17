@@ -41,7 +41,7 @@ specific_include_rules = {
     "+chrome/android/java/src/org/chromium/chrome/browser/prerender/ExternalPrerenderHandler.java",
     "+chrome/android/java/src/org/chromium/chrome/browser/rlz/RevenueStats.java",
     "+chrome/android/java/src/org/chromium/chrome/browser/night_mode",
-    "+chrome/android/public/profiles/java/src/org/chromium/chrome/browser/profiles/Profile.java",
+    "+chrome/browser/profiles/android/java/src/org/chromium/chrome/browser/profiles/Profile.java",
     "+chrome/browser/util/android/java/src/org/chromium/chrome/browser/util/UrlConstants.java",
 
     "-components",

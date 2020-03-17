@@ -23,6 +23,7 @@
 #include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/web/mock_web_controller.h"
+#include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
@@ -60,6 +61,12 @@ using ::testing::UnorderedElementsAre;
 
 namespace {
 
+class MockPasswordManagerClient
+    : public password_manager::StubPasswordManagerClient {
+ public:
+  MOCK_CONST_METHOD0(WasCredentialLeakDialogShown, bool());
+};
+
 class FakeClient : public Client {
  public:
   // Implements Client
@@ -75,6 +82,8 @@ class FakeClient : public Client {
   std::string GetCountryCode() override { return ""; }
   DeviceContext GetDeviceContext() override { return DeviceContext(); }
   MOCK_METHOD0(GetWebContents, content::WebContents*());
+  MOCK_METHOD0(GetPasswordManagerClient,
+               password_manager::PasswordManagerClient*());
   MOCK_METHOD1(Shutdown, void(Metrics::DropOutReason reason));
   MOCK_METHOD0(AttachUI, void());
   MOCK_METHOD0(DestroyUI, void());
@@ -117,6 +126,8 @@ class ControllerTest : public content::RenderViewHostTestHarness {
     mock_service_ = service.get();
 
     ON_CALL(fake_client_, GetWebContents).WillByDefault(Return(web_contents()));
+    ON_CALL(fake_client_, GetPasswordManagerClient)
+        .WillByDefault(Return(&mock_password_manager_client_));
 
     controller_ = std::make_unique<Controller>(
         web_contents(), &fake_client_, task_environment()->GetMockTickClock(),
@@ -238,7 +249,7 @@ class ControllerTest : public content::RenderViewHostTestHarness {
   MockWebController* mock_web_controller_;
   NiceMock<FakeClient> fake_client_;
   NiceMock<MockControllerObserver> mock_observer_;
-
+  MockPasswordManagerClient mock_password_manager_client_;
   std::unique_ptr<Controller> controller_;
 };
 
@@ -2120,6 +2131,40 @@ TEST_F(ControllerTest, SetGenericUi) {
       std::make_unique<GenericUserInterfaceProto>(GenericUserInterfaceProto()),
       base::DoNothing());
   controller_->ClearGenericUi();
+}
+
+TEST_F(ControllerTest, StartPasswordChangeFlow) {
+  EXPECT_CALL(mock_password_manager_client_, WasCredentialLeakDialogShown())
+      .WillOnce(Return(true));
+
+  GURL initialUrl("http://example.com/password");
+  EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(Eq(initialUrl), _, _))
+      .WillOnce(RunOnceCallback<2>(true, ""));
+  std::map<std::string, std::string> parameters;
+  std::string username = "test_username";
+  parameters["PASSWORD_CHANGE_USERNAME"] = username;
+
+  EXPECT_TRUE(
+      controller_->Start(initialUrl, TriggerContext::Create(parameters, "")));
+  EXPECT_EQ(GetUserData()->selected_login_->username, username);
+}
+
+TEST_F(ControllerTest, BlockPasswordChangeFlow) {
+  // If the password manager doesn't confirm that a leak dialog was shown, the
+  // flow should not start.
+  EXPECT_CALL(mock_password_manager_client_, WasCredentialLeakDialogShown())
+      .WillOnce(Return(false));
+
+  GURL initialUrl("http://example.com/password");
+  EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(Eq(initialUrl), _, _))
+      .Times(0);
+  std::map<std::string, std::string> parameters;
+  std::string username = "test_username";
+  parameters["PASSWORD_CHANGE_USERNAME"] = username;
+
+  EXPECT_FALSE(
+      controller_->Start(initialUrl, TriggerContext::Create(parameters, "")));
+  EXPECT_FALSE(GetUserData()->selected_login_);
 }
 
 }  // namespace autofill_assistant

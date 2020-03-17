@@ -893,6 +893,12 @@
        <structure name="IDR_OS_SETTINGS_CROSTINI_PORT_FORWARDING_JS"
                   file="chromeos/crostini_page/crostini_port_forwarding.js"
                   type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_CROSTINI_MIC_SHARING_DIALOG_HTML"
+                 file="chromeos/crostini_page/crostini_mic_sharing_dialog.html"
+                 type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_CROSTINI_MIC_SHARING_DIALOG_JS"
+                 file="chromeos/crostini_page/crostini_mic_sharing_dialog.js"
+                 type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_CROSTINI_SHARED_PATHS_HTML"
                  file="chromeos/crostini_page/crostini_shared_paths.html"
                  type="chrome_html" />

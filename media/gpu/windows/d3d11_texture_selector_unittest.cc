@@ -35,14 +35,15 @@ class D3D11TextureSelectorUnittest : public ::testing::Test {
 
   std::unique_ptr<TextureSelector> CreateWithDefaultGPUInfo(
       DXGI_FORMAT decoder_output_format,
-      bool zero_copy_enabled = true) {
+      bool zero_copy_enabled = true,
+      TextureSelector::HDRMode hdr_mode = TextureSelector::HDRMode::kSDROnly) {
     gpu::GpuPreferences prefs;
     prefs.enable_zero_copy_dxgi_video = zero_copy_enabled;
     gpu::GpuDriverBugWorkarounds workarounds;
     workarounds.disable_dxgi_zero_copy_video = false;
     auto media_log = std::make_unique<NullMediaLog>();
     return TextureSelector::Create(prefs, workarounds, decoder_output_format,
-                                   media_log.get());
+                                   hdr_mode, media_log.get());
   }
 };
 
@@ -54,14 +55,28 @@ TEST_F(D3D11TextureSelectorUnittest, NV12BindsToNV12) {
   EXPECT_EQ(tex_sel->OutputDXGIFormat(), DXGI_FORMAT_NV12);
 }
 
-TEST_F(D3D11TextureSelectorUnittest, P010CopiesToARGB) {
-  auto tex_sel = CreateWithDefaultGPUInfo(DXGI_FORMAT_P010);
+TEST_F(D3D11TextureSelectorUnittest, P010CopiesToFP16InHDR) {
+  auto tex_sel = CreateWithDefaultGPUInfo(DXGI_FORMAT_P010, true,
+                                          TextureSelector::HDRMode::kSDROrHDR);
 
   // TODO(liberato): check "copies", somehow.
   EXPECT_EQ(tex_sel->PixelFormat(), PIXEL_FORMAT_ARGB);
   // Note that this might also produce 8 bit rgb, but for now always
   // tries for fp16.
   EXPECT_EQ(tex_sel->OutputDXGIFormat(), DXGI_FORMAT_R16G16B16A16_FLOAT);
+  // TODO(liberato): Check output color space, somehow.
+}
+
+TEST_F(D3D11TextureSelectorUnittest, P010CopiesTo8BitInSDR) {
+  auto tex_sel = CreateWithDefaultGPUInfo(DXGI_FORMAT_P010, true,
+                                          TextureSelector::HDRMode::kSDROnly);
+
+  // TODO(liberato): check "copies", somehow.
+  EXPECT_EQ(tex_sel->PixelFormat(), PIXEL_FORMAT_ARGB);
+  // Note that this might also produce 8 bit rgb, but for now always
+  // tries for fp16.
+  EXPECT_EQ(tex_sel->OutputDXGIFormat(), DXGI_FORMAT_B8G8R8A8_UNORM);
+  // TODO(liberato): Check output color space, somehow.
 }
 
 }  // namespace media

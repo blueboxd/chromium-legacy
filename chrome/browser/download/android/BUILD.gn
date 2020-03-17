@@ -31,7 +31,7 @@ android_library("java") {
     "//components/feed/core/shared_prefs:feed_shared_prefs",
     "//components/offline_items_collection/core:core_java",
     "//content/public/android:content_java",
-    "//third_party/android_deps:com_android_support_support_compat_java",
+    "//third_party/android_deps:androidx_core_core_java",
   ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]

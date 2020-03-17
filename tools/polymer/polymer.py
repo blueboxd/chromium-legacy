@@ -250,6 +250,12 @@ def _extract_template(html_file, html_type):
           assert re.match(r'\s*</template>', lines[i - 2])
           assert re.match(r'\s*<script ', lines[i - 1])
           end_line = i - 3;
+
+    # If an opening <dom-module> tag was found, check that a closing one was
+    # found as well.
+    if start_line != - 1:
+      assert end_line != -1
+
     return _add_template_markers('\n' + ''.join(lines[start_line:end_line + 1]))
 
   if html_type == 'style-module':

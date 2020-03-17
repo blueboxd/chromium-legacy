@@ -39,8 +39,7 @@ PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
       StringView("PaintWorklet #") + String::Number(global_scope_number);
 
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-      document->Url(), mojom::ScriptType::kModule,
-      OffMainThreadWorkerScriptFetchOption::kEnabled, global_scope_name,
+      document->Url(), mojom::blink::ScriptType::kModule, global_scope_name,
       document->UserAgent(), frame->Client()->CreateWorkerFetchContext(),
       document->GetContentSecurityPolicy()->Headers(),
       document->GetReferrerPolicy(), document->GetSecurityOrigin(),

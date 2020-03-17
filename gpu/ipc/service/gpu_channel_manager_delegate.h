@@ -37,6 +37,11 @@ class GpuChannelManagerDelegate {
   // Notification from GPU that the channel is destroyed.
   virtual void DidDestroyChannel(int client_id) = 0;
 
+  // Notification that all GPU channels are shutdown properly.
+  // Note this is NOT called in error conditions such as losing channel due to
+  // context loss, or from debug messages.
+  virtual void DidDestroyAllChannels() = 0;
+
   // Tells the delegate that an offscreen context was destroyed for the provided
   // |active_url|.
   virtual void DidDestroyOffscreenContext(const GURL& active_url) = 0;

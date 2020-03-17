@@ -219,8 +219,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, HasMinimalUiButtons) {
 
 // Tests that desktop PWAs open links in the browser.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, DesktopPWAsOpenLinksInApp) {
-  ASSERT_TRUE(https_server()->Start());
-
   const GURL app_url = GetSecureAppURL();
   const AppId app_id = InstallPWA(app_url);
   Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
@@ -232,8 +230,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, DesktopPWAsOpenLinksInApp) {
 // Tests that desktop PWAs open links in a new tab at the end of the tabstrip of
 // the last active browser.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, DesktopPWAsOpenLinksInNewTab) {
-  ASSERT_TRUE(https_server()->Start());
-
   const GURL app_url = GetSecureAppURL();
   const AppId app_id = InstallPWA(app_url);
   Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
@@ -267,8 +263,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, DesktopPWAsOpenLinksInNewTab) {
 
 // Tests that desktop PWAs are opened at the correct size.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, PWASizeIsCorrectlyRestored) {
-  ASSERT_TRUE(https_server()->Start());
-
   const GURL app_url = GetSecureAppURL();
   const AppId app_id = InstallPWA(app_url);
   Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
@@ -287,8 +281,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, PWASizeIsCorrectlyRestored) {
 // Tests that desktop PWAs are reopened at the correct size.
 IN_PROC_BROWSER_TEST_P(WebAppTabRestoreBrowserTest,
                        ReopenedPWASizeIsCorrectlyRestored) {
-  ASSERT_TRUE(https_server()->Start());
-
   const GURL app_url = GetSecureAppURL();
   const AppId app_id = InstallPWA(app_url);
   Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
@@ -317,8 +309,6 @@ IN_PROC_BROWSER_TEST_P(WebAppTabRestoreBrowserTest,
 // Tests that using window.open to create a popup window out of scope results in
 // a correctly sized window.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, OffScopePWAPopupsHaveCorrectSize) {
-  ASSERT_TRUE(https_server()->Start());
-
   const GURL app_url = GetSecureAppURL();
   const AppId app_id = InstallPWA(app_url);
   Browser* const app_browser = LaunchWebAppBrowser(app_id);
@@ -350,8 +340,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, OffScopePWAPopupsHaveCorrectSize) {
 // Tests that using window.open to create a popup window in scope results in
 // a correctly sized window.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, InScopePWAPopupsHaveCorrectSize) {
-  ASSERT_TRUE(https_server()->Start());
-
   const GURL app_url = GetSecureAppURL();
   const AppId app_id = InstallPWA(app_url);
   Browser* const app_browser = LaunchWebAppBrowser(app_id);
@@ -379,8 +367,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, InScopePWAPopupsHaveCorrectSize) {
 
 // Tests that app windows are correctly restored.
 IN_PROC_BROWSER_TEST_P(WebAppTabRestoreBrowserTest, RestoreAppWindow) {
-  ASSERT_TRUE(https_server()->Start());
-
   const GURL app_url = GetSecureAppURL();
   const AppId app_id = InstallPWA(app_url);
   Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
@@ -406,8 +392,6 @@ IN_PROC_BROWSER_TEST_P(WebAppTabRestoreBrowserTest, RestoreAppWindow) {
 // to be shown to the user.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest,
                        LocationBarIsVisibleOffScopeOnSameOrigin) {
-  ASSERT_TRUE(https_server()->Start());
-
   const GURL app_url = GetSecureAppURL();
   const AppId app_id = InstallPWA(app_url);
   Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
@@ -425,7 +409,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, UpgradeWithoutCustomTabBar) {
-  ASSERT_TRUE(https_server()->Start());
   const GURL secure_app_url =
       https_server()->GetURL("app.site.com", "/empty.html");
   GURL::Replacements rep;
@@ -450,8 +433,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, UpgradeWithoutCustomTabBar) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, OverscrollEnabled) {
-  ASSERT_TRUE(https_server()->Start());
-
   const GURL app_url = GetSecureAppURL();
   const AppId app_id = InstallPWA(app_url);
   Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
@@ -482,8 +463,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, CopyURL) {
 // Tests that the command for popping a tab out to a PWA window is disabled in
 // incognito.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, PopOutDisabledInIncognito) {
-  ASSERT_TRUE(https_server()->Start());
-
   const GURL app_url = GetSecureAppURL();
   const AppId app_id = InstallPWA(app_url);
 
@@ -500,8 +479,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, PopOutDisabledInIncognito) {
 
 // Tests that PWA menus have an uninstall option.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, UninstallMenuOption) {
-  ASSERT_TRUE(https_server()->Start());
-
   const GURL app_url = GetSecureAppURL();
   const AppId app_id = InstallPWA(app_url);
   Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
@@ -523,8 +500,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, UninstallMenuOption) {
 // Tests that both installing a PWA and creating a shortcut app are disabled for
 // incognito windows.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ShortcutMenuOptionsInIncognito) {
-  ASSERT_TRUE(https_server()->Start());
-
   Browser* const incognito_browser = CreateIncognitoBrowser(profile());
   EXPECT_FALSE(NavigateAndAwaitInstallabilityCheck(incognito_browser,
                                                    GetSecureAppURL()));
@@ -538,8 +513,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ShortcutMenuOptionsInIncognito) {
 // Tests that both installing a PWA and creating a shortcut app are disabled for
 // an error page.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ShortcutMenuOptionsForErrorPage) {
-  ASSERT_TRUE(https_server()->Start());
-
   EXPECT_FALSE(NavigateAndAwaitInstallabilityCheck(
       browser(), https_server()->GetURL("/invalid_path.html")));
 
@@ -551,8 +524,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ShortcutMenuOptionsForErrorPage) {
 // for an installable PWA.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest,
                        ShortcutMenuOptionsForInstallablePWA) {
-  ASSERT_TRUE(https_server()->Start());
-
   EXPECT_TRUE(
       NavigateAndAwaitInstallabilityCheck(browser(), GetInstallableAppURL()));
 
@@ -562,8 +533,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest,
 
 // Tests that an installed PWA is not used when out of scope by one path level.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, MenuOptionsOutsideInstalledPwaScope) {
-  ASSERT_TRUE(https_server()->Start());
-
   NavigateToURLAndWait(
       browser(),
       https_server()->GetURL("/banners/scope_is_start_url/index.html"));
@@ -581,7 +550,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, MenuOptionsOutsideInstalledPwaScope) {
 
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, InstallInstallableSite) {
   base::UserActionTester user_action_tester;
-  ASSERT_TRUE(https_server()->Start());
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
 
   const AppId app_id = InstallPwaForCurrentUrl();
@@ -598,8 +566,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, InstallInstallableSite) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, CanInstallOverTabPwa) {
-  ASSERT_TRUE(https_server()->Start());
-
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
   const AppId app_id = InstallPwaForCurrentUrl();
 
@@ -618,8 +584,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, CanInstallOverTabPwa) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, CannotInstallOverWindowPwa) {
-  ASSERT_TRUE(https_server()->Start());
-
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
   InstallPwaForCurrentUrl();
 
@@ -634,8 +598,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, CannotInstallOverWindowPwa) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, CannotInstallOverPolicyPwa) {
-  ASSERT_TRUE(https_server()->Start());
-
   ExternalInstallOptions options = CreateInstallOptions(GetInstallableAppURL());
   options.install_source = ExternalInstallSource::kExternalPolicy;
   PendingAppManagerInstall(profile(), options);
@@ -654,8 +616,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, CannotInstallOverPolicyPwa) {
 // Tests that the command for OpenActiveTabInPwaWindow is available for secure
 // pages in an app's scope.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ReparentWebAppForSecureActiveTab) {
-  ASSERT_TRUE(https_server()->Start());
-
   const GURL app_url = GetSecureAppURL();
   const AppId app_id = InstallPWA(app_url);
 
@@ -673,8 +633,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ReparentWebAppForSecureActiveTab) {
 
 // Tests that reparenting the last browser tab doesn't close the browser window.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ReparentLastBrowserTab) {
-  ASSERT_TRUE(https_server()->Start());
-
   const GURL app_url = GetSecureAppURL();
   const AppId app_id = InstallPWA(app_url);
   NavigateToURLAndWait(browser(), app_url);
@@ -689,8 +647,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ReparentLastBrowserTab) {
 // Tests that the manifest name of the current installable site is used in the
 // installation menu text.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, InstallToShelfContainsAppName) {
-  ASSERT_TRUE(https_server()->Start());
-
   EXPECT_TRUE(
       NavigateAndAwaitInstallabilityCheck(browser(), GetInstallableAppURL()));
 
@@ -707,8 +663,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, InstallToShelfContainsAppName) {
 
 // Check that no assertions are hit when showing a permission request bubble.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, PermissionBubble) {
-  ASSERT_TRUE(https_server()->Start());
-
   const GURL app_url = GetSecureAppURL();
   const AppId app_id = InstallPWA(app_url);
   Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
@@ -723,7 +677,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, PermissionBubble) {
 // Ensure that web app windows with blank titles don't display the URL as a
 // default window title.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, EmptyTitlesDoNotDisplayUrl) {
-  ASSERT_TRUE(https_server()->Start());
   const GURL app_url = https_server()->GetURL("app.site.com", "/empty.html");
   const AppId app_id = InstallPWA(app_url);
   Browser* const app_browser = LaunchWebAppBrowser(app_id);
@@ -740,7 +693,6 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, EmptyTitlesDoNotDisplayUrl) {
 // Ensure that web app windows display the app title instead of the page
 // title when off scope.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, OffScopeUrlsDisplayAppTitle) {
-  ASSERT_TRUE(https_server()->Start());
   const GURL app_url = GetSecureAppURL();
   const base::string16 app_title = base::ASCIIToUTF16("A Web App");
 

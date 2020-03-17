@@ -13,7 +13,6 @@
 #include "base/files/scoped_file.h"
 #include "base/guid.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_drive_image_download_service.h"
@@ -314,9 +313,8 @@ void PluginVmInstaller::StartImport() {
   DCHECK_EQ(state_, State::DOWNLOADING);
   state_ = State::IMPORTING;
 
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&PluginVmInstaller::DetectImageType,
                      base::Unretained(this)),
       base::BindOnce(&PluginVmInstaller::OnImageTypeDetected,
@@ -729,10 +727,8 @@ void PluginVmInstaller::RemoveTemporaryImageIfExists() {
         base::BindOnce(&PluginVmInstaller::OnTemporaryImageRemoved,
                        weak_ptr_factory_.GetWeakPtr()));
   } else if (!downloaded_image_.empty()) {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-         base::MayBlock()},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
         base::BindOnce(&base::DeleteFile, downloaded_image_,
                        false /* recursive */),
         base::BindOnce(&PluginVmInstaller::OnTemporaryImageRemoved,

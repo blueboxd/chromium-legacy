@@ -74,8 +74,8 @@ void ServiceWorkerInstalledScriptLoader::OnStarted(
   DCHECK(info);
 
   if (version_for_main_script_http_response_info_) {
-    version_for_main_script_http_response_info_->SetMainScriptHttpResponseInfo(
-        *info);
+    version_for_main_script_http_response_info_->SetMainScriptResponse(
+        std::make_unique<ServiceWorkerVersion::MainScriptResponse>(*info));
   }
 
   auto response = ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(

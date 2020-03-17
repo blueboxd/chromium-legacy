@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_OS_SETTINGS_LOCALIZED_STRINGS_PROVIDER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_OS_SETTINGS_LOCALIZED_STRINGS_PROVIDER_H_
 
+#include <memory>
 #include <unordered_map>
+#include <vector>
 
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_per_page_strings_provider.h"
 #include "chrome/services/local_search_service/public/mojom/local_search_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -15,7 +18,6 @@ class Profile;
 
 namespace content {
 class WebUIDataSource;
-class WebContents;
 }  // namespace content
 
 namespace chromeos {
@@ -44,16 +46,12 @@ struct SearchConcept;
 //     show Bluetooth settings unless the device has Bluetooth capabilities),
 //     these strings are added/removed according to the Add/Remove*SearchTags()
 //     instance functions.
-class OsSettingsLocalizedStringsProvider : public KeyedService {
+class OsSettingsLocalizedStringsProvider
+    : public KeyedService,
+      public OsSettingsPerPageStringsProvider::Delegate {
  public:
-  // Adds the strings needed by the OS settings page to |html_source|
-  // This function causes |html_source| to expose a strings.js file from its
-  // source which contains a mapping from string's name to its translated value.
-  static void AddOsLocalizedStrings(content::WebUIDataSource* html_source,
-                                    Profile* profile,
-                                    content::WebContents* web_contents);
-
-  explicit OsSettingsLocalizedStringsProvider(
+  OsSettingsLocalizedStringsProvider(
+      Profile* profile,
       local_search_service::mojom::LocalSearchService* local_search_service);
   OsSettingsLocalizedStringsProvider(
       const OsSettingsLocalizedStringsProvider& other) = delete;
@@ -61,14 +59,11 @@ class OsSettingsLocalizedStringsProvider : public KeyedService {
       const OsSettingsLocalizedStringsProvider& other) = delete;
   ~OsSettingsLocalizedStringsProvider() override;
 
-  void AddNetworkSearchTags();
-  void RemoveNetworkSearchTags();
-
-  void AddEthernetSearchTags();
-  void RemoveEthernetSearchTags();
-
-  void AddWifiSearchTags();
-  void RemoveWifiSearchTags();
+  // Adds the strings needed by the OS settings page to |html_source|
+  // This function causes |html_source| to expose a strings.js file from its
+  // source which contains a mapping from string's name to its translated value.
+  void AddOsLocalizedStrings(content::WebUIDataSource* html_source,
+                             Profile* profile);
 
   // Returns the tag metadata associated with |canonical_message_id|, which must
   // be one of the canonical IDS_SETTINGS_TAG_* identifiers used for a search
@@ -80,9 +75,12 @@ class OsSettingsLocalizedStringsProvider : public KeyedService {
   // KeyedService:
   void Shutdown() override;
 
-  void AddSearchTagsGroup(const std::vector<SearchConcept>& tags_group);
-  void RemoveSearchTagsGroup(const std::vector<SearchConcept>& tags_group);
+  // OsSettingsPerPageStringsProvider::Delegate:
+  void AddSearchTags(const std::vector<SearchConcept>& tags_group) override;
+  void RemoveSearchTags(const std::vector<SearchConcept>& tags_group) override;
 
+  std::vector<std::unique_ptr<OsSettingsPerPageStringsProvider>>
+      per_page_providers_;
   mojo::Remote<local_search_service::mojom::Index> index_remote_;
   std::unordered_map<int, const SearchConcept*> canonical_id_to_metadata_map_;
 };

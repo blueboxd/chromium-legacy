@@ -17,7 +17,7 @@
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/metrics/webxr_session_tracker.h"
 #include "chrome/browser/vr/mode.h"
-#include "chrome/browser/vr/service/browser_xr_runtime.h"
+#include "chrome/browser/vr/service/browser_xr_runtime_impl.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/permissions/permission_manager.h"
@@ -47,7 +47,7 @@ device::mojom::XRRuntimeSessionOptionsPtr GetRuntimeOptions(
 
 vr::XrConsentPromptLevel GetRequiredConsentLevel(
     device::mojom::XRSessionMode mode,
-    const vr::BrowserXRRuntime* runtime,
+    const vr::BrowserXRRuntimeImpl* runtime,
     const std::set<device::mojom::XRSessionFeature>& requested_features) {
   if (base::Contains(
           requested_features,
@@ -422,7 +422,7 @@ void VRServiceImpl::RequestSession(
 }
 
 void VRServiceImpl::ShowConsentPrompt(SessionRequestData request,
-                                      BrowserXRRuntime* runtime) {
+                                      BrowserXRRuntimeImpl* runtime) {
   DVLOG(2) << __func__;
   DCHECK(request.options);
   DCHECK(runtime);
@@ -509,7 +509,7 @@ void VRServiceImpl::OnConsentResult(SessionRequestData request,
 }
 
 void VRServiceImpl::EnsureRuntimeInstalled(SessionRequestData request,
-                                           BrowserXRRuntime* runtime) {
+                                           BrowserXRRuntimeImpl* runtime) {
   DVLOG(2) << __func__;
 
   // If we were not provided the runtime, try to get it again.
@@ -606,7 +606,7 @@ void VRServiceImpl::SupportsSession(
 }
 
 void VRServiceImpl::ExitPresent(ExitPresentCallback on_exited) {
-  BrowserXRRuntime* immersive_runtime =
+  BrowserXRRuntimeImpl* immersive_runtime =
       runtime_manager_->GetCurrentlyPresentingImmersiveRuntime();
   DVLOG(2) << __func__ << ": !!immersive_runtime=" << !!immersive_runtime;
   if (immersive_runtime) {
@@ -619,7 +619,7 @@ void VRServiceImpl::ExitPresent(ExitPresentCallback on_exited) {
 void VRServiceImpl::SetFramesThrottled(bool throttled) {
   if (throttled != frames_throttled_) {
     frames_throttled_ = throttled;
-    BrowserXRRuntime* immersive_runtime =
+    BrowserXRRuntimeImpl* immersive_runtime =
         runtime_manager_->GetCurrentlyPresentingImmersiveRuntime();
     if (immersive_runtime) {
       immersive_runtime->SetFramesThrottled(this, frames_throttled_);

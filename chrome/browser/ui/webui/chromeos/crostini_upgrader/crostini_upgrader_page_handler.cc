@@ -45,6 +45,10 @@ void Redisplay() {
 
 }  // namespace
 
+void CrostiniUpgraderPageHandler::OnBackupMaybeStarted(bool did_start) {
+  Redisplay();
+}
+
 void CrostiniUpgraderPageHandler::Backup(bool show_file_chooser) {
   Redisplay();
   base::UmaHistogramEnumeration(crostini::kUpgradeDialogEventHistogram,

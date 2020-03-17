@@ -33,6 +33,7 @@
 #include "components/autofill_assistant/browser/website_login_fetcher_impl.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/version_info/channel.h"
@@ -463,9 +464,18 @@ autofill::PersonalDataManager* ClientAndroid::GetPersonalDataManager() {
       ProfileManager::GetLastUsedProfile());
 }
 
+password_manager::PasswordManagerClient*
+ClientAndroid::GetPasswordManagerClient() {
+  if (!password_manager_client_) {
+    password_manager_client_ =
+        ChromePasswordManagerClient::FromWebContents(web_contents_);
+  }
+  return password_manager_client_;
+}
+
 WebsiteLoginFetcher* ClientAndroid::GetWebsiteLoginFetcher() {
   if (!website_login_fetcher_) {
-    auto* client = ChromePasswordManagerClient::FromWebContents(web_contents_);
+    auto* client = GetPasswordManagerClient();
     auto* factory =
         password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
             web_contents_);

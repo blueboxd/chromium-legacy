@@ -25,9 +25,13 @@ _log = logging.getLogger(__file__)
 
 # The default filename of manifest expected by `wpt`.
 MANIFEST_NAME = 'MANIFEST.json'
+
 # The filename used for the base manifest includes the version as a
 # workaround for trouble landing huge changes to the base manifest when
 # the version changes. See https://crbug.com/876717.
+#
+# NOTE: If this is changed, be sure to update other instances of
+# "WPT_BASE_MANIFEST_7" in the code.
 BASE_MANIFEST_NAME = 'WPT_BASE_MANIFEST_7.json'
 
 # TODO(robertma): Use the official wpt.manifest module.

@@ -236,9 +236,9 @@
 #include "base/win/win_util.h"
 #include "chrome/browser/chrome_browser_main_win.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
+#include "chrome/browser/notifications/win/notification_launch_id.h"
 #include "chrome/browser/ui/network_profile_bubble.h"
 #include "chrome/browser/ui/views/try_chrome_dialog_win/try_chrome_dialog.h"
-#include "chrome/browser/web_applications/components/web_app_file_handler_registration_win.h"
 #include "chrome/browser/win/browser_util.h"
 #include "chrome/browser/win/chrome_select_file_dialog_factory.h"
 #include "chrome/browser/win/parental_controls.h"
@@ -298,7 +298,6 @@
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #if defined(OS_WIN)
 #include "chrome/browser/vr/service/xr_session_request_consent_manager_impl.h"
-#include "chrome/browser/vr/ui_host/vr_ui_host_impl.h"
 #endif
 #endif
 
@@ -351,10 +350,10 @@ Profile* CreatePrimaryProfile(const content::MainFunctionParams& parameters,
 // notification, the profile id encoded in the notification launch id should
 // be chosen over all others.
 #if defined(OS_WIN)
-  if (parsed_command_line.HasSwitch(switches::kNotificationLaunchId)) {
-    profiles::SetLastUsedProfile(
-        base::UTF16ToUTF8(parsed_command_line.GetSwitchValueNative(
-            switches::kNotificationLaunchId)));
+  std::string last_used_profile_id =
+      NotificationLaunchId::GetNotificationLaunchProfileId(parsed_command_line);
+  if (!last_used_profile_id.empty()) {
+    profiles::SetLastUsedProfile(last_used_profile_id);
     set_last_used_profile = true;
   }
 #endif  // defined(OS_WIN)
@@ -958,7 +957,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
       base::Bind(&vr::VRServiceImpl::Create));
 
 #if defined(OS_WIN)
-  vr::VRUiHost::SetFactory(&vr::VRUiHostImpl::Create);
   vr::XRSessionRequestConsentManager::SetInstance(
       new vr::XRSessionRequestConsentManagerImpl());
 #endif  // defined(OS_WIN)
@@ -1276,14 +1274,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     return chrome::RESULT_CODE_DOWNGRADE_AND_RELAUNCH;
   }
   downgrade_manager_.UpdateLastVersion(user_data_dir_);
-#endif
-
-#if defined(OS_WIN)
-  // Write current executable path to |user_data_dir_| to inform Progressive Web
-  // App launchers inside |user_data_dir_| which chrome.exe to launch from.
-  base::ThreadPool::PostTask(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
-      base::BindOnce(&web_app::UpdateChromeExePath, user_data_dir_));
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)

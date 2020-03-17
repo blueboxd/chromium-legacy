@@ -485,7 +485,6 @@ public class CustomTabsConnection {
             return;
         }
 
-        url = DataReductionProxySettings.getInstance().maybeRewriteWebliteUrl(url);
         if (maySpeculate(session)) {
             boolean canUseHiddenTab = mClientManager.getCanUseHiddenTab(session);
             startSpeculation(session, url, canUseHiddenTab, extras, uid);

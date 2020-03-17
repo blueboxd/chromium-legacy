@@ -40,12 +40,12 @@ class ASH_PUBLIC_EXPORT LocaleUpdateController {
   // Get the singleton instance of LocaleUpdateController.
   static LocaleUpdateController* Get();
 
-  // When this is called in OOBE, it returns kAccept immediately after invoking
-  // observer callbacks. |current|, |from|, and |to| are ignored in this case.
-  // Otherwise it displays a notification in ash prompting the user whether to
-  // accept a change in the locale. If the user clicks the accept button (or
-  // closes the notification), OnLocaleChange() returns kAccept. If the user
-  // clicks the revert button, returns kRevert.
+  // When this is called in OOBE or LOGIN_PRIMARY, it returns kAccept
+  // immediately after invoking observer callbacks. |current|, |from|, and |to|
+  // are ignored in this case. Otherwise it displays a notification in ash
+  // prompting the user whether to accept a change in the locale. If the user
+  // clicks the accept button (or closes the notification), OnLocaleChange()
+  // returns kAccept. If the user clicks the revert button, returns kRevert.
   using OnLocaleChangedCallback =
       base::OnceCallback<void(LocaleNotificationResult)>;
   virtual void OnLocaleChanged(const std::string& current,

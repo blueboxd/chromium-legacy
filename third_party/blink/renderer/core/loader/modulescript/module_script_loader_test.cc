@@ -203,11 +203,10 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
                           MakeGarbageCollected<TestLoaderFactory>()));
   reporting_proxy_ = std::make_unique<MockWorkerReportingProxy>();
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-      url_, mojom::ScriptType::kModule,
-      OffMainThreadWorkerScriptFetchOption::kEnabled, "GlobalScopeName",
-      "UserAgent", nullptr /* web_worker_fetch_context */,
-      Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
-      security_origin_.get(), true /* is_secure_context */, HttpsState::kModern,
+      url_, mojom::blink::ScriptType::kModule, "GlobalScopeName", "UserAgent",
+      nullptr /* web_worker_fetch_context */, Vector<CSPHeaderAndType>(),
+      network::mojom::ReferrerPolicy::kDefault, security_origin_.get(),
+      true /* is_secure_context */, HttpsState::kModern,
       nullptr /* worker_clients */, nullptr /* content_settings_client */,
       network::mojom::IPAddressSpace::kLocal, nullptr /* origin_trial_token */,
       base::UnguessableToken::Create(), nullptr /* worker_settings */,

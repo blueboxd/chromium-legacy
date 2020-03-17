@@ -377,8 +377,6 @@ jumbo_static_library("browser") {
     "content_settings/sound_content_setting_observer.h",
     "content_settings/tab_specific_content_settings.cc",
     "content_settings/tab_specific_content_settings.h",
-    "content_settings/web_site_settings_uma_util.cc",
-    "content_settings/web_site_settings_uma_util.h",
     "crash_upload_list/crash_upload_list.cc",
     "crash_upload_list/crash_upload_list.h",
     "crash_upload_list/crash_upload_list_android.cc",
@@ -2650,8 +2648,6 @@ jumbo_static_library("browser") {
       "android/profile_key_startup_accessor.h",
       "android/profile_key_util.cc",
       "android/profile_key_util.h",
-      "android/profiles/profile_downloader_android.cc",
-      "android/profiles/profile_manager_utils.cc",
       "android/provider/blocking_ui_thread_async_request.cc",
       "android/provider/blocking_ui_thread_async_request.h",
       "android/provider/bookmark_model_task.cc",
@@ -2827,9 +2823,6 @@ jumbo_static_library("browser") {
       "first_run/android/first_run_utils.cc",
       "flags/android/chrome_feature_list.cc",
       "flags/android/chrome_feature_list.h",
-      "geolocation/android/location_settings.h",
-      "geolocation/android/location_settings_impl.cc",
-      "geolocation/android/location_settings_impl.h",
       "history/android/android_history_provider_service.cc",
       "history/android/android_history_provider_service.h",
       "history/android/android_provider_backend.cc",
@@ -2934,6 +2927,8 @@ jumbo_static_library("browser") {
       "prerender/external_prerender_handler_android.h",
       "previews/android/previews_android_bridge.cc",
       "previews/android/previews_android_bridge.h",
+      "profiles/android/profile_downloader_android.cc",
+      "profiles/android/profile_manager_utils.cc",
       "profiles/incognito_utils_android.cc",
       "profiles/profile_android.cc",
       "profiles/profile_android.h",
@@ -3015,6 +3010,7 @@ jumbo_static_library("browser") {
       "//components/invalidation/impl:feature_list",
       "//components/javascript_dialogs/android:jni_headers",
       "//components/language/android:language_bridge",
+      "//components/location/android:settings",
       "//components/module_installer/android:native",
       "//components/omnibox/browser",
       "//components/page_load_metrics/browser",
@@ -4881,8 +4877,15 @@ jumbo_static_library("browser") {
       "android/feed/feed_scheduler_bridge.h",
       "android/feed/history/feed_history_helper.cc",
       "android/feed/history/feed_history_helper.h",
+      "android/feed/v2/feed_service_bridge.cc",
+      "android/feed/v2/feed_service_bridge.h",
+      "android/feed/v2/feed_service_factory.cc",
+      "android/feed/v2/feed_service_factory.h",
     ]
-    deps += [ "//components/feed/content:feed_content" ]
+    deps += [
+      "//components/feed/content:feed_content",
+      "//components/feed/core/v2:feed_core_v2",
+    ]
   }
 
   if (enable_library_cdms) {
@@ -5405,11 +5408,18 @@ jumbo_static_library("browser") {
       deps += [ "//device/vr/public/mojom" ]
     }
 
+    if (!is_android) {
+      sources += [
+        "vr/service/isolated_device_provider.cc",
+        "vr/service/isolated_device_provider.h",
+      ]
+    }
+
     sources += [
       "component_updater/vr_assets_component_installer.cc",
       "component_updater/vr_assets_component_installer.h",
-      "vr/service/browser_xr_runtime.cc",
-      "vr/service/browser_xr_runtime.h",
+      "vr/service/browser_xr_runtime_impl.cc",
+      "vr/service/browser_xr_runtime_impl.h",
       "vr/service/chrome_xr_integration_client.cc",
       "vr/service/chrome_xr_integration_client.h",
       "vr/service/vr_service_impl.cc",

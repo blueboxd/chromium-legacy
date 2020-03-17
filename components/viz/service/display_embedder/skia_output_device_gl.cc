@@ -36,8 +36,7 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
     scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(/*need_swap_semaphore=*/false,
-                       memory_tracker,
+    : SkiaOutputDevice(memory_tracker,
                        std::move(did_swap_buffer_complete_callback)),
       mailbox_manager_(mailbox_manager),
       context_state_(context_state),
@@ -314,12 +313,13 @@ void SkiaOutputDeviceGL::DiscardBackbuffer() {
   gl_surface_->SetBackbufferAllocation(false);
 }
 
-SkSurface* SkiaOutputDeviceGL::BeginPaint() {
+SkSurface* SkiaOutputDeviceGL::BeginPaint(
+    std::vector<GrBackendSemaphore>* end_semaphores) {
   DCHECK(sk_surface_);
   return sk_surface_.get();
 }
 
-void SkiaOutputDeviceGL::EndPaint(const GrBackendSemaphore& semaphore) {}
+void SkiaOutputDeviceGL::EndPaint() {}
 
 scoped_refptr<gl::GLImage> SkiaOutputDeviceGL::GetGLImageForMailbox(
     const gpu::Mailbox& mailbox) {

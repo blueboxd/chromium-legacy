@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 8087 tests; 8079 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 8087 tests; 8081 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS form.title: 38 tests
 PASS form.lang: 38 tests
 PASS form.dir: 68 tests
@@ -109,11 +109,7 @@ PASS button.formMethod: 5 tests
 PASS button.formNoValidate: 39 tests
 PASS button.formTarget: 38 tests
 PASS button.name: 38 tests
-PASS button.type: 31 tests
-FAIL button.type: setAttribute() to "reſet" assert_equals: IDL get expected "submit" but got "reset"
-PASS button.type: 34 tests
-FAIL button.type: IDL set to "reſet" assert_equals: IDL get expected "submit" but got "reset"
-PASS button.type: 5 tests
+PASS button.type: 72 tests
 PASS button.value: 38 tests
 PASS select.title: 38 tests
 PASS select.lang: 38 tests

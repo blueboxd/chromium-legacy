@@ -9,7 +9,7 @@ import sys
 
 from mojom import fileutil
 
-fileutil.EnsureModuleAvailable("jinja2")
+fileutil.AddLocalRepoThirdPartyDirToModulePath()
 import jinja2
 
 

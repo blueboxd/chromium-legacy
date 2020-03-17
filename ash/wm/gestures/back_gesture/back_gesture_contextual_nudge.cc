@@ -14,6 +14,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
@@ -44,6 +45,10 @@ constexpr int kPaddingBetweenCircleAndLabel = 8;
 
 // Color of the label.
 constexpr SkColor kLabelColor = gfx::kGoogleGrey200;
+
+// Shadow color and blur for the label.
+constexpr SkColor kLabelShadowColor = SkColorSetARGB(0x66, 0x00, 0x00, 0x00);
+constexpr int kLabelShadowBlur = 1;
 
 // Width and height of the label.
 constexpr int kLabelWidth = 70;
@@ -177,6 +182,9 @@ class BackGestureContextualNudge::ContextualNudgeView
       label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
       label_->SetFontList(
           gfx::FontList().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
+      label_->SetShadows(gfx::ShadowValues(
+          1, gfx::ShadowValue(gfx::Vector2d(), kLabelShadowBlur,
+                              kLabelShadowColor)));
       AddChildView(label_);
     }
     SuggestionView(const SuggestionView&) = delete;

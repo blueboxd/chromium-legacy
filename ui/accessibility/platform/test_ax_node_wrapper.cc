@@ -4,7 +4,7 @@
 
 #include "ui/accessibility/platform/test_ax_node_wrapper.h"
 
-#include <unordered_map>
+#include <map>
 #include <utility>
 
 #include "base/numerics/ranges.h"
@@ -21,7 +21,7 @@ namespace ui {
 namespace {
 
 // A global map from AXNodes to TestAXNodeWrappers.
-std::unordered_map<AXNode::AXID, TestAXNodeWrapper*> g_node_id_to_wrapper_map;
+std::map<AXNode::AXID, TestAXNodeWrapper*> g_node_id_to_wrapper_map;
 
 // A global coordinate offset.
 gfx::Vector2d g_offset;
@@ -34,7 +34,7 @@ float g_scale_factor = 1.0;
 //     map associated with such tree, i.e. a pair {tree, nullptr} is invalid.
 //   - For testing purposes, assume there is a single node being focused in the
 //     entire tree and if such node is deleted, focus is completely lost.
-std::unordered_map<AXTree*, AXNode*> g_focused_node_in_tree;
+std::map<AXTree*, AXNode*> g_focused_node_in_tree;
 
 // A global indicating the last node which ShowContextMenu was called from.
 AXNode* g_node_from_last_show_context_menu;
@@ -45,6 +45,10 @@ AXNode* g_node_from_last_default_action;
 
 // A global indicating that AXPlatformNodeDelegate objects are web content.
 bool g_is_web_content = false;
+
+// A map of hit test results - a map from source node ID to destination node
+// ID.
+std::map<AXNode::AXID, AXNode::AXID> g_hit_test_result;
 
 // A simple implementation of AXTreeObserver to catch when AXNodes are
 // deleted so we can delete their wrappers.
@@ -100,8 +104,15 @@ std::unique_ptr<base::AutoReset<float>> TestAXNodeWrapper::SetScaleFactor(
   return std::make_unique<base::AutoReset<float>>(&g_scale_factor, value);
 }
 
+// static
 void TestAXNodeWrapper::SetGlobalIsWebContent(bool is_web_content) {
   g_is_web_content = is_web_content;
+}
+
+// static
+void TestAXNodeWrapper::SetHitTestResult(AXNode::AXID src_node_id,
+                                         AXNode::AXID dst_node_id) {
+  g_hit_test_result[src_node_id] = dst_node_id;
 }
 
 TestAXNodeWrapper::~TestAXNodeWrapper() {
@@ -240,8 +251,14 @@ gfx::Rect TestAXNodeWrapper::GetHypertextRangeBoundsRect(
 }
 
 TestAXNodeWrapper* TestAXNodeWrapper::HitTestSyncInternal(int x, int y) {
+  if (g_hit_test_result.find(node_->id()) != g_hit_test_result.end()) {
+    int result_id = g_hit_test_result[node_->id()];
+    AXNode* result_node = tree_->GetFromId(result_id);
+    return GetOrCreate(tree_, result_node);
+  }
+
   // Here we find the deepest child whose bounding box contains the given point.
-  // The assuptions are that there are no overlapping bounding rects and that
+  // The assumptions are that there are no overlapping bounding rects and that
   // all children have smaller bounding rects than their parents.
   if (!GetClippedScreenBoundsRect().Contains(gfx::Rect(x, y, 0, 0)))
     return nullptr;

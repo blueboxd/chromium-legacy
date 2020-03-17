@@ -168,6 +168,7 @@ void WebAppControllerBrowserTest::SetUpCommandLine(
 void WebAppControllerBrowserTest::SetUpOnMainThread() {
   extensions::ExtensionBrowserTest::SetUpOnMainThread();
   host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(https_server()->Start());
 
   // By default, all SSL cert checks are valid. Can be overridden in tests.
   cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);

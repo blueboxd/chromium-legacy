@@ -35,6 +35,7 @@ class MockDemoSetupScreenView : public DemoSetupScreenView {
   MOCK_METHOD0(OnSetupSucceeded, void());
   MOCK_METHOD1(OnSetupFailed,
                void(const DemoSetupController::DemoSetupError& error));
+  MOCK_METHOD1(IncrementSetupProgress, void(bool complete));
 
   void Bind(DemoSetupScreen* screen) override;
 

@@ -2139,6 +2139,7 @@ if (enable_java_templates) {
         "--extra-main-r-text-files=@FileArg($_rebased_build_config:deps_info:extra_main_r_text_files)",
         "--min-sdk-version=${invoker.min_sdk_version}",
         "--target-sdk-version=${invoker.target_sdk_version}",
+        "--webp-cache-dir=obj/android-webp-cache",
       ]
 
       inputs += [ invoker.android_manifest ]

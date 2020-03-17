@@ -12,14 +12,14 @@
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/android/search_permissions/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/geolocation/android/location_settings.h"
-#include "chrome/browser/geolocation/android/location_settings_impl.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/infobars/core/infobar.h"
+#include "components/location/android/location_settings.h"
+#include "components/location/android/location_settings_impl.h"
 #include "components/permissions/permission_request_id.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -214,7 +214,8 @@ void GeolocationPermissionContextAndroid::NotifyPermissionSet(
     location_settings_dialog_request_id_ = id;
     location_settings_dialog_callback_ = std::move(callback);
     location_settings_->PromptToEnableSystemLocationSetting(
-        is_default_search ? SEARCH : DEFAULT, web_contents,
+        is_default_search ? SEARCH : DEFAULT,
+        web_contents->GetTopLevelNativeWindow(),
         base::BindOnce(
             &GeolocationPermissionContextAndroid::OnLocationSettingsDialogShown,
             weak_factory_.GetWeakPtr(), requesting_origin, embedding_origin,
@@ -347,7 +348,7 @@ bool GeolocationPermissionContextAndroid::IsLocationAccessPossible(
     bool user_gesture) {
   return (location_settings_->HasAndroidLocationPermission() ||
           location_settings_->CanPromptForAndroidLocationPermission(
-              web_contents)) &&
+              web_contents->GetTopLevelNativeWindow())) &&
          (location_settings_->IsSystemLocationSettingEnabled() ||
           CanShowLocationSettingsDialog(requesting_origin, user_gesture,
                                         true /* ignore_backoff */));

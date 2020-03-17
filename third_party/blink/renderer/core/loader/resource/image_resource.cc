@@ -146,6 +146,10 @@ class ImageResource::ImageResourceInfoImpl final
     }
   }
 
+  bool IsAdResource() const override {
+    return resource_->GetResourceRequest().IsAdResource();
+  }
+
   const Member<ImageResource> resource_;
 };
 

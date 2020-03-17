@@ -16,11 +16,13 @@ CopyingTexture2DWrapper::CopyingTexture2DWrapper(
     const gfx::Size& size,
     std::unique_ptr<Texture2DWrapper> output_wrapper,
     std::unique_ptr<VideoProcessorProxy> processor,
-    ComD3D11Texture2D output_texture)
+    ComD3D11Texture2D output_texture,
+    base::Optional<gfx::ColorSpace> output_color_space)
     : size_(size),
       video_processor_(std::move(processor)),
       output_texture_wrapper_(std::move(output_wrapper)),
-      output_texture_(std::move(output_texture)) {}
+      output_texture_(std::move(output_texture)),
+      output_color_space_(std::move(output_color_space)) {}
 
 CopyingTexture2DWrapper::~CopyingTexture2DWrapper() = default;
 
@@ -31,9 +33,12 @@ CopyingTexture2DWrapper::~CopyingTexture2DWrapper() = default;
     }                           \
   } while (0)
 
-bool CopyingTexture2DWrapper::ProcessTexture(ComD3D11Texture2D texture,
-                                             size_t array_slice,
-                                             MailboxHolderArray* mailbox_dest) {
+bool CopyingTexture2DWrapper::ProcessTexture(
+    ComD3D11Texture2D texture,
+    size_t array_slice,
+    const gfx::ColorSpace& input_color_space,
+    MailboxHolderArray* mailbox_dest,
+    gfx::ColorSpace* output_color_space) {
   D3D11_VIDEO_PROCESSOR_OUTPUT_VIEW_DESC output_view_desc = {
       D3D11_VPOV_DIMENSION_TEXTURE2D};
   output_view_desc.Texture2D.MipSlice = 0;
@@ -53,13 +58,27 @@ bool CopyingTexture2DWrapper::ProcessTexture(ComD3D11Texture2D texture,
   streams.Enable = TRUE;
   streams.pInputSurface = input_view.Get();
 
+  // If we were given an output color space, then that's what we'll use.
+  // Otherwise, we'll use whatever the input space is.
+  gfx::ColorSpace copy_color_space =
+      output_color_space_ ? *output_color_space_ : input_color_space;
+
+  // If the input color space has changed, or if this is the first call, then
+  // notify the video processor about it.
+  if (!previous_input_color_space_ ||
+      *previous_input_color_space_ != input_color_space) {
+    previous_input_color_space_ = input_color_space;
+    video_processor_->SetStreamColorSpace(input_color_space);
+    video_processor_->SetOutputColorSpace(copy_color_space);
+  }
+
   RETURN_ON_FAILURE(video_processor_->VideoProcessorBlt(output_view.Get(),
                                                         0,  // output_frameno
                                                         1,  // stream_count
                                                         &streams));
 
-  return output_texture_wrapper_->ProcessTexture(output_texture_, 0,
-                                                 mailbox_dest);
+  return output_texture_wrapper_->ProcessTexture(
+      output_texture_, 0, copy_color_space, mailbox_dest, output_color_space);
 }
 
 bool CopyingTexture2DWrapper::Init(GetCommandBufferHelperCB get_helper_cb) {

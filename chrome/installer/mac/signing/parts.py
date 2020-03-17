@@ -127,7 +127,6 @@ def get_parts(config):
         'libswiftshader_libEGL.dylib',
         'libswiftshader_libGLESv2.dylib',
         'libvk_swiftshader.dylib',
-        'libvulkan.dylib',
     )
     for library in dylibs:
         library_basename = os.path.basename(library)

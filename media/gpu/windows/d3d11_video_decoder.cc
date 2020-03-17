@@ -31,6 +31,7 @@
 #include "media/gpu/windows/d3d11_video_decoder_impl.h"
 #include "media/gpu/windows/supported_profile_helpers.h"
 #include "media/media_buildflags.h"
+#include "ui/gl/direct_composition_surface_win.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_switches.h"
 
@@ -277,9 +278,15 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  texture_selector_ = TextureSelector::Create(
-      gpu_preferences_, gpu_workarounds_,
-      decoder_configurator_->TextureFormat(), media_log_.get());
+  // Use IsHDRSupported to guess whether the compositor can output HDR textures.
+  // See TextureSelector for notes about why the decoder should not care.
+  texture_selector_ =
+      TextureSelector::Create(gpu_preferences_, gpu_workarounds_,
+                              decoder_configurator_->TextureFormat(),
+                              gl::DirectCompositionSurfaceWin::IsHDRSupported()
+                                  ? TextureSelector::HDRMode::kSDROrHDR
+                                  : TextureSelector::HDRMode::kSDROnly,
+                              media_log_.get());
   if (!texture_selector_) {
     NotifyError("D3DD11: Cannot get TextureSelector for format");
     return;
@@ -725,7 +732,10 @@ bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   base::TimeDelta timestamp = picture_buffer->timestamp_;
 
   MailboxHolderArray mailbox_holders;
-  if (!picture_buffer->ProcessTexture(&mailbox_holders)) {
+  gfx::ColorSpace output_color_space;
+  if (!picture_buffer->ProcessTexture(
+          picture->get_colorspace().ToGfxColorSpace(), &mailbox_holders,
+          &output_color_space)) {
     NotifyError("Unable to process texture");
     return false;
   }
@@ -762,7 +772,7 @@ bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
     frame->metadata()->SetBoolean(VideoFrameMetadata::HW_PROTECTED, true);
   }
 
-  frame->set_color_space(picture->get_colorspace().ToGfxColorSpace());
+  frame->set_color_space(output_color_space);
   output_cb_.Run(frame);
   return true;
 }

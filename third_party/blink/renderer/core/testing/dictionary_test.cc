@@ -75,12 +75,6 @@ void DictionaryTest::set(const InternalDictionary* testing_dictionary) {
         testing_dictionary->doubleOrStringSequenceMember();
   }
   event_target_or_null_member_ = testing_dictionary->eventTargetOrNullMember();
-  if (testing_dictionary->hasDictionaryMember()) {
-    NonThrowableExceptionState exception_state;
-    dictionary_member_properties_ =
-        testing_dictionary->dictionaryMember().GetOwnPropertiesAsStringHashMap(
-            exception_state);
-  }
   if (testing_dictionary->hasInternalEnumOrInternalEnumSequenceMember()) {
     internal_enum_or_internal_enum_sequence_ =
         testing_dictionary->internalEnumOrInternalEnumSequenceMember();
@@ -93,18 +87,6 @@ InternalDictionary* DictionaryTest::get() {
   InternalDictionary* result = InternalDictionary::Create();
   GetInternals(result);
   return result;
-}
-
-ScriptValue DictionaryTest::getDictionaryMemberProperties(
-    ScriptState* script_state) {
-  if (!dictionary_member_properties_)
-    return ScriptValue();
-  V8ObjectBuilder builder(script_state);
-  HashMap<String, String> properties = dictionary_member_properties_.value();
-  for (HashMap<String, String>::iterator it = properties.begin();
-       it != properties.end(); ++it)
-    builder.AddString(it->key, it->value);
-  return builder.GetScriptValue();
 }
 
 void DictionaryTest::setDerived(const InternalDictionaryDerived* derived) {

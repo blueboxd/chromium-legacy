@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {PaymentsManagerImpl} from 'chrome://settings/settings.js';
+// #import {MetricsBrowserProxyImpl, PaymentsManagerImpl, PrivacyElementInteractions} from 'chrome://settings/settings.js'
+// #import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.m.js';
 // #import {TestPaymentsManager, createCreditCardEntry, createEmptyCreditCardEntry} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {eventToPromise, whenAttributeIs} from 'chrome://test/test_util.m.js';
+// #import {eventToPromise, isVisible, whenAttributeIs} from 'chrome://test/test_util.m.js';
 // #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // clang-format-on
 
@@ -593,6 +594,40 @@ cr.define('settings_payments_section', function() {
           'settings-upi-id-list-entry');
 
       assertEquals(0, upiRows.length);
+    });
+
+    test('CanMakePaymentToggle_Visible', function() {
+      // The privacy settings redesign exposes the 'canMakePayment' toggle
+      // in the Payments section.
+      loadTimeData.overrideValues({'privacySettingsRedesignEnabled': true});
+      const section = createPaymentsSection(
+          /*creditCards=*/[], /*upiIds=*/[], /*prefValues=*/ {});
+      assertTrue(test_util.isVisible(section.$$('#canMakePaymentToggle')));
+    });
+
+    test('CanMakePaymentToggle_NotPresentBeforeRedesign', function() {
+      // Before the privacy settings redesign, the 'canMakePayment' toggle
+      // lived elsewhere.
+      loadTimeData.overrideValues({'privacySettingsRedesignEnabled': false});
+      const section = createPaymentsSection(
+          /*creditCards=*/[], /*upiIds=*/[], /*prefValues=*/ {});
+      assertFalse(!!section.$$('#canMakePaymentToggle'));
+    });
+
+    test('CanMakePaymentToggle_RecordsMetrics', async function() {
+      const testMetricsBrowserProxy = new TestMetricsBrowserProxy();
+      settings.MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
+
+      loadTimeData.overrideValues({'privacySettingsRedesignEnabled': true});
+      const section = createPaymentsSection(
+          /*creditCards=*/[], /*upiIds=*/[], /*prefValues=*/ {});
+
+      section.$$('#canMakePaymentToggle').click();
+      const result = await testMetricsBrowserProxy.whenCalled(
+          'recordSettingsPageHistogram');
+
+      assertEquals(
+          settings.PrivacyElementInteractions.PAYMENT_METHOD, result);
     });
   });
   // #cr_define_end

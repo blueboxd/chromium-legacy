@@ -83,6 +83,15 @@ struct ShapeResultView::RunInfoPart {
   // |base::span<RunInfoPart>|.
   const RunInfoPart* get() const { return this; }
 
+  void ExpandRangeToIncludePartialGlyphs(unsigned offset,
+                                         unsigned* from,
+                                         unsigned* to) const {
+    DCHECK_GE(offset + start_index_, offset_);
+    unsigned part_offset = offset + start_index_ - offset_;
+    run_->ExpandRangeToIncludePartialGlyphs(
+        part_offset, reinterpret_cast<int*>(from), reinterpret_cast<int*>(to));
+  }
+
   scoped_refptr<const ShapeResult::RunInfo> run_;
   ShapeResult::RunInfo::GlyphDataRange range_;
 
@@ -631,6 +640,15 @@ FloatRect ShapeResultView::ComputeInkBounds() const {
   }
 
   return ink_bounds;
+}
+
+void ShapeResultView::ExpandRangeToIncludePartialGlyphs(unsigned* from,
+                                                        unsigned* to) const {
+  unsigned accumulated_offset = char_index_offset_;
+  for (const auto& part : Parts()) {
+    part.ExpandRangeToIncludePartialGlyphs(accumulated_offset, from, to);
+    accumulated_offset += part.NumCharacters();
+  }
 }
 
 }  // namespace blink

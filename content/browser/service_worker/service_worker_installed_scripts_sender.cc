@@ -125,8 +125,11 @@ void ServiceWorkerInstalledScriptsSender::OnStarted(
   script_info->meta_data = std::move(meta_data_handle);
   script_info->meta_data_size = meta_data_size;
   manager_->TransferInstalledScript(std::move(script_info));
-  if (IsSendingMainScript())
-    owner_->SetMainScriptHttpResponseInfo(*http_info->http_info);
+  if (IsSendingMainScript()) {
+    owner_->SetMainScriptResponse(
+        std::make_unique<ServiceWorkerVersion::MainScriptResponse>(
+            *http_info->http_info));
+  }
 }
 
 void ServiceWorkerInstalledScriptsSender::OnFinished(

@@ -15,10 +15,10 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/apps/apk_web_app_installer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_registry_observer.h"
 
 class ArcAppListPrefs;
 class Profile;
@@ -29,6 +29,7 @@ class PrefRegistrySyncable;
 
 namespace web_app {
 enum class InstallResultCode;
+class WebAppProvider;
 }  // namespace web_app
 
 namespace chromeos {
@@ -36,7 +37,7 @@ namespace chromeos {
 class ApkWebAppService : public KeyedService,
                          public ApkWebAppInstaller::Owner,
                          public ArcAppListPrefs::Observer,
-                         public extensions::ExtensionRegistryObserver {
+                         public web_app::AppRegistrarObserver {
  public:
   static ApkWebAppService* Get(Profile* profile);
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -77,10 +78,8 @@ class ApkWebAppService : public KeyedService,
                         bool uninstalled) override;
   void OnPackageListInitialRefreshed() override;
 
-  // extensions::ExtensionRegistryObserver overrides.
-  void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                              const extensions::Extension* extension,
-                              extensions::UninstallReason reason) override;
+  // web_app::AppRegistrarObserver overrides.
+  void OnWebAppUninstalled(const web_app::AppId& web_app_id) override;
 
   void OnDidGetWebAppIcon(const std::string& package_name,
                           arc::mojom::WebAppInfoPtr web_app_info,
@@ -94,10 +93,10 @@ class ApkWebAppService : public KeyedService,
 
   Profile* profile_;
   ArcAppListPrefs* arc_app_list_prefs_;
+  web_app::WebAppProvider* provider_;
 
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      observer_{this};
+  ScopedObserver<web_app::AppRegistrar, web_app::AppRegistrarObserver>
+      registrar_observer_{this};
 
   // Must go last.
   base::WeakPtrFactory<ApkWebAppService> weak_ptr_factory_{this};

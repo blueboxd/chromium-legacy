@@ -524,8 +524,9 @@
       # This should be the same with 'android-marshmallow-arm64-rel'.
       'android-marshmallow-arm64-rel-swarming':  'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild',
 
-      # This should be the same with 'Linux Builder'.
+      # These should be the same with 'Linux Builder'.
       'linux-rel-swarming': 'gpu_tests_release_bot',
+      'linux-rel-swarming-staging': 'gpu_tests_release_bot',
 
       # This should be the same with 'Mac Builder'.
       'mac-rel-swarming': 'gpu_tests_release_bot_minimal_symbols',

@@ -57,6 +57,8 @@ class StrikeDatabaseIntegratorBase {
  protected:
   // Removes all strikes in which it has been longer than GetExpiryTimeMicros()
   // past |last_update_timestamp|.
+  // TODO(crbug/1061639): Provide option to NOT expire strikes, perhaps by
+  //                      GetExpiryTimeMicros() return a base::Optional.
   void RemoveExpiredStrikes();
 
  private:

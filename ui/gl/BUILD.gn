@@ -10,7 +10,6 @@ import("//build/config/ui.gni")
 import("//testing/test.gni")
 import("//ui/gl/features.gni")
 import("//ui/ozone/ozone.gni")
-
 declare_args() {
   enable_swiftshader = (is_win || is_linux || (is_mac && use_egl) ||
                         is_chromeos || is_fuchsia) &&
@@ -416,13 +415,11 @@ if (is_mac && use_egl) {
     sources = [
       "$root_out_dir/libEGL.dylib",
       "$root_out_dir/libGLESv2.dylib",
-      "$root_out_dir/libvulkan.dylib",
     ]
     outputs = [ "$root_out_dir/egl_intermediates/{{source_file_part}}" ]
     deps = [
       "//third_party/angle:libEGL",
       "//third_party/angle:libGLESv2",
-      "//third_party/angle/third_party/vulkan-loader/src:libvulkan",
     ]
   }
 

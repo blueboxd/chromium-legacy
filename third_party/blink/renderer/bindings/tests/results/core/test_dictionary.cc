@@ -49,10 +49,6 @@ void TestDictionary::setCallbackFunctionMember(V8VoidCallbackFunction* value) {
   callback_function_member_ = value;
 }
 
-void TestDictionary::setDictionaryMember(Dictionary value) {
-  dictionary_member_ = value;
-}
-
 void TestDictionary::setDoubleOrNullOrDoubleOrNullSequenceMember(const DoubleOrDoubleOrNullSequence& value) {
   double_or_null_or_double_or_null_sequence_member_ = value;
 }

@@ -787,6 +787,10 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // context menu.
   bool handling_mouse_menu_ = false;
 
+  // This is set to true when we call ShowWindow(SC_RESTORE), in order to
+  // call HandleWindowMinimizedOrRestored() when we get a WM_ACTIVATE message.
+  bool notify_restore_on_activate_ = false;
+
   // This is a map of the HMONITOR to full screeen window instance. It is safe
   // to keep a raw pointer to the HWNDMessageHandler instance as we track the
   // window destruction and ensure that the map is cleaned up.

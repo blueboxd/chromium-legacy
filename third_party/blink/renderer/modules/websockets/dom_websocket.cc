@@ -348,7 +348,6 @@ void DOMWebSocket::send(DOMArrayBuffer* binary_data,
   NETWORK_DVLOG(1) << "WebSocket " << this << " send() Sending ArrayBuffer "
                    << binary_data;
   DCHECK(binary_data);
-  DCHECK(binary_data->Buffer());
   if (common_.GetState() == kConnecting) {
     SetInvalidStateErrorForSendMethod(exception_state);
     return;

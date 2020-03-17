@@ -2199,7 +2199,7 @@
   {
     "name": "enable-webrtc-pipewire-capturer",
     "owners": [ "tomas.popela@gmail.com" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 83
   },
   {
     "name": "enable-webrtc-remote-event-log",
@@ -3619,6 +3619,11 @@
     "name": "smart-dim-model-v3",
     "owners": [ "amoylan", "jiameng" ],
     "expiry_milestone": 83
+  },
+  {
+    "name": "smart-dim-new-ml-agent",
+    "owners": [ "alanlxl", "amoylan" ],
+    "expiry_milestone": 85
   },
   {
     "name": "smart-text-selection",

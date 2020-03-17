@@ -154,6 +154,22 @@ void UMABrowsingActivityObserver::LogBrowserTabCount() const {
   // Record how many tab groups are open across all windows.
   UMA_HISTOGRAM_COUNTS_100("TabGroups.UserGroupCountPerLoad", tab_group_count);
 
+  // Record how many tabs are in the current group. Records 0 if the active tab
+  // is not in a group.
+  const Browser* current_browser = BrowserList::GetInstance()->GetLastActive();
+  if (current_browser) {
+    TabStripModel* const tab_strip_model = current_browser->tab_strip_model();
+    const base::Optional<tab_groups::TabGroupId> active_group =
+        tab_strip_model->GetTabGroupForTab(tab_strip_model->active_index());
+    UMA_HISTOGRAM_COUNTS_100("Tabs.TabCountInGroupPerLoad",
+                             active_group.has_value()
+                                 ? tab_strip_model->group_model()
+                                       ->GetTabGroup(active_group.value())
+                                       ->ListTabs()
+                                       .size()
+                                 : 0);
+  }
+
   // Record how many tab groups with a user-set name or color are open across
   // all windows.
   UMA_HISTOGRAM_COUNTS_100("TabGroups.UserCustomizedGroupCountPerLoad",

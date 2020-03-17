@@ -23,6 +23,7 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/work_item_list.h"
 #include "chrome/updater/constants.h"
+#include "chrome/updater/server/win/updater_idl.h"
 #include "chrome/updater/util.h"
 #include "chrome/updater/win/constants.h"
 #include "chrome/updater/win/setup/setup_util.h"
@@ -49,10 +50,11 @@ void DeleteComService() {
 }
 
 void DeleteComInterfaces(HKEY root) {
-  const base::string16 iid_reg_path = GetComIidRegistryPath();
-  const base::string16 typelib_reg_path = GetComTypeLibRegistryPath();
-  for (const auto& reg_path : {iid_reg_path, typelib_reg_path}) {
-    InstallUtil::DeleteRegistryKey(root, reg_path, WorkItem::kWow64Default);
+  for (const auto iid : {__uuidof(IUpdater), __uuidof(IUpdaterObserver)}) {
+    for (const auto& reg_path : {GetComIidRegistryPath(iid), 
+                                 GetComTypeLibRegistryPath(iid)}) {
+      InstallUtil::DeleteRegistryKey(root, reg_path, WorkItem::kWow64Default);
+    }
   }
 }
 

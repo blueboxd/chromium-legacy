@@ -18,7 +18,7 @@
       }
 
       img {
-        @apply --cr-icon-height-width;
+        /* Dimensions of the image are set in the URL. */
         margin-inline-end: 16px;
       }
 
@@ -30,7 +30,7 @@
         margin-inline-end: 8px;
       }
     </style>
-    <img role="presentation" src="chrome://extension-icon/[[extensionId]]/40/1">
+    <img role="presentation" src="chrome://extension-icon/[[extensionId]]/20/1">
     <span inner-h-t-m-l="[[getLabel_(extensionId, extensionName)]]"></span>
     <template is="dom-if" if="[[extensionCanBeDisabled]]" restamp>
       <cr-button on-click="onDisableTap_">$i18n{disable}</cr-button>

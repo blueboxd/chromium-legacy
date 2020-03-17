@@ -61,6 +61,10 @@ const base::Feature kDisplayLocking{"DisplayLocking",
 const base::Feature kJSONModules{"JSONModules",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables top-level await in modules.
+const base::Feature kTopLevelAwait{"TopLevelAwait",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable LayoutNG.
 const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_ENABLED_BY_DEFAULT};
 

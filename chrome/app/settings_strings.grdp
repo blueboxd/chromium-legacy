@@ -1616,14 +1616,14 @@
     Safety check ran a moment ago
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER_MINS" desc="A message shown on the top of the safety check feature, explaining to the user that it ran minutes ago.">
-    {MINS, plural,
+    {NUM_MINS, plural,
      =1 {Safety check ran 1 minute ago}
-     other {Safety check ran # minutes ago}}
+     other {Safety check ran {NUM_MINS} minutes ago}}
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER_HOURS" desc="A message shown on the top of the safety check feature, explaining to the user that it ran hours ago.">
-    {MINS, plural,
+    {NUM_HOURS, plural,
      =1 {Safety check ran 1 hour ago}
-     other {Safety check ran # hours ago}}
+     other {Safety check ran {NUM_HOURS} hours ago}}
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER_TIME" desc="A message shown on the top of the safety check feature, showing to the user at which time it ran.">
     Safety check ran at <ph name="TIME">$1<ex>14:30</ex></ph>
@@ -1636,8 +1636,8 @@
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER_DAYS" desc="A message shown on the top of the safety check feature, showing to the user how many days ago it ran.">
     {NUM_DAYS, plural,
-     = 1 {Safety check ran 1 day ago}
-     other {Safety check ran # days ago}}
+     =1 {Safety check ran 1 day ago}
+     other {Safety check ran {NUM_DAYS} days ago}}
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER_DATE" desc="A message shown on the top of the safety check feature, showing to the user on which date it ran.">
     Safety check ran on <ph name="DATE">$1<ex>April 1st, 2020</ex></ph>
@@ -1663,7 +1663,7 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_COMPROMISED" desc="This text points out that the safety check password check has found compromised passwords. The placeholder will be a numeral.">
     {NUM_PASSWORDS, plural,
      =1 {1 compromised password}
-     other {# compromised passwords}}
+     other {{NUM_PASSWORDS} compromised passwords}}
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_NO_PASSWORDS" desc="This text points out that password check cannot run due to the user not having saved passwords.">
     No saved passwords
@@ -1698,17 +1698,17 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BLOCKLISTED_OFF" desc="This text describes that potentially harmful extensions have been disabled. The placeholder will be a numeral.">
     {NUM_EXTENSIONS, plural,
      =1 {1 potentially harmful extension is off. You can also remove it.}
-     other {# potentially harmful extensions are off. You can also remove them.}}
+     other {{NUM_EXTENSIONS} potentially harmful extensions are off. You can also remove them.}}
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BLOCKLISTED_ON_USER" desc="This text describes that the user has turned potentially harmful extensions back on. The placeholder will be a numeral.">
     {NUM_EXTENSIONS, plural,
      =1 {You turned 1 potentially harmful extension back on}
-     other {You turned # potentially harmful extensions back on}}
+     other {You turned {NUM_EXTENSIONS} potentially harmful extensions back on}}
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BLOCKLISTED_ON_ADMIN" desc="This text describes that an administrator has turned potentially harmful extensions back on.">
     {NUM_EXTENSIONS, plural,
      =1 {Your administrator turned 1 potentially harmful extension back on}
-     other {Your administrator turned # potentially harmful extensions back on}}
+     other {Your administrator turned {NUM_EXTENSIONS} potentially harmful extensions back on}}
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BUTTON" desc="This button allows users to review their extensions settings.">
     Review

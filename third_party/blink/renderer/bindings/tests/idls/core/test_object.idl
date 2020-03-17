@@ -80,7 +80,6 @@ interface TestObject {
     attribute long xmlAttribute;
     // Non-wrapper types
     readonly attribute NodeFilter nodeFilterAttribute;
-    attribute SerializedScriptValue serializedScriptValueAttribute;
     attribute any anyAttribute;
     // Custom type conversions
     attribute Promise<any> promiseAttribute;
@@ -331,23 +330,17 @@ interface TestObject {
     void voidMethodTestEnumArg(TestEnum testEnumTypeArg);
     void voidMethodTestMultipleEnumArg(TestEnum testEnumTypeArg, TestEnum2 testEnumTypeArg2);
     // Exceptional types
-    Dictionary dictionaryMethod();
     TestDictionary testDictionaryMethod();
     TestDictionary? nullableTestDictionaryMethod();
     static TestDictionary staticTestDictionaryMethod();
     static TestDictionary? staticNullableTestDictionaryMethod();
     void passPermissiveDictionaryMethod([PermissiveDictionaryConversion] optional TestDictionary arg);
     NodeFilter nodeFilterMethod();
-    Promise<void> promiseMethod(long arg1, Dictionary arg2, DOMString arg3, DOMString... variadic);
-    Promise<any> promiseMethodWithoutExceptionState(Dictionary arg1);
-    SerializedScriptValue serializedScriptValueMethod();
+    Promise<void> promiseMethod(long arg1, DOMString arg2, DOMString... variadic);
     XPathNSResolver xPathNSResolverMethod();
-    void voidMethodDictionaryArg(Dictionary dictionaryArg);
     void voidMethodNodeFilterArg(NodeFilter nodeFilterArg);
     void voidMethodPromiseArg(Promise<any> promiseArg);
-    void voidMethodSerializedScriptValueArg(SerializedScriptValue serializedScriptValueArg);
     void voidMethodXPathNSResolverArg(XPathNSResolver xPathNSResolverArg);
-    void voidMethodDictionarySequenceArg(sequence<Dictionary> dictionarySequenceArg);
 
     // Arguments
     void voidMethodStringArgLongArg(DOMString stringArg, long longArg);
@@ -363,8 +356,6 @@ interface TestObject {
     void voidMethodLongArgOptionalLongArgOptionalLongArg(long longArg, optional long optionalLongArg1, optional long optionalLongArg2);
     void voidMethodLongArgOptionalTestInterfaceEmptyArg(long longArg, optional TestInterfaceEmpty optionalTestInterfaceEmpty);
     void voidMethodTestInterfaceEmptyArgOptionalLongArg(TestInterfaceEmpty optionalTestInterfaceEmpty, optional long longArg);
-    // Optional arguments: exceptional case
-    void voidMethodOptionalDictionaryArg(optional Dictionary optionalDictionaryArg);
 
     // Optional arguments with defaults
     void voidMethodDefaultByteStringArg(optional ByteString defaultByteStringArg = "foo");

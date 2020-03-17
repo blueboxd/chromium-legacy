@@ -20,7 +20,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/profiles/profile_shortcut_manager_win.h"
-#include "chrome/browser/web_applications/components/web_app_file_handler_registration_win.h"
+#include "chrome/browser/web_applications/chrome_pwa_launcher/last_browser_file_util.h"
 #endif
 
 namespace downgrade {
@@ -41,7 +41,7 @@ std::vector<SnapshotItemDetails> CollectUserDataItems() {
       SnapshotItemDetails(base::FilePath(profiles::kHighResAvatarFolderName),
                           SnapshotItemDetails::ItemType::kDirectory, 0)};
 #if defined(OS_WIN)
-  user_data_items.emplace_back(base::FilePath(web_app::kLastBrowserFile),
+  user_data_items.emplace_back(base::FilePath(web_app::kLastBrowserFilename),
                                SnapshotItemDetails::ItemType::kFile, 0);
 #endif  // defined(OS_WIN)
   return user_data_items;

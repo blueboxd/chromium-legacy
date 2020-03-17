@@ -57,10 +57,8 @@ from v8_utilities import binding_header_filename, extended_attribute_value_conta
 ################################################################################
 
 NON_WRAPPER_TYPES = frozenset([
-    'Dictionary',
     'EventHandler',
     'NodeFilter',
-    'SerializedScriptValue',
 ])
 TYPED_ARRAY_TYPES = frozenset([
     'Float32Array',
@@ -126,7 +124,6 @@ CPP_INTEGER_CONVERSION_RULES = {
     'unsigned long long': 'uint64_t',
 }
 CPP_SPECIAL_CONVERSION_RULES = {
-    'Dictionary': 'Dictionary',
     'EventHandler': 'EventListener*',
     'Promise': 'ScriptPromise',
     'ScriptValue': 'ScriptValue',
@@ -247,8 +244,6 @@ def cpp_type(idl_type,
     if base_idl_type in CPP_SPECIAL_CONVERSION_RULES:
         return CPP_SPECIAL_CONVERSION_RULES[base_idl_type]
 
-    if base_idl_type == 'SerializedScriptValue':
-        return 'scoped_refptr<%s>' % base_idl_type
     if idl_type.is_string_type:
         if idl_type.has_string_context:
             return 'String'
@@ -425,8 +420,6 @@ INCLUDES_FOR_TYPE = {
         'core/typed_arrays/array_buffer_view_helpers.h',
         'core/typed_arrays/flexible_array_buffer_view.h'
     ]),
-    'Dictionary':
-    set(['bindings/core/v8/dictionary.h']),
     'EventHandler':
     set(['bindings/core/v8/js_event_handler.h']),
     'HTMLCollection':
@@ -447,11 +440,6 @@ INCLUDES_FOR_TYPE = {
     set(['bindings/core/v8/script_promise.h']),
     'ScriptValue':
     set(['bindings/core/v8/script_value.h']),
-    'SerializedScriptValue':
-    set([
-        'bindings/core/v8/serialization/serialized_script_value.h',
-        'bindings/core/v8/serialization/serialized_script_value_factory.h'
-    ]),
 }
 
 
@@ -644,8 +632,7 @@ def v8_conversion_needs_exception_state(idl_type):
             or idl_type.is_dictionary
             or idl_type.is_array_buffer_view_or_typed_array
             or idl_type.has_string_context or
-            idl_type.name in ('Boolean', 'ByteString', 'Dictionary', 'Object',
-                              'USVString', 'SerializedScriptValue'))
+            idl_type.name in ('Boolean', 'ByteString', 'Object', 'USVString'))
 
 
 IdlType.v8_conversion_needs_exception_state = property(
@@ -656,9 +643,8 @@ IdlArrayOrSequenceType.v8_conversion_needs_exception_state = True
 IdlRecordType.v8_conversion_needs_exception_state = True
 IdlUnionType.v8_conversion_needs_exception_state = True
 
-TRIVIAL_CONVERSIONS = frozenset([
-    'any', 'boolean', 'Dictionary', 'NodeFilter', 'XPathNSResolver', 'Promise'
-])
+TRIVIAL_CONVERSIONS = frozenset(
+    ['any', 'boolean', 'NodeFilter', 'XPathNSResolver', 'Promise'])
 
 
 def v8_conversion_is_trivial(idl_type):
@@ -736,12 +722,6 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value,
 
     if idl_type.is_integer_type:
         arguments = ', '.join([v8_value, 'exception_state'])
-    elif base_idl_type == 'SerializedScriptValue':
-        arguments = ', '.join([
-            v8_value,
-            'SerializedScriptValue::SerializeOptions(SerializedScriptValue::kNotForStorage)',
-            'exception_state'
-        ])
     elif idl_type.v8_conversion_needs_exception_state:
         arguments = ', '.join([v8_value, 'exception_state'])
     else:
@@ -983,9 +963,6 @@ def v8_conversion_type(idl_type, extended_attributes):
         return base_idl_type
     if base_idl_type in ['object', 'ScriptValue']:
         return 'ScriptValue'
-    # Generic dictionary type
-    if base_idl_type == 'Dictionary':
-        return 'Dictionary'
 
     # Data type with potential additional includes
     if base_idl_type in V8_SET_RETURN_VALUE:  # Special V8SetReturnValue treatment
@@ -1046,8 +1023,6 @@ V8_SET_RETURN_VALUE = {
     'V8SetReturnValue(info, {cpp_value})',
     'ScriptValue':
     'V8SetReturnValue(info, {cpp_value})',
-    'SerializedScriptValue':
-    'V8SetReturnValue(info, {cpp_value})',
     # Records.
     'Record':
     'V8SetReturnValue(info, ToV8({cpp_value}, info.Holder(), info.GetIsolate()))',
@@ -1079,11 +1054,6 @@ V8_SET_RETURN_VALUE = {
     # creation context of the DOM wrapper for the return value.
     'DOMWrapperStatic':
     'V8SetReturnValue(info, {cpp_value}, info.GetIsolate()->GetCurrentContext()->Global())',
-    # Generic dictionary type
-    'Dictionary':
-    'V8SetReturnValue(info, {cpp_value})',
-    'DictionaryStatic':
-    '#error not implemented yet',
     # Nullable dictionaries
     'NullableDictionary':
     'V8SetReturnValue(info, result)',
@@ -1125,15 +1095,13 @@ def v8_set_return_value(idl_type,
     this_v8_conversion_type = idl_type.v8_conversion_type(extended_attributes)
     # SetReturn-specific overrides
     if this_v8_conversion_type in ('EventHandler', 'NodeFilter', 'ScriptValue',
-                                   'SerializedScriptValue', 'sequence',
-                                   'FrozenArray'):
+                                   'sequence', 'FrozenArray'):
         # Convert value to V8 and then use general V8SetReturnValue
         cpp_value = idl_type.cpp_value_to_v8_value(
             cpp_value, extended_attributes=extended_attributes)
     if this_v8_conversion_type == 'DOMWrapper':
         this_v8_conversion_type = dom_wrapper_conversion_type()
-    if is_static and this_v8_conversion_type in ('Dictionary',
-                                                 'NullableDictionary',
+    if is_static and this_v8_conversion_type in ('NullableDictionary',
                                                  'DictionaryOrUnion'):
         this_v8_conversion_type += 'Static'
 
@@ -1182,8 +1150,6 @@ CPP_VALUE_TO_V8_VALUE = {
     ('({cpp_value}.IsNull() ? ' + 'v8::Null({isolate}).As<v8::Value>() : ' +
      'V8String({isolate}, {cpp_value}).As<v8::Value>())'),
     # Special cases
-    'Dictionary':
-    '{cpp_value}.V8Value()',
     'EventHandler':
     'JSEventHandler::AsV8Value({isolate}, impl, {cpp_value})',
     'NodeFilter':
@@ -1192,8 +1158,6 @@ CPP_VALUE_TO_V8_VALUE = {
     'ToV8({cpp_value}, {creation_context}, {isolate})',
     'ScriptValue':
     '{cpp_value}.V8Value()',
-    'SerializedScriptValue':
-    'V8Deserialize({isolate}, {cpp_value}.get())',
     # General
     'sequence':
     'ToV8({cpp_value}, {creation_context}, {isolate})',

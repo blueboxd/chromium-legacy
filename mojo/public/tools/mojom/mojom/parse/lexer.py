@@ -9,7 +9,7 @@ import sys
 from mojom import fileutil
 from mojom.error import Error
 
-fileutil.EnsureModuleAvailable("ply")
+fileutil.AddLocalRepoThirdPartyDirToModulePath()
 from ply.lex import TOKEN
 
 

@@ -26,7 +26,6 @@ public class TabBuilder {
     private TabDelegateFactory mDelegateFactory;
     private boolean mInitiallyHidden;
     private TabState mTabState;
-    private boolean mUnfreeze;
 
     /**
      * Sets the id with which the Tab to create should be identified.
@@ -120,17 +119,6 @@ public class TabBuilder {
         return this;
     }
 
-    /**
-     * Sets a flag indicating if there should be an attempt to restore state at the end of
-     *        the initialization.
-     * @param unfreeze {@code true} if WebContents needs restoring from its saved state.
-     * @return {@link TabBuilder} creating the Tab.
-     */
-    public TabBuilder setUnfreeze(boolean unfreeze) {
-        mUnfreeze = unfreeze;
-        return this;
-    }
-
     public Tab build() {
         // Pre-condition check
         if (mCreationType != null) {
@@ -154,7 +142,7 @@ public class TabBuilder {
         // Initializes Tab. Its user data objects are also initialized through the event
         // |onInitialized| of TabObserver they register.
         tab.initialize(mParent, mCreationType, mLoadUrlParams, mWebContents, mDelegateFactory,
-                mInitiallyHidden, mTabState, mUnfreeze);
+                mInitiallyHidden, mTabState);
         return tab;
     }
 

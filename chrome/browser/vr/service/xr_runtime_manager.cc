@@ -12,7 +12,7 @@
 #include "base/memory/singleton.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "build/build_config.h"
-#include "chrome/browser/vr/service/browser_xr_runtime.h"
+#include "chrome/browser/vr/service/browser_xr_runtime_impl.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/common/content_features.h"
@@ -174,7 +174,8 @@ void XRRuntimeManager::RemoveService(VRServiceImpl* service) {
   }
 }
 
-BrowserXRRuntime* XRRuntimeManager::GetRuntime(device::mojom::XRDeviceId id) {
+BrowserXRRuntimeImpl* XRRuntimeManager::GetRuntime(
+    device::mojom::XRDeviceId id) {
   auto it = runtimes_.find(id);
   if (it == runtimes_.end())
     return nullptr;
@@ -182,9 +183,9 @@ BrowserXRRuntime* XRRuntimeManager::GetRuntime(device::mojom::XRDeviceId id) {
   return it->second.get();
 }
 
-BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
+BrowserXRRuntimeImpl* XRRuntimeManager::GetRuntimeForOptions(
     device::mojom::XRSessionOptions* options) {
-  BrowserXRRuntime* runtime = nullptr;
+  BrowserXRRuntimeImpl* runtime = nullptr;
   switch (options->mode) {
     case device::mojom::XRSessionMode::kImmersiveAr:
       runtime = GetRuntime(device::mojom::XRDeviceId::ARCORE_DEVICE_ID);
@@ -206,7 +207,7 @@ BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
              : nullptr;
 }
 
-BrowserXRRuntime* XRRuntimeManager::GetImmersiveVrRuntime() {
+BrowserXRRuntimeImpl* XRRuntimeManager::GetImmersiveVrRuntime() {
 #if defined(OS_ANDROID)
   auto* gvr = GetRuntime(device::mojom::XRDeviceId::GVR_DEVICE_ID);
   if (gvr)
@@ -240,7 +241,7 @@ BrowserXRRuntime* XRRuntimeManager::GetImmersiveVrRuntime() {
   return nullptr;
 }
 
-BrowserXRRuntime* XRRuntimeManager::GetImmersiveArRuntime() {
+BrowserXRRuntimeImpl* XRRuntimeManager::GetImmersiveArRuntime() {
   device::mojom::XRSessionOptions options = {};
   options.mode = device::mojom::XRSessionMode::kImmersiveAr;
   return GetRuntimeForOptions(&options);
@@ -294,7 +295,8 @@ device::mojom::VRDisplayInfoPtr XRRuntimeManager::GetCurrentVRDisplayInfo(
   return device_info;
 }
 
-BrowserXRRuntime* XRRuntimeManager::GetCurrentlyPresentingImmersiveRuntime() {
+BrowserXRRuntimeImpl*
+XRRuntimeManager::GetCurrentlyPresentingImmersiveRuntime() {
   auto* vr_runtime = GetImmersiveVrRuntime();
   if (vr_runtime && vr_runtime->GetServiceWithActiveImmersiveSession()) {
     return vr_runtime;
@@ -420,8 +422,8 @@ void XRRuntimeManager::AddRuntime(
 
   TRACE_EVENT_INSTANT1("xr", "AddRuntime", TRACE_EVENT_SCOPE_THREAD, "id", id);
 
-  runtimes_[id] = std::make_unique<BrowserXRRuntime>(id, std::move(runtime),
-                                                     std::move(info));
+  runtimes_[id] = std::make_unique<BrowserXRRuntimeImpl>(id, std::move(runtime),
+                                                         std::move(info));
 
   for (XRRuntimeManagerObserver& obs : g_xr_runtime_manager_observers.Get())
     obs.OnRuntimeAdded(runtimes_[id].get());
@@ -446,7 +448,7 @@ void XRRuntimeManager::RemoveRuntime(device::mojom::XRDeviceId id) {
 
   // Remove the runtime from runtimes_ before notifying services that it was
   // removed, since they will query for runtimes in RuntimesChanged.
-  std::unique_ptr<BrowserXRRuntime> removed_runtime = std::move(it->second);
+  std::unique_ptr<BrowserXRRuntimeImpl> removed_runtime = std::move(it->second);
   runtimes_.erase(it);
 
   for (VRServiceImpl* service : services_)

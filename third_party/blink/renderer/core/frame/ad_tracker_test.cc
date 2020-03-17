@@ -10,7 +10,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
@@ -22,6 +24,11 @@
 namespace blink {
 
 namespace {
+
+const unsigned char kSmallGifData[] = {0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01,
+                                       0x00, 0x01, 0x00, 0x00, 0xff, 0x00, 0x2c,
+                                       0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01,
+                                       0x00, 0x00, 0x02, 0x00, 0x3b};
 
 class TestAdTracker : public AdTracker {
  public:
@@ -474,9 +481,9 @@ TEST_F(AdTrackerSimTest, ImageLoadedWhileExecutingAdScriptAsyncEnabled) {
   GetDocument().GetFrame()->SetAdTrackerForTesting(ad_tracker_);
 
   const char kAdUrl[] = "https://example.com/ad_script.js";
-  const char kVanillaUrl[] = "https://example.com/vanilla_image.jpg";
+  const char kVanillaUrl[] = "https://example.com/vanilla_image.gif";
   SimSubresourceRequest ad_resource(kAdUrl, "text/javascript");
-  SimSubresourceRequest vanilla_image(kVanillaUrl, "image/jpeg");
+  SimSubresourceRequest vanilla_image(kVanillaUrl, "image/gif");
 
   ad_tracker_->SetAdSuffix("ad_script.js");
 
@@ -484,14 +491,19 @@ TEST_F(AdTrackerSimTest, ImageLoadedWhileExecutingAdScriptAsyncEnabled) {
 
   ad_resource.Complete(R"SCRIPT(
     image = document.createElement("img");
-    image.src = "vanilla_image.jpg";
+    image.src = "vanilla_image.gif";
     document.body.appendChild(image);
     )SCRIPT");
 
   // Wait for script to run.
   base::RunLoop().RunUntilIdle();
 
-  vanilla_image.Complete("");
+  // Put the gif bytes in a Vector to avoid difficulty with
+  // non null-terminated char*.
+  Vector<char> gif;
+  gif.Append(kSmallGifData, sizeof(kSmallGifData));
+
+  vanilla_image.Complete(gif);
 
   EXPECT_TRUE(IsKnownAdScript(GetDocument().ToExecutionContext(), kAdUrl));
   EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(kAdUrl));
@@ -499,6 +511,17 @@ TEST_F(AdTrackerSimTest, ImageLoadedWhileExecutingAdScriptAsyncEnabled) {
   // Image loading is async, so we should catch this when async stacks are
   // monitored.
   EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaUrl));
+
+  // Walk through the DOM to get the image element.
+  Element* doc_element = GetDocument().documentElement();
+  Element* body_element = Traversal<Element>::LastChild(*doc_element);
+  HTMLImageElement* image_element =
+      Traversal<HTMLImageElement>::FirstChild(*body_element);
+
+  // When async stacks are monitored, we should also tag the
+  // HTMLImageElement as ad-related.
+  ASSERT_TRUE(image_element);
+  EXPECT_TRUE(image_element->IsAdRelated());
 }
 
 // Image loaded by ad script is tagged as ad.
@@ -512,9 +535,9 @@ TEST_F(AdTrackerSimTest, ImageLoadedWhileExecutingAdScriptAsyncDisabled) {
   GetDocument().GetFrame()->SetAdTrackerForTesting(ad_tracker_);
 
   const char kAdUrl[] = "https://example.com/ad_script.js";
-  const char kVanillaUrl[] = "https://example.com/vanilla_image.jpg";
+  const char kVanillaUrl[] = "https://example.com/vanilla_image.gif";
   SimSubresourceRequest ad_resource(kAdUrl, "text/javascript");
-  SimSubresourceRequest vanilla_image(kVanillaUrl, "image/jpeg");
+  SimSubresourceRequest vanilla_image(kVanillaUrl, "image/gif");
 
   ad_tracker_->SetAdSuffix("ad_script.js");
 
@@ -522,14 +545,19 @@ TEST_F(AdTrackerSimTest, ImageLoadedWhileExecutingAdScriptAsyncDisabled) {
 
   ad_resource.Complete(R"SCRIPT(
     image = document.createElement("img");
-    image.src = "vanilla_image.jpg";
+    image.src = "vanilla_image.gif";
     document.body.appendChild(image);
     )SCRIPT");
 
   // Wait for script to run.
   base::RunLoop().RunUntilIdle();
 
-  vanilla_image.Complete("");
+  // Put the gif bytes in a Vector to avoid difficulty with
+  // non null-terminated char*.
+  Vector<char> gif;
+  gif.Append(kSmallGifData, sizeof(kSmallGifData));
+
+  vanilla_image.Complete(gif);
 
   EXPECT_TRUE(IsKnownAdScript(GetDocument().ToExecutionContext(), kAdUrl));
   EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(kAdUrl));
@@ -537,6 +565,58 @@ TEST_F(AdTrackerSimTest, ImageLoadedWhileExecutingAdScriptAsyncDisabled) {
   // Image loading is async, so we won't catch this when async stacks aren't
   // monitored.
   EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaUrl));
+
+  // Walk through the DOM to get the image element.
+  Element* doc_element = GetDocument().documentElement();
+  Element* body_element = Traversal<Element>::LastChild(*doc_element);
+  HTMLImageElement* image_element =
+      Traversal<HTMLImageElement>::FirstChild(*body_element);
+
+  // When async stacks are not monitored, we do not tag the
+  // HTMLImageElement as ad-related.
+  ASSERT_TRUE(image_element);
+  EXPECT_FALSE(image_element->IsAdRelated());
+}
+
+// Image loaded by ad script is tagged as ad.
+TEST_F(AdTrackerSimTest, DataURLImageLoadedWhileExecutingAdScriptAsyncEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kAsyncStackAdTagging);
+
+  // Reset the AdTracker so that it gets the latest base::Feature value on
+  // construction.
+  ad_tracker_ = MakeGarbageCollected<TestAdTracker>(GetDocument().GetFrame());
+  GetDocument().GetFrame()->SetAdTrackerForTesting(ad_tracker_);
+
+  const char kAdUrl[] = "https://example.com/ad_script.js";
+  SimSubresourceRequest ad_resource(kAdUrl, "text/javascript");
+
+  ad_tracker_->SetAdSuffix("ad_script.js");
+
+  main_resource_->Complete("<body></body><script src=ad_script.js></script>");
+
+  ad_resource.Complete(R"SCRIPT(
+    image = document.createElement("img");
+    image.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=";
+    document.body.appendChild(image);
+    )SCRIPT");
+
+  // Wait for script to run.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(IsKnownAdScript(GetDocument().ToExecutionContext(), kAdUrl));
+  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(kAdUrl));
+
+  // Walk through the DOM to get the image element.
+  Element* doc_element = GetDocument().documentElement();
+  Element* body_element = Traversal<Element>::LastChild(*doc_element);
+  HTMLImageElement* image_element =
+      Traversal<HTMLImageElement>::FirstChild(*body_element);
+
+  // When async stacks are monitored, we should also tag the
+  // HTMLImageElement as ad-related.
+  ASSERT_TRUE(image_element);
+  EXPECT_TRUE(image_element->IsAdRelated());
 }
 
 // Frame loaded by ad script is tagged as ad.

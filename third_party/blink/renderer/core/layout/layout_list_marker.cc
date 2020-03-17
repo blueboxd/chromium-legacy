@@ -171,10 +171,7 @@ void LayoutListMarker::ImageChanged(WrappedImagePtr o, CanDeferInvalidation) {
 }
 
 void LayoutListMarker::UpdateMarginsAndContent() {
-  if (PreferredLogicalWidthsDirty())
-    ComputePreferredLogicalWidths();
-  else
-    UpdateMargins();
+  UpdateMargins(MinPreferredLogicalWidth());
 }
 
 void LayoutListMarker::UpdateContent() {
@@ -232,40 +229,42 @@ LayoutUnit LayoutListMarker::GetWidthOfText(ListStyleCategory category) const {
   return item_width + suffix_space_width;
 }
 
-void LayoutListMarker::ComputePreferredLogicalWidths() {
-  DCHECK(PreferredLogicalWidthsDirty());
-  UpdateContent();
-
-  if (IsImage()) {
-    LayoutSize image_size(ImageBulletSize());
-    min_preferred_logical_width_ = max_preferred_logical_width_ =
-        StyleRef().IsHorizontalWritingMode() ? image_size.Width()
-                                             : image_size.Height();
-    ClearPreferredLogicalWidthsDirty();
-    UpdateMargins();
-    return;
-  }
+void LayoutListMarker::ComputeIntrinsicLogicalWidths(
+    LayoutUnit& min_logical_width,
+    LayoutUnit& max_logical_width) const {
+  const_cast<LayoutListMarker*>(this)->UpdateContent();
 
   LayoutUnit logical_width;
-  ListStyleCategory category = GetListStyleCategory();
-  switch (category) {
-    case ListStyleCategory::kNone:
-      break;
-    case ListStyleCategory::kSymbol:
-      logical_width = WidthOfSymbol(StyleRef());
-      break;
-    case ListStyleCategory::kLanguage:
-    case ListStyleCategory::kStaticString:
-      logical_width = GetWidthOfText(category);
-      break;
+  if (IsImage()) {
+    LayoutSize image_size(ImageBulletSize());
+    logical_width = StyleRef().IsHorizontalWritingMode() ? image_size.Width()
+                                                         : image_size.Height();
+  } else {
+    ListStyleCategory category = GetListStyleCategory();
+    switch (category) {
+      case ListStyleCategory::kNone:
+        break;
+      case ListStyleCategory::kSymbol:
+        logical_width = WidthOfSymbol(StyleRef());
+        break;
+      case ListStyleCategory::kLanguage:
+      case ListStyleCategory::kStaticString:
+        logical_width = GetWidthOfText(category);
+        break;
+    }
   }
 
-  min_preferred_logical_width_ = logical_width;
-  max_preferred_logical_width_ = logical_width;
+  min_logical_width = logical_width;
+  max_logical_width = logical_width;
 
+  const_cast<LayoutListMarker*>(this)->UpdateMargins(logical_width);
+}
+
+void LayoutListMarker::ComputePreferredLogicalWidths() {
+  DCHECK(PreferredLogicalWidthsDirty());
+  ComputeIntrinsicLogicalWidths(min_preferred_logical_width_,
+                                max_preferred_logical_width_);
   ClearPreferredLogicalWidthsDirty();
-
-  UpdateMargins();
 }
 
 LayoutUnit LayoutListMarker::WidthOfSymbol(const ComputedStyle& style) {
@@ -277,7 +276,7 @@ LayoutUnit LayoutListMarker::WidthOfSymbol(const ComputedStyle& style) {
   return LayoutUnit((font_data->GetFontMetrics().Ascent() * 2 / 3 + 1) / 2 + 2);
 }
 
-void LayoutListMarker::UpdateMargins() {
+void LayoutListMarker::UpdateMargins(LayoutUnit marker_inline_size) {
   LayoutUnit margin_start;
   LayoutUnit margin_end;
   const ComputedStyle& style = StyleRef();
@@ -286,7 +285,7 @@ void LayoutListMarker::UpdateMargins() {
         InlineMarginsForInside(style, IsImage());
   } else {
     std::tie(margin_start, margin_end) =
-        InlineMarginsForOutside(style, IsImage(), MinPreferredLogicalWidth());
+        InlineMarginsForOutside(style, IsImage(), marker_inline_size);
   }
 
   SetMarginStart(margin_start);

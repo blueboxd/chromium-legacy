@@ -22,7 +22,6 @@
 #include "chrome/android/chrome_jni_headers/WebsitePreferenceBridge_jni.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
-#include "chrome/browser/content_settings/web_site_settings_uma_util.h"
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/media/android/cdm/media_drm_license_manager.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
@@ -37,6 +36,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/browser/uma_util.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_manager.h"
@@ -265,7 +265,7 @@ void SetSettingForOrigin(JNIEnv* env,
   GetHostContentSettingsMap(is_incognito)
       ->SetContentSettingDefaultScope(origin_url, embedder_url, content_type,
                                       std::string(), setting);
-  WebSiteSettingsUmaUtil::LogPermissionChange(content_type, setting);
+  content_settings::LogWebSiteSettingsPermissionChange(content_type, setting);
 }
 
 permissions::ChooserContextBase* GetChooserContext(ContentSettingsType type) {
@@ -515,7 +515,7 @@ static void JNI_WebsitePreferenceBridge_SetNotificationSettingForOrigin(
           permissions::PermissionSourceUI::SITE_SETTINGS);
 
   NotificationPermissionContext::UpdatePermission(profile, url, setting);
-  WebSiteSettingsUmaUtil::LogPermissionChange(
+  content_settings::LogWebSiteSettingsPermissionChange(
       ContentSettingsType::NOTIFICATIONS, setting);
 }
 
@@ -532,7 +532,7 @@ static void JNI_WebsitePreferenceBridge_ReportNotificationRevokedForOrigin(
   ContentSetting setting = static_cast<ContentSetting>(new_setting_value);
   DCHECK_NE(setting, CONTENT_SETTING_ALLOW);
 
-  WebSiteSettingsUmaUtil::LogPermissionChange(
+  content_settings::LogWebSiteSettingsPermissionChange(
       ContentSettingsType::NOTIFICATIONS, setting);
 
   permissions::PermissionUmaUtil::PermissionRevoked(

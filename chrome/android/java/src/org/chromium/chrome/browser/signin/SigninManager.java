@@ -352,16 +352,6 @@ public class SigninManager
     }
 
     /**
-    * Clear pending sign in when system accounts in AccountTrackerService were refreshed.
-    */
-    @Override
-    public void onSystemAccountsChanged() {
-        if (mSignInState != null) {
-            abortSignIn();
-        }
-    }
-
-    /**
      * Starts the sign-in flow, and executes the callback when finished.
      *
      * The sign-in flow goes through the following steps:

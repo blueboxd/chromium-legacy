@@ -71,6 +71,9 @@ Polymer({
     /** @private */
     showPasswordEditDialog_: Boolean,
 
+    /** @private */
+    showPasswordRemoveDialog_: Boolean,
+
     /**
      * The password that the user is interacting with now.
      * @private {?PasswordManagerProxy.CompromisedCredential}
@@ -213,8 +216,14 @@ Polymer({
   /** @private */
   onMenuRemovePasswordClick_() {
     this.$.moreActionsMenu.close();
+    this.showPasswordRemoveDialog_ = true;
+  },
 
-    // TODO(crbug.com/1047726) Implement dialog.
+  /** @private */
+  onPasswordRemoveDialogClosed_() {
+    this.showPasswordRemoveDialog_ = false;
+    cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
+    this.activeDialogAnchor_ = null;
   },
 
   /** @private */

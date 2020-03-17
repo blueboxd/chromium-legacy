@@ -872,7 +872,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileListMouseSelectionA11y").DisableFilesNg(),
         TestCase("fileListMouseSelectionA11y").FilesNg(),
         TestCase("fileListDeleteMultipleFiles").DisableFilesNg(),
-        TestCase("fileListDeleteMultipleFiles").FilesNg()));
+        TestCase("fileListDeleteMultipleFiles").FilesNg(),
+        TestCase("fileListRenameFromSelectAll").FilesNg()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Crostini, /* crostini.js */

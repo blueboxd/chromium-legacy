@@ -238,7 +238,8 @@ void ProcessMirrorHeader(
         gaia::AreEmailsSame(primary_account.email,
                             manage_accounts_params.email)) {
       identity_manager->GetAccountsCookieMutator()->LogOutAllAccounts(
-          gaia::GaiaSource::kChromeOS);
+          gaia::GaiaSource::kChromeOS,
+          signin::AccountsCookieMutator::LogOutFromCookieCompletedCallback());
       UMA_HISTOGRAM_BOOLEAN("AccountManager.MirrorReauthenticationRequest",
                             true);
       return;

@@ -10,6 +10,7 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
+#include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -74,7 +75,7 @@ TEST_F(QuickAnswersConsentTest, AcceptConsent) {
 
   // Consent is accepted after 6 seconds.
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(6));
-  consent_->AcceptConsent();
+  consent_->AcceptConsent(ConsentInteractionType::kAccept);
 
   // Verify that it is consented.
   ASSERT_TRUE(pref_service()->GetBoolean(prefs::kQuickAnswersConsented));

@@ -48,10 +48,13 @@ class CORE_EXPORT Dictionary final {
   explicit Dictionary(v8::Isolate*,
                       v8::Local<v8::Value> dictionary_object,
                       ExceptionState&);
+  // ScriptValue can refer a V8 object, and such a ScriptValue can be
+  // converted into Dictionary without exceptions.
   explicit Dictionary(const ScriptValue& script_value)
       : isolate_(script_value.GetIsolate()) {
     CHECK(script_value.IsObject());
     dictionary_object_ = script_value.V8Value().As<v8::Object>();
+    value_type_ = ValueType::kObject;
   }
 
   Dictionary& operator=(const Dictionary&) = default;

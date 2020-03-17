@@ -3527,6 +3527,11 @@ const char kSmartDimModelV3Name[] = "Smart Dim updated model";
 const char kSmartDimModelV3Description[] =
     "Uses an updated model for user activity prediction (Smart Dim).";
 
+const char kSmartDimNewMlAgentName[] = "Smart Dim new machine learning agent";
+const char kSmartDimNewMlAgentDescription[] =
+    "Uses a new machine learning agent to switch between builtin and dynamic "
+    "ML models.";
+
 const char kSmartTextSelectionName[] = "Smart Text Selection";
 const char kSmartTextSelectionDescription[] =
     "Shows quick actions for text "

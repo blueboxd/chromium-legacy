@@ -4924,8 +4924,6 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                            GetNodeFromTree(tree_id, 1));
   EXPECT_ENCLOSING_ELEMENT(GetNodeFromTree(tree_id, 11),
                            GetNodeFromTree(tree_id, 11));
-  EXPECT_ENCLOSING_ELEMENT(GetNodeFromTree(tree_id, 12),
-                           GetNodeFromTree(tree_id, 6));
   EXPECT_ENCLOSING_ELEMENT(GetNodeFromTree(tree_id, 13),
                            GetNodeFromTree(tree_id, 13));
   EXPECT_ENCLOSING_ELEMENT(GetNodeFromTree(tree_id, 14),

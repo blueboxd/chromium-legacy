@@ -258,8 +258,9 @@ void WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
   //   before WorkerOrWorkletScriptController::Initialize(). Therefore, we
   //   ignore the first call of PrepareForEvaluation() from
   //   WorkerGlobalScope::Initialize(), and call it here again.
-  // TODO(nhiroki): Remove this workaround once off-the-main-thread worker
-  // script fetch is enabled by default for all worker types.
+  // TODO(https://crbug.com/835717): Remove this workaround once
+  // off-the-main-thread worker script fetch is enabled by default for dedicated
+  // workers.
   //
   // - For worklets, there is no appropriate timing to call
   //   PrepareForEvaluation() other than here because worklets have various
@@ -268,8 +269,9 @@ void WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
   //   addModule() call in JS).
   // TODO(nhiroki): Unify worklet initialization sequences, and move this to an
   // appropriate place.
-  if (global_scope_->GetOffMainThreadWorkerScriptFetchOption() ==
-          OffMainThreadWorkerScriptFetchOption::kDisabled ||
+  if ((global_scope_->IsWorkerGlobalScope() &&
+       To<WorkerGlobalScope>(global_scope_.Get())
+           ->IsOffMainThreadScriptFetchDisabled()) ||
       global_scope_->IsWorkletGlobalScope()) {
     // This should be called after origin trial tokens are applied for
     // OriginTrialContext in WorkerGlobalScope::Initialize() to install origin
@@ -283,13 +285,13 @@ void WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
 
 void WorkerOrWorkletScriptController::PrepareForEvaluation() {
   if (!IsContextInitialized()) {
-    // For workers with off-the-main-thread worker script fetch, this can be
+    // For workers with on-the-main-thread worker script fetch, this can be
     // called before WorkerOrWorkletScriptController::Initialize() via
     // WorkerGlobalScope creation function. In this case, PrepareForEvaluation()
     // calls this function again. See comments in PrepareForEvaluation().
     DCHECK(global_scope_->IsWorkerGlobalScope());
-    DCHECK_EQ(OffMainThreadWorkerScriptFetchOption::kDisabled,
-              global_scope_->GetOffMainThreadWorkerScriptFetchOption());
+    DCHECK(To<WorkerGlobalScope>(global_scope_.Get())
+               ->IsOffMainThreadScriptFetchDisabled());
     return;
   }
   DCHECK(!is_ready_to_evaluate_);

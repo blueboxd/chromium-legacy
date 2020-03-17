@@ -42,7 +42,7 @@ class TransportChannelSocketAdapter : public P2PDatagramSocket,
   // Sets callback that should be called when the adapter is being
   // destroyed. The callback is not allowed to touch the adapter, but
   // can do anything else, e.g. destroy the TransportChannel.
-  void SetOnDestroyedCallback(const base::Closure& callback);
+  void SetOnDestroyedCallback(base::OnceClosure callback);
 
   // Closes the stream. |error_code| specifies error code that will
   // be returned by Recv() and Send() after the stream is closed.
@@ -70,7 +70,7 @@ class TransportChannelSocketAdapter : public P2PDatagramSocket,
 
   cricket::IceTransportInternal* channel_;
 
-  base::Closure destruction_callback_;
+  base::OnceClosure destruction_callback_;
 
   net::CompletionRepeatingCallback read_callback_;
   scoped_refptr<net::IOBuffer> read_buffer_;

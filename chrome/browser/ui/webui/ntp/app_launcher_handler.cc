@@ -150,9 +150,10 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
            .GetByID(extension->id());
   extensions::GetExtensionBasicInfo(extension, enabled, value);
 
-  value->SetBoolean("mayDisable", extensions::ExtensionSystem::Get(
-      service->profile())->management_policy()->UserMayModifySettings(
-      extension, NULL));
+  value->SetBoolean("mayDisable",
+                    extensions::ExtensionSystem::Get(service->profile())
+                        ->management_policy()
+                        ->UserMayModifySettings(extension, nullptr));
 
   bool is_locally_installed =
       !extension->is_hosted_app() ||
@@ -317,7 +318,7 @@ void AppLauncherHandler::Observe(int type,
                       &app_info);
         web_ui()->CallJavascriptFunctionUnsafe("ntp.appMoved", app_info);
       } else {
-        HandleGetApps(NULL);
+        HandleGetApps(nullptr);
       }
       break;
     }
@@ -468,9 +469,8 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
     registrar_.Add(this, chrome::NOTIFICATION_APP_LAUNCHER_REORDERED,
                    content::Source<AppSorting>(
                        ExtensionSystem::Get(profile)->app_sorting()));
-    registrar_.Add(this,
-                   extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-                   content::Source<CrxInstaller>(NULL));
+    registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
+                   content::Source<CrxInstaller>(nullptr));
     registrar_.Add(this,
                    extensions::NOTIFICATION_EXTENSION_LOAD_ERROR,
                    content::Source<Profile>(profile));
@@ -541,7 +541,7 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
     // it automatically.
     Browser* browser = chrome::FindBrowserWithWebContents(
         web_ui()->GetWebContents());
-    WebContents* old_contents = NULL;
+    WebContents* old_contents = nullptr;
     if (browser)
       old_contents = browser->tab_strip_model()->GetActiveWebContents();
 
@@ -595,8 +595,9 @@ void AppLauncherHandler::HandleUninstallApp(const base::ListValue* args) {
   if (!extension)
     return;
 
-  if (!extensions::ExtensionSystem::Get(extension_service_->profile())->
-          management_policy()->UserMayModifySettings(extension, NULL)) {
+  if (!extensions::ExtensionSystem::Get(extension_service_->profile())
+           ->management_policy()
+           ->UserMayModifySettings(extension, nullptr)) {
     LOG(ERROR) << "Attempt to uninstall an extension that is non-usermanagable "
                << "was made. Extension id : " << extension->id();
     return;

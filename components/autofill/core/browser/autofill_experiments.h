@@ -53,8 +53,6 @@ bool IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled();
 // response of the option.
 bool OfferStoreUnmaskedCards(bool is_off_the_record);
 
-// Returns whether autofilling one-time-code fields with SMS OTPs is enabled.
-bool IsAutofillSmsReceiverEnabled();
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_EXPERIMENTS_H_

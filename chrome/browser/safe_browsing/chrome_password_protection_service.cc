@@ -325,19 +325,6 @@ ChromePasswordProtectionService::GetPasswordProtectionService(
 
 #if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
 // static
-bool ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
-    Profile* profile) {
-  ChromePasswordProtectionService* service =
-      ChromePasswordProtectionService::GetPasswordProtectionService(profile);
-  if (!service)
-    return false;
-  auto* unhandled_sync_password_reuses = profile->GetPrefs()->GetDictionary(
-      prefs::kSafeBrowsingUnhandledGaiaPasswordReuses);
-  return unhandled_sync_password_reuses &&
-         !unhandled_sync_password_reuses->empty();
-}
-
-// static
 bool ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
     content::WebContents* web_contents,
     PasswordType password_type) {

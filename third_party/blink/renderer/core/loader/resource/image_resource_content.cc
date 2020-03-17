@@ -69,6 +69,8 @@ class NullImageResourceInfo final
 
   void LoadDeferredImage(ResourceFetcher* fetcher) override {}
 
+  bool IsAdResource() const override { return false; }
+
   const KURL url_;
   const ResourceResponse response_;
 };
@@ -683,6 +685,10 @@ bool ImageResourceContent::IsCacheValidator() const {
 
 void ImageResourceContent::LoadDeferredImage(ResourceFetcher* fetcher) {
   info_->LoadDeferredImage(fetcher);
+}
+
+bool ImageResourceContent::IsAdResource() const {
+  return info_->IsAdResource();
 }
 
 }  // namespace blink

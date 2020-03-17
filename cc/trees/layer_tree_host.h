@@ -813,8 +813,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   bool clear_caches_on_next_commit_ = false;
   viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;
-  // Used to detect surface invariant violations.
-  bool has_pushed_local_surface_id_from_parent_ = false;
   bool new_local_surface_id_request_ = false;
   uint32_t defer_main_frame_update_count_ = 0;
 

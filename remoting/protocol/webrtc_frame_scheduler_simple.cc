@@ -110,7 +110,7 @@ void WebrtcFrameSchedulerSimple::OnTargetBitrateChanged(int bandwidth_kbps) {
 
 void WebrtcFrameSchedulerSimple::Start(
     WebrtcDummyVideoEncoderFactory* video_encoder_factory,
-    const base::Closure& capture_callback) {
+    const base::RepeatingClosure& capture_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   capture_callback_ = capture_callback;
   video_encoder_factory->SetVideoChannelStateObserver(

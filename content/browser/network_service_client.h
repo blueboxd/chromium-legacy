@@ -79,7 +79,7 @@ class CONTENT_EXPORT NetworkServiceClient
       int32_t render_frame_id,
       const base::UnguessableToken& devtool_request_id,
       const network::URLLoaderCompletionStatus& status) override;
-  void LogRapporSampleForCrossOriginFetchFromContentScript3(
+  void LogCrossOriginFetchFromContentScript3(
       const std::string& isolated_world_host) override;
 
   // net::CertDatabase::Observer implementation:

@@ -72,7 +72,7 @@ void WebrtcAudioSinkAdapter::OnData(const void* audio_data,
 
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&AudioStub::ProcessAudioPacket, audio_stub_,
-                                std::move(audio_packet), base::Closure()));
+                                std::move(audio_packet), base::OnceClosure()));
 }
 
 }  // namespace protocol

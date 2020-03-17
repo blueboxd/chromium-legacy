@@ -197,6 +197,7 @@ void VulkanDemo::RenderFrame() {
   CreateSkSurface();
   Draw(sk_surface_->getCanvas(), 0.7);
   GrBackendSemaphore semaphore;
+  semaphore.initVulkan(scoped_write_->GetEndSemaphore());
   GrFlushInfo flush_info = {
       .fFlags = kNone_GrFlushFlags,
       .fNumSemaphores = 1,
@@ -209,7 +210,6 @@ void VulkanDemo::RenderFrame() {
   if (!backend.getVkImageInfo(&vk_image_info))
     NOTREACHED() << "Failed to get image info";
   scoped_write_->set_image_layout(vk_image_info.fImageLayout);
-  scoped_write_->SetEndSemaphore(semaphore.vkSemaphore());
   scoped_write_.reset();
   vulkan_surface_->SwapBuffers();
 

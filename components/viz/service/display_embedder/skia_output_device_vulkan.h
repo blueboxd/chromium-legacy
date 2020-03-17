@@ -42,8 +42,9 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
   void PostSubBuffer(const gfx::Rect& rect,
                      BufferPresentedCallback feedback,
                      std::vector<ui::LatencyInfo> latency_info) override;
-  SkSurface* BeginPaint() override;
-  void EndPaint(const GrBackendSemaphore& semaphore) override;
+  SkSurface* BeginPaint(
+      std::vector<GrBackendSemaphore>* end_semaphores) override;
+  void EndPaint() override;
 
  private:
   struct SkSurfaceSizePair {

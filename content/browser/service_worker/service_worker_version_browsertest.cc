@@ -235,7 +235,8 @@ VerifySaveDataHeaderNotInRequest(const net::test_server::HttpRequest& request) {
   return std::make_unique<net::test_server::BasicHttpResponse>();
 }
 
-net::HttpResponseInfo CreateHttpResponseInfo() {
+std::unique_ptr<ServiceWorkerVersion::MainScriptResponse>
+CreateMainScriptResponse() {
   net::HttpResponseInfo info;
   const char data[] =
       "HTTP/1.1 200 OK\0"
@@ -243,7 +244,7 @@ net::HttpResponseInfo CreateHttpResponseInfo() {
       "\0";
   info.headers =
       new net::HttpResponseHeaders(std::string(data, base::size(data)));
-  return info;
+  return std::make_unique<ServiceWorkerVersion::MainScriptResponse>(info);
 }
 
 // Returns a unique script for each request, to test service worker update.
@@ -590,7 +591,7 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
       base::Optional<blink::ServiceWorkerStatusCode>* result) {
     ASSERT_TRUE(
         BrowserThread::CurrentlyOn(ServiceWorkerContext::GetCoreThreadId()));
-    version_->SetMainScriptHttpResponseInfo(CreateHttpResponseInfo());
+    version_->SetMainScriptResponse(CreateMainScriptResponse());
     version_->StartWorker(
         ServiceWorkerMetrics::EventType::UNKNOWN,
         CreateReceiver(BrowserThread::UI, std::move(done), result));

@@ -24,8 +24,8 @@ android_library("java") {
     "//components/embedder_support/android:util_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:androidx_collection_collection_java",
-    "//third_party/android_deps:com_android_support_support_compat_java",
-    "//third_party/android_deps:com_android_support_support_core_utils_java",
+    "//third_party/android_deps:androidx_core_core_java",
+    "//third_party/android_deps:androidx_legacy_legacy_support_core_utils_java",
     "//url:gurl_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]

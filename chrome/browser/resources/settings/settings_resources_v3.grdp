@@ -114,6 +114,10 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/password_manager_proxy.m.js"
            use_base_dir="false"
            type="BINDATA" />
+ <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORD_REMOVE_CONFIRMATION_DIALOG_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/password_remove_confirmation_dialog.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
   <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORDS_SECTION_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/passwords_section.m.js"
            use_base_dir="false"
@@ -344,6 +348,16 @@
            use_base_dir="false"
            preprocess="true"
            type="BINDATA" />
+  <if expr="not chromeos">
+    <include name="IDR_SETTINGS_PEOPLE_PAGE_IMPORT_DATA_DIALOG_M_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/people_page/import_data_dialog.m.js"
+             use_base_dir="false"
+             type="BINDATA" />
+    <include name="IDR_SETTINGS_PEOPLE_PAGE_IMPORT_DATA_BROWSER_PROXY_M_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/people_page/import_data_browser_proxy.m.js"
+             use_base_dir="false"
+             type="BINDATA" />
+  </if>
   <include name="IDR_SETTINGS_PLURAL_STRING_PROXY_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/plural_string_proxy.m.js"
            use_base_dir="false"

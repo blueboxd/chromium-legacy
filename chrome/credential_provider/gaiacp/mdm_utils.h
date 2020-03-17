@@ -111,6 +111,10 @@ HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties);
 // Constructs the password lsa store key for the given |sid|.
 base::string16 GetUserPasswordLsaStoreKey(const base::string16& sid);
 
+// Get device resource ID for the user with given |sid|. Returns an empty string
+// if one has not been set for the user.
+base::string16 GetUserDeviceResourceId(const base::string16& sid);
+
 }  // namespace credential_provider
 
 #endif  // CHROME_CREDENTIAL_PROVIDER_GAIACP_MDM_UTILS_H_

@@ -1223,7 +1223,20 @@ void AuthenticatorCommon::OnRegisterResponse(
       bool is_transport_used_internal =
           transport_used &&
           *transport_used == device::FidoTransportProtocol::kInternal;
-      if (attestation_requested_) {
+
+      base::Optional<AttestationErasureOption> attestation_erasure;
+      const bool origin_is_crypto_token_extension =
+          WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
+              caller_origin_);
+
+      // cryptotoken checks the attestation blocklist itself.
+      if (!origin_is_crypto_token_extension &&
+          device::DoesMatchWebAuthAttestationBlockedDomains(caller_origin_) &&
+          !request_delegate_->ShouldPermitIndividualAttestation(
+              relying_party_id_)) {
+        attestation_erasure =
+            AttestationErasureOption::kEraseAttestationAndAaguid;
+      } else if (origin_is_crypto_token_extension && attestation_requested_) {
         // Cryptotoken requests may bypass the attestation prompt because the
         // extension implements its own. Invoking the attestation prompt code
         // here would not work anyway, because the WebContents associated with
@@ -1232,18 +1245,8 @@ void AuthenticatorCommon::OnRegisterResponse(
         //
         // Note that for AttestationConveyancePreference::kNone, attestation
         // erasure is still performed as usual.
-        if (WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
-                caller_origin_)) {
-          InvokeCallbackAndCleanup(
-              std::move(make_credential_response_callback_),
-              blink::mojom::AuthenticatorStatus::SUCCESS,
-              CreateMakeCredentialResponse(
-                  std::move(client_data_json_), std::move(*response_data),
-                  AttestationErasureOption::kIncludeAttestation),
-              Focus::kDoCheck);
-          return;
-        }
-
+        attestation_erasure = AttestationErasureOption::kIncludeAttestation;
+      } else if (attestation_requested_) {
         UMA_HISTOGRAM_ENUMERATION("WebAuthentication.AttestationPromptResult",
                                   AttestationPromptResult::kQueried);
         awaiting_attestation_response_ = true;
@@ -1253,12 +1256,7 @@ void AuthenticatorCommon::OnRegisterResponse(
                 &AuthenticatorCommon::OnRegisterResponseAttestationDecided,
                 weak_factory_.GetWeakPtr(), std::move(*response_data),
                 is_transport_used_internal));
-        return;
-      }
-
-      AttestationErasureOption attestation_erasure =
-          AttestationErasureOption::kEraseAttestationAndAaguid;
-      if (response_data->IsSelfAttestation()) {
+      } else if (response_data->IsSelfAttestation()) {
         attestation_erasure = AttestationErasureOption::kIncludeAttestation;
       } else if (is_transport_used_internal) {
         // Contrary to what the WebAuthn spec says, for internal (platform)
@@ -1266,15 +1264,21 @@ void AuthenticatorCommon::OnRegisterResponse(
         // even if requested attestationConveyancePreference is "none".
         attestation_erasure =
             AttestationErasureOption::kEraseAttestationButIncludeAaguid;
+      } else {
+        attestation_erasure =
+            AttestationErasureOption::kEraseAttestationAndAaguid;
       }
 
-      InvokeCallbackAndCleanup(
-          std::move(make_credential_response_callback_),
-          blink::mojom::AuthenticatorStatus::SUCCESS,
-          CreateMakeCredentialResponse(std::move(client_data_json_),
-                                       std::move(*response_data),
-                                       attestation_erasure),
-          Focus::kDoCheck);
+      if (attestation_erasure.has_value()) {
+        InvokeCallbackAndCleanup(
+            std::move(make_credential_response_callback_),
+            blink::mojom::AuthenticatorStatus::SUCCESS,
+            CreateMakeCredentialResponse(std::move(client_data_json_),
+                                         std::move(*response_data),
+                                         *attestation_erasure),
+            Focus::kDoCheck);
+      }
+
       return;
   }
   NOTREACHED();

@@ -79,6 +79,12 @@ class SafetyCheckHandler
   // should only be called as a result of an explicit user action.
   void PerformSafetyCheck();
 
+  // Constructs the 'safety check ran' display string by how long ago safety
+  // check ran.
+  base::string16 GetStringForParentRan(double timestamp_ran);
+  base::string16 GetStringForParentRan(double timestamp_ran,
+                                       base::Time systemTime);
+
  protected:
   SafetyCheckHandler(std::unique_ptr<VersionUpdater> version_updater,
                      password_manager::BulkLeakCheckService* leak_service,

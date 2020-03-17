@@ -19,8 +19,9 @@ void PostTaskAndroid::SignalNativeSchedulerReady() {
 }
 
 // static
-void PostTaskAndroid::SignalNativeSchedulerShutdown() {
-  Java_PostTask_onNativeSchedulerShutdown(base::android::AttachCurrentThread());
+void PostTaskAndroid::SignalNativeSchedulerShutdownForTesting() {
+  Java_PostTask_onNativeSchedulerShutdownForTesting(
+      base::android::AttachCurrentThread());
 }
 
 namespace {

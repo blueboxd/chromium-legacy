@@ -20,8 +20,8 @@ _PROCESS_START_TIMEOUT = 10.0
 
 class Deobfuscator(object):
   def __init__(self, mapping_path):
-    script_path = os.path.join(
-        constants.GetOutDirectory(), 'bin', 'java_deobfuscate')
+    script_path = os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'android',
+                               'stacktrace', 'java_deobfuscate.py')
     cmd = [script_path, mapping_path]
     # Allow only one thread to call TransformLines() at a time.
     self._lock = threading.Lock()
@@ -134,7 +134,7 @@ class Deobfuscator(object):
 
 class DeobfuscatorPool(object):
   # As of Sep 2017, each instance requires about 500MB of RAM, as measured by:
-  # /usr/bin/time -v out/Release/bin/java_deobfuscate \
+  # /usr/bin/time -v build/android/stacktrace/java_deobfuscate.py \
   #     out/Release/apks/ChromePublic.apk.mapping
   def __init__(self, mapping_path, pool_size=4):
     self._mapping_path = mapping_path

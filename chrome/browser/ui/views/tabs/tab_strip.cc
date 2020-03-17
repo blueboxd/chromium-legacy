@@ -1903,17 +1903,18 @@ SkColor TabStrip::GetTabBackgroundColor(
   if (!tp)
     return SK_ColorBLACK;
 
-  if (active == TabActive::kActive)
-    return tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
+  constexpr int kColorIds[2][2] = {
+      {ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE,
+       ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE},
+      {ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_INACTIVE,
+       ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE}};
 
   using State = BrowserFrameActiveState;
-  const bool is_active_frame =
+  const bool tab_active = active == TabActive::kActive;
+  const bool frame_active =
       (active_state == State::kActive) ||
       ((active_state == State::kUseCurrent) && ShouldPaintAsActiveFrame());
-  return tp->GetColor(
-      is_active_frame
-          ? ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE
-          : ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE);
+  return tp->GetColor(kColorIds[tab_active][frame_active]);
 }
 
 SkColor TabStrip::GetTabForegroundColor(TabActive active,

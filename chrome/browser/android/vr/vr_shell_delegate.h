@@ -84,7 +84,7 @@ class VrShellDelegate : public device::GvrDelegateProvider,
   // As for the runtimes that got added to the XRRuntimeManager before the
   // VrShell got created, their poses will be turned off too on its
   // creation.
-  void OnRuntimeAdded(vr::BrowserXRRuntime* runtime) override;
+  void OnRuntimeAdded(content::BrowserXRRuntime* runtime) override;
   void OnPresentResult(
       device::mojom::VRDisplayInfoPtr display_info,
       device::mojom::XRRuntimeSessionOptionsPtr options,

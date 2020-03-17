@@ -13,20 +13,56 @@ class FileSystemWriter {
   /**
    * @param {number} position
    * @param {BufferSource|Blob|string} data
-   * @return {Promise<undefined>}
+   * @return {!Promise<undefined>}
    */
   async write(position, data) {}
 
   /**
    * @param {number} size
-   * @return {Promise<undefined>}
+   * @return {!Promise<undefined>}
    */
   async truncate(size) {}
 
   /**
-   * @return {Promise<undefined>}
+   * @return {!Promise<undefined>}
    */
   async close() {}
+}
+
+/**
+ * @typedef {{
+ *   type: string,
+ *   size: (number|undefined),
+ *   position: (number|undefined),
+ *   data: (BufferSource|Blob|string|undefined)
+ * }}
+ */
+var WriteParams;
+
+/** @interface */
+class FileSystemWritableFileStream {
+  /**
+   * @param {BufferSource|Blob|string|WriteParams} data
+   * @return {!Promise<undefined>}
+   */
+  async write(data) {}
+
+  /**
+   * @param {number} size
+   * @return {!Promise<undefined>}
+   */
+  async truncate(size) {}
+
+  /**
+   * @return {!Promise<undefined>}
+   */
+  async close() {}
+
+  /**
+   * @param {number} offset
+   * @return {!Promise<undefined>}
+   */
+  async seek(offset) {}
 }
 
 /** @typedef {{writable: boolean}} */
@@ -47,13 +83,13 @@ class FileSystemHandle {
 
   /**
    * @param {FileSystemHandlePermissionDescriptor} descriptor
-   * @return {Promise<PermissionState>}
+   * @return {!Promise<PermissionState>}
    */
   queryPermission(descriptor) {}
 
   /**
    * @param {FileSystemHandlePermissionDescriptor} descriptor
-   * @return {Promise<PermissionState>}
+   * @return {!Promise<PermissionState>}
    */
   requestPermission(descriptor) {}
 }
@@ -64,12 +100,19 @@ var FileSystemCreateWriterOptions;
 /** @interface */
 class FileSystemFileHandle extends FileSystemHandle {
   /**
+   * @deprecated TODO(b/151564533): Remove when m82 is stable.
    * @param {FileSystemCreateWriterOptions=} options
-   * @return {Promise<!FileSystemWriter>}
+   * @return {!Promise<!FileSystemWriter>}
    */
   createWriter(options) {}
 
-  /** @return {Promise<!File>} */
+  /**
+   * @param {FileSystemCreateWriterOptions=} options
+   * @return {!Promise<!FileSystemWritableFileStream>}
+   */
+  createWritable(options) {}
+
+  /** @return {!Promise<!File>} */
   getFile() {}
 }
 
@@ -121,10 +164,10 @@ class FileSystemDirectoryHandle extends FileSystemHandle {
 /** @interface */
 class LaunchParams {
   constructor() {
-    /** @type{Array<FileSystemHandle>} */
+    /** @type {Array<FileSystemHandle>} */
     this.files;
 
-    /** @type{Request} */
+    /** @type {Request} */
     this.request;
   }
 }
@@ -134,15 +177,15 @@ var LaunchConsumer;
 
 /** @interface */
 class LaunchQueue {
-  /** @param{LaunchConsumer} consumer */
+  /** @param {LaunchConsumer} consumer */
   setConsumer(consumer) {}
 }
 
 /**
  * @typedef {{
  *    description: (string|undefined),
- *    mimeTypes: (Array<string>|undefined),
- *    extensions: (Array<string>|undefined)
+ *    mimeTypes: (!Array<string>|undefined),
+ *    extensions: (!Array<string>|undefined)
  * }}
  */
 var ChooseFileSystemEntriesOptionsAccepts;
@@ -151,17 +194,17 @@ var ChooseFileSystemEntriesOptionsAccepts;
  * @typedef {{
  *    type: (string|undefined),
  *    multiple: (boolean|undefined),
- *    accepts: (Array<ChooseFileSystemEntriesOptionsAccepts>|undefined),
+ *    accepts: (!Array<!ChooseFileSystemEntriesOptionsAccepts>|undefined),
  *    excludeAcceptAllOption: (boolean|undefined)
  * }}
  */
 var chooseFileSystemEntriesOptions;
 
 /**
- * @param {(chooseFileSystemEntriesOptions|undefined)} options
- * @return {Promise<(FileSystemHandle|Array<FileSystemHandle>)>}
+ * @param {(!chooseFileSystemEntriesOptions|undefined)} options
+ * @return {!Promise<(!FileSystemHandle|!Array<!FileSystemHandle>)>}
  */
-window.chooseFileSystemEntries = function(options) {};
+window.chooseFileSystemEntries;
 
 /** @type {LaunchQueue} */
 window.launchQueue;

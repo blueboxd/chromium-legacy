@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_driver.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
@@ -261,12 +260,6 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
 #else
     NOTREACHED();
 #endif
-  } else if (identifier == POPUP_ITEM_ID_ONE_TIME_CODE) {
-    if (IsAutofillSmsReceiverEnabled()) {
-      driver_->RendererShouldFillFieldWithValue(value);
-    } else {
-      NOTREACHED();
-    }
   } else {
     if (identifier > 0) {  // Denotes an Autofill suggestion.
       AutofillMetrics::LogAutofillSuggestionAcceptedIndex(

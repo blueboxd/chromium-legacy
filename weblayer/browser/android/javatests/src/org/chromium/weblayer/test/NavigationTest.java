@@ -7,7 +7,6 @@ package org.chromium.weblayer.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
@@ -28,7 +27,6 @@ import org.chromium.weblayer.NavigationCallback;
 import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.NavigationState;
 import org.chromium.weblayer.Tab;
-import org.chromium.weblayer.TabCallback;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.ArrayList;
@@ -442,41 +440,6 @@ public class NavigationTest {
                 curCompletedCount, url, LoadError.HTTP_CLIENT_ERROR);
         assertEquals(mCallback.onCompletedCallback.getHttpStatusCode(), 404);
         assertEquals(mCallback.onCompletedCallback.getNavigationState(), NavigationState.COMPLETE);
-    }
-
-    @Test
-    @SmallTest
-    public void testRepostConfirmation() throws Exception {
-        // Load a page with a form.
-        InstrumentationActivity activity =
-                mActivityTestRule.launchShellWithUrl(mActivityTestRule.getTestDataURL("form.html"));
-        assertNotNull(activity);
-        setNavigationCallback(activity);
-
-        // Touch the page; this should submit the form.
-        int currentCallCount = mCallback.onCompletedCallback.getCallCount();
-        EventUtils.simulateTouchCenterOfView(activity.getWindow().getDecorView());
-        String targetUrl = mActivityTestRule.getTestDataURL("simple_page.html");
-        mCallback.onCompletedCallback.assertCalledWith(currentCallCount, targetUrl);
-
-        // Make sure a tab modal shows after we attempt a reload.
-        Boolean isTabModalShowingResult[] = new Boolean[1];
-        CallbackHelper callbackHelper = new CallbackHelper();
-        runOnUiThreadBlocking(() -> {
-            Tab tab = activity.getTab();
-            TabCallback callback = new TabCallback() {
-                @Override
-                public void onTabModalStateChanged(boolean isTabModalShowing) {
-                    isTabModalShowingResult[0] = isTabModalShowing;
-                    callbackHelper.notifyCalled();
-                }
-            };
-            tab.registerTabCallback(callback);
-            tab.getNavigationController().reload();
-        });
-
-        callbackHelper.waitForFirst();
-        assertTrue(isTabModalShowingResult[0]);
     }
 
     private void setNavigationCallback(InstrumentationActivity activity) {

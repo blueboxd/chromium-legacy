@@ -310,9 +310,8 @@ class MediaLoadDeferrer : public content::RenderViewObserver {
   DISALLOW_COPY_AND_ASSIGN(MediaLoadDeferrer);
 };
 
-std::unique_ptr<base::Unwinder> CreateV8Unwinder(
-    const v8::UnwindState& unwind_state) {
-  return std::make_unique<V8Unwinder>(unwind_state);
+std::unique_ptr<base::Unwinder> CreateV8Unwinder(v8::Isolate* isolate) {
+  return std::make_unique<V8Unwinder>(isolate);
 }
 
 }  // namespace
@@ -340,7 +339,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::Get();
 
   main_thread_profiler_->SetAuxUnwinderFactory(base::BindRepeating(
-      &CreateV8Unwinder, v8::Isolate::GetCurrent()->GetUnwindState()));
+      &CreateV8Unwinder, base::Unretained(v8::Isolate::GetCurrent())));
 
   thread->SetRendererProcessType(
       IsStandaloneContentExtensionProcess()

@@ -140,7 +140,7 @@ jumbo_source_set("filters") {
     deps += [ "//third_party/libvpx" ]
   }
 
-  if (enable_libaom_decoder) {
+  if (enable_libaom) {
     sources += [
       "aom_video_decoder.cc",
       "aom_video_decoder.h",
@@ -375,7 +375,7 @@ source_set("unit_tests") {
     sources += [ "vpx_video_decoder_unittest.cc" ]
   }
 
-  if (enable_libaom_decoder) {
+  if (enable_libaom) {
     sources += [ "aom_video_decoder_unittest.cc" ]
   }
 

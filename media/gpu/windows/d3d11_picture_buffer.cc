@@ -59,8 +59,12 @@ bool D3D11PictureBuffer::Init(GetCommandBufferHelperCB get_helper_cb,
   return true;
 }
 
-bool D3D11PictureBuffer::ProcessTexture(MailboxHolderArray* mailbox_dest) {
-  return texture_wrapper_->ProcessTexture(Texture(), level_, mailbox_dest);
+bool D3D11PictureBuffer::ProcessTexture(
+    const gfx::ColorSpace& input_color_space,
+    MailboxHolderArray* mailbox_dest,
+    gfx::ColorSpace* output_color_space) {
+  return texture_wrapper_->ProcessTexture(Texture(), level_, input_color_space,
+                                          mailbox_dest, output_color_space);
 }
 
 ComD3D11Texture2D D3D11PictureBuffer::Texture() const {

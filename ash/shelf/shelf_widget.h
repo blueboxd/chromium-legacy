@@ -115,14 +115,13 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
   void CalculateTargetBounds() override;
   gfx::Rect GetTargetBounds() const override;
   void UpdateLayout(bool animate) override;
+  void UpdateTargetBoundsForGesture(int shelf_position) override;
 
   // TODO(manucornet): Remove this method when all this widget's layout
   // logic is part of this class.
   void set_target_bounds(gfx::Rect target_bounds) {
     target_bounds_ = target_bounds;
   }
-
-  void UpdateTargetBoundsForGesture(int new_position);
 
   // ShelfLayoutManagerObserver:
   void WillDeleteShelfLayoutManager() override;

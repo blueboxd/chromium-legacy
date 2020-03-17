@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover_screen_handler.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 
 namespace chromeos {
@@ -34,12 +35,20 @@ DiscoverScreen::~DiscoverScreen() {
 void DiscoverScreen::ShowImpl() {
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin() ||
-      !ash::TabletMode::Get()->InTabletMode() ||
       !chromeos::quick_unlock::IsPinEnabled(prefs) ||
       chromeos::quick_unlock::IsPinDisabledByPolicy(prefs)) {
     exit_callback_.Run();
     return;
   }
+
+  // Skip the screen if the device is not in tablet mode, unless tablet mode
+  // first user run is forced on the device.
+  if (!ash::TabletMode::Get()->InTabletMode() &&
+      !chromeos::switches::ShouldOobeUseTabletModeFirstRun()) {
+    exit_callback_.Run();
+    return;
+  }
+
   view_->Show();
 }
 

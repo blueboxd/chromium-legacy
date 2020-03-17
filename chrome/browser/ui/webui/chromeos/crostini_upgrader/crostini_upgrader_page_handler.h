@@ -47,6 +47,7 @@ class CrostiniUpgraderPageHandler
   void Launch() override;
 
   // CrostiniUpgraderUIObserver
+  void OnBackupMaybeStarted(bool did_start) override;
   void OnBackupProgress(int percent) override;
   void OnBackupSucceeded(bool was_cancelled) override;
   void OnBackupFailed() override;

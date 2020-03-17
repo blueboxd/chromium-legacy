@@ -69,10 +69,15 @@ class TestURLLoaderInterceptor {
     bypass_cache_urls_.clear();
   }
 
+  network::mojom::RequestDestination destination(const GURL& url) {
+    return destinations_[url];
+  }
+
  private:
   bool InterceptURLRequest(
       content::URLLoaderInterceptor::RequestParams* params) {
     intercepted_urls_.insert(params->url_request.url);
+    destinations_[params->url_request.url] = params->url_request.destination;
     if (params->url_request.load_flags & net::LOAD_BYPASS_CACHE)
       bypass_cache_urls_.insert(params->url_request.url);
     return false;
@@ -81,6 +86,7 @@ class TestURLLoaderInterceptor {
   std::set<GURL> intercepted_urls_;
   std::set<GURL> bypass_cache_urls_;
   content::URLLoaderInterceptor interceptor_;
+  std::map<GURL, network::mojom::RequestDestination> destinations_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderInterceptor);
 };
@@ -278,6 +284,8 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, ReloadBypassingCache) {
     waiter.Wait();
   }
   ASSERT_TRUE(url_loader_interceptor.was_loaded(icon_url));
+  ASSERT_EQ(network::mojom::RequestDestination::kImage,
+            url_loader_interceptor.destination(icon_url));
   EXPECT_FALSE(url_loader_interceptor.did_bypass_cache(icon_url));
   url_loader_interceptor.Reset();
 
@@ -293,6 +301,8 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, ReloadBypassingCache) {
     waiter.Wait();
   }
   EXPECT_FALSE(url_loader_interceptor.did_bypass_cache(icon_url));
+  ASSERT_EQ(network::mojom::RequestDestination::kImage,
+            url_loader_interceptor.destination(icon_url));
   url_loader_interceptor.Reset();
 
   // A reload ignoring the cache should refetch the favicon from the website.
@@ -302,6 +312,8 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, ReloadBypassingCache) {
     waiter.Wait();
   }
   ASSERT_TRUE(url_loader_interceptor.was_loaded(icon_url));
+  ASSERT_EQ(network::mojom::RequestDestination::kImage,
+            url_loader_interceptor.destination(icon_url));
   EXPECT_TRUE(url_loader_interceptor.did_bypass_cache(icon_url));
 }
 
@@ -426,6 +438,8 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, LoadIconFromWebManifest) {
 
 #if defined(OS_ANDROID)
   EXPECT_TRUE(url_loader_interceptor.was_loaded(icon_url));
+  ASSERT_EQ(network::mojom::RequestDestination::kImage,
+            url_loader_interceptor.destination(icon_url));
   EXPECT_NE(nullptr,
             GetFaviconForPageURL(url, favicon_base::IconType::kWebManifestIcon)
                 .bitmap_data);
@@ -776,6 +790,8 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTestWithAutoupgradesDisabled,
   waiter.Wait();
 
   EXPECT_TRUE(url_interceptor.was_loaded(favicon_url));
+  ASSERT_EQ(network::mojom::RequestDestination::kImage,
+            url_interceptor.destination(favicon_url));
 }
 
 IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, SVGFavicon) {

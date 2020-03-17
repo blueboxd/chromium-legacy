@@ -11,6 +11,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -22,9 +23,15 @@ class View;
 // effects.
 class VIEWS_EXPORT HighlightPathGenerator {
  public:
-  struct RoundRect {
+  struct VIEWS_EXPORT RoundRect {
+    // TODO(http://crbug.com/1056490): Remove these constructors and have
+    // callsites create a gfx::RoundedCornersF explicitly, or replace this
+    // struct with a gfx::RRectF.
+    RoundRect();
+    RoundRect(const gfx::RectF& bounds, float corner_radius);
+
     gfx::RectF bounds;
-    float corner_radius = 0.f;
+    gfx::RoundedCornersF corner_radius;
   };
 
   // TODO(http://crbug.com/1056490): Remove this constructor in favor of the one

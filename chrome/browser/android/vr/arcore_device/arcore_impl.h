@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/util/type_safety/id_type.h"
 #include "chrome/browser/android/vr/arcore_device/arcore.h"
+#include "chrome/browser/android/vr/arcore_device/arcore_anchor_manager.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_plane_manager.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_sdk.h"
 #include "chrome/browser/android/vr/arcore_device/scoped_arcore_objects.h"
@@ -122,41 +123,20 @@ class ArCoreImpl : public ArCore {
   internal::ScopedArCoreObject<ArSession*> arcore_session_;
   internal::ScopedArCoreObject<ArFrame*> arcore_frame_;
 
-  // List of anchors - used for retrieving anchors tracked by ARCore. The list
-  // will initially be null - call EnsureArCoreAnchorsList() before using it.
-  // Allows reuse of the list across updates; ARCore clears the list on each
-  // call to the ARCore SDK.
-  internal::ScopedArCoreObject<ArAnchorList*> arcore_anchors_;
-
   // ArCore light estimation data
   internal::ScopedArCoreObject<ArLightEstimate*> arcore_light_estimate_;
 
-  // Initializes |arcore_anchors_| list.
-  void EnsureArCoreAnchorsList();
-
-  // Returns vector containing information about all anchors updated in the
-  // current frame.
-  std::vector<mojom::XRAnchorDataPtr> GetUpdatedAnchorsData();
-
-  // The result will contain IDs of all anchors still tracked in the current
-  // frame.
-  std::vector<uint64_t> GetAllAnchorIds();
-
+  // Plane manager. Valid after a call to Initialize.
   std::unique_ptr<ArCorePlaneManager> plane_manager_;
+  // Anchor manager. Valid after a call to Initialize.
+  std::unique_ptr<ArCoreAnchorManager> anchor_manager_;
 
   uint64_t next_id_ = 1;
-  std::map<void*, AnchorId> ar_anchor_address_to_id_;
-  std::map<AnchorId, device::internal::ScopedArCoreObject<ArAnchor*>>
-      anchor_id_to_anchor_object_;
 
   std::map<HitTestSubscriptionId, HitTestSubscriptionData>
       hit_test_subscription_id_to_data_;
   std::map<HitTestSubscriptionId, TransientInputHitTestSubscriptionData>
       hit_test_subscription_id_to_transient_hit_test_data_;
-
-  // Returns tuple containing anchor id and a boolean signifying that the anchor
-  // was created.
-  std::pair<AnchorId, bool> CreateOrGetAnchorId(void* anchor_address);
 
   HitTestSubscriptionId CreateHitTestSubscriptionId();
 
@@ -211,10 +191,6 @@ class ArCoreImpl : public ArCore {
       const gfx::Transform& mojo_from_viewer,
       const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
           maybe_input_state);
-
-  // Executes |fn| for each still tracked anchor present in |arcore_anchors_|.
-  template <typename FunctionType>
-  void ForEachArCoreAnchor(FunctionType fn);
 
   // Must be last.
   base::WeakPtrFactory<ArCoreImpl> weak_ptr_factory_{this};

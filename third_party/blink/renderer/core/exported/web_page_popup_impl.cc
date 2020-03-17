@@ -386,7 +386,7 @@ void WebPagePopupImpl::BeginFrame(base::TimeTicks last_frame_time) {
   widget_base_.BeginMainFrame(last_frame_time);
 }
 
-void WebPagePopupImpl::UpdateLifecycle(LifecycleUpdate requested_update,
+void WebPagePopupImpl::UpdateLifecycle(WebLifecycleUpdate requested_update,
                                        DocumentUpdateReason reason) {
   if (!page_)
     return;

@@ -70,8 +70,8 @@ class CORE_EXPORT CascadePriority {
                   << kOriginImportanceOffset) {}
   // See StyleCascade.generation_.
   CascadePriority(CascadePriority o, uint8_t generation)
-      : bits_(o.bits_ | generation) {
-    DCHECK_LT(generation, 0xF);
+      : bits_((o.bits_ & ~static_cast<uint8_t>(0xF)) | generation) {
+    DCHECK_LE(generation, 0xF);
   }
 
   bool IsImportant() const { return (bits_ >> kImportantBit) & 1; }
@@ -82,6 +82,7 @@ class CORE_EXPORT CascadePriority {
   }
   bool HasOrigin() const { return GetOrigin() != CascadeOrigin::kNone; }
   uint32_t GetPosition() const { return (bits_ >> 4) & 0xFFFFFFFF; }
+  uint8_t GetGeneration() const { return bits_ & 0xF; }
 
   bool operator>=(const CascadePriority& o) const { return bits_ >= o.bits_; }
   bool operator<(const CascadePriority& o) const { return bits_ < o.bits_; }

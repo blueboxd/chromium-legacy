@@ -13,7 +13,7 @@
   <release seq="1">
     <structures>
       <structure name="IDR_CAMERA_BACKGROUND_JS" file="src/js/background.js" type="chrome_html" />
-      <structure name="IDR_CAMERA_BUNDLE_JS" file="src/js/google-analytics-bundle.js" type="chrome_html" />
+      <structure name="IDR_CAMERA_BUNDLE_JS" file="src/js/lib/google-analytics-bundle.js" type="chrome_html" />
       <structure name="IDR_CAMERA_CAMERA3_DEVICE_INFO_JS" file="src/js/device/camera3_device_info.js" type="chrome_html" />
       <structure name="IDR_CAMERA_CAMERA_JS" file="src/js/views/camera.js" type="chrome_html" />
       <structure name="IDR_CAMERA_CAMERA_INTENT_JS" file="src/js/views/camera_intent.js" type="chrome_html" />

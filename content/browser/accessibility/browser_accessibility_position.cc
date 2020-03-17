@@ -115,6 +115,14 @@ BrowserAccessibilityPosition::GetAncestorAnchors() const {
   return anchors;
 }
 
+BrowserAccessibility* BrowserAccessibilityPosition::GetLowestUnignoredAncestor()
+    const {
+  if (!GetAnchor())
+    return nullptr;
+
+  return GetAnchor()->PlatformGetParent();
+}
+
 void BrowserAccessibilityPosition::AnchorParent(
     AXTreeID* tree_id,
     ui::AXNode::AXID* parent_id) const {

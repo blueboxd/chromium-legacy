@@ -33,12 +33,14 @@ WebAppMigrationManager::WebAppMigrationManager(
     : bookmark_app_registrar_(profile),
       bookmark_app_registry_controller_(profile),
       bookmark_app_icon_manager_(profile),
+      bookmark_app_file_handler_manager_(profile),
       database_factory_(database_factory),
       web_app_icon_manager_(web_app_icon_manager) {
   database_ = std::make_unique<WebAppDatabase>(
       database_factory_,
       base::BindRepeating(&WebAppMigrationManager::ReportDatabaseError,
                           base::Unretained(this)));
+  bookmark_app_file_handler_manager_.SetSubsystems(&bookmark_app_registrar_);
 }
 
 WebAppMigrationManager::~WebAppMigrationManager() = default;
@@ -161,16 +163,6 @@ void WebAppMigrationManager::MigrateBookmarkAppInstallSource(
   DCHECK(web_app->HasAnySources());
 }
 
-void WebAppMigrationManager::MigrateBookmarkAppFileHandlers(const AppId& app_id,
-                                                            WebApp* web_app) {
-  NOTIMPLEMENTED();
-  // TODO(crbug.com/1020037): Convert
-  // bookmark_app_file_handler_manager.GetAllFileHandlers(app_id) to
-  // apps::FileHandlers representation.
-  apps::FileHandlers file_handlers;
-  web_app->SetFileHandlers(std::move(file_handlers));
-}
-
 bool WebAppMigrationManager::CanMigrateBookmarkApp(const AppId& app_id) const {
   if (!bookmark_app_registrar_.IsInstalled(app_id))
     return false;
@@ -212,7 +204,11 @@ std::unique_ptr<WebApp> WebAppMigrationManager::MigrateBookmarkApp(
   sync_data.theme_color = bookmark_app_registrar_.GetAppThemeColor(app_id);
   web_app->SetSyncData(std::move(sync_data));
 
-  MigrateBookmarkAppFileHandlers(app_id, web_app.get());
+  const apps::FileHandlers* file_handlers =
+      bookmark_app_file_handler_manager_.GetAllFileHandlers(app_id);
+  if (file_handlers)
+    web_app->SetFileHandlers(*file_handlers);
+
   MigrateBookmarkAppInstallSource(app_id, web_app.get());
 
   return web_app;

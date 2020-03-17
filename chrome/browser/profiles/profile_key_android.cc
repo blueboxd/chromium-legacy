@@ -6,8 +6,8 @@
 
 #include "base/android/jni_android.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/android/public/profiles/jni_headers/ProfileKey_jni.h"
 #include "chrome/browser/android/profile_key_util.h"
+#include "chrome/browser/profiles/android/jni_headers/ProfileKey_jni.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"

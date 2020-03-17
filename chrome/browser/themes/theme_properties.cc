@@ -52,7 +52,7 @@ SkColor GetLightModeColor(int id) {
   switch (id) {
     // Properties stored in theme pack.  If you change these defaults, you must
     // increment the version number in browser_theme_pack.cc.
-    case ThemeProperties::COLOR_FRAME:
+    case ThemeProperties::COLOR_FRAME_ACTIVE:
     case ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE:
     case ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE:
     case ThemeProperties::COLOR_STATUS_BUBBLE:
@@ -61,7 +61,7 @@ SkColor GetLightModeColor(int id) {
     case ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE:
     case ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE:
       return color_utils::HSLShift(
-          GetLightModeColor(ThemeProperties::COLOR_FRAME),
+          GetLightModeColor(ThemeProperties::COLOR_FRAME_ACTIVE),
           ThemeProperties::GetDefaultTint(ThemeProperties::TINT_FRAME_INACTIVE,
                                           false));
     case ThemeProperties::COLOR_DOWNLOAD_SHELF:
@@ -117,8 +117,8 @@ SkColor GetLightModeColor(int id) {
     case ThemeProperties::COLOR_OMNIBOX_BACKGROUND:
       return gfx::kGoogleGrey100;
 
-    case ThemeProperties::COLOR_FRAME_INCOGNITO:
-    case ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE:
+    case ThemeProperties::COLOR_FRAME_ACTIVE_INCOGNITO:
+    case ThemeProperties::COLOR_FRAME_INACTIVE_INCOGNITO:
     case ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE_INCOGNITO:
     case ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_INACTIVE_INCOGNITO:
     case ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO:
@@ -144,15 +144,15 @@ SkColor GetLightModeColor(int id) {
 
 base::Optional<SkColor> GetIncognitoColor(int id) {
   switch (id) {
-    case ThemeProperties::COLOR_FRAME:
+    case ThemeProperties::COLOR_FRAME_ACTIVE:
     case ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE:
       return color_utils::HSLShift(
-          GetLightModeColor(ThemeProperties::COLOR_FRAME),
+          GetLightModeColor(ThemeProperties::COLOR_FRAME_ACTIVE),
           ThemeProperties::GetDefaultTint(ThemeProperties::TINT_FRAME, true));
     case ThemeProperties::COLOR_FRAME_INACTIVE:
     case ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE:
       return color_utils::HSLShift(
-          GetLightModeColor(ThemeProperties::COLOR_FRAME),
+          GetLightModeColor(ThemeProperties::COLOR_FRAME_ACTIVE),
           ThemeProperties::GetDefaultTint(ThemeProperties::TINT_FRAME_INACTIVE,
                                           true));
     case ThemeProperties::COLOR_DOWNLOAD_SHELF:

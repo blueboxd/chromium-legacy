@@ -416,11 +416,55 @@ cr.define('settings_privacy_page', function() {
     });
   }
 
+  function registerHappinessTrackingSurveysTests() {
+    suite('HappinessTrackingSurveys', function() {
+      /** @type {settings.TestHatsBrowserProxy} */
+      let testHatsBrowserProxy;
+
+      /** @type {SettingsPrivacyPageElement} */
+      let page;
+
+      setup(function() {
+        testHatsBrowserProxy = new TestHatsBrowserProxy();
+        settings.HatsBrowserProxyImpl.instance_ = testHatsBrowserProxy;
+        PolymerTest.clearBody();
+        page = document.createElement('settings-privacy-page');
+        document.body.appendChild(page);
+        return test_util.flushTasks();
+      });
+
+      teardown(function() {
+        page.remove();
+      });
+
+      test('ClearBrowsingDataTrigger', function() {
+        page.$$('#clearBrowsingData').click();
+        return testHatsBrowserProxy.whenCalled('tryShowSurvey');
+      });
+
+      test('CookiesTrigger', function() {
+        page.$$('#cookiesLinkRow').click();
+        return testHatsBrowserProxy.whenCalled('tryShowSurvey');
+      });
+
+      test('SecurityTrigger', function() {
+        page.$$('#securityLinkRow').click();
+        return testHatsBrowserProxy.whenCalled('tryShowSurvey');
+      });
+
+      test('PermissionsTrigger', function() {
+        page.$$('#permissionsLinkRow').click();
+        return testHatsBrowserProxy.whenCalled('tryShowSurvey');
+      });
+    });
+  }
+
   return {
     registerNativeCertificateManagerTests,
     registerPrivacyPageTests,
     registerPrivacyPageRedesignTests,
     registerPrivacyPageSoundTests,
     registerUMALoggingTests,
+    registerHappinessTrackingSurveysTests,
   };
 });

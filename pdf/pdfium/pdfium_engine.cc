@@ -1200,9 +1200,8 @@ bool PDFiumEngine::OnRightMouseDown(const pp::MouseInputEvent& event) {
   if (selection_.empty())
     return false;
 
-  std::vector<pp::Rect> selection_rect_vector;
-  GetAllScreenRectsUnion(selection_, GetVisibleRect().point(),
-                         &selection_rect_vector);
+  std::vector<pp::Rect> selection_rect_vector =
+      GetAllScreenRectsUnion(selection_, GetVisibleRect().point());
   for (const auto& rect : selection_rect_vector) {
     if (rect.Contains(point.x(), point.y()))
       return false;
@@ -1883,10 +1882,11 @@ void PDFiumEngine::StopFind() {
   find_factory_.CancelAll();
 }
 
-void PDFiumEngine::GetAllScreenRectsUnion(
+std::vector<pp::Rect> PDFiumEngine::GetAllScreenRectsUnion(
     const std::vector<PDFiumRange>& rect_range,
-    const pp::Point& offset_point,
-    std::vector<pp::Rect>* rect_vector) const {
+    const pp::Point& offset_point) const {
+  std::vector<pp::Rect> rect_vector;
+  rect_vector.reserve(rect_range.size());
   for (const auto& range : rect_range) {
     pp::Rect result_rect;
     const std::vector<pp::Rect>& rects =
@@ -1894,13 +1894,14 @@ void PDFiumEngine::GetAllScreenRectsUnion(
                              layout_.options().default_page_orientation());
     for (const auto& rect : rects)
       result_rect = result_rect.Union(rect);
-    rect_vector->push_back(result_rect);
+    rect_vector.push_back(result_rect);
   }
+  return rect_vector;
 }
 
 void PDFiumEngine::UpdateTickMarks() {
-  std::vector<pp::Rect> tickmarks;
-  GetAllScreenRectsUnion(find_results_, pp::Point(0, 0), &tickmarks);
+  std::vector<pp::Rect> tickmarks =
+      GetAllScreenRectsUnion(find_results_, pp::Point());
   client_->UpdateTickMarks(tickmarks);
 }
 

@@ -144,7 +144,6 @@
     },
     {
       name: "AnimationWorklet",
-      origin_trial_feature_name: "AnimationWorklet",
       status: "experimental",
     },
     {
@@ -1524,7 +1523,6 @@
     {
       name: "ScrollTimeline",
       status: "experimental",
-      origin_trial_feature_name: "AnimationWorklet",
       implied_by: ['AnimationWorklet']
     },
     // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left

@@ -25,8 +25,8 @@ class GuestDriver {
   }
 }
 
-/** @implements FileSystemWriter */
-class FakeFileWriter {
+/** @implements FileSystemWritableFileStream */
+class FakeWritableFileStream {
   constructor(/** !Blob= */ data = new Blob()) {
     this.data = data;
 
@@ -38,7 +38,8 @@ class FakeFileWriter {
     });
   }
   /** @override */
-  async write(position, data) {
+  async write(data) {
+    const position = 0;  // Assume no seeks.
     this.data = new Blob([
       this.data.slice(0, position),
       data,
@@ -53,6 +54,10 @@ class FakeFileWriter {
   async close() {
     this.resolveClose(this.data);
   }
+  /** @override */
+  async seek(offset) {
+    throw new Error('seek() not implemented.')
+  }
 }
 
 /** @implements FileSystemFileHandle  */
@@ -62,8 +67,8 @@ class FakeFileSystemFileHandle {
     this.isDirectory = false;
     this.name = 'fakefile';
 
-    /** @type{?FakeFileWriter} */
-    this.lastWriter;
+    /** @type{?FakeWritableFileStream} */
+    this.lastWritable;
   }
 
   /** @override */
@@ -72,12 +77,16 @@ class FakeFileSystemFileHandle {
   requestPermission(descriptor) {}
   /** @override */
   createWriter(options) {
-    this.lastWriter = new FakeFileWriter();
-    return Promise.resolve(this.lastWriter);
+    throw new Error('createWriter() deprecated.')
+  }
+  /** @override */
+  createWritable(options) {
+    this.lastWritable = new FakeWritableFileStream();
+    return Promise.resolve(this.lastWritable);
   }
   /** @override */
   getFile() {
     console.error('getFile() not implemented');
-    return null;
+    return Promise.resolve(new File([], 'fake-file'));
   }
 }

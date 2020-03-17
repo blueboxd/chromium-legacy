@@ -160,10 +160,6 @@ FormDataImporter* ChromeAutofillClientIOS::GetFormDataImporter() {
   return form_data_importer_.get();
 }
 
-SmsClient* ChromeAutofillClientIOS::GetSmsClient() {
-  return nullptr;
-}
-
 payments::PaymentsClient* ChromeAutofillClientIOS::GetPaymentsClient() {
   return payments_client_.get();
 }

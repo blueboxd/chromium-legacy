@@ -1349,7 +1349,7 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
           script, base::size(kNewBody), net::OK, std::string());
     }
 
-    version->SetMainScriptHttpResponseInfo(CreateHttpResponseInfo());
+    version->SetMainScriptResponse(CreateMainScriptResponse());
     std::move(callback).Run();
   }
 

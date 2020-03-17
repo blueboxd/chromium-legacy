@@ -47,6 +47,11 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   // Set a global indicating that AXPlatformNodeDelegates are for web content.
   static void SetGlobalIsWebContent(bool is_web_content);
 
+  // When a hit test is called on |src_node_id|, return |dst_node_id| as
+  // the result.
+  static void SetHitTestResult(AXNode::AXID src_node_id,
+                               AXNode::AXID dst_node_id);
+
   ~TestAXNodeWrapper() override;
 
   AXPlatformNode* ax_platform_node() const { return platform_node_; }

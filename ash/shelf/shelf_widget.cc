@@ -905,12 +905,12 @@ void ShelfWidget::UpdateLayout(bool animate) {
   delegate_view_->UpdateOpaqueBackground();
 }
 
-void ShelfWidget::UpdateTargetBoundsForGesture(int new_position) {
+void ShelfWidget::UpdateTargetBoundsForGesture(int shelf_position) {
   if (shelf_->IsHorizontalAlignment()) {
     if (!IsHotseatEnabled())
-      target_bounds_.set_y(new_position);
+      target_bounds_.set_y(shelf_position);
   } else {
-    target_bounds_.set_x(new_position);
+    target_bounds_.set_x(shelf_position);
   }
 }
 

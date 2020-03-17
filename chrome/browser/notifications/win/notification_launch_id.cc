@@ -9,6 +9,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/common/chrome_switches.h"
 
 namespace {
 
@@ -175,4 +176,14 @@ std::string NotificationLaunchId::GetProfileIdFromLaunchId(
   // The launch_id_invalid failure is logged via HandleActivation(). We don't
   // re-log it here, which would skew the UMA failure metrics.
   return launch_id.is_valid() ? launch_id.profile_id() : std::string();
+}
+
+// static
+std::string NotificationLaunchId::GetNotificationLaunchProfileId(
+    const base::CommandLine& command_line) {
+  if (command_line.HasSwitch(switches::kNotificationLaunchId)) {
+    return NotificationLaunchId::GetProfileIdFromLaunchId(
+        command_line.GetSwitchValueNative(switches::kNotificationLaunchId));
+  }
+  return std::string();
 }

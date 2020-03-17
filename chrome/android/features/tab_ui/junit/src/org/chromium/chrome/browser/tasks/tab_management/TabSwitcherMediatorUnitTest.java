@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -83,6 +84,7 @@ public class TabSwitcherMediatorUnitTest {
 
     private static final int CONTROL_HEIGHT_DEFAULT = 56;
     private static final int CONTROL_HEIGHT_MODIFIED = 0;
+    private static final int CONTROL_HEIGHT_INCREASED = 76;
 
     private static final String TAB1_TITLE = "Tab1";
     private static final String TAB2_TITLE = "Tab2";
@@ -604,6 +606,43 @@ public class TabSwitcherMediatorUnitTest {
 
         listener.run(TAB1_ID);
         verify(mTabGridDialogController).resetWithListOfTabs(eq(null));
+    }
+
+    @Test
+    public void updatesPropertiesWithTopControlsChanges() {
+        assertEquals(
+                CONTROL_HEIGHT_DEFAULT, mModel.get(TabListContainerProperties.TOP_CONTROLS_HEIGHT));
+        assertEquals(
+                CONTROL_HEIGHT_DEFAULT, mModel.get(TabListContainerProperties.SHADOW_TOP_MARGIN));
+
+        mFullscreenListenerCaptor.getValue().onTopControlsHeightChanged(
+                CONTROL_HEIGHT_INCREASED, 0);
+        assertEquals(CONTROL_HEIGHT_INCREASED,
+                mModel.get(TabListContainerProperties.TOP_CONTROLS_HEIGHT));
+        assertEquals(
+                CONTROL_HEIGHT_INCREASED, mModel.get(TabListContainerProperties.SHADOW_TOP_MARGIN));
+
+        mFullscreenListenerCaptor.getValue().onTopControlsHeightChanged(CONTROL_HEIGHT_DEFAULT, 0);
+        assertEquals(
+                CONTROL_HEIGHT_DEFAULT, mModel.get(TabListContainerProperties.TOP_CONTROLS_HEIGHT));
+        assertEquals(
+                CONTROL_HEIGHT_DEFAULT, mModel.get(TabListContainerProperties.SHADOW_TOP_MARGIN));
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.START_SURFACE_ANDROID)
+    public void updatesPropertiesWithTopControlsChanges_StartSurface() {
+        assertEquals(0, mModel.get(TabListContainerProperties.TOP_CONTROLS_HEIGHT));
+        assertEquals(0, mModel.get(TabListContainerProperties.SHADOW_TOP_MARGIN));
+
+        mFullscreenListenerCaptor.getValue().onTopControlsHeightChanged(
+                CONTROL_HEIGHT_INCREASED, 0);
+        assertEquals(0, mModel.get(TabListContainerProperties.TOP_CONTROLS_HEIGHT));
+        assertEquals(0, mModel.get(TabListContainerProperties.SHADOW_TOP_MARGIN));
+
+        mFullscreenListenerCaptor.getValue().onTopControlsHeightChanged(CONTROL_HEIGHT_DEFAULT, 0);
+        assertEquals(0, mModel.get(TabListContainerProperties.TOP_CONTROLS_HEIGHT));
+        assertEquals(0, mModel.get(TabListContainerProperties.SHADOW_TOP_MARGIN));
     }
 
     private void initAndAssertAllProperties() {

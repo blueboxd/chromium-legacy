@@ -1593,9 +1593,9 @@ INSTANTIATE_TEST_SUITE_P(UseLocalPrediction,
 #define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
 #endif
 
-IN_PROC_BROWSER_TEST_P(LoadingPredictorBrowserTestWithOptimizationGuide,
-                       DISABLE_ON_WIN_MAC_CHROMEOS(
-                           NavigationHasLocalPredictionNoOptimizationHint)) {
+IN_PROC_BROWSER_TEST_P(
+    LoadingPredictorBrowserTestWithOptimizationGuide,
+    DISABLED_NavigationHasLocalPredictionNoOptimizationHint) {
   // Navigate the first time to fill the predictor's database and the HTTP
   // cache.
   GURL url = embedded_test_server()->GetURL(
@@ -1720,10 +1720,10 @@ IN_PROC_BROWSER_TEST_P(
   }
 }
 
+// crbug.com/1060966
 IN_PROC_BROWSER_TEST_P(
     LoadingPredictorBrowserTestWithOptimizationGuide,
-    DISABLE_ON_WIN_MAC_CHROMEOS(
-        NavigationWithNoLocalPredictionsButHasOptimizationHint)) {
+    DISABLED_NavigationWithNoLocalPredictionsButHasOptimizationHint) {
   {
     base::HistogramTester histogram_tester;
 

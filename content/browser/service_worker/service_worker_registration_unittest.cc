@@ -410,8 +410,8 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
         helper_->context()->storage(), version_1->script_url(),
         {} /* headers */, "I'm the body", "I'm the meta data"));
     version_1->script_cache_map()->SetResources(records_1);
-    version_1->SetMainScriptHttpResponseInfo(
-        EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
+    version_1->SetMainScriptResponse(
+        EmbeddedWorkerTestHelper::CreateMainScriptResponse());
     base::Optional<blink::ServiceWorkerStatusCode> status;
     base::RunLoop run_loop;
     context()->registry()->StoreRegistration(
@@ -452,8 +452,8 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
         helper_->context()->storage(), version_2->script_url(),
         {} /* headers */, "I'm the body", "I'm the meta data"));
     version_2->script_cache_map()->SetResources(records_2);
-    version_2->SetMainScriptHttpResponseInfo(
-        EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
+    version_2->SetMainScriptResponse(
+        EmbeddedWorkerTestHelper::CreateMainScriptResponse());
     version_2->set_fetch_handler_existence(
         ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
     registration_->SetWaitingVersion(version_2);
@@ -897,8 +897,8 @@ class ServiceWorkerRegistrationObjectHostTest
                                            {} /* headers */, "I'm the body",
                                            "I'm the meta data"));
     version->script_cache_map()->SetResources(records);
-    version->SetMainScriptHttpResponseInfo(
-        EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
+    version->SetMainScriptResponse(
+        EmbeddedWorkerTestHelper::CreateMainScriptResponse());
     version->set_fetch_handler_existence(
         ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
     version->SetStatus(ServiceWorkerVersion::INSTALLING);

@@ -11,6 +11,12 @@
 
 namespace views {
 
+HighlightPathGenerator::RoundRect::RoundRect() = default;
+
+HighlightPathGenerator::RoundRect::RoundRect(const gfx::RectF& bounds,
+                                             float corner_radius)
+    : bounds(bounds), corner_radius(corner_radius) {}
+
 HighlightPathGenerator::HighlightPathGenerator()
     : HighlightPathGenerator(gfx::Insets()) {}
 
@@ -39,11 +45,8 @@ SkPath HighlightPathGenerator::GetHighlightPath(const View* view) {
   base::Optional<HighlightPathGenerator::RoundRect> round_rect =
       GetRoundRect(view);
   DCHECK(round_rect);
-
-  const float corner_radius = round_rect->corner_radius;
-  return SkPath().addRoundRect(
-      gfx::RectToSkRect(gfx::ToEnclosingRect(round_rect->bounds)),
-      corner_radius, corner_radius);
+  return SkPath().addRRect(
+      SkRRect{gfx::RRectF(round_rect->bounds, round_rect->corner_radius)});
 }
 
 base::Optional<HighlightPathGenerator::RoundRect>

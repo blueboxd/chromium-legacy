@@ -183,7 +183,7 @@ void HTMLTextAreaElement::ParseAttribute(
     // deprecated.  The soft/hard /off values are a recommendation for HTML 4
     // extension by IE and NS 4.
     WrapMethod wrap;
-    if (DeprecatedEqualIgnoringCase(value, "physical") ||
+    if (EqualIgnoringASCIICase(value, "physical") ||
         EqualIgnoringASCIICase(value, "hard") ||
         EqualIgnoringASCIICase(value, "on"))
       wrap = kHardWrap;

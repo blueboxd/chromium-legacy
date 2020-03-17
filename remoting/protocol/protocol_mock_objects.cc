@@ -95,9 +95,9 @@ SynchronousPairingRegistry::~SynchronousPairingRegistry() = default;
 void SynchronousPairingRegistry::PostTask(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const base::Location& from_here,
-    const base::Closure& task) {
+    base::OnceClosure task) {
   DCHECK(task_runner->BelongsToCurrentThread());
-  task.Run();
+  std::move(task).Run();
 }
 
 }  // namespace protocol

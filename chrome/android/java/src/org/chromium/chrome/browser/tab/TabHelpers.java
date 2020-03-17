@@ -29,10 +29,9 @@ public final class TabHelpers {
      * Creates Tab helper objects upon Tab creation.
      * @param tab {@link Tab} to create helpers for.
      * @param parentTab {@link Tab} parent tab
-     * @param creationState State in which the tab is created.
      */
-    static void initTabHelpers(Tab tab, Tab parentTab, @TabCreationState Integer creationState) {
-        if (creationState != null) TabUma.create(tab, creationState);
+    static void initTabHelpers(Tab tab, Tab parentTab) {
+        TabUma.createForTab(tab);
         TabDistillabilityProvider.createForTab(tab);
         TabThemeColorHelper.createForTab(tab);
         InterceptNavigationDelegateImpl.createForTab(tab);

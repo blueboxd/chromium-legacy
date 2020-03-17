@@ -31,11 +31,11 @@ class AppShimHostBootstrap;
 
 // This is the counterpart to AppShimController in
 // chrome/app/chrome_main_app_mode_mac.mm. The AppShimHost is owned by the
-// ExtensionAppShimHandler, which implements its client interface.
+// AppShimManager, which implements its client interface.
 class AppShimHost : public chrome::mojom::AppShimHost {
  public:
   // The interface through which the AppShimHost interacts with
-  // ExtensionAppShimHandler.
+  // AppShimManager.
   class Client {
    public:
     // Request that the handler launch the app shim process.

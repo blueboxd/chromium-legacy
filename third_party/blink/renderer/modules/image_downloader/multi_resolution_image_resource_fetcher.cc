@@ -209,6 +209,7 @@ void MultiResolutionImageResourceFetcher::Start(
   request_.SetSiteForCookies(frame->GetDocument()->SiteForCookies());
   request_.SetMode(request_mode);
   request_.SetCredentialsMode(credentials_mode);
+  request_.SetRequestDestination(network::mojom::RequestDestination::kImage);
 
   client_ = std::make_unique<ClientImpl>(std::move(callback));
 

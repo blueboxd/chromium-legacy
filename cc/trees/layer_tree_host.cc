@@ -1201,22 +1201,6 @@ void LayerTreeHost::SetViewportRectAndScale(
       device_scale_factor_changed) {
     SetPropertyTreesNeedRebuild();
     SetNeedsCommit();
-#if defined(OS_MACOSX)
-    // TODO(jonross): This check is not valid on Aura or Mus yet, but should be.
-    CHECK(!has_pushed_local_surface_id_from_parent_ ||
-          new_local_surface_id_request_ ||
-          !local_surface_id_allocation_from_parent_.IsValid())
-        << "Invalid Surface Id State: !has_pushed "
-        << !has_pushed_local_surface_id_from_parent_ << " new_id_request "
-        << new_local_surface_id_request_ << " !valid_parent_id "
-        << !local_surface_id_allocation_from_parent_.IsValid()
-        << ". Changed state: device_viewport_size "
-        << device_viewport_rect_changed << " painted_device_scale_factor "
-        << painted_device_scale_factor_changed << " device_scale_factor "
-        << device_scale_factor_changed << " cached LSId "
-        << previous_local_surface_id.ToString() << " new LSId "
-        << local_surface_id_allocation_from_parent.ToString();
-#endif
   }
 }
 
@@ -1355,7 +1339,6 @@ void LayerTreeHost::SetLocalSurfaceIdAllocationFromParent(
   // latest value received from our parent.
   local_surface_id_allocation_from_parent_ =
       local_surface_id_allocation_from_parent;
-  has_pushed_local_surface_id_from_parent_ = false;
 
   // If the parent sequence number has not advanced, then there is no need to
   // commit anything. This can occur when the child sequence number has
@@ -1556,7 +1539,6 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
 
   tree_impl->SetLocalSurfaceIdAllocationFromParent(
       local_surface_id_allocation_from_parent_);
-  has_pushed_local_surface_id_from_parent_ = true;
 
   if (pending_page_scale_animation_) {
     tree_impl->SetPendingPageScaleAnimation(

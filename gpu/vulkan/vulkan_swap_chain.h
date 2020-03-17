@@ -41,9 +41,8 @@ class VULKAN_EXPORT VulkanSwapChain {
     // transferred to the caller.
     VkSemaphore TakeBeginSemaphore();
 
-    // Set the end write semaphore. The ownership of the semaphore will be
-    // transferred to ScopedWrite.
-    void SetEndSemaphore(VkSemaphore);
+    // Get the end write semaphore.
+    VkSemaphore GetEndSemaphore();
 
    private:
     VulkanSwapChain* const swap_chain_;

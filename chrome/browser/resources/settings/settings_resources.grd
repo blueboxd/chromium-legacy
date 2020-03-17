@@ -709,6 +709,12 @@
                  file="autofill_page/passwords_export_dialog.js"
                  type="chrome_html"
                  preprocess="true" />
+      <structure name="IDR_SETTINGS_PASSWORD_REMOVE_CONFIRMATION_DIALOG_HTML"
+                 file="autofill_page/password_remove_confirmation_dialog.html"
+                 type="chrome_html" />
+       <structure name="IDR_SETTINGS_PASSWORD_REMOVE_CONFIRMATION_DIALOG_JS"
+                 file="autofill_page/password_remove_confirmation_dialog.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PAYMENTS_SECTION_HTML"
                  file="autofill_page/payments_section.html"
                  type="chrome_html" />
@@ -945,6 +951,12 @@
       <structure name="IDR_SETTINGS_PROTOCOL_HANDLERS_JS"
                  file="site_settings/protocol_handlers.js"
                  preprocess="true"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_HATS_BROWSER_PROXY_HTML"
+                 file="hats_browser_proxy.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_HATS_BROWSER_PROXY_JS"
+                 file="hats_browser_proxy.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_METRICS_BROWSER_PROXY_HTML"
                  file="metrics_browser_proxy.html"

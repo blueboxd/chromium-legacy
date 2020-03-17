@@ -1666,15 +1666,14 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
       available_bounds.x() - (shelf_hidden_at_start ? shelf_size : 0),
       available_bounds.right() - (shelf_hidden_at_start ? 0 : shelf_size));
 
+  const int shelf_position = baseline + translate;
   if (horizontal) {
     if (!IsHotseatEnabled()) {
-      shelf_->shelf_widget()->UpdateTargetBoundsForGesture(baseline +
-                                                           translate);
-      shelf_->navigation_widget()->UpdateTargetBoundsForGesture();
-      gfx::Rect hotseat_bounds = shelf_->hotseat_widget()->GetTargetBounds();
-      hotseat_bounds.set_y(baseline + translate);
-      shelf_->hotseat_widget()->set_target_bounds(hotseat_bounds);
-      shelf_->status_area_widget()->UpdateTargetBoundsForGesture();
+      shelf_->shelf_widget()->UpdateTargetBoundsForGesture(shelf_position);
+      shelf_->navigation_widget()->UpdateTargetBoundsForGesture(shelf_position);
+      shelf_->hotseat_widget()->UpdateTargetBoundsForGesture(shelf_position);
+      shelf_->status_area_widget()->UpdateTargetBoundsForGesture(
+          shelf_position);
       return;
     }
 
@@ -1722,16 +1721,14 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     gfx::Rect hotseat_bounds = shelf_->hotseat_widget()->GetTargetBounds();
     hotseat_bounds.set_y(hotseat_y + shelf_bounds.y());
     shelf_->hotseat_widget()->set_target_bounds(hotseat_bounds);
-    shelf_->status_area_widget()->UpdateTargetBoundsForGesture();
+    shelf_->status_area_widget()->UpdateTargetBoundsForGesture(shelf_position);
     return;
   }
 
-  shelf_->shelf_widget()->UpdateTargetBoundsForGesture(baseline + translate);
-  shelf_->navigation_widget()->UpdateTargetBoundsForGesture();
-  gfx::Rect hotseat_bounds = shelf_->hotseat_widget()->GetTargetBounds();
-  hotseat_bounds.set_x(baseline + translate);
-  shelf_->hotseat_widget()->set_target_bounds(hotseat_bounds);
-  shelf_->status_area_widget()->UpdateTargetBoundsForGesture();
+  shelf_->shelf_widget()->UpdateTargetBoundsForGesture(shelf_position);
+  shelf_->navigation_widget()->UpdateTargetBoundsForGesture(shelf_position);
+  shelf_->hotseat_widget()->UpdateTargetBoundsForGesture(shelf_position);
+  shelf_->status_area_widget()->UpdateTargetBoundsForGesture(shelf_position);
 }
 
 void ShelfLayoutManager::UpdateAutoHideStateNow() {

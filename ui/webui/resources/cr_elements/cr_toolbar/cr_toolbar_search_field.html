@@ -64,13 +64,14 @@
       }
 
       paper-spinner-lite {
-        @apply --cr-icon-height-width;
         --paper-spinner-color:
             var(--cr-toolbar-search-field-input-color, white);
+        height: var(--cr-icon-size);
         margin: 0 6px;
         opacity: 0;
         padding: 6px;
         position: absolute;
+        width: var(--cr-icon-size);
       }
 
       paper-spinner-lite[active] {

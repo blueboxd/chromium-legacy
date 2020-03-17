@@ -144,16 +144,17 @@ BrowserThemePackTest::BrowserThemePackTest()
 // static
 std::map<int, SkColor> BrowserThemePackTest::GetDefaultColorMap() {
   std::map<int, SkColor> colors;
-  GenerateDefaultFrameColor(&colors, TP::COLOR_FRAME, TP::TINT_FRAME, false);
+  GenerateDefaultFrameColor(&colors, TP::COLOR_FRAME_ACTIVE, TP::TINT_FRAME,
+                            false);
   GenerateDefaultFrameColor(&colors, TP::COLOR_FRAME_INACTIVE,
                             TP::TINT_FRAME_INACTIVE, false);
-  GenerateDefaultFrameColor(&colors, TP::COLOR_FRAME_INCOGNITO, TP::TINT_FRAME,
-                            true);
-  GenerateDefaultFrameColor(&colors, TP::COLOR_FRAME_INCOGNITO_INACTIVE,
+  GenerateDefaultFrameColor(&colors, TP::COLOR_FRAME_ACTIVE_INCOGNITO,
+                            TP::TINT_FRAME, true);
+  GenerateDefaultFrameColor(&colors, TP::COLOR_FRAME_INACTIVE_INCOGNITO,
                             TP::TINT_FRAME_INACTIVE, true);
 
   // For the rest, use default colors.
-  for (int i = TP::COLOR_FRAME_INCOGNITO_INACTIVE + 1;
+  for (int i = TP::COLOR_FRAME_INACTIVE_INCOGNITO + 1;
        i <= TP::COLOR_CONTROL_BUTTON_BACKGROUND; ++i) {
     colors[i] = GetDefaultColor(i);
   }
@@ -494,7 +495,7 @@ void BrowserThemePackTest::VerifyCalculatedColorContrast(const SkColor colors[],
     BrowserThemePack::BuildFromColor(color, pack.get());
 
     SkColor frame_color, toolbar_color;
-    EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME, &frame_color));
+    EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME_ACTIVE, &frame_color));
     EXPECT_TRUE(pack->GetColor(TP::COLOR_TOOLBAR, &toolbar_color));
     EXPECT_GE(color_utils::GetContrastRatio(frame_color, toolbar_color),
               contrast_ratio);
@@ -511,9 +512,9 @@ SkColor BrowserThemePackTest::GetDefaultColor(int id) {
   // Direct incognito IDs need to be mapped back to the non-incognito versions
   // (plus passing "true" for |incognito|) to avoid DCHECK failures.
   switch (id) {
-    case TP::COLOR_FRAME_INCOGNITO:
-      return TP::GetDefaultColor(TP::COLOR_FRAME, true);
-    case TP::COLOR_FRAME_INCOGNITO_INACTIVE:
+    case TP::COLOR_FRAME_ACTIVE_INCOGNITO:
+      return TP::GetDefaultColor(TP::COLOR_FRAME_ACTIVE, true);
+    case TP::COLOR_FRAME_INACTIVE_INCOGNITO:
       return TP::GetDefaultColor(TP::COLOR_FRAME_INACTIVE, true);
     case TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO:
       return TP::GetDefaultColor(TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE,
@@ -538,8 +539,8 @@ void BrowserThemePackTest::GenerateDefaultFrameColor(
     int color,
     int tint,
     bool otr) {
-  (*colors)[color] =
-      HSLShift(GetDefaultColor(TP::COLOR_FRAME), TP::GetDefaultTint(tint, otr));
+  (*colors)[color] = HSLShift(GetDefaultColor(TP::COLOR_FRAME_ACTIVE),
+                              TP::GetDefaultTint(tint, otr));
 }
 
 // Actual tests ----------------------------------------------------------------
@@ -854,16 +855,16 @@ TEST_F(BrowserThemePackTest, TestWindowControlButtonBGColor_FrameColor) {
   // Verify that control button background colors are matching the frame colors.
   VerifyColorsMatch(pack.get(),
                     TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE,
-                    TP::COLOR_FRAME);
+                    TP::COLOR_FRAME_ACTIVE);
   VerifyColorsMatch(pack.get(),
                     TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE,
                     TP::COLOR_FRAME_INACTIVE);
   VerifyColorsMatch(pack.get(),
                     TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE,
-                    TP::COLOR_FRAME_INCOGNITO);
+                    TP::COLOR_FRAME_ACTIVE_INCOGNITO);
   VerifyColorsMatch(
       pack.get(), TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE,
-      TP::COLOR_FRAME_INCOGNITO_INACTIVE);
+      TP::COLOR_FRAME_INACTIVE_INCOGNITO);
 }
 
 // Ensure that, given a theme which specifies a button background color, the
@@ -890,13 +891,14 @@ TEST_F(BrowserThemePackTest, TestWindowControlButtonBGColor_ButtonBGColor) {
     int frame_color_id;
   };
   const CaptionButtonColorPair color_pairs_to_check[] = {
-      {TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE, TP::COLOR_FRAME},
+      {TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE,
+       TP::COLOR_FRAME_ACTIVE},
       {TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE,
        TP::COLOR_FRAME_INACTIVE},
       {TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE,
-       TP::COLOR_FRAME_INCOGNITO},
+       TP::COLOR_FRAME_ACTIVE_INCOGNITO},
       {TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE,
-       TP::COLOR_FRAME_INCOGNITO_INACTIVE},
+       TP::COLOR_FRAME_INACTIVE_INCOGNITO},
   };
 
   for (const CaptionButtonColorPair& current_pair : color_pairs_to_check) {
@@ -1013,7 +1015,7 @@ TEST_F(BrowserThemePackTest,
 }
 
 // Ensure that, given an explicit frame color and a frame image, the output
-// color in COLOR_FRAME reflects the explicit color.
+// color in COLOR_FRAME_ACTIVE reflects the explicit color.
 TEST_F(BrowserThemePackTest,
        TestFrameColorComputedFromImageOverridesInputColor) {
   scoped_refptr<BrowserThemePack> pack(
@@ -1022,7 +1024,7 @@ TEST_F(BrowserThemePackTest,
                           pack.get());
 
   SkColor frame_color;
-  EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME, &frame_color));
+  EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME_ACTIVE, &frame_color));
 
   constexpr SkColor kExplicitColor = SkColorSetRGB(255, 0, 255);
   EXPECT_EQ(frame_color, kExplicitColor);
@@ -1036,7 +1038,7 @@ TEST_F(BrowserThemePackTest, TestBuildFromColor) {
   BrowserThemePack::BuildFromColor(color, pack.get());
 
   SkColor frame_color;
-  EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME, &frame_color));
+  EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME_ACTIVE, &frame_color));
   EXPECT_TRUE(pack->GetColor(TP::COLOR_TOOLBAR, &frame_color));
   EXPECT_TRUE(pack->GetColor(TP::COLOR_NTP_BACKGROUND, &frame_color));
 }
@@ -1064,7 +1066,7 @@ TEST_F(BrowserThemePackTest, BuildFromColor_BasicTestColors) {
     BrowserThemePack::BuildFromColor(color, pack.get());
 
     SkColor frame_color, background_tab, background_tab_text;
-    EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME, &frame_color));
+    EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME_ACTIVE, &frame_color));
     EXPECT_TRUE(pack->GetColor(TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE,
                                &background_tab));
     EXPECT_TRUE(pack->GetColor(TP::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE,
@@ -1125,7 +1127,7 @@ TEST_F(BrowserThemePackTest, BuildFromColor_TestAdjustedFrameColor) {
     BrowserThemePack::BuildFromColor(color, pack.get());
 
     SkColor frame_color;
-    EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME, &frame_color));
+    EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME_ACTIVE, &frame_color));
 
     // Dark backgrounds should get even darker.
     EXPECT_GT(color_utils::GetRelativeLuminance(color),
@@ -1138,7 +1140,7 @@ TEST_F(BrowserThemePackTest, BuildFromColor_TestAdjustedFrameColor) {
     BrowserThemePack::BuildFromColor(color, pack.get());
 
     SkColor frame_color;
-    EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME, &frame_color));
+    EXPECT_TRUE(pack->GetColor(TP::COLOR_FRAME_ACTIVE, &frame_color));
 
     // Light backgrounds should get even lighter.
     EXPECT_LT(color_utils::GetRelativeLuminance(color),

@@ -16,6 +16,9 @@
 namespace base {
 class SequencedTaskRunner;
 }
+namespace leveldb_proto {
+class ProtoDatabaseProvider;
+}
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -46,6 +49,7 @@ class FeedService : public KeyedService {
               std::unique_ptr<RefreshTaskScheduler> refresh_task_scheduler,
               PrefService* profile_prefs,
               PrefService* local_state,
+              leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
               signin::IdentityManager* identity_manager,
               scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
               scoped_refptr<base::SequencedTaskRunner> background_task_runner,

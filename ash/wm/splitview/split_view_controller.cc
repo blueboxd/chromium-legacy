@@ -78,20 +78,32 @@ constexpr float kBlackScrimFadeInRatio = 0.1f;
 constexpr float kBlackScrimOpacity = 0.4f;
 
 // Histogram names that record presentation time of resize operation with
-// following conditions, a) single snapped window, empty overview, b) two
-// snapped windows, c) single snapped window and non empty overview.
-constexpr char kSplitViewResizeSingleHistogram[] =
+// following conditions, a) clamshell split view, empty overview grid,
+// b) clamshell split view, nonempty overview grid, c) tablet split view, one
+// snapped window, empty overview grid, d) tablet split view, two snapped
+// windows, e) tablet split view, one snapped window, nonempty overview grid.
+constexpr char kClamshellSplitViewResizeSingleHistogram[] =
+    "Ash.SplitViewResize.PresentationTime.ClamshellMode.SingleWindow";
+constexpr char kClamshellSplitViewResizeWithOverviewHistogram[] =
+    "Ash.SplitViewResize.PresentationTime.ClamshellMode.WithOverview";
+constexpr char kTabletSplitViewResizeSingleHistogram[] =
     "Ash.SplitViewResize.PresentationTime.TabletMode.SingleWindow";
-constexpr char kSplitViewResizeMultiHistogram[] =
+constexpr char kTabletSplitViewResizeMultiHistogram[] =
     "Ash.SplitViewResize.PresentationTime.TabletMode.MultiWindow";
-constexpr char kSplitViewResizeWithOverviewHistogram[] =
+constexpr char kTabletSplitViewResizeWithOverviewHistogram[] =
     "Ash.SplitViewResize.PresentationTime.TabletMode.WithOverview";
 
-constexpr char kSplitViewResizeSingleMaxLatencyHistogram[] =
+constexpr char kClamshellSplitViewResizeSingleMaxLatencyHistogram[] =
+    "Ash.SplitViewResize.PresentationTime.MaxLatency.ClamshellMode."
+    "SingleWindow";
+constexpr char kClamshellSplitViewResizeWithOverviewMaxLatencyHistogram[] =
+    "Ash.SplitViewResize.PresentationTime.MaxLatency.ClamshellMode."
+    "WithOverview";
+constexpr char kTabletSplitViewResizeSingleMaxLatencyHistogram[] =
     "Ash.SplitViewResize.PresentationTime.MaxLatency.TabletMode.SingleWindow";
-constexpr char kSplitViewResizeMultiMaxLatencyHistogram[] =
+constexpr char kTabletSplitViewResizeMultiMaxLatencyHistogram[] =
     "Ash.SplitViewResize.PresentationTime.MaxLatency.TabletMode.MultiWindow";
-constexpr char kSplitViewResizeWithOverviewMaxLatencyHistogram[] =
+constexpr char kTabletSplitViewResizeWithOverviewMaxLatencyHistogram[] =
     "Ash.SplitViewResize.PresentationTime.MaxLatency.TabletMode.WithOverview";
 
 gfx::Point GetBoundedPosition(const gfx::Point& location_in_screen,
@@ -689,18 +701,20 @@ void SplitViewController::StartResize(const gfx::Point& location_in_screen) {
   if (state_ == State::kBothSnapped) {
     presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
         split_view_divider_->divider_widget()->GetCompositor(),
-        kSplitViewResizeMultiHistogram,
-        kSplitViewResizeMultiMaxLatencyHistogram);
-  } else if (GetOverviewSession() && !GetOverviewSession()->IsEmpty()) {
+        kTabletSplitViewResizeMultiHistogram,
+        kTabletSplitViewResizeMultiMaxLatencyHistogram);
+  } else if (GetOverviewSession() && !GetOverviewSession()
+                                          ->GetGridWithRootWindow(root_window_)
+                                          ->empty()) {
     presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
         split_view_divider_->divider_widget()->GetCompositor(),
-        kSplitViewResizeWithOverviewHistogram,
-        kSplitViewResizeWithOverviewMaxLatencyHistogram);
+        kTabletSplitViewResizeWithOverviewHistogram,
+        kTabletSplitViewResizeWithOverviewMaxLatencyHistogram);
   } else {
     presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
         split_view_divider_->divider_widget()->GetCompositor(),
-        kSplitViewResizeSingleHistogram,
-        kSplitViewResizeSingleMaxLatencyHistogram);
+        kTabletSplitViewResizeSingleHistogram,
+        kTabletSplitViewResizeSingleMaxLatencyHistogram);
   }
 }
 
@@ -784,6 +798,10 @@ void SplitViewController::EndSplitView(EndReason end_reason) {
     }
     EndResizeImpl();
   }
+
+  // There is at least one case where this line of code is needed: if the user
+  // presses Ctrl+W while resizing a clamshell split view window.
+  presentation_time_recorder_.reset();
 
   // Remove observers when the split view mode ends.
   Shell::Get()->RemoveShellObserver(this);
@@ -931,13 +949,19 @@ void SplitViewController::OnWindowBoundsChanged(
     return;
 
   WindowState* window_state = WindowState::Get(window);
-  const bool is_window_moved = window_state->is_dragged() &&
-                               window_state->drag_details()->bounds_change ==
-                                   WindowResizer::kBoundsChange_Repositions;
-  if (is_window_moved) {
-    // Ending overview will also end clamshell split view.
-    Shell::Get()->overview_controller()->EndOverview();
-    return;
+  if (window_state->is_dragged()) {
+    DCHECK_NE(WindowResizer::kBoundsChange_None,
+              window_state->drag_details()->bounds_change);
+    if (window_state->drag_details()->bounds_change ==
+        WindowResizer::kBoundsChange_Repositions) {
+      // Ending overview will also end clamshell split view.
+      Shell::Get()->overview_controller()->EndOverview();
+      return;
+    }
+    DCHECK_EQ(WindowResizer::kBoundsChange_Resizes,
+              window_state->drag_details()->bounds_change);
+    DCHECK(presentation_time_recorder_);
+    presentation_time_recorder_->RequestNext();
   }
 
   const gfx::Rect work_area =
@@ -971,12 +995,28 @@ void SplitViewController::OnResizeLoopStarted(aura::Window* window) {
       GetWindowComponentForResize(window)) {
     // Ending overview will also end clamshell split view.
     Shell::Get()->overview_controller()->EndOverview();
+    return;
+  }
+
+  DCHECK(GetOverviewSession());
+  if (GetOverviewSession()->GetGridWithRootWindow(root_window_)->empty()) {
+    presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
+        window->layer()->GetCompositor(),
+        kClamshellSplitViewResizeSingleHistogram,
+        kClamshellSplitViewResizeSingleMaxLatencyHistogram);
+  } else {
+    presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
+        window->layer()->GetCompositor(),
+        kClamshellSplitViewResizeWithOverviewHistogram,
+        kClamshellSplitViewResizeWithOverviewMaxLatencyHistogram);
   }
 }
 
 void SplitViewController::OnResizeLoopEnded(aura::Window* window) {
   if (!InClamshellSplitViewMode())
     return;
+
+  presentation_time_recorder_.reset();
 
   if (divider_position_ < GetDividerEndPosition() * kOneThirdPositionRatio ||
       divider_position_ > GetDividerEndPosition() * kTwoThirdPositionRatio) {

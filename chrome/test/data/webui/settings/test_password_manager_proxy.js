@@ -24,6 +24,7 @@
       'getPasswordCheckStatus',
       'getPlainttextCompromisedPassword',
       'changeCompromisedCredential',
+      'removeCompromisedCredential',
     ]);
 
     this.actual_ = new autofill_test_util.PasswordManagerExpectations();
@@ -206,5 +207,10 @@
   changeCompromisedCredential(credential, newPassword) {
     this.methodCalled('changeCompromisedCredential', {credential, newPassword});
     return Promise.resolve();
+  }
+
+  /** @override */
+  removeCompromisedCredential(compromisedCredential) {
+    this.methodCalled('removeCompromisedCredential', compromisedCredential);
   }
 }

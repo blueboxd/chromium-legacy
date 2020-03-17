@@ -533,7 +533,7 @@ class PaintPreviewContext : public PrintContext {
     LocalFrameView* frame_view = GetFrame()->View();
     DCHECK(frame_view);
     PropertyTreeState property_tree_state =
-        frame_view->GetLayoutView()->FirstFragment().LocalBorderBoxProperties();
+        frame_view->GetLayoutView()->FirstFragment().ContentsProperties();
 
     // This calls BeginRecording on |builder| with dimensions specified by the
     // CullRect.

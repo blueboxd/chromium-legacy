@@ -52,11 +52,11 @@ CSSValueID ListTypeToCSSValueID(const AtomicString& value) {
     return CSSValueID::kUpperRoman;
   if (value == "1")
     return CSSValueID::kDecimal;
-  if (DeprecatedEqualIgnoringCase(value, "disc"))
+  if (EqualIgnoringASCIICase(value, "disc"))
     return CSSValueID::kDisc;
   if (EqualIgnoringASCIICase(value, "circle"))
     return CSSValueID::kCircle;
-  if (DeprecatedEqualIgnoringCase(value, "square"))
+  if (EqualIgnoringASCIICase(value, "square"))
     return CSSValueID::kSquare;
   if (EqualIgnoringASCIICase(value, "none"))
     return CSSValueID::kNone;

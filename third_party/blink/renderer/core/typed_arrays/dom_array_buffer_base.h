@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_DOM_ARRAY_BUFFER_BASE_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_contents.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -16,24 +16,28 @@ class CORE_EXPORT DOMArrayBufferBase : public ScriptWrappable {
  public:
   ~DOMArrayBufferBase() override = default;
 
-  const ArrayBuffer* Buffer() const { return buffer_.get(); }
-  ArrayBuffer* Buffer() { return buffer_.get(); }
+  const ArrayBufferContents* Content() const { return &contents_; }
+  ArrayBufferContents* Content() { return &contents_; }
 
-  const void* Data() const { return Buffer()->Data(); }
-  void* Data() { return Buffer()->Data(); }
+  const void* Data() const { return contents_.Data(); }
+  void* Data() { return contents_.Data(); }
 
-  size_t ByteLengthAsSizeT() const { return Buffer()->ByteLengthAsSizeT(); }
+  const void* DataMaybeShared() const { return contents_.DataMaybeShared(); }
+  void* DataMaybeShared() { return contents_.DataMaybeShared(); }
+
+  size_t ByteLengthAsSizeT() const { return contents_.DataLength(); }
 
   // This function is deprecated and should not be used. Use {ByteLengthAsSizeT}
   // instead.
   unsigned DeprecatedByteLengthAsUnsigned() const {
-    size_t size = ByteLengthAsSizeT();
-    CHECK_LE(size, static_cast<size_t>(std::numeric_limits<unsigned>::max()));
-    return static_cast<unsigned>(size);
+    return base::checked_cast<unsigned>(contents_.DataLength());
   }
 
-  bool IsDetached() const { return Buffer()->IsDetached(); }
-  bool IsShared() const { return Buffer()->IsShared(); }
+  bool IsDetached() const { return is_detached_; }
+
+  void Detach() { is_detached_ = true; }
+
+  bool IsShared() const { return contents_.IsShared(); }
 
   v8::Local<v8::Value> Wrap(v8::Isolate*,
                             v8::Local<v8::Object> creation_context) override {
@@ -42,12 +46,11 @@ class CORE_EXPORT DOMArrayBufferBase : public ScriptWrappable {
   }
 
  protected:
-  explicit DOMArrayBufferBase(scoped_refptr<ArrayBuffer> buffer)
-      : buffer_(std::move(buffer)) {
-    DCHECK(buffer_);
-  }
+  explicit DOMArrayBufferBase(ArrayBufferContents contents)
+      : contents_(std::move(contents)) {}
 
-  scoped_refptr<ArrayBuffer> buffer_;
+  ArrayBufferContents contents_;
+  bool is_detached_ = false;
 };
 
 }  // namespace blink

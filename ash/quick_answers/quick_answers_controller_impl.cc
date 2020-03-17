@@ -56,22 +56,20 @@ void QuickAnswersControllerImpl::MaybeShowQuickAnswers(
   anchor_bounds_ = anchor_bounds;
   query_ = title;
 
-  // User-consent is required for the Quick-Answers feature.
-  if (!consent_controller_->HasConsented()) {
-    // Optionally display a user-consent view informing users about the feature.
-    if (consent_controller_->ShouldShowConsent() &&
-        !quick_answers_ui_controller_->is_showing_user_consent_view()) {
+  // Show user-consent notice informing user about the feature if required.
+  if (consent_controller_->ShouldShowConsent()) {
+    if (!quick_answers_ui_controller_->is_showing_user_consent_view()) {
       quick_answers_ui_controller_->CreateUserConsentView(anchor_bounds);
       consent_controller_->StartConsent();
     }
 
-    // Quick-Answers will not be displayed without user's consent.
+    // Quick-Answers will only be displayed after explicit or tacit consent is
+    // obtained.
     return;
   }
 
+  // Create Quick-Answers view and fetch Quick-Answer.
   quick_answers_ui_controller_->CreateQuickAnswersView(anchor_bounds, title);
-
-  // Fetch Quick Answer.
   QuickAnswersRequest request;
   request.selected_text = title;
   quick_answers_client_->SendRequest(request);
@@ -137,7 +135,8 @@ void QuickAnswersControllerImpl::UpdateQuickAnswersAnchorBounds(
 
 void QuickAnswersControllerImpl::OnUserConsentGranted() {
   quick_answers_ui_controller_->CloseUserConsentView();
-  consent_controller_->AcceptConsent();
+  consent_controller_->AcceptConsent(
+      chromeos::quick_answers::ConsentInteractionType::kAccept);
 
   // Display Quick-Answer for the cached query when user consents.
   MaybeShowQuickAnswers(anchor_bounds_, query_);
@@ -145,7 +144,8 @@ void QuickAnswersControllerImpl::OnUserConsentGranted() {
 
 void QuickAnswersControllerImpl::OnConsentSettingsRequestedByUser() {
   quick_answers_ui_controller_->CloseUserConsentView();
-  consent_controller_->DismissConsent();
+  consent_controller_->AcceptConsent(
+      chromeos::quick_answers::ConsentInteractionType::kManageSettings);
   NewWindowDelegate::GetInstance()->NewTabWithUrl(
       GURL(kAssistantRelatedInfoUrl), /*from_user_interaction=*/true);
 }

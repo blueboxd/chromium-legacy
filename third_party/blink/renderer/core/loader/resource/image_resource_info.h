@@ -60,6 +60,8 @@ class CORE_EXPORT ImageResourceInfo : public GarbageCollectedMixin {
 
   virtual void LoadDeferredImage(ResourceFetcher* fetcher) = 0;
 
+  virtual bool IsAdResource() const = 0;
+
   void Trace(Visitor* visitor) override {}
 };
 

@@ -158,7 +158,8 @@ void EmbeddedWorkerTestHelper::ShutdownContext() {
 }
 
 // static
-net::HttpResponseInfo EmbeddedWorkerTestHelper::CreateHttpResponseInfo() {
+std::unique_ptr<ServiceWorkerVersion::MainScriptResponse>
+EmbeddedWorkerTestHelper::CreateMainScriptResponse() {
   net::HttpResponseInfo info;
   const char data[] =
       "HTTP/1.1 200 OK\0"
@@ -166,7 +167,7 @@ net::HttpResponseInfo EmbeddedWorkerTestHelper::CreateHttpResponseInfo() {
       "\0";
   info.headers =
       new net::HttpResponseHeaders(std::string(data, base::size(data)));
-  return info;
+  return std::make_unique<ServiceWorkerVersion::MainScriptResponse>(info);
 }
 
 void EmbeddedWorkerTestHelper::PopulateScriptCacheMap(
@@ -179,7 +180,7 @@ void EmbeddedWorkerTestHelper::PopulateScriptCacheMap(
     return;
   }
   if (!version->GetMainScriptResponse())
-    version->SetMainScriptHttpResponseInfo(CreateHttpResponseInfo());
+    version->SetMainScriptResponse(CreateMainScriptResponse());
   if (!version->script_cache_map()->size()) {
     // Add a dummy ResourceRecord for the main script to the script cache map of
     // the ServiceWorkerVersion.

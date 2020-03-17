@@ -17,6 +17,7 @@
 #include "media/gpu/command_buffer_helper.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/windows/d3d11_com_defs.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_dxgi.h"
@@ -46,7 +47,9 @@ class MEDIA_GPU_EXPORT Texture2DWrapper {
   // used to refer to it.
   virtual bool ProcessTexture(ComD3D11Texture2D texture,
                               size_t array_slice,
-                              MailboxHolderArray* mailbox_dest_out) = 0;
+                              const gfx::ColorSpace& input_color_space,
+                              MailboxHolderArray* mailbox_dest_out,
+                              gfx::ColorSpace* output_color_space) = 0;
 };
 
 // The default texture wrapper that uses GPUResources to talk to hardware
@@ -64,7 +67,9 @@ class MEDIA_GPU_EXPORT DefaultTexture2DWrapper : public Texture2DWrapper {
 
   bool ProcessTexture(ComD3D11Texture2D texture,
                       size_t array_slice,
-                      MailboxHolderArray* mailbox_dest) override;
+                      const gfx::ColorSpace& input_color_space,
+                      MailboxHolderArray* mailbox_dest,
+                      gfx::ColorSpace* output_color_space) override;
 
  private:
   // Things that are to be accessed / freed only on the main thread.  In

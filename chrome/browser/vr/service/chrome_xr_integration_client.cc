@@ -15,6 +15,11 @@
 #include "chrome/browser/android/vr/arcore_device/arcore_install_helper.h"
 #endif
 #endif
+
+#if defined(OS_WIN)
+#include "chrome/browser/vr/ui_host/vr_ui_host_impl.h"
+#endif
+
 namespace {
 vr::ChromeXrIntegrationClient* g_instance = nullptr;
 }
@@ -43,4 +48,12 @@ ChromeXrIntegrationClient::GetInstallHelper(
       return nullptr;
   }
 }
+
+#if defined(OS_WIN)
+std::unique_ptr<content::VrUiHost> ChromeXrIntegrationClient::CreateVrUiHost(
+    device::mojom::XRDeviceId device_id,
+    mojo::PendingRemote<device::mojom::XRCompositorHost> compositor) {
+  return std::make_unique<VRUiHostImpl>(device_id, std::move(compositor));
+}
+#endif
 }  // namespace vr

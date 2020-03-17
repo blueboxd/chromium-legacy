@@ -230,12 +230,12 @@ NetworkDeviceHandlerImpl::~NetworkDeviceHandlerImpl() {
 
 void NetworkDeviceHandlerImpl::GetDeviceProperties(
     const std::string& device_path,
-    const network_handler::DictionaryResultCallback& callback,
+    network_handler::DictionaryResultCallback callback,
     const network_handler::ErrorCallback& error_callback) const {
   ShillDeviceClient::Get()->GetProperties(
       dbus::ObjectPath(device_path),
-      base::BindOnce(&network_handler::GetPropertiesCallback, callback,
-                     error_callback, device_path));
+      base::BindOnce(&network_handler::GetPropertiesCallback,
+                     std::move(callback), error_callback, device_path));
 }
 
 void NetworkDeviceHandlerImpl::SetDeviceProperty(
@@ -516,8 +516,9 @@ void NetworkDeviceHandlerImpl::ApplyMACAddressRandomizationToShill() {
     case MACAddressRandomizationSupport::NOT_REQUESTED:
       GetDeviceProperties(
           device_state->path(),
-          base::Bind(&NetworkDeviceHandlerImpl::HandleMACAddressRandomization,
-                     weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(
+              &NetworkDeviceHandlerImpl::HandleMACAddressRandomization,
+              weak_ptr_factory_.GetWeakPtr()),
           network_handler::ErrorCallback());
       return;
     case MACAddressRandomizationSupport::SUPPORTED:

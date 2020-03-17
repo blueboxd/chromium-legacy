@@ -748,20 +748,18 @@ Output = class {
           // Language Switching. Only execute if feature is enabled.
           if (localStorage['languageSwitching'] === 'true') {
             /**
-             * Passed as a callback to assignLanguagesForStringAttribute.
-             * Appends outputString to the output buffer in newLanguage.
+             * Passed as a callback to assignLocalesAndAppend.
+             * Appends |outputString| to |buff| with |newLocale|.
              * @param {!Array<Spannable>} buff
              * @param {{isUnique: (boolean|undefined),
              *      annotation: !Array<*>}} options
-             * @param {string} newLanguage
              * @param {string} outputString
+             * @param {string} newLocale
              */
-            const appendStringWithLanguage = function(
-                buff, options, newLanguage, outputString) {
+            const appendStringWithLocale = function(
+                buff, options, outputString, newLocale) {
               const speechProps = new Output.SpeechProperties();
-              // Set output language.
-              speechProps.properties['lang'] = newLanguage;
-              // Append outputString to buff.
+              speechProps.properties['lang'] = newLocale;
               this.append_(buff, outputString, options);
               // Attach associated SpeechProperties if the buffer is
               // non-empty.
@@ -769,10 +767,8 @@ Output = class {
                 buff[buff.length - 1].setSpan(speechProps, 0, 0);
               }
             };
-            // Cut up node name into multiple spans with different languages.
-            LanguageSwitching.assignLanguagesForStringAttribute(
-                node, 'name',
-                appendStringWithLanguage.bind(this, buff, options));
+            LanguageSwitching.instance.assignLocalesAndAppend(
+                node, 'name', appendStringWithLocale.bind(this, buff, options));
           } else {
             const nameOrAnnotation =
                 UserAnnotationHandler.getAnnotationForNode(node) || node.name;

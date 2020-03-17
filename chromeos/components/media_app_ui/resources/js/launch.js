@@ -45,8 +45,8 @@ guestMessagePipe.registerHandler(Message.OVERWRITE_FILE, async (message) => {
   if (!currentlyWritableFileHandle || overwrite.token != fileToken) {
     throw new Error('File not current.');
   }
-  const writer = await currentlyWritableFileHandle.createWriter();
-  await writer.write(0, overwrite.blob);
+  const writer = await currentlyWritableFileHandle.createWritable();
+  await writer.write(overwrite.blob);
   await writer.truncate(overwrite.blob.size);
   await writer.close();
 });

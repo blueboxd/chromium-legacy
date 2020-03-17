@@ -20,9 +20,12 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 
+namespace v8 {
+class Isolate;
+}
+
 namespace blink {
 
-class ArrayBuffer;
 class ScriptState;
 class StreamAbortInfo;
 class WebTransportCloseProxy;
@@ -123,6 +126,24 @@ class MODULES_EXPORT OutgoingStream
   // Prepares the object for destruction.
   void Dispose();
 
+  class CachedDataBuffer {
+   public:
+    CachedDataBuffer(v8::Isolate* isolate, const uint8_t* data, size_t length);
+
+    ~CachedDataBuffer();
+
+    size_t length() const { return length_; }
+
+    uint8_t* data() { return buffer_; }
+
+   private:
+    // We need the isolate to call |AdjustAmountOfExternalAllocatedMemory| for
+    // the memory stored in |buffer_|.
+    v8::Isolate* isolate_;
+    size_t length_ = 0u;
+    uint8_t* buffer_ = nullptr;
+  };
+
   const Member<ScriptState> script_state_;
   const Member<WebTransportCloseProxy> close_proxy_;
   mojo::ScopedDataPipeProducerHandle data_pipe_;
@@ -135,10 +156,10 @@ class MODULES_EXPORT OutgoingStream
 
   // Data which has been passed to write() but still needs to be written
   // asynchronously.
-  // Uses an ArrayBuffer rather than a Vector because WTF::Vector is currently
-  // limited to 2GB.
+  // Uses a custom CachedDataBuffer rather than a Vector because
+  // WTF::Vector is currently limited to 2GB.
   // TODO(ricea): Change this to a Vector when it becomes 64-bit safe.
-  scoped_refptr<ArrayBuffer> cached_data_;
+  std::unique_ptr<CachedDataBuffer> cached_data_;
 
   // The offset into |cached_data_| of the first byte that still needs to be
   // written.

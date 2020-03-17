@@ -12,20 +12,16 @@
 class CrostiniAppRestartView : public views::DialogDelegateView {
  public:
   // Create and show a new dialog.
-  static void Show(const ash::ShelfID& id, int64_t display_id);
+  static void Show(int64_t display_id);
 
   // views::DialogDelegateView:
   bool ShouldShowCloseButton() const override;
-  bool Accept() override;
   gfx::Size CalculatePreferredSize() const override;
   ui::ModalType GetModalType() const override;
 
  private:
-  CrostiniAppRestartView(const ash::ShelfID& id, int64_t display_id);
+  CrostiniAppRestartView();
   ~CrostiniAppRestartView() override = default;
-
-  ash::ShelfID id_;
-  int64_t display_id_;
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniAppRestartView);
 };

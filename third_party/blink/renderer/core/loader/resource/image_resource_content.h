@@ -186,6 +186,9 @@ class CORE_EXPORT ImageResourceContent final
 
   void LoadDeferredImage(ResourceFetcher* fetcher);
 
+  // Returns whether the resource request has been tagged as an ad.
+  bool IsAdResource() const;
+
  private:
   using CanDeferInvalidation = ImageResourceObserver::CanDeferInvalidation;
 

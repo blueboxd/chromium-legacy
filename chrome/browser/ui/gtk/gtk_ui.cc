@@ -953,10 +953,11 @@ void GtkUi::UpdateColors() {
     const SkColor frame_color_incognito_inactive =
         color_utils::HSLShift(frame_color_inactive, kDefaultTintFrameIncognito);
 
-    color_map[ThemeProperties::COLOR_FRAME] = frame_color;
+    color_map[ThemeProperties::COLOR_FRAME_ACTIVE] = frame_color;
     color_map[ThemeProperties::COLOR_FRAME_INACTIVE] = frame_color_inactive;
-    color_map[ThemeProperties::COLOR_FRAME_INCOGNITO] = frame_color_incognito;
-    color_map[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] =
+    color_map[ThemeProperties::COLOR_FRAME_ACTIVE_INCOGNITO] =
+        frame_color_incognito;
+    color_map[ThemeProperties::COLOR_FRAME_INACTIVE_INCOGNITO] =
         frame_color_incognito_inactive;
 
     // Compose the window color on the frame color to ensure the resulting tab

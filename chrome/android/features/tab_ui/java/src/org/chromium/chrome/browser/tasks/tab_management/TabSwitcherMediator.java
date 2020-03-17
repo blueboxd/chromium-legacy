@@ -22,7 +22,6 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
@@ -51,7 +50,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
-import org.chromium.chrome.tab_ui.R;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -94,22 +92,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     private final ObserverList<TabSwitcher.OverviewModeObserver> mObservers = new ObserverList<>();
     private final ChromeFullscreenManager mFullscreenManager;
     private TabGridDialogMediator.DialogController mTabGridDialogController;
-    private final ChromeFullscreenManager.FullscreenListener mFullscreenListener =
-            new ChromeFullscreenManager.FullscreenListener() {
-                @Override
-                public void onContentOffsetChanged(int offset) {}
-
-                @Override
-                public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
-                        int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
-                }
-
-                @Override
-                public void onBottomControlsHeightChanged(
-                        int bottomControlsHeight, int bottomControlsMinHeight) {
-                    mContainerViewModel.set(BOTTOM_CONTROLS_HEIGHT, bottomControlsHeight);
-                }
-            };
+    private final ChromeFullscreenManager.FullscreenListener mFullscreenListener;
 
     private final ViewGroup mContainerView;
     private final TabSelectionEditorCoordinator
@@ -281,6 +264,29 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
             }
         };
 
+        mFullscreenListener = new ChromeFullscreenManager.FullscreenListener() {
+            @Override
+            public void onContentOffsetChanged(int offset) {}
+
+            @Override
+            public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
+                    int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {}
+
+            @Override
+            public void onTopControlsHeightChanged(
+                    int topControlsHeight, int topControlsMinHeight) {
+                if (mode == TabListCoordinator.TabListMode.CAROUSEL) return;
+
+                updateTopControlsProperties(topControlsHeight);
+            }
+
+            @Override
+            public void onBottomControlsHeightChanged(
+                    int bottomControlsHeight, int bottomControlsMinHeight) {
+                mContainerViewModel.set(BOTTOM_CONTROLS_HEIGHT, bottomControlsHeight);
+            }
+        };
+
         mFullscreenManager.addListener(mFullscreenListener);
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
 
@@ -293,20 +299,9 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
         // Container view takes care of padding and margin in start surface.
         if (mode != TabListCoordinator.TabListMode.CAROUSEL) {
-            // The start surface checks in this block are for top controls height and shadow margin
-            //  to be set correctly for displaying the omnibox above the tab switcher.
-            int topControlsHeight = StartSurfaceConfiguration.isStartSurfaceEnabled()
-                    ? 0
-                    : fullscreenManager.getTopControlsHeight();
-            mContainerViewModel.set(TOP_CONTROLS_HEIGHT, topControlsHeight);
+            updateTopControlsProperties(fullscreenManager.getTopControlsHeight());
             mContainerViewModel.set(
                     BOTTOM_CONTROLS_HEIGHT, fullscreenManager.getBottomControlsHeight());
-
-            int toolbarHeight =
-                    ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
-                            R.dimen.toolbar_height_no_shadow);
-            mContainerViewModel.set(SHADOW_TOP_MARGIN,
-                    StartSurfaceConfiguration.isStartSurfaceEnabled() ? 0 : toolbarHeight);
         }
 
         mContainerView = containerView;
@@ -372,6 +367,15 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         }
 
         mContainerViewModel.set(IS_VISIBLE, isVisible);
+    }
+
+    private void updateTopControlsProperties(int topControlsHeight) {
+        // The start surface checks in this block are for top controls height and shadow
+        // margin to be set correctly for displaying the omnibox above the tab switcher.
+        topControlsHeight =
+                StartSurfaceConfiguration.isStartSurfaceEnabled() ? 0 : topControlsHeight;
+        mContainerViewModel.set(TOP_CONTROLS_HEIGHT, topControlsHeight);
+        mContainerViewModel.set(SHADOW_TOP_MARGIN, topControlsHeight);
     }
 
     /**

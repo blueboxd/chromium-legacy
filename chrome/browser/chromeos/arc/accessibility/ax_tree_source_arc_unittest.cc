@@ -368,9 +368,9 @@ TEST_F(AXTreeSourceArcTest, ReorderChildrenByLayout) {
 
   // Sanity check tree output.
   ExpectTree(
-      "id=100 window (0, 0)-(0, 0) child_ids=10\n"
-      "  id=10 genericContainer FOCUSABLE INVISIBLE (0, 0)-(0, 0) "
-      "restriction=disabled modal=true child_ids=1,2\n"
+      "id=100 window FOCUSABLE (0, 0)-(0, 0) modal=true child_ids=10\n"
+      "  id=10 genericContainer INVISIBLE (0, 0)-(0, 0) restriction=disabled "
+      "child_ids=1,2\n"
       "    id=1 button FOCUSABLE (100, 100)-(100, 100) restriction=disabled "
       "class_name=android.widget.Button name=button1\n"
       "    id=2 button FOCUSABLE (100, 100)-(10, 100) restriction=disabled "
@@ -513,15 +513,6 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
   CallSerializeNode(root, &data);
   ASSERT_FALSE(
       data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-
-  // Root window title propagates to the name of the root node of the window if
-  // it isn't specified.
-  SetProperty(root_window, AXWindowStringProperty::TITLE, "Window Title");
-  CallNotifyAccessibilityEvent(event.get());
-  CallSerializeNode(root, &data);
-  ASSERT_TRUE(
-      data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-  ASSERT_EQ("Window Title", name);
 }
 
 TEST_F(AXTreeSourceArcTest, AccessibleNameComputationTextField) {
@@ -699,6 +690,7 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputationWindowWithChildren) {
       data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
   EXPECT_EQ("window title", name);
   EXPECT_NE(ax::mojom::Role::kRootWebArea, data->role);
+  EXPECT_TRUE(data->GetBoolAttribute(ax::mojom::BoolAttribute::kModal));
 
   CallSerializeWindow(child, &data);
   ASSERT_TRUE(
@@ -711,7 +703,6 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputationWindowWithChildren) {
       data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
   EXPECT_EQ("node text", name);
   EXPECT_EQ(ax::mojom::Role::kStaticText, data->role);
-  EXPECT_TRUE(data->GetBoolAttribute(ax::mojom::BoolAttribute::kModal));
 
   CallSerializeNode(child_node, &data);
   ASSERT_TRUE(
@@ -907,13 +898,6 @@ TEST_F(AXTreeSourceArcTest, GetTreeDataAppliesFocus) {
   AXWindowInfoData* child = event->window_data->back().get();
   child->window_id = 1;
 
-  CallNotifyAccessibilityEvent(event.get());
-  ui::AXTreeData data;
-
-  // Nothing should be focused when there are no nodes.
-  EXPECT_TRUE(CallGetTreeData(&data));
-  EXPECT_EQ(ui::AXNode::kInvalidAXID, data.focus_id);
-
   // Add a child node.
   root->root_node_id = 2;
   event->node_data.push_back(AXNodeInfoData::New());
@@ -923,10 +907,11 @@ TEST_F(AXTreeSourceArcTest, GetTreeDataAppliesFocus) {
 
   CallNotifyAccessibilityEvent(event.get());
 
+  ui::AXTreeData data;
   EXPECT_TRUE(CallGetTreeData(&data));
-  EXPECT_EQ(2, data.focus_id);
+  EXPECT_EQ(root->window_id, data.focus_id);
 
-  EXPECT_EQ(2, GetDispatchedEventCount(ax::mojom::Event::kLayoutComplete));
+  EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kLayoutComplete));
 }
 
 TEST_F(AXTreeSourceArcTest, OnViewSelectedEvent) {
@@ -1169,9 +1154,9 @@ TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {
   CallNotifyAccessibilityEvent(event.get());
   EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kFocus));
   ExpectTree(
-      "id=100 window (0, 0)-(0, 0) child_ids=10\n"
-      "  id=10 genericContainer FOCUSABLE IGNORED INVISIBLE (0, 0)-(0, 0) "
-      "restriction=disabled modal=true child_ids=1\n"
+      "id=100 window FOCUSABLE (0, 0)-(0, 0) modal=true child_ids=10\n"
+      "  id=10 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
+      "restriction=disabled child_ids=1\n"
       "    id=1 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
       "restriction=disabled child_ids=2\n"
       "      id=2 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
@@ -1191,9 +1176,9 @@ TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {
 
   CallNotifyAccessibilityEvent(event.get());
   ExpectTree(
-      "id=100 window (0, 0)-(0, 0) child_ids=10\n"
-      "  id=10 genericContainer FOCUSABLE INVISIBLE (0, 0)-(0, 0) "
-      "restriction=disabled modal=true child_ids=1\n"
+      "id=100 window FOCUSABLE (0, 0)-(0, 0) modal=true child_ids=10\n"
+      "  id=10 genericContainer INVISIBLE (0, 0)-(0, 0) "
+      "restriction=disabled child_ids=1\n"
       "    id=1 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
       "restriction=disabled child_ids=2\n"
       "      id=2 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
@@ -1341,7 +1326,7 @@ TEST_F(AXTreeSourceArcTest, SyncFocus) {
   EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kLocationChanged));
 
   // When the focused node disappeared from the tree, move the focus to the
-  // root of the node tree.
+  // root.
   root->int_list_properties->clear();
   event->node_data.resize(1);
 
@@ -1349,7 +1334,7 @@ TEST_F(AXTreeSourceArcTest, SyncFocus) {
   CallNotifyAccessibilityEvent(event.get());
 
   EXPECT_TRUE(CallGetTreeData(&data));
-  EXPECT_EQ(root->id, data.focus_id);
+  EXPECT_EQ(root_window->window_id, data.focus_id);
 }
 
 TEST_F(AXTreeSourceArcTest, LiveRegion) {

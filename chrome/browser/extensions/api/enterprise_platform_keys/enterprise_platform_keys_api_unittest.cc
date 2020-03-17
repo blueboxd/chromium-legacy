@@ -41,7 +41,8 @@ void FakeRunCheckNotRegister(
     const std::string& key_name_for_spkac) {
   EXPECT_FALSE(register_key);
   std::move(callback).Run(
-      chromeos::attestation::TpmChallengeKeyResult::MakeResult("response"));
+      chromeos::attestation::TpmChallengeKeyResult::MakeChallengeResponse(
+          "response"));
 }
 
 class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {

@@ -17,8 +17,8 @@ import org.chromium.chrome.browser.password_manager.settings.PasswordSettings;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.ModelType;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
@@ -74,8 +74,7 @@ public class PasswordManagerLauncher {
     }
 
     public static boolean isSyncingPasswordsWithoutCustomPassphrase() {
-        ChromeSigninController signInController = ChromeSigninController.get();
-        if (signInController == null || !signInController.isSignedIn()) return false;
+        if (!IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount()) return false;
 
         ProfileSyncService profileSyncService = ProfileSyncService.get();
         if (profileSyncService == null

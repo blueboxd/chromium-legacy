@@ -174,6 +174,12 @@
   getPasswordCheckStatus() {}
 
   /**
+   * Requests to remove |compromisedCredential| from the password store.
+   * @param {!PasswordManagerProxy.CompromisedCredential} compromisedCredential
+   */
+  removeCompromisedCredential(compromisedCredential) {}
+
+  /**
    * Add an observer to the compromised passwords change.
    * @param {function(!PasswordManagerProxy.CompromisedCredentials):void}
    *      listener
@@ -391,6 +397,11 @@ PasswordManagerProxy.PasswordCheckStatus;
     return new Promise(resolve => {
       chrome.passwordsPrivate.getCompromisedCredentials(resolve);
     });
+  }
+
+  /** @override */
+  removeCompromisedCredential(compromisedCredential) {
+    chrome.passwordsPrivate.removeCompromisedCredential(compromisedCredential);
   }
 
   /** @override */

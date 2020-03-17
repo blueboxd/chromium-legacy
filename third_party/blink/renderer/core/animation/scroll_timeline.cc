@@ -119,8 +119,7 @@ ScrollTimeline* ScrollTimeline::Create(Document& document,
 
   return MakeGarbageCollected<ScrollTimeline>(
       &document, scroll_source, orientation, start_scroll_offset,
-      end_scroll_offset, options->timeRange().GetAsDouble(),
-      Timing::StringToFillMode(options->fill()));
+      end_scroll_offset, options->timeRange().GetAsDouble());
 }
 
 ScrollTimeline::ScrollTimeline(Document* document,
@@ -128,16 +127,14 @@ ScrollTimeline::ScrollTimeline(Document* document,
                                ScrollDirection orientation,
                                CSSPrimitiveValue* start_scroll_offset,
                                CSSPrimitiveValue* end_scroll_offset,
-                               double time_range,
-                               Timing::FillMode fill)
+                               double time_range)
     : AnimationTimeline(document),
       scroll_source_(scroll_source),
       resolved_scroll_source_(ResolveScrollSource(scroll_source_)),
       orientation_(orientation),
       start_scroll_offset_(start_scroll_offset),
       end_scroll_offset_(end_scroll_offset),
-      time_range_(time_range),
-      fill_(fill) {}
+      time_range_(time_range) {}
 
 bool ScrollTimeline::IsActive() const {
   LayoutBox* layout_box = resolved_scroll_source_
@@ -175,28 +172,18 @@ ScrollTimeline::PhaseAndTime ScrollTimeline::ComputePhaseAndCurrentTime()
   ResolveScrollStartAndEnd(layout_box, max_offset, resolved_start_scroll_offset,
                            resolved_end_scroll_offset);
 
+  // TODO(crbug.com/1060384): Once the spec has been updated to state what the
+  // expected result is when startScrollOffset >= endScrollOffset, we might need
+  // to add a special case here. See
+  // https://github.com/WICG/scroll-animations/issues/20
+
   // 3. If current scroll offset is less than startScrollOffset:
   if (current_offset < resolved_start_scroll_offset) {
-    // Return an unresolved time value if fill is none or forwards.
-    if (fill_ == Timing::FillMode::NONE || fill_ == Timing::FillMode::FORWARDS)
-      return {TimelinePhase::kBefore, base::nullopt};
-
-    // Otherwise, return 0.
     return {TimelinePhase::kBefore, base::TimeDelta()};
   }
 
   // 4. If current scroll offset is greater than or equal to endScrollOffset:
   if (current_offset >= resolved_end_scroll_offset) {
-    // If endScrollOffset is less than the maximum scroll offset of scrollSource
-    // in orientation and fill is none or backwards, return an unresolved time
-    // value.
-    if (resolved_end_scroll_offset < max_offset &&
-        (fill_ == Timing::FillMode::NONE ||
-         fill_ == Timing::FillMode::BACKWARDS)) {
-      return {TimelinePhase::kAfter, base::nullopt};
-    }
-
-    // Otherwise, return the effective time range.
     return {TimelinePhase::kAfter,
             base::TimeDelta::FromMillisecondsD(time_range_)};
   }
@@ -256,10 +243,6 @@ String ScrollTimeline::endScrollOffset() {
 
 void ScrollTimeline::timeRange(DoubleOrScrollTimelineAutoKeyword& result) {
   result.SetDouble(time_range_);
-}
-
-String ScrollTimeline::fill() {
-  return Timing::FillModeString(fill_);
 }
 
 void ScrollTimeline::GetCurrentAndMaxOffset(const LayoutBox* layout_box,

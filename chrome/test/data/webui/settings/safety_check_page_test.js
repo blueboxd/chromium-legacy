@@ -93,6 +93,13 @@ suite('SafetyCheckUiTests', function() {
     assertTrue(page.$$('#safetyCheckCollapse').opened);
   });
 
+  test('HappinessTrackingSurveysTest', function() {
+    const testHatsBrowserProxy = new TestHatsBrowserProxy();
+    settings.HatsBrowserProxyImpl.instance_ = testHatsBrowserProxy;
+    page.$$('#safetyCheckParentButton').click();
+    return testHatsBrowserProxy.whenCalled('tryShowSurvey');
+  });
+
   test('updatesCheckingUiTest', function() {
     fireSafetyCheckUpdatesEvent(settings.SafetyCheckUpdatesStatus.CHECKING);
     Polymer.dom.flush();

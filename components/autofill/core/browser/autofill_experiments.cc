@@ -262,8 +262,4 @@ bool OfferStoreUnmaskedCards(bool is_off_the_record) {
 #endif
 }
 
-bool IsAutofillSmsReceiverEnabled() {
-  return base::FeatureList::IsEnabled(features::kAutofillSmsReceiver);
-}
-
 }  // namespace autofill

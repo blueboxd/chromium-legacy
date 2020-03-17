@@ -24,7 +24,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -130,10 +129,6 @@ TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
           .SkipSettingsInitialization()
           .Build();
 
-  NetworkPropertiesManager network_properties_manager(
-      base::DefaultClock::GetInstance(), drp_test_context->pref_service());
-  drp_test_context->config()->SetNetworkPropertiesManagerForTesting(
-      &network_properties_manager);
 
   // The proxy is enabled initially.
   drp_test_context->config()->UpdateConfigForTesting(true, true, true);
@@ -162,10 +157,6 @@ TEST(DataReductionProxySettingsStandaloneTest, TestIsProxyEnabledOrManaged) {
           .SkipSettingsInitialization()
           .Build();
 
-  NetworkPropertiesManager network_properties_manager(
-      base::DefaultClock::GetInstance(), drp_test_context->pref_service());
-  drp_test_context->config()->SetNetworkPropertiesManagerForTesting(
-      &network_properties_manager);
   drp_test_context->InitSettings();
 
   DataReductionProxySettings* settings = drp_test_context->settings();
@@ -203,10 +194,6 @@ TEST(DataReductionProxySettingsStandaloneTest, TestCanUseDataReductionProxy) {
           .SkipSettingsInitialization()
           .Build();
 
-  NetworkPropertiesManager network_properties_manager(
-      base::DefaultClock::GetInstance(), drp_test_context->pref_service());
-  drp_test_context->config()->SetNetworkPropertiesManagerForTesting(
-      &network_properties_manager);
   drp_test_context->InitSettings();
 
   MockDataReductionProxyService* mock_service =
@@ -236,10 +223,6 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
   // Initialize the pref member in |settings_| without the usual callback
   // so it won't trigger MaybeActivateDataReductionProxy when the pref value
   // is set.
-  NetworkPropertiesManager network_properties_manager(
-      base::DefaultClock::GetInstance(), test_context_->pref_service());
-  test_context_->config()->SetNetworkPropertiesManagerForTesting(
-      &network_properties_manager);
 
   // TODO(bengr): Test enabling/disabling while a secure proxy check is
   // outstanding.
@@ -404,11 +387,6 @@ TEST(DataReductionProxySettingsStandaloneTest,
           .WithMockDataReductionProxyService()
           .SkipSettingsInitialization()
           .Build();
-
-  NetworkPropertiesManager network_properties_manager(
-      base::DefaultClock::GetInstance(), drp_test_context->pref_service());
-  drp_test_context->config()->SetNetworkPropertiesManagerForTesting(
-      &network_properties_manager);
 
   // The proxy is enabled initially.
   drp_test_context->config()->UpdateConfigForTesting(true, true, true);

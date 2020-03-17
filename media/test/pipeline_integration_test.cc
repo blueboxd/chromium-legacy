@@ -37,46 +37,16 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
-#if defined(MOJO_RENDERER)
-#include "media/mojo/clients/mojo_renderer.h"
-#include "media/mojo/mojom/interface_factory.mojom.h"
-#include "media/mojo/mojom/renderer.mojom.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/service_manager/public/cpp/manifest_builder.h"  // nogncheck
-#include "services/service_manager/public/cpp/test/test_service.h"  // nogncheck
-#include "services/service_manager/public/cpp/test/test_service_manager.h"  // nogncheck
-
-// TODO(dalecurtis): The mojo renderer is in another process, so we have no way
-// currently to get hashes for video and audio samples.  This also means that
-// real audio plays out for each test.
-#define EXPECT_HASH_EQ(a, b)
-#define EXPECT_VIDEO_FORMAT_EQ(a, b)
-#define EXPECT_COLOR_SPACE_EQ(a, b)
-
-// TODO(xhwang): EME support is not complete for the mojo renderer, so all
-// encrypted tests are currently disabled.
-#define DISABLE_EME_TESTS 1
-
-// TODO(xhwang,dalecurtis): Text tracks are not currently supported by the mojo
-// renderer.
-#define DISABLE_TEXT_TRACK_TESTS 1
-
-#else
 #define EXPECT_HASH_EQ(a, b) EXPECT_EQ(a, b)
 #define EXPECT_VIDEO_FORMAT_EQ(a, b) EXPECT_EQ(a, b)
 #define EXPECT_COLOR_SPACE_EQ(a, b) EXPECT_EQ(a, b)
-#endif  // defined(MOJO_RENDERER)
 
+// TODO(xhwang): Currently DISABLE_EME_TESTS is not defined and EME tests are
+// not disabled. Check whether we still need it.
 #if defined(DISABLE_EME_TESTS)
 #define MAYBE_EME(test) DISABLED_##test
 #else
 #define MAYBE_EME(test) test
-#endif
-
-#if defined(DISABLE_TEXT_TRACK_TESTS)
-#define MAYBE_TEXT(test) DISABLED_##test
-#else
-#define MAYBE_TEXT(test) test
 #endif
 
 using ::testing::_;
@@ -101,7 +71,6 @@ const int k640WebMFileDurationMs = 2762;
 const int kVP9WebMFileDurationMs = 2736;
 const int kVP8AWebMFileDurationMs = 2734;
 
-#if !defined(MOJO_RENDERER)
 static const char kSfxLosslessHash[] = "3.03,2.86,2.99,3.31,3.57,4.06,";
 
 #if defined(OPUS_FIXED_POINT)
@@ -152,7 +121,6 @@ static const char kOpusSmallCodecDelayHash_2[] =
 // For BasicPlaybackOpusWebmHashed_MonoOutput test case.
 static const char kOpusMonoOutputHash[] = "-2.36,-1.64,0.84,1.55,1.51,-0.90,";
 #endif  // defined(OPUS_FIXED_POINT)
-#endif  // !defined(MOJO_RENDERER)
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const int k640IsoCencFileDurationMs = 2769;

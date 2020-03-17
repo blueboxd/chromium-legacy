@@ -35,9 +35,7 @@ SkiaOutputDeviceDawn::SkiaOutputDeviceDawn(
     gfx::SurfaceOrigin origin,
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(/*need_swap_semaphore=*/false,
-                       memory_tracker,
-                       did_swap_buffer_complete_callback),
+    : SkiaOutputDevice(memory_tracker, did_swap_buffer_complete_callback),
       context_provider_(context_provider),
       widget_(widget) {
   capabilities_.output_surface_origin = origin;
@@ -85,7 +83,8 @@ void SkiaOutputDeviceDawn::SwapBuffers(
                     std::move(latency_info));
 }
 
-SkSurface* SkiaOutputDeviceDawn::BeginPaint() {
+SkSurface* SkiaOutputDeviceDawn::BeginPaint(
+    std::vector<GrBackendSemaphore>* end_semaphores) {
   GrDawnRenderTargetInfo info;
   info.fTextureView = swap_chain_.GetCurrentTextureView();
   info.fFormat = kSwapChainFormat;
@@ -105,7 +104,7 @@ SkSurface* SkiaOutputDeviceDawn::BeginPaint() {
   return sk_surface_.get();
 }
 
-void SkiaOutputDeviceDawn::EndPaint(const GrBackendSemaphore& semaphore) {
+void SkiaOutputDeviceDawn::EndPaint() {
   GrFlushInfo flush_info;
   sk_surface_->flush(SkSurface::BackendSurfaceAccess::kPresent, flush_info);
   sk_surface_.reset();

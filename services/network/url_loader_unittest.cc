@@ -2599,7 +2599,7 @@ class MockNetworkServiceClient : public TestNetworkServiceClient {
     }
   }
 
-  void LogRapporSampleForCrossOriginFetchFromContentScript3(
+  void LogCrossOriginFetchFromContentScript3(
       const std::string& isolated_world_host) override {}
 
   void WaitUntilRawResponse(size_t goal) {

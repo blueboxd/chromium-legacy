@@ -68,35 +68,34 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
   BeginFrameProviderParams begin_frame_provider_params =
       creation_params->begin_frame_provider_params;
 
-  // Off-the-main-thread worker script fetch:
-  // Initialize() is called after script fetch.
-  if (creation_params->off_main_thread_fetch_option ==
-      OffMainThreadWorkerScriptFetchOption::kEnabled) {
-    return MakeGarbageCollected<DedicatedWorkerGlobalScope>(
-        std::move(creation_params), thread, time_origin,
-        std::move(outside_origin_trial_tokens), begin_frame_provider_params);
-  }
-
-  // Legacy on-the-main-thread worker script fetch (to be removed):
   KURL response_script_url = creation_params->script_url;
   network::mojom::ReferrerPolicy response_referrer_policy =
       creation_params->referrer_policy;
-  network::mojom::IPAddressSpace response_address_space =
-      *creation_params->response_address_space;
+  base::Optional<network::mojom::IPAddressSpace> response_address_space =
+      creation_params->response_address_space;
+
   auto* global_scope = MakeGarbageCollected<DedicatedWorkerGlobalScope>(
       std::move(creation_params), thread, time_origin,
       std::move(outside_origin_trial_tokens), begin_frame_provider_params);
-  // Pass dummy CSP headers here as it is superseded by outside's CSP headers in
-  // Initialize().
-  // Pass dummy origin trial tokens here as it is already set to outside's
-  // origin trial tokens in DedicatedWorkerGlobalScope's constructor.
-  // Pass kAppCacheNoCacheId here as on-the-main-thread script fetch doesn't
-  // have its own appcache and instead depends on the parent frame's one.
-  global_scope->Initialize(response_script_url, response_referrer_policy,
-                           response_address_space, Vector<CSPHeaderAndType>(),
-                           nullptr /* response_origin_trial_tokens */,
-                           mojom::blink::kAppCacheNoCacheId);
-  return global_scope;
+
+  if (global_scope->IsOffMainThreadScriptFetchDisabled()) {
+    // Legacy on-the-main-thread worker script fetch (to be removed):
+    // Pass dummy CSP headers here as it is superseded by outside's CSP headers
+    // in Initialize().
+    // Pass dummy origin trial tokens here as it is already set to outside's
+    // origin trial tokens in DedicatedWorkerGlobalScope's constructor.
+    // Pass kAppCacheNoCacheId here as on-the-main-thread script fetch doesn't
+    // have its own appcache and instead depends on the parent frame's one.
+    global_scope->Initialize(
+        response_script_url, response_referrer_policy, *response_address_space,
+        Vector<CSPHeaderAndType>(), nullptr /* response_origin_trial_tokens */,
+        mojom::blink::kAppCacheNoCacheId);
+    return global_scope;
+  } else {
+    // Off-the-main-thread worker script fetch:
+    // Initialize() is called after script fetch.
+    return global_scope;
+  }
 }
 
 DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
@@ -223,6 +222,16 @@ void DedicatedWorkerGlobalScope::FetchAndRunModuleScript(
                     ModuleScriptCustomFetchType::kWorkerConstructor,
                     MakeGarbageCollected<WorkerModuleTreeClient>(
                         ScriptController()->GetScriptState()));
+}
+
+bool DedicatedWorkerGlobalScope::IsOffMainThreadScriptFetchDisabled() {
+  // The top-level dedicated worker script is loaded on the main thread when the
+  // script type is classic and PlzDedicatedWorker (off-the-main-thread script
+  // fetch) is disabled.
+  // TODO(https://crbug.com/835717): Remove this function after dedicated
+  // workers support off-the-main-thread script fetch by default.
+  return GetScriptType() == mojom::blink::ScriptType::kClassic &&
+         !base::FeatureList::IsEnabled(features::kPlzDedicatedWorker);
 }
 
 const String DedicatedWorkerGlobalScope::name() const {

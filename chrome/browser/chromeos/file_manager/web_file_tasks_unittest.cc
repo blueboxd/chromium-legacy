@@ -45,11 +45,12 @@ class WebFileTasksTest : public testing::Test {
     app_provider_->Start();
   }
 
-  void InstallFileHandler(const web_app::AppId& app_id,
-                          const GURL& install_url,
-                          const std::vector<std::string> accepts) {
+  void InstallFileHandler(
+      const web_app::AppId& app_id,
+      const GURL& install_url,
+      const web_app::TestFileHandlerManager::AcceptMap& accept) {
     app_registrar_->AddExternalApp(app_id, {install_url});
-    file_handler_manager_->InstallFileHandler(app_id, install_url, accepts);
+    file_handler_manager_->InstallFileHandler(app_id, install_url, accept);
   }
 
   Profile* profile() { return &profile_; }
@@ -68,7 +69,7 @@ class WebFileTasksTest : public testing::Test {
 TEST_F(WebFileTasksTest, WebAppFileHandlingCanBeDisabledByFlag) {
   const char kGraphrId[] = "graphr-app-id";
   const char kGraphrAction[] = "https://graphr.tld/csv";
-  InstallFileHandler(kGraphrId, GURL(kGraphrAction), {".csv", "text/csv"});
+  InstallFileHandler(kGraphrId, GURL(kGraphrAction), {{"text/csv", {".csv"}}});
 
   std::vector<extensions::EntryInfo> entries;
   entries.emplace_back(
@@ -125,8 +126,8 @@ TEST_F(WebFileTasksTest, DisabledFileHandlersAreNotVisible) {
                                         blink::features::kFileHandlingAPI},
                                        {});
 
-  InstallFileHandler(kGraphrId, GURL(kGraphrAction), {".csv", "text/csv"});
-  InstallFileHandler(kFooId, GURL(kFooAction), {".csv", "text/csv"});
+  InstallFileHandler(kGraphrId, GURL(kGraphrAction), {{"text/csv", {".csv"}}});
+  InstallFileHandler(kFooId, GURL(kFooAction), {{"text/csv", {".csv"}}});
 
   std::vector<extensions::EntryInfo> entries;
   entries.emplace_back(
@@ -160,9 +161,10 @@ TEST_F(WebFileTasksTest, FindWebFileHandlerTasks) {
   const char kBarAction[] = "https://bar.tld/files";
 
   // Foo can handle "text/plain" and "text/html".
-  InstallFileHandler(kFooId, GURL(kFooAction), {"text/plain", "text/html"});
+  InstallFileHandler(kFooId, GURL(kFooAction),
+                     {{"text/plain", {".txt"}}, {"text/html", {".html"}}});
   // Bar can only handle "text/plain".
-  InstallFileHandler(kBarId, GURL(kBarAction), {"text/plain"});
+  InstallFileHandler(kBarId, GURL(kBarAction), {{"text/plain", {".txt"}}});
 
   // Find apps for a "text/plain" file. Both Foo and Bar should be found.
   std::vector<extensions::EntryInfo> entries;
@@ -222,18 +224,18 @@ TEST_F(WebFileTasksTest, FindWebFileHandlerTask_Generic) {
   };
 
   // Bar provides a file handler for .txt files, and has no generic handler.
-  InstallFileHandler(kBarId, GURL(kBarAction), {".txt"});
+  InstallFileHandler(kBarId, GURL(kBarAction), {{"text/plain", {".txt"}}});
 
   // Baz provides a file handler for all extensions and all images.
-  InstallFileHandler(kBazId, GURL(kBazAction), {".*"});
-  InstallFileHandler(kBazId, GURL(kBazAction), {"image/*"});
+  InstallFileHandler(kBazId, GURL(kBazAction), {{"*/*", {".*"}}});
+  InstallFileHandler(kBazId, GURL(kBazAction), {{"image/*", {".*"}}});
 
   // Foo provides a file handler for "text/plain" and "*/*" <-- All file types.
-  InstallFileHandler(kFooId, GURL(kFooAction), {"text/plain"});
-  InstallFileHandler(kFooId, GURL(kFooAction), {"*/*"});
+  InstallFileHandler(kFooId, GURL(kFooAction), {{"text/plain", {".txt"}}});
+  InstallFileHandler(kFooId, GURL(kFooAction), {{"*/*", {".*"}}});
 
   // Qux provides a file handler for all file types.
-  InstallFileHandler(kQuxId, GURL(kQuxAction), {"*"});
+  InstallFileHandler(kQuxId, GURL(kQuxAction), {{"*", {".*"}}});
 
   std::vector<extensions::EntryInfo> entries;
   std::vector<FullTaskDescriptor> tasks;

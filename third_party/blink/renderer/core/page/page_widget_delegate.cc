@@ -60,14 +60,13 @@ void PageWidgetDelegate::PostAnimate(Page& page) {
   page.Animator().PostAnimate();
 }
 
-void PageWidgetDelegate::UpdateLifecycle(
-    Page& page,
-    LocalFrame& root,
-    WebWidget::LifecycleUpdate requested_update,
-    DocumentUpdateReason reason) {
-  if (requested_update == WebWidget::LifecycleUpdate::kLayout) {
+void PageWidgetDelegate::UpdateLifecycle(Page& page,
+                                         LocalFrame& root,
+                                         WebLifecycleUpdate requested_update,
+                                         DocumentUpdateReason reason) {
+  if (requested_update == WebLifecycleUpdate::kLayout) {
     page.Animator().UpdateLifecycleToLayoutClean(root, reason);
-  } else if (requested_update == WebWidget::LifecycleUpdate::kPrePaint) {
+  } else if (requested_update == WebLifecycleUpdate::kPrePaint) {
     page.Animator().UpdateAllLifecyclePhasesExceptPaint(root, reason);
   } else {
     page.Animator().UpdateAllLifecyclePhases(root, reason);

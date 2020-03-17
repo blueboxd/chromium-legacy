@@ -12,47 +12,97 @@
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_file_handler_manager.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "url/gurl.h"
 
 namespace web_app {
 
 TEST(FileHandlerUtilsTest, GetFileExtensionsFromFileHandlers) {
-  // Construct FileHandlerInfo vector with multiple file extensions.
-  const std::vector<std::string> test_file_extensions = {"txt", "xls", "doc"};
-  apps::FileHandlerInfo fhi1;
-  apps::FileHandlerInfo fhi2;
-  fhi1.extensions.insert(test_file_extensions[0]);
-  fhi1.extensions.insert(test_file_extensions[1]);
-  fhi2.extensions.insert(test_file_extensions[2]);
-  std::vector<apps::FileHandlerInfo> file_handlers = {fhi1, fhi2};
+  apps::FileHandlers file_handlers;
+
+  {
+    apps::FileHandler file_handler;
+    file_handler.action = GURL("https://app.site/open-foo");
+    {
+      apps::FileHandler::AcceptEntry accept_entry;
+      accept_entry.mime_type = "application/foo";
+      accept_entry.file_extensions.insert(".foo");
+      file_handler.accept.push_back(accept_entry);
+    }
+    {
+      apps::FileHandler::AcceptEntry accept_entry;
+      accept_entry.mime_type = "application/foobar";
+      accept_entry.file_extensions.insert(".foobar");
+      file_handler.accept.push_back(accept_entry);
+    }
+    file_handlers.push_back(file_handler);
+  }
+
+  {
+    apps::FileHandler file_handler;
+    file_handler.action = GURL("https://app.site/open-bar");
+    {
+      apps::FileHandler::AcceptEntry accept_entry;
+      accept_entry.mime_type = "application/bar";
+      accept_entry.file_extensions.insert(".bar");
+      accept_entry.file_extensions.insert(".baz");
+      file_handler.accept.push_back(accept_entry);
+    }
+    file_handlers.push_back(file_handler);
+  }
+
   std::set<std::string> file_extensions =
       GetFileExtensionsFromFileHandlers(file_handlers);
 
-  EXPECT_EQ(file_extensions.size(), test_file_extensions.size());
-  for (const auto& test_file_extension : test_file_extensions) {
-    EXPECT_TRUE(file_extensions.find(test_file_extension) !=
-                file_extensions.end());
-  }
+  EXPECT_EQ(4u, file_extensions.size());
+  EXPECT_THAT(file_extensions,
+              testing::UnorderedElementsAre(".foo", ".foobar", ".bar", ".baz"));
 }
 
 TEST(FileHandlerUtilsTest, GetMimeTypesFromFileHandlers) {
-  // Construct FileHandlerInfo vector with multiple mime types.
-  const std::vector<std::string> test_mime_types = {
-      "text/plain", "image/png", "application/vnd.my-app.file"};
-  apps::FileHandlerInfo fhi1;
-  apps::FileHandlerInfo fhi2;
-  fhi1.types.insert(test_mime_types[0]);
-  fhi1.types.insert(test_mime_types[1]);
-  fhi2.types.insert(test_mime_types[2]);
-  std::vector<apps::FileHandlerInfo> file_handlers = {fhi1, fhi2};
+  apps::FileHandlers file_handlers;
+
+  {
+    apps::FileHandler file_handler;
+    file_handler.action = GURL("https://app.site/open-foo");
+    {
+      apps::FileHandler::AcceptEntry accept_entry;
+      accept_entry.mime_type = "application/foo";
+      accept_entry.file_extensions.insert(".foo");
+      file_handler.accept.push_back(accept_entry);
+    }
+    {
+      apps::FileHandler::AcceptEntry accept_entry;
+      accept_entry.mime_type = "application/foobar";
+      accept_entry.file_extensions.insert(".foobar");
+      file_handler.accept.push_back(accept_entry);
+    }
+    file_handlers.push_back(file_handler);
+  }
+
+  {
+    apps::FileHandler file_handler;
+    file_handler.action = GURL("https://app.site/open-bar");
+    {
+      apps::FileHandler::AcceptEntry accept_entry;
+      accept_entry.mime_type = "application/bar";
+      accept_entry.file_extensions.insert(".bar");
+      accept_entry.file_extensions.insert(".baz");
+      file_handler.accept.push_back(accept_entry);
+    }
+    file_handlers.push_back(file_handler);
+  }
+
   std::set<std::string> mime_types =
       GetMimeTypesFromFileHandlers(file_handlers);
 
-  EXPECT_EQ(mime_types.size(), test_mime_types.size());
-  for (const auto& test_mime_type : test_mime_types) {
-    EXPECT_TRUE(mime_types.find(test_mime_type) != mime_types.end());
-  }
+  EXPECT_EQ(3u, mime_types.size());
+  EXPECT_THAT(mime_types,
+              testing::UnorderedElementsAre(
+                  "application/foo", "application/foobar", "application/bar"));
 }
 
 class FileHandlerManagerTest : public WebAppTest {
@@ -82,13 +132,15 @@ class FileHandlerManagerTest : public WebAppTest {
 TEST_F(FileHandlerManagerTest, FileHandlersAreNotAvailableUnlessEnabled) {
   const AppId app_id = "app-id";
 
-  file_handler_manager().InstallFileHandler(
-      app_id, GURL("https://app.site/handle-foo"), {".foo", "application/foo"},
-      /*enable=*/false);
+  file_handler_manager().InstallFileHandler(app_id,
+                                            GURL("https://app.site/handle-foo"),
+                                            {{"application/foo", {".foo"}}},
+                                            /*enable=*/false);
 
-  file_handler_manager().InstallFileHandler(
-      app_id, GURL("https://app.site/handle-bar"), {".bar", "application/bar"},
-      /*enable=*/false);
+  file_handler_manager().InstallFileHandler(app_id,
+                                            GURL("https://app.site/handle-bar"),
+                                            {{"application/bar", {".bar"}}},
+                                            /*enable=*/false);
 
   // File handlers are disabled by default.
   {
@@ -127,6 +179,10 @@ TEST_F(FileHandlerManagerTest, NoHandlersRegistered) {
 TEST_F(FileHandlerManagerTest, NoLaunchFilesPassed) {
   const AppId app_id = "app-id";
 
+  file_handler_manager().InstallFileHandler(app_id,
+                                            GURL("https://app.site/handle-foo"),
+                                            {{"application/foo", {".foo"}}});
+
   // Returns nullopt when no launch files are passed.
   EXPECT_EQ(base::nullopt,
             file_handler_manager().GetMatchingFileHandlerURL(app_id, {}));
@@ -136,7 +192,8 @@ TEST_F(FileHandlerManagerTest, SingleValidExtensionSingleExtensionHandler) {
   const AppId app_id = "app-id";
   const GURL url("https://app.site/handle-foo");
 
-  file_handler_manager().InstallFileHandler(app_id, url, {".foo"});
+  file_handler_manager().InstallFileHandler(app_id, url,
+                                            {{"application/foo", {".foo"}}});
 
   // Matches on single valid extension.
   const base::FilePath path(FILE_PATH_LITERAL("file.foo"));
@@ -148,7 +205,8 @@ TEST_F(FileHandlerManagerTest, SingleInvalidExtensionSingleExtensionHandler) {
   const AppId app_id = "app-id";
   const GURL url("https://app.site/handle-foo");
 
-  file_handler_manager().InstallFileHandler(app_id, url, {".foo"});
+  file_handler_manager().InstallFileHandler(app_id, url,
+                                            {{"application/foo", {".foo"}}});
 
   // Returns nullopt on single invalid extension.
   const base::FilePath path(FILE_PATH_LITERAL("file.bar"));
@@ -160,7 +218,9 @@ TEST_F(FileHandlerManagerTest, SingleValidExtensionMultiExtensionHandler) {
   const AppId app_id = "app-id";
   const GURL url("https://app.site/handle-foo");
 
-  file_handler_manager().InstallFileHandler(app_id, url, {".foo", ".bar"});
+  file_handler_manager().InstallFileHandler(
+      app_id, GURL("https://app.site/handle-foo"),
+      {{"application/foo", {".foo"}}, {"application/bar", {".bar"}}});
 
   // Matches on single valid extension for multi-extension handler.
   const base::FilePath path(FILE_PATH_LITERAL("file.foo"));
@@ -172,7 +232,9 @@ TEST_F(FileHandlerManagerTest, MultipleValidExtensions) {
   const AppId app_id = "app-id";
   const GURL url("https://app.site/handle-foo");
 
-  file_handler_manager().InstallFileHandler(app_id, url, {".foo", ".bar"});
+  file_handler_manager().InstallFileHandler(
+      app_id, GURL("https://app.site/handle-foo"),
+      {{"application/foo", {".foo"}}, {"application/bar", {".bar"}}});
 
   // Matches on multiple valid extensions for multi-extension handler.
   const base::FilePath path1(FILE_PATH_LITERAL("file.foo"));
@@ -185,7 +247,8 @@ TEST_F(FileHandlerManagerTest, PartialExtensionMatch) {
   const AppId app_id = "app-id";
   const GURL url("https://app.site/handle-foo");
 
-  file_handler_manager().InstallFileHandler(app_id, url, {".foo"});
+  file_handler_manager().InstallFileHandler(app_id, url,
+                                            {{"application/foo", {".foo"}}});
 
   // Returns nullopt on partial extension match.
   const base::FilePath path1(FILE_PATH_LITERAL("file.foo"));
@@ -198,7 +261,8 @@ TEST_F(FileHandlerManagerTest, SingleFileWithoutExtension) {
   const AppId app_id = "app-id";
   const GURL url("https://app.site/handle-foo");
 
-  file_handler_manager().InstallFileHandler(app_id, url, {".foo"});
+  file_handler_manager().InstallFileHandler(app_id, url,
+                                            {{"application/foo", {".foo"}}});
 
   // Returns nullopt where a file has no extension.
   const base::FilePath path(FILE_PATH_LITERAL("file"));
@@ -210,7 +274,8 @@ TEST_F(FileHandlerManagerTest, FileWithoutExtensionAmongMultipleFiles) {
   const AppId app_id = "app-id";
   const GURL url("https://app.site/handle-foo");
 
-  file_handler_manager().InstallFileHandler(app_id, url, {".foo"});
+  file_handler_manager().InstallFileHandler(app_id, url,
+                                            {{"application/foo", {".foo"}}});
 
   // Returns nullopt where one file has no extension while others do.
   const base::FilePath path1(FILE_PATH_LITERAL("file"));

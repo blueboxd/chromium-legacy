@@ -42,14 +42,10 @@ const size_t kBitsPerSampleOffset = 14;
 const size_t kValidBitsPerSampleOffset = 18;
 const size_t kSubFormatOffset = 24;
 
-// Some constants for audio format.
-const int kAudioFormatPCM = 1;
-const int kAudioFormatExtensible = 0xfffe;
-
 // A convenience struct for passing WAV parameters around. AudioParameters is
 // too heavyweight for this. Keep this class internal to this implementation.
 struct WavAudioParameters {
-  int audio_format;
+  WavAudioHandler::AudioFormat audio_format;
   uint16_t num_channels;
   uint32_t sample_rate;
   uint16_t bits_per_sample;
@@ -58,15 +54,25 @@ struct WavAudioParameters {
 };
 
 bool ParamsAreValid(const WavAudioParameters& params) {
-  const uint16_t bytes_per_sample = params.bits_per_sample / 8;
-  return (params.audio_format == kAudioFormatPCM && params.num_channels != 0u &&
-          params.num_channels <= static_cast<uint16_t>(limits::kMaxChannels) &&
-          params.sample_rate != 0u && params.bits_per_sample != 0u &&
-          params.bits_per_sample % 8u == 0u &&
-          (bytes_per_sample == 1 || bytes_per_sample == 2 ||
-           bytes_per_sample == 4) &&
-          (!params.is_extensible ||
-           params.valid_bits_per_sample == params.bits_per_sample));
+  return (
+      // Check number of channels
+      params.num_channels != 0u &&
+      params.num_channels <= static_cast<uint16_t>(limits::kMaxChannels) &&
+      // Check sample rate
+      params.sample_rate != 0u &&
+      (
+          // Check bits per second for PCM data
+          (params.audio_format ==
+               WavAudioHandler::AudioFormat::kAudioFormatPCM &&
+           (params.bits_per_sample == 8u || params.bits_per_sample == 16u ||
+            params.bits_per_sample == 32u)) ||
+          // Check bits per second for float data
+          (params.audio_format ==
+               WavAudioHandler::AudioFormat::kAudioFormatFloat &&
+           (params.bits_per_sample == 32u || params.bits_per_sample == 64u))) &&
+      // Check extensible format bps
+      (!params.is_extensible ||
+       params.valid_bits_per_sample == params.bits_per_sample));
 }
 
 // Reads an integer from |data| with |offset|.
@@ -92,19 +98,22 @@ bool ParseFmtChunk(const base::StringPiece data, WavAudioParameters* params) {
   }
 
   // Read in serialized parameters.
-  params->audio_format = ReadInt<uint16_t>(data, kAudioFormatOffset);
+  params->audio_format =
+      ReadInt<WavAudioHandler::AudioFormat>(data, kAudioFormatOffset);
   params->num_channels = ReadInt<uint16_t>(data, kChannelOffset);
   params->sample_rate = ReadInt<uint32_t>(data, kSampleRateOffset);
   params->bits_per_sample = ReadInt<uint16_t>(data, kBitsPerSampleOffset);
 
-  if (params->audio_format == kAudioFormatExtensible) {
+  if (params->audio_format ==
+      WavAudioHandler::AudioFormat::kAudioFormatExtensible) {
     if (data.size() < kFmtChunkExtensibleMinimumSize) {
       LOG(ERROR) << "Data size " << data.size() << " is too short.";
       return false;
     }
 
     params->is_extensible = true;
-    params->audio_format = ReadInt<uint16_t>(data, kSubFormatOffset);
+    params->audio_format =
+        ReadInt<WavAudioHandler::AudioFormat>(data, kSubFormatOffset);
     params->valid_bits_per_sample =
         ReadInt<uint16_t>(data, kValidBitsPerSampleOffset);
   } else {
@@ -192,11 +201,13 @@ bool ParseWavData(const base::StringPiece wav_data,
 WavAudioHandler::WavAudioHandler(base::StringPiece audio_data,
                                  uint16_t num_channels,
                                  uint32_t sample_rate,
-                                 uint16_t bits_per_sample)
+                                 uint16_t bits_per_sample,
+                                 AudioFormat audio_format)
     : data_(audio_data),
       num_channels_(num_channels),
       sample_rate_(sample_rate),
-      bits_per_sample_(bits_per_sample) {
+      bits_per_sample_(bits_per_sample),
+      audio_format_(audio_format) {
   DCHECK_NE(num_channels_, 0u);
   DCHECK_NE(sample_rate_, 0u);
   DCHECK_NE(bits_per_sample_, 0u);
@@ -215,9 +226,9 @@ std::unique_ptr<WavAudioHandler> WavAudioHandler::Create(
   if (!ParseWavData(wav_data, &audio_data, &params))
     return nullptr;
 
-  return base::WrapUnique(new WavAudioHandler(audio_data, params.num_channels,
-                                              params.sample_rate,
-                                              params.bits_per_sample));
+  return base::WrapUnique(
+      new WavAudioHandler(audio_data, params.num_channels, params.sample_rate,
+                          params.bits_per_sample, params.audio_format));
 }
 
 bool WavAudioHandler::AtEnd(size_t cursor) const {
@@ -240,8 +251,53 @@ bool WavAudioHandler::CopyTo(AudioBus* bus,
   const int bytes_per_frame = num_channels_ * bits_per_sample_ / 8;
   const int remaining_frames = (data_.size() - cursor) / bytes_per_frame;
   const int frames = std::min(bus->frames(), remaining_frames);
+  const auto* source = data_.data() + cursor;
 
-  bus->FromInterleaved(data_.data() + cursor, frames, bits_per_sample_ / 8);
+  switch (audio_format_) {
+    case AudioFormat::kAudioFormatPCM:
+      switch (bits_per_sample_) {
+        case 8:
+          bus->FromInterleaved<UnsignedInt8SampleTypeTraits>(
+              reinterpret_cast<const uint8_t*>(source), frames);
+          break;
+        case 16:
+          bus->FromInterleaved<SignedInt16SampleTypeTraits>(
+              reinterpret_cast<const int16_t*>(source), frames);
+          break;
+        case 32:
+          bus->FromInterleaved<SignedInt32SampleTypeTraits>(
+              reinterpret_cast<const int32_t*>(source), frames);
+          break;
+        default:
+          NOTREACHED()
+              << "Unsupported bytes per sample encountered for integer PCM: "
+              << bytes_per_frame;
+          bus->ZeroFrames(frames);
+      }
+      break;
+    case AudioFormat::kAudioFormatFloat:
+      switch (bits_per_sample_) {
+        case 32:
+          bus->FromInterleaved<Float32SampleTypeTraitsNoClip>(
+              reinterpret_cast<const float*>(source), frames);
+          break;
+        case 64:
+          bus->FromInterleaved<Float64SampleTypeTraits>(
+              reinterpret_cast<const double*>(source), frames);
+          break;
+        default:
+          NOTREACHED()
+              << "Unsupported bytes per sample encountered for float PCM: "
+              << bytes_per_frame;
+          bus->ZeroFrames(frames);
+      }
+      break;
+    default:
+      NOTREACHED() << "Unsupported audio format encountered: "
+                   << static_cast<uint16_t>(audio_format_);
+      bus->ZeroFrames(frames);
+  }
+
   *bytes_written = frames * bytes_per_frame;
   bus->ZeroFramesPartial(frames, bus->frames() - frames);
   return true;

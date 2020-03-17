@@ -428,7 +428,7 @@ SkColor CustomTabBarView::GetDefaultFrameColor() const {
   return ash::kDefaultFrameColor;
 #else
   return ThemeProperties::GetDefaultColor(
-      ThemeProperties::COLOR_FRAME, false,
+      ThemeProperties::COLOR_FRAME_ACTIVE, false,
       GetNativeTheme()->ShouldUseDarkColors());
 #endif
 }

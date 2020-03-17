@@ -169,11 +169,13 @@ class VideoFrameSubmitterTest : public testing::Test {
     task_environment_.RunUntilIdle();
   }
 
-  void MakeSubmitter() {
+  void MakeSubmitter() { MakeSubmitter(base::DoNothing()); }
+
+  void MakeSubmitter(cc::PlaybackRoughnessReportingCallback reporting_cb) {
     resource_provider_ = new StrictMock<MockVideoFrameResourceProvider>(
         context_provider_.get(), nullptr);
     submitter_ = std::make_unique<VideoFrameSubmitter>(
-        base::DoNothing(),
+        base::DoNothing(), reporting_cb,
         base::WrapUnique<MockVideoFrameResourceProvider>(resource_provider_));
 
     submitter_->Initialize(video_frame_provider_.get());
@@ -685,7 +687,7 @@ TEST_F(VideoFrameSubmitterTest, StopUsingProviderDuringContextLost) {
 }
 
 // Test the behaviour of the ChildLocalSurfaceIdAllocator instance. It checks
-// that the LocalSurfaceId is propoerly set at creation and updated when the
+// that the LocalSurfaceId is properly set at creation and updated when the
 // video frames change.
 TEST_F(VideoFrameSubmitterTest, FrameSizeChangeUpdatesLocalSurfaceId) {
   {

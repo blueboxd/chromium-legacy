@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_VR_SERVICE_ISOLATED_DEVICE_PROVIDER_H_
 
 #include "base/containers/flat_map.h"
-#include "chrome/browser/vr/vr_export.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom-forward.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_provider.h"
@@ -14,11 +13,13 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
+namespace content {
+class VrUiHost;
+}
+
 namespace vr {
 
-class VRUiHost;
-
-class VR_EXPORT IsolatedVRDeviceProvider
+class IsolatedVRDeviceProvider
     : public device::VRDeviceProvider,
       public device::mojom::IsolatedXRRuntimeProviderClient {
  public:
@@ -63,8 +64,8 @@ class VR_EXPORT IsolatedVRDeviceProvider
   mojo::Receiver<device::mojom::IsolatedXRRuntimeProviderClient> receiver_{
       this};
 
-  using UiHostMap =
-      base::flat_map<device::mojom::XRDeviceId, std::unique_ptr<VRUiHost>>;
+  using UiHostMap = base::flat_map<device::mojom::XRDeviceId,
+                                   std::unique_ptr<content::VrUiHost>>;
   UiHostMap ui_host_map_;
 };
 

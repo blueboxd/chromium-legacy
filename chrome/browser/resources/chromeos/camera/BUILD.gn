@@ -23,6 +23,7 @@ group("chrome_camera_app") {
     ":chrome_camera_app_js",
     ":chrome_camera_app_js_browser_proxy",
     ":chrome_camera_app_js_device",
+    ":chrome_camera_app_js_lib",
     ":chrome_camera_app_js_models",
     ":chrome_camera_app_js_mojo",
     ":chrome_camera_app_js_views",
@@ -100,7 +101,6 @@ copy("chrome_camera_app_js") {
     "src/js/background_ops.js",
     "src/js/chrome_util.js",
     "src/js/gallerybutton.js",
-    "src/js/google-analytics-bundle.js",
     "src/js/intent.js",
     "src/js/main.js",
     "src/js/metrics.js",
@@ -136,6 +136,14 @@ copy("chrome_camera_app_js_device") {
   ]
 
   outputs = [ "$chrome_camera_app_dir/js/device/{{source_file_part}}" ]
+}
+
+copy("chrome_camera_app_js_lib") {
+  sources = [
+    "src/js/lib/google-analytics-bundle.js",
+  ]
+
+  outputs = [ "$chrome_camera_app_dir/js/lib/{{source_file_part}}" ]
 }
 
 copy("chrome_camera_app_js_models") {

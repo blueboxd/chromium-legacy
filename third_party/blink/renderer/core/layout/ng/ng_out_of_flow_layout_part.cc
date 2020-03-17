@@ -587,7 +587,8 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
       NeedMinMaxSize(candidate_style) || should_be_considered_as_replaced) {
     // This is a new formatting context, so whatever happened on the outside
     // doesn't concern us.
-    MinMaxSizesInput input(container_content_size.block_size);
+    MinMaxSizesInput input(
+        container_content_size_in_candidate_writing_mode.block_size);
     min_max_sizes = ComputeMinAndMaxContentSizeForOutOfFlow(
         candidate_constraint_space, node, border_padding, input);
   }

@@ -35,14 +35,14 @@ class NotShared {
   NotShared() = default;
 
   explicit NotShared(T* typedArray) : typed_array_(typedArray) {
-    DCHECK(!(typedArray && typedArray->View()->IsShared()));
+    DCHECK(!(typedArray && typedArray->IsShared()));
   }
   NotShared(const NotShared& other) = default;
   template <typename U>
   NotShared(const NotShared<U>& other) : typed_array_(other.View()) {}
   template <typename U>
   NotShared(const Member<U>& other) {
-    DCHECK(!other->View()->IsShared());
+    DCHECK(!other->IsShared());
     typed_array_ = other.Get();
   }
 

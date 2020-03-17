@@ -505,6 +505,33 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleHitTest) {
   CheckVariantHasName(obj_2, L"Name2");
 }
 
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleHitTestDoesNotLoopForever) {
+  AXNodeData root;
+  root.id = 1;
+  root.relative_bounds.bounds = gfx::RectF(0, 0, 40, 40);
+
+  AXNodeData node1;
+  node1.id = 2;
+  node1.relative_bounds.bounds = gfx::RectF(0, 0, 10, 10);
+  node1.SetName("Name1");
+  root.child_ids.push_back(node1.id);
+
+  Init(root, node1);
+
+  // Set up the endless loop.
+  TestAXNodeWrapper::SetHitTestResult(1, 2);
+  TestAXNodeWrapper::SetHitTestResult(2, 1);
+
+  // Hit testing on the root returns the child. Hit testing on the
+  // child returns the root, but that should be rejected rather than
+  // looping endlessly.
+  ComPtr<IAccessible> root_obj(GetRootIAccessible());
+  ScopedVariant obj_1;
+  EXPECT_EQ(S_OK, root_obj->accHitTest(5, 5, obj_1.Receive()));
+  ASSERT_NE(nullptr, obj_1.ptr());
+  CheckVariantHasName(obj_1, L"Name1");
+}
+
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleName) {
   AXNodeData root;
   root.id = 1;

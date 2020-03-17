@@ -182,11 +182,11 @@ TEST_F('MediaAppUIBrowserTest', 'OverwriteOriginalIPC', async () => {
   loadFile(await createTestImageFile(), handle);
 
   // Write should not be called initially.
-  assertEquals(undefined, handle.lastWriter);
+  assertEquals(undefined, handle.lastWritable);
 
   const message = {overwriteLastFile: 'Foo'};
   const testResponse = await guestMessagePipe.sendMessage('test', message);
-  const writeResult = await handle.lastWriter.closePromise;
+  const writeResult = await handle.lastWritable.closePromise;
 
   assertEquals(testResponse.testQueryResult, 'overwriteOriginal resolved');
   assertEquals(await writeResult.text(), 'Foo');

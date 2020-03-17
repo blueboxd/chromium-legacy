@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <utility>
+#include <vector>
 
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -51,6 +52,10 @@
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_util_win.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/uninstall_browser_prompt.h"
+#include "chrome/browser/web_applications/chrome_pwa_launcher/last_browser_file_util.h"
+#include "chrome/browser/web_applications/chrome_pwa_launcher/launcher_update.h"
+#include "chrome/browser/web_applications/components/web_app_file_handler_registration_win.h"
+#include "chrome/browser/web_applications/components/web_app_shortcut.h"
 #include "chrome/browser/win/browser_util.h"
 #include "chrome/browser/win/chrome_elf_init.h"
 #include "chrome/browser/win/conflicts/enumerate_input_method_editors.h"
@@ -85,6 +90,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "extensions/browser/extension_registry.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
@@ -445,6 +451,40 @@ void MaybePostSettingsResetPrompt() {
   }
 }
 
+// Updates all Progressive Web App launchers in |profile_dir| to the latest
+// version.
+void UpdatePwaLaunchersForProfile(const base::FilePath& profile_dir) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  Profile* profile =
+      g_browser_process->profile_manager()->GetProfileByPath(profile_dir);
+  if (!profile) {
+    // The profile was unloaded.
+    return;
+  }
+
+  // Create a vector of all PWA-launcher paths in |profile_dir|.
+  std::vector<base::FilePath> pwa_launcher_paths;
+  for (const auto& extension :
+       extensions::ExtensionRegistry::Get(profile)->enabled_extensions()) {
+    if (extension->from_bookmark()) {
+      base::FilePath web_app_path =
+          web_app::GetOsIntegrationResourcesDirectoryForApp(
+              profile_dir, extension->id(), GURL());
+      web_app_path =
+          web_app_path.Append(web_app::GetAppSpecificLauncherFilename(
+              base::UTF8ToUTF16(extension->name())));
+      pwa_launcher_paths.push_back(std::move(web_app_path));
+    }
+  }
+
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
+      base::BindOnce(&web_app::UpdatePwaLaunchers,
+                     std::move(pwa_launcher_paths)));
+}
+
 // This error message is not localized because we failed to load the
 // localization data files.
 const char kMissingLocaleDataTitle[] = "Missing File Error";
@@ -634,6 +674,25 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
     AfterStartupTaskUtils::PostTask(
         FROM_HERE, base::ThreadPool::CreateSequencedTaskRunner({}),
         base::BindOnce(&DelayedRecordProcessorMetrics));
+  }
+
+  // Write current executable path to the User Data directory to inform
+  // Progressive Web App launchers, which run from within the User Data
+  // directory, which chrome.exe to launch from.
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+      base::BindOnce(&web_app::WriteChromePathToLastBrowserFile,
+                     user_data_dir()));
+
+  // If Chrome was launched by a Progressive Web App launcher that needs to be
+  // updated, update all launchers for this profile.
+  if (parsed_command_line().HasSwitch(switches::kAppId) &&
+      parsed_command_line().GetSwitchValueASCII(
+          switches::kPwaLauncherVersion) != chrome::kChromeVersion) {
+    content::BrowserThread::PostBestEffortTask(
+        FROM_HERE, base::SequencedTaskRunnerHandle::Get(),
+        base::BindOnce(&UpdatePwaLaunchersForProfile, profile()->GetPath()));
   }
 }
 

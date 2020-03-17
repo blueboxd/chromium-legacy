@@ -8,8 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/login/auth/challenge_response_key.h"
 #include "net/ssl/client_cert_identity.h"
@@ -38,30 +36,48 @@ class ChallengeResponseAuthKeysLoader final {
   static bool CanAuthenticateUser(const AccountId& account_id);
 
   ChallengeResponseAuthKeysLoader();
+  ChallengeResponseAuthKeysLoader(const ChallengeResponseAuthKeysLoader&) =
+      delete;
+  ChallengeResponseAuthKeysLoader& operator=(
+      const ChallengeResponseAuthKeysLoader&) = delete;
   ~ChallengeResponseAuthKeysLoader();
 
   // Prepares the ChallengeResponseKey values containing the currently available
-  // cryptographic keys that can be used to authenticate the given user.
+  // cryptographic keys that can be used to authenticate the given user. If
+  // there should be force-installed extensions that provide a certificate for
+  // the given user, waits until these are installed and loaded (default: up to
+  // 5 seconds, configured by |maximum_extension_load_waiting_time_|).
   //
   // The callback is run with an empty |challenge_response_keys| in the cases
   // when the user's profile doesn't support challenge-response authentication
-  // or when there's no currently available suitable cryptographic key.
+  // or when there is no suitable cryptographic key available.
   void LoadAvailableKeys(const AccountId& account_id,
                          LoadAvailableKeysCallback callback);
 
+  void SetMaxWaitTimeForTesting(base::TimeDelta time) {
+    maximum_extension_load_waiting_time_ = time;
+  }
+
  private:
-  // Asynchronous job which is scheduled by LoadAvailableKeys after the list of
-  // currently available cryptographic keys is refreshed from certificate
-  // providers.
+  // Asynchronous job which is scheduled by LoadAvailableKeys after all
+  // necessary extensions are loaded.
+  void ContinueLoadAvailableKeysExtensionsLoaded(
+      const AccountId& account_id,
+      const std::vector<std::string>& suitable_public_key_spki_items,
+      LoadAvailableKeysCallback callback);
+
+  // Asynchronous job which is scheduled by
+  // ContinueLoadAvailableKeysExtensionsLoaded after the list of currently
+  // available cryptographic keys is refreshed from certificate providers.
   void ContinueLoadAvailableKeysWithCerts(
       const AccountId& account_id,
       const std::vector<std::string>& suitable_public_key_spki_items,
       LoadAvailableKeysCallback callback,
       net::ClientCertIdentityList cert_identities);
 
-  base::WeakPtrFactory<ChallengeResponseAuthKeysLoader> weak_ptr_factory_{this};
+  base::TimeDelta maximum_extension_load_waiting_time_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChallengeResponseAuthKeysLoader);
+  base::WeakPtrFactory<ChallengeResponseAuthKeysLoader> weak_ptr_factory_{this};
 };
 
 }  // namespace chromeos

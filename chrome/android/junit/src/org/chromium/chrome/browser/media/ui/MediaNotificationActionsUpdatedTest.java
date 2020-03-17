@@ -57,7 +57,7 @@ public class MediaNotificationActionsUpdatedTest extends MediaNotificationManage
     @Test
     public void testActionsDefaultToNull() {
         mTabHolder.simulateMediaSessionStateChanged(true, false);
-        assertEquals(new HashSet<Integer>(), getDisplayedActions());
+        assertEquals(DEFAULT_ACTIONS, getDisplayedActions());
     }
 
     @Test
@@ -77,8 +77,9 @@ public class MediaNotificationActionsUpdatedTest extends MediaNotificationManage
         assertEquals(buildActions(), getDisplayedActions());
 
         mTabHolder.simulateNavigation("https://example1.com/", false);
+        mTabHolder.simulateMediaSessionActionsChanged(DEFAULT_ACTIONS);
         advanceTimeByMillis(THROTTLE_MILLIS);
-        assertEquals(new HashSet<Integer>(), getDisplayedActions());
+        assertEquals(DEFAULT_ACTIONS, getDisplayedActions());
     }
 
     @Test

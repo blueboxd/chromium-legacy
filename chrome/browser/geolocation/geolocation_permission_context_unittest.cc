@@ -59,9 +59,9 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
-#include "chrome/browser/geolocation/android/mock_location_settings.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_android.h"
 #include "components/location/android/location_settings_dialog_outcome.h"
+#include "components/location/android/mock_location_settings.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/permission_type.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"

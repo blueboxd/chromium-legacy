@@ -104,8 +104,8 @@ class ServiceWorkerVersionTest : public testing::Test {
         helper_->context()->storage(), version_->script_url(), 10,
         {} /* headers */, "I'm a body", "I'm a meta data"));
     version_->script_cache_map()->SetResources(records);
-    version_->SetMainScriptHttpResponseInfo(
-        EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
+    version_->SetMainScriptResponse(
+        EmbeddedWorkerTestHelper::CreateMainScriptResponse());
     if (GetFetchHandlerExistence() !=
         ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN) {
       version_->set_fetch_handler_existence(GetFetchHandlerExistence());

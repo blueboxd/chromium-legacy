@@ -1460,6 +1460,42 @@ TEST_F(DesktopWidgetTestInteractive, RestoreAndMinimizeVisibility) {
   EXPECT_TRUE(root_window->IsVisible());
   widget->CloseNow();
 }
+
+// Test that focus is restored to the widget after a minimized window
+// is activated.
+TEST_F(DesktopWidgetTestInteractive, MinimizeAndActivateFocus) {
+  Widget* widget = CreateWidget();
+  aura::Window* root_window = GetRootWindow(widget);
+  auto* widget_window = widget->GetNativeWindow();
+  ShowSync(widget);
+  ASSERT_FALSE(widget->IsMinimized());
+  EXPECT_TRUE(root_window->IsVisible());
+  widget_window->Focus();
+  EXPECT_TRUE(widget_window->HasFocus());
+  widget->GetContentsView()->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  widget->GetContentsView()->RequestFocus();
+  EXPECT_TRUE(widget->GetContentsView()->HasFocus());
+
+  PropertyWaiter minimize_widget_waiter(
+      base::BindRepeating(&Widget::IsMinimized, base::Unretained(widget)),
+      true);
+  widget->Minimize();
+  EXPECT_TRUE(minimize_widget_waiter.Wait());
+  EXPECT_TRUE(widget->IsVisible());
+  EXPECT_FALSE(root_window->IsVisible());
+
+  PropertyWaiter restore_widget_waiter(
+      base::BindRepeating(&Widget::IsMinimized, base::Unretained(widget)),
+      false);
+  widget->Activate();
+  EXPECT_TRUE(widget->GetContentsView()->HasFocus());
+  EXPECT_TRUE(restore_widget_waiter.Wait());
+  EXPECT_TRUE(widget->IsVisible());
+  EXPECT_TRUE(root_window->IsVisible());
+  EXPECT_TRUE(widget_window->CanFocus());
+  widget->CloseNow();
+}
+
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)

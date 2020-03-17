@@ -83,7 +83,9 @@ void UsbDeviceWin::OnReadDescriptors(
     return;
   }
 
-  // Keep |bus_number| and |port_number| before updating the |device_info_|.
+  // Keep |guid|, |bus_number| and |port_number| before updating the
+  // |device_info_|.
+  descriptor->device_info->guid = device_info_->guid,
   descriptor->device_info->bus_number = device_info_->bus_number,
   descriptor->device_info->port_number = device_info_->port_number,
   device_info_ = std::move(descriptor->device_info);

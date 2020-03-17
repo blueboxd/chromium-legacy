@@ -165,8 +165,6 @@ js_type_check("closure_compile_module") {
   is_polymer3 = true
   deps = [
     #    ":account_manager_browser_proxy.m",
-    #    ":import_data_browser_proxy.m",
-    #    ":import_data_dialog.m",
     #    ":manage_profile.m",
     #    ":manage_profile_browser_proxy.m",
     #    ":people_page.m",
@@ -177,6 +175,13 @@ js_type_check("closure_compile_module") {
     #    ":sync_controls.m",
     #    ":sync_page.m",
   ]
+
+  if (!is_chromeos) {
+    deps += [
+      ":import_data_browser_proxy.m",
+      ":import_data_dialog.m",
+    ]
+  }
 }
 
 js_library("account_manager_browser_proxy.m") {
@@ -187,20 +192,26 @@ js_library("account_manager_browser_proxy.m") {
   extra_deps = [ ":modulize" ]
 }
 
-js_library("import_data_browser_proxy.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/settings/people_page/import_data_browser_proxy.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
-  extra_deps = [ ":modulize" ]
-}
+if (!is_chromeos) {
+  js_library("import_data_browser_proxy.m") {
+    sources = [ "$root_gen_dir/chrome/browser/resources/settings/people_page/import_data_browser_proxy.m.js" ]
+    deps = [ "//ui/webui/resources/js:cr.m" ]
+    externs_list = [ "$externs_path/metrics_private.js" ]
+    extra_deps = [ ":modulize" ]
+  }
 
-js_library("import_data_dialog.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/settings/people_page/import_data_dialog.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
-  extra_deps = [ ":import_data_dialog_module" ]
+  js_library("import_data_dialog.m") {
+    sources = [ "$root_gen_dir/chrome/browser/resources/settings/people_page/import_data_dialog.m.js" ]
+    deps = [
+      ":import_data_browser_proxy.m",
+      "../controls:settings_checkbox.m",
+      "../prefs:prefs_behavior.m",
+      "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+      "//ui/webui/resources/js:i18n_behavior.m",
+      "//ui/webui/resources/js:web_ui_listener_behavior.m",
+    ]
+    extra_deps = [ ":import_data_dialog_module" ]
+  }
 }
 
 js_library("manage_profile.m") {
@@ -278,7 +289,6 @@ import("//tools/polymer/polymer.gni")
 
 group("polymer3_elements") {
   public_deps = [
-    ":import_data_dialog_module",
     ":manage_profile_module",
     ":modulize",
     ":people_page_module",
@@ -287,12 +297,18 @@ group("polymer3_elements") {
     ":sync_controls_module",
     ":sync_page_module",
   ]
+
+  if (!is_chromeos) {
+    public_deps += [ ":import_data_dialog_module" ]
+  }
 }
 
 polymer_modulizer("import_data_dialog") {
   js_file = "import_data_dialog.js"
   html_file = "import_data_dialog.html"
   html_type = "dom-module"
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports = settings_auto_imports + [ "chrome/browser/resources/settings/people_page/import_data_browser_proxy.html|ImportDataBrowserProxy,ImportDataBrowserProxyImpl,ImportDataStatus,BrowserProfile" ]
 }
 
 polymer_modulizer("manage_profile") {
@@ -334,11 +350,15 @@ polymer_modulizer("sync_page") {
 js_modulizer("modulize") {
   input_files = [
     "account_manager_browser_proxy.js",
-    "import_data_browser_proxy.js",
     "manage_profile_browser_proxy.js",
     "profile_info_browser_proxy.js",
     "sync_browser_proxy.js",
   ]
+
+  if (!is_chromeos) {
+    input_files += [ "import_data_browser_proxy.js" ]
+  }
+
   namespace_rewrites =
       settings_namespace_rewrites + [ "settings.StoredAccount|StoredAccount" ]
 }

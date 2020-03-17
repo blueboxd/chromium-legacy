@@ -146,7 +146,7 @@ SkColor BrowserNonClientFrameView::GetFrameColor(
     BrowserFrameActiveState active_state) const {
   return GetFrameThemeProvider()->GetColor(
       ShouldPaintAsActive(active_state)
-          ? ThemeProperties::COLOR_FRAME
+          ? ThemeProperties::COLOR_FRAME_ACTIVE
           : ThemeProperties::COLOR_FRAME_INACTIVE);
 }
 

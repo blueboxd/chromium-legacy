@@ -265,6 +265,10 @@ Polymer({
         this.setGeneralError_(
             loadTimeData.getString('smbShareAddedMountExistsMessage'));
         break;
+      case SmbMountResult.TOO_MANY_OPENED:
+        this.setGeneralError_(
+            loadTimeData.getString('smbShareAddedTooManyMountsMessage'));
+        break;
       default:
         this.setGeneralError_(
             loadTimeData.getString('smbShareAddedErrorMessage'));

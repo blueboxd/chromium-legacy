@@ -212,6 +212,11 @@ source_set("web_applications_unit_tests") {
       "//components/arc/mojom",
     ]
   }
+
+  if (is_win) {
+    deps +=
+        [ "//chrome/browser/web_applications/chrome_pwa_launcher:unit_tests" ]
+  }
 }
 
 source_set("web_applications_browser_tests") {

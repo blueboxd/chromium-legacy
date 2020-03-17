@@ -23,6 +23,48 @@ class KURL;
 class ScriptFetchOptions;
 class ScriptState;
 class ScriptValue;
+class ScriptPromise;
+
+// ModuleEvaluationResult encapsulates the result of a module evaluation.
+// - Without top-level-await
+//   - succeed and not return a value, or
+//     (IsSuccess() == true), no return value is available.
+//   - throw any object.
+//     (IsException() == true && GetException()) returns the thrown exception
+// - With top-level-await a module can either
+//   - return a promise, or
+//     (IsSuccess() == true && GetPromise()) returns a valid ScriptPromise())
+//   - throw any object.
+//     (IsException() == true && GetException()) returns the thrown exception
+class CORE_EXPORT ModuleEvaluationResult final {
+  STACK_ALLOCATED();
+
+ public:
+  ModuleEvaluationResult() = delete;
+  static ModuleEvaluationResult Empty();
+  static ModuleEvaluationResult FromResult(v8::Local<v8::Value> promise);
+  static ModuleEvaluationResult FromException(v8::Local<v8::Value> exception);
+
+  ModuleEvaluationResult(const ModuleEvaluationResult& value) = default;
+  ModuleEvaluationResult& operator=(const ModuleEvaluationResult& value) =
+      default;
+  ~ModuleEvaluationResult() = default;
+
+  ModuleEvaluationResult& Escape(ScriptState::EscapableScope* scope);
+
+  bool IsSuccess() const { return is_success_; }
+  bool IsException() const { return !is_success_; }
+
+  v8::Local<v8::Value> GetException() const;
+  ScriptPromise GetPromise(ScriptState* script_state) const;
+
+ private:
+  ModuleEvaluationResult(bool is_success, v8::Local<v8::Value> value)
+      : is_success_(is_success), value_(value) {}
+
+  bool is_success_;
+  v8::Local<v8::Value> value_;
+};
 
 // ModuleRecordProduceCacheData is a parameter object for
 // ModuleRecord::ProduceCache().
@@ -78,7 +120,7 @@ class CORE_EXPORT ModuleRecord final {
                                  v8::Local<v8::Module> record,
                                  const KURL& source_url);
 
-  // Returns exception, if any.
+  // Returns exception, if any
   static ScriptValue Evaluate(ScriptState*,
                               v8::Local<v8::Module> record,
                               const KURL& source_url);

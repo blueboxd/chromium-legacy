@@ -96,10 +96,6 @@ FormDataImporter* WebViewAutofillClientIOS::GetFormDataImporter() {
   return form_data_importer_.get();
 }
 
-SmsClient* WebViewAutofillClientIOS::GetSmsClient() {
-  return nullptr;
-}
-
 payments::PaymentsClient* WebViewAutofillClientIOS::GetPaymentsClient() {
   return payments_client_.get();
 }

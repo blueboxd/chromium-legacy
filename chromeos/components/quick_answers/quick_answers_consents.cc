@@ -36,7 +36,8 @@ void QuickAnswersConsent::DismissConsent() {
   RecordImpressionDuration();
 }
 
-void QuickAnswersConsent::AcceptConsent() {
+void QuickAnswersConsent::AcceptConsent(ConsentInteractionType interaction) {
+  // TODO(llin): Use |interaction| for user-consent related logging.
   RecordImpressionDuration();
   // Marks the consent as accepted.
   prefs_->SetBoolean(prefs::kQuickAnswersConsented, true);

@@ -225,6 +225,7 @@ CookieStore::CookieStore(
     mojo::Remote<network::mojom::blink::RestrictedCookieManager> backend)
     : ExecutionContextLifecycleObserver(execution_context),
       backend_(std::move(backend)),
+      change_listener_receiver_(this, execution_context),
       default_cookie_url_(DefaultCookieURL(execution_context)),
       default_site_for_cookies_(DefaultSiteForCookies(execution_context)),
       default_top_frame_origin_(DefaultTopFrameOrigin(execution_context)) {
@@ -326,6 +327,7 @@ ScriptPromise CookieStore::Delete(ScriptState* script_state,
 }
 
 void CookieStore::Trace(Visitor* visitor) {
+  visitor->Trace(change_listener_receiver_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }

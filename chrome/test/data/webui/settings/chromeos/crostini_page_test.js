@@ -266,13 +266,19 @@ suite('CrostiniPageTests', function() {
           assertFalse(subpage.$$('#import cr-button').disabled);
         });
 
-    test('TogglecCrostiniMicSharing', function() {
+    test('ToggleCrostiniMicSharing', async function() {
       assertTrue(!!subpage.$$('#crostini-mic-sharing'));
+      assertFalse(!!subpage.$$('settings-crostini-mic-sharing-dialog'));
       setCrostiniPrefs(true, {micSharing: true});
       assertTrue(subpage.$$('#crostini-mic-sharing').checked);
       assertTrue(subpage.$$('#crostini-mic-sharing').pref.value);
 
       subpage.$$('#crostini-mic-sharing').click();
+      await flushAsync();
+      assertTrue(!!subpage.$$('settings-crostini-mic-sharing-dialog'));
+      const dialog = subpage.$$('settings-crostini-mic-sharing-dialog');
+      dialog.$$('cr-dialog cr-button').click();
+      await flushAsync();
       assertFalse(subpage.$$('#crostini-mic-sharing').checked);
       assertFalse(subpage.$$('#crostini-mic-sharing').pref.value);
 

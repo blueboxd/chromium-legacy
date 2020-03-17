@@ -19521,6 +19521,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ShowGestureEducationHelp">
+  <owner>amehfooz@chromium.org</owner>
+  <owner>tengs@chromium.org</owner>
+  <description>
+    The user opened the gesture education help from the notification shown to
+    highlight new gestures in tablet mode.
+  </description>
+</action>
+
 <action name="ShowHelpTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

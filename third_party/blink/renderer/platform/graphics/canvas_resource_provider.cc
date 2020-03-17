@@ -1038,7 +1038,7 @@ void CanvasResourceProvider::EnsureSkiaCanvas() {
       color_params_.GetSkColorType(), use_hardware_decode_cache());
 
   cc::SkiaPaintCanvas::ContextFlushes context_flushes;
-  if (IsAccelerated() &&
+  if (IsAccelerated() && ContextProviderWrapper() &&
       !ContextProviderWrapper()
            ->ContextProvider()
            ->GetGpuFeatureInfo()

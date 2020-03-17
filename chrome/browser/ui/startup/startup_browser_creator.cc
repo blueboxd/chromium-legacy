@@ -1026,13 +1026,10 @@ base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
 // the profile id encoded in the notification launch id should be chosen over
 // all others.
 #if defined(OS_WIN)
-  if (command_line.HasSwitch(switches::kNotificationLaunchId)) {
-    std::string profile_id = NotificationLaunchId::GetProfileIdFromLaunchId(
-        command_line.GetSwitchValueNative(switches::kNotificationLaunchId));
-    if (!profile_id.empty()) {
-      return user_data_dir.Append(
-          base::FilePath(base::UTF8ToUTF16(profile_id)));
-    }
+  std::string profile_id =
+      NotificationLaunchId::GetNotificationLaunchProfileId(command_line);
+  if (!profile_id.empty()) {
+    return user_data_dir.Append(base::FilePath(base::UTF8ToUTF16(profile_id)));
   }
 #endif  // defined(OS_WIN)
 

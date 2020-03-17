@@ -656,6 +656,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const std::string& data,
       IsClipboardPasteAllowedCallback callback) override;
 
+  void LogUkmEventForCrossOriginFetchFromContentScript3(
+      const std::string& isolated_world_host) override;
+
 #if BUILDFLAG(ENABLE_PLUGINS)
   bool ShouldAllowPluginCreation(
       const url::Origin& embedder_origin,

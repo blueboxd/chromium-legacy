@@ -59,14 +59,14 @@ base::string16 GetComServiceAppidRegistryPath() {
   return base::StrCat({L"Software\\Classes\\AppID\\", GetComServiceClsid()});
 }
 
-base::string16 GetComIidRegistryPath() {
-  return base::StrCat({L"Software\\Classes\\Interface\\",
-                       base::win::String16FromGUID(__uuidof(IUpdater))});
+base::string16 GetComIidRegistryPath(REFIID iid) {
+  return base::StrCat(
+      {L"Software\\Classes\\Interface\\", base::win::String16FromGUID(iid)});
 }
 
-base::string16 GetComTypeLibRegistryPath() {
-  return base::StrCat({L"Software\\Classes\\TypeLib\\",
-                       base::win::String16FromGUID(__uuidof(IUpdater))});
+base::string16 GetComTypeLibRegistryPath(REFIID iid) {
+  return base::StrCat(
+      {L"Software\\Classes\\TypeLib\\", base::win::String16FromGUID(iid)});
 }
 
 }  // namespace updater

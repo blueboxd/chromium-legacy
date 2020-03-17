@@ -190,7 +190,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     }
     NetworkHandler::Get()->network_device_handler()->GetDeviceProperties(
         device->path(),
-        base::Bind(
+        base::BindOnce(
             &NetworkConfigMessageHandler::GetShillDevicePropertiesSuccess,
             weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&NetworkConfigMessageHandler::ErrorCallback,

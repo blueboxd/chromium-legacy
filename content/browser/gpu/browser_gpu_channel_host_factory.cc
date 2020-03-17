@@ -261,6 +261,15 @@ void BrowserGpuChannelHostFactory::Terminate() {
   instance_ = nullptr;
 }
 
+void BrowserGpuChannelHostFactory::MaybeCloseChannel() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!gpu_channel_ || !gpu_channel_->HasOneRef())
+    return;
+
+  gpu_channel_->DestroyChannel();
+  gpu_channel_ = nullptr;
+}
+
 void BrowserGpuChannelHostFactory::CloseChannel() {
   if (gpu_channel_) {
     gpu_channel_->DestroyChannel();

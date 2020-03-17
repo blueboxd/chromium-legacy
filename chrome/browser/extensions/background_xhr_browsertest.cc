@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_with_management_policy_apitest.h"
@@ -34,6 +35,7 @@
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_server_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -105,7 +107,18 @@ IN_PROC_BROWSER_TEST_F(BackgroundXhrTest, HttpAuth) {
 
 class BackgroundXhrWebstoreTest : public ExtensionApiTestWithManagementPolicy {
  public:
-  BackgroundXhrWebstoreTest() = default;
+  BackgroundXhrWebstoreTest() {
+    // TODO(lukasza): https://crbug.com/1061567: Migrate tests related to
+    // cross-origin requests from content scripts into the
+    // CrossOriginReadBlockingExtensionTest suite (which already covers test
+    // matrix of various enabled/disabled features).
+    //
+    // Affected tests:
+    // - BackgroundXhrWebstoreTest.PolicyContentScriptXHR
+    scoped_feature_list_.InitAndDisableFeature(
+        network::features::kCorbAllowlistAlsoAppliesToOorCors);
+  }
+
   ~BackgroundXhrWebstoreTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -169,6 +182,7 @@ class BackgroundXhrWebstoreTest : public ExtensionApiTestWithManagementPolicy {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundXhrWebstoreTest);
 };

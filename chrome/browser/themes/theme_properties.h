@@ -26,14 +26,14 @@ class ThemeProperties {
   // browser_theme_pack.cc.
 
   enum OverwritableByUserThemeProperty {
-    COLOR_FRAME,
+    COLOR_FRAME_ACTIVE,
     COLOR_FRAME_INACTIVE,
     // Instead of using the INCOGNITO variants directly, most code should
     // use the original color ID in an incognito-aware context (such as
     // GetDefaultColor).  This comment applies to other properties tagged
     // INCOGNITO below as well.
-    COLOR_FRAME_INCOGNITO,
-    COLOR_FRAME_INCOGNITO_INACTIVE,
+    COLOR_FRAME_ACTIVE_INCOGNITO,
+    COLOR_FRAME_INACTIVE_INCOGNITO,
     COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE,
     COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE,
     COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO,

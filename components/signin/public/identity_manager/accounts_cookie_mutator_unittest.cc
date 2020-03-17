@@ -55,6 +55,7 @@ enum class AccountsCookiesMutatorAction {
   kTriggerCookieJarUpdateNoAccounts,
   kTriggerCookieJarUpdateOneAccount,
   kTriggerOnCookieChangeNoAccounts,
+  kLogOutFromCookie,
 };
 
 }  // namespace
@@ -130,6 +131,13 @@ class AccountsCookieMutatorTest
         break;
       case AccountsCookiesMutatorAction::kTriggerOnCookieChangeNoAccounts:
         SetListAccountsResponseNoAccounts(GetTestURLLoaderFactory());
+        break;
+      case AccountsCookiesMutatorAction::kLogOutFromCookie:
+        GetTestURLLoaderFactory()->AddResponse(
+            GaiaUrls::GetInstance()
+                ->LogOutURLWithSource(GaiaConstants::kChromeSource)
+                .spec(),
+            std::string(), net::HTTP_OK);
         break;
     }
   }
@@ -505,19 +513,19 @@ TEST_F(AccountsCookieMutatorTest, ForceTriggerOnCookieChange) {
 
 // Test that trying to log out all sessions generates the right network request.
 TEST_F(AccountsCookieMutatorTest, LogOutAllAccounts) {
-  base::RunLoop run_loop;
-  GetTestURLLoaderFactory()->SetInterceptor(base::BindRepeating(
-      [](base::OnceClosure quit_closure,
-         const network::ResourceRequest& request) {
-        EXPECT_EQ(request.url.spec(),
-                  GaiaUrls::GetInstance()
-                      ->LogOutURLWithSource(GaiaConstants::kChromeSource)
-                      .spec());
-        std::move(quit_closure).Run();
-      },
-      run_loop.QuitClosure()));
+  PrepareURLLoaderResponsesForAction(
+      AccountsCookiesMutatorAction::kLogOutFromCookie);
 
-  accounts_cookie_mutator()->LogOutAllAccounts(gaia::GaiaSource::kChrome);
+  base::RunLoop run_loop;
+  accounts_cookie_mutator()->LogOutAllAccounts(
+      gaia::GaiaSource::kChrome, base::BindOnce(
+                                     [](base::OnceClosure quit_closure,
+                                        const GoogleServiceAuthError& error) {
+                                       EXPECT_EQ(error.state(),
+                                                 GoogleServiceAuthError::NONE);
+                                       std::move(quit_closure).Run();
+                                     },
+                                     run_loop.QuitClosure()));
   run_loop.Run();
 }
 

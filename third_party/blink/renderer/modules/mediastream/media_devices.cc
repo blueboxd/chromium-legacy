@@ -200,8 +200,8 @@ void MediaDevices::ContextDestroyed() {
 }
 
 void MediaDevices::OnDevicesChanged(
-    mojom::blink::MediaDeviceType type,
-    Vector<mojom::blink::MediaDeviceInfoPtr> device_infos) {
+    MediaDeviceType type,
+    const Vector<WebMediaDeviceInfo>& device_infos) {
   Document* document = Document::From(GetExecutionContext());
   DCHECK(document);
 
@@ -260,7 +260,7 @@ void MediaDevices::Dispose() {
 
 void MediaDevices::DevicesEnumerated(
     ScriptPromiseResolver* resolver,
-    Vector<Vector<mojom::blink::MediaDeviceInfoPtr>> enumeration,
+    const Vector<Vector<WebMediaDeviceInfo>>& enumeration,
     Vector<mojom::blink::VideoInputDeviceCapabilitiesPtr>
         video_input_capabilities,
     Vector<mojom::blink::AudioInputDeviceCapabilitiesPtr>
@@ -300,14 +300,14 @@ void MediaDevices::DevicesEnumerated(
     for (wtf_size_t j = 0; j < enumeration[i].size(); ++j) {
       mojom::blink::MediaDeviceType device_type =
           static_cast<mojom::blink::MediaDeviceType>(i);
-      mojom::blink::MediaDeviceInfoPtr device_info =
-          std::move(enumeration[i][j]);
+      WebMediaDeviceInfo device_info = enumeration[i][j];
       if (device_type == mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT ||
           device_type == mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT) {
         InputDeviceInfo* input_device_info =
             MakeGarbageCollected<InputDeviceInfo>(
-                device_info->device_id, device_info->label,
-                device_info->group_id, device_type);
+                String::FromUTF8(device_info.device_id),
+                String::FromUTF8(device_info.label),
+                String::FromUTF8(device_info.group_id), device_type);
         if (device_type == mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT &&
             !video_input_capabilities.IsEmpty()) {
           input_device_info->SetVideoInputCapabilities(
@@ -321,8 +321,9 @@ void MediaDevices::DevicesEnumerated(
         media_devices.push_back(input_device_info);
       } else {
         media_devices.push_back(MakeGarbageCollected<MediaDeviceInfo>(
-            device_info->device_id, device_info->label, device_info->group_id,
-            device_type));
+            String::FromUTF8(device_info.device_id),
+            String::FromUTF8(device_info.label),
+            String::FromUTF8(device_info.group_id), device_type));
       }
     }
   }

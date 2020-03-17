@@ -183,6 +183,12 @@ class MEDIA_EXPORT VideoFrameMetadata {
     // network.
     RECEIVE_TIME,
 
+    // If present, this field represents the duration this frame is ideally
+    // expected to spend on the screen during playback. Unlike FRAME_DURATION
+    // this field takes into account current playback rate.
+    // Use Get/SetTimeDelta() for this key.
+    WALLCLOCK_FRAME_DURATION,
+
     NUM_KEYS
   };
 

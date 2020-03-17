@@ -239,10 +239,6 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
   data_reduction_proxy::DataReductionProxySettings::
       InitDataReductionProxySettings(profile_prefs, std::move(service));
 
-#if defined(OS_CHROMEOS)
-  data_reduction_proxy_service()->config()->EnableGetNetworkIdAsynchronously();
-#endif
-
   data_reduction_proxy::DataReductionProxySettings::
       SetCallbackToRegisterSyntheticFieldTrial(base::Bind(
           &ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial));

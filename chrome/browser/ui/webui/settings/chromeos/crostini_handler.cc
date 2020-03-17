@@ -176,16 +176,14 @@ void CrostiniHandler::HandleRequestRemoveCrostini(const base::ListValue* args) {
 void CrostiniHandler::HandleGetCrostiniSharedPathsDisplayText(
     const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(2U, args->GetSize());
-  std::string callback_id;
-  const base::ListValue* paths;
-  CHECK(args->GetString(0, &callback_id));
-  CHECK(args->GetList(1, &paths));
+  CHECK_EQ(2U, args->GetList().size());
+  std::string callback_id = args->GetList()[0].GetString();
+  base::Value::ConstListView paths = args->GetList()[1].GetList();
 
   base::ListValue texts;
-  for (auto it = paths->begin(); it != paths->end(); ++it) {
+  for (size_t i = 0; i < paths.size(); ++i) {
     texts.AppendString(file_manager::util::GetPathDisplayTextForSettings(
-        profile_, it->GetString()));
+        profile_, paths[i].GetString()));
   }
   ResolveJavascriptCallback(base::Value(callback_id), texts);
 }
@@ -193,13 +191,10 @@ void CrostiniHandler::HandleGetCrostiniSharedPathsDisplayText(
 void CrostiniHandler::HandleRemoveCrostiniSharedPath(
     const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(3U, args->GetSize());
-  std::string callback_id;
-  std::string vm_name;
-  std::string path;
-  CHECK(args->GetString(0, &callback_id));
-  CHECK(args->GetString(1, &vm_name));
-  CHECK(args->GetString(2, &path));
+  CHECK_EQ(3U, args->GetList().size());
+  std::string callback_id = args->GetList()[0].GetString();
+  std::string vm_name = args->GetList()[1].GetString();
+  std::string path = args->GetList()[2].GetString();
 
   guest_os::GuestOsSharePath::GetForProfile(profile_)->UnsharePath(
       vm_name, base::FilePath(path),
@@ -262,7 +257,7 @@ base::Value CrostiniDiskInfoToValue(
 void CrostiniHandler::HandleGetCrostiniSharedUsbDevices(
     const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
 
   std::string callback_id = args->GetList()[0].GetString();
 
@@ -279,7 +274,7 @@ void CrostiniHandler::HandleGetCrostiniSharedUsbDevices(
 
 void CrostiniHandler::HandleSetCrostiniUsbDeviceShared(
     const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetSize());
+  CHECK_EQ(2U, args->GetList().size());
   const auto& args_list = args->GetList();
   std::string guid = args_list[0].GetString();
   bool shared = args_list[1].GetBool();
@@ -307,14 +302,14 @@ void CrostiniHandler::OnUsbDevicesChanged() {
 
 void CrostiniHandler::HandleExportCrostiniContainer(
     const base::ListValue* args) {
-  CHECK_EQ(0U, args->GetSize());
+  CHECK_EQ(0U, args->GetList().size());
   crostini::CrostiniExportImport::GetForProfile(profile_)->ExportContainer(
       web_ui()->GetWebContents());
 }
 
 void CrostiniHandler::HandleImportCrostiniContainer(
     const base::ListValue* args) {
-  CHECK_EQ(0U, args->GetSize());
+  CHECK_EQ(0U, args->GetList().size());
   crostini::CrostiniExportImport::GetForProfile(profile_)->ImportContainer(
       web_ui()->GetWebContents());
 }
@@ -322,7 +317,7 @@ void CrostiniHandler::HandleImportCrostiniContainer(
 void CrostiniHandler::HandleCrostiniInstallerStatusRequest(
     const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(0U, args->GetSize());
+  CHECK_EQ(0U, args->GetList().size());
   bool status = crostini::CrostiniManager::GetForProfile(profile_)
                     ->GetCrostiniDialogStatus(crostini::DialogType::INSTALLER);
   OnCrostiniDialogStatusChanged(crostini::DialogType::INSTALLER, status);
@@ -331,7 +326,7 @@ void CrostiniHandler::HandleCrostiniInstallerStatusRequest(
 void CrostiniHandler::HandleCrostiniExportImportOperationStatusRequest(
     const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(0U, args->GetSize());
+  CHECK_EQ(0U, args->GetList().size());
   bool in_progress = crostini::CrostiniExportImport::GetForProfile(profile_)
                          ->GetExportImportOperationStatus();
   OnCrostiniExportImportOperationStatusChanged(in_progress);
@@ -388,7 +383,7 @@ void CrostiniHandler::OnQueryAdbSideload(
 }
 
 void CrostiniHandler::HandleEnableArcAdbRequest(const base::ListValue* args) {
-  CHECK_EQ(0U, args->GetSize());
+  CHECK_EQ(0U, args->GetList().size());
   if (!CheckEligibilityToChangeArcAdbSideloading())
     return;
 
@@ -402,7 +397,7 @@ void CrostiniHandler::HandleEnableArcAdbRequest(const base::ListValue* args) {
 }
 
 void CrostiniHandler::HandleDisableArcAdbRequest(const base::ListValue* args) {
-  CHECK_EQ(0U, args->GetSize());
+  CHECK_EQ(0U, args->GetList().size());
   if (!CheckEligibilityToChangeArcAdbSideloading())
     return;
 
@@ -449,7 +444,7 @@ void CrostiniHandler::LaunchTerminal() {
 
 void CrostiniHandler::HandleRequestContainerUpgradeView(
     const base::ListValue* args) {
-  CHECK_EQ(0U, args->GetSize());
+  CHECK_EQ(0U, args->GetList().size());
   chromeos::CrostiniUpgraderDialog::Show(base::BindOnce(
       &CrostiniHandler::LaunchTerminal, weak_ptr_factory_.GetWeakPtr()));
 }
@@ -463,7 +458,7 @@ void CrostiniHandler::OnCrostiniExportImportOperationStatusChanged(
 
 void CrostiniHandler::HandleQueryArcAdbRequest(const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(0U, args->GetSize());
+  CHECK_EQ(0U, args->GetList().size());
 
   chromeos::SessionManagerClient* client =
       chromeos::SessionManagerClient::Get();
@@ -474,7 +469,7 @@ void CrostiniHandler::HandleQueryArcAdbRequest(const base::ListValue* args) {
 void CrostiniHandler::HandleCrostiniUpgraderDialogStatusRequest(
     const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(0U, args->GetSize());
+  CHECK_EQ(0U, args->GetList().size());
   bool is_open = crostini::CrostiniManager::GetForProfile(profile_)
                      ->GetCrostiniDialogStatus(crostini::DialogType::UPGRADER);
   OnCrostiniDialogStatusChanged(crostini::DialogType::UPGRADER, is_open);
@@ -492,20 +487,14 @@ void CrostiniHandler::HandleCrostiniContainerUpgradeAvailableRequest(
 
 void CrostiniHandler::HandleAddCrostiniPortForward(
     const base::ListValue* args) {
-  CHECK_EQ(6U, args->GetSize());
+  CHECK_EQ(6U, args->GetList().size());
 
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
-  std::string vm_name;
-  CHECK(args->GetString(1, &vm_name));
-  std::string container_name;
-  CHECK(args->GetString(2, &container_name));
-  int port_number;
-  CHECK(args->GetInteger(3, &port_number));
-  int protocol_type;
-  CHECK(args->GetInteger(4, &protocol_type));
-  std::string label;
-  CHECK(args->GetString(5, &label));
+  std::string callback_id = args->GetList()[0].GetString();
+  std::string vm_name = args->GetList()[1].GetString();
+  std::string container_name = args->GetList()[2].GetString();
+  int port_number = args->GetList()[3].GetInt();
+  int protocol_type = args->GetList()[4].GetInt();
+  std::string label = args->GetList()[5].GetString();
 
   crostini::CrostiniPortForwarder::GetForProfile(profile_)->AddPort(
       crostini::ContainerId(std::move(vm_name), std::move(container_name)),

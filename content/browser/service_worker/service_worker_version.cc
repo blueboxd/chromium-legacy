@@ -211,6 +211,17 @@ constexpr base::TimeDelta ServiceWorkerVersion::kTimeoutTimerDelay;
 constexpr base::TimeDelta ServiceWorkerVersion::kStartNewWorkerTimeout;
 constexpr base::TimeDelta ServiceWorkerVersion::kStopWorkerTimeout;
 
+ServiceWorkerVersion::MainScriptResponse::MainScriptResponse(
+    const net::HttpResponseInfo& http_info) {
+  response_time = http_info.response_time;
+  if (http_info.headers)
+    http_info.headers->GetLastModifiedValue(&last_modified);
+  headers = http_info.headers;
+  ssl_info = http_info.ssl_info;
+}
+
+ServiceWorkerVersion::MainScriptResponse::~MainScriptResponse() = default;
+
 void ServiceWorkerVersion::RestartTick(base::TimeTicks* time) const {
   *time = tick_clock_->NowTicks();
 }
@@ -1050,15 +1061,9 @@ void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
   SetAllRequestExpirations(tick_clock_->NowTicks() + kRequestTimeout);
 }
 
-void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
-    const net::HttpResponseInfo& http_info) {
-  script_response_time_for_devtools_ = http_info.response_time;
-  auto response = std::make_unique<MainScriptResponse>();
-  response->response_time = http_info.response_time;
-  if (http_info.headers) {
-    http_info.headers->GetLastModifiedValue(&response->last_modified);
-  }
-  response->ssl_info = http_info.ssl_info;
+void ServiceWorkerVersion::SetMainScriptResponse(
+    std::unique_ptr<MainScriptResponse> response) {
+  script_response_time_for_devtools_ = response->response_time;
   main_script_response_ = std::move(response);
 
   // Updates |origin_trial_tokens_| if it is not set yet. This happens when:
@@ -1069,7 +1074,8 @@ void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
   //     wasn't set in the entry.
   if (!origin_trial_tokens_) {
     origin_trial_tokens_ = validator_->GetValidTokensFromHeaders(
-        url::Origin::Create(scope()), http_info.headers.get(), clock_->Now());
+        url::Origin::Create(scope()), main_script_response_->headers.get(),
+        clock_->Now());
   }
 
   if (context_) {

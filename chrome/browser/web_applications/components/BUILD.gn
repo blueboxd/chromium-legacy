@@ -131,6 +131,10 @@ source_set("components") {
     "//services/preferences/public/cpp",
     "//skia",
   ]
+
+  if (is_win) {
+    deps += [ "//chrome/browser/web_applications/chrome_pwa_launcher:util" ]
+  }
 }
 
 source_set("unit_tests") {
@@ -178,6 +182,10 @@ source_set("unit_tests") {
 
   if (is_chromeos) {
     deps += [ "//chrome/browser/chromeos" ]
+  }
+
+  if (is_win) {
+    deps += [ "//chrome/browser/web_applications/chrome_pwa_launcher:util" ]
   }
 }
 

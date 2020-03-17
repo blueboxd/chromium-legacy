@@ -35,6 +35,7 @@ class StatusIndicatorMediator
             new HashSet<>();
     private Supplier<Integer> mStatusBarWithoutIndicatorColorSupplier;
     private Runnable mOnCompositorShowAnimationEnd;
+    private Supplier<Boolean> mCanAnimateNativeBrowserControls;
 
     private int mIndicatorHeight;
     private boolean mIsHiding;
@@ -47,37 +48,28 @@ class StatusIndicatorMediator
      * @param statusBarWithoutIndicatorColorSupplier A supplier that will get the status bar color
      *                                               without taking the status indicator into
      *                                               account.
+     * @param canAnimateNativeBrowserControls Will supply a boolean denoting whether the native
+     *                                        browser controls can be animated. This will be false
+     *                                        where we can't have a reliable cc::BCOM instance, e.g.
+     *                                        tab switcher.
      */
     StatusIndicatorMediator(PropertyModel model, ChromeFullscreenManager fullscreenManager,
-            Supplier<Integer> statusBarWithoutIndicatorColorSupplier) {
+            Supplier<Integer> statusBarWithoutIndicatorColorSupplier,
+            Supplier<Boolean> canAnimateNativeBrowserControls) {
         mModel = model;
         mFullscreenManager = fullscreenManager;
         mStatusBarWithoutIndicatorColorSupplier = statusBarWithoutIndicatorColorSupplier;
+        mCanAnimateNativeBrowserControls = canAnimateNativeBrowserControls;
     }
 
     @Override
     public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
             int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
-        final boolean compositedVisible = topControlsMinHeightOffset > 0;
-        // Composited view should be visible if we have a positive top min-height offset, or current
-        // min-height.
-        mModel.set(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, compositedVisible);
+        // If we aren't animating the browser controls in cc, we shouldn't care about the offsets
+        // we get.
+        if (!mCanAnimateNativeBrowserControls.get()) return;
 
-        final boolean isCompletelyShown = topControlsMinHeightOffset == mIndicatorHeight;
-        // Android view should only be visible when the indicator is fully shown.
-        mModel.set(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY,
-                mIsHiding ? View.GONE : (isCompletelyShown ? View.VISIBLE : View.INVISIBLE));
-
-        if (mOnCompositorShowAnimationEnd != null && isCompletelyShown) {
-            mOnCompositorShowAnimationEnd.run();
-            mOnCompositorShowAnimationEnd = null;
-        }
-
-        final boolean doneHiding = !compositedVisible && mIsHiding;
-        if (doneHiding) {
-            mFullscreenManager.removeListener(this);
-            mIsHiding = false;
-        }
+        onOffsetChanged(topControlsMinHeightOffset);
     }
 
     @Override
@@ -333,6 +325,34 @@ class StatusIndicatorMediator
             mIsHiding = true;
         }
 
+        // If the browser controls won't be animating, we can pretend that the animation ended.
+        if (!mCanAnimateNativeBrowserControls.get()) {
+            onOffsetChanged(mIndicatorHeight);
+        }
+
         notifyHeightChange(newHeight);
+    }
+
+    private void onOffsetChanged(int topControlsMinHeightOffset) {
+        final boolean compositedVisible = topControlsMinHeightOffset > 0;
+        // Composited view should be visible if we have a positive top min-height offset, or current
+        // min-height.
+        mModel.set(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, compositedVisible);
+
+        final boolean isCompletelyShown = topControlsMinHeightOffset == mIndicatorHeight;
+        // Android view should only be visible when the indicator is fully shown.
+        mModel.set(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY,
+                mIsHiding ? View.GONE : (isCompletelyShown ? View.VISIBLE : View.INVISIBLE));
+
+        if (mOnCompositorShowAnimationEnd != null && isCompletelyShown) {
+            mOnCompositorShowAnimationEnd.run();
+            mOnCompositorShowAnimationEnd = null;
+        }
+
+        final boolean doneHiding = !compositedVisible && mIsHiding;
+        if (doneHiding) {
+            mFullscreenManager.removeListener(this);
+            mIsHiding = false;
+        }
     }
 }

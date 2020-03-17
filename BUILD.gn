@@ -1032,26 +1032,8 @@ if (!is_ios) {
     data = [ "//third_party/devtools-frontend/src/test/webtests/" ]
   }
 
-  # https://www.chromium.org/developers/testing/webkit-layout-tests
-  generate_wrapper("blink_web_tests") {
+  group("blink_web_tests_support_data") {
     testonly = true
-    wrapper_script = "${root_build_dir}/bin/run_blink_web_tests"
-    executable = "//third_party/blink/tools/run_web_tests.py"
-    executable_args = []
-
-    if (is_debug) {
-      executable_args += [ "--debug" ]
-    } else {
-      executable_args += [ "--release" ]
-    }
-
-    if (is_android) {
-      executable_args += [
-        "--platform",
-        "android",
-      ]
-    }
-
     data_deps = [
       ":layout_test_data_mojo_bindings",
       ":layout_test_data_mojo_bindings_lite",
@@ -1112,9 +1094,12 @@ if (!is_ios) {
       "//testing/scripts/common.py",
       "//testing/scripts/run_isolated_script_test.py",
       "//testing/xvfb.py",
-      "//third_party/blink/perf_tests/",
       "//third_party/blink/tools/",
-      "//third_party/blink/web_tests/",
+      "//third_party/blink/web_tests/VirtualTestSuites",
+      "//third_party/blink/web_tests/external/WPT_BASE_MANIFEST_7.json",
+      "//third_party/blink/web_tests/external/wpt/resources/",
+      "//third_party/blink/web_tests/resources/",
+      "//third_party/blink/web_tests/wpt_internal/",
       "//third_party/pywebsocket3/src/mod_pywebsocket/",
     ]
 
@@ -1136,6 +1121,65 @@ if (!is_ios) {
         "//build/android/",
       ]
     }
+  }
+
+  # https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_tests.md
+  generate_wrapper("blink_web_tests") {
+    testonly = true
+    wrapper_script = "${root_build_dir}/bin/run_blink_web_tests"
+    executable = "//third_party/blink/tools/run_web_tests.py"
+    executable_args = []
+
+    if (is_debug) {
+      executable_args += [ "--debug" ]
+    } else {
+      executable_args += [ "--release" ]
+    }
+
+    if (is_android) {
+      executable_args += [
+        "--platform",
+        "android",
+      ]
+    }
+
+    data_deps = [ ":blink_web_tests_support_data" ]
+    data = [
+      "//third_party/blink/perf_tests/",
+      "//third_party/blink/web_tests/",
+    ]
+  }
+
+  generate_wrapper("webgpu_blink_web_tests") {
+    testonly = true
+    wrapper_script = "${root_build_dir}/bin/run_webgpu_blink_web_tests"
+    executable = "//third_party/blink/tools/run_web_tests.py"
+    executable_args = [
+      "--additional-driver-flag=--enable-unsafe-webgpu",
+      "--ignore-default-expectations",
+      "--additional-expectations",
+      "@WrappedPath(../../third_party/blink/web_tests/WebGPUExpectations)",
+      "--isolated-script-test-filter=wpt_internal/webgpu/*",
+    ]
+
+    if (is_debug) {
+      executable_args += [ "--debug" ]
+    } else {
+      executable_args += [ "--release" ]
+    }
+
+    if (is_android) {
+      executable_args += [
+        "--platform",
+        "android",
+      ]
+    }
+
+    data_deps = [ ":blink_web_tests_support_data" ]
+    data = [
+      "//third_party/blink/web_tests/WebGPUExpectations",
+      "//third_party/blink/web_tests/external/wpt/webgpu/",
+    ]
   }
 
   copy("layout_test_data_mojo_bindings") {

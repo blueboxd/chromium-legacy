@@ -12,6 +12,7 @@
 
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/debug/alias.h"
@@ -734,8 +735,12 @@ void HWNDMessageHandler::Restore() {
 }
 
 void HWNDMessageHandler::Activate() {
-  if (IsMinimized())
+  if (IsMinimized()) {
+    base::AutoReset<bool> restoring_activate(&notify_restore_on_activate_,
+                                             true);
     ::ShowWindow(hwnd(), SW_RESTORE);
+  }
+
   ::SetWindowPos(hwnd(), HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
   SetForegroundWindow(hwnd());
 }
@@ -989,7 +994,6 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
                                       LPARAM l_param) {
   HWND window = hwnd();
   LRESULT result = 0;
-
   if (delegate_ && delegate_->PreHandleMSG(message, w_param, l_param, &result))
     return result;
 
@@ -1020,9 +1024,10 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
     }
   }
 
-  if (message == WM_ACTIVATE && IsTopLevelWindow(window))
+  if (message == WM_ACTIVATE && IsTopLevelWindow(window)) {
     PostProcessActivateMessage(LOWORD(w_param), !!HIWORD(w_param),
                                reinterpret_cast<HWND>(l_param));
+  }
   return result;
 }
 
@@ -1285,6 +1290,12 @@ void HWNDMessageHandler::PostProcessActivateMessage(
     HWND window_gaining_or_losing_activation) {
   DCHECK(IsTopLevelWindow(hwnd()));
   const bool active = activation_state != WA_INACTIVE && !minimized;
+  if (notify_restore_on_activate_) {
+    notify_restore_on_activate_ = false;
+    delegate_->HandleWindowMinimizedOrRestored(/*restored=*/true);
+    // Prevent OnSize() from also calling HandleWindowMinimizedOrRestored.
+    last_size_param_ = SIZE_RESTORED;
+  }
   if (delegate_->CanActivate())
     delegate_->HandleActivationChanged(active);
 

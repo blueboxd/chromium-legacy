@@ -281,6 +281,10 @@ JobConfigurationBase::GetResourceRequest(bool bypass_proxy, int last_error) {
   rr->load_flags =
       net::LOAD_DISABLE_CACHE | (bypass_proxy ? net::LOAD_BYPASS_PROXY : 0);
   rr->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  // Disable secure DNS for requests related to device management to allow for
+  // recovery in the event of a misconfigured secure DNS policy.
+  rr->trusted_params = network::ResourceRequest::TrustedParams();
+  rr->trusted_params->disable_secure_dns = true;
 
   // If auth data is specified, use it to build the request.
   if (auth_data_) {

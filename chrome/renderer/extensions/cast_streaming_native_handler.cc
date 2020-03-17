@@ -584,22 +584,20 @@ void CastStreamingNativeHandler::StartCastRtpStream(
   if (!ToFrameSenderConfigOrThrow(isolate, params->payload, &config))
     return;
 
-  base::Closure start_callback =
-      base::Bind(&CastStreamingNativeHandler::CallStartCallback,
-                 weak_factory_.GetWeakPtr(),
-                 transport_id);
-  base::Closure stop_callback =
-      base::Bind(&CastStreamingNativeHandler::CallStopCallback,
-                 weak_factory_.GetWeakPtr(),
-                 transport_id);
+  base::OnceClosure start_callback =
+      base::BindOnce(&CastStreamingNativeHandler::CallStartCallback,
+                     weak_factory_.GetWeakPtr(), transport_id);
+  base::OnceClosure stop_callback =
+      base::BindOnce(&CastStreamingNativeHandler::CallStopCallback,
+                     weak_factory_.GetWeakPtr(), transport_id);
   CastRtpStream::ErrorCallback error_callback =
       base::Bind(&CastStreamingNativeHandler::CallErrorCallback,
                  weak_factory_.GetWeakPtr(),
                  transport_id);
 
   // |transport_id| is a globally unique identifier for the RTP stream.
-  transport->Start(transport_id, config, start_callback, stop_callback,
-                   error_callback);
+  transport->Start(transport_id, config, std::move(start_callback),
+                   std::move(stop_callback), error_callback);
 }
 
 void CastStreamingNativeHandler::StopCastRtpStream(

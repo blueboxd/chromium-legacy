@@ -23,6 +23,7 @@ class AppUpdateAll : public App {
   // Overrides for App.
   void FirstTaskRun() override;
   void Initialize() override;
+  void Uninitialize() override;
 
   scoped_refptr<Configurator> config_;
   std::unique_ptr<UpdateService> update_service_;
@@ -30,6 +31,10 @@ class AppUpdateAll : public App {
 
 void AppUpdateAll::Initialize() {
   config_ = base::MakeRefCounted<Configurator>();
+}
+
+void AppUpdateAll::Uninitialize() {
+  update_service_->Uninitialize();
 }
 
 // AppUpdateAll triggers an update of all registered applications.

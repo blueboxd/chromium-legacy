@@ -238,6 +238,7 @@ AccountReconcilor::AccountReconcilor(
       error_during_last_reconcile_(GoogleServiceAuthError::AuthErrorNone()),
       reconcile_is_noop_(true),
       set_accounts_in_progress_(false),
+      log_out_in_progress_(false),
       chrome_accounts_changed_(false),
       account_reconcilor_lock_count_(0),
       reconcile_on_unblock_(false),
@@ -445,7 +446,9 @@ void AccountReconcilor::PerformLogoutAllAccountsAction() {
     return;
   VLOG(1) << "AccountReconcilor::PerformLogoutAllAccountsAction";
   identity_manager_->GetAccountsCookieMutator()->LogOutAllAccounts(
-      delegate_->GetGaiaApiSource());
+      delegate_->GetGaiaApiSource(),
+      base::BindOnce(&AccountReconcilor::OnLogOutFromCookieCompleted,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void AccountReconcilor::StartReconcile() {
@@ -541,6 +544,7 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
       // instead.
       PerformLogoutAllAccountsAction();
       gaia_accounts.clear();
+      // TODO(alexilin): Asynchronously wait until the logout is complete.
       OnSetAccountsInCookieCompleted(
           signin::SetAccountsInCookieResult::kSuccess);
       DCHECK(!is_reconcile_started_);
@@ -754,6 +758,7 @@ void AccountReconcilor::FinishReconcile(
     // Really messed up state.  Blow away the gaia cookie completely and
     // rebuild it, making sure the primary account as specified by the
     // IdentityManager is the first session in the gaia cookie.
+    log_out_in_progress_ = true;
     PerformLogoutAllAccountsAction();
     gaia_accounts.clear();
   }
@@ -816,6 +821,7 @@ void AccountReconcilor::FinishReconcile(
 
 void AccountReconcilor::AbortReconcile() {
   VLOG(1) << "AccountReconcilor::AbortReconcile: try again later";
+  log_out_in_progress_ = false;
   add_to_cookie_.clear();
   CalculateIfReconcileIsDone();
 
@@ -826,7 +832,8 @@ void AccountReconcilor::AbortReconcile() {
 void AccountReconcilor::CalculateIfReconcileIsDone() {
   base::TimeDelta duration = base::Time::Now() - reconcile_start_time_;
   // Record the duration if reconciliation was underway and now it is over.
-  if (is_reconcile_started_ && add_to_cookie_.empty()) {
+  if (is_reconcile_started_ && add_to_cookie_.empty() &&
+      !log_out_in_progress_) {
     bool was_last_reconcile_successful =
         (error_during_last_reconcile_.state() ==
          GoogleServiceAuthError::State::NONE);
@@ -848,7 +855,7 @@ void AccountReconcilor::CalculateIfReconcileIsDone() {
     }
   }
 
-  is_reconcile_started_ = !add_to_cookie_.empty();
+  is_reconcile_started_ = !add_to_cookie_.empty() || log_out_in_progress_;
   if (!is_reconcile_started_)
     VLOG(1) << "AccountReconcilor::CalculateIfReconcileIsDone: done";
 }
@@ -934,6 +941,23 @@ void AccountReconcilor::OnAddAccountToCookieCompleted(
         !error_during_last_reconcile_.IsPersistentError()) {
       error_during_last_reconcile_ = error;
     }
+    CalculateIfReconcileIsDone();
+    ScheduleStartReconcileIfChromeAccountsChanged();
+  }
+}
+
+void AccountReconcilor::OnLogOutFromCookieCompleted(
+    const GoogleServiceAuthError& error) {
+  VLOG(1) << "AccountReconcilor::OnLogOutFromCookieCompleted: "
+          << "Error was " << error.ToString();
+
+  if (is_reconcile_started_) {
+    if (error.state() != GoogleServiceAuthError::State::NONE &&
+        !error_during_last_reconcile_.IsPersistentError()) {
+      error_during_last_reconcile_ = error;
+    }
+
+    log_out_in_progress_ = false;
     CalculateIfReconcileIsDone();
     ScheduleStartReconcileIfChromeAccountsChanged();
   }

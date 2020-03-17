@@ -102,7 +102,7 @@ interface NetworkServiceClient {
     mojo_base.mojom.UnguessableToken devtool_request_id,
     URLLoaderCompletionStatus status);
 
-  // Called to log Rappor sample for the
+  // Called to log a Rappor sample and a UKM event for the
   // Extensions.CrossOriginFetchFromContentScript3 metric.  See the metric
   // definition in //tools/metrics/rappor/rappor.xml for more details,
   // including when this metric should be logged.
@@ -111,8 +111,7 @@ interface NetworkServiceClient {
   // that has initiated the network request.  See the doc comment for
   // network.mojom.URLRequest.isolated_world_origin for more details.
   // In practice, |isolated_world_origin| is the Chrome Extension ID.
-  LogRapporSampleForCrossOriginFetchFromContentScript3(
-    string isolated_world_hostname);
+  LogCrossOriginFetchFromContentScript3(string isolated_world_hostname);
 };
 
 // Values for configuring HTTP authentication that can only be set once.

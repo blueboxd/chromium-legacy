@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.areAnimatorsEnabled;
 
@@ -15,6 +16,7 @@ import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -53,6 +55,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     public TestRule mProcessor = new Features.JUnitProcessor();
 
     private static final int CONTAINER_HEIGHT = 56;
+    private static final int INCREASED_CONTAINER_HEIGHT = 76;
     private PropertyModel mContainerModel;
     private PropertyModelChangeProcessor mMCP;
     private TabListRecyclerView mRecyclerView;
@@ -260,6 +263,27 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
         mContainerModel.set(TabListContainerProperties.BOTTOM_CONTROLS_HEIGHT, CONTAINER_HEIGHT);
         assertThat(((FrameLayout.LayoutParams) mRecyclerView.getLayoutParams()).bottomMargin,
                 equalTo(CONTAINER_HEIGHT));
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    public void testSetShadowTopMarginUpdatesMargin() {
+        mContainerModel.set(
+                TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);
+
+        mContainerModel.set(TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES, false);
+        mContainerModel.set(TabListContainerProperties.IS_VISIBLE, true);
+
+        ImageView shadowImageView = mRecyclerView.getShadowImageViewForTesting();
+
+        assertThat(mRecyclerView.getLayoutParams(), instanceOf(FrameLayout.LayoutParams.class));
+        assertEquals(0, ((FrameLayout.LayoutParams) shadowImageView.getLayoutParams()).topMargin);
+
+        mContainerModel.set(
+                TabListContainerProperties.SHADOW_TOP_MARGIN, INCREASED_CONTAINER_HEIGHT);
+        assertEquals(INCREASED_CONTAINER_HEIGHT,
+                ((FrameLayout.LayoutParams) shadowImageView.getLayoutParams()).topMargin);
     }
 
     @Override

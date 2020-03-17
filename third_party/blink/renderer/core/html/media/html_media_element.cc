@@ -3977,7 +3977,7 @@ WebMediaPlayer::CorsMode HTMLMediaElement::CorsMode() const {
       FastGetAttribute(html_names::kCrossoriginAttr);
   if (cross_origin_mode.IsNull())
     return WebMediaPlayer::kCorsModeUnspecified;
-  if (DeprecatedEqualIgnoringCase(cross_origin_mode, "use-credentials"))
+  if (EqualIgnoringASCIICase(cross_origin_mode, "use-credentials"))
     return WebMediaPlayer::kCorsModeUseCredentials;
   return WebMediaPlayer::kCorsModeAnonymous;
 }

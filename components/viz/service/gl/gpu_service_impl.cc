@@ -730,6 +730,11 @@ void GpuServiceImpl::DidDestroyChannel(int client_id) {
   gpu_host_->DidDestroyChannel(client_id);
 }
 
+void GpuServiceImpl::DidDestroyAllChannels() {
+  DCHECK(main_runner_->BelongsToCurrentThread());
+  gpu_host_->DidDestroyAllChannels();
+}
+
 void GpuServiceImpl::DidDestroyOffscreenContext(const GURL& active_url) {
   DCHECK(main_runner_->BelongsToCurrentThread());
   gpu_host_->DidDestroyOffscreenContext(active_url);

@@ -37,6 +37,7 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/installer.h"
 #include "chrome/updater/persisted_data.h"
+#include "chrome/updater/prefs.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/win/install_progress_observer.h"
 #include "chrome/updater/win/setup/setup.h"
@@ -699,6 +700,7 @@ class AppInstall : public App {
  private:
   ~AppInstall() override = default;
   void Initialize() override;
+  void Uninitialize() override;
   void FirstTaskRun() override;
 
   void SetupDone(int result);
@@ -717,6 +719,10 @@ AppInstall::AppInstall(const std::string& app_id) : app_id_(app_id) {}
 void AppInstall::Initialize() {
   base::i18n::InitializeICU();
   config_ = base::MakeRefCounted<Configurator>();
+}
+
+void AppInstall::Uninitialize() {
+  PrefsCommitPendingWrites(config_->GetPrefService());
 }
 
 void AppInstall::FirstTaskRun() {

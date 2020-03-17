@@ -83,9 +83,9 @@ IN_PROC_BROWSER_TEST_F(WebAppGlassBrowserFrameViewTest, NoThemeColor) {
   if (!InstallAndLaunchWebApp())
     return;
 
-  EXPECT_EQ(
-      glass_frame_view_->GetTitlebarColor(),
-      ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_FRAME, false));
+  EXPECT_EQ(glass_frame_view_->GetTitlebarColor(),
+            ThemeProperties::GetDefaultColor(
+                ThemeProperties::COLOR_FRAME_ACTIVE, false));
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppGlassBrowserFrameViewTest, MaximizedLayout) {

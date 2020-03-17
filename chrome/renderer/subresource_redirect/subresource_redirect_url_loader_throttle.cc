@@ -45,7 +45,9 @@ SubresourceRedirectURLLoaderThrottle::MaybeCreateThrottle(
       request.GetRequestDestination() ==
           network::mojom::RequestDestination::kImage &&
       request.Url().ProtocolIs(url::kHttpsScheme) &&
-      blink::WebNetworkStateNotifier::SaveDataEnabled()) {
+      blink::WebNetworkStateNotifier::SaveDataEnabled() &&
+      request.GetRequestContext() !=
+          blink::mojom::RequestContextType::FAVICON) {
     return base::WrapUnique<SubresourceRedirectURLLoaderThrottle>(
         new SubresourceRedirectURLLoaderThrottle(
             render_frame_id, request.GetPreviewsState() &

@@ -89,7 +89,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XDisplayManager::Delegate {
  public:
   virtual ~Delegate() = default;
   virtual void OnXDisplayListUpdated() = 0;
-  virtual float GetXDisplayScaleFactor() = 0;
+  virtual float GetXDisplayScaleFactor() const = 0;
 };
 
 }  // namespace ui

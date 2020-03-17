@@ -13,8 +13,6 @@ namespace web_app {
 
 base::FilePath GetChromeProxyPath();
 
-base::FilePath GetChromePwaLauncherPath();
-
 namespace internals {
 
 // Returns the Windows user-level shortcut paths that are specified in

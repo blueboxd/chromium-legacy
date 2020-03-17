@@ -61,8 +61,6 @@ ChromeVoxLanguageSwitchingTest = class extends ChromeVoxNextE2ETest {
         {'lang': 'zh-TW'}, {'lang': 'ast'}
       ]);
     };
-
-    this.setAvailableVoices();
   }
 
   /**
@@ -93,7 +91,7 @@ ChromeVoxLanguageSwitchingTest = class extends ChromeVoxNextE2ETest {
    */
   setAvailableVoices() {
     chrome.tts.getVoices(function(voices) {
-      LanguageSwitching.availableVoices_ = voices;
+      LanguageSwitching.instance.availableVoices_ = voices;
     });
   }
 
@@ -221,6 +219,7 @@ TEST_F(
         // Turn on language switching.
         localStorage['languageSwitching'] = 'true';
         this.setAvailableVoices();
+        LanguageSwitching.instance.subNodeSwitchingEnabled_ = true;
         mockFeedback.call(doCmd('jumpToTop'))
             .expectSpeechWithLanguage('es', 'español: Hola.');
         mockFeedback.call(doCmd('nextLine'))
@@ -241,7 +240,7 @@ TEST_F(
         localStorage['languageSwitching'] = 'true';
         this.setAvailableVoices();
         // Disable sub-node-level switching.
-        LanguageSwitching.sub_node_switching_enabled_ = false;
+        LanguageSwitching.instance.subNodeSwitchingEnabled_ = false;
         mockFeedback.call(doCmd('jumpToTop'))
             .expectSpeechWithLanguage('es', 'español: Hola.');
         mockFeedback.call(doCmd('nextLine'))
@@ -262,12 +261,13 @@ TEST_F(
       this.runWithLoadedTree(this.nestedLanguagesLabeledDoc, function() {
         localStorage['languageSwitching'] = 'true';
         this.setAvailableVoices();
+        LanguageSwitching.instance.subNodeSwitchingEnabled_ = true;
         // We should be able to switch languages when each component is labeled
         // with a language.
         mockFeedback
             .call(doCmd('jumpToTop'))
-            // LanguageSwitching.currentLanguage_ is initialized to 'en'. Do not
-            // prepend 'English' because language does not switch.
+            // LanguageSwitching.instance_.currentLanguage_ is initialized to
+            // 'en'. Do not prepend 'English' because language does not switch.
             .expectSpeechWithLanguage(
                 'en', 'In the morning, I sometimes eat breakfast.');
         mockFeedback.call(doCmd('nextLine'))
@@ -297,7 +297,7 @@ TEST_F(
         localStorage['languageSwitching'] = 'true';
         this.setAvailableVoices();
         // Disable sub-node-switching.
-        LanguageSwitching.sub_node_switching_enabled_ = false;
+        LanguageSwitching.instance.subNodeSwitchingEnabled_ = false;
         mockFeedback.call(doCmd('jumpToTop'))
             .expectSpeechWithLanguage(
                 'en', 'In the morning, I sometimes eat breakfast.');
@@ -328,12 +328,13 @@ TEST_F(
       this.runWithLoadedTree(this.buttonAndLinkDoc, function(root) {
         localStorage['languageSwitching'] = 'true';
         this.setAvailableVoices();
+        LanguageSwitching.instance.subNodeSwitchingEnabled_ = true;
         mockFeedback
             .call(doCmd('jumpToTop'))
             // Sub-node language detection is able to label this as 'en' and
             // overwrite the author-provided language of 'es'.
-            // LanguageSwitching.currentLanguage_ is initialized to 'en'. Do not
-            // prepend 'English' because language does not switch.
+            // LanguageSwitching.instance_.currentLanguage_ is initialized to
+            // 'en'. Do not prepend 'English' because language does not switch.
             .expectSpeechWithLanguage(
                 'en', 'This is a paragraph, written in English.')
             .call(doCmd('nextObject'))
@@ -358,7 +359,7 @@ TEST_F(
         localStorage['languageSwitching'] = 'true';
         this.setAvailableVoices();
         // Disable sub-node-switching.
-        LanguageSwitching.sub_node_switching_enabled_ = false;
+        LanguageSwitching.instance.subNodeSwitchingEnabled_ = false;
         mockFeedback
             .call(doCmd('jumpToTop'))
             // Sub-node language detection is disabled, so we are not able to
@@ -387,12 +388,14 @@ TEST_F(
           this.japaneseAndEnglishUnlabeledDoc, function(root) {
             localStorage['languageSwitching'] = 'true';
             this.setAvailableVoices();
+            LanguageSwitching.instance.subNodeSwitchingEnabled_ = true;
             // We are able to separate out English and Japanese because they use
             // different scripts.
             mockFeedback
                 .call(doCmd('jumpToTop'))
-                // LanguageSwitching.currentLanguage_ is initialized to 'en'. Do
-                // not prepend 'English' because language does not switch.
+                // LanguageSwitching.instance_.currentLanguage_ is initialized
+                // to 'en'. Do not prepend 'English' because language does not
+                // switch.
                 .expectSpeechWithLanguage('en', 'Hello, my name is ')
                 .expectSpeechWithLanguage('ja', '日本語: 太田あきひろ. ')
                 // Expect 'en-us' because sub-node language of 'en' doesn't come
@@ -416,7 +419,7 @@ TEST_F(
             localStorage['languageSwitching'] = 'true';
             this.setAvailableVoices();
             // Disable sub-node-switching.
-            LanguageSwitching.sub_node_switching_enabled_ = false;
+            LanguageSwitching.instance.subNodeSwitchingEnabled_ = false;
             mockFeedback
                 .call(doCmd('jumpToTop'))
                 // Expect the node's contents to be read in one language
@@ -441,12 +444,13 @@ TEST_F(
       this.runWithLoadedTree(this.englishAndKoreanUnlabeledDoc, function(root) {
         localStorage['languageSwitching'] = 'true';
         this.setAvailableVoices();
+        LanguageSwitching.instance.subNodeSwitchingEnabled_ = true;
         // We are able to separate out English and Korean because they use
         // different scripts.
         mockFeedback
             .call(doCmd('jumpToTop'))
-            // LanguageSwitching.currentLanguage_ is initialized to 'en'. Do not
-            // prepend 'English' because language does not switch.
+            // LanguageSwitching.instance_.currentLanguage_ is initialized to
+            // 'en'. Do not prepend 'English' because language does not switch.
             .expectSpeechWithLanguage('en', 'This text is written in English. ')
             .expectSpeechWithLanguage('ko', '한국어: 차에 한하여 중임할 수. ')
             // Expect 'en-us' because sub-node language of 'en' doesn't come
@@ -466,7 +470,7 @@ TEST_F(
         localStorage['languageSwitching'] = 'true';
         this.setAvailableVoices();
         // Disable sub-node-switching
-        LanguageSwitching.sub_node_switching_enabled_ = false;
+        LanguageSwitching.instance.subNodeSwitchingEnabled_ = false;
         mockFeedback.call(doCmd('jumpToTop'))
             .expectSpeechWithLanguage(
                 'en-us',
@@ -484,11 +488,12 @@ TEST_F(
       this.runWithLoadedTree(this.englishAndFrenchUnlabeledDoc, function(root) {
         localStorage['languageSwitching'] = 'true';
         this.setAvailableVoices();
+        LanguageSwitching.instance.subNodeSwitchingEnabled_ = true;
         // Unable to separate out English and French when unlabeled.
         mockFeedback
             .call(doCmd('jumpToTop'))
-            // LanguageSwitching.currentLanguage_ is initialized to 'en'. Do not
-            // prepend 'English' because language does not switch.
+            // LanguageSwitching.instance_.currentLanguage_ is initialized to
+            // 'en'. Do not prepend 'English' because language does not switch.
             .expectSpeechWithLanguage(
                 'en',
                 'This entire object should be read in English, even' +
@@ -505,7 +510,7 @@ TEST_F(
       this.runWithLoadedTree(this.englishAndFrenchUnlabeledDoc, function(root) {
         localStorage['languageSwitching'] = 'true';
         this.setAvailableVoices();
-        LanguageSwitching.sub_node_switching_enabled_ = false;
+        LanguageSwitching.instance.subNodeSwitchingEnabled_ = false;
         mockFeedback.call(doCmd('jumpToTop'))
             .expectSpeechWithLanguage(
                 'en',
@@ -525,8 +530,9 @@ TEST_F(
           this.japaneseCharacterUnlabeledDoc, function(root) {
             localStorage['languageSwitching'] = 'true';
             this.setAvailableVoices();
+            LanguageSwitching.instance.subNodeSwitchingEnabled_ = true;
             // We are able to detect and switch at the character level if the
-            // character is unique to a certian script. In this case, 'ど' only
+            // character is unique to a certain script. In this case, 'ど' only
             // appears in Japanese, and therefore we can confidently switch
             // languages.
             mockFeedback.call(doCmd('jumpToTop'))
@@ -543,7 +549,7 @@ TEST_F(
           this.japaneseCharacterUnlabeledDoc, function(root) {
             localStorage['languageSwitching'] = 'true';
             this.setAvailableVoices();
-            LanguageSwitching.sub_node_switching_enabled_ = false;
+            LanguageSwitching.instance.subNodeSwitchingEnabled_ = false;
             mockFeedback.call(doCmd('jumpToTop'))
                 .expectSpeechWithLanguage('en-us', 'ど');
             mockFeedback.replay();
@@ -558,6 +564,7 @@ TEST_F(
       this.runWithLoadedTree(this.japaneseAndChineseUnlabeledDoc, function(root) {
         localStorage['languageSwitching'] = 'true';
         this.setAvailableVoices();
+        LanguageSwitching.instance.subNodeSwitchingEnabled_ = true;
         // Unable to separate out Japanese and Chinese if unlabeled.
         mockFeedback.call(doCmd('jumpToTop'))
             .expectSpeechWithLanguage(
@@ -574,7 +581,7 @@ TEST_F(
       this.runWithLoadedTree(this.japaneseAndChineseUnlabeledDoc, function(root) {
         localStorage['languageSwitching'] = 'true';
         this.setAvailableVoices();
-        LanguageSwitching.sub_node_switching_enabled_ = false;
+        LanguageSwitching.instance.subNodeSwitchingEnabled_ = false;
         mockFeedback.call(doCmd('jumpToTop'))
             .expectSpeechWithLanguage(
                 'en-us',
@@ -599,7 +606,7 @@ TEST_F(
           function(root) {
             localStorage['languageSwitching'] = 'true';
             this.setAvailableVoices();
-            LanguageSwitching.sub_node_switching_enabled_ = false;
+            LanguageSwitching.instance.subNodeSwitchingEnabled_ = false;
             mockFeedback.call(doCmd('jumpToTop'))
                 .expectSpeechWithLanguage(
                     'zh',
@@ -616,6 +623,7 @@ TEST_F(
       this.runWithLoadedTree(this.japaneseAndKoreanUnlabeledDoc, function(root) {
         localStorage['languageSwitching'] = 'true';
         this.setAvailableVoices();
+        LanguageSwitching.instance.subNodeSwitchingEnabled_ = true;
         // Unable to separate out Japanese and Korean if unlabeled.
         mockFeedback.call(doCmd('jumpToTop'))
             .expectSpeechWithLanguage(
@@ -632,7 +640,7 @@ TEST_F(
       this.runWithLoadedTree(this.japaneseAndKoreanUnlabeledDoc, function(root) {
         localStorage['languageSwitching'] = 'true';
         this.setAvailableVoices();
-        LanguageSwitching.sub_node_switching_enabled_ = false;
+        LanguageSwitching.instance.subNodeSwitchingEnabled_ = false;
         // Node-level language detection runs and assigns language of 'ko' to
         // the node.
         mockFeedback.call(doCmd('jumpToTop'))
@@ -652,6 +660,7 @@ TEST_F(
       this.runWithLoadedTree(this.asturianAndJapaneseDoc, function(root) {
         localStorage['languageSwitching'] = 'true';
         this.setAvailableVoices();
+        LanguageSwitching.instance.subNodeSwitchingEnabled_ = true;
         mockFeedback.call(doCmd('jumpToTop'))
             .expectSpeechWithLanguage('ja', '日本語: ど')
             .call(doCmd('nextObject'))
@@ -670,7 +679,7 @@ TEST_F(
       this.runWithLoadedTree(this.asturianAndJapaneseDoc, function(root) {
         localStorage['languageSwitching'] = 'true';
         this.setAvailableVoices();
-        LanguageSwitching.sub_node_level_switching_enabled_ = false;
+        LanguageSwitching.instance_.sub_node_level_switching_enabled_ = false;
         mockFeedback.call(doCmd('jumpToTop'))
             .expectSpeechWithLanguage('ja', '日本語: ど')
             .call(doCmd('nextObject'))
@@ -710,7 +719,7 @@ TEST_F('ChromeVoxLanguageSwitchingTest', 'DefaultToUILanguageTest', function() {
       this.japaneseAndInvalidLanguagesLabeledDoc, function(root) {
         localStorage['languageSwitching'] = 'true';
         this.setAvailableVoices();
-        LanguageSwitching.sub_node_level_switching_enabled_ = false;
+        LanguageSwitching.instance_.sub_node_level_switching_enabled_ = false;
         // Default to browser UI language, 'en-us', instead of defaulting to the
         // language we last switched to.
         mockFeedback.call(doCmd('jumpToTop'))
@@ -729,7 +738,7 @@ TEST_F('ChromeVoxLanguageSwitchingTest', 'NoAvailableVoicesTest', function() {
   this.runWithLoadedTree(this.vietnameseAndUrduLabeledDoc, function(root) {
     localStorage['languageSwitching'] = 'true';
     this.setAvailableVoices();
-    LanguageSwitching.sub_node_level_switching_enabled_ = false;
+    LanguageSwitching.instance_.sub_node_level_switching_enabled_ = false;
     mockFeedback.call(doCmd('jumpToTop'))
         .expectSpeechWithLanguage(
             'en-us', 'No voice available for language: Vietnamese')

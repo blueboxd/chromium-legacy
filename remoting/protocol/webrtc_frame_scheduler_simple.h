@@ -41,7 +41,7 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
 
   // WebrtcFrameScheduler implementation.
   void Start(WebrtcDummyVideoEncoderFactory* video_encoder_factory,
-             const base::Closure& capture_callback) override;
+             const base::RepeatingClosure& capture_callback) override;
   void Pause(bool pause) override;
   bool OnFrameCaptured(const webrtc::DesktopFrame* frame,
                        WebrtcVideoEncoder::FrameParams* params_out) override;
@@ -59,7 +59,7 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
   // be replaced for unittests.
   const base::TickClock* tick_clock_;
 
-  base::Closure capture_callback_;
+  base::RepeatingClosure capture_callback_;
   bool paused_ = false;
 
   // Set to true after the first key frame is requested.

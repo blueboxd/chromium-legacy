@@ -9,6 +9,8 @@ import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.CachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
@@ -43,7 +45,6 @@ public class ChromeCachedFlags {
 
         // clang-format off
         List<String> featuresToCache = Arrays.asList(
-
                 ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED,
                 ChromeFeatureList.CHROME_DUET,
                 ChromeFeatureList.CHROME_DUET_ADAPTIVE,
@@ -78,6 +79,15 @@ public class ChromeCachedFlags {
                 TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO);
         // clang-format on
         CachedFeatureFlags.cacheFieldTrialParameters(fieldTrialsToCache);
+
+        // TODO(crbug.com/1062013): Remove this after M85.
+        // This pref is only needed while clients are transitioning to caching via
+        // {@link StartSurfaceConfiguration#START_SURFACE_VARIATION}. It is still honored by
+        // {@link StartSurfaceConfiguration#isStartSurfaceSinglePaneEnabled()}. When it is removed,
+        // the cached value will be lost, but this only matters if the client hasn't started Chrome
+        // in months, and the effect is only that they will use a default value for the first run.
+        SharedPreferencesManager.getInstance().removeKey(
+                ChromePreferenceKeys.START_SURFACE_SINGLE_PANE_ENABLED_KEY);
 
         mIsFinishedCachingNativeFlags = true;
     }

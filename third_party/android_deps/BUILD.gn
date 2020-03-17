@@ -137,16 +137,6 @@ java_group("com_android_support_cursoradapter_java") {
   ]
 }
 
-java_group("com_android_support_customview_java") {
-  deps = [
-    ":${target_name}_orig__unpack_aar",
-    ":androidx_customview_customview_java",
-  ]
-  input_jars_paths = [
-    "${target_out_dir}/com_android_support_customview_java_orig/classes.jar",
-  ]
-}
-
 java_group("com_android_support_design_java") {
   deps = [
     ":${target_name}_orig__unpack_aar",
@@ -325,16 +315,6 @@ java_group("com_android_support_versionedparcelable_java") {
     ":androidx_versionedparcelable_versionedparcelable_java",
   ]
   input_jars_paths = [ "${target_out_dir}/com_android_support_versionedparcelable_java_orig/classes.jar" ]
-}
-
-java_group("com_android_support_viewpager_java") {
-  deps = [
-    ":${target_name}_orig__unpack_aar",
-    ":androidx_viewpager_viewpager_java",
-  ]
-  input_jars_paths = [
-    "${target_out_dir}/com_android_support_viewpager_java_orig/classes.jar",
-  ]
 }
 
 # The dependencies below are used by chromecast internal.

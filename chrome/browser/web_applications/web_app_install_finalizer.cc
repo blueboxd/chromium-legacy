@@ -97,25 +97,21 @@ std::vector<SquareSizePx> GetSquareSizePxs(
 }
 
 void SetWebAppFileHandlers(
-    const std::vector<blink::Manifest::FileHandler>& file_handlers,
+    const std::vector<blink::Manifest::FileHandler>& manifest_file_handlers,
     WebApp* web_app) {
   apps::FileHandlers web_app_file_handlers;
-  for (const auto& file_handler : file_handlers) {
-    apps::FileHandler web_app_file_handler;
-    web_app_file_handler.action = file_handler.action;
 
-    // Convert from string16 to string in the accept map.
-    for (const auto& pair : file_handler.accept) {
-      apps::FileHandler::AcceptEntry accept_entry;
-      accept_entry.mime_type = base::UTF16ToUTF8(pair.first);
-      for (const auto& file_extension : pair.second) {
-        // Remove leading ".".
-        const auto utf8_file_extension = base::UTF16ToUTF8(file_extension);
-        DCHECK(base::StartsWith(utf8_file_extension, ".",
-                                base::CompareCase::SENSITIVE));
-        accept_entry.file_extensions.insert(utf8_file_extension.substr(1));
-      }
-      web_app_file_handler.accept.push_back(std::move(accept_entry));
+  for (const auto& manifest_file_handler : manifest_file_handlers) {
+    apps::FileHandler web_app_file_handler;
+    web_app_file_handler.action = manifest_file_handler.action;
+
+    for (const auto& it : manifest_file_handler.accept) {
+      apps::FileHandler::AcceptEntry web_app_accept_entry;
+      web_app_accept_entry.mime_type = base::UTF16ToUTF8(it.first);
+      for (const auto& manifest_file_extension : it.second)
+        web_app_accept_entry.file_extensions.insert(
+            base::UTF16ToUTF8(manifest_file_extension));
+      web_app_file_handler.accept.push_back(std::move(web_app_accept_entry));
     }
 
     web_app_file_handlers.push_back(std::move(web_app_file_handler));

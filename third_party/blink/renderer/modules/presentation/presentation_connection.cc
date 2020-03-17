@@ -450,7 +450,6 @@ void PresentationConnection::send(const String& message,
 void PresentationConnection::send(DOMArrayBuffer* array_buffer,
                                   ExceptionState& exception_state) {
   DCHECK(array_buffer);
-  DCHECK(array_buffer->Buffer());
   if (!CanSendMessage(exception_state))
     return;
   if (!base::CheckedNumeric<wtf_size_t>(array_buffer->ByteLengthAsSizeT())
@@ -643,7 +642,6 @@ void PresentationConnection::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {
   DCHECK(!messages_.IsEmpty());
   DCHECK_EQ(messages_.front()->type, kMessageTypeBlob);
   DCHECK(buffer);
-  DCHECK(buffer->Buffer());
   if (!base::CheckedNumeric<wtf_size_t>(buffer->ByteLengthAsSizeT())
            .IsValid()) {
     // TODO(crbug.com/1036565): generate error message? The problem is that the

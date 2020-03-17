@@ -380,11 +380,11 @@ base::Optional<double> Animation::currentTimeForBinding() const {
   // 3. Otherwise,
   // current time = (timeline time - start time) × playback rate
   base::Optional<double> timeline_time = timeline_->CurrentTimeSeconds();
-  // TODO(crbug.com/916117): Handle NaN values for scroll linked animations.
-  if (!timeline_time) {
-    DCHECK(timeline_->IsScrollTimeline());
-    return 0;
-  }
+
+  // An active timeline should always have a value, and since inactive timeline
+  // is handled in step 2 above, make sure that timeline_time has a value.
+  DCHECK(timeline_time.has_value());
+
   double current_time =
       (timeline_time.value() - start_time_.value()) * playback_rate_;
   return SecondsToMilliseconds(current_time);
@@ -690,11 +690,13 @@ base::Optional<double> Animation::CalculateCurrentTime() const {
   if (!start_time_ || !timeline_ || !timeline_->IsActive())
     return base::nullopt;
   base::Optional<double> timeline_time = timeline_->CurrentTimeSeconds();
-  // TODO(crbug.com/916117): Handle NaN time for scroll-linked animations.
+
   if (!timeline_time) {
-    DCHECK(timeline_->IsScrollTimeline());
+    // timeline_time can be null only when the timeline is inactive
+    DCHECK(!timeline_->IsActive());
     return base::nullopt;
   }
+
   return (timeline_time.value() - start_time_.value()) * playback_rate_;
 }
 
@@ -1216,8 +1218,8 @@ void Animation::UpdateFinishedState(UpdateType update_type,
   if (unconstrained_current_time && start_time_ && !pending_play_ &&
       !pending_pause_) {
     // Can seek outside the bounds of the active effect. Set the hold time to
-    // the unconstrained value of the current time in the even that this update
-    // this the result of explicitly setting the current time and the new time
+    // the unconstrained value of the current time in the event that this update
+    // is the result of explicitly setting the current time and the new time
     // is out of bounds. An update due to a time tick should not snap the hold
     // value back to the boundary if previously set outside the normal effect
     // boundary. The value of previous current time is used to retain this
@@ -1849,7 +1851,7 @@ void Animation::cancel() {
   SetOutdated();
 
   // Force dispatch of canceled event.
-  ForceServiceOnNextFrame();
+  Update(kTimingUpdateOnDemand);
 
   // Notify of change to canceled state.
   NotifyProbe();

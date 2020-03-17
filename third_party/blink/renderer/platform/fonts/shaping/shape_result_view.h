@@ -145,9 +145,11 @@ class PLATFORM_EXPORT ShapeResultView final
   }
   void GetRunFontData(Vector<ShapeResult::RunFontData>*) const;
 
+  void ExpandRangeToIncludePartialGlyphs(unsigned* from, unsigned* to) const;
+
  private:
   template <class ShapeResultType>
-  ShapeResultView(const ShapeResultType*);
+  explicit ShapeResultView(const ShapeResultType*);
 
   struct RunInfoPart;
   template <class ShapeResultType>

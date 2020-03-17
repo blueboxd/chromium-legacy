@@ -27,6 +27,11 @@ static constexpr base::TaskTraits kComClientTraits = {
 
 namespace updater {
 
+HRESULT UpdaterObserverImpl::OnComplete(int error_code) {
+  VLOG(2) << "UpdaterObserverImpl::OnComplete(" << error_code << ")";
+  return S_OK;
+}
+
 UpdateServiceOutOfProcess::UpdateServiceOutOfProcess() = default;
 
 UpdateServiceOutOfProcess::~UpdateServiceOutOfProcess() {
@@ -76,6 +81,10 @@ void UpdateServiceOutOfProcess::Update(const std::string& app_id,
   NOTREACHED();
 }
 
+void UpdateServiceOutOfProcess::Uninitialize() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
 void UpdateServiceOutOfProcess::UpdateAllOnSTA(
     base::OnceCallback<void(Result)> callback) {
   DCHECK(com_task_runner_->BelongsToCurrentThread());
@@ -97,12 +106,17 @@ void UpdateServiceOutOfProcess::UpdateAllOnSTA(
     return;
   }
 
-  hr = updater->UpdateAll(NULL);
+  ::CoAddRefServerProcess();
+  auto observer = Microsoft::WRL::Make<UpdaterObserverImpl>();
+  hr = updater->UpdateAll(observer.Get());
   if (FAILED(hr)) {
     VLOG(2) << "Failed to call IUpdater::UpdateAll" << std::hex << hr;
     std::move(callback).Run(static_cast<Result>(hr));
     return;
   }
+
+  observer.Reset();
+  ::CoReleaseServerProcess();
 }
 
 }  // namespace updater

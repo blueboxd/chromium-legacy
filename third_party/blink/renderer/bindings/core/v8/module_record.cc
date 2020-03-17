@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
-
+#include "base/feature_list.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/boxed_v8_module.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -17,6 +18,49 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
+
+// static
+ModuleEvaluationResult ModuleEvaluationResult::Empty() {
+  DCHECK(!base::FeatureList::IsEnabled(features::kTopLevelAwait));
+  return ModuleEvaluationResult(true, {});
+}
+
+// static
+ModuleEvaluationResult ModuleEvaluationResult::FromResult(
+    v8::Local<v8::Value> promise) {
+  DCHECK(base::FeatureList::IsEnabled(features::kTopLevelAwait) ||
+         promise.IsEmpty());
+  DCHECK(!base::FeatureList::IsEnabled(features::kTopLevelAwait) ||
+         promise->IsPromise());
+  return ModuleEvaluationResult(true, promise);
+}
+
+// static
+ModuleEvaluationResult ModuleEvaluationResult::FromException(
+    v8::Local<v8::Value> exception) {
+  DCHECK(!exception.IsEmpty());
+  return ModuleEvaluationResult(false, exception);
+}
+
+ModuleEvaluationResult& ModuleEvaluationResult::Escape(
+    ScriptState::EscapableScope* scope) {
+  value_ = scope->Escape(value_);
+  return *this;
+}
+
+v8::Local<v8::Value> ModuleEvaluationResult::GetException() const {
+  DCHECK(IsException());
+  DCHECK(!value_.IsEmpty());
+  return value_;
+}
+
+ScriptPromise ModuleEvaluationResult::GetPromise(
+    ScriptState* script_state) const {
+  DCHECK(base::FeatureList::IsEnabled(features::kTopLevelAwait));
+  DCHECK(IsSuccess());
+  DCHECK(!value_.IsEmpty());
+  return ScriptPromise(script_state, value_);
+}
 
 ModuleRecordProduceCacheData::ModuleRecordProduceCacheData(
     v8::Isolate* isolate,

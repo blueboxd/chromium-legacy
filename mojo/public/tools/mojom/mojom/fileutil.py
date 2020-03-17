@@ -14,7 +14,8 @@ def _GetDirAbove(dirname):
   path = os.path.abspath(__file__)
   while True:
     path, tail = os.path.split(path)
-    assert tail
+    if not tail:
+      return None
     if tail == dirname:
       return path
 
@@ -32,13 +33,13 @@ def EnsureDirectoryExists(path, always_try_to_create=False):
         raise
 
 
-def EnsureModuleAvailable(module_name):
-  """Helper function which attempts to find the Python module named
-  |module_name| using the usual module search. If that fails, this assumes it's
-  being called within the Chromium tree, or an equivalent tree where this
-  library lives somewhere under a "mojo" directory which has a "third_party"
-  sibling."""
-  try:
-    imp.find_module(module_name)
-  except ImportError:
-    sys.path.append(os.path.join(_GetDirAbove("mojo"), "third_party"))
+def AddLocalRepoThirdPartyDirToModulePath():
+  """Helper function to find the top-level directory of this script's repository
+  assuming the script falls somewhere within a 'mojo' directory, and insert the
+  top-level 'third_party' directory early in the module search path. Used to
+  ensure that third-party dependencies provided within the repository itself
+  (e.g. Chromium sources include snapshots of jinja2 and ply) are preferred over
+  locally installed system library packages."""
+  toplevel_dir = _GetDirAbove('mojo')
+  if toplevel_dir:
+    sys.path.insert(1, os.path.join(toplevel_dir, 'third_party'))

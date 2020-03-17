@@ -17,7 +17,8 @@ namespace protocol {
 FakeVideoStub::FakeVideoStub() = default;
 FakeVideoStub::~FakeVideoStub() = default;
 
-void FakeVideoStub::set_on_frame_callback(base::Closure on_frame_callback) {
+void FakeVideoStub::set_on_frame_callback(
+    const base::RepeatingClosure& on_frame_callback) {
   CHECK(thread_checker_.CalledOnValidThread());
   on_frame_callback_ = on_frame_callback;
 }
@@ -36,7 +37,8 @@ void FakeVideoStub::ProcessVideoPacket(
 FakeFrameConsumer::FakeFrameConsumer() = default;
 FakeFrameConsumer::~FakeFrameConsumer() = default;
 
-void FakeFrameConsumer::set_on_frame_callback(base::Closure on_frame_callback) {
+void FakeFrameConsumer::set_on_frame_callback(
+    const base::RepeatingClosure& on_frame_callback) {
   CHECK(thread_checker_.CalledOnValidThread());
   on_frame_callback_ = on_frame_callback;
 }
@@ -66,7 +68,7 @@ FakeFrameStatsConsumer::FakeFrameStatsConsumer() = default;
 FakeFrameStatsConsumer::~FakeFrameStatsConsumer() = default;
 
 void FakeFrameStatsConsumer::set_on_stats_callback(
-    base::Closure on_stats_callback) {
+    const base::RepeatingClosure& on_stats_callback) {
   on_stats_callback_ = on_stats_callback;
 }
 

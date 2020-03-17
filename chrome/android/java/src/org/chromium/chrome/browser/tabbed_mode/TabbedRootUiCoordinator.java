@@ -13,6 +13,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -34,6 +35,7 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.status_indicator.StatusIndicatorCoordinator;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
@@ -184,9 +186,15 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
         }
 
         final ChromeFullscreenManager fullscreenManager = mActivity.getFullscreenManager();
+        Supplier<Boolean> canAnimateBrowserControls = () -> {
+            final Tab tab = mActivity.getActivityTabProvider().get();
+            return tab != null && tab.isUserInteractable();
+        };
+        mToolbarManager.setCanAnimateNativeBrowserControlsSupplier(canAnimateBrowserControls);
         mStatusIndicatorCoordinator = new StatusIndicatorCoordinator(mActivity,
                 mActivity.getCompositorViewHolder().getResourceManager(), fullscreenManager,
-                mActivity.getStatusBarColorController()::getStatusBarColorWithoutStatusIndicator);
+                mActivity.getStatusBarColorController()::getStatusBarColorWithoutStatusIndicator,
+                canAnimateBrowserControls);
         layoutManager.setStatusIndicatorSceneOverlay(mStatusIndicatorCoordinator.getSceneLayer());
         mStatusIndicatorObserver = new StatusIndicatorCoordinator.StatusIndicatorObserver() {
             @Override

@@ -109,8 +109,11 @@ InitCustomPassphraseCryptographerFromNigori(
   return cryptographer;
 }
 
-sync_pb::NigoriSpecifics CreateCustomPassphraseNigori(const KeyParams& params) {
-  syncer::KeyDerivationMethod method = params.derivation_params.method();
+sync_pb::NigoriSpecifics CreateCustomPassphraseNigori(
+    const KeyParams& passphrase_key_params,
+    const base::Optional<KeyParams>& old_key_params) {
+  syncer::KeyDerivationMethod method =
+      passphrase_key_params.derivation_params.method();
 
   sync_pb::NigoriSpecifics nigori;
   nigori.set_keybag_is_frozen(true);
@@ -127,7 +130,8 @@ sync_pb::NigoriSpecifics CreateCustomPassphraseNigori(const KeyParams& params) {
       // Nigori.
       break;
     case syncer::KeyDerivationMethod::SCRYPT_8192_8_11:
-      base::Base64Encode(params.derivation_params.scrypt_salt(), &encoded_salt);
+      base::Base64Encode(passphrase_key_params.derivation_params.scrypt_salt(),
+                         &encoded_salt);
       nigori.set_custom_passphrase_key_derivation_salt(encoded_salt);
       break;
     case syncer::KeyDerivationMethod::UNSUPPORTED:
@@ -136,19 +140,16 @@ sync_pb::NigoriSpecifics CreateCustomPassphraseNigori(const KeyParams& params) {
       break;
   }
 
-  // Nigori also contains a keybag, which is an encrypted collection of all keys
-  // that the data might be encrypted with. To create it, we construct a
-  // cryptographer, add our key to it, and use GetKeys() to dump it to the
-  // keybag (in encrypted form). So, in our case, the keybag is simply the
-  // passphrase-derived key encrypted with itself.  Note that this is usually
-  // also the case during normal Sync operation, and so the keybag from Nigori
-  // only helps the encryption machinery to know if a given key is correct (e.g.
-  // checking if a user's passphrase is correct is done by trying to decrypt the
-  // keybag using a key derived from that passphrase). However, in some migrated
-  // states, the keybag might also additionally contain an old, pre-migration
-  // key.
+  // Create the cryptographer, which encrypts with the key derived from
+  // |passphrase_key_params| and can decrypt with the key derived from
+  // |old_key_params| if given. |encryption_keybag| is a serialized version
+  // of this cryptographer |key_bag| encrypted with its encryption key.
   auto cryptographer = syncer::CryptographerImpl::FromSingleKeyForTesting(
-      params.password, params.derivation_params);
+      passphrase_key_params.password, passphrase_key_params.derivation_params);
+  if (old_key_params) {
+    cryptographer->EmplaceKey(old_key_params->password,
+                              old_key_params->derivation_params);
+  }
   sync_pb::CryptographerData proto = cryptographer->ToProto();
   bool encrypt_result = cryptographer->Encrypt(
       proto.key_bag(), nigori.mutable_encryption_keybag());

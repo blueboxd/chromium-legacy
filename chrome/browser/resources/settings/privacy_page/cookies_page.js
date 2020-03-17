@@ -20,6 +20,18 @@ const CookiesControl = {
   BLOCK_ALL: 'block-all',
 };
 
+/**
+ * Must be kept in sync with the C++ enum of the same name (see
+ * chrome/browser/net/prediction_options.h).
+ * @enum {number}
+ */
+const NetworkPredictionOptions = {
+  ALWAYS: 0,
+  WIFI_ONLY: 1,
+  NEVER: 2,
+  DEFAULT: 1,
+};
+
 Polymer({
   is: 'settings-cookies-page',
 
@@ -45,6 +57,18 @@ Polymer({
 
     /** @private */
     cookiesControlRadioSelected_: String,
+
+    /**
+     * Used for HTML bindings. This is defined as a property rather than
+     * within the ready callback, because the value needs to be available
+     * before local DOM initialization - otherwise, the toggle has unexpected
+     * behavior.
+     * @private {!NetworkPredictionOptions}
+     */
+    networkPredictionUncheckedValue_: {
+      type: Number,
+      value: NetworkPredictionOptions.NEVER,
+    },
 
     // A "virtual" preference that is use to control the state of the
     // clear on exit toggle.
@@ -76,6 +100,9 @@ Polymer({
   /** @type {?settings.SiteSettingsPrefsBrowserProxy} */
   browserProxy_: null,
 
+  /** @type {?settings.MetricsBrowserProxy} */
+  metricsBrowserProxy_: null,
+
   /** @override */
   created() {
     // Used during property initialisation so must be set in created.
@@ -85,6 +112,8 @@ Polymer({
 
   /** @override */
   ready() {
+    this.metricsBrowserProxy_ = settings.MetricsBrowserProxyImpl.getInstance();
+
     this.addWebUIListener('contentSettingCategoryChanged', category => {
       if (category === settings.ContentSettingsTypes.COOKIES) {
         this.updateCookiesControls_();
@@ -223,6 +252,17 @@ Polymer({
     this.browserProxy_.setDefaultValueForContentType(
         settings.ContentSettingsTypes.COOKIES,
         this.computeClearOnExitSetting_());
+  },
+
+  /**
+   * Records changes made to the network prediction setting for logging, the
+   * logic of actually changing the setting is taken care of by the
+   * net.network_prediction_options pref.
+   * @private
+   */
+  onNetworkPredictionChange_() {
+    this.metricsBrowserProxy_.recordSettingsPageHistogram(
+        settings.PrivacyElementInteractions.NETWORK_PREDICTION);
   },
 });
 })();

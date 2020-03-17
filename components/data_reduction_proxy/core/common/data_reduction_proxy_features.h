@@ -10,7 +10,6 @@
 namespace data_reduction_proxy {
 namespace features {
 
-extern const base::Feature kDataReductionProxyDecidesTransform;
 extern const base::Feature kDataReductionProxyLowMemoryDevicePromo;
 extern const base::Feature kDogfood;
 extern const base::Feature kDataReductionProxyHoldback;

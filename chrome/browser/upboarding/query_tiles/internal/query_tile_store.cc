@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/upboarding/query_tiles/internal/query_tile_store.h"
+
 #include <utility>
 
-#include "chrome/browser/upboarding/query_tiles/internal/query_tile_store.h"
+#include "chrome/browser/upboarding/query_tiles/internal/proto_conversion.h"
 
 namespace leveldb_proto {
 
 void DataToProto(upboarding::QueryTileEntry* data,
                  upboarding::query_tiles::proto::QueryTileEntry* proto) {
-  NOTIMPLEMENTED();
+  QueryTileEntryToProto(data, proto);
 }
 
 void ProtoToData(upboarding::query_tiles::proto::QueryTileEntry* proto,
                  upboarding::QueryTileEntry* data) {
-  NOTIMPLEMENTED();
+  QueryTileEntryFromProto(proto, data);
 }
 
 }  // namespace leveldb_proto
@@ -52,7 +54,7 @@ void QueryTileStore::Delete(const std::string& key, DeleteCallback callback) {
 void QueryTileStore::OnDbInitialized(LoadCallback callback,
                                      leveldb_proto::Enums::InitStatus status) {
   if (status != leveldb_proto::Enums::InitStatus::kOK) {
-    std::move(callback).Run(false, {});
+    std::move(callback).Run(false, KeysAndEntries());
     return;
   }
 

@@ -28,6 +28,7 @@ class PersonalDataManager;
 namespace payments {
 
 // Retrieves the full card details, including the pan and the cvc.
+// TODO(crbug/1061638): Refactor to use base::WaitableEvent where possible.
 class FullCardRequest final : public CardUnmaskDelegate {
  public:
   // The interface for receiving the full card details.

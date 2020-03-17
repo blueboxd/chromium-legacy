@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ServiceTabLauncher;
 import org.chromium.chrome.browser.init.StartupTabPreloader;
-import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
@@ -303,12 +302,6 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
             String appId, boolean forceNewTab, Intent intent, long intentTimestamp) {
         assert !mIncognito;
         boolean isLaunchedFromChrome = TextUtils.equals(appId, mActivity.getPackageName());
-
-        // If an external app sends an intent for a Weblite URL and the Data Reduction Proxy is
-        // using Weblite mode, then use the URL in the lite_url parameter if its scheme is HTTP.
-        // This is used by ChromeTabbedActvity intents so that the user does not receive Weblite
-        // pages when they could be served a Data Reduction Proxy preview page.
-        if (url != null) url = DataReductionProxySettings.getInstance().maybeRewriteWebliteUrl(url);
 
         if (forceNewTab && !isLaunchedFromChrome) {
             // We don't associate the tab with that app ID, as it is assumed that if the

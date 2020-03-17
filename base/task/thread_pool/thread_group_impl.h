@@ -97,10 +97,6 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
     return num_tasks_before_detach_histogram_;
   }
 
-  const HistogramBase* num_workers_histogram() const {
-    return num_workers_histogram_;
-  }
-
   // Waits until at least |n| workers are idle. Note that while workers are
   // disallowed from cleaning up during this call: tests using a custom
   // |suggested_reclaim_time_| need to be careful to invoke this swiftly after

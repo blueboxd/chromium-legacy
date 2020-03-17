@@ -274,6 +274,15 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allow embedder control GPU process launch retry on failure behavior.
   virtual bool AllowGpuLaunchRetryOnIOThread();
 
+  // Called when GPU process is not used for compositing. Allow embedder to
+  // control whether to shut down the GPU process to save memory, at the cost
+  // of slower start up the next time GPU process is needed.
+  // Note this only ensures the GPU process is not used for compositing. It is
+  // the embedder's responsibility to ensure there are no other services hosted
+  // by the GPU process being used; examples include accelerated media decoders
+  // and encoders.
+  virtual bool CanShutdownGpuProcessNowOnIOThread();
+
   // Notifies that a render process will be created. This is called before
   // the content layer adds its own BrowserMessageFilters, so that the
   // embedder's IPC filters have priority.
@@ -1798,6 +1807,18 @@ class CONTENT_EXPORT ContentBrowserClient {
   // entering fullscreen. For example, it is used in layout tests to allow
   // fullscreen when mock screen orientation changes.
   virtual bool CanEnterFullscreenWithoutUserActivation();
+
+  // Called to log a UKM event for the
+  // Extensions.CrossOriginFetchFromContentScript3 metric.  See the metric
+  // definition in //tools/metrics/ukm/ukm.xml for more details, including when
+  // this metric should be logged.
+  //
+  // |isolated_world_host| is the hostname of the isolated world origin that has
+  // initiated the network request.  See the doc comment for
+  // network.mojom.URLRequest.isolated_world_origin for more details.  In
+  // practice, |isolated_world_host| is the Chrome Extension ID.
+  virtual void LogUkmEventForCrossOriginFetchFromContentScript3(
+      const std::string& isolated_world_host);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Returns true if |embedder_origin| is allowed to embed a plugin described by

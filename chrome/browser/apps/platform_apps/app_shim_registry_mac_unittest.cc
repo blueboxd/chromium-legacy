@@ -4,7 +4,7 @@
 
 #include "chrome/browser/apps/platform_apps/app_shim_registry_mac.h"
 
-#include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

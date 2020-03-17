@@ -311,11 +311,10 @@ ScriptPromise BaseAudioContext::decodeAudioData(
   // TODO(crbug.com/1060315): This check needs to be revised when the spec
   // behavior is clarified for the case of a non-existent ExecutionContext.
   if (!GetExecutionContext()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kNotAllowedError,
-            "Cannot decode audio data: The document is no longer active."));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotAllowedError,
+        "Cannot decode audio data: The document is no longer active.");
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);

@@ -7,7 +7,7 @@
 #include "apps/app_lifetime_monitor_factory.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/apps/app_shim/app_shim_listener.h"
-#include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 
@@ -26,17 +26,17 @@ const base::FilePath& AppShimListenerTestApi::directory_in_tmp() {
   return listener_->directory_in_tmp_;
 }
 
-void AppShimListenerTestApi::SetExtensionAppShimHandler(
-    std::unique_ptr<apps::ExtensionAppShimHandler> handler) {
-  AppShimHostBootstrap::SetClient(handler.get());
-  listener_->extension_app_shim_handler_.swap(handler);
+void AppShimListenerTestApi::SetAppShimManager(
+    std::unique_ptr<apps::AppShimManager> manager) {
+  AppShimHostBootstrap::SetClient(manager.get());
+  listener_->app_shim_manager_.swap(manager);
 
-  // Remove old handler from all AppLifetimeMonitors. Usually this is done at
+  // Remove old manager from all AppLifetimeMonitors. Usually this is done at
   // profile destruction.
   for (Profile* profile :
        g_browser_process->profile_manager()->GetLoadedProfiles()) {
     apps::AppLifetimeMonitorFactory::GetForBrowserContext(profile)
-        ->RemoveObserver(handler.get());
+        ->RemoveObserver(manager.get());
   }
 }
 

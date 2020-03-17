@@ -800,14 +800,34 @@ IFACEMETHODIMP AXPlatformNodeWin::accHitTest(LONG x_left,
     return S_FALSE;
   }
 
-  gfx::NativeViewAccessible hit_child =
-      GetDelegate()->HitTestSync(x_left, y_top);
-  if (!hit_child) {
-    child->vt = VT_EMPTY;
-    return S_FALSE;
+  AXPlatformNode* current_result = this;
+  while (true) {
+    gfx::NativeViewAccessible hit_child =
+        current_result->GetDelegate()->HitTestSync(x_left, y_top);
+    if (!hit_child) {
+      child->vt = VT_EMPTY;
+      return S_FALSE;
+    }
+
+    // Check if the hit child is a descendant. If it's not a descendant,
+    // just ignore the result and stick with the current result.
+    // Ideally this shouldn't happen - see http://crbug.com/1061323
+    AXPlatformNode* hit_child_node =
+        AXPlatformNode::FromNativeViewAccessible(hit_child);
+    if (!hit_child_node || !hit_child_node->IsDescendantOf(current_result))
+      break;
+
+    if (hit_child_node == current_result)
+      break;
+
+    // Continue to check recursively. That's because HitTestSync may have
+    // returned the best result within a particular accessibility tree,
+    // but we might need to recurse further in a tree of a different type
+    // (for example, from Views to Web).
+    current_result = hit_child_node;
   }
 
-  if (hit_child == this) {
+  if (current_result == this) {
     // This object is the best match, so return CHILDID_SELF. It's tempting to
     // simplify the logic and use VT_DISPATCH everywhere, but the Windows
     // call AccessibleObjectFromPoint will keep calling accHitTest until some
@@ -817,20 +837,11 @@ IFACEMETHODIMP AXPlatformNodeWin::accHitTest(LONG x_left,
     return S_OK;
   }
 
-  // Call accHitTest recursively on the result, which may be a recursive call
-  // to this function or it may be overridden, for example in the case of a
-  // WebView.
-  HRESULT result = hit_child->accHitTest(x_left, y_top, child);
-
-  // If the recursive call returned CHILDID_SELF, we have to convert that
-  // into a VT_DISPATCH for the return value to this call.
-  if (S_OK == result && child->vt == VT_I4 && child->lVal == CHILDID_SELF) {
-    child->vt = VT_DISPATCH;
-    child->pdispVal = hit_child;
-    // Always increment ref when returning a reference to a COM object.
-    child->pdispVal->AddRef();
-  }
-  return result;
+  child->vt = VT_DISPATCH;
+  child->pdispVal = static_cast<AXPlatformNodeWin*>(current_result);
+  // Always increment ref when returning a reference to a COM object.
+  child->pdispVal->AddRef();
+  return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::accDoDefaultAction(VARIANT var_id) {
@@ -6832,7 +6843,7 @@ bool AXPlatformNodeWin::IsUIAControl() const {
   const ui::AXNodeData& data = GetData();
   return !((IsReadOnlySupported(data.role) && data.IsReadOnlyOrDisabled()) ||
            data.HasState(ax::mojom::State::kInvisible) ||
-           data.role == ax::mojom::Role::kIgnored);
+           (data.IsIgnored() && !data.HasState(ax::mojom::State::kFocusable)));
 }
 
 base::Optional<LONG> AXPlatformNodeWin::ComputeUIALandmarkType() const {

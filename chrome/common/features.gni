@@ -27,7 +27,8 @@ declare_args() {
   # builtin_cert_verifier_feature_supported platforms.
   # See crbug.com/410574.  This can be removed when the builtin verifier is
   # unconditionally enabled on all platforms.
-  builtin_cert_verifier_policy_supported = is_chromeos || is_desktop_linux
+  builtin_cert_verifier_policy_supported =
+      is_chromeos || is_desktop_linux || is_mac
 
   # Enables support for background apps.
   enable_background_contents = !is_android && !is_chromecast

@@ -324,9 +324,11 @@ message PolicyFetchRequest {
   optional int64 timestamp = 2;
 
   // Tell server what kind of security signature is required.
+  // TODO(b/147782972): Move to toplevel in sync with Chrome OS client code.
   enum SignatureType {
     NONE = 0;
     SHA1_RSA = 1;
+    SHA256_RSA = 2;
   }
   optional SignatureType signature_type = 3 [default = NONE];
 
@@ -660,6 +662,9 @@ message PolicyFetchResponse {
   // DEPRECATED! Client-side should verify and rely on the policy_type inside
   // the signed policy_data.
   optional string policy_type = 10 [deprecated = true];
+
+  // The type of signature used to generate policy_data_signature.
+  optional PolicyFetchRequest.SignatureType policy_data_signature_type = 11;
 }
 
 // DEPRECATED: Protobuf used to generate the deprecated
@@ -2201,6 +2206,10 @@ message DeviceRemoteCommandRequest {
 
   // Whether the server should send secure commands or not.
   optional bool send_secure_commands = 3;
+
+  // What type of signature to use. Only valid if send_secure_commmands is true.
+  // If NONE is passed, SHA1_RSA will be used instead for compatibility.
+  optional PolicyFetchRequest.SignatureType signature_type = 4;
 }
 
 message DeviceRemoteCommandResponse {

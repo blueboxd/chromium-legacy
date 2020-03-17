@@ -32,15 +32,13 @@ ScrollTimeline::ScrollTimeline(base::Optional<ElementId> scroller_id,
                                base::Optional<double> start_scroll_offset,
                                base::Optional<double> end_scroll_offset,
                                double time_range,
-                               KeyframeModel::FillMode fill,
                                int animation_timeline_id)
     : AnimationTimeline(animation_timeline_id),
       pending_id_(scroller_id),
       direction_(direction),
       start_scroll_offset_(start_scroll_offset),
       end_scroll_offset_(end_scroll_offset),
-      time_range_(time_range),
-      fill_(fill) {}
+      time_range_(time_range) {}
 
 ScrollTimeline::~ScrollTimeline() = default;
 
@@ -49,17 +47,16 @@ scoped_refptr<ScrollTimeline> ScrollTimeline::Create(
     ScrollTimeline::ScrollDirection direction,
     base::Optional<double> start_scroll_offset,
     base::Optional<double> end_scroll_offset,
-    double time_range,
-    KeyframeModel::FillMode fill) {
+    double time_range) {
   return base::WrapRefCounted(new ScrollTimeline(
       scroller_id, direction, start_scroll_offset, end_scroll_offset,
-      time_range, fill, AnimationIdProvider::NextTimelineId()));
+      time_range, AnimationIdProvider::NextTimelineId()));
 }
 
 scoped_refptr<AnimationTimeline> ScrollTimeline::CreateImplInstance() const {
   return base::WrapRefCounted(
       new ScrollTimeline(pending_id_, direction_, start_scroll_offset_,
-                         end_scroll_offset_, time_range_, fill_, id()));
+                         end_scroll_offset_, time_range_, id()));
 }
 
 bool ScrollTimeline::IsActive(const ScrollTree& scroll_tree,
@@ -111,37 +108,19 @@ base::Optional<base::TimeTicks> ScrollTimeline::CurrentTime(
   double resolved_start_scroll_offset = start_scroll_offset_.value_or(0);
   double resolved_end_scroll_offset = end_scroll_offset_.value_or(max_offset);
 
+  // TODO(crbug.com/1060384): Once the spec has been updated to state what the
+  // expected result is when startScrollOffset >= endScrollOffset, we might need
+  // to add a special case here. See
+  // https://github.com/WICG/scroll-animations/issues/20
+
   // 3. If current scroll offset is less than startScrollOffset:
   if (current_offset < resolved_start_scroll_offset) {
-    // Return an unresolved time value if fill is none or forwards.
-    if (fill_ == KeyframeModel::FillMode::NONE ||
-        fill_ == KeyframeModel::FillMode::FORWARDS) {
-      return base::nullopt;
-    }
-
-    // Otherwise, return 0.
     return base::TimeTicks();
   }
 
   // 4. If current scroll offset is greater than or equal to endScrollOffset:
   if (current_offset >= resolved_end_scroll_offset) {
-    // If endScrollOffset is less than the maximum scroll offset of scrollSource
-    // in orientation and fill is none or backwards, return an unresolved time
-    // value.
-    if (resolved_end_scroll_offset < max_offset &&
-        (fill_ == KeyframeModel::FillMode::NONE ||
-         fill_ == KeyframeModel::FillMode::BACKWARDS)) {
-      return base::nullopt;
-    }
-
-    // Otherwise, return the effective time range.
     return base::TimeTicks() + base::TimeDelta::FromMillisecondsD(time_range_);
-  }
-
-  // This is not by the spec, but avoids a negative current time.
-  // See https://github.com/WICG/scroll-animations/issues/20
-  if (resolved_start_scroll_offset >= resolved_end_scroll_offset) {
-    return base::nullopt;
   }
 
   // 5. Return the result of evaluating the following expression:

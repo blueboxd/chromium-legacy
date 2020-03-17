@@ -207,6 +207,7 @@
 /spirv-cross/spirv-cross
 /spirv-headers/src
 /SPIRV-Tools/src
+/sqlite/src
 /sqlite4java/lib/
 /subresource-filter-ruleset/data/UnindexedRules
 /swiftshader/

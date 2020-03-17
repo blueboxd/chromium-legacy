@@ -26,7 +26,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkDeviceHandler
   // NetworkDeviceHandler overrides
   void GetDeviceProperties(
       const std::string& device_path,
-      const network_handler::DictionaryResultCallback& callback,
+      network_handler::DictionaryResultCallback callback,
       const network_handler::ErrorCallback& error_callback) const override;
 
   void SetDeviceProperty(

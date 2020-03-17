@@ -75,6 +75,11 @@ class CORE_EXPORT CSSAnimations final {
       const ComputedStyle* parent_style,
       bool was_viewport_changed);
 
+  static AnimationEffect::EventDelegate* CreateEventDelegate(
+      Element* element,
+      const PropertyHandle& property_handle,
+      AnimationEffect::EventDelegate* old_event_delegate);
+
   // Specifies whether to process custom or standard CSS properties.
   enum class PropertyPass { kCustom, kStandard };
   static void CalculateTransitionUpdate(CSSAnimationUpdate&,
@@ -223,14 +228,18 @@ class CORE_EXPORT CSSAnimations final {
   class TransitionEventDelegate final : public AnimationEffect::EventDelegate {
    public:
     TransitionEventDelegate(Element* transition_target,
-                            const PropertyHandle& property)
+                            const PropertyHandle& property,
+                            Timing::Phase previous_phase = Timing::kPhaseNone)
         : transition_target_(transition_target),
           property_(property),
-          previous_phase_(Timing::kPhaseNone) {}
+          previous_phase_(previous_phase) {}
     bool RequiresIterationEvents(const AnimationEffect&) override {
       return false;
     }
     void OnEventCondition(const AnimationEffect&, Timing::Phase) override;
+    bool IsTransitionEventDelegate() const override { return true; }
+    Timing::Phase getPreviousPhase() const { return previous_phase_; }
+
     void Trace(Visitor*) override;
 
    private:
@@ -248,6 +257,13 @@ class CORE_EXPORT CSSAnimations final {
   };
 
   DISALLOW_COPY_AND_ASSIGN(CSSAnimations);
+};
+
+template <>
+struct DowncastTraits<CSSAnimations::TransitionEventDelegate> {
+  static bool AllowFrom(const AnimationEffect::EventDelegate& delegate) {
+    return delegate.IsTransitionEventDelegate();
+  }
 };
 
 }  // namespace blink

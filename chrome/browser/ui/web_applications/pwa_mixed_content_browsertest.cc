@@ -98,8 +98,6 @@ class PWAMixedContentBrowserTestWithAutoupgradesDisabled
 // a non-installable site.
 IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTest,
                        ShortcutMenuOptionsForNonInstallableSite) {
-  ASSERT_TRUE(https_server()->Start());
-
   EXPECT_FALSE(
       NavigateAndAwaitInstallabilityCheck(browser(), GetMixedContentAppURL()));
 
@@ -110,7 +108,6 @@ IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTest,
 // Tests that mixed content is loaded inside PWA windows.
 IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTestWithAutoupgradesDisabled,
                        MixedContentInPWA) {
-  ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const GURL app_url = GetMixedContentAppURL();
@@ -124,7 +121,6 @@ IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTestWithAutoupgradesDisabled,
 // tab.
 IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTestWithAutoupgradesDisabled,
                        MixedContentOpenInChrome) {
-  ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const GURL app_url = GetMixedContentAppURL();
@@ -162,7 +158,6 @@ IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTestWithAutoupgradesDisabled,
 // content cannot be loaded in the new app window.
 IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTestWithAutoupgradesDisabled,
                        MixedContentReparentWebContentsIntoAppBrowser) {
-  ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const GURL app_url = GetMixedContentAppURL();
@@ -201,8 +196,6 @@ IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTestWithAutoupgradesDisabled,
 
 // Tests that mixed content is not loaded inside iframes in PWA windows.
 IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTest, IFrameMixedContentInPWA) {
-  ASSERT_TRUE(https_server()->Start());
-
   const GURL app_url = GetSecureIFrameAppURL();
   const AppId app_id = InstallPWA(app_url);
   Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
@@ -215,7 +208,6 @@ IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTest, IFrameMixedContentInPWA) {
 IN_PROC_BROWSER_TEST_P(
     PWAMixedContentBrowserTestWithAutoupgradesDisabled,
     IFrameDynamicMixedContentInPWAReparentWebContentsIntoAppBrowser) {
-  ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const GURL app_url = GetSecureIFrameAppURL();
@@ -241,7 +233,6 @@ IN_PROC_BROWSER_TEST_P(
 // tab, when the iframe was created in a PWA window.
 IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTestWithAutoupgradesDisabled,
                        IFrameDynamicMixedContentInPWAOpenInChrome) {
-  ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const GURL app_url = GetSecureIFrameAppURL();

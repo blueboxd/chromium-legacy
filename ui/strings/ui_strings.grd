@@ -1033,13 +1033,7 @@ need to be translated for each locale.-->
         Use high density
       </message>
       <message name="IDS_CROSTINI_APP_RESTART_BODY" desc="Description for the Crostini app restart dialog.">
-        To adjust the window display density, restart the app.
-      </message>
-      <message name="IDS_CROSTINI_APP_RESTART_BUTTON" desc="Label for the button in the Crostini app restart dialog to restart an app.">
-        Restart
-      </message>
-      <message name="IDS_CROSTINI_NOT_NOW_BUTTON" desc="Label for the button in the Crostini app restart dialog to dismiss the dialog.">
-        Not now
+        Your application's display settings will take effect when it is next restarted.
       </message>
 
       <!-- Badging -->

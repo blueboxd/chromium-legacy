@@ -64,7 +64,7 @@ class NetworkCertMigrator::MigrationTask
       ShillServiceClient::Get()->GetProperties(
           dbus::ObjectPath(service_path),
           base::BindOnce(&network_handler::GetPropertiesCallback,
-                         base::Bind(&MigrationTask::MigrateNetwork, this),
+                         base::BindOnce(&MigrationTask::MigrateNetwork, this),
                          network_handler::ErrorCallback(), service_path));
     }
   }

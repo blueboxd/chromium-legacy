@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
       browser_view->frame()->GetFrameView();
   const ui::ThemeProvider* theme_provider = frame_view->GetThemeProvider();
   const SkColor expected_active_color =
-      theme_provider->GetColor(ThemeProperties::COLOR_FRAME);
+      theme_provider->GetColor(ThemeProperties::COLOR_FRAME_ACTIVE);
   const SkColor expected_inactive_color =
       theme_provider->GetColor(ThemeProperties::COLOR_FRAME_INACTIVE);
 
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
   InstallAndLaunchBookmarkApp();
   // Bookmark apps are not affected by browser themes.
   EXPECT_EQ(ThemeProperties::GetDefaultColor(
-                ThemeProperties::COLOR_FRAME, false,
+                ThemeProperties::COLOR_FRAME_ACTIVE, false,
                 app_frame_view_->GetNativeTheme()->ShouldUseDarkColors()),
             app_frame_view_->GetFrameColor(BrowserFrameActiveState::kActive));
 }
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
   // (https://crbug.com/878636)
   const ui::ThemeProvider* theme_provider = app_frame_view_->GetThemeProvider();
   const SkColor frame_color =
-      theme_provider->GetColor(ThemeProperties::COLOR_FRAME);
+      theme_provider->GetColor(ThemeProperties::COLOR_FRAME_ACTIVE);
   EXPECT_EQ(frame_color,
             app_frame_view_->GetFrameColor(BrowserFrameActiveState::kActive));
 #else

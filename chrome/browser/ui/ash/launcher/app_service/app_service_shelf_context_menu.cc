@@ -175,7 +175,7 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
       const bool scaled = command_id == ash::CROSTINI_USE_LOW_DENSITY;
       registry_service->SetAppScaled(item().id.app_id, scaled);
       if (controller()->IsOpen(item().id))
-        CrostiniAppRestartView::Show(item().id, display_id());
+        CrostiniAppRestartView::Show(display_id());
       return;
     }
 

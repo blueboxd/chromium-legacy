@@ -186,8 +186,8 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
                        base::TimeTicks presentation_time,
                        bool repaint_duplicate_frame);
 
-  void SetCurrentFrame(scoped_refptr<VideoFrame> frame,
-                       base::TimeTicks expected_presentation_time);
+  void SetCurrentFrame_Locked(scoped_refptr<VideoFrame> frame,
+                              base::TimeTicks expected_presentation_time);
 
   // Called by |background_rendering_timer_| when enough time elapses where we
   // haven't seen a Render() call.
@@ -233,14 +233,10 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
 
   // Callback used to satisfy video.rAF requests.
   // Set on the main thread, fired on the compositor thread.
-  // TODO(https://crbug.com/1057304): consolidate locks.
-  base::Lock new_presented_frame_cb_lock_;
-  OnNewFramePresentedCB new_presented_frame_cb_
-      GUARDED_BY(new_presented_frame_cb_lock_);
+  OnNewFramePresentedCB new_presented_frame_cb_ GUARDED_BY(current_frame_lock_);
 
   // Set on the compositor thread, but also read on the media thread. Lock is
   // not used when reading |current_frame_| on the compositor thread.
-  // TODO(https://crbug.com/1057304): consolidate locks.
   base::Lock current_frame_lock_;
   scoped_refptr<VideoFrame> current_frame_;
 
@@ -252,7 +248,6 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   uint32_t presentation_counter_ GUARDED_BY(current_frame_lock_) = 0u;
 
   // These values are updated and read from the media and compositor threads.
-  // TODO(https://crbug.com/1057304): consolidate locks.
   base::Lock callback_lock_;
   VideoRendererSink::RenderCallback* callback_ GUARDED_BY(callback_lock_) =
       nullptr;

@@ -295,21 +295,6 @@ if (window.internals && internals.dictionaryTest) {
     shouldThrow("dictionaryTest.set({eventTargetOrNullMember: {}})");
     debug('');
 
-    debug('Test for passing Dictionary (not IDL dictionary)');
-    dictionaryTest.set({
-        dictionaryMember: {'foo': 'x', 'bar': 'y'}
-    });
-    properties = dictionaryTest.getDictionaryMemberProperties();
-    shouldBeEqualToString('properties.foo', 'x');
-    shouldBeEqualToString('properties.bar', 'y');
-    shouldBeUndefined('properties.baz');
-    dictionaryTest.set({dictionaryMember: undefined});
-    properties = dictionaryTest.getDictionaryMemberProperties();
-    shouldBe('properties', '{}');
-    shouldThrow("dictionaryTest.set({dictionaryMember: 42})");
-    shouldThrow("dictionaryTest.set({dictionaryMember: 'foo'})");
-    debug('');
-
     debug('Test for derived dictionary');
     dictionaryTest.setDerived({ requiredBooleanMember: true });
     derived = dictionaryTest.getDerived();

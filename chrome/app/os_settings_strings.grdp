@@ -357,6 +357,9 @@
   <message name="IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_EXISTS_MESSAGE" desc="The message shown when mounting a new SMB share fails because the share is already mounted.">
     Error mounting share. The specified share is already mounted.
   </message>
+  <message name="IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_TOO_MANY_MOUNTS_MESSAGE" desc="The message shown when mounting a new SMB share fails because too many SMB shares are already mounted.">
+    Error mounting share. Too many SMB shares are already mounted.
+  </message>
   <message name="IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_INVALID_URL_MESSAGE" desc="The message shown when mounting a new SMB share fails because the URL is an invalid format.">
     Invalid URL format. Supported formats are \\server\share and smb://server/share.
   </message>
@@ -978,6 +981,12 @@
   </message>
   <message name="IDS_SETTINGS_CROSTINI_MIC_TITLE" desc="Title for sharing mic with Crostini.">
     Give access to microphone
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_MIC_DIALOG_TITLE" desc="Dialog title for sharing mic with Crostini.">
+    Linux restart required
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_MIC_DIALOG_LABEL" desc="Dialog label for sharing mic with Crostini.">
+    Changes to microphone will take effect when Linux is next restarted.
   </message>
 
   <!-- Android apps page (OS settings) -->

@@ -199,8 +199,8 @@ void WakeOnWifiManager::GetWifiDeviceProperties() {
 
   NetworkHandler::Get()->network_device_handler()->GetDeviceProperties(
       device->path(),
-      base::Bind(&WakeOnWifiManager::GetDevicePropertiesCallback,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&WakeOnWifiManager::GetDevicePropertiesCallback,
+                     weak_ptr_factory_.GetWeakPtr()),
       network_handler::ErrorCallback());
 }
 

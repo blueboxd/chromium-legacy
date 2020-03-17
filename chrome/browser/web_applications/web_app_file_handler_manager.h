@@ -10,7 +10,6 @@
 
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
-#include "components/services/app_service/public/cpp/file_handler_info.h"
 
 class Profile;
 
@@ -22,17 +21,7 @@ class WebAppFileHandlerManager : public FileHandlerManager {
   ~WebAppFileHandlerManager() override;
 
  protected:
-  const std::vector<apps::FileHandlerInfo>* GetAllFileHandlers(
-      const AppId& app_id) override;
-
- private:
-  using FileHandlerInfos = std::map<AppId, std::vector<apps::FileHandlerInfo>>;
-
-  // TODO(crbug.com/938103): At the moment, we have two equivalent
-  // representations of these data held in memory: here, and in WebApp. If
-  // GetAllFileHandlers can be modified to return a copy rather than a
-  // reference, there would be no need to cache here.
-  FileHandlerInfos file_handler_infos_;
+  const apps::FileHandlers* GetAllFileHandlers(const AppId& app_id) override;
 };
 
 }  // namespace web_app

@@ -101,13 +101,11 @@ class CORE_EXPORT DedicatedWorker final
   void Start();
   void ContinueStart(
       const KURL& script_url,
-      OffMainThreadWorkerScriptFetchOption,
       network::mojom::ReferrerPolicy,
       base::Optional<network::mojom::IPAddressSpace> response_address_space,
       const String& source_code);
   std::unique_ptr<GlobalScopeCreationParams> CreateGlobalScopeCreationParams(
       const KURL& script_url,
-      OffMainThreadWorkerScriptFetchOption,
       network::mojom::ReferrerPolicy,
       base::Optional<network::mojom::IPAddressSpace> response_address_space);
   scoped_refptr<WebWorkerFetchContext> CreateWebWorkerFetchContext();

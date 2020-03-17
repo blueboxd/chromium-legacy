@@ -129,7 +129,7 @@ android_library("web_contents_delegate_java") {
     "//base:base_java",
     "//base:jni_java",
     "//content/public/android:content_java",
-    "//third_party/android_deps:com_android_support_support_compat_java",
+    "//third_party/android_deps:androidx_core_core_java",
     "//ui/android:ui_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]

@@ -281,8 +281,9 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
 
   Image* PaintAndSchedulePrimaryPlane() {
     // Call Begin/EndPaint to ensusre the image is initialized before use.
-    output_device_->BeginPaint();
-    output_device_->EndPaint(GrBackendSemaphore());
+    std::vector<GrBackendSemaphore> end_semaphores;
+    output_device_->BeginPaint(&end_semaphores);
+    output_device_->EndPaint();
     SchedulePrimaryPlane();
     return current_image();
   }

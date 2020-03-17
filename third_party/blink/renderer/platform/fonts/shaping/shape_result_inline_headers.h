@@ -211,7 +211,7 @@ struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
       }
 
       if (!Rtl())
-        end = num_characters_;
+        end = offset + num_characters_;
       else
         end = start;
       start = index;

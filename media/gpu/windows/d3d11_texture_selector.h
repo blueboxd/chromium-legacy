@@ -13,6 +13,7 @@
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/windows/d3d11_picture_buffer.h"
 #include "media/gpu/windows/d3d11_video_processor_proxy.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -23,6 +24,11 @@ class MediaLog;
 // GUID support.
 class MEDIA_GPU_EXPORT TextureSelector {
  public:
+  enum class HDRMode {
+    kSDROnly = 0,
+    kSDROrHDR = 1,
+  };
+
   TextureSelector(VideoPixelFormat pixfmt,
                   DXGI_FORMAT output_dxgifmt,
                   bool supports_swap_chain);
@@ -32,6 +38,7 @@ class MEDIA_GPU_EXPORT TextureSelector {
       const gpu::GpuPreferences& gpu_preferences,
       const gpu::GpuDriverBugWorkarounds& workarounds,
       DXGI_FORMAT decoder_output_format,
+      HDRMode hdr_output_mode,
       MediaLog* media_log);
 
   virtual std::unique_ptr<Texture2DWrapper> CreateTextureWrapper(
@@ -57,14 +64,18 @@ class MEDIA_GPU_EXPORT CopyTextureSelector : public TextureSelector {
   CopyTextureSelector(VideoPixelFormat pixfmt,
                       DXGI_FORMAT input_dxgifmt,
                       DXGI_FORMAT output_dxgifmt,
-                      bool supports_swap_chain)
-      : TextureSelector(pixfmt, output_dxgifmt, supports_swap_chain) {}
+                      base::Optional<gfx::ColorSpace> output_color_space,
+                      bool supports_swap_chain);
+  ~CopyTextureSelector() override;
 
   std::unique_ptr<Texture2DWrapper> CreateTextureWrapper(
       ComD3D11Device device,
       ComD3D11VideoDevice video_device,
       ComD3D11DeviceContext,
       gfx::Size size) override;
+
+ private:
+  base::Optional<gfx::ColorSpace> output_color_space_;
 };
 
 }  // namespace media

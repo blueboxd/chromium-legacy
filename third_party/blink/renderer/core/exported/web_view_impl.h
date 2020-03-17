@@ -463,7 +463,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time,
                                cc::ActiveFrameSequenceTrackers trackers);
   std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics();
-  void UpdateLifecycle(WebWidget::LifecycleUpdate requested_update,
+  void UpdateLifecycle(WebLifecycleUpdate requested_update,
                        DocumentUpdateReason reason);
   void ThemeChanged();
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&);

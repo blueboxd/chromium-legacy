@@ -105,8 +105,8 @@ void LocaleUpdateControllerImpl::OnLocaleChanged(
   for (auto& observer : observers_)
     observer.OnLocaleChanged();
 
-  if (Shell::Get()->session_controller()->GetSessionState() ==
-      SessionState::OOBE) {
+  SessionState state = Shell::Get()->session_controller()->GetSessionState();
+  if (state == SessionState::OOBE || state == SessionState::LOGIN_PRIMARY) {
     std::move(callback).Run(LocaleNotificationResult::kAccept);
     return;
   }

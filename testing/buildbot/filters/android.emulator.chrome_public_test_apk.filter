@@ -91,3 +91,9 @@
 -org.chromium.chrome.browser.autofill.AutofillUpstreamTest.testSaveCardInfoBarWithEmptyMonthAndYear
 -org.chromium.chrome.browser.autofill.AutofillUpstreamTest.testSaveCardInfoBarWithEmptyName
 -org.chromium.chrome.browser.autofill.AutofillUpstreamTest.testSaveCardInfoBarWithEmptyYear
+
+# crbug.com/1062055
+-org.chromium.chrome.browser.metrics.StartupLoadingMetricsTest.testWebApkStartRecorded
+
+# crbug.com/1062058
+-org.chromium.chrome.browser.customtabs.DetachedResourceRequestTest.testSafeBrowsingMainResourceWithSplitCache

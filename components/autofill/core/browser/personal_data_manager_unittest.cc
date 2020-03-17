@@ -1337,6 +1337,49 @@ TEST_F(PersonalDataManagerTest, UpdateVerifiedProfilesOrigin) {
   EXPECT_TRUE(profiles2[0]->IsVerified());
 }
 
+// Test that ensure local data is not lost on sign-in.
+TEST_F(PersonalDataManagerTest, KeepExistingLocalDataOnSignIn) {
+  // Set up the experiment flags.
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillEnableAccountWalletStorage},
+      /*disabled_features=*/{});
+
+// ClearPrimaryAccount is not supported on CrOS.
+#if !defined(OS_CHROMEOS)
+  // Sign out.
+  identity_test_env_.ClearPrimaryAccount();
+  EXPECT_EQ(AutofillSyncSigninState::kSignedOut,
+            personal_data_->GetSyncSigninState());
+#endif
+  EXPECT_EQ(0U, personal_data_->GetCreditCards().size());
+
+  // Add local card.
+  CreditCard local_card;
+  test::SetCreditCardInfo(&local_card, "Freddy Mercury",
+                          "4234567890123463",  // Visa
+                          "08", "2999", "1");
+  local_card.set_guid("00000000-0000-0000-0000-000000000009");
+  local_card.set_record_type(CreditCard::LOCAL_CARD);
+  local_card.set_use_count(5);
+  personal_data_->AddCreditCard(local_card);
+  WaitForOnPersonalDataChanged();
+  EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
+
+  // Sign in.
+  identity_test_env_.SetPrimaryAccount("test@gmail.com");
+  sync_service_.SetIsAuthenticatedAccountPrimary(true);
+  sync_service_.SetActiveDataTypes(
+      syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
+  EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled,
+            personal_data_->GetSyncSigninState());
+  ASSERT_TRUE(TurnOnSyncFeature());
+
+  // Check saved local card should be not lost.
+  EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(0, local_card.Compare(*personal_data_->GetCreditCards()[0]));
+}
+
 // Makes sure that full cards are re-masked when full PAN storage is off.
 TEST_F(PersonalDataManagerTest, RefuseToStoreFullCard) {
 // On Linux this should be disabled automatically. Elsewhere, only if the

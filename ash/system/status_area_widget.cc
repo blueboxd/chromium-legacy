@@ -212,7 +212,7 @@ void StatusAreaWidget::UpdateLayout(bool animate) {
   layout_inputs_ = new_layout_inputs;
 }
 
-void StatusAreaWidget::UpdateTargetBoundsForGesture() {
+void StatusAreaWidget::UpdateTargetBoundsForGesture(int shelf_position) {
   const gfx::Point shelf_origin =
       shelf_->shelf_widget()->GetTargetBounds().origin();
   if (shelf_->IsHorizontalAlignment())

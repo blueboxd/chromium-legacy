@@ -13,10 +13,10 @@ import("//third_party/yasm/yasm_assemble.gni")
 buildflag_header("libaom_buildflags") {
   header = "libaom_buildflags.h"
 
-  flags = [ "ENABLE_LIBAOM_DECODER=$enable_libaom_decoder" ]
+  flags = [ "ENABLE_LIBAOM=$enable_libaom" ]
 }
 
-if (enable_libaom_decoder) {
+if (enable_libaom) {
   # Sets the architecture name for building libaom.
   if (current_cpu == "x86") {
     cpu_arch_full = "ia32"
@@ -74,6 +74,12 @@ if (enable_libaom_decoder) {
       sources = aom_dsp_common_asm_sse2
       sources += aom_dsp_common_asm_ssse3
       sources += aom_ports_asm_x86
+      sources += aom_av1_encoder_asm_sse2
+      sources += aom_av1_encoder_asm_ssse3_x86_64
+      sources += aom_dsp_encoder_asm_sse2
+      sources += aom_dsp_encoder_asm_sse2_x86_64
+      sources += aom_dsp_encoder_asm_ssse3_x86_64
+      sources += aom_dsp_encoder_avx_asm_x86_64
       defines = [ "CHROMIUM" ]
       include_dirs = libaom_include_dirs
     }
@@ -93,6 +99,18 @@ if (enable_libaom_decoder) {
       }
       sources = aom_av1_common_intrin_sse2
       sources += aom_dsp_common_intrin_sse2
+      sources += aom_av1_encoder_intrin_sse2
+      sources += aom_dsp_encoder_intrin_sse2
+    }
+
+    source_set("libaom_intrinsics_sse3") {
+      configs -= [ "//build/config/compiler:chromium_code" ]
+      configs += [ "//build/config/compiler:no_chromium_code" ]
+      configs += [ ":libaom_config" ]
+      if (!is_win || is_clang) {
+        cflags = [ "-msse3" ]
+      }
+      sources = aom_av1_encoder_intrin_sse3
     }
 
     source_set("libaom_intrinsics_ssse3") {
@@ -104,6 +122,7 @@ if (enable_libaom_decoder) {
       }
       sources = aom_av1_common_intrin_ssse3
       sources += aom_dsp_common_intrin_ssse3
+      sources += aom_dsp_encoder_intrin_ssse3
     }
 
     source_set("libaom_intrinsics_sse4_1") {
@@ -115,6 +134,8 @@ if (enable_libaom_decoder) {
       }
       sources = aom_av1_common_intrin_sse4_1
       sources += aom_dsp_common_intrin_sse4_1
+      sources += aom_av1_encoder_intrin_sse4_1
+      sources += aom_dsp_encoder_intrin_sse4_1
     }
 
     source_set("libaom_intrinsics_sse4_2") {
@@ -124,6 +145,7 @@ if (enable_libaom_decoder) {
       if (!is_win || is_clang) {
         cflags = [ "-msse4.2" ]
       }
+      sources = aom_av1_encoder_intrin_sse4_2
     }
 
     source_set("libaom_intrinsics_avx") {
@@ -148,6 +170,8 @@ if (enable_libaom_decoder) {
       }
       sources = aom_av1_common_intrin_avx2
       sources += aom_dsp_common_intrin_avx2
+      sources += aom_av1_encoder_intrin_avx2
+      sources += aom_dsp_encoder_intrin_avx2
     }
   }
 
@@ -167,6 +191,8 @@ if (enable_libaom_decoder) {
           [ "//third_party/libaom/source/libaom/aom_ports/arm_cpudetect.c" ]
       sources += aom_av1_common_intrin_neon
       sources += aom_dsp_common_intrin_neon
+      sources += aom_av1_encoder_intrin_neon
+      sources += aom_dsp_encoder_intrin_neon
     }
   }
 
@@ -187,12 +213,15 @@ if (enable_libaom_decoder) {
     sources += aom_scale_sources
     sources += aom_sources
     sources += aom_util_sources
+    sources += aom_av1_encoder_sources
+    sources += aom_dsp_encoder_sources
     deps = []
     if (current_cpu == "x86" || (current_cpu == "x64" && !is_msan)) {
       deps += [
         ":libaom_intrinsics_avx",
         ":libaom_intrinsics_avx2",
         ":libaom_intrinsics_sse2",
+        ":libaom_intrinsics_sse3",
         ":libaom_intrinsics_sse4_1",
         ":libaom_intrinsics_sse4_2",
         ":libaom_intrinsics_ssse3",

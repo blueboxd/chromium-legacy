@@ -10,27 +10,31 @@
 
 #include "ash/public/cpp/shelf_model.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/apps/apk_web_app_installer.h"
 #include "chrome/browser/chromeos/apps/apk_web_app_service.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/app_registrar_observer.h"
+#include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_registry_observer.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/uninstall_reason.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
@@ -59,10 +63,19 @@ namespace chromeos {
 
 class ApkWebAppInstallerBrowserTest
     : public InProcessBrowserTest,
-      public extensions::ExtensionRegistryObserver,
-      public ArcAppListPrefs::Observer {
+      public web_app::AppRegistrarObserver,
+      public ArcAppListPrefs::Observer,
+      public ::testing::WithParamInterface<web_app::ProviderType> {
  public:
-  ApkWebAppInstallerBrowserTest() = default;
+  ApkWebAppInstallerBrowserTest() {
+    if (GetParam() == web_app::ProviderType::kWebApps) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    } else if (GetParam() == web_app::ProviderType::kBookmarkApps) {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    }
+  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     arc::SetArcAvailableCommandLineForTesting(command_line);
@@ -93,11 +106,29 @@ class ApkWebAppInstallerBrowserTest
         app_instance_.get());
     app_instance_.reset();
     arc::ArcSessionManager::Get()->Shutdown();
+    arc_app_list_prefs_ = nullptr;
   }
 
-  void SetUpOnMainThread() override { EnableArc(); }
+  void SetUpWebApps() {
+    provider_ = web_app::WebAppProvider::Get(browser()->profile());
+    DCHECK(provider_);
+    observer_.Add(&provider_->registrar());
+  }
 
-  void TearDownOnMainThread() override { DisableArc(); }
+  void TearDownWebApps() {
+    provider_ = nullptr;
+    observer_.RemoveAll();
+  }
+
+  void SetUpOnMainThread() override {
+    EnableArc();
+    SetUpWebApps();
+  }
+
+  void TearDownOnMainThread() override {
+    DisableArc();
+    TearDownWebApps();
+  }
 
   arc::mojom::ArcPackageInfoPtr GetWebAppPackage(
       const std::string& package_name,
@@ -130,22 +161,15 @@ class ApkWebAppInstallerBrowserTest
     return ApkWebAppService::Get(browser()->profile());
   }
 
-  // ExtensionRegistryObserver:
-  void OnExtensionInstalled(content::BrowserContext* browser_context,
-                            const extensions::Extension* extension,
-                            bool is_update) override {
-    installed_extension_ = extension;
-    is_update_installed_ = is_update;
+  // web_app::AppRegistrarObserver overrides.
+  void OnWebAppInstalled(const web_app::AppId& web_app_id) override {
+    installed_web_app_id_ = web_app_id;
+    installed_web_app_name_ =
+        provider_->registrar().GetAppShortName(web_app_id);
   }
 
-  void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UninstallReason uninstall_reason) override {
-    uninstall_reason_ = uninstall_reason;
-    // Make copies of required data: the |extension| object will be destroyed.
-    uninstalled_extension_name_ = extension->name();
-    uninstalled_extension_id_ = extension->id();
+  void OnWebAppWillBeUninstalled(const web_app::AppId& web_app_id) override {
+    uninstalled_web_app_id_ = web_app_id;
   }
 
   // ArcAppListPrefs::Observer:
@@ -156,37 +180,33 @@ class ApkWebAppInstallerBrowserTest
   }
 
   void Reset() {
-    removed_package_ = "";
-
-    installed_extension_ = nullptr;
-    is_update_installed_ = base::nullopt;
-
-    uninstalled_extension_id_.clear();
-    uninstalled_extension_name_.clear();
-    uninstall_reason_ = extensions::UNINSTALL_REASON_FOR_TESTING;
+    removed_package_.clear();
+    installed_web_app_id_.clear();
+    installed_web_app_name_.clear();
+    uninstalled_web_app_id_.clear();
   }
 
  protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  ScopedObserver<web_app::AppRegistrar, web_app::AppRegistrarObserver>
+      observer_{this};
   ArcAppListPrefs* arc_app_list_prefs_ = nullptr;
+  web_app::WebAppProvider* provider_ = nullptr;
   std::unique_ptr<arc::FakeAppInstance> app_instance_;
+
   std::string removed_package_;
-
-  const extensions::Extension* installed_extension_ = nullptr;
-  base::Optional<bool> is_update_installed_;
-
-  extensions::ExtensionId uninstalled_extension_id_;
-  std::string uninstalled_extension_name_;
-  extensions::UninstallReason uninstall_reason_ =
-      extensions::UNINSTALL_REASON_FOR_TESTING;
+  web_app::AppId installed_web_app_id_;
+  std::string installed_web_app_name_;
+  web_app::AppId uninstalled_web_app_id_;
 };
 
 class ApkWebAppInstallerDelayedArcStartBrowserTest
     : public ApkWebAppInstallerBrowserTest {
   // Don't start ARC.
-  void SetUpOnMainThread() override {}
+  void SetUpOnMainThread() override { SetUpWebApps(); }
 
   // Don't tear down ARC.
-  void TearDownOnMainThread() override {}
+  void TearDownOnMainThread() override { TearDownWebApps(); }
 };
 
 class ApkWebAppInstallerWithLauncherControllerBrowserTest
@@ -195,23 +215,23 @@ class ApkWebAppInstallerWithLauncherControllerBrowserTest
   // ApkWebAppInstallerBrowserTest
   void SetUpOnMainThread() override {
     EnableArc();
+    SetUpWebApps();
     launcher_controller_ = ChromeLauncherController::instance();
     ASSERT_TRUE(launcher_controller_);
   }
 
   // ApkWebAppInstallerBrowserTest
-  void TearDownOnMainThread() override { DisableArc(); }
+  void TearDownOnMainThread() override {
+    DisableArc();
+    TearDownWebApps();
+  }
 
  protected:
   ChromeLauncherController* launcher_controller_;
 };
 
 // Test the full installation and uninstallation flow.
-IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest, InstallAndUninstall) {
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      observer(this);
-  observer.Add(extensions::ExtensionRegistry::Get(browser()->profile()));
+IN_PROC_BROWSER_TEST_P(ApkWebAppInstallerBrowserTest, InstallAndUninstall) {
   ApkWebAppService* service = apk_web_app_service();
   service->SetArcAppListPrefsForTesting(arc_app_list_prefs_);
 
@@ -220,11 +240,8 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest, InstallAndUninstall) {
     base::RunLoop run_loop;
     service->SetWebAppInstalledCallbackForTesting(base::BindLambdaForTesting(
         [&](const std::string& package_name, const web_app::AppId& web_app_id) {
-          EXPECT_TRUE(installed_extension_);
-          EXPECT_EQ(kAppTitle, installed_extension_->name());
-          EXPECT_FALSE(is_update_installed_.value());
-
-          EXPECT_EQ(web_app_id, installed_extension_->id());
+          EXPECT_EQ(kAppTitle, installed_web_app_name_);
+          EXPECT_EQ(web_app_id, installed_web_app_id_);
           EXPECT_EQ(kPackageName, package_name);
           app_id = web_app_id;
           run_loop.Quit();
@@ -235,16 +252,13 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest, InstallAndUninstall) {
   }
 
   // Now send an uninstallation call from ARC, which should uninstall the
-  // installed extension.
+  // installed web app.
   {
     base::RunLoop run_loop;
     service->SetWebAppUninstalledCallbackForTesting(base::BindLambdaForTesting(
         [&](const std::string& package_name, const web_app::AppId& web_app_id) {
-          EXPECT_FALSE(uninstalled_extension_id_.empty());
-          EXPECT_EQ(kAppTitle, uninstalled_extension_name_);
-          EXPECT_EQ(extensions::UNINSTALL_REASON_ARC, uninstall_reason_);
-
-          EXPECT_EQ(app_id, uninstalled_extension_id_);
+          EXPECT_FALSE(uninstalled_web_app_id_.empty());
+          EXPECT_EQ(app_id, uninstalled_web_app_id_);
           // No UninstallPackage happened.
           EXPECT_EQ("", package_name);
           run_loop.Quit();
@@ -256,11 +270,7 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest, InstallAndUninstall) {
 }
 
 // Test installation via PackageListRefreshed.
-IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest, PackageListRefreshed) {
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      observer(this);
-  observer.Add(extensions::ExtensionRegistry::Get(browser()->profile()));
+IN_PROC_BROWSER_TEST_P(ApkWebAppInstallerBrowserTest, PackageListRefreshed) {
   ApkWebAppService* service = apk_web_app_service();
   service->SetArcAppListPrefsForTesting(arc_app_list_prefs_);
 
@@ -270,9 +280,8 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest, PackageListRefreshed) {
   base::RunLoop run_loop;
   service->SetWebAppInstalledCallbackForTesting(base::BindLambdaForTesting(
       [&](const std::string& package_name, const web_app::AppId& web_app_id) {
-        EXPECT_TRUE(installed_extension_);
-        EXPECT_EQ(kAppTitle, installed_extension_->name());
-        EXPECT_FALSE(is_update_installed_.value());
+        EXPECT_EQ(kAppTitle, installed_web_app_name_);
+        EXPECT_EQ(web_app_id, installed_web_app_id_);
         run_loop.Quit();
       }));
 
@@ -281,36 +290,38 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest, PackageListRefreshed) {
 }
 
 // Test uninstallation when ARC isn't running.
-IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerDelayedArcStartBrowserTest,
+IN_PROC_BROWSER_TEST_P(ApkWebAppInstallerDelayedArcStartBrowserTest,
                        DelayedUninstall) {
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      observer(this);
-  observer.Add(extensions::ExtensionRegistry::Get(browser()->profile()));
   ApkWebAppService* service = apk_web_app_service();
 
-  base::RunLoop run_loop;
-  service->SetWebAppInstalledCallbackForTesting(base::BindLambdaForTesting(
-      [&](const std::string& package_name, const web_app::AppId& web_app_id) {
-        EXPECT_TRUE(installed_extension_);
-        EXPECT_EQ(kAppTitle, installed_extension_->name());
-        EXPECT_FALSE(is_update_installed_.value());
-        run_loop.Quit();
-      }));
+  {
+    base::RunLoop run_loop;
+    service->SetWebAppInstalledCallbackForTesting(base::BindLambdaForTesting(
+        [&](const std::string& package_name, const web_app::AppId& web_app_id) {
+          EXPECT_EQ(kAppTitle, installed_web_app_name_);
+          EXPECT_EQ(web_app_id, installed_web_app_id_);
+          EXPECT_EQ(kPackageName, package_name);
+          run_loop.Quit();
+        }));
 
-  // Install an app from the raw data as if ARC had installed it.
-  service->OnDidGetWebAppIcon(kPackageName, GetWebAppInfo(kAppTitle),
-                              GetFakeIconBytes());
-  run_loop.Run();
+    // Install an app from the raw data as if ARC had installed it.
+    service->OnDidGetWebAppIcon(kPackageName, GetWebAppInfo(kAppTitle),
+                                GetFakeIconBytes());
+    run_loop.Run();
+  }
 
-  // Uninstall the app on the extensions side. ARC uninstallation should be
+  // Uninstall the app on the web apps side. ARC uninstallation should be
   // queued.
-  extensions::ExtensionSystem::Get(browser()->profile())
-      ->extension_service()
-      ->UninstallExtension(installed_extension_->id(),
-                           extensions::UNINSTALL_REASON_USER_INITIATED,
-                           /*error=*/nullptr);
-  EXPECT_EQ(extensions::UNINSTALL_REASON_USER_INITIATED, uninstall_reason_);
+  {
+    base::RunLoop run_loop;
+    provider_->install_finalizer().UninstallExternalWebApp(
+        installed_web_app_id_, web_app::ExternalInstallSource::kArc,
+        base::BindLambdaForTesting([&](bool uninstalled) {
+          EXPECT_TRUE(uninstalled);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
 
   // Start up ARC and set the package to be installed.
   EnableArc();
@@ -330,18 +341,14 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerDelayedArcStartBrowserTest,
 }
 
 // Test an upgrade that becomes a web app and then stops being a web app.
-IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest,
+IN_PROC_BROWSER_TEST_P(ApkWebAppInstallerBrowserTest,
                        UpgradeToWebAppAndToArcApp) {
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      observer(this);
-  observer.Add(extensions::ExtensionRegistry::Get(browser()->profile()));
   ApkWebAppService* service = apk_web_app_service();
   service->SetArcAppListPrefsForTesting(arc_app_list_prefs_);
   app_instance_->SendPackageAdded(GetArcAppPackage(kPackageName, kAppTitle));
 
-  EXPECT_FALSE(installed_extension_);
-  EXPECT_TRUE(uninstalled_extension_id_.empty());
+  EXPECT_TRUE(installed_web_app_id_.empty());
+  EXPECT_TRUE(uninstalled_web_app_id_.empty());
 
   // Send a second package added call from ARC, upgrading the package to a web
   // app.
@@ -349,11 +356,8 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest,
     base::RunLoop run_loop;
     service->SetWebAppInstalledCallbackForTesting(base::BindLambdaForTesting(
         [&](const std::string& package_name, const web_app::AppId& web_app_id) {
-          EXPECT_TRUE(uninstalled_extension_id_.empty());
-
-          EXPECT_TRUE(installed_extension_);
-          EXPECT_EQ(kAppTitle, installed_extension_->name());
-          EXPECT_FALSE(is_update_installed_.value());
+          EXPECT_TRUE(uninstalled_web_app_id_.empty());
+          EXPECT_EQ(kAppTitle, installed_web_app_name_);
           run_loop.Quit();
         }));
 
@@ -362,14 +366,12 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest,
   }
 
   // Send an package added call from ARC, upgrading the package to not be a
-  // web app. The extension should be uninstalled.
+  // web app. The web app should be uninstalled.
   {
     base::RunLoop run_loop;
     service->SetWebAppUninstalledCallbackForTesting(base::BindLambdaForTesting(
         [&](const std::string& package_name, const web_app::AppId& web_app_id) {
-          EXPECT_FALSE(uninstalled_extension_id_.empty());
-          EXPECT_EQ(kAppTitle, uninstalled_extension_name_);
-          EXPECT_EQ(extensions::UNINSTALL_REASON_ARC, uninstall_reason_);
+          EXPECT_EQ(uninstalled_web_app_id_, installed_web_app_id_);
           run_loop.Quit();
         }));
     app_instance_->SendPackageAdded(GetArcAppPackage(kPackageName, kAppTitle));
@@ -377,15 +379,16 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest,
   }
 
   Reset();
+  EXPECT_TRUE(installed_web_app_id_.empty());
+  EXPECT_TRUE(installed_web_app_name_.empty());
 
   // Upgrade the package to a web app again and make sure it is installed again.
   {
     base::RunLoop run_loop;
     service->SetWebAppInstalledCallbackForTesting(base::BindLambdaForTesting(
         [&](const std::string& package_name, const web_app::AppId& web_app_id) {
-          EXPECT_TRUE(installed_extension_);
-          EXPECT_EQ(kAppTitle, installed_extension_->name());
-          EXPECT_FALSE(is_update_installed_.value());
+          EXPECT_FALSE(installed_web_app_id_.empty());
+          EXPECT_EQ(kAppTitle, installed_web_app_name_);
           run_loop.Quit();
         }));
 
@@ -394,12 +397,8 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerWithLauncherControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(ApkWebAppInstallerWithLauncherControllerBrowserTest,
                        CheckPinStateAfterUpdate) {
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      observer(this);
-  observer.Add(extensions::ExtensionRegistry::Get(browser()->profile()));
   ApkWebAppService* service = apk_web_app_service();
   service->SetArcAppListPrefsForTesting(arc_app_list_prefs_);
   app_instance_->SendPackageAdded(GetArcAppPackage(kPackageName, kAppTitle));
@@ -414,8 +413,8 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerWithLauncherControllerBrowserTest,
   app.sticky = true;
   app_instance_->SendPackageAppListRefreshed(kPackageName, {app});
 
-  EXPECT_FALSE(installed_extension_);
-  EXPECT_TRUE(uninstalled_extension_id_.empty());
+  EXPECT_TRUE(installed_web_app_id_.empty());
+  EXPECT_TRUE(uninstalled_web_app_id_.empty());
   EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id));
 
   // Pin the app to the shelf.
@@ -434,8 +433,13 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerWithLauncherControllerBrowserTest,
     base::RunLoop run_loop;
     service->SetWebAppInstalledCallbackForTesting(base::BindLambdaForTesting(
         [&](const std::string& package_name, const web_app::AppId& web_app_id) {
+          // Web apps update the launcher asynchronously, so flush the App
+          // Service's mojo calls to ensure that happens.
+          auto* proxy =
+              apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+          proxy->FlushMojoCallsForTesting();
           keep_web_app_id = web_app_id;
-          EXPECT_TRUE(installed_extension_);
+          EXPECT_FALSE(installed_web_app_id_.empty());
           EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id));
           EXPECT_TRUE(launcher_controller_->IsAppPinned(keep_web_app_id));
           int new_index =
@@ -466,7 +470,7 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerWithLauncherControllerBrowserTest,
     base::RunLoop run_loop;
     service->SetWebAppUninstalledCallbackForTesting(base::BindLambdaForTesting(
         [&](const std::string& package_name, const web_app::AppId& web_app_id) {
-          EXPECT_FALSE(uninstalled_extension_id_.empty());
+          EXPECT_FALSE(uninstalled_web_app_id_.empty());
           EXPECT_FALSE(launcher_controller_->IsAppPinned(web_app_id));
           EXPECT_TRUE(launcher_controller_->IsAppPinned(arc_app_id));
           int new_index =
@@ -479,5 +483,23 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerWithLauncherControllerBrowserTest,
     run_loop.Run();
   }
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ApkWebAppInstallerBrowserTest,
+                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
+                                           web_app::ProviderType::kWebApps),
+                         web_app::ProviderTypeParamToString);
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ApkWebAppInstallerDelayedArcStartBrowserTest,
+                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
+                                           web_app::ProviderType::kWebApps),
+                         web_app::ProviderTypeParamToString);
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ApkWebAppInstallerWithLauncherControllerBrowserTest,
+                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
+                                           web_app::ProviderType::kWebApps),
+                         web_app::ProviderTypeParamToString);
 
 }  // namespace chromeos

@@ -339,9 +339,6 @@ class MODULES_EXPORT AXObjectCacheImpl
   HeapVector<Member<AXEventParams>> notifications_to_post_;
   void PostNotificationsAfterLayout(Document*);
 
-  // ExecutionContextLifecycleObserver overrides.
-  void ContextDestroyed() override;
-
   // Get the currently focused Node element.
   Node* FocusedElement();
 

@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="crostini_browser_proxy.html">
+<link rel="import" href="crostini_mic_sharing_dialog.html">
 <link rel="import" href="../../controls/settings_toggle_button.html">
 <link rel="import" href="../../i18n_setup.html">
 <link rel="import" href="../../prefs/prefs_behavior.html">
@@ -95,8 +96,9 @@
     </template>
     <template is="dom-if" if="[[showCrostiniMic_]]">
       <settings-toggle-button id="crostini-mic-sharing"
-          pref="{{prefs.crostini.mic_sharing}}"
-          label="$i18n{enableCrostiniMicTitle}">
+        on-change="onMicSharingChange_"
+        pref="{{prefs.crostini.mic_sharing}}"
+        label="$i18n{crostiniMicTitle}">
       </settings-toggle-button>
     </template>
     <template is="dom-if" if="[[!hideCrostiniUninstall_]]">
@@ -107,6 +109,12 @@
           $i18n{crostiniRemoveButton}
         </cr-button>
       </div>
+    </template>
+
+    <template is="dom-if" if="[[showCrostiniMicSharingDialog_]]" restamp>
+      <settings-crostini-mic-sharing-dialog
+          on-close="onCrostiniMicSharingDialogClose_">
+      </settings-crostini-mic-sharing-dialog>
     </template>
   </template>
   <script src="crostini_subpage.js"></script>

@@ -23,6 +23,7 @@
 #include "components/autofill_assistant/browser/service_impl.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/user_data.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -42,6 +43,13 @@ static constexpr int kAutostartInitialProgress = 5;
 
 // Parameter that allows setting the color of the overlay.
 static const char* const kOverlayColorParameterName = "OVERLAY_COLORS";
+
+// Parameter that contains the current session username. Should be synced with
+// |SESSION_USERNAME_PARAMETER| from
+// .../password_manager/PasswordChangeLauncher.java
+// TODO(b/151401974): Eliminate duplicate parameter definitions.
+static const char* const kPasswordChangeUsernameParameterName =
+    "PASSWORD_CHANGE_USERNAME";
 
 // Returns true if the state requires a UI to be shown.
 //
@@ -943,6 +951,12 @@ void Controller::InitFromParameters() {
 
     SetOverlayColors(std::move(colors));
   }
+  const base::Optional<std::string> password_change_username =
+      trigger_context_->GetParameter(kPasswordChangeUsernameParameterName);
+  if (password_change_username) {
+    user_data_->selected_login_.emplace(web_contents()->GetLastCommittedURL(),
+                                        *password_change_username);
+  }
 }
 
 void Controller::Track(std::unique_ptr<TriggerContext> trigger_context,
@@ -971,8 +985,19 @@ bool Controller::HasRunFirstCheck() const {
 bool Controller::Start(const GURL& deeplink_url,
                        std::unique_ptr<TriggerContext> trigger_context) {
   if (state_ != AutofillAssistantState::INACTIVE &&
-      state_ != AutofillAssistantState::TRACKING)
+      state_ != AutofillAssistantState::TRACKING) {
     return false;
+  }
+  // Verify a password change intent before running.
+  // TODO(b/151391231): Remove when intent signing is implemented.
+  if (trigger_context->GetParameter(kPasswordChangeUsernameParameterName)) {
+    auto* password_manager_client = client_->GetPasswordManagerClient();
+    if (!password_manager_client ||
+        !password_manager_client->WasCredentialLeakDialogShown()) {
+      VLOG(1) << "Failed to start a password change flow.";
+      return false;
+    }
+  }
 
   trigger_context_ = std::move(trigger_context);
   InitFromParameters();

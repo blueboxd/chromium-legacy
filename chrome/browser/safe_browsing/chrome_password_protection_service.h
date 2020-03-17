@@ -103,8 +103,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       Profile* profile);
 
 #if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
-  static bool ShouldShowChangePasswordSettingUI(Profile* profile);
-
   // Called by SecurityStateTabHelper to determine if page info bubble should
   // show password reuse warning.
   static bool ShouldShowPasswordReusePageInfoBubble(

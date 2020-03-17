@@ -68,6 +68,11 @@ class TestingSafetyCheckHandler : public SafetyCheckHandler {
 
 class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
  public:
+  void SetBulkLeakCheckService(
+      password_manager::BulkLeakCheckService* leak_service) {
+    leak_service_ = leak_service;
+  }
+
   void SetNumCompromisedCredentials(int compromised_password_count) {
     compromised_password_count_ = compromised_password_count;
   }
@@ -76,6 +81,14 @@ class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
       extensions::api::passwords_private::PasswordCheckState state) {
     state_ = state;
   }
+
+  // When |running_state_on_start_| is set to |true|, this class simulates the
+  // behavior of the real password check by synchronously settings the state to
+  // |kRunning| once |StartPasswordCheck()| is invoked. Since that is the case
+  // for the majority of non-error password check flows, the default is |true|.
+  // In some test cases with no transitions to the |kRunning| state, such as not
+  // having any passwords, it is necessary to disable this functionality.
+  void SetRunningStateOnStart(bool value) { running_state_on_start_ = value; }
 
   std::vector<extensions::api::passwords_private::CompromisedCredential>
   GetCompromisedCredentials() override {
@@ -94,10 +107,22 @@ class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
     return status;
   }
 
+  bool StartPasswordCheck() override {
+    bool ret_val =
+        extensions::TestPasswordsPrivateDelegate::StartPasswordCheck();
+    if (running_state_on_start_) {
+      leak_service_->set_state_and_notify(
+          password_manager::BulkLeakCheckService::State::kRunning);
+    }
+    return ret_val;
+  }
+
  private:
+  password_manager::BulkLeakCheckService* leak_service_ = nullptr;
   int compromised_password_count_ = 0;
   extensions::api::passwords_private::PasswordCheckState state_ =
       extensions::api::passwords_private::PASSWORD_CHECK_STATE_IDLE;
+  bool running_state_on_start_ = true;
 };
 
 class TestSafetyCheckExtensionService : public TestExtensionService {
@@ -180,6 +205,7 @@ void SafetyCheckHandlerTest::SetUp() {
   auto version_updater = std::make_unique<TestVersionUpdater>();
   test_leak_service_ = std::make_unique<password_manager::BulkLeakCheckService>(
       nullptr, nullptr);
+  test_passwords_delegate_.SetBulkLeakCheckService(test_leak_service_.get());
   version_updater_ = version_updater.get();
   test_web_ui_.set_web_contents(web_contents());
   test_extension_prefs_ = extensions::ExtensionPrefs::Get(profile());
@@ -598,6 +624,17 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_RunningOneCompromised) {
   VerifyDisplayString(event, "1 compromised password");
 }
 
+TEST_F(SafetyCheckHandlerTest, CheckPasswords_NoPasswords) {
+  test_passwords_delegate_.SetRunningStateOnStart(false);
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kPasswords,
+          static_cast<int>(SafetyCheckHandler::PasswordsStatus::kSafe));
+  EXPECT_TRUE(event);
+  VerifyDisplayString(event, "No compromised passwords found");
+}
+
 TEST_F(SafetyCheckHandlerTest, CheckExtensions_NoExtensions) {
   safety_check_->PerformSafetyCheck();
   EXPECT_TRUE(GetSafetyCheckStatusChangedWithDataIfExists(
@@ -758,4 +795,34 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_Error) {
   EXPECT_TRUE(event);
   VerifyDisplayString(event,
                       "Browser can't check your extensions. Try again later.");
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckParentRanDisplayString) {
+  // 1 second before midnight, so that -(24h-1s) is still on the same day.
+  const base::Time systemTime =
+      base::Time::Now().LocalMidnight() - base::TimeDelta::FromSeconds(1);
+  // Display strings for given time deltas in seconds.
+  std::vector<std::tuple<std::string, int>> tuples{
+      std::make_tuple("Safety check ran a moment ago", 1),
+      std::make_tuple("Safety check ran a moment ago", 59),
+      std::make_tuple("Safety check ran 1 minute ago", 60),
+      std::make_tuple("Safety check ran 2 minutes ago", 60 * 2),
+      std::make_tuple("Safety check ran 59 minutes ago", 60 * 60 - 1),
+      std::make_tuple("Safety check ran 1 hour ago", 60 * 60),
+      std::make_tuple("Safety check ran 2 hours ago", 60 * 60 * 2),
+      std::make_tuple("Safety check ran 23 hours ago", 60 * 60 * 23),
+      std::make_tuple("Safety check ran yesterday", 60 * 60 * 24),
+      std::make_tuple("Safety check ran yesterday", 60 * 60 * 24 * 2 - 1),
+      std::make_tuple("Safety check ran 2 days ago", 60 * 60 * 24 * 2),
+      std::make_tuple("Safety check ran 2 days ago", 60 * 60 * 24 * 3 - 1),
+      std::make_tuple("Safety check ran 3 days ago", 60 * 60 * 24 * 3),
+      std::make_tuple("Safety check ran 3 days ago", 60 * 60 * 24 * 4 - 1)};
+  // Test that above time deltas produce the corresponding display strings.
+  for (auto tuple : tuples) {
+    const base::Time time =
+        systemTime - base::TimeDelta::FromSeconds(std::get<1>(tuple));
+    const base::string16 displayString = safety_check_->GetStringForParentRan(
+        time.ToJsTimeIgnoringNull(), systemTime);
+    EXPECT_EQ(base::UTF8ToUTF16(std::get<0>(tuple)), displayString);
+  }
 }

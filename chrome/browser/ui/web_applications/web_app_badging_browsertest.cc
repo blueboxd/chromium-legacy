@@ -32,7 +32,6 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
     WebAppControllerBrowserTest::SetUpOnMainThread();
 
     ASSERT_TRUE(cross_origin_https_server_.Start());
-    ASSERT_TRUE(https_server()->Start());
     ASSERT_TRUE(embedded_test_server()->Start());
 
     GURL cross_site_frame_url =

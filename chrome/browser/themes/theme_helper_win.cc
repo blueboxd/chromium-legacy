@@ -80,7 +80,7 @@ SkColor ThemeHelperWin::GetDefaultColor(
     // uses because some things (like the incognito icon) use this color to
     // decide whether they should draw in light or dark mode. Incognito colors
     // should be the same as non-incognito in all cases here.
-    if (id == ThemeProperties::COLOR_FRAME) {
+    if (id == ThemeProperties::COLOR_FRAME_ACTIVE) {
       if (dwm_frame_color_)
         return dwm_frame_color_.value();
       if (!ShouldCustomDrawSystemTitlebar())
@@ -117,10 +117,10 @@ bool ThemeHelperWin::GetPlatformHighContrastColor(int id,
 
   switch (id) {
     // Window Background
-    case ThemeProperties::COLOR_FRAME:
-    case ThemeProperties::COLOR_FRAME_INCOGNITO:
+    case ThemeProperties::COLOR_FRAME_ACTIVE:
+    case ThemeProperties::COLOR_FRAME_ACTIVE_INCOGNITO:
     case ThemeProperties::COLOR_FRAME_INACTIVE:
-    case ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE:
+    case ThemeProperties::COLOR_FRAME_INACTIVE_INCOGNITO:
     case ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE:
     case ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO:
     case ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE:

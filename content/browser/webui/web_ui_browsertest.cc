@@ -154,6 +154,26 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnDifferenteWebUITypes) {
       web_contents->GetMainFrame()->GetProcess()->GetID()));
 }
 
+// Tests that a WebUI page will use a separate SiteInstance when we navigated to
+// it from the initial blank page.
+IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest,
+                       ForceBrowsingInstanceSwapOnFirstNavigation) {
+  WebContents* web_contents = shell()->web_contents();
+  scoped_refptr<SiteInstance> orig_site_instance(
+      web_contents->GetSiteInstance());
+  // Navigate from the initial blank page to the WebUI URL.
+  const GURL web_ui_url(GetWebUIURL(kChromeUIHistogramHost));
+  EXPECT_TRUE(ContentWebUIControllerFactory::GetInstance()->UseWebUIForURL(
+      web_contents->GetBrowserContext(), web_ui_url));
+  ASSERT_TRUE(NavigateToURL(web_contents, web_ui_url));
+
+  EXPECT_TRUE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+      web_contents->GetMainFrame()->GetProcess()->GetID()));
+  auto* new_site_instance = web_contents->GetSiteInstance();
+  EXPECT_NE(orig_site_instance, new_site_instance);
+  EXPECT_FALSE(orig_site_instance->IsRelatedSiteInstance(new_site_instance));
+}
+
 // Tests that navigating from chrome:// to chrome-untrusted:// results in
 // SiteInstance swap.
 IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnFromChromeToUntrusted) {

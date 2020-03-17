@@ -11,7 +11,7 @@ from mojom.error import Error
 from mojom.parse import ast
 from mojom.parse.lexer import Lexer
 
-fileutil.EnsureModuleAvailable("ply")
+fileutil.AddLocalRepoThirdPartyDirToModulePath()
 from ply import lex
 from ply import yacc
 

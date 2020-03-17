@@ -157,7 +157,7 @@ config("sqlite_warnings") {
     ]
   }
   if (is_win && !is_clang) {
-    cflags += [ "/wd4101" ]  # 'zTrace' unreferenced variable in patched/vdbe.c
+    cflags += [ "/wd4101" ]  # 'zTrace' unreferenced variable in src/src/vdbe.c
   }
 }
 
@@ -376,7 +376,7 @@ if (is_win || is_mac || is_linux) {
 # Libfuzzer-based fuzzer test from SQLite source tree.
 fuzzer_test("sqlite3_ossfuzz_fuzzer") {
   include_dirs = [ "." ]
-  sources = [ "patched/test/ossfuzz.c" ]
+  sources = [ "src/test/ossfuzz.c" ]
   deps = [ ":sqlite" ]
   dict = "fuzz/sql.dict"
 }
@@ -534,7 +534,7 @@ config("sqlite3_dbfuzz2_config") {
 if (use_fuzzing_engine) {
   fuzzer_test("sqlite3_dbfuzz2_fuzzer") {
     include_dirs = [ "." ]
-    sources = [ "patched/test/dbfuzz2.c" ]
+    sources = [ "src/test/dbfuzz2.c" ]
     deps = [ ":sqlite" ]
     additional_configs = [ ":sqlite3_dbfuzz2_config" ]
     seed_corpus = "fuzz/db_corpus"

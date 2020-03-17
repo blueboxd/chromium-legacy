@@ -41,6 +41,14 @@ class MockVideoProcessorProxy : public VideoProcessorProxy {
     return MockCreateVideoProcessorInputView();
   }
 
+  void SetStreamColorSpace(const gfx::ColorSpace& color_space) override {
+    last_stream_color_space_ = color_space;
+  }
+
+  void SetOutputColorSpace(const gfx::ColorSpace& color_space) override {
+    last_output_color_space_ = color_space;
+  }
+
   HRESULT VideoProcessorBlt(ID3D11VideoProcessorOutputView* output_view,
                             UINT output_frameno,
                             UINT stream_count,
@@ -52,6 +60,10 @@ class MockVideoProcessorProxy : public VideoProcessorProxy {
   MOCK_METHOD0(MockCreateVideoProcessorOutputView, HRESULT());
   MOCK_METHOD0(MockCreateVideoProcessorInputView, HRESULT());
   MOCK_METHOD0(MockVideoProcessorBlt, HRESULT());
+
+  // Most recent arguments to SetStream/OutputColorSpace().
+  base::Optional<gfx::ColorSpace> last_stream_color_space_;
+  base::Optional<gfx::ColorSpace> last_output_color_space_;
 };
 
 class MockTexture2DWrapper : public Texture2DWrapper {
@@ -60,7 +72,12 @@ class MockTexture2DWrapper : public Texture2DWrapper {
 
   bool ProcessTexture(ComD3D11Texture2D texture,
                       size_t array_slice,
-                      MailboxHolderArray* mailbox_dest) override {
+                      const gfx::ColorSpace& input_color_space,
+                      MailboxHolderArray* mailbox_dest,
+                      gfx::ColorSpace* output_color_space) override {
+    // Pretend we created an arbitrary color space, so that we're sure that it
+    // is returned from the copying wrapper.
+    *output_color_space = gfx::ColorSpace::CreateHDR10();
     return MockProcessTexture();
   }
 
@@ -78,7 +95,7 @@ CommandBufferHelperPtr UselessHelper() {
 
 class D3D11CopyingTexture2DWrapperTest
     : public ::testing::TestWithParam<
-          std::tuple<HRESULT, HRESULT, HRESULT, bool, bool, bool>> {
+          std::tuple<HRESULT, HRESULT, HRESULT, bool, bool, bool, bool>> {
  public:
 #define FIELD(TYPE, NAME, INDEX) \
   TYPE Get##NAME() { return std::get<INDEX>(GetParam()); }
@@ -88,9 +105,10 @@ class D3D11CopyingTexture2DWrapperTest
   FIELD(bool, ProcessorProxyInit, 3)
   FIELD(bool, TextureWrapperInit, 4)
   FIELD(bool, ProcessTexture, 5)
+  FIELD(bool, PassthroughColorSpace, 6)
 #undef FIELD
 
-  std::unique_ptr<VideoProcessorProxy> ExpectProcessorProxy() {
+  std::unique_ptr<MockVideoProcessorProxy> ExpectProcessorProxy() {
     auto result = std::make_unique<MockVideoProcessorProxy>();
     ON_CALL(*result.get(), MockInit(_, _))
         .WillByDefault(Return(GetProcessorProxyInit()));
@@ -104,7 +122,7 @@ class D3D11CopyingTexture2DWrapperTest
     ON_CALL(*result.get(), MockVideoProcessorBlt())
         .WillByDefault(Return(GetVideoProcessorBlt()));
 
-    return std::move(result);
+    return result;
   }
 
   std::unique_ptr<Texture2DWrapper> ExpectTextureWrapper() {
@@ -142,6 +160,7 @@ INSTANTIATE_TEST_CASE_P(CopyingTexture2DWrapperTest,
                                 Values(S_OK, E_FAIL),
                                 Bool(),
                                 Bool(),
+                                Bool(),
                                 Bool()));
 
 // For ever potential return value combination for the D3D11VideoProcessor,
@@ -149,13 +168,41 @@ INSTANTIATE_TEST_CASE_P(CopyingTexture2DWrapperTest,
 TEST_P(D3D11CopyingTexture2DWrapperTest,
        CopyingTextureWrapperProcessesCorrectly) {
   gfx::Size size;
+  auto processor = ExpectProcessorProxy();
+  MockVideoProcessorProxy* processor_raw = processor.get();
+  // Provide an unlikely color space, to see if it gets to the video processor,
+  // if we're not just doing a pass-through of the input.
+  base::Optional<gfx::ColorSpace> copy_color_space;
+  if (!GetPassthroughColorSpace())
+    copy_color_space = gfx::ColorSpace::CreateDisplayP3D65();
   auto wrapper = std::make_unique<CopyingTexture2DWrapper>(
-      size, ExpectTextureWrapper(), ExpectProcessorProxy(), nullptr);
+      size, ExpectTextureWrapper(), std::move(processor), nullptr,
+      copy_color_space);
 
   MailboxHolderArray mailboxes;
+  gfx::ColorSpace input_color_space = gfx::ColorSpace::CreateSCRGBLinear();
+  gfx::ColorSpace output_color_space;
   EXPECT_EQ(wrapper->Init(CreateMockHelperCB()), InitSucceeds());
-  EXPECT_EQ(wrapper->ProcessTexture(nullptr, 0, &mailboxes),
+  EXPECT_EQ(wrapper->ProcessTexture(nullptr, 0, input_color_space, &mailboxes,
+                                    &output_color_space),
             ProcessTextureSucceeds());
+
+  if (ProcessTextureSucceeds()) {
+    // Regardless of what the input space is, the output should be provided by
+    // the mock wrapper.
+    EXPECT_EQ(gfx::ColorSpace::CreateHDR10(), output_color_space);
+
+    // Also expect that the input and copy spaces were provided to the video
+    // processor as the stream and output color spaces, respectively.  If no
+    // copy space was provided, then expect that the output is the input.
+    EXPECT_TRUE(processor_raw->last_stream_color_space_);
+    EXPECT_EQ(*processor_raw->last_stream_color_space_, input_color_space);
+    EXPECT_TRUE(processor_raw->last_output_color_space_);
+    EXPECT_EQ(*processor_raw->last_output_color_space_,
+              copy_color_space ? *copy_color_space : input_color_space);
+  }
+
+  // TODO: verify that these aren't sent multiple times, unless they change.
 }
 
 }  // namespace media

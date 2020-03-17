@@ -9,6 +9,7 @@
 
 #include "ash/accessibility/focus_ring_controller.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/locale_update_controller.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
@@ -247,6 +248,17 @@ struct ShowLoginWizardSwitchLanguageCallbackData {
   chromeos::InputEventsBlocker events_blocker;
 };
 
+// Trigger OnLocaleChanged via ash::LocaleUpdateController.
+void NotifyLocaleChange() {
+  // The first three arguments of OnLocaleChanged are cur_locale, from_locale
+  // and to_locale which are used to notify the user about the locale change.
+  // We pass empty strings to OnLocaleChanged because when it is called in OOBE
+  // the locales are ignored since no notification is displayed.
+  ash::LocaleUpdateController::Get()->OnLocaleChanged(
+      std::string(), std::string(), std::string(),
+      base::DoNothing::Once<ash::LocaleNotificationResult>());
+}
+
 void OnLanguageSwitchedCallback(
     std::unique_ptr<ShowLoginWizardSwitchLanguageCallbackData> self,
     const chromeos::locale_util::LanguageSwitchResult& result) {
@@ -254,6 +266,8 @@ void OnLanguageSwitchedCallback(
     LOG(WARNING) << "Locale could not be found for '" << result.requested_locale
                  << "'";
 
+  // Notify the locale change.
+  NotifyLocaleChange();
   ShowLoginWizardFinish(self->first_screen, self->startup_manifest);
 }
 

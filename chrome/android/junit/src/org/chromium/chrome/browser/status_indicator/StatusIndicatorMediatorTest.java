@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.test.util.browser.Features;
@@ -44,17 +45,22 @@ public class StatusIndicatorMediatorTest {
     @Mock
     StatusIndicatorCoordinator.StatusIndicatorObserver mObserver;
 
+    @Mock
+    Supplier<Boolean> mCanAnimateNativeBrowserControls;
+
     private PropertyModel mModel;
     private StatusIndicatorMediator mMediator;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        when(mCanAnimateNativeBrowserControls.get()).thenReturn(true);
         mModel = new PropertyModel.Builder(StatusIndicatorProperties.ALL_KEYS)
                          .with(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.GONE)
                          .with(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, false)
                          .build();
-        mMediator = new StatusIndicatorMediator(mModel, mFullscreenManager, () -> Color.WHITE);
+        mMediator = new StatusIndicatorMediator(
+                mModel, mFullscreenManager, () -> Color.WHITE, mCanAnimateNativeBrowserControls);
     }
 
     @Test
@@ -138,6 +144,26 @@ public class StatusIndicatorMediatorTest {
         // Hide again.
         mMediator.onControlsOffsetChanged(0, 0, 0, 0, false);
         assertEquals(View.INVISIBLE, mModel.get(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY));
+        assertFalse(mModel.get(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE));
+    }
+
+    @Test
+    public void testSkipAnimationIfCannotAnimateNativeBrowserControls() {
+        // Assume we can't animate the native browser controls.
+        when(mCanAnimateNativeBrowserControls.get()).thenReturn(false);
+
+        // Show the indicator.
+        setViewHeight(50);
+        mMediator.onLayoutChange(mStatusIndicatorView, 0, 0, 0, 0, 0, 0, 0, 0);
+        // The indicator should be visible immediately.
+        assertEquals(View.VISIBLE, mModel.get(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY));
+        assertTrue(mModel.get(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE));
+
+        // Hide the indicator.
+        setViewHeight(0);
+        mMediator.onLayoutChange(mStatusIndicatorView, 0, 0, 0, 0, 0, 0, 0, 0);
+        // The indicator should hide immediately.
+        assertEquals(View.GONE, mModel.get(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY));
         assertFalse(mModel.get(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE));
     }
 

@@ -153,13 +153,13 @@ scoped_refptr<VideoFrame> VideoFrameCompositor::GetCurrentFrameOnAnyThread() {
   return current_frame_;
 }
 
-void VideoFrameCompositor::SetCurrentFrame(
+void VideoFrameCompositor::SetCurrentFrame_Locked(
     scoped_refptr<VideoFrame> frame,
     base::TimeTicks expected_presentation_time) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   TRACE_EVENT1("media", "VideoFrameCompositor::SetCurrentFrame", "frame",
                frame->AsHumanReadableString());
-  base::AutoLock lock(current_frame_lock_);
+  current_frame_lock_.AssertAcquired();
   current_frame_ = std::move(frame);
   last_presentation_time_ = tick_clock_->NowTicks();
   last_expected_presentation_time_ = expected_presentation_time;
@@ -274,7 +274,7 @@ void VideoFrameCompositor::SetOnNewProcessedFrameCallback(
 
 void VideoFrameCompositor::SetOnFramePresentedCallback(
     OnNewFramePresentedCB present_cb) {
-  base::AutoLock lock(new_presented_frame_cb_lock_);
+  base::AutoLock lock(current_frame_lock_);
   new_presented_frame_cb_ = std::move(present_cb);
 }
 
@@ -328,18 +328,17 @@ bool VideoFrameCompositor::ProcessNewFrame(scoped_refptr<VideoFrame> frame,
   // subsequent PutCurrentFrame() call it will mark it as rendered.
   rendered_last_frame_ = false;
 
-  SetCurrentFrame(std::move(frame), presentation_time);
-
-  if (new_processed_frame_cb_)
-    std::move(new_processed_frame_cb_).Run(tick_clock_->NowTicks());
-
   // Copy to a local variable to avoid potential deadlock when executing the
   // callback.
   OnNewFramePresentedCB frame_presented_cb;
   {
-    base::AutoLock lock(new_presented_frame_cb_lock_);
+    base::AutoLock lock(current_frame_lock_);
+    SetCurrentFrame_Locked(std::move(frame), presentation_time);
     frame_presented_cb = std::move(new_presented_frame_cb_);
   }
+
+  if (new_processed_frame_cb_)
+    std::move(new_processed_frame_cb_).Run(tick_clock_->NowTicks());
 
   if (frame_presented_cb) {
     std::move(frame_presented_cb).Run();

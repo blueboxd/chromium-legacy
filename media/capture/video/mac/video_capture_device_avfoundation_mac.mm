@@ -152,6 +152,8 @@ void MaybeWriteUma(int number_of_devices, int number_of_suspended_devices) {
 // formats.
 media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
   switch (code) {
+    case kCVPixelFormatType_422YpCbCr8:
+      return media::PIXEL_FORMAT_UYVY;
     case kCMPixelFormat_422YpCbCr8_yuvs:
       return media::PIXEL_FORMAT_YUY2;
     case kCMVideoCodecType_JPEG_OpenDML:
@@ -348,7 +350,7 @@ void ExtractBaseAddressAndLength(char** base_address,
   _frameHeight = height;
   _frameRate = frameRate;
 
-  FourCharCode best_fourcc = kCMPixelFormat_422YpCbCr8_yuvs;
+  FourCharCode best_fourcc = kCMPixelFormat_422YpCbCr8;
   const bool prefer_mjpeg =
       width > kMjpegWidthThreshold || height > kMjpegHeightThreshold;
   for (AVCaptureDeviceFormat* format in [_captureDevice formats]) {

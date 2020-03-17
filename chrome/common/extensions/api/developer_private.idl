@@ -138,7 +138,6 @@ namespace developerPrivate {
     boolean updateRequired;
     boolean blockedByPolicy;
     boolean custodianApprovalRequired;
-    boolean blockedMature;
   };
 
   dictionary OptionsPage {

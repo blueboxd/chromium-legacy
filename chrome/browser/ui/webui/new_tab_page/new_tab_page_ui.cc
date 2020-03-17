@@ -109,6 +109,9 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       {"tryAgain", IDS_NEW_TAB_VOICE_TRY_AGAIN},
       {"voiceSearchButtonLabel", IDS_TOOLTIP_MIC_SEARCH},
       {"waiting", IDS_NEW_TAB_VOICE_WAITING},
+
+      // Search box.
+      {"searchBoxHint", IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD},
   };
   AddLocalizedStringsBulk(source, kStrings);
 

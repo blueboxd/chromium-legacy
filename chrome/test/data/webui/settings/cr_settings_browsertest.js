@@ -395,7 +395,7 @@ CrSettingsPasswordsCheckTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsPasswordsCheckTest', 'DISABLED_All', function() {
+TEST_F('CrSettingsPasswordsCheckTest', 'All', function() {
   mocha.run();
 });
 

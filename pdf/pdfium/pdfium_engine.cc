@@ -390,6 +390,13 @@ void ShutdownSDK() {
     TearDownV8();
 }
 
+PDFEngine::AccessibilityTextFieldInfo::AccessibilityTextFieldInfo() = default;
+
+PDFEngine::AccessibilityTextFieldInfo::AccessibilityTextFieldInfo(
+    const AccessibilityTextFieldInfo& that) = default;
+
+PDFEngine::AccessibilityTextFieldInfo::~AccessibilityTextFieldInfo() = default;
+
 std::unique_ptr<PDFEngine> PDFEngine::Create(PDFEngine::Client* client,
                                              bool enable_javascript) {
   return std::make_unique<PDFiumEngine>(client, enable_javascript);
@@ -2330,6 +2337,12 @@ std::vector<PDFEngine::AccessibilityHighlightInfo>
 PDFiumEngine::GetHighlightInfo(int page_index) {
   DCHECK(PageIndexInBounds(page_index));
   return pages_[page_index]->GetHighlightInfo();
+}
+
+std::vector<PDFEngine::AccessibilityTextFieldInfo>
+PDFiumEngine::GetTextFieldInfo(int page_index) {
+  DCHECK(PageIndexInBounds(page_index));
+  return pages_[page_index]->GetTextFieldInfo();
 }
 
 bool PDFiumEngine::GetPrintScaling() {

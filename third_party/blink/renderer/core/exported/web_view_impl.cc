@@ -161,6 +161,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
+#include "third_party/blink/renderer/platform/widget/widget_base.h"
 
 #include "ui/gfx/skia_util.h"
 
@@ -1506,7 +1507,7 @@ void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time) {
       MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());
 
   base::Optional<LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer> ukm_timer;
-  if (WebFrameWidgetBase::ShouldRecordMainFrameMetrics()) {
+  if (WidgetBase::ShouldRecordBeginMainFrameMetrics()) {
     ukm_timer.emplace(MainFrameImpl()
                           ->GetFrame()
                           ->View()

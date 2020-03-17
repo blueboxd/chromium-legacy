@@ -38,8 +38,8 @@ bool ConfirmMinimalUIForTest();
 // Dismisses the minimal UI. Returns true on success.
 bool DismissMinimalUIForTest();
 
-// Returns true when running on Android M.
-bool IsAndroidMarshmallowForTest();
+// Returns true when running on Android M or L.
+bool IsAndroidMarshmallowOrLollipopForTest();
 
 // Sets an observer on future Java PaymentRequests that will call these
 // callbacks when the events occur.

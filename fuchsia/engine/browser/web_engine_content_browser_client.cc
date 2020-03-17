@@ -15,6 +15,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
+#include "fuchsia/base/fuchsia_dir_scheme.h"
 #include "fuchsia/engine/browser/url_request_rewrite_rules_manager.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_browser_interface_binders.h"
@@ -123,7 +124,7 @@ void WebEngineContentBrowserClient::
         NonNetworkURLLoaderFactoryMap* factories) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kContentDirectories)) {
-    (*factories)[WebEngineContentClient::kFuchsiaContentDirectoryScheme] =
+    (*factories)[cr_fuchsia::kFuchsiaDirScheme] =
         std::make_unique<ContentDirectoryLoaderFactory>();
   }
 }
@@ -135,7 +136,7 @@ void WebEngineContentBrowserClient::
         NonNetworkURLLoaderFactoryMap* factories) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kContentDirectories)) {
-    (*factories)[WebEngineContentClient::kFuchsiaContentDirectoryScheme] =
+    (*factories)[cr_fuchsia::kFuchsiaDirScheme] =
         std::make_unique<ContentDirectoryLoaderFactory>();
   }
 }

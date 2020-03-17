@@ -106,6 +106,20 @@ constexpr char kTabletSplitViewResizeMultiMaxLatencyHistogram[] =
 constexpr char kTabletSplitViewResizeWithOverviewMaxLatencyHistogram[] =
     "Ash.SplitViewResize.PresentationTime.MaxLatency.TabletMode.WithOverview";
 
+// The time when the number of roots in split view changes from one to two. Used
+// for the purpose of metric collection.
+base::Time g_multi_display_split_view_start_time;
+
+bool IsExactlyOneRootInSplitView() {
+  const aura::Window::Windows all_root_windows = Shell::GetAllRootWindows();
+  return 1 ==
+         std::count_if(
+             all_root_windows.begin(), all_root_windows.end(),
+             [](aura::Window* root_window) {
+               return SplitViewController::Get(root_window)->InSplitViewMode();
+             });
+}
+
 gfx::Point GetBoundedPosition(const gfx::Point& location_in_screen,
                               const gfx::Rect& bounds_in_screen) {
   return gfx::Point(
@@ -433,7 +447,16 @@ void SplitViewController::SnapWindow(aura::Window* window,
         do_divider_spawn_animation = true;
       }
     }
+
     splitview_start_time_ = base::Time::Now();
+    // We are about to enter split view on |root_window_|. If split view is
+    // already active on exactly one root, then |root_window_| will be the
+    // second root, and so multi-display split view begins now.
+    if (IsExactlyOneRootInSplitView()) {
+      base::RecordAction(
+          base::UserMetricsAction("SplitView_MultiDisplaySplitView"));
+      g_multi_display_split_view_start_time = splitview_start_time_;
+    }
   }
 
   aura::Window* previous_snapped_window = nullptr;
@@ -822,8 +845,15 @@ void SplitViewController::EndSplitView(EndReason end_reason) {
   // finds out !InSplitViewMode().
   split_view_divider_.reset();
   base::RecordAction(base::UserMetricsAction("SplitView_EndSplitView"));
+  const base::Time now = base::Time::Now();
   UMA_HISTOGRAM_LONG_TIMES("Ash.SplitView.TimeInSplitView",
-                           base::Time::Now() - splitview_start_time_);
+                           now - splitview_start_time_);
+  // We just ended split view on |root_window_|. If there is exactly one root
+  // where split view is still active, then multi-display split view ends now.
+  if (IsExactlyOneRootInSplitView()) {
+    UMA_HISTOGRAM_LONG_TIMES("Ash.SplitView.TimeInMultiDisplaySplitView",
+                             now - g_multi_display_split_view_start_time);
+  }
 }
 
 bool SplitViewController::IsWindowInSplitView(

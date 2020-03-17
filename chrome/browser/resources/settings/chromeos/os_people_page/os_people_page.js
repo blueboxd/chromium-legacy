@@ -11,7 +11,6 @@ Polymer({
 
   behaviors: [
     settings.RouteObserverBehavior,
-    CrPngBehavior,
     I18nBehavior,
     WebUIListenerBehavior,
     LockStateBehavior,
@@ -232,8 +231,7 @@ Polymer({
     // Extract first frame from image by creating a single frame PNG using
     // url as input if base64 encoded and potentially animated.
     if (info.iconUrl.startsWith('data:image/png;base64')) {
-      this.profileIconUrl_ =
-          CrPngBehavior.convertImageSequenceToPng([info.iconUrl]);
+      this.profileIconUrl_ = cr.png.convertImageSequenceToPng([info.iconUrl]);
       return;
     }
     this.profileIconUrl_ = info.iconUrl;

@@ -1623,4 +1623,36 @@ TEST_F(VideoRendererAlgorithmTest, UsesFrameDuration) {
             base::TimeTicks() + kLongDuration + tg.interval(1) * 3);
 }
 
+// Check that VideoRendererAlgorithm correctly sets WALLCLOCK_FRAME_DURATION
+// for each frame.
+TEST_F(VideoRendererAlgorithmTest, WallClockDurationMetadataSet) {
+  int playback_rate = 4;
+  int frame_count = 10;
+  TickGenerator tg(tick_clock_->NowTicks(), 25);
+
+  time_source_.SetPlaybackRate(playback_rate);
+  auto intended_duration = tg.interval(1) / playback_rate;
+
+  for (int i = 0; i < frame_count; i++) {
+    auto frame = CreateFrame(tg.interval(i));
+    frame->metadata()->SetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
+                                    tg.interval(1));
+    algorithm_.EnqueueFrame(frame);
+  }
+
+  for (int i = 0; i < frame_count; i++) {
+    size_t frames_dropped = 0;
+    auto frame = RenderAndStep(&tg, &frames_dropped);
+
+    SCOPED_TRACE(base::StringPrintf("Frame #%d", i));
+    base::TimeDelta wallclock_duration;
+    EXPECT_TRUE(frame->metadata()->GetTimeDelta(
+        media::VideoFrameMetadata::WALLCLOCK_FRAME_DURATION,
+        &wallclock_duration));
+
+    EXPECT_EQ(wallclock_duration, intended_duration);
+    EXPECT_EQ(algorithm_.average_frame_duration(), intended_duration);
+  }
+}
+
 }  // namespace media

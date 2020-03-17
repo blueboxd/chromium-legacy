@@ -124,6 +124,7 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   # These are listed in Builders that are skipped for other reasons.
   'chrome_junit_tests',
   'components_background_task_scheduler_junit_tests',
+  'components_embedder_support_junit_tests',
   'components_gcm_driver_junit_tests',
   'components_permissions_junit_tests',
   'components_policy_junit_tests',

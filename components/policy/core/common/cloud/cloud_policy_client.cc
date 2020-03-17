@@ -728,9 +728,7 @@ void CloudPolicyClient::ClientCertProvisioningFinishCsr(
 
   em::FinishCsrRequest* finish_csr_request =
       request->mutable_finish_csr_request();
-  if (!va_challenge_response.empty()) {
-    finish_csr_request->set_va_challenge_response(va_challenge_response);
-  }
+  finish_csr_request->set_va_challenge_response(va_challenge_response);
   finish_csr_request->set_signature(signature);
 
   request_jobs_.push_back(service_->CreateJob(std::move(config)));

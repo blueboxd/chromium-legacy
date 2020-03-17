@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_PASSWORDS_PRIVATE_PASSWORD_CHECK_DELEGATE_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_utils.h"
 #include "chrome/common/extensions/api/passwords_private.h"
@@ -25,6 +26,10 @@ class PasswordStore;
 }
 
 namespace extensions {
+
+extern const char kPasswordCheckDataKey[];
+
+class PasswordCheckProgress;
 
 // This class handles the part of the passwordsPrivate extension API that deals
 // with the bulk password check feature.
@@ -131,8 +136,12 @@ class PasswordCheckDelegate
   password_manager::BulkLeakCheckServiceAdapter
       bulk_leak_check_service_adapter_;
 
-  // Remembers whether the bulk check is running due to explicit user action.
-  bool is_bulk_check_running_ = false;
+  // Remembers the progress of the ongoing check. Null if no check is currently
+  // running.
+  base::WeakPtr<PasswordCheckProgress> password_check_progress_;
+
+  // Remembers whether a password check is running right now.
+  bool is_check_running_ = false;
 
   // A scoped observer for |saved_passwords_presenter_|.
   ScopedObserver<password_manager::SavedPasswordsPresenter,

@@ -24,6 +24,7 @@
 #include "fuchsia/base/fake_component_context.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/frame_test_util.h"
+#include "fuchsia/base/fuchsia_dir_scheme.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/string_util.h"
@@ -57,6 +58,21 @@ constexpr char kDummyAgentUrl[] =
 void ComponentErrorHandler(zx_status_t status) {
   ZX_LOG(ERROR, status) << "Component launch failed";
   ADD_FAILURE();
+}
+
+// Helper used to ensure that cr_fuchsia::RegisterFuchsiaDirScheme() is called
+// once per process to register fuchsia-dir scheme. In cast_runner this function
+// is called in main.cc, but that code is not executed in
+// cast_runner_integration_tests.
+//
+// TODO(crbug.com/1062351): Update the tests to start cast_runner component
+// instead of creating CastRunner in process. Then remove this function.
+void EnsureFuchsiaDirSchemeInitialized() {
+  class SchemeInitializer {
+   public:
+    SchemeInitializer() { cr_fuchsia::RegisterFuchsiaDirScheme(); }
+  };
+  static SchemeInitializer initializer;
 }
 
 class FakeUrlRequestRewriteRulesProvider
@@ -198,6 +214,8 @@ class CastRunnerIntegrationTest : public testing::Test {
  protected:
   explicit CastRunnerIntegrationTest(
       fuchsia::web::ContextFeatureFlags feature_flags) {
+    EnsureFuchsiaDirSchemeInitialized();
+
     // Create the CastRunner, published into |outgoing_directory_|.
     fuchsia::web::CreateContextParams create_context_params;
     create_context_params.set_features(feature_flags);

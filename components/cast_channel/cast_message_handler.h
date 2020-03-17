@@ -153,6 +153,13 @@ class CastMessageHandler : public CastSocket::Observer {
                                 const std::string& source_id,
                                 const std::string& destination_id);
 
+  // Closes any virtual connection on (|source_id|, |destination_id|) on the
+  // device given by |channel_id|, sending a virtual connection close request to
+  // the device if necessary.
+  virtual void CloseConnection(int channel_id,
+                               const std::string& source_id,
+                               const std::string& destination_id);
+
   // Sends an app availability for |app_id| to the device given by |socket|.
   // |callback| is always invoked asynchronously, and will be invoked when a
   // response is received, or if the request timed out. No-ops if there is

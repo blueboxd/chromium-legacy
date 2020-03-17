@@ -741,6 +741,10 @@
       settable_from_internals: true,
     },
     {
+      name: "FontAccess",
+      status: "experimental",
+    },
+    {
       name: "FontSrcLocalMatching",
       // No status, as the web platform runtime enabled feature is controlled by
       // a Chromium level feature.

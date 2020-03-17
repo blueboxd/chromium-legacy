@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/exported/web_external_widget_impl.h"
 
 #include "cc/trees/layer_tree_host.h"
+#include "third_party/blink/renderer/platform/widget/widget_base.h"
 
 namespace blink {
 
@@ -28,7 +29,9 @@ WebExternalWidgetImpl::WebExternalWidgetImpl(
         widget)
     : client_(client),
       debug_url_(debug_url),
-      widget_base_(this, std::move(widget_host), std::move(widget)) {
+      widget_base_(std::make_unique<WidgetBase>(this,
+                                                std::move(widget_host),
+                                                std::move(widget))) {
   DCHECK(client_);
 }
 
@@ -37,7 +40,19 @@ WebExternalWidgetImpl::~WebExternalWidgetImpl() = default;
 void WebExternalWidgetImpl::SetCompositorHosts(
     cc::LayerTreeHost* layer_tree_host,
     cc::AnimationHost* animation_host) {
-  widget_base_.SetCompositorHosts(layer_tree_host, animation_host);
+  widget_base_->SetCompositorHosts(layer_tree_host, animation_host);
+}
+
+void WebExternalWidgetImpl::SetCompositorVisible(bool visible) {
+  widget_base_->SetCompositorVisible(visible);
+}
+
+void WebExternalWidgetImpl::UpdateVisualState() {
+  widget_base_->UpdateVisualState();
+}
+
+void WebExternalWidgetImpl::WillBeginCompositorFrame() {
+  widget_base_->WillBeginCompositorFrame();
 }
 
 WebHitTestResult WebExternalWidgetImpl::HitTestResultAt(const gfx::Point&) {
@@ -70,7 +85,12 @@ WebInputEventResult WebExternalWidgetImpl::DispatchBufferedTouchEvents() {
 }
 
 void WebExternalWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
-  widget_base_.LayerTreeHost()->SetNonBlinkManagedRootLayer(layer);
+  widget_base_->LayerTreeHost()->SetNonBlinkManagedRootLayer(layer);
+}
+
+void WebExternalWidgetImpl::RecordTimeToFirstActivePaint(
+    base::TimeDelta duration) {
+  client_->RecordTimeToFirstActivePaint(duration);
 }
 
 }  // namespace blink

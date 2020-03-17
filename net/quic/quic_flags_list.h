@@ -273,32 +273,13 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_ack_delay_alarm_granularity,
           false)
 
-// If true, QuicSentPacketManager::SetSendAlgorithm(CongestionControlType) will
-// become a no-op if the current and the requested cc_type are the same.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_set_send_algorithm_noop_if_cc_type_unchanged,
-    true)
-
 // If true, use predictable grease settings identifiers and values.
 QUIC_FLAG(bool, FLAGS_quic_enable_http3_grease_randomness, true)
-
-// If true, QuicConnection will check handshake timeout before idle timeout.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_check_handshake_timeout_before_idle_timeout,
-    true)
 
 // If true and batch writer is used, QuicConnection will flush after a mtu probe
 // is sent.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_batch_writer_flush_after_mtu_probe,
-          true)
-
-// If true, neuter unencrypted control frames in
-// QuicUnackedPacketMap::NeuterUnencryptedPackets.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_neuter_unencrypted_control_frames,
           true)
 
 // When the EACK connection option is sent by the client, an ack-eliciting frame
@@ -341,11 +322,6 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_minimum_validation_of_coalesced_packets,
     true)
-
-// If true, do not send WINDOW_UPDATE if connection has been disconnected.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_no_window_update_if_disconnected,
-          true)
 
 // If true, arm the 1st PTO with earliest in flight sent time.
 QUIC_FLAG(bool,
@@ -398,4 +374,10 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_write_with_transmission, false)
 // loss only event.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_fix_zero_bw_on_loss_only_event,
+          false)
+
+// If true, trigger QUIC_BUG in two ShouldCreateIncomingStream() overrides when
+// called with locally initiated stream ID.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_create_incoming_stream_bug,
           false)

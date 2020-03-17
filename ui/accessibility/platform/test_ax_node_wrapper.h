@@ -86,7 +86,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
       const AXCoordinateSystem coordinate_system,
       const AXClippingBehavior clipping_behavior,
       AXOffscreenResult* offscreen_result) const override;
-  gfx::NativeViewAccessible HitTestSync(int x, int y) override;
+  gfx::NativeViewAccessible HitTestSync(int x, int y) const override;
   gfx::NativeViewAccessible GetFocus() override;
   bool IsMinimized() const override;
   bool IsWebContent() const override;

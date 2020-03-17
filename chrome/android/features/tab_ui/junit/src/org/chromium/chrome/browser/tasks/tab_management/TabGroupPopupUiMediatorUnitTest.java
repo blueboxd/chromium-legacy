@@ -312,22 +312,6 @@ public class TabGroupPopupUiMediatorUnitTest {
     }
 
     @Test
-    public void tabAddition_NotUpdate_Background() {
-        // Mock that the strip is showing.
-        mModel.set(TabGroupPopupUiProperties.IS_VISIBLE, true);
-        // Mock that tab1, tab2 and tab3 are in the same group, and tab3 has just been created from
-        // background.
-        List<Tab> tabGroup = new ArrayList<>(Arrays.asList(mTab1, mTab2, mTab3));
-        createTabGroup(tabGroup, TAB1_ID);
-
-        mTabModelObserverCaptor.getValue().didAddTab(mTab3, TabLaunchType.FROM_LONGPRESS_BACKGROUND,
-                TabCreationState.LIVE_IN_BACKGROUND);
-
-        assertThat(mModel.get(TabGroupPopupUiProperties.IS_VISIBLE), equalTo(true));
-        verify(mUpdater, never()).updateTabGroupPopUi();
-    }
-
-    @Test
     public void tabClosureUndone_Show() {
         // Mock that the strip is hiding.
         mModel.set(TabGroupPopupUiProperties.IS_VISIBLE, false);

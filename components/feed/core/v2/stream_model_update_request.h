@@ -46,10 +46,12 @@ struct StreamModelUpdateRequest {
 
   // If this data originates from the network, this is the server-reported time
   // at which the request was fulfilled.
+  // TODO(harringtond): Use this or remove it.
   int64_t server_response_time;
 
   // If this data originates from the network, this is the time taken by the
   // server to produce the response.
+  // TODO(harringtond): Use this or remove it.
   base::TimeDelta response_time;
 };
 

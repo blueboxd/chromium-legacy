@@ -8,8 +8,8 @@ import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQuali
 
 import android.content.Context;
 
-import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.NotificationPermissionUpdater;
+import org.chromium.components.embedder_support.util.Origin;
 
 import java.util.HashSet;
 import java.util.Set;

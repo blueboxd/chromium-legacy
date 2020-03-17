@@ -7113,7 +7113,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 10
+          "shards": 20
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests"
@@ -8347,7 +8347,6 @@
         },
         "name": "blink_web_tests",
         "results_handler": "layout tests",
-        "shards": 25,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8357,7 +8356,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 12
+          "shards": 25
         },
         "test_target": "//:blink_web_tests"
       },

@@ -28,6 +28,9 @@ class CORE_EXPORT ResizeObserverEntry final : public ScriptWrappable {
   DOMRectReadOnly* contentRect() const { return content_rect_; }
   ResizeObserverSize* contentBoxSize() const { return content_box_size_; }
   ResizeObserverSize* borderBoxSize() const { return border_box_size_; }
+  ResizeObserverSize* devicePixelContentBoxSize() const {
+    return device_pixel_content_box_size_;
+  }
 
   void Trace(Visitor*) override;
 
@@ -36,6 +39,7 @@ class CORE_EXPORT ResizeObserverEntry final : public ScriptWrappable {
   Member<DOMRectReadOnly> content_rect_;
   Member<ResizeObserverSize> content_box_size_;
   Member<ResizeObserverSize> border_box_size_;
+  Member<ResizeObserverSize> device_pixel_content_box_size_;
 
   static DOMRectReadOnly* ZoomAdjustedLayoutRect(LayoutRect content_rect,
                                                  const ComputedStyle& style);

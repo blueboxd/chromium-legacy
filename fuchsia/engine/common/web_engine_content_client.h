@@ -10,9 +10,6 @@
 
 class WebEngineContentClient : public content::ContentClient {
  public:
-  // URL scheme used to access content directories.
-  static const char kFuchsiaContentDirectoryScheme[];
-
   WebEngineContentClient();
   ~WebEngineContentClient() override;
 

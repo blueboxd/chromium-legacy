@@ -31,9 +31,9 @@ SandboxStatusExtension::SandboxStatusExtension(content::RenderFrame* frame)
   // Don't do anything else for subframes.
   if (!frame->IsMainFrame())
     return;
-  frame->GetAssociatedInterfaceRegistry()->AddInterface(
-      base::Bind(&SandboxStatusExtension::OnSandboxStatusExtensionRequest,
-                 base::RetainedRef(this)));
+  frame->GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
+      &SandboxStatusExtension::OnSandboxStatusExtensionRequest,
+      base::RetainedRef(this)));
 }
 
 SandboxStatusExtension::~SandboxStatusExtension() {}
@@ -81,7 +81,8 @@ void SandboxStatusExtension::Install() {
   v8::Local<v8::Function> function;
   bool success =
       gin::CreateFunctionTemplate(
-          isolate, base::Bind(&SandboxStatusExtension::GetSandboxStatus, this))
+          isolate,
+          base::BindRepeating(&SandboxStatusExtension::GetSandboxStatus, this))
           ->GetFunction(context)
           .ToLocal(&function);
   if (success) {

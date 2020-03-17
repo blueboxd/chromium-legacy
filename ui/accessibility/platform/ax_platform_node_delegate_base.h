@@ -129,7 +129,7 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
 
   // Derivative utils for AXPlatformNodeDelegate::GetBoundsRect
   gfx::Rect GetClippedScreenBoundsRect(
-      AXOffscreenResult* offscreen_result = nullptr) const;
+      AXOffscreenResult* offscreen_result = nullptr) const override;
   gfx::Rect GetUnclippedScreenBoundsRect(
       AXOffscreenResult* offscreen_result = nullptr) const;
 
@@ -144,7 +144,7 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   //
   // This function is mainly used by accessibility debugging software.
   // Platforms with touch accessibility use a different asynchronous interface.
-  gfx::NativeViewAccessible HitTestSync(int x, int y) override;
+  gfx::NativeViewAccessible HitTestSync(int x, int y) const override;
 
   // Return the node within this node's subtree (inclusive) that currently
   // has focus.

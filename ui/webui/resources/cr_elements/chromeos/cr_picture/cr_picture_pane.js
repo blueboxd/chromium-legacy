@@ -11,8 +11,6 @@
 Polymer({
   is: 'cr-picture-pane',
 
-  behaviors: [CrPngBehavior],
-
   properties: {
 
     /** Whether the camera is present / available */
@@ -123,8 +121,8 @@ Polymer({
       }
       const blob = new Blob([bytes], {'type': 'image/png'});
       // Use first frame as placeholder while rest of image loads.
-      image.style.backgroundImage = 'url(' +
-          CrPngBehavior.convertImageSequenceToPng([this.imageSrc]) + ')';
+      image.style.backgroundImage =
+          'url(' + cr.png.convertImageSequenceToPng([this.imageSrc]) + ')';
       this.imageUrl = URL.createObjectURL(blob);
     } else {
       image.style.backgroundImage = 'none';

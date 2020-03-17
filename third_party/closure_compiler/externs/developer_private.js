@@ -183,8 +183,7 @@ chrome.developerPrivate.RuntimeError;
  *   corruptInstall: boolean,
  *   updateRequired: boolean,
  *   blockedByPolicy: boolean,
- *   custodianApprovalRequired: boolean,
- *   blockedMature: boolean
+ *   custodianApprovalRequired: boolean
  * }}
  */
 chrome.developerPrivate.DisableReasons;

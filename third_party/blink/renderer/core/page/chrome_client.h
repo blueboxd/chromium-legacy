@@ -116,6 +116,8 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
  public:
   virtual ~ChromeClient() = default;
 
+  virtual WebViewImpl* GetWebView() const = 0;
+
   // Converts the scalar value from window coordinates to viewport scale.
   virtual float WindowToViewportScalar(LocalFrame*,
                                        const float value) const = 0;
@@ -262,8 +264,6 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
                             const String& default_value,
                             String& result);
   virtual bool TabsToLinks() = 0;
-
-  virtual WebViewImpl* GetWebView() const = 0;
 
   virtual WebScreenInfo GetScreenInfo(LocalFrame& frame) const = 0;
   virtual void SetCursor(const ui::Cursor&, LocalFrame* local_root) = 0;

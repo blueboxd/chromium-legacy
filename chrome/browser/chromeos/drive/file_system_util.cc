@@ -44,26 +44,22 @@ DriveIntegrationService* GetIntegrationServiceByProfile(Profile* profile) {
 }
 
 bool IsUnderDriveMountPoint(const base::FilePath& path) {
-  return !ExtractDrivePath(path).empty();
-}
-
-base::FilePath ExtractDrivePath(const base::FilePath& path) {
   std::vector<base::FilePath::StringType> components;
   path.GetComponents(&components);
-  if (components.size() < 3)
-    return base::FilePath();
+  if (components.size() < 4)
+    return false;
   if (components[0] != FILE_PATH_LITERAL("/"))
-    return base::FilePath();
-  if (components[1] != FILE_PATH_LITERAL("special"))
-    return base::FilePath();
-  static const base::FilePath::CharType kPrefix[] = FILE_PATH_LITERAL("drive");
-  if (components[2].compare(0, base::size(kPrefix) - 1, kPrefix) != 0)
-    return base::FilePath();
+    return false;
+  if (components[1] != FILE_PATH_LITERAL("media"))
+    return false;
+  if (components[2] != FILE_PATH_LITERAL("fuse"))
+    return false;
+  static const base::FilePath::CharType kPrefix[] =
+      FILE_PATH_LITERAL("drivefs");
+  if (components[3].compare(0, base::size(kPrefix) - 1, kPrefix) != 0)
+    return false;
 
-  base::FilePath drive_path = GetDriveGrandRootPath();
-  for (size_t i = 3; i < components.size(); ++i)
-    drive_path = drive_path.Append(components[i]);
-  return drive_path;
+  return true;
 }
 
 base::FilePath GetCacheRootPath(Profile* profile) {

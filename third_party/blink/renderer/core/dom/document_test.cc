@@ -528,14 +528,14 @@ TEST_F(DocumentTest, referrerPolicyParsing) {
     if (test.is_legacy) {
       // Legacy keyword support must be explicitly enabled for the policy to
       // parse successfully.
-      GetDocument().ToExecutionContext()->ParseAndSetReferrerPolicy(
+      GetDocument().GetExecutionContext()->ParseAndSetReferrerPolicy(
           test.policy);
       EXPECT_EQ(network::mojom::ReferrerPolicy::kDefault,
                 GetDocument().GetReferrerPolicy());
-      GetDocument().ToExecutionContext()->ParseAndSetReferrerPolicy(test.policy,
-                                                                    true);
+      GetDocument().GetExecutionContext()->ParseAndSetReferrerPolicy(
+          test.policy, true);
     } else {
-      GetDocument().ToExecutionContext()->ParseAndSetReferrerPolicy(
+      GetDocument().GetExecutionContext()->ParseAndSetReferrerPolicy(
           test.policy);
     }
     EXPECT_EQ(test.expected, GetDocument().GetReferrerPolicy()) << test.policy;

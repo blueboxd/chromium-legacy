@@ -339,4 +339,9 @@ const base::Feature kWebUIOmniboxPopup{"WebUIOmniboxPopup",
 const base::Feature kOmniboxAssistantVoiceSearch{
     "OmniboxAssistantVoiceSearch", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, provides an omnibox context menu option that prevents URL
+// elisions.
+const base::Feature kOmniboxContextMenuShowFullUrls{
+    "OmniboxContextMenuShowFullUrls", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace omnibox

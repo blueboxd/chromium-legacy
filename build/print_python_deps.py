@@ -5,8 +5,10 @@
 
 """Prints all non-system dependencies for the given module.
 
-The primary use-case for this script is to genererate the list of python modules
+The primary use-case for this script is to generate the list of python modules
 required for .isolate files.
+
+This script should be compatible with Python 2 and Python 3.
 """
 
 import argparse
@@ -71,6 +73,31 @@ def _FindPythonInDirectory(directory):
         yield os.path.join(root, filename)
 
 
+def _GetTargetPythonVersion(module):
+  """Heuristically determines the target module's Python version."""
+  with open(module) as f:
+    shebang = f.readline().strip()
+  default_version = 2
+  if shebang.startswith('#!'):
+    # Examples:
+    # '#!/usr/bin/python'
+    # '#!/usr/bin/python2.7'
+    # '#!/usr/bin/python3'
+    # '#!/usr/bin/env python3'
+    # '#!/usr/bin/env vpython'
+    # '#!/usr/bin/env vpython3'
+    exec_name = os.path.basename(shebang[2:].split(' ')[-1])
+    for python_prefix in ['python', 'vpython']:
+      if exec_name.startswith(python_prefix):
+        version_string = exec_name[len(python_prefix):]
+        break
+    else:
+      raise ValueError('Invalid shebang: ' + shebang)
+    if version_string:
+      return int(float(version_string))
+  return default_version
+
+
 def main():
   parser = argparse.ArgumentParser(
       description='Prints all non-system dependencies for the given module.')
@@ -104,6 +131,10 @@ def main():
     options.output = options.module + 'deps'
     options.root = os.path.dirname(options.module)
 
+  target_version = _GetTargetPythonVersion(options.module)
+  assert target_version in [2, 3]
+  current_version = sys.version_info[0]
+
   # Trybots run with vpython as default Python, but with a different config
   # from //.vpython. To make the is_vpython test work, and to match the behavior
   # of dev machines, the shebang line must be run with python2.7.
@@ -111,15 +142,15 @@ def main():
   # E.g. $HOME/.vpython-root/dd50d3/bin/python
   # E.g. /b/s/w/ir/cache/vpython/ab5c79/bin/python
   is_vpython = 'vpython' in sys.executable
-  if not is_vpython:
-    with open(options.module) as f:
-      shebang = f.readline()
+  if not is_vpython or target_version != current_version:
+    # Prevent infinite relaunch if something goes awry.
+    assert not options.did_relaunch
     # Re-launch using vpython will cause us to pick up modules specified in
     # //.vpython, but does not cause it to pick up modules defined inline via
     # [VPYTHON:BEGIN] ... [VPYTHON:END] comments.
     # TODO(agrieve): Add support for this if the need ever arises.
-    if True or shebang.startswith('#!') and 'vpython' in shebang:
-      os.execvp('vpython', ['vpython'] + sys.argv + ['--did-relaunch'])
+    vpython_to_use = {2: 'vpython', 3: 'vpython3'}[target_version]
+    os.execvp(vpython_to_use, [vpython_to_use] + sys.argv + ['--did-relaunch'])
 
   # Replace the path entry for print_python_deps.py with the one for the given
   # module.

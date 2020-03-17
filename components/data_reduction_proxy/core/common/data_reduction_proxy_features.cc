@@ -9,7 +9,6 @@
 namespace data_reduction_proxy {
 namespace features {
 
-
 // Enables the data saver promo for low memory Android devices.
 const base::Feature kDataReductionProxyLowMemoryDevicePromo{
     "DataReductionProxyLowMemoryDevicePromo",
@@ -27,9 +26,8 @@ const base::Feature kDataReductionProxyHoldback{
 
 // Enables data reduction proxy when network service is enabled.
 const base::Feature kDataReductionProxyEnabledWithNetworkService{
-  "DataReductionProxyEnabledWithNetworkService",
-      base::FEATURE_ENABLED_BY_DEFAULT
-};
+    "DataReductionProxyEnabledWithNetworkService",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables block action of all proxies when 502 is received with no
 // Chrome-Proxy header. The block duration is configurable via field trial with
@@ -66,6 +64,10 @@ const base::Feature kDataReductionProxyAggressiveConfigFetch{
 // savings provided by DataSaver.
 const base::Feature kReportSaveDataSavings{"ReportSaveDataSavings",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables fetching the Client Config for server-based Lite Mode features.
+const base::Feature kFetchClientConfig{"DataReductionProxyFetchClientConfig",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace data_reduction_proxy

@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// clang-format on
+
 /**
  * @typedef {{hasChildren: boolean,
  *            id: string,
@@ -10,13 +14,13 @@
  *            totalUsage: string,
  *            type: string}}
  */
-let CookieDetails;
+/* #export */ let CookieDetails;
 
 /**
  * @typedef {{content: string,
  *            label: string}}
  */
-let CookieDataForDisplay;
+/* #export */ let CookieDataForDisplay;
 
 // This structure maps the various cookie type names from C++ (hence the
 // underscores) to arrays of the different types of data each has, along with
@@ -25,7 +29,7 @@ let CookieDataForDisplay;
 // 1) to list what subset of the cookie data we want to show in the UI.
 // 2) What order to show it in.
 // 3) What user friendly label to prefix the data with.
-const cookieInfo = {
+/* #export */ const cookieInfo = {
   'cookie': [
     ['name', 'cookieName'], ['content', 'cookieContent'],
     ['domain', 'cookieDomain'], ['path', 'cookiePath'],
@@ -73,7 +77,7 @@ const cookieInfo = {
  * @param {CookieDetails} data The contents of the cookie.
  * @return {!Array<CookieDataForDisplay>}
  */
-const getCookieData = function(data) {
+/* #export */ const getCookieData = function(data) {
   /** @type {!Array<CookieDataForDisplay>} */
   const out = [];
   const fields = cookieInfo[data.type];

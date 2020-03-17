@@ -1185,7 +1185,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTargetURL_ACK, OnUpdateTargetURLAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetBackgroundOpaque, OnSetBackgroundOpaque)
 
     // Page messages.
     IPC_MESSAGE_HANDLER(PageMsg_VisibilityChanged, OnPageVisibilityChanged)
@@ -1871,19 +1870,6 @@ void RenderViewImpl::SetFocusAndActivateForTesting(bool enable) {
     // Fake an IPC message so go through the IPC handler.
     render_widget->OnSetFocus(false);
     SetActiveForWidget(false);
-  }
-}
-
-void RenderViewImpl::OnSetBackgroundOpaque(bool opaque) {
-  if (!GetWebView())
-    return;
-
-  if (opaque) {
-    GetWebView()->ClearBaseBackgroundColorOverride();
-    GetWebView()->ClearBackgroundColorOverride();
-  } else {
-    GetWebView()->SetBaseBackgroundColorOverride(SK_ColorTRANSPARENT);
-    GetWebView()->SetBackgroundColorOverride(SK_ColorTRANSPARENT);
   }
 }
 

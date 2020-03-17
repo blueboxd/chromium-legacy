@@ -39,8 +39,15 @@ if (optimize_webui) {
   optimize_webui("build_polymer3") {
     host = "settings"
     input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
-    js_out_files = [ "settings.rollup.js" ]
-    js_module_in_files = [ "settings.js" ]
+    js_module_in_files = [
+      "settings.js",
+      "lazy_load.js",
+    ]
+    js_out_files = [
+      "settings.rollup.js",
+      "lazy_load.rollup.js",
+      "shared.rollup.js",
+    ]
 
     deps = [
       ":unpak",
@@ -246,6 +253,7 @@ group("closure_compile_module") {
     "settings_menu:closure_compile_module",
     "settings_page:closure_compile_module",
     "settings_ui:closure_compile_module",
+    "site_settings:closure_compile_module",
   ]
   if (!is_chromeos) {
     deps += [
@@ -416,6 +424,7 @@ group("polymer3_elements") {
     "site_settings_page:polymer3_elements",
 
     # Local targets
+    ":ensure_lazy_loaded_module",
     ":icons_module",
     ":modulize",
     ":settings_page_css_module",
@@ -469,6 +478,12 @@ polymer_modulizer("site_favicon") {
   html_type = "dom-module"
   auto_imports =
       [ "ui/webui/resources/html/icon.html|getFavicon,getFaviconForPageURL" ]
+}
+
+polymer_modulizer("ensure_lazy_loaded") {
+  js_file = "ensure_lazy_loaded.m.js"
+  html_file = "ensure_lazy_loaded.html"
+  html_type = "v3-ready"
 }
 
 js_modulizer("modulize") {

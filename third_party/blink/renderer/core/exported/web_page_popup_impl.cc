@@ -69,6 +69,7 @@
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
+#include "third_party/blink/renderer/platform/widget/widget_base.h"
 
 namespace blink {
 
@@ -155,13 +156,13 @@ class PagePopupChromeClient final : public EmptyChromeClient {
 
   void AttachCompositorAnimationTimeline(CompositorAnimationTimeline* timeline,
                                          LocalFrame*) override {
-    popup_->widget_base_.AnimationHost()->AddAnimationTimeline(
+    popup_->widget_base_->AnimationHost()->AddAnimationTimeline(
         timeline->GetAnimationTimeline());
   }
 
   void DetachCompositorAnimationTimeline(CompositorAnimationTimeline* timeline,
                                          LocalFrame*) override {
-    popup_->widget_base_.AnimationHost()->RemoveAnimationTimeline(
+    popup_->widget_base_->AnimationHost()->RemoveAnimationTimeline(
         timeline->GetAnimationTimeline());
   }
 
@@ -200,17 +201,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
   }
 
   void SetTouchAction(LocalFrame* frame, TouchAction touch_action) override {
-    DCHECK(frame);
-    WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
-    // TODO(https://crbug.com/844547): check if we are setting touch action on
-    // pop up window or not.
-    if (!web_frame)
-      return;
-    WebFrameWidget* widget = web_frame->LocalRoot()->FrameWidget();
-    if (!widget)
-      return;
-    if (WebWidgetClient* client = To<WebFrameWidgetBase>(widget)->Client())
-      client->SetTouchAction(static_cast<WebTouchAction>(touch_action));
+    // Touch action is not used in the compositor for WebPagePopup.
   }
 
   void AttachRootLayer(scoped_refptr<cc::Layer> layer,
@@ -261,7 +252,9 @@ WebPagePopupImpl::WebPagePopupImpl(
     CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
         widget)
     : web_page_popup_client_(client),
-      widget_base_(this, std::move(widget_host), std::move(widget)) {
+      widget_base_(std::make_unique<WidgetBase>(this,
+                                                std::move(widget_host),
+                                                std::move(widget))) {
   DCHECK(client);
 }
 
@@ -321,7 +314,7 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
     cache->ChildrenChanged(&popup_client_->OwnerElement());
   }
 
-  page_->AnimationHostInitialized(*widget_base_.AnimationHost(), nullptr);
+  page_->AnimationHostInitialized(*widget_base_->AnimationHost(), nullptr);
 
   scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
   popup_client_->WriteDocument(data.get());
@@ -336,7 +329,19 @@ void WebPagePopupImpl::SetCompositorHosts(cc::LayerTreeHost* layer_tree_host,
                                           cc::AnimationHost* animation_host) {
   // Careful Initialize() is called after SetCompositorHosts, so don't do
   // much work here.
-  widget_base_.SetCompositorHosts(layer_tree_host, animation_host);
+  widget_base_->SetCompositorHosts(layer_tree_host, animation_host);
+}
+
+void WebPagePopupImpl::SetCompositorVisible(bool visible) {
+  widget_base_->SetCompositorVisible(visible);
+}
+
+void WebPagePopupImpl::UpdateVisualState() {
+  widget_base_->UpdateVisualState();
+}
+
+void WebPagePopupImpl::WillBeginCompositorFrame() {
+  widget_base_->WillBeginCompositorFrame();
 }
 
 void WebPagePopupImpl::PostMessageToPopup(const String& message) {
@@ -371,7 +376,7 @@ void WebPagePopupImpl::SetWindowRect(const IntRect& rect_in_screen) {
 
 void WebPagePopupImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   root_layer_ = std::move(layer);
-  widget_base_.LayerTreeHost()->SetRootLayer(root_layer_);
+  widget_base_->LayerTreeHost()->SetRootLayer(root_layer_);
 }
 
 void WebPagePopupImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
@@ -383,7 +388,11 @@ void WebPagePopupImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
 }
 
 void WebPagePopupImpl::BeginFrame(base::TimeTicks last_frame_time) {
-  widget_base_.BeginMainFrame(last_frame_time);
+  widget_base_->BeginMainFrame(last_frame_time);
+}
+
+void WebPagePopupImpl::RecordTimeToFirstActivePaint(base::TimeDelta duration) {
+  WidgetClient()->RecordTimeToFirstActivePaint(duration);
 }
 
 void WebPagePopupImpl::UpdateLifecycle(WebLifecycleUpdate requested_update,
@@ -562,7 +571,7 @@ void WebPagePopupImpl::Close() {
   }
 
   web_page_popup_client_ = nullptr;
-  SetCompositorHosts(nullptr, nullptr);
+  widget_base_.reset();
 
   // Self-delete on Close().
   Release();

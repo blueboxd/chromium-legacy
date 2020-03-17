@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "build/buildflag.h"
 #include "fuchsia/base/config_reader.h"
+#include "fuchsia/base/fuchsia_dir_scheme.h"
 #include "fuchsia/base/init_logging.h"
 #include "fuchsia/runners/buildflags.h"
 #include "fuchsia/runners/cast/cast_runner.h"
@@ -42,6 +43,8 @@ int main(int argc, char** argv) {
   CHECK(cr_fuchsia::InitLoggingFromCommandLine(
       *base::CommandLine::ForCurrentProcess()))
       << "Failed to initialize logging.";
+
+  cr_fuchsia::RegisterFuchsiaDirScheme();
 
   fuchsia::web::ContextFeatureFlags features =
       fuchsia::web::ContextFeatureFlags::NETWORK |

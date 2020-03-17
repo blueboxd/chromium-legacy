@@ -26,9 +26,7 @@
 namespace safe_browsing {
 
 #if defined(OS_ANDROID)
-const int kDefaultMemoryLowerThresholdMb = 4096;
-// By default, the upper threshold shouldn't be in effect.
-const int kDefaultMemoryUpperThresholdMb = INT_MAX;
+const int kDefaultMemoryThresholdMb = 4096;
 #endif
 
 // static
@@ -37,17 +35,17 @@ bool RealTimePolicyEngine::IsUrlLookupEnabled() {
     return false;
 #if defined(OS_ANDROID)
   // On Android, performs real time URL lookup only if
-  // |kRealTimeUrlLookupEnabled| is enabled, and system memory is between the
-  // upper threshold and lower threshold.
-  int memory_lower_threshold_mb = base::GetFieldTrialParamByFeatureAsInt(
-      kRealTimeUrlLookupEnabled, kRealTimeUrlLookupMemoryLowerThresholdMb,
-      kDefaultMemoryLowerThresholdMb);
-  int memory_upper_threshold_mb = base::GetFieldTrialParamByFeatureAsInt(
-      kRealTimeUrlLookupEnabled, kRealTimeUrlLookupMemoryUpperThresholdMb,
-      kDefaultMemoryUpperThresholdMb);
-  return base::SysInfo::AmountOfPhysicalMemoryMB() >=
-             memory_lower_threshold_mb &&
-         base::SysInfo::AmountOfPhysicalMemoryMB() <= memory_upper_threshold_mb;
+  // |kRealTimeUrlLookupEnabled| is enabled, and system memory is larger than
+  // threshold, or the feature flag
+  // |kRealTimeUrlLookupEnabledForAllAndroidDevices| is enabled.
+  int memory_threshold_mb = base::GetFieldTrialParamByFeatureAsInt(
+      kRealTimeUrlLookupEnabled, kRealTimeUrlLookupMemoryThresholdMb,
+      kDefaultMemoryThresholdMb);
+  bool is_high_end_device =
+      base::SysInfo::AmountOfPhysicalMemoryMB() >= memory_threshold_mb;
+  return is_high_end_device ||
+         base::FeatureList::IsEnabled(
+             kRealTimeUrlLookupEnabledForAllAndroidDevices);
 #else
   return true;
 #endif

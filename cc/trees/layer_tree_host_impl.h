@@ -1275,12 +1275,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   ImplThreadPhase impl_thread_phase_ = ImplThreadPhase::IDLE;
 
-  // Tracks whether a BeginMainFrame is expected to be dispatched during an
-  // 'impl frame' (i.e. between WillBeginImplFrame() and DidFinishImplFrame()),
-  // and whether it was actually dispatched during the impl frame.
-  bool begin_main_frame_expected_during_impl_ = false;
-  bool begin_main_frame_sent_during_impl_ = false;
-
   ImageAnimationController image_animation_controller_;
 
   std::unique_ptr<UkmManager> ukm_manager_;

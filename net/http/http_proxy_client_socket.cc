@@ -15,6 +15,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/proxy_delegate.h"
+#include "net/base/proxy_server.h"
 #include "net/http/http_basic_stream.h"
 #include "net/http/http_log_util.h"
 #include "net/http/http_network_session.h"
@@ -382,8 +383,8 @@ int HttpProxyClientSocket::DoSendRequest() {
 
     if (proxy_delegate_) {
       HttpRequestHeaders proxy_delegate_headers;
-      proxy_delegate_->OnBeforeHttp1TunnelRequest(proxy_server_,
-                                                  &proxy_delegate_headers);
+      proxy_delegate_->OnBeforeTunnelRequest(proxy_server_,
+                                             &proxy_delegate_headers);
       extra_headers.MergeFrom(proxy_delegate_headers);
     }
 
@@ -434,8 +435,8 @@ int HttpProxyClientSocket::DoReadHeadersComplete(int result) {
       response_.headers.get());
 
   if (proxy_delegate_) {
-    int rv = proxy_delegate_->OnHttp1TunnelHeadersReceived(proxy_server_,
-                                                           *response_.headers);
+    int rv = proxy_delegate_->OnTunnelHeadersReceived(proxy_server_,
+                                                      *response_.headers);
     if (rv != OK) {
       DCHECK_NE(ERR_IO_PENDING, rv);
       return rv;

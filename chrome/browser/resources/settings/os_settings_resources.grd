@@ -250,6 +250,9 @@
       <structure name="IDR_OS_SETTINGS_OS_SETTINGS_PAGE_HTML"
                  file="chromeos/os_settings_page/os_settings_page.html"
                  type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_ENSURE_LAZY_LOADED_HTML"
+                 file="ensure_lazy_loaded.html"
+                 type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_EXTENSION_CONTROL_BROWSER_PROXY_JS"
                  file="extension_control_browser_proxy.js"
                  type="chrome_html" />

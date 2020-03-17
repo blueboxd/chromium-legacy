@@ -20,12 +20,9 @@ enum class ResourceType;
 #if defined(OS_ANDROID)
 // A parameter controlled by finch experiment.
 // On Android, performs real time URL lookup only if |kRealTimeUrlLookupEnabled|
-// is enabled, and system memory is between the upper threshold and the lower
-// threshold.
-const char kRealTimeUrlLookupMemoryLowerThresholdMb[] =
+// is enabled, and system memory is larger than threshold.
+const char kRealTimeUrlLookupMemoryThresholdMb[] =
     "SafeBrowsingRealTimeUrlLookupMemoryThresholdMb";
-const char kRealTimeUrlLookupMemoryUpperThresholdMb[] =
-    "SafeBrowsingRealTimeUrlLookupMemoryUpperThresholdMb";
 #endif
 
 // This class implements the logic to decide whether the real time lookup

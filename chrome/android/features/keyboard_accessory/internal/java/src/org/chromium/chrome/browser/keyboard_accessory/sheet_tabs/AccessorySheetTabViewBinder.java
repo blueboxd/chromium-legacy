@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.LayoutRes;
@@ -53,6 +54,8 @@ class AccessorySheetTabViewBinder {
                 return new TitleViewHolder(parent);
             case AccessorySheetDataPiece.Type.FOOTER_COMMAND:
                 return new FooterCommandViewHolder(parent);
+            case AccessorySheetDataPiece.Type.OPTION_TOGGLE:
+                return new OptionToggleViewHolder(parent);
         }
         assert false : "Unhandled type of data piece: " + viewType;
         return null;
@@ -92,6 +95,33 @@ class AccessorySheetTabViewBinder {
             view.setText(footerCommand.getDisplayText());
             view.setContentDescription(footerCommand.getDisplayText());
             view.setOnClickListener(v -> footerCommand.execute());
+        }
+    }
+
+    /**
+     *  Holds a title, subtitle which shows the state of the toggle and a toggle.
+     */
+    static class OptionToggleViewHolder
+            extends ElementViewHolder<KeyboardAccessoryData.OptionToggle, LinearLayout> {
+        OptionToggleViewHolder(ViewGroup parent) {
+            super(parent, R.layout.keyboard_accessory_sheet_tab_option_toggle);
+        }
+
+        @Override
+        protected void bind(KeyboardAccessoryData.OptionToggle optionToggle, LinearLayout view) {
+            view.setClickable(true);
+            view.setOnClickListener(
+                    v -> optionToggle.getCallback().onResult(!optionToggle.isEnabled()));
+
+            TextView titleText = view.findViewById(R.id.option_toggle_title);
+            titleText.setText(optionToggle.getDisplayText());
+
+            TextView subtitleText = view.findViewById(R.id.option_toggle_subtitle);
+            subtitleText.setText(optionToggle.isEnabled() ? R.string.text_on : R.string.text_off);
+
+            Switch switchView = view.findViewById(R.id.option_toggle_switch);
+            switchView.setChecked(optionToggle.isEnabled());
+            switchView.setBackground(null);
         }
     }
 

@@ -5,7 +5,8 @@
 /** @fileoverview Runs the Polymer Password Settings tests. */
 
 // clang-format off
-// #import {getToastManager, PasswordManagerImpl} from 'chrome://settings/settings.js';
+// #import {PasswordManagerImpl} from 'chrome://settings/settings.js';
+// #import {getToastManager} from 'chrome://settings/lazy_load.js';
 // #import {PasswordSectionElementFactory, createExceptionEntry, createPasswordEntry, makeCompromisedCredential, makePasswordCheckStatus} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
 // #import {runStartExportTest, runExportFlowFastTest, runExportFlowErrorTest, runExportFlowErrorRetryTest, runExportFlowSlowTest, runCancelExportTest, runFireCloseEventAfterExportCompleteTest} from 'chrome://test/settings/passwords_export_test.m.js';
 // #import {eventToPromise} from 'chrome://test/test_util.m.js';

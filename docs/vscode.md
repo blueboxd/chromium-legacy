@@ -30,6 +30,10 @@ Here's what works well:
 *   Building works well. Build tools are easy to integrate. Warnings and errors
     are displayed on a separate page and you can click to jump to the
     corresponding line of code.
+*   VSCode Remote, which allows you to edit remotely-hosted code, and even run
+    computationally expensive plugins like vscode-clangd on the remote
+    server/workstation (see the [Remote section](#Remote)). Great for working-
+    from-home.
 
 [TOC]
 
@@ -109,6 +113,9 @@ every day:
     YouCompleteMe code completion for VS Code. It works fairly well in Chromium.
 *   ***Rewrap*** -
     Wrap lines at 80 characters with `Alt+Q`.
+*   ***Remote*** -
+    Remotely connect to your workstation through SSH using your laptop. See the
+    [Remote](#Remote) section for more information about how to set this up.
 
 To install You-Complete-Me, enter these commands in a terminal:
 
@@ -261,6 +268,34 @@ wholesale, enter the following command into your terminal:
 ```
 $ cp tools/vscode/keybindings.json5 .vscode/keybindings.json
 ```
+
+### Remote
+VSCode now has a
+[Remote](https://code.visualstudio.com/docs/remote/remote-overview) framework
+that allows you to use VSCode on your laptop while your code is hosted
+elsewhere. This really shines when used in conjunction with the vscode-clangd plugin,
+which allows clangd to run remotely as well.
+
+To get this to run, install the Remote pack extension, and then make sure your
+ssh config file has your remote connection:
+
+`~/.ssh/config`:
+```
+Host my-connection
+  HostName my-remote-host.corp.company.com
+```
+
+VSCode will then list this connection in the 'Remote Explorer' section on the
+left. To launch VSCode with this connection, click on the '+window' icon next
+to the listed hostname. It has you choose a folder - use the 'src' folder root.
+This will open a new VSCode window in 'Remote' mode. ***Now you can install
+extensions specifically for your remote connection, like vscode-clangd, etc.***
+
+#### Windows & SSH
+This currently is difficult on Windows because VSCode remote tools assumes
+'sshd' is installed, which isn't the case on Windows. If someone figures out
+how to get vscode remote working on windows with ssh please update this
+document :)
 
 ### Snippets
 There are some useful snippets provided in

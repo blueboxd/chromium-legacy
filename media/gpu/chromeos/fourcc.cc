@@ -74,6 +74,9 @@ base::Optional<Fourcc> Fourcc::FromVideoPixelFormat(
         return Fourcc(NV12);
       case PIXEL_FORMAT_NV21:
         return Fourcc(NV21);
+      case PIXEL_FORMAT_UYVY:
+        NOTREACHED();
+        FALLTHROUGH;
       case PIXEL_FORMAT_I422:
       case PIXEL_FORMAT_I420A:
       case PIXEL_FORMAT_I444:
@@ -107,6 +110,9 @@ base::Optional<Fourcc> Fourcc::FromVideoPixelFormat(
         return Fourcc(YM16);
       case PIXEL_FORMAT_NV21:
         return Fourcc(NM21);
+      case PIXEL_FORMAT_UYVY:
+        NOTREACHED();
+        FALLTHROUGH;
       case PIXEL_FORMAT_I420A:
       case PIXEL_FORMAT_I444:
       case PIXEL_FORMAT_YUY2:

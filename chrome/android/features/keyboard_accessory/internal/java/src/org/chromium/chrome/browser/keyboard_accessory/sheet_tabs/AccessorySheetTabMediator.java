@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingMetricsRecorder;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.FooterCommand;
+import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.OptionToggle;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
 import org.chromium.chrome.browser.keyboard_accessory.data.Provider;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece;
@@ -64,6 +65,9 @@ class AccessorySheetTabMediator implements Provider.Observer<AccessorySheetData>
         if (shouldShowTitle(accessorySheetData.getUserInfoList())) {
             items.add(new AccessorySheetDataPiece(accessorySheetData.getTitle(), Type.TITLE));
         }
+        if (accessorySheetData.getOptionToggle() != null) {
+            items.add(createDataPieceForToggle(accessorySheetData.getOptionToggle()));
+        }
         if (!accessorySheetData.getWarning().isEmpty()) {
             items.add(new AccessorySheetDataPiece(accessorySheetData.getWarning(), Type.WARNING));
         }
@@ -75,6 +79,28 @@ class AccessorySheetTabMediator implements Provider.Observer<AccessorySheetData>
         }
 
         return items.toArray(new AccessorySheetDataPiece[0]);
+    }
+
+    private AccessorySheetDataPiece createDataPieceForToggle(OptionToggle toggle) {
+        OptionToggle toggleWithAddedCallback =
+                new OptionToggle(toggle.getDisplayText(), toggle.isEnabled(), enabled -> {
+                    updateOptionToggleEnabled();
+                    toggle.getCallback().onResult(enabled);
+                });
+        return new AccessorySheetDataPiece(toggleWithAddedCallback, Type.OPTION_TOGGLE);
+    }
+
+    private void updateOptionToggleEnabled() {
+        for (int i = 0; i < mModel.size(); ++i) {
+            AccessorySheetDataPiece data = mModel.get(i);
+            if (AccessorySheetDataPiece.getType(data) == Type.OPTION_TOGGLE) {
+                OptionToggle toggle = (OptionToggle) data.getDataPiece();
+                OptionToggle updatedToggle = new OptionToggle(
+                        toggle.getDisplayText(), !toggle.isEnabled(), toggle.getCallback());
+                mModel.update(i, new AccessorySheetDataPiece(updatedToggle, Type.OPTION_TOGGLE));
+                break;
+            }
+        }
     }
 
     private boolean shouldShowTitle(List<UserInfo> userInfoList) {

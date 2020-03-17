@@ -60,13 +60,12 @@ class TestResizeObserverDelegate : public ResizeObserver::Delegate {
  */
 class ResizeObserverUnitTest : public SimTest {};
 
-TEST_F(ResizeObserverUnitTest, ResizeObservationSize) {
+TEST_F(ResizeObserverUnitTest, ResizeObserverDOMContentBoxAndSVG) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
 
   main_resource.Write(R"HTML(
     <div id='domTarget' style='width:100px;height:100px'>yo</div>
-    <div id='domBorderTarget' style='width:100px;height:100px;padding:5px'>yoyo</div>
     <svg height='200' width='200'>
     <circle id='svgTarget' cx='100' cy='100' r='100'/>
     </svg>
@@ -77,19 +76,14 @@ TEST_F(ResizeObserverUnitTest, ResizeObservationSize) {
       MakeGarbageCollected<TestResizeObserverDelegate>(GetDocument());
   ResizeObserver* observer = ResizeObserver::Create(GetDocument(), delegate);
   Element* dom_target = GetDocument().getElementById("domTarget");
-  Element* dom_border_target = GetDocument().getElementById("domBorderTarget");
   Element* svg_target = GetDocument().getElementById("svgTarget");
   ResizeObservation* dom_observation = MakeGarbageCollected<ResizeObservation>(
       dom_target, observer, ResizeObserverBoxOptions::ContentBox);
-  ResizeObservation* dom_border_observation =
-      MakeGarbageCollected<ResizeObservation>(
-          dom_border_target, observer, ResizeObserverBoxOptions::BorderBox);
   ResizeObservation* svg_observation = MakeGarbageCollected<ResizeObservation>(
       svg_target, observer, ResizeObserverBoxOptions::ContentBox);
 
   // Initial observation is out of sync
   ASSERT_TRUE(dom_observation->ObservationSizeOutOfSync());
-  ASSERT_TRUE(dom_border_observation->ObservationSizeOutOfSync());
   ASSERT_TRUE(svg_observation->ObservationSizeOutOfSync());
 
   // Target size is correct
@@ -98,11 +92,6 @@ TEST_F(ResizeObserverUnitTest, ResizeObservationSize) {
   ASSERT_EQ(size.Height(), 100);
   dom_observation->SetObservationSize(size);
 
-  size = dom_border_observation->ComputeTargetSize();
-  ASSERT_EQ(size.Width(), 110);
-  ASSERT_EQ(size.Height(), 110);
-  dom_border_observation->SetObservationSize(size);
-
   size = svg_observation->ComputeTargetSize();
   ASSERT_EQ(size.Width(), 200);
   ASSERT_EQ(size.Height(), 200);
@@ -110,11 +99,92 @@ TEST_F(ResizeObserverUnitTest, ResizeObservationSize) {
 
   // Target size is in sync
   ASSERT_FALSE(dom_observation->ObservationSizeOutOfSync());
-  ASSERT_FALSE(dom_border_observation->ObservationSizeOutOfSync());
+  ASSERT_FALSE(svg_observation->ObservationSizeOutOfSync());
 
   // Target depths
   ASSERT_EQ(svg_observation->TargetDepth() - dom_observation->TargetDepth(),
             (size_t)1);
+}
+
+TEST_F(ResizeObserverUnitTest, ResizeObserverDOMBorderBox) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+
+  main_resource.Write(R"HTML(
+    <div id='domBorderTarget' style='width:100px;height:100px;padding:5px'>
+      yoyo
+    </div>
+  )HTML");
+  main_resource.Finish();
+
+  ResizeObserver::Delegate* delegate =
+      MakeGarbageCollected<TestResizeObserverDelegate>(GetDocument());
+  ResizeObserver* observer = ResizeObserver::Create(GetDocument(), delegate);
+  Element* dom_border_target = GetDocument().getElementById("domBorderTarget");
+  ResizeObservation* dom_border_observation =
+      MakeGarbageCollected<ResizeObservation>(
+          dom_border_target, observer, ResizeObserverBoxOptions::BorderBox);
+
+  // Initial observation is out of sync
+  ASSERT_TRUE(dom_border_observation->ObservationSizeOutOfSync());
+
+  // Target size is correct
+  LayoutSize size = dom_border_observation->ComputeTargetSize();
+  ASSERT_EQ(size.Width(), 110);
+  ASSERT_EQ(size.Height(), 110);
+  dom_border_observation->SetObservationSize(size);
+
+  // Target size is in sync
+  ASSERT_FALSE(dom_border_observation->ObservationSizeOutOfSync());
+}
+
+TEST_F(ResizeObserverUnitTest, ResizeObserverDOMDevicePixelContentBox) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+
+  main_resource.Write(R"HTML(
+    <div id='domTarget' style='width:100px;height:100px'>yo</div>
+    <svg height='200' width='200'>
+      <div style='zoom:3;'>
+        <div id='domDPTarget' style='width:50px;height:30px'></div>
+      </div>
+    </svg>
+  )HTML");
+  main_resource.Finish();
+
+  ResizeObserver::Delegate* delegate =
+      MakeGarbageCollected<TestResizeObserverDelegate>(GetDocument());
+  ResizeObserver* observer = ResizeObserver::Create(GetDocument(), delegate);
+  Element* dom_target = GetDocument().getElementById("domTarget");
+  Element* dom_dp_target = GetDocument().getElementById("domDPTarget");
+
+  ResizeObservation* dom_dp_nested_observation =
+      MakeGarbageCollected<ResizeObservation>(
+          dom_dp_target, observer,
+          ResizeObserverBoxOptions::DevicePixelContentBox);
+  ResizeObservation* dom_dp_observation =
+      MakeGarbageCollected<ResizeObservation>(
+          dom_target, observer,
+          ResizeObserverBoxOptions::DevicePixelContentBox);
+
+  // Initial observation is out of sync
+  ASSERT_TRUE(dom_dp_observation->ObservationSizeOutOfSync());
+  ASSERT_TRUE(dom_dp_nested_observation->ObservationSizeOutOfSync());
+
+  // Target size is correct
+  LayoutSize size = dom_dp_observation->ComputeTargetSize();
+  ASSERT_EQ(size.Width(), 100);
+  ASSERT_EQ(size.Height(), 100);
+  dom_dp_observation->SetObservationSize(size);
+
+  size = dom_dp_nested_observation->ComputeTargetSize();
+  ASSERT_EQ(size.Width(), 150);
+  ASSERT_EQ(size.Height(), 90);
+  dom_dp_nested_observation->SetObservationSize(size);
+
+  // Target size is in sync
+  ASSERT_FALSE(dom_dp_observation->ObservationSizeOutOfSync());
+  ASSERT_FALSE(dom_dp_nested_observation->ObservationSizeOutOfSync());
 }
 
 // Test whether a new observation is created when an observation's
@@ -175,6 +245,8 @@ TEST_F(ResizeObserverUnitTest, TestNonBoxTarget) {
   EXPECT_EQ(entry->contentBoxSize()->blockSize(), 0);
   EXPECT_EQ(entry->borderBoxSize()->inlineSize(), 0);
   EXPECT_EQ(entry->borderBoxSize()->blockSize(), 0);
+  EXPECT_EQ(entry->devicePixelContentBoxSize()->inlineSize(), 0);
+  EXPECT_EQ(entry->devicePixelContentBoxSize()->blockSize(), 0);
 }
 
 TEST_F(ResizeObserverUnitTest, TestMemoryLeaks) {

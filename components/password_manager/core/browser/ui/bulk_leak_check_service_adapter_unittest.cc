@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/ui/bulk_leak_check_service_adapter.h"
 
+#include <memory>
 #include <tuple>
 #include <vector>
 
@@ -162,6 +163,27 @@ TEST_F(BulkLeakCheckServiceAdapterTest, StartBulkLeakCheck) {
   expected.push_back(MakeLeakCheckCredential(kUsername2, kPassword2));
 
   EXPECT_THAT(credentials, CredentialsAre(std::cref(expected)));
+}
+
+TEST_F(BulkLeakCheckServiceAdapterTest, StartBulkLeakCheckAttachesData) {
+  constexpr char kKey[] = "key";
+  struct UserData : LeakCheckCredential::Data {
+    std::unique_ptr<Data> Clone() override { return std::make_unique<Data>(); }
+  } data;
+
+  std::vector<PasswordForm> passwords = {
+      MakeSavedPassword(kExampleCom, kUsername1, kPassword1)};
+  store().AddLogin(passwords[0]);
+  RunUntilIdle();
+
+  auto leak_check = std::make_unique<NiceMockBulkLeakCheck>();
+  std::vector<LeakCheckCredential> credentials;
+  EXPECT_CALL(*leak_check, CheckCredentials).WillOnce(MoveArg(&credentials));
+  EXPECT_CALL(factory(), TryCreateBulkLeakCheck)
+      .WillOnce(Return(ByMove(std::move(leak_check))));
+  adapter().StartBulkLeakCheck(kKey, &data);
+
+  EXPECT_NE(nullptr, credentials.at(0).GetUserData(kKey));
 }
 
 // Tests that multiple credentials with effectively the same username are

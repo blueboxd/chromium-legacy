@@ -245,7 +245,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   void DoDefaultAction(const BrowserAccessibility& node);
   void GetImageData(const BrowserAccessibility& node,
                     const gfx::Size& max_size);
-  void HitTest(const gfx::Point& point);
+  void HitTest(const gfx::Point& point) const;
   void Increment(const BrowserAccessibility& node);
   void LoadInlineTextBoxes(const BrowserAccessibility& node);
   void ScrollToMakeVisible(
@@ -270,7 +270,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   void SignalEndOfTest();
 
   // Retrieve the bounds of the parent View in screen coordinates.
-  virtual gfx::Rect GetViewBounds();
+  virtual gfx::Rect GetViewBounds() const;
 
   // Fire an event telling native assistive technology to move focus to the
   // given find in page result.
@@ -451,13 +451,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
 
   // Given a point in screen coordinates, trigger an asynchronous hit test
   // but return the best possible match instantly.
-  //
-  //
-  BrowserAccessibility* CachingAsyncHitTest(const gfx::Point& screen_point);
+  BrowserAccessibility* CachingAsyncHitTest(
+      const gfx::Point& screen_point) const;
 
   // Called in response to a hover event, caches the result for the next
   // call to CachingAsyncHitTest().
-  void CacheHitTestResult(BrowserAccessibility* hit_test_result);
+  void CacheHitTestResult(BrowserAccessibility* hit_test_result) const;
 
   // Called when |this| is an accessibility manager for a portal's main frame,
   // and when that portal is activated.
@@ -510,9 +509,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // last object found by an asynchronous hit test. Subsequent hit test
   // requests that remain within this object's bounds will return the same
   // object, but will also trigger a new asynchronous hit test request.
-  ui::AXTreeID last_hover_ax_tree_id_;
-  int last_hover_node_id_;
-  gfx::Rect last_hover_bounds_;
+  mutable ui::AXTreeID last_hover_ax_tree_id_;
+  mutable int last_hover_node_id_;
+  mutable gfx::Rect last_hover_bounds_;
 
   // True if the root's parent is in another accessibility tree and that
   // parent's child is the root. Ensures that the parent node is notified

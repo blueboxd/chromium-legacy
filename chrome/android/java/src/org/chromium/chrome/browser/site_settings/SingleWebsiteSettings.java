@@ -28,7 +28,6 @@ import androidx.preference.PreferenceScreen;
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -37,6 +36,7 @@ import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.embedder_support.util.Origin;
 
 import java.util.Arrays;
 import java.util.Collection;

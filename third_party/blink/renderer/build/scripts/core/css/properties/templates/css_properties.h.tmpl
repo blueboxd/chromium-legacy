@@ -41,7 +41,6 @@ namespace {{namespace}} {
   (property.visited and 'kVisited' or ''),
   (property.is_internal and 'kInternal' or ''),
   (property.affected_by_forced_colors and 'kIsAffectedByForcedColors' or ''),
-  (property.ua and 'kUA' or ''),
   (property.is_animation_property and 'kAnimation' or ''),
   (property.valid_for_first_letter and 'kValidForFirstLetter' or ''),
   (property.valid_for_cue and 'kValidForCue' or ''),
@@ -75,9 +74,6 @@ class {{class_name}} final : public {{property.superclass}} {
   {% endif %}
   {% if property.unvisited_property %}
   const CSSProperty* GetUnvisitedProperty() const override;
-  {% endif %}
-  {% if property.ua_property %}
-  const CSSProperty* GetUAProperty() const override;
   {% endif %}
   {% if property.surrogate_for or property.direction_aware_options %}
   const CSSProperty* SurrogateFor(TextDirection, blink::WritingMode) const override;

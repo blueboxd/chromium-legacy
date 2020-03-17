@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/passwords/credential_leak_dialog_view.h"
 
 #include "build/build_config.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/passwords/credential_leak_dialog_controller.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -23,39 +22,19 @@
 
 namespace {
 
-// Fixed height of the illustration shown on the top of the dialog.
-constexpr int kIllustrationHeight = 148;
-
-// Fixed background color of the illustration shown on the top of the dialog in
-// normal mode.
-constexpr SkColor kPictureBackgroundColor = SkColorSetARGB(0x0A, 0, 0, 0);
-
-// Fixed background color of the illustration shown on the top of the dialog in
-// dark mode.
-constexpr SkColor kPictureBackgroundColorDarkMode =
-    SkColorSetARGB(0x1A, 0x00, 0x00, 0x00);
-
 // Updates the image displayed on the illustration based on the current theme.
 void UpdateImageView(NonAccessibleImageView* image_view,
                      bool dark_mode_enabled) {
   image_view->SetImage(
-      gfx::CreateVectorIcon(dark_mode_enabled ? kPasswordCheckWarningDarkIcon
-                                              : kPasswordCheckWarningIcon,
-                            dark_mode_enabled ? kPictureBackgroundColorDarkMode
-                                              : kPictureBackgroundColor));
+      *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          dark_mode_enabled ? IDR_PASSWORD_CHECK_DARK : IDR_PASSWORD_CHECK));
 }
 
 // Creates the illustration which is rendered on top of the dialog.
 std::unique_ptr<NonAccessibleImageView> CreateIllustration(
     bool dark_mode_enabled) {
-  const gfx::Size illustration_size(
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
-          DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH),
-      kIllustrationHeight);
   auto image_view = std::make_unique<NonAccessibleImageView>();
-  image_view->SetPreferredSize(illustration_size);
   UpdateImageView(image_view.get(), dark_mode_enabled);
-  image_view->SetSize(illustration_size);
   image_view->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
   return image_view;
 }

@@ -602,6 +602,30 @@ PDFiumPage::GetHighlightInfo() {
   return highlight_info;
 }
 
+std::vector<PDFEngine::AccessibilityTextFieldInfo>
+PDFiumPage::GetTextFieldInfo() {
+  std::vector<PDFEngine::AccessibilityTextFieldInfo> text_field_info;
+  if (!available_)
+    return text_field_info;
+
+  PopulateAnnotations();
+
+  text_field_info.reserve(text_fields_.size());
+  for (const TextField& text_field : text_fields_) {
+    PDFEngine::AccessibilityTextFieldInfo cur_info;
+    cur_info.name = text_field.name;
+    cur_info.value = text_field.value;
+    cur_info.is_read_only = !!(text_field.flags & FPDF_FORMFLAG_READONLY);
+    cur_info.is_required = !!(text_field.flags & FPDF_FORMFLAG_REQUIRED);
+    cur_info.is_password = !!(text_field.flags & FPDF_FORMFLAG_TEXT_PASSWORD);
+    cur_info.bounds = pp::FloatRect(
+        text_field.bounding_rect.x(), text_field.bounding_rect.y(),
+        text_field.bounding_rect.width(), text_field.bounding_rect.height());
+    text_field_info.push_back(std::move(cur_info));
+  }
+  return text_field_info;
+}
+
 PDFiumPage::Area PDFiumPage::GetLinkTargetAtIndex(int link_index,
                                                   LinkTarget* target) {
   if (!available_ || link_index < 0)

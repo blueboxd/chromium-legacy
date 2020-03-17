@@ -132,6 +132,7 @@ VideoCaptureFormat FindClosestSupportedFormat(
 gfx::ColorSpace GetDefaultColorSpace(VideoPixelFormat format) {
   switch (format) {
     case PIXEL_FORMAT_YUY2:
+    case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I420:
     case PIXEL_FORMAT_I422:

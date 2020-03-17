@@ -31,8 +31,8 @@ bool PaymentRequestTestController::DismissMinimalUI() {
   return DismissMinimalUIForTest();
 }
 
-bool PaymentRequestTestController::IsAndroidMarshmallow() {
-  return IsAndroidMarshmallowForTest();
+bool PaymentRequestTestController::IsAndroidMarshmallowOrLollipop() {
+  return IsAndroidMarshmallowOrLollipopForTest();
 }
 
 void PaymentRequestTestController::SetUpOnMainThread() {

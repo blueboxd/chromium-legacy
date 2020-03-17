@@ -11,7 +11,7 @@ cr.define('settings', function() {
    * in chrome/browser/ui/webui/site_settings_helper.cc
    * @enum {string}
    */
-  const ContentSettingsTypes = {
+  /* #export */ const ContentSettingsTypes = {
     COOKIES: 'cookies',
     IMAGES: 'images',
     JAVASCRIPT: 'javascript',
@@ -50,7 +50,7 @@ cr.define('settings', function() {
    * components/content_settings/core/common/content_settings.h
    * @enum {string}
    */
-  const ContentSetting = {
+  /* #export */ const ContentSetting = {
     DEFAULT: 'default',
     ALLOW: 'allow',
     BLOCK: 'block',
@@ -65,7 +65,7 @@ cr.define('settings', function() {
    * chrome/browser/ui/webui/site_settings_helper.cc
    * @enum {string}
    */
-  const ChooserType = {
+  /* #export */ const ChooserType = {
     NONE: '',
     USB_DEVICES: 'usb-devices-data',
     SERIAL_PORTS: 'serial-ports-data',
@@ -91,7 +91,7 @@ cr.define('settings', function() {
    * chrome/browser/ui/webui/site_settings_helper.h
    * @enum {string}
    */
-  const SiteSettingSource = {
+  /* #export */ const SiteSettingSource = {
     ADS_FILTER_BLACKLIST: 'ads-filter-blacklist',
     DEFAULT: 'default',
     // This source is for the Protected Media Identifier / Protected Content
@@ -172,7 +172,7 @@ cr.define('settings', function() {
    * match for SiteExceptions.
    * @type {string}
    */
-  const SITE_EXCEPTION_WILDCARD = '*';
+  /* #export */ const SITE_EXCEPTION_WILDCARD = '*';
 
   // #cr_define_end
   return {

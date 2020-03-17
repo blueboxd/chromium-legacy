@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedW
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 

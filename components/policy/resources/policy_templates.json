@@ -20203,6 +20203,10 @@ If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not 
             'renewal_period_seconds': {
               'description': 'Number of days before expiration of a certificate when renewal should be triggered',
               'type': 'integer'
+            },
+            'policy_version': {
+              'description': 'The client should not interpret this data and should forward it verbatim. The DMServer uses policy_version to verify that the policy view of DMServer matches the view of Chrome OS device.',
+              'type': 'string'
             }
           },
           'required': ['cert_profile_id', 'key_algorithm']
@@ -20216,7 +20220,7 @@ If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not 
         'can_be_recommended': False,
         'can_be_mandatory' : True,
       },
-      'example_value': [{'name': 'Certificate Profile 1', 'cert_profile_id':'cert_profile_id_1', 'key_algorithm':'rsa', 'renewal_period_seconds': 2592000}],
+      'example_value': [{'name': 'Certificate Profile 1', 'cert_profile_id':'cert_profile_id_1', 'key_algorithm':'rsa', 'renewal_period_seconds': 2592000, 'policy_version': 'some_hash'}],
       'id': 680,
       'caption': '''Required Client Certificates''',
       'tags': [],
@@ -20247,6 +20251,10 @@ If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not 
             'renewal_period_seconds': {
               'description': 'Number of days before expiration of a certificate when renewal should be triggered',
               'type': 'integer'
+            },
+            'policy_version': {
+              'description': 'The client should not interpret this data and should forward it verbatim. The DMServer uses policy_version to verify that the policy view of DMServer matches the view of Chrome OS device.',
+              'type': 'string'
             }
           },
           'required': ['cert_profile_id', 'key_algorithm']
@@ -20260,7 +20268,7 @@ If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not 
         'can_be_recommended': False,
         'can_be_mandatory' : True,
       },
-      'example_value': [{'name': 'Certificate Profile 1', 'cert_profile_id':'cert_profile_id_1', 'key_algorithm':'rsa', 'renewal_period_seconds': 2592000}],
+      'example_value': [{'name': 'Certificate Profile 1', 'cert_profile_id':'cert_profile_id_1', 'key_algorithm':'rsa', 'renewal_period_seconds': 2592000, 'policy_version': 'some_hash'}],
       'id': 681,
       'caption': '''Required device-wide Client Certificates''',
       'tags': [],

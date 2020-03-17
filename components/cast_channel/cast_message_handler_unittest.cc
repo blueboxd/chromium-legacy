@@ -277,6 +277,20 @@ TEST_F(CastMessageHandlerTest, EnsureConnection) {
   handler_.EnsureConnection(channel_id_, kSourceId, kDestinationId);
 }
 
+TEST_F(CastMessageHandlerTest, CloseConnection) {
+  ExpectEnsureConnection();
+  handler_.EnsureConnection(channel_id_, kSourceId, kDestinationId);
+
+  EXPECT_CALL(
+      *transport_,
+      SendMessage(HasMessageType(CastMessageType::kCloseConnection), _));
+  handler_.CloseConnection(channel_id_, kSourceId, kDestinationId);
+
+  // Re-open virtual connection should cause CONNECT message to be sent.
+  ExpectEnsureConnection();
+  handler_.EnsureConnection(channel_id_, kSourceId, kDestinationId);
+}
+
 TEST_F(CastMessageHandlerTest, CloseConnectionFromReceiver) {
   ExpectEnsureConnection();
   handler_.EnsureConnection(channel_id_, kSourceId, kDestinationId);

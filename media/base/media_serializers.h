@@ -358,16 +358,16 @@ struct MediaSerializer<media::StatusCode> {
 // Class (complex)
 template <>
 struct MediaSerializer<media::Status> {
-  static base::Value Serialize(const media::Status& err) {
-    if (err.IsOk())
+  static base::Value Serialize(const media::Status& status) {
+    if (status.is_ok())
       return base::Value("Ok");
 
     base::Value result(base::Value::Type::DICTIONARY);
-    FIELD_SERIALIZE("status_code", err.code());
-    FIELD_SERIALIZE("status_message", err.message());
-    FIELD_SERIALIZE("stack", err.data_->frames);
-    FIELD_SERIALIZE("data", err.data_->data);
-    FIELD_SERIALIZE("causes", err.data_->causes);
+    FIELD_SERIALIZE("status_code", status.code());
+    FIELD_SERIALIZE("status_message", status.message());
+    FIELD_SERIALIZE("stack", status.data_->frames);
+    FIELD_SERIALIZE("data", status.data_->data);
+    FIELD_SERIALIZE("causes", status.data_->causes);
     return result;
   }
 };

@@ -18,6 +18,8 @@ namespace blink {
 
 constexpr const char* kBoxOptionBorderBox = "border-box";
 constexpr const char* kBoxOptionContentBox = "content-box";
+constexpr const char* kBoxOptionDevicePixelContentBox =
+    "device-pixel-content-box";
 
 ResizeObserver* ResizeObserver::Create(Document& document,
                                        V8ResizeObserverCallback* callback) {
@@ -53,6 +55,8 @@ ResizeObserverBoxOptions ResizeObserver::ParseBoxOptions(
     return ResizeObserverBoxOptions::BorderBox;
   if (box_options == kBoxOptionContentBox)
     return ResizeObserverBoxOptions::ContentBox;
+  if (box_options == kBoxOptionDevicePixelContentBox)
+    return ResizeObserverBoxOptions::DevicePixelContentBox;
   return ResizeObserverBoxOptions::ContentBox;
 }
 

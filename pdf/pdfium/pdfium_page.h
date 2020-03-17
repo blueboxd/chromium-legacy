@@ -60,6 +60,9 @@ class PDFiumPage {
   // For all the highlights on the page, get their underlying text ranges and
   // bounding boxes.
   std::vector<PDFEngine::AccessibilityHighlightInfo> GetHighlightInfo();
+  // For all the text fields on the page, get their properties like name,
+  // value, bounding boxes, etc.
+  std::vector<PDFEngine::AccessibilityTextFieldInfo> GetTextFieldInfo();
 
   enum Area {
     NONSELECTABLE_AREA,

@@ -1009,6 +1009,8 @@ void ProcessManager::RenderProcessExited(
 void ProcessManager::UnregisterServiceWorker(const WorkerId& worker_id) {
   // TODO(lazyboy): DCHECK that |worker_id| exists in |all_extension_workers_|.
   all_extension_workers_.Remove(worker_id);
+  for (auto& observer : observer_list_)
+    observer.OnServiceWorkerUnregistered(worker_id);
 }
 
 bool ProcessManager::HasServiceWorker(const WorkerId& worker_id) const {

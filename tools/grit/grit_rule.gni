@@ -14,13 +14,13 @@
 #   source (required)
 #       Path to .grd file.
 #
-#   source_is_generated (optional, defaults to false)
-#       Declares that the input (or one of its dependencies) is generated so
-#       that grit_info is not run on the file when
-#       compute_inputs_for_analyze is set (because the file will not
-#       exist at analyze time). For "analyze" to be correct in this case, the
-#       inputs to the grit file must either be listed in the inputs variable
-#       or are listed as inputs to dependencies of this target.
+#   enable_input_discovery_for_gn_analyze (default=true)
+#       Runs grit_info.py via exec_script() when compute_inputs_for_analyze=true
+#       in order to discover all files that affect this target.
+#       Turn this off when the .grd file is generated, or an <include> with
+#       flattenhtml=true points to a generated file.
+#       For "gn analyze" to be correct with this arg disabled, all inputs
+#       must be listed via |inputs|.
 #
 #   inputs  (optional)
 #       List of additional files, required for grit to process source file.
@@ -292,9 +292,10 @@ template("grit") {
     }
 
     _rebased_source_path = rebase_path(invoker.source, root_build_dir)
-    _source_is_generated =
-        defined(invoker.source_is_generated) && invoker.source_is_generated
-    if (!_source_is_generated && compute_inputs_for_analyze) {
+    _enable_grit_info =
+        !defined(invoker.enable_input_discovery_for_gn_analyze) ||
+        invoker.enable_input_discovery_for_gn_analyze
+    if (_enable_grit_info && compute_inputs_for_analyze) {
       # Only call exec_script when the user has explicitly opted into greater
       # precision at the expense of performance.
       _rel_inputs = exec_script("//tools/grit/grit_info.py",

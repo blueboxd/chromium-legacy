@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {MetricsBrowserProxyImpl, PaymentsManagerImpl, PrivacyElementInteractions} from 'chrome://settings/settings.js'
+// #import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from 'chrome://settings/settings.js';
+// #import {PaymentsManagerImpl} from 'chrome://settings/lazy_load.js'
 // #import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.m.js';
 // #import {TestPaymentsManager, createCreditCardEntry, createEmptyCreditCardEntry} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';

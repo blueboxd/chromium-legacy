@@ -13,6 +13,7 @@ import("//testing/test.gni")
 source_set("base") {
   sources = [
     "config_reader.cc",
+    "fuchsia_dir_scheme.cc",
     "init_logging.cc",
     "mem_buffer_util.cc",
     "scoped_pseudo_file_publisher.cc",
@@ -20,6 +21,7 @@ source_set("base") {
   ]
   public = [
     "config_reader.h",
+    "fuchsia_dir_scheme.h",
     "init_logging.h",
     "mem_buffer_util.h",
     "scoped_pseudo_file_publisher.h",
@@ -28,6 +30,7 @@ source_set("base") {
   deps = [
     "//base",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem",
+    "//url",
   ]
 }
 
@@ -60,6 +63,17 @@ source_set("message_port") {
     "//third_party/blink/public/common:headers",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
   ]
+}
+
+source_set("legacymetrics") {
+  sources = [
+    "legacymetrics_histogram_flattener.cc",
+    "legacymetrics_histogram_flattener.h",
+    "legacymetrics_user_event_recorder.cc",
+    "legacymetrics_user_event_recorder.h",
+  ]
+  deps = [ "//base" ]
+  public_deps = [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.legacymetrics" ]
 }
 
 # Used to propagate release-qualified package names to integration test code.
@@ -102,8 +116,13 @@ source_set("test_support") {
 
 # Unit-tests for all //fuchsia/base utilities.
 test("cr_fuchsia_base_unittests") {
-  sources = [ "agent_impl_unittests.cc" ]
+  sources = [
+    "agent_impl_unittests.cc",
+    "legacymetrics_histogram_flattener_unittest.cc",
+    "legacymetrics_user_event_recorder_unittest.cc",
+  ]
   deps = [
+    ":legacymetrics",
     ":modular",
     ":test_support",
     "//base",

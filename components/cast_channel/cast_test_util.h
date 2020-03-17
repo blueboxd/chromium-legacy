@@ -167,6 +167,8 @@ class MockCastMessageHandler : public CastMessageHandler {
 
   MOCK_METHOD3(EnsureConnection,
                void(int, const std::string&, const std::string&));
+  MOCK_METHOD3(CloseConnection,
+               void(int, const std::string&, const std::string&));
   MOCK_METHOD3(RequestAppAvailability,
                void(CastSocket* socket,
                     const std::string& app_id,

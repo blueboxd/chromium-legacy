@@ -33,8 +33,6 @@ const CAPTURE_DURATION_MS = 1000;
 Polymer({
   is: 'cr-camera',
 
-  behaviors: [CrPngBehavior],
-
   properties: {
     /** Strings provided by host */
     takePhotoLabel: String,
@@ -285,8 +283,7 @@ Polymer({
         encodedImages.concat(encodedImages.slice(1, -1).reverse());
 
     /** Convert image sequence to animated PNG. */
-    return CrPngBehavior.convertImageSequenceToPng(
-        forwardBackwardImageSequence);
+    return cr.png.convertImageSequenceToPng(forwardBackwardImageSequence);
   },
 
   /**

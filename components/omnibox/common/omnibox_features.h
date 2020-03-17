@@ -74,6 +74,7 @@ extern const base::Feature kWebUIOmniboxPopup;
 // Omnibox UI - these affect the UI or function of the location bar (not the
 // popup).
 extern const base::Feature kOmniboxAssistantVoiceSearch;
+extern const base::Feature kOmniboxContextMenuShowFullUrls;
 
 }  // namespace omnibox
 

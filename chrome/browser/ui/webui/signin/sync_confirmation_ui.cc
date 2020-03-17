@@ -36,6 +36,11 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
   source->UseStringsJs();
   source->EnableReplaceI18nInJS();
 
+  source->AddResourcePath("signin_shared_css.js", IDR_SIGNIN_SHARED_CSS_JS);
+  source->AddResourcePath("sync_confirmation_browser_proxy.js",
+                          IDR_SYNC_CONFIRMATION_BROWSER_PROXY_JS);
+  source->AddResourcePath("sync_confirmation.js", IDR_SYNC_CONFIRMATION_JS);
+
   if (is_sync_allowed) {
     source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
     source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
@@ -43,12 +48,8 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
         "script-src chrome://resources chrome://test 'self';");
 
     source->SetDefaultResource(IDR_SYNC_CONFIRMATION_HTML);
-    source->AddResourcePath("signin_shared_css.js", IDR_SIGNIN_SHARED_CSS_JS);
-    source->AddResourcePath("sync_confirmation_browser_proxy.js",
-                            IDR_SYNC_CONFIRMATION_BROWSER_PROXY_JS);
     source->AddResourcePath("sync_confirmation_app.js",
                             IDR_SYNC_CONFIRMATION_APP_JS);
-    source->AddResourcePath("sync_confirmation.js", IDR_SYNC_CONFIRMATION_JS);
 
     source->AddResourcePath(
         "images/sync_confirmation_illustration.svg",
@@ -90,10 +91,8 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
     source->AddString("accountPictureUrl", custom_picture_url);
   } else {
     source->SetDefaultResource(IDR_SYNC_DISABLED_CONFIRMATION_HTML);
-    source->AddResourcePath("signin_shared_old_css.html",
-                            IDR_SIGNIN_SHARED_OLD_CSS_HTML);
-    source->AddResourcePath("sync_disabled_confirmation.js",
-                            IDR_SYNC_DISABLED_CONFIRMATION_JS);
+    source->AddResourcePath("sync_disabled_confirmation_app.js",
+                            IDR_SYNC_DISABLED_CONFIRMATION_APP_JS);
 
     AddStringResource(source, "syncDisabledConfirmationTitle",
                       IDS_SYNC_DISABLED_CONFIRMATION_CHROME_SYNC_TITLE);

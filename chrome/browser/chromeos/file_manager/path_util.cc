@@ -108,6 +108,30 @@ bool ShouldMountPrimaryUserDownloads(Profile* profile) {
   return false;
 }
 
+// Extracts the Drive path from the given path located under the legacy Drive
+// mount point. Returns an empty path if |path| is not under the legacy Drive
+// mount point.
+// Example: ExtractLegacyDrivePath("/special/drive-xxx/foo.txt") =>
+//   "drive/foo.txt"
+base::FilePath ExtractLegacyDrivePath(const base::FilePath& path) {
+  std::vector<base::FilePath::StringType> components;
+  path.GetComponents(&components);
+  if (components.size() < 3)
+    return base::FilePath();
+  if (components[0] != FILE_PATH_LITERAL("/"))
+    return base::FilePath();
+  if (components[1] != FILE_PATH_LITERAL("special"))
+    return base::FilePath();
+  static const base::FilePath::CharType kPrefix[] = FILE_PATH_LITERAL("drive");
+  if (components[2].compare(0, base::size(kPrefix) - 1, kPrefix) != 0)
+    return base::FilePath();
+
+  base::FilePath drive_path = drive::util::GetDriveGrandRootPath();
+  for (size_t i = 3; i < components.size(); ++i)
+    drive_path = drive_path.Append(components[i]);
+  return drive_path;
+}
+
 }  // namespace
 
 const base::FilePath::CharType kRemovableMediaPath[] =
@@ -221,7 +245,7 @@ bool MigrateToDriveFs(Profile* profile,
   }
   *new_path = integration_service->GetMountPointPath();
   return drive::util::GetDriveGrandRootPath().AppendRelativePath(
-      drive::util::ExtractDrivePath(old_path), new_path);
+      ExtractLegacyDrivePath(old_path), new_path);
 }
 
 std::string GetDownloadsMountPointName(Profile* profile) {

@@ -18,8 +18,7 @@ message MalwareDeepScanningClientRequest {
   // Identifies the type of client.
   optional Population population = 1;
 
-  // The download token from the original ClientDownloadResponse.
-  optional string download_token = 2;
+  reserved 2;
 }
 
 // DLP-specific scanning information.

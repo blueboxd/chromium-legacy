@@ -8,18 +8,18 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Base64;
 
-import org.chromium.base.ContextUtils;
-import org.chromium.base.StrictModeContext;
-import org.chromium.chrome.browser.browserservices.Origin;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.annotation.WorkerThread;
 import androidx.browser.trusted.Token;
+
+import org.chromium.base.ContextUtils;
+import org.chromium.base.StrictModeContext;
+import org.chromium.components.embedder_support.util.Origin;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Stores data about origins associated with a Trusted Web Activity for the purpose of Permission

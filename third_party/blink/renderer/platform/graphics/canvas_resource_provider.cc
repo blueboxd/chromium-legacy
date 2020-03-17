@@ -1129,7 +1129,7 @@ GrContext* CanvasResourceProvider::GetGrContext() const {
 }
 
 void CanvasResourceProvider::FlushCanvas() {
-  if (!recorder_ || !recorder_->ListHasDrawOps())
+  if (!HasRecordedDrawOps())
     return;
   EnsureSkiaCanvas();
   last_recording_ = recorder_->finishRecordingAsPicture();
@@ -1156,7 +1156,7 @@ bool CanvasResourceProvider::WritePixels(const SkImageInfo& orig_info,
   TRACE_EVENT0("blink", "CanvasResourceProvider::WritePixels");
 
   DCHECK(IsValid());
-  DCHECK(!recorder_->ListHasDrawOps());
+  DCHECK(!HasRecordedDrawOps());
 
   EnsureSkiaCanvas();
 
@@ -1282,7 +1282,7 @@ void CanvasResourceProvider::SkipQueuedDrawCommands() {
   // so always update the |mode_| to discard the old copy of canvas content.
   mode_ = SkSurface::kDiscard_ContentChangeMode;
 
-  if (!recorder_ || !recorder_->ListHasDrawOps())
+  if (!HasRecordedDrawOps())
     return;
   recorder_->finishRecordingAsPicture();
   cc::PaintCanvas* canvas =
@@ -1304,6 +1304,10 @@ void CanvasResourceProvider::RestoreBackBuffer(const cc::PaintImage& image) {
   cc::PaintFlags copy_paint;
   copy_paint.setBlendMode(SkBlendMode::kSrc);
   skia_canvas_->drawImage(image, 0, 0, &copy_paint);
+}
+
+bool CanvasResourceProvider::HasRecordedDrawOps() const {
+  return recorder_ && recorder_->ListHasDrawOps();
 }
 
 }  // namespace blink

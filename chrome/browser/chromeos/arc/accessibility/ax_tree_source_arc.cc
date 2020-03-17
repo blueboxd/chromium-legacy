@@ -155,8 +155,8 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     if (IsValid(new_focus))
       android_focused_id_ = new_focus->GetId();
 
-    if (event_data->eventText)
-      UpdateAXNameCache(focused_node, *event_data->eventText);
+    if (event_data->event_text)
+      UpdateAXNameCache(focused_node, *event_data->event_text);
   }
 
   if (!android_focused_id_ || !GetFromId(*android_focused_id_)) {

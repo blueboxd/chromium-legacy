@@ -28,13 +28,15 @@ class ResizeObserverController final
   void AddObserver(ResizeObserver&);
 
   // observation API
-  // Returns depth of shallowest observed node, kDepthLimit if none.
-  size_t GatherObservations(size_t deeper_than);
+  // Returns min depth of shallowest observed node, kDepthLimit if none.
+  size_t GatherObservations();
   // Returns true if gatherObservations has skipped observations
   // because they were too shallow.
   bool SkippedObservations();
   void DeliverObservations();
   void ClearObservations();
+
+  void ClearMinDepth() { min_depth_ = 0; }
 
   void Trace(Visitor*);
 
@@ -46,6 +48,8 @@ class ResizeObserverController final
  private:
   // Active observers
   HeapLinkedHashSet<WeakMember<ResizeObserver>> observers_;
+  // Minimum depth for observations to be active
+  size_t min_depth_ = 0;
 };
 
 }  // namespace blink

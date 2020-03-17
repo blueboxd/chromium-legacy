@@ -241,7 +241,7 @@ message CastLogsProto {
   optional fixed32 virtual_release_track = 4;
 
   // Cast specific device information which is expected to change over time.
-  // Next tag: 9
+  // Next tag: 10
   message CastDeviceMutableInfo {
     // This is the last type of reboot the device encountered
     // Next tag: 14
@@ -294,6 +294,9 @@ message CastLogsProto {
     optional string timezone_id = 7;
     // Optional value to log latest ui version.
     optional string latest_ui_version = 8;
+
+    // Station ID of the device if connected to Google WiFi network
+    optional string google_wifi_station_shmac = 9;
   }
   // The device sends this information at least once per day.
   optional CastDeviceMutableInfo cast_device_mutable_info = 5;

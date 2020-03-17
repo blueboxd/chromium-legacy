@@ -51,7 +51,6 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
-import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.SessionHandler;
@@ -66,6 +65,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessLauncherHelper;
@@ -687,7 +687,8 @@ public class CustomTabsConnection {
 
             // Attempt to verify origin synchronously. If successful directly initialize postMessage
             // channel for session.
-            Uri verifiedOrigin = verifyOriginForSession(session, uid, postMessageOrigin);
+            Uri verifiedOrigin = verifyOriginForSession(session, uid,
+                    org.chromium.chrome.browser.browserservices.Origin.create(postMessageOrigin));
             if (verifiedOrigin == null) {
                 mClientManager.verifyAndInitializeWithPostMessageOriginForSession(
                         session, postMessageOrigin, CustomTabsService.RELATION_USE_AS_ORIGIN);
@@ -710,6 +711,12 @@ public class CustomTabsConnection {
             CustomTabsSessionToken session, int clientUid, Origin origin) {
         if (clientUid == Process.myUid()) return Uri.EMPTY;
         return null;
+    }
+
+    // TODO(crbug.com/1058597): Delete this once Clank switches to the new Origin class.
+    protected Uri verifyOriginForSession(CustomTabsSessionToken session, int clientUid,
+            org.chromium.chrome.browser.browserservices.Origin origin) {
+        return verifyOriginForSession(session, clientUid, (Origin) origin);
     }
 
     public int postMessage(CustomTabsSessionToken session, String message, Bundle extras) {

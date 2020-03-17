@@ -267,6 +267,10 @@ class WebWidgetClient {
   virtual void AddPresentationCallback(
       uint32_t frame_token,
       base::OnceCallback<void(base::TimeTicks)> callback) {}
+
+  // Record the time it took for the first paint after the widget transitioned
+  // from background inactive to active.
+  virtual void RecordTimeToFirstActivePaint(base::TimeDelta duration) {}
 };
 
 }  // namespace blink

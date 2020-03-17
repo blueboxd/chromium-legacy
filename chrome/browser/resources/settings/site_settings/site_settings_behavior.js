@@ -6,6 +6,11 @@
  * @fileoverview Behavior common to Site Settings classes.
  */
 
+// clang-format off
+// #import {ContentSetting,ContentSettingsTypes} from './constants.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {RawSiteException,SiteException,SiteSettingsPrefsBrowserProxy,SiteSettingsPrefsBrowserProxyImpl} from './site_settings_prefs_browser_proxy.m.js';
+// clang-format on
 
 /**
  * The source information on site exceptions doesn't exactly match the
@@ -238,4 +243,4 @@ const SiteSettingsBehaviorImpl = {
 };
 
 /** @polymerBehavior */
-const SiteSettingsBehavior = [SiteSettingsBehaviorImpl];
+/* #export */ const SiteSettingsBehavior = [SiteSettingsBehaviorImpl];

@@ -39,9 +39,9 @@
 
 namespace blink {
 
-class Document;
 class Event;
 class EventTarget;
+class LocalDOMWindow;
 class MediaQueryListListener;
 
 class CORE_EXPORT ScriptedAnimationController
@@ -51,7 +51,7 @@ class CORE_EXPORT ScriptedAnimationController
   USING_GARBAGE_COLLECTED_MIXIN(ScriptedAnimationController);
 
  public:
-  explicit ScriptedAnimationController(Document*);
+  explicit ScriptedAnimationController(LocalDOMWindow*);
   ~ScriptedAnimationController() override = default;
 
   void Trace(Visitor*) override;
@@ -117,7 +117,7 @@ class CORE_EXPORT ScriptedAnimationController
 
   bool HasScheduledFrameTasks() const;
 
-  Document* GetDocument() const;
+  LocalDOMWindow* GetWindow() const;
 
   ALWAYS_INLINE bool InsertToPerFrameEventsMap(const Event* event);
   ALWAYS_INLINE void EraseFromPerFrameEventsMap(const Event* event);

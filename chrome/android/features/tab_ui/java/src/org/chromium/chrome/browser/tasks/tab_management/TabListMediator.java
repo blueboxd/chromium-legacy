@@ -31,7 +31,6 @@ import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
-import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
@@ -200,19 +199,6 @@ class TabListMediator {
             mThumbnailProvider.getTabThumbnailWithCallback(
                     tabId, forking, mForceUpdate, mWriteToCache);
         }
-    }
-
-    /**
-     * An interface used to end current item animation in {@link RecyclerView} at certain position.
-     */
-    interface ItemAnimationStopper {
-        /**
-         * This method stops the item animation from {@link RecyclerView.ItemAnimator} for item in
-         * {@code position}.
-         *
-         * @param position  The position of the item whose animation will end.
-         */
-        void endItemAnimationForPosition(int position);
     }
 
     /**
@@ -451,8 +437,8 @@ class TabListMediator {
             TabListFaviconProvider tabListFaviconProvider, boolean actionOnRelatedTabs,
             @Nullable SelectionDelegateProvider selectionDelegateProvider,
             @Nullable GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
-            @Nullable TabGridDialogHandler dialogHandler, ItemAnimationStopper itemAnimationStopper,
-            String componentName, @UiType int uiType) {
+            @Nullable TabGridDialogHandler dialogHandler, String componentName,
+            @UiType int uiType) {
         mContext = context;
         mTabModelSelector = tabModelSelector;
         mThumbnailProvider = thumbnailProvider;
@@ -552,14 +538,9 @@ class TabListMediator {
 
             @Override
             public void willCloseTab(Tab tab, boolean animate) {
-                int index = mModel.indexFromId(tab.getId());
-                if (index == TabModel.INVALID_TAB_INDEX) return;
+                if (mModel.indexFromId(tab.getId()) == TabModel.INVALID_TAB_INDEX) return;
                 tab.removeObserver(mTabObserver);
-                // TODO(crbug.com/1045944): This line is for a specific crash, it should not be
-                // needed. Investigate why the crash is happening only in pop-up tab strip. Maybe
-                // related to how RecyclerView layouts in a wrap_content PopupWindow.
-                if (uiType == UiType.STRIP) itemAnimationStopper.endItemAnimationForPosition(index);
-                mModel.removeAt(index);
+                mModel.removeAt(mModel.indexFromId(tab.getId()));
             }
 
             @Override

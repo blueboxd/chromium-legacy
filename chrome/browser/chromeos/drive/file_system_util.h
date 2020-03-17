@@ -27,11 +27,6 @@ DriveIntegrationService* GetIntegrationServiceByProfile(Profile*);
 // Returns true if the given path is under the Drive mount point.
 bool IsUnderDriveMountPoint(const base::FilePath& path);
 
-// Extracts the Drive path from the given path located under the Drive mount
-// point. Returns an empty path if |path| is not under the Drive mount point.
-// Examples: ExtractDrivePath("/special/drive-xxx/foo.txt") => "drive/foo.txt"
-base::FilePath ExtractDrivePath(const base::FilePath& path);
-
 // Gets the cache root path (i.e. <user_profile_dir>/GCache/v1) from the
 // profile.
 base::FilePath GetCacheRootPath(Profile* profile);

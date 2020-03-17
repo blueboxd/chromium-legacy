@@ -116,10 +116,8 @@ if (is_android) {
   }
 }
 
-source_set("unit_tests") {
+group("unit_tests") {
   testonly = true
-
-  sources = []
-
+  visibility = [ "//chrome/browser/upboarding:unit_tests" ]
   deps = [ "//chrome/browser/upboarding/query_tiles/internal:unit_tests" ]
 }

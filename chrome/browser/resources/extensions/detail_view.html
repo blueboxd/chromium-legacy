@@ -168,12 +168,6 @@
             $i18n{itemReload}
           </cr-button>
         </template>
-        <cr-tooltip-icon id="blockedMatureToolTip"
-            hidden$="[[!data.disableReasons.blockedMature]]"
-            tooltip-text="$i18n{disableBlockedMature}"
-            icon-class="cr20:kite"
-            icon-aria-label="$i18n{disableBlockedMature}">
-        </cr-tooltip-icon>
         <cr-toggle id="enableToggle"
             aria-label$="[[appOrExtension(
                 data.type,

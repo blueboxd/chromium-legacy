@@ -13,6 +13,9 @@ import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 
+/** @type {string} */
+export const NONE_ANIMATION = 'none 0s ease 0s 1 normal none running';
+
 /**
  * @param {!HTMLElement} element
  * @param {string} key

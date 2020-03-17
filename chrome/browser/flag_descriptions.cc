@@ -290,6 +290,11 @@ const char kContextMenuSearchWithGoogleLensDescription[] =
     "Replaces default image search with an intent to Google Lens when "
     "supported.";
 
+const char kOmniboxContextMenuShowFullUrlsName[] =
+    "Context menu show full URLs";
+const char kOmniboxContextMenuShowFullUrlsDescription[] =
+    "Provides an omnibox context menu option that prevents URL elisions.";
+
 const char kClickToOpenPDFName[] = "Click to open embedded PDFs";
 const char kClickToOpenPDFDescription[] =
     "When the PDF plugin is unavailable, show a click-to-open placeholder for "
@@ -2996,8 +3001,7 @@ const char kArcNativeBridgeToggleDescription[] =
 const char kArcPrintSpoolerExperimentName[] =
     "Enable print spooler experiment for ARC";
 const char kArcPrintSpoolerExperimentDescription[] =
-    "Enables using Chrome OS print system and print preview in ARC."
-    "This feature only works on the Canary and Dev channels.";
+    "Enables using the Chrome OS print system and print preview in ARC.";
 
 const char kArcUsbHostName[] = "Enable ARC USB host integration";
 const char kArcUsbHostDescription[] =

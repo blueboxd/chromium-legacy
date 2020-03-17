@@ -36,7 +36,7 @@ struct MediaSerializer<UselessThingToBeSerialized> {
 // Friend class of MediaLog for access to internal constants.
 class StatusTest : public testing::Test {
  public:
-  Status DontFail() { return Status::Ok(); }
+  Status DontFail() { return OkStatus(); }
 
   Status FailEasily() { return STATUS(kCodeOnlyForTesting, "Message"); }
 

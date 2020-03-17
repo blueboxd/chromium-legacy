@@ -8061,6 +8061,12 @@
         "test_target": "//components/background_task_scheduler:components_background_task_scheduler_junit_tests"
       },
       {
+        "name": "components_embedder_support_junit_tests",
+        "swarming": {},
+        "test": "components_embedder_support_junit_tests",
+        "test_target": "//components/embedder_support/android:components_embedder_support_junit_tests"
+      },
+      {
         "name": "components_gcm_driver_junit_tests",
         "swarming": {},
         "test": "components_gcm_driver_junit_tests",

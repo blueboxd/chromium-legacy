@@ -35,6 +35,7 @@ class PasswordAccessorySheetModernViewBinder {
                 return new AccessorySheetTabViewBinder.TitleViewHolder(
                         parent, R.layout.keyboard_accessory_sheet_tab_title);
             case AccessorySheetDataPiece.Type.FOOTER_COMMAND:
+            case AccessorySheetDataPiece.Type.OPTION_TOGGLE:
                 return AccessorySheetTabViewBinder.create(parent, viewType);
         }
         assert false : "Unhandled type of data piece: " + viewType;

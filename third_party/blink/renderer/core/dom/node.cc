@@ -827,7 +827,7 @@ static Node* NodeOrStringToNode(
                             : node_or_string.GetAsNode()->textContent();
 
   string_value = TrustedTypesCheckForScript(
-      string_value, document.ToExecutionContext(), exception_state);
+      string_value, document.GetExecutionContext(), exception_state);
   if (exception_state.HadException())
     return nullptr;
   return Text::Create(document, string_value);

@@ -1055,7 +1055,7 @@ TEST_F(AXTreeSourceArcTest, OnDrawerOpened) {
   event->source_id = 10;  // root
   event->task_id = 1;
   event->event_type = AXEventType::WINDOW_STATE_CHANGED;
-  event->eventText = std::vector<std::string>({"Navigation"});
+  event->event_text = std::vector<std::string>({"Navigation"});
 
   event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
   event->window_data->emplace_back(AXWindowInfoData::New());
@@ -1108,7 +1108,7 @@ TEST_F(AXTreeSourceArcTest, OnDrawerOpened) {
   EXPECT_EQ("Navigation", name);
 
   // Validate that the drawer title is cached.
-  event->eventText.reset();
+  event->event_text.reset();
   event->event_type = AXEventType::WINDOW_CONTENT_CHANGED;
   CallNotifyAccessibilityEvent(event.get());
 

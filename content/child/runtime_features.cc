@@ -334,6 +334,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kEnableOnly},
           {"FeaturePolicyForClientHints",
            features::kFeaturePolicyForClientHints, kUseFeatureState},
+          {"FontAccess", blink::features::kFontAccess, kUseFeatureState},
           {"FontSrcLocalMatching", features::kFontSrcLocalMatching,
            kUseFeatureState},
           {"HTMLImports", blink::features::kWebComponentsV0Enabled,

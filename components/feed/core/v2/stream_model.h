@@ -20,6 +20,7 @@ class DataOperation;
 }  // namespace feedwire
 
 namespace feed {
+struct StreamModelUpdateRequest;
 
 // An in-memory stream model.
 class StreamModel {
@@ -43,11 +44,28 @@ class StreamModel {
     std::vector<SharedStateInfo> shared_states;
   };
 
+  struct StoreUpdate {
+    StoreUpdate();
+    ~StoreUpdate();
+    StoreUpdate(const StoreUpdate&);
+    StoreUpdate(StoreUpdate&&);
+    StoreUpdate& operator=(const StoreUpdate&);
+    StoreUpdate& operator=(StoreUpdate&&);
+
+    std::vector<feedstore::DataOperation> operations;
+  };
+
   class Observer {
    public:
     virtual ~Observer() = default;
     // Called when the UI model changes.
     virtual void OnUiUpdate(const UiUpdate& update) = 0;
+  };
+  class StoreObserver {
+   public:
+    // Called when the peristent store should be modified to reflect a model
+    // change.
+    virtual void OnStoreChange(const StoreUpdate& update) = 0;
   };
 
   explicit StreamModel();
@@ -57,6 +75,7 @@ class StreamModel {
   StreamModel& operator=(const StreamModel&) = delete;
 
   void SetObserver(Observer* observer);
+  void SetStoreObserver(StoreObserver* store_observer);
 
   // Data access.
 
@@ -66,6 +85,10 @@ class StreamModel {
   }
   // Returns the content identified by |ContentRevision|.
   const feedstore::Content* FindContent(ContentRevision revision) const;
+
+  // Apply an update from the network or storage.
+  void Update(std::unique_ptr<StreamModelUpdateRequest> update_request);
+
   // Apply |operations| to the model.
   void ExecuteOperations(std::vector<feedstore::DataOperation> operations);
 
@@ -86,13 +109,20 @@ class StreamModel {
   void UpdateFlattenedTree();
 
   Observer* observer_ = nullptr;  // Unowned.
-
+  StoreObserver* store_observer_ = nullptr;  // Unowned.
   stream_model::ContentIdMap id_map_;
   stream_model::FeatureTree base_feature_tree_{&id_map_};
   // |base_feature_tree_| with |ephemeral_changes_| applied.
   // Null if there are no ephemeral changes.
   std::unique_ptr<stream_model::FeatureTree> feature_tree_after_changes_;
   stream_model::EphemeralChangeList ephemeral_changes_;
+
+  // The following data is associated with the stream, but lives outside of the
+  // tree.
+
+  std::string next_page_token_;    // TODO(harringtond): use this value.
+  std::string consistency_token_;  // TODO(harringtond): use this value.
+  base::Time last_added_time_;     // TODO(harringtond): use this value.
 
   // Current state of the flattened tree.
   // Updated after each tree change.

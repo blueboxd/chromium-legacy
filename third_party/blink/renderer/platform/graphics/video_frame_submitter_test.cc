@@ -12,10 +12,12 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "cc/layers/video_frame_provider.h"
+#include "cc/metrics/video_playback_roughness_reporter.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/task_runner_provider.h"
@@ -37,6 +39,7 @@
 
 using testing::_;
 using testing::AnyNumber;
+using testing::Invoke;
 using testing::Return;
 using testing::StrictMock;
 
@@ -953,6 +956,68 @@ TEST_F(VideoFrameSubmitterTest, ZeroSizedFramesAreNotSubmitted) {
   EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _)).Times(0);
   submitter_->DidReceiveFrame();
   task_environment_.RunUntilIdle();
+}
+
+// Check that given enough frames with wallclock duration and enough
+// presentation feedback data, VideoFrameSubmitter will call the video roughness
+// reporting callback.
+TEST_F(VideoFrameSubmitterTest, ProcessTimingDetails) {
+  int fps = 24;
+  int reports = 0;
+  base::TimeDelta frame_duration = base::TimeDelta::FromSecondsD(1.0 / fps);
+  int frames_to_run =
+      (fps / 2) *
+      (cc::VideoPlaybackRoughnessReporter::kMinWindowsBeforeSubmit + 1);
+  WTF::HashMap<uint32_t, viz::mojom::blink::FrameTimingDetailsPtr>
+      timing_details;
+
+  MakeSubmitter(
+      base::BindLambdaForTesting([&](int frames, base::TimeDelta duration,
+                                     double roughness) { reports++; }));
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
+  submitter_->StartRendering();
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(IsRendering());
+
+  auto sink_submit = [&](const viz::LocalSurfaceId&,
+                         viz::CompositorFrame* frame) {
+    auto token = frame->metadata.frame_token;
+    viz::mojom::blink::FrameTimingDetailsPtr details =
+        viz::mojom::blink::FrameTimingDetails::New();
+    details->presentation_feedback =
+        gfx::mojom::blink::PresentationFeedback::New();
+    details->presentation_feedback->timestamp =
+        base::TimeTicks() + frame_duration * token;
+    timing_details.clear();
+    timing_details.Set(token, std::move(details));
+  };
+
+  EXPECT_CALL(*video_frame_provider_, UpdateCurrentFrame)
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*video_frame_provider_, PutCurrentFrame).Times(AnyNumber());
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame)
+      .WillRepeatedly(Invoke(sink_submit));
+  EXPECT_CALL(*resource_provider_, AppendQuads).Times(AnyNumber());
+  EXPECT_CALL(*resource_provider_, PrepareSendToParent).Times(AnyNumber());
+  EXPECT_CALL(*resource_provider_, ReleaseFrameResources).Times(AnyNumber());
+
+  for (int i = 0; i < frames_to_run; i++) {
+    auto frame = media::VideoFrame::CreateFrame(
+        media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
+        gfx::Size(8, 8), i * frame_duration);
+    frame->metadata()->SetTimeDelta(
+        media::VideoFrameMetadata::WALLCLOCK_FRAME_DURATION, frame_duration);
+    EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
+        .WillRepeatedly(Return(frame));
+
+    auto args = begin_frame_source_->CreateBeginFrameArgs(BEGINFRAME_FROM_HERE,
+                                                          now_src_.get());
+    submitter_->OnBeginFrame(args, std::move(timing_details));
+    task_environment_.RunUntilIdle();
+    AckSubmittedFrame();
+  }
+  submitter_->StopRendering();
+  EXPECT_EQ(reports, 1);
 }
 
 }  // namespace blink

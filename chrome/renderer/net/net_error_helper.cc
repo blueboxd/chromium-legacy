@@ -167,10 +167,11 @@ NetErrorHelper::NetErrorHelper(RenderFrame* render_frame)
                                      !render_frame->IsHidden()));
 
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
-      base::Bind(&NetErrorHelper::OnNetworkDiagnosticsClientRequest,
-                 base::Unretained(this)));
-  render_frame->GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
-      &NetErrorHelper::OnNavigationCorrectorRequest, base::Unretained(this)));
+      base::BindRepeating(&NetErrorHelper::OnNetworkDiagnosticsClientRequest,
+                          base::Unretained(this)));
+  render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
+      base::BindRepeating(&NetErrorHelper::OnNavigationCorrectorRequest,
+                          base::Unretained(this)));
 }
 
 NetErrorHelper::~NetErrorHelper() {

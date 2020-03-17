@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "chrome/browser/performance_manager/mechanisms/tab_loader.h"
+#include "chrome/browser/performance_manager/mechanisms/page_loader.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/test_support/graph_test_harness.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -16,17 +16,18 @@ namespace performance_manager {
 
 namespace policies {
 
-// Mock version of a performance_manager::mechanism::TabLoader.
-class LenientMockTabLoader : public performance_manager::mechanism::TabLoader {
+// Mock version of a performance_manager::mechanism::PageLoader.
+class LenientMockPageLoader
+    : public performance_manager::mechanism::PageLoader {
  public:
-  LenientMockTabLoader() = default;
-  ~LenientMockTabLoader() override = default;
-  LenientMockTabLoader(const LenientMockTabLoader& other) = delete;
-  LenientMockTabLoader& operator=(const LenientMockTabLoader&) = delete;
+  LenientMockPageLoader() = default;
+  ~LenientMockPageLoader() override = default;
+  LenientMockPageLoader(const LenientMockPageLoader& other) = delete;
+  LenientMockPageLoader& operator=(const LenientMockPageLoader&) = delete;
 
   MOCK_METHOD1(LoadPageNode, void(const PageNode* page_node));
 };
-using MockTabLoader = ::testing::StrictMock<LenientMockTabLoader>;
+using MockPageLoader = ::testing::StrictMock<LenientMockPageLoader>;
 
 class BackgroundTabLoadingPolicyTest : public GraphTestHarness {
  public:
@@ -43,8 +44,8 @@ class BackgroundTabLoadingPolicyTest : public GraphTestHarness {
     policy_ = policy.get();
     graph()->PassToGraph(std::move(policy));
 
-    // Make the policy use a mock TabLoader.
-    auto mock_loader = std::make_unique<MockTabLoader>();
+    // Make the policy use a mock PageLoader.
+    auto mock_loader = std::make_unique<MockPageLoader>();
     mock_loader_ = mock_loader.get();
     policy_->SetMockLoaderForTesting(std::move(mock_loader));
   }
@@ -53,11 +54,11 @@ class BackgroundTabLoadingPolicyTest : public GraphTestHarness {
 
  protected:
   BackgroundTabLoadingPolicy* policy() { return policy_; }
-  MockTabLoader* loader() { return mock_loader_; }
+  MockPageLoader* loader() { return mock_loader_; }
 
  private:
   BackgroundTabLoadingPolicy* policy_;
-  MockTabLoader* mock_loader_;
+  MockPageLoader* mock_loader_;
 };
 
 TEST_F(BackgroundTabLoadingPolicyTest, RestoreTabs) {

@@ -2166,42 +2166,50 @@ void LocalFrameView::ScheduleVisualUpdateForPaintInvalidationIfNeeded() {
   // phase of this cycle.
 }
 
-void LocalFrameView::NotifyResizeObservers() {
+bool LocalFrameView::NotifyResizeObservers(
+    DocumentLifecycle::LifecycleState target_state) {
+  // Return true if lifecycles need to be re-run
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::NotifyResizeObservers");
+
+  if (target_state < DocumentLifecycle::kPaintClean)
+    return false;
+
   // Controller exists only if ResizeObserver was created.
   if (!GetFrame().GetDocument()->GetResizeObserverController())
-    return;
+    return false;
 
   ResizeObserverController& resize_controller =
       frame_->GetDocument()->EnsureResizeObserverController();
 
-  DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean);
+  DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
 
-  size_t min_depth = 0;
-  for (min_depth = resize_controller.GatherObservations(0);
-       min_depth != ResizeObserverController::kDepthBottom;
-       min_depth = resize_controller.GatherObservations(min_depth)) {
+  size_t min_depth = resize_controller.GatherObservations();
+
+  if (min_depth != ResizeObserverController::kDepthBottom) {
     resize_controller.DeliverObservations();
-    GetFrame().GetDocument()->UpdateStyleAndLayout(
-        DocumentUpdateReason::kSizeChange);
+  } else {
+    // Observation depth limit reached
+    if (resize_controller.SkippedObservations()) {
+      resize_controller.ClearObservations();
+      ErrorEvent* error = ErrorEvent::Create(
+          "ResizeObserver loop limit exceeded",
+          SourceLocation::Capture(frame_->GetDocument()->ToExecutionContext()),
+          nullptr);
+      // We're using |SanitizeScriptErrors::kDoNotSanitize| as the error is made
+      // by blink itself.
+      // TODO(yhirano): Reconsider this.
+      frame_->GetDocument()->ToExecutionContext()->DispatchErrorEvent(
+          error, SanitizeScriptErrors::kDoNotSanitize);
+      // Ensure notifications will get delivered in next cycle.
+      ScheduleAnimation();
+      DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
+    }
+    if (Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean)
+      return false;
   }
 
-  if (resize_controller.SkippedObservations()) {
-    resize_controller.ClearObservations();
-    ErrorEvent* error = ErrorEvent::Create(
-        "ResizeObserver loop limit exceeded",
-        SourceLocation::Capture(frame_->GetDocument()->ToExecutionContext()),
-        nullptr);
-    // We're using |SanitizeScriptErrors::kDoNotSanitize| as the error is made
-    // by blink itself.
-    // TODO(yhirano): Reconsider this.
-    frame_->GetDocument()->ToExecutionContext()->DispatchErrorEvent(
-        error, SanitizeScriptErrors::kDoNotSanitize);
-    // Ensure notifications will get delivered in next cycle.
-    ScheduleAnimation();
-  }
-
-  DCHECK(!GetLayoutView()->NeedsLayout());
+  // Lifecycle needs to be run again because Resize Observer affected layout
+  return true;
 }
 
 // TODO(leviw): We don't assert lifecycle information from documents in child
@@ -2309,39 +2317,56 @@ bool LocalFrameView::UpdateLifecyclePhases(
 
 void LocalFrameView::UpdateLifecyclePhasesInternal(
     DocumentLifecycle::LifecycleState target_state) {
-  bool run_more_lifecycle_phases =
-      RunStyleAndLayoutLifecyclePhases(target_state);
-  if (!run_more_lifecycle_phases)
-    return;
-  DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean);
+  // Run style, layout, compositing and prepaint lifecycle phases and deliver
+  // resize observations if required. Resize observer callbacks/delegates have
+  // the potential to dirty layout (until loop limit is reached) and therefore
+  // the above lifecycle phases need to be re-run until the limit is reached
+  // or no layout is pending.
+  while (true) {
+    bool run_more_lifecycle_phases =
+        RunStyleAndLayoutLifecyclePhases(target_state);
+    if (!run_more_lifecycle_phases)
+      return;
+    DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean);
 
-  if (!GetLayoutView())
-    return;
+    if (!GetLayoutView())
+      return;
 
+    {
+      // We need scoping braces here because this
+      // DisallowLayoutInvalidationScope is meant to be in effect during
+      // pre-paint, but not during ResizeObserver.
+#if DCHECK_IS_ON()
+      DisallowLayoutInvalidationScope disallow_layout_invalidation(this);
+#endif
+      TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                           "SetLayerTreeId", TRACE_EVENT_SCOPE_THREAD, "data",
+                           inspector_set_layer_tree_id::Data(frame_.Get()));
+      TRACE_EVENT1("devtools.timeline", "UpdateLayerTree", "data",
+                   inspector_update_layer_tree_event::Data(frame_.Get()));
+
+      run_more_lifecycle_phases = RunCompositingLifecyclePhase(target_state);
+      if (!run_more_lifecycle_phases)
+        return;
+
+      // TODO(pdr): PrePaint should be under the "Paint" devtools timeline step
+      // when CompositeAfterPaint is enabled.
+      run_more_lifecycle_phases = RunPrePaintLifecyclePhase(target_state);
+      DCHECK(ShouldThrottleRendering() ||
+             Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
+      if (!run_more_lifecycle_phases)
+        return;
+    }
+
+    run_more_lifecycle_phases = RunResizeObserverSteps(target_state);
+    if (!run_more_lifecycle_phases)
+      break;
+  }
+  // Layout invalidation scope was disabled for resize observer
+  // re-enable it for subsequent steps
 #if DCHECK_IS_ON()
   DisallowLayoutInvalidationScope disallow_layout_invalidation(this);
 #endif
-
-  {
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                         "SetLayerTreeId", TRACE_EVENT_SCOPE_THREAD, "data",
-                         inspector_set_layer_tree_id::Data(frame_.Get()));
-    TRACE_EVENT1("devtools.timeline", "UpdateLayerTree", "data",
-                 inspector_update_layer_tree_event::Data(frame_.Get()));
-
-    run_more_lifecycle_phases = RunCompositingLifecyclePhase(target_state);
-    if (!run_more_lifecycle_phases)
-      return;
-
-    // TODO(pdr): PrePaint should be under the "Paint" devtools timeline step
-    // when CompositeAfterPaint is enabled.
-    run_more_lifecycle_phases = RunPrePaintLifecyclePhase(target_state);
-    DCHECK(ShouldThrottleRendering() ||
-           Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
-    if (!run_more_lifecycle_phases)
-      return;
-  }
-
   // Now that we have run the lifecycle up to paint, we can reset
   // |need_paint_phase_after_throttling_| so that the paint phase will
   // properly see us as being throttled (if that was the only reason we remained
@@ -2356,6 +2381,27 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
 
   ForAllRemoteFrameViews(
       [](RemoteFrameView& frame_view) { frame_view.UpdateCompositingRect(); });
+}
+
+bool LocalFrameView::RunResizeObserverSteps(
+    DocumentLifecycle::LifecycleState target_state) {
+  bool re_run_lifecycles = false;
+  if (target_state == DocumentLifecycle::kPaintClean) {
+    ForAllNonThrottledLocalFrameViews(
+        [&re_run_lifecycles](LocalFrameView& frame_view) {
+          bool result =
+              frame_view.NotifyResizeObservers(DocumentLifecycle::kPaintClean);
+          re_run_lifecycles = re_run_lifecycles || result;
+        });
+  }
+  if (!re_run_lifecycles) {
+    ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+      ResizeObserverController& resize_controller =
+          frame_view.frame_->GetDocument()->EnsureResizeObserverController();
+      resize_controller.ClearMinDepth();
+    });
+  }
+  return re_run_lifecycles;
 }
 
 bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
@@ -2409,18 +2455,11 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
   frame_->GetPage()->GetValidationMessageClient().LayoutOverlay();
 
   if (target_state == DocumentLifecycle::kPaintClean) {
-    ForAllNonThrottledLocalFrameViews(
-        [](LocalFrameView& frame_view) { frame_view.NotifyResizeObservers(); });
-
     ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
       frame_view.NotifyFrameRectsChangedIfNeeded();
     });
   }
-  // If we exceed the number of re-layouts during ResizeObserver notifications,
-  // then we shouldn't continue with the lifecycle updates. At that time, we
-  // have scheduled an animation and we'll try again.
-  DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean ||
-         Lifecycle().GetState() == DocumentLifecycle::kVisualUpdatePending);
+
   return Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean;
 }
 

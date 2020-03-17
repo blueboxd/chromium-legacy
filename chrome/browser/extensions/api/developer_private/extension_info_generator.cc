@@ -560,8 +560,6 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   info->disable_reasons.custodian_approval_required =
       (disable_reasons & disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED) !=
       0;
-  info->disable_reasons.blocked_mature =
-      (disable_reasons & disable_reason::DISABLE_BLOCKED_MATURE) != 0;
 
   // Error collection.
   bool error_console_enabled =

@@ -281,7 +281,7 @@ gfx::NativeViewAccessible AXFragmentRootWin::GetPreviousSibling() {
   return nullptr;
 }
 
-gfx::NativeViewAccessible AXFragmentRootWin::HitTestSync(int x, int y) {
+gfx::NativeViewAccessible AXFragmentRootWin::HitTestSync(int x, int y) const {
   AXPlatformNodeDelegate* child_delegate = GetChildNodeDelegate();
   if (child_delegate)
     return child_delegate->HitTestSync(x, y);

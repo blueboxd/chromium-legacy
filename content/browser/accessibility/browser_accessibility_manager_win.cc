@@ -582,7 +582,7 @@ bool BrowserAccessibilityManagerWin::CanFireEvents() const {
          GetDelegateFromRootManager()->AccessibilityGetAcceleratedWidget();
 }
 
-gfx::Rect BrowserAccessibilityManagerWin::GetViewBounds() {
+gfx::Rect BrowserAccessibilityManagerWin::GetViewBounds() const {
   // We have to take the device scale factor into account on Windows.
   BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
   if (delegate) {

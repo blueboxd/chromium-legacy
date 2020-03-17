@@ -13,8 +13,8 @@ import android.text.TextUtils;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.browserservices.ClientAppDataRegister;
-import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
+import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 
 import java.util.HashSet;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 19
+// Next MinVersion: 20
 
 module arc.mojom;
 
@@ -358,7 +358,7 @@ struct AccessibilityEventData {
   [MinVersion=14] bool is_input_method_window;
 
   // Retrieved from AccessibilityRecord.getText().
-  [MinVersion=15] array<string>? eventText;
+  [MinVersion=15] array<string>? event_text;
 };
 
 // AccessibilityActionData is a struct to contain info of AccessibilityAction in

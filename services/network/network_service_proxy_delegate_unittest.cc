@@ -312,7 +312,7 @@ TEST_F(NetworkServiceProxyDelegateTest, AddsHeadersToTunnelRequest) {
 
   net::HttpRequestHeaders headers;
   auto proxy_server = net::ProxyServer::FromPacString("HTTPS proxy");
-  delegate->OnBeforeHttp1TunnelRequest(proxy_server, &headers);
+  delegate->OnBeforeTunnelRequest(proxy_server, &headers);
 
   EXPECT_FALSE(headers.HasHeader("pre_cache"));
   EXPECT_FALSE(headers.HasHeader("post_cache"));

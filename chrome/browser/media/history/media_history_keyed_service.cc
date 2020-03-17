@@ -11,6 +11,8 @@
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/history/core/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "media/base/media_switches.h"
 
@@ -18,13 +20,17 @@ namespace media_history {
 
 // StoreHolder will in most cases hold a local MediaHistoryStore. However, for
 // OTR profiles we hold a pointer to the original profile store. When accessing
-// MediaHistoryStore you should use GetForRead for read operations and
-// GetForWrite for write operations. This can be null if the store is read only.
+// MediaHistoryStore you should use GetForRead for read operations,
+// GetForWrite for write operations and GetForDelete for delete operations.
+// These can be null if the store is read only or we disable storing browsing
+// history.
 class MediaHistoryKeyedService::StoreHolder {
  public:
-  explicit StoreHolder(std::unique_ptr<MediaHistoryStore> local)
-      : local_(std::move(local)) {}
-  explicit StoreHolder(MediaHistoryKeyedService* remote) : remote_(remote) {}
+  explicit StoreHolder(Profile* profile,
+                       std::unique_ptr<MediaHistoryStore> local)
+      : profile_(profile), local_(std::move(local)) {}
+  explicit StoreHolder(Profile* profile, MediaHistoryKeyedService* remote)
+      : profile_(profile), remote_(remote) {}
 
   ~StoreHolder() = default;
   StoreHolder(const StoreHolder& t) = delete;
@@ -37,12 +43,21 @@ class MediaHistoryKeyedService::StoreHolder {
   }
 
   MediaHistoryStore* GetForWrite() {
+    if (profile_->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled))
+      return nullptr;
+    if (local_)
+      return local_.get();
+    return nullptr;
+  }
+
+  MediaHistoryStore* GetForDelete() {
     if (local_)
       return local_.get();
     return nullptr;
   }
 
  private:
+  Profile* profile_;
   std::unique_ptr<MediaHistoryStore> local_;
   MediaHistoryKeyedService* remote_ = nullptr;
 };
@@ -60,14 +75,15 @@ MediaHistoryKeyedService::MediaHistoryKeyedService(Profile* profile)
         MediaHistoryKeyedService::Get(profile->GetOriginalProfile());
     DCHECK(original);
 
-    store_ = std::make_unique<StoreHolder>(original);
+    store_ = std::make_unique<StoreHolder>(profile, original);
   } else {
     auto db_task_runner = base::ThreadPool::CreateUpdateableSequencedTaskRunner(
         {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
-    store_ = std::make_unique<StoreHolder>(std::make_unique<MediaHistoryStore>(
-        profile_, std::move(db_task_runner)));
+    store_ = std::make_unique<StoreHolder>(
+        profile_, std::make_unique<MediaHistoryStore>(
+                      profile_, std::move(db_task_runner)));
   }
 }
 
@@ -93,7 +109,7 @@ void MediaHistoryKeyedService::OnURLsDeleted(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
   // The store might not always be writable.
-  auto* store = store_->GetForWrite();
+  auto* store = store_->GetForDelete();
   if (!store)
     return;
 

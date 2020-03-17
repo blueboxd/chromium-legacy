@@ -59,12 +59,46 @@ class RealTimePolicyEngineTest : public PlatformTest {
 TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_LargeMemorySize) {
   base::test::ScopedFeatureList feature_list;
   int system_memory_size = base::SysInfo::AmountOfPhysicalMemoryMB();
-  int memory_size_lower_threshold = system_memory_size - 1;
+  int memory_size_threshold = system_memory_size - 1;
   feature_list.InitWithFeaturesAndParameters(
       /* enabled_features */ {{kRealTimeUrlLookupEnabled,
-                               {{kRealTimeUrlLookupMemoryLowerThresholdMb,
+                               {{kRealTimeUrlLookupMemoryThresholdMb,
                                  base::NumberToString(
-                                     memory_size_lower_threshold)}}}},
+                                     memory_size_threshold)}}}},
+      /* disabled_features */ {});
+  pref_service_.SetUserPref(
+      unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
+      std::make_unique<base::Value>(true));
+  EXPECT_TRUE(CanPerformFullURLLookup(/* is_off_the_record */ false));
+}
+
+TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_SmallMemorySize) {
+  base::test::ScopedFeatureList feature_list;
+  int system_memory_size = base::SysInfo::AmountOfPhysicalMemoryMB();
+  int memory_size_threshold = system_memory_size + 1;
+  feature_list.InitWithFeaturesAndParameters(
+      /* enabled_features */ {{kRealTimeUrlLookupEnabled,
+                               {{kRealTimeUrlLookupMemoryThresholdMb,
+                                 base::NumberToString(
+                                     memory_size_threshold)}}}},
+      /* disabled_features */ {});
+  pref_service_.SetUserPref(
+      unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
+      std::make_unique<base::Value>(true));
+  EXPECT_FALSE(CanPerformFullURLLookup(/* is_off_the_record */ false));
+}
+
+TEST_F(RealTimePolicyEngineTest,
+       TestCanPerformFullURLLookup_SmallMemorySizeWithAllDevicesFlagEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  int system_memory_size = base::SysInfo::AmountOfPhysicalMemoryMB();
+  int memory_size_threshold = system_memory_size + 1;
+  feature_list.InitWithFeaturesAndParameters(
+      /* enabled_features */ {{kRealTimeUrlLookupEnabled,
+                               {{kRealTimeUrlLookupMemoryThresholdMb,
+                                 base::NumberToString(memory_size_threshold)}}},
+                              {kRealTimeUrlLookupEnabledForAllAndroidDevices,
+                               {}}},
       /* disabled_features */ {});
   pref_service_.SetUserPref(
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
@@ -73,44 +107,26 @@ TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_LargeMemorySize) {
 }
 
 TEST_F(RealTimePolicyEngineTest,
-       TestCanPerformFullURLLookup_LargeMemorySizeExceedUpperThreshold) {
-  base::test::ScopedFeatureList feature_list;
-  int system_memory_size = base::SysInfo::AmountOfPhysicalMemoryMB();
-  int memory_size_upper_threshold = system_memory_size - 1;
-  feature_list.InitWithFeaturesAndParameters(
-      /* enabled_features */ {{kRealTimeUrlLookupEnabled,
-                               {{kRealTimeUrlLookupMemoryUpperThresholdMb,
-                                 base::NumberToString(
-                                     memory_size_upper_threshold)}}}},
-      /* disabled_features */ {});
-  pref_service_.SetUserPref(
-      unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
-      std::make_unique<base::Value>(true));
-  EXPECT_FALSE(CanPerformFullURLLookup(/* is_off_the_record */ false));
-}
-
-TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_SmallMemorySize) {
-  base::test::ScopedFeatureList feature_list;
-  int system_memory_size = base::SysInfo::AmountOfPhysicalMemoryMB();
-  int memory_size_lower_threshold = system_memory_size + 1;
-  feature_list.InitWithFeaturesAndParameters(
-      /* enabled_features */ {{kRealTimeUrlLookupEnabled,
-                               {{kRealTimeUrlLookupMemoryLowerThresholdMb,
-                                 base::NumberToString(
-                                     memory_size_lower_threshold)}}}},
-      /* disabled_features */ {});
-  pref_service_.SetUserPref(
-      unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
-      std::make_unique<base::Value>(true));
-  EXPECT_FALSE(CanPerformFullURLLookup(/* is_off_the_record */ false));
-}
-
-TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookup_DisabledUrlLookupWithLargeMemorySize) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeaturesAndParameters(
       /* enabled_features */ {},
       /* disabled_features */ {kRealTimeUrlLookupEnabled});
+  EXPECT_FALSE(CanPerformFullURLLookup(/* is_off_the_record */ false));
+}
+
+TEST_F(RealTimePolicyEngineTest,
+       TestCanPerformFullURLLookup_DisabledUrlLookupWithAllDevicesFlagEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      /* enabled_features */ {{kRealTimeUrlLookupEnabledForAllAndroidDevices,
+                               {}}},
+      /* disabled_features */ {kRealTimeUrlLookupEnabled});
+  pref_service_.SetUserPref(
+      unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
+      std::make_unique<base::Value>(true));
+  // |kRealTimeUrlLookupEnabledForAllAndroidDevices| is in effect only if
+  // |kRealTimeUrlLookupEnabled| is set to true.
   EXPECT_FALSE(CanPerformFullURLLookup(/* is_off_the_record */ false));
 }
 #endif  // defined(OS_ANDROID)
@@ -175,12 +191,11 @@ TEST_F(RealTimePolicyEngineTest,
   base::test::ScopedFeatureList feature_list;
 #if defined(OS_ANDROID)
   int system_memory_size = base::SysInfo::AmountOfPhysicalMemoryMB();
-  int memory_size_lower_threshold = system_memory_size - 1;
+  int memory_size_threshold = system_memory_size - 1;
   feature_list.InitWithFeaturesAndParameters(
       /* enabled_features */ {{kRealTimeUrlLookupEnabled,
-                               {{kRealTimeUrlLookupMemoryLowerThresholdMb,
-                                 base::NumberToString(
-                                     memory_size_lower_threshold)}}},
+                               {{kRealTimeUrlLookupMemoryThresholdMb,
+                                 base::NumberToString(memory_size_threshold)}}},
                               {kRealTimeUrlLookupEnabledWithToken, {}}},
       /* disabled_features */ {kRealTimeUrlLookupEnabledForEP});
 #else
@@ -202,12 +217,11 @@ TEST_F(RealTimePolicyEngineTest,
   base::test::ScopedFeatureList feature_list;
 #if defined(OS_ANDROID)
   int system_memory_size = base::SysInfo::AmountOfPhysicalMemoryMB();
-  int memory_size_lower_threshold = system_memory_size - 1;
+  int memory_size_threshold = system_memory_size - 1;
   feature_list.InitWithFeaturesAndParameters(
       /* enabled_features */ {{kRealTimeUrlLookupEnabled,
-                               {{kRealTimeUrlLookupMemoryLowerThresholdMb,
-                                 base::NumberToString(
-                                     memory_size_lower_threshold)}}},
+                               {{kRealTimeUrlLookupMemoryThresholdMb,
+                                 base::NumberToString(memory_size_threshold)}}},
                               {kRealTimeUrlLookupEnabledWithToken, {}}},
       /* disabled_features */ {});
 #else

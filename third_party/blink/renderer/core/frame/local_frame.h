@@ -89,6 +89,7 @@ class FrameConsole;
 class FrameOverlay;
 // class FrameScheduler;
 class FrameSelection;
+class FrameWidget;
 class InputMethodController;
 class InspectorTraceEvents;
 class CoreProbeSink;
@@ -303,6 +304,13 @@ class CORE_EXPORT LocalFrame final : public Frame,
   AssociatedInterfaceProvider* GetRemoteNavigationAssociatedInterfaces();
 
   LocalFrameClient* Client() const;
+
+  // Returns the widget for this frame, or from the nearest ancestor which is a
+  // local root. It is never null for frames in ordinary Pages (which means the
+  // Page is inside a WebView), except very early in initialization. For frames
+  // in a non-ordinary Page (without a WebView, such as in unit tests, popups,
+  // devtools), it will always be null.
+  FrameWidget* GetWidgetForLocalRoot();
 
   WebContentSettingsClient* GetContentSettingsClient();
 

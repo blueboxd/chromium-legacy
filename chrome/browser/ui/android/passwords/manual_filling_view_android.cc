@@ -180,7 +180,8 @@ void JNI_ManualFillingComponentBridge_CachePasswordSheetDataForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_web_contents,
     const base::android::JavaParamRef<jobjectArray>& j_usernames,
-    const base::android::JavaParamRef<jobjectArray>& j_passwords) {
+    const base::android::JavaParamRef<jobjectArray>& j_passwords,
+    jboolean j_blacklisted) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
 
@@ -203,7 +204,7 @@ void JNI_ManualFillingComponentBridge_CachePasswordSheetDataForTesting(
       ->GetCredentialCacheForTesting()
       ->SaveCredentialsAndBlacklistedForOrigin(
           credentials,
-          password_manager::CredentialCache::IsOriginBlacklisted(false),
+          password_manager::CredentialCache::IsOriginBlacklisted(j_blacklisted),
           origin);
 }
 

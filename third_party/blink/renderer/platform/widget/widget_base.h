@@ -37,12 +37,27 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget {
   // Set the current compositor hosts.
   void SetCompositorHosts(cc::LayerTreeHost*, cc::AnimationHost*);
 
-  cc::AnimationHost* AnimationHost() const;
-  cc::LayerTreeHost* LayerTreeHost() const;
+  // Set the compositor as visible. If |visible| is true, then the compositor
+  // will request a new layer frame sink, begin producing frames from the
+  // compositor scheduler, and in turn will update the document lifecycle.
+  void SetCompositorVisible(bool visible);
 
   // Called to update the document lifecycle, advance the state of animations
   // and dispatch rAF.
   void BeginMainFrame(base::TimeTicks frame_time);
+
+  // Update the visual state of the document, running the document lifecycle.
+  void UpdateVisualState();
+
+  // Called when a compositor frame will begin.
+  void WillBeginCompositorFrame();
+
+  cc::AnimationHost* AnimationHost() const;
+  cc::LayerTreeHost* LayerTreeHost() const;
+
+  // Returns if we should gather begin main frame metrics. If there is no
+  // compositor thread this returns false.
+  static bool ShouldRecordBeginMainFrameMetrics();
 
  private:
   // Not owned, they are owned by the RenderWidget.
@@ -51,6 +66,8 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget {
   WidgetBaseClient* client_;
   mojo::AssociatedRemote<mojom::blink::WidgetHost> widget_host_;
   mojo::AssociatedReceiver<mojom::blink::Widget> receiver_;
+  bool first_update_visual_state_after_hidden_ = false;
+  base::TimeTicks was_shown_time_ = base::TimeTicks::Now();
 };
 
 }  // namespace blink

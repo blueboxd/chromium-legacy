@@ -362,9 +362,6 @@
       =1 {{COUNT} compromised password}
       other {{COUNT} compromised passwords}}
   </message>
-  <message name="IDS_SETTINGS_LEAKED_PASSWORDS_COUNT" desc="Number of compromised passwords found during bulk check.">
-    <ph name="COUNT">$1<ex>5</ex></ph> compromised passwords
-  </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_AGAIN" desc="Button to start bulk password check manually in passwords check section.">
     Check again
   </message>
@@ -2374,16 +2371,16 @@
     Show all (recommended)
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES_ALLOW" desc="The sub-label for links to manage cookies when the current cookie setting is allow.">
-    {COUNT, plural,
+    {COUNT plural,
      =0 {Cookies are allowed}
      =1 {Cookies are allowed, 1 exception}
-     other {Cookies are allowed, # exceptions}}
+     other {Cookies are allowed, {COUNT} exceptions}}
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES_BLOCK" desc="The sub-label for links to manage cookies when the current cookie setting is allow.">
     {COUNT, plural,
      =0 {Cookies are blocked.}
      =1 {Cookies are blocked, 1 exception}
-     other {Cookies are blocked, # exceptions}}
+     other {Cookies are blocked, {COUNT} exceptions}}
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES_BLOCK_THIRD_PARTY" desc="The sub-label for links to manage cookies when the current cookie setting is to block third party cookies.">
     Third-party cookies are blocked
@@ -2818,7 +2815,7 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_NUM_COOKIES" desc="A label showing the number of cookies set on a site.">
     {NUM_COOKIES, plural,
         =1 {1 cookie}
-        other {# cookies}}
+        other {{NUM_COOKIES} cookies}}
   </message>
   <message name="IDS_SETTINGS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL" desc="The Local Storage Origin label">
     Origin
@@ -3167,15 +3164,15 @@
     <message name="IDS_SETTINGS_RESET_CLEANUP_DETAILS_ITEMS_TO_BE_REMOVED" desc="Label for an expansion arrow. On expansion, the screen displays a list of files and programs that Chrome will remove or quarantine. Placeholder can be 2 or more items.">
       {NUM_ITEMS, plural,
         =1 {1 item}
-        other {# items}}
+        other {{NUM_ITEMS} items}}
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_DETAILS_REGISTRY_ENTRIES" desc="Introduces a bullet list containing the names of registry entries to be removed/changed by Chrome.">
       Registry entries to be removed or changed:
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_DETAILS_MORE" desc="Link; on click, the screen shows items to be removed by Chrome. Items could include files, programs, or registry entries. This link is for advanced users. Placeholder can be 2 or more items.">
-      {NUM_DOWNLOAD, plural,
+      {NUM_DOWNLOADS, plural,
         =1 {1 more}
-        other {# more}}
+        other {{NUM_DOWNLOADS} more}}
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_CLEANUP_ERROR" desc="Body of a generic error message that could appear during the cleanup of harmful software. Multiple causes for the error are possible.">
       An error occurred while Chrome was removing harmful software

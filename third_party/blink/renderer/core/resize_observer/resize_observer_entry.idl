@@ -10,4 +10,5 @@ interface ResizeObserverEntry {
     readonly attribute DOMRectReadOnly contentRect;
     [RuntimeEnabled=ResizeObserverUpdates] readonly attribute ResizeObserverSize contentBoxSize;
     [RuntimeEnabled=ResizeObserverUpdates] readonly attribute ResizeObserverSize borderBoxSize;
+    [RuntimeEnabled=ResizeObserverUpdates] readonly attribute ResizeObserverSize devicePixelContentBoxSize;
 };

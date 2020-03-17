@@ -184,6 +184,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
       const AXClippingBehavior clipping_behavior,
       AXOffscreenResult* offscreen_result = nullptr) const = 0;
 
+  virtual gfx::Rect GetClippedScreenBoundsRect(
+      AXOffscreenResult* offscreen_result = nullptr) const = 0;
+
   // Return the bounds of the text range given by text offsets relative to
   // GetHypertext in the coordinate system indicated. If the clipping behavior
   // is set to clipped, clipping is applied. If an offscreen result address is
@@ -219,7 +222,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   //
   // This function is mainly used by accessibility debugging software.
   // Platforms with touch accessibility use a different asynchronous interface.
-  virtual gfx::NativeViewAccessible HitTestSync(int x, int y) = 0;
+  virtual gfx::NativeViewAccessible HitTestSync(int x, int y) const = 0;
 
   // Return the node within this node's subtree (inclusive) that currently has
   // focus, or return nullptr if this subtree is not connected to the top

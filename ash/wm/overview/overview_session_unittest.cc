@@ -7092,6 +7092,90 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   CheckWindowResizingPerformanceHistograms("AfterResizingWindow2", 1, 1, 1, 1);
 }
 
+// Verify that the user action "SplitView_MultiDisplaySplitView" is recorded
+// when multi-display split view starts, and that a value is recorded to the
+// histogram "Ash.SplitView.TimeInMultiDisplaySplitView" when multi-display
+// split view ends. This test does not actually examine the timing values
+// recorded to the histogram, but this test does provide evidence of timing
+// accuracy as the time in multi-display split view is measured from the time
+// when the user action "SplitView_MultiDisplaySplitView" is recorded.
+TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
+       MultiDisplaySplitViewMetrics) {
+  base::UserActionTester user_action_tester;
+  base::HistogramTester histogram_tester;
+  // Verifies that multi-display split view has started exactly |start_count|
+  // times and ended exactly |end_count| times. If not, then the output will
+  // include |description| to indicate where the test failed.
+  const auto verify = [&user_action_tester, &histogram_tester](
+                          const char* description, int start_count,
+                          int end_count) {
+    SCOPED_TRACE(description);
+    EXPECT_EQ(start_count, user_action_tester.GetActionCount(
+                               "SplitView_MultiDisplaySplitView"));
+    histogram_tester.ExpectTotalCount(
+        "Ash.SplitView.TimeInMultiDisplaySplitView", end_count);
+  };
+
+  UpdateDisplay("800x600,800x600,800x600");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(3u, root_windows.size());
+  const gfx::Rect bounds_within_root1(0, 0, 400, 400);
+  const gfx::Rect bounds_within_root2(800, 0, 400, 400);
+  const gfx::Rect bounds_within_root3(1600, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow(bounds_within_root1);
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow(bounds_within_root1);
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow(bounds_within_root2);
+  std::unique_ptr<aura::Window> window4 = CreateTestWindow(bounds_within_root2);
+  std::unique_ptr<aura::Window> window5 = CreateTestWindow(bounds_within_root3);
+  SplitViewController* split_view_controller1 =
+      SplitViewController::Get(root_windows[0]);
+  SplitViewController* split_view_controller2 =
+      SplitViewController::Get(root_windows[1]);
+  SplitViewController* split_view_controller3 =
+      SplitViewController::Get(root_windows[2]);
+  verify("1. Unit test set up", 0, 0);
+  ToggleOverview();
+  split_view_controller1->SnapWindow(window1.get(), SplitViewController::LEFT);
+  verify("2. Number of displays in split view changed from 0 to 1", 0, 0);
+  split_view_controller2->SnapWindow(window3.get(), SplitViewController::LEFT);
+  verify("3. Number of displays in split view changed from 1 to 2", 1, 0);
+  ToggleOverview();
+  verify("4. Number of displays in split view changed from 2 to 0", 1, 1);
+  ToggleOverview();
+  split_view_controller1->SnapWindow(window1.get(), SplitViewController::LEFT);
+  verify("5. Number of displays in split view changed from 0 to 1", 1, 1);
+  split_view_controller2->SnapWindow(window3.get(), SplitViewController::LEFT);
+  verify("6. Number of displays in split view changed from 1 to 2", 2, 1);
+  split_view_controller3->SnapWindow(window5.get(), SplitViewController::LEFT);
+  verify("7. Number of displays in split view changed from 2 to 3", 2, 1);
+  ToggleOverview();
+  verify("8. Number of displays in split view changed from 3 to 0", 2, 2);
+  ToggleOverview();
+  split_view_controller1->SnapWindow(window1.get(), SplitViewController::LEFT);
+  verify("9. Number of displays in split view changed from 0 to 1", 2, 2);
+  split_view_controller2->SnapWindow(window3.get(), SplitViewController::LEFT);
+  verify("10. Number of displays in split view changed from 1 to 2", 3, 2);
+  split_view_controller3->SnapWindow(window5.get(), SplitViewController::LEFT);
+  verify("11. Number of displays in split view changed from 2 to 3", 3, 2);
+  // For good test coverage, after multi-display split view started with
+  // |split_view_controller2|, now we end split view on |split_view_controller2|
+  // first, and then end multi-display split view with |split_view_controller3|.
+  window3.reset();
+  verify("12. Number of displays in split view changed from 3 to 2", 3, 2);
+  window5.reset();
+  verify("13. Number of displays in split view changed from 2 to 1", 3, 3);
+  window1.reset();
+  verify("14. Number of displays in split view changed from 1 to 0", 3, 3);
+  split_view_controller1->SnapWindow(window2.get(), SplitViewController::LEFT);
+  verify("15. Number of displays in split view changed from 0 to 1", 3, 3);
+  // In this case, multi-display split view ends as soon as it starts. The
+  // metrics should report that as starting and ending multi-display split view.
+  split_view_controller2->SnapWindow(window4.get(), SplitViewController::LEFT);
+  verify(
+      "16. Multi-display split view started by snapping last overview window",
+      4, 4);
+}
+
 // Verify that |SplitViewController::CanSnapWindow| checks that the minimum size
 // of the window fits into the left or top, with the default divider position.
 // (If the work area length is odd, then the right or bottom will be one pixel

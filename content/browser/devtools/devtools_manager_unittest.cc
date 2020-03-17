@@ -17,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
+#include "content/common/content_constants_internal.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -140,33 +141,18 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
       WebContents::FromRenderViewHost(inspected_rvh)));
   client_host.InspectAgentHost(agent_host.get());
 
-  // Start with a short timeout.
-  inspected_rvh->GetWidget()->StartInputEventAckTimeout(
-      TimeDelta::FromMilliseconds(10));
-  {
-    base::RunLoop run_loop;
-    // Wait long enough for first timeout and see if it fired. We use quit-when-
-    // idle so that all tasks due after the timeout get a chance to run.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitWhenIdleClosure(),
-        TimeDelta::FromMilliseconds(10));
-    run_loop.Run();
-  }
+  // Start a timeout.
+  inspected_rvh->GetWidget()->StartInputEventAckTimeout();
+  task_environment()->FastForwardBy(
+      base::TimeDelta::FromMilliseconds(kHungRendererDelayMs + 10));
   EXPECT_FALSE(delegate.renderer_unresponsive_received());
 
   // Now close devtools and check that the notification is delivered.
   client_host.Close();
-  // Start with a short timeout.
-  inspected_rvh->GetWidget()->StartInputEventAckTimeout(
-      TimeDelta::FromMilliseconds(10));
-  {
-    base::RunLoop run_loop;
-    // Wait long enough for first timeout and see if it fired.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitWhenIdleClosure(),
-        TimeDelta::FromMilliseconds(10));
-    run_loop.Run();
-  }
+  // Start a timeout.
+  inspected_rvh->GetWidget()->StartInputEventAckTimeout();
+  task_environment()->FastForwardBy(
+      base::TimeDelta::FromMilliseconds(kHungRendererDelayMs + 10));
   EXPECT_TRUE(delegate.renderer_unresponsive_received());
 
   contents()->SetDelegate(nullptr);

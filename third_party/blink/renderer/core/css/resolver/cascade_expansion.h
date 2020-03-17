@@ -53,9 +53,8 @@ inline size_t DecodeDeclarationIndex(uint32_t position) {
 //   top:2px;
 //
 // In other words, 'all' is expanded into the actual longhands it represents.
-// A similar expansion happens for properties which have a companion
-// -internal-visited-* or -internal-ua-* properties. Those expansions happen
-// conditionally, depending on the inside-link status and origin (respectively).
+// A similar expansion happens for properties which have companion
+// -internal-visited-* properties (depending on inside-link status).
 //
 // Usage:
 //
@@ -66,7 +65,7 @@ inline size_t DecodeDeclarationIndex(uint32_t position) {
 class CORE_EXPORT CascadeExpansion {
   STACK_ALLOCATED();
 
-  enum class State { kInit, kNormal, kVisited, kUA, kAll };
+  enum class State { kInit, kNormal, kVisited, kAll };
 
  public:
   // CascadeExpansion objects which exceed these limits will emit nothing.
@@ -104,14 +103,11 @@ class CORE_EXPORT CascadeExpansion {
   static bool IsAffectedByAll(CSSPropertyID);
 
   bool ShouldEmitVisited() const;
-  bool ShouldEmitUA() const;
 
   void AdvanceNormal();
   bool AdvanceVisited();
-  bool AdvanceUA();
   void AdvanceAll();
 
-  void RestoreUnvisited();
   CSSPropertyValueSet::PropertyReference PropertyAt(size_t) const;
 
   const Document& document_;

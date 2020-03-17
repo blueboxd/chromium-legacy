@@ -32,12 +32,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_PAGE_POPUP_IMPL_H_
 
 #include "base/macros.h"
+#include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/page/page_popup.h"
 #include "third_party/blink/renderer/core/page/page_widget_delegate.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/widget/widget_base.h"
 #include "third_party/blink/renderer/platform/widget/widget_base_client.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -53,6 +54,7 @@ class PagePopupChromeClient;
 class PagePopupClient;
 class WebViewImpl;
 class LocalDOMWindow;
+class WidgetBase;
 
 class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
                                            public PageWidgetEventHandler,
@@ -98,6 +100,9 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
   // WebWidget implementation.
   WebInputEventResult DispatchBufferedTouchEvents() override;
+  void SetCompositorVisible(bool visible) override;
+  void UpdateVisualState() override;
+  void WillBeginCompositorFrame() override;
 
   // WebPagePopup implementation.
   gfx::Point PositionRelativeToOwner() override;
@@ -110,11 +115,13 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   // PageWidgetEventHandler implementation.
   WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
 
+ private:
   // WidgetBaseClient overrides:
   void DispatchRafAlignedInput(base::TimeTicks frame_time) override;
   void BeginMainFrame(base::TimeTicks last_frame_time) override;
+  void RecordTimeToFirstActivePaint(base::TimeDelta duration) override;
+  void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
 
- private:
   // WebWidget implementation.
   // NOTE: The WebWidget may still be used after requesting the popup to be
   // closed and destroyed. But the Page and the MainFrame are destroyed
@@ -122,7 +129,6 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   // of the WebWidget need to check if close has already been initiated (they
   // can do so by checking |page_|) and not crash! https://crbug.com/906340
   void SetCompositorHosts(cc::LayerTreeHost*, cc::AnimationHost*) override;
-  void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
   void BeginFrame(base::TimeTicks last_frame_time) override;
   void UpdateLifecycle(WebLifecycleUpdate requested_update,
                        DocumentUpdateReason reason) override;
@@ -181,7 +187,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
   // Base functionality all widgets have. This is a member as to avoid
   // complicated inheritance structures.
-  WidgetBase widget_base_;
+  std::unique_ptr<WidgetBase> widget_base_;
 
   friend class WebPagePopup;
   friend class PagePopupChromeClient;

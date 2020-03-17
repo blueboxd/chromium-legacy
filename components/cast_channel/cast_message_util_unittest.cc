@@ -88,6 +88,23 @@ TEST(CastMessageUtilTest, CreateStopRequest) {
   EXPECT_THAT(message.payload_utf8(), IsJson(expected_message));
 }
 
+TEST(CastMessageUtilTest, CreateVirtualConnectionClose) {
+  std::string expected_message = R"(
+    {
+       "type": "CLOSE",
+       "reasonCode": 5
+    }
+  )";
+
+  CastMessage message =
+      CreateVirtualConnectionClose("sourceId", "destinationId");
+  ASSERT_TRUE(IsCastMessageValid(message));
+  EXPECT_EQ(message.source_id(), "sourceId");
+  EXPECT_EQ(message.destination_id(), "destinationId");
+  EXPECT_EQ(message.namespace_(), kConnectionNamespace);
+  EXPECT_THAT(message.payload_utf8(), IsJson(expected_message));
+}
+
 TEST(CastMessageUtilTest, CreateReceiverStatusRequest) {
   std::string expected_message = R"(
     {

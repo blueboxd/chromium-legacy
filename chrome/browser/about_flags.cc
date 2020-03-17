@@ -4979,6 +4979,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kAvatarToolbarButton)},
 #endif  // defined(OS_CHROMEOS)
 
+    {"omnibox-context-menu-show-full-urls",
+     flag_descriptions::kOmniboxContextMenuShowFullUrlsName,
+     flag_descriptions::kOmniboxContextMenuShowFullUrlsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxContextMenuShowFullUrls)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

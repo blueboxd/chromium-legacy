@@ -69,6 +69,14 @@ class WebWidget {
   // the pointers valid until Close() is called.
   virtual void SetCompositorHosts(cc::LayerTreeHost*, cc::AnimationHost*) = 0;
 
+  // Adjust the compositor visible state. This does method does not get called
+  // if this widget does not composite.
+  virtual void SetCompositorVisible(bool visible) = 0;
+
+  // Update the visual state of the page. Updating the document
+  // lifecycle.
+  virtual void UpdateVisualState() = 0;
+
   // This method closes and deletes the WebWidget.
   virtual void Close() {}
 
@@ -81,9 +89,6 @@ class WebWidget {
   // Called to notify the WebWidget of entering/exiting fullscreen mode.
   virtual void DidEnterFullscreen() {}
   virtual void DidExitFullscreen() {}
-
-  // TODO(crbug.com/704763): Remove the need for this.
-  virtual void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) {}
 
   // Called to update imperative animation state. This should be called before
   // paint, although the client can rate-limit these calls.
@@ -129,6 +134,8 @@ class WebWidget {
   // before RecordEndOfFrameMetrics has been called.
   virtual void BeginCommitCompositorFrame() {}
   virtual void EndCommitCompositorFrame(base::TimeTicks) {}
+
+  virtual void WillBeginCompositorFrame() {}
 
   // Called to run through the entire set of document lifecycle phases needed
   // to render a frame of the web widget. This MUST be called before Paint,

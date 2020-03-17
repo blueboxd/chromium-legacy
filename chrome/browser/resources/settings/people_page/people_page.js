@@ -11,9 +11,6 @@ Polymer({
 
   behaviors: [
     settings.RouteObserverBehavior, I18nBehavior, WebUIListenerBehavior,
-    // <if expr="chromeos">
-    CrPngBehavior,
-    // </if>
   ],
 
   properties: {
@@ -233,8 +230,7 @@ Polymer({
      */
     // <if expr="chromeos">
     if (info.iconUrl.startsWith('data:image/png;base64')) {
-      this.profileIconUrl_ =
-          CrPngBehavior.convertImageSequenceToPng([info.iconUrl]);
+      this.profileIconUrl_ = cr.png.convertImageSequenceToPng([info.iconUrl]);
       return;
     }
     // </if>

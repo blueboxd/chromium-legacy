@@ -87,7 +87,7 @@ OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
 
   // Clear the background transparent or opaque.
   if (IsCanvas2DBufferValid()) {
-    GetOrCreateCanvasResourceProvider()->Clear();
+    GetCanvasResourceProvider()->Clear();
     DidDraw();
   }
 
@@ -120,13 +120,12 @@ void OffscreenCanvasRenderingContext2D::commit() {
 }
 
 void OffscreenCanvasRenderingContext2D::FlushRecording() {
-  if (!have_recorded_draw_commands_)
+  if (!GetCanvasResourceProvider() ||
+      !GetCanvasResourceProvider()->HasRecordedDrawOps())
     return;
 
   GetCanvasResourceProvider()->FlushCanvas();
   GetCanvasResourceProvider()->ReleaseLockedImages();
-
-  have_recorded_draw_commands_ = false;
 }
 
 void OffscreenCanvasRenderingContext2D::FinalizeFrame() {
@@ -272,7 +271,6 @@ cc::PaintCanvas* OffscreenCanvasRenderingContext2D::GetPaintCanvas() const {
 }
 
 void OffscreenCanvasRenderingContext2D::DidDraw() {
-  have_recorded_draw_commands_ = true;
   dirty_rect_for_commit_.setWH(Width(), Height());
   Host()->DidDraw();
   if (GetCanvasResourceProvider() && GetCanvasResourceProvider()->needs_flush())
@@ -280,7 +278,6 @@ void OffscreenCanvasRenderingContext2D::DidDraw() {
 }
 
 void OffscreenCanvasRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {
-  have_recorded_draw_commands_ = true;
   dirty_rect_for_commit_.join(dirty_rect);
   Host()->DidDraw(SkRect::Make(dirty_rect_for_commit_));
   if (GetCanvasResourceProvider() && GetCanvasResourceProvider()->needs_flush())
@@ -340,7 +337,6 @@ bool OffscreenCanvasRenderingContext2D::WritePixels(
 
   DCHECK(IsPaintable());
   FinalizeFrame();
-  have_recorded_draw_commands_ = false;
 
   return offscreenCanvasForBinding()->ResourceProvider()->WritePixels(
       orig_info, pixels, row_bytes, x, y);

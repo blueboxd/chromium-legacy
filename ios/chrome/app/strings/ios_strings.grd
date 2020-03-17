@@ -782,6 +782,12 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_TEXT" desc="Feature title in the settings for the user to enable/disable, to have autocomplete searches and URLs. Text related to 'Sends searches from the address bar and search box, and some cookies to your default search engine' [iOS only]">
         Autocomplete Searches and URLs
       </message>
+      <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_SAFE_BROWSING_DETAIL" desc="Feature detail text in the setting to enable/disable safe browsing">
+        Sends URLs of some pages you visit to Google, when your security is at risk 
+      </message>
+      <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_SAFE_BROWSING_TEXT" desc="The section title of 'Protects you and your device from dangerous sites'">
+        Safe Browsing (protects you and your device from dangerous sites)
+      </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_DETAIL" desc="Detail text for a feature in the settings for the user to enable/disable, to make searches andn browsing better. Related to 'Make searches and browsing better'. [iOS only]">
         Sends URLs of pages you visit to Google.
       </message>

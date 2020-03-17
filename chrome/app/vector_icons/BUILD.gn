@@ -75,8 +75,6 @@ aggregate_vector_icons("chrome_vector_icons") {
     "overflow_chevron.icon",
     "page_info_content_paste.icon",
     "paintbrush.icon",
-    "password_check_warning.icon",
-    "password_check_warning_dark.icon",
     "photo.icon",
     "photo_camera.icon",
     "picture_in_picture_control_background.icon",

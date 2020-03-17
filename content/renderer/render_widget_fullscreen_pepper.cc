@@ -157,6 +157,10 @@ class PepperExternalWidgetClient : public blink::WebExternalWidgetClient {
 
   void DidResize(const gfx::Size& size) override { widget_->DidResize(size); }
 
+  void RecordTimeToFirstActivePaint(base::TimeDelta duration) override {
+    widget_->RecordTimeToFirstActivePaint(duration);
+  }
+
  private:
   RenderWidgetFullscreenPepper* widget_;
 };

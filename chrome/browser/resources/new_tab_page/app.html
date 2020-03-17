@@ -43,21 +43,6 @@
     flex-direction: column;
   }
 
-  #voiceSearchButton {
-    background: url(icons/googlemic_clr_24px.svg) no-repeat center;
-    background-size: 21px 21px;
-    border: none;
-    cursor: pointer;
-    height: 21px;
-    outline: none;
-    padding: 0;
-    width: 21px;
-  }
-
-  :host-context(.focus-outline-visible) #voiceSearchButton:focus {
-    box-shadow: 0 0 0 2px var(--ntp-focus-shadow-color);
-  }
-
   #promo {
     bottom: 16px;
     height: 35px;
@@ -169,9 +154,8 @@
   </ntp-untrusted-iframe>
   <div id="backgroundGradient" hidden="[[!showBackgroundImage_]]"></div>
   <div id="content">
-    <button id="voiceSearchButton" on-click="onVoiceSearchClick_"
-        title="$i18n{voiceSearchButtonLabel}">
-    </button>
+    <ntp-fakebox id="fakebox" on-open-voice-search="onVoiceSearchClick_">
+    </ntp-fakebox>
     <ntp-most-visited id="mostVisited" dark$="[[theme_.isDark]]">
     </ntp-most-visited>
     <dom-if if="[[showCustomizeDialog_]]" restamp>

@@ -91,17 +91,9 @@ void CascadeExpansion::Next() {
       case State::kNormal:
         if (ShouldEmitVisited() && AdvanceVisited())
           break;
-        if (ShouldEmitUA() && AdvanceUA())
-          break;
         AdvanceNormal();
         break;
       case State::kVisited:
-        RestoreUnvisited();
-        if (ShouldEmitUA() && AdvanceUA())
-          break;
-        AdvanceNormal();
-        break;
-      case State::kUA:
         AdvanceNormal();
         break;
       case State::kAll:
@@ -121,10 +113,6 @@ bool CascadeExpansion::ShouldEmitVisited() const {
   // be skipped by the do-while in Next(). However, it's probably good to avoid
   // entering State::kVisited at all, if we can avoid it.
   return !filter_.Rejects(CSSProperty::kVisited, true);
-}
-
-bool CascadeExpansion::ShouldEmitUA() const {
-  return matched_properties_.types_.origin == CascadeOrigin::kUserAgent;
 }
 
 void CascadeExpansion::AdvanceNormal() {
@@ -174,18 +162,6 @@ bool CascadeExpansion::AdvanceVisited() {
   return true;
 }
 
-bool CascadeExpansion::AdvanceUA() {
-  DCHECK(ShouldEmitUA());
-  DCHECK(property_);
-  const CSSProperty* ua = property_->GetUAProperty();
-  if (!ua)
-    return false;
-  property_ = ua;
-  id_ = ua->PropertyID();
-  state_ = State::kUA;
-  return true;
-}
-
 void CascadeExpansion::AdvanceAll() {
   state_ = State::kAll;
 
@@ -202,14 +178,6 @@ void CascadeExpansion::AdvanceAll() {
     AdvanceNormal();
   else
     property_ = &CSSProperty::Get(id_);
-}
-
-void CascadeExpansion::RestoreUnvisited() {
-  DCHECK(property_);
-  DCHECK(property_->IsVisited());
-  DCHECK_EQ(state_, State::kVisited);
-  property_ = property_->GetUnvisitedProperty();
-  id_ = property_->PropertyID();
 }
 
 CSSPropertyValueSet::PropertyReference CascadeExpansion::PropertyAt(

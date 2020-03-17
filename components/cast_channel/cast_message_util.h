@@ -202,6 +202,9 @@ CastMessage CreateVirtualConnectionRequest(
     const std::string& user_agent,
     const std::string& browser_version);
 
+CastMessage CreateVirtualConnectionClose(const std::string& source_id,
+                                         const std::string& destination_id);
+
 // Creates an app availability request for |app_id| from |source_id| with
 // ID |request_id|.
 // TODO(imcheng): May not need |source_id|, just use sender-0?

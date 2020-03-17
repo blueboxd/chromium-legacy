@@ -12,6 +12,7 @@ import android.provider.Browser;
 import org.chromium.base.Log;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.PageTransition;
 
@@ -57,8 +58,13 @@ public class ExternalNavigationHandler {
         return true;
     }
 
-    static boolean shouldOverrideUrlLoading(TabImpl tab, String url, boolean hasUserGesture,
-            boolean isRedirect, boolean isMainFrame, int pageTransition) {
+    static boolean shouldOverrideUrlLoading(TabImpl tab, ExternalNavigationParams params) {
+        String url = params.getUrl();
+        boolean hasUserGesture = params.hasUserGesture();
+        boolean isRedirect = params.isRedirect();
+        boolean isMainFrame = params.isMainFrame();
+        int pageTransition = params.getPageTransition();
+
         if (UrlUtilities.isAcceptedScheme(url)) return false;
 
         // A back-forward navigation should never trigger an intent.

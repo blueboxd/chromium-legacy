@@ -148,9 +148,15 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                           const PaintInfo& paint_info,
                           const PhysicalOffset& paint_offset);
   void PaintBoxItem(const NGFragmentItem& item,
+                    const NGPhysicalBoxFragment& child_fragment,
                     const NGInlineCursor& cursor,
                     const PaintInfo& paint_info,
                     const PhysicalOffset& paint_offset);
+  void PaintBoxItem(const NGFragmentItem& item,
+                    const NGInlineCursor& cursor,
+                    const PaintInfo& paint_info,
+                    const PhysicalOffset& paint_offset,
+                    const PhysicalOffset& parent_offset);
   void PaintFloatingItems(const PaintInfo&, NGInlineCursor* cursor);
   void PaintFloatingChildren(const NGPhysicalContainerFragment&,
                              const PaintInfo& paint_info,

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_error_page/web_time_limit_error_page.h"
 
+#include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -32,19 +33,20 @@ std::string GetWebTimeLimitErrorPage(base::string16 block_header,
                                      base::string16 block_message,
                                      base::TimeDelta time_limit,
                                      const std::string& app_locale) {
-  block_message +=
-      l10n_util::GetStringFUTF16(IDS_WEB_TIME_LIMIT_ERROR_PAGE_NEXT_ACCESS_TIME,
-                                 GetTimeLimitMessage(time_limit));
-
   base::DictionaryValue strings;
-
   strings.SetString("blockPageTitle",
                     l10n_util::GetStringFUTF16(
                         IDS_WEB_TIME_LIMIT_ERROR_PAGE_TITLE,
                         l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
 
   strings.SetString("blockPageHeader", block_header);
-  strings.SetString("blockPageMessage", block_message);
+  strings.SetString(
+      "blockPageMessage",
+      base::StrCat({block_message, base::UTF8ToUTF16(" "),
+                    l10n_util::GetStringFUTF16(
+                        IDS_WEB_TIME_LIMIT_ERROR_PAGE_NEXT_ACCESS_TIME,
+                        GetTimeLimitMessage(time_limit))}));
+
   webui::SetLoadTimeDataDefaults(app_locale, &strings);
   std::string html =
       ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(

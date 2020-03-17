@@ -278,10 +278,17 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   };
   bool ScrollToNode(ScrollType scroll_type);
 
+  // This will return the nearest leaf node to the point, the leaf node will not
+  // necessarily be directly under the point. This utilizes
+  // AXPlatformNodeDelegate::HitTestSync, which in the case of
+  // BrowserAccessibility, may not be accurate after a single call. See
+  // BrowserAccessibilityManager::CachingAsyncHitTest
+  AXPlatformNodeBase* NearestLeafToPoint(gfx::Point point) const;
+
   // Return the nearest text index to a point in screen coordinates for an
   // accessibility node. If the node is not a text only node, the implicit
   // nearest index is zero. Note this will only find the index of text on the
-  // input node. The node's subtree will not be searched.
+  // input node. Due to perf concerns, this should only be called on leaf nodes.
   int NearestTextIndexToPoint(gfx::Point point);
 
   ui::TextAttributeList ComputeTextAttributes() const;

@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource} from 'chrome://settings/lazy_load.js';
 // #import {Router, Route} from 'chrome://settings/settings.js';
+// clang-format on
 
 cr.define('test_util', function() {
 
@@ -97,7 +100,7 @@ cr.define('test_util', function() {
    *     this function.
    * @return {SiteSettingsPref}
    */
-  function createSiteSettingsPrefs(
+  /* #export */ function createSiteSettingsPrefs(
       defaultsList, exceptionsList, chooserExceptionsList = []) {
     // These test defaults reflect the actual defaults assigned to each
     // ContentSettingType, but keeping these in sync shouldn't matter for tests.
@@ -195,7 +198,7 @@ cr.define('test_util', function() {
    *     permission.
    * @return {?settings.ContentSettingsType}
    */
-  function getContentSettingsTypeFromChooserType(chooserType) {
+  /* #export */ function getContentSettingsTypeFromChooserType(chooserType) {
     switch (chooserType) {
       case settings.ChooserType.USB_DEVICES:
         return settings.ContentSettingsTypes.USB_DEVICES;

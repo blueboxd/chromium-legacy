@@ -207,4 +207,79 @@ suite('CrSettingsCookiesPageTest', function() {
     assertEquals(
         settings.PrivacyElementInteractions.NETWORK_PREDICTION, result);
   });
+
+  test('CookieSettingExceptions_Search', async function() {
+    exceptionPrefs = test_util.createSiteSettingsPrefs([], [
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.COOKIES,
+          [
+            test_util.createRawSiteException('http://foo-block.com', {
+              embeddingOrigin: '',
+              setting: settings.ContentSetting.BLOCK,
+            }),
+            test_util.createRawSiteException('http://foo-allow.com', {
+              embeddingOrigin: '',
+            }),
+            test_util.createRawSiteException('http://foo-session.com', {
+              embeddingOrigin: '',
+              setting: settings.ContentSetting.SESSION_ONLY,
+            }),
+          ]),
+    ]);
+    page.searchTerm = 'foo';
+    siteSettingsBrowserProxy.setPrefs(exceptionPrefs);
+    await siteSettingsBrowserProxy.whenCalled('getExceptionList');
+    Polymer.dom.flush();
+
+    const exceptionLists = page.shadowRoot.querySelectorAll('site-list');
+    assertEquals(exceptionLists.length, 3);
+
+    for (const list of exceptionLists) {
+      assertTrue(test_util.isChildVisible(list, 'site-list-entry'));
+    }
+
+    page.searchTerm = 'unrelated.com';
+    Polymer.dom.flush();
+
+    for (const list of exceptionLists) {
+      assertFalse(test_util.isChildVisible(list, 'site-list-entry'));
+    }
+  });
+
+  test('CookieSettingExceptions_Managed', async function() {
+    const managedPrefs = test_util.createSiteSettingsPrefs(
+        [test_util.createContentSettingTypeToValuePair(
+            settings.ContentSettingsTypes.COOKIES,
+            test_util.createDefaultContentSetting({
+              setting: settings.ContentSetting.SESSION_ONLY,
+              source: settings.SiteSettingSource.POLICY
+            }))],
+        []);
+    siteSettingsBrowserProxy.setPrefs(managedPrefs);
+    await siteSettingsBrowserProxy.whenCalled('getDefaultValueForContentType');
+    Polymer.dom.flush();
+
+    let exceptionLists = page.shadowRoot.querySelectorAll('site-list');
+    assertEquals(exceptionLists.length, 3);
+    for (const list of exceptionLists) {
+      assertTrue(!!list.readOnlyList);
+    }
+
+    const unmanagedPrefs = test_util.createSiteSettingsPrefs(
+        [test_util.createContentSettingTypeToValuePair(
+            settings.ContentSettingsTypes.COOKIES,
+            test_util.createDefaultContentSetting({
+              setting: settings.ContentSetting.ALLOW,
+            }))],
+        []);
+    siteSettingsBrowserProxy.setPrefs(unmanagedPrefs);
+    await siteSettingsBrowserProxy.whenCalled('getDefaultValueForContentType');
+    Polymer.dom.flush();
+
+    exceptionLists = page.shadowRoot.querySelectorAll('site-list');
+    assertEquals(exceptionLists.length, 3);
+    for (const list of exceptionLists) {
+      assertFalse(!!list.readOnlyList);
+    }
+  });
 });

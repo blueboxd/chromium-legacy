@@ -5,7 +5,7 @@
 // https://drafts.csswg.org/resize-observer/#enumdef-resizeobserverboxoptions
 
 enum ResizeObserverBoxOptions {
-    "border-box", "content-box"
+    "border-box", "content-box", "device-pixel-content-box"
 };
 
 // https://drafts.csswg.org/resize-observer/#dictdef-resizeobserveroptions

@@ -123,6 +123,8 @@ class PDFiumEngine : public PDFEngine,
   std::vector<AccessibilityImageInfo> GetImageInfo(int page_index) override;
   std::vector<AccessibilityHighlightInfo> GetHighlightInfo(
       int page_index) override;
+  std::vector<AccessibilityTextFieldInfo> GetTextFieldInfo(
+      int page_index) override;
   bool GetPrintScaling() override;
   int GetCopiesToPrint() override;
   int GetDuplexType() override;

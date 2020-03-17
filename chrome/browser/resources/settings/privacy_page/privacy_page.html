@@ -249,8 +249,12 @@
           no-search="[[!privacySettingsRedesignEnabled_]]">
         <settings-subpage id="cookies" page-title="$i18n{cookiePageTitle}"
             no-search$="[[!privacySettingsRedesignEnabled_]]"
+            search-label="$i18n{siteSettingsAllSitesSearch}"
+            search-term="{{searchFilter_}}"
             associated-control="[[$$('#cookiesLinkRow')]]">
-          <settings-cookies-page prefs="{{prefs}}"></settings-cookies-page>
+          <settings-cookies-page prefs="{{prefs}}"
+              search-term="[[searchFilter_]]">
+          </settings-cookies-page>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/cookies" no-search>

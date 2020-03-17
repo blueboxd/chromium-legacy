@@ -95,9 +95,6 @@ IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the renderer.
 
-// Make the RenderWidget background transparent or opaque.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetBackgroundOpaque, bool /* opaque */)
-
 // This passes a set of webkit preferences down to the renderer.
 IPC_MESSAGE_ROUTED1(ViewMsg_UpdateWebPreferences,
                     content::WebPreferences)

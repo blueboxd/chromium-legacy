@@ -186,6 +186,11 @@ class RenderProcessHostTest : public ContentBrowserTest,
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+#if defined(OS_LINUX)
+    // Due to problems with PulseAudio failing to start, use a fake audio
+    // stream. https://crbug.com/1047655#c70
+    command_line->AppendSwitch(switches::kDisableAudioOutput);
+#endif
     command_line->AppendSwitchASCII(
         switches::kAutoplayPolicy,
         switches::autoplay::kNoUserGestureRequiredPolicy);
@@ -917,11 +922,6 @@ class CaptureStreamRenderProcessHostTest : public RenderProcessHostTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-#if defined(OS_LINUX)
-    // Due to problems with PulseAudio failing to start, use a fake audio
-    // stream. https://crbug.com/1047655#c70
-    command_line->AppendSwitch(switches::kDisableAudioOutput);
-#endif
     // These flags are necessary to emulate camera input for getUserMedia()
     // tests.
     command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);

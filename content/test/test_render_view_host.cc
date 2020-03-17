@@ -28,6 +28,7 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/web_preferences.h"
 #include "content/test/test_render_frame_host.h"
+#include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/video_frame.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -274,6 +275,15 @@ bool TestRenderViewHost::CreateRenderView(
     main_frame->BindInterfaceProviderReceiver(
         stub_interface_provider_remote.InitWithNewPipeAndPassReceiver());
     main_frame->SetRenderFrameCreated(true);
+
+    mojo::AssociatedRemote<blink::mojom::FrameWidgetHost> frame_widget_host;
+    auto frame_widget_host_receiver =
+        frame_widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting();
+    mojo::AssociatedRemote<blink::mojom::FrameWidget> frame_widget;
+    auto frame_widget_receiver =
+        frame_widget.BindNewEndpointAndPassDedicatedReceiverForTesting();
+    GetWidget()->BindFrameWidgetInterfaces(
+        std::move(frame_widget_host_receiver), frame_widget.Unbind());
   }
 
   return true;
@@ -320,7 +330,9 @@ void TestRenderViewHost::TestOnUpdateStateWithFile(
   static_cast<RenderFrameHostImpl*>(GetMainFrame())->OnUpdateState(state);
 }
 
-RenderViewHostImplTestHarness::RenderViewHostImplTestHarness() {
+RenderViewHostImplTestHarness::RenderViewHostImplTestHarness()
+    : RenderViewHostTestHarness(
+          base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
   std::vector<ui::ScaleFactor> scale_factors;
   scale_factors.push_back(ui::SCALE_FACTOR_100P);
   scoped_set_supported_scale_factors_.reset(

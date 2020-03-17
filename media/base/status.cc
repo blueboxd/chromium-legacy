@@ -25,7 +25,7 @@ Status::Status(const Status& copy) {
 }
 
 Status& Status::operator=(const Status& copy) {
-  if (copy.IsOk()) {
+  if (copy.is_ok()) {
     data_.reset();
     return *this;
   }
@@ -67,6 +67,10 @@ Status&& Status::AddCause(Status&& cause) && {
 void Status::AddFrame(const base::Location& location) {
   DCHECK(data_);
   data_->frames.push_back(MediaSerialize(location));
+}
+
+Status OkStatus() {
+  return Status();
 }
 
 }  // namespace media

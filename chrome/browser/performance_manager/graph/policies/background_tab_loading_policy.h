@@ -13,7 +13,7 @@
 namespace performance_manager {
 
 namespace mechanism {
-class TabLoader;
+class PageLoader;
 }  // namespace mechanism
 
 namespace policies {
@@ -36,10 +36,10 @@ class BackgroundTabLoadingPolicy : public GraphOwned {
   // Schedules the PageNodes in |page_nodes| to be loaded when appropriate.
   void RestoreTabs(std::vector<PageNode*> page_nodes);
 
-  void SetMockLoaderForTesting(std::unique_ptr<mechanism::TabLoader> loader);
+  void SetMockLoaderForTesting(std::unique_ptr<mechanism::PageLoader> loader);
 
  private:
-  std::unique_ptr<performance_manager::mechanism::TabLoader> tab_loader_;
+  std::unique_ptr<performance_manager::mechanism::PageLoader> page_loader_;
 };
 
 }  // namespace policies

@@ -250,10 +250,10 @@ class TestProxyDelegateWithProxyInfo : public ProxyDelegate {
 
   void OnFallback(const ProxyServer& bad_proxy, int net_error) override {}
 
-  void OnBeforeHttp1TunnelRequest(const ProxyServer& proxy_server,
-                                  HttpRequestHeaders* extra_headers) override {}
+  void OnBeforeTunnelRequest(const ProxyServer& proxy_server,
+                             HttpRequestHeaders* extra_headers) override {}
 
-  Error OnHttp1TunnelHeadersReceived(
+  Error OnTunnelHeadersReceived(
       const ProxyServer& proxy_server,
       const HttpResponseHeaders& response_headers) override {
     return OK;

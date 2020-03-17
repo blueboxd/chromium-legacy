@@ -123,7 +123,7 @@ public class ManualFillingTestHelper {
                     AccessoryTabType.PASSWORDS, mSheetSuggestionsProvider);
         });
         if (waitForNode) DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), PASSWORD_NODE_ID);
-        cacheCredentials(new String[0], new String[0]); // This caches the empty state.
+        cacheCredentials(new String[0], new String[0], false); // This caches the empty state.
     }
 
     public void clear() {
@@ -316,7 +316,7 @@ public class ManualFillingTestHelper {
      */
     public void cacheTestCredentials() {
         cacheCredentials(new String[] {"mpark@gmail.com", "mayapark@googlemail.com"},
-                new String[] {"TestPassword", "SomeReallyLongPassword"});
+                new String[] {"TestPassword", "SomeReallyLongPassword"}, false);
     }
 
     /**
@@ -325,7 +325,7 @@ public class ManualFillingTestHelper {
      * @param password A {@link String} to be used as display text for a password chip.
      */
     public void cacheCredentials(String username, String password) {
-        cacheCredentials(new String[] {username}, new String[] {password});
+        cacheCredentials(new String[] {username}, new String[] {password}, false);
     }
 
     /**
@@ -333,11 +333,14 @@ public class ManualFillingTestHelper {
      * controller. The controller will only refresh this cache on page load.
      * @param usernames {@link String}s to be used as display text for username chips.
      * @param passwords {@link String}s to be used as display text for password chips.
+     * @param originBlacklisted boolean indicating whether password saving is disabled for the
+     *                          origin.
      */
-    public void cacheCredentials(String[] usernames, String[] passwords) {
+    public void cacheCredentials(
+            String[] usernames, String[] passwords, boolean originBlacklisted) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ManualFillingComponentBridge.cachePasswordSheetData(
-                    mActivityTestRule.getWebContents(), usernames, passwords);
+                    mActivityTestRule.getWebContents(), usernames, passwords, originBlacklisted);
         });
     }
 

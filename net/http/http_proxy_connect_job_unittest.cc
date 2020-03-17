@@ -447,46 +447,62 @@ TEST_P(HttpProxyConnectJobTest, HasEstablishedConnectionTunnel) {
 }
 
 TEST_P(HttpProxyConnectJobTest, ProxyDelegateExtraHeaders) {
-  // TODO(https://crbug.com/926427): The ProxyDelegate API is currently broken
-  // in the SPDY case.
-  if (GetParam() == SPDY)
-    return;
-
   InitProxyDelegate();
 
   ProxyServer proxy_server(
       GetParam() == HTTP ? ProxyServer::SCHEME_HTTP : ProxyServer::SCHEME_HTTPS,
       HostPortPair(GetParam() == HTTP ? kHttpProxyHost : kHttpsProxyHost,
                    GetParam() == HTTP ? 80 : 443));
-  std::string request =
+  std::string proxy_server_uri = proxy_server.ToURI();
+
+  std::string http1_request =
       "CONNECT www.endpoint.test:443 HTTP/1.1\r\n"
       "Host: www.endpoint.test:443\r\n"
       "Proxy-Connection: keep-alive\r\n"
       "Foo: " +
-      proxy_server.ToURI() + "\r\n\r\n";
+      proxy_server_uri + "\r\n\r\n";
   MockWrite writes[] = {
-      MockWrite(ASYNC, 0, request.c_str()),
+      MockWrite(ASYNC, 0, http1_request.c_str()),
   };
 
-  const char kResponseHeaderName[] = "Foo";
+  const char kResponseHeaderName[] = "foo";
   const char kResponseHeaderValue[] = "Response";
-  std::string response = base::StringPrintf(
+  std::string http1_response = base::StringPrintf(
       "HTTP/1.1 200 Connection Established\r\n"
       "%s: %s\r\n\r\n",
       kResponseHeaderName, kResponseHeaderValue);
   MockRead reads[] = {
-      MockRead(ASYNC, 1, response.c_str()),
+      MockRead(ASYNC, 1, http1_response.c_str()),
   };
 
-  Initialize(reads, writes, base::span<MockRead>(), base::span<MockWrite>(),
-             ASYNC);
+  const char* const kExtraRequestHeaders[] = {
+      "foo",
+      proxy_server_uri.c_str(),
+  };
+  const char* const kExtraResponseHeaders[] = {
+      kResponseHeaderName,
+      kResponseHeaderValue,
+  };
+  spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyConnect(
+      kExtraRequestHeaders, base::size(kExtraRequestHeaders) / 2, 1,
+      HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair(kEndpointHost, 443)));
+  MockWrite spdy_writes[] = {CreateMockWrite(req, 0)};
+  spdy::SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(
+      kExtraResponseHeaders, base::size(kExtraResponseHeaders) / 2, 1));
+  MockRead spdy_reads[] = {
+      CreateMockRead(resp, 1, ASYNC),
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
+  };
+
+  Initialize(reads, writes, spdy_reads, spdy_writes, ASYNC);
 
   TestConnectJobDelegate test_delegate;
   std::unique_ptr<ConnectJob> connect_job =
       CreateConnectJobForTunnel(&test_delegate);
   test_delegate.StartJobExpectingResult(connect_job.get(), OK,
                                         false /* expect_sync_result */);
-  proxy_delegate_->VerifyOnHttp1TunnelHeadersReceived(
+  proxy_delegate_->VerifyOnTunnelHeadersReceived(
       proxy_server, kResponseHeaderName, kResponseHeaderValue);
 }
 

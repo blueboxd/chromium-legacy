@@ -229,21 +229,18 @@ HRESULT AXPlatformNodeTextProviderWin::RangeFromPoint(
   UIA_VALIDATE_TEXTPROVIDER_CALL();
   *range = nullptr;
 
-  // Retrieve the closest accessibility node via hit testing the point. No
-  // coordinate unit conversion is needed, hit testing input is also in screen
-  // coordinates.
-  gfx::NativeViewAccessible nearest_native_view_accessible =
-      owner()->GetDelegate()->HitTestSync(uia_point.x, uia_point.y);
-  DCHECK(nearest_native_view_accessible);
+  gfx::Point point(uia_point.x, uia_point.y);
+  // Retrieve the closest accessibility node. No coordinate unit conversion is
+  // needed, hit testing input is also in screen coordinates.
 
-  AXPlatformNodeWin* nearest_node = static_cast<AXPlatformNodeWin*>(
-      AXPlatformNode::FromNativeViewAccessible(nearest_native_view_accessible));
+  AXPlatformNodeWin* nearest_node =
+      static_cast<AXPlatformNodeWin*>(owner()->NearestLeafToPoint(point));
   DCHECK(nearest_node);
+  DCHECK(nearest_node->IsLeaf());
 
   AXNodePosition::AXPositionInstance start, end;
   start = nearest_node->GetDelegate()->CreateTextPositionAt(
-      nearest_node->NearestTextIndexToPoint(
-          gfx::Point(uia_point.x, uia_point.y)));
+      nearest_node->NearestTextIndexToPoint(point));
   DCHECK(!start->IsNullPosition());
   end = start->Clone();
 

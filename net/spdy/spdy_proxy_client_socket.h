@@ -18,6 +18,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
+#include "net/base/proxy_server.h"
 #include "net/http/http_auth_controller.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
@@ -35,6 +36,7 @@
 namespace net {
 
 class IOBuffer;
+class ProxyDelegate;
 class SpdyStream;
 
 class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
@@ -45,10 +47,12 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
   // data read/written to the socket will be transferred in data frames. This
   // object will set itself as |spdy_stream|'s delegate.
   SpdyProxyClientSocket(const base::WeakPtr<SpdyStream>& spdy_stream,
+                        const ProxyServer& proxy_server,
                         const std::string& user_agent,
                         const HostPortPair& endpoint,
                         const NetLogWithSource& source_net_log,
-                        HttpAuthController* auth_controller);
+                        HttpAuthController* auth_controller,
+                        ProxyDelegate* proxy_delegate);
 
   // On destruction Disconnect() is called.
   ~SpdyProxyClientSocket() override;
@@ -154,6 +158,11 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
   // specified by the URL, due to Alternate-Protocol or fixed testing ports.
   const HostPortPair endpoint_;
   scoped_refptr<HttpAuthController> auth_;
+
+  const ProxyServer proxy_server_;
+
+  // This delegate must outlive this proxy client socket.
+  ProxyDelegate* const proxy_delegate_;
 
   std::string user_agent_;
 

@@ -7,6 +7,11 @@
  * interact with the content settings prefs.
  */
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// #import {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource} from './constants.m.js';
+// clang-format on
+
 /**
  * The handler will send a policy source that is similar, but not exactly the
  * same as a ControlledBy value. If the ContentSettingProvider is omitted it
@@ -69,7 +74,7 @@ let SiteGroup;
  *            setting: !settings.ContentSetting,
  *            source: !settings.SiteSettingSource}}
  */
-let RawSiteException;
+/* #export */ let RawSiteException;
 
 /**
  * The site exception after it has been converted/filtered for UI use.
@@ -84,7 +89,7 @@ let RawSiteException;
  *            controlledBy: !chrome.settingsPrivate.ControlledBy,
  *            showAndroidSmsNote: (boolean|undefined)}}
  */
-let SiteException;
+/* #export */ let SiteException;
 
 /**
  * Represents a list of exceptions recently configured for a site, where recent
@@ -144,7 +149,7 @@ let ZoomLevelEntry;
 
 cr.define('settings', function() {
   /** @interface */
-  class SiteSettingsPrefsBrowserProxy {
+  /* #export */ class SiteSettingsPrefsBrowserProxy {
     /**
      * Sets the default value for a site settings category.
      * @param {string} contentType The name of the category to change.
@@ -406,7 +411,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.SiteSettingsPrefsBrowserProxy}
    */
-  class SiteSettingsPrefsBrowserProxyImpl {
+  /* #export */ class SiteSettingsPrefsBrowserProxyImpl {
     /** @override */
     setDefaultValueForContentType(contentType, defaultValue) {
       chrome.send('setDefaultValueForContentType', [contentType, defaultValue]);

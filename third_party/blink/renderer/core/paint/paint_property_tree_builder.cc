@@ -1543,10 +1543,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateInnerBorderRadiusClip() {
   if (NeedsPaintPropertyUpdate()) {
     if (NeedsInnerBorderRadiusClip(object_)) {
       const LayoutBox& box = ToLayoutBox(object_);
+      LayoutRect box_rect(context_.current.paint_offset.ToLayoutPoint(),
+                          box.Size());
       ClipPaintPropertyNode::State state(
           context_.current.transform,
-          box.StyleRef().GetRoundedInnerBorderFor(LayoutRect(
-              context_.current.paint_offset.ToLayoutPoint(), box.Size())));
+          box.StyleRef().GetInnerBorderFor(box_rect),
+          box.StyleRef().GetRoundedInnerBorderFor(box_rect));
       OnUpdateClip(properties_->UpdateInnerBorderRadiusClip(
           *context_.current.clip, std::move(state)));
     } else {

@@ -139,8 +139,9 @@ message ExtensionInstallProto {
                                        // approval for a supervised user.
     BLOCKED_BY_POLICY = 13;  // The extension is disabled because it's blocked
                              // by enterprise policy.
-    BLOCKED_MATURE = 14;     // The extension is disabled because it's blocked
-                             // due to mature content for supervised users.
+    // Deprecated: The extension is disabled because it's blocked due to mature
+    // content for supervised users.
+    DEPRECATED_BLOCKED_MATURE = 14;
   }
   // Any DisableReasons in effect for the extension. An empty list means the
   // extension is not disabled. Note that an extension that is not disabled may

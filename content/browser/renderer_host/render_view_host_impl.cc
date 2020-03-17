@@ -449,7 +449,7 @@ bool RenderViewHostImpl::IsRenderViewLive() {
 }
 
 void RenderViewHostImpl::SetBackgroundOpaque(bool opaque) {
-  Send(new ViewMsg_SetBackgroundOpaque(GetRoutingID(), opaque));
+  GetWidget()->GetAssociatedFrameWidget()->SetBackgroundOpaque(opaque);
 }
 
 bool RenderViewHostImpl::IsMainFrameActive() {

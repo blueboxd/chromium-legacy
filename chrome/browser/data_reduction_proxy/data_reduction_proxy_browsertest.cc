@@ -110,7 +110,6 @@ ClientConfig CreateEmptyConfig() {
   return CreateEmptyProxyConfig(kSessionKey, 1000, 0, 0.5f, false);
 }
 
-
 class TestSettingsObserver : public DataReductionProxySettingsObserver {
  public:
   TestSettingsObserver() = default;
@@ -533,7 +532,6 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
   EXPECT_EQ(result, kDummyBody);
 }
 
-
 IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
                        ProxyNotUsedWhenDisabled) {
   net::EmbeddedTestServer test_server;
@@ -627,8 +625,6 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
   EXPECT_EQ(GetBody(), kDummyBody);
 }
 
-
-
 // Test that enabling the holdback disables the proxy and that the client config
 // is fetched when lite page redirect preview is enabled.
 class DataReductionProxyWithHoldbackBrowsertest
@@ -636,39 +632,36 @@ class DataReductionProxyWithHoldbackBrowsertest
       public DataReductionProxyBrowsertest {
  public:
   DataReductionProxyWithHoldbackBrowsertest()
-      : DataReductionProxyBrowsertest(),
-        // Consider the holdback as enabled if holdback is enabled or the
-        // |force_enable_config_service_fetches_| is enabled.
+      :  // Consider the holdback as enabled if holdback is enabled or the
+         // |enable_config_service_fetches_| is enabled.
         data_reduction_proxy_holdback_enabled_(std::get<2>(GetParam()) ||
                                                std::get<0>(GetParam())),
         lite_page_redirect_previews_enabled_(std::get<1>(GetParam())),
-        force_enable_config_service_fetches_(std::get<2>(GetParam())) {}
+        enable_config_service_fetches_(std::get<2>(GetParam())) {}
 
   void SetUp() override {
-    if (force_enable_config_service_fetches_) {
-      scoped_feature_list_.InitAndEnableFeatureWithParameters(
-          data_reduction_proxy::features::kDataReductionProxyHoldback,
-          {{"force_enable_config_service_fetches", "true"}});
-    }
-    if (!force_enable_config_service_fetches_ &&
-        data_reduction_proxy_holdback_enabled_) {
-      scoped_feature_list_.InitAndEnableFeature(
-          data_reduction_proxy::features::kDataReductionProxyHoldback);
-    }
-    if (lite_page_redirect_previews_enabled_) {
-      previews_lite_page_redirect_feature_list_.InitAndEnableFeature(
-          previews::features::kLitePageServerPreviews);
-    }
+    data_reduction_proxy_holdback_feature_list_.InitWithFeatureState(
+        data_reduction_proxy::features::kDataReductionProxyHoldback,
+        data_reduction_proxy_holdback_enabled_);
+
+    fetch_client_config_feature_list_.InitWithFeatureState(
+        data_reduction_proxy::features::kFetchClientConfig,
+        enable_config_service_fetches_);
+
+    previews_lite_page_redirect_feature_list_.InitWithFeatureState(
+        previews::features::kLitePageServerPreviews,
+        lite_page_redirect_previews_enabled_);
 
     InProcessBrowserTest::SetUp();
   }
 
   const bool data_reduction_proxy_holdback_enabled_;
   const bool lite_page_redirect_previews_enabled_;
-  const bool force_enable_config_service_fetches_;
+  const bool enable_config_service_fetches_;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList data_reduction_proxy_holdback_feature_list_;
+  base::test::ScopedFeatureList fetch_client_config_feature_list_;
   base::test::ScopedFeatureList previews_lite_page_redirect_feature_list_;
 };
 
@@ -717,7 +710,6 @@ class DataReductionProxyExpBrowsertest : public DataReductionProxyBrowsertest {
   }
 };
 
-
 class DataReductionProxyExpFeatureBrowsertest
     : public DataReductionProxyBrowsertest {
  public:
@@ -740,7 +732,6 @@ class DataReductionProxyExpFeatureBrowsertest
 
   const std::string experiment_name = "foo_feature_experiment";
 };
-
 
 // Threadsafe log for recording a sequence of events as newline separated text.
 class EventLog {
@@ -859,7 +850,6 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
     EXPECT_FALSE(observer.last_initiator_origin().has_value());
   }
 
-
   // Simulate clicking on a same-site link.
   {
     content::TestNavigationObserver observer(
@@ -882,6 +872,5 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
               observer.last_initiator_origin());
   }
 }
-
 
 }  // namespace data_reduction_proxy

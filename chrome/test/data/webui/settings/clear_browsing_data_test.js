@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {ClearBrowsingDataBrowserProxyImpl, Router, routes, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+// #import {Router, routes, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+// #import {ClearBrowsingDataBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 // #import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';

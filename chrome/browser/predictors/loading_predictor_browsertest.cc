@@ -1644,10 +1644,10 @@ IN_PROC_BROWSER_TEST_P(
   }
 }
 
+// crbug.com/1060966
 IN_PROC_BROWSER_TEST_P(
     LoadingPredictorBrowserTestWithOptimizationGuide,
-    DISABLE_ON_WIN_MAC_CHROMEOS(
-        NavigationWithBothLocalPredictionAndOptimizationHint)) {
+    DISABLED_NavigationWithBothLocalPredictionAndOptimizationHint) {
   base::HistogramTester histogram_tester;
 
   GURL url = embedded_test_server()->GetURL(

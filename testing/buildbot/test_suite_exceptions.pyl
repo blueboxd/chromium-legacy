@@ -155,7 +155,9 @@
         'args': [
           '--debug',
         ],
-        'shards': 25,
+        'swarming': {
+          'shards': 25,
+        },
       },
       'V8 Blink Linux Debug': {
         'args': [
@@ -443,6 +445,17 @@
         },
       },
       'Mac ASan 64 Tests (1)': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              # These shards are liable to time out when running on minis.
+              'cores': '8',
+            }
+          ],
+          'shards': 20,
+        },
+      },
+      'Mac10.13 Tests (dbg)': {
         'swarming': {
           'shards': 20,
         },
@@ -2285,13 +2298,6 @@
       'Win7 FYI Release (AMD)',
       # crbug.com/1005814
       'Win10 FYI x64 Release (AMD RX 550)',
-    ],
-  },
-  'webgl_conformance_swangle_passthrough_tests': {
-    'remove_from': [
-      # Disable tests on ASAN builds until libvulkan is statically linked:
-      # anglebug.com/4477
-      'Mac FYI GPU ASAN Release',
     ],
   },
   'webgl_conformance_tests': {

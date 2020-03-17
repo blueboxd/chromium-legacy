@@ -668,6 +668,7 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
           NOTREACHED();
       }
       break;
+    case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_YUV420P9:
     case PIXEL_FORMAT_YUV422P9:
     case PIXEL_FORMAT_YUV444P9:

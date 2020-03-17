@@ -2024,384 +2024,55 @@ TEST_F(StyleCascadeTest, ApplyWithFilter) {
   EXPECT_EQ("inline", cascade.ComputedValue("display"));
 }
 
-TEST_F(StyleCascadeTest, UAStyleAbsentWithoutAppearance) {
+TEST_F(StyleCascadeTest, HasAuthorBackground) {
+  Vector<String> properties = {"background-attachment", "background-blend-mode",
+                               "background-clip",       "background-image",
+                               "background-origin",     "background-position-x",
+                               "background-position-y", "background-size"};
+
+  for (String property : properties) {
+    TestCascade cascade(GetDocument());
+    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
+    cascade.Add(property, "unset", Origin::kAuthor);
+    cascade.Apply();
+    EXPECT_TRUE(cascade.TakeStyle()->HasAuthorBackground());
+  }
+}
+
+TEST_F(StyleCascadeTest, HasAuthorBorder) {
+  Vector<String> properties = {
+      "border-top-color",          "border-right-color",
+      "border-bottom-color",       "border-left-color",
+      "border-top-style",          "border-right-style",
+      "border-bottom-style",       "border-left-style",
+      "border-top-width",          "border-right-width",
+      "border-bottom-width",       "border-left-width",
+      "border-top-left-radius",    "border-top-right-radius",
+      "border-bottom-left-radius", "border-bottom-right-radius",
+      "border-image-source",       "border-image-slice",
+      "border-image-width",        "border-image-outset",
+      "border-image-repeat"};
+
+  for (String property : properties) {
+    TestCascade cascade(GetDocument());
+    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
+    cascade.Add(property, "unset", Origin::kAuthor);
+    cascade.Apply();
+    EXPECT_TRUE(cascade.TakeStyle()->HasAuthorBorder());
+  }
+}
+
+TEST_F(StyleCascadeTest, NoAuthorBackgroundOrBorder) {
   TestCascade cascade(GetDocument());
+  cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
   cascade.Add("background-color", "red", Origin::kUserAgent);
-  cascade.Add("border-right-color", "red", Origin::kUserAgent);
+  cascade.Add("border-left-color", "green", Origin::kUserAgent);
+  cascade.Add("background-clip", "padding-box", Origin::kUser);
+  cascade.Add("border-right-color", "green", Origin::kUser);
   cascade.Apply();
-  EXPECT_FALSE(cascade.State().GetUAStyle());
-}
-
-TEST_F(StyleCascadeTest, UAStylePresentWithAppearance) {
-  TestCascade cascade(GetDocument());
-  cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-  cascade.Add("background-color", "red", Origin::kUserAgent);
-  cascade.Apply();
-  EXPECT_TRUE(cascade.State().GetUAStyle());
-}
-
-TEST_F(StyleCascadeTest, UAStyleNoDiffBackground) {
-  TestCascade cascade(GetDocument());
-  cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-  cascade.Add("background-attachment", "fixed", Origin::kUserAgent);
-  cascade.Add("background-blend-mode", "darken", Origin::kUserAgent);
-  cascade.Add("background-clip", "padding-box", Origin::kUserAgent);
-  cascade.Add("background-image", "none", Origin::kUserAgent);
-  cascade.Add("background-origin", "content-box", Origin::kUserAgent);
-  cascade.Add("background-position-x", "10px", Origin::kUserAgent);
-  cascade.Add("background-position-y", "10px", Origin::kUserAgent);
-  cascade.Add("background-size", "contain", Origin::kUserAgent);
-  cascade.Apply();
-  ASSERT_TRUE(cascade.State().GetUAStyle());
-  EXPECT_FALSE(cascade.State().GetUAStyle()->HasDifferentBackground(
-      cascade.State().StyleRef()));
-}
-
-TEST_F(StyleCascadeTest, UAStyleDiffBackground) {
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("background-image", "linear-gradient(red, green)",
-                Origin::kUserAgent);
-    cascade.Add("background-attachment", "fixed", Origin::kUserAgent);
-    cascade.Add("background-attachment", "unset", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBackground(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("background-image", "linear-gradient(red, green)",
-                Origin::kUserAgent);
-    cascade.Add("background-blend-mode", "darken", Origin::kUserAgent);
-    cascade.Add("background-blend-mode", "unset", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBackground(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("background-image", "linear-gradient(red, green)",
-                Origin::kUserAgent);
-    cascade.Add("background-clip", "padding-box", Origin::kUserAgent);
-    cascade.Add("background-clip", "unset", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBackground(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("background-image", "linear-gradient(green, red)",
-                Origin::kUserAgent);
-    cascade.Add("background-image", "linear-gradient(red, green)",
-                Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBackground(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("background-image", "linear-gradient(green, red)",
-                Origin::kUserAgent);
-    cascade.Add("background-origin", "content-box", Origin::kUserAgent);
-    cascade.Add("background-origin", "unset", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBackground(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("background-image", "linear-gradient(green, red)",
-                Origin::kUserAgent);
-    cascade.Add("background-position-x", "10px", Origin::kUserAgent);
-    cascade.Add("background-position-x", "unset", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBackground(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("background-image", "linear-gradient(green, red)",
-                Origin::kUserAgent);
-    cascade.Add("background-position-y", "10px", Origin::kUserAgent);
-    cascade.Add("background-position-y", "unset", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBackground(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("background-image", "linear-gradient(green, red)",
-                Origin::kUserAgent);
-    cascade.Add("background-size", "contain", Origin::kUserAgent);
-    cascade.Add("background-size", "unset", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBackground(
-        cascade.State().StyleRef()));
-  }
-}
-
-TEST_F(StyleCascadeTest, UAStyleBorderNoDifference) {
-  TestCascade cascade(GetDocument());
-  cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-  cascade.Add("border-top-color", "red", Origin::kUserAgent);
-  cascade.Add("border-right-color", "red", Origin::kUserAgent);
-  cascade.Add("border-bottom-color", "red", Origin::kUserAgent);
-  cascade.Add("border-left-color", "red", Origin::kUserAgent);
-  cascade.Add("border-top-style", "dashed", Origin::kUserAgent);
-  cascade.Add("border-right-style", "dashed", Origin::kUserAgent);
-  cascade.Add("border-bottom-style", "dashed", Origin::kUserAgent);
-  cascade.Add("border-left-style", "dashed", Origin::kUserAgent);
-  cascade.Add("border-top-width", "5px", Origin::kUserAgent);
-  cascade.Add("border-right-width", "5px", Origin::kUserAgent);
-  cascade.Add("border-bottom-width", "5px", Origin::kUserAgent);
-  cascade.Add("border-left-width", "5px", Origin::kUserAgent);
-  cascade.Add("border-top-left-radius", "5px", Origin::kUserAgent);
-  cascade.Add("border-top-right-radius", "5px", Origin::kUserAgent);
-  cascade.Add("border-bottom-left-radius", "5px", Origin::kUserAgent);
-  cascade.Add("border-bottom-right-radius", "5px", Origin::kUserAgent);
-  cascade.Add("border-image-source", "none", Origin::kUserAgent);
-  cascade.Add("border-image-slice", "30", Origin::kUserAgent);
-  cascade.Add("border-image-width", "10px", Origin::kUserAgent);
-  cascade.Add("border-image-outset", "15px", Origin::kUserAgent);
-  cascade.Add("border-image-repeat", "round", Origin::kUserAgent);
-  cascade.Apply();
-  ASSERT_TRUE(cascade.State().GetUAStyle());
-  EXPECT_FALSE(cascade.State().GetUAStyle()->HasDifferentBorder(
-      cascade.State().StyleRef()));
-}
-
-TEST_F(StyleCascadeTest, UAStyleBorderDifference) {
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-top-color", "red", Origin::kUserAgent);
-    cascade.Add("border-top-color", "green", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-right-color", "red", Origin::kUserAgent);
-    cascade.Add("border-right-color", "green", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-bottom-color", "red", Origin::kUserAgent);
-    cascade.Add("border-bottom-color", "green", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-left-color", "red", Origin::kUserAgent);
-    cascade.Add("border-left-color", "green", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-top-style", "dashed", Origin::kUserAgent);
-    cascade.Add("border-top-style", "solid", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-right-style", "dashed", Origin::kUserAgent);
-    cascade.Add("border-right-style", "solid", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-bottom-style", "dashed", Origin::kUserAgent);
-    cascade.Add("border-bottom-style", "solid", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-left-style", "dashed", Origin::kUserAgent);
-    cascade.Add("border-left-style", "solid", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-top-style", "solid", Origin::kUserAgent);
-    cascade.Add("border-top-width", "10px", Origin::kUserAgent);
-    cascade.Add("border-top-width", "9px", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-right-style", "solid", Origin::kUserAgent);
-    cascade.Add("border-right-width", "10px", Origin::kUserAgent);
-    cascade.Add("border-right-width", "9px", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-bottom-style", "solid", Origin::kUserAgent);
-    cascade.Add("border-bottom-width", "10px", Origin::kUserAgent);
-    cascade.Add("border-bottom-width", "9px", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-left-style", "solid", Origin::kUserAgent);
-    cascade.Add("border-left-width", "10px", Origin::kUserAgent);
-    cascade.Add("border-left-width", "9px", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-top-left-radius", "5px", Origin::kUserAgent);
-    cascade.Add("border-top-left-radius", "2px", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-top-right-radius", "5px", Origin::kUserAgent);
-    cascade.Add("border-top-right-radius", "2px", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-bottom-left-radius", "5px", Origin::kUserAgent);
-    cascade.Add("border-bottom-left-radius", "2px", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-bottom-right-radius", "5px", Origin::kUserAgent);
-    cascade.Add("border-bottom-right-radius", "2px", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-image-source", "none", Origin::kUserAgent);
-    cascade.Add("border-image-source", "linear-gradient(red, green)",
-                Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-image-slice", "30", Origin::kUserAgent);
-    cascade.Add("border-image-slice", "10", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-image-width", "10px", Origin::kUserAgent);
-    cascade.Add("border-image-width", "15px", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-image-outset", "10px", Origin::kUserAgent);
-    cascade.Add("border-image-outset", "15px", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
-  {
-    TestCascade cascade(GetDocument());
-    cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
-    cascade.Add("border-image-repeat", "round", Origin::kUserAgent);
-    cascade.Add("border-image-repeat", "stretch", Origin::kAuthor);
-    cascade.Apply();
-    ASSERT_TRUE(cascade.State().GetUAStyle());
-    EXPECT_TRUE(cascade.State().GetUAStyle()->HasDifferentBorder(
-        cascade.State().StyleRef()));
-  }
+  auto style = cascade.TakeStyle();
+  EXPECT_FALSE(style->HasAuthorBackground());
+  EXPECT_FALSE(style->HasAuthorBorder());
 }
 
 TEST_F(StyleCascadeTest, AnalyzeMatchResult) {

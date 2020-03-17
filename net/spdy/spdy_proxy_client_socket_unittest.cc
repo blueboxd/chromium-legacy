@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/address_list.h"
 #include "net/base/load_timing_info.h"
+#include "net/base/proxy_server.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/winsock_init.h"
 #include "net/dns/mock_host_resolver.h"
@@ -265,11 +266,14 @@ void SpdyProxyClientSocketTest::Initialize(base::span<const MockRead> reads,
 
   // Create the SpdyProxyClientSocket.
   sock_ = std::make_unique<SpdyProxyClientSocket>(
-      spdy_stream, user_agent_, endpoint_host_port_pair_, net_log_.bound(),
+      spdy_stream, ProxyServer(ProxyServer::SCHEME_HTTPS, proxy_host_port_),
+      user_agent_, endpoint_host_port_pair_, net_log_.bound(),
       new HttpAuthController(
           HttpAuth::AUTH_PROXY, GURL("https://" + proxy_host_port_.ToString()),
           NetworkIsolationKey(), session_->http_auth_cache(),
-          session_->http_auth_handler_factory(), session_->host_resolver()));
+          session_->http_auth_handler_factory(), session_->host_resolver()),
+      // Testing with the proxy delegate is in HttpProxyConnectJobTest.
+      nullptr);
 }
 
 scoped_refptr<IOBufferWithSize> SpdyProxyClientSocketTest::CreateBuffer(

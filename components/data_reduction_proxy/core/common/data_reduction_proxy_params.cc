@@ -91,15 +91,9 @@ bool IsIncludedInHoldbackFieldTrial() {
 }
 
 bool ForceEnableClientConfigServiceForAllDataSaverUsers() {
-  // Client config is enabled for all data users that are not in the
-  // kDataReductionProxyHoldback. Users that have kDataReductionProxyHoldback
-  // enabled have config service client enabled only if
-  // |force_enable_config_service_fetches| is set to true.
-  return GetFieldTrialParamByFeatureAsBool(
-      data_reduction_proxy::features::kDataReductionProxyHoldback,
-      "force_enable_config_service_fetches", false);
+  return base::FeatureList::IsEnabled(
+      data_reduction_proxy::features::kFetchClientConfig);
 }
-
 
 bool IsForcePingbackEnabledViaFlags() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -287,8 +281,6 @@ std::string GetDataSaverServerExperiments() {
   return base::GetFieldTrialParamValueByFeature(
       features::kDataReductionProxyServerExperiments, kExperimentsOption);
 }
-
-
 
 bool IsEnabledWithNetworkService() {
   return base::FeatureList::IsEnabled(

@@ -862,7 +862,7 @@ TEST_F(PasswordCheckDelegateTest, LastTimePasswordCheckCompletedIsSet) {
               Pointee(std::string("5 minutes ago")));
 }
 
-// Checks that a tranistion into the idle state after starting a check results
+// Checks that a transition into the idle state after starting a check results
 // in resetting the kLastTimePasswordCheckCompleted pref to the current time.
 TEST_F(PasswordCheckDelegateTest, LastTimePasswordCheckCompletedReset) {
   delegate().StartPasswordCheck();
@@ -871,6 +871,55 @@ TEST_F(PasswordCheckDelegateTest, LastTimePasswordCheckCompletedReset) {
   PasswordCheckStatus status = delegate().GetPasswordCheckStatus();
   EXPECT_THAT(status.elapsed_time_since_last_check,
               Pointee(std::string("Just now")));
+}
+
+// Checks that processing a credential by the leak check updates the progress
+// correctly and raises the expected event.
+TEST_F(PasswordCheckDelegateTest, OnCredentialDoneUpdatesProgress) {
+  const char* const kEventName =
+      api::passwords_private::OnPasswordCheckStatusChanged::kEventName;
+
+  identity_test_env().MakeAccountAvailable(kTestEmail);
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1, kPassword1));
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername2, kPassword2));
+  store().AddLogin(MakeSavedPassword(kExampleOrg, kUsername1, kPassword1));
+  store().AddLogin(MakeSavedPassword(kExampleOrg, kUsername2, kPassword2));
+  RunUntilIdle();
+
+  const auto event_iter = event_router_observer().events().find(kEventName);
+  delegate().StartPasswordCheck();
+  EXPECT_EQ(events::PASSWORDS_PRIVATE_ON_PASSWORD_CHECK_STATUS_CHANGED,
+            event_iter->second->histogram_value);
+  auto status = PasswordCheckStatus::FromValue(
+      event_iter->second->event_args->GetList().front());
+  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_RUNNING,
+            status->state);
+  EXPECT_EQ(0, *status->already_processed);
+  EXPECT_EQ(4, *status->remaining_in_queue);
+
+  static_cast<BulkLeakCheckDelegateInterface*>(service())->OnFinishedCredential(
+      LeakCheckCredential(base::ASCIIToUTF16(kUsername1),
+                          base::ASCIIToUTF16(kPassword1)),
+      IsLeaked(false));
+
+  status = PasswordCheckStatus::FromValue(
+      event_iter->second->event_args->GetList().front());
+  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_RUNNING,
+            status->state);
+  EXPECT_EQ(2, *status->already_processed);
+  EXPECT_EQ(2, *status->remaining_in_queue);
+
+  static_cast<BulkLeakCheckDelegateInterface*>(service())->OnFinishedCredential(
+      LeakCheckCredential(base::ASCIIToUTF16(kUsername2),
+                          base::ASCIIToUTF16(kPassword2)),
+      IsLeaked(false));
+
+  status = PasswordCheckStatus::FromValue(
+      event_iter->second->event_args->GetList().front());
+  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_RUNNING,
+            status->state);
+  EXPECT_EQ(4, *status->already_processed);
+  EXPECT_EQ(0, *status->remaining_in_queue);
 }
 
 }  // namespace extensions

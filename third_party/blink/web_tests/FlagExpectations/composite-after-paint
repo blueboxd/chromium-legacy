@@ -45,11 +45,6 @@ virtual/android/url-bar/bottom-fixed-adjusted-when-showing-url-bar.html [ Crash 
 # Wrong clipping of the right side of nested composited reflection with non-zero filter origin.
 compositing/reflections/deeply-nested-reflections.html [ Failure ]
 
-# We always paint opacity:0 which breaks LCP's expectation.
-crbug.com/957674 cexternal/wpt/largest-contentful-paint/invisible-images.html [ Failure ]
-crbug.com/957674 virtual/scalefactor200/external/wpt/largest-contentful-paint/invisible-images.html [ Skip ]
-crbug.com/957674 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/invisible-images.html [ Skip ]
-
 # A fieldset paints its background twice.
 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-overflow.html [ Crash ]
 

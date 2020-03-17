@@ -10,9 +10,12 @@
 #include "cc/input/layer_selection_bound.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/trees/layer_tree_host.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/common/input/web_gesture_device.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -22,14 +25,9 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/timer.h"
-#include "third_party/blink/renderer/platform/widget/widget_base.h"
+#include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/widget/widget_base_client.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
-
-namespace cc {
-class AnimationHost;
-class Layer;
-}
 
 namespace gfx {
 class Point;
@@ -45,13 +43,15 @@ class PageWidgetEventHandler;
 class PaintWorkletPaintDispatcher;
 class WebLocalFrameImpl;
 class WebViewImpl;
+class WidgetBase;
 struct IntrinsicSizingInfo;
 
 class CORE_EXPORT WebFrameWidgetBase
     : public GarbageCollected<WebFrameWidgetBase>,
       public WebFrameWidget,
       public WidgetBaseClient,
-      public mojom::blink::FrameWidget {
+      public mojom::blink::FrameWidget,
+      public FrameWidget {
  public:
   WebFrameWidgetBase(
       WebWidgetClient&,
@@ -65,7 +65,8 @@ class CORE_EXPORT WebFrameWidgetBase
           widget);
   ~WebFrameWidgetBase() override;
 
-  WebWidgetClient* Client() const { return client_; }
+  // Returns the WebFrame that this widget is attached to. It will be a local
+  // root since only local roots have a widget attached.
   WebLocalFrameImpl* LocalRootImpl() const { return local_root_; }
 
   // Returns the bounding box of the block type node touched by the WebPoint.
@@ -90,12 +91,26 @@ class CORE_EXPORT WebFrameWidgetBase
   base::WeakPtr<PaintWorkletPaintDispatcher> EnsureCompositorPaintDispatcher(
       scoped_refptr<base::SingleThreadTaskRunner>* paint_task_runner);
 
-  // Sets the root layer. The |layer| can be null when detaching the root layer.
-  virtual void SetRootLayer(scoped_refptr<cc::Layer> layer) = 0;
-
-  cc::AnimationHost* AnimationHost() const;
-
   virtual HitTestResult CoreHitTestResultAt(const gfx::Point&) = 0;
+
+  // FrameWidget implementation.
+  WebWidgetClient* Client() const final { return client_; }
+  cc::AnimationHost* AnimationHost() const final;
+  void SetOverscrollBehavior(
+      const cc::OverscrollBehavior& overscroll_behavior) final;
+  void RequestAnimationAfterDelay(const base::TimeDelta&) final;
+  void RegisterSelection(cc::LayerSelection selection) final;
+  void RequestDecode(const cc::PaintImage&,
+                     base::OnceCallback<void(bool)>) final;
+  void NotifySwapAndPresentationTimeInBlink(
+      WebReportTimeCallback swap_callback,
+      WebReportTimeCallback presentation_callback) final;
+  void RequestBeginMainFrameNotExpected(bool request) final;
+  int GetLayerTreeId() final;
+  void SetEventListenerProperties(cc::EventListenerClass,
+                                  cc::EventListenerProperties) final;
+  cc::EventListenerProperties EventListenerProperties(
+      cc::EventListenerClass) const final;
 
   // WebFrameWidget implementation.
   void Close() override;
@@ -149,15 +164,17 @@ class CORE_EXPORT WebFrameWidgetBase
   void DidLosePointerLock() override;
   void ShowContextMenu(WebMenuSourceType) override;
   void BeginFrame(base::TimeTicks frame_time) final;
+  void SetCompositorVisible(bool visible) override;
+  void UpdateVisualState() override;
+  void WillBeginCompositorFrame() final;
 
   // WidgetBaseClient methods.
   void DispatchRafAlignedInput(base::TimeTicks frame_time) override;
+  void RecordTimeToFirstActivePaint(base::TimeDelta duration) override;
 
   // mojom::blink::FrameWidget methods.
   void DragSourceSystemDragEnded() override;
-
-  // Image decode functionality.
-  void RequestDecode(const PaintImage&, base::OnceCallback<void(bool)>);
+  void SetBackgroundOpaque(bool opaque) override;
 
   // Called when the FrameView for this Widget's local root is created.
   virtual void DidCreateLocalRootView() {}
@@ -167,8 +184,6 @@ class CORE_EXPORT WebFrameWidgetBase
   // to this widget. It will return nullptr if no frame is focused or, the
   // focused frame has a different local root.
   LocalFrame* FocusedLocalFrameInWidget() const;
-
-  void RequestAnimationAfterDelay(const base::TimeDelta&);
 
   virtual void Trace(Visitor*);
 
@@ -181,14 +196,6 @@ class CORE_EXPORT WebFrameWidgetBase
   // paint into another widget which has a background color of its own.
   void SetBackgroundColor(SkColor color);
 
-  // Set the browser's behavior when overscroll happens, e.g. whether to glow
-  // or navigate.
-  void SetOverscrollBehavior(const cc::OverscrollBehavior& overscroll_behavior);
-
-  // Used to update the active selection bounds. Pass a default-constructed
-  // LayerSelection to clear it.
-  void RegisterSelection(cc::LayerSelection selection);
-
   // Starts an animation of the page scale to a target scale factor and scroll
   // offset.
   // If use_anchor is true, destination is a point on the screen that will
@@ -199,26 +206,8 @@ class CORE_EXPORT WebFrameWidgetBase
                                float new_page_scale,
                                base::TimeDelta duration);
 
-  // Enable or disable BeginMainFrameNotExpected signals from the compositor,
-  // which are consumed by the blink scheduler.
-  void RequestBeginMainFrameNotExpected(bool request);
-
-  // A stable numeric Id for the local root's compositor. For tracing/debugging
-  // purposes.
-  int GetLayerTreeId();
-
   // Called to update if scroll events should be sent.
   void SetHaveScrollEventHandlers(bool);
-
-  // Set or get what event handlers exist in the document contained in the
-  // WebWidget in order to inform the compositor thread if it is able to handle
-  // an input event, or it needs to pass it to the main thread to be handled.
-  // The class is the type of input event, and for each class there is a
-  // properties defining if the compositor thread can handle the event.
-  void SetEventListenerProperties(cc::EventListenerClass,
-                                  cc::EventListenerProperties);
-  cc::EventListenerProperties EventListenerProperties(
-      cc::EventListenerClass) const;
 
   // Start deferring commits to the compositor, allowing document lifecycle
   // updates without committing the layer tree. Commits are deferred
@@ -250,10 +239,6 @@ class CORE_EXPORT WebFrameWidgetBase
 
   cc::LayerTreeDebugState GetLayerTreeDebugState();
   void SetLayerTreeDebugState(const cc::LayerTreeDebugState& state);
-
-  // Returns if we should gather main frame metrics. If there is no compositor
-  // thread this returns false.
-  static bool ShouldRecordMainFrameMetrics();
 
  protected:
   enum DragAction { kDragEnter, kDragOver };
@@ -301,7 +286,7 @@ class CORE_EXPORT WebFrameWidgetBase
 
   // Base functionality all widgets have. This is a member as to avoid
   // complicated inheritance structures.
-  WidgetBase widget_base_;
+  std::unique_ptr<WidgetBase> widget_base_;
 
  private:
   void CancelDrag();

@@ -89,7 +89,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void Resize(const WebSize&) override;
   void DidEnterFullscreen() override;
   void DidExitFullscreen() override;
-  void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
   void DidBeginFrame() override;
   void BeginUpdateLayers() override;
   void EndUpdateLayers() override;
@@ -136,13 +135,15 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   bool ForSubframe() const override { return true; }
   void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&) override;
   void DidCreateLocalRootView() override;
-
-  void SetRootLayer(scoped_refptr<cc::Layer>) override;
   HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
   void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
 
+  // FrameWidget overrides:
+  void SetRootLayer(scoped_refptr<cc::Layer>) override;
+
   // WidgetBaseClient overrides:
   void BeginMainFrame(base::TimeTicks last_frame_time) override;
+  void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
 
   void UpdateMainFrameLayoutSize();
 

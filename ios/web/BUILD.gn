@@ -661,7 +661,7 @@ grit("resources") {
   source = "ios_web_resources.grd"
 
   # Required due to flattenhtml="true" on a generated file.
-  source_is_generated = true
+  enable_input_discovery_for_gn_analyze = false
 
   outputs = [
     "grit/ios_web_resources.h",

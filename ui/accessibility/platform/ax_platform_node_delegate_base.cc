@@ -13,6 +13,7 @@
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/accessibility/platform/ax_platform_node_base.h"
 
 namespace ui {
 
@@ -241,7 +242,7 @@ gfx::Rect AXPlatformNodeDelegateBase::GetUnclippedScreenBoundsRect(
 }
 
 gfx::NativeViewAccessible AXPlatformNodeDelegateBase::HitTestSync(int x,
-                                                                  int y) {
+                                                                  int y) const {
   return nullptr;
 }
 

@@ -1442,6 +1442,8 @@ jumbo_component("platform") {
     "webrtc/webrtc_video_frame_adapter.h",
     "webrtc/webrtc_video_utils.cc",
     "webrtc/webrtc_video_utils.h",
+    "widget/frame_widget.cc",
+    "widget/frame_widget.h",
     "widget/widget_base.cc",
     "widget/widget_base.h",
     "widget/widget_base_client.h",
@@ -1982,6 +1984,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojom:test_interfaces_blink",
+    "//ui/gfx/mojom:test_interfaces_blink",
     "//url",
     "//url/mojom:test_url_mojom_gurl_blink",
   ]

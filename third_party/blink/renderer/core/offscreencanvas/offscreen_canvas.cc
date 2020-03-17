@@ -377,39 +377,46 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
     }
 
     IntSize surface_size(width(), height());
-    CanvasResourceProvider::ResourceUsage usage;
-    if (can_use_gpu) {
-      if (HasPlaceholderCanvas()) {
-        usage = CanvasResourceProvider::ResourceUsage::
-            kAcceleratedCompositedResourceUsage;
-      } else {
-        usage =
-            CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage;
-      }
-    } else {
-      if (HasPlaceholderCanvas()) {
-        usage = CanvasResourceProvider::ResourceUsage::
-            kSoftwareCompositedResourceUsage;
-      } else {
-        usage = CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage;
-      }
-    }
-
     base::WeakPtr<CanvasResourceDispatcher> dispatcher_weakptr =
         HasPlaceholderCanvas() ? GetOrCreateResourceDispatcher()->GetWeakPtr()
                                : nullptr;
-    base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderUsage", usage);
+    std::unique_ptr<CanvasResourceProvider> provider;
+    // kAcceleratedCompositedResourceUsage and kSoftwareCompositedResourceUsage
+    // still need to use the Create method for CanvasResourceProvider.
+    // The former kAcceleratedResourceUsage and kSoftwareResourceUsage have been
+    // replaced by two different constructors (one of sharedImage witt the
+    // fallback to bitmap, and the other one to bitmap)
+    // This is still WIP and more changes will come in upcoming CLs.
+    if (can_use_gpu && HasPlaceholderCanvas()) {
+      provider = CanvasResourceProvider::Create(
+          surface_size,
+          CanvasResourceProvider::ResourceUsage::
+              kAcceleratedCompositedResourceUsage,
+          SharedGpuContext::ContextProviderWrapper(), 0, FilterQuality(),
+          context_->ColorParams(), presentation_mode,
+          std::move(dispatcher_weakptr), /*is_origin_top_left=*/false);
+    } else if (!can_use_gpu && HasPlaceholderCanvas()) {
+      provider = CanvasResourceProvider::Create(
+          surface_size,
+          CanvasResourceProvider::ResourceUsage::
+              kSoftwareCompositedResourceUsage,
+          SharedGpuContext::ContextProviderWrapper(), 0, FilterQuality(),
+          context_->ColorParams(), presentation_mode,
+          std::move(dispatcher_weakptr), /*is_origin_top_left=*/false);
+    } else if (can_use_gpu) {
+      provider = CanvasResourceProvider::CreateSharedImageProvider(
+          surface_size, SharedGpuContext::ContextProviderWrapper(),
+          FilterQuality(), context_->ColorParams(),
+          /*is_origin_top_left=*/false, /*shared_image_usage_flags*/ 0u);
 
-    if (usage ==
-        CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage) {
-      ReplaceResourceProvider(CanvasResourceProvider::CreateBitmapProvider(
-          surface_size, FilterQuality(), context_->ColorParams()));
-    } else {
-      ReplaceResourceProvider(CanvasResourceProvider::Create(
-          surface_size, usage, SharedGpuContext::ContextProviderWrapper(), 0,
-          FilterQuality(), context_->ColorParams(), presentation_mode,
-          std::move(dispatcher_weakptr), false /* is_origin_top_left */));
+    }  // else will try the BitmapProvider
+
+    if (!provider) {
+      provider = CanvasResourceProvider::CreateBitmapProvider(
+          surface_size, FilterQuality(), context_->ColorParams());
     }
+
+    ReplaceResourceProvider(std::move(provider));
 
     if (ResourceProvider() && ResourceProvider()->IsValid()) {
       base::UmaHistogramBoolean("Blink.Canvas.ResourceProviderIsAccelerated",
@@ -417,6 +424,7 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
       base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderType",
                                     ResourceProvider()->GetType());
       ResourceProvider()->Clear();
+      DidDraw();
 
       if (needs_matrix_clip_restore_) {
         needs_matrix_clip_restore_ = false;

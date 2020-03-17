@@ -216,6 +216,10 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
     settings.compositor_threaded_scrollbar_scrolling = true;
   }
 
+  if (base::FeatureList::IsEnabled(features::kPercentBasedScrolling)) {
+    settings.percent_based_scrolling = true;
+  }
+
 #if DCHECK_IS_ON()
   if (command_line->HasSwitch(cc::switches::kLogOnUIDoubleBackgroundBlur))
     settings.log_on_ui_double_background_blur = true;

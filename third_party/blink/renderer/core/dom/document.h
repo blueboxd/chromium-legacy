@@ -272,7 +272,6 @@ using ExplicitlySetAttrElementsMap =
 // the user in a frame and an execution context for JavaScript code.
 class CORE_EXPORT Document : public ContainerNode,
                              public TreeScope,
-                             public ConsoleLogger,
                              public UseCounter,
                              public FeaturePolicyParserDelegate,
                              public Supplementable<Document> {
@@ -1443,10 +1442,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void AddConsoleMessage(ConsoleMessage* message,
                          bool discard_duplicates = false);
-  void AddConsoleMessageImpl(mojom::ConsoleMessageSource,
-                             mojom::ConsoleMessageLevel,
-                             const String& message,
-                             bool discard_duplicates) final;
   void AddInspectorIssue(InspectorIssue*);
 
   LocalFrame* ExecutingFrame();

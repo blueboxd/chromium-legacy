@@ -1649,8 +1649,12 @@ BrowserAccessibility::ChildrenEnd() {
   return std::make_unique<PlatformChildIterator>(PlatformChildrenEnd());
 }
 
-gfx::NativeViewAccessible BrowserAccessibility::HitTestSync(int x, int y) {
-  auto* accessible = manager_->CachingAsyncHitTest(gfx::Point(x, y));
+gfx::NativeViewAccessible BrowserAccessibility::HitTestSync(int x,
+                                                            int y) const {
+  if (!instance_active())
+    return nullptr;
+  BrowserAccessibility* accessible =
+      manager_->CachingAsyncHitTest(gfx::Point(x, y));
   if (!accessible)
     return nullptr;
 

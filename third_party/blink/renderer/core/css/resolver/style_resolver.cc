@@ -2113,13 +2113,6 @@ void StyleResolver::CascadeAndApplyMatchedProperties(
 
   CascadeAndApplyCustomPropertyAnimations(state, cascade, filter, &result);
 
-  if (const UAStyle* ua_style = state.GetUAStyle()) {
-    state.Style()->SetHasAuthorBackground(
-        ua_style->HasDifferentBackground(state.StyleRef()));
-    state.Style()->SetHasAuthorBorder(
-        ua_style->HasDifferentBorder(state.StyleRef()));
-  }
-
   CascadeAndApplyForcedColors(state, result);
 
   LoadPendingResources(state);

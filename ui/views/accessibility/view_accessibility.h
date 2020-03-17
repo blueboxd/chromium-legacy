@@ -97,7 +97,7 @@ class VIEWS_EXPORT ViewAccessibility {
   Widget* GetNextFocus();
   Widget* GetPreviousFocus();
 
-  virtual gfx::NativeViewAccessible GetNativeObject();
+  virtual gfx::NativeViewAccessible GetNativeObject() const;
   virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type);
 
   // Causes the screen reader to announce |text|. If the current user is not

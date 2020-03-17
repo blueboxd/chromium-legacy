@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {CrSettingsPrefs, LanguagesBrowserProxyImpl} from 'chrome://settings/settings.js';
+// #import {CrSettingsPrefs} from 'chrome://settings/settings.js';
+// #import {LanguagesBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 // #import {FakeSettingsPrivate} from 'chrome://test/settings/fake_settings_private.m.js';
 // #import {getFakeLanguagePrefs} from 'chrome://test/settings/fake_language_settings_private.m.js';
 // #import {TestLanguagesBrowserProxy} from 'chrome://test/settings/test_languages_browser_proxy.m.js';

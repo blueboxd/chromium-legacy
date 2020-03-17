@@ -436,6 +436,7 @@ class CONTENT_EXPORT RenderWidget
   void AddPresentationCallback(
       uint32_t frame_token,
       base::OnceCallback<void(base::TimeTicks)> callback) override;
+  void RecordTimeToFirstActivePaint(base::TimeDelta duration) override;
 
   // Returns the scale being applied to the document in blink by the device
   // emulator. Returns 1 if there is no emulation active. Use this to position
@@ -800,7 +801,6 @@ class CONTENT_EXPORT RenderWidget
   // local root associated with this RenderWidget.
   PepperPluginInstanceImpl* GetFocusedPepperPluginInsideWidget();
 #endif
-  void RecordTimeToFirstActivePaint();
 
   // This method returns the WebLocalFrame which is currently focused and
   // belongs to the frame tree associated with this RenderWidget.
@@ -1040,9 +1040,6 @@ class CONTENT_EXPORT RenderWidget
   // being handled. If the current event results in starting a drag/drop
   // session, this info is sent to the browser along with other drag/drop info.
   DragEventSourceInfo possible_drag_event_info_;
-
-  bool first_update_visual_state_after_hidden_ = false;
-  base::TimeTicks was_shown_time_ = base::TimeTicks::Now();
 
   // Object to record tab switch time into this RenderWidget
   ContentToVisibleTimeReporter tab_switch_time_recorder_;

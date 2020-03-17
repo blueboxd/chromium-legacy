@@ -11,6 +11,11 @@ group("upboarding") {
   deps = [ "//chrome/browser/upboarding/query_tiles" ]
 }
 
+group("unit_tests") {
+  testonly = true
+  deps = [ "//chrome/browser/upboarding/query_tiles:unit_tests" ]
+}
+
 if (is_android) {
   java_group("java") {
     deps = [ "query_tiles:query_tiles_java" ]

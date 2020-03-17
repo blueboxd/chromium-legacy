@@ -523,6 +523,68 @@ TEST_F(AccessibilityTest, GetAccessibilityHighlightInfo) {
   }
 }
 
+TEST_F(AccessibilityTest, GetAccessibilityTextFieldInfo) {
+  static const pp::PDF::PrivateAccessibilityTextFieldInfo
+      kExpectedTextFieldInfo[] = {
+          {"Text Box", "Text", false, false, false, 0, 5, {138, 230, 135, 41}},
+          {"ReadOnly",
+           "Elephant",
+           true,
+           false,
+           false,
+           1,
+           5,
+           {138, 163, 135, 41}},
+          {"Required",
+           "Required Field",
+           false,
+           true,
+           false,
+           2,
+           5,
+           {138, 303, 135, 34}},
+          {"Password", "", false, false, true, 3, 5, {138, 356, 135, 35}}};
+
+  static const pp::Rect kExpectedPageRect = {{5, 3}, {400, 400}};
+
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("form_text_fields.pdf"));
+  ASSERT_TRUE(engine);
+  ASSERT_EQ(1, engine->GetNumberOfPages());
+
+  PP_PrivateAccessibilityPageInfo page_info;
+  std::vector<pp::PDF::PrivateAccessibilityTextRunInfo> text_runs;
+  std::vector<PP_PrivateAccessibilityCharInfo> chars;
+  pp::PDF::PrivateAccessibilityPageObjects page_objects;
+  ASSERT_TRUE(GetAccessibilityInfo(engine.get(), 0, &page_info, &text_runs,
+                                   &chars, &page_objects));
+  EXPECT_EQ(0u, page_info.page_index);
+  CompareRect(kExpectedPageRect, page_info.bounds);
+  EXPECT_EQ(text_runs.size(), page_info.text_run_count);
+  EXPECT_EQ(chars.size(), page_info.char_count);
+  ASSERT_EQ(page_objects.text_fields.size(),
+            base::size(kExpectedTextFieldInfo));
+
+  for (size_t i = 0; i < page_objects.text_fields.size(); ++i) {
+    const pp::PDF::PrivateAccessibilityTextFieldInfo& text_field_info =
+        page_objects.text_fields[i];
+    EXPECT_EQ(kExpectedTextFieldInfo[i].name, text_field_info.name);
+    EXPECT_EQ(kExpectedTextFieldInfo[i].value, text_field_info.value);
+    EXPECT_EQ(kExpectedTextFieldInfo[i].is_read_only,
+              text_field_info.is_read_only);
+    EXPECT_EQ(kExpectedTextFieldInfo[i].is_required,
+              text_field_info.is_required);
+    EXPECT_EQ(kExpectedTextFieldInfo[i].is_password,
+              text_field_info.is_password);
+    EXPECT_EQ(kExpectedTextFieldInfo[i].index_in_page,
+              text_field_info.index_in_page);
+    EXPECT_EQ(kExpectedTextFieldInfo[i].text_run_index,
+              text_field_info.text_run_index);
+    CompareRect(kExpectedTextFieldInfo[i].bounds, text_field_info.bounds);
+  }
+}
+
 TEST_F(AccessibilityTest, TestSelectionActionHandling) {
   struct Selection {
     uint32_t start_page_index;

@@ -257,8 +257,15 @@ public final class TabImpl extends ITab.Stub {
         TabImplJni.get().setTopControlsContainerView(mNativeTab, TabImpl.this, 0);
     }
 
+    /**
+     * Returns whether this Tab is visible.
+     */
+    public boolean isVisible() {
+        return (mBrowser.getActiveTab() == this && mBrowser.isStarted());
+    }
+
     private void updateWebContentsVisibility() {
-        boolean visibleNow = mBrowser.getActiveTab() == this && mBrowser.isStarted();
+        boolean visibleNow = isVisible();
         boolean webContentsVisible = mWebContents.getVisibility() == Visibility.VISIBLE;
         if (visibleNow) {
             if (!webContentsVisible) mWebContents.onShow();

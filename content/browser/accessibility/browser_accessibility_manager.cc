@@ -878,7 +878,7 @@ void BrowserAccessibilityManager::ClearAccessibilityFocus(
   delegate_->AccessibilityPerformAction(action_data);
 }
 
-void BrowserAccessibilityManager::HitTest(const gfx::Point& point) {
+void BrowserAccessibilityManager::HitTest(const gfx::Point& point) const {
   if (!delegate_)
     return;
 
@@ -892,7 +892,7 @@ void BrowserAccessibilityManager::HitTest(const gfx::Point& point) {
   delegate_->AccessibilityPerformAction(action_data);
 }
 
-gfx::Rect BrowserAccessibilityManager::GetViewBounds() {
+gfx::Rect BrowserAccessibilityManager::GetViewBounds() const {
   BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
   if (delegate)
     return delegate->AccessibilityGetViewBounds();
@@ -1462,7 +1462,7 @@ void BrowserAccessibilityManager::UseCustomDeviceScaleFactorForTesting(
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::CachingAsyncHitTest(
-    const gfx::Point& screen_point) {
+    const gfx::Point& screen_point) const {
   // TODO(crbug.com/1061323): By starting the hit test on the root frame,
   // it allows for the possibility that we don't return a descendant as the
   // hit test result, but AXPlatformNodeDelegate says that it's only supposed
@@ -1507,15 +1507,10 @@ BrowserAccessibility* BrowserAccessibilityManager::CachingAsyncHitTest(
 }
 
 void BrowserAccessibilityManager::CacheHitTestResult(
-    BrowserAccessibility* hit_test_result) {
+    BrowserAccessibility* hit_test_result) const {
   // Walk up to the highest ancestor that's a leaf node; we don't want to
   // return a node that's hidden from the tree.
-  BrowserAccessibility* parent = hit_test_result->PlatformGetParent();
-  while (parent) {
-    if (parent->PlatformChildCount() == 0)
-      hit_test_result = parent;
-    parent = parent->PlatformGetParent();
-  }
+  hit_test_result = hit_test_result->PlatformGetClosestPlatformObject();
 
   last_hover_ax_tree_id_ = hit_test_result->manager()->ax_tree_id();
   last_hover_node_id_ = hit_test_result->GetId();

@@ -42,16 +42,13 @@ Polymer({
   },
 
   /**
-   * @return {!Promise<Element>} Child element which has been stamped into the
-   *     DOM tree.
+   * @param {!function():!Promise} requestFn Requests the lazy module.
+   * @return {!Promise<!Element>} Resolves with the stamped child element after
+   *     the lazy module has been loaded.
    */
-  get() {
-    if (this.loading_) {
-      return this.loading_;
-    }
-
-    this.loading_ = new Promise((resolve, reject) => {
-      /* #ignore */ this.importHref(this.url, () => {
+  requestLazyModule_(requestFn) {
+    return new Promise((resolve, reject) => {
+      requestFn().then(() => {
         const template =
             /** @type {!HTMLTemplateElement} */ (this.getContentChildren()[0]);
         const TemplateClass = Polymer.Templatize.templatize(template, this, {
@@ -68,9 +65,30 @@ Polymer({
         resolve(this.child_);
 
         this.fire('lazy-loaded');
-     /* #ignore */ }, reject, true);
+      }, reject);
     });
+  },
 
+  /**
+   * @return {!Promise<Element>} Child element which has been stamped into the
+   *     DOM tree.
+   */
+  get() {
+    if (this.loading_) {
+      return this.loading_;
+    }
+
+    // Polymer 2 codepath
+    /* #ignore */ const requestLazyModuleFn = () => {
+      /* #ignore */ return new Promise((resolve, reject) => {
+        /* #ignore */ this.importHref(this.url, resolve, reject, true);
+      /* #ignore */ });
+    /* #ignore */ };
+
+    // Polymer 3 codepath, do not delete next line comment.
+    // #polymer3 const requestLazyModuleFn = ensureLazyLoaded;
+
+    this.loading_ = this.requestLazyModule_(requestLazyModuleFn);
     return this.loading_;
   },
 

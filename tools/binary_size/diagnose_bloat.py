@@ -375,14 +375,13 @@ class _BuildHelper(object):
 
 class _BuildArchive(object):
   """Class for managing a directory with build results and build metadata."""
-  def __init__(self, rev, base_archive_dir, build, subrepo, slow_options,
-               save_unstripped):
+
+  def __init__(self, rev, base_archive_dir, build, subrepo, save_unstripped):
     self.build = build
     self.dir = os.path.join(base_archive_dir, rev)
     metadata_path = os.path.join(self.dir, 'metadata.txt')
     self.rev = rev
     self.metadata = _Metadata([self], build, metadata_path, subrepo)
-    self._slow_options = slow_options
     self._save_unstripped = save_unstripped
 
   def ArchiveBuildResults(self, supersize_path, tool_prefix=None):
@@ -418,8 +417,6 @@ class _BuildArchive(object):
         _RESOURCE_SIZES_PATH, self.build.abs_apk_path, '--output-dir', self.dir,
         '--chartjson', '--chromium-output-dir', self.build.output_directory
     ]
-    if self._slow_options:
-      cmd += ['--estimate-patch-size', '--dump-static-initializers']
     _RunCmd(cmd)
 
   def _ArchiveFile(self, filename):
@@ -448,13 +445,12 @@ class _BuildArchive(object):
 
 class _DiffArchiveManager(object):
   """Class for maintaining BuildArchives and their related diff artifacts."""
-  def __init__(self, revs, archive_dir, diffs, build, subrepo, slow_options,
-               save_unstripped):
+
+  def __init__(self, revs, archive_dir, diffs, build, subrepo, save_unstripped):
     self.archive_dir = archive_dir
     self.build = build
     self.build_archives = [
-        _BuildArchive(rev, archive_dir, build, subrepo, slow_options,
-                      save_unstripped)
+        _BuildArchive(rev, archive_dir, build, subrepo, save_unstripped)
         for rev in revs
     ]
     self.diffs = diffs
@@ -815,11 +811,6 @@ def main():
                       action='store_true',
                       help='Build/download all revs from --reference-rev to '
                            'rev and diff the contiguous revisions.')
-  parser.add_argument('--include-slow-options',
-                      action='store_true',
-                      help='Run some extra steps that take longer to complete. '
-                           'This includes apk-patch-size estimation and '
-                           'static-initializer counting.')
   parser.add_argument('--single',
                       action='store_true',
                       help='Sets --reference-rev=rev.')
@@ -912,8 +903,7 @@ def main():
           ResourceSizesDiff(build.apk_name)
       ]
     diff_mngr = _DiffArchiveManager(revs, args.archive_directory, diffs, build,
-                                    subrepo, args.include_slow_options,
-                                    args.unstripped)
+                                    subrepo, args.unstripped)
     consecutive_failures = 0
     i = 0
     for i, archive in enumerate(diff_mngr.build_archives):

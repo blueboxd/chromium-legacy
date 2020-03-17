@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -48,8 +49,6 @@ static ShouldRespectOverflowClipType ShouldRespectOverflowClip(
 }
 
 bool PaintLayerPainter::PaintedOutputInvisible(const ComputedStyle& style) {
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-
   if (style.HasBackdropFilter())
     return false;
 
@@ -86,10 +85,10 @@ PaintResult PaintLayerPainter::Paint(
       !paint_layer_.HasSelfPaintingLayerDescendant())
     return kFullyPainted;
 
-  // If this layer is totally invisible then there is nothing to paint. In CAP
-  // we simplify this optimization by painting even when effectively invisible
-  // but skipping the painted content during layerization in
-  // PaintArtifactCompositor.
+  // If this layer is totally invisible then there is nothing to paint.
+  // In CompositeAfterPaint we simplify this optimization by painting even when
+  // effectively invisible but skipping the painted content during layerization
+  // in PaintArtifactCompositor.
   if (paint_layer_.PaintsWithTransparency(
           painting_info.GetGlobalPaintFlags())) {
     if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
@@ -324,6 +323,10 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     paint_layer_.SetPreviousCullRect(CullRect());
     return kMayBeClippedByCullRect;
   }
+
+  base::Optional<IgnorePaintTimingScope> ignore_paint_timing;
+  if (PaintedOutputInvisible(paint_layer_.GetLayoutObject().StyleRef()))
+    ignore_paint_timing.emplace();
 
   PaintLayerFlags paint_flags = paint_flags_arg;
   PaintLayerPaintingInfo painting_info = painting_info_arg;

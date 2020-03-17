@@ -176,6 +176,9 @@ extern const char kBypassAppBannerEngagementChecksDescription[];
 extern const char kContextMenuSearchWithGoogleLensName[];
 extern const char kContextMenuSearchWithGoogleLensDescription[];
 
+extern const char kOmniboxContextMenuShowFullUrlsName[];
+extern const char kOmniboxContextMenuShowFullUrlsDescription[];
+
 extern const char kClickToOpenPDFName[];
 extern const char kClickToOpenPDFDescription[];
 

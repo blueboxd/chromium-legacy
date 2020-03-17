@@ -276,6 +276,7 @@ if (is_chromeos_device) {
 
       # crbug.com/1062289
       "security.NetworkListenersARC",
+      "security.NetworkListenersNonARC",
 
       # crbug.com/1054340
       "crostini.AudioSanity.artifact",

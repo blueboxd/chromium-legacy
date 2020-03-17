@@ -84,6 +84,7 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
+#include "third_party/blink/renderer/platform/widget/widget_base.h"
 
 namespace blink {
 namespace {
@@ -285,6 +286,7 @@ void WebFrameWidgetImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
   GetPage()->Animator().SetSuppressFrameRequestsWorkaroundFor704763Only(
       suppress_frame_requests);
 }
+
 void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
   TRACE_EVENT1("blink", "WebFrameWidgetImpl::beginFrame", "frameTime",
                last_frame_time);
@@ -295,7 +297,7 @@ void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
 
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       LocalRootImpl()->GetFrame()->GetDocument()->Lifecycle());
-  if (ShouldRecordMainFrameMetrics()) {
+  if (WidgetBase::ShouldRecordBeginMainFrameMetrics()) {
     SCOPED_UMA_AND_UKM_TIMER(
         LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator(),
         LocalFrameUkmAggregator::kAnimate);
@@ -1018,14 +1020,14 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
 
   // WebFrameWidgetImpl is used for child frames, which always have a
   // transparent background color.
-  widget_base_.LayerTreeHost()->set_background_color(SK_ColorTRANSPARENT);
+  widget_base_->LayerTreeHost()->set_background_color(SK_ColorTRANSPARENT);
   // Pass the limits even though this is for subframes, as the limits will
   // be needed in setting the raster scale.
   Client()->SetPageScaleStateAndLimits(1.f, false /* is_pinch_gesture_active */,
                                        View()->MinimumPageScaleFactor(),
                                        View()->MaximumPageScaleFactor());
 
-  widget_base_.LayerTreeHost()->SetRootLayer(layer);
+  widget_base_->LayerTreeHost()->SetRootLayer(layer);
 }
 
 HitTestResult WebFrameWidgetImpl::CoreHitTestResultAt(

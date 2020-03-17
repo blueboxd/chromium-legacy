@@ -230,7 +230,7 @@ public class TabListCoordinator implements Destroyable {
         mMediator = new TabListMediator(context, mModel, tabModelSelector, thumbnailProvider,
                 titleProvider, tabListFaviconProvider, actionOnRelatedTabs,
                 selectionDelegateProvider, gridCardOnClickListenerProvider, dialogHandler,
-                this::endItemAnimationForPosition, componentName, itemType);
+                componentName, itemType);
 
         if (mMode == TabListMode.GRID) {
             GridLayoutManager gridLayoutManager =
@@ -415,13 +415,5 @@ public class TabListCoordinator implements Destroyable {
      */
     void removeSpecialListItem(@UiType int uiType, int itemIdentifier) {
         mMediator.removeSpecialItemFromModel(uiType, itemIdentifier);
-    }
-
-    private void endItemAnimationForPosition(int pos) {
-        RecyclerView.ViewHolder viewHolder = mRecyclerView.findViewHolderForAdapterPosition(pos);
-        if (viewHolder == null || mRecyclerView.getItemAnimator() == null) {
-            return;
-        }
-        mRecyclerView.getItemAnimator().endAnimation(viewHolder);
     }
 }

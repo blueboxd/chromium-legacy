@@ -40,7 +40,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.CloseableOnMainThread;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -57,7 +56,6 @@ import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.contextmenu.RevampedContextMenuUtils;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -212,10 +210,16 @@ public class TabGroupPopupUiTest {
 
         // Click on the current tab in strip to close, and the closure should trigger tab strip
         // update.
-        clickOnNthItemInStrip(cta, getCurrentTabIndexInGroup(cta));
+        onView(withId(R.id.tab_list_view))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(
+                        getCurrentTabIndexInGroup(cta), click()));
         verifyShowingTabStrip(cta, 3);
 
-        clickOnNthItemInStrip(cta, getCurrentTabIndexInGroup(cta));
+        onView(withId(R.id.tab_list_view))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(
+                        getCurrentTabIndexInGroup(cta), click()));
         verifyShowingTabStrip(cta, 2);
     }
 
@@ -253,44 +257,6 @@ public class TabGroupPopupUiTest {
                     assertTrue(stripContainerView instanceof FrameLayout);
                     assertEquals(1f, stripContainerView.getAlpha(), 0);
                 });
-    }
-
-    @Test
-    @MediumTest
-    public void testAddTabFromBackground() throws Throwable {
-        launchActivity();
-        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        EmbeddedTestServer embeddedTestServer =
-                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-        String contextMenuTestUrl = embeddedTestServer.getURL(
-                "/chrome/test/data/android/contextmenu/context_menu_test.html");
-
-        mActivityTestRule.loadUrl(contextMenuTestUrl);
-        try (CloseableOnMainThread ignored = CloseableOnMainThread.StrictMode.allowDiskWrites()) {
-            RevampedContextMenuUtils.selectContextMenuItem(
-                    InstrumentationRegistry.getInstrumentation(), cta,
-                    cta.getTabModelSelector().getCurrentTab(), "testLink",
-                    R.id.contextmenu_open_in_new_tab);
-        }
-        verifyShowingTabStrip(cta, 2);
-
-        // Add enough tabs so that adding new items later requires recyclerView to recycle old
-        // views.
-        for (int i = 0; i < 6; i++) {
-            onView(withId(R.id.toolbar_right_button))
-                    .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
-                    .perform(click());
-        }
-        verifyShowingTabStrip(cta, 8);
-
-        clickOnNthItemInStrip(cta, 0);
-        try (CloseableOnMainThread ignored = CloseableOnMainThread.StrictMode.allowDiskWrites()) {
-            RevampedContextMenuUtils.selectContextMenuItem(
-                    InstrumentationRegistry.getInstrumentation(), cta,
-                    cta.getTabModelSelector().getCurrentTab(), "testLink",
-                    R.id.contextmenu_open_in_new_tab);
-        }
-        verifyShowingTabStrip(cta, 9);
     }
 
     private void createTabGroupAndEnterTabPage(ChromeTabbedActivity cta, int tabCount, String url) {
@@ -383,11 +349,5 @@ public class TabGroupPopupUiTest {
                                             .getTabModelSelector()
                                             .getTabModelFilterProvider()
                                             .getCurrentTabModelFilter()::isTabModelRestored);
-    }
-
-    private void clickOnNthItemInStrip(ChromeTabbedActivity cta, int index) {
-        onView(withId(R.id.tab_list_view))
-                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
-                .perform(RecyclerViewActions.actionOnItemAtPosition(index, click()));
     }
 }

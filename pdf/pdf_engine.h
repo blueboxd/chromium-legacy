@@ -283,6 +283,19 @@ class PDFEngine {
     uint32_t color;
   };
 
+  struct AccessibilityTextFieldInfo {
+    AccessibilityTextFieldInfo();
+    AccessibilityTextFieldInfo(const AccessibilityTextFieldInfo& that);
+    ~AccessibilityTextFieldInfo();
+
+    std::string name;
+    std::string value;
+    bool is_read_only;
+    bool is_required;
+    bool is_password;
+    pp::FloatRect bounds;
+  };
+
   // Factory method to create an instance of the PDF Engine.
   static std::unique_ptr<PDFEngine> Create(Client* client,
                                            bool enable_javascript);
@@ -390,6 +403,10 @@ class PDFEngine {
   // For all the highlights in page |page_index|, get their underlying text
   // ranges and bounding boxes.
   virtual std::vector<AccessibilityHighlightInfo> GetHighlightInfo(
+      int page_index) = 0;
+  // For all the text fields in page |page_index|, get their properties like
+  // name, value, bounding boxes etc.
+  virtual std::vector<AccessibilityTextFieldInfo> GetTextFieldInfo(
       int page_index) = 0;
 
   // Gets the PDF document's print scaling preference. True if the document can

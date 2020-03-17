@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/test/payments/payment_request_platform_browsertest_base.h"
+#include "components/payments/core/features.h"
+#include "components/payments/core/journey_logger.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {
 
@@ -59,5 +64,83 @@ IN_PROC_BROWSER_TEST_F(PaymentHandlerJustInTimeInstallationTest,
   // kylepay should be installed just-in-time and used for testing.
   ExpectBodyContains("kylepay.com/webpay");
 }
+
+class AlwaysAllowJustInTimePaymentAppTest
+    : public PaymentHandlerJustInTimeInstallationTest,
+      public testing::WithParamInterface<bool> {
+ protected:
+  AlwaysAllowJustInTimePaymentAppTest() {
+    scoped_feature_list_.InitWithFeatureState(
+        features::kAlwaysAllowJustInTimePaymentApp, GetParam());
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(AlwaysAllowJustInTimePaymentAppTest,
+                       HybridRequest_NoCreditCard) {
+  base::HistogramTester histogram_tester;
+  ResetEventWaiterForSingleEvent(GetParam() ? TestEvent::kPaymentCompleted
+                                            : TestEvent::kShowAppsReady);
+  EXPECT_TRUE(
+      content::ExecJs(GetActiveWebContents(),
+                      "testPaymentMethods([ "
+                      " {supportedMethods: 'basic-card'}, "
+                      " {supportedMethods: 'https://kylepay.com/webpay'}])"));
+  WaitForObservedEvent();
+
+  if (GetParam()) {
+    // If AlwaysAllowJIT is enabled, kylepay should be installed just-in-time
+    // and used for testing.
+    ExpectBodyContains("kylepay.com/webpay");
+  } else {
+    // With AlwaysJIT disabled, the request is expected to stop at the payment
+    // sheet waiting for user action.
+    EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), "abort()"));
+  }
+
+  std::vector<base::Bucket> buckets =
+      histogram_tester.GetAllSamples("PaymentRequest.Events");
+  ASSERT_EQ(1U, buckets.size());
+  EXPECT_FALSE(buckets[0].min &
+               JourneyLogger::EVENT_AVAILABLE_METHOD_BASIC_CARD);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_AVAILABLE_METHOD_GOOGLE);
+  EXPECT_EQ(GetParam(),
+            (buckets[0].min & JourneyLogger::EVENT_AVAILABLE_METHOD_OTHER) > 0);
+}
+
+IN_PROC_BROWSER_TEST_P(AlwaysAllowJustInTimePaymentAppTest,
+                       HybridRequest_HasCompleteCreditCard) {
+  CreateAndAddCreditCardForProfile(CreateAndAddAutofillProfile());
+
+  base::HistogramTester histogram_tester;
+  ResetEventWaiterForSingleEvent(TestEvent::kShowAppsReady);
+
+  EXPECT_TRUE(
+      content::ExecJs(GetActiveWebContents(),
+                      "testPaymentMethods([ "
+                      " {supportedMethods: 'basic-card'}, "
+                      " {supportedMethods: 'https://kylepay.com/webpay'}])"));
+  WaitForObservedEvent();
+
+  // Regardless whether AlwaysJIT is disabled, beceause there is a complete
+  // basic card, the request is expected to stop at the payment sheet waiting
+  // for user action.
+  EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), "abort()"));
+
+  std::vector<base::Bucket> buckets =
+      histogram_tester.GetAllSamples("PaymentRequest.Events");
+  ASSERT_EQ(1U, buckets.size());
+  EXPECT_TRUE(buckets[0].min &
+              JourneyLogger::EVENT_AVAILABLE_METHOD_BASIC_CARD);
+  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_AVAILABLE_METHOD_GOOGLE);
+  EXPECT_EQ(GetParam(),
+            (buckets[0].min & JourneyLogger::EVENT_AVAILABLE_METHOD_OTHER) > 0);
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         AlwaysAllowJustInTimePaymentAppTest,
+                         ::testing::Values(true, false));
 
 }  // namespace payments

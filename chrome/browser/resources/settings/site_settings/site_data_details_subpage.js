@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 (function() {
-'use strict';
 
 const categoryLabels = {
   app_cache: loadTimeData.getString('cookieAppCache'),

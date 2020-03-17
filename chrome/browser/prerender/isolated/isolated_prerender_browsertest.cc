@@ -131,11 +131,11 @@ class IsolatedPrerenderBrowserTest
   }
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kIsolatePrerenders);
-
-    holdback_scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        data_reduction_proxy::features::kDataReductionProxyHoldback,
-        {{"force_enable_config_service_fetches", "true"}});
+    scoped_feature_list_.InitWithFeatures(
+        {features::kIsolatePrerenders,
+         data_reduction_proxy::features::kDataReductionProxyHoldback,
+         data_reduction_proxy::features::kFetchClientConfig},
+        {});
 
     InProcessBrowserTest::SetUp();
   }
@@ -276,7 +276,6 @@ class IsolatedPrerenderBrowserTest
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::test::ScopedFeatureList holdback_scoped_feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> origin_server_;
   std::unique_ptr<net::EmbeddedTestServer> config_server_;
   size_t origin_server_request_with_cookies_ = 0;

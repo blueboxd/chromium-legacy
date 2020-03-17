@@ -6300,7 +6300,8 @@
             "name": "Certificate Profile 1",
             "cert_profile_id":"cert_profile_id_1",
             "key_algorithm":"rsa",
-            "renewal_period_seconds": 2592000
+            "renewal_period_seconds": 2592000,
+            "policy_version": "some_hash"
           }]
         },
         "prefs": {
@@ -6309,7 +6310,8 @@
               "name": "Certificate Profile 1",
               "cert_profile_id":"cert_profile_id_1",
               "key_algorithm":"rsa",
-              "renewal_period_seconds": 2592000
+              "renewal_period_seconds": 2592000,
+              "policy_version": "some_hash"
             }]
           }
         }
@@ -6325,7 +6327,8 @@
             "name": "Certificate Profile 1",
             "cert_profile_id":"cert_profile_id_1",
             "key_algorithm":"rsa",
-            "renewal_period_seconds": 2592000
+            "renewal_period_seconds": 2592000,
+            "policy_version": "some_hash"
           }]
         },
         "prefs": {
@@ -6334,7 +6337,8 @@
               "name": "Certificate Profile 1",
               "cert_profile_id":"cert_profile_id_1",
               "key_algorithm":"rsa",
-              "renewal_period_seconds": 2592000
+              "renewal_period_seconds": 2592000,
+              "policy_version": "some_hash"
             }],
             "local_state": true
           }

@@ -31,39 +31,18 @@ TEST_F(ProfileRelatedFileSystemUtilTest, IsUnderDriveMountPoint) {
   EXPECT_FALSE(IsUnderDriveMountPoint(
       base::FilePath::FromUTF8Unsafe("/wherever/foo.txt")));
   EXPECT_FALSE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("/special/foo.txt")));
+      base::FilePath::FromUTF8Unsafe("/media/fuse/foo.txt")));
   EXPECT_FALSE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("special/drive/foo.txt")));
+      base::FilePath::FromUTF8Unsafe("media/fuse/drivefs/foo.txt")));
 
-  EXPECT_TRUE(
-      IsUnderDriveMountPoint(base::FilePath::FromUTF8Unsafe("/special/drive")));
   EXPECT_TRUE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("/special/drive/foo.txt")));
+      base::FilePath::FromUTF8Unsafe("/media/fuse/drivefs")));
   EXPECT_TRUE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("/special/drive/subdir/foo.txt")));
+      base::FilePath::FromUTF8Unsafe("/media/fuse/drivefs/foo.txt")));
   EXPECT_TRUE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("/special/drive-xxx/foo.txt")));
-}
-
-TEST_F(ProfileRelatedFileSystemUtilTest, ExtractDrivePath) {
-  EXPECT_EQ(
-      base::FilePath(),
-      ExtractDrivePath(base::FilePath::FromUTF8Unsafe("/wherever/foo.txt")));
-  EXPECT_EQ(
-      base::FilePath(),
-      ExtractDrivePath(base::FilePath::FromUTF8Unsafe("/special/foo.txt")));
-
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive"),
-            ExtractDrivePath(base::FilePath::FromUTF8Unsafe("/special/drive")));
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/foo.txt"),
-            ExtractDrivePath(
-                base::FilePath::FromUTF8Unsafe("/special/drive/foo.txt")));
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/subdir/foo.txt"),
-            ExtractDrivePath(base::FilePath::FromUTF8Unsafe(
-                "/special/drive/subdir/foo.txt")));
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/foo.txt"),
-            ExtractDrivePath(
-                base::FilePath::FromUTF8Unsafe("/special/drive-xxx/foo.txt")));
+      base::FilePath::FromUTF8Unsafe("/media/fuse/drivefs/subdir/foo.txt")));
+  EXPECT_TRUE(IsUnderDriveMountPoint(
+      base::FilePath::FromUTF8Unsafe("/media/fuse/drivefs-xxx/foo.txt")));
 }
 
 TEST_F(ProfileRelatedFileSystemUtilTest, GetCacheRootPath) {

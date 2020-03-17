@@ -399,16 +399,6 @@ class WebView {
   // well.
   virtual void SetBaseBackgroundColor(SkColor) {}
 
-  // Overrides the page's background and base background color. You
-  // can use this to enforce a transparent background, which is useful if you
-  // want to have some custom background rendered behind the widget.
-  //
-  // These may are only called for composited WebViews.
-  virtual void SetBackgroundColorOverride(SkColor) {}
-  virtual void ClearBackgroundColorOverride() {}
-  virtual void SetBaseBackgroundColorOverride(SkColor) {}
-  virtual void ClearBaseBackgroundColorOverride() {}
-
   // Scheduling -----------------------------------------------------------
 
   virtual PageScheduler* Scheduler() const = 0;

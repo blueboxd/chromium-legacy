@@ -106,11 +106,6 @@ class ColumnRuleColor;
 class Fill;
 class Float;
 class FloodColor;
-class InternalUaBackgroundColor;
-class InternalUaBorderBottomColor;
-class InternalUaBorderLeftColor;
-class InternalUaBorderRightColor;
-class InternalUaBorderTopColor;
 class InternalVisitedBackgroundColor;
 class InternalVisitedBorderBottomColor;
 class InternalVisitedBorderLeftColor;
@@ -216,11 +211,6 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::Fill;
   friend class css_longhand::Float;
   friend class css_longhand::FloodColor;
-  friend class css_longhand::InternalUaBackgroundColor;
-  friend class css_longhand::InternalUaBorderBottomColor;
-  friend class css_longhand::InternalUaBorderLeftColor;
-  friend class css_longhand::InternalUaBorderRightColor;
-  friend class css_longhand::InternalUaBorderTopColor;
   friend class css_longhand::InternalVisitedBackgroundColor;
   friend class css_longhand::InternalVisitedBorderBottomColor;
   friend class css_longhand::InternalVisitedBorderLeftColor;
@@ -259,7 +249,6 @@ class ComputedStyle : public ComputedStyleBase,
   friend class StyleBuilderFunctions;
   // Saves Border/Background information for later comparison.
   friend class CachedUAStyle;
-  friend class UAStyle;
   // Accesses visited and unvisited colors.
   friend class ColorPropertyFunctions;
   // Edits the background for media controls.
@@ -1955,10 +1944,15 @@ class ComputedStyle : public ComputedStyleBase,
         LengthSize(Length::Fixed(s.Width()), Length::Fixed(s.Height())));
   }
 
+  FloatRoundedRect GetBorderFor(const LayoutRect& border_rect) const;
+
   FloatRoundedRect GetRoundedBorderFor(
       const LayoutRect& border_rect,
       bool include_logical_left_edge = true,
       bool include_logical_right_edge = true) const;
+
+  FloatRoundedRect GetInnerBorderFor(const LayoutRect& border_rect) const;
+
   FloatRoundedRect GetRoundedInnerBorderFor(
       const LayoutRect& border_rect,
       bool include_logical_left_edge = true,

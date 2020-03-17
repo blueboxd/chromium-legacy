@@ -33,6 +33,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/common/content_constants_internal.h"
 #include "content/common/edit_command.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
@@ -1322,53 +1323,43 @@ TEST_F(RenderWidgetHostTest, UnhandledGestureEvent) {
 // Test that the hang monitor timer expires properly if a new timer is started
 // while one is in progress (see crbug.com/11007).
 TEST_F(RenderWidgetHostTest, DontPostponeInputEventAckTimeout) {
-  // Start with a short timeout.
-  host_->StartInputEventAckTimeout(TimeDelta::FromMilliseconds(10));
+  base::TimeDelta delay =
+      base::TimeDelta::FromMilliseconds(kHungRendererDelayMs);
 
-  // Immediately try to add a long 30 second timeout.
+  // Start a timeout.
+  host_->StartInputEventAckTimeout();
+
+  task_environment_.FastForwardBy(delay / 2);
+
+  // Add another timeout.
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
-  host_->StartInputEventAckTimeout(TimeDelta::FromSeconds(30));
+  host_->StartInputEventAckTimeout();
 
   // Wait long enough for first timeout and see if it fired.
-  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(10));
+  task_environment_.FastForwardBy(delay);
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
 // Test that the hang monitor timer expires properly if it is started, stopped,
 // and then started again.
 TEST_F(RenderWidgetHostTest, StopAndStartInputEventAckTimeout) {
-  // Start with a short timeout, then stop it.
-  host_->StartInputEventAckTimeout(TimeDelta::FromMilliseconds(10));
+  // Start a timeout, then stop it.
+  host_->StartInputEventAckTimeout();
   host_->StopInputEventAckTimeout();
 
   // Start it again to ensure it still works.
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
-  host_->StartInputEventAckTimeout(TimeDelta::FromMilliseconds(10));
+  host_->StartInputEventAckTimeout();
 
   // Wait long enough for first timeout and see if it fired.
-  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(40));
-  EXPECT_TRUE(delegate_->unresponsive_timer_fired());
-}
-
-// Test that the hang monitor timer expires properly if it is started, then
-// updated to a shorter duration.
-TEST_F(RenderWidgetHostTest, ShorterDelayInputEventAckTimeout) {
-  // Start with a timeout.
-  host_->StartInputEventAckTimeout(TimeDelta::FromMilliseconds(100));
-
-  // Start it again with shorter delay.
-  EXPECT_FALSE(delegate_->unresponsive_timer_fired());
-  host_->StartInputEventAckTimeout(TimeDelta::FromMilliseconds(20));
-
-  // Wait long enough for the second timeout and see if it fired.
-  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(25));
+  task_environment_.FastForwardBy(
+      base::TimeDelta::FromMilliseconds(kHungRendererDelayMs + 10));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
 // Test that the hang monitor timer is effectively disabled when the widget is
 // hidden.
 TEST_F(RenderWidgetHostTest, InputEventAckTimeoutDisabledForInputWhenHidden) {
-  host_->set_hung_renderer_delay(base::TimeDelta::FromMicroseconds(1));
   SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 10, 0, false);
 
   // Hiding the widget should deactivate the timeout.
@@ -1376,18 +1367,21 @@ TEST_F(RenderWidgetHostTest, InputEventAckTimeoutDisabledForInputWhenHidden) {
 
   // The timeout should not fire.
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
-  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(2));
+  task_environment_.FastForwardBy(
+      base::TimeDelta::FromMilliseconds(kHungRendererDelayMs + 10));
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
 
   // The timeout should never reactivate while hidden.
   SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 10, 0, false);
-  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(2));
+  task_environment_.FastForwardBy(
+      base::TimeDelta::FromMilliseconds(kHungRendererDelayMs + 10));
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
 
   // Showing the widget should restore the timeout, as the events have
   // not yet been ack'ed.
   host_->WasShown(base::nullopt /* record_tab_switch_time_request */);
-  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(2));
+  task_environment_.FastForwardBy(
+      base::TimeDelta::FromMilliseconds(kHungRendererDelayMs + 10));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1395,12 +1389,10 @@ TEST_F(RenderWidgetHostTest, InputEventAckTimeoutDisabledForInputWhenHidden) {
 // This can happen if the second input event causes the renderer to hang.
 // This test will catch a regression of crbug.com/111185.
 TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
-  // Configure the host to wait 10ms before considering
-  // the renderer hung.
-  host_->set_hung_renderer_delay(base::TimeDelta::FromMicroseconds(10));
-
   // Send two events but only one ack.
   SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
+  task_environment_.FastForwardBy(
+      base::TimeDelta::FromMilliseconds(kHungRendererDelayMs / 2));
   SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
 
   MockWidgetInputHandler::MessageVector dispatched_events =
@@ -1411,10 +1403,12 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
   // Send the simulated response from the renderer back.
   dispatched_events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
 
-  // Wait long enough for first timeout and see if it fired.
-  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(20));
+  // Wait long enough for second timeout and see if it fired.
+  task_environment_.FastForwardBy(
+      base::TimeDelta::FromMilliseconds(kHungRendererDelayMs + 10));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
+
 TEST_F(RenderWidgetHostTest, IgnoreInputEvent) {
   host_->SetupForInputRouterTest();
 

@@ -780,14 +780,14 @@ void ArcAccessibilityHelperBridge::HandleFilterTypeAllEvent(
           arc::mojom::AccessibilityEventType::ANNOUNCEMENT ||
       event_data->event_type ==
           arc::mojom::AccessibilityEventType::NOTIFICATION_STATE_CHANGED) {
-    if (!event_data->eventText.has_value())
+    if (!event_data->event_text.has_value())
       return;
 
     extensions::EventRouter* event_router = GetEventRouter();
     // OnAnnounceForAccessibility is used to force speech output.
     std::unique_ptr<base::ListValue> event_args(
         extensions::api::accessibility_private::OnAnnounceForAccessibility::
-            Create(*(event_data->eventText)));
+            Create(*(event_data->event_text)));
     std::unique_ptr<extensions::Event> event(new extensions::Event(
         extensions::events::ACCESSIBILITY_PRIVATE_ON_ANNOUNCE_FOR_ACCESSIBILITY,
         extensions::api::accessibility_private::OnAnnounceForAccessibility::

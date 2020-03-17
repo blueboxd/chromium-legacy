@@ -202,8 +202,10 @@ public class PaymentRequestTestBridge {
 
     @CalledByNative
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
-    public static boolean isAndroidMarshmallowForTest() {
-        return Build.VERSION.SDK_INT == Build.VERSION_CODES.M;
+    public static boolean isAndroidMarshmallowOrLollipopForTest() {
+        return Build.VERSION.SDK_INT == Build.VERSION_CODES.M
+                || Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP
+                || Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP_MR1;
     }
 
     /**

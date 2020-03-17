@@ -91,6 +91,7 @@ android_library("java") {
     "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/embedder_support/android/metrics:java",
+    "//components/external_intents/android:java",
     "//components/find_in_page/android:java",
     "//components/javascript_dialogs/android:java",
     "//components/metrics:metrics_java",

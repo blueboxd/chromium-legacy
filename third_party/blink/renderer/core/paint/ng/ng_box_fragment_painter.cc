@@ -1153,7 +1153,7 @@ void NGBoxFragmentPainter::PaintInlineItems(const PaintInfo& paint_info,
         break;
       case NGFragmentItem::kBox:
         if (!item->IsHiddenForPaint())
-          PaintBoxItem(*item, *cursor, paint_info, paint_offset);
+          PaintBoxItem(*item, *cursor, paint_info, paint_offset, parent_offset);
         cursor->MoveToNextSkippingChildren();
         break;
       case NGFragmentItem::kLine:
@@ -1309,7 +1309,8 @@ void NGBoxFragmentPainter::PaintLineBoxChildItems(
     if (const NGPhysicalBoxFragment* child_fragment =
             child_item->BoxFragment()) {
       if (child_fragment->IsListMarker()) {
-        PaintBoxItem(*child_item, *children, paint_info, paint_offset);
+        PaintBoxItem(*child_item, *child_fragment, *children, paint_info,
+                     paint_offset);
         continue;
       }
     }
@@ -1452,39 +1453,56 @@ NGBoxFragmentPainter::MoveTo NGBoxFragmentPainter::PaintLineBoxItem(
   return kDontSkipChildren;
 }
 
+// Paint non-culled box item.
+void NGBoxFragmentPainter::PaintBoxItem(
+    const NGFragmentItem& item,
+    const NGPhysicalBoxFragment& child_fragment,
+    const NGInlineCursor& cursor,
+    const PaintInfo& paint_info,
+    const PhysicalOffset& paint_offset) {
+  DCHECK_EQ(item.Type(), NGFragmentItem::kBox);
+  DCHECK_EQ(&item, cursor.Current().Item());
+  DCHECK_EQ(item.BoxFragment(), &child_fragment);
+  DCHECK(!child_fragment.IsHiddenForPaint());
+  if (child_fragment.HasSelfPaintingLayer() || child_fragment.IsFloating())
+    return;
+
+  // TODO(kojii): Check CullRect.
+
+  if (child_fragment.IsAtomicInline() || child_fragment.IsListMarker()) {
+    if (FragmentRequiresLegacyFallback(child_fragment)) {
+      PaintInlineChildBoxUsingLegacyFallback(child_fragment, paint_info);
+      return;
+    }
+    NGBoxFragmentPainter(child_fragment).PaintAllPhasesAtomically(paint_info);
+    return;
+  }
+
+  DCHECK(child_fragment.IsInlineBox());
+  NGInlineBoxFragmentPainter(cursor, item, child_fragment)
+      .Paint(paint_info, paint_offset);
+}
+
 void NGBoxFragmentPainter::PaintBoxItem(const NGFragmentItem& item,
                                         const NGInlineCursor& cursor,
                                         const PaintInfo& paint_info,
-                                        const PhysicalOffset& paint_offset) {
+                                        const PhysicalOffset& paint_offset,
+                                        const PhysicalOffset& parent_offset) {
   DCHECK_EQ(item.Type(), NGFragmentItem::kBox);
   DCHECK_EQ(&item, cursor.Current().Item());
 
   if (const NGPhysicalBoxFragment* child_fragment = item.BoxFragment()) {
-    DCHECK(!child_fragment->IsHiddenForPaint());
-    if (child_fragment->HasSelfPaintingLayer() || child_fragment->IsFloating())
-      return;
-
-    // TODO(kojii): Check CullRect.
-
-    if (child_fragment->IsAtomicInline() || child_fragment->IsListMarker()) {
-      if (FragmentRequiresLegacyFallback(*child_fragment)) {
-        PaintInlineChildBoxUsingLegacyFallback(*child_fragment, paint_info);
-        return;
-      }
-      NGBoxFragmentPainter(*child_fragment)
-          .PaintAllPhasesAtomically(paint_info);
-      return;
-    }
-
-    DCHECK(child_fragment->IsInlineBox());
-    NGInlineBoxFragmentPainter(cursor, item, *child_fragment)
-        .Paint(paint_info, paint_offset);
+    PaintBoxItem(item, *child_fragment, cursor, paint_info, paint_offset);
     return;
   }
 
+  // This |item| is a culled inline box.
+  DCHECK(item.GetLayoutObject()->IsLayoutInline());
   NGInlineCursor children = cursor.CursorForDescendants();
-  PaintInlineItems(paint_info, paint_offset, item.OffsetInContainerBlock(),
-                   &children);
+  // Pass the given |parent_offset| because culled inline boxes do not affect
+  // the sub-pixel snapping behavior. TODO(kojii): This is for the
+  // compatibility, we may want to revisit in future.
+  PaintInlineItems(paint_info, paint_offset, parent_offset, &children);
 }
 
 bool NGBoxFragmentPainter::IsPaintingScrollingBackground(

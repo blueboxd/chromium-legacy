@@ -29,12 +29,38 @@ import org.chromium.ui.modelutil.PropertyModel;
 public abstract class InfoBar implements InfoBarInteractionHandler, InfoBarUiItem {
     private static final String TAG = "InfoBar";
 
+    /**
+     * Interface for InfoBar to interact with its container.
+     */
+    public interface Container {
+        /**
+         * @return True if the infobar is in front.
+         */
+        boolean isFrontInfoBar(InfoBar infoBar);
+
+        /**
+         * Remove the infobar from its container.
+         * @param infoBar InfoBar to remove from the View hierarchy.
+         */
+        void removeInfoBar(InfoBar infoBar);
+
+        /**
+         * Notifies that an infobar's View ({@link InfoBar#getView}) has changed.
+         */
+        void notifyInfoBarViewChanged();
+
+        /**
+         * @return True if the container's destroy() method has been called.
+         */
+        boolean isDestroyed();
+    }
+
     private final int mIconDrawableId;
     private final Bitmap mIconBitmap;
     private final @ColorRes int mIconTintId;
     private final CharSequence mMessage;
 
-    private @Nullable InfoBarContainer mContainer;
+    private @Nullable Container mContainer;
     private @Nullable View mView;
     private @Nullable Context mContext;
 
@@ -205,7 +231,7 @@ public abstract class InfoBar implements InfoBarInteractionHandler, InfoBarUiIte
     private boolean closeInfoBar() {
         if (!mIsDismissed) {
             mIsDismissed = true;
-            if (!mContainer.hasBeenDestroyed()) {
+            if (!mContainer.isDestroyed()) {
                 // If the container was destroyed, it's already been emptied of all its infobars.
                 onStartedHiding();
                 mContainer.removeInfoBar(this);
@@ -223,7 +249,7 @@ public abstract class InfoBar implements InfoBarInteractionHandler, InfoBarUiIte
      *         infobars).
      */
     public boolean isFrontInfoBar() {
-        return mContainer.getFrontInfoBar() == this;
+        return mContainer.isFrontInfoBar(this);
     }
 
     /**
@@ -236,7 +262,7 @@ public abstract class InfoBar implements InfoBarInteractionHandler, InfoBarUiIte
         return mNativeInfoBarPtr;
     }
 
-    void setInfoBarContainer(InfoBarContainer container) {
+    void setContainer(Container container) {
         mContainer = container;
     }
 

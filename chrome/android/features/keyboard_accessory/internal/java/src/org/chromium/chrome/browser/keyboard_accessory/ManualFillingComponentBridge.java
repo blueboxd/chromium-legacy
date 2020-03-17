@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.FooterCommand;
+import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.OptionToggle;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
@@ -123,7 +124,10 @@ class ManualFillingComponentBridge {
     @CalledByNative
     private void addOptionToggleToAccessorySheetData(Object objAccessorySheetData,
             String displayText, boolean enabled, @AccessoryAction int accessoryAction) {
-        // TODO(crbug.com/1044930): Implement this.
+        // TODO(crbug.com/1044930): Update the callback with a call to native which communicates the
+        // new state of the toggle.
+        ((AccessorySheetData) objAccessorySheetData)
+                .setOptionToggle(new OptionToggle(displayText, enabled, e -> {}));
     }
 
     @CalledByNative
@@ -166,10 +170,10 @@ class ManualFillingComponentBridge {
     }
 
     @VisibleForTesting
-    public static void cachePasswordSheetData(
-            WebContents webContents, String[] userNames, String[] passwords) {
+    public static void cachePasswordSheetData(WebContents webContents, String[] userNames,
+            String[] passwords, boolean originBlacklisted) {
         ManualFillingComponentBridgeJni.get().cachePasswordSheetDataForTesting(
-                webContents, userNames, passwords);
+                webContents, userNames, passwords, originBlacklisted);
     }
 
     @VisibleForTesting
@@ -195,8 +199,8 @@ class ManualFillingComponentBridge {
                 ManualFillingComponentBridge caller, int tabType, UserInfoField userInfoField);
         void onOptionSelected(long nativeManualFillingViewAndroid,
                 ManualFillingComponentBridge caller, int accessoryAction);
-        void cachePasswordSheetDataForTesting(
-                WebContents webContents, String[] userNames, String[] passwords);
+        void cachePasswordSheetDataForTesting(WebContents webContents, String[] userNames,
+                String[] passwords, boolean originBlacklisted);
         void notifyFocusedFieldTypeForTesting(WebContents webContents, int focusedFieldType);
         void signalAutoGenerationStatusForTesting(WebContents webContents, boolean available);
         void disableServerPredictionsForTesting();

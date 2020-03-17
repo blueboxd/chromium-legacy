@@ -41,7 +41,7 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
   ~ViewAXPlatformNodeDelegate() override;
 
   // ViewAccessibility:
-  gfx::NativeViewAccessible GetNativeObject() override;
+  gfx::NativeViewAccessible GetNativeObject() const override;
   void NotifyAccessibilityEvent(ax::mojom::Event event_type) override;
 #if defined(OS_MACOSX)
   void AnnounceText(const base::string16& text) override;
@@ -63,7 +63,7 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
       const ui::AXCoordinateSystem coordinate_system,
       const ui::AXClippingBehavior clipping_behavior,
       ui::AXOffscreenResult* offscreen_result) const override;
-  gfx::NativeViewAccessible HitTestSync(int x, int y) override;
+  gfx::NativeViewAccessible HitTestSync(int x, int y) const override;
   gfx::NativeViewAccessible GetFocus() override;
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override;
   ui::AXPlatformNode* GetFromTreeIDAndNodeID(const ui::AXTreeID& ax_tree_id,

@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -22,7 +23,8 @@ extern bool IsExplicitlyRegisteredForTiming(const LayoutObject* layout_object);
 
 }
 
-class ImageElementTimingTest : public testing::Test {
+class ImageElementTimingTest : public testing::Test,
+                               public PaintTestConfigurations {
  protected:
   void SetUp() override {
     web_view_helper_.Initialize();
@@ -107,13 +109,18 @@ class ImageElementTimingTest : public testing::Test {
   }
 };
 
-TEST_F(ImageElementTimingTest, TestIsExplicitlyRegisteredForTiming) {
+INSTANTIATE_PAINT_TEST_SUITE_P(ImageElementTimingTest);
+
+TEST_P(ImageElementTimingTest, TestIsExplicitlyRegisteredForTiming) {
   frame_test_helpers::LoadHTMLString(
       web_view_helper_.GetWebView()->MainFrameImpl(), R"HTML(
     <img id="missing-attribute" style='width: 100px; height: 100px;'/>
-    <img id="unset-attribute" elementtiming style='width: 100px; height: 100px;'/>
-    <img id="empty-attribute" elementtiming="" style='width: 100px; height: 100px;'/>
-    <img id="valid-attribute" elementtiming="valid-id" style='width: 100px; height: 100px;'/>
+    <img id="unset-attribute" elementtiming
+         style='width: 100px; height: 100px;'/>
+    <img id="empty-attribute" elementtiming=""
+         style='width: 100px; height: 100px;'/>
+    <img id="valid-attribute" elementtiming="valid-id"
+         style='width: 100px; height: 100px;'/>
   )HTML",
       base_url_);
 
@@ -141,7 +148,7 @@ TEST_F(ImageElementTimingTest, TestIsExplicitlyRegisteredForTiming) {
                          "should be explicitly registered.";
 }
 
-TEST_F(ImageElementTimingTest, IgnoresUnmarkedElement) {
+TEST_P(ImageElementTimingTest, IgnoresUnmarkedElement) {
   // Tests that, if the 'elementtiming' attribute is missing, the element isn't
   // considered by ImageElementTiming.
   frame_test_helpers::LoadHTMLString(
@@ -156,12 +163,13 @@ TEST_F(ImageElementTimingTest, IgnoresUnmarkedElement) {
       std::make_pair(layout_image, layout_image->CachedImage())));
 }
 
-TEST_F(ImageElementTimingTest, ImageInsideSVG) {
+TEST_P(ImageElementTimingTest, ImageInsideSVG) {
   frame_test_helpers::LoadHTMLString(
       web_view_helper_.GetWebView()->MainFrameImpl(), R"HTML(
     <svg>
       <foreignObject width="100" height="100">
-        <img elementtiming="image-inside-svg" id="target" style='width: 100px; height: 100px;'/>
+        <img elementtiming="image-inside-svg" id="target"
+             style='width: 100px; height: 100px;'/>
       </foreignObject>
     </svg>
   )HTML",
@@ -175,13 +183,14 @@ TEST_F(ImageElementTimingTest, ImageInsideSVG) {
       std::make_pair(layout_image, layout_image->CachedImage())));
 }
 
-TEST_F(ImageElementTimingTest, ImageInsideNonRenderedSVG) {
+TEST_P(ImageElementTimingTest, ImageInsideNonRenderedSVG) {
   frame_test_helpers::LoadHTMLString(
       web_view_helper_.GetWebView()->MainFrameImpl(), R"HTML(
     <svg mask="url(#mask)">
       <mask id="mask">
         <foreignObject width="100" height="100">
-          <img elementtiming="image-inside-svg" id="target" style='width: 100px; height: 100px;'/>
+          <img elementtiming="image-inside-svg" id="target"
+               style='width: 100px; height: 100px;'/>
         </foreignObject>
       </mask>
       <rect width="100" height="100" fill="green"/>
@@ -195,10 +204,11 @@ TEST_F(ImageElementTimingTest, ImageInsideNonRenderedSVG) {
   EXPECT_FALSE(GetLayoutObjectById("target"));
 }
 
-TEST_F(ImageElementTimingTest, ImageRemoved) {
+TEST_P(ImageElementTimingTest, ImageRemoved) {
   frame_test_helpers::LoadHTMLString(
       web_view_helper_.GetWebView()->MainFrameImpl(), R"HTML(
-    <img elementtiming="will-be-removed" id="target" style='width: 100px; height: 100px;'/>
+    <img elementtiming="will-be-removed" id="target"
+         style='width: 100px; height: 100px;'/>
   )HTML",
       base_url_);
   LayoutImage* layout_image = SetImageResource("target", 5, 5);
@@ -213,11 +223,12 @@ TEST_F(ImageElementTimingTest, ImageRemoved) {
   EXPECT_EQ(ImagesNotifiedSize(), 0u);
 }
 
-TEST_F(ImageElementTimingTest, SVGImageRemoved) {
+TEST_P(ImageElementTimingTest, SVGImageRemoved) {
   frame_test_helpers::LoadHTMLString(
       web_view_helper_.GetWebView()->MainFrameImpl(), R"HTML(
     <svg>
-      <image elementtiming="svg-will-be-removed" id="target" style='width: 100px; height: 100px;'/>
+      <image elementtiming="svg-will-be-removed" id="target"
+             style='width: 100px; height: 100px;'/>
     </svg>
   )HTML",
       base_url_);
@@ -233,7 +244,7 @@ TEST_F(ImageElementTimingTest, SVGImageRemoved) {
   EXPECT_EQ(ImagesNotifiedSize(), 0u);
 }
 
-TEST_F(ImageElementTimingTest, BackgroundImageRemoved) {
+TEST_P(ImageElementTimingTest, BackgroundImageRemoved) {
   frame_test_helpers::LoadHTMLString(
       web_view_helper_.GetWebView()->MainFrameImpl(), R"HTML(
     <style>

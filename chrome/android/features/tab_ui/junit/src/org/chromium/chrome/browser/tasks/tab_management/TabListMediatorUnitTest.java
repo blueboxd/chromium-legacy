@@ -215,8 +215,6 @@ public class TabListMediatorUnitTest {
     @Mock
     TabListMediator.TabGridAccessibilityHelper mTabGridAccessibilityHelper;
     @Mock
-    TabListMediator.ItemAnimationStopper mItemAnimationStopper;
-    @Mock
     TemplateUrlService mTemplateUrlService;
 
     @Captor
@@ -326,7 +324,7 @@ public class TabListMediatorUnitTest {
         mMediator = new TabListMediator(mContext, mModel, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
                 mTabListFaviconProvider, false, null, mGridCardOnClickListenerProvider, null,
-                mItemAnimationStopper, getClass().getSimpleName(), UiType.CLOSABLE);
+                getClass().getSimpleName(), UiType.CLOSABLE);
         mMediator.registerOrientationListener(mGridLayoutManager);
         TrackerFactory.setTrackerForTests(mTracker);
     }
@@ -583,16 +581,6 @@ public class TabListMediatorUnitTest {
                 prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL), false);
 
         assertThat(mModel.size(), equalTo(2));
-    }
-
-    @Test
-    public void tabClosure_ForceStopItemAnimationForStrip() {
-        setUpForTabGroupOperation(TabListMediatorType.TAB_STRIP);
-
-        mMediatorTabModelObserver.willCloseTab(mTab2, false);
-
-        assertThat(mModel.size(), equalTo(1));
-        verify(mItemAnimationStopper).endItemAnimationForPosition(eq(1));
     }
 
     @Test
@@ -1934,8 +1922,8 @@ public class TabListMediatorUnitTest {
         // Re-initialize the mediator to setup TemplateUrlServiceObserver if needed.
         mMediator = new TabListMediator(mContext, mModel, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
-                mTabListFaviconProvider, true, null, null, null, mItemAnimationStopper,
-                getClass().getSimpleName(), TabProperties.UiType.CLOSABLE);
+                mTabListFaviconProvider, true, null, null, null, getClass().getSimpleName(),
+                TabProperties.UiType.CLOSABLE);
 
         initAndAssertAllProperties();
 
@@ -1957,8 +1945,8 @@ public class TabListMediatorUnitTest {
         // Re-initialize the mediator to setup TemplateUrlServiceObserver if needed.
         mMediator = new TabListMediator(mContext, mModel, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
-                mTabListFaviconProvider, true, null, null, null, mItemAnimationStopper,
-                getClass().getSimpleName(), TabProperties.UiType.CLOSABLE);
+                mTabListFaviconProvider, true, null, null, null, getClass().getSimpleName(),
+                TabProperties.UiType.CLOSABLE);
 
         initAndAssertAllProperties();
 
@@ -2092,7 +2080,7 @@ public class TabListMediatorUnitTest {
         mMediator = new TabListMediator(mContext, mModel, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
                 mTabListFaviconProvider, actionOnRelatedTabs, null, null, handler,
-                mItemAnimationStopper, getClass().getSimpleName(), uiType);
+                getClass().getSimpleName(), uiType);
 
         // There are two TabModelObserver and two TabGroupModelFilter.Observer added when
         // initializing TabListMediator, one set from TabListMediator and the other from

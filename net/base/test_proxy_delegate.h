@@ -30,7 +30,7 @@ class TestProxyDelegate : public ProxyDelegate {
     trusted_spdy_proxy_ = proxy_server;
   }
 
-  void VerifyOnHttp1TunnelHeadersReceived(
+  void VerifyOnTunnelHeadersReceived(
       const ProxyServer& proxy_server,
       const std::string& response_header_name,
       const std::string& response_header_value) const;
@@ -41,9 +41,9 @@ class TestProxyDelegate : public ProxyDelegate {
                       const ProxyRetryInfoMap& proxy_retry_info,
                       ProxyInfo* result) override;
   void OnFallback(const ProxyServer& bad_proxy, int net_error) override;
-  void OnBeforeHttp1TunnelRequest(const ProxyServer& proxy_server,
-                                  HttpRequestHeaders* extra_headers) override;
-  Error OnHttp1TunnelHeadersReceived(
+  void OnBeforeTunnelRequest(const ProxyServer& proxy_server,
+                             HttpRequestHeaders* extra_headers) override;
+  Error OnTunnelHeadersReceived(
       const ProxyServer& proxy_server,
       const HttpResponseHeaders& response_headers) override;
 

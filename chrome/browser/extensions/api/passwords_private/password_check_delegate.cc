@@ -4,12 +4,17 @@
 
 #include "chrome/browser/extensions/api/passwords_private/password_check_delegate.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <memory>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
@@ -25,6 +30,7 @@
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
+#include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 #include "components/password_manager/core/browser/ui/compromised_credentials_provider.h"
 #include "components/password_manager/core/browser/ui/credential_utils.h"
@@ -40,24 +46,94 @@
 
 namespace extensions {
 
-namespace {
-
 using autofill::PasswordForm;
 using password_manager::BulkLeakCheckService;
+using password_manager::CanonicalizedCredential;
 using password_manager::CanonicalizeUsername;
+using password_manager::CompromiseType;
 using password_manager::CredentialWithPassword;
+using password_manager::LeakCheckCredential;
 using ui::TimeFormat;
 using CompromisedCredentialsView =
     password_manager::CompromisedCredentialsProvider::CredentialsView;
 using SavedPasswordsView =
     password_manager::SavedPasswordsPresenter::SavedPasswordsView;
 
+// Key used to attach UserData to a LeakCheckCredential.
+constexpr char kPasswordCheckDataKey[] = "password-check-data-key";
+
+// Class remembering the state required to update the progress of an ongoing
+// Password Check.
+class PasswordCheckProgress : public base::RefCounted<PasswordCheckProgress> {
+ public:
+  base::WeakPtr<PasswordCheckProgress> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+  size_t remaining_in_queue() const { return remaining_in_queue_; }
+  size_t already_processed() const { return already_processed_; }
+
+  // Increments the counts corresponding to |password|. Intended to be called
+  // for each credential that is passed to the bulk check.
+  void IncrementCounts(const PasswordForm& password) {
+    ++remaining_in_queue_;
+    ++counts_[password];
+  }
+
+  // Updates the counts after a |credential| has been processed by the bulk
+  // check.
+  void OnProcessed(const LeakCheckCredential& credential) {
+    auto it = counts_.find(credential);
+    const int num_matching = it != counts_.end() ? it->second : 0;
+    already_processed_ += num_matching;
+    remaining_in_queue_ -= num_matching;
+  }
+
+ private:
+  friend class base::RefCounted<PasswordCheckProgress>;
+  ~PasswordCheckProgress() = default;
+
+  // Count variables needed to correctly show the progress of the check to the
+  // user. |already_processed_| contains the number of credentials that have
+  // been checked already, while |remaining_in_queue_| remembers how many
+  // passwords still need to be checked.
+  // Since the bulk leak check tries to be as efficient as possible, it performs
+  // a deduplication step before starting to check passwords. In this step it
+  // canonicalizes each credential, and only processes the combinations that are
+  // unique. Since this number likely does not match the total number of saved
+  // passwords, we remember in |counts_| how many saved passwords a given
+  // canonicalized credential corresponds to.
+  size_t already_processed_ = 0;
+  size_t remaining_in_queue_ = 0;
+  base::flat_map<CanonicalizedCredential, size_t> counts_;
+
+  base::WeakPtrFactory<PasswordCheckProgress> weak_ptr_factory_{this};
+};
+
+namespace {
+
+// A class attached to each LeakCheckCredential that holds a shared handle to
+// the PasswordCheckProgress and is able to update the progress accordingly.
+class PasswordCheckData : public LeakCheckCredential::Data {
+ public:
+  explicit PasswordCheckData(scoped_refptr<PasswordCheckProgress> progress)
+      : progress_(std::move(progress)) {}
+  ~PasswordCheckData() override = default;
+
+  std::unique_ptr<Data> Clone() override {
+    return std::make_unique<PasswordCheckData>(progress_);
+  }
+
+ private:
+  scoped_refptr<PasswordCheckProgress> progress_;
+};
+
 api::passwords_private::CompromiseType ConvertCompromiseType(
-    password_manager::CompromiseType type) {
+    CompromiseType type) {
   switch (type) {
-    case password_manager::CompromiseType::kLeaked:
+    case CompromiseType::kLeaked:
       return api::passwords_private::COMPROMISE_TYPE_LEAKED;
-    case password_manager::CompromiseType::kPhished:
+    case CompromiseType::kPhished:
       return api::passwords_private::COMPROMISE_TYPE_PHISHED;
   }
 
@@ -303,8 +379,21 @@ bool PasswordCheckDelegate::RemoveCompromisedCredential(
 }
 
 bool PasswordCheckDelegate::StartPasswordCheck() {
-  is_bulk_check_running_ = true;
-  return bulk_leak_check_service_adapter_.StartBulkLeakCheck();
+  if (bulk_leak_check_service_adapter_.GetBulkLeakCheckState() ==
+      BulkLeakCheckService::State::kRunning) {
+    return false;
+  }
+
+  auto progress = base::MakeRefCounted<PasswordCheckProgress>();
+  for (const auto& password : saved_passwords_presenter_.GetSavedPasswords())
+    progress->IncrementCounts(password);
+
+  password_check_progress_ = progress->GetWeakPtr();
+  PasswordCheckData data(std::move(progress));
+  is_check_running_ = bulk_leak_check_service_adapter_.StartBulkLeakCheck(
+      kPasswordCheckDataKey, &data);
+  DCHECK(is_check_running_);
+  return is_check_running_;
 }
 
 void PasswordCheckDelegate::StopPasswordCheck() {
@@ -313,7 +402,6 @@ void PasswordCheckDelegate::StopPasswordCheck() {
 
 api::passwords_private::PasswordCheckStatus
 PasswordCheckDelegate::GetPasswordCheckStatus() const {
-  // TODO(crbug.com/1047726): Add support for QUOTA_LIMIT state.
   api::passwords_private::PasswordCheckStatus result;
 
   // Obtain the timestamp of the last completed check. This is 0.0 in case the
@@ -333,12 +421,17 @@ PasswordCheckDelegate::GetPasswordCheckStatus() const {
   // Handle the currently running case first, only then consider errors.
   if (state == BulkLeakCheckService::State::kRunning) {
     result.state = api::passwords_private::PASSWORD_CHECK_STATE_RUNNING;
-    result.remaining_in_queue = std::make_unique<int>(
-        bulk_leak_check_service_adapter_.GetPendingChecksCount());
-    // Make sure we'll never surface a negative number in the UI.
-    result.already_processed = std::make_unique<int>(
-        std::max(0, base::checked_cast<int>(saved_passwords.size()) -
-                        *result.remaining_in_queue));
+
+    if (password_check_progress_) {
+      result.already_processed =
+          std::make_unique<int>(password_check_progress_->already_processed());
+      result.remaining_in_queue =
+          std::make_unique<int>(password_check_progress_->remaining_in_queue());
+    } else {
+      result.already_processed = std::make_unique<int>(0);
+      result.remaining_in_queue = std::make_unique<int>(0);
+    }
+
     return result;
   }
 
@@ -375,10 +468,10 @@ void PasswordCheckDelegate::OnCompromisedCredentialsChanged(
 }
 
 void PasswordCheckDelegate::OnStateChanged(BulkLeakCheckService::State state) {
-  if (is_bulk_check_running_ && state == BulkLeakCheckService::State::kIdle) {
+  if (is_check_running_ && state == BulkLeakCheckService::State::kIdle) {
     // When the service transitions from running into idle it has finished a
     // check.
-    is_bulk_check_running_ = false;
+    is_check_running_ = false;
     profile_->GetPrefs()->SetDouble(
         password_manager::prefs::kLastTimePasswordCheckCompleted,
         base::Time::Now().ToDoubleT());
@@ -391,26 +484,36 @@ void PasswordCheckDelegate::OnStateChanged(BulkLeakCheckService::State state) {
 }
 
 void PasswordCheckDelegate::OnCredentialDone(
-    const password_manager::LeakCheckCredential& credential,
+    const LeakCheckCredential& credential,
     password_manager::IsLeaked is_leaked) {
-  if (!is_leaked)
-    return;
-
-  const base::string16 canocalized_username =
-      CanonicalizeUsername(credential.username());
-  for (const PasswordForm& saved_password :
-       saved_passwords_presenter_.GetSavedPasswords()) {
-    if (saved_password.password_value == credential.password() &&
-        CanonicalizeUsername(saved_password.username_value) ==
-            canocalized_username) {
-      password_store_->AddCompromisedCredentials({
-          .signon_realm = saved_password.signon_realm,
-          .username = saved_password.username_value,
-          .create_time = base::Time::Now(),
-          .compromise_type = password_manager::CompromiseType::kLeaked,
-      });
+  if (is_leaked) {
+    // In case the credential is leaked, iterate over all currently saved
+    // credentials and mark those as compromised that have the same
+    // canonicalized username and password.
+    const base::string16 canocalized_username =
+        CanonicalizeUsername(credential.username());
+    for (const PasswordForm& saved_password :
+         saved_passwords_presenter_.GetSavedPasswords()) {
+      if (saved_password.password_value == credential.password() &&
+          CanonicalizeUsername(saved_password.username_value) ==
+              canocalized_username) {
+        password_store_->AddCompromisedCredentials({
+            .signon_realm = saved_password.signon_realm,
+            .username = saved_password.username_value,
+            .create_time = base::Time::Now(),
+            .compromise_type = CompromiseType::kLeaked,
+        });
+      }
     }
   }
+
+  // Update the progress in case there is one.
+  if (password_check_progress_)
+    password_check_progress_->OnProcessed(credential);
+
+  // Trigger an update of the check status, considering that the progress has
+  // changed.
+  NotifyPasswordCheckStatusChanged();
 }
 
 const CredentialWithPassword*

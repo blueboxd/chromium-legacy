@@ -102,9 +102,9 @@ suite('NewTabPageAppTest', () => {
     assertStyle(app.$.backgroundImageAttribution2, 'display', 'none');
   });
 
-  test('clicking voice search button opens voice search overlay', async () => {
+  test('open voice search event opens voice search overlay', async () => {
     // Act.
-    app.$.voiceSearchButton.click();
+    app.$.fakebox.dispatchEvent(new Event('open-voice-search'));
     await flushTasks();
 
     // Assert.

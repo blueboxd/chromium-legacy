@@ -901,8 +901,8 @@ void NetErrorHelperCore::StartAutoReloadTimer() {
   auto_reload_timer_->Stop();
   auto_reload_timer_->Start(
       FROM_HERE, delay,
-      base::Bind(&NetErrorHelperCore::AutoReloadTimerFired,
-                 base::Unretained(this)));
+      base::BindOnce(&NetErrorHelperCore::AutoReloadTimerFired,
+                     base::Unretained(this)));
 }
 
 void NetErrorHelperCore::AutoReloadTimerFired() {

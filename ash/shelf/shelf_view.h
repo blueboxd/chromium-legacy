@@ -67,40 +67,6 @@ enum ShelfAlignmentUmaEnumValue {
 // ShelfView contains the shelf items visible within an active user session.
 // ShelfView and LoginShelfView should never be shown together.
 
-// In the following example, there are 12 apps to place on the shelf, plus
-// the app list and back buttons, which make 14 shelf items in total.
-//
-// If there is enough screen space, all icons can fit:
-//
-// ------------------------------------------------------------
-// | o |         | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
-// ------------------------------------------------------------
-//                 ^                                        ^
-//                 |                                        |
-//             first_visible_index = 0            last_visible_index = 10
-//
-// Where "o" is the home button (back button is hidden).
-//
-// If screen space is more constrained, some icons are placed in an overflow
-// menu (which holds its own instance of ShelfView):
-//
-//                first_visible_index = 8        last_visible_index = 11
-//                     (for the overflow)        (for overflow)
-//                                     |             |
-//                                     v             v
-//                                   ---------------------
-//                                   | 8 | 9 | 10 | 11 |
-//                                   ---------------------
-//                                             ^
-// --------------------------------------------------
-// | o |    | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | ... |
-// --------------------------------------------------
-//            ^                           ^    ^
-//            |                           |    L-- overflow button
-//     first_visible_index = 0            |
-//      (for the main shelf)        last_visible_index = 7
-//
-
 class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                              public ShelfButtonDelegate,
                              public ShelfModelObserver,

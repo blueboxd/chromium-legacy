@@ -527,6 +527,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
         CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
     widget->SetCompositorHosts(web_widget_client.layer_tree_host(),
                                web_widget_client.animation_host());
+    widget->SetCompositorVisible(true);
     web_view->DidAttachLocalMainFrame();
   }
 

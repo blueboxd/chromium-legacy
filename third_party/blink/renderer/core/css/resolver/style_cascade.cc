@@ -122,10 +122,6 @@ void StyleCascade::Apply(const MatchResult* match_result,
                          CascadeFilter filter) {
   Resolver resolver(filter, match_result, interpolations, ++generation_);
 
-  // The computed value of -webkit-appearance decides whether we need to
-  // apply -internal-ua properties or not.
-  ApplyAppearance(resolver);
-
   // Affects the computed value of 'color', hence needs to happen before
   // high-priority properties.
   LookupAndApply(GetCSSPropertyColorScheme(), resolver);
@@ -143,6 +139,12 @@ void StyleCascade::Apply(const MatchResult* match_result,
 
   if (interpolations)
     ApplyInterpolations(*interpolations, resolver);
+
+  if (map_.Find(CSSPropertyName(CSSPropertyID::kWebkitAppearance)) &&
+      state_.Style()->HasAppearance()) {
+    state_.Style()->SetHasAuthorBackground(HasAuthorBackground());
+    state_.Style()->SetHasAuthorBorder(HasAuthorBorder());
+  }
 }
 
 StyleCascade::Surrogate StyleCascade::ResolveSurrogate(
@@ -204,12 +206,6 @@ void StyleCascade::ApplyHighPriority(Resolver& resolver) {
     if (state_.GetElement() == GetDocument().documentElement())
       state_.Style()->SetColor(state_.Style()->InitialColorForColorScheme());
   }
-}
-
-void StyleCascade::ApplyAppearance(Resolver& resolver) {
-  LookupAndApply(GetCSSPropertyWebkitAppearance(), resolver);
-  if (!state_.Style()->HasAppearance())
-    resolver.filter_ = resolver.filter_.Set(CSSProperty::kUA, true);
 }
 
 void StyleCascade::ApplyWebkitBorderImage(Resolver& resolver) {
@@ -777,6 +773,47 @@ StyleCascade::AutoLock::~AutoLock() {
 
 const Document& StyleCascade::GetDocument() const {
   return state_.GetDocument();
+}
+
+bool StyleCascade::HasAuthorDeclaration(const CSSProperty& property) const {
+  return map_.At(property.GetCSSPropertyName()).GetOrigin() ==
+         CascadeOrigin::kAuthor;
+}
+
+bool StyleCascade::HasAuthorBorder() const {
+  return HasAuthorDeclaration(GetCSSPropertyBorderBottomColor()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderBottomLeftRadius()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderBottomRightRadius()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderBottomStyle()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderBottomWidth()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderImageOutset()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderImageRepeat()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderImageSlice()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderImageSource()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderImageWidth()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderLeftColor()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderLeftStyle()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderLeftWidth()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderRightColor()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderRightStyle()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderRightWidth()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderTopColor()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderTopLeftRadius()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderTopRightRadius()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderTopStyle()) ||
+         HasAuthorDeclaration(GetCSSPropertyBorderTopWidth());
+}
+
+bool StyleCascade::HasAuthorBackground() const {
+  return HasAuthorDeclaration(GetCSSPropertyBackgroundAttachment()) ||
+         HasAuthorDeclaration(GetCSSPropertyBackgroundBlendMode()) ||
+         HasAuthorDeclaration(GetCSSPropertyBackgroundClip()) ||
+         HasAuthorDeclaration(GetCSSPropertyBackgroundColor()) ||
+         HasAuthorDeclaration(GetCSSPropertyBackgroundImage()) ||
+         HasAuthorDeclaration(GetCSSPropertyBackgroundOrigin()) ||
+         HasAuthorDeclaration(GetCSSPropertyBackgroundPositionX()) ||
+         HasAuthorDeclaration(GetCSSPropertyBackgroundPositionY()) ||
+         HasAuthorDeclaration(GetCSSPropertyBackgroundSize());
 }
 
 }  // namespace blink

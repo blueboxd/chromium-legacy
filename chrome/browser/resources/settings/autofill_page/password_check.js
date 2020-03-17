@@ -261,7 +261,7 @@ Polymer({
    */
   getStatusIconClass_(status, leakedPasswords) {
     if (!this.hasLeaksOrErrors_(status, leakedPasswords)) {
-      return 'no-leaks';
+      return this.waitsForFirstCheck_() ? 'hidden' : 'no-leaks';
     }
     if (this.hasLeakedCredentials_(leakedPasswords)) {
       return 'has-leaks';
@@ -277,7 +277,9 @@ Polymer({
   getTitle_() {
     switch (this.status_.state) {
       case CheckState.IDLE:
-        return this.i18n('checkPasswords');
+        return this.waitsForFirstCheck_() ?
+            this.i18n('checkPasswordsDescription') :
+            this.i18n('checkedPasswords');
       case CheckState.CANCELED:
         return this.i18n('checkPasswordsCanceled');
       case CheckState.RUNNING:
@@ -332,6 +334,8 @@ Polymer({
   getButtonText_(status) {
     switch (status.state) {
       case CheckState.IDLE:
+        return this.waitsForFirstCheck_() ? this.i18n('checkPasswords') :
+                                            this.i18n('checkPasswordsAgain');
       case CheckState.CANCELED:
       case CheckState.TOO_MANY_PASSWORDS:
         return this.i18n('checkPasswordsAgain');
@@ -347,6 +351,15 @@ Polymer({
         return '';  // Undefined behavior. Don't show any misleading text.
     }
     assertNotReached('Can\'t find a button text for state: ' + status.state);
+  },
+
+  /**
+   * Returns 'action-button' only for the very first check.
+   * @return {string}
+   * @private
+   */
+  getButtonTypeClass_() {
+    return this.waitsForFirstCheck_() ? 'action-button' : ' ';
   },
 
   /**
@@ -382,7 +395,10 @@ Polymer({
    * @private
    */
   bannerImageSrc_(isDarkMode) {
-    const type = this.status_.state == CheckState.IDLE ? 'positive' : 'neutral';
+    const type =
+        (this.status_.state == CheckState.IDLE && !this.waitsForFirstCheck_()) ?
+        'positive' :
+        'neutral';
     const suffix = isDarkMode ? '_dark' : '';
     return `chrome://settings/images/password_check_${type}${suffix}.svg`;
   },
@@ -442,7 +458,7 @@ Polymer({
     }
     switch (this.status_.state) {
       case CheckState.IDLE:
-        return true;
+        return !this.waitsForFirstCheck_();
       case CheckState.CANCELED:
       case CheckState.RUNNING:
       case CheckState.OFFLINE:
@@ -458,6 +474,15 @@ Polymer({
     assertNotReached(
         'Not specified whether to show passwords for state: ' +
         this.status_.state);
+  },
+
+  /**
+   * Returns true iff the leak check was performed at least once before.
+   * @return {boolean}
+   * @private
+   */
+  waitsForFirstCheck_() {
+    return !this.status_.elapsedTimeSinceLastCheck;
   },
 
   /**

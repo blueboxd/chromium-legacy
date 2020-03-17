@@ -33,6 +33,7 @@
 
 using base::test::IsJson;
 using base::test::ParseJson;
+using blink::mojom::PresentationConnectionCloseReason;
 using testing::_;
 using testing::AllOf;
 using testing::AnyNumber;
@@ -267,6 +268,16 @@ TEST_F(CastSessionClientImplTest, SendStopSessionCommandToReceiver) {
           "type": "STOP"
         }
       })"));
+}
+
+TEST_F(CastSessionClientImplTest, CloseConnection) {
+  EXPECT_CALL(activity_, CloseConnectionOnReceiver("theClientId"));
+  client_->CloseConnection(PresentationConnectionCloseReason::CLOSED);
+}
+
+TEST_F(CastSessionClientImplTest, DidCloseConnection) {
+  EXPECT_CALL(activity_, CloseConnectionOnReceiver("theClientId"));
+  client_->DidClose(PresentationConnectionCloseReason::WENT_AWAY);
 }
 
 }  // namespace media_router

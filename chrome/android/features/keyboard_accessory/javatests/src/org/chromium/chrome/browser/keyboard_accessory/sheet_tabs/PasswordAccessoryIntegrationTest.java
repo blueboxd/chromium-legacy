@@ -7,7 +7,9 @@ package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isChecked;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.isNotChecked;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
@@ -30,11 +32,13 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper;
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.TimeoutException;
@@ -137,5 +141,26 @@ public class PasswordAccessoryIntegrationTest {
         mHelper.waitForKeyboardToDisappear();
         whenDisplayed(withId(R.id.passwords_sheet));
         onView(withText(containsString("No saved passwords"))).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.RECOVER_FROM_NEVER_SAVE_ANDROID)
+    public void testEnablesUnblacklistingToggle() throws TimeoutException {
+        mHelper.loadTestPage(false);
+        mHelper.cacheCredentials(new String[0], new String[0], true);
+
+        // Focus the field to bring up the accessory.
+        mHelper.focusPasswordField();
+        mHelper.waitForKeyboardAccessoryToBeShown();
+        whenDisplayed(allOf(isDisplayed(), isKeyboardAccessoryTabLayout()))
+                .perform(selectTabAtPosition(0));
+
+        whenDisplayed(withId(R.id.option_toggle_switch)).check(matches(isNotChecked()));
+        onView(withId(R.id.option_toggle_subtitle)).check(matches(withText(R.string.text_off)));
+
+        whenDisplayed(withId(R.id.option_toggle_switch)).perform(click());
+        onView(withId(R.id.option_toggle_switch)).check(matches(isChecked()));
+        onView(withId(R.id.option_toggle_subtitle)).check(matches(withText(R.string.text_on)));
     }
 }

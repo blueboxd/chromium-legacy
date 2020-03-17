@@ -218,6 +218,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   void RestoreBackBuffer(const cc::PaintImage&);
 
   ResourceProviderType GetType() const { return type_; }
+  bool HasRecordedDrawOps() const;
 
  protected:
   gpu::gles2::GLES2Interface* ContextGL() const;

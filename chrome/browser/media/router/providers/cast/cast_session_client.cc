@@ -109,9 +109,7 @@ void CastSessionClientImpl::OnMessage(
 }
 
 void CastSessionClientImpl::DidClose(PresentationConnectionCloseReason reason) {
-  // TODO(https://crbug.com/809249): Implement close connection with this
-  // method once we make sure Blink calls this on navigation and on
-  // PresentationConnection::close().
+  activity_->CloseConnectionOnReceiver(client_id());
 }
 
 void CastSessionClientImpl::SendErrorCodeToClient(
@@ -250,8 +248,8 @@ void CastSessionClientImpl::CloseConnection(
     PresentationConnectionCloseReason close_reason) {
   if (connection_remote_)
     connection_remote_->DidClose(close_reason);
-
   TearDownPresentationConnection();
+  activity_->CloseConnectionOnReceiver(client_id());
 }
 
 void CastSessionClientImpl::TerminateConnection() {

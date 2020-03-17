@@ -1421,6 +1421,9 @@ void AXObject::UpdateDistributionForFlatTreeTraversal() const {
 }
 
 bool AXObject::IsARIAControlledByTextboxWithActiveDescendant() const {
+  if (IsDetached())
+    return false;
+
   // This situation should mostly arise when using an active descendant on a
   // textbox inside an ARIA 1.1 combo box widget, which points to the selected
   // option in a list. In such situations, the active descendant is useful only

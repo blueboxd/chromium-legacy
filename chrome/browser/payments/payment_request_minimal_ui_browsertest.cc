@@ -80,10 +80,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestMinimalUITest, HasEnrolledInstrument) {
                                            GetPaymentMethodForHost("a.com"))));
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestMinimalUITest, DISABLED_ConfirmPayment) {
+IN_PROC_BROWSER_TEST_F(PaymentRequestMinimalUITest, ConfirmPayment) {
   // TODO(crbug.com/1061574): ConfirmPayment times out on
-  // android-marshmallow-arm64-rel bot.
-  if (test_controller()->IsAndroidMarshmallow())
+  // android-marshmallow-arm64-rel and "Lollipop Phone Tester" bots.
+  if (test_controller()->IsAndroidMarshmallowOrLollipop())
     return;
 
   InstallPaymentHandlerAndSetMinimalUIBehavior(Behavior::CONFIRM_MINIMAL_UI);

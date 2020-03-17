@@ -29,9 +29,11 @@ class BulkLeakCheckServiceAdapter : public SavedPasswordsPresenter::Observer {
   // Instructs the adapter to start a check. This is a no-op in case a check is
   // already running. Otherwise, this will obtain the list of saved passwords
   // from |presenter_|, perform de-duplication of username and password pairs
-  // and then feed it to the |service_| for checking.
+  // and then feed it to the |service_| for checking. If |key| is present, it
+  // will append |data->Clone()| to each created LeakCheckCredential.
   // Returns whether new check was started.
-  bool StartBulkLeakCheck();
+  bool StartBulkLeakCheck(const void* key = nullptr,
+                          LeakCheckCredential::Data* data = nullptr);
 
   // This asks |service_| to stop an ongoing check.
   void StopBulkLeakCheck();

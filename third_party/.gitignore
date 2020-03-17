@@ -36,7 +36,6 @@
 /apache-mac/bin/openssl
 /apache-mac/lib/*.dylib
 /apache-mac/libexec/apache2/*.so
-/apk-patch-size-estimator/lib/
 /arcore-android-sdk/src/
 /arcore-android-sdk/test-apks/arcore/*.apk
 /asan

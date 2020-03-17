@@ -208,13 +208,19 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       base::TimeTicks navigation_start) override;
   WebFrameWidget* MainFrameWidget() override;
   void SetBaseBackgroundColor(SkColor) override;
-  void SetBackgroundColorOverride(SkColor) override;
-  void ClearBackgroundColorOverride() override;
-  void SetBaseBackgroundColorOverride(SkColor) override;
-  void ClearBaseBackgroundColorOverride() override;
   void SetInsidePortal(bool inside_portal) override;
   void PaintContent(cc::PaintCanvas*, const gfx::Rect&) override;
   void SetTextAutosizerPageInfo(const WebTextAutosizerPageInfo&) override;
+
+  // Overrides the page's background and base background color. You
+  // can use this to enforce a transparent background, which is useful if you
+  // want to have some custom background rendered behind the widget.
+  //
+  // These may are only called for composited WebViews.
+  void SetBackgroundColorOverride(SkColor);
+  void ClearBackgroundColorOverride();
+  void SetBaseBackgroundColorOverride(SkColor);
+  void ClearBaseBackgroundColorOverride();
 
   // Requests a page-scale animation based on the specified point/rect.
   void AnimateDoubleTapZoom(const gfx::Point&, const WebRect& block_bounds);

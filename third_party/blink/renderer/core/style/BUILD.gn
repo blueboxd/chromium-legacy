@@ -93,8 +93,6 @@ blink_core_sources("rendering") {
     "style_variables.cc",
     "style_variables.h",
     "text_size_adjust.h",
-    "ua_style.cc",
-    "ua_style.h",
   ]
 }
 

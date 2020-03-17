@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/profiler/module_cache.h"
 #include "base/profiler/stack_sampling_profiler_test_util.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
@@ -23,6 +24,22 @@
 #include "v8/include/v8.h"
 
 namespace {
+
+class TestModule : public base::ModuleCache::Module {
+ public:
+  TestModule(uintptr_t base_address, size_t size)
+      : base_address_(base_address), size_(size) {}
+
+  uintptr_t GetBaseAddress() const override { return base_address_; }
+  std::string GetId() const override { return ""; }
+  base::FilePath GetDebugBasename() const override { return base::FilePath(); }
+  size_t GetSize() const override { return size_; }
+  bool IsNative() const override { return true; }
+
+ private:
+  const uintptr_t base_address_;
+  const size_t size_;
+};
 
 v8::Local<v8::String> ToV8String(const char* str) {
   return v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), str,
@@ -399,13 +416,11 @@ TEST(V8UnwinderTest, CanUnwindFrom_OtherModule) {
   unwinder.OnStackCapture();
   unwinder.UpdateModules(&module_cache);
 
-  const uintptr_t address_in_this_module =
-      reinterpret_cast<uintptr_t>(&CreatePointerHolder);
-  const base::ModuleCache::Module* module =
-      module_cache.GetModuleForAddress(address_in_this_module);
-  ASSERT_NE(nullptr, module);
+  auto other_module = std::make_unique<TestModule>(1, 10);
+  const base::ModuleCache::Module* other_module_ptr = other_module.get();
+  module_cache.AddCustomNativeModule(std::move(other_module));
 
-  base::Frame frame{1, module};
+  base::Frame frame{1, other_module_ptr};
   EXPECT_FALSE(unwinder.CanUnwindFrom(&frame));
 }
 

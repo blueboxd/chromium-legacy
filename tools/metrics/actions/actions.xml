@@ -21414,6 +21414,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SplitView_MultiDisplaySplitView">
+  <owner>amusbach@chromium.org</owner>
+  <owner>xdai@chromium.org</owner>
+  <description>
+    Recorded when the number of displays in split view becomes more than one.
+  </description>
+</action>
+
 <action name="SplitView_ResizeWindows">
   <owner>xdai@chromium.org</owner>
   <description>

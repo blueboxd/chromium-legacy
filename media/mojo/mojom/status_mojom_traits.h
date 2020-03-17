@@ -21,28 +21,28 @@ struct StructTraits<media::mojom::StatusDataView, media::Status> {
   }
 
   static base::Optional<std::string> message(const media::Status& input) {
-    if (input.IsOk())
+    if (input.is_ok())
       return base::nullopt;
     DCHECK(input.data_);
     return input.message();
   }
 
   static base::span<base::Value> frames(const media::Status& input) {
-    if (input.IsOk())
+    if (input.is_ok())
       return {};
     DCHECK(input.data_);
     return input.data_->frames;
   }
 
   static base::span<media::Status> causes(const media::Status& input) {
-    if (input.IsOk())
+    if (input.is_ok())
       return {};
     DCHECK(input.data_);
     return input.data_->causes;
   }
 
   static base::Optional<base::Value> data(const media::Status& input) {
-    if (!input.IsOk()) {
+    if (!input.is_ok()) {
       DCHECK(input.data_);
       return input.data_->data.Clone();
     }

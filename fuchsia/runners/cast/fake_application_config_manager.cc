@@ -23,6 +23,13 @@ chromium::cast::ApplicationConfig FakeApplicationConfigManager::CreateConfig(
   app_config.set_display_name("Dummy test app");
   app_config.set_web_url(url.spec());
   app_config.set_agent_url(kAgentComponentUrl);
+
+  // Add a PROTECTED_MEDIA_IDENTIFIER permission. This is consistent with the
+  // real ApplicationConfigManager.
+  fuchsia::web::PermissionDescriptor permission;
+  permission.set_type(fuchsia::web::PermissionType::PROTECTED_MEDIA_IDENTIFIER);
+  app_config.mutable_permissions()->push_back(std::move(permission));
+
   return app_config;
 }
 

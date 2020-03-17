@@ -116,6 +116,10 @@ class ActivityRecord {
   virtual void StopSessionOnReceiver(const std::string& client_id,
                                      cast_channel::ResultCallback callback);
 
+  // Closes any virtual connection between |client_id| and this session on the
+  // receiver.
+  virtual void CloseConnectionOnReceiver(const std::string& client_id);
+
   // Called when the client given by |client_id| requests to leave the session.
   // This will also cause all clients within the session with matching origin
   // and/or tab ID to leave (i.e., their presentation connections will be

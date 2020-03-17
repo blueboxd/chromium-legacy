@@ -49,6 +49,8 @@ js_modulizer("modulize") {
     "settings_textarea_tests.js",
     "settings_toggle_button_tests.js",
     "settings_ui_tests.js",
+    "site_data_details_subpage_tests.js",
+    "site_list_entry_tests.js",
     "site_favicon_test.js",
     "startup_urls_page_test.js",
     "sync_test_util.js",
@@ -56,11 +58,13 @@ js_modulizer("modulize") {
     "test_extension_control_browser_proxy.js",
     "test_languages_browser_proxy.js",
     "test_lifetime_browser_proxy.js",
+    "test_local_data_browser_proxy.js",
     "test_metrics_browser_proxy.js",
     "test_open_window_proxy.js",
     "test_password_manager_proxy.js",
     "test_reset_browser_proxy.js",
     "test_search_engines_browser_proxy.js",
+    "test_site_settings_prefs_browser_proxy.js",
     "test_sync_browser_proxy.js",
     "test_util.js",
   ]
@@ -106,6 +110,7 @@ js_modulizer("modulize") {
                          "settings_search.TestSearchEnginesBrowserProxy|TestSearchEnginesBrowserProxy",
                          "sync_test_util.getSyncAllPrefs|getSyncAllPrefs",
                          "sync_test_util.simulateSyncStatus|simulateSyncStatus",
+                         "test_util.createSiteSettingsPrefs|createSiteSettingsPrefs",
                          "test_util.setupPopstateListener|setupPopstateListener",
                        ]
 }

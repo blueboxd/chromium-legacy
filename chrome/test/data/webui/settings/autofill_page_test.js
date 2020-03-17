@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {AutofillManagerImpl, CrSettingsPrefs, OpenWindowProxyImpl, PasswordManagerImpl, PaymentsManagerImpl, Router, routes} from 'chrome://settings/settings.js';
+// #import {CrSettingsPrefs, OpenWindowProxyImpl, PasswordManagerImpl, Router, routes} from 'chrome://settings/settings.js';
+// #import {AutofillManagerImpl, PaymentsManagerImpl} from 'chrome://settings/lazy_load.js';
 // #import {createAddressEntry, createCreditCardEntry, createExceptionEntry, createPasswordEntry, AutofillManagerExpectations, PasswordManagerExpectations, PaymentsManagerExpectations, TestAutofillManager, TestPaymentsManager} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
 // #import {FakeSettingsPrivate} from 'chrome://test/settings/fake_settings_private.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';

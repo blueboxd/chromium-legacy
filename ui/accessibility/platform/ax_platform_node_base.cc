@@ -1761,6 +1761,58 @@ int AXPlatformNodeBase::FindTextBoundary(
                                  boundary, offset, direction, affinity));
 }
 
+AXPlatformNodeBase* AXPlatformNodeBase::NearestLeafToPoint(
+    gfx::Point point) const {
+  // First, scope the search to the node that contains point.
+  AXPlatformNodeBase* nearest_node =
+      static_cast<AXPlatformNodeBase*>(AXPlatformNode::FromNativeViewAccessible(
+          GetDelegate()->HitTestSync(point.x(), point.y())));
+
+  if (!nearest_node)
+    return nullptr;
+
+  AXPlatformNodeBase* parent = nearest_node;
+  // GetFirstChild does not consider if the parent is a leaf.
+  AXPlatformNodeBase* current_descendant =
+      parent->GetChildCount() ? parent->GetFirstChild() : nullptr;
+  AXPlatformNodeBase* nearest_descendant = nullptr;
+  float shortest_distance;
+  while (parent && current_descendant) {
+    // Manhattan Distance is used to provide faster distance estimates.
+    float current_distance = current_descendant->GetDelegate()
+                                 ->GetClippedScreenBoundsRect()
+                                 .ManhattanDistanceToPoint(point);
+
+    if (!nearest_descendant || current_distance < shortest_distance) {
+      shortest_distance = current_distance;
+      nearest_descendant = current_descendant;
+    }
+
+    // Traverse
+    AXPlatformNodeBase* next_sibling = current_descendant->GetNextSibling();
+    if (next_sibling) {
+      current_descendant = next_sibling;
+    } else {
+      // We have gone through all siblings, update nearest and descend if
+      // possible.
+      if (nearest_descendant) {
+        nearest_node = nearest_descendant;
+        // If the nearest node is a leaf that does not have a child tree, break.
+        if (!nearest_node->GetChildCount())
+          break;
+
+        parent = nearest_node;
+        current_descendant = parent->GetFirstChild();
+
+        // Reset nearest_descendant to force the nearest node to be a descendant
+        // of  "parent".
+        nearest_descendant = nullptr;
+      }
+    }
+  }
+  return nearest_node;
+}
+
 int AXPlatformNodeBase::NearestTextIndexToPoint(gfx::Point point) {
   // For text objects, find the text position nearest to the point.The nearest
   // index of a non-text object is implicitly 0. Text fields such as textarea

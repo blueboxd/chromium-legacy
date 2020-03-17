@@ -7,6 +7,11 @@
  * section.
  */
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// #import {CookieDetails} from './cookie_info.m.js';
+// clang-format on
+
 /**
  * @typedef {{
  *   id: string,
@@ -14,7 +19,7 @@
  *   children: !Array<CookieDetails>,
  * }}
  */
-let CookieList;
+/* #export */ let CookieList;
 
 /**
  * @typedef {{
@@ -44,7 +49,7 @@ let EtldPlus1CookieNumber;
 
 cr.define('settings', function() {
   /** @interface */
-  class LocalDataBrowserProxy {
+  /* #export */ class LocalDataBrowserProxy {
     /**
      * @param {string} filter Search filter (use "" for none).
      * @return {!Promise<!LocalDataList>}
@@ -110,7 +115,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.LocalDataBrowserProxy}
    */
-  class LocalDataBrowserProxyImpl {
+  /* #export */ class LocalDataBrowserProxyImpl {
     /** @override */
     getDisplayList(filter) {
       return cr.sendWithPromise('localData.getDisplayList', filter);

@@ -4,6 +4,17 @@
 
 /** @fileoverview Suite of tests for site-list-entry. */
 
+// clang-format off
+// #import 'chrome://test/cr_elements/cr_policy_strings.js';
+// #import {ContentSettingsTypes,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+// #import {eventToPromise} from 'chrome://test/test_util.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {Router, routes} from 'chrome://settings/settings.js';
+// #import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.m.js';
+// clang-format on
+
 suite('SiteListEntry', function() {
   let testElement;
 
@@ -95,7 +106,7 @@ suite('SiteListEntry', function() {
     return browserProxy.whenCalled('isOriginValid').then((args) => {
       assertEquals('http://example.com', args);
       Polymer.dom.flush();
-      settingsRow = testElement.root.querySelector('.settings-row');
+      const settingsRow = testElement.root.querySelector('.settings-row');
       assertTrue(settingsRow.hasAttribute('actionable'));
       const subpageArrow = settingsRow.querySelector('.subpage-arrow');
       assertFalse(!subpageArrow);

@@ -325,7 +325,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, EventAnnouncement) {
   std::vector<std::string> text({announce_text});
   auto event = arc::mojom::AccessibilityEventData::New();
   event->event_type = arc::mojom::AccessibilityEventType::ANNOUNCEMENT;
-  event->eventText =
+  event->event_text =
       base::make_optional<std::vector<std::string>>(std::move(text));
 
   helper_bridge->OnAccessibilityEvent(event.Clone());
@@ -400,7 +400,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, Toast) {
   auto event = arc::mojom::AccessibilityEventData::New();
   event->event_type =
       arc::mojom::AccessibilityEventType::NOTIFICATION_STATE_CHANGED;
-  event->eventText =
+  event->event_text =
       base::make_optional<std::vector<std::string>>(std::move(text));
 
   helper_bridge->OnAccessibilityEvent(event.Clone());

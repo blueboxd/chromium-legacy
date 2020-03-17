@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "net/base/auth.h"
 #include "net/base/io_buffer.h"
+#include "net/base/proxy_delegate.h"
 #include "net/http/http_auth_cache.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_log_util.h"
@@ -33,14 +34,18 @@ namespace net {
 
 SpdyProxyClientSocket::SpdyProxyClientSocket(
     const base::WeakPtr<SpdyStream>& spdy_stream,
+    const ProxyServer& proxy_server,
     const std::string& user_agent,
     const HostPortPair& endpoint,
     const NetLogWithSource& source_net_log,
-    HttpAuthController* auth_controller)
+    HttpAuthController* auth_controller,
+    ProxyDelegate* proxy_delegate)
     : next_state_(STATE_DISCONNECTED),
       spdy_stream_(spdy_stream),
       endpoint_(endpoint),
       auth_(auth_controller),
+      proxy_server_(proxy_server),
+      proxy_delegate_(proxy_delegate),
       user_agent_(user_agent),
       user_buffer_len_(0),
       write_buffer_len_(0),
@@ -363,6 +368,13 @@ int SpdyProxyClientSocket::DoSendRequest() {
     auth_->AddAuthorizationHeader(&authorization_headers);
   }
 
+  if (proxy_delegate_) {
+    HttpRequestHeaders proxy_delegate_headers;
+    proxy_delegate_->OnBeforeTunnelRequest(proxy_server_,
+                                           &proxy_delegate_headers);
+    request_.extra_headers.MergeFrom(proxy_delegate_headers);
+  }
+
   std::string request_line;
   BuildTunnelRequest(endpoint_, authorization_headers, user_agent_,
                      &request_line, &request_.extra_headers);
@@ -401,6 +413,15 @@ int SpdyProxyClientSocket::DoReadReplyComplete(int result) {
   NetLogResponseHeaders(
       net_log_, NetLogEventType::HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS,
       response_.headers.get());
+
+  if (proxy_delegate_) {
+    int rv = proxy_delegate_->OnTunnelHeadersReceived(proxy_server_,
+                                                      *response_.headers);
+    if (rv != OK) {
+      DCHECK_NE(ERR_IO_PENDING, rv);
+      return rv;
+    }
+  }
 
   switch (response_.headers->response_code()) {
     case 200:  // OK

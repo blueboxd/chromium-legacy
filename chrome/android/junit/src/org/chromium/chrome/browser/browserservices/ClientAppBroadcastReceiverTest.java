@@ -30,6 +30,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.NotificationPermissionUpdater;
+import org.chromium.components.embedder_support.util.Origin;
 
 import java.util.Arrays;
 import java.util.HashSet;

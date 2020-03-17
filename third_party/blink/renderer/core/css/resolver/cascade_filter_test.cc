@@ -88,8 +88,6 @@ TEST(CascadeFilterTest, RejectFlag) {
                     .Add(CSSProperty::kInherited, false);
   EXPECT_TRUE(filter.Rejects(CSSProperty::kVisited, true));
   EXPECT_TRUE(filter.Rejects(CSSProperty::kInherited, false));
-  EXPECT_FALSE(filter.Rejects(CSSProperty::kUA, true));
-  EXPECT_FALSE(filter.Rejects(CSSProperty::kUA, false));
   EXPECT_FALSE(filter.Rejects(CSSProperty::kVisited, false));
   EXPECT_FALSE(filter.Rejects(CSSProperty::kInherited, true));
 }

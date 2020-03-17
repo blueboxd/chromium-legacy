@@ -786,8 +786,6 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
 void ExtensionService::DisableExtension(const std::string& extension_id,
                                         int disable_reasons) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(disable_reasons != disable_reason::DISABLE_BLOCKED_MATURE ||
-         profile()->IsChild());
   extension_registrar_.DisableExtension(extension_id, disable_reasons);
 }
 
@@ -1032,7 +1030,6 @@ void ExtensionService::CheckManagementPolicy() {
     // related disable reasons.
     if (!profile()->IsChild()) {
       disable_reasons &= (~disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);
-      disable_reasons &= (~disable_reason::DISABLE_BLOCKED_MATURE);
     }
 
     extension_prefs_->ReplaceDisableReasons(extension->id(), disable_reasons);

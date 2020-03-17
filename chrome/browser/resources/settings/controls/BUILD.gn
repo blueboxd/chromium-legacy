@@ -360,10 +360,13 @@ polymer_modulizer("settings_idle_load") {
   html_file = "settings_idle_load.html"
   html_type = "dom-module"
   auto_imports = [
+    "chrome/browser/resources/settings/ensure_lazy_loaded.html|ensureLazyLoaded",
     "ui/webui/resources/html/assert.html|assert",
     "ui/webui/resources/html/polymer.html|Polymer,html,templatize,TemplateInstanceBase",
   ]
-  namespace_rewrites = [ "Polymer.Templatize.templatize|templatize" ]
+  namespace_rewrites = settings_namespace_rewrites + [
+    "Polymer.Templatize.templatize|templatize",
+  ]
 }
 
 polymer_modulizer("settings_radio_group") {

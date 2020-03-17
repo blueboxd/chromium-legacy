@@ -258,6 +258,7 @@
       {
         "args": [
           "--driver-logging",
+          "--jobs=1",
           "--no-xvfb",
           "--additional-driver-flag=--use-vulkan=native"
         ],
@@ -539,6 +540,7 @@
       {
         "args": [
           "--driver-logging",
+          "--jobs=1",
           "--no-xvfb",
           "--additional-driver-flag=--use-vulkan=native"
         ],
@@ -1249,6 +1251,7 @@
       {
         "args": [
           "--driver-logging",
+          "--jobs=1",
           "--platform=mac-mac10.13"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -1519,6 +1522,7 @@
       {
         "args": [
           "--driver-logging",
+          "--jobs=1",
           "--platform=mac-mac10.13"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -2217,6 +2221,7 @@
       {
         "args": [
           "--driver-logging",
+          "--jobs=1",
           "--additional-driver-flag=--disable-gpu-sandbox",
           "--target=Release_x64"
         ],
@@ -2497,6 +2502,7 @@
       {
         "args": [
           "--driver-logging",
+          "--jobs=1",
           "--additional-driver-flag=--disable-gpu-sandbox",
           "--target=Release_x64"
         ],
@@ -3197,6 +3203,7 @@
       {
         "args": [
           "--driver-logging",
+          "--jobs=1",
           "--additional-driver-flag=--disable-gpu-sandbox"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3476,6 +3483,7 @@
       {
         "args": [
           "--driver-logging",
+          "--jobs=1",
           "--additional-driver-flag=--disable-gpu-sandbox"
         ],
         "isolate_name": "webgpu_blink_web_tests",

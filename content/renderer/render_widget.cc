@@ -535,8 +535,10 @@ void RenderWidget::Initialize(ShowCallback show_callback,
   // for a provisional frame, this importantly starts the compositor before
   // the frame is inserted into the frame tree, which impacts first paint
   // metrics.
-  if (!is_hidden_ && !never_composited_)
+  if (!is_hidden_ && !never_composited_) {
+    web_widget->SetCompositorVisible(true);
     layer_tree_view_->SetVisible(true);
+  }
 
   webwidget_ = web_widget;
   web_widget->SetCompositorHosts(layer_tree_view_->layer_tree_host(),
@@ -1026,8 +1028,6 @@ void RenderWidget::OnWasShown(
   TRACE_EVENT_WITH_FLOW0("renderer", "RenderWidget::OnWasShown", routing_id(),
                          TRACE_EVENT_FLAG_FLOW_IN);
 
-  was_shown_time_ = base::TimeTicks::Now();
-
   SetHidden(false);
   if (record_tab_switch_time_request) {
     layer_tree_host_->RequestPresentationTimeForNextFrame(
@@ -1240,42 +1240,21 @@ void RenderWidget::ScheduleAnimation() {
 
 void RenderWidget::UpdateVisualState() {
   DCHECK(!IsForProvisionalFrame());
-
-  // We record metrics only when running in multi-threaded mode, not
-  // single-thread mode for testing.
-  bool record_main_frame_metrics =
-      !!compositor_deps_->GetCompositorImplThreadTaskRunner();
-
-  // When recording main frame metrics set the lifecycle reason to
-  // kBeginMainFrame, because this is the calller of UpdateLifecycle
-  // for the main frame. Otherwise, set the reason to kTests, which is
-  // the only other reason this method is called.
-  blink::DocumentUpdateReason lifecycle_reason =
-      record_main_frame_metrics ? blink::DocumentUpdateReason::kBeginMainFrame
-                                : blink::DocumentUpdateReason::kTest;
-  GetWebWidget()->UpdateLifecycle(blink::WebLifecycleUpdate::kAll,
-                                  lifecycle_reason);
-  GetWebWidget()->SetSuppressFrameRequestsWorkaroundFor704763Only(false);
-
-  if (first_update_visual_state_after_hidden_) {
-    RecordTimeToFirstActivePaint();
-    first_update_visual_state_after_hidden_ = false;
-  }
+  GetWebWidget()->UpdateVisualState();
 }
 
-void RenderWidget::RecordTimeToFirstActivePaint() {
+void RenderWidget::RecordTimeToFirstActivePaint(base::TimeDelta duration) {
   RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
-  base::TimeDelta sample = base::TimeTicks::Now() - was_shown_time_;
   if (render_thread_impl->NeedsToRecordFirstActivePaint(TTFAP_AFTER_PURGED)) {
     UMA_HISTOGRAM_TIMES("PurgeAndSuspend.Experimental.TimeToFirstActivePaint",
-                        sample);
+                        duration);
   }
   if (render_thread_impl->NeedsToRecordFirstActivePaint(
           TTFAP_5MIN_AFTER_BACKGROUNDED)) {
     UMA_HISTOGRAM_TIMES(
         "PurgeAndSuspend.Experimental.TimeToFirstActivePaint."
         "AfterBackgrounded.5min",
-        sample);
+        duration);
   }
 }
 
@@ -1305,7 +1284,7 @@ void RenderWidget::EndUpdateLayers() {
 void RenderWidget::WillBeginCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
 
-  GetWebWidget()->SetSuppressFrameRequestsWorkaroundFor704763Only(true);
+  GetWebWidget()->WillBeginCompositorFrame();
 
   // The UpdateTextInputState can result in further layout and possibly
   // enable GPU acceleration so they need to be called before any painting
@@ -2441,9 +2420,6 @@ void RenderWidget::SetHidden(bool hidden) {
   // throttled acks are released in case frame production ceases.
   is_hidden_ = hidden;
 
-  if (is_hidden_)
-    first_update_visual_state_after_hidden_ = true;
-
   if (render_widget_scheduling_state_)
     render_widget_scheduling_state_->SetHidden(hidden);
 
@@ -2452,8 +2428,10 @@ void RenderWidget::SetHidden(bool hidden) {
   if (is_hidden_)
     widget_input_handler_manager_->InvokeInputProcessedCallback();
 
-  if (!never_composited_)
+  if (!never_composited_) {
+    webwidget_->SetCompositorVisible(!is_hidden_);
     layer_tree_view_->SetVisible(!is_hidden_);
+  }
 }
 
 void RenderWidget::OnImeEventGuardStart(ImeEventGuard* guard) {
@@ -2688,6 +2666,8 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
   cc::LayerTreeSettings settings;
 
   settings.use_zoom_for_dsf = compositor_deps->IsUseZoomForDSFEnabled();
+  settings.percent_based_scrolling =
+      base::FeatureList::IsEnabled(features::kPercentBasedScrolling);
   settings.compositor_threaded_scrollbar_scrolling =
       base::FeatureList::IsEnabled(
           features::kCompositorThreadedScrollbarScrolling);

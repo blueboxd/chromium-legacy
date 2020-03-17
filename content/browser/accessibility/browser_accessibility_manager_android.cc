@@ -411,7 +411,7 @@ void BrowserAccessibilityManagerAndroid::HandleHoverEvent(
     wcax->HandleHover(android_node->unique_id());
 }
 
-gfx::Rect BrowserAccessibilityManagerAndroid::GetViewBounds() {
+gfx::Rect BrowserAccessibilityManagerAndroid::GetViewBounds() const {
   // We have to take the device scale factor into account on Android.
   BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
   if (delegate) {

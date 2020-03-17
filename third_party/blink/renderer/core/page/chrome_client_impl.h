@@ -63,9 +63,8 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   ~ChromeClientImpl() override;
   void Trace(Visitor* visitor) override;
 
-  WebViewImpl* GetWebView() const override;
-
   // ChromeClient methods:
+  WebViewImpl* GetWebView() const override;
   void ChromeDestroyed() override;
   void SetWindowRect(const IntRect&, LocalFrame&) override;
   IntRect RootWindowRect(LocalFrame&) override;

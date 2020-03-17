@@ -131,6 +131,7 @@ gfx::Size VideoFrame::SampleSize(VideoPixelFormat format, size_t plane) {
         case PIXEL_FORMAT_P016LE:
           return gfx::Size(2, 2);
 
+        case PIXEL_FORMAT_UYVY:
         case PIXEL_FORMAT_UNKNOWN:
         case PIXEL_FORMAT_YUY2:
         case PIXEL_FORMAT_ARGB:
@@ -193,6 +194,7 @@ static bool RequiresEvenSizeAllocation(VideoPixelFormat format) {
     case PIXEL_FORMAT_YUV422P12:
     case PIXEL_FORMAT_YUV444P12:
     case PIXEL_FORMAT_I420A:
+    case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_P016LE:
       return true;
     case PIXEL_FORMAT_UNKNOWN:
@@ -863,6 +865,7 @@ int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
     case PIXEL_FORMAT_RGB24:
       return 3;
     case PIXEL_FORMAT_Y16:
+    case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_YUY2:
     case PIXEL_FORMAT_YUV420P9:
     case PIXEL_FORMAT_YUV422P9:

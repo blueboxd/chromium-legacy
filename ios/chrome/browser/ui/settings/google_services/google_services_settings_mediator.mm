@@ -10,6 +10,8 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/features.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/ukm/ios/features.h"
@@ -44,6 +46,7 @@
 #endif
 
 using l10n_util::GetNSString;
+using safe_browsing::kSafeBrowsingAvailableOnIOS;
 
 typedef NSArray<TableViewItem*>* ItemArray;
 
@@ -80,6 +83,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ManageSyncItemType,
   // NonPersonalizedSectionIdentifier section.
   AutocompleteSearchesAndURLsItemType,
+  SafeBrowsingItemType,
   ImproveChromeItemType,
   BetterSearchAndBrowsingItemType,
   ItemTypePasswordLeakCheckSwitch,
@@ -135,6 +139,9 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 // Preference value for the "Autocomplete searches and URLs" feature.
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* autocompleteSearchPreference;
+// Preference value for the "Safe Browsing" feature.
+@property(nonatomic, strong, readonly)
+    PrefBackedBoolean* safeBrowsingPreference;
 // Preference value for the "Help improve Chromium's features" feature.
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* sendDataUsagePreference;
@@ -179,6 +186,12 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         initWithPrefService:userPrefService
                    prefName:prefs::kSearchSuggestEnabled];
     _autocompleteSearchPreference.observer = self;
+    if (base::FeatureList::IsEnabled(kSafeBrowsingAvailableOnIOS)) {
+      _safeBrowsingPreference = [[PrefBackedBoolean alloc]
+          initWithPrefService:userPrefService
+                     prefName:prefs::kSafeBrowsingEnabled];
+      _safeBrowsingPreference.observer = self;
+    }
     _sendDataUsagePreference = [[PrefBackedBoolean alloc]
         initWithPrefService:localPrefService
                    prefName:metrics::prefs::kMetricsReportingEnabled];
@@ -510,6 +523,9 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       case AutocompleteSearchesAndURLsItemType:
         switchItem.on = self.autocompleteSearchPreference.value;
         break;
+      case SafeBrowsingItemType:
+        switchItem.on = self.safeBrowsingPreference.value;
+        break;
       case ImproveChromeItemType:
         switchItem.on = self.sendDataUsagePreference.value;
         break;
@@ -563,13 +579,26 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 - (ItemArray)nonPersonalizedItems {
   if (!_nonPersonalizedItems) {
-    SyncSwitchItem* autocompleteSearchesAndURLsItem = [self
+    NSMutableArray* items = [NSMutableArray array];
+    SyncSwitchItem* autocompleteItem = [self
         switchItemWithItemType:AutocompleteSearchesAndURLsItemType
                   textStringID:
-                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_TEXT
+            IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_TEXT
                 detailStringID:
-                    IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_DETAIL
+          IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_DETAIL
                       dataType:0];
+    [items addObject:autocompleteItem];
+    if (base::FeatureList::IsEnabled(kSafeBrowsingAvailableOnIOS)) {
+      SyncSwitchItem* safeBrowsingItem = [self
+          switchItemWithItemType:SafeBrowsingItemType
+                    textStringID:
+                        IDS_IOS_GOOGLE_SERVICES_SETTINGS_SAFE_BROWSING_TEXT
+                  detailStringID:
+                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_SAFE_BROWSING_DETAIL
+                        dataType:0];
+      [items addObject:safeBrowsingItem];
+    }
+    [items addObject:self.passwordLeakCheckItem];
     SyncSwitchItem* improveChromeItem =
         [self switchItemWithItemType:ImproveChromeItemType
                         textStringID:
@@ -577,19 +606,18 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
                       detailStringID:
                           IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_DETAIL
                             dataType:0];
+    [items addObject:improveChromeItem];
     SyncSwitchItem* betterSearchAndBrowsingItemType = [self
         switchItemWithItemType:BetterSearchAndBrowsingItemType
                   textStringID:
-                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_TEXT
+                IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_TEXT
                 detailStringID:
-                    IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_DETAIL
+              IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_DETAIL
                       dataType:0];
     betterSearchAndBrowsingItemType.accessibilityIdentifier =
         kBetterSearchAndBrowsingItemAccessibilityID;
-    _nonPersonalizedItems = @[
-      autocompleteSearchesAndURLsItem, self.passwordLeakCheckItem,
-      improveChromeItem, betterSearchAndBrowsingItemType
-    ];
+    [items addObject:betterSearchAndBrowsingItemType];
+    _nonPersonalizedItems = items;
   }
   return _nonPersonalizedItems;
 }
@@ -732,6 +760,9 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     case AutocompleteSearchesAndURLsItemType:
       self.autocompleteSearchPreference.value = value;
       break;
+    case SafeBrowsingItemType:
+      self.safeBrowsingPreference.value = value;
+      break;
     case ImproveChromeItemType:
       self.sendDataUsagePreference.value = value;
       // Don't set value if sendDataUsageWifiOnlyPreference has not been
@@ -810,6 +841,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     case SyncDisabledByAdministratorErrorItemType:
     case SyncSettingsNotCofirmedErrorItemType:
     case AutocompleteSearchesAndURLsItemType:
+    case SafeBrowsingItemType:
     case ItemTypePasswordLeakCheckSwitch:
     case ImproveChromeItemType:
     case BetterSearchAndBrowsingItemType:

@@ -135,15 +135,14 @@ class RealTimeUrlLookupServiceTest : public PlatformTest {
         std::make_unique<base::Value>(true));
 #if defined(OS_ANDROID)
     int system_memory_size = base::SysInfo::AmountOfPhysicalMemoryMB();
-    int memory_size_lower_threshold = system_memory_size - 1;
+    int memory_size_threshold = system_memory_size - 1;
     if (is_with_token_enabled) {
       feature_list_.InitWithFeaturesAndParameters(
           /* enabled_features */ {{kRealTimeUrlLookupEnabled,
-                                   {
-                                     { kRealTimeUrlLookupMemoryLowerThresholdMb,
-                                       base::NumberToString(
-                                           memory_size_lower_threshold) }
-                                   }},
+                                   { {
+                                     kRealTimeUrlLookupMemoryThresholdMb,
+                                     base::NumberToString(memory_size_threshold)
+                                   } }},
                                   { kRealTimeUrlLookupEnabledWithToken,
                                     {} }},
           /* disabled_features */ {});
@@ -152,8 +151,8 @@ class RealTimeUrlLookupServiceTest : public PlatformTest {
           /* enabled_features */ {{
             kRealTimeUrlLookupEnabled,
             {
-              { kRealTimeUrlLookupMemoryLowerThresholdMb,
-                base::NumberToString(memory_size_lower_threshold) }
+              { kRealTimeUrlLookupMemoryThresholdMb,
+                base::NumberToString(memory_size_threshold) }
             }
           }},
           /* disabled_features */ {});

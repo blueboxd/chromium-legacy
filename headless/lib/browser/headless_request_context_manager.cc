@@ -182,9 +182,16 @@ HeadlessRequestContextManager::CreateSystemContext(
 HeadlessRequestContextManager::HeadlessRequestContextManager(
     const HeadlessBrowserContextOptions* options,
     base::FilePath user_data_path)
-    : cookie_encryption_enabled_(
+    :
+// On Windows, Cookie encryption requires access to local_state prefs, which are
+// unavailable.
+#if defined(OS_WIN)
+      cookie_encryption_enabled_(false),
+#else
+      cookie_encryption_enabled_(
           !base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kDisableCookieEncryption)),
+#endif
       user_data_path_(std::move(user_data_path)),
       accept_language_(options->accept_language()),
       user_agent_(options->user_agent()),

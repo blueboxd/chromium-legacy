@@ -81,11 +81,6 @@ const CSSProperty* {{class_name}}::GetUnvisitedProperty() const {
   return &Get{{property.unvisited_property.property_id}}();
 }
   {% endif %}
-  {% if property.ua_property %}
-const CSSProperty* {{class_name}}::GetUAProperty() const {
-  return &Get{{property.ua_property.property_id}}();
-}
-  {% endif %}
 
   {% if property.surrogate_for %}
 const CSSProperty* {{class_name}}::SurrogateFor(TextDirection direction,

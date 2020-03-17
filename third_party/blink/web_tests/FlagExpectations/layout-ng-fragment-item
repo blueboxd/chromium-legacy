@@ -224,8 +224,6 @@ crbug.com/718155 virtual/android/fullscreen/full-screen-iframe-not-allowed.html 
 crbug.com/982194 virtual/audio-service/http/tests/media/video-frame-size-change.html [ Failure Pass ]
 crbug.com/874695 crbug.com/936165 virtual/audio-service/media/autoplay-muted.html [ Crash Pass Timeout ]
 crbug.com/982194 compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
-crbug.com/982194 css2.1/t100801-c544-valgn-00-a-ag.html [ Failure ]
-crbug.com/982194 css2.1/t100801-c544-valgn-03-d-agi.html [ Failure ]
 crbug.com/982194 css3/filters/backdrop-filter-svg.html [ Failure ]
 crbug.com/982194 custom-elements/form-submission-file.html [ Crash Pass ]
 crbug.com/982194 external/wpt/compat/webkit-text-fill-color-property-005.html [ Failure ]

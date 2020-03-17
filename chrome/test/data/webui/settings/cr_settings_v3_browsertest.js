@@ -621,3 +621,27 @@ var CrSettingsPaymentsSectionV3Test = class extends CrSettingsV3BrowserTest {
 TEST_F('CrSettingsPaymentsSectionV3Test', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var CrSettingsSiteDataDetailsV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/site_data_details_subpage_tests.m.js';
+  }
+};
+
+TEST_F('CrSettingsSiteDataDetailsV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var CrSettingsSiteListEntryV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/site_list_entry_tests.m.js';
+  }
+};
+
+TEST_F('CrSettingsSiteListEntryV3Test', 'All', function() {
+  mocha.run();
+});

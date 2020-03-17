@@ -11,8 +11,8 @@
 <link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
-<link rel="import" href="../site_settings/category_setting_exceptions.html">
 <link rel="import" href="../site_settings/constants.html">
+<link rel="import" href="../site_settings/site_list.html">
 <link rel="import" href="../site_settings/site_settings_prefs_browser_proxy.html">
 <link rel="import" href="collapse_radio_button.html">
 <link rel="import" href="do_not_track_toggle.html">
@@ -127,13 +127,27 @@
         numeric-unchecked-value="[[networkPredictionUncheckedValue_]]"
         on-settings-boolean-control-change="onNetworkPredictionChange_">
     </settings-toggle-button>
-    <div class="settings-box first">
-      <h2>$i18n{cookiesManageSiteSpecificExceptions}</h2>
-    </div>
-    <category-setting-exceptions
-        category="[[ContentSettingsTypes.COOKIES]]"
-        block-header="$i18n{siteSettingsBlock}">
-    </category-setting-exceptions>
+    <site-list id="allowExceptionsList"
+        category="[[cookiesContentSettingType_]]"
+        category-subtype="[[contentSetting_.ALLOW]]"
+        category-header="$i18n{cookiePageAllowExceptions}"
+        read-only-list="[[cookiesContentSettingManaged_]]"
+        search-filter="[[searchTerm]]">
+    </site-list>
+    <site-list id="sessionOnlyExceptionsList"
+        category="[[cookiesContentSettingType_]]"
+        category-subtype="[[contentSetting_.SESSION_ONLY]]"
+        category-header="$i18n{cookiePageSessionOnlyExceptions}"
+        read-only-list="[[cookiesContentSettingManaged_]]"
+        search-filter="[[searchTerm]]">
+    </site-list>
+    <site-list id="blockExceptionsList"
+        category="[[cookiesContentSettingType_]]"
+        category-subtype="[[contentSetting_.BLOCK]]"
+        category-header="$i18n{cookiePageBlockExceptions}"
+        read-only-list="[[cookiesContentSettingManaged_]]"
+        search-filter="[[searchTerm]]">
+    </site-list>
   </template>
   <script src="cookies_page.js"></script>
 </dom-module>

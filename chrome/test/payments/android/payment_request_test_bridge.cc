@@ -48,8 +48,8 @@ bool DismissMinimalUIForTest() {
       base::android::AttachCurrentThread());
 }
 
-bool IsAndroidMarshmallowForTest() {
-  return Java_PaymentRequestTestBridge_isAndroidMarshmallowForTest(
+bool IsAndroidMarshmallowOrLollipopForTest() {
+  return Java_PaymentRequestTestBridge_isAndroidMarshmallowOrLollipopForTest(
       base::android::AttachCurrentThread());
 }
 

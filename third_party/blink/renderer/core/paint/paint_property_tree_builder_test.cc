@@ -1718,6 +1718,38 @@ TEST_P(PaintPropertyTreeBuilderTest, BorderRadiusClip) {
                           GetDocument().View()->GetLayoutView());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, SubpixelBorderRadiusClip) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+     body {
+       margin: 0px;
+     }
+     #div {
+       margin-top: 0.5px;
+       width: 100px;
+       height: 100px;
+       overflow: hidden;
+       border-radius: 50%;
+     }
+    </style>
+    <div id='div'></div>
+  )HTML");
+
+  LayoutObject& div = *GetLayoutObjectByElementId("div");
+  const ObjectPaintProperties* div_properties =
+      div.FirstFragment().PaintProperties();
+
+  const ClipPaintPropertyNode* border_radius_clip =
+      div_properties->InnerBorderRadiusClip();
+  FloatSize corner(50, 50);
+  EXPECT_EQ(FloatRoundedRect(FloatRect(0, 0.5, 100, 100), corner, corner,
+                             corner, corner),
+            border_radius_clip->UnsnappedClipRect());
+  EXPECT_EQ(FloatRoundedRect(FloatRect(0, 1, 100, 100), corner, corner, corner,
+                             corner),
+            border_radius_clip->PixelSnappedClipRect());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
   SetBodyInnerHTML(R"HTML(
     <style>

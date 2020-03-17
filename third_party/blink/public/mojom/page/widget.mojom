@@ -9,6 +9,9 @@ module blink.mojom;
 interface FrameWidget {
   // Notifies the Widget that the system drag and drop operation has ended.
   DragSourceSystemDragEnded();
+
+  // Makes the Widget background transparent or opaque.
+  SetBackgroundOpaque(bool opaque);
 };
 
 // Implemented in Browser, this interface defines frame-widget-specific methods that

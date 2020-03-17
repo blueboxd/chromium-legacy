@@ -84,29 +84,54 @@ TEST_F(RenderViewHostTest, FilterAbout) {
 
 // The RenderViewHost tells the renderer process about SetBackgroundOpaque()
 // changes.
+
+class FakeFrameWidget : public blink::mojom::FrameWidget {
+ public:
+  explicit FakeFrameWidget(
+      mojo::PendingAssociatedReceiver<blink::mojom::FrameWidget> frame_widget)
+      : receiver_(this, std::move(frame_widget)) {}
+  FakeFrameWidget(const FakeFrameWidget&) = delete;
+  void operator=(const FakeFrameWidget&) = delete;
+
+  bool GetBackgroundOpaque() const {
+    DCHECK_NE(value_, -1);
+    return value_;
+  }
+  void Reset() { value_ = -1; }
+
+ private:
+  void DragSourceSystemDragEnded() override {}
+  void SetBackgroundOpaque(bool value) override { value_ = value; }
+
+  mojo::AssociatedReceiver<blink::mojom::FrameWidget> receiver_;
+  int value_ = -1;
+};
+
 TEST_F(RenderViewHostTest, SetBackgroundOpaque) {
+  mojo::AssociatedRemote<blink::mojom::FrameWidgetHost> blink_frame_widget_host;
+  auto blink_frame_widget_host_receiver =
+      blink_frame_widget_host
+          .BindNewEndpointAndPassDedicatedReceiverForTesting();
+  mojo::AssociatedRemote<blink::mojom::FrameWidget> blink_frame_widget;
+  auto blink_frame_widget_receiver =
+      blink_frame_widget.BindNewEndpointAndPassDedicatedReceiverForTesting();
+
+  test_rvh()->GetWidget()->BindFrameWidgetInterfaces(
+      std::move(blink_frame_widget_host_receiver), blink_frame_widget.Unbind());
+
+  FakeFrameWidget fake_frame_widget(std::move(blink_frame_widget_receiver));
+
   for (bool value : {true, false}) {
     SCOPED_TRACE(value);
     // This method is part of RenderWidgetHostOwnerDelegate, provided to the
     // main frame RenderWidgetHost, which uses it to inform the RenderView
     // in the renderer process of the background opaque state.
-    auto* as_owner_delegate =
-        static_cast<RenderWidgetHostOwnerDelegate*>(test_rvh());
-    as_owner_delegate->SetBackgroundOpaque(value);
+    test_rvh()->GetWidget()->GetAssociatedFrameWidget()->SetBackgroundOpaque(
+        value);
+    base::RunLoop().RunUntilIdle();
 
-    // This RenderWidget(View) was a main frame, so it passes along
-    // transparent background color to the RenderView.
-    const IPC::Message* set_background =
-        process()->sink().GetUniqueMessageMatching(
-            ViewMsg_SetBackgroundOpaque::ID);
-    ASSERT_TRUE(set_background);
-    std::tuple<bool> sent_background;
-    ViewMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
-    EXPECT_EQ(std::get<0>(sent_background), value);
-
-    // GetUniqueMessageMatching() on the next trip through the loop should
-    // not find the message from the current loop, so remove that one.
-    process()->sink().ClearMessages();
+    EXPECT_EQ(fake_frame_widget.GetBackgroundOpaque(), value);
+    fake_frame_widget.Reset();
   }
 }
 

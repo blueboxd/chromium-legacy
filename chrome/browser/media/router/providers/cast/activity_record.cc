@@ -144,6 +144,14 @@ void ActivityRecord::StopSessionOnReceiver(
                                 std::move(callback));
 }
 
+void ActivityRecord::CloseConnectionOnReceiver(const std::string& client_id) {
+  CastSession* session = GetSession();
+  if (!session)
+    return;
+  message_handler_->CloseConnection(cast_channel_id(), client_id,
+                                    session->transport_id());
+}
+
 void ActivityRecord::HandleLeaveSession(const std::string& client_id) {
   auto client_it = connected_clients_.find(client_id);
   CHECK(client_it != connected_clients_.end());

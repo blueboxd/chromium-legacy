@@ -218,14 +218,14 @@ void NetworkServiceProxyDelegate::OnResolveProxy(
 void NetworkServiceProxyDelegate::OnFallback(const net::ProxyServer& bad_proxy,
                                              int net_error) {}
 
-void NetworkServiceProxyDelegate::OnBeforeHttp1TunnelRequest(
+void NetworkServiceProxyDelegate::OnBeforeTunnelRequest(
     const net::ProxyServer& proxy_server,
     net::HttpRequestHeaders* extra_headers) {
   if (IsInProxyConfig(proxy_server))
     MergeRequestHeaders(extra_headers, proxy_config_->connect_tunnel_headers);
 }
 
-net::Error NetworkServiceProxyDelegate::OnHttp1TunnelHeadersReceived(
+net::Error NetworkServiceProxyDelegate::OnTunnelHeadersReceived(
     const net::ProxyServer& proxy_server,
     const net::HttpResponseHeaders& response_headers) {
   return net::OK;
@@ -280,8 +280,9 @@ bool NetworkServiceProxyDelegate::IsInProxyConfig(
     return true;
 
   for (const auto& config : previous_proxy_configs_) {
-    if (RulesContainsProxy(config->rules, proxy_server))
+    if (RulesContainsProxy(config->rules, proxy_server)) {
       return true;
+    }
   }
 
   return false;

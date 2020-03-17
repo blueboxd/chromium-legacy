@@ -17,6 +17,7 @@ namespace extensions {
 class Extension;
 class ExtensionHost;
 class ProcessManager;
+struct WorkerId;
 
 class ProcessManagerObserver : public base::CheckedObserver {
  public:
@@ -42,6 +43,9 @@ class ProcessManagerObserver : public base::CheckedObserver {
   virtual void OnExtensionFrameUnregistered(
       const std::string& extension_id,
       content::RenderFrameHost* render_frame_host) {}
+
+  // Called when a service worker is no longer part of an extension process.
+  virtual void OnServiceWorkerUnregistered(const WorkerId& worker_id) {}
 
   // Called when the observed ProcessManager is shutting down.
   virtual void OnProcessManagerShutdown(ProcessManager* manager) {}

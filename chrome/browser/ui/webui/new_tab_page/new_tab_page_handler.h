@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/search/background/ntp_background_service_observer.h"
 #include "chrome/browser/search/instant_service_observer.h"
+#include "chrome/browser/ui/omnibox/omnibox_tab_helper.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/common/search/instant_types.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -32,7 +33,8 @@ class WebContents;
 
 class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
                           public InstantServiceObserver,
-                          public NtpBackgroundServiceObserver {
+                          public NtpBackgroundServiceObserver,
+                          public OmniboxTabHelper::Observer {
  public:
   NewTabPageHandler(mojo::PendingReceiver<new_tab_page::mojom::PageHandler>
                         pending_page_handler,
@@ -65,6 +67,8 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
       GetBackgroundCollectionsCallback callback) override;
   void GetBackgroundImages(const std::string& collection_id,
                            GetBackgroundImagesCallback callback) override;
+  void FocusOmnibox() override;
+  void PasteIntoOmnibox(const std::string& text) override;
 
  private:
   // InstantServiceObserver:
@@ -76,6 +80,11 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   void OnCollectionImagesAvailable() override;
   void OnNextCollectionImageAvailable() override;
   void OnNtpBackgroundServiceShuttingDown() override;
+
+  // OmniboxTabHelper::Observer:
+  void OnOmniboxInputStateChanged() override;
+  void OnOmniboxFocusChanged(OmniboxFocusState state,
+                             OmniboxFocusChangeReason reason) override;
 
   chrome_colors::ChromeColorsService* chrome_colors_service_;
   InstantService* instant_service_;

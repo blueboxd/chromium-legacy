@@ -154,12 +154,6 @@ void StyleResolverState::CacheUserAgentBorderAndBackground() {
   cached_ua_style_ = std::make_unique<CachedUAStyle>(Style());
 }
 
-UAStyle* StyleResolverState::EnsureUAStyle() {
-  if (!ua_style_)
-    ua_style_ = std::make_unique<UAStyle>();
-  return ua_style_.get();
-}
-
 void StyleResolverState::LoadPendingResources() {
   element_style_resources_.LoadPendingResources(Style());
 }

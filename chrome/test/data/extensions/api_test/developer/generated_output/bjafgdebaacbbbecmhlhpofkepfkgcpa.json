@@ -3,7 +3,6 @@
    "description": "",
    "disableReasons": {
       "blockedByPolicy": false,
-      "blockedMature": false,
       "corruptInstall": false,
       "custodianApprovalRequired": false,
       "suspiciousInstall": false,

@@ -127,8 +127,6 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   bool PushFrame() override;
 
-  bool HasRecordedDrawCommands() { return have_recorded_draw_commands_; }
-
  protected:
   CanvasColorParams ColorParams() const override;
   bool WritePixels(const SkImageInfo& orig_info,
@@ -139,7 +137,6 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   void WillOverwriteCanvas() override;
 
  private:
-  bool have_recorded_draw_commands_;
   void FinalizeFrame() final;
   void FlushRecording();
 

@@ -121,6 +121,9 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
       buffer_formats[1] = gfx::BufferFormat::RG_88;
       return VideoFrameResourceType::YUV;
 
+    case PIXEL_FORMAT_UYVY:
+      NOTREACHED();
+      FALLTHROUGH;
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I422:
     case PIXEL_FORMAT_I444:

@@ -73,7 +73,7 @@ bool DefaultTexture2DWrapper::ProcessTexture(
   // TODO(liberato): Would be nice if SB<> knew how to post and reply, so that
   // we could get the error code back eventually, and fail later with it.
   auto result = gpu_resources_->PushNewTexture(std::move(texture), array_slice);
-  if (!result.IsOk())
+  if (!result.is_ok())
     return false;
 
   // TODO(liberato): make sure that |mailbox_holders_| is zero-initialized in
@@ -254,7 +254,7 @@ Status DefaultTexture2DWrapper::GpuResources::PushNewTexture(
   if (!eglStreamConsumerAcquireKHR(egl_display, stream_))
     return Status(StatusCode::kCouldNotPostAcquireStream);
 
-  return Status::Ok();
+  return OkStatus();
 }
 
 }  // namespace media

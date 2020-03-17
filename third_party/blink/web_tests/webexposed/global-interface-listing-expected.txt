@@ -6666,6 +6666,7 @@ interface ResizeObserverEntry
     getter borderBoxSize
     getter contentBoxSize
     getter contentRect
+    getter devicePixelContentBoxSize
     getter target
     method constructor
 interface ResizeObserverSize

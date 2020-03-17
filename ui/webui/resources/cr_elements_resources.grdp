@@ -207,12 +207,12 @@
                file="cr_elements/chromeos/cr_picture/cr_picture_types.js"
                type="chrome_html"
                compress="gzip" />
-    <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_PICTURE_CR_PNG_BEHAVIOR_HTML"
-               file="cr_elements/chromeos/cr_picture/cr_png_behavior.html"
+    <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_PICTURE_PNG_HTML"
+               file="cr_elements/chromeos/cr_picture/png.html"
                type="chrome_html"
                compress="gzip" />
-    <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_PICTURE_CR_PNG_BEHAVIOR_JS"
-               file="cr_elements/chromeos/cr_picture/cr_png_behavior.js"
+    <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_PICTURE_PNG_JS"
+               file="cr_elements/chromeos/cr_picture/png.js"
                type="chrome_html"
                compress="gzip" />
     <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_PICTURE_ICONS_HTML"

@@ -131,7 +131,6 @@ class CSSProperties(object):
             self.expand_visited(property_)
             property_['in_origin_trial'] = False
             self.expand_origin_trials(property_, origin_trial_features)
-            self.expand_ua(property_)
             self.expand_surrogate(property_)
 
         self._aliases = [
@@ -209,17 +208,6 @@ class CSSProperties(object):
         # Upgrade 'surrogate_for' to property reference.
         property_['surrogate_for'] = self._properties_by_name[
             property_['surrogate_for']]
-
-    def expand_ua(self, ua_property_):
-        if not ua_property_['ua_property_for']:
-            return
-        ua_property_for = ua_property_['ua_property_for']
-        author_property = self._properties_by_name[ua_property_for]
-        ua_property_['ua'] = True
-        ua_property_['author_property'] = author_property
-        assert 'ua_property' not in author_property, \
-            'A property may not have multiple ua properties'
-        author_property['ua_property'] = ua_property_
 
     def expand_aliases(self):
         for i, alias in enumerate(self._aliases):

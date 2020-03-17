@@ -350,6 +350,7 @@ source_set("weblayer_lib_base") {
       "//components/embedder_support/android:util",
       "//components/embedder_support/android:web_contents_delegate",
       "//components/embedder_support/android/metrics",
+      "//components/external_intents/android",
       "//components/javascript_dialogs",
       "//components/metrics",
       "//components/minidump_uploader",

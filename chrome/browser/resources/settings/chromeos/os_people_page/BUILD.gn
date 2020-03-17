@@ -138,7 +138,7 @@ js_library("os_people_page") {
     "//chrome/browser/resources/settings/people_page:signout_dialog",
     "//chrome/browser/resources/settings/people_page:sync_browser_proxy",
     "//ui/webui/resources/cr_components/chromeos/quick_unlock:lock_screen_constants",
-    "//ui/webui/resources/cr_elements/chromeos/cr_picture:cr_png_behavior",
+    "//ui/webui/resources/cr_elements/chromeos/cr_picture:png",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:icon",

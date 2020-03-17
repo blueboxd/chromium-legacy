@@ -338,6 +338,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
   // Only used in Polymer 3, see https://crbug.com/1026426.
   html_source->AddResourcePath("settings.js", IDR_SETTINGS_SETTINGS_ROLLUP_JS);
+  html_source->AddResourcePath("shared.rollup.js",
+                               IDR_SETTINGS_SHARED_ROLLUP_JS);
+  html_source->AddResourcePath("lazy_load.js",
+                               IDR_SETTINGS_LAZY_LOAD_ROLLUP_JS);
   html_source->AddResourcePath("settings_v3.html",
                                IDR_SETTINGS_SETTINGS_V3_HTML);
 #else

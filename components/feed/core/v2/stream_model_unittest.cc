@@ -7,11 +7,14 @@
 #include "base/optional.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
+#include "components/feed/core/v2/stream_model_update_request.h"
 #include "components/feed/core/v2/test/stream_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feed {
 namespace {
+using StoreUpdate = StreamModel::StoreUpdate;
+using UiUpdate = StreamModel::UiUpdate;
 
 std::vector<std::string> GetContentFrames(const StreamModel& model) {
   std::vector<std::string> frames;
@@ -29,20 +32,35 @@ std::vector<std::string> GetContentFrames(const StreamModel& model) {
 class TestObserver : public StreamModel::Observer {
  public:
   explicit TestObserver(StreamModel* model) { model->SetObserver(this); }
-  void OnUiUpdate(const StreamModel::UiUpdate& update) override {
-    update_ = update;
-  }
 
-  const base::Optional<StreamModel::UiUpdate>& GetUiUpdate() const {
-    return update_;
-  }
+  // StreamModel::Observer.
+  void OnUiUpdate(const UiUpdate& update) override { update_ = update; }
+  const base::Optional<UiUpdate>& GetUiUpdate() const { return update_; }
   bool ContentListChanged() const {
     return update_ && update_->content_list_changed;
   }
+
   void Clear() { update_ = base::nullopt; }
 
  private:
-  base::Optional<StreamModel::UiUpdate> update_;
+  base::Optional<UiUpdate> update_;
+};
+
+class TestStoreObserver : public StreamModel::StoreObserver {
+ public:
+  explicit TestStoreObserver(StreamModel* model) {
+    model->SetStoreObserver(this);
+  }
+
+  // StreamModel::StoreObserver.
+  void OnStoreChange(const StoreUpdate& records) override { update_ = records; }
+
+  const base::Optional<StoreUpdate>& GetUpdate() const { return update_; }
+
+  void Clear() { update_ = base::nullopt; }
+
+ private:
+  base::Optional<StoreUpdate> update_;
 };
 
 TEST(StreamModelTest, ConstructEmptyModel) {
@@ -52,15 +70,17 @@ TEST(StreamModelTest, ConstructEmptyModel) {
   EXPECT_EQ(0UL, model.GetContentList().size());
 }
 
-// Typical stream (Stream -> Cluster -> Content).
-TEST(StreamModelTest, AddStreamClusterContent) {
+TEST(StreamModelTest, ExecuteOperationsTypicalStream) {
   StreamModel model;
   TestObserver observer(&model);
+  TestStoreObserver store_observer(&model);
 
   model.ExecuteOperations(MakeTypicalStreamOperations());
-
   EXPECT_TRUE(observer.ContentListChanged());
   EXPECT_EQ(std::vector<std::string>({"f:0", "f:1"}), GetContentFrames(model));
+  ASSERT_TRUE(store_observer.GetUpdate());
+  ASSERT_EQ(MakeTypicalStreamOperations().size(),
+            store_observer.GetUpdate()->operations.size());
 }
 
 TEST(StreamModelTest, AddContentWithoutRoot) {
@@ -264,13 +284,25 @@ TEST(StreamModelTest, CommitEphemeralChange) {
   TestObserver observer(&model);
 
   model.ExecuteOperations(MakeTypicalStreamOperations());
+
   EphemeralChangeId change_id = model.CreateEphemeralChange({
       MakeOperation(MakeCluster(2, MakeRootId())),
       MakeOperation(MakeContentNode(2, MakeClusterId(2))),
       MakeOperation(MakeContent(2)),
   });
 
+  observer.Clear();
+  TestStoreObserver store_observer(&model);
   EXPECT_TRUE(model.CommitEphemeralChange(change_id));
+
+  // Check that the observer's |OnStoreChange()| was called.
+  ASSERT_TRUE(store_observer.GetUpdate());
+  StoreUpdate store_update = *store_observer.GetUpdate();
+  ASSERT_EQ(3UL, store_update.operations.size());
+  EXPECT_EQ(feedstore::StreamStructure::CLUSTER,
+            store_update.operations[0].structure().type());
+  EXPECT_EQ(feedstore::StreamStructure::CONTENT,
+            store_update.operations[1].structure().type());
 
   // Can't reject after commit.
   EXPECT_FALSE(model.RejectEphemeralChange(change_id));
@@ -324,6 +356,27 @@ TEST(StreamModelTest, RejectFirstEphemeralChange) {
 
   EXPECT_EQ(std::vector<std::string>({"f:0", "f:1", "f:3"}),
             GetContentFrames(model));
+}
+
+TEST(StreamModelTest, InitialLoad) {
+  StreamModel model;
+  TestObserver observer(&model);
+  TestStoreObserver store_observer(&model);
+  auto initial_update = std::make_unique<StreamModelUpdateRequest>();
+  initial_update->source =
+      StreamModelUpdateRequest::Source::kInitialLoadFromStore;
+  initial_update->content.push_back(MakeContent(0));
+  *initial_update->stream_data.add_structures() = MakeStream();
+  *initial_update->stream_data.add_structures() = MakeCluster(0, MakeRootId());
+  *initial_update->stream_data.add_structures() =
+      MakeContentNode(0, MakeClusterId(0));
+
+  model.Update(std::move(initial_update));
+
+  // Check that content was added and the store doesn't receive its own update.
+  EXPECT_TRUE(observer.ContentListChanged());
+  EXPECT_EQ(std::vector<std::string>({"f:0"}), GetContentFrames(model));
+  EXPECT_FALSE(store_observer.GetUpdate());
 }
 
 }  // namespace

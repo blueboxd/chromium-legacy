@@ -586,8 +586,8 @@ class Document::NetworkStateObserver final
   USING_GARBAGE_COLLECTED_MIXIN(Document::NetworkStateObserver);
 
  public:
-  explicit NetworkStateObserver(Document& document)
-      : ExecutionContextLifecycleObserver(&document) {
+  explicit NetworkStateObserver(ExecutionContext* context)
+      : ExecutionContextLifecycleObserver(context) {
     online_observer_handle_ = GetNetworkStateNotifier().AddOnLineObserver(
         this, GetExecutionContext()->GetTaskRunner(TaskType::kNetworking));
   }
@@ -595,11 +595,9 @@ class Document::NetworkStateObserver final
   void OnLineStateChange(bool on_line) override {
     AtomicString event_name =
         on_line ? event_type_names::kOnline : event_type_names::kOffline;
-    Document* document = Document::From(GetExecutionContext());
-    if (!document->domWindow())
-      return;
-    document->domWindow()->DispatchEvent(*Event::Create(event_name));
-    probe::NetworkStateChanged(document->GetFrame(), on_line);
+    auto* window = To<LocalDOMWindow>(GetExecutionContext());
+    window->DispatchEvent(*Event::Create(event_name));
+    probe::NetworkStateChanged(window->GetFrame(), on_line);
   }
 
   void ContextDestroyed() override {
@@ -727,7 +725,7 @@ Document::Document(const DocumentInit& initializer,
       write_recursion_is_too_deep_(false),
       write_recursion_depth_(0),
       scripted_animation_controller_(
-          MakeGarbageCollected<ScriptedAnimationController>(this)),
+          MakeGarbageCollected<ScriptedAnimationController>(domWindow())),
       current_frame_is_throttled_(false),
       registration_context_(initializer.RegistrationContext(this)),
       element_data_cache_clear_timer_(
@@ -755,7 +753,7 @@ Document::Document(const DocumentInit& initializer,
       isolated_world_csp_map_(
           MakeGarbageCollected<
               HeapHashMap<int, Member<ContentSecurityPolicy>>>()),
-      permission_service_(this->ToExecutionContext()),
+      permission_service_(GetExecutionContext()),
       font_preload_manager_(*this) {
   security_initializer.ApplyPendingDataToDocument(*this);
   GetOriginTrialContext()->BindExecutionContext(GetExecutionContext());
@@ -3196,7 +3194,8 @@ void Document::Initialize() {
   // Observer(s) should not be initialized until the document is initialized /
   // attached to a frame. Otherwise
   // ExecutionContextLifecycleObserver::contextDestroyed wouldn't be fired.
-  network_state_observer_ = MakeGarbageCollected<NetworkStateObserver>(*this);
+  network_state_observer_ =
+      MakeGarbageCollected<NetworkStateObserver>(GetExecutionContext());
 
   // Check for frame_ so we only attach documents with its own scheduler.
   if (frame_)
@@ -7233,15 +7232,6 @@ void Document::AddConsoleMessage(ConsoleMessage* message,
   // Don't let non-attached Documents spam the console.
   if (domWindow())
     domWindow()->AddConsoleMessage(message, discard_duplicates);
-}
-
-void Document::AddConsoleMessageImpl(mojom::ConsoleMessageSource source,
-                                     mojom::ConsoleMessageLevel level,
-                                     const String& message,
-                                     bool discard_duplicates) {
-  AddConsoleMessage(
-      MakeGarbageCollected<ConsoleMessage>(source, level, message),
-      discard_duplicates);
 }
 
 void Document::AddInspectorIssue(InspectorIssue* issue) {

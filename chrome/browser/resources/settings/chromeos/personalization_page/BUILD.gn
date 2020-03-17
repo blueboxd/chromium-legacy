@@ -21,7 +21,7 @@ js_library("change_picture") {
     "//ui/webui/resources/cr_elements/chromeos/cr_picture:cr_picture_list",
     "//ui/webui/resources/cr_elements/chromeos/cr_picture:cr_picture_pane",
     "//ui/webui/resources/cr_elements/chromeos/cr_picture:cr_picture_types",
-    "//ui/webui/resources/cr_elements/chromeos/cr_picture:cr_png_behavior",
+    "//ui/webui/resources/cr_elements/chromeos/cr_picture:png",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:util",

@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/svg/svg_graphics_element.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -48,11 +49,13 @@ ResizeObserverEntry::ResizeObserverEntry(Element* target) : target_(target) {
     if (auto* svg_graphics_element = DynamicTo<SVGGraphicsElement>(target)) {
       LayoutSize bounding_box_size =
           LayoutSize(svg_graphics_element->GetBBox().Size());
-      LayoutRect content_rect(LayoutPoint(), bounding_box_size);
-      content_rect_ = ZoomAdjustedLayoutRect(content_rect, style);
+      content_rect_ = DOMRectReadOnly::FromFloatRect(
+          FloatRect(FloatPoint(), FloatSize(bounding_box_size)));
       if (RuntimeEnabledFeatures::ResizeObserverUpdatesEnabled()) {
-        content_box_size_ = ZoomAdjustedSize(bounding_box_size, style);
-        border_box_size_ = ZoomAdjustedSize(bounding_box_size, style);
+        content_box_size_ = ResizeObserverSize::Create(
+            bounding_box_size.Width(), bounding_box_size.Height());
+        border_box_size_ = content_box_size_;
+        device_pixel_content_box_size_ = content_box_size_;
       }
     } else if (layout_object->IsBox()) {
       LayoutBox* layout_box = target->GetLayoutBox();
@@ -70,6 +73,18 @@ ResizeObserverEntry::ResizeObserverEntry(Element* target) : target_(target) {
 
         content_box_size_ = ZoomAdjustedSize(content_box_size, style);
         border_box_size_ = ZoomAdjustedSize(border_box_size, style);
+        LayoutSize paint_offset =
+            layout_object->FirstFragment().PaintOffset().ToLayoutSize();
+
+        device_pixel_content_box_size_ = ResizeObserverSize::Create(
+            SnapSizeToPixel(layout_box->ContentLogicalWidth(),
+                            style.IsHorizontalWritingMode()
+                                ? paint_offset.Width()
+                                : paint_offset.Height()),
+            SnapSizeToPixel(layout_box->ContentLogicalHeight(),
+                            style.IsHorizontalWritingMode()
+                                ? paint_offset.Height()
+                                : paint_offset.Width()));
       }
     }
   }
@@ -81,6 +96,8 @@ ResizeObserverEntry::ResizeObserverEntry(Element* target) : target_(target) {
       content_box_size_ = ResizeObserverSize::Create(0, 0);
     if (!border_box_size_)
       border_box_size_ = ResizeObserverSize::Create(0, 0);
+    if (!device_pixel_content_box_size_)
+      device_pixel_content_box_size_ = ResizeObserverSize::Create(0, 0);
   }
 }
 
@@ -89,6 +106,7 @@ void ResizeObserverEntry::Trace(Visitor* visitor) {
   visitor->Trace(content_rect_);
   visitor->Trace(content_box_size_);
   visitor->Trace(border_box_size_);
+  visitor->Trace(device_pixel_content_box_size_);
   ScriptWrappable::Trace(visitor);
 }
 

@@ -133,7 +133,6 @@ void FeatureTree::AddContent(ContentRevision revision_id,
   // these copies.
   const ContentTag tag = GetContentTag(content.content_id());
   DCHECK(!content_.count(revision_id));
-
   GetOrMakeNode(tag)->content_revision = revision_id;
   content_[revision_id] = std::move(content);
 }

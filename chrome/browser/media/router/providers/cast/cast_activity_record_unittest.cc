@@ -455,4 +455,13 @@ TEST_F(CastActivityRecordTest, OnAppMessageAllClients) {
   record_->OnAppMessage(message);
 }
 
+TEST_F(CastActivityRecordTest, CloseConnectionOnReceiver) {
+  SetUpSession();
+  AddMockClient("theClientId1");
+
+  EXPECT_CALL(message_handler_, CloseConnection(kChannelId, "theClientId1",
+                                                session_->transport_id()));
+  record_->CloseConnectionOnReceiver("theClientId1");
+}
+
 }  // namespace media_router

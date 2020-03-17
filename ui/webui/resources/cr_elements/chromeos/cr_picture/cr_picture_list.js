@@ -12,8 +12,6 @@
 Polymer({
   is: 'cr-picture-list',
 
-  behaviors: [CrPngBehavior],
-
   properties: {
     cameraPresent: Boolean,
 
@@ -292,7 +290,7 @@ Polymer({
      * url as input if base64 encoded and potentially animated.
      */
     if (url.split(',')[0] === 'data:image/png;base64') {
-      return CrPngBehavior.convertImageSequenceToPng([url]);
+      return cr.png.convertImageSequenceToPng([url]);
     }
 
     return url;

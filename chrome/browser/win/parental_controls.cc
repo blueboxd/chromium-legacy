@@ -10,12 +10,20 @@
 #include <wpcapi.h>
 #include <wrl/client.h>
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "base/win/registry.h"
+#include "base/win/win_util.h"
+#include "base/win/windows_types.h"
+#include "base/win/windows_version.h"
 
 namespace {
 
@@ -36,13 +44,6 @@ class WinParentalControlsValue {
  private:
   friend struct base::DefaultSingletonTraits<WinParentalControlsValue>;
 
-  // Histogram enum for tracking the thread that checked parental controls.
-  enum class ThreadType {
-    UI = 0,
-    BLOCKING,
-    COUNT,
-  };
-
   WinParentalControlsValue() : parental_controls_(GetParentalControls()) {}
 
   ~WinParentalControlsValue() = default;
@@ -53,7 +54,7 @@ class WinParentalControlsValue {
   // Returns the Windows Parental control enablements. This feature is available
   // on Windows 7 and beyond. This function should be called on a COM
   // Initialized thread and is potentially blocking.
-  static WinParentalControls GetParentalControls() {
+  static WinParentalControls GetParentalControlsFromApi() {
     // Since we can potentially block, make sure the thread is okay with this.
     base::ScopedBlockingCall scoped_blocking_call(
         FROM_HERE, base::BlockingType::MAY_BLOCK);
@@ -78,6 +79,52 @@ class WinParentalControlsValue {
         (restrictions & WPCFLAG_WEB_FILTERED) == WPCFLAG_WEB_FILTERED
         /* web_filter */
     };
+    return controls;
+  }
+
+  // Update |controls| with parental controls found to be active by reading
+  // parental controls configuration from the registry. May be necessary on
+  // Win10 where the APIs are not fully supported and may not always accurately
+  // report such state.
+  //
+  // TODO(ericorth@chromium.org): Detect |logging_required| configuration,
+  // rather than just web filtering.
+  static void UpdateParentalControlsFromRegistry(
+      WinParentalControls* controls) {
+    DCHECK(controls);
+
+    std::wstring user_sid;
+    if (!base::win::GetUserSidString(&user_sid))
+      return;
+
+    static constexpr wchar_t kWebFilterRegistryPathFormat[] =
+        L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Parental "
+        "Controls\\Users\\%ls\\Web";
+
+    std::wstring web_filter_key_path =
+        base::StringPrintf(kWebFilterRegistryPathFormat, user_sid.c_str());
+    base::win::RegKey web_filter_key(
+        HKEY_LOCAL_MACHINE, web_filter_key_path.c_str(), KEY_QUERY_VALUE);
+    if (!web_filter_key.Valid())
+      return;
+
+    // Web filtering is in use if the key contains any "Filter On" value.
+    DWORD filter_on_value;
+    if (web_filter_key.ReadValueDW(L"Filter On", &filter_on_value) ==
+        ERROR_SUCCESS) {
+      controls->any_restrictions = true;
+      controls->web_filter = true;
+    }
+  }
+
+  static WinParentalControls GetParentalControls() {
+    WinParentalControls controls = GetParentalControlsFromApi();
+
+    // Parental controls APIs are not fully supported in Win10 and beyond, so
+    // check registry properties for restictions.
+    if (base::win::GetVersion() >= base::win::Version::WIN10)
+      UpdateParentalControlsFromRegistry(&controls);
+
     return controls;
   }
 

@@ -158,6 +158,10 @@
         <structure type="chrome_scaled_image" name="IDR_ARC_PLAY_STORE_OPTIN_IN_PROGRESS_NOTIFICATION" file="cros/notification_play_store_optin_in_progress.png" />
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EASYUNLOCK_ENABLED" file="cros/notification_easyunlock_enabled.png" />
       </if>
+      <if expr="not is_android">
+        <structure type="chrome_scaled_image" name="IDR_PASSWORD_CHECK" file="common/password_check.png" />
+        <structure type="chrome_scaled_image" name="IDR_PASSWORD_CHECK_DARK" file="common/password_check_dark.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_PLUGINS_FAVICON" file="common/favicon_extensions.png" />
       <if expr="not is_android">
         <structure type="chrome_scaled_image" name="IDR_PRERENDER" file="common/prerender_succeed_icon.png" />

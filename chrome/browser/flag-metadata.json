@@ -1940,7 +1940,7 @@
   {
     "name": "enable-storage-pressure-ui",
     "owners": [ "jarrydg"],
-    "expiry_milestone": 82
+    "expiry_milestone": 85
   },
   {
     "name": "enable-streamlined-usb-printer-setup",
@@ -2952,6 +2952,11 @@
     "name": "omnibox-compact-suggestions",
     "owners": [ "ender", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 87
+  },
+  {
+    "name": "omnibox-context-menu-show-full-urls",
+    "owners": [ "livvielin", "chrome-security-enamel@google.com" ],
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-deferred-keyboard-popup",

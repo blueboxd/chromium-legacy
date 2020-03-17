@@ -20,6 +20,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/history/core/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/test/test_utils.h"
 #include "media/base/media_switches.h"
@@ -34,11 +36,21 @@ namespace {
 constexpr base::TimeDelta kTestClipDuration =
     base::TimeDelta::FromMilliseconds(26771);
 
+enum class TestState {
+  kNormal,
+
+  // Runs the test in incognito mode.
+  kIncognito,
+
+  // Runs the test with the "SavingBrowserHistoryDisabled" policy enabled.
+  kSavingBrowserHistoryDisabled,
+};
+
 }  // namespace
 
 // Runs the test with a param to signify the profile being incognito if true.
 class MediaHistoryBrowserTest : public InProcessBrowserTest,
-                                public testing::WithParamInterface<bool> {
+                                public testing::WithParamInterface<TestState> {
  public:
   MediaHistoryBrowserTest() = default;
   ~MediaHistoryBrowserTest() override = default;
@@ -290,16 +302,28 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest,
   }
 
   Browser* CreateBrowserFromParam() {
-    return GetParam() ? CreateIncognitoBrowser() : browser();
+    if (GetParam() == TestState::kIncognito) {
+      return CreateIncognitoBrowser();
+    } else if (GetParam() == TestState::kSavingBrowserHistoryDisabled) {
+      browser()->profile()->GetPrefs()->SetBoolean(
+          prefs::kSavingBrowserHistoryDisabled, true);
+    }
+
+    return browser();
   }
 
-  bool IsReadOnly() const { return GetParam(); }
+  bool IsReadOnly() const { return GetParam() != TestState::kNormal; }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All, MediaHistoryBrowserTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    MediaHistoryBrowserTest,
+    testing::Values(TestState::kNormal,
+                    TestState::kIncognito,
+                    TestState::kSavingBrowserHistoryDisabled));
 
 IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
                        RecordMediaSession_OnNavigate_Incomplete) {

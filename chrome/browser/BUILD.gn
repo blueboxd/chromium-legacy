@@ -3352,7 +3352,8 @@ jumbo_static_library("browser") {
       "performance_manager/graph/policies/urgent_page_discarding_policy.h",
       "performance_manager/mechanisms/page_discarder.cc",
       "performance_manager/mechanisms/page_discarder.h",
-      "performance_manager/mechanisms/tab_loader.h",
+      "performance_manager/mechanisms/page_loader.cc",
+      "performance_manager/mechanisms/page_loader.h",
       "performance_manager/persistence/site_data/exponential_moving_average.cc",
       "performance_manager/persistence/site_data/exponential_moving_average.h",
       "performance_manager/persistence/site_data/feature_usage.h",
@@ -5561,7 +5562,7 @@ grit("resources") {
   source = "browser_resources.grd"
 
   # Required due to flattenhtml="true" on a generated file.
-  source_is_generated = true
+  enable_input_discovery_for_gn_analyze = false
 
   use_brotli = true
 

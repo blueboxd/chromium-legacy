@@ -276,7 +276,7 @@ if (is_chromeos) {
     deps = [ "//chrome/browser/ui/webui/app_management:mojo_bindings_js" ]
     if (optimize_webui) {
       # Required due to flattenhtml="true" on a generated file.
-      source_is_generated = true
+      enable_input_discovery_for_gn_analyze = false
       source = "settings/os_settings_resources_vulcanized.grd"
 
       deps += [ "//chrome/browser/resources/settings/chromeos:build" ]

@@ -122,11 +122,13 @@ class AppLauncherTabHelperTest : public PlatformTest {
 
   bool TestShouldAllowRequest(NSString* url_string,
                               bool target_frame_is_main,
-                              bool has_user_gesture) WARN_UNUSED_RESULT {
+                              bool has_user_gesture,
+                              ui::PageTransition transition_type =
+                                  ui::PageTransition::PAGE_TRANSITION_LINK)
+      WARN_UNUSED_RESULT {
     NSURL* url = [NSURL URLWithString:url_string];
     web::WebStatePolicyDecider::RequestInfo request_info(
-        ui::PageTransition::PAGE_TRANSITION_LINK, target_frame_is_main,
-        has_user_gesture);
+        transition_type, target_frame_is_main, has_user_gesture);
     return tab_helper_->ShouldAllowRequest([NSURLRequest requestWithURL:url],
                                            request_info);
   }
@@ -166,9 +168,8 @@ class AppLauncherTabHelperTest : public PlatformTest {
     abuse_detector_.policy = is_app_blocked ? ExternalAppLaunchPolicyBlock
                                             : ExternalAppLaunchPolicyAllow;
     ui::PageTransition transition_type =
-        is_link_transition
-            ? ui::PageTransition::PAGE_TRANSITION_LINK
-            : ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT;
+        is_link_transition ? ui::PageTransition::PAGE_TRANSITION_LINK
+                           : ui::PageTransition::PAGE_TRANSITION_TYPED;
 
     NSURL* url = [NSURL
         URLWithString:@"itms-apps://itunes.apple.com/us/app/appname/id123"];
@@ -408,6 +409,19 @@ TEST_F(AppLauncherTabHelperTest, UpdatingTheReadingList) {
                                     /*is_link_transition*/ true,
                                     /*expected_read_status*/ false));
   EXPECT_EQ(2U, delegate_.countOfAppsLaunched);
+}
+
+// Tests that launching a SMS URL via a JavaScript redirect in the main frame
+// is allowed. Covers the scenario for crbug.com/1058388
+TEST_F(AppLauncherTabHelperTest, LaunchSmsApp_JavaScriptRedirect) {
+  NSString* sms_url_string = @"sms:?&body=Hello%20World";
+  ui::PageTransition page_transition = ui::PageTransitionFromInt(
+      ui::PageTransition::PAGE_TRANSITION_LINK |
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT);
+  EXPECT_FALSE(
+      TestShouldAllowRequest(sms_url_string, /*target_frame_is_main=*/true,
+                             /*has_user_gesture=*/false, page_transition));
+  EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
 }
 
 }  // namespace

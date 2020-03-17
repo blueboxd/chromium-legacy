@@ -17,7 +17,7 @@ TestProxyDelegate::TestProxyDelegate() = default;
 
 TestProxyDelegate::~TestProxyDelegate() = default;
 
-void TestProxyDelegate::VerifyOnHttp1TunnelHeadersReceived(
+void TestProxyDelegate::VerifyOnTunnelHeadersReceived(
     const ProxyServer& proxy_server,
     const std::string& response_header_name,
     const std::string& response_header_value) const {
@@ -61,7 +61,7 @@ void TestProxyDelegate::OnResolveProxy(
 void TestProxyDelegate::OnFallback(const ProxyServer& bad_proxy,
                                    int net_error) {}
 
-void TestProxyDelegate::OnBeforeHttp1TunnelRequest(
+void TestProxyDelegate::OnBeforeTunnelRequest(
     const ProxyServer& proxy_server,
     HttpRequestHeaders* extra_headers) {
   on_before_tunnel_request_called_ = true;
@@ -69,7 +69,7 @@ void TestProxyDelegate::OnBeforeHttp1TunnelRequest(
     extra_headers->SetHeader("Foo", proxy_server.ToURI());
 }
 
-Error TestProxyDelegate::OnHttp1TunnelHeadersReceived(
+Error TestProxyDelegate::OnTunnelHeadersReceived(
     const ProxyServer& proxy_server,
     const HttpResponseHeaders& response_headers) {
   EXPECT_EQ(on_tunnel_headers_received_headers_.get(), nullptr);

@@ -2264,7 +2264,7 @@ void Element::setAttribute(const AtomicString& local_name,
 
   String trusted_value =
       TrustedTypesCheckFor(ExpectedTrustedTypeForAttribute(q_name), value,
-                           GetDocument().ToExecutionContext(), exception_state);
+                           GetExecutionContext(), exception_state);
   if (exception_state.HadException())
     return;
 
@@ -2292,7 +2292,7 @@ void Element::setAttribute(const QualifiedName& name,
 
   String trusted_value =
       TrustedTypesCheckFor(ExpectedTrustedTypeForAttribute(name), value,
-                           GetDocument().ToExecutionContext(), exception_state);
+                           GetExecutionContext(), exception_state);
   if (exception_state.HadException())
     return;
 
@@ -2324,9 +2324,9 @@ void Element::setAttribute(
   wtf_size_t index;
   QualifiedName q_name = QualifiedName::Null();
   std::tie(index, q_name) = LookupAttributeQNameInternal(local_name);
-  String value = TrustedTypesCheckFor(
-      ExpectedTrustedTypeForAttribute(q_name), string_or_trusted,
-      GetDocument().ToExecutionContext(), exception_state);
+  String value = TrustedTypesCheckFor(ExpectedTrustedTypeForAttribute(q_name),
+                                      string_or_trusted, GetExecutionContext(),
+                                      exception_state);
   if (exception_state.HadException())
     return;
   SetAttributeInternal(index, q_name, AtomicString(value),
@@ -3907,7 +3907,7 @@ Attr* Element::setAttributeNode(Attr* attr_node,
 
   String value = TrustedTypesCheckFor(
       ExpectedTrustedTypeForAttribute(attr_node->GetQualifiedName()),
-      attr_node->value(), GetDocument().ToExecutionContext(), exception_state);
+      attr_node->value(), GetExecutionContext(), exception_state);
   if (exception_state.HadException())
     return nullptr;
 
@@ -4028,7 +4028,7 @@ void Element::setAttributeNS(
 
   String value = TrustedTypesCheckFor(
       ExpectedTrustedTypeForAttribute(parsed_name), string_or_trusted,
-      GetDocument().ToExecutionContext(), exception_state);
+      GetExecutionContext(), exception_state);
   if (exception_state.HadException())
     return;
 
@@ -4649,8 +4649,7 @@ String Element::outerHTML() const {
 
 void Element::setInnerHTML(const String& html,
                            ExceptionState& exception_state) {
-  probe::BreakableLocation(GetDocument().ToExecutionContext(),
-                           "Element.setInnerHTML");
+  probe::BreakableLocation(GetExecutionContext(), "Element.setInnerHTML");
   if (html.IsEmpty() && !HasNonInBodyInsertionMode()) {
     setTextContent(html);
   } else {

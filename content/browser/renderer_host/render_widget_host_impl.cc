@@ -144,6 +144,11 @@ namespace {
 
 bool g_check_for_pending_visual_properties_ack = true;
 
+bool ShouldDisableHangMonitor() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableHangMonitor);
+}
+
 // <process id, routing id>
 using RenderWidgetHostID = std::pair<int32_t, int32_t>;
 using RoutingIDWidgetMap =
@@ -364,12 +369,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
   SetWidget(std::move(widget));
 
   const auto* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kDisableHangMonitor)) {
-    input_event_ack_timeout_ = std::make_unique<TimeoutMonitor>(
-        base::BindRepeating(&RenderWidgetHostImpl::OnInputEventAckTimeout,
-                            weak_factory_.GetWeakPtr()));
-  }
-
   if (!command_line->HasSwitch(switches::kDisableNewContentRenderingTimeout)) {
     new_content_rendering_timeout_ = std::make_unique<TimeoutMonitor>(
         base::BindRepeating(&RenderWidgetHostImpl::ClearDisplayedGraphics,
@@ -1144,17 +1143,27 @@ void RenderWidgetHostImpl::RenderProcessBlockedStateChanged(bool blocked) {
     RestartInputEventAckTimeoutIfNecessary();
 }
 
-void RenderWidgetHostImpl::StartInputEventAckTimeout(TimeDelta delay) {
-  if (!input_event_ack_timeout_)
+void RenderWidgetHostImpl::StartInputEventAckTimeout() {
+  if (ShouldDisableHangMonitor())
     return;
-  input_event_ack_timeout_->Start(delay);
-  input_event_ack_start_time_ = clock_->NowTicks();
+
+  if (!input_event_ack_timeout_.IsRunning()) {
+    input_event_ack_timeout_.Start(
+        FROM_HERE, hung_renderer_delay_,
+        base::BindOnce(&RenderWidgetHostImpl::OnInputEventAckTimeout,
+                       weak_factory_.GetWeakPtr()));
+    input_event_ack_start_time_ = clock_->NowTicks();
+  }
 }
 
 void RenderWidgetHostImpl::RestartInputEventAckTimeoutIfNecessary() {
-  if (!GetProcess()->IsBlocked() && input_event_ack_timeout_ &&
-      in_flight_event_count_ > 0 && !is_hidden_)
-    input_event_ack_timeout_->Restart(hung_renderer_delay_);
+  if (!GetProcess()->IsBlocked() && !ShouldDisableHangMonitor() &&
+      in_flight_event_count_ > 0 && !is_hidden_) {
+    input_event_ack_timeout_.Start(
+        FROM_HERE, hung_renderer_delay_,
+        base::BindOnce(&RenderWidgetHostImpl::OnInputEventAckTimeout,
+                       weak_factory_.GetWeakPtr()));
+  }
 }
 
 bool RenderWidgetHostImpl::IsCurrentlyUnresponsive() {
@@ -1162,8 +1171,7 @@ bool RenderWidgetHostImpl::IsCurrentlyUnresponsive() {
 }
 
 void RenderWidgetHostImpl::StopInputEventAckTimeout() {
-  if (input_event_ack_timeout_)
-    input_event_ack_timeout_->Stop();
+  input_event_ack_timeout_.Stop();
 
   if (!input_event_ack_start_time_.is_null()) {
     base::TimeDelta elapsed = clock_->NowTicks() - input_event_ack_start_time_;
@@ -2693,7 +2701,7 @@ InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
 void RenderWidgetHostImpl::IncrementInFlightEventCount() {
   ++in_flight_event_count_;
   if (!is_hidden_)
-    StartInputEventAckTimeout(hung_renderer_delay_);
+    StartInputEventAckTimeout();
 }
 
 void RenderWidgetHostImpl::DecrementInFlightEventCount(
@@ -2766,6 +2774,11 @@ bool RenderWidgetHostImpl::RemovePendingUserActivationIfAvailable() {
     return true;
   }
   return false;
+}
+
+const mojo::AssociatedRemote<blink::mojom::FrameWidget>&
+RenderWidgetHostImpl::GetAssociatedFrameWidget() {
+  return blink_frame_widget_;
 }
 
 void RenderWidgetHostImpl::DispatchInputEventWithLatencyInfo(

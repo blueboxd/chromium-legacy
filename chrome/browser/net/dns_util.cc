@@ -12,9 +12,32 @@
 
 #if defined(OS_WIN)
 #include "base/enterprise_util.h"
+#include "base/win/windows_version.h"
+#include "chrome/browser/win/parental_controls.h"
 #endif
 
 namespace chrome_browser_net {
+
+namespace {
+
+#if defined(OS_WIN)
+bool ShouldDisableDohForWindowsParentalControls() {
+  const WinParentalControls& parental_controls = GetWinParentalControls();
+  if (parental_controls.web_filter)
+    return true;
+
+  // Some versions before Windows 8 may not fully support |web_filter|, so
+  // conservatively disable doh for any recognized parental controls.
+  if (parental_controls.any_restrictions &&
+      base::win::GetVersion() < base::win::Version::WIN8) {
+    return true;
+  }
+
+  return false;
+}
+#endif  // defined(OS_WIN)
+
+}  // namespace
 
 bool ShouldDisableDohForManaged() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
@@ -28,8 +51,11 @@ bool ShouldDisableDohForManaged() {
   return false;
 }
 
-// TODO(crbug.com/1037961): Implement this method.
 bool ShouldDisableDohForParentalControls() {
+#if defined(OS_WIN)
+  return ShouldDisableDohForWindowsParentalControls();
+#endif
+
   return false;
 }
 

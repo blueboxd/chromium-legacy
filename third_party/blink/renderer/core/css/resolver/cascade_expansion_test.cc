@@ -240,10 +240,6 @@ TEST_F(CascadeExpansionTest, Value) {
   EXPECT_EQ(CSSPropertyID::kInternalVisitedBackgroundColor, e.Id());
   EXPECT_EQ("red", e.Value().CssText());
   e.Next();
-  ASSERT_FALSE(e.AtEnd());
-  EXPECT_EQ(CSSPropertyID::kInternalUaBackgroundColor, e.Id());
-  EXPECT_EQ("red", e.Value().CssText());
-  e.Next();
   EXPECT_TRUE(e.AtEnd());
 }
 
@@ -318,100 +314,6 @@ TEST_F(CascadeExpansionTest, InternalVisitedWithTrailer) {
   e.Next();
   ASSERT_FALSE(e.AtEnd());
   EXPECT_EQ(CSSPropertyID::kLeft, e.Id());
-  e.Next();
-  EXPECT_TRUE(e.AtEnd());
-}
-
-TEST_F(CascadeExpansionTest, InternalUA) {
-  MatchResult result;
-  result.AddMatchedProperties(ParseDeclarationBlock("border-left-width:1px"));
-  result.FinishAddingUARules();
-  result.FinishAddingUserRules();
-  result.FinishAddingAuthorRulesForTreeScope();
-
-  ASSERT_EQ(1u, result.GetMatchedProperties().size());
-
-  auto e = ExpansionAt(result, 0);
-  ASSERT_FALSE(e.AtEnd());
-  EXPECT_EQ(CSSPropertyID::kBorderLeftWidth, e.Id());
-  e.Next();
-  ASSERT_FALSE(e.AtEnd());
-  EXPECT_EQ(CSSPropertyID::kInternalUaBorderLeftWidth, e.Id());
-  e.Next();
-  EXPECT_TRUE(e.AtEnd());
-}
-
-TEST_F(CascadeExpansionTest, InternalUAOmittedForNonUserAgent) {
-  MatchResult result;
-  result.FinishAddingUARules();
-  result.AddMatchedProperties(ParseDeclarationBlock("border-left-width:1px"));
-  result.FinishAddingUserRules();
-  result.AddMatchedProperties(ParseDeclarationBlock("border-right-width:1px"));
-  result.FinishAddingAuthorRulesForTreeScope();
-
-  ASSERT_EQ(2u, result.GetMatchedProperties().size());
-
-  {
-    auto e = ExpansionAt(result, 0);
-    ASSERT_FALSE(e.AtEnd());
-    EXPECT_EQ(CSSPropertyID::kBorderLeftWidth, e.Id());
-    e.Next();
-    EXPECT_TRUE(e.AtEnd());
-  }
-
-  {
-    auto e = ExpansionAt(result, 1);
-    ASSERT_FALSE(e.AtEnd());
-    EXPECT_EQ(CSSPropertyID::kBorderRightWidth, e.Id());
-    e.Next();
-    EXPECT_TRUE(e.AtEnd());
-  }
-}
-
-TEST_F(CascadeExpansionTest, InternalVisitedAndUA) {
-  MatchResult result;
-  result.AddMatchedProperties(ParseDeclarationBlock("border-left-color:red"));
-  result.FinishAddingUARules();
-  result.FinishAddingUserRules();
-  result.FinishAddingAuthorRulesForTreeScope();
-
-  ASSERT_EQ(1u, result.GetMatchedProperties().size());
-
-  auto e = ExpansionAt(result, 0);
-  ASSERT_FALSE(e.AtEnd());
-  EXPECT_EQ(CSSPropertyID::kBorderLeftColor, e.Id());
-  e.Next();
-  ASSERT_FALSE(e.AtEnd());
-  EXPECT_EQ(CSSPropertyID::kInternalVisitedBorderLeftColor, e.Id());
-  e.Next();
-  ASSERT_FALSE(e.AtEnd());
-  EXPECT_EQ(CSSPropertyID::kInternalUaBorderLeftColor, e.Id());
-  e.Next();
-  EXPECT_TRUE(e.AtEnd());
-}
-
-TEST_F(CascadeExpansionTest, InternalVisitedAndUAWithTrailer) {
-  MatchResult result;
-  result.AddMatchedProperties(
-      ParseDeclarationBlock("border-left-color:red;font-size:1px"));
-  result.FinishAddingUARules();
-  result.FinishAddingUserRules();
-  result.FinishAddingAuthorRulesForTreeScope();
-
-  ASSERT_EQ(1u, result.GetMatchedProperties().size());
-
-  auto e = ExpansionAt(result, 0);
-  ASSERT_FALSE(e.AtEnd());
-  EXPECT_EQ(CSSPropertyID::kBorderLeftColor, e.Id());
-  e.Next();
-  ASSERT_FALSE(e.AtEnd());
-  EXPECT_EQ(CSSPropertyID::kInternalVisitedBorderLeftColor, e.Id());
-  e.Next();
-  ASSERT_FALSE(e.AtEnd());
-  EXPECT_EQ(CSSPropertyID::kInternalUaBorderLeftColor, e.Id());
-  e.Next();
-  ASSERT_FALSE(e.AtEnd());
-  EXPECT_EQ(CSSPropertyID::kFontSize, e.Id());
   e.Next();
   EXPECT_TRUE(e.AtEnd());
 }
@@ -499,24 +401,6 @@ TEST_F(CascadeExpansionTest, FilterInternalVisited) {
   auto e = ExpansionAt(result, 0, filter);
   ASSERT_FALSE(e.AtEnd());
   EXPECT_EQ(CSSPropertyID::kColor, e.Id());
-  e.Next();
-  EXPECT_TRUE(e.AtEnd());
-}
-
-TEST_F(CascadeExpansionTest, FilterInternalUA) {
-  MatchResult result;
-  result.FinishAddingUARules();
-  result.AddMatchedProperties(ParseDeclarationBlock("border-left-width:1px"));
-  result.FinishAddingUserRules();
-  result.FinishAddingAuthorRulesForTreeScope();
-
-  CascadeFilter filter(CSSProperty::kUA, true);
-
-  ASSERT_EQ(1u, result.GetMatchedProperties().size());
-
-  auto e = ExpansionAt(result, 0, filter);
-  ASSERT_FALSE(e.AtEnd());
-  EXPECT_EQ(CSSPropertyID::kBorderLeftWidth, e.Id());
   e.Next();
   EXPECT_TRUE(e.AtEnd());
 }

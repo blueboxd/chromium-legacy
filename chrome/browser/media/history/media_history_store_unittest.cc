@@ -26,7 +26,9 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/history/core/common/pref_names.h"
 #include "components/history/core/test/test_history_database.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/media_player_watch_time.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
@@ -56,11 +58,22 @@ std::unique_ptr<KeyedService> BuildTestHistoryService(
   return service;
 }
 
+enum class TestState {
+  kNormal,
+
+  // Runs the test in incognito mode.
+  kIncognito,
+
+  // Runs the test with the "SavingBrowserHistoryDisabled" policy enabled.
+  kSavingBrowserHistoryDisabled,
+};
+
 }  // namespace
 
 // Runs the test with a param to signify the profile being incognito if true.
-class MediaHistoryStoreUnitTest : public testing::Test,
-                                  public testing::WithParamInterface<bool> {
+class MediaHistoryStoreUnitTest
+    : public testing::Test,
+      public testing::WithParamInterface<TestState> {
  public:
   MediaHistoryStoreUnitTest() = default;
   void SetUp() override {
@@ -70,6 +83,11 @@ class MediaHistoryStoreUnitTest : public testing::Test,
     profile_builder.SetPath(temp_dir_.GetPath());
     g_temp_history_dir = temp_dir_.GetPath();
     profile_ = profile_builder.Build();
+
+    if (GetParam() == TestState::kSavingBrowserHistoryDisabled) {
+      profile_->GetPrefs()->SetBoolean(prefs::kSavingBrowserHistoryDisabled,
+                                       true);
+    }
 
     HistoryServiceFactory::GetInstance()->SetTestingFactory(
         profile_.get(), base::BindRepeating(&BuildTestHistoryService));
@@ -162,7 +180,7 @@ class MediaHistoryStoreUnitTest : public testing::Test,
   MediaHistoryKeyedService* service() const {
     // If the param is true then we use the OTR service to simulate being in
     // incognito.
-    if (GetParam())
+    if (GetParam() == TestState::kIncognito)
       return otr_service();
 
     return MediaHistoryKeyedService::Get(profile_.get());
@@ -170,7 +188,7 @@ class MediaHistoryStoreUnitTest : public testing::Test,
 
   MediaHistoryKeyedService* otr_service() const { return otr_service_.get(); }
 
-  bool IsReadOnly() const { return GetParam(); }
+  bool IsReadOnly() const { return GetParam() != TestState::kNormal; }
 
  private:
   base::ScopedTempDir temp_dir_;
@@ -185,7 +203,12 @@ class MediaHistoryStoreUnitTest : public testing::Test,
   std::unique_ptr<TestingProfile> profile_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All, MediaHistoryStoreUnitTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    MediaHistoryStoreUnitTest,
+    testing::Values(TestState::kNormal,
+                    TestState::kIncognito,
+                    TestState::kSavingBrowserHistoryDisabled));
 
 TEST_P(MediaHistoryStoreUnitTest, CreateDatabaseTables) {
   ASSERT_TRUE(GetDB().DoesTableExist("origin"));
@@ -601,7 +624,10 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
   base::test::ScopedFeatureList features_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All, MediaHistoryStoreFeedsTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         MediaHistoryStoreFeedsTest,
+                         testing::Values(TestState::kNormal,
+                                         TestState::kIncognito));
 
 TEST_P(MediaHistoryStoreFeedsTest, CreateDatabaseTables) {
   ASSERT_TRUE(GetDB().DoesTableExist("mediaFeed"));

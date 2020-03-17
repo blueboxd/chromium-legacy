@@ -75,11 +75,13 @@ if (enable_libaom) {
       sources += aom_dsp_common_asm_ssse3
       sources += aom_ports_asm_x86
       sources += aom_av1_encoder_asm_sse2
-      sources += aom_av1_encoder_asm_ssse3_x86_64
       sources += aom_dsp_encoder_asm_sse2
-      sources += aom_dsp_encoder_asm_sse2_x86_64
-      sources += aom_dsp_encoder_asm_ssse3_x86_64
-      sources += aom_dsp_encoder_avx_asm_x86_64
+      if (current_cpu == "x64") {
+        sources += aom_av1_encoder_asm_ssse3_x86_64
+        sources += aom_dsp_encoder_asm_sse2_x86_64
+        sources += aom_dsp_encoder_asm_ssse3_x86_64
+        sources += aom_dsp_encoder_avx_asm_x86_64
+      }
       defines = [ "CHROMIUM" ]
       include_dirs = libaom_include_dirs
     }

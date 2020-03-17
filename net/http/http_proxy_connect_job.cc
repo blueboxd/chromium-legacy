@@ -641,8 +641,9 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStreamComplete(int result) {
   DCHECK(stream.get());
   // |transport_socket_| will set itself as |stream|'s delegate.
   transport_socket_ = std::make_unique<SpdyProxyClientSocket>(
-      stream, GetUserAgent(), params_->endpoint(), net_log(),
-      http_auth_controller_.get());
+      stream, ProxyServer(GetProxyServerScheme(), GetDestination()),
+      GetUserAgent(), params_->endpoint(), net_log(),
+      http_auth_controller_.get(), common_connect_job_params()->proxy_delegate);
   return transport_socket_->Connect(base::BindOnce(
       &HttpProxyConnectJob::OnIOComplete, base::Unretained(this)));
 }
@@ -710,8 +711,10 @@ int HttpProxyConnectJob::DoQuicProxyCreateStreamComplete(int result) {
   quic_stream->SetPriority(precedence);
 
   transport_socket_ = std::make_unique<QuicProxyClientSocket>(
-      std::move(quic_stream), std::move(quic_session_), GetUserAgent(),
-      params_->endpoint(), net_log(), http_auth_controller_.get());
+      std::move(quic_stream), std::move(quic_session_),
+      ProxyServer(GetProxyServerScheme(), GetDestination()), GetUserAgent(),
+      params_->endpoint(), net_log(), http_auth_controller_.get(),
+      common_connect_job_params()->proxy_delegate);
   return transport_socket_->Connect(base::BindOnce(
       &HttpProxyConnectJob::OnIOComplete, base::Unretained(this)));
 }

@@ -4,6 +4,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -18,13 +19,14 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/platform/ax_platform_node_base.h"
 
 namespace content {
 
 class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
  public:
-  AccessibilityHitTestingBrowserTest() {}
-  ~AccessibilityHitTestingBrowserTest() override {}
+  AccessibilityHitTestingBrowserTest() = default;
+  ~AccessibilityHitTestingBrowserTest() override = default;
 
   BrowserAccessibility* HitTestAndWaitForResultWithEvent(
       const gfx::Point& point,
@@ -74,19 +76,49 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
     return hit_node;
   }
 
-  BrowserAccessibility* CallCachingAsyncHitTest(const gfx::Point& point) {
+  gfx::Point ToScreenPoint(gfx::Point point) {
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
     BrowserAccessibilityManager* manager =
         web_contents->GetRootBrowserAccessibilityManager();
-    gfx::Point screen_point =
-        point + manager->GetViewBounds().OffsetFromOrigin();
+    return point + manager->GetViewBounds().OffsetFromOrigin();
+  }
+
+  BrowserAccessibility* CallCachingAsyncHitTest(const gfx::Point& point) {
+    gfx::Point screen_point = ToScreenPoint(point);
+    BrowserAccessibilityManager* manager =
+        static_cast<WebContentsImpl*>(shell()->web_contents())
+            ->GetRootBrowserAccessibilityManager();
 
     // Each call to CachingAsyncHitTest results in at least one HOVER
-    // event received. Block until we receive it.
+    // event received. Block until we receive it. CachingAsyncHitTestNearestLeaf
+    // will call CachingAsyncHitTest.
     AccessibilityNotificationWaiter hover_waiter(
         shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kHover);
+
     BrowserAccessibility* result = manager->CachingAsyncHitTest(screen_point);
+
+    hover_waiter.WaitForNotification();
+    return result;
+  }
+
+  ui::AXPlatformNodeBase* CallNearestLeafNode(const gfx::Point& point) {
+    gfx::Point screen_point = ToScreenPoint(point);
+    BrowserAccessibilityManager* manager =
+        static_cast<WebContentsImpl*>(shell()->web_contents())
+            ->GetRootBrowserAccessibilityManager();
+
+    // Each call to CachingAsyncHitTest results in at least one HOVER
+    // event received. Block until we receive it. CachingAsyncHitTest
+    // will call CachingAsyncHitTest.
+    AccessibilityNotificationWaiter hover_waiter(
+        shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kHover);
+    ui::AXPlatformNodeBase* result = nullptr;
+    if (manager->GetRoot()->GetAXPlatformNode()) {
+      result = static_cast<ui::AXPlatformNodeBase*>(
+                   manager->GetRoot()->GetAXPlatformNode())
+                   ->NearestLeafToPoint(screen_point);
+    }
     hover_waiter.WaitForNotification();
     return result;
   }
@@ -589,4 +621,91 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
 
 #endif  // !defined(OS_ANDROID) && !defined(OS_MACOSX)
 
+// GetAXPlatformNode is currently only supported on windows and linux (excluding
+// Chrome OS or Chromecast)
+#if defined(OS_WIN) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS) && !BUILDFLAG(IS_CHROMECAST))
+IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
+                       NearestLeafInIframes) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  GURL url(embedded_test_server()->GetURL(
+      "/accessibility/hit_testing/hit_testing.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  waiter.WaitForNotification();
+
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Ordinary Button");
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Scrolled Button");
+
+  // For each point we try, the first time we call CachingAsyncHitTest it
+  // should FAIL and return the wrong object, because this test page has
+  // been designed to confound local synchronous hit testing using
+  // z-indexes. However, calling CachingAsyncHitTest a second time should
+  // return the correct result (since CallCachingAsyncHitTest waits for the
+  // HOVER event to be received). CachingAsyncHitTest is called by
+  // GetNearestLeaf
+
+  // (50, 50) -> "Button"
+  ui::AXPlatformNodeBase* hit_node;
+  hit_node = CallNearestLeafNode(gfx::Point(50, 50));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_NE(ax::mojom::Role::kButton, hit_node->GetData().role);
+  hit_node = CallNearestLeafNode(gfx::Point(50, 50));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_EQ("Button",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+
+  // (280, 50) -> "Button" is still the closest node to the cursor.
+  hit_node = CallNearestLeafNode(gfx::Point(280, 50));
+  EXPECT_NE(ax::mojom::Role::kButton, hit_node->GetData().role);
+  hit_node = CallNearestLeafNode(gfx::Point(280, 50));
+  EXPECT_EQ("Button",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+
+  // (50, 305) -> "Ordinary Button" is the closest leaf node.
+  hit_node = CallNearestLeafNode(gfx::Point(50, 305));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_NE(ax::mojom::Role::kButton, hit_node->GetData().role);
+  hit_node = CallNearestLeafNode(gfx::Point(50, 305));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetData().role);
+  EXPECT_EQ("Ordinary Button",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+
+  // (50, 350) -> "Ordinary Button". As we are still within the previous cached
+  // hit test's bounds, the subsequent call correctly gets the descendant.
+  hit_node = CallNearestLeafNode(gfx::Point(50, 350));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetData().role);
+  EXPECT_EQ("Ordinary Button",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+
+  // (50, 455) -> "Scrolled Button"
+  hit_node = CallNearestLeafNode(gfx::Point(50, 455));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_NE(ax::mojom::Role::kButton, hit_node->GetData().role);
+  hit_node = CallNearestLeafNode(gfx::Point(50, 455));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetData().role);
+  EXPECT_EQ("Scrolled Button",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+
+  // (50, 505) -> "Scrolled Button"
+  hit_node = CallNearestLeafNode(gfx::Point(50, 505));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_NE(ax::mojom::Role::kButton, hit_node->GetData().role);
+  hit_node = CallNearestLeafNode(gfx::Point(50, 505));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetData().role);
+  EXPECT_EQ("Scrolled Button",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+}
+#endif
 }  // namespace content

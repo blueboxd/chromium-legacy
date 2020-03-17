@@ -10,6 +10,7 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
+#include "fuchsia/base/fuchsia_dir_scheme.h"
 #include "fuchsia/base/init_logging.h"
 #include "fuchsia/runners/buildflags.h"
 #include "fuchsia/runners/common/web_content_runner.h"
@@ -22,6 +23,8 @@ int main(int argc, char** argv) {
   CHECK(cr_fuchsia::InitLoggingFromCommandLine(
       *base::CommandLine::ForCurrentProcess()))
       << "Failed to initialize logging.";
+
+  cr_fuchsia::RegisterFuchsiaDirScheme();
 
   fuchsia::web::CreateContextParams create_context_params;
   create_context_params.set_features(

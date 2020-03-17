@@ -4,7 +4,8 @@
 
 
 // clang-format off
-// #import {SystemPageBrowserProxyImpl,LifetimeBrowserProxyImpl} from 'chrome://settings/settings.js';
+// #import {LifetimeBrowserProxyImpl} from 'chrome://settings/settings.js';
+// #import {SystemPageBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 // #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 // #import {TestLifetimeBrowserProxy} from 'chrome://test/settings/test_lifetime_browser_proxy.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';

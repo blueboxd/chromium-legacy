@@ -276,9 +276,10 @@ TestAXNodeWrapper* TestAXNodeWrapper::HitTestSyncInternal(int x, int y) {
   return this;
 }
 
-gfx::NativeViewAccessible TestAXNodeWrapper::HitTestSync(int x, int y) {
-  TestAXNodeWrapper* wrapper =
-      HitTestSyncInternal(x / g_scale_factor, y / g_scale_factor);
+gfx::NativeViewAccessible TestAXNodeWrapper::HitTestSync(int x, int y) const {
+  const TestAXNodeWrapper* wrapper =
+      const_cast<TestAXNodeWrapper*>(this)->HitTestSyncInternal(
+          x / g_scale_factor, y / g_scale_factor);
   return wrapper ? wrapper->ax_platform_node()->GetNativeViewAccessible()
                  : nullptr;
 }

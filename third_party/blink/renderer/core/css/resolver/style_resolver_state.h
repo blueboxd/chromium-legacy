@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/style/cached_ua_style.h"
-#include "third_party/blink/renderer/core/style/ua_style.h"
 
 namespace blink {
 
@@ -146,10 +145,6 @@ class CORE_EXPORT StyleResolverState {
     return cached_ua_style_.get();
   }
 
-  const UAStyle* GetUAStyle() const { return ua_style_.get(); }
-
-  UAStyle* EnsureUAStyle();
-
   ElementStyleResources& GetElementStyleResources() {
     return element_style_resources_;
   }
@@ -241,7 +236,6 @@ class CORE_EXPORT StyleResolverState {
   FontBuilder font_builder_;
 
   std::unique_ptr<CachedUAStyle> cached_ua_style_;
-  std::unique_ptr<UAStyle> ua_style_;
 
   ElementStyleResources element_style_resources_;
   Element* pseudo_element_;

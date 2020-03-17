@@ -21,7 +21,6 @@ import tempfile
 import zipfile
 import zlib
 
-from binary_size import apk_downloader
 import devil_chromium
 from devil.android.sdk import build_tools
 from devil.utils import cmd_helper
@@ -33,8 +32,6 @@ from pylib.constants import host_paths
 _AAPT_PATH = lazy.WeakConstant(lambda: build_tools.GetPath('aapt'))
 _BUILD_UTILS_PATH = os.path.join(
     host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'gyp')
-_APK_PATCH_SIZE_ESTIMATOR_PATH = os.path.join(
-    host_paths.DIR_SOURCE_ROOT, 'third_party', 'apk-patch-size-estimator')
 
 with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
   import perf_tests_results_helper # pylint: disable=import-error
@@ -45,9 +42,6 @@ with host_paths.SysPath(host_paths.TRACING_PATH):
 with host_paths.SysPath(_BUILD_UTILS_PATH, 0):
   from util import build_utils # pylint: disable=import-error
   from util import zipalign  # pylint: disable=import-error
-
-with host_paths.SysPath(_APK_PATCH_SIZE_ESTIMATOR_PATH):
-  import apk_patch_size_estimator # pylint: disable=import-error
 
 
 zipalign.ApplyZipFileZipAlignFix()
@@ -555,25 +549,6 @@ def _DoDexAnalysis(apk_filename, report_func):
   report_func('DexCache', 'DexCache', total_size, 'bytes')
 
 
-def _PrintPatchSizeEstimate(new_apk, builder, bucket, report_func):
-  apk_name = os.path.basename(new_apk)
-  # Reference APK paths have spaces replaced by underscores.
-  builder = builder.replace(' ', '_')
-  old_apk = apk_downloader.MaybeDownloadApk(
-      builder, apk_downloader.CURRENT_MILESTONE, apk_name,
-      apk_downloader.DEFAULT_DOWNLOAD_PATH, bucket)
-  if old_apk:
-    # Use a temp dir in case patch size functions fail to clean up temp files.
-    with build_utils.TempDir() as tmp:
-      tmp_name = os.path.join(tmp, 'patch.tmp')
-      bsdiff = apk_patch_size_estimator.calculate_bsdiff(
-          old_apk, new_apk, None, tmp_name)
-      report_func('PatchSizeEstimate', 'BSDiff (gzipped)', bsdiff, 'bytes')
-      fbf = apk_patch_size_estimator.calculate_filebyfile(
-          old_apk, new_apk, None, tmp_name)
-      report_func('PatchSizeEstimate', 'FileByFile (gzipped)', fbf, 'bytes')
-
-
 @contextmanager
 def Unzip(zip_file, filename=None):
   """Utility for temporary use of a single file in a zip archive."""
@@ -613,9 +588,6 @@ def _Analyze(apk_path, chartjson, args):
   apks_path = args.input if args.input.endswith('.apks') else None
   _DoApkAnalysis(apk_path, apks_path, tool_prefix, out_dir, report_func)
   _DoDexAnalysis(apk_path, report_func)
-  if args.estimate_patch_size:
-    _PrintPatchSizeEstimate(apk_path, args.reference_apk_builder,
-                            args.reference_apk_bucket, report_func)
 
 
 def ResourceSizes(args):
@@ -698,21 +670,6 @@ def main():
       help='Output the results to a file in the given '
       'format instead of printing the results.')
   argparser.add_argument('--loadable_module', help='Obsolete (ignored).')
-  argparser.add_argument(
-      '--estimate-patch-size',
-      action='store_true',
-      help='Include patch size estimates. Useful for perf '
-      'builders where a reference APK is available but adds '
-      '~3 mins to run time.')
-  argparser.add_argument(
-      '--reference-apk-builder',
-      default=apk_downloader.DEFAULT_BUILDER,
-      help='Builder name to use for reference APK for patch '
-      'size estimates.')
-  argparser.add_argument(
-      '--reference-apk-bucket',
-      default=apk_downloader.DEFAULT_BUCKET,
-      help='Storage bucket holding reference APKs.')
 
   # Accepted to conform to the isolated script interface, but ignored.
   argparser.add_argument(

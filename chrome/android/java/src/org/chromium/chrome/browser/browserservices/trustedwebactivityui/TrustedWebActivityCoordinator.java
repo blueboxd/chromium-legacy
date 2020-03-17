@@ -9,7 +9,6 @@ import androidx.browser.trusted.TrustedWebActivityDisplayMode;
 import androidx.browser.trusted.TrustedWebActivityDisplayMode.ImmersiveMode;
 
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.ClientPackageNameProvider;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier;
@@ -32,6 +31,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
+import org.chromium.components.embedder_support.util.Origin;
 
 import javax.inject.Inject;
 

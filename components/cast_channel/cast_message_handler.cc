@@ -94,6 +94,33 @@ void CastMessageHandler::EnsureConnection(int channel_id,
   DoEnsureConnection(socket, source_id, destination_id);
 }
 
+void CastMessageHandler::CloseConnection(int channel_id,
+                                         const std::string& source_id,
+                                         const std::string& destination_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CastSocket* socket = socket_service_->GetSocket(channel_id);
+  if (!socket) {
+    return;
+  }
+
+  VirtualConnection connection(socket->id(), source_id, destination_id);
+  if (virtual_connections_.find(connection) == virtual_connections_.end())
+    return;
+
+  VLOG(1) << "Closing VC for channel: " << connection.channel_id
+          << ", source: " << connection.source_id
+          << ", dest: " << connection.destination_id;
+  socket->transport()->SendMessage(
+      CreateVirtualConnectionClose(connection.source_id,
+                                   connection.destination_id),
+      base::BindOnce(&CastMessageHandler::OnMessageSent,
+                     weak_ptr_factory_.GetWeakPtr()));
+
+  // Assume the virtual connection close will succeed.  Eventually the receiver
+  // will remove the connection even if it doesn't.
+  virtual_connections_.erase(connection);
+}
+
 CastMessageHandler::PendingRequests*
 CastMessageHandler::GetOrCreatePendingRequests(int channel_id) {
   CastMessageHandler::PendingRequests* requests = nullptr;
@@ -300,9 +327,6 @@ void CastMessageHandler::OnError(const CastSocket& socket,
 void CastMessageHandler::OnMessage(const CastSocket& socket,
                                    const CastMessage& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DVLOG(2) << __func__ << ", channel_id: " << socket.id()
-           << ", message: " << message;
-
   // TODO(jrw): Splitting internal messages into a separate code path with a
   // separate data type is pretty questionable, because it causes duplicated
   // code paths in the downstream logic (manifested as separate OnAppMessage and
@@ -310,6 +334,8 @@ void CastMessageHandler::OnMessage(const CastSocket& socket,
   if (IsCastInternalNamespace(message.namespace_())) {
     if (message.payload_type() ==
         cast::channel::CastMessage_PayloadType_STRING) {
+      VLOG(1) << __func__ << ": channel_id: " << socket.id()
+              << ", message: " << message;
       parse_json_.Run(
           message.payload_utf8(),
           base::BindOnce(&CastMessageHandler::HandleCastInternalMessage,
@@ -390,6 +416,8 @@ void CastMessageHandler::SendCastMessageToSocket(CastSocket* socket,
   // A virtual connection must be opened to the receiver before other messages
   // can be sent.
   DoEnsureConnection(socket, message.source_id(), message.destination_id());
+  VLOG(1) << __func__ << ": channel_id: " << socket->id()
+          << ", message: " << message;
   socket->transport()->SendMessage(
       message, base::BindOnce(&CastMessageHandler::OnMessageSent,
                               weak_ptr_factory_.GetWeakPtr()));
@@ -404,9 +432,9 @@ void CastMessageHandler::DoEnsureConnection(CastSocket* socket,
   if (virtual_connections_.find(connection) != virtual_connections_.end())
     return;
 
-  DVLOG(1) << "Creating VC for channel: " << connection.channel_id
-           << ", source: " << connection.source_id
-           << ", dest: " << connection.destination_id;
+  VLOG(1) << "Creating VC for channel: " << connection.channel_id
+          << ", source: " << connection.source_id
+          << ", dest: " << connection.destination_id;
   CastMessage virtual_connection_request = CreateVirtualConnectionRequest(
       connection.source_id, connection.destination_id,
       connection.destination_id == kPlatformReceiverId

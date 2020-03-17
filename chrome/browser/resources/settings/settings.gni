@@ -5,6 +5,7 @@
 # Common namespace rewrites for all polymer_modulizer() or js_modulizer()
 # targets in Settings.
 settings_namespace_rewrites = [
+  "// #polymer3 |",
   "cr_slider.SliderTick|SliderTick",
   "settings.address.CountryDetailManager|CountryDetailManager",
   "settings.AboutPageBrowserProxy|AboutPageBrowserProxy",
@@ -12,9 +13,11 @@ settings_namespace_rewrites = [
   "settings.AutofillManager|AutofillManager",
   "settings.BlockingRequestManager|BlockingRequestManager",
   "settings.CaptionsBrowserProxy|CaptionsBrowserProxy",
+  "settings.ChooserType|ChooserType",
   "settings.ChromeCleanupProxy|ChromeCleanupProxy",
   "settings.ChromeCleanupRemovalListItem|ChromeCleanupRemovalListItem",
   "settings.ClearBrowsingDataBrowserProxy|ClearBrowsingDataBrowserProxy",
+  "settings.ContentSetting|ContentSetting",
   "settings.CreditCardEntry|CreditCardEntry",
   "settings.BrowserProfile|BrowserProfile",
   "settings.DefaultBrowserBrowserProxy|DefaultBrowserBrowserProxy",
@@ -30,6 +33,7 @@ settings_namespace_rewrites = [
   "settings.IncompatibleApplication|IncompatibleApplication",
   "settings.LanguagesBrowserProxy|LanguagesBrowserProxy",
   "settings.LifetimeBrowserProxy|LifetimeBrowserProxy",
+  "settings.LocalDataBrowserProxy|LocalDataBrowserProxy",
   "settings.MainPageBehavior|MainPageBehavior",
   "settings.MetricsBrowserProxy|MetricsBrowserProxy",
   "settings.MinimumRoutes|MinimumRoutes",
@@ -49,6 +53,9 @@ settings_namespace_rewrites = [
   "settings.SearchEnginesBrowserProxy|SearchEnginesBrowserProxy",
   "settings.SearchRequest|SearchRequest",
   "settings.SearchResult|SearchResult",
+  "settings.SITE_EXCEPTION_WILDCARD|SITE_EXCEPTION_WILDCARD",
+  "settings.SiteSettingSource|SiteSettingSource",
+  "settings.SiteSettingsPrefsBrowserProxy|SiteSettingsPrefsBrowserProxy",
   "settings.StartupUrlsPageBrowserProxy|StartupUrlsPageBrowserProxy",
   "settings.StatusAction|StatusAction",
   "settings.SyncBrowserProxy|SyncBrowserProxy",

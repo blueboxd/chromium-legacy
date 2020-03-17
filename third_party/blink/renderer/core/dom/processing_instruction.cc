@@ -219,7 +219,7 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
           title_);
     }
     css_sheet->SetMediaQueries(
-        MediaQuerySet::Create(media_, GetDocument().ToExecutionContext()));
+        MediaQuerySet::Create(media_, GetExecutionContext()));
     sheet_ = css_sheet;
     // We don't need the cross-origin security check here because we are
     // getting the sheet text in "strict" mode. This enforces a valid CSS MIME

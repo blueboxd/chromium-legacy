@@ -140,7 +140,7 @@ ViewAXPlatformNodeDelegate::~ViewAXPlatformNodeDelegate() {
   ax_platform_node_->Destroy();
 }
 
-gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetNativeObject() {
+gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetNativeObject() const {
   DCHECK(ax_platform_node_);
   return ax_platform_node_->GetNativeViewAccessible();
 }
@@ -384,7 +384,7 @@ gfx::Rect ViewAXPlatformNodeDelegate::GetBoundsRect(
 }
 
 gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(int x,
-                                                                  int y) {
+                                                                  int y) const {
   if (!view() || !view()->GetWidget())
     return nullptr;
 

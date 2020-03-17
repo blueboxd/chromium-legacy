@@ -92,7 +92,7 @@ bool PaymentRequestTestController::DismissMinimalUI() {
   return true;
 }
 
-bool PaymentRequestTestController::IsAndroidMarshmallow() {
+bool PaymentRequestTestController::IsAndroidMarshmallowOrLollipop() {
   return false;
 }
 

@@ -37,7 +37,7 @@ import java.util.ArrayList;
  * When initiated from native code, special code is needed to keep the Java and native infobar in
  * sync, see NativeInfoBar.
  */
-public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
+public class InfoBarContainer implements UserData, KeyboardVisibilityListener, InfoBar.Container {
     private static final String TAG = "InfoBarContainer";
 
     private static final Class<InfoBarContainer> USER_DATA_KEY = InfoBarContainer.class;
@@ -291,7 +291,7 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
         }
 
         infoBar.setContext(mInfoBarContainerView.getContext());
-        infoBar.setInfoBarContainer(this);
+        infoBar.setContainer(this);
 
         // We notify observers immediately (before the animation starts).
         for (InfoBarContainerObserver observer : mObservers) {
@@ -317,10 +317,7 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
         addInfoBar(infoBar);
     }
 
-    /**
-     * Notifies that an infobar's View ({@link InfoBar#getView}) has changed. If the infobar is
-     * visible, a view swapping animation will be run.
-     */
+    @Override
     public void notifyInfoBarViewChanged() {
         assert !mDestroyed;
         if (mInfoBarContainerView != null) mInfoBarContainerView.notifyInfoBarViewChanged();
@@ -341,12 +338,8 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
         return mInfoBarContainerView != null ? mInfoBarContainerView.getVisibility() : View.GONE;
     }
 
-    /**
-     * Called by {@link InfoBar} to remove itself from the view hierarchy.
-     *
-     * @param infoBar InfoBar to remove from the View hierarchy.
-     */
-    void removeInfoBar(InfoBar infoBar) {
+    @Override
+    public void removeInfoBar(InfoBar infoBar) {
         assert !mDestroyed;
 
         if (!mInfoBars.remove(infoBar)) {
@@ -364,11 +357,8 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
         mInfoBarContainerView.removeInfoBar(infoBar);
     }
 
-    /**
-     * @return True when this container has been emptied and its native counterpart has been
-     *         destroyed.
-     */
-    public boolean hasBeenDestroyed() {
+    @Override
+    public boolean isDestroyed() {
         return mDestroyed;
     }
 
@@ -542,13 +532,10 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
         }
     }
 
-    /**
-     * @return The infobar in front.
-     */
-    @Nullable
-    InfoBar getFrontInfoBar() {
-        if (mInfoBars.isEmpty()) return null;
-        return mInfoBars.get(0);
+    @Override
+    public boolean isFrontInfoBar(InfoBar infoBar) {
+        if (mInfoBars.isEmpty()) return false;
+        return mInfoBars.get(0) == infoBar;
     }
 
     /**

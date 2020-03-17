@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/values.h"
+#include "net/base/proxy_delegate.h"
 #include "net/http/http_auth_controller.h"
 #include "net/http/http_log_util.h"
 #include "net/http/http_response_headers.h"
@@ -25,10 +26,12 @@ namespace net {
 QuicProxyClientSocket::QuicProxyClientSocket(
     std::unique_ptr<QuicChromiumClientStream::Handle> stream,
     std::unique_ptr<QuicChromiumClientSession::Handle> session,
+    const ProxyServer& proxy_server,
     const std::string& user_agent,
     const HostPortPair& endpoint,
     const NetLogWithSource& net_log,
-    HttpAuthController* auth_controller)
+    HttpAuthController* auth_controller,
+    ProxyDelegate* proxy_delegate)
     : next_state_(STATE_DISCONNECTED),
       stream_(std::move(stream)),
       session_(std::move(session)),
@@ -36,6 +39,8 @@ QuicProxyClientSocket::QuicProxyClientSocket(
       write_buf_len_(0),
       endpoint_(endpoint),
       auth_(auth_controller),
+      proxy_server_(proxy_server),
+      proxy_delegate_(proxy_delegate),
       user_agent_(user_agent),
       net_log_(net_log) {
   DCHECK(stream_->IsOpen());
@@ -348,6 +353,13 @@ int QuicProxyClientSocket::DoSendRequest() {
     auth_->AddAuthorizationHeader(&authorization_headers);
   }
 
+  if (proxy_delegate_) {
+    HttpRequestHeaders proxy_delegate_headers;
+    proxy_delegate_->OnBeforeTunnelRequest(proxy_server_,
+                                           &proxy_delegate_headers);
+    request_.extra_headers.MergeFrom(proxy_delegate_headers);
+  }
+
   std::string request_line;
   BuildTunnelRequest(endpoint_, authorization_headers, user_agent_,
                      &request_line, &request_.extra_headers);
@@ -403,6 +415,15 @@ int QuicProxyClientSocket::DoReadReplyComplete(int result) {
   NetLogResponseHeaders(
       net_log_, NetLogEventType::HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS,
       response_.headers.get());
+
+  if (proxy_delegate_) {
+    int rv = proxy_delegate_->OnTunnelHeadersReceived(proxy_server_,
+                                                      *response_.headers);
+    if (rv != OK) {
+      DCHECK_NE(ERR_IO_PENDING, rv);
+      return rv;
+    }
+  }
 
   switch (response_.headers->response_code()) {
     case 200:  // OK

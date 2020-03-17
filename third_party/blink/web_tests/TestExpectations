@@ -1497,6 +1497,8 @@ crbug.com/711805 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/posi
 crbug.com/829028 virtual/layout_ng_fragment_traversal/fast/block/float/4145535Crash.html [ Failure Pass ]
 
 crbug.com/591099 [ Mac ] virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/text/white-space-bidirectionality-001.xht [ Failure ]
+crbug.com/982194 [ Mac ] virtual/layout_ng_fragment_traversal/fast/table/027-vertical.html [ Failure ]
+crbug.com/982194 [ Mac ] virtual/layout_ng_fragment_traversal/fast/table/border-collapsing/003-vertical.html [ Failure ]
 
 # From NeverFixTests:
 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/linebox/inline-formatting-context-002.xht [ Skip ]
@@ -6952,6 +6954,9 @@ crbug.com/1060175 [ Win ] wpt_internal/webxr/xr_view_projection_detached.https.h
 # Temporarily disable to land https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2097337
 crbug.com/1011811 http/tests/devtools/changes/changes-sidebar.js [ Pass Failure ]
 crbug.com/1011811 http/tests/devtools/search/search-in-static.js [ Pass Failure ]
+
+# Temporarily disabled to land https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2101972
+crbug.com/174309 http/tests/devtools/quick-open/command-menu.js [ Pass Failure ]
 
 # Sheriff 2020-03-12
 crbug.com/1060175 [ Mac ] css3/calc/simple-calcs-prefixed.html [ Pass Timeout ]

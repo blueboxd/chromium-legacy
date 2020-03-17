@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {ContentSetting} from 'chrome://settings/lazy_load.js';
+// #import {createSiteSettingsPrefs, getContentSettingsTypeFromChooserType} from 'chrome://test/settings/test_util.m.js';
+// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// clang-format on
+
 /**
  * In the real (non-test) code, this data comes from the C++ handler.
  * Only used for tests.
@@ -21,7 +27,7 @@ let SiteSettingsPref;
  *
  * @implements {settings.SiteSettingsPrefsBrowserProxy}
  */
-class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
+/* #export */ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'clearFlashPref',

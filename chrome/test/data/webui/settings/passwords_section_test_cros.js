@@ -10,7 +10,8 @@
  */
 
 // clang-format off
-// #import {BlockingRequestManager, PasswordManagerImpl} from 'chrome://settings/settings.js';
+// #import {PasswordManagerImpl} from 'chrome://settings/settings.js';
+// #import {BlockingRequestManager} from 'chrome://settings/lazy_load.js';
 // #import {PasswordSectionElementFactory, createPasswordEntry} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
 // #import {runStartExportTest, runExportFlowFastTest, runExportFlowErrorTest, runExportFlowErrorRetryTest, runExportFlowSlowTest, runCancelExportTest, runFireCloseEventAfterExportCompleteTest} from 'chrome://test/settings/passwords_export_test.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';

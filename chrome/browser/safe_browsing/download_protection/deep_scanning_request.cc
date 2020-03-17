@@ -192,8 +192,6 @@ void DeepScanningRequest::Start() {
     MalwareDeepScanningClientRequest malware_request;
     malware_request.set_population(
         MalwareDeepScanningClientRequest::POPULATION_TITANIUM);
-    malware_request.set_download_token(
-        DownloadProtectionService::GetDownloadPingToken(item_));
     request->set_request_malware_scan(std::move(malware_request));
   } else if (trigger_ == DeepScanTrigger::TRIGGER_POLICY) {
     policy::DMToken dm_token = GetDMToken(profile);
@@ -215,8 +213,6 @@ void DeepScanningRequest::Start() {
       MalwareDeepScanningClientRequest malware_request;
       malware_request.set_population(
           MalwareDeepScanningClientRequest::POPULATION_ENTERPRISE);
-      malware_request.set_download_token(
-          DownloadProtectionService::GetDownloadPingToken(item_));
       request->set_request_malware_scan(std::move(malware_request));
     }
   }

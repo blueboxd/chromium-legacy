@@ -51,8 +51,6 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
 
     void SetClipRect(const FloatRoundedRect& clip_rect_arg,
                      const FloatRoundedRect& pixel_snapped_clip_rect_arg) {
-      DCHECK(clip_rect_arg.GetRadii() ==
-             pixel_snapped_clip_rect_arg.GetRadii());
       clip_rect = clip_rect_arg;
       pixel_snapped_clip_rect = pixel_snapped_clip_rect_arg;
     }

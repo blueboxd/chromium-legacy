@@ -273,9 +273,27 @@ class ScopedPaintTimingDetectorBlockPaintHook {
   DISALLOW_COPY_AND_ASSIGN(ScopedPaintTimingDetectorBlockPaintHook);
 };
 
+// Creates a scope to ignore paint timing, e.g. when we are painting contents
+// under opacity:0.
+class IgnorePaintTimingScope {
+  STACK_ALLOCATED();
+
+ public:
+  IgnorePaintTimingScope() : auto_reset_(&should_ignore_, true) {}
+  ~IgnorePaintTimingScope() = default;
+
+  static bool ShouldIgnore() { return should_ignore_; }
+
+ private:
+  base::AutoReset<bool> auto_reset_;
+  static bool should_ignore_;
+};
+
 // static
 inline void PaintTimingDetector::NotifyTextPaint(
     const IntRect& text_visual_rect) {
+  if (IgnorePaintTimingScope::ShouldIgnore())
+    return;
   ScopedPaintTimingDetectorBlockPaintHook::AggregateTextPaint(text_visual_rect);
 }
 

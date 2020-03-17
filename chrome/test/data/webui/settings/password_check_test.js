@@ -6,6 +6,7 @@
 
 // clang-format off
 // #import {PasswordManagerImpl} from 'chrome://settings/settings.js';
+// #import 'chrome://settings/lazy_load.js';
 // #import {makeCompromisedCredential,  makePasswordCheckStatus} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
 // #import {getSyncAllPrefs,simulateSyncStatus} from 'chrome://test/settings/sync_test_util.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -130,7 +131,28 @@ cr.define('settings_passwords_check', function() {
 
     // Test verifies that clicking 'Check again' make proper function call to
     // password manager
-    test('testCheckAgainButtonWhenIdle', function() {
+    test('testCheckAgainButtonWhenIdleAfterFirstRun', function() {
+      const data = passwordManager.data;
+      data.checkStatus = autofill_test_util.makePasswordCheckStatus(
+          /*state=*/ PasswordCheckState.IDLE,
+          /*checked=*/ undefined,
+          /*remaining=*/ undefined,
+          /*lastCheck=*/ 'Just now');
+      const section = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus')
+          .then(() => {
+            assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
+            expectEquals(
+                section.i18n('checkPasswordsAgain'),
+                section.$.controlPasswordCheckButton.innerText);
+            section.$.controlPasswordCheckButton.click();
+          })
+          .then(() => passwordManager.whenCalled('startBulkPasswordCheck'));
+    });
+
+    // Test verifies that clicking 'Start Check' make proper function call to
+    // password manager
+    test('testStartCheckButtonWhenIdle', function() {
       assertEquals(
           PasswordCheckState.IDLE, passwordManager.data.checkStatus.state);
       const section = createCheckPasswordSection();
@@ -138,7 +160,7 @@ cr.define('settings_passwords_check', function() {
           .then(() => {
             assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
             expectEquals(
-                section.i18n('checkPasswordsAgain'),
+                section.i18n('checkPasswords'),
                 section.$.controlPasswordCheckButton.innerText);
             section.$.controlPasswordCheckButton.click();
           })
@@ -540,8 +562,12 @@ cr.define('settings_passwords_check', function() {
     // Tests that the spinner is replaced with a checkmark on successful runs.
     test('testShowsCheckmarkIconWhenFinishedWithoutLeaks', function() {
       const data = passwordManager.data;
-      assertEquals(PasswordCheckState.IDLE, data.checkStatus.state);
       assertEquals(0, data.leakedCredentials.length);
+      data.checkStatus = autofill_test_util.makePasswordCheckStatus(
+          /*state=*/ PasswordCheckState.IDLE,
+          /*checked=*/ undefined,
+          /*remaining=*/ undefined,
+          /*lastCheck=*/ 'Just now');
 
       const checkPasswordSection = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
@@ -552,6 +578,23 @@ cr.define('settings_passwords_check', function() {
         assertTrue(isElementVisible(icon));
         expectFalse(icon.classList.contains('has-leaks'));
         expectTrue(icon.classList.contains('no-leaks'));
+      });
+    });
+
+    // Tests that there is neither spinner nor icon if the check hasn't run yet.
+    test('testIconWhenFirstRunIsPending', function() {
+      const data = passwordManager.data;
+      assertEquals(0, data.leakedCredentials.length);
+      data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(PasswordCheckState.IDLE);
+
+      const checkPasswordSection = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        const icon = checkPasswordSection.$$('iron-icon');
+        const spinner = checkPasswordSection.$$('paper-spinner-lite');
+        expectFalse(isElementVisible(spinner));
+        expectFalse(isElementVisible(icon));
       });
     });
 
@@ -681,16 +724,17 @@ cr.define('settings_passwords_check', function() {
       });
     });
 
-    // After running, show confirmation, timestamp and number of leaks.
-    test('testDontShowTimeStampIfNotRun', function() {
+    // Before the first run, show only a description of what the check does.
+    test('testShowOnlyDescriptionIfNotRun', function() {
       const section = createCheckPasswordSection();
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
         Polymer.dom.flush();
         const title = section.$.title;
         const subtitle = section.$.subtitle;
         assertTrue(isElementVisible(title));
-        assertTrue(isElementVisible(subtitle));
-        expectEquals(section.i18n('checkPasswords'), title.innerText);
+        assertFalse(isElementVisible(subtitle));
+        expectEquals(section.i18n('checkPasswordsDescription'),
+                     title.innerText);
       });
     });
 
@@ -715,7 +759,7 @@ cr.define('settings_passwords_check', function() {
         assertTrue(isElementVisible(title));
         assertTrue(isElementVisible(subtitle));
         expectEquals(
-            section.i18n('checkPasswords') + ' • Just now', title.innerText);
+            section.i18n('checkedPasswords') + ' • Just now', title.innerText);
       });
     });
 
@@ -847,7 +891,7 @@ cr.define('settings_passwords_check', function() {
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
         assertTrue(isElementVisible(section.$.controlPasswordCheckButton));
         expectEquals(
-            section.i18n('checkPasswordsAgain'),
+            section.i18n('checkPasswords'),
             section.$.controlPasswordCheckButton.innerText);
 
         // Change status from running to IDLE.
@@ -869,6 +913,26 @@ cr.define('settings_passwords_check', function() {
     // after a leak check finished.
     test('testShowsPositiveBannerWhenIdle', function() {
       const data = passwordManager.data;
+      assertEquals(0, data.leakedCredentials.length);
+      data.checkStatus = autofill_test_util.makePasswordCheckStatus(
+          /*state=*/ PasswordCheckState.IDLE,
+          /*checked=*/ undefined,
+          /*remaining=*/ undefined,
+          /*lastCheck=*/ 'Just now');
+
+      const checkPasswordSection = createCheckPasswordSection();
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        assertTrue(isElementVisible(checkPasswordSection.$$('#bannerImage')));
+        expectEquals(
+            'chrome://settings/images/password_check_positive.svg',
+            checkPasswordSection.$$('#bannerImage').src);
+      });
+    });
+
+    // Test that the banner indicates a neutral state if no check was run yet.
+    test('testShowsNeutralBannerBeforeFirstRun', function() {
+      const data = passwordManager.data;
       assertEquals(PasswordCheckState.IDLE, data.checkStatus.state);
       assertEquals(0, data.leakedCredentials.length);
 
@@ -877,7 +941,7 @@ cr.define('settings_passwords_check', function() {
         Polymer.dom.flush();
         assertTrue(isElementVisible(checkPasswordSection.$$('#bannerImage')));
         expectEquals(
-            'chrome://settings/images/password_check_positive.svg',
+            'chrome://settings/images/password_check_neutral.svg',
             checkPasswordSection.$$('#bannerImage').src);
       });
     });

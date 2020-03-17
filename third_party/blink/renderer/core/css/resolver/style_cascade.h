@@ -407,6 +407,10 @@ class CORE_EXPORT StyleCascade {
 
   const Document& GetDocument() const;
 
+  bool HasAuthorDeclaration(const CSSProperty&) const;
+  bool HasAuthorBorder() const;
+  bool HasAuthorBackground() const;
+
   StyleResolverState& state_;
   CascadeMap map_;
   // Generational Apply

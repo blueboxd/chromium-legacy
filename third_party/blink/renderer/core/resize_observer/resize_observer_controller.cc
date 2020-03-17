@@ -14,15 +14,16 @@ void ResizeObserverController::AddObserver(ResizeObserver& observer) {
   observers_.insert(&observer);
 }
 
-size_t ResizeObserverController::GatherObservations(size_t deeper_than) {
+size_t ResizeObserverController::GatherObservations() {
   size_t shallowest = ResizeObserverController::kDepthBottom;
 
   for (auto& observer : observers_) {
-    size_t depth = observer->GatherObservations(deeper_than);
+    size_t depth = observer->GatherObservations(min_depth_);
     if (depth < shallowest)
       shallowest = depth;
   }
-  return shallowest;
+  min_depth_ = shallowest;
+  return min_depth_;
 }
 
 bool ResizeObserverController::SkippedObservations() {

@@ -58,9 +58,9 @@ void ScriptedAnimationController::EraseFromPerFrameEventsMap(
   }
 }
 
-ScriptedAnimationController::ScriptedAnimationController(Document* document)
-    : ExecutionContextLifecycleStateObserver(document),
-      callback_collection_(document->ToExecutionContext()) {
+ScriptedAnimationController::ScriptedAnimationController(LocalDOMWindow* window)
+    : ExecutionContextLifecycleStateObserver(window),
+      callback_collection_(window) {
   UpdateStateIfNeeded();
 }
 
@@ -160,8 +160,8 @@ void ScriptedAnimationController::DispatchEvents(
 }
 
 void ScriptedAnimationController::ExecuteVideoRafCallbacks() {
-  // dispatchEvents() runs script which can cause the document to be destroyed.
-  if (!GetDocument())
+  // dispatchEvents() runs script which can cause the context to be destroyed.
+  if (!GetExecutionContext())
     return;
 
   Vector<VideoRafExecutionCallback> video_raf_callbacks;
@@ -171,8 +171,8 @@ void ScriptedAnimationController::ExecuteVideoRafCallbacks() {
 }
 
 void ScriptedAnimationController::ExecuteFrameCallbacks() {
-  // dispatchEvents() runs script which can cause the document to be destroyed.
-  if (!GetDocument())
+  // dispatchEvents() runs script which can cause the context to be destroyed.
+  if (!GetExecutionContext())
     return;
 
   callback_collection_.ExecuteFrameCallbacks(current_frame_time_ms_,
@@ -191,26 +191,24 @@ void ScriptedAnimationController::CallMediaQueryListListeners() {
 bool ScriptedAnimationController::HasScheduledFrameTasks() const {
   return callback_collection_.HasFrameCallback() || !task_queue_.IsEmpty() ||
          !event_queue_.IsEmpty() || !media_query_list_listeners_.IsEmpty() ||
-         GetDocument()->HasAutofocusCandidates() || !video_raf_queue_.IsEmpty();
+         GetWindow()->document()->HasAutofocusCandidates() ||
+         !video_raf_queue_.IsEmpty();
 }
 
 void ScriptedAnimationController::ServiceScriptedAnimations(
     base::TimeTicks monotonic_time_now) {
-  if (!GetDocument() || !GetDocument()->Loader() ||
-      GetDocument()->IsContextPaused()) {
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextPaused())
     return;
-  }
+  auto* loader = GetWindow()->document()->Loader();
+  if (!loader)
+    return;
 
   current_frame_time_ms_ =
-      GetDocument()
-          ->Loader()
-          ->GetTiming()
+      loader->GetTiming()
           .MonotonicTimeToZeroBasedDocumentTime(monotonic_time_now)
           .InMillisecondsF();
   current_frame_legacy_time_ms_ =
-      GetDocument()
-          ->Loader()
-          ->GetTiming()
+      loader->GetTiming()
           .MonotonicTimeToPseudoWallTime(monotonic_time_now)
           .InMillisecondsF();
   current_frame_had_raf_ = HasFrameCallback();
@@ -223,7 +221,7 @@ void ScriptedAnimationController::ServiceScriptedAnimations(
   // 10.5. For each fully active Document in docs, flush autofocus
   // candidates for that Document if its browsing context is a top-level
   // browsing context.
-  GetDocument()->FlushAutofocusCandidates();
+  GetWindow()->document()->FlushAutofocusCandidates();
 
   // 10.8. For each fully active Document in docs, evaluate media
   // queries and report changes for that Document, passing in now as the
@@ -296,15 +294,17 @@ void ScriptedAnimationController::EnqueueMediaQueryChangeListeners(
 }
 
 void ScriptedAnimationController::ScheduleAnimationIfNeeded() {
-  if (!GetDocument() || !GetDocument()->GetFrame() ||
-      GetDocument()->IsContextPaused()) {
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextPaused())
     return;
-  }
+
+  auto* frame = GetWindow()->GetFrame();
+  if (!frame)
+    return;
 
   // If there is any pre-frame work to do, schedule an animation
   // unconditionally.
   if (HasScheduledFrameTasks()) {
-    GetDocument()->View()->ScheduleAnimation();
+    frame->View()->ScheduleAnimation();
     return;
   }
 
@@ -313,13 +313,13 @@ void ScriptedAnimationController::ScheduleAnimationIfNeeded() {
   // scheduled post-frame tasks will get run at the end of the current frame, so
   // no need to schedule another one.
   if (callback_collection_.HasPostFrameCallback() &&
-      !GetDocument()->GetPage()->Animator().IsServicingAnimations()) {
-    GetDocument()->View()->ScheduleAnimation();
+      !frame->GetPage()->Animator().IsServicingAnimations()) {
+    frame->View()->ScheduleAnimation();
   }
 }
 
-Document* ScriptedAnimationController::GetDocument() const {
-  return Document::From(GetExecutionContext());
+LocalDOMWindow* ScriptedAnimationController::GetWindow() const {
+  return To<LocalDOMWindow>(GetExecutionContext());
 }
 
 }  // namespace blink

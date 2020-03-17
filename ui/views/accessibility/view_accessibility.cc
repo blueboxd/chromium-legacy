@@ -296,7 +296,7 @@ Widget* ViewAccessibility::GetPreviousFocus() {
   return previous_focus_;
 }
 
-gfx::NativeViewAccessible ViewAccessibility::GetNativeObject() {
+gfx::NativeViewAccessible ViewAccessibility::GetNativeObject() const {
   return nullptr;
 }
 

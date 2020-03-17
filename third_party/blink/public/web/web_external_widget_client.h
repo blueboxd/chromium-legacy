@@ -32,6 +32,10 @@ class WebExternalWidgetClient {
 
   // Called when the associated WebExternalWidget has adjusted its size.
   virtual void DidResize(const gfx::Size& size) = 0;
+
+  // Record the time it took for the first paint after the widget transitioned
+  // from background inactive to active.
+  virtual void RecordTimeToFirstActivePaint(base::TimeDelta duration) {}
 };
 
 }  // namespace blink

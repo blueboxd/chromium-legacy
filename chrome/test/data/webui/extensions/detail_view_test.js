@@ -64,7 +64,6 @@ suite(extension_detail_view_tests.suiteName, function() {
     expectTrue(testIsVisible('#closeButton'));
     expectTrue(testIsVisible('#icon'));
     expectTrue(testIsVisible('#enableToggle'));
-    expectFalse(testIsVisible('#blockedMatureToolTip'));
     expectFalse(testIsVisible('#extensions-options'));
     expectTrue(
         item.$.description.textContent.indexOf('This is an extension') !== -1);
@@ -184,14 +183,6 @@ suite(extension_detail_view_tests.suiteName, function() {
     expectTrue(testIsVisible('#enableToggle'));
     expectTrue(item.$$('#enableToggle').disabled);
     item.set('data.disableReasons.blockedByPolicy', false);
-    flush();
-
-    item.set('data.disableReasons.blockedMature', true);
-    flush();
-    expectTrue(testIsVisible('#enableToggle'));
-    expectTrue(item.$$('#enableToggle').disabled);
-    expectTrue(testIsVisible('#blockedMatureToolTip'));
-    item.set('data.disableReasons.blockedMature', false);
     flush();
 
     item.set('data.disableReasons.custodianApprovalRequired', true);

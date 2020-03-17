@@ -5,8 +5,8 @@
 // clang-format off
 // #import {eventToPromise} from 'chrome://test/test_util.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {ResetBrowserProxyImpl} from 'chrome://settings/settings.js';
-// #import {Router, routes} from 'chrome://settings/settings.js';
+// #import {Router, routes, ResetBrowserProxyImpl} from 'chrome://settings/settings.js';
+// #import 'chrome://settings/lazy_load.js';
 // #import {TestResetBrowserProxy} from 'chrome://test/settings/test_reset_browser_proxy.m.js';
 // clang-format on
 

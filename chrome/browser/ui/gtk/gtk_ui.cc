@@ -969,6 +969,10 @@ void GtkUi::UpdateColors() {
     color_map[ThemeProperties::COLOR_DOWNLOAD_SHELF] = tab_color;
     color_map[ThemeProperties::COLOR_INFOBAR] = tab_color;
     color_map[ThemeProperties::COLOR_STATUS_BUBBLE] = tab_color;
+    color_map[ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE] =
+        tab_color;
+    color_map[ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_INACTIVE] =
+        tab_color;
 
     const SkColor background_tab_text_color =
         GetFgColor(header_selector + " GtkLabel.title");

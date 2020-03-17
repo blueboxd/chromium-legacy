@@ -23,7 +23,9 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/history/core/common/pref_names.h"
 #include "components/history/core/test/test_history_database.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/media_player_watch_time.h"
 #include "content/public/test/test_utils.h"
 #include "services/media_session/public/cpp/media_image.h"
@@ -47,9 +49,18 @@ std::unique_ptr<KeyedService> BuildTestHistoryService(
   return service;
 }
 
+enum class TestState {
+  kNormal,
+
+  // Runs the test with the "SavingBrowserHistoryDisabled" policy enabled.
+  kSavingBrowserHistoryDisabled,
+};
+
 }  // namespace
 
-class MediaHistoryKeyedServiceTest : public ChromeRenderViewHostTestHarness {
+class MediaHistoryKeyedServiceTest
+    : public ChromeRenderViewHostTestHarness,
+      public testing::WithParamInterface<TestState> {
  public:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
@@ -84,6 +95,9 @@ class MediaHistoryKeyedServiceTest : public ChromeRenderViewHostTestHarness {
   }
 
   void TearDown() override {
+    profile()->GetPrefs()->SetBoolean(prefs::kSavingBrowserHistoryDisabled,
+                                      false);
+
     service_->Shutdown();
 
     // Tests that run a history service that uses the mock task runner for
@@ -152,6 +166,14 @@ class MediaHistoryKeyedServiceTest : public ChromeRenderViewHostTestHarness {
     return images;
   }
 
+  void MaybeSetSavingBrowsingHistoryDisabled() {
+    if (GetParam() != TestState::kSavingBrowserHistoryDisabled)
+      return;
+
+    profile()->GetPrefs()->SetBoolean(prefs::kSavingBrowserHistoryDisabled,
+                                      true);
+  }
+
   scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner_;
 
  private:
@@ -162,7 +184,13 @@ class MediaHistoryKeyedServiceTest : public ChromeRenderViewHostTestHarness {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-TEST_F(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenHistoryIsDeleted) {
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    MediaHistoryKeyedServiceTest,
+    testing::Values(TestState::kNormal,
+                    TestState::kSavingBrowserHistoryDisabled));
+
+TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenHistoryIsDeleted) {
   history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile(), ServiceAccessType::IMPLICIT_ACCESS);
   GURL url("http://google.com/test");
@@ -184,6 +212,8 @@ TEST_F(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenHistoryIsDeleted) {
 
   EXPECT_EQ(2, GetUserDataTableRowCount());
 
+  MaybeSetSavingBrowsingHistoryDisabled();
+
   {
     base::CancelableTaskTracker task_tracker;
 
@@ -201,7 +231,7 @@ TEST_F(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenHistoryIsDeleted) {
   EXPECT_EQ(0, GetUserDataTableRowCount());
 }
 
-TEST_F(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
+TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
   history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile(), ServiceAccessType::IMPLICIT_ACCESS);
 
@@ -339,6 +369,8 @@ TEST_F(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
   EXPECT_EQ(all_urls, GetURLsInTable(MediaHistoryPlaybackTable::kTableName));
   EXPECT_EQ(all_urls, GetURLsInTable(MediaHistorySessionTable::kTableName));
   EXPECT_EQ(images, GetURLsInTable(MediaHistoryImagesTable::kTableName));
+
+  MaybeSetSavingBrowsingHistoryDisabled();
 
   {
     base::CancelableTaskTracker task_tracker;

@@ -499,7 +499,9 @@ void FidoCableDiscovery::StartCableDiscovery() {
 void FidoCableDiscovery::OnStartDiscoverySession(
     std::unique_ptr<BluetoothDiscoverySession> session) {
   FIDO_LOG(DEBUG) << "Discovery session started.";
-  RecordCableV1DiscoveryEventOnce(CableV1DiscoveryEvent::kScanningStarted);
+  if (has_v1_discovery_data_) {
+    RecordCableV1DiscoveryEventOnce(CableV1DiscoveryEvent::kScanningStarted);
+  }
   SetDiscoverySession(std::move(session));
   // Advertising is delayed by 500ms to ensure that any UI has a chance to
   // appear as we don't want to start broadcasting without the user being

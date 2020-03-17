@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/widget/widget_base.h"
 
 namespace blink {
 
@@ -187,7 +188,7 @@ void WebViewFrameWidget::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
     DCHECK(!root_layer);
     return;
   }
-  cc::LayerTreeHost* layer_tree_host = widget_base_.LayerTreeHost();
+  cc::LayerTreeHost* layer_tree_host = widget_base_->LayerTreeHost();
   layer_tree_host->SetRootLayer(root_layer);
   web_view_->DidChangeRootLayer(!!root_layer);
 }

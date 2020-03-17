@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {AutofillManagerImpl, CountryDetailManagerImpl} from 'chrome://settings/settings.js';
+// #import 'chrome://settings/settings.js';
+// #import {AutofillManagerImpl, CountryDetailManagerImpl} from 'chrome://settings/lazy_load.js';
 // #import {createAddressEntry, createEmptyAddressEntry, TestAutofillManager} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
 // #import {eventToPromise} from 'chrome://test/test_util.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';

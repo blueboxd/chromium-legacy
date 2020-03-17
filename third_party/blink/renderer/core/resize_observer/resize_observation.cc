@@ -4,11 +4,13 @@
 
 #include "third_party/blink/renderer/core/resize_observer/resize_observation.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
+#include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_box_options.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_graphics_element.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 
 namespace blink {
 
@@ -60,13 +62,31 @@ LayoutSize ResizeObservation::ComputeTargetSize() const {
         return LayoutSize();
 
       if (LayoutBox* layout_box = ToLayoutBox(layout_object)) {
+        const ComputedStyle& style = layout_object->StyleRef();
         switch (observed_box_) {
           case ResizeObserverBoxOptions::BorderBox:
-            return LayoutSize(layout_box->LogicalWidth(),
-                              layout_box->LogicalHeight());
+            return LayoutSize(AdjustForAbsoluteZoom::AdjustLayoutUnit(
+                                  layout_box->LogicalWidth(), style),
+                              AdjustForAbsoluteZoom::AdjustLayoutUnit(
+                                  layout_box->LogicalHeight(), style));
           case ResizeObserverBoxOptions::ContentBox:
-            return LayoutSize(layout_box->ContentLogicalWidth(),
-                              layout_box->ContentLogicalHeight());
+            return LayoutSize(AdjustForAbsoluteZoom::AdjustLayoutUnit(
+                                  layout_box->ContentLogicalWidth(), style),
+                              AdjustForAbsoluteZoom::AdjustLayoutUnit(
+                                  layout_box->ContentLogicalHeight(), style));
+          case ResizeObserverBoxOptions::DevicePixelContentBox: {
+            LayoutSize paint_offset =
+                layout_object->FirstFragment().PaintOffset().ToLayoutSize();
+            return LayoutSize(
+                SnapSizeToPixel(layout_box->ContentLogicalWidth(),
+                                style.IsHorizontalWritingMode()
+                                    ? paint_offset.Width()
+                                    : paint_offset.Height()),
+                SnapSizeToPixel(layout_box->ContentLogicalHeight(),
+                                style.IsHorizontalWritingMode()
+                                    ? paint_offset.Height()
+                                    : paint_offset.Width()));
+          }
           default:
             NOTREACHED();
         }

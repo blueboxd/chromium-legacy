@@ -1313,9 +1313,6 @@ std::string SerializeDeepScanningRequest(
         break;
     }
 
-    malware_request.SetStringKey(
-        "download_token", request.malware_scan_request().download_token());
-
     request_dict.SetKey("malware_scan_request", std::move(malware_request));
   }
 

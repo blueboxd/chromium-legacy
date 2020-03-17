@@ -47,6 +47,15 @@ Polymer({
     },
 
     /**
+     * Current search term.
+     */
+    searchTerm: {
+      type: String,
+      notify: true,
+      value: '',
+    },
+
+    /**
      * Valid cookie states.
      * @private
      */
@@ -86,10 +95,28 @@ Polymer({
       notify: true,
     },
 
+    /** @private */
+    contentSetting_: {
+      type: Object,
+      value: settings.ContentSetting,
+    },
+
     /**
      * @private {!settings.ContentSettingsTypes}
      */
-    ContentSettingsTypes: {type: Object, value: settings.ContentSettingsTypes},
+    cookiesContentSettingType_: {
+      type: String,
+      value: settings.ContentSettingsTypes.COOKIES,
+    },
+
+    /**
+     * Whether the cookie content setting is managed.
+     * @private
+     */
+    cookiesContentSettingManaged_: {
+      type: Boolean,
+      notify: false,
+    },
   },
 
   observers: [
@@ -159,6 +186,9 @@ Polymer({
     };
     this.clearOnExitDisabled_ =
         contentSetting.setting === settings.ContentSetting.BLOCK;
+
+    this.cookiesContentSettingManaged_ =
+        contentSetting.source === settings.SiteSettingSource.POLICY;
   },
 
   /**

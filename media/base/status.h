@@ -40,11 +40,6 @@ class StatusDataView;
 // successful returns.
 class MEDIA_EXPORT Status {
  public:
-  // Convenience function to return |kOk|.
-  // OK won't have a message, trace, or data associated with them, and DCHECK
-  // if they are added.
-  static Status Ok() { return Status(); }
-
   // Default constructor can be used for Status::Ok();
   Status();
 
@@ -69,7 +64,7 @@ class MEDIA_EXPORT Status {
   // Needs an out of line destructor...
   ~Status();
 
-  bool IsOk() const { return !data_; }
+  bool is_ok() const { return !data_; }
 
   // Getters for internal fields
   const std::string& message() const {
@@ -147,6 +142,11 @@ class MEDIA_EXPORT Status {
   // A null internals is an implicit OK.
   std::unique_ptr<StatusInternal> data_;
 };
+
+// Convenience function to return |kOk|.
+// OK won't have a message, trace, or data associated with them, and DCHECK
+// if they are added.
+MEDIA_EXPORT Status OkStatus();
 
 // We need this two step macro to allow calling with no extra args - in a single
 // step macro we would have no way of removing the trailing comma after the

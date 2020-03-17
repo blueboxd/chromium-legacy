@@ -29,6 +29,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
@@ -177,12 +178,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Use RenderWidgetHostImpl::From(rwh) to downcast a RenderWidgetHost to a
   // RenderWidgetHostImpl.
   static RenderWidgetHostImpl* From(RenderWidgetHost* rwh);
-
-  void set_hung_renderer_delay(const base::TimeDelta& delay) {
-    hung_renderer_delay_ = delay;
-  }
-
-  base::TimeDelta hung_renderer_delay() { return hung_renderer_delay_; }
 
   void set_new_content_rendering_delay_for_testing(
       const base::TimeDelta& delay) {
@@ -787,6 +782,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Add/ClearPendingUserActivation() for details.
   bool RemovePendingUserActivationIfAvailable();
 
+  const mojo::AssociatedRemote<blink::mojom::FrameWidget>&
+  GetAssociatedFrameWidget();
+
  protected:
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to
@@ -958,7 +956,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Starts a hang monitor timeout. If there's already a hang monitor timeout
   // the new one will only fire if it has a shorter delay than the time
   // left on the existing timeouts.
-  void StartInputEventAckTimeout(base::TimeDelta delay);
+  void StartInputEventAckTimeout();
 
   // Stops all existing hang monitor timeouts and assumes the renderer is
   // responsive.
@@ -1181,7 +1179,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Receives and handles all input events.
   std::unique_ptr<InputRouter> input_router_;
 
-  std::unique_ptr<TimeoutMonitor> input_event_ack_timeout_;
+  base::OneShotTimer input_event_ack_timeout_;
   base::TimeTicks input_event_ack_start_time_;
 
   std::unique_ptr<base::CallbackList<void(bool)>::Subscription>

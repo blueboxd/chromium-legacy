@@ -63,6 +63,8 @@ bool IsBackgroundImageContentful(const LayoutObject& object,
 
 }  // namespace
 
+bool IgnorePaintTimingScope::should_ignore_ = false;
+
 PaintTimingDetector::PaintTimingDetector(LocalFrameView* frame_view)
     : frame_view_(frame_view),
       text_paint_timing_detector_(
@@ -106,6 +108,9 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
     const StyleFetchedImage* style_image,
     const PropertyTreeState& current_paint_chunk_properties,
     const IntRect& image_border) {
+  if (IgnorePaintTimingScope::ShouldIgnore())
+    return;
+
   DCHECK(image);
   DCHECK(style_image->CachedImage());
   if (!node)
@@ -132,6 +137,9 @@ void PaintTimingDetector::NotifyImagePaint(
     const IntSize& intrinsic_size,
     const ImageResourceContent* cached_image,
     const PropertyTreeState& current_paint_chunk_properties) {
+  if (IgnorePaintTimingScope::ShouldIgnore())
+    return;
+
   LocalFrameView* frame_view = object.GetFrameView();
   if (!frame_view)
     return;
@@ -349,6 +357,9 @@ ScopedPaintTimingDetectorBlockPaintHook*
 void ScopedPaintTimingDetectorBlockPaintHook::EmplaceIfNeeded(
     const LayoutBoxModelObject& aggregator,
     const PropertyTreeState& property_tree_state) {
+  if (IgnorePaintTimingScope::ShouldIgnore())
+    return;
+
   // |reset_top_| is unset when |aggregator| is anonymous so that each
   // aggregation corresponds to an element. See crbug.com/988593. When set,
   // |top_| becomes |this|, and |top_| is restored to the previous value when

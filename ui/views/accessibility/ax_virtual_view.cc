@@ -314,7 +314,7 @@ gfx::Rect AXVirtualView::GetBoundsRect(
   }
 }
 
-gfx::NativeViewAccessible AXVirtualView::HitTestSync(int x, int y) {
+gfx::NativeViewAccessible AXVirtualView::HitTestSync(int x, int y) const {
   if (custom_data_.relative_bounds.bounds.Contains(static_cast<float>(x),
                                                    static_cast<float>(y))) {
     if (!IsIgnored())

@@ -1315,6 +1315,15 @@ LocalFrameClient* LocalFrame::Client() const {
   return static_cast<LocalFrameClient*>(Frame::Client());
 }
 
+FrameWidget* LocalFrame::GetWidgetForLocalRoot() {
+  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(this);
+  if (!web_frame)
+    return nullptr;
+  // This WebFrameWidgetBase upcasts to a FrameWidget which is the interface
+  // exposed to Blink core.
+  return web_frame->LocalRootFrameWidget();
+}
+
 WebContentSettingsClient* LocalFrame::GetContentSettingsClient() {
   return Client() ? Client()->GetContentSettingsClient() : nullptr;
 }

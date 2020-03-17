@@ -359,6 +359,7 @@ public abstract class ChromeFeatureList {
     public static final String QUIET_NOTIFICATION_PROMPTS = "QuietNotificationPrompts";
     public static final String REACHED_CODE_PROFILER = "ReachedCodeProfiler";
     public static final String READER_MODE_IN_CCT = "ReaderModeInCCT";
+    public static final String RECOVER_FROM_NEVER_SAVE_ANDROID = "RecoverFromNeverSaveAndroid";
     public static final String REMOVE_NAVIGATION_HISTORY = "RemoveNavigationHistory";
     public static final String REORDER_BOOKMARKS = "ReorderBookmarks";
     public static final String REVAMPED_CONTEXT_MENU = "RevampedContextMenu";

@@ -88,6 +88,10 @@ extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 // Controls whether the real time URL lookup is enabled.
 extern const base::Feature kRealTimeUrlLookupEnabled;
 
+// Controls whether the real time URL lookup is enabled for all Android devices.
+// This flag is in effect only if |kRealTimeUrlLookupEnabled| is true.
+extern const base::Feature kRealTimeUrlLookupEnabledForAllAndroidDevices;
+
 // Controls whether the real time URL lookup is enabled for Enhanced Protection
 // users.
 extern const base::Feature kRealTimeUrlLookupEnabledForEP;

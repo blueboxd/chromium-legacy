@@ -250,8 +250,6 @@ std::vector<ExtensionInstallProto::DisableReason> GetDisableReasons(
        ExtensionInstallProto::CUSTODIAN_APPROVAL_REQUIRED},
       {extensions::disable_reason::DISABLE_BLOCKED_BY_POLICY,
        ExtensionInstallProto::BLOCKED_BY_POLICY},
-      {extensions::disable_reason::DISABLE_BLOCKED_MATURE,
-       ExtensionInstallProto::BLOCKED_MATURE},
   };
 
   int disable_reasons = prefs->GetDisableReasons(id);

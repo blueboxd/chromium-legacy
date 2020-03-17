@@ -15,11 +15,11 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
+import org.chromium.chrome.browser.homepage.settings.HomepageMetricsEnums.HomeButtonPreferenceState;
+import org.chromium.chrome.browser.homepage.settings.HomepageMetricsEnums.HomepageLocationType;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.settings.homepage.HomepageMetricsEnums.HomeButtonPreferenceState;
-import org.chromium.chrome.browser.settings.homepage.HomepageMetricsEnums.HomepageLocationType;
 import org.chromium.components.embedder_support.util.UrlConstants;
 
 /**

@@ -1367,6 +1367,20 @@ static FloatRoundedRect::Radii CalcRadiiFor(const LengthSize& top_left,
                                  FloatSizeForLengthSize(bottom_right, size));
 }
 
+FloatRoundedRect ComputedStyle::GetBorderFor(
+    const LayoutRect& border_rect) const {
+  FloatRoundedRect rounded_rect((FloatRect(border_rect)));
+  if (HasBorderRadius()) {
+    FloatRoundedRect::Radii radii = CalcRadiiFor(
+        BorderTopLeftRadius(), BorderTopRightRadius(), BorderBottomLeftRadius(),
+        BorderBottomRightRadius(), FloatSize(border_rect.Size()));
+    rounded_rect.IncludeLogicalEdges(radii, IsHorizontalWritingMode(), true,
+                                     true);
+    rounded_rect.ConstrainRadii();
+  }
+  return rounded_rect;
+}
+
 FloatRoundedRect ComputedStyle::GetRoundedBorderFor(
     const LayoutRect& border_rect,
     bool include_logical_left_edge,
@@ -1382,6 +1396,36 @@ FloatRoundedRect ComputedStyle::GetRoundedBorderFor(
     rounded_rect.ConstrainRadii();
   }
   return rounded_rect;
+}
+
+FloatRoundedRect ComputedStyle::GetInnerBorderFor(
+    const LayoutRect& border_rect) const {
+  int left_width = BorderLeftWidth();
+  int right_width = BorderRightWidth();
+  int top_width = BorderTopWidth();
+  int bottom_width = BorderBottomWidth();
+
+  LayoutRectOutsets insets(-top_width, -right_width, -bottom_width,
+                           -left_width);
+
+  LayoutRect inner_rect(border_rect);
+  inner_rect.Expand(insets);
+  LayoutSize inner_rect_size = inner_rect.Size();
+  inner_rect_size.ClampNegativeToZero();
+  inner_rect.SetSize(inner_rect_size);
+
+  FloatRoundedRect float_inner_rect((FloatRect(inner_rect)));
+
+  if (HasBorderRadius()) {
+    FloatRoundedRect::Radii radii = GetBorderFor(border_rect).GetRadii();
+
+    // Insets use negative values.
+    radii.Shrink(-insets.Top().ToFloat(), -insets.Bottom().ToFloat(),
+                 -insets.Left().ToFloat(), -insets.Right().ToFloat());
+    float_inner_rect.IncludeLogicalEdges(radii, IsHorizontalWritingMode(), true,
+                                         true);
+  }
+  return float_inner_rect;
 }
 
 FloatRoundedRect ComputedStyle::GetRoundedInnerBorderFor(

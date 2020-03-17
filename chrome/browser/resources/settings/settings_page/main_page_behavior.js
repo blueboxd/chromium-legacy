@@ -5,6 +5,7 @@
 // clang-format off
 // #import {assert} from 'chrome://resources/js/assert.m.js';
 // #import {beforeNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {ensureLazyLoaded} from '../ensure_lazy_loaded.m.js';
 // #import {Route, Router} from '../router.m.js';
 // #import {SettingsRoutes} from '../settings_routes.m.js';
 // clang-format on
@@ -206,12 +207,16 @@ cr.define('settings', function() {
       // TODO(dpapad): On chrome://os-settings the lazy_load.html file resides
       // at a different path. Remove conditional logic once this file is not
       // shared between chrome://settings and chrome://os-settings.
-      // TODO(rbpotter): Fix this to work correctly in Polymer 3, instead of
-      // just removing the importHref lines.
-      const lazyLoadPathPrefix =
-          window.location.origin === 'chrome://settings' ? '' : '/chromeos';
+      // Polymer 2 codepath
+      /* #ignore */ const lazyLoadPathPrefix =
+          /* #ignore */ window.location.origin === 'chrome://settings' ?
+          /* #ignore */ '' :
+          /* #ignore */ '/chromeos';
       /* #ignore */ Polymer.importHref(
           /* #ignore */ `${lazyLoadPathPrefix}/lazy_load.html`, () => {});
+
+      // Polymer 3 codepath, do not delete next line comment.
+      // #polymer3 ensureLazyLoaded();
 
       this.ensureSectionForRoute_(route).then(section => {
         section.classList.add('expanded');

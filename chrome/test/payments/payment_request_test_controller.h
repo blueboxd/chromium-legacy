@@ -78,8 +78,8 @@ class PaymentRequestTestController {
   // UI is not implemented on the current platform.
   bool DismissMinimalUI();
 
-  // Returns true when running on Android M.
-  bool IsAndroidMarshmallow();
+  // Returns true when running on Android M or L.
+  bool IsAndroidMarshmallowOrLollipop();
 
  private:
   // Observers that forward through to the PaymentRequestTestObserver.

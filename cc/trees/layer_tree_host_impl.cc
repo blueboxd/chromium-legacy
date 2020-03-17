@@ -404,10 +404,7 @@ void LayerTreeHostImpl::WillSendBeginMainFrame() {
 }
 
 void LayerTreeHostImpl::DidSendBeginMainFrame(const viz::BeginFrameArgs& args) {
-  if (!begin_main_frame_sent_during_impl_) {
-    begin_main_frame_sent_during_impl_ = true;
-    frame_trackers_.NotifyBeginMainFrame(args);
-  }
+  frame_trackers_.NotifyBeginMainFrame(args);
 }
 
 void LayerTreeHostImpl::BeginMainFrameAborted(
@@ -2715,9 +2712,6 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   current_begin_frame_tracker_.Start(args);
   frame_trackers_.NotifyBeginImplFrame(args);
 
-  begin_main_frame_expected_during_impl_ = client_->IsBeginMainFrameExpected();
-  begin_main_frame_sent_during_impl_ = false;
-
   if (is_likely_to_require_a_draw_) {
     // Optimistically schedule a draw. This will let us expect the tile manager
     // to complete its work so that we can draw new tiles within the impl frame
@@ -2784,10 +2778,6 @@ void LayerTreeHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack,
     const auto& args = current_begin_frame_tracker_.Current();
     if (args.frame_id == ack.frame_id) {
       frame_trackers_.NotifyImplFrameCausedNoDamage(ack);
-      if (begin_main_frame_sent_during_impl_ &&
-          reason == FrameSkippedReason::kNoDamage) {
-        frame_trackers_.NotifyMainFrameCausedNoDamage(args);
-      }
     }
   }
 }

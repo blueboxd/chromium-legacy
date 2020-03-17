@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/css_custom_font_data.h"
 #include "third_party/blink/renderer/core/css/css_font_face.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -113,7 +114,9 @@ RemoteFontFaceSource::RemoteFontFaceSource(CSSFontFace* css_font_face,
 RemoteFontFaceSource::~RemoteFontFaceSource() = default;
 
 Document* RemoteFontFaceSource::GetDocument() const {
-  return Document::DynamicFrom(font_selector_->GetExecutionContext());
+  auto* window =
+      DynamicTo<LocalDOMWindow>(font_selector_->GetExecutionContext());
+  return window ? window->document() : nullptr;
 }
 
 void RemoteFontFaceSource::Dispose() {
@@ -140,8 +143,9 @@ void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
   // Prevent promise rejection while shutting down the document.
   // See crbug.com/960290
   if (execution_context->IsDocument() &&
-      Document::From(execution_context)->IsDetached())
+      To<LocalDOMWindow>(execution_context)->document()->IsDetached()) {
     return;
+  }
 
   FontResource* font = ToFontResource(resource);
   histograms_.RecordRemoteFont(font);
@@ -246,9 +250,7 @@ FontDisplay RemoteFontFaceSource::GetFontDisplayWithFeaturePolicyCheck(
 }
 
 bool RemoteFontFaceSource::ShouldTriggerWebFontsIntervention() {
-  const auto* document =
-      Document::DynamicFrom(font_selector_->GetExecutionContext());
-  if (!document)
+  if (!IsA<LocalDOMWindow>(font_selector_->GetExecutionContext()))
     return false;
 
   WebEffectiveConnectionType connection_type =

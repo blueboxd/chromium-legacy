@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/crostini_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/extension_shelf_context_menu.h"
+#include "chrome/browser/ui/ash/launcher/extension_uninstaller.h"
 #include "chrome/browser/ui/ash/launcher/internal_app_shelf_context_menu.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -39,7 +40,17 @@ void UninstallApp(Profile* profile, const std::string& app_id) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
   DCHECK(proxy);
-  proxy->Uninstall(app_id, nullptr /* parent_window */);
+  if (proxy->AppRegistryCache().GetAppType(app_id) !=
+      apps::mojom::AppType::kUnknown) {
+    proxy->Uninstall(app_id, nullptr /* parent_window */);
+    return;
+  }
+
+  // Runs the extension uninstall flow for for extensions. ExtensionUninstall
+  // deletes itself when done or aborted.
+  ExtensionUninstaller* extension_uninstaller =
+      new ExtensionUninstaller(profile, app_id, nullptr /* parent_window */);
+  extension_uninstaller->Run();
   return;
 }
 

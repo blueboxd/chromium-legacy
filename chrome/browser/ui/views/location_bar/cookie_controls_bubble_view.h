@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_controller.h"
+#include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -39,6 +40,7 @@ class CookieControlsBubbleView : public LocationBarBubbleDelegateView,
 
   // CookieControlsView:
   void OnStatusChanged(CookieControlsStatus status,
+                       CookieControlsEnforcement enforcement,
                        int blocked_cookies) override;
   void OnBlockedCookiesCountChanged(int blocked_cookies) override;
 
@@ -77,6 +79,9 @@ class CookieControlsBubbleView : public LocationBarBubbleDelegateView,
   CookieControlsController* controller_ = nullptr;
 
   CookieControlsStatus status_ = CookieControlsStatus::kUninitialized;
+
+  CookieControlsEnforcement enforcement_ =
+      CookieControlsEnforcement::kNoEnforcement;
 
   IntermediateStep intermediate_step_ = IntermediateStep::kNone;
 

@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import org.chromium.base.StrictModeContext;
 import org.chromium.components.browser_ui.modaldialog.R;
 import org.chromium.components.browser_ui.modaldialog.TabModalPresenter;
 import org.chromium.content_public.browser.WebContents;
@@ -43,10 +44,17 @@ public class WebLayerTabModalPresenter extends TabModalPresenter {
         runEnterAnimation();
     }
 
+    private FrameLayout loadDialogContainer() {
+        // LayoutInflater may trigger accessing the disk.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            return (FrameLayout) LayoutInflater.from(mContext).inflate(
+                    R.layout.modal_dialog_container, null);
+        }
+    }
+
     @Override
     protected ViewGroup createDialogContainer() {
-        FrameLayout dialogContainer = (FrameLayout) LayoutInflater.from(mContext).inflate(
-                R.layout.modal_dialog_container, null);
+        FrameLayout dialogContainer = loadDialogContainer();
         dialogContainer.setVisibility(View.GONE);
         dialogContainer.setClickable(true);
 

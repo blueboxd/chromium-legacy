@@ -501,7 +501,7 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest {
                                            int net_result) {
     scoped_refptr<net::X509Certificate> cert(https_server_.GetCertificate());
     net::CertVerifyResult verify_result;
-    verify_result.is_issued_by_known_root = true;
+    verify_result.is_issued_by_known_root = false;
     verify_result.verified_cert = cert;
     verify_result.cert_status = cert_status;
 

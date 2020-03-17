@@ -888,7 +888,7 @@ void StyleEngine::FontsNeedUpdate(FontSelector*) {
         StyleChangeReasonForTracing::Create(style_change_reason::kFonts));
   }
 
-  probe::FontsUpdated(document_->ToExecutionContext(), nullptr, String(),
+  probe::FontsUpdated(document_->GetExecutionContext(), nullptr, String(),
                       nullptr);
 }
 
@@ -2080,7 +2080,7 @@ void StyleEngine::UpdateColorScheme() {
   bool use_dark_scheme =
       preferred_color_scheme_ == PreferredColorScheme::kDark &&
       SupportsDarkColorScheme();
-  if (!use_dark_scheme && settings->ForceDarkModeEnabled()) {
+  if (!use_dark_scheme && settings->GetForceDarkModeEnabled()) {
     // Make sure we don't match (prefers-color-scheme: dark) when forced
     // darkening is enabled.
     preferred_color_scheme_ = PreferredColorScheme::kNoPreference;

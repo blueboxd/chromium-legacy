@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 
@@ -54,7 +55,7 @@ bool StyleMedia::matchMedium(const String& query) const {
     return false;
 
   scoped_refptr<MediaQuerySet> media = MediaQuerySet::Create();
-  if (!media->Set(query, document->ToExecutionContext()))
+  if (!media->Set(query, GetFrame()->DomWindow()))
     return false;
 
   MediaQueryEvaluator screen_eval(GetFrame());

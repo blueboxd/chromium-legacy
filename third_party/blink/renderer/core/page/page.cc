@@ -737,14 +737,7 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
       break;
     }
     case SettingsDelegate::kPaintChange: {
-      for (Frame* frame = MainFrame(); frame;
-           frame = frame->Tree().TraverseNext()) {
-        auto* local_frame = DynamicTo<LocalFrame>(frame);
-        if (!local_frame)
-          continue;
-        if (LayoutView* view = local_frame->ContentLayoutObject())
-          view->InvalidatePaintForViewAndCompositedLayers();
-      }
+      InvalidatePaint();
       break;
     }
     case SettingsDelegate::kScrollbarLayoutChange: {
@@ -771,11 +764,7 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
       break;
     }
     case SettingsDelegate::kColorSchemeChange:
-      for (Frame* frame = MainFrame(); frame;
-           frame = frame->Tree().TraverseNext()) {
-        if (auto* local_frame = DynamicTo<LocalFrame>(frame))
-          local_frame->GetDocument()->ColorSchemeChanged();
-      }
+      InvalidateColorScheme();
       break;
     case SettingsDelegate::kSpatialNavigationChange:
       if (spatial_navigation_controller_ ||
@@ -804,6 +793,29 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
         main_local_frame->GetDocument()->VisionDeficiencyChanged();
       break;
     }
+    case SettingsDelegate::kForceDarkChange:
+      InvalidateColorScheme();
+      InvalidatePaint();
+      break;
+  }
+}
+
+void Page::InvalidateColorScheme() {
+  for (Frame* frame = MainFrame(); frame;
+       frame = frame->Tree().TraverseNext()) {
+    if (auto* local_frame = DynamicTo<LocalFrame>(frame))
+      local_frame->GetDocument()->ColorSchemeChanged();
+  }
+}
+
+void Page::InvalidatePaint() {
+  for (Frame* frame = MainFrame(); frame;
+       frame = frame->Tree().TraverseNext()) {
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
+      continue;
+    if (LayoutView* view = local_frame->ContentLayoutObject())
+      view->InvalidatePaintForViewAndCompositedLayers();
   }
 }
 

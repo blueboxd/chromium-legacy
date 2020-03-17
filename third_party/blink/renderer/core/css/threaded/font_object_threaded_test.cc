@@ -61,8 +61,6 @@ TSAN_TEST(FontObjectThreadedTest, GetDefaultFontData) {
       font_description.SetGenericFamily(family_type);
 
       Font font = Font(font_description);
-      font.Update(nullptr);
-
       ASSERT_TRUE(font.PrimaryFont());
     }
   });
@@ -121,7 +119,6 @@ TSAN_TEST(FontObjectThreadedTest, WordShaperTest) {
     font_description.SetGenericFamily(FontDescription::kStandardFamily);
 
     Font font = Font(font_description);
-    font.Update(nullptr);
     ASSERT_TRUE(font.CanShapeWordByWord());
     ShapeCache cache;
 

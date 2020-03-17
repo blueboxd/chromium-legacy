@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cookie_list_item.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cookie_store_delete_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cookie_store_get_options.h"
@@ -416,6 +417,7 @@ void CookieStore::GetAllForUrlToGetAllResult(
   ScriptState* script_state = resolver->GetScriptState();
   if (!script_state->ContextIsValid())
     return;
+  ScriptState::Scope scope(script_state);
 
   HeapVector<Member<CookieListItem>> cookies;
   cookies.ReserveInitialCapacity(backend_cookies.size());
@@ -434,6 +436,7 @@ void CookieStore::GetAllForUrlToGetResult(
   ScriptState* script_state = resolver->GetScriptState();
   if (!script_state->ContextIsValid())
     return;
+  ScriptState::Scope scope(script_state);
 
   if (backend_cookies.IsEmpty()) {
     resolver->Resolve(v8::Null(script_state->GetIsolate()));
@@ -477,10 +480,11 @@ void CookieStore::OnSetCanonicalCookieResult(ScriptPromiseResolver* resolver,
   ScriptState* script_state = resolver->GetScriptState();
   if (!script_state->ContextIsValid())
     return;
+  ScriptState::Scope scope(script_state);
 
   if (!backend_success) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kUnknownError,
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kUnknownError,
         "An unknown error occured while writing the cookie."));
     return;
   }

@@ -82,9 +82,6 @@ class CORE_EXPORT Settings {
     return text_autosizing_window_size_override_;
   }
 
-  void SetForceDarkModeEnabled(bool enabled);
-  bool ForceDarkModeEnabled() const { return force_dark_mode_; }
-
   SETTINGS_GETTERS_AND_SETTERS
 
   void SetDelegate(SettingsDelegate*);
@@ -98,7 +95,6 @@ class CORE_EXPORT Settings {
   IntSize text_autosizing_window_size_override_;
   bool text_autosizing_enabled_ : 1;
   bool bypass_csp_ = false;
-  bool force_dark_mode_ = false;
 
   SETTINGS_MEMBER_VARIABLES
 

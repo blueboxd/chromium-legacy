@@ -183,7 +183,7 @@ unsigned int ComputedStylePropertyMap::size() const {
   DCHECK(StyledNode());
   const Document& document = StyledNode()->GetDocument();
   return CSSComputedStyleDeclaration::ComputableProperties(
-             document.ToExecutionContext())
+             StyledNode()->GetExecutionContext())
              .size() +
          ComputedStyleCSSValueMapping::GetVariables(
              *style, document.GetPropertyRegistry())
@@ -281,7 +281,7 @@ void ComputedStylePropertyMap::ForEachProperty(
   HeapVector<std::pair<CSSPropertyName, Member<const CSSValue>>> values;
   for (const CSSProperty* property :
        CSSComputedStyleDeclaration::ComputableProperties(
-           document.ToExecutionContext())) {
+           StyledNode()->GetExecutionContext())) {
     DCHECK(property);
     DCHECK(!property->IDEquals(CSSPropertyID::kVariable));
     const CSSValue* value = property->CSSValueFromComputedStyle(

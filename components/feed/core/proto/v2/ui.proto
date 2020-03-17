@@ -6,8 +6,6 @@ syntax = "proto3";
 
 package feedui;
 
-import "components/feed/core/proto/ui/piet/piet.proto";
-
 option optimize_for = LITE_RUNTIME;
 
 // This is a simplified and complete set of protos that define UI.
@@ -38,6 +36,7 @@ message StreamUpdate {
 // A horizontal slice of UI to be presented in the vertical-scrolling feed.
 message Slice {
   oneof SliceData { XSurfaceSlice xsurface_slice = 1; }
+  string slice_id = 2;
 }
 
 message XSurfaceSlice {

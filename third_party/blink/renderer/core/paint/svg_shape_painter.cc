@@ -47,25 +47,22 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
       layout_svg_shape_.IsShapeEmpty())
     return;
 
-  PaintInfo paint_info_before_filtering(paint_info);
-
   if (SVGModelObjectPainter(layout_svg_shape_)
-          .CullRectSkipsPainting(paint_info_before_filtering)) {
+          .CullRectSkipsPainting(paint_info)) {
     return;
   }
   // Shapes cannot have children so do not call TransformCullRect.
 
   ScopedSVGTransformState transform_state(
-      paint_info_before_filtering, layout_svg_shape_,
-      layout_svg_shape_.LocalSVGTransform());
+      paint_info, layout_svg_shape_, layout_svg_shape_.LocalSVGTransform());
   {
-    ScopedSVGPaintState paint_state(layout_svg_shape_,
-                                    paint_info_before_filtering);
+    ScopedSVGPaintState paint_state(layout_svg_shape_, paint_info);
     if (paint_state.ApplyEffects() &&
         !DrawingRecorder::UseCachedDrawingIfPossible(
             paint_state.GetPaintInfo().context, layout_svg_shape_,
             paint_state.GetPaintInfo().phase)) {
-      SVGModelObjectPainter::RecordHitTestData(layout_svg_shape_, paint_info);
+      SVGModelObjectPainter::RecordHitTestData(layout_svg_shape_,
+                                               paint_state.GetPaintInfo());
       DrawingRecorder recorder(paint_state.GetPaintInfo().context,
                                layout_svg_shape_,
                                paint_state.GetPaintInfo().phase);
@@ -139,8 +136,7 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
     }
   }
 
-  SVGModelObjectPainter(layout_svg_shape_)
-      .PaintOutline(paint_info_before_filtering);
+  SVGModelObjectPainter(layout_svg_shape_).PaintOutline(paint_info);
 }
 
 class PathWithTemporaryWindingRule {

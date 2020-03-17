@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -698,9 +699,9 @@ StringKeyframeVector EffectInput::ParseKeyframesArgument(
     return {};
 
   // TODO(crbug.com/816934): Get spec to specify what parsing context to use.
-  Document& document =
-      element ? element->GetDocument()
-              : *Document::From(ExecutionContext::From(script_state));
+  Document& document = element
+                           ? element->GetDocument()
+                           : *LocalDOMWindow::From(script_state)->document();
 
   StringKeyframeVector parsed_keyframes;
   if (script_iterator.IsNull()) {

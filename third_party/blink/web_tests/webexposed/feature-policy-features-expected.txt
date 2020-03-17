@@ -50,6 +50,7 @@ serial
 sync-script
 sync-xhr
 top-navigation
+trust-token-redemption
 usb
 vertical-scroll
 wake-lock

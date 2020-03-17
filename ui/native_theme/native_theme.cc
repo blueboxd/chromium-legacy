@@ -6,9 +6,20 @@
 
 #include <cstring>
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
+#include "build/build_config.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
+#include "ui/color/color_provider_manager.h"
 #include "ui/native_theme/common_theme.h"
+
+#if !defined(OS_ANDROID)
+#include "ui/color/color_mixers.h"
+#endif
 
 namespace ui {
 
@@ -22,6 +33,26 @@ NativeTheme::ExtraParams::ExtraParams(const ExtraParams& other) {
 
 SkColor NativeTheme::GetSystemColor(ColorId color_id,
                                     ColorScheme color_scheme) const {
+  // TODO(http://crbug.com/1057754): Remove the below restrictions.
+  if (base::FeatureList::IsEnabled(features::kColorProviderRedirection) &&
+      !ShouldUseDarkColors() && !UsesHighContrastColors()) {
+    if (!color_provider_) {
+      // Lazy init the color provider as it makes USER32 calls underneath on
+      // Windows, which isn't permitted on renderers.
+      // TODO(http://crbug.com/1057754): Handle dark and high contrast modes.
+      color_provider_ = ColorProviderManager::Get().GetColorProviderFor(
+          ColorProviderManager::ColorMode::kLight,
+          ColorProviderManager::ContrastMode::kNormal);
+    }
+    switch (color_id) {
+      case kColorId_WindowBackground:
+        return color_provider_->GetColor(kColorWindowBackground);
+      case kColorId_DialogBackground:
+        return color_provider_->GetColor(kColorDialogBackground);
+      default:
+        break;
+    }
+  }
   return GetAuraColor(color_id, this, color_scheme);
 }
 
@@ -48,7 +79,23 @@ void NativeTheme::NotifyObservers() {
 NativeTheme::NativeTheme(bool should_use_dark_colors)
     : should_use_dark_colors_(should_use_dark_colors || IsForcedDarkMode()),
       is_high_contrast_(IsForcedHighContrast()),
-      preferred_color_scheme_(CalculatePreferredColorScheme()) {}
+      preferred_color_scheme_(CalculatePreferredColorScheme()) {
+#if !defined(OS_ANDROID)
+  // TODO(http://crbug.com/1057754): Merge this into the ColorProviderManager.
+  static base::OnceClosure color_provider_manager_init = base::BindOnce([]() {
+    ColorProviderManager::Get().SetColorProviderInitializer(base::BindRepeating(
+        [](ColorProvider* provider, ColorProviderManager::ColorMode color_mode,
+           ColorProviderManager::ContrastMode contrast_mode) {
+          ui::AddCoreDefaultColorMixers(
+              provider, color_mode == ColorProviderManager::ColorMode::kDark);
+          ui::AddNativeColorMixers(provider);
+          ui::AddUiColorMixers(provider);
+        }));
+  });
+  if (!color_provider_manager_init.is_null())
+    std::move(color_provider_manager_init).Run();
+#endif  // !defined(OS_ANDROID)
+}
 
 NativeTheme::~NativeTheme() = default;
 

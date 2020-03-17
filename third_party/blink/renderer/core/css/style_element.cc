@@ -152,7 +152,7 @@ StyleElement::ProcessingResult StyleElement::CreateSheet(Element& element,
     const AtomicString& media_string = media();
     if (!media_string.IsEmpty()) {
       media_queries =
-          MediaQuerySet::Create(media_string, document.ToExecutionContext());
+          MediaQuerySet::Create(media_string, element.GetExecutionContext());
     }
     loading_ = true;
     TextPosition start_position =

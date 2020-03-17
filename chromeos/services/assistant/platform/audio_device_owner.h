@@ -11,6 +11,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "libassistant/shared/public/platform_audio_output.h"
 #include "media/base/audio_block_fifo.h"
 #include "media/base/audio_parameters.h"
@@ -23,7 +24,8 @@ namespace chromeos {
 namespace assistant {
 
 class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioDeviceOwner
-    : public media::AudioRendererSink::RenderCallback {
+    : public media::AudioRendererSink::RenderCallback,
+      media_session::mojom::MediaSessionObserver {
  public:
   AudioDeviceOwner(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -32,11 +34,29 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioDeviceOwner
   ~AudioDeviceOwner() override;
 
   void StartOnMainThread(
+      AssistantMediaSession* media_session,
       assistant_client::AudioOutput::Delegate* delegate,
       mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory,
       const assistant_client::OutputStreamFormat& format);
 
   void StopOnBackgroundThread();
+
+  // media_session::mojom::MediaSessionObserver overrides:
+  void MediaSessionInfoChanged(
+      media_session::mojom::MediaSessionInfoPtr info) override;
+  void MediaSessionMetadataChanged(
+      const base::Optional<::media_session::MediaMetadata>& metadata) override {
+  }
+  void MediaSessionActionsChanged(
+      const std::vector<media_session::mojom::MediaSessionAction>& action)
+      override {}
+  void MediaSessionImagesChanged(
+      const base::flat_map<media_session::mojom::MediaSessionImageType,
+                           std::vector<::media_session::MediaImage>>& images)
+      override {}
+  void MediaSessionPositionChanged(
+      const base::Optional<::media_session::MediaPosition>& position) override {
+  }
 
   // media::AudioRenderSink::RenderCallback overrides:
   int Render(base::TimeDelta delay,
@@ -50,7 +70,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioDeviceOwner
 
  private:
   void StartDeviceOnBackgroundThread(
-      mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory);
+      mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory,
+      AssistantMediaSession* media_session);
 
   // Requests assistant to fill buffer with more data.
   void ScheduleFillLocked(const base::TimeTicks& time);
@@ -68,6 +89,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioDeviceOwner
   // guarded by lock_.
   bool is_filling_ = false;
 
+  // Guarded by |lock_|.
   assistant_client::AudioOutput::Delegate* delegate_;
 
   // Audio output device id used for output.
@@ -77,6 +99,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioDeviceOwner
   std::vector<uint8_t> audio_data_;
   assistant_client::OutputStreamFormat format_;
   media::AudioParameters audio_param_;
+
+  mojo::Receiver<media_session::mojom::MediaSessionObserver> session_receiver_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(AudioDeviceOwner);
 };

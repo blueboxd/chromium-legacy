@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -49,14 +50,14 @@ namespace blink {
 const char FontFaceSetDocument::kSupplementName[] = "FontFaceSetDocument";
 
 FontFaceSetDocument::FontFaceSetDocument(Document& document)
-    : FontFaceSet(*document.ToExecutionContext()),
+    : FontFaceSet(*document.GetExecutionContext()),
       Supplement<Document>(document) {}
 
 FontFaceSetDocument::~FontFaceSetDocument() = default;
 
 bool FontFaceSetDocument::InActiveContext() const {
   ExecutionContext* context = GetExecutionContext();
-  return context && Document::From(context)->IsActive();
+  return context && To<LocalDOMWindow>(context)->document()->IsActive();
 }
 
 

@@ -555,8 +555,8 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
         KeyframeEffect::kDefaultPriority, event_delegate);
 
     auto* animation = MakeGarbageCollected<CSSAnimation>(
-        element->GetDocument().ContextDocument()->ToExecutionContext(),
-        &(element->GetDocument().Timeline()), effect, entry.name);
+        element->GetExecutionContext(), &(element->GetDocument().Timeline()),
+        effect, entry.name);
     animation->play();
     if (inert_animation->Paused())
       animation->pause();
@@ -626,8 +626,8 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
         element, model, inert_animation->SpecifiedTiming(),
         KeyframeEffect::kTransitionPriority, event_delegate);
     auto* animation = MakeGarbageCollected<CSSTransition>(
-        element->GetDocument().ContextDocument()->ToExecutionContext(),
-        &(element->GetDocument().Timeline()), transition_effect, property);
+        element->GetExecutionContext(), &(element->GetDocument().Timeline()),
+        transition_effect, property);
 
     animation->play();
 

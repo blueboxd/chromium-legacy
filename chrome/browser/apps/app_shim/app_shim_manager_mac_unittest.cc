@@ -131,7 +131,8 @@ class MockDelegate : public AppShimManager::Delegate {
 
 class TestingAppShimManager : public AppShimManager {
  public:
-  TestingAppShimManager(Delegate* delegate) { set_delegate(delegate); }
+  TestingAppShimManager(std::unique_ptr<Delegate> delegate)
+      : AppShimManager(std::move(delegate)) {}
   virtual ~TestingAppShimManager() {}
 
   MOCK_METHOD1(OnShimFocus, void(AppShimHost* host));
@@ -295,8 +296,9 @@ class AppShimManagerTest : public testing::Test {
     AppShimRegistry::Get()->SetPrefServiceAndUserDataDirForTesting(
         local_state_.get(), user_data_dir);
 
-    delegate_ = new MockDelegate;
-    manager_.reset(new TestingAppShimManager(delegate_));
+    std::unique_ptr<MockDelegate> delegate = std::make_unique<MockDelegate>();
+    delegate_ = delegate.get();
+    manager_.reset(new TestingAppShimManager(std::move(delegate)));
     AppShimHostBootstrap::SetClient(manager_.get());
     bootstrap_aa_ = (new TestingAppShimHostBootstrap(
                          profile_path_a_, kTestAppIdA,

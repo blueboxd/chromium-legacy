@@ -72,8 +72,10 @@ CookieControlsBubbleView* CookieControlsBubbleView::GetCookieBubble() {
   return g_instance;
 }
 
-void CookieControlsBubbleView::OnStatusChanged(CookieControlsStatus new_status,
-                                               int blocked_cookies) {
+void CookieControlsBubbleView::OnStatusChanged(
+    CookieControlsStatus new_status,
+    CookieControlsEnforcement new_enforcement,
+    int blocked_cookies) {
   if (status_ == new_status) {
     OnBlockedCookiesCountChanged(blocked_cookies);
     return;
@@ -81,6 +83,7 @@ void CookieControlsBubbleView::OnStatusChanged(CookieControlsStatus new_status,
   if (new_status != CookieControlsStatus::kEnabled)
     intermediate_step_ = IntermediateStep::kNone;
   status_ = new_status;
+  enforcement_ = new_enforcement;
   blocked_cookies_ = blocked_cookies;
   UpdateUi();
 }
@@ -159,7 +162,8 @@ void CookieControlsBubbleView::UpdateUi() {
           : l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_TURN_ON_BUTTON));
   DialogDelegate::SetButtons(
       (intermediate_step_ == IntermediateStep::kTurnOffButton ||
-       status_ == CookieControlsStatus::kDisabledForSite)
+       (status_ == CookieControlsStatus::kDisabledForSite &&
+        enforcement_ == CookieControlsEnforcement::kNoEnforcement))
           ? ui::DIALOG_BUTTON_OK
           : ui::DIALOG_BUTTON_NONE);
   DialogDelegate::SetAcceptCallback(base::BindOnce(

@@ -17,8 +17,6 @@ source_set("feed_core_v2") {
     "feed_network_impl.h",
     "feed_stream.cc",
     "feed_stream.h",
-    "feed_stream_background.cc",
-    "feed_stream_background.h",
     "master_refresh_throttler.cc",
     "master_refresh_throttler.h",
     "proto_util.cc",
@@ -69,6 +67,8 @@ source_set("core_unit_tests") {
     "feed_stream_unittest.cc",
     "stream_model_unittest.cc",
     "stream_model_update_request_unittest.cc",
+    "test/stream_builder.cc",
+    "test/stream_builder.h",
   ]
 
   deps = [

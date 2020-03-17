@@ -24,16 +24,17 @@
 #include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 
 namespace blink {
 
 const PropertyRegistration* PropertyRegistration::From(
     const ExecutionContext* execution_context,
     const AtomicString& property_name) {
-  const auto* document = Document::DynamicFrom(execution_context);
-  if (!document)
+  const auto* window = DynamicTo<LocalDOMWindow>(execution_context);
+  if (!window)
     return nullptr;
-  const PropertyRegistry* registry = document->GetPropertyRegistry();
+  const PropertyRegistry* registry = window->document()->GetPropertyRegistry();
   return registry ? registry->Registration(property_name) : nullptr;
 }
 
@@ -167,7 +168,7 @@ void PropertyRegistration::registerProperty(
     return;
   }
   AtomicString atomic_name(name);
-  Document* document = Document::From(execution_context);
+  Document* document = To<LocalDOMWindow>(execution_context)->document();
   PropertyRegistry& registry = *document->GetPropertyRegistry();
   if (registry.Registration(atomic_name)) {
     exception_state.ThrowDOMException(

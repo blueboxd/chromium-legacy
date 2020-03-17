@@ -992,7 +992,7 @@ TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
   // Modify the CSSPropertyValueSet once to make it a mutable set. Subsequent
   // modifications will not change the CSSPropertyValueSet pointer and cache
   // hash value will be the same.
-  style_rule->style()->setProperty(GetDocument().ToExecutionContext(), "color",
+  style_rule->style()->setProperty(GetDocument().GetExecutionContext(), "color",
                                    "red", "", ASSERT_NO_EXCEPTION);
   UpdateAllLifecyclePhases();
 
@@ -1000,7 +1000,7 @@ TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
   EXPECT_EQ(MakeRGB(255, 0, 0), t1->GetComputedStyle()->VisitedDependentColor(
                                     GetCSSPropertyColor()));
 
-  style_rule->style()->setProperty(GetDocument().ToExecutionContext(), "color",
+  style_rule->style()->setProperty(GetDocument().GetExecutionContext(), "color",
                                    "green", "", ASSERT_NO_EXCEPTION);
   UpdateAllLifecyclePhases();
 

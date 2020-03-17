@@ -135,7 +135,7 @@ class TestCascade {
 
   CascadePriority GetPriority(String name) {
     return GetPriority(
-        *CSSPropertyName::From(GetDocument().ToExecutionContext(), name));
+        *CSSPropertyName::From(GetDocument().GetExecutionContext(), name));
   }
 
   CascadePriority GetPriority(CSSPropertyName name) {

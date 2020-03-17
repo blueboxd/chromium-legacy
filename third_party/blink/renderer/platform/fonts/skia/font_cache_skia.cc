@@ -247,7 +247,7 @@ sk_sp<SkTypeface> FontCache::CreateTypeface(
 }
 
 #if !defined(OS_MACOSX)
-std::vector<FontEnumerationEntry> FontCache::EnumerateAvailableFonts() {
+std::vector<FontEnumerationEntry> FontCache::EnumeratePlatformAvailableFonts() {
   NOTIMPLEMENTED();
   return std::vector<FontEnumerationEntry>();
 }

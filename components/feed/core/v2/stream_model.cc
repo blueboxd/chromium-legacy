@@ -20,15 +20,21 @@ StreamModel::UiUpdate::UiUpdate(const UiUpdate&) = default;
 StreamModel::UiUpdate& StreamModel::UiUpdate::operator=(const UiUpdate&) =
     default;
 
-StreamModel::StreamModel(Observer* observer) : observer_(observer) {}
+StreamModel::StreamModel() = default;
 StreamModel::~StreamModel() = default;
+
+void StreamModel::SetObserver(Observer* observer) {
+  DCHECK(!observer || !observer_)
+      << "Attempting to set the observer multiple times";
+  observer_ = observer;
+}
 
 const feedstore::Content* StreamModel::FindContent(
     ContentRevision revision) const {
   return GetFinalFeatureTree()->FindContent(revision);
 }
 
-StreamModel::EphemeralChangeId StreamModel::CreateEphemeralChange(
+EphemeralChangeId StreamModel::CreateEphemeralChange(
     std::vector<feedstore::DataOperation> operations) {
   const EphemeralChangeId id =
       ephemeral_changes_.AddEphemeralChange(std::move(operations))->id();
@@ -86,8 +92,8 @@ void StreamModel::UpdateFlattenedTree() {
   update.content_list_changed = content_list_ != new_state;
 
   content_list_ = std::move(new_state);
-
-  observer_->OnUiUpdate(update);
+  if (observer_)
+    observer_->OnUiUpdate(update);
 }
 
 stream_model::FeatureTree* StreamModel::GetFinalFeatureTree() {

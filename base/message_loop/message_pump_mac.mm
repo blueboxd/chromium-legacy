@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/auto_reset.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/mac/call_with_eh_frame.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -51,6 +52,9 @@ bool g_not_using_cr_app = false;
 
 // The MessagePump controlling [NSApp run].
 MessagePumpNSApplication* g_app_pump;
+
+Feature kMessagePumpTimerInvalidation{"MessagePumpMacTimerInvalidation",
+                                      FEATURE_ENABLED_BY_DEFAULT};
 
 // Various CoreFoundation definitions.
 typedef struct __CFRuntimeBase {
@@ -368,6 +372,10 @@ int MessagePumpCFRunLoopBase::GetModeMask() const {
 // uses public API to confirm that the private API changed the correct bit.
 // static
 bool MessagePumpCFRunLoopBase::CanInvalidateCFRunLoopTimers() {
+  if (!FeatureList::IsEnabled(kMessagePumpTimerInvalidation)) {
+    return false;
+  }
+
   CFRunLoopTimerContext timer_context = CFRunLoopTimerContext();
   timer_context.info = nullptr;
   ScopedCFTypeRef<CFRunLoopTimerRef> test_timer(

@@ -274,6 +274,9 @@ if (is_chromeos_device) {
       # crbug.com/1051059
       "security.SELinuxProcessesARC",
 
+      # crbug.com/1062289
+      "security.NetworkListenersARC",
+
       # crbug.com/1054340
       "crostini.AudioSanity.artifact",
       "crostini.CopyPaste.wayland_to_wayland_artifact",

@@ -24,7 +24,6 @@ class OpenTypeMathSupportTest : public testing::Test {
   void SetUp() override {
     font_description.SetComputedSize(10.0);
     font = Font(font_description);
-    font.Update(nullptr);
   }
 
   void TearDown() override {}

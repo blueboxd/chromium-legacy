@@ -468,7 +468,8 @@ Polymer({
    */
   suppressesCheckupLink_() {
     if (this.status_.state != CheckState.TOO_MANY_PASSWORDS &&
-        this.status_.state != CheckState.TOO_MANY_PASSWORDS_AND_QUOTA_LIMIT) {
+        this.status_.state != CheckState.TOO_MANY_PASSWORDS_AND_QUOTA_LIMIT &&
+        this.status_.state != CheckState.QUOTA_LIMIT) {
       return true;  // Never show the retry link for other states.
     }
     if (!this.syncStatus_ || !this.syncStatus_.signedIn) {

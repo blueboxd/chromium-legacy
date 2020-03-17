@@ -26,6 +26,8 @@ jumbo_component("color") {
   sources = [
     "color_mixer.cc",
     "color_provider.cc",
+    "color_provider_manager.cc",
+    "color_provider_manager.h",
     "color_recipe.cc",
     "color_recipe.h",
     "color_set.cc",
@@ -48,6 +50,7 @@ test("color_unittests") {
 
   sources = [
     "color_mixer_unittest.cc",
+    "color_provider_manager_unittest.cc",
     "color_provider_unittest.cc",
     "color_recipe_unittest.cc",
     "color_test_ids.h",
@@ -82,6 +85,8 @@ jumbo_component("mixers") {
 
   if (is_chromeos) {
     sources += [ "cros/native_color_mixer.cc" ]
+  } else if (is_fuchsia) {
+    sources += [ "fuchsia/native_color_mixer.cc" ]
   } else if (is_linux) {
     sources += [ "linux/native_color_mixer.cc" ]
   } else if (is_mac) {

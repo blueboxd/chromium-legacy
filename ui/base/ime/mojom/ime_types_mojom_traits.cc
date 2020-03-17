@@ -183,6 +183,8 @@ ui::mojom::ImeTextSpanUnderlineStyle EnumTraits<
       return ui::mojom::ImeTextSpanUnderlineStyle::kDot;
     case ui::ImeTextSpan::UnderlineStyle::kDash:
       return ui::mojom::ImeTextSpanUnderlineStyle::kDash;
+    case ui::ImeTextSpan::UnderlineStyle::kSquiggle:
+      return ui::mojom::ImeTextSpanUnderlineStyle::kSquiggle;
   }
 
   NOTREACHED();
@@ -206,6 +208,9 @@ bool EnumTraits<ui::mojom::ImeTextSpanUnderlineStyle,
       return true;
     case ui::mojom::ImeTextSpanUnderlineStyle::kDash:
       *out = ui::ImeTextSpan::UnderlineStyle::kDash;
+      return true;
+    case ui::mojom::ImeTextSpanUnderlineStyle::kSquiggle:
+      *out = ui::ImeTextSpan::UnderlineStyle::kSquiggle;
       return true;
   }
 

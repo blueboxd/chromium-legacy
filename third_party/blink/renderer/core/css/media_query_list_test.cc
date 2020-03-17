@@ -25,7 +25,7 @@ class TestListener : public MediaQueryListListener {
 TEST(MediaQueryListTest, CrashInStop) {
   auto* document = MakeGarbageCollected<Document>();
   auto* list = MakeGarbageCollected<MediaQueryList>(
-      document->ToExecutionContext(),
+      document->GetExecutionContext(),
       MakeGarbageCollected<MediaQueryMatcher>(*document),
       MediaQuerySet::Create());
   list->AddListener(MakeGarbageCollected<TestListener>());

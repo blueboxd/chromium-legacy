@@ -386,6 +386,11 @@ void FontCache::InvalidateShapeCache() {
   PurgeFallbackListShaperCache();
 }
 
+void FontCache::InvalidateEnumerationCache() {
+  TRACE_EVENT0("fonts,ui", "FontCache::InvalidateEnumerationCache");
+  font_enumeration_cache_.clear();
+}
+
 void FontCache::Purge(PurgeSeverity purge_severity) {
   // Ideally we should never be forcing the purge while the
   // FontCachePurgePreventer is in scope, but we call purge() at any timing
@@ -398,6 +403,7 @@ void FontCache::Purge(PurgeSeverity purge_severity) {
 
   PurgePlatformFontDataCache();
   PurgeFallbackListShaperCache();
+  InvalidateEnumerationCache();
 }
 
 void FontCache::AddClient(FontCacheClient* client) {
@@ -418,6 +424,10 @@ uint16_t FontCache::Generation() {
 void FontCache::Invalidate() {
   TRACE_EVENT0("fonts,ui", "FontCache::Invalidate");
   font_platform_data_cache_.clear();
+  // TODO(https://crbug.com/1061630): Determine optimal cache invalidation
+  // strategy for enumeration. As implemented, the enumeration cache might not
+  // get invalidated when the system fonts change.
+  InvalidateEnumerationCache();
   generation_++;
 
   if (font_cache_clients_) {
@@ -522,6 +532,17 @@ FontCache::Bcp47Vector FontCache::GetBcp47LocaleForRequest(
   if (fallback_priority == FontFallbackPriority::kEmojiEmoji)
     result.push_back(kColorEmojiLocale);
   return result;
+}
+
+const std::vector<FontEnumerationEntry>& FontCache::EnumerateAvailableFonts() {
+  if (font_enumeration_cache_.size() == 0) {
+    base::TimeTicks enum_start = base::TimeTicks::Now();
+    font_enumeration_cache_ = EnumeratePlatformAvailableFonts();
+    base::TimeDelta time_taken = base::TimeTicks::Now() - enum_start;
+    UMA_HISTOGRAM_TIMES("Blink.Fonts.Enumeration.Duration", time_taken);
+  }
+
+  return font_enumeration_cache_;
 }
 
 }  // namespace blink

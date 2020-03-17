@@ -39,7 +39,6 @@ class ShapeResultBloberizerTest : public testing::Test {
     font_description.SetGenericFamily(FontDescription::kStandardFamily);
 
     font = Font(font_description);
-    font.Update(nullptr);
     ASSERT_TRUE(font.CanShapeWordByWord());
     fallback_fonts = nullptr;
     cache = std::make_unique<ShapeCache>();
@@ -267,7 +266,6 @@ TEST_F(ShapeResultBloberizerTest, CommonAccentLeftToRightFillGlyphBuffer) {
   bloberizer.FillGlyphs(run_info, buffer);
 
   Font reference_font(font_description);
-  reference_font.Update(nullptr);
   reference_font.SetCanShapeWordByWordForTesting(false);
 
   ShapeResultBloberizer reference_bloberizer(reference_font, 1);
@@ -305,7 +303,6 @@ TEST_F(ShapeResultBloberizerTest, CommonAccentRightToLeftFillGlyphBuffer) {
   bloberizer.FillGlyphs(run_info, buffer);
 
   Font reference_font(font_description);
-  reference_font.Update(nullptr);
   reference_font.SetCanShapeWordByWordForTesting(false);
 
   ShapeResultBloberizer reference_bloberizer(reference_font, 1);

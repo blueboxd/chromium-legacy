@@ -94,12 +94,4 @@ void Settings::SetTextAutosizingWindowSizeOverride(
   Invalidate(SettingsDelegate::kTextAutosizingChange);
 }
 
-void Settings::SetForceDarkModeEnabled(bool enabled) {
-  if (force_dark_mode_ == enabled)
-    return;
-  force_dark_mode_ = enabled;
-  SetDarkModeEnabled(force_dark_mode_);
-  Invalidate(SettingsDelegate::kColorSchemeChange);
-}
-
 }  // namespace blink

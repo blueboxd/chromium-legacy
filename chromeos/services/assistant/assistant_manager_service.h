@@ -101,6 +101,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
 
   // Sync the device apps user consent status.
   virtual void SyncDeviceAppsStatus() = 0;
+
+  // Update and sync the internal media player status to Libassistant.
+  virtual void UpdateInternalMediaPlayerStatus(
+      media_session::mojom::MediaSessionAction action) = 0;
 };
 
 // Observes all state changes made to the |AssistantManagerService::State|.

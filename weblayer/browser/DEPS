@@ -15,6 +15,7 @@ include_rules = [
   "+components/javascript_dialogs",
   "+components/keyed_service/content",
   "+components/metrics",
+  "+components/navigation_interception",
   "+components/network_time",
   "+components/permissions",
   "+components/pref_registry",

@@ -26820,6 +26820,11 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3188" label="V8ShadowRoot_GetAnimations_Method"/>
   <int value="3189" label="ClientHintsUAFullVersion"/>
   <int value="3190" label="SchedulerCurrentTaskSignal"/>
+  <int value="3191" label="ThirdPartyFileSystem"/>
+  <int value="3192" label="ThirdPartyIndexedDb"/>
+  <int value="3193" label="ThirdPartyCacheStorage"/>
+  <int value="3194" label="ThirdPartyLocalStorage"/>
+  <int value="3195" label="ThirdPartySessionStorage"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -26912,6 +26917,7 @@ Called by update_feature_policy_enum.py.-->
   <int value="69" label="ClientHintUAMobile"/>
   <int value="70" label="StorageAccessAPI"/>
   <int value="71" label="ClientHintUAFullVersion"/>
+  <int value="72" label="TrustTokenRedemption"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">
@@ -38625,6 +38631,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentBlueTitlesOnPageSuggestions:disabled"/>
   <int value="-593536514" label="ExperimentalTabController:enabled"/>
   <int value="-589096918" label="ash-enable-fullscreen-app-list"/>
+  <int value="-582870536" label="BluetoothNextHandsfreeProfile:enabled"/>
   <int value="-579192400" label="disable-input-view"/>
   <int value="-577982497" label="CupsPrintersUiOverhaul:enabled"/>
   <int value="-574354898" label="PostQuantumCECPQ2:enabled"/>
@@ -39804,6 +39811,7 @@ from previous Chrome versions.
   <int value="852313529" label="RTCUnifiedPlanByDefault:disabled"/>
   <int value="854730848" label="disable-app-info-dialog-mac"/>
   <int value="855746780" label="disable-physical-keyboard-autocorrect"/>
+  <int value="857391671" label="BluetoothNextHandsfreeProfile:disabled"/>
   <int value="857445869" label="enable-captive-portal-bypass-proxy"/>
   <int value="860336036" label="ChromeModernDesign:enabled"/>
   <int value="862453793" label="TranslateUI2016Q2:enabled"/>
@@ -71451,6 +71459,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="XRRuntimeAvailable">
+  <obsolete>
+    Removed 03/2020
+  </obsolete>
   <int value="0" label="None"/>
   <int value="1" label="OpenVR"/>
 </enum>

@@ -3048,6 +3048,12 @@ const char kBluetoothKernelSuspendNotifierDescription[] =
     "Enables the Bluetooth kernel suspend notifier which will allow wake from "
     "suspend using Bluetooth HID devices.";
 
+const char kBluetoothNextHandsfreeProfileName[] =
+    "Enable next version of Bluetooth Handsfree profile";
+const char kBluetoothNextHandsfreeProfileDescription[] =
+    "Enable next version of Bluetooth Handsfree profile 1.7 which includes "
+    "WBS(wideband speeech) feature";
+
 const char kCameraSystemWebAppName[] = "Camera System Web App";
 const char kCameraSystemWebAppDescription[] =
     "Run the Chrome Camera App as a System Web App.";

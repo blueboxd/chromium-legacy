@@ -222,10 +222,10 @@ Polymer({
     this.safeBrowsingStatus_ = settings.SafetyCheckSafeBrowsingStatus.CHECKING;
     this.extensionsStatus_ = settings.SafetyCheckExtensionsStatus.CHECKING;
     // Display running-status for safety check elements.
-    this.updatesDisplayString_ = this.i18n('safetyCheckRunning');
-    this.passwordsDisplayString_ = this.i18n('safetyCheckRunning');
-    this.safeBrowsingDisplayString_ = this.i18n('safetyCheckRunning');
-    this.extensionsDisplayString_ = this.i18n('safetyCheckRunning');
+    this.updatesDisplayString_ = '';
+    this.passwordsDisplayString_ = '';
+    this.safeBrowsingDisplayString_ = '';
+    this.extensionsDisplayString_ = '';
     // Trigger safety check.
     this.safetyCheckBrowserProxy_.runSafetyCheck();
   },
@@ -311,64 +311,15 @@ Polymer({
     return this.parentStatus_ == ParentStatus.AFTER;
   },
 
-  /**
-   * @private
-   * @return {?string}
-   */
-  getParentIcon_: function() {
-    switch (this.parentStatus_) {
-      case ParentStatus.BEFORE:
-      case ParentStatus.AFTER:
-        return 'settings:assignment';
-      case ParentStatus.CHECKING:
-        return null;
-      default:
-        assertNotReached();
-    }
-  },
-
-  /**
-   * @private
-   * @return {?string}
-   */
-  getParentIconSrc_: function() {
-    switch (this.parentStatus_) {
-      case ParentStatus.BEFORE:
-      case ParentStatus.AFTER:
-        return null;
-      case ParentStatus.CHECKING:
-        return 'chrome://resources/images/throbber_small.svg';
-      default:
-        assertNotReached();
-    }
-  },
-
-  /**
-   * @private
-   * @return {string}
-   */
-  getParentIconClass_: function() {
-    switch (this.parentStatus_) {
-      case ParentStatus.BEFORE:
-      case ParentStatus.CHECKING:
-        return 'icon-blue';
-      default:
-        return '';
-    }
-  },
-
   /** @private */
   onRunSafetyCheckClick_: function() {
     settings.HatsBrowserProxyImpl.getInstance().tryShowSurvey();
 
     this.runSafetyCheck_();
-    this.focusParent_();
-  },
 
-  /** @private */
-  focusParent_() {
-    const parent = /** @type {!Element} */ (this.$$('#safetyCheckParent'));
-    parent.focus();
+    // TODO(crbug.com/1015841): Prevent the focus from getting lost, once it
+    // has been decided which element to focus after the safety check
+    // parent button got clicked, and, as a result, disappeared.
   },
 
   /**

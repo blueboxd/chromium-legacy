@@ -10,15 +10,14 @@
 #include "base/util/type_safety/id_type.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/v2/proto_util.h"
+#include "components/feed/core/v2/public/feed_stream_api.h"
 
 namespace feed {
 namespace stream_model {
 
 // Uniquely identifies a feedwire::ContentId. Provided by |ContentIdMap|.
 using ContentTag = util::IdTypeU32<class ContentTagClass>;
-// Uniquely identifies a revision of a |feedstore::Content|. If Content changes,
-// it is assigned a new revision number.
-using ContentRevision = util::IdTypeU32<class ContentRevisionClass>;
+using ContentRevision = feed::ContentRevision;
 
 // Maps ContentId into ContentTag, and generates ContentRevision IDs.
 class ContentIdMap {

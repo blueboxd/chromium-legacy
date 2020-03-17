@@ -10,6 +10,7 @@
 #include "services/network/public/cpp/request_mode.h"
 #include "services/network/public/mojom/trust_tokens.mojom-blink.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
@@ -55,6 +56,9 @@
 namespace blink {
 
 namespace {
+
+using network::mojom::blink::TrustTokenOperationType;
+
 // Converts an IDL trustToken object to its Mojo counterpart.
 // The elements of trustToken (and of TrustTokenParams) comprise:
 // - an operation type, always populated
@@ -152,6 +156,7 @@ bool ConvertTrustTokenToMojom(const TrustToken& in,
 
   return true;
 }
+
 }  // namespace
 
 FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
@@ -605,6 +610,17 @@ Request* Request::CreateRequestWithRequestOrString(
       // Whenever parsing the trustToken argument fails, we expect a suitable
       // exception to be thrown.
       DCHECK(exception_state.HadException());
+      return nullptr;
+    }
+
+    if ((params.type == TrustTokenOperationType::kRedemption ||
+         params.type == TrustTokenOperationType::kSigning) &&
+        !execution_context->IsFeatureEnabled(
+            mojom::blink::FeaturePolicyFeature::kTrustTokenRedemption)) {
+      exception_state.ThrowTypeError(
+          "trustToken: Redemption ('srr-token-redemption') and signing "
+          "('send-srr') operations require that the trust-token-redemption "
+          "Feature Policy feature be enabled.");
       return nullptr;
     }
 

@@ -95,25 +95,8 @@ sk_sp<PaintRecord> RecordMarker(Color blink_color) {
 void DrawDocumentMarker(GraphicsContext& context,
                         const FloatPoint& pt,
                         float width,
-                        DocumentMarker::MarkerType marker_type,
-                        float zoom) {
-  DCHECK(marker_type == DocumentMarker::kSpelling ||
-         marker_type == DocumentMarker::kGrammar);
-
-  DEFINE_STATIC_LOCAL(
-      PaintRecord*, spelling_marker,
-      (RecordMarker(
-           LayoutTheme::GetTheme().PlatformSpellingMarkerUnderlineColor())
-           .release()));
-  DEFINE_STATIC_LOCAL(
-      PaintRecord*, grammar_marker,
-      (RecordMarker(
-           LayoutTheme::GetTheme().PlatformGrammarMarkerUnderlineColor())
-           .release()));
-  auto* const marker = marker_type == DocumentMarker::kSpelling
-                           ? spelling_marker
-                           : grammar_marker;
-
+                        float zoom,
+                        PaintRecord* const marker) {
   // Position already includes zoom and device scale factor.
   SkScalar origin_x = WebCoreFloatToSkScalar(pt.X());
   SkScalar origin_y = WebCoreFloatToSkScalar(pt.Y());
@@ -185,28 +168,49 @@ void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
       marker.UseTextColor()
           ? style.VisitedDependentColor(GetCSSPropertyWebkitTextFillColor())
           : marker.UnderlineColor();
-  context.SetStrokeColor(marker_color);
-  // Set the style of the underline if there is any.
-  switch (marker.UnderlineStyle()) {
-    case ui::mojom::ImeTextSpanUnderlineStyle::kDash:
-      context.SetStrokeStyle(StrokeStyle::kDashedStroke);
-      break;
-    case ui::mojom::ImeTextSpanUnderlineStyle::kDot:
-      context.SetStrokeStyle(StrokeStyle::kDottedStroke);
-      break;
-    case ui::mojom::ImeTextSpanUnderlineStyle::kSolid:
-      context.SetStrokeStyle(StrokeStyle::kSolidStroke);
-      break;
-    case ui::mojom::ImeTextSpanUnderlineStyle::kNone:
-      context.SetStrokeStyle(StrokeStyle::kNoStroke);
-      break;
+  if (marker.UnderlineStyle() !=
+      ui::mojom::ImeTextSpanUnderlineStyle::kSquiggle) {
+    context.SetStrokeColor(marker_color);
+    context.SetStrokeThickness(line_thickness);
+    // Set the style of the underline if there is any.
+    switch (marker.UnderlineStyle()) {
+      case ui::mojom::ImeTextSpanUnderlineStyle::kDash:
+        context.SetStrokeStyle(StrokeStyle::kDashedStroke);
+        break;
+      case ui::mojom::ImeTextSpanUnderlineStyle::kDot:
+        context.SetStrokeStyle(StrokeStyle::kDottedStroke);
+        break;
+      case ui::mojom::ImeTextSpanUnderlineStyle::kSolid:
+        context.SetStrokeStyle(StrokeStyle::kSolidStroke);
+        break;
+      case ui::mojom::ImeTextSpanUnderlineStyle::kNone:
+        context.SetStrokeStyle(StrokeStyle::kNoStroke);
+        break;
+      case ui::mojom::ImeTextSpanUnderlineStyle::kSquiggle:
+        // Wavy stroke style is not implemented in DrawLineForText so we handle
+        // it specially in the else condition below only for composition
+        // markers.
+        break;
+    }
+    context.DrawLineForText(
+        FloatPoint(box_origin.left + start,
+                   (box_origin.top + logical_height.ToInt() - line_thickness)
+                       .ToFloat()),
+        width);
+  } else {
+    // For wavy underline format we use this logic that is very similar to
+    // spelling/grammar squiggles format. Only applicable for composition
+    // markers for now.
+    if (marker.GetType() == DocumentMarker::kComposition) {
+      sk_sp<PaintRecord> composition_marker = (RecordMarker(marker_color));
+      DrawDocumentMarker(
+          context,
+          FloatPoint((box_origin.left + start).ToFloat(),
+                     (box_origin.top + logical_height.ToInt() - line_thickness)
+                         .ToFloat()),
+          width, line_thickness, composition_marker.get());
+    }
   }
-  context.SetStrokeThickness(line_thickness);
-  context.DrawLineForText(
-      FloatPoint(
-          box_origin.left + start,
-          (box_origin.top + logical_height.ToInt() - line_thickness).ToFloat()),
-      width);
 }
 
 void DocumentMarkerPainter::PaintDocumentMarker(
@@ -241,10 +245,24 @@ void DocumentMarkerPainter::PaintDocumentMarker(
     // prevent a big gap.
     underline_offset = baseline + 2 * zoom;
   }
+  DEFINE_STATIC_LOCAL(
+      PaintRecord*, spelling_marker,
+      (RecordMarker(
+           LayoutTheme::GetTheme().PlatformSpellingMarkerUnderlineColor())
+           .release()));
+  DEFINE_STATIC_LOCAL(
+      PaintRecord*, grammar_marker,
+      (RecordMarker(
+           LayoutTheme::GetTheme().PlatformGrammarMarkerUnderlineColor())
+           .release()));
+
+  auto* const marker = marker_type == DocumentMarker::kSpelling
+                           ? spelling_marker
+                           : grammar_marker;
   DrawDocumentMarker(context,
                      FloatPoint((box_origin.left + local_rect.X()).ToFloat(),
                                 (box_origin.top + underline_offset).ToFloat()),
-                     local_rect.Width().ToFloat(), marker_type, zoom);
+                     local_rect.Width().ToFloat(), zoom, marker);
 }
 
 TextPaintStyle DocumentMarkerPainter::ComputeTextPaintStyleFrom(

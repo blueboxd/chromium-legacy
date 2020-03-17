@@ -24,7 +24,6 @@ class CachingWordShaperTest : public testing::Test {
     font_description.SetGenericFamily(FontDescription::kStandardFamily);
 
     font = Font(font_description);
-    font.Update(nullptr);
     ASSERT_TRUE(font.CanShapeWordByWord());
     fallback_fonts = nullptr;
     cache = std::make_unique<ShapeCache>();
@@ -390,7 +389,6 @@ TEST_F(CachingWordShaperTest, TextOrientationFallbackShouldNotInFallbackList) {
 
   font_description.SetOrientation(FontOrientation::kVerticalMixed);
   Font vertical_mixed_font = Font(font_description);
-  vertical_mixed_font.Update(nullptr);
   ASSERT_TRUE(vertical_mixed_font.CanShapeWordByWord());
 
   CachingWordShaper shaper(vertical_mixed_font);

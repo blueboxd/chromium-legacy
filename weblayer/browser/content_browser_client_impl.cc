@@ -71,6 +71,7 @@
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
+#include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/spellcheck/browser/spell_check_host_impl.h"  // nogncheck
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -147,26 +148,6 @@ void HandleSSLErrorWrapper(
       captive_portal_service,
       std::make_unique<weblayer::WebLayerSecurityBlockingPageFactory>());
 }
-
-#if defined(OS_ANDROID)
-// Returns true if |scheme| identifies one that is handled/known by WebLayer.
-bool IsHandledScheme(base::StringPiece scheme) {
-  DCHECK_EQ(scheme, base::ToLowerASCII(scheme));
-  static const base::NoDestructor<base::flat_set<base::StringPiece>>
-      kKnownSchemes(base::flat_set<base::StringPiece>({
-        content::kChromeDevToolsScheme, content::kChromeUIScheme,
-            content::kChromeUIUntrustedScheme, url::kAboutScheme,
-            url::kBlobScheme, url::kDataScheme, url::kFileScheme,
-            url::kFileSystemScheme, url::kHttpScheme, url::kHttpsScheme,
-            url::kJavaScriptScheme,
-#if BUILDFLAG(ENABLE_WEBSOCKETS)
-            url::kWsScheme, url::kWssScheme,
-#endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
-            url::kContentScheme,
-      }));
-  return kKnownSchemes->contains(scheme);
-}
-#endif  // defined(OS_ANDROID)
 
 }  // namespace
 
@@ -434,6 +415,12 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
       throttles.push_back(
           GetSafeBrowsingService()->CreateSafeBrowsingNavigationThrottle(
               handle));
+      if (handle->IsInMainFrame()) {
+        throttles.push_back(
+            navigation_interception::InterceptNavigationDelegate::
+                CreateThrottleFor(
+                    handle, navigation_interception::SynchronyMode::kAsync));
+      }
     }
   }
 #endif
@@ -545,69 +532,5 @@ void ContentBrowserClientImpl::GetAdditionalMappedFilesForChildProcess(
 #endif  // defined(OS_ANDROID)
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
-bool ContentBrowserClientImpl::ShouldOverrideUrlLoading(
-    int frame_tree_node_id,
-    bool browser_initiated,
-    const GURL& gurl,
-    const std::string& request_method,
-    bool has_user_gesture,
-    bool is_redirect,
-    bool is_main_frame,
-    ui::PageTransition transition,
-    bool* ignore_navigation) {
-  *ignore_navigation = false;
-
-  // Only GETs can be overridden.
-  if (request_method != "GET")
-    return true;
-
-  bool application_initiated =
-      browser_initiated || transition & ui::PAGE_TRANSITION_FORWARD_BACK;
-
-  // Don't offer application-initiated navigations unless it's a redirect.
-  if (application_initiated && !is_redirect)
-    return true;
-
-  // For HTTP schemes, only top-level navigations can be overridden. Similarly,
-  // WebView Classic lets app override only top level about:blank navigations.
-  // So we filter out non-top about:blank navigations here.
-  if (!is_main_frame &&
-      (gurl.SchemeIs(url::kHttpScheme) || gurl.SchemeIs(url::kHttpsScheme) ||
-       gurl.SchemeIs(url::kAboutScheme)))
-    return true;
-
-  content::WebContents* web_contents =
-      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
-  if (web_contents == nullptr)
-    return true;
-
-  if (gurl.is_valid() && IsHandledScheme(gurl.scheme()))
-    return true;
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-
-  base::string16 url = base::UTF8ToUTF16(gurl.possibly_invalid_spec());
-  base::android::ScopedJavaLocalRef<jstring> jurl =
-      base::android::ConvertUTF16ToJavaString(env, url);
-
-  TabImpl* tab_impl = TabImpl::FromWebContents(web_contents);
-  *ignore_navigation = tab_impl->ShouldOverrideUrlLoading(
-      env, jurl, has_user_gesture, is_redirect, is_main_frame);
-
-  if (base::android::HasException(env)) {
-    // Tell the chromium message loop to not perform any tasks after the
-    // current one - we want to make sure we return to Java cleanly without
-    // first making any new JNI calls.
-    base::MessageLoopCurrentForUI::Get()->Abort();
-    // If we crashed we don't want to continue the navigation.
-    *ignore_navigation = true;
-    return false;
-  }
-
-  return true;
-}
-#endif
 
 }  // namespace weblayer

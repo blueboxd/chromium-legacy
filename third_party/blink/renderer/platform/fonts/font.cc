@@ -413,16 +413,15 @@ int Font::OffsetForPosition(const TextRun& run,
 }
 
 ShapeCache* Font::GetShapeCache() const {
-  return font_fallback_list_->GetShapeCache(font_description_);
+  return EnsureFontFallbackList()->GetShapeCache(font_description_);
 }
 
 bool Font::CanShapeWordByWord() const {
-  return font_fallback_list_ &&
-         font_fallback_list_->CanShapeWordByWord(GetFontDescription());
+  return EnsureFontFallbackList()->CanShapeWordByWord(GetFontDescription());
 }
 
 void Font::ReportNotDefGlyph() const {
-  FontSelector* fontSelector = font_fallback_list_->GetFontSelector();
+  FontSelector* fontSelector = EnsureFontFallbackList()->GetFontSelector();
   // We have a few non-DOM usages of Font code, for example in DragImage::Create
   // and in EmbeddedObjectPainter::paintReplaced. In those cases, we can't
   // retrieve a font selector as our connection to a Document object to report

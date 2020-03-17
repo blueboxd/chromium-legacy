@@ -25,6 +25,8 @@ class CookieControlsIconView : public PageActionIconView,
 
   // CookieControlsUI:
   void OnStatusChanged(CookieControlsStatus status,
+                       CookieControlsEnforcement enforcement,
+
                        int blocked_cookies) override;
   void OnBlockedCookiesCountChanged(int blocked_cookies) override;
 

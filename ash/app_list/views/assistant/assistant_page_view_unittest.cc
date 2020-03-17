@@ -172,6 +172,10 @@ class AssistantPageViewTest : public AssistantAshTestBase {
     return view->GetBoundsInScreen().CenterPoint();
   }
 
+  void PressKey(ui::KeyboardCode key_code) {
+    GetEventGenerator()->PressKey(key_code, /*flags=*/ui::EF_NONE);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AssistantPageViewTest);
 };
@@ -360,19 +364,19 @@ TEST_F(AssistantPageViewTest, RememberAndShowHistory) {
 
   EXPECT_TRUE(input_text_field()->GetText().empty());
 
-  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_UP, /*flags=*/0);
+  PressKey(ui::KeyboardCode::VKEY_UP);
   EXPECT_EQ(input_text_field()->GetText(), base::UTF8ToUTF16("query 2"));
 
-  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_UP, /*flags=*/0);
+  PressKey(ui::KeyboardCode::VKEY_UP);
   EXPECT_EQ(input_text_field()->GetText(), base::UTF8ToUTF16("query 1"));
 
-  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_UP, /*flags=*/0);
+  PressKey(ui::KeyboardCode::VKEY_UP);
   EXPECT_EQ(input_text_field()->GetText(), base::UTF8ToUTF16("query 1"));
 
-  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_DOWN, /*flags=*/0);
+  PressKey(ui::KeyboardCode::VKEY_DOWN);
   EXPECT_EQ(input_text_field()->GetText(), base::UTF8ToUTF16("query 2"));
 
-  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_DOWN, /*flags=*/0);
+  PressKey(ui::KeyboardCode::VKEY_DOWN);
   EXPECT_TRUE(input_text_field()->GetText().empty());
 }
 

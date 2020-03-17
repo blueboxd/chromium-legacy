@@ -37,7 +37,7 @@
 namespace blink {
 
 ShapeCache* CachingWordShaper::GetShapeCache() const {
-  return font_.font_fallback_list_->GetShapeCache(font_.font_description_);
+  return font_.GetShapeCache();
 }
 
 // Returns the total advance width of the TextRun run. If glyph_bounds
@@ -157,7 +157,7 @@ GlyphData CachingWordShaper::EmphasisMarkGlyphData(
   ShapeResultBuffer buffer;
   ShapeResultsForRun(GetShapeCache(), &font_, emphasis_mark_run, &buffer);
 
-  return buffer.EmphasisMarkGlyphData(font_.font_description_);
+  return buffer.EmphasisMarkGlyphData(font_.GetFontDescription());
 }
 
 }  // namespace blink

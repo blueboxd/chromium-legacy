@@ -73,7 +73,7 @@ void RegisterProperty(Document& document,
   property_definition->setSyntax(syntax);
   property_definition->setInitialValue(initial_value);
   property_definition->setInherits(is_inherited);
-  PropertyRegistration::registerProperty(document.ToExecutionContext(),
+  PropertyRegistration::registerProperty(document.GetExecutionContext(),
                                          property_definition, exception_state);
   ASSERT_FALSE(exception_state.HadException());
 }

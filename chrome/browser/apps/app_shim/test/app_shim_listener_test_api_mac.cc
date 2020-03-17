@@ -26,18 +26,4 @@ const base::FilePath& AppShimListenerTestApi::directory_in_tmp() {
   return listener_->directory_in_tmp_;
 }
 
-void AppShimListenerTestApi::SetAppShimManager(
-    std::unique_ptr<apps::AppShimManager> manager) {
-  AppShimHostBootstrap::SetClient(manager.get());
-  listener_->app_shim_manager_.swap(manager);
-
-  // Remove old manager from all AppLifetimeMonitors. Usually this is done at
-  // profile destruction.
-  for (Profile* profile :
-       g_browser_process->profile_manager()->GetLoadedProfiles()) {
-    apps::AppLifetimeMonitorFactory::GetForBrowserContext(profile)
-        ->RemoveObserver(manager.get());
-  }
-}
-
 }  // namespace test

@@ -113,12 +113,14 @@ class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
                                              HotseatState to_state) override;
   void OnHotseatTransitionAnimationEnded(HotseatState from_state,
                                          HotseatState to_state) override;
+  void OnHotseatTransitionAnimationAborted() override;
+
   // views::WidgetDelegateView:
   bool CanActivate() const override;
   void ReorderChildLayers(ui::Layer* parent_layer) override;
 
   // OverviewObserver:
-  void OnOverviewModeStartingAnimationComplete(bool canceled) override;
+  void OnOverviewModeWillStart() override;
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
   // WallpaperControllerObserver:
@@ -144,7 +146,7 @@ class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
   ui::Layer translucent_background_;
   ScrollableShelfView* scrollable_shelf_view_ = nullptr;  // unowned.
   // Blur is disabled during animations to improve performance.
-  bool blur_lock_ = false;
+  int blur_lock_ = 0;
 
   // The most recent color that the |translucent_background_| has been animated
   // to.
@@ -175,8 +177,11 @@ void HotseatWidget::DelegateView::Init(
       Shell::Get()->overview_controller();
   if (wallpaper_controller)
     wallpaper_controller->AddObserver(this);
-  if (overview_controller)
+  if (overview_controller) {
     overview_controller->AddObserver(this);
+    if(overview_controller->InOverviewSession())
+      ++blur_lock_;
+  }
   SetParentLayer(parent_layer);
 
   DCHECK(scrollable_shelf_view);
@@ -232,7 +237,7 @@ void HotseatWidget::DelegateView::SetTranslucentBackground(
 }
 
 void HotseatWidget::DelegateView::SetBackgroundBlur(bool enable_blur) {
-  if (!features::IsBackgroundBlurEnabled() || blur_lock_)
+  if (!features::IsBackgroundBlurEnabled() || blur_lock_ > 0)
     return;
 
   const int blur_radius =
@@ -244,15 +249,25 @@ void HotseatWidget::DelegateView::SetBackgroundBlur(bool enable_blur) {
 void HotseatWidget::DelegateView::OnHotseatTransitionAnimationWillStart(
     HotseatState from_state,
     HotseatState to_state) {
+  DCHECK_LE(blur_lock_, 2);
+
   SetBackgroundBlur(false);
-  blur_lock_ = true;
+  ++blur_lock_;
 }
 
 void HotseatWidget::DelegateView::OnHotseatTransitionAnimationEnded(
     HotseatState from_state,
     HotseatState to_state) {
-  blur_lock_ = false;
+  DCHECK_GT(blur_lock_, 0);
+
+  --blur_lock_;
   SetBackgroundBlur(true);
+}
+
+void HotseatWidget::DelegateView::OnHotseatTransitionAnimationAborted() {
+  DCHECK_GT(blur_lock_, 0);
+
+  --blur_lock_;
 }
 
 bool HotseatWidget::DelegateView::CanActivate() const {
@@ -266,13 +281,18 @@ void HotseatWidget::DelegateView::ReorderChildLayers(ui::Layer* parent_layer) {
   parent_layer->StackAtBottom(&translucent_background_);
 }
 
-void HotseatWidget::DelegateView::OnOverviewModeStartingAnimationComplete(
-    bool canceled) {
+void HotseatWidget::DelegateView::OnOverviewModeWillStart() {
+  DCHECK_LE(blur_lock_, 2);
+
   SetBackgroundBlur(false);
+  ++blur_lock_;
 }
 
 void HotseatWidget::DelegateView::OnOverviewModeEndingAnimationComplete(
     bool canceled) {
+  DCHECK_GT(blur_lock_, 0);
+
+  --blur_lock_;
   SetBackgroundBlur(true);
 }
 

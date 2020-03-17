@@ -369,6 +369,9 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
   void UpdateHasRelatedPages();
 
+  void InvalidateColorScheme();
+  void InvalidatePaint();
+
   // Typically, the main frame and Page should both be owned by the embedder,
   // which must call Page::willBeDestroyed() prior to destroying Page. This
   // call detaches the main frame and clears this pointer, thus ensuring that

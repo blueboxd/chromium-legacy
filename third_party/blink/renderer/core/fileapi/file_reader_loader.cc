@@ -67,17 +67,11 @@ FileReaderLoader::FileReaderLoader(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : read_type_(read_type),
       client_(client),
-      // TODO(https://crbug.com/957651): task_runner should never be null, but
-      // if it is make sure SimpleWatcher doesn't crash and just use a default
-      // task runner instead for now.
-      handle_watcher_(
-          FROM_HERE,
-          mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC,
-          task_runner ? task_runner : base::SequencedTaskRunnerHandle::Get()),
+      handle_watcher_(FROM_HERE,
+                      mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC,
+                      task_runner),
       task_runner_(std::move(task_runner)) {
-  // TODO(https://crbug.com/957651): Change this into a DCHECK once we figured
-  // out where code is passing in a null task runner,
-  CHECK(task_runner_);
+  DCHECK(task_runner_);
 }
 
 FileReaderLoader::~FileReaderLoader() {

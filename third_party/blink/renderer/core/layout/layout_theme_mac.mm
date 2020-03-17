@@ -1513,8 +1513,7 @@ void LayoutThemeMac::AdjustControlPartStyle(ComputedStyle& style) {
         style.SetLineHeight(ComputedStyleInitialValues::InitialLineHeight());
 
         // Now update our font.
-        if (style.SetFontDescription(control_font))
-          style.GetFont().Update(nullptr);
+        style.SetFontDescription(control_font);
       }
       break;
     }

@@ -462,46 +462,14 @@ gfx::PointF ScalePointRelative(const gfx::Point& from_origin,
       gfx::ScalePoint(point - from_origin_vector, scale_factor));
   return scaled_relative_point + to_origin_vector;
 }
+
 }  // namespace
 
 ScreenWin::ScreenWin() : ScreenWin(true) {}
 
-ScreenWin::ScreenWin(bool initialize)
-    : color_profile_reader_(new ColorProfileReader(this)) {
-  DCHECK(!g_screen_win_instance);
-  g_screen_win_instance = this;
-  if (initialize)
-    Initialize();
-}
-
 ScreenWin::~ScreenWin() {
   DCHECK_EQ(g_screen_win_instance, this);
-  if (uwp_text_scale_factor_)
-    uwp_text_scale_factor_->RemoveObserver(this);
-
   g_screen_win_instance = nullptr;
-}
-
-// static
-int ScreenWin::GetSystemMetricsForScaleFactor(float scale_factor, int metric) {
-  if (base::win::IsProcessPerMonitorDpiAware()) {
-    using GetSystemMetricsForDpiPtr = decltype(::GetSystemMetricsForDpi)*;
-    static const auto get_metric_for_dpi_func =
-        reinterpret_cast<GetSystemMetricsForDpiPtr>(
-            base::win::GetUser32FunctionPointer("GetSystemMetricsForDpi"));
-    if (get_metric_for_dpi_func) {
-      return get_metric_for_dpi_func(metric,
-                                     GetDPIFromScalingFactor(scale_factor));
-    }
-  }
-
-  // Fallback for when we're running Windows 8.1, which doesn't support
-  // GetSystemMetricsForDpi and yet does support per-process dpi awareness.
-  Display primary_display(g_screen_win_instance->GetPrimaryDisplay());
-  int system_metrics_result = g_screen_win_instance->GetSystemMetrics(metric);
-
-  return static_cast<int>(std::round(scale_factor * system_metrics_result /
-                                     primary_display.device_scale_factor()));
 }
 
 // static
@@ -704,15 +672,11 @@ gfx::NativeWindow ScreenWin::GetNativeWindowFromHWND(HWND hwnd) const {
   return nullptr;
 }
 
-void ScreenWin::OnUwpTextScaleFactorChanged() {
-  UpdateAllDisplaysAndNotify();
-}
-
-void ScreenWin::OnUwpTextScaleFactorCleanup(UwpTextScaleFactor* source) {
-  if (source == uwp_text_scale_factor_)
-    uwp_text_scale_factor_ = nullptr;
-
-  UwpTextScaleFactor::Observer::OnUwpTextScaleFactorCleanup(source);
+ScreenWin::ScreenWin(bool initialize) {
+  DCHECK(!g_screen_win_instance);
+  g_screen_win_instance = this;
+  if (initialize)
+    Initialize();
 }
 
 gfx::Point ScreenWin::GetCursorScreenPoint() {
@@ -811,8 +775,7 @@ void ScreenWin::Initialize() {
   // We want to remember that we've observed a screen metrics object so that we
   // can remove ourselves as an observer at some later point (either when the
   // metrics object notifies us it's going away or when we are destructed).
-  uwp_text_scale_factor_ = UwpTextScaleFactor::Instance();
-  uwp_text_scale_factor_->AddObserver(this);
+  scale_factor_observer_.Add(UwpTextScaleFactor::Instance());
 }
 
 MONITORINFOEX ScreenWin::MonitorInfoFromScreenPoint(
@@ -966,6 +929,28 @@ ScreenWinDisplay ScreenWin::GetScreenWinDisplayVia(Getter getter,
   return (g_screen_win_instance->*getter)(value);
 }
 
+// static
+int ScreenWin::GetSystemMetricsForScaleFactor(float scale_factor, int metric) {
+  if (base::win::IsProcessPerMonitorDpiAware()) {
+    using GetSystemMetricsForDpiPtr = decltype(::GetSystemMetricsForDpi)*;
+    static const auto get_metric_for_dpi_func =
+        reinterpret_cast<GetSystemMetricsForDpiPtr>(
+            base::win::GetUser32FunctionPointer("GetSystemMetricsForDpi"));
+    if (get_metric_for_dpi_func) {
+      return get_metric_for_dpi_func(metric,
+                                     GetDPIFromScalingFactor(scale_factor));
+    }
+  }
+
+  // Fallback for when we're running Windows 8.1, which doesn't support
+  // GetSystemMetricsForDpi and yet does support per-process dpi awareness.
+  Display primary_display(g_screen_win_instance->GetPrimaryDisplay());
+  int system_metrics_result = g_screen_win_instance->GetSystemMetrics(metric);
+
+  return static_cast<int>(std::round(scale_factor * system_metrics_result /
+                                     primary_display.device_scale_factor()));
+}
+
 void ScreenWin::RecordDisplayScaleFactors() const {
   std::vector<int> unique_scale_factors;
   for (const auto& screen_win_display : screen_win_displays_) {
@@ -980,6 +965,16 @@ void ScreenWin::RecordDisplayScaleFactors() const {
       base::UmaHistogramSparse("UI.DeviceScale", reported_scale);
     }
   }
+}
+
+void ScreenWin::OnUwpTextScaleFactorChanged() {
+  UpdateAllDisplaysAndNotify();
+}
+
+void ScreenWin::OnUwpTextScaleFactorCleanup(UwpTextScaleFactor* source) {
+  if (scale_factor_observer_.IsObserving(source))
+    scale_factor_observer_.Remove(source);
+  UwpTextScaleFactor::Observer::OnUwpTextScaleFactorCleanup(source);
 }
 
 }  // namespace win

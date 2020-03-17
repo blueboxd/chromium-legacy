@@ -83,7 +83,6 @@ class HarfBuzzShaperTest : public testing::Test {
   void SetUp() override {
     font_description.SetComputedSize(12.0);
     font = Font(font_description);
-    font.Update(nullptr);
   }
 
   void TearDown() override {}
@@ -101,7 +100,6 @@ class HarfBuzzShaperTest : public testing::Test {
 
     font_description.SetFamily(devanagari_family);
     font = Font(font_description);
-    font.Update(nullptr);
   }
 
   Font CreateAhem(float size) {
@@ -472,7 +470,6 @@ TEST_F(HarfBuzzShaperTest, ShapeTabulationCharacters) {
 TEST_F(HarfBuzzShaperTest, ShapeVerticalUpright) {
   font_description.SetOrientation(FontOrientation::kVerticalUpright);
   font = Font(font_description);
-  font.Update(nullptr);
 
   // This string should create 2 runs, ideographic and Latin, both in upright.
   String string(u"\u65E5\u65E5\u65E5lllll");
@@ -496,7 +493,6 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalUpright) {
 TEST_F(HarfBuzzShaperTest, ShapeVerticalUprightIdeograph) {
   font_description.SetOrientation(FontOrientation::kVerticalUpright);
   font = Font(font_description);
-  font.Update(nullptr);
 
   // This string should create one ideograph run.
   String string(u"\u65E5\u65E6\u65E0\u65D3\u65D0");
@@ -527,7 +523,6 @@ TEST_F(HarfBuzzShaperTest, RangeShapeSmallCaps) {
   font_description.SetVariantCaps(FontDescription::kSmallCaps);
   font_description.SetComputedSize(12.0);
   Font font(font_description);
-  font.Update(nullptr);
 
   // Shaping index 2 to 3 means that case splitting for small caps splits before
   // character index 2 since the initial 'a' needs to be uppercased, but the
@@ -563,7 +558,6 @@ TEST_F(HarfBuzzShaperTest, RangeShapeSmallCaps) {
 TEST_F(HarfBuzzShaperTest, ShapeVerticalMixed) {
   font_description.SetOrientation(FontOrientation::kVerticalMixed);
   font = Font(font_description);
-  font.Update(nullptr);
 
   // This string should create 2 runs, ideographic in upright and Latin in
   // rotated horizontal.
@@ -1634,10 +1628,7 @@ static bool KerningIsHappening(const FontDescription& font_description,
   kern.SetKerning(FontDescription::kAutoKerning);
 
   Font font_no_kern(no_kern);
-  font_no_kern.Update(nullptr);
-
   Font font_kern(kern);
-  font_kern.Update(nullptr);
 
   HarfBuzzShaper shaper(str);
 
@@ -1749,7 +1740,6 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalWithoutSubpixelPositionIsRounded) {
 
   font_description.SetOrientation(FontOrientation::kVerticalUpright);
   font = Font(font_description);
-  font.Update(nullptr);
 
   String string(u"\u65E5\u65E5\u65E5");
   TextDirection direction = TextDirection::kLtr;
@@ -1769,7 +1759,6 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalWithSubpixelPositionIsRounded) {
 
   font_description.SetOrientation(FontOrientation::kVerticalUpright);
   font = Font(font_description);
-  font.Update(nullptr);
 
   String string(u"\u65E5\u65E5\u65E5");
   TextDirection direction = TextDirection::kLtr;

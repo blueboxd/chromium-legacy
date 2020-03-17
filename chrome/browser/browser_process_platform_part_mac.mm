@@ -8,6 +8,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #import "chrome/browser/app_controller_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
+#include "chrome/browser/apps/app_shim/extension_app_shim_manager_delegate_mac.h"
 #include "chrome/browser/chrome_browser_application_mac.h"
 #include "components/metal_util/test_shader.h"
 
@@ -69,6 +71,9 @@ void BrowserProcessPlatformPart::AttemptExit(bool try_to_quit_application) {
 }
 
 void BrowserProcessPlatformPart::PreMainMessageLoopRun() {
+  app_shim_manager_ = std::make_unique<apps::AppShimManager>(
+      std::make_unique<apps::ExtensionAppShimManagerDelegate>());
+
   // AppShimListener can not simply be reset, otherwise destroying the old
   // domain socket will cause the just-created socket to be unlinked.
   DCHECK(!app_shim_listener_.get());
@@ -76,6 +81,10 @@ void BrowserProcessPlatformPart::PreMainMessageLoopRun() {
 
   // Launch a test Metal shader compile once the run loop starts.
   metal::TestShader(base::BindOnce(&TestShaderCallback));
+}
+
+apps::AppShimManager* BrowserProcessPlatformPart::app_shim_manager() {
+  return app_shim_manager_.get();
 }
 
 AppShimListener* BrowserProcessPlatformPart::app_shim_listener() {

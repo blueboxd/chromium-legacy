@@ -126,6 +126,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void AddAndFireStateObserver(StateObserver* observer) override;
   void RemoveStateObserver(const StateObserver* observer) override;
   void SyncDeviceAppsStatus() override;
+  void UpdateInternalMediaPlayerStatus(
+      media_session::mojom::MediaSessionAction action) override;
 
   // mojom::Assistant overrides:
   void StartEditReminderInteraction(const std::string& client_id) override;
@@ -227,9 +229,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void MediaSessionPositionChanged(
       const base::Optional<media_session::MediaPosition>& position) override {}
 
-  void UpdateInternalMediaPlayerStatus(
-      media_session::mojom::MediaSessionAction action);
-
   // The start runs in the background. This will wait until the background
   // thread is finished.
   void WaitUntilStartIsFinishedForTesting();
@@ -240,7 +239,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   }
 
  private:
-  class AssistantMediaSessionObserver;
   void StartAssistantInternal(const base::Optional<UserInfo>& user);
   void PostInitAssistant();
 

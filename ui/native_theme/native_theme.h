@@ -28,6 +28,9 @@ class Size;
 }
 
 namespace ui {
+
+class ColorProvider;
+
 // This class supports drawing UI controls (like buttons, text fields, lists,
 // comboboxes, etc) that look like the native UI controls of the underlying
 // platform, such as Windows or Linux. It also supplies default colors for
@@ -477,6 +480,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
   bool is_high_contrast_ = false;
   PreferredColorScheme preferred_color_scheme_ =
       PreferredColorScheme::kNoPreference;
+  mutable ColorProvider* color_provider_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTheme);
 };

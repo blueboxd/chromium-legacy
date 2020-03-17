@@ -47,7 +47,7 @@ struct KeyValuePairKeyExtractor {
   // Assumes out points to a buffer of size at least sizeof(T::KeyType).
   template <typename T>
   static const typename T::KeyType& ExtractSafe(const T& p, void* out) {
-    AtomicMemcpy<sizeof(typename T::KeyType)>(out, &p.key);
+    AtomicReadMemcpy<sizeof(typename T::KeyType)>(out, &p.key);
     return *reinterpret_cast<typename T::KeyType*>(out);
   }
 };

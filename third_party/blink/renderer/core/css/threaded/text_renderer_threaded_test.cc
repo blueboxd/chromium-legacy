@@ -37,7 +37,6 @@ TSAN_TEST(TextRendererThreadedTest, MeasureText) {
     font_description.SetGenericFamily(FontDescription::kStandardFamily);
 
     Font font = Font(font_description);
-    font.Update(nullptr);
 
     const SimpleFontData* font_data = font.PrimaryFont();
     ASSERT_TRUE(font_data);
@@ -77,7 +76,6 @@ TSAN_TEST(TextRendererThreadedTest, DrawText) {
     font_description.SetGenericFamily(FontDescription::kStandardFamily);
 
     Font font = Font(font_description);
-    font.Update(nullptr);
 
     FloatPoint location(0, 0);
     TextRun text_run(text, 0, 0, TextRun::kAllowTrailingExpansion,

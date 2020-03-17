@@ -219,8 +219,9 @@ void AppShimManager::AppState::SaveLastActiveProfiles() const {
   AppShimRegistry::Get()->OnAppQuit(app_id, last_active_profile_paths);
 }
 
-AppShimManager::AppShimManager()
-    : delegate_(new ExtensionAppShimManagerDelegate), weak_factory_(this) {
+AppShimManager::AppShimManager(std::unique_ptr<Delegate> delegate)
+    : delegate_(std::move(delegate)), weak_factory_(this) {
+  AppShimHostBootstrap::SetClient(this);
   // This is instantiated in BrowserProcessImpl::PreMainMessageLoopRun with
   // AppShimListener. Since PROFILE_CREATED is not fired until
   // ProfileManager::GetLastUsedProfile/GetLastOpenedProfiles, this should catch
@@ -234,6 +235,7 @@ AppShimManager::AppShimManager()
 
 AppShimManager::~AppShimManager() {
   BrowserList::RemoveObserver(this);
+  AppShimHostBootstrap::SetClient(nullptr);
 }
 
 AppShimHost* AppShimManager::FindHost(Profile* profile,
@@ -524,11 +526,7 @@ void AppShimManager::OnShimProcessConnectedAndAllLaunchesDone(
 AppShimManager* AppShimManager::Get() {
   // This will only return nullptr in certain unit tests that do not initialize
   // the app shim host manager.
-  auto* shim_host_manager =
-      g_browser_process->platform_part()->app_shim_listener();
-  if (shim_host_manager)
-    return shim_host_manager->app_shim_manager();
-  return nullptr;
+  return g_browser_process->platform_part()->app_shim_manager();
 }
 
 void AppShimManager::CloseShimsForProfile(Profile* profile) {
@@ -720,10 +718,6 @@ void AppShimManager::OnShimSelectedProfileAndAppLoaded(
     // window).
     delegate_->LaunchApp(profile, app_id, std::vector<base::FilePath>());
   }
-}
-
-void AppShimManager::set_delegate(Delegate* delegate) {
-  delegate_.reset(delegate);
 }
 
 void AppShimManager::Observe(int type,

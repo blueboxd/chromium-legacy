@@ -12,7 +12,6 @@
 
 namespace blink {
 
-class DisplayLockSuspendedHandle;
 class Element;
 class DisplayLockScopedLogger;
 class StyleRecalcChange;
@@ -104,14 +103,6 @@ class CORE_EXPORT DisplayLockContext final
   void NotifyIsIntersectingViewport();
   void NotifyIsNotIntersectingViewport();
 
-  // Request that this context be locked. Called when style determines that the
-  // subtree rooted at this element should be skipped, unless things like
-  // viewport intersection prevent it from doing so.
-  bool RequestLock(uint16_t activation_mask);
-  // Request that this context be unlocked. Called when style determines that
-  // the subtree rooted at this element should be rendered.
-  void RequestUnlock();
-
   // Lifecycle observation / state functions.
   bool ShouldStyle(DisplayLockLifecycleTarget) const;
   void DidStyle(DisplayLockLifecycleTarget);
@@ -148,9 +139,6 @@ class CORE_EXPORT DisplayLockContext final
   // Returns true if this context is locked.
   bool IsLocked() const { return is_locked_; }
 
-  // Called when the layout tree is attached.
-  void DidAttachLayoutTree();
-
   // Returns a ScopedForcedUpdate object which for the duration of its lifetime
   // will allow updates to happen on this element's subtree. For the element
   // itself, the frame rect will still be the same as at the time the lock was
@@ -169,7 +157,6 @@ class CORE_EXPORT DisplayLockContext final
 
   // LifecycleNotificationObserver overrides.
   void WillStartLifecycleUpdate(const LocalFrameView&) override;
-  void DidFinishLifecycleUpdate(const LocalFrameView&) override;
 
   // Inform the display lock that it prevented a style change. This is used to
   // invalidate style when we need to update it in the future.
@@ -229,20 +216,30 @@ class CORE_EXPORT DisplayLockContext final
   friend class DisplayLockContextRenderingTest;
   friend class DisplayLockContextTest;
 
-  // Production friends.
-  friend class DisplayLockSuspendedHandle;
+  // Request that this context be locked. Called when style determines that the
+  // subtree rooted at this element should be skipped, unless things like
+  // viewport intersection prevent it from doing so.
+  bool RequestLock(uint16_t activation_mask);
+  // Request that this context be unlocked. Called when style determines that
+  // the subtree rooted at this element should be rendered.
+  void RequestUnlock();
 
   // Returns true if this lock has been activated and the activation has not yet
   // been cleared.
   bool IsActivated() const;
 
-  void UpdateActivationBlockingCount(bool was_activatable, bool is_activatable);
+  // Records the locked context counts on the document as well as context that
+  // block all activation.
+  void UpdateDocumentBookkeeping(bool was_locked,
+                                 bool all_activation_was_blocked,
+                                 bool is_locked,
+                                 bool all_activation_is_blocked);
 
   // Set which reasons activate, as a mask of DisplayLockActivationReason enums.
-  void SetActivatable(uint16_t activatable_mask);
+  void UpdateActivationMask(uint16_t activatable_mask);
 
   // Clear the activated flag.
-  void ClearActivated();
+  void ResetActivation();
 
   // Marks ancestors of elements in |whitespace_reattach_set_| with
   // ChildNeedsReattachLayoutTree and clears the set.
@@ -287,10 +284,6 @@ class CORE_EXPORT DisplayLockContext final
   // when acquiring this lock should immediately resolve the acquire promise.
   bool ConnectedToView() const;
 
-  // During an attempt to commit, clean up state and reject pending resolver
-  // promises if the lock is not connected to the tree.
-  bool CleanupAndRejectCommitIfNotConnected();
-
   // Registers or unregisters the element for intersection observations in the
   // document. This is used to activate on visibily changes. This can be safely
   // called even if changes are not required, since it will only act if a
@@ -307,10 +300,10 @@ class CORE_EXPORT DisplayLockContext final
   // the notifications.
   void UpdateLifecycleNotificationRegistration();
 
-  // Acquire the lock, should only be called when unlocked.
-  void StartAcquire();
-  // Initiate a commit.
-  void StartCommit();
+  // Locks the context.
+  void Lock();
+  // Unlocks the context.
+  void Unlock();
 
   WeakMember<Element> element_;
   WeakMember<Document> document_;
@@ -335,7 +328,6 @@ class CORE_EXPORT DisplayLockContext final
 
   bool needs_effective_allowed_touch_action_update_ = false;
   bool needs_prepaint_subtree_walk_ = false;
-  bool is_horizontal_writing_mode_ = true;
   bool needs_graphics_layer_collection_ = false;
   bool needs_compositing_requirements_update_ = false;
 
@@ -362,10 +354,9 @@ class CORE_EXPORT DisplayLockContext final
   // intersection (or lack thereof) because we were nested in a locked subtree.
   // In that case, we register for lifecycle notifications and check every time
   // if we are still nested.
-  bool needs_intersection_lock_check_ = false;
+  bool needs_deferred_not_intersecting_signal_ = false;
 
   // Lock has been requested.
-  bool lock_requested_ = false;
   bool is_locked_ = false;
 
   // TODO(vmpstr): This is only needed while we're still sending activation

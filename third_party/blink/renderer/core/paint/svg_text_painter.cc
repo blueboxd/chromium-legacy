@@ -28,13 +28,13 @@ void SVGTextPainter::Paint(const PaintInfo& paint_info) {
       block_info, layout_svg_text_,
       layout_svg_text_.LocalToSVGParentTransform());
 
-  if (paint_info.phase == PaintPhase::kForeground)
-    SVGModelObjectPainter::RecordHitTestData(layout_svg_text_, paint_info);
+  if (block_info.phase == PaintPhase::kForeground)
+    SVGModelObjectPainter::RecordHitTestData(layout_svg_text_, block_info);
 
   BlockPainter(layout_svg_text_).Paint(block_info);
 
   // Paint the outlines, if any
-  if (paint_info.phase == PaintPhase::kForeground) {
+  if (block_info.phase == PaintPhase::kForeground) {
     block_info.phase = PaintPhase::kOutline;
     BlockPainter(layout_svg_text_).Paint(block_info);
   }

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/limits.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -15,6 +16,10 @@ namespace chromeos {
 namespace assistant {
 
 namespace {
+
+// The reduced audio (the ducked track) volume level while listening to user
+// speech.
+constexpr double kDuckingVolume = 0.2;
 
 constexpr int kNumberOfBuffersPerSec = 10;
 
@@ -80,6 +85,7 @@ AudioDeviceOwner::~AudioDeviceOwner() {
 }
 
 void AudioDeviceOwner::StartOnMainThread(
+    AssistantMediaSession* media_session,
     assistant_client::AudioOutput::Delegate* delegate,
     mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory,
     const assistant_client::OutputStreamFormat& format) {
@@ -115,26 +121,46 @@ void AudioDeviceOwner::StartOnMainThread(
     background_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&AudioDeviceOwner::StartDeviceOnBackgroundThread,
-                       base::Unretained(this), std::move(stream_factory)));
+                       base::Unretained(this), std::move(stream_factory),
+                       media_session));
   }
 }
 
 void AudioDeviceOwner::StopOnBackgroundThread() {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  base::AutoLock lock(lock_);
   output_device_.reset();
+  base::AutoLock lock(lock_);
   if (delegate_) {
     delegate_->OnStopped();
     delegate_ = nullptr;
   }
 }
 
+void AudioDeviceOwner::MediaSessionInfoChanged(
+    media_session::mojom::MediaSessionInfoPtr info) {
+  // |output_device_| is only accessed on background thread.
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+
+  // We only handle media ducking case here as intended. Other media
+  // operactions, such as pausing and resuming, are handled by Libassistant
+  // |MediaManager| API in |AssistantManagerServiceImpl|.
+  const bool is_ducking =
+      info->state ==
+      media_session::mojom::MediaSessionInfo::SessionState::kDucking;
+
+  if (output_device_)
+    output_device_->SetVolume(is_ducking ? kDuckingVolume : 1.0);
+}
+
 void AudioDeviceOwner::StartDeviceOnBackgroundThread(
-    mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory) {
+    mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory,
+    AssistantMediaSession* media_session) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   output_device_ = std::make_unique<audio::OutputDevice>(
       std::move(stream_factory), audio_param_, this, device_id_);
   output_device_->Play();
+
+  media_session->AddObserver(session_receiver_.BindNewPipeAndPassRemote());
 }
 
 int AudioDeviceOwner::Render(base::TimeDelta delay,

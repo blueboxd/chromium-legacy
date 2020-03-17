@@ -1317,6 +1317,7 @@ if (!is_android) {
       "../browser/ui/views/device_chooser_browsertest.cc",
       "../browser/ui/views/hats/hats_browsertest.cc",
       "../browser/ui/views/intent_picker_bubble_view_browsertest.cc",
+      "../browser/ui/views/reader_mode/reader_mode_icon_view_browsertest.cc",
       "../browser/ui/views/try_chrome_dialog_win/try_chrome_dialog_browsertest.cc",
       "../browser/ui/views/web_apps/web_app_frame_toolbar_browsertest.cc",
       "../browser/ui/views/web_apps/web_app_minimal_ui_test.cc",
@@ -3834,6 +3835,10 @@ test("unit_tests") {
       "../browser/touch_to_fill/touch_to_fill_controller_unittest.cc",
       "../browser/translate/translate_manager_render_view_host_android_unittest.cc",
     ]
+
+    if (enable_password_change_in_leaked_dialog) {
+      sources += [ "../browser/password_manager/credential_leak_password_change_controller_android_unittest.cc" ]
+    }
     deps += [
       "//base:base_java",
       "//chrome:chrome_android_core",

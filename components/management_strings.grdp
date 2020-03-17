@@ -183,8 +183,8 @@
   <message name="IDS_MANAGEMENT_DATA_LOSS_PREVENTION_NAME" desc="Name for the data loss prevention feature">
     Data Loss Prevention
   </message>
-  <message name="IDS_MANAGEMENT_DATA_LOSS_PREVENTION_PERMISSIONS" desc="Permissions description for the data loss prevention feature">
-    Scan the contents of the files that you download or upload in Chrome.
+  <message name="IDS_MANAGEMENT_DATA_LOSS_PREVENTION_PERMISSIONS" desc="Permissions description for the data loss prevention feature.  The part that says 'that you download or upload in Chrome' applies only to files, not the clipboard">
+    Scan the contents of the clipboard, as well as files that you download or upload in Chrome.
   </message>
   <message name="IDS_MANAGEMENT_MALWARE_SCANNING_NAME" desc="Name for the malware scanning feature">
     Malware Scanning

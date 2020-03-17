@@ -1430,6 +1430,10 @@ void TSFTextStore::GetStyle(const TF_DISPLAYATTRIBUTE& attribute,
         span->underline_style = ImeTextSpan::UnderlineStyle::kDash;
         break;
       }
+      case TF_LS_SQUIGGLE: {
+        span->underline_style = ImeTextSpan::UnderlineStyle::kSquiggle;
+        break;
+      }
       default: {
         span->underline_style = ImeTextSpan::UnderlineStyle::kSolid;
       }

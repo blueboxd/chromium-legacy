@@ -18,6 +18,17 @@
 class ThirdPartyMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:
+  enum class AccessType {
+    kCookieRead,
+    kCookieWrite,
+    kLocalStorage,
+    kSessionStorage,
+    kFileSystem,
+    kIndexedDb,
+    kCacheStorage,
+    kUnknown,
+  };
+
   ThirdPartyMetricsObserver();
   ~ThirdPartyMetricsObserver() override;
 
@@ -48,14 +59,6 @@ class ThirdPartyMetricsObserver
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
  private:
-  enum class AccessType {
-    kCookieRead,
-    kCookieWrite,
-    kLocalStorage,
-    kSessionStorage,
-    kUnknown,
-  };
-
   struct AccessedTypes {
     explicit AccessedTypes(AccessType access_type);
     bool cookie_read = false;
@@ -70,6 +73,9 @@ class ThirdPartyMetricsObserver
                                AccessType access_type);
   void RecordMetrics(
       const page_load_metrics::mojom::PageLoadTiming& main_frame_timing);
+
+  // Records feature usage for |access_type| with use counters.
+  void RecordStorageUseCounter(AccessType accesse_type);
 
   AccessType StorageTypeToAccessType(
       page_load_metrics::StorageType storage_type);

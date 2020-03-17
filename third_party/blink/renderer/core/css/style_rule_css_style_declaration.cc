@@ -36,7 +36,7 @@ StyleRuleCSSStyleDeclaration::StyleRuleCSSStyleDeclaration(
               parent_rule->parentStyleSheet()))
               ? const_cast<Document*>(CSSStyleSheet::SingleOwnerDocument(
                                           parent_rule->parentStyleSheet()))
-                    ->ToExecutionContext()
+                    ->GetExecutionContext()
               : nullptr,
           property_set_arg),
       parent_rule_(parent_rule) {}

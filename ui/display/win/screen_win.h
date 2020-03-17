@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "ui/display/display_change_notifier.h"
 #include "ui/display/display_export.h"
 #include "ui/display/screen.h"
@@ -248,7 +249,8 @@ class DISPLAY_EXPORT ScreenWin : public Screen,
   std::vector<Display> displays_;
 
   // A helper to read color profiles from the filesystem.
-  std::unique_ptr<ColorProfileReader> color_profile_reader_;
+  std::unique_ptr<ColorProfileReader> color_profile_reader_ =
+      std::make_unique<ColorProfileReader>(this);
 
   // Callback to use to query when the HDR status may have changed.
   RequestHDRStatusCallback request_hdr_status_callback_;
@@ -257,7 +259,8 @@ class DISPLAY_EXPORT ScreenWin : public Screen,
   // advanced color" setting.
   bool hdr_enabled_ = false;
 
-  UwpTextScaleFactor* uwp_text_scale_factor_ = nullptr;
+  ScopedObserver<UwpTextScaleFactor, UwpTextScaleFactor::Observer>
+      scale_factor_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ScreenWin);
 };

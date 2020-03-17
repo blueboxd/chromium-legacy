@@ -1614,6 +1614,8 @@ jumbo_static_library("ui") {
       "ash/launcher/extension_app_window_launcher_item_controller.h",
       "ash/launcher/extension_shelf_context_menu.cc",
       "ash/launcher/extension_shelf_context_menu.h",
+      "ash/launcher/extension_uninstaller.cc",
+      "ash/launcher/extension_uninstaller.h",
       "ash/launcher/launcher_app_updater.cc",
       "ash/launcher/launcher_app_updater.h",
       "ash/launcher/launcher_controller_helper.cc",

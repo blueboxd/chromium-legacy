@@ -430,6 +430,8 @@ class DeepScanningDialogViewsAppearanceBrowserTest
 }  // namespace
 
 IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsBehaviorBrowserTest, Test) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
   // The test is wrong if neither DLP or Malware is enabled. This would imply a
   // Deep Scanning call site called ShowForWebContents without first checking
   // IsEnabled returns true.
@@ -464,7 +466,7 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsBehaviorBrowserTest, Test) {
   DeepScanningDialogDelegate::Data data;
   data.do_dlp_scan = dlp_enabled();
   data.do_malware_scan = malware_enabled();
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
+  CreateFilesForTest({"foo.doc"}, {"content"}, &data);
 
   DeepScanningDialogDelegate::ShowForWebContents(
       browser()->tab_strip_model()->GetActiveWebContents(), std::move(data),
@@ -509,6 +511,8 @@ INSTANTIATE_TEST_SUITE_P(
 
 IN_PROC_BROWSER_TEST_F(DeepScanningDialogViewsCancelPendingScanBrowserTest,
                        Test) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
   // Setup policies to enable deep scanning, its UI and the responses to be
   // simulated.
   SetDlpPolicy(CHECK_UPLOADS);
@@ -530,9 +534,8 @@ IN_PROC_BROWSER_TEST_F(DeepScanningDialogViewsCancelPendingScanBrowserTest,
   DeepScanningDialogDelegate::Data data;
   data.do_dlp_scan = true;
   data.do_malware_scan = false;
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/bar.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/baz.doc"));
+  CreateFilesForTest({"foo.doc", "bar.doc", "baz.doc"},
+                     {"random", "file", "contents"}, &data);
 
   DeepScanningDialogDelegate::ShowForWebContents(
       browser()->tab_strip_model()->GetActiveWebContents(), std::move(data),
@@ -552,6 +555,8 @@ IN_PROC_BROWSER_TEST_F(DeepScanningDialogViewsCancelPendingScanBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsWarningBrowserTest, Test) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
   // Setup policies.
   SetDlpPolicy(CHECK_UPLOADS);
   SetWaitPolicy(DELAY_UPLOADS);
@@ -578,8 +583,7 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsWarningBrowserTest, Test) {
   data.do_dlp_scan = true;
   data.text.emplace_back(base::UTF8ToUTF16("foo"));
   data.text.emplace_back(base::UTF8ToUTF16("bar"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/bar.doc"));
+  CreateFilesForTest({"foo.doc", "bar.doc"}, {"file", "content"}, &data);
 
   DeepScanningDialogDelegate::ShowForWebContents(
       browser()->tab_strip_model()->GetActiveWebContents(), std::move(data),
@@ -607,6 +611,8 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Combine(testing::Values(kNoDelay, kSmallDelay), testing::Bool()));
 
 IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsAppearanceBrowserTest, Test) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
   // Setup policies to enable deep scanning, its UI and the responses to be
   // simulated.
   SetDlpPolicy(CHECK_UPLOADS);
@@ -633,7 +639,7 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsAppearanceBrowserTest, Test) {
   // Use a file path or text to validate the appearance of the dialog for both
   // types of scans.
   if (file_scan())
-    data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
+    CreateFilesForTest({"foo.doc"}, {"content"}, &data);
   else
     data.text.emplace_back(base::UTF8ToUTF16("foo"));
 

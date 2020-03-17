@@ -42,9 +42,10 @@ struct COMPONENT_EXPORT(UI_BASE_IME_TYPES) ImeTextSpan {
     kSolid,
     kDot,
     kDash,
+    kSquiggle,
   };
 
-  ImeTextSpan(
+  explicit ImeTextSpan(
       Type type = Type::kComposition,
       uint32_t start_offset = 0,
       uint32_t end_offset = 0,

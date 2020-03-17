@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/events/animation_playback_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -169,16 +170,14 @@ Animation* Animation::Create(AnimationEffect* effect,
   }
   DCHECK(IsA<DocumentTimeline>(timeline) || timeline->IsScrollTimeline());
 
-  auto* context_document = timeline->GetDocument()->ContextDocument();
-  return MakeGarbageCollected<Animation>(
-      context_document ? context_document->ToExecutionContext() : nullptr,
-      timeline, effect);
+  auto* context = timeline->GetDocument()->GetExecutionContext();
+  return MakeGarbageCollected<Animation>(context, timeline, effect);
 }
 
 Animation* Animation::Create(ExecutionContext* execution_context,
                              AnimationEffect* effect,
                              ExceptionState& exception_state) {
-  Document* document = Document::From(execution_context);
+  Document* document = To<LocalDOMWindow>(execution_context)->document();
   return Create(effect, &document->Timeline(), exception_state);
 }
 
@@ -226,8 +225,8 @@ Animation::Animation(ExecutionContext* execution_context,
     }
     content_->Attach(this);
   }
-  document_ =
-      timeline_ ? timeline_->GetDocument() : Document::From(execution_context);
+  document_ = timeline_ ? timeline_->GetDocument()
+                        : To<LocalDOMWindow>(execution_context)->document();
   DCHECK(document_);
 
   if (timeline_)
@@ -2257,7 +2256,7 @@ void Animation::commitStyles(ExceptionState& exception_state) {
     CSSPropertyRef ref(property.GetCSSPropertyName(), target->GetDocument());
     const CSSValue* value = ref.GetProperty().CSSValueFromComputedStyle(
         *style, target->GetLayoutObject(), false);
-    inline_style->setProperty(target->GetDocument().ToExecutionContext(),
+    inline_style->setProperty(target->GetExecutionContext(),
                               property.GetCSSPropertyName().ToAtomicString(),
                               value->CssText(), "", ASSERT_NO_EXCEPTION);
   }

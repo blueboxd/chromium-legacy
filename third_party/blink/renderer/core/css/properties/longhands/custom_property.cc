@@ -19,7 +19,7 @@ CustomProperty::CustomProperty(const AtomicString& name,
                                const Document& document)
     : CustomProperty(
           name,
-          PropertyRegistration::From(document.ToExecutionContext(), name)) {}
+          PropertyRegistration::From(document.GetExecutionContext(), name)) {}
 
 CustomProperty::CustomProperty(const AtomicString& name,
                                const PropertyRegistry* registry)

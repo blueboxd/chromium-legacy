@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "components/feed/core/common/enums.h"
@@ -24,9 +25,9 @@ class TickClock;
 }  // namespace base
 
 namespace feed {
+class StreamModel;
 class FeedNetwork;
 class RefreshTaskScheduler;
-class FeedStreamBackground;
 
 // Implements FeedStreamApi. |FeedStream| additionally exposes functionality
 // needed by other classes within the Feed component.
@@ -68,8 +69,17 @@ class FeedStream : public FeedStreamApi,
   void InitializeScheduling();
 
   // FeedStreamApi.
+
+  void AttachSurface(SurfaceInterface*) override;
+  void DetachSurface(SurfaceInterface*) override;
   void SetArticlesListVisible(bool is_visible) override;
   bool IsArticlesListVisible() override;
+  void ExecuteOperations(
+      std::vector<feedstore::DataOperation> operations) override;
+  EphemeralChangeId CreateEphemeralChange(
+      std::vector<feedstore::DataOperation> operations) override;
+  bool CommitEphemeralChange(EphemeralChangeId id) override;
+  bool RejectEphemeralChange(EphemeralChangeId id) override;
 
   // offline_pages::TaskQueue::Delegate.
   void OnTaskQueueIsIdle() override;
@@ -102,23 +112,19 @@ class FeedStream : public FeedStreamApi,
   // Returns the time of the last content fetch.
   base::Time GetLastFetchTime();
 
-  // Provides access to |FeedStreamBackground|.
-  // PostTask's to |background_callback| in the background thread. When
-  // complete, executes |foreground_result_callback| with the result.
-  template <typename R1, typename R2>
-  bool RunInBackgroundAndReturn(
-      const base::Location& from_here,
-      base::OnceCallback<R1(FeedStreamBackground*)> background_callback,
-      base::OnceCallback<void(R2)> foreground_result_callback) {
-    return base::PostTaskAndReplyWithResult(
-        background_task_runner_.get(), from_here,
-        base::BindOnce(std::move(background_callback), background_.get()),
-        std::move(foreground_result_callback));
-  }
+  // Loads |model|. Should be used for testing in place of typical model
+  // loading from network or storage.
+  void LoadModelForTesting(std::unique_ptr<StreamModel> model);
+
+  // Returns the model if it is loaded, or null otherwise.
+  StreamModel* GetModel() { return model_.get(); }
 
  private:
+  class ModelMonitor;
   void MaybeTriggerRefresh(TriggerType trigger,
                            bool clear_all_before_refresh = false);
+  void LoadModel(std::unique_ptr<StreamModel> model);
+  void UnloadModel();
 
   // Determines whether or not a fetch should be allowed.
   // If a fetch is allowed, quota is reserved with the assumption that a fetch
@@ -136,10 +142,17 @@ class FeedStream : public FeedStreamApi,
   const base::TickClock* tick_clock_;
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
-  // Owned, but should only be accessed with |background_task_runner_|.
-  std::unique_ptr<FeedStreamBackground> background_;
 
   offline_pages::TaskQueue task_queue_;
+  // Monitors |model_|. Null when |model_| is null.
+  std::unique_ptr<ModelMonitor> model_monitor_;
+  // The stream model. Null if not yet loaded.
+  // Internally, this should only be changed by |LoadModel()| and
+  // |UnloadModel()|.
+  std::unique_ptr<StreamModel> model_;
+
+  // Set of (unowned) attached surfaces.
+  base::ObserverList<SurfaceInterface> surfaces_;
 
   // Mutable state.
   UserClassifier user_classifier_;

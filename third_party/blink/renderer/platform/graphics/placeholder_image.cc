@@ -177,7 +177,6 @@ class PlaceholderImage::SharedFont : public RefCounted<SharedFont> {
   explicit SharedFont(float scale_factor)
       : font_(CreatePlaceholderFontDescription(scale_factor)),
         scale_factor_(scale_factor) {
-    font_.Update(nullptr);
   }
 
   ~SharedFont() {
@@ -191,7 +190,6 @@ class PlaceholderImage::SharedFont : public RefCounted<SharedFont> {
 
     scale_factor_ = scale_factor;
     font_ = Font(CreatePlaceholderFontDescription(scale_factor_));
-    font_.Update(nullptr);
   }
 
   const Font& font() const { return font_; }

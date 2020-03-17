@@ -82,7 +82,7 @@ class CustomizedLabelButton : public views::LabelButton {
                         const SkColor color,
                         const gfx::FontList& font_list)
       : LabelButton(listener, text) {
-    SetTextColor(views::Button::ButtonState::STATE_NORMAL, color);
+    SetEnabledTextColors(color);
     label()->SetFontList(font_list);
     label()->SetLineHeight(kLineHeightDip);
   }

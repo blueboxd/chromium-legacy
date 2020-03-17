@@ -164,8 +164,9 @@ class OutgoingVisualPropertiesIPCWatcher {
  public:
   OutgoingVisualPropertiesIPCWatcher(
       RenderProcessHostImpl* rph,
+      FrameTreeNode* root,
       base::RepeatingCallback<void(const VisualProperties&)> callback)
-      : rph_(rph), callback_(std::move(callback)) {
+      : rph_(rph), root_(root), callback_(std::move(callback)) {
     rph_->SetIpcSendWatcherForTesting(
         base::BindRepeating(&OutgoingVisualPropertiesIPCWatcher::OnMessage,
                             base::Unretained(this)));
@@ -175,7 +176,20 @@ class OutgoingVisualPropertiesIPCWatcher {
   }
 
  private:
+  bool IsMessageForFrameTreeWidget(int routing_id, FrameTreeNode* node) {
+    auto* render_widget_host =
+        node->current_frame_host()->GetRenderWidgetHost();
+    if (routing_id == render_widget_host->GetRoutingID())
+      return true;
+    for (size_t i = 0; i < node->child_count(); ++i) {
+      if (IsMessageForFrameTreeWidget(routing_id, node->child_at(i)))
+        return true;
+    }
+    return false;
+  }
   void OnMessage(const IPC::Message& message) {
+    if (!IsMessageForFrameTreeWidget(message.routing_id(), root_))
+      return;
     IPC_BEGIN_MESSAGE_MAP(OutgoingVisualPropertiesIPCWatcher, message)
       IPC_MESSAGE_HANDLER(WidgetMsg_UpdateVisualProperties, ProcessMessage)
     IPC_END_MESSAGE_MAP()
@@ -183,7 +197,8 @@ class OutgoingVisualPropertiesIPCWatcher {
 
   void ProcessMessage(const VisualProperties& props) { callback_.Run(props); }
 
-  RenderProcessHostImpl* rph_;
+  RenderProcessHostImpl* const rph_;
+  FrameTreeNode* const root_;
   base::RepeatingCallback<void(const VisualProperties&)> callback_;
 };
 
@@ -257,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
 
     gfx::Size child_visible_viewport_size;
     OutgoingVisualPropertiesIPCWatcher child_watcher(
-        child_rph,
+        child_rph, root,
         base::BindLambdaForTesting([&](const VisualProperties& props) {
           child_visible_viewport_size = props.visible_viewport_size;
 
@@ -282,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
 
     gfx::Size child_visible_viewport_size;
     OutgoingVisualPropertiesIPCWatcher child_watcher(
-        nested_child_rph,
+        nested_child_rph, nested_root,
         base::BindLambdaForTesting([&](const VisualProperties& props) {
           child_visible_viewport_size = props.visible_viewport_size;
 
@@ -322,12 +337,12 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
     gfx::Size root_visible_viewport_size;
     gfx::Size child_visible_viewport_size;
     OutgoingVisualPropertiesIPCWatcher root_watcher(
-        root_rph,
+        root_rph, root,
         base::BindLambdaForTesting([&](const VisualProperties& props) {
           root_visible_viewport_size = props.visible_viewport_size;
         }));
     OutgoingVisualPropertiesIPCWatcher child_watcher(
-        child_rph,
+        child_rph, root,
         base::BindLambdaForTesting([&](const VisualProperties& props) {
           child_visible_viewport_size = props.visible_viewport_size;
 
@@ -359,12 +374,12 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
     gfx::Size root_visible_viewport_size;
     gfx::Size child_visible_viewport_size;
     OutgoingVisualPropertiesIPCWatcher root_watcher(
-        nested_root_rph,
+        nested_root_rph, nested_root,
         base::BindLambdaForTesting([&](const VisualProperties& props) {
           root_visible_viewport_size = props.visible_viewport_size;
         }));
     OutgoingVisualPropertiesIPCWatcher child_watcher(
-        nested_child_rph,
+        nested_child_rph, nested_root,
         base::BindLambdaForTesting([&](const VisualProperties& props) {
           child_visible_viewport_size = props.visible_viewport_size;
 
@@ -406,12 +421,12 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
     gfx::Size root_visible_viewport_size;
     gfx::Size child_visible_viewport_size;
     OutgoingVisualPropertiesIPCWatcher root_watcher(
-        root_rph,
+        root_rph, root,
         base::BindLambdaForTesting([&](const VisualProperties& props) {
           root_visible_viewport_size = props.visible_viewport_size;
         }));
     OutgoingVisualPropertiesIPCWatcher child_watcher(
-        child_rph,
+        child_rph, root,
         base::BindLambdaForTesting([&](const VisualProperties& props) {
           child_visible_viewport_size = props.visible_viewport_size;
 

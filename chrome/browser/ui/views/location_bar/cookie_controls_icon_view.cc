@@ -40,8 +40,10 @@ void CookieControlsIconView::UpdateImpl() {
   SetVisible(ShouldBeVisible());
 }
 
-void CookieControlsIconView::OnStatusChanged(CookieControlsStatus status,
-                                             int blocked_cookies) {
+void CookieControlsIconView::OnStatusChanged(
+    CookieControlsStatus status,
+    CookieControlsEnforcement enforcement,
+    int blocked_cookies) {
   if (status_ != status) {
     status_ = status;
     SetVisible(ShouldBeVisible());

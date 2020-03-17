@@ -34,6 +34,8 @@ class ASH_EXPORT HotseatTransitionAnimator
     // Called when hotseat transition animations end.
     virtual void OnHotseatTransitionAnimationEnded(HotseatState from_state,
                                                    HotseatState to_start) {}
+    // Called when hotseat transition animations was aborted.
+    virtual void OnHotseatTransitionAnimationAborted() {}
   };
 
   explicit HotseatTransitionAnimator(ShelfWidget* shelf_widget);
@@ -47,6 +49,7 @@ class ASH_EXPORT HotseatTransitionAnimator
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override;
 
   // Enables or enables animations. Disabling the animations will stop in-flight
   // animations.

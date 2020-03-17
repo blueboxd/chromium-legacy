@@ -37,6 +37,7 @@ if (!is_ios) {
       "//base:base_static",
       "//base:i18n",
       "//base/allocator:buildflags",
+      "//components/crash/core/common",
       "//components/tracing:startup_tracing",
     ]
 

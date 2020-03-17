@@ -26,11 +26,11 @@
       await clearAndLog(`console.warn("warning")`);
       forceSelect(0);
 
-      dumpFocus();
+      await dumpFocus();
       press('ArrowRight');
-      dumpFocus();
+      await dumpFocus();
       press('ArrowLeft');
-      dumpFocus();
+      await dumpFocus();
 
       next();
     },
@@ -39,13 +39,13 @@
       await clearAndLog(`console.group("group"); console.log("log child");`, 2);
       forceSelect(0);
 
-      dumpFocus();
+      await dumpFocus();
       await ConsoleTestRunner.dumpConsoleMessages();
       press('ArrowLeft');
-      dumpFocus();
+      await dumpFocus();
       await ConsoleTestRunner.dumpConsoleMessages();
       press('ArrowRight');
-      dumpFocus();
+      await dumpFocus();
       await ConsoleTestRunner.dumpConsoleMessages();
 
       next();
@@ -55,21 +55,21 @@
       await clearAndLog(`console.log("before");console.log("text", obj1, obj2);console.log("after");`, 3);
       forceSelect(1);
 
-      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await dumpFocus(true, 1, true /* skipObjectCheck */);
       press('ArrowRight');
-      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await dumpFocus(true, 1, true /* skipObjectCheck */);
       press('ArrowDown');
-      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await dumpFocus(true, 1, true /* skipObjectCheck */);
       press('ArrowDown');
-      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await dumpFocus(true, 1, true /* skipObjectCheck */);
       press('ArrowDown');
-      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await dumpFocus(true, 1, true /* skipObjectCheck */);
       press('ArrowUp');
-      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await dumpFocus(true, 1, true /* skipObjectCheck */);
       press('ArrowUp');
-      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await dumpFocus(true, 1, true /* skipObjectCheck */);
       press('ArrowLeft');
-      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await dumpFocus(true, 1, true /* skipObjectCheck */);
 
       next();
     },
@@ -80,39 +80,39 @@
       await clearAndLog(`console.log("before");console.log("text", obj1, obj2);console.log("after");`, 3);
       forceSelect(1);
 
-      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await dumpFocus(true, 1, true /* skipObjectCheck */);
       press('ArrowRight');
-      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await dumpFocus(true, 1, true /* skipObjectCheck */);
 
       // Expand obj1.
       press('ArrowRight');
-      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await dumpFocus(true, 1, true /* skipObjectCheck */);
       await ConsoleTestRunner.waitForRemoteObjectsConsoleMessagesPromise();
       press('ArrowDown');
-      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await dumpFocus(true, 1, true /* skipObjectCheck */);
       press('ArrowDown');
-      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await dumpFocus(true, 1, true /* skipObjectCheck */);
 
       // Expand obj2.
       press('ArrowRight');
-      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await dumpFocus(true, 1, true /* skipObjectCheck */);
       await ConsoleTestRunner.waitForRemoteObjectsConsoleMessagesPromise();
       press('ArrowDown');
       press('ArrowDown');
       press('ArrowDown');
-      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await dumpFocus(true, 1, true /* skipObjectCheck */);
 
       press('ArrowUp');
       press('ArrowUp');
-      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await dumpFocus(true, 1, true /* skipObjectCheck */);
 
       // Collapse object.
       press('ArrowLeft');
-      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await dumpFocus(true, 1, true /* skipObjectCheck */);
 
       // Select message.
       press('ArrowLeft');
-      dumpFocus(true, 1, true /* skipObjectCheck */);
+      await dumpFocus(true, 1, true /* skipObjectCheck */);
 
       next();
     },
@@ -121,38 +121,38 @@
       await clearAndLog(`console.log("before");console.warn("warning", obj1);console.log("after");`, 3);
       forceSelect(1);
 
-      dumpFocus(true, 1);
+      await dumpFocus(true, 1);
       press('ArrowRight');
-      dumpFocus(true, 1);
+      await dumpFocus(true, 1);
       press('ArrowRight');
-      dumpFocus(true, 1);
+      await dumpFocus(true, 1);
 
       // Expand object.
       press('ArrowRight');
-      dumpFocus(true, 1);
+      await dumpFocus(true, 1);
       await ConsoleTestRunner.waitForRemoteObjectsConsoleMessagesPromise();
       press('ArrowDown');
-      dumpFocus(true, 1);
+      await dumpFocus(true, 1);
       press('ArrowDown');
       press('ArrowDown');
       press('ArrowDown');
-      dumpFocus(true, 1);
+      await dumpFocus(true, 1);
 
       press('ArrowUp');
       press('ArrowUp');
-      dumpFocus(true, 1);
+      await dumpFocus(true, 1);
       press('ArrowUp');
-      dumpFocus(true, 1);
+      await dumpFocus(true, 1);
       press('ArrowUp');
-      dumpFocus(true, 1);
+      await dumpFocus(true, 1);
 
       // Collapse trace.
       press('ArrowLeft');
-      dumpFocus(true, 1);
+      await dumpFocus(true, 1);
 
       // ArrowLeft on message does not collapse object.
       press('ArrowLeft');
-      dumpFocus(true, 1);
+      await dumpFocus(true, 1);
 
       next();
     },
@@ -168,15 +168,15 @@
       await nodePromise;
       forceSelect(1);
 
-      dumpFocus(true, 1);
+      await dumpFocus(true, 1);
       press('ArrowDown');
       press('ArrowDown');
-      dumpFocus(true, 1);
+      await dumpFocus(true, 1);
 
       // Expand object.
       press('ArrowRight');
       await ConsoleTestRunner.waitForRemoteObjectsConsoleMessagesPromise();
-      dumpFocus(true, 1);
+      await dumpFocus(true, 1);
 
       next();
     },
@@ -189,12 +189,12 @@
       prompt.focus();
       shiftPress('Tab');
       press('ArrowUp');  // Move from source link to object.
-      dumpFocus(true, 1);
+      await dumpFocus(true, 1);
 
       // Expand object.
       press('ArrowRight');
       await ConsoleTestRunner.waitForRemoteObjectsConsoleMessagesPromise();
-      dumpFocus(true, 1);
+      await dumpFocus(true, 1);
 
       next();
     },
@@ -208,11 +208,11 @@
       prompt.focus();
       shiftPress('Tab');
       press('ArrowUp');  // Move from source link to "after".
-      dumpFocus(true);
+      await dumpFocus(true);
 
       press('ArrowUp');  // Move from source link to object.
       press('ArrowUp');
-      dumpFocus(true);
+      await dumpFocus(true);
 
       next();
     },
@@ -234,11 +234,11 @@
       await ConsoleTestRunner.waitForRemoteObjectsConsoleMessagesPromise();
       press('Tab');
 
-      dumpFocus(true);
+      await dumpFocus(true);
       shiftPress('Tab');
       press('ArrowUp');  // Move from source link to object.
 
-      dumpFocus(true);
+      await dumpFocus(true);
       dumpScrollInfo();
 
       next();
@@ -279,12 +279,17 @@
     TestRunner.addResult(infoText);
   }
 
-  function dumpFocus(activeElement, messageIndex = 0, skipObjectCheck) {
-    const firstMessage = consoleView._visibleViewMessages[messageIndex];
-    const hasTrace = !!firstMessage.element().querySelector('.console-message-stack-trace-toggle');
-    const hasHiddenStackTrace = firstMessage.element().querySelector('.console-message-stack-trace-wrapper > div.hidden');
-    const hasCollapsedObject = firstMessage.element().querySelector('.console-view-object-properties-section:not(.expanded)');
-    const hasExpandedObject = firstMessage.element().querySelector('.console-view-object-properties-section.expanded');
+  async function dumpFocus(activeElement, messageIndex = 0, skipObjectCheck) {
+    const firstMessage = consoleView._visibleViewMessages[messageIndex]
+    // Ordering here is important. Retrieving the element triggers the creation of a LiveLocation.
+    // Wait for pending updates to settle as updates usually cause more rendering.
+    const firstMessageElement = firstMessage.element();
+    await TestRunner.waitForPendingLiveLocationUpdates();
+
+    const hasTrace = !!firstMessageElement.querySelector('.console-message-stack-trace-toggle');
+    const hasHiddenStackTrace = firstMessageElement.querySelector('.console-message-stack-trace-wrapper > div.hidden');
+    const hasCollapsedObject = firstMessageElement.querySelector('.console-view-object-properties-section:not(.expanded)');
+    const hasExpandedObject = firstMessageElement.querySelector('.console-view-object-properties-section.expanded');
 
     TestRunner.addResult(`Viewport virtual selection: ${viewport._virtualSelectedIndex}`);
 

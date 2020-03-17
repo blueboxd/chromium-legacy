@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
+#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/browser/render_frame_host.h"
@@ -49,6 +50,12 @@ ThirdPartyMetricsObserver::AccessedTypes::AccessedTypes(
       break;
     case AccessType::kSessionStorage:
       session_storage = true;
+      break;
+    // No extra metadata required for the following types as they only record
+    // use counters.
+    case AccessType::kFileSystem:
+    case AccessType::kIndexedDb:
+    case AccessType::kCacheStorage:
       break;
     case AccessType::kUnknown:
       NOTREACHED();
@@ -103,6 +110,41 @@ void ThirdPartyMetricsObserver::OnCookieChange(
     bool blocked_by_policy) {
   OnCookieOrStorageAccess(url, first_party_url, blocked_by_policy,
                           AccessType::kCookieWrite);
+}
+
+void ThirdPartyMetricsObserver::RecordStorageUseCounter(
+    AccessType access_type) {
+  page_load_metrics::mojom::PageLoadFeatures third_party_storage_features;
+
+  switch (access_type) {
+    case AccessType::kLocalStorage:
+      third_party_storage_features.features.push_back(
+          blink::mojom::WebFeature::kThirdPartyLocalStorage);
+      break;
+    case AccessType::kSessionStorage:
+      third_party_storage_features.features.push_back(
+          blink::mojom::WebFeature::kThirdPartySessionStorage);
+      break;
+    case AccessType::kFileSystem:
+      third_party_storage_features.features.push_back(
+          blink::mojom::WebFeature::kThirdPartyFileSystem);
+      break;
+    case AccessType::kIndexedDb:
+      third_party_storage_features.features.push_back(
+          blink::mojom::WebFeature::kThirdPartyIndexedDb);
+      break;
+    case AccessType::kCacheStorage:
+      third_party_storage_features.features.push_back(
+          blink::mojom::WebFeature::kThirdPartyCacheStorage);
+      break;
+    default
+        :  // No feature usage recorded for storage types without a use counter.
+      return;
+  }
+
+  page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
+      GetDelegate().GetWebContents()->GetMainFrame(),
+      third_party_storage_features);
 }
 
 void ThirdPartyMetricsObserver::OnStorageAccessed(
@@ -212,6 +254,8 @@ void ThirdPartyMetricsObserver::OnCookieOrStorageAccess(
     }
   }
 
+  RecordStorageUseCounter(access_type);
+
   GURL representative_url(
       base::StrCat({url.scheme(), "://", registrable_domain, "/"}));
 
@@ -230,6 +274,12 @@ void ThirdPartyMetricsObserver::OnCookieOrStorageAccess(
         break;
       case AccessType::kSessionStorage:
         it->second.session_storage = true;
+        break;
+      // No metadata is tracked for the following types as they only record use
+      // counters.
+      case AccessType::kFileSystem:
+      case AccessType::kIndexedDb:
+      case AccessType::kCacheStorage:
         break;
       case AccessType::kUnknown:
         NOTREACHED();
@@ -296,8 +346,13 @@ ThirdPartyMetricsObserver::StorageTypeToAccessType(
       return AccessType::kLocalStorage;
     case page_load_metrics::StorageType::kSessionStorage:
       return AccessType::kSessionStorage;
+    case page_load_metrics::StorageType::kFileSystem:
+      return AccessType::kFileSystem;
+    case page_load_metrics::StorageType::kIndexedDb:
+      return AccessType::kIndexedDb;
+    case page_load_metrics::StorageType::kCacheStorage:
+      return AccessType::kCacheStorage;
     default:
-      NOTREACHED();
       return AccessType::kUnknown;
   }
 }

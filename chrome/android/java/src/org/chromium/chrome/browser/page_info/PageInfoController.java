@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.site_settings.ContentSettingValues;
 import org.chromium.chrome.browser.site_settings.CookieControlsBridge;
 import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -617,12 +618,14 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     }
 
     @Override
-    public void onCookieBlockingStatusChanged(int status) {
-        mView.getCookieControlsView().setCookieBlockingStatus(status);
+    public void onCookieBlockingStatusChanged(
+            @CookieControlsStatus int status, @CookieControlsEnforcement int enforcement) {
+        mView.getCookieControlsView().setCookieBlockingStatus(
+                status, enforcement != CookieControlsEnforcement.NO_ENFORCEMENT);
     }
 
     @Override
-    public void onBlockedCookiesCountChanged(@CookieControlsStatus int blockedCookies) {
+    public void onBlockedCookiesCountChanged(int blockedCookies) {
         mView.getCookieControlsView().setBlockedCookiesCount(blockedCookies);
     }
 

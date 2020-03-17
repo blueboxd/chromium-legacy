@@ -36,9 +36,8 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   Font font(font_description);
   // Set font size to something other than the default 0 size in
   // FontDescription, 16 matches the default text size in HTML.
+  // We don't use a FontSelector here. Only look for system fonts for now.
   font_description.SetComputedSize(16.0f);
-  // Only look for system fonts for now.
-  font.Update(nullptr);
 
   HarfBuzzShaper shaper(String(converted_input_buffer, converted_length));
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);

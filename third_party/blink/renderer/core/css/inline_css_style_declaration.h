@@ -37,8 +37,7 @@ class InlineCSSStyleDeclaration final
  public:
   explicit InlineCSSStyleDeclaration(Element* parent_element)
       : AbstractPropertySetCSSStyleDeclaration(
-            parent_element ? parent_element->GetDocument().ToExecutionContext()
-                           : nullptr),
+            parent_element ? parent_element->GetExecutionContext() : nullptr),
         parent_element_(parent_element) {}
 
   void Trace(Visitor*) override;

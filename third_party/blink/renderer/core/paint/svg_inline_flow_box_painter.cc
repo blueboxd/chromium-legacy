@@ -18,15 +18,15 @@ void SVGInlineFlowBoxPainter::PaintSelectionBackground(
   DCHECK(paint_info.phase == PaintPhase::kForeground ||
          paint_info.phase == PaintPhase::kSelection);
 
-  PaintInfo child_paint_info(paint_info);
   for (InlineBox* child = svg_inline_flow_box_.FirstChild(); child;
        child = child->NextOnLine()) {
-    if (auto* svg_inline_text_box = DynamicTo<SVGInlineTextBox>(child))
+    if (auto* svg_inline_text_box = DynamicTo<SVGInlineTextBox>(child)) {
       SVGInlineTextBoxPainter(*svg_inline_text_box)
-          .PaintSelectionBackground(child_paint_info);
-    else if (auto* svg_inline_flow_box = DynamicTo<SVGInlineFlowBox>(child))
+          .PaintSelectionBackground(paint_info);
+    } else if (auto* svg_inline_flow_box = DynamicTo<SVGInlineFlowBox>(child)) {
       SVGInlineFlowBoxPainter(*svg_inline_flow_box)
-          .PaintSelectionBackground(child_paint_info);
+          .PaintSelectionBackground(paint_info);
+    }
   }
 }
 
@@ -38,11 +38,12 @@ void SVGInlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
   ScopedSVGPaintState paint_state(*LineLayoutAPIShim::ConstLayoutObjectFrom(
                                       svg_inline_flow_box_.GetLineLayoutItem()),
                                   paint_info, svg_inline_flow_box_);
-  if (paint_state.ApplyEffects()) {
-    for (InlineBox* child = svg_inline_flow_box_.FirstChild(); child;
-         child = child->NextOnLine())
-      child->Paint(paint_state.GetPaintInfo(), paint_offset, LayoutUnit(),
-                   LayoutUnit());
+  if (!paint_state.ApplyEffects())
+    return;
+  for (InlineBox* child = svg_inline_flow_box_.FirstChild(); child;
+       child = child->NextOnLine()) {
+    child->Paint(paint_state.GetPaintInfo(), paint_offset, LayoutUnit(),
+                 LayoutUnit());
   }
 }
 

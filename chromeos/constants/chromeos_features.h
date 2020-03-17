@@ -34,6 +34,8 @@ extern const base::Feature kBluetoothPhoneFilter;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kBluetoothKernelSuspendNotifier;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kBluetoothNextHandsfreeProfile;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCameraSystemWebApp;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCrostiniPortForwarding;

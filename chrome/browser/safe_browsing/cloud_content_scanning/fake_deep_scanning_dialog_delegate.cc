@@ -170,6 +170,7 @@ void FakeDeepScanningDialogDelegate::UploadTextForDeepScanning(
 }
 
 void FakeDeepScanningDialogDelegate::UploadFileForDeepScanning(
+    BinaryUploadService::Result result,
     const base::FilePath& path,
     std::unique_ptr<BinaryUploadService::Request> request) {
   DCHECK(!path.empty());

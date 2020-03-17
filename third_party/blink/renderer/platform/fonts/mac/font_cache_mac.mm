@@ -325,7 +325,7 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
   return platform_data;
 }
 
-std::vector<FontEnumerationEntry> FontCache::EnumerateAvailableFonts() {
+std::vector<FontEnumerationEntry> FontCache::EnumeratePlatformAvailableFonts() {
   @autoreleasepool {
     std::vector<FontEnumerationEntry> output;
 

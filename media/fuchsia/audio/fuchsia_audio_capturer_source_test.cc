@@ -4,6 +4,7 @@
 
 #include "media/fuchsia/audio/fuchsia_audio_capturer_source.h"
 
+#include <fuchsia/media/cpp/fidl_test_base.h>
 #include <lib/fidl/cpp/binding.h>
 
 #include "base/fuchsia/fuchsia_logging.h"
@@ -18,7 +19,8 @@ namespace {
 constexpr size_t kFramesPerPacket = 480;
 constexpr uint32_t kBufferId = 0;
 
-class TestAudioCapturer : public fuchsia::media::AudioCapturer {
+class TestAudioCapturer
+    : public fuchsia::media::testing::AudioCapturer_TestBase {
  public:
   TestAudioCapturer(
       fidl::InterfaceRequest<fuchsia::media::AudioCapturer> request)
@@ -109,25 +111,10 @@ class TestAudioCapturer : public fuchsia::media::AudioCapturer {
     packets_usage_[buffer_index] = false;
   }
 
-  // The following AudioCapturer methods are not expected to be called.
-  void RemovePayloadBuffer(uint32_t id) final { FAIL(); }
-  void DiscardAllPackets(DiscardAllPacketsCallback callback) final { FAIL(); }
-  void DiscardAllPacketsNoReply() final { FAIL(); }
-  void StopAsyncCaptureNoReply() final { FAIL(); }
-  void CaptureAt(uint32_t payload_buffer_id,
-                 uint32_t payload_offset,
-                 uint32_t frames,
-                 CaptureAtCallback callback) final {
-    FAIL();
+  // No other methods are expected to be called.
+  void NotImplemented_(const std::string& name) final {
+    FAIL() << ": " << name;
   }
-  void StopAsyncCapture(StopAsyncCaptureCallback callback) final { FAIL(); }
-  void BindGainControl(
-      fidl::InterfaceRequest<fuchsia::media::audio::GainControl>
-          gain_control_request) final {
-    FAIL();
-  }
-  void SetUsage(fuchsia::media::AudioCaptureUsage usage) final { FAIL(); }
-  void GetStreamType(GetStreamTypeCallback callback) final { FAIL(); }
 
  private:
   fidl::Binding<fuchsia::media::AudioCapturer> binding_;

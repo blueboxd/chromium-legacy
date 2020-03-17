@@ -142,4 +142,26 @@ TEST(FontCache, EnumerateAvailableFonts) {
   ASSERT_TRUE(consumer.AllExpectationsMet());
 }
 
+TEST(FontCache, EnumerateAvailableFontsInvalidation) {
+  FontCache* font_cache = FontCache::GetFontCache();
+  ASSERT_TRUE(font_cache);
+
+  // Make sure we start at zero.
+  font_cache->Invalidate();
+  size_t zero = 0;
+  ASSERT_EQ(zero, font_cache->EnumerationCacheSizeForTesting());
+
+  // The cache gets populated.
+  size_t enum_size_1 = font_cache->EnumerateAvailableFonts().size();
+  ASSERT_EQ(enum_size_1, font_cache->EnumerationCacheSizeForTesting());
+
+  // Invalidation clears the cache.
+  font_cache->Invalidate();
+  ASSERT_EQ(zero, font_cache->EnumerationCacheSizeForTesting());
+
+  // The cache gets re-populated.
+  size_t enum_size_2 = font_cache->EnumerateAvailableFonts().size();
+  ASSERT_EQ(enum_size_1, enum_size_2);
+}
+
 }  // namespace blink

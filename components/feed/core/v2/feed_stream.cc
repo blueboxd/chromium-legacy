@@ -9,14 +9,95 @@
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
 #include "components/feed/core/common/pref_names.h"
+#include "components/feed/core/proto/v2/store.pb.h"
+#include "components/feed/core/proto/v2/ui.pb.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/v2/feed_network.h"
-#include "components/feed/core/v2/feed_stream_background.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
 #include "components/feed/core/v2/scheduling.h"
+#include "components/feed/core/v2/stream_model.h"
 #include "components/prefs/pref_service.h"
 
 namespace feed {
+
+// Tracks UI changes in |StreamModel| and forwards them to |SurfaceInterface|s.
+// Has the same lifetime as |StreamModel|.
+class FeedStream::ModelMonitor : public StreamModel::Observer {
+ public:
+  using ContentRevision = ContentRevision;
+  ModelMonitor(StreamModel* model,
+               const base::ObserverList<SurfaceInterface>* surfaces)
+      : model_(model), surfaces_(surfaces) {
+    model_->SetObserver(this);
+    const std::vector<ContentRevision>& content_list = model_->GetContentList();
+    current_content_set_.insert(content_list.begin(), content_list.end());
+  }
+  ~ModelMonitor() override = default;
+  ModelMonitor(const ModelMonitor&) = delete;
+  ModelMonitor& operator=(const ModelMonitor&) = delete;
+
+  // StreamModel::Observer.
+  void OnUiUpdate(const StreamModel::UiUpdate& update) override {
+    // TODO(harringtond): add shared states too.
+    if (!update.content_list_changed)
+      return;
+    feedui::StreamUpdate stream_update;
+    const std::vector<ContentRevision>& content_list = model_->GetContentList();
+    for (ContentRevision content_revision : content_list) {
+      AddSliceUpdate(&stream_update, content_revision,
+                     current_content_set_.count(content_revision) == 0);
+    }
+    current_content_set_.clear();
+    current_content_set_.insert(content_list.begin(), content_list.end());
+
+    for (SurfaceInterface& surface : *surfaces_) {
+      surface.StreamUpdate(stream_update);
+    }
+  }
+
+  // Sends the initial stream state to a newly connected surface.
+  void SurfaceAdded(SurfaceInterface* surface) {
+    surface->InitialStreamState(GetUpdateForNewSurface());
+  }
+
+ private:
+  static std::string ToSliceId(ContentRevision content_revision) {
+    auto integer_value = content_revision.value();
+    return std::string(reinterpret_cast<char*>(&integer_value),
+                       sizeof(integer_value));
+  }
+
+  void AddSliceUpdate(feedui::StreamUpdate* stream_update,
+                      ContentRevision content_revision,
+                      bool is_content_new) {
+    if (is_content_new) {
+      feedui::Slice* slice =
+          stream_update->add_updated_slices()->mutable_slice();
+      slice->set_slice_id(ToSliceId(content_revision));
+      const feedstore::Content* content = model_->FindContent(content_revision);
+      DCHECK(content);
+      slice->mutable_xsurface_slice()->set_xsurface_frame(content->frame());
+    } else {
+      stream_update->add_updated_slices()->set_slice_id(
+          ToSliceId(content_revision));
+    }
+  }
+
+  feedui::StreamUpdate GetUpdateForNewSurface() {
+    feedui::StreamUpdate result;
+    for (ContentRevision content_revision : model_->GetContentList()) {
+      AddSliceUpdate(&result, content_revision, /*is_content_new=*/true);
+    }
+    // TODO(harringtond): add shared states too.
+    return result;
+  }
+
+  // Owned by |FeedStream|.
+  StreamModel* model_;
+  const base::ObserverList<SurfaceInterface>* surfaces_;
+
+  std::set<ContentRevision> current_content_set_;
+};
 
 FeedStream::FeedStream(
     RefreshTaskScheduler* refresh_task_scheduler,
@@ -35,7 +116,6 @@ FeedStream::FeedStream(
       clock_(clock),
       tick_clock_(tick_clock),
       background_task_runner_(background_task_runner),
-      background_(std::make_unique<FeedStreamBackground>()),
       task_queue_(this),
       user_classifier_(profile_prefs, clock),
       refresh_throttler_(profile_prefs, clock) {
@@ -53,12 +133,17 @@ void FeedStream::InitializeScheduling() {
       GetUserClassTriggerThreshold(GetUserClass(), TriggerType::kFixedTimer));
 }
 
-FeedStream::~FeedStream() {
-  // Delete |background_| in the background sequence.
-  background_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce([](std::unique_ptr<FeedStreamBackground> background) {},
-                     std::move(background_)));
+FeedStream::~FeedStream() = default;
+
+void FeedStream::AttachSurface(SurfaceInterface* surface) {
+  surfaces_.AddObserver(surface);
+  if (model_monitor_) {
+    model_monitor_->SurfaceAdded(surface);
+  }
+}
+
+void FeedStream::DetachSurface(SurfaceInterface* surface) {
+  surfaces_.RemoveObserver(surface);
 }
 
 void FeedStream::SetArticlesListVisible(bool is_visible) {
@@ -67,6 +152,36 @@ void FeedStream::SetArticlesListVisible(bool is_visible) {
 
 bool FeedStream::IsArticlesListVisible() {
   return profile_prefs_->GetBoolean(prefs::kArticlesListVisible);
+}
+
+void FeedStream::ExecuteOperations(
+    std::vector<feedstore::DataOperation> operations) {
+  if (!model_) {
+    DLOG(ERROR) << "Calling ExecuteOperations before the model is loaded";
+    return;
+  }
+  return model_->ExecuteOperations(std::move(operations));
+}
+
+EphemeralChangeId FeedStream::CreateEphemeralChange(
+    std::vector<feedstore::DataOperation> operations) {
+  if (!model_) {
+    DLOG(ERROR) << "Calling CreateEphemeralChange before the model is loaded";
+    return {};
+  }
+  return model_->CreateEphemeralChange(std::move(operations));
+}
+
+bool FeedStream::CommitEphemeralChange(EphemeralChangeId id) {
+  if (!model_)
+    return false;
+  return model_->CommitEphemeralChange(id);
+}
+
+bool FeedStream::RejectEphemeralChange(EphemeralChangeId id) {
+  if (!model_)
+    return false;
+  return model_->RejectEphemeralChange(id);
 }
 
 UserClass FeedStream::GetUserClass() {
@@ -80,6 +195,10 @@ base::Time FeedStream::GetLastFetchTime() {
   if (fetch_time > clock_->Now())
     return base::Time();
   return fetch_time;
+}
+
+void FeedStream::LoadModelForTesting(std::unique_ptr<StreamModel> model) {
+  LoadModel(std::move(model));
 }
 
 void FeedStream::OnTaskQueueIsIdle() {}
@@ -180,6 +299,23 @@ void FeedStream::MaybeTriggerRefresh(TriggerType trigger,
   stream_event_observer_->OnMaybeTriggerRefresh(trigger,
                                                 clear_all_before_refresh);
   // TODO(harringtond): Implement refresh (with LoadStreamTask).
+}
+
+void FeedStream::LoadModel(std::unique_ptr<StreamModel> model) {
+  DCHECK(!model_);
+  model_ = std::move(model);
+  model_monitor_ =
+      std::make_unique<FeedStream::ModelMonitor>(model_.get(), &surfaces_);
+  for (SurfaceInterface& surface : surfaces_) {
+    model_monitor_->SurfaceAdded(&surface);
+  }
+}
+
+void FeedStream::UnloadModel() {
+  if (!model_)
+    return;
+  model_monitor_.reset();
+  model_.reset();
 }
 
 }  // namespace feed

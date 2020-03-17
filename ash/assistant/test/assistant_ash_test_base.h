@@ -42,7 +42,7 @@ class AssistantAshTestBase : public AshTestBase {
   using AssistantExitPoint = chromeos::assistant::mojom::AssistantExitPoint;
 
   AssistantAshTestBase();
-  AssistantAshTestBase(base::test::TaskEnvironment::TimeSource time);
+  explicit AssistantAshTestBase(base::test::TaskEnvironment::TimeSource time);
   ~AssistantAshTestBase() override;
 
   void SetUp() override;

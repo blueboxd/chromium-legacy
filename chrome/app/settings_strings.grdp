@@ -2621,7 +2621,7 @@
     This will clear <ph name="TOTAL_USAGE">$1<ex>8 GB</ex></ph> of data stored by sites and installed apps.
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_SIGN_OUT" desc="Text for the dialog that warns about being signed out when clearing storage used by all sites.">
-    You'll be signed out of all sites, including in any open tabs.
+    You'll be signed out of all sites, including in open tabs.
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_DIALOG_TITLE" desc="Title of the dialog that warns about deleting all site data.">
     Clear site data

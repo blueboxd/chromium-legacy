@@ -640,7 +640,8 @@ UkmPageLoadMetricsObserver::GetThirdPartyCookieBlockingEnabled() const {
   if (!cookie_settings->IsCookieControlsEnabled())
     return base::nullopt;
 
-  return !cookie_settings->IsThirdPartyAccessAllowed(GetDelegate().GetUrl());
+  return !cookie_settings->IsThirdPartyAccessAllowed(GetDelegate().GetUrl(),
+                                                     nullptr /* source */);
 }
 
 void UkmPageLoadMetricsObserver::OnTimingUpdate(

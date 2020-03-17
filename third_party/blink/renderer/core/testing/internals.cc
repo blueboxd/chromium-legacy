@@ -1144,6 +1144,8 @@ static base::Optional<ImeTextSpanUnderlineStyle> UnderlineStyleFrom(
     return ImeTextSpanUnderlineStyle::kDot;
   if (EqualIgnoringASCIICase(underline_style, "dash"))
     return ImeTextSpanUnderlineStyle::kDash;
+  if (EqualIgnoringASCIICase(underline_style, "squiggle"))
+    return ImeTextSpanUnderlineStyle::kSquiggle;
   return base::nullopt;
 }
 

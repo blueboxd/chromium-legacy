@@ -62,8 +62,7 @@ class HotseatTransitionAnimator::TransitionAnimationMetricsReporter
 HotseatTransitionAnimator::HotseatTransitionAnimator(ShelfWidget* shelf_widget)
     : shelf_widget_(shelf_widget),
       animation_metrics_reporter_(
-          std::make_unique<TransitionAnimationMetricsReporter>()) {
-}
+          std::make_unique<TransitionAnimationMetricsReporter>()) {}
 
 HotseatTransitionAnimator::~HotseatTransitionAnimator() {
   StopObservingImplicitAnimations();
@@ -87,6 +86,16 @@ void HotseatTransitionAnimator::OnImplicitAnimationsCompleted() {
 
   if (test_observer_)
     test_observer_->OnTransitionTestAnimationEnded();
+}
+
+void HotseatTransitionAnimator::OnLayerAnimationAborted(
+    ui::LayerAnimationSequence* sequence) {
+  // NOTE: This will be called only once (or zero times) each time for`
+  // DoAnimation because we only have one LayerAnimationSequence for this
+  // particular animation. If another is added we will have to modify how this
+  // is sent out.
+  for (auto& observer : observers_)
+    observer.OnHotseatTransitionAnimationAborted();
 }
 
 void HotseatTransitionAnimator::SetAnimationsEnabledInSessionState(

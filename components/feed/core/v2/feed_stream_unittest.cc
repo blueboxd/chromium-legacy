@@ -4,21 +4,39 @@
 
 #include "components/feed/core/v2/feed_stream.h"
 #include "base/optional.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "components/feed/core/common/pref_names.h"
+#include "components/feed/core/proto/v2/store.pb.h"
+#include "components/feed/core/proto/v2/ui.pb.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/v2/feed_network.h"
-#include "components/feed/core/v2/feed_stream_background.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
+#include "components/feed/core/v2/stream_model.h"
+#include "components/feed/core/v2/test/stream_builder.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feed {
 namespace {
+
+class TestSurface : public FeedStream::SurfaceInterface {
+ public:
+  // FeedStream::SurfaceInterface.
+  void InitialStreamState(const feedui::StreamUpdate& stream_update) override {
+    initial_state = stream_update;
+  }
+  void StreamUpdate(const feedui::StreamUpdate& stream_update) override {
+    update = stream_update;
+  }
+
+  base::Optional<feedui::StreamUpdate> initial_state;
+  base::Optional<feedui::StreamUpdate> update;
+};
 
 class TestFeedNetwork : public FeedNetwork {
  public:
@@ -76,7 +94,6 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
   // FeedStream::Delegate.
   bool IsEulaAccepted() override { return true; }
   bool IsOffline() override { return false; }
-
  protected:
   TestEventObserver event_observer_;
   TestingPrefServiceSimple profile_prefs_;
@@ -98,32 +115,6 @@ TEST_F(FeedStreamTest, SetArticlesListVisible) {
   EXPECT_FALSE(stream_->IsArticlesListVisible());
   stream_->SetArticlesListVisible(true);
   EXPECT_TRUE(stream_->IsArticlesListVisible());
-}
-
-TEST_F(FeedStreamTest, RunInBackgroundAndReturn) {
-  int result_received = 0;
-  FeedStreamBackground* background_received = nullptr;
-  base::RunLoop run_loop;
-  auto quit = run_loop.QuitClosure();
-
-  auto background_lambda =
-      base::BindLambdaForTesting([&](FeedStreamBackground* bg) {
-        background_received = bg;
-        return 5;
-      });
-  auto result_lambda = base::BindLambdaForTesting([&](int result) {
-    result_received = result;
-    quit.Run();
-  });
-
-  stream_->RunInBackgroundAndReturn(FROM_HERE,
-                                    base::BindOnce(background_lambda),
-                                    base::BindOnce(result_lambda));
-
-  run_loop.Run();
-
-  EXPECT_TRUE(background_received);
-  EXPECT_EQ(5, result_received);
 }
 
 TEST_F(FeedStreamTest, RefreshIsScheduledOnInitialize) {
@@ -148,6 +139,113 @@ TEST_F(FeedStreamTest, DoNotRefreshIfArticlesListIsHidden) {
 
   EXPECT_TRUE(refresh_scheduler_.canceled);
   EXPECT_FALSE(event_observer_.refresh_trigger_type);
+}
+
+TEST_F(FeedStreamTest, SurfaceReceivesInitialContent) {
+  {
+    auto model = std::make_unique<StreamModel>();
+    model->ExecuteOperations(MakeTypicalStreamOperations());
+    stream_->LoadModelForTesting(std::move(model));
+  }
+  TestSurface surface;
+  stream_->AttachSurface(&surface);
+  ASSERT_TRUE(surface.initial_state);
+  const feedui::StreamUpdate& initial_state = surface.initial_state.value();
+  ASSERT_EQ(2, initial_state.updated_slices().size());
+  EXPECT_NE("", initial_state.updated_slices(0).slice().slice_id());
+  EXPECT_EQ("f:0", initial_state.updated_slices(0)
+                       .slice()
+                       .xsurface_slice()
+                       .xsurface_frame());
+  EXPECT_NE("", initial_state.updated_slices(1).slice().slice_id());
+  EXPECT_EQ("f:1", initial_state.updated_slices(1)
+                       .slice()
+                       .xsurface_slice()
+                       .xsurface_frame());
+}
+
+TEST_F(FeedStreamTest, SurfaceReceivesUpdatedContent) {
+  {
+    auto model = std::make_unique<StreamModel>();
+    model->ExecuteOperations(MakeTypicalStreamOperations());
+    stream_->LoadModelForTesting(std::move(model));
+  }
+  TestSurface surface;
+  stream_->AttachSurface(&surface);
+  // Remove #1, add #2.
+  stream_->ExecuteOperations({
+      MakeOperation(MakeRemove(MakeClusterId(1))),
+      MakeOperation(MakeCluster(2, MakeRootId())),
+      MakeOperation(MakeContentNode(2, MakeClusterId(2))),
+      MakeOperation(MakeContent(2)),
+  });
+  ASSERT_TRUE(surface.update);
+  const feedui::StreamUpdate& initial_state = surface.initial_state.value();
+  const feedui::StreamUpdate& update = surface.update.value();
+
+  ASSERT_EQ(2, update.updated_slices().size());
+  // First slice is just an ID that matches the old 1st slice ID.
+  EXPECT_EQ(initial_state.updated_slices(0).slice().slice_id(),
+            update.updated_slices(0).slice_id());
+  // Second slice is a new xsurface slice.
+  EXPECT_NE("", update.updated_slices(1).slice().slice_id());
+  EXPECT_EQ("f:2",
+            update.updated_slices(1).slice().xsurface_slice().xsurface_frame());
+}
+
+TEST_F(FeedStreamTest, SurfaceReceivesSecondUpdatedContent) {
+  {
+    auto model = std::make_unique<StreamModel>();
+    model->ExecuteOperations(MakeTypicalStreamOperations());
+    stream_->LoadModelForTesting(std::move(model));
+  }
+  TestSurface surface;
+  stream_->AttachSurface(&surface);
+  // Add #2.
+  stream_->ExecuteOperations({
+      MakeOperation(MakeCluster(2, MakeRootId())),
+      MakeOperation(MakeContentNode(2, MakeClusterId(2))),
+      MakeOperation(MakeContent(2)),
+  });
+
+  // Clear the last update and add #3.
+  surface.update = {};
+  stream_->ExecuteOperations({
+      MakeOperation(MakeCluster(3, MakeRootId())),
+      MakeOperation(MakeContentNode(3, MakeClusterId(3))),
+      MakeOperation(MakeContent(3)),
+  });
+
+  // The last update should have only one new piece of content.
+  // This verifies the current content set is tracked properly.
+  ASSERT_TRUE(surface.update);
+
+  ASSERT_EQ(4, surface.update->updated_slices().size());
+  EXPECT_FALSE(surface.update->updated_slices(0).has_slice());
+  EXPECT_FALSE(surface.update->updated_slices(1).has_slice());
+  EXPECT_FALSE(surface.update->updated_slices(2).has_slice());
+  EXPECT_EQ("f:3", surface.update->updated_slices(3)
+                       .slice()
+                       .xsurface_slice()
+                       .xsurface_frame());
+}
+
+TEST_F(FeedStreamTest, DetachSurface) {
+  {
+    auto model = std::make_unique<StreamModel>();
+    model->ExecuteOperations(MakeTypicalStreamOperations());
+    stream_->LoadModelForTesting(std::move(model));
+  }
+  TestSurface surface;
+  stream_->AttachSurface(&surface);
+  EXPECT_TRUE(surface.initial_state);
+  stream_->DetachSurface(&surface);
+
+  // Arbitrary stream change. Surface should not see the update.
+  stream_->ExecuteOperations({
+      MakeOperation(MakeRemove(MakeClusterId(1))),
+  });
+  EXPECT_FALSE(surface.update);
 }
 
 }  // namespace

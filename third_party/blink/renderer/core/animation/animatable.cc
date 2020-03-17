@@ -30,7 +30,7 @@ namespace {
 // the |element.animate| API is used to animate a CSS property which is blocked
 // by the feature policy 'layout-animations'.
 void ReportFeaturePolicyViolationsIfNecessary(
-    const Document& document,
+    const ExecutionContext& context,
     const KeyframeEffectModelBase& effect) {
   for (const auto& property_handle : effect.Properties()) {
     if (!property_handle.IsCSSProperty())
@@ -38,8 +38,7 @@ void ReportFeaturePolicyViolationsIfNecessary(
     const auto& css_property = property_handle.GetCSSProperty();
     if (LayoutAnimationsPolicy::AffectedCSSProperties().Contains(
             &css_property)) {
-      LayoutAnimationsPolicy::ReportViolation(css_property,
-                                              *document.ToExecutionContext());
+      LayoutAnimationsPolicy::ReportViolation(css_property, context);
     }
   }
 }
@@ -69,7 +68,7 @@ Animation* Animatable::animate(
   if (exception_state.HadException())
     return nullptr;
 
-  ReportFeaturePolicyViolationsIfNecessary(element->GetDocument(),
+  ReportFeaturePolicyViolationsIfNecessary(*element->GetExecutionContext(),
                                            *effect->Model());
   Animation* animation = element->GetDocument().Timeline().Play(effect);
   if (options.IsKeyframeAnimationOptions())
@@ -86,7 +85,7 @@ Animation* Animatable::animate(ScriptState* script_state,
   if (exception_state.HadException())
     return nullptr;
 
-  ReportFeaturePolicyViolationsIfNecessary(element->GetDocument(),
+  ReportFeaturePolicyViolationsIfNecessary(*element->GetExecutionContext(),
                                            *effect->Model());
   return element->GetDocument().Timeline().Play(effect);
 }

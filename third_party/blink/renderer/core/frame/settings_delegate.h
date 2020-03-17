@@ -73,6 +73,7 @@ class CORE_EXPORT SettingsDelegate {
     kSpatialNavigationChange,
     kUniversalAccessChange,
     kVisionDeficiencyChange,
+    kForceDarkChange,
   };
 
   virtual void SettingsChanged(ChangeType) = 0;

@@ -108,7 +108,7 @@ CSSStyleSheet* CSSStyleSheet::Create(Document& document,
   scoped_refptr<MediaQuerySet> media_query_set;
   if (options->media().IsString()) {
     media_query_set = MediaQuerySet::Create(options->media().GetAsString(),
-                                            document.ToExecutionContext());
+                                            document.GetExecutionContext());
   } else {
     media_query_set = options->media().GetAsMediaList()->Queries()->Copy();
   }

@@ -24,10 +24,6 @@ namespace feed {
 // An in-memory stream model.
 class StreamModel {
  public:
-  using ContentId = feedwire::ContentId;
-  using ContentRevision = stream_model::ContentRevision;
-  using EphemeralChangeId = stream_model::EphemeralChangeId;
-
   // Information about an update to the model.
   struct UiUpdate {
     struct SharedStateInfo {
@@ -49,15 +45,18 @@ class StreamModel {
 
   class Observer {
    public:
+    virtual ~Observer() = default;
     // Called when the UI model changes.
-    virtual void OnUiUpdate(const UiUpdate&) = 0;
+    virtual void OnUiUpdate(const UiUpdate& update) = 0;
   };
 
-  explicit StreamModel(Observer* observer);
+  explicit StreamModel();
   ~StreamModel();
 
   StreamModel(const StreamModel& src) = delete;
   StreamModel& operator=(const StreamModel&) = delete;
+
+  void SetObserver(Observer* observer);
 
   // Data access.
 
@@ -86,7 +85,7 @@ class StreamModel {
 
   void UpdateFlattenedTree();
 
-  Observer* observer_;  // Unowned.
+  Observer* observer_ = nullptr;  // Unowned.
 
   stream_model::ContentIdMap id_map_;
   stream_model::FeatureTree base_feature_tree_{&id_map_};

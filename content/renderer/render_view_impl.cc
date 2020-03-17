@@ -1709,6 +1709,7 @@ void RenderViewImpl::ApplyPageVisibilityState(
 void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {
   webkit_preferences_ = prefs;
   ApplyWebPreferences(webkit_preferences_, GetWebView());
+  ApplyCommandLineToSettings(GetWebView()->GetSettings());
 }
 
 void RenderViewImpl::OnSetRendererPrefs(

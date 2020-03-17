@@ -34,12 +34,15 @@ class CookieControlsBridge : public CookieControlsView {
 
   // CookieControlsView:
   void OnStatusChanged(CookieControlsStatus status,
+                       CookieControlsEnforcement enforcement,
                        int blocked_cookies) override;
   void OnBlockedCookiesCountChanged(int blocked_cookies) override;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> jobject_;
   CookieControlsStatus status_ = CookieControlsStatus::kUninitialized;
+  CookieControlsEnforcement enforcement_ =
+      CookieControlsEnforcement::kNoEnforcement;
   base::Optional<int> blocked_cookies_;
   std::unique_ptr<CookieControlsController> controller_;
   ScopedObserver<CookieControlsController, CookieControlsView> observer_{this};

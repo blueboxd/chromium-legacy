@@ -137,7 +137,7 @@ class AppShimManager : public AppShimHostBootstrap::Client,
   // non-null except for tests.
   static AppShimManager* Get();
 
-  AppShimManager();
+  explicit AppShimManager(std::unique_ptr<Delegate> delegate);
   ~AppShimManager() override;
 
   // Get the host corresponding to a profile and app id, or null if there is
@@ -198,7 +198,6 @@ class AppShimManager : public AppShimHostBootstrap::Client,
   virtual bool IsAcceptablyCodeSigned(pid_t pid) const;
 
   // Exposed for testing.
-  void set_delegate(Delegate* delegate);
   content::NotificationRegistrar& registrar() { return registrar_; }
 
   // Called when profile menu items may have changed. Rebuilds the profile

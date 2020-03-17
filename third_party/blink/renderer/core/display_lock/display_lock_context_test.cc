@@ -141,6 +141,10 @@ class DisplayLockContextTest : public testing::Test,
       UpdateAllLifecyclePhasesForTest();
   }
 
+  void UnlockImmediate(DisplayLockContext* context) {
+    context->RequestUnlock();
+  }
+
   bool GraphicsLayerNeedsCollection(DisplayLockContext* context) const {
     return context->needs_graphics_layer_collection_;
   }
@@ -216,7 +220,7 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
       MakeRGB(255, 0, 0));
   // Manually commit the lock so that we can verify which dirty bits get
   // propagated.
-  element->GetDisplayLockContext()->RequestUnlock();
+  UnlockImmediate(element->GetDisplayLockContext());
   element->setAttribute(html_names::kStyleAttr, "color: red;");
 
   auto* child = GetDocument().getElementById("child");
@@ -246,7 +250,7 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
       child->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()),
       MakeRGB(0, 0, 255));
 
-  child->GetDisplayLockContext()->RequestUnlock();
+  UnlockImmediate(child->GetDisplayLockContext());
   child->setAttribute(html_names::kStyleAttr, "color: blue;");
   EXPECT_TRUE(GetDocument().body()->ChildNeedsStyleRecalc());
   EXPECT_FALSE(element->NeedsStyleRecalc());
@@ -710,7 +714,7 @@ TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChange) {
 
   // Manually start commit, so that we can verify which dirty bits get
   // propagated.
-  element->GetDisplayLockContext()->RequestUnlock();
+  UnlockImmediate(element->GetDisplayLockContext());
   EXPECT_TRUE(element->ChildNeedsStyleRecalc());
   EXPECT_FALSE(element->NeedsReattachLayoutTree());
   EXPECT_FALSE(element->ChildNeedsReattachLayoutTree());
@@ -1304,7 +1308,7 @@ TEST_F(DisplayLockContextTest, AncestorAllowedTouchAction) {
   // Manually commit the lock so that we can verify which dirty bits get
   // propagated.
   CommitElement(*locked_element, false);
-  locked_element->GetDisplayLockContext()->RequestUnlock();
+  UnlockImmediate(locked_element->GetDisplayLockContext());
 
   EXPECT_FALSE(ancestor_object->EffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(handler_object->EffectiveAllowedTouchActionChanged());
@@ -1448,7 +1452,7 @@ TEST_F(DisplayLockContextTest, DescendantAllowedTouchAction) {
   // Manually commit the lock so that we can verify which dirty bits get
   // propagated.
   CommitElement(*locked_element, false);
-  locked_element->GetDisplayLockContext()->RequestUnlock();
+  UnlockImmediate(locked_element->GetDisplayLockContext());
 
   EXPECT_FALSE(ancestor_object->EffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(descendant_object->EffectiveAllowedTouchActionChanged());
@@ -1602,7 +1606,7 @@ TEST_F(DisplayLockContextTest, DescendantNeedsPaintPropertyUpdateBlocked) {
   // Manually commit the lock so that we can verify which dirty bits get
   // propagated.
   CommitElement(*locked_element, false);
-  locked_element->GetDisplayLockContext()->RequestUnlock();
+  UnlockImmediate(locked_element->GetDisplayLockContext());
 
   EXPECT_FALSE(ancestor_object->NeedsPaintPropertyUpdate());
   EXPECT_FALSE(descendant_object->NeedsPaintPropertyUpdate());
@@ -1640,6 +1644,7 @@ class DisplayLockContextRenderingTest : public RenderingTest,
   bool IsActivated(DisplayLockContext* context) const {
     return context->IsActivated();
   }
+  void LockImmediate(DisplayLockContext* context) { context->RequestLock(0u); }
 };
 
 TEST_F(DisplayLockContextRenderingTest, FrameDocumentRemovedWhileAcquire) {
@@ -1658,7 +1663,7 @@ TEST_F(DisplayLockContextRenderingTest, FrameDocumentRemovedWhileAcquire) {
   auto* target = ChildDocument().getElementById("target");
   GetDocument().getElementById("frame")->remove();
 
-  target->EnsureDisplayLockContext().RequestLock(0);
+  LockImmediate(&target->EnsureDisplayLockContext());
 }
 
 TEST_F(DisplayLockContextRenderingTest,
@@ -1793,7 +1798,7 @@ TEST_F(DisplayLockContextRenderingTest,
   EXPECT_TRUE(unrelated_element->GetLayoutObject()->NeedsLayout());
   EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
   EXPECT_TRUE(inner_element->GetLayoutObject()->NeedsLayout());
-  EXPECT_TRUE(inner_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
 
   // Clear the layout.
   UpdateAllLifecyclePhasesForTest();
@@ -1927,7 +1932,7 @@ TEST_F(DisplayLockContextRenderingTest, NestedLockDoesHideWhenItIsOffscreen) {
   EXPECT_TRUE(unrelated_element->GetLayoutObject()->NeedsLayout());
   EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
   EXPECT_TRUE(inner_element->GetLayoutObject()->NeedsLayout());
-  EXPECT_TRUE(inner_element->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
 
   // Clear the layout.
   UpdateAllLifecyclePhasesForTest();

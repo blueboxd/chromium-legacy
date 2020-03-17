@@ -448,11 +448,9 @@ void NGBoxFragmentPainter::PaintObject(
       (!physical_box_fragment.Children().empty() ||
        physical_box_fragment.HasItems() || inline_box_cursor_) &&
       !paint_info.DescendantPaintingBlocked()) {
-    if (RuntimeEnabledFeatures::LayoutNGFragmentPaintEnabled()) {
-      if (UNLIKELY(paint_phase == PaintPhase::kForeground &&
-                   box_fragment_.Style().HasColumnRule()))
-        PaintColumnRules(paint_info, paint_offset);
-    }
+    if (UNLIKELY(paint_phase == PaintPhase::kForeground &&
+                 box_fragment_.Style().HasColumnRule()))
+      PaintColumnRules(paint_info, paint_offset);
 
     if (paint_phase != PaintPhase::kFloat) {
       if (UNLIKELY(inline_box_cursor_)) {

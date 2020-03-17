@@ -165,14 +165,60 @@ cr.define('settings_passwords_check', function() {
           .then(() => passwordManager.whenCalled('stopBulkPasswordCheck'));
     });
 
-    // Test verifies that 'Try again' is not visible if users are out of quota.
-    test('testNoRetryAfterHittingQuota', function() {
+    // Test verifies that sync users see only the link to account checkup and no
+    // button to start the local leak check once they run out of quota.
+    test('testOnlyCheckupLinkAfterHittingQuotaWhenSyncing', function() {
       passwordManager.data.checkStatus =
           autofill_test_util.makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.QUOTA_LIMIT);
+
       const section = createCheckPasswordSection();
+      cr.webUIListenerCallback(
+          'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
+      sync_test_util.simulateSyncStatus({signedIn: true});
+
       return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        expectTrue(isElementVisible(section.$.linkToGoogleAccount));
         expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
+      });
+    });
+
+    // Test verifies that non-sync users see neither the link to the account
+    // checkup nor a retry button once they run out of quota.
+    test('testNoCheckupLinkAfterHittingQuotaWhenSignedOut', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              PasswordCheckState.QUOTA_LIMIT);
+
+      const section = createCheckPasswordSection();
+      cr.webUIListenerCallback(
+          'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
+      sync_test_util.simulateSyncStatus({signedIn: false});
+
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        expectFalse(isElementVisible(section.$.linkToGoogleAccount));
+        expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
+      });
+    });
+
+    // Test verifies that custom passphrase users see neither the link to the
+    // account checkup nor a retry button once they run out of quota.
+    test('testNoCheckupLinkAfterHittingQuotaForEncryption', function() {
+      passwordManager.data.checkStatus =
+          autofill_test_util.makePasswordCheckStatus(
+              PasswordCheckState.QUOTA_LIMIT);
+
+      const section = createCheckPasswordSection();
+      const syncPrefs = sync_test_util.getSyncAllPrefs();
+      syncPrefs.encryptAllData = true;
+      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
+      sync_test_util.simulateSyncStatus({signedIn: true});
+
+      return passwordManager.whenCalled('getPasswordCheckStatus').then(() => {
+        Polymer.dom.flush();
+        expectFalse(isElementVisible(section.$.linkToGoogleAccount));
+        assertFalse(isElementVisible(section.$.controlPasswordCheckButton));
       });
     });
 

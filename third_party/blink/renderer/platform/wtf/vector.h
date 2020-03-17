@@ -204,14 +204,40 @@ struct VectorMover<true, T, Allocator> {
         Traits::NotifyNewElements(dst, src_end - src);
     }
   }
+
+  template <bool = Allocator::kIsGarbageCollected>
+  static void MoveOverlappingImpl(const T* src, const T* src_end, T* dst);
+  template <>
+  static void MoveOverlappingImpl<false>(const T* src,
+                                         const T* src_end,
+                                         T* dst) {
+    memmove(dst, src,
+            reinterpret_cast<const char*>(src_end) -
+                reinterpret_cast<const char*>(src));
+  }
+  template <>
+  static void MoveOverlappingImpl<true>(const T* src,
+                                        const T* src_end,
+                                        T* dst) {
+    if (src == dst)
+      return;
+    if (dst < src) {
+      for (; src < src_end; ++src, ++dst)
+        AtomicWriteMemcpy<sizeof(T)>(dst, src);
+    } else {
+      --src_end;
+      T* dst_end = dst + (src_end - src);
+      for (; src_end >= src; --src_end, --dst_end)
+        AtomicWriteMemcpy<sizeof(T)>(dst_end, src_end);
+    }
+  }
+
   static void MoveOverlapping(const T* src,
                               const T* src_end,
                               T* dst,
                               bool has_inline_buffer) {
     if (LIKELY(dst && src)) {
-      memmove(dst, src,
-              reinterpret_cast<const char*>(src_end) -
-                  reinterpret_cast<const char*>(src));
+      MoveOverlappingImpl(src, src_end, dst);
       if (has_inline_buffer)
         Traits::NotifyNewElements(dst, src_end - src);
     }

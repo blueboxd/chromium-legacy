@@ -15,6 +15,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -23,6 +24,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/audio_devices_pref_handler_stub.h"
+#include "chromeos/constants/chromeos_features.h"
 
 using std::max;
 using std::min;
@@ -980,6 +982,8 @@ void CrasAudioHandler::InitializeAudioAfterCrasServiceAvailable(
   GetSystemAecGroupId();
   GetNodes();
   GetNumberOfOutputStreams();
+  CrasAudioClient::Get()->SetNextHandsfreeProfile(base::FeatureList::IsEnabled(
+      chromeos::features::kBluetoothNextHandsfreeProfile));
 }
 
 void CrasAudioHandler::ApplyAudioPolicy() {

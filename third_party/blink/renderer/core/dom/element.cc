@@ -2922,9 +2922,6 @@ void Element::AttachLayoutTree(AttachContext& context) {
   } else {
     context.previous_in_flow = children_context.previous_in_flow;
   }
-
-  if (auto* display_lock_context = GetDisplayLockContext())
-    display_lock_context->DidAttachLayoutTree();
 }
 
 void Element::DetachLayoutTree(bool performing_reattach) {

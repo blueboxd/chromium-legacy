@@ -33,7 +33,6 @@ class GURL;
 
 namespace base {
 class FilePath;
-class Time;
 }  // namespace base
 
 namespace storage {
@@ -117,10 +116,6 @@ class CONTENT_EXPORT FileSystemManagerImpl
   void TruncateSync(const GURL& file_path,
                     int64_t length,
                     TruncateSyncCallback callback) override;
-  void TouchFile(const GURL& path,
-                 base::Time last_access_time,
-                 base::Time last_modified_time,
-                 TouchFileCallback callback) override;
   void CreateSnapshotFile(const GURL& file_path,
                           CreateSnapshotFileCallback callback) override;
   void GetPlatformPath(const GURL& file_path,

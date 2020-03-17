@@ -27,7 +27,6 @@
 #include "chrome/browser/metrics/bluetooth_available_utility.h"
 #include "chrome/browser/metrics/process_memory_metrics_emitter.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -534,10 +533,6 @@ void RecordIsPinnedToTaskbarHistogram() {
       base::Bind(&OnIsPinnedToTaskbarResult));
 }
 
-void RecordVrStartupHistograms() {
-  vr::XRRuntimeManager::RecordVrStartupHistograms();
-}
-
 class ScHandleTraits {
  public:
   typedef SC_HANDLE Handle;
@@ -656,12 +651,6 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
 
   background_task_runner->PostDelayedTask(
       FROM_HERE, base::BindOnce(&RecordIsPinnedToTaskbarHistogram),
-      base::TimeDelta::FromSeconds(45));
-
-  // TODO(billorr): This should eventually be done on all platforms that support
-  // VR.
-  background_task_runner->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&RecordVrStartupHistograms),
       base::TimeDelta::FromSeconds(45));
 #endif  // defined(OS_WIN)
 

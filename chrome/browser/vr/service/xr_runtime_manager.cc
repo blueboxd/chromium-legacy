@@ -24,10 +24,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 
-#if BUILDFLAG(ENABLE_OPENVR)
-#include "device/vr/openvr/openvr_device.h"
-#endif
-
 #if defined(OS_ANDROID)
 #include "device/vr/android/gvr/gvr_device_provider.h"
 
@@ -118,12 +114,6 @@ bool XRRuntimeManager::HasInstance() {
 
 XRRuntimeManager* XRRuntimeManager::GetInstanceIfCreated() {
   return g_xr_runtime_manager;
-}
-
-void XRRuntimeManager::RecordVrStartupHistograms() {
-#if BUILDFLAG(ENABLE_OPENVR)
-  device::OpenVRDevice::RecordRuntimeAvailability();
-#endif
 }
 
 void XRRuntimeManager::AddObserver(XRRuntimeManagerObserver* observer) {

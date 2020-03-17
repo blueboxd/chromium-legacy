@@ -68,6 +68,10 @@ jumbo_component("native_theme") {
     "//base/third_party/dynamic_annotations",
     "//cc/paint",
     "//ui/base",
+    "//ui/color",
+
+    # http://crbug.com/730719 - No !is_android to work around gn --check.
+    "//ui/color:mixers",
     "//ui/display",
     "//ui/gfx",
     "//ui/gfx/geometry",

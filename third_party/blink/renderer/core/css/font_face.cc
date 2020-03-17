@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
@@ -76,9 +77,9 @@ const CSSValue* ParseCSSValue(const ExecutionContext* context,
                               const String& value,
                               AtRuleDescriptorID descriptor_id) {
   CSSParserContext* parser_context =
-      context->IsDocument()
-          ? MakeGarbageCollected<CSSParserContext>(*Document::From(context))
-          : MakeGarbageCollected<CSSParserContext>(*context);
+      context->IsDocument() ? MakeGarbageCollected<CSSParserContext>(
+                                  *To<LocalDOMWindow>(context)->document())
+                            : MakeGarbageCollected<CSSParserContext>(*context);
   return AtRuleDescriptorParser::ParseFontFaceDescriptor(descriptor_id, value,
                                                          *parser_context);
 }
@@ -172,7 +173,7 @@ FontFace* FontFace::Create(Document* document,
     return nullptr;
 
   FontFace* font_face =
-      MakeGarbageCollected<FontFace>(document->ToExecutionContext());
+      MakeGarbageCollected<FontFace>(document->GetExecutionContext());
 
   if (font_face->SetFamilyValue(*family) &&
       font_face->SetPropertyFromStyle(properties,
@@ -191,7 +192,7 @@ FontFace* FontFace::Create(Document* document,
                                       AtRuleDescriptorID::FontDisplay) &&
       font_face->GetFontSelectionCapabilities().IsValid() &&
       !font_face->family().IsEmpty()) {
-    font_face->InitCSSFontFace(document->ToExecutionContext(), *src);
+    font_face->InitCSSFontFace(document->GetExecutionContext(), *src);
     return font_face;
   }
   return nullptr;
@@ -685,8 +686,9 @@ bool ContextAllowsDownload(ExecutionContext* context) {
   if (!context) {
     return false;
   }
-  if (const Document* document = Document::DynamicFrom(context)) {
-    const Settings* settings = document->GetSettings();
+  if (const auto* window = DynamicTo<LocalDOMWindow>(context)) {
+    const Settings* settings =
+        window->GetFrame() ? window->GetFrame()->GetSettings() : nullptr;
     return settings && settings->GetDownloadableBinaryFontsEnabled();
   }
   // TODO(fserb): ideally, we would like to have the settings value available
@@ -710,8 +712,8 @@ void FontFace::InitCSSFontFace(ExecutionContext* context, const CSSValue& src) {
     const CSSFontFaceSrcValue& item = To<CSSFontFaceSrcValue>(src_list.Item(i));
 
     FontSelector* font_selector = nullptr;
-    if (auto* document = Document::DynamicFrom(context)) {
-      font_selector = document->GetStyleEngine().GetFontSelector();
+    if (auto* window = DynamicTo<LocalDOMWindow>(context)) {
+      font_selector = window->document()->GetStyleEngine().GetFontSelector();
     } else if (auto* scope = DynamicTo<WorkerGlobalScope>(context)) {
       font_selector = scope->GetFontSelector();
     } else {

@@ -68,6 +68,11 @@ void FakeAssistantManagerServiceImpl::RemoveStateObserver(
   state_observers_.RemoveObserver(observer);
 }
 
+void FakeAssistantManagerServiceImpl::UpdateInternalMediaPlayerStatus(
+    MediaSessionAction action) {
+  action_ = action;
+}
+
 void FakeAssistantManagerServiceImpl::StartEditReminderInteraction(
     const std::string& client_id) {}
 

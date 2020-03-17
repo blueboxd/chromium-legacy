@@ -89,6 +89,7 @@ public final class TabImpl extends ITab.Stub {
     private FindResultBar mFindResultBar;
     // See usage note in {@link #onFindResultAvailable}.
     boolean mWaitingForMatchRects;
+    private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
 
     private static class InternalAccessDelegateImpl
             implements ViewEventSink.InternalAccessDelegate {
@@ -163,6 +164,8 @@ public final class TabImpl extends ITab.Stub {
         }
         mConstraintsUpdatedCallback = (constraints) -> onBrowserControlsStateUpdated(constraints);
         mBrowserControlsVisibility.addObserver(mConstraintsUpdatedCallback);
+
+        mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl(this);
     }
 
     public ProfileImpl getProfile() {
@@ -499,13 +502,6 @@ public final class TabImpl extends ITab.Stub {
             mFindResultBar.setMatchRects(
                     matchRects.version, matchRects.rects, matchRects.activeRect);
         }
-    }
-
-    @CalledByNative
-    private boolean shouldOverrideUrlLoading(
-            String url, boolean hasUserGesture, boolean isRedirect, boolean isMainFrame) {
-        return ExternalNavigationHandler.shouldOverrideUrlLoading(
-                this, url, hasUserGesture, isRedirect, isMainFrame);
     }
 
     public void destroy() {

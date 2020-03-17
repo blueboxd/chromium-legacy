@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cookie_list_item.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cookie_store_get_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -187,9 +188,14 @@ void CookieStoreManager::Trace(Visitor* visitor) {
 
 void CookieStoreManager::OnSubscribeResult(ScriptPromiseResolver* resolver,
                                            bool backend_success) {
+  ScriptState* script_state = resolver->GetScriptState();
+  if (!script_state->ContextIsValid())
+    return;
+  ScriptState::Scope scope(script_state);
+
   if (!backend_success) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kUnknownError,
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kUnknownError,
         "An unknown error occured while subscribing to cookie changes."));
     return;
   }
@@ -200,10 +206,15 @@ void CookieStoreManager::OnGetSubscriptionsResult(
     ScriptPromiseResolver* resolver,
     Vector<mojom::blink::CookieChangeSubscriptionPtr> backend_result,
     bool backend_success) {
+  ScriptState* script_state = resolver->GetScriptState();
+  if (!script_state->ContextIsValid())
+    return;
+  ScriptState::Scope scope(script_state);
+
   if (!backend_success) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kUnknownError,
-        "An unknown error occured while reading cookie change subscriptions."));
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kUnknownError,
+        "An unknown error occured while subscribing to cookie changes."));
     return;
   }
 

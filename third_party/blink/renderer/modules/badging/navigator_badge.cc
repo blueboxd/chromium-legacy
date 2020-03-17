@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/badging/navigator_badge.h"
 
+#include "build/build_config.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -82,13 +83,17 @@ ScriptPromise NavigatorBadge::SetAppBadgeHelper(
   if (badge_value->is_number() && badge_value->get_number() == 0)
     return ClearAppBadgeHelper(script_state);
 
+#if !defined(OS_ANDROID)
   From(script_state).badge_service()->SetBadge(std::move(badge_value));
+#endif
   return ScriptPromise::CastUndefined(script_state);
 }
 
 // static
 ScriptPromise NavigatorBadge::ClearAppBadgeHelper(ScriptState* script_state) {
+#if !defined(OS_ANDROID)
   From(script_state).badge_service()->ClearBadge();
+#endif
   return ScriptPromise::CastUndefined(script_state);
 }
 

@@ -25,7 +25,7 @@ class ComputedStylePropertyMapTest : public PageTestBase {
 TEST_F(ComputedStylePropertyMapTest, TransformMatrixZoom) {
   ComputedStylePropertyMap* map =
       SetBodyStyle("transform:matrix(1, 0, 0, 1, 100, 100);zoom:2");
-  CSSStyleValue* style_value = map->get(GetDocument().ToExecutionContext(),
+  CSSStyleValue* style_value = map->get(GetDocument().GetExecutionContext(),
                                         "transform", ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(style_value);
   EXPECT_EQ("matrix(1, 0, 0, 1, 100, 100)", style_value->toString());
@@ -35,7 +35,7 @@ TEST_F(ComputedStylePropertyMapTest, TransformMatrix3DZoom) {
   ComputedStylePropertyMap* map = SetBodyStyle(
       "transform:matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 100, 100, 100, "
       "1);zoom:2");
-  CSSStyleValue* style_value = map->get(GetDocument().ToExecutionContext(),
+  CSSStyleValue* style_value = map->get(GetDocument().GetExecutionContext(),
                                         "transform", ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(style_value);
   EXPECT_EQ("matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 100, 100, 100, 1)",
@@ -45,7 +45,7 @@ TEST_F(ComputedStylePropertyMapTest, TransformMatrix3DZoom) {
 TEST_F(ComputedStylePropertyMapTest, TransformPerspectiveZoom) {
   ComputedStylePropertyMap* map =
       SetBodyStyle("transform:perspective(100px);zoom:2");
-  CSSStyleValue* style_value = map->get(GetDocument().ToExecutionContext(),
+  CSSStyleValue* style_value = map->get(GetDocument().GetExecutionContext(),
                                         "transform", ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(style_value);
   EXPECT_EQ("perspective(100px)", style_value->toString());

@@ -1748,7 +1748,8 @@ public class ChromeTabbedActivity
 
         final Tab currentTab = getActivityTab();
 
-        if (PaintPreviewTabHelper.get(currentTab).removePaintPreviewDemoIfShowing()) {
+        if (currentTab != null
+                && PaintPreviewTabHelper.get(currentTab).removePaintPreviewDemoIfShowing()) {
             return true;
         }
 

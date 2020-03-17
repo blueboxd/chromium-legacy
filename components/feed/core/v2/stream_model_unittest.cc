@@ -5,86 +5,13 @@
 #include "components/feed/core/v2/stream_model.h"
 
 #include "base/optional.h"
-#include "base/strings/string_number_conversions.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
+#include "components/feed/core/v2/test/stream_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feed {
 namespace {
-using feedwire::ContentId;
-using EphemeralChangeId = StreamModel::EphemeralChangeId;
-using ContentRevision = StreamModel::ContentRevision;
-
-ContentId MakeContentId(const std::string& domain, int id_number) {
-  ContentId id;
-  id.set_content_domain(domain);
-  id.set_id(id_number);
-  return id;
-}
-
-ContentId MakeClusterId(int id_number) {
-  return MakeContentId("cluster", id_number);
-}
-
-ContentId MakeContentContentId(int id_number) {
-  return MakeContentId("content", id_number);
-}
-ContentId MakeRootId(int id_number = 0) {
-  return MakeContentId("stream", id_number);
-}
-
-feedstore::StreamStructure MakeStream(int id_number = 0) {
-  feedstore::StreamStructure result;
-  result.set_type(feedstore::StreamStructure::STREAM);
-  result.set_operation(feedstore::StreamStructure::UPDATE_OR_APPEND);
-  *result.mutable_content_id() = MakeRootId(id_number);
-  return result;
-}
-
-feedstore::StreamStructure MakeCluster(int id_number, ContentId parent) {
-  feedstore::StreamStructure result;
-  result.set_type(feedstore::StreamStructure::CLUSTER);
-  result.set_operation(feedstore::StreamStructure::UPDATE_OR_APPEND);
-  *result.mutable_content_id() = MakeClusterId(id_number);
-  *result.mutable_parent_id() = parent;
-  return result;
-}
-
-feedstore::StreamStructure MakeContentNode(int id_number, ContentId parent) {
-  feedstore::StreamStructure result;
-  result.set_type(feedstore::StreamStructure::CONTENT);
-  result.set_operation(feedstore::StreamStructure::UPDATE_OR_APPEND);
-  *result.mutable_content_id() = MakeContentContentId(id_number);
-  *result.mutable_parent_id() = parent;
-  return result;
-}
-
-feedstore::StreamStructure MakeRemove(ContentId id) {
-  feedstore::StreamStructure result;
-  result.set_operation(feedstore::StreamStructure::REMOVE);
-  *result.mutable_content_id() = id;
-  return result;
-}
-
-feedstore::Content MakeContent(int id_number) {
-  feedstore::Content result;
-  *result.mutable_content_id() = MakeContentContentId(id_number);
-  result.set_frame("f:" + base::NumberToString(id_number));
-  return result;
-}
-
-feedstore::DataOperation MakeOperation(feedstore::StreamStructure structure) {
-  feedstore::DataOperation operation;
-  *operation.mutable_structure() = std::move(structure);
-  return operation;
-}
-
-feedstore::DataOperation MakeOperation(feedstore::Content content) {
-  feedstore::DataOperation operation;
-  *operation.mutable_content() = std::move(content);
-  return operation;
-}
 
 std::vector<std::string> GetContentFrames(const StreamModel& model) {
   std::vector<std::string> frames;
@@ -99,20 +26,9 @@ std::vector<std::string> GetContentFrames(const StreamModel& model) {
   return frames;
 }
 
-std::vector<feedstore::DataOperation> MakeTypicalStreamOperations() {
-  return {
-      MakeOperation(MakeStream()),
-      MakeOperation(MakeCluster(0, MakeRootId())),
-      MakeOperation(MakeContentNode(0, MakeClusterId(0))),
-      MakeOperation(MakeContent(0)),
-      MakeOperation(MakeCluster(1, MakeRootId())),
-      MakeOperation(MakeContentNode(1, MakeClusterId(1))),
-      MakeOperation(MakeContent(1)),
-  };
-}
-
 class TestObserver : public StreamModel::Observer {
  public:
+  explicit TestObserver(StreamModel* model) { model->SetObserver(this); }
   void OnUiUpdate(const StreamModel::UiUpdate& update) override {
     update_ = update;
   }
@@ -130,16 +46,16 @@ class TestObserver : public StreamModel::Observer {
 };
 
 TEST(StreamModelTest, ConstructEmptyModel) {
-  TestObserver observer;
-  StreamModel model(&observer);
+  StreamModel model;
+  TestObserver observer(&model);
 
   EXPECT_EQ(0UL, model.GetContentList().size());
 }
 
 // Typical stream (Stream -> Cluster -> Content).
 TEST(StreamModelTest, AddStreamClusterContent) {
-  TestObserver observer;
-  StreamModel model(&observer);
+  StreamModel model;
+  TestObserver observer(&model);
 
   model.ExecuteOperations(MakeTypicalStreamOperations());
 
@@ -148,8 +64,8 @@ TEST(StreamModelTest, AddStreamClusterContent) {
 }
 
 TEST(StreamModelTest, AddContentWithoutRoot) {
-  TestObserver observer;
-  StreamModel model(&observer);
+  StreamModel model;
+  TestObserver observer(&model);
 
   std::vector<feedstore::DataOperation> operations{
       MakeOperation(MakeCluster(0, MakeRootId())),
@@ -164,8 +80,8 @@ TEST(StreamModelTest, AddContentWithoutRoot) {
 
 // Verify Stream -> Content works.
 TEST(StreamModelTest, AddStreamContent) {
-  TestObserver observer;
-  StreamModel model(&observer);
+  StreamModel model;
+  TestObserver observer(&model);
 
   std::vector<feedstore::DataOperation> operations{
       MakeOperation(MakeStream()),
@@ -179,8 +95,8 @@ TEST(StreamModelTest, AddStreamContent) {
 
 TEST(StreamModelTest, AddRootAsChild) {
   // When the root is added as a child, it's no longer considered a root.
-  TestObserver observer;
-  StreamModel model(&observer);
+  StreamModel model;
+  TestObserver observer(&model);
   feedstore::StreamStructure stream_with_parent = MakeStream();
   *stream_with_parent.mutable_parent_id() = MakeContentContentId(0);
   std::vector<feedstore::DataOperation> operations{
@@ -198,8 +114,8 @@ TEST(StreamModelTest, AddRootAsChild) {
 // Changing the STREAM root to CLUSTER means it is no longer eligible to be
 // the root.
 TEST(StreamModelTest, ChangeStreamToCluster) {
-  TestObserver observer;
-  StreamModel model(&observer);
+  StreamModel model;
+  TestObserver observer(&model);
   feedstore::StreamStructure stream_as_cluster = MakeStream();
   stream_as_cluster.set_type(feedstore::StreamStructure::CLUSTER);
 
@@ -216,8 +132,8 @@ TEST(StreamModelTest, ChangeStreamToCluster) {
 }
 
 TEST(StreamModelTest, RemoveCluster) {
-  TestObserver observer;
-  StreamModel model(&observer);
+  StreamModel model;
+  TestObserver observer(&model);
 
   std::vector<feedstore::DataOperation> operations =
       MakeTypicalStreamOperations();
@@ -229,8 +145,8 @@ TEST(StreamModelTest, RemoveCluster) {
 }
 
 TEST(StreamModelTest, RemoveContent) {
-  TestObserver observer;
-  StreamModel model(&observer);
+  StreamModel model;
+  TestObserver observer(&model);
 
   std::vector<feedstore::DataOperation> operations =
       MakeTypicalStreamOperations();
@@ -242,8 +158,8 @@ TEST(StreamModelTest, RemoveContent) {
 }
 
 TEST(StreamModelTest, RemoveRoot) {
-  TestObserver observer;
-  StreamModel model(&observer);
+  StreamModel model;
+  TestObserver observer(&model);
 
   std::vector<feedstore::DataOperation> operations =
       MakeTypicalStreamOperations();
@@ -255,8 +171,8 @@ TEST(StreamModelTest, RemoveRoot) {
 }
 
 TEST(StreamModelTest, RemoveAndAddRoot) {
-  TestObserver observer;
-  StreamModel model(&observer);
+  StreamModel model;
+  TestObserver observer(&model);
 
   std::vector<feedstore::DataOperation> operations =
       MakeTypicalStreamOperations();
@@ -269,8 +185,8 @@ TEST(StreamModelTest, RemoveAndAddRoot) {
 }
 
 TEST(StreamModelTest, SwitchStreams) {
-  TestObserver observer;
-  StreamModel model(&observer);
+  StreamModel model;
+  TestObserver observer(&model);
 
   std::vector<feedstore::DataOperation> operations =
       MakeTypicalStreamOperations();
@@ -297,8 +213,8 @@ TEST(StreamModelTest, SwitchStreams) {
 TEST(StreamModelTest, RemoveAndUpdateCluster) {
   // Remove a cluster and add it back. Adding it back keeps its original
   // placement.
-  TestObserver observer;
-  StreamModel model(&observer);
+  StreamModel model;
+  TestObserver observer(&model);
 
   std::vector<feedstore::DataOperation> operations =
       MakeTypicalStreamOperations();
@@ -312,8 +228,8 @@ TEST(StreamModelTest, RemoveAndUpdateCluster) {
 
 TEST(StreamModelTest, RemoveAndAppendToNewParent) {
   // Attempt to re-parent a node. This is not allowed, the old parent remains.
-  TestObserver observer;
-  StreamModel model(&observer);
+  StreamModel model;
+  TestObserver observer(&model);
 
   std::vector<feedstore::DataOperation> operations =
       MakeTypicalStreamOperations();
@@ -326,8 +242,8 @@ TEST(StreamModelTest, RemoveAndAppendToNewParent) {
 }
 
 TEST(StreamModelTest, EphemeralNewCluster) {
-  TestObserver observer;
-  StreamModel model(&observer);
+  StreamModel model;
+  TestObserver observer(&model);
 
   model.ExecuteOperations(MakeTypicalStreamOperations());
   observer.Clear();
@@ -344,8 +260,8 @@ TEST(StreamModelTest, EphemeralNewCluster) {
 }
 
 TEST(StreamModelTest, CommitEphemeralChange) {
-  TestObserver observer;
-  StreamModel model(&observer);
+  StreamModel model;
+  TestObserver observer(&model);
 
   model.ExecuteOperations(MakeTypicalStreamOperations());
   EphemeralChangeId change_id = model.CreateEphemeralChange({
@@ -364,8 +280,8 @@ TEST(StreamModelTest, CommitEphemeralChange) {
 }
 
 TEST(StreamModelTest, RejectEphemeralChange) {
-  TestObserver observer;
-  StreamModel model(&observer);
+  StreamModel model;
+  TestObserver observer(&model);
 
   model.ExecuteOperations(MakeTypicalStreamOperations());
   EphemeralChangeId change_id = model.CreateEphemeralChange({
@@ -384,8 +300,8 @@ TEST(StreamModelTest, RejectEphemeralChange) {
 }
 
 TEST(StreamModelTest, RejectFirstEphemeralChange) {
-  TestObserver observer;
-  StreamModel model(&observer);
+  StreamModel model;
+  TestObserver observer(&model);
 
   model.ExecuteOperations(MakeTypicalStreamOperations());
   EphemeralChangeId change_id1 = model.CreateEphemeralChange({

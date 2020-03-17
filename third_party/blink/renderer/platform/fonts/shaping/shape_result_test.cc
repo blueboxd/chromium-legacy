@@ -21,7 +21,6 @@ class ShapeResultTest : public testing::Test {
   void SetUp() override {
     font_description.SetComputedSize(12.0);
     font = Font(font_description);
-    font.Update(nullptr);
 
     FontDescription::VariantLigatures ligatures;
     arabic_font = blink::test::CreateTestFont(

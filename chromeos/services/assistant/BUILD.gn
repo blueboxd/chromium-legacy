@@ -164,6 +164,7 @@ source_set("tests") {
   if (enable_cros_libassistant) {
     sources += [
       "assistant_manager_service_impl_unittest.cc",
+      "media_session/assistant_media_session_unittest.cc",
       "platform/audio_input_impl_unittest.cc",
       "platform/audio_output_provider_impl_unittest.cc",
       "platform/network_provider_impl_unittest.cc",

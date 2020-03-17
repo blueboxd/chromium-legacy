@@ -5,7 +5,9 @@
 #include <memory>
 
 #include "base/at_exit.h"
+#include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/i18n/icu_util.h"
 #include "base/memory/ptr_util.h"
@@ -66,11 +68,16 @@ int main(int argc, char** argv) {
 
   base::CommandLine::Init(argc, argv);
 
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
   // Disabling Direct Composition works around the limitation that
   // InProcessContextFactory doesn't work with Direct Composition, causing the
   // window to not render. See http://crbug.com/936249.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisableDirectComposition);
+  command_line->AppendSwitch(switches::kDisableDirectComposition);
+
+  base::FeatureList::InitializeInstance(
+      command_line->GetSwitchValueASCII(switches::kEnableFeatures),
+      command_line->GetSwitchValueASCII(switches::kDisableFeatures));
 
   base::AtExitManager at_exit;
 

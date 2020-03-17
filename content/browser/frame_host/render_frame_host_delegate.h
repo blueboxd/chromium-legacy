@@ -507,9 +507,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void AudioContextPlaybackStopped(RenderFrameHost* host,
                                            int context_id) {}
 
-  virtual void MediaWatchTimeChanged(
-      const content::MediaPlayerWatchTime& watch_time) {}
-
   // Returns the main frame of the inner delegate that is attached to this
   // delegate using |frame_tree_node|. Returns nullptr if no such inner delegate
   // exists.

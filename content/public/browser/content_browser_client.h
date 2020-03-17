@@ -1493,7 +1493,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual std::vector<base::FilePath> GetNetworkContextsParentDirectory();
 
 #if defined(OS_ANDROID)
-  // Only used by Android WebView/WebLayer.
+  // Only used by Android WebView.
   // Returns:
   //   true  - The check was successfully performed without throwing a
   //           Java exception. |*ignore_navigation| is set to the

@@ -56,6 +56,11 @@ const base::Feature kBluetoothPhoneFilter{"BluetoothPhoneFilter",
 const base::Feature kBluetoothKernelSuspendNotifier{
     "BluetoothKernelSuspendNotifier", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, browser will notify Chrome OS audio server to register HFP 1.7
+// to BlueZ, which includes wideband speech feature.
+const base::Feature kBluetoothNextHandsfreeProfile{
+    "BluetoothNextHandsfreeProfile", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable or disables running the Camera App as a System Web App.
 const base::Feature kCameraSystemWebApp{"CameraSystemWebApp",
                                         base::FEATURE_DISABLED_BY_DEFAULT};

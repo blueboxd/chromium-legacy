@@ -80,6 +80,8 @@ ConvertUiUnderlineStyleToUiImeTextSpanUnderlineStyle(
       return ui::mojom::ImeTextSpanUnderlineStyle::kDot;
     case ui::ImeTextSpan::UnderlineStyle::kDash:
       return ui::mojom::ImeTextSpanUnderlineStyle::kDash;
+    case ui::ImeTextSpan::UnderlineStyle::kSquiggle:
+      return ui::mojom::ImeTextSpanUnderlineStyle::kSquiggle;
   }
 
   NOTREACHED();
@@ -98,6 +100,8 @@ ConvertUiImeTextSpanUnderlineStyleToUiUnderlineStyle(
       return ui::ImeTextSpan::UnderlineStyle::kDot;
     case ui::mojom::ImeTextSpanUnderlineStyle::kDash:
       return ui::ImeTextSpan::UnderlineStyle::kDash;
+    case ui::mojom::ImeTextSpanUnderlineStyle::kSquiggle:
+      return ui::ImeTextSpan::UnderlineStyle::kSquiggle;
   }
 
   NOTREACHED();

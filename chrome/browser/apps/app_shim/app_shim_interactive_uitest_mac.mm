@@ -28,6 +28,7 @@
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_listener.h"
 #include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
+#include "chrome/browser/apps/app_shim/extension_app_shim_manager_delegate_mac.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -83,7 +84,9 @@ class AppShimInteractiveTest : public extensions::PlatformAppBrowserTest {
 class WindowedAppShimLaunchObserver : public apps::AppShimManager {
  public:
   WindowedAppShimLaunchObserver(const std::string& app_id)
-      : app_mode_id_(app_id),
+      : AppShimManager(
+            std::make_unique<apps::ExtensionAppShimManagerDelegate>()),
+        app_mode_id_(app_id),
         observed_(false) {
     StartObserving();
   }
@@ -236,10 +239,8 @@ NSString* GetBundleID(const base::FilePath& shim_path) {
 }
 
 bool HasAppShimHost(Profile* profile, const std::string& app_id) {
-  return g_browser_process->platform_part()
-      ->app_shim_listener()
-      ->app_shim_manager()
-      ->FindHost(profile, app_id);
+  return g_browser_process->platform_part()->app_shim_manager()->FindHost(
+      profile, app_id);
 }
 
 base::FilePath GetAppShimPath(Profile* profile,

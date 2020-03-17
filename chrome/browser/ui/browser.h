@@ -622,6 +622,9 @@ class Browser : public TabStripModelObserver,
   bool IsFrameLowPriority(
       const content::WebContents* web_contents,
       const content::RenderFrameHost* render_frame_host) override;
+  void MediaWatchTimeChanged(
+      const content::MediaPlayerWatchTime& watch_time) override;
+  base::WeakPtr<content::WebContentsDelegate> GetDelegateWeakPtr() override;
 
   bool is_type_normal() const { return type_ == TYPE_NORMAL; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }

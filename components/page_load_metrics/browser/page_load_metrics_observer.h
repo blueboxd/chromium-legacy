@@ -31,7 +31,13 @@ namespace page_load_metrics {
 
 // Storage types reported to page load metrics observers on storage
 // accesses.
-enum class StorageType { kLocalStorage, kSessionStorage };
+enum class StorageType {
+  kLocalStorage,
+  kSessionStorage,
+  kFileSystem,
+  kIndexedDb,
+  kCacheStorage
+};
 
 // Information related to failed provisional loads.
 struct FailedProvisionalLoadInfo {

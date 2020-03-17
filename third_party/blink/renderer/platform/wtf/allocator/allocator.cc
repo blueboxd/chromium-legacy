@@ -21,7 +21,7 @@ static_assert(WTF::IsStackAllocatedType<StackAllocatedType>::value,
 
 namespace WTF {
 
-void AtomicMemcpy(void* to, const void* from, size_t bytes) {
+void AtomicReadMemcpy(void* to, const void* from, size_t bytes) {
   size_t* sizet_to = reinterpret_cast<size_t*>(to);
   const size_t* sizet_from = reinterpret_cast<const size_t*>(from);
   for (; bytes > sizeof(size_t);
@@ -32,6 +32,21 @@ void AtomicMemcpy(void* to, const void* from, size_t bytes) {
   const uint8_t* uint8t_from = reinterpret_cast<const uint8_t*>(sizet_from);
   for (; bytes > 0; bytes -= sizeof(uint8_t), ++uint8t_to, ++uint8t_from) {
     *uint8t_to = AsAtomicPtr(uint8t_from)->load(std::memory_order_relaxed);
+  }
+  DCHECK_EQ(0u, bytes);
+}
+
+void AtomicWriteMemcpy(void* to, const void* from, size_t bytes) {
+  size_t* sizet_to = reinterpret_cast<size_t*>(to);
+  const size_t* sizet_from = reinterpret_cast<const size_t*>(from);
+  for (; bytes > sizeof(size_t);
+       bytes -= sizeof(size_t), ++sizet_to, ++sizet_from) {
+    AsAtomicPtr(sizet_to)->store(*sizet_from, std::memory_order_relaxed);
+  }
+  uint8_t* uint8t_to = reinterpret_cast<uint8_t*>(sizet_to);
+  const uint8_t* uint8t_from = reinterpret_cast<const uint8_t*>(sizet_from);
+  for (; bytes > 0; bytes -= sizeof(uint8_t), ++uint8t_to, ++uint8t_from) {
+    AsAtomicPtr(uint8t_to)->store(*uint8t_from, std::memory_order_relaxed);
   }
   DCHECK_EQ(0u, bytes);
 }

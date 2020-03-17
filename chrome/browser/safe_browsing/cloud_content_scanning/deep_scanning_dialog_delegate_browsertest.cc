@@ -100,6 +100,14 @@ FakeBinaryUploadService* FakeBinaryUploadServiceStorage() {
   return &service;
 }
 
+const std::set<std::string>* DocMimeTypes() {
+  static std::set<std::string> set = {
+      "application/msword",
+      // The 50 MB file can result in no mimetype being found.
+      ""};
+  return &set;
+}
+
 const std::set<std::string>* ExeMimeTypes() {
   static std::set<std::string> set = {"application/x-msdownload",
                                       "application/x-ms-dos-executable",
@@ -153,11 +161,6 @@ class MinimalFakeDeepScanningDialogDelegate
 
 constexpr char kDmToken[] = "dm_token";
 
-std::vector<base::FilePath>* CreatedFilePaths() {
-  static std::vector<base::FilePath> paths;
-  return &paths;
-}
-
 }  // namespace
 
 // Tests the behavior of the dialog delegate with minimal overriding of methods.
@@ -194,22 +197,6 @@ class DeepScanningDialogDelegateBrowserTest
   void DestructorCalled(DeepScanningDialogViews* views) override {
     // The test is over once the views are destroyed.
     CallQuitClosure();
-  }
-
-  void CreateFilesForTest(const std::vector<std::string>& paths,
-                          const std::vector<std::string>& contents,
-                          DeepScanningDialogDelegate::Data* data) {
-    ASSERT_EQ(paths.size(), contents.size());
-
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-
-    for (size_t i = 0; i < paths.size(); ++i) {
-      base::FilePath path = temp_dir_.GetPath().AppendASCII(paths[i]);
-      CreatedFilePaths()->emplace_back(path);
-      base::File file(path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
-      file.WriteAtCurrentPos(contents[i].data(), contents[i].size());
-      data->paths.emplace_back(path);
-    }
   }
 
   void ExpectNoReport() {
@@ -501,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(DeepScanningDialogDelegateBrowserTest, Files) {
   // The malware verdict means an event should be reported.
   ExpectDangerousDeepScanningResult(
       /*url*/ "about:blank",
-      /*filename*/ CreatedFilePaths()->at(1).AsUTF8Unsafe(),
+      /*filename*/ created_file_paths()[1].AsUTF8Unsafe(),
       // printf "bad file content" | sha256sum |  tr '[:lower:]' '[:upper:]'
       /*sha*/
       "77AE96C38386429D28E53F5005C46C7B4D8D39BE73D757CE61E0AE65CC1A5A5D",
@@ -682,7 +669,7 @@ IN_PROC_BROWSER_TEST_P(
   // The file should be reported as unscanned.
   ExpectUnscannedFileEvent(
       /*url*/ "about:blank",
-      /*filename*/ CreatedFilePaths()->at(0).AsUTF8Unsafe(),
+      /*filename*/ created_file_paths()[0].AsUTF8Unsafe(),
       // TODO(1061461): Check SHA256 in this test once the bug is fixed.
       /*sha*/ "",
       /*trigger*/ SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
@@ -724,6 +711,99 @@ INSTANTIATE_TEST_SUITE_P(
                     BLOCK_UNSUPPORTED_FILETYPES_DOWNLOADS,
                     BLOCK_UNSUPPORTED_FILETYPES_UPLOADS,
                     BLOCK_UNSUPPORTED_FILETYPES_UPLOADS_AND_DOWNLOADS));
+
+class DeepScanningDialogDelegateBlockLargeFileTransferBrowserTest
+    : public DeepScanningDialogDelegateBrowserTest,
+      public testing::WithParamInterface<BlockLargeFileTransferValues> {
+ public:
+  using DeepScanningDialogDelegateBrowserTest::
+      DeepScanningDialogDelegateBrowserTest;
+
+  BlockLargeFileTransferValues block_large_file_transfer() const {
+    return GetParam();
+  }
+
+  bool expected_result() const {
+    switch (block_large_file_transfer()) {
+      case BLOCK_NONE:
+      case BLOCK_LARGE_DOWNLOADS:
+        return true;
+      case BLOCK_LARGE_UPLOADS:
+      case BLOCK_LARGE_UPLOADS_AND_DOWNLOADS:
+        return false;
+    }
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(
+    DeepScanningDialogDelegateBlockLargeFileTransferBrowserTest,
+    Test) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  // Create the large file.
+  DeepScanningDialogDelegate::Data data;
+  data.do_dlp_scan = true;
+  data.do_malware_scan = true;
+  CreateFilesForTest(
+      {"large.doc"},
+      {std::string(BinaryUploadService::kMaxUploadSizeBytes + 1, 'a')}, &data);
+
+  // Set up delegate and upload service.
+  EnableUploadsScanningAndReporting();
+  SetBlockLargeFileTransferPolicy(block_large_file_transfer());
+
+  DeepScanningDialogDelegate::SetFactoryForTesting(
+      base::BindRepeating(&MinimalFakeDeepScanningDialogDelegate::Create));
+
+  FakeBinaryUploadServiceStorage()->SetAuthorized(true);
+  FakeBinaryUploadServiceStorage()->SetShouldAutomaticallyAuthorize(true);
+
+  // The file should be reported as unscanned.
+  ExpectUnscannedFileEvent(
+      /*url*/ "about:blank",
+      /*filename*/ created_file_paths()[0].AsUTF8Unsafe(),
+      // python3 -c "print('a' * (50 * 1024 * 1024 + 1), end='')" | sha256sum |\
+      // tr '[:lower:]' '[:upper:]'
+      /*sha*/
+      "9EB56DB30C49E131459FE735BA6B9D38327376224EC8D5A1233F43A5B4A25942",
+      /*trigger*/ SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
+      /*reason*/ "fileTooLarge",
+      /*mimetypes*/ DocMimeTypes(),
+      /*size*/ BinaryUploadService::kMaxUploadSizeBytes + 1);
+
+  bool called = false;
+  base::RunLoop run_loop;
+  SetQuitClosure(run_loop.QuitClosure());
+
+  // Start test.
+  DeepScanningDialogDelegate::ShowForWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents(), std::move(data),
+      base::BindLambdaForTesting(
+          [this, &called](const DeepScanningDialogDelegate::Data& data,
+                          const DeepScanningDialogDelegate::Result& result) {
+            ASSERT_TRUE(result.text_results.empty());
+            ASSERT_EQ(result.paths_results.size(), 1u);
+            ASSERT_EQ(result.paths_results[0], expected_result());
+
+            called = true;
+          }),
+      DeepScanAccessPoint::UPLOAD);
+
+  run_loop.Run();
+  EXPECT_TRUE(called);
+
+  // Expect 1 request for authentication needed to report the unscanned file
+  // event.
+  ASSERT_EQ(FakeBinaryUploadServiceStorage()->requests_count(), 1);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    DeepScanningDialogDelegateBlockLargeFileTransferBrowserTest,
+    DeepScanningDialogDelegateBlockLargeFileTransferBrowserTest,
+    testing::Values(BLOCK_NONE,
+                    BLOCK_LARGE_DOWNLOADS,
+                    BLOCK_LARGE_UPLOADS,
+                    BLOCK_LARGE_UPLOADS_AND_DOWNLOADS));
 
 IN_PROC_BROWSER_TEST_F(DeepScanningDialogDelegateBrowserTest, Texts) {
   // Set up delegate and upload service.

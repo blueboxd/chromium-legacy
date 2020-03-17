@@ -64,7 +64,6 @@ class XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
   static void RemoveObserver(XRRuntimeManagerObserver* observer);
 
   static void ExitImmersivePresentation();
-  static void RecordVrStartupHistograms();
 
   // Adds a listener for runtime manager events. XRRuntimeManager does not own
   // this object.

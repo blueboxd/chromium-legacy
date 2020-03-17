@@ -52,6 +52,7 @@ class UnresponsiveDeepScanningDialogDelegate
   }
 
   void UploadFileForDeepScanning(
+      BinaryUploadService::Result result,
       const base::FilePath& path,
       std::unique_ptr<BinaryUploadService::Request> request) override {
     // Do nothing.
@@ -85,6 +86,7 @@ void DeepScanningBrowserTestBase::TearDownOnMainThread() {
       AllowPasswordProtectedFilesValues::ALLOW_UPLOADS_AND_DOWNLOADS);
   SetBlockUnsupportedFileTypesPolicy(
       BlockUnsupportedFiletypesValues::BLOCK_UNSUPPORTED_FILETYPES_NONE);
+  SetBlockLargeFileTransferPolicy(BlockLargeFileTransferValues::BLOCK_NONE);
   SetUnsafeEventsReportingPolicy(false);
 }
 
@@ -116,6 +118,12 @@ void DeepScanningBrowserTestBase::SetBlockUnsupportedFileTypesPolicy(
     BlockUnsupportedFiletypesValues state) {
   g_browser_process->local_state()->SetInteger(
       prefs::kBlockUnsupportedFiletypes, state);
+}
+
+void DeepScanningBrowserTestBase::SetBlockLargeFileTransferPolicy(
+    BlockLargeFileTransferValues state) {
+  g_browser_process->local_state()->SetInteger(prefs::kBlockLargeFileTransfer,
+                                               state);
 }
 
 void DeepScanningBrowserTestBase::SetUnsafeEventsReportingPolicy(bool report) {
@@ -168,6 +176,28 @@ DeepScanningClientResponse DeepScanningBrowserTestBase::StatusCallback(
 bool DeepScanningBrowserTestBase::EncryptionStatusCallback(
     const base::FilePath& path) {
   return false;
+}
+
+void DeepScanningBrowserTestBase::CreateFilesForTest(
+    const std::vector<std::string>& paths,
+    const std::vector<std::string>& contents,
+    DeepScanningDialogDelegate::Data* data) {
+  ASSERT_EQ(paths.size(), contents.size());
+
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+  for (size_t i = 0; i < paths.size(); ++i) {
+    base::FilePath path = temp_dir_.GetPath().AppendASCII(paths[i]);
+    created_file_paths_.emplace_back(path);
+    base::File file(path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    file.WriteAtCurrentPos(contents[i].data(), contents[i].size());
+    data->paths.emplace_back(path);
+  }
+}
+
+const std::vector<base::FilePath>&
+DeepScanningBrowserTestBase::created_file_paths() const {
+  return created_file_paths_;
 }
 
 }  // namespace safe_browsing

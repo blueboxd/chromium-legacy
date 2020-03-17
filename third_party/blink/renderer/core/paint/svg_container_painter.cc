@@ -32,10 +32,8 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
   if (svg_svg_element && svg_svg_element->HasEmptyViewBox())
     return;
 
-  PaintInfo paint_info_before_filtering(paint_info);
-
   if (SVGModelObjectPainter(layout_svg_container_)
-          .CullRectSkipsPainting(paint_info_before_filtering)) {
+          .CullRectSkipsPainting(paint_info)) {
     return;
   }
 
@@ -44,6 +42,7 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
   //   2) Complexity: Difficulty updating clips when ancestor transforms change.
   // This is why we use an infinite cull rect if there is a transform. Non-svg
   // content, does this in PaintLayerPainter::PaintSingleFragment.
+  PaintInfo paint_info_before_filtering(paint_info);
   if (layout_svg_container_.StyleRef().HasTransform()) {
     paint_info_before_filtering.ApplyInfiniteCullRect();
   } else if (const auto* properties =
@@ -59,7 +58,8 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
     base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
     if (layout_svg_container_.IsSVGViewportContainer() &&
         SVGLayoutSupport::IsOverflowHidden(layout_svg_container_)) {
-      const auto* fragment = paint_info.FragmentToPaint(layout_svg_container_);
+      const auto* fragment =
+          paint_info_before_filtering.FragmentToPaint(layout_svg_container_);
       if (!fragment)
         return;
       const auto* properties = fragment->PaintProperties();
@@ -68,9 +68,9 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
       // properties are ready.
       if (properties && properties->OverflowClip()) {
         scoped_paint_chunk_properties.emplace(
-            paint_info.context.GetPaintController(),
+            paint_info_before_filtering.context.GetPaintController(),
             *properties->OverflowClip(), layout_svg_container_,
-            paint_info.DisplayItemTypeForClipping());
+            paint_info_before_filtering.DisplayItemTypeForClipping());
       }
     }
 

@@ -930,22 +930,14 @@ NSString* const kVersionKey = @"KSVersion";
   // the system level so all users can share the data as part of the ticket
   // promotion.
   //
-  // It will also ensure that the Keystone system ticket store is in a usable
-  // state for all users on the system.  Ideally, Keystone's installer or
-  // another part of Keystone would handle this.  The underlying problem is
-  // http://b/2285921, and it causes http://b/2289908, which this workaround
-  // addresses.
-  //
   // This is run synchronously, which isn't optimal, but
   // -[KSRegistration promoteWithParameters:authorization:] is currently
   // synchronous too, and this operation needs to happen before that one.
   //
-  // TODO(mark): Make asynchronous.  That only makes sense if the promotion
-  // operation itself is asynchronous too.  http://b/2290009.  Hopefully,
-  // the Keystone promotion code will just be changed to do what preflight
-  // now does, and then the preflight script can be removed instead.
-  // However, preflight operation (and promotion) should only be asynchronous
-  // if the synchronous parameter is NO.
+  // Hopefully, the Keystone promotion code will just be changed to do what
+  // preflight now does, and then the preflight script can be removed instead.
+  // However, preflight operation (and promotion) should only be asynchronous if
+  // the synchronous parameter is NO.
   NSString* preflightPath =
       [base::mac::FrameworkBundle()
           pathForResource:@"keystone_promote_preflight"

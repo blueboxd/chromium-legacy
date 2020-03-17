@@ -323,9 +323,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // The page that was showing before ShowSearchResults(true) was invoked.
   int page_before_search_ = 0;
 
-  // The page that was showing before ShowEmbeddedAssistantUi(true) was invoked.
-  int page_before_assistant_ = 0;
-
   // Manages the pagination for the launcher pages.
   PaginationModel pagination_model_{this};
 

@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/feature_policy/layout_animations_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
@@ -126,7 +127,7 @@ CSSParserContext::CSSParserContext(
               : false,
           document.GetSecureContextMode(),
           ContentSecurityPolicy::ShouldBypassMainWorld(
-              document.ToExecutionContext())
+              document.GetExecutionContext())
               ? network::mojom::CSPDisposition::DO_NOT_CHECK
               : network::mojom::CSPDisposition::CHECK,
           &document,
@@ -147,7 +148,9 @@ CSSParserContext::CSSParserContext(const ExecutionContext& context)
                        ContentSecurityPolicy::ShouldBypassMainWorld(&context)
                            ? network::mojom::CSPDisposition::DO_NOT_CHECK
                            : network::mojom::CSPDisposition::CHECK,
-                       Document::DynamicFrom(context),
+                       IsA<LocalDOMWindow>(&context)
+                           ? To<LocalDOMWindow>(context).document()
+                           : nullptr,
                        ResourceFetchRestriction::kNone) {}
 
 CSSParserContext::CSSParserContext(
@@ -255,7 +258,7 @@ const Document* CSSParserContext::GetDocument() const {
 // Fuzzers may execution CSS parsing code without a Document being available,
 // thus this method can return null.
 const ExecutionContext* CSSParserContext::GetExecutionContext() const {
-  return (document_.Get()) ? document_.Get()->ToExecutionContext() : nullptr;
+  return (document_.Get()) ? document_.Get()->GetExecutionContext() : nullptr;
 }
 
 void CSSParserContext::ReportLayoutAnimationsViolationIfNeeded(

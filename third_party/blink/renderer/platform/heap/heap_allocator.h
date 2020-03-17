@@ -605,6 +605,8 @@ class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
     static_assert(WTF::IsTraceable<T>::value,
                   "For vectors without traceable elements, use Vector<> "
                   "instead of HeapVector<>.");
+    static_assert(!WTF::IsWeak<T>::value,
+                  "Weak types are not allowed in HeapVector.");
   }
 
  public:
@@ -652,8 +654,7 @@ class HeapDeque : public Deque<T, 0, HeapAllocator> {
   DISALLOW_NEW();
 
   static void CheckType() {
-    static_assert(internal::IsMemberOrWeakMemberType<T>,
-                  "HeapDeque supports only Member and WeakMember.");
+    static_assert(internal::IsMember<T>, "HeapDeque supports only Member.");
     static_assert(std::is_trivially_destructible<HeapDeque>::value,
                   "HeapDeque must be trivially destructible.");
     static_assert(

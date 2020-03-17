@@ -8,6 +8,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
 #include "components/page_info/android/cookie_controls_status.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_contents.h"
@@ -61,7 +62,8 @@ class CookieControlsController {
   };
 
   // Determine the CookieControlsStatus based on |web_contents|.
-  CookieControlsStatus GetStatus(content::WebContents* web_contents);
+  std::pair<CookieControlsStatus, CookieControlsEnforcement> GetStatus(
+      content::WebContents* web_contents);
 
   // Updates the blocked cookie count of |icon_|.
   void PresentBlockedCookieCounter();
@@ -77,6 +79,7 @@ class CookieControlsController {
 
   std::unique_ptr<TabObserver> tab_observer_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
+  scoped_refptr<content_settings::CookieSettings> regular_cookie_settings_;
   PrefChangeRegistrar pref_change_registrar_;
 
   bool should_reload_ = false;

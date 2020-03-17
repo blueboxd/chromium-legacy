@@ -11,9 +11,9 @@
 
 namespace WTF {
 
-// ConstructTraits is used to construct elements in WTF collections. All
-// in-place constructions that may assign Oilpan objects must be dispatched
-// through ConstructAndNotifyElement.
+// ConstructTraits is used to construct elements in WTF collections.
+// All in-place constructions that may assign Oilpan objects must be
+// dispatched through ConstructAndNotifyElement.
 template <typename T, typename Traits, typename Allocator>
 class ConstructTraits {
   STATIC_ONLY(ConstructTraits);

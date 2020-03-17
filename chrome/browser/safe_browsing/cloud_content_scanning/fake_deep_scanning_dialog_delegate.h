@@ -100,6 +100,7 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
   void UploadTextForDeepScanning(
       std::unique_ptr<BinaryUploadService::Request> request) override;
   void UploadFileForDeepScanning(
+      BinaryUploadService::Result result,
       const base::FilePath& path,
       std::unique_ptr<BinaryUploadService::Request> request) override;
 

@@ -241,6 +241,66 @@ class ShelfStateWatcher : public ShelfObserver {
   int state_change_count_ = 0;
 };
 
+// Watches the Hotseat transition animation states.
+class HotseatTransitionAnimationObserver
+    : public HotseatTransitionAnimator::Observer {
+ public:
+  explicit HotseatTransitionAnimationObserver(
+      HotseatTransitionAnimator* hotseat_transition_animator)
+      : hotseat_transition_animator_(hotseat_transition_animator) {
+    hotseat_transition_animator_->AddObserver(this);
+  }
+  ~HotseatTransitionAnimationObserver() override {
+    hotseat_transition_animator_->RemoveObserver(this);
+  }
+
+  // HotseatTransitionAnimtor::Observer:
+  void OnHotseatTransitionAnimationWillStart(HotseatState from_state,
+                                             HotseatState to_start) override {
+    ++observer_counts_.started;
+  }
+  void OnHotseatTransitionAnimationEnded(HotseatState from_state,
+                                         HotseatState to_start) override {
+    ++observer_counts_.ended;
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+  void OnHotseatTransitionAnimationAborted() override {
+    ++observer_counts_.aborted;
+  }
+
+  void Wait() {
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+  }
+
+  void Reset() {
+    if (run_loop_)
+      run_loop_->Quit();
+    observer_counts_ = {0};
+  }
+
+  // Checks that the started and ending/aborting methods have fired the same
+  // amount of times.
+  bool ObserverCountsEqual() const {
+    return observer_counts_.started ==
+           (observer_counts_.ended + observer_counts_.aborted);
+  }
+
+  int AnimationAbortedCalls() const { return observer_counts_.aborted; }
+
+ private:
+  // Struct which keeps track of the counts of the Observer method has fired.
+  // These are used to verify that started calls = ended calls + aborted calls.
+  struct ObserverCounts {
+    int started;
+    int ended;
+    int aborted;
+  } observer_counts_ = {0};
+  std::unique_ptr<base::RunLoop> run_loop_;
+  HotseatTransitionAnimator* hotseat_transition_animator_;
+};
+
 // Used to test the Hotseat, ScrollabeShelf, and DenseShelf features.
 INSTANTIATE_TEST_SUITE_P(
     All,
@@ -703,6 +763,61 @@ TEST_P(HotseatWidgetTest, SwipeUpOnShelfShowsHotseatInSplitView) {
                                      InAppShelfGestures::kSwipeDownToHide, 0);
   histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
                                      InAppShelfGestures::kSwipeUpToShow, 1);
+}
+
+// Tests that HotseatTransitionAimationObserver starting and ending calls have a
+// 1:1 relation. This test verifies that behavior.
+TEST_P(HotseatWidgetTest, ObserverCallsMatch) {
+  ui::ScopedAnimationDurationScaleMode non_zero(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  // Enter tablet mode to show the home launcher. Hotseat state should be
+  // kShownHomeLauncher.
+  TabletModeControllerTestApi().EnterTabletMode();
+  ASSERT_EQ(HotseatState::kShownHomeLauncher,
+            GetShelfLayoutManager()->hotseat_state());
+
+  // Create a window to transition to the in-app shelf. Hotseat state should be
+  // kHidden.
+  HotseatTransitionAnimationObserver observer(
+      GetPrimaryShelf()->shelf_widget()->hotseat_transition_animator());
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 800, 800));
+  observer.Wait();
+  EXPECT_TRUE(observer.ObserverCountsEqual());
+  ASSERT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+
+  observer.Reset();
+  // Go to home launcher again. Hotseat state should be kShownHomeLauncher.
+  ShowShelfAndGoHome();
+  observer.Wait();
+  EXPECT_TRUE(observer.ObserverCountsEqual());
+  ASSERT_EQ(HotseatState::kShownHomeLauncher,
+            GetShelfLayoutManager()->hotseat_state());
+
+  observer.Reset();
+  // Go to overview and cancel immediately. Hotseat state should be
+  // kShownHomeLauncher.
+  StartOverview();
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsInStartAnimation());
+  EXPECT_FALSE(observer.ObserverCountsEqual());
+  // Overview triggers two animations for hotseat state changes, thus one of
+  // them is cancelled.
+  EXPECT_EQ(1, observer.AnimationAbortedCalls());
+  EndOverview();
+  observer.Wait();
+  // We cancelled the StartOverviewAnimation while it was running, so we expect
+  // the total number of aborted calls were 3.
+  EXPECT_EQ(3, observer.AnimationAbortedCalls());
+  EXPECT_TRUE(observer.ObserverCountsEqual());
+  ASSERT_EQ(HotseatState::kShownHomeLauncher,
+            GetShelfLayoutManager()->hotseat_state());
+
+  observer.Reset();
+  // Go to overview. Hotseat state should be kExtended.
+  StartOverview();
+  observer.Wait();
+  EXPECT_TRUE(observer.ObserverCountsEqual());
+  ASSERT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
 }
 
 // Tests that a swipe up on the shelf shows the hotseat while in split view.

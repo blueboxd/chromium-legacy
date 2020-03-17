@@ -30,12 +30,13 @@ namespace {
 class ChromeRequireCTDelegateTest : public ::testing::Test {
  public:
   void SetUp() override {
+    // Use a certificate with a notBefore prior to May 2018, so that CT is not
+    // implicitly required.
     cert_ = net::CreateCertificateChainFromFile(
-        net::GetTestCertsDirectory(), "ok_cert.pem",
+        net::GetTestCertsDirectory(), "expired_cert.pem",
         net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
     ASSERT_TRUE(cert_);
-    hashes_.push_back(net::HashValue(
-        net::X509Certificate::CalculateFingerprint256(cert_->cert_buffer())));
+    hashes_.push_back(net::HashValue(net::SHA256HashValue{0}));
   }
 
  protected:

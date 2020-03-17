@@ -642,12 +642,24 @@ void DeepScanningDialogDelegate::UploadTextForDeepScanning(
 }
 
 void DeepScanningDialogDelegate::UploadFileForDeepScanning(
+    BinaryUploadService::Result result,
     const base::FilePath& path,
     std::unique_ptr<BinaryUploadService::Request> request) {
   DCHECK(
       !data_.do_dlp_scan ||
       (DlpDeepScanningClientRequest::FILE_UPLOAD ==
        request->deep_scanning_request().dlp_scan_request().content_source()));
+
+  // If a non-SUCCESS result was previously obtained, it means the file has some
+  // property (too large, unsupported file type, encrypted, ...) that makes its
+  // upload pointless, so the request should finish early. This is done here
+  // instead of OnGotFileInfo (UploadFileForDeepScanning's only caller) so tests
+  // can override this behavior.
+  if (result != BinaryUploadService::Result::SUCCESS) {
+    request->FinishRequest(result, DeepScanningClientResponse());
+    return;
+  }
+
   BinaryUploadService* upload_service = GetBinaryUploadService();
   if (upload_service)
     upload_service->MaybeUploadForDeepScanning(std::move(request));
@@ -693,7 +705,7 @@ void DeepScanningDialogDelegate::OnGotFileInfo(
   file_info_[index].size = data.size;
 
   PrepareRequest(DlpDeepScanningClientRequest::FILE_UPLOAD, request.get());
-  UploadFileForDeepScanning(data_.paths[index], std::move(request));
+  UploadFileForDeepScanning(result, data_.paths[index], std::move(request));
 }
 
 void DeepScanningDialogDelegate::UpdateFinalResult(

@@ -29,14 +29,6 @@ enum class VrViewerType {
   OPENXR_UNKNOWN = 70,                 // Going through OpenXR APIs
 };
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class XrRuntimeAvailable {
-  NONE = 0,
-  OPENVR = 1,
-  kMaxValue = OPENVR,
-};
-
 void LogViewerType(VrViewerType);  // Implemented in vr_device_base.cc
 
 }  // namespace device

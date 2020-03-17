@@ -31,7 +31,6 @@ static Font ReplacementTextFont() {
   font_description.SetWeight(BoldWeightValue());
   font_description.SetComputedSize(font_description.SpecifiedSize());
   Font font(font_description);
-  font.Update(nullptr);
   return font;
 }
 

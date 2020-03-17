@@ -3,12 +3,15 @@
 // found in the LICENSE file.
 
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include <cstddef>
 
 #include "base/scoped_observer.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/values.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -443,30 +446,52 @@ TEST_F(CookieSettingsTest, ExtensionsThirdParty) {
 }
 
 TEST_F(CookieSettingsTest, ThirdPartyException) {
-  EXPECT_TRUE(cookie_settings_->IsThirdPartyAccessAllowed(kFirstPartySite));
+  EXPECT_TRUE(
+      cookie_settings_->IsThirdPartyAccessAllowed(kFirstPartySite, nullptr));
   EXPECT_TRUE(
       cookie_settings_->IsCookieAccessAllowed(kHttpsSite, kFirstPartySite));
 
   prefs_.SetBoolean(prefs::kBlockThirdPartyCookies, true);
-  EXPECT_FALSE(cookie_settings_->IsThirdPartyAccessAllowed(kFirstPartySite));
+  EXPECT_FALSE(
+      cookie_settings_->IsThirdPartyAccessAllowed(kFirstPartySite, nullptr));
   EXPECT_FALSE(
       cookie_settings_->IsCookieAccessAllowed(kHttpsSite, kFirstPartySite));
 
   cookie_settings_->SetThirdPartyCookieSetting(kFirstPartySite,
                                                CONTENT_SETTING_ALLOW);
-  EXPECT_TRUE(cookie_settings_->IsThirdPartyAccessAllowed(kFirstPartySite));
+  EXPECT_TRUE(
+      cookie_settings_->IsThirdPartyAccessAllowed(kFirstPartySite, nullptr));
   EXPECT_TRUE(
       cookie_settings_->IsCookieAccessAllowed(kHttpsSite, kFirstPartySite));
 
   cookie_settings_->ResetThirdPartyCookieSetting(kFirstPartySite);
-  EXPECT_FALSE(cookie_settings_->IsThirdPartyAccessAllowed(kFirstPartySite));
+  EXPECT_FALSE(
+      cookie_settings_->IsThirdPartyAccessAllowed(kFirstPartySite, nullptr));
   EXPECT_FALSE(
       cookie_settings_->IsCookieAccessAllowed(kHttpsSite, kFirstPartySite));
 
   cookie_settings_->SetCookieSetting(kHttpsSite, CONTENT_SETTING_ALLOW);
-  EXPECT_FALSE(cookie_settings_->IsThirdPartyAccessAllowed(kFirstPartySite));
+  EXPECT_FALSE(
+      cookie_settings_->IsThirdPartyAccessAllowed(kFirstPartySite, nullptr));
   EXPECT_TRUE(
       cookie_settings_->IsCookieAccessAllowed(kHttpsSite, kFirstPartySite));
+}
+
+TEST_F(CookieSettingsTest, ManagedThirdPartyException) {
+  SettingSource source;
+  EXPECT_TRUE(
+      cookie_settings_->IsThirdPartyAccessAllowed(kFirstPartySite, &source));
+  EXPECT_TRUE(
+      cookie_settings_->IsCookieAccessAllowed(kHttpsSite, kFirstPartySite));
+  EXPECT_EQ(source, SettingSource::SETTING_SOURCE_USER);
+
+  prefs_.SetManagedPref(prefs::kManagedDefaultCookiesSetting,
+                        std::make_unique<base::Value>(CONTENT_SETTING_BLOCK));
+  EXPECT_FALSE(
+      cookie_settings_->IsThirdPartyAccessAllowed(kFirstPartySite, &source));
+  EXPECT_FALSE(
+      cookie_settings_->IsCookieAccessAllowed(kHttpsSite, kFirstPartySite));
+  EXPECT_EQ(source, SettingSource::SETTING_SOURCE_POLICY);
 }
 
 TEST_F(CookieSettingsTest, ThirdPartySettingObserver) {

@@ -83,4 +83,22 @@ TEST_F(CompositionMarkerTest, UnderlineStyleDashed) {
   EXPECT_EQ(Color::kTransparent, marker->TextColor());
 }
 
+TEST_F(CompositionMarkerTest, UnderlineStyleSquiggled) {
+  CompositionMarker* marker = MakeGarbageCollected<CompositionMarker>(
+      0, 1, Color::kDarkGray, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSquiggle, Color::kTransparent, Color::kGray);
+  EXPECT_EQ(Color::kDarkGray, marker->UnderlineColor());
+  EXPECT_TRUE(marker->HasThicknessThin());
+  EXPECT_EQ(ImeTextSpanUnderlineStyle::kSquiggle, marker->UnderlineStyle());
+  EXPECT_EQ(Color::kTransparent, marker->TextColor());
+  EXPECT_EQ(Color::kGray, marker->BackgroundColor());
+
+  CompositionMarker* thick_marker = MakeGarbageCollected<CompositionMarker>(
+      0, 1, Color::kDarkGray, ImeTextSpanThickness::kThick,
+      ImeTextSpanUnderlineStyle::kSquiggle, Color::kTransparent, Color::kGray);
+  EXPECT_TRUE(thick_marker->HasThicknessThick());
+  EXPECT_EQ(ImeTextSpanUnderlineStyle::kSquiggle, marker->UnderlineStyle());
+  EXPECT_EQ(Color::kTransparent, marker->TextColor());
+}
+
 }  // namespace blink

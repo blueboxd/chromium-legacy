@@ -2529,6 +2529,11 @@ enum WebFeature {
   kV8ShadowRoot_GetAnimations_Method = 3188,
   kClientHintsUAFullVersion = 3189,
   kSchedulerCurrentTaskSignal = 3190,
+  kThirdPartyFileSystem = 3191,
+  kThirdPartyIndexedDb = 3192,
+  kThirdPartyCacheStorage = 3193,
+  kThirdPartyLocalStorage = 3194,
+  kThirdPartySessionStorage = 3195,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

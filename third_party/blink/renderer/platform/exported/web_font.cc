@@ -29,7 +29,6 @@ class WebFont::Impl final {
 
  public:
   explicit Impl(const WebFontDescription& description) : font_(description) {
-    font_.Update(nullptr);
   }
 
   const Font& GetFont() const { return font_; }

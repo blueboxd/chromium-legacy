@@ -36,6 +36,7 @@ static_library("flags_android") {
     "android/cached_feature_flags.h",
   ]
   deps = [
+    ":jni_headers",
     "//base",
     "//content/public/common",
   ]

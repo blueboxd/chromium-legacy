@@ -196,9 +196,8 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
             for (@PermissionInfo.Type int j = 0; j < PermissionInfo.Type.NUM_ENTRIES; j++) {
                 if (PermissionInfo.getContentSettingsType(j)
                         == SiteSettingsCategory.contentSettingsType(i)) {
-                    return (j == PermissionInfo.Type.MIDI)
-                            ? false
-                            : ContentSettingValues.BLOCK == website.site().getPermission(j);
+                    return j != PermissionInfo.Type.MIDI
+                            && ContentSettingValues.BLOCK == website.site().getPermission(j);
                 }
             }
         }

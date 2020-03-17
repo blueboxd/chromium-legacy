@@ -28,10 +28,9 @@
 AppShimListener::AppShimListener() {}
 
 void AppShimListener::Init() {
+  has_initialized_ = true;
+
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!app_shim_manager_);
-  app_shim_manager_.reset(new apps::AppShimManager());
-  AppShimHostBootstrap::SetClient(app_shim_manager_.get());
   // Initialize the instance of AppShimTerminationManager, to ensure that it
   // registers for its notifications.
   apps::AppShimTerminationManager::Get();
@@ -51,7 +50,7 @@ AppShimListener::~AppShimListener() {
   // The AppShimListener is only initialized if the Chrome process
   // successfully took the singleton lock. If it was not initialized, do not
   // delete existing app shim socket files as they belong to another process.
-  if (!app_shim_manager_)
+  if (!has_initialized_)
     return;
 
   AppShimHostBootstrap::SetClient(nullptr);

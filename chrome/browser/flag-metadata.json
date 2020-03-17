@@ -394,6 +394,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "bluetooth-next-handsfree-profile",
+    "owners": [ "hychao" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "bypass-app-banner-engagement-checks",
     "owners": [ "dominickn" ],
     "expiry_milestone": 84

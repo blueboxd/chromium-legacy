@@ -59,6 +59,7 @@ enum ImeTextSpanUnderlineStyle {
   kSolid,
   kDot,
   kDash,
+  kSquiggle,
 };
 
 // Represents an underlined segment of text currently composed by IME.

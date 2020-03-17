@@ -59,9 +59,12 @@
     return;                                                                 \
   }
 
-using ActionModule = assistant_client::ActionModule;
+using assistant_client::ActionModule;
+using assistant_client::MediaStatus;
+using media_session::mojom::MediaSessionAction;
+using media_session::mojom::MediaSessionInfo;
+using media_session::mojom::MediaSessionInfoPtr;
 using Resolution = assistant_client::ConversationStateListener::Resolution;
-using MediaStatus = assistant_client::MediaStatus;
 using CommunicationErrorType =
     chromeos::assistant::AssistantManagerService::CommunicationErrorType;
 
@@ -270,34 +273,6 @@ void AssistantManagerServiceImpl::RegisterFallbackMediaHandler() {
       });
 }
 
-void AssistantManagerServiceImpl::UpdateInternalMediaPlayerStatus(
-    media_session::mojom::MediaSessionAction action) {
-  auto* media_manager = assistant_manager_->GetMediaManager();
-  if (!media_manager)
-    return;
-
-  switch (action) {
-    case media_session::mojom::MediaSessionAction::kPause:
-      media_manager->Pause();
-      break;
-    case media_session::mojom::MediaSessionAction::kPlay:
-      media_manager->Resume();
-      break;
-    case media_session::mojom::MediaSessionAction::kPreviousTrack:
-    case media_session::mojom::MediaSessionAction::kNextTrack:
-    case media_session::mojom::MediaSessionAction::kSeekBackward:
-    case media_session::mojom::MediaSessionAction::kSeekForward:
-    case media_session::mojom::MediaSessionAction::kSkipAd:
-    case media_session::mojom::MediaSessionAction::kStop:
-    case media_session::mojom::MediaSessionAction::kSeekTo:
-    case media_session::mojom::MediaSessionAction::kScrubTo:
-    case media_session::mojom::MediaSessionAction::kEnterPictureInPicture:
-    case media_session::mojom::MediaSessionAction::kExitPictureInPicture:
-      NOTIMPLEMENTED();
-      break;
-  }
-}
-
 void AssistantManagerServiceImpl::WaitUntilStartIsFinishedForTesting() {
   // First we wait until |StartAssistantInternal| is finished.
   background_thread_.FlushForTesting();
@@ -385,6 +360,36 @@ void AssistantManagerServiceImpl::SyncDeviceAppsStatus() {
   assistant_settings_manager_->SyncDeviceAppsStatus(
       base::BindOnce(&AssistantManagerServiceImpl::OnDeviceAppsEnabled,
                      weak_factory_.GetWeakPtr()));
+}
+
+void AssistantManagerServiceImpl::UpdateInternalMediaPlayerStatus(
+    MediaSessionAction action) {
+  if (!assistant_manager_)
+    return;
+  auto* media_manager = assistant_manager_->GetMediaManager();
+  if (!media_manager)
+    return;
+
+  switch (action) {
+    case MediaSessionAction::kPause:
+      media_manager->Pause();
+      break;
+    case MediaSessionAction::kPlay:
+      media_manager->Resume();
+      break;
+    case MediaSessionAction::kPreviousTrack:
+    case MediaSessionAction::kNextTrack:
+    case MediaSessionAction::kSeekBackward:
+    case MediaSessionAction::kSeekForward:
+    case MediaSessionAction::kSkipAd:
+    case MediaSessionAction::kStop:
+    case MediaSessionAction::kSeekTo:
+    case MediaSessionAction::kScrubTo:
+    case MediaSessionAction::kEnterPictureInPicture:
+    case MediaSessionAction::kExitPictureInPicture:
+      NOTIMPLEMENTED();
+      break;
+  }
 }
 
 void AssistantManagerServiceImpl::StartVoiceInteraction() {
@@ -702,6 +707,11 @@ void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url,
 
   for (auto& it : interaction_subscribers_)
     it->OnOpenUrlResponse(gurl, is_background);
+}
+
+void AssistantManagerServiceImpl::OnPlaybackStateChange(
+    const MediaStatus& status) {
+  media_session_->NotifyMediaSessionMetadataChanged(status);
 }
 
 void AssistantManagerServiceImpl::OnShowNotification(
@@ -1335,7 +1345,7 @@ void AssistantManagerServiceImpl::MediaSessionChanged(
 }
 
 void AssistantManagerServiceImpl::MediaSessionInfoChanged(
-    media_session::mojom::MediaSessionInfoPtr info) {
+    MediaSessionInfoPtr info) {
   media_session_info_ptr_ = std::move(info);
   UpdateMediaState();
 }
@@ -1344,12 +1354,6 @@ void AssistantManagerServiceImpl::MediaSessionMetadataChanged(
     const base::Optional<media_session::MediaMetadata>& metadata) {
   media_metadata_ = std::move(metadata);
   UpdateMediaState();
-}
-
-void AssistantManagerServiceImpl::OnPlaybackStateChange(
-    const MediaStatus& status) {
-  if (media_session_)
-    media_session_->NotifyMediaSessionMetadataChanged(status);
 }
 
 void AssistantManagerServiceImpl::OnAlarmTimerStateChanged() {
@@ -1512,7 +1516,7 @@ void AssistantManagerServiceImpl::UpdateMediaState() {
     }
 
     if (media_session_info_ptr_->state ==
-            media_session::mojom::MediaSessionInfo::SessionState::kSuspended &&
+            MediaSessionInfo::SessionState::kSuspended &&
         media_session_info_ptr_->playback_state ==
             media_session::mojom::MediaPlaybackState::kPlaying) {
       // It is an intermediate state caused by some providers override the
@@ -1526,8 +1530,8 @@ void AssistantManagerServiceImpl::UpdateMediaState() {
   // media provider) will trigger media state change event. Only update the
   // external media status if the state changes is triggered by external
   // providers.
-  if (media_session_ && media_session_->internal_audio_focus_id() ==
-                            media_session_audio_focus_id_) {
+  if (media_session_->internal_audio_focus_id() ==
+      media_session_audio_focus_id_) {
     return;
   }
 
@@ -1543,7 +1547,7 @@ void AssistantManagerServiceImpl::UpdateMediaState() {
   media_status.playback_state = MediaStatus::IDLE;
   if (media_session_info_ptr_ &&
       media_session_info_ptr_->state !=
-          media_session::mojom::MediaSessionInfo::SessionState::kInactive) {
+          MediaSessionInfo::SessionState::kInactive) {
     switch (media_session_info_ptr_->playback_state) {
       case media_session::mojom::MediaPlaybackState::kPlaying:
         media_status.playback_state = MediaStatus::PLAYING;

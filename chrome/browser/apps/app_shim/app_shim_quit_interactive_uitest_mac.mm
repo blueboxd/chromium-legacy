@@ -58,9 +58,7 @@ class AppShimQuitTest : public PlatformAppBrowserTest {
     ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
     ASSERT_EQ(1u, [[NSApp windows] count]);
 
-    manager_ = g_browser_process->platform_part()
-                   ->app_shim_listener()
-                   ->app_shim_manager();
+    manager_ = g_browser_process->platform_part()->app_shim_manager();
 
     // Attach a host for the app.
     extensions::ExtensionRegistry* registry =

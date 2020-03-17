@@ -265,9 +265,12 @@ class DeepScanningDialogDelegate {
 
   // Upload the request for deep scanning using the binary upload service.
   // These methods exist so they can be overridden in tests as needed.
+  // The |result| argument exists as an optimization to finish the request early
+  // when the result is known in advance to avoid using the upload service.
   virtual void UploadTextForDeepScanning(
       std::unique_ptr<BinaryUploadService::Request> request);
   virtual void UploadFileForDeepScanning(
+      BinaryUploadService::Result result,
       const base::FilePath& path,
       std::unique_ptr<BinaryUploadService::Request> request);
 

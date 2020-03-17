@@ -56,10 +56,10 @@ public class CookieControlsView
         mParams.onUiClosingCallback.run();
     }
 
-    public void setCookieBlockingStatus(@CookieControlsStatus int status) {
+    public void setCookieBlockingStatus(@CookieControlsStatus int status, boolean isEnforced) {
         mLastSwitchState = status == CookieControlsStatus.ENABLED;
         mSwitch.setChecked(mLastSwitchState);
-        mSwitch.setEnabled(status != CookieControlsStatus.DISABLED);
+        mSwitch.setEnabled(!isEnforced);
     }
 
     public void setBlockedCookiesCount(int blockedCookies) {

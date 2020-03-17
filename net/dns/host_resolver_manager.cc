@@ -787,12 +787,18 @@ class HostResolverManager::ProbeRequestImpl
   void OnSessionChanged() override { CancelRunner(); }
 
   void OnDohServerUnavailable(bool network_change) override {
-    StartRunner(network_change);
+    // Start the runner asynchronously, as this may trigger reentrant calls into
+    // HostResolverManager, which are not allowed during notification handling.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ProbeRequestImpl::StartRunner,
+                       weak_ptr_factory_.GetWeakPtr(), network_change));
   }
 
  private:
   void StartRunner(bool network_change) {
     DCHECK(resolver_);
+    DCHECK(!resolver_->invalidation_in_progress_);
 
     if (!runner_)
       runner_ = resolver_->CreateDohProbeRunner(context_);
@@ -800,12 +806,19 @@ class HostResolverManager::ProbeRequestImpl
       runner_->Start(network_change);
   }
 
-  void CancelRunner() { runner_.reset(); }
+  void CancelRunner() {
+    runner_.reset();
+
+    // Cancel any asynchronous StartRunner() calls.
+    weak_ptr_factory_.InvalidateWeakPtrs();
+  }
 
   // TODO(ericorth@chromium.org): Use base::UnownedPtr once available.
   ResolveContext* context_;
   std::unique_ptr<DnsProbeRunner> runner_;
   base::WeakPtr<HostResolverManager> resolver_;
+
+  base::WeakPtrFactory<ProbeRequestImpl> weak_ptr_factory_{this};
 };
 
 //------------------------------------------------------------------------------

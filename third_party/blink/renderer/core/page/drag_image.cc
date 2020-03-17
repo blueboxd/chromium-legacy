@@ -132,7 +132,6 @@ static Font DeriveDragLabelFont(int size,
   description.SetSpecifiedSize(size);
   description.SetComputedSize(size);
   Font result(description);
-  result.Update(nullptr);
   return result;
 }
 

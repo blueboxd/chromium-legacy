@@ -19,7 +19,7 @@ TEST_F(CSSPropertyTest, VisitedPropertiesAreNotWebExposed) {
   for (CSSPropertyID property_id : CSSPropertyIDList()) {
     const CSSProperty& property = CSSProperty::Get(property_id);
     EXPECT_TRUE(!property.IsVisited() ||
-                !property.IsWebExposed(GetDocument().ToExecutionContext()));
+                !property.IsWebExposed(GetDocument().GetExecutionContext()));
   }
 }
 
@@ -41,7 +41,7 @@ TEST_F(CSSPropertyTest, GetUnvisitedPropertyFromVisited) {
 
 TEST_F(CSSPropertyTest, InternalEffectiveZoomNotWebExposed) {
   const CSSProperty& property = GetCSSPropertyInternalEffectiveZoom();
-  EXPECT_FALSE(property.IsWebExposed(GetDocument().ToExecutionContext()));
+  EXPECT_FALSE(property.IsWebExposed(GetDocument().GetExecutionContext()));
 }
 
 TEST_F(CSSPropertyTest, InternalEffectiveZoomCanBeParsed) {

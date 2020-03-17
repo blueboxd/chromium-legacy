@@ -13,6 +13,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import org.chromium.base.StrictModeContext;
+
 /**
  * UI for the color chooser that shows on the Android platform as a result of
  * &lt;input type=color &gt; form element.
@@ -33,6 +35,15 @@ public class ColorPickerDialog extends AlertDialog implements OnColorChangedList
 
     private int mCurrentColor;
 
+    View inflateView(Context context, int id) {
+        // LayoutInflater may trigger accessing the disk.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            LayoutInflater inflater =
+                    (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            return inflater.inflate(id, null);
+        }
+    }
+
     /**
      * @param context The context the dialog is to run in.
      * @param listener The object to notify when the color is set.
@@ -48,9 +59,7 @@ public class ColorPickerDialog extends AlertDialog implements OnColorChangedList
         mCurrentColor = mInitialColor;
 
         // Initialize title
-        LayoutInflater inflater =
-                (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View title = inflater.inflate(R.layout.color_picker_dialog_title, null);
+        View title = inflateView(context, R.layout.color_picker_dialog_title);
         setCustomTitle(title);
 
         mCurrentColorView = title.findViewById(R.id.selected_color_view);
@@ -90,7 +99,7 @@ public class ColorPickerDialog extends AlertDialog implements OnColorChangedList
         });
 
         // Initialize main content view
-        View content = inflater.inflate(R.layout.color_picker_dialog_content, null);
+        View content = inflateView(context, R.layout.color_picker_dialog_content);
         setView(content);
 
         // Initialize More button.

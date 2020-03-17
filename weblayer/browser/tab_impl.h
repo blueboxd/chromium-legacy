@@ -119,14 +119,6 @@ class TabImpl : public Tab,
   void UpdateBrowserControlsState(JNIEnv* env, jint constraint);
 
   base::android::ScopedJavaLocalRef<jstring> GetGuid(JNIEnv* env);
-
-  // Calls through to Java to determine whether the loading of |jurl| should be
-  // overridden, returning true if so.
-  bool ShouldOverrideUrlLoading(JNIEnv* env,
-                                base::android::ScopedJavaLocalRef<jstring> jurl,
-                                bool has_user_gesture,
-                                bool is_redirect,
-                                bool is_main_frame);
 #endif
 
   DownloadDelegate* download_delegate() { return download_delegate_; }

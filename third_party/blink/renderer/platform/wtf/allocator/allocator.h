@@ -161,24 +161,26 @@ ALWAYS_INLINE const std::atomic<T>* AsAtomicPtr(const T* t) {
   return reinterpret_cast<const std::atomic<T>*>(t);
 }
 
-// Load |bytes| bytes from |from| to |to| using atomic reads. Assumes |to| is
-// size_t-aligned and  points to a buffer of size at least |bytes|. Note that
-// atomicity is guaranteed only per word, not for the entire |bytes| bytes as
-// a whole.
-WTF_EXPORT void AtomicMemcpy(void* to, const void* from, size_t bytes);
+// Copies |bytes| bytes from |from| to |to| using atomic reads. Assumes |to|
+// and |from| are size_t-aligned and point to buffers of size |bytes|. Note
+// that atomicity is guaranteed only per word, not for the entire |bytes|
+// bytes as a whole. When copying arrays of elements, If |to| and |from|
+// are overlapping, should move the elements one by one.
+WTF_EXPORT void AtomicReadMemcpy(void* to, const void* from, size_t bytes);
 template <size_t bytes>
-ALWAYS_INLINE void AtomicMemcpy(void* to, const void* from) {
+ALWAYS_INLINE void AtomicReadMemcpy(void* to, const void* from) {
   static_assert(bytes > 0, "Number of copied bytes should be greater than 0");
   DCHECK_EQ(0u, reinterpret_cast<size_t>(from) & (sizeof(size_t) - 1));
   DCHECK_EQ(0u, reinterpret_cast<size_t>(to) & (sizeof(size_t) - 1));
-  AtomicMemcpy(to, from, bytes);
+  AtomicReadMemcpy(to, from, bytes);
 }
 
-// AtomicMemcpy specializations:
+// AtomicReadMemcpy specializations:
 
 #if defined(ARCH_CPU_X86_64)
 template <>
-ALWAYS_INLINE void AtomicMemcpy<sizeof(uint32_t)>(void* to, const void* from) {
+ALWAYS_INLINE void AtomicReadMemcpy<sizeof(uint32_t)>(void* to,
+                                                      const void* from) {
   *reinterpret_cast<uint32_t*>(to) =
       AsAtomicPtr(reinterpret_cast<const uint32_t*>(from))
           ->load(std::memory_order_relaxed);
@@ -186,15 +188,16 @@ ALWAYS_INLINE void AtomicMemcpy<sizeof(uint32_t)>(void* to, const void* from) {
 #endif  // ARCH_CPU_X86_64
 
 template <>
-ALWAYS_INLINE void AtomicMemcpy<sizeof(size_t)>(void* to, const void* from) {
+ALWAYS_INLINE void AtomicReadMemcpy<sizeof(size_t)>(void* to,
+                                                    const void* from) {
   *reinterpret_cast<size_t*>(to) =
       AsAtomicPtr(reinterpret_cast<const size_t*>(from))
           ->load(std::memory_order_relaxed);
 }
 
 template <>
-ALWAYS_INLINE void AtomicMemcpy<2 * sizeof(size_t)>(void* to,
-                                                    const void* from) {
+ALWAYS_INLINE void AtomicReadMemcpy<2 * sizeof(size_t)>(void* to,
+                                                        const void* from) {
   *reinterpret_cast<size_t*>(to) =
       AsAtomicPtr(reinterpret_cast<const size_t*>(from))
           ->load(std::memory_order_relaxed);
@@ -204,8 +207,8 @@ ALWAYS_INLINE void AtomicMemcpy<2 * sizeof(size_t)>(void* to,
 }
 
 template <>
-ALWAYS_INLINE void AtomicMemcpy<3 * sizeof(size_t)>(void* to,
-                                                    const void* from) {
+ALWAYS_INLINE void AtomicReadMemcpy<3 * sizeof(size_t)>(void* to,
+                                                        const void* from) {
   *reinterpret_cast<size_t*>(to) =
       AsAtomicPtr(reinterpret_cast<const size_t*>(from))
           ->load(std::memory_order_relaxed);
@@ -215,6 +218,65 @@ ALWAYS_INLINE void AtomicMemcpy<3 * sizeof(size_t)>(void* to,
   *(reinterpret_cast<size_t*>(to) + 2) =
       AsAtomicPtr(reinterpret_cast<const size_t*>(from) + 2)
           ->load(std::memory_order_relaxed);
+}
+
+// Copies |bytes| bytes from |from| to |to| using atomic writes. Assumes |to|
+// and |from| are size_t-aligned and point to buffers of size |bytes|. Note
+// that atomicity is guaranteed only per word, not for the entire |bytes|
+// bytes as a whole. When copying arrays of elements, If |to| and |from| are
+// overlapping, should move the elements one by one.
+WTF_EXPORT void AtomicWriteMemcpy(void* to, const void* from, size_t bytes);
+template <size_t bytes>
+ALWAYS_INLINE void AtomicWriteMemcpy(void* to, const void* from) {
+  static_assert(bytes > 0, "Number of copied bytes should be greater than 0");
+  DCHECK_EQ(0u, reinterpret_cast<size_t>(from) & (sizeof(size_t) - 1));
+  DCHECK_EQ(0u, reinterpret_cast<size_t>(to) & (sizeof(size_t) - 1));
+  AtomicWriteMemcpy(to, from, bytes);
+}
+
+// AtomicReadMemcpy specializations:
+
+#if defined(ARCH_CPU_X86_64)
+template <>
+ALWAYS_INLINE void AtomicWriteMemcpy<sizeof(uint32_t)>(void* to,
+                                                       const void* from) {
+  AsAtomicPtr(reinterpret_cast<uint32_t*>(to))
+      ->store(*reinterpret_cast<const uint32_t*>(from),
+              std::memory_order_relaxed);
+}
+#endif  // ARCH_CPU_X86_64
+
+template <>
+ALWAYS_INLINE void AtomicWriteMemcpy<sizeof(size_t)>(void* to,
+                                                     const void* from) {
+  AsAtomicPtr(reinterpret_cast<size_t*>(to))
+      ->store(*reinterpret_cast<const size_t*>(from),
+              std::memory_order_relaxed);
+}
+
+template <>
+ALWAYS_INLINE void AtomicWriteMemcpy<2 * sizeof(size_t)>(void* to,
+                                                         const void* from) {
+  AsAtomicPtr(reinterpret_cast<size_t*>(to))
+      ->store(*reinterpret_cast<const size_t*>(from),
+              std::memory_order_relaxed);
+  AsAtomicPtr(reinterpret_cast<size_t*>(to) + 1)
+      ->store(*(reinterpret_cast<const size_t*>(from) + 1),
+              std::memory_order_relaxed);
+}
+
+template <>
+ALWAYS_INLINE void AtomicWriteMemcpy<3 * sizeof(size_t)>(void* to,
+                                                         const void* from) {
+  AsAtomicPtr(reinterpret_cast<size_t*>(to))
+      ->store(*reinterpret_cast<const size_t*>(from),
+              std::memory_order_relaxed);
+  AsAtomicPtr(reinterpret_cast<size_t*>(to) + 1)
+      ->store(*(reinterpret_cast<const size_t*>(from) + 1),
+              std::memory_order_relaxed);
+  AsAtomicPtr(reinterpret_cast<size_t*>(to) + 2)
+      ->store(*(reinterpret_cast<const size_t*>(from) + 2),
+              std::memory_order_relaxed);
 }
 
 }  // namespace WTF

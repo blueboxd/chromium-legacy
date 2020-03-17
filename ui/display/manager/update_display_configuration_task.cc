@@ -5,6 +5,7 @@
 #include "ui/display/manager/update_display_configuration_task.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "ui/display/manager/configure_displays_task.h"
 #include "ui/display/manager/display_layout_manager.h"
 #include "ui/display/manager/display_util.h"
@@ -37,6 +38,7 @@ UpdateDisplayConfigurationTask::~UpdateDisplayConfigurationTask() {
 }
 
 void UpdateDisplayConfigurationTask::Run() {
+  start_timestamp_ = base::TimeTicks::Now();
   requesting_displays_ = true;
   delegate_->GetDisplays(
       base::BindOnce(&UpdateDisplayConfigurationTask::OnDisplaysUpdated,
@@ -145,6 +147,14 @@ void UpdateDisplayConfigurationTask::OnEnableSoftwareMirroring(
 }
 
 void UpdateDisplayConfigurationTask::FinishConfiguration(bool success) {
+  DCHECK(start_timestamp_);
+  base::UmaHistogramTimes(
+      "DisplayManager.UpdateDisplayConfigurationTask.ExecutionTime",
+      base::TimeTicks::Now() - *start_timestamp_);
+  base::UmaHistogramBoolean(
+      "DisplayManager.UpdateDisplayConfigurationTask.Success", success);
+  start_timestamp_.reset();
+
   std::move(callback_).Run(success, cached_displays_,
                            cached_unassociated_displays_, new_display_state_,
                            new_power_state_);

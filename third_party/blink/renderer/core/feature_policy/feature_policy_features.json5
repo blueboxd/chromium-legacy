@@ -270,6 +270,11 @@
       depends_on: ["FeaturePolicyForSandbox"],
     },
     {
+      name: "TrustTokenRedemption",
+      feature_policy_name: "trust-token-redemption",
+      depends_on: ["TrustTokens"],
+    },
+    {
       name: "Usb",
       feature_policy_name: "usb",
       depends_on: ["WebUSB"],

@@ -429,16 +429,6 @@ ScopedJavaLocalRef<jstring> TabImpl::GetGuid(JNIEnv* env) {
   return base::android::ConvertUTF8ToJavaString(AttachCurrentThread(),
                                                 GetGuid());
 }
-
-bool TabImpl::ShouldOverrideUrlLoading(
-    JNIEnv* env,
-    base::android::ScopedJavaLocalRef<jstring> jurl,
-    bool has_user_gesture,
-    bool is_redirect,
-    bool is_main_frame) {
-  return Java_TabImpl_shouldOverrideUrlLoading(
-      env, java_impl_, jurl, has_user_gesture, is_redirect, is_main_frame);
-}
 #endif
 
 content::WebContents* TabImpl::OpenURLFromTab(

@@ -90,7 +90,6 @@ class NGInlineNodeTest : public NGLayoutTest {
   void SetUp() override {
     NGLayoutTest::SetUp();
     style_ = ComputedStyle::Create();
-    style_->GetFont().Update(nullptr);
   }
 
   void SetupHtml(const char* id, String html) {
@@ -450,7 +449,6 @@ TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   UseLayoutObjectAndAhem();
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   style->SetLineHeight(Length::Fixed(1));
-  style->GetFont().Update(nullptr);
   NGInlineNodeForTest node = CreateInlineNode();
   node = CreateBidiIsolateNode(node, layout_object_);
   node.ShapeText();

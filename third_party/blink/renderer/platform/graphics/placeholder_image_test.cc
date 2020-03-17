@@ -133,7 +133,6 @@ float GetExpectedPlaceholderTextWidth(const StringView& text,
   description.SetWeight(FontSelectionValue(500));
 
   Font font(description);
-  font.Update(nullptr);
   return font.Width(TextRun(text));
 }
 

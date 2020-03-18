@@ -68,11 +68,12 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
     thread->Start(
         std::make_unique<GlobalScopeCreationParams>(
             document->Url(), mojom::blink::ScriptType::kModule, "AudioWorklet",
-            document->UserAgent(), nullptr /* web_worker_fetch_context */,
-            Vector<CSPHeaderAndType>(), document->GetReferrerPolicy(),
-            document->GetSecurityOrigin(), document->IsSecureContext(),
-            document->GetHttpsState(), nullptr /* worker_clients */,
-            nullptr /* content_settings_client */,
+            document->UserAgent(),
+            document->GetFrame()->Loader().UserAgentMetadata(),
+            nullptr /* web_worker_fetch_context */, Vector<CSPHeaderAndType>(),
+            document->GetReferrerPolicy(), document->GetSecurityOrigin(),
+            document->IsSecureContext(), document->GetHttpsState(),
+            nullptr /* worker_clients */, nullptr /* content_settings_client */,
             document->GetSecurityContext().AddressSpace(),
             OriginTrialContext::GetTokens(document->ToExecutionContext()).get(),
             base::UnguessableToken::Create(), nullptr /* worker_settings */,

@@ -16,9 +16,8 @@
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_camera_controller.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_view_controller.h"
 #include "ios/chrome/browser/ui/scanner/camera_controller.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
-#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -60,19 +59,15 @@ using scanner::CameraState;
 + (id)locationBarCoordinatorLoadGURLFromLocationBarSwizzleBlockForSearchURL:
     (NSURL*)searchURL {
   GURL searchGURL = net::GURLWithNSURL(searchURL);
-  void (^loadGURLFromLocationBarBlock)(LocationBarCoordinator*,
-                                       TemplateURLRef::PostContent*,
-                                       const GURL&, ui::PageTransition) =
-      ^void(LocationBarCoordinator* self,
-            TemplateURLRef::PostContent* postContent, const GURL& url,
-            ui::PageTransition transition) {
-        web::NavigationManager::WebLoadParams params(searchGURL);
-        params.transition_type = transition;
-        UrlLoadingServiceFactory::GetForBrowserState(
-            self.browser->GetBrowserState())
-            ->Load(UrlLoadParams::InCurrentTab(params));
-        [self cancelOmniboxEdit];
-      };
+  auto loadGURLFromLocationBarBlock = ^void(
+      LocationBarCoordinator* self, TemplateURLRef::PostContent* postContent,
+      const GURL& url, ui::PageTransition transition) {
+    web::NavigationManager::WebLoadParams params(searchGURL);
+    params.transition_type = transition;
+    UrlLoadingBrowserAgent::FromBrowser(self.browser)
+        ->Load(UrlLoadParams::InCurrentTab(params));
+    [self cancelOmniboxEdit];
+  };
 
   return loadGURLFromLocationBarBlock;
 }

@@ -10,7 +10,7 @@
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {eventToPromise, isVisible, whenAttributeIs} from 'chrome://test/test_util.m.js';
 // #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-// clang-format-on
+// clang-format on
 
 cr.define('settings_payments_section', function() {
   suite('PaymentSectionUiTest', function() {
@@ -627,8 +627,7 @@ cr.define('settings_payments_section', function() {
       const result = await testMetricsBrowserProxy.whenCalled(
           'recordSettingsPageHistogram');
 
-      assertEquals(
-          settings.PrivacyElementInteractions.PAYMENT_METHOD, result);
+      assertEquals(settings.PrivacyElementInteractions.PAYMENT_METHOD, result);
     });
   });
   // #cr_define_end

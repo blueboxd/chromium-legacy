@@ -202,7 +202,7 @@ Params& Params::operator=(const Params&) = default;
 
 void TrustTokenRequestSigningHelper::Begin(
     net::URLRequest* request,
-    base::OnceCallback<void(TrustTokenOperationStatus)> done) {
+    base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) {
   DCHECK(request);
   DCHECK(request->url().SchemeIsHTTPOrHTTPS() &&
          IsUrlPotentiallyTrustworthy(request->url()));
@@ -226,7 +226,7 @@ void TrustTokenRequestSigningHelper::Begin(
 
   if (!maybe_redemption_record) {
     AttachSignedRedemptionRecordHeader(request, std::string());
-    std::move(done).Run(TrustTokenOperationStatus::kResourceExhausted);
+    std::move(done).Run(mojom::TrustTokenOperationStatus::kResourceExhausted);
     return;
   }
 
@@ -236,7 +236,7 @@ void TrustTokenRequestSigningHelper::Begin(
 
   if (!maybe_headers_to_sign) {
     AttachSignedRedemptionRecordHeader(request, std::string());
-    std::move(done).Run(TrustTokenOperationStatus::kInvalidArgument);
+    std::move(done).Run(mojom::TrustTokenOperationStatus::kInvalidArgument);
     return;
   }
 
@@ -251,7 +251,7 @@ void TrustTokenRequestSigningHelper::Begin(
   }
 
   if (params_.sign_request_data == mojom::TrustTokenSignRequestData::kOmit) {
-    std::move(done).Run(TrustTokenOperationStatus::kOk);
+    std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
     return;
   }
 
@@ -263,7 +263,7 @@ void TrustTokenRequestSigningHelper::Begin(
     request->RemoveRequestHeaderByName(kTrustTokensRequestHeaderSecTime);
     request->RemoveRequestHeaderByName(kTrustTokensRequestHeaderSignedHeaders);
 
-    std::move(done).Run(TrustTokenOperationStatus::kInternalError);
+    std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
     return;
   }
 
@@ -274,7 +274,7 @@ void TrustTokenRequestSigningHelper::Begin(
 
   // Error serializing the header. Not expected.
   if (!maybe_signature_header) {
-    std::move(done).Run(TrustTokenOperationStatus::kInternalError);
+    std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
     return;
   }
 
@@ -282,12 +282,12 @@ void TrustTokenRequestSigningHelper::Begin(
                                        *maybe_signature_header,
                                        /*overwrite=*/true);
 
-  std::move(done).Run(TrustTokenOperationStatus::kOk);
+  std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
 }
 
-TrustTokenOperationStatus TrustTokenRequestSigningHelper::Finalize(
+mojom::TrustTokenOperationStatus TrustTokenRequestSigningHelper::Finalize(
     mojom::URLResponseHead* response) {
-  return TrustTokenOperationStatus::kOk;
+  return mojom::TrustTokenOperationStatus::kOk;
 }
 
 base::Optional<std::string>

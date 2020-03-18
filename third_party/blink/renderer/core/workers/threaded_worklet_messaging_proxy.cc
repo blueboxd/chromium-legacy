@@ -59,6 +59,7 @@ void ThreadedWorkletMessagingProxy::Initialize(
       std::make_unique<GlobalScopeCreationParams>(
           document->Url(), mojom::blink::ScriptType::kModule, global_scope_name,
           document->UserAgent(),
+          document->GetFrame()->Client()->UserAgentMetadata(),
           document->GetFrame()->Client()->CreateWorkerFetchContext(),
           csp->Headers(), document->GetReferrerPolicy(),
           document->GetSecurityOrigin(), document->IsSecureContext(),

@@ -83,8 +83,9 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
     if (continue_rendering) {
       for (LayoutObject* child = layout_svg_container_.FirstChild(); child;
            child = child->NextSibling()) {
+        auto* foreign_object = DynamicTo<LayoutSVGForeignObject>(*child);
         if (child->IsSVGForeignObject()) {
-          SVGForeignObjectPainter(ToLayoutSVGForeignObject(*child))
+          SVGForeignObjectPainter(*foreign_object)
               .PaintLayer(paint_state.GetPaintInfo());
         } else {
           child->Paint(paint_state.GetPaintInfo());

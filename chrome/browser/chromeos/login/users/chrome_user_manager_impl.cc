@@ -215,16 +215,6 @@ bool IsManagedSessionEnabled(policy::DeviceLocalAccountPolicyBroker* broker) {
   return entry->value && entry->value->GetBool();
 }
 
-base::span<const base::Value> GetListPolicyValue(
-    const policy::PolicyMap& policy_map,
-    const char* policy_key) {
-  const policy::PolicyMap::Entry* entry = policy_map.Get(policy_key);
-  if (!entry || !entry->value || !entry->value->is_list())
-    return {};
-
-  return entry->value->GetList();
-}
-
 bool AreRiskyPoliciesUsed(policy::DeviceLocalAccountPolicyBroker* broker) {
   const policy::PolicyMap& policy_map = broker->core()->store()->policy_map();
   for (const auto& it : policy_map) {
@@ -252,39 +242,6 @@ bool IsProxyUsed(const PrefService* local_state_prefs) {
   if (!proxy_config || !proxy_config->GetMode(&mode))
     return false;
   return mode != ProxyPrefs::MODE_DIRECT;
-}
-
-bool AreRiskyExtensionsForceInstalled(
-    policy::DeviceLocalAccountPolicyBroker* broker) {
-  const policy::PolicyMap& policy_map = broker->core()->store()->policy_map();
-
-  auto forcelist =
-      GetListPolicyValue(policy_map, policy::key::kExtensionInstallForcelist);
-
-  // Extension is risky if it's present in force-installed extensions and is not
-  // whitelisted for public sessions.
-
-  if (forcelist.empty())
-    return false;
-
-  for (const base::Value& extension : forcelist) {
-    if (!extension.is_string())
-      continue;
-
-    // Each extension entry contains an extension id and optional update URL
-    // separated by ';'.
-    std::vector<std::string> extension_items =
-        base::SplitString(extension.GetString(), ";", base::TRIM_WHITESPACE,
-                          base::SPLIT_WANT_NONEMPTY);
-    if (extension_items.empty())
-      continue;
-
-    // If current force-installed extension is not whitelisted for public
-    // sessions, consider the extension risky.
-    if (!extensions::IsWhitelistedForPublicSession(extension_items[0]))
-      return true;
-  }
-  return false;
 }
 
 bool PolicyHasWebTrustedAuthorityCertificate(
@@ -1468,7 +1425,8 @@ bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(
     policy::DeviceLocalAccountPolicyBroker* broker) const {
   return IsManagedSessionEnabled(broker) &&
          (AreRiskyPoliciesUsed(broker) ||
-          AreRiskyExtensionsForceInstalled(broker) ||
+          g_browser_process->local_state()->GetBoolean(
+              prefs::kManagedSessionUseFullLoginWarning) ||
           PolicyHasWebTrustedAuthorityCertificate(broker) ||
           IsProxyUsed(GetLocalState()));
 }

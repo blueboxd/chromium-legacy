@@ -18,7 +18,7 @@
 // #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // #import {MockTimer} from 'chrome://test/mock_timer.m.js';
 // #import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.m.js';
-// clang-format-on
+// clang-format on
 
 cr.define('settings_passwords_section_cros', function() {
   suite('PasswordsSection_Cros', function() {
@@ -78,8 +78,8 @@ cr.define('settings_passwords_section_cros', function() {
         const dialog = super.createExportPasswordsDialog(passwordManager);
         dialog.tokenRequestManager = new settings.BlockingRequestManager();
         return overrideRequestManager ?
-            Object.assign(dialog,
-                {tokenRequestManager: this.tokenRequestManager}) :
+            Object.assign(
+                dialog, {tokenRequestManager: this.tokenRequestManager}) :
             dialog;
       }
 
@@ -208,15 +208,15 @@ cr.define('settings_passwords_section_cros', function() {
 
     // Note (rbpotter): this passes locally, but may still be flaky (see
     // https://www.crbug.com/1021474)
-    test.skip('password-prompt-dialog appears on auth token request',
-        function() {
-      const passwordsSection =
-          elementFactory.createPasswordsSection(passwordManager);
-      assertTrue(!passwordsSection.$$('settings-password-prompt-dialog'));
-      passwordsSection.tokenRequestManager_.request(fail);
-      Polymer.dom.flush();
-      assertTrue(!!passwordsSection.$$('settings-password-prompt-dialog'));
-    });
+    test.skip(
+        'password-prompt-dialog appears on auth token request', function() {
+          const passwordsSection =
+              elementFactory.createPasswordsSection(passwordManager);
+          assertTrue(!passwordsSection.$$('settings-password-prompt-dialog'));
+          passwordsSection.tokenRequestManager_.request(fail);
+          Polymer.dom.flush();
+          assertTrue(!!passwordsSection.$$('settings-password-prompt-dialog'));
+        });
 
     // Note (rbpotter): this fails locally, possibly out of date
     test.skip(

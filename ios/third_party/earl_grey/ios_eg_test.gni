@@ -24,13 +24,16 @@ template("ios_eg_test") {
     if (!defined(bundle_deps)) {
       bundle_deps = []
     }
+    if (!defined(include_provider_resources)) {
+      include_provider_resources = true
+    }
     bundle_deps += [
       "//ios/third_party/earl_grey:earl_grey+bundle",
       "//ios/third_party/gtx:gtx+bundle",
       "//ios/third_party/ochamcrest:ochamcrest+bundle",
     ]
-    if (ios_firebase_resources_target != "") {
-      bundle_deps += [ ios_firebase_resources_target ]
+    if (include_provider_resources) {
+      bundle_deps += ios_providers_resources_targets
     }
     if (!defined(deps)) {
       deps = []

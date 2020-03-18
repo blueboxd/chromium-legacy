@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-class UrlLoadingService;
+class UrlLoadingBrowserAgent;
 
 @protocol NewTabPageControllerDelegate;
 
@@ -15,7 +15,7 @@ class UrlLoadingService;
 
 // Init with the given loader object. |loader| may be nil, but isn't
 // retained so it must outlive this controller.
-- (id)initWithUrlLoadingService:(UrlLoadingService*)urlLoadingService;
+- (instancetype)initWithUrlLoader:(UrlLoadingBrowserAgent*)URLLoader;
 
 @end
 

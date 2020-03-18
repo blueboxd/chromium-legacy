@@ -458,8 +458,8 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
     }
 
     // input type=range
-    if (css_box->IsSlider())
-      return MakeGarbageCollected<AXSlider>(ToLayoutSlider(css_box), *this);
+    if (auto* slider = DynamicTo<LayoutSlider>(css_box))
+      return MakeGarbageCollected<AXSlider>(slider, *this);
   }
 
   return MakeGarbageCollected<AXLayoutObject>(layout_object, *this);

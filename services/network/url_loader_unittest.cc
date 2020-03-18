@@ -68,20 +68,25 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/origin_policy_manager.mojom.h"
+#include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/test/test_data_pipe_getter.h"
 #include "services/network/test/test_network_context_client.h"
 #include "services/network/test/test_network_service_client.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "services/network/test_chunked_data_pipe_getter.h"
+#include "services/network/trust_tokens/trust_token_request_helper.h"
 #include "services/network/url_loader.h"
 #include "services/network/url_request_context_owner.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace network {
 
 namespace {
+
+using ::testing::Optional;
 
 // Returns a URLLoader::DeleteCallback that destroys |url_loader| and quits
 // |run_loop| when invoked. Tests must wait on the RunLoop to ensure nothing is
@@ -488,7 +493,7 @@ class URLLoaderTest : public testing::Test {
         /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
     ran_ = true;
 
@@ -743,9 +748,14 @@ class URLLoaderTest : public testing::Test {
   static constexpr int kProcessId = 4;
   static constexpr int kRouteId = 8;
 
- private:
+  // |OnServerReceivedRequest| allows subclasses to register additional logic to
+  // execute once a request reaches the test server.
+  virtual void OnServerReceivedRequest(const net::test_server::HttpRequest&) {}
+
+ protected:
   void Monitor(const net::test_server::HttpRequest& request) {
     sent_request_ = request;
+    OnServerReceivedRequest(request);
   }
 
   base::test::TaskEnvironment task_environment_;
@@ -1060,7 +1070,7 @@ TEST_F(URLLoaderTest, DestroyOnURLLoaderPipeClosed) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   // Run until the response body pipe arrives, to make sure that a live body
   // pipe does not result in keeping the loader alive when the URLLoader pipe is
@@ -1115,7 +1125,7 @@ TEST_F(URLLoaderTest, CloseResponseBodyConsumerBeforeProducer) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   client()->RunUntilResponseBodyArrived();
   EXPECT_TRUE(client()->has_received_response());
@@ -1172,7 +1182,7 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetBeforeResponseHeaders) {
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   // Pausing reading response body from network stops future reads from the
   // underlying URLRequest. So no data should be sent using the response body
@@ -1251,7 +1261,7 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetWhenReadIsPending) {
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   response_controller.WaitForRequest();
   response_controller.Send(
@@ -1319,7 +1329,7 @@ TEST_F(URLLoaderTest, ResumeReadingBodyFromNetAfterClosingConsumer) {
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   loader->PauseReadingBodyFromNet();
   loader.FlushForTesting();
@@ -1382,7 +1392,7 @@ TEST_F(URLLoaderTest, MultiplePauseResumeReadingBodyFromNet) {
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   // It is okay to call ResumeReadingBodyFromNet() even if there is no prior
   // PauseReadingBodyFromNet().
@@ -1636,7 +1646,7 @@ TEST_F(URLLoaderTest, UploadFileCanceled) {
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   mojom::NetworkContextClient::OnFileUploadRequestedCallback callback;
   network_context_client->RunUntilUploadRequested(&callback);
@@ -1824,7 +1834,7 @@ TEST_F(URLLoaderTest, UploadChunkedDataPipe) {
       nullptr /* resource_scheduler_client */,
       nullptr /* keepalive_statistics_reporter */,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   mojom::ChunkedDataPipeGetter::GetSizeCallback get_size_callback =
       data_pipe_getter.WaitForGetSize();
@@ -1896,7 +1906,7 @@ TEST_F(URLLoaderTest, RedirectModifiedHeaders) {
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   client()->RunUntilRedirectReceived();
 
@@ -1951,7 +1961,7 @@ TEST_F(URLLoaderTest, RedirectFailsOnModifyUnsafeHeader) {
         /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
     client.RunUntilRedirectReceived();
 
@@ -1991,7 +2001,7 @@ TEST_F(URLLoaderTest, RedirectLogsModifiedConcerningHeader) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   client.RunUntilRedirectReceived();
 
@@ -2045,7 +2055,7 @@ TEST_F(URLLoaderTest, RedirectRemoveHeader) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   client()->RunUntilRedirectReceived();
 
@@ -2089,7 +2099,7 @@ TEST_F(URLLoaderTest, RedirectRemoveHeaderAndAddItBack) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   client()->RunUntilRedirectReceived();
 
@@ -2137,7 +2147,7 @@ TEST_F(URLLoaderTest, UpgradeAddsSecHeaders) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   client()->RunUntilRedirectReceived();
 
@@ -2189,7 +2199,7 @@ TEST_F(URLLoaderTest, DowngradeRemovesSecHeaders) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   client()->RunUntilRedirectReceived();
 
@@ -2250,7 +2260,7 @@ TEST_F(URLLoaderTest, RedirectChainRemovesAndAddsSecHeaders) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   client()->RunUntilRedirectReceived();
 
@@ -2317,7 +2327,7 @@ TEST_F(URLLoaderTest, RedirectSecHeadersUser) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   client()->RunUntilRedirectReceived();
 
@@ -2350,7 +2360,7 @@ TEST_F(URLLoaderTest, RedirectDirectlyModifiedSecHeadersUser) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   client()->RunUntilRedirectReceived();
 
@@ -2456,7 +2466,7 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
         /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
     loaders.emplace_back(
         std::make_pair(std::move(url_loader), std::move(loader_remote)));
@@ -2479,7 +2489,7 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
   base::RunLoop().RunUntilIdle();
 
   // Make sure that the ResourceScheduler throttles this request.
@@ -2517,7 +2527,7 @@ TEST_F(URLLoaderTest, ReadPipeClosedWhileReadTaskPosted) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   client()->RunUntilResponseBodyArrived();
   client()->response_body_release();
@@ -2907,7 +2917,7 @@ TEST_F(URLLoaderTest, SetAuth) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(url_loader);
@@ -2952,7 +2962,7 @@ TEST_F(URLLoaderTest, CancelAuth) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(url_loader);
@@ -2997,7 +3007,7 @@ TEST_F(URLLoaderTest, TwoChallenges) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(url_loader);
@@ -3043,7 +3053,7 @@ TEST_F(URLLoaderTest, NoAuthRequiredForFavicon) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(url_loader);
@@ -3088,7 +3098,7 @@ TEST_F(URLLoaderTest, HttpAuthResponseHeadersAvailable) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(url_loader);
@@ -3131,7 +3141,7 @@ TEST_F(URLLoaderTest, CorbEffectiveWithCors) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   client()->RunUntilResponseBodyArrived();
   std::string body = ReadBody();
@@ -3172,7 +3182,7 @@ TEST_F(URLLoaderTest, CorbExcludedWithNoCors) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   client()->RunUntilResponseBodyArrived();
   std::string body = ReadBody();
@@ -3216,7 +3226,7 @@ TEST_F(URLLoaderTest, CorbEffectiveWithNoCorsWhenNoActualPlugin) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   client()->RunUntilResponseBodyArrived();
   std::string body = ReadBody();
@@ -3252,7 +3262,7 @@ TEST_F(URLLoaderTest, FollowRedirectTwice) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   client()->RunUntilRedirectReceived();
 
@@ -3355,7 +3365,7 @@ TEST_F(URLLoaderTest, ClientAuthRespondTwice) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   EXPECT_EQ(0, network_context_client.on_certificate_requested_counter());
   EXPECT_EQ(0, private_key->sign_count());
@@ -3407,7 +3417,7 @@ TEST_F(URLLoaderTest, ClientAuthDestroyResponder) {
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
   network_context_client.set_url_loader_remote(&loader);
 
   RunUntilIdle();
@@ -3450,7 +3460,7 @@ TEST_F(URLLoaderTest, ClientAuthCancelConnection) {
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
   network_context_client.set_url_loader_remote(&loader);
 
   RunUntilIdle();
@@ -3492,7 +3502,7 @@ TEST_F(URLLoaderTest, ClientAuthCancelCertificateSelection) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   RunUntilIdle();
   ASSERT_TRUE(url_loader);
@@ -3543,7 +3553,7 @@ TEST_F(URLLoaderTest, ClientAuthNoCertificate) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   RunUntilIdle();
   ASSERT_TRUE(url_loader);
@@ -3599,7 +3609,7 @@ TEST_F(URLLoaderTest, ClientAuthCertificateWithValidSignature) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   RunUntilIdle();
   ASSERT_TRUE(url_loader);
@@ -3657,7 +3667,7 @@ TEST_F(URLLoaderTest, ClientAuthCertificateWithInvalidSignature) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   RunUntilIdle();
   ASSERT_TRUE(url_loader);
@@ -3697,7 +3707,7 @@ TEST_F(URLLoaderTest, BlockAllCookies) {
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   EXPECT_FALSE(url_loader->AllowCookies(first_party_url, site_for_cookies));
   EXPECT_FALSE(url_loader->AllowCookies(third_party_url, site_for_cookies));
@@ -3726,7 +3736,7 @@ TEST_F(URLLoaderTest, BlockOnlyThirdPartyCookies) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   EXPECT_TRUE(url_loader->AllowCookies(first_party_url, site_for_cookies));
   EXPECT_FALSE(url_loader->AllowCookies(third_party_url, site_for_cookies));
@@ -3754,7 +3764,7 @@ TEST_F(URLLoaderTest, AllowAllCookies) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   EXPECT_TRUE(url_loader->AllowCookies(first_party_url, site_for_cookies));
   EXPECT_TRUE(url_loader->AllowCookies(third_party_url, site_for_cookies));
@@ -3783,7 +3793,7 @@ TEST_F(URLLoaderTest, CookieReporting) {
         &params, /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
     delete_run_loop.Run();
     loader_client.RunUntilComplete();
@@ -3818,7 +3828,7 @@ TEST_F(URLLoaderTest, CookieReporting) {
         &params, /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
     delete_run_loop.Run();
     loader_client.RunUntilComplete();
@@ -3860,7 +3870,7 @@ TEST_F(URLLoaderTest, CookieReportingRedirect) {
       /*coep_reporter=*/nullptr, 0 /* request_id */,
       0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-      nullptr /* origin_policy_manager */);
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   loader_client.RunUntilRedirectReceived();
   loader->FollowRedirect({}, {}, base::nullopt);
@@ -3912,7 +3922,7 @@ TEST_F(URLLoaderTest, CookieReportingAuth) {
         &params, /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
     loader_client.RunUntilComplete();
     delete_run_loop.Run();
@@ -3960,7 +3970,7 @@ TEST_F(URLLoaderTest, RawRequestCookies) {
         &params, /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
     delete_run_loop.Run();
     loader_client.RunUntilComplete();
@@ -4010,7 +4020,7 @@ TEST_F(URLLoaderTest, RawRequestCookiesFlagged) {
         &params, /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
     delete_run_loop.Run();
     loader_client.RunUntilComplete();
@@ -4053,7 +4063,7 @@ TEST_F(URLLoaderTest, RawResponseCookies) {
         &params, /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
     delete_run_loop.Run();
     loader_client.RunUntilComplete();
@@ -4099,7 +4109,7 @@ TEST_F(URLLoaderTest, RawResponseCookiesInvalid) {
         &params, /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
     delete_run_loop.Run();
     loader_client.RunUntilComplete();
@@ -4144,7 +4154,7 @@ TEST_F(URLLoaderTest, RawResponseCookiesRedirect) {
         /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
     loader_client.RunUntilRedirectReceived();
 
@@ -4195,7 +4205,7 @@ TEST_F(URLLoaderTest, RawResponseCookiesRedirect) {
         /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
     loader_client.RunUntilRedirectReceived();
     loader->FollowRedirect({}, {}, base::nullopt);
@@ -4242,7 +4252,7 @@ TEST_F(URLLoaderTest, RawResponseCookiesAuth) {
         &params, /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
     loader_client.RunUntilComplete();
     delete_run_loop.Run();
@@ -4286,7 +4296,7 @@ TEST_F(URLLoaderTest, RawResponseCookiesAuth) {
         &params, /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
     loader_client.RunUntilComplete();
     delete_run_loop.Run();
@@ -4328,7 +4338,7 @@ TEST_F(URLLoaderTest, RawResponseQUIC) {
         &params, /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
     delete_run_loop.Run();
     loader_client.RunUntilComplete();
@@ -4374,7 +4384,7 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
         &params, /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
     delete_run_loop.Run();
     loader_client.RunUntilComplete();
@@ -4430,7 +4440,7 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
         &params, /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
     delete_run_loop.Run();
     loader_client.RunUntilComplete();
@@ -4473,7 +4483,7 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
         &params, /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
     delete_run_loop.Run();
     loader_client.RunUntilComplete();
@@ -4555,7 +4565,7 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
         /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        &mock_origin_policy_manager);
+        &mock_origin_policy_manager, nullptr /* trust_token_helper */);
 
     loader_client.RunUntilComplete();
     delete_run_loop.Run();
@@ -4595,7 +4605,7 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
         /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        &mock_origin_policy_manager);
+        &mock_origin_policy_manager, nullptr /* trust_token_helper */);
 
     loader_client.RunUntilComplete();
     delete_run_loop.Run();
@@ -4633,7 +4643,7 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
         /*coep_reporter=*/nullptr, 0 /* request_id */,
         0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        &mock_origin_policy_manager);
+        &mock_origin_policy_manager, nullptr /* trust_token_helper */);
 
     loader_client.RunUntilResponseBodyArrived();
     delete_run_loop.Run();
@@ -4739,6 +4749,290 @@ TEST_F(URLLoaderTest, CrossOriginEmbedderPolicyValue) {
     EXPECT_EQ(coep.report_only_reporting_endpoint,
               testcase.report_only_reporting_endpoint);
   }
+}
+
+namespace {
+
+class MockTrustTokenRequestHelper : public TrustTokenRequestHelper {
+ public:
+  enum class SyncOrAsync { kSync, kAsync };
+
+  // |begin_operation_synchrony| denotes whether to complete the |Begin|
+  // operation synchronously. (|Finalize| is always synchronous.)
+  //
+  // |begin_done_flag|, if provided, will be set to true immediately before the
+  // |Begin| operation returns.
+  MockTrustTokenRequestHelper(
+      base::Optional<mojom::TrustTokenOperationStatus> on_begin,
+      base::Optional<mojom::TrustTokenOperationStatus> on_finalize,
+      SyncOrAsync begin_operation_synchrony,
+      bool* begin_done_flag = nullptr)
+      : on_begin_(on_begin),
+        on_finalize_(on_finalize),
+        begin_operation_synchrony_(begin_operation_synchrony),
+        begin_done_flag_(begin_done_flag) {}
+
+  ~MockTrustTokenRequestHelper() override {
+    DCHECK(!on_begin_.has_value())
+        << "Begin operation was expected but not performed.";
+    DCHECK(!on_finalize_.has_value())
+        << "Finalize operation was expected but not performed.";
+  }
+
+  MockTrustTokenRequestHelper(const MockTrustTokenRequestHelper&) = delete;
+  MockTrustTokenRequestHelper& operator=(const MockTrustTokenRequestHelper&) =
+      delete;
+
+  // TrustTokenRequestHelper:
+  void Begin(net::URLRequest* request,
+             base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done)
+      override {
+    DCHECK(on_begin_.has_value());
+
+    // Clear storage to crash if the method gets called a second time.
+    mojom::TrustTokenOperationStatus result = *on_begin_;
+    on_begin_.reset();
+
+    switch (begin_operation_synchrony_) {
+      case SyncOrAsync::kSync: {
+        OnDoneBeginning(base::BindOnce(std::move(done), result));
+        return;
+      }
+      case SyncOrAsync::kAsync: {
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE,
+            base::BindOnce(&MockTrustTokenRequestHelper::OnDoneBeginning,
+                           base::Unretained(this),
+                           base::BindOnce(std::move(done), result)));
+        return;
+      }
+    }
+  }
+
+  mojom::TrustTokenOperationStatus Finalize(
+      mojom::URLResponseHead* response) override {
+    DCHECK(on_finalize_.has_value());
+
+    // Clear storage to crash if the method gets called a second time.
+    mojom::TrustTokenOperationStatus result = *on_finalize_;
+    on_finalize_.reset();
+    return result;
+  }
+
+ private:
+  void OnDoneBeginning(base::OnceClosure done) {
+    if (begin_done_flag_) {
+      EXPECT_FALSE(*begin_done_flag_);
+      *begin_done_flag_ = true;
+    }
+
+    std::move(done).Run();
+  }
+
+  // Store mocked function results in Optionals to hit a CHECK failure if a mock
+  // method is called without having had a return value specified.
+  base::Optional<mojom::TrustTokenOperationStatus> on_begin_;
+  base::Optional<mojom::TrustTokenOperationStatus> on_finalize_;
+
+  SyncOrAsync begin_operation_synchrony_;
+
+  bool* begin_done_flag_;
+};
+
+}  // namespace
+
+class URLLoaderSyncOrAsyncTrustTokenOperationTest
+    : public URLLoaderTest,
+      public ::testing::WithParamInterface<
+          MockTrustTokenRequestHelper::SyncOrAsync> {
+ public:
+  void OnServerReceivedRequest(const net::test_server::HttpRequest&) override {
+    EXPECT_TRUE(outbound_trust_token_operation_was_successful_);
+  }
+
+ protected:
+  // Maintain a flag, set by the mock trust token request helper, denoting
+  // whether we've successfully executed the outbound Trust Tokens operation.
+  // This is used to make URLLoader does not send its main request before it
+  // has completed the outbound part of its Trust Tokens operation (this
+  // involves checking preconditions and potentially annotating the request with
+  // Trust Tokens-related request headers).
+  bool outbound_trust_token_operation_was_successful_ = false;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    WithSyncAndAsyncOperations,
+    URLLoaderSyncOrAsyncTrustTokenOperationTest,
+    ::testing::Values(MockTrustTokenRequestHelper::SyncOrAsync::kSync,
+                      MockTrustTokenRequestHelper::SyncOrAsync::kAsync));
+
+// An otherwise-successful request with an associated Trust Tokens operation
+// whose Begin and Finalize steps are both successful should succeed overall.
+TEST_P(URLLoaderSyncOrAsyncTrustTokenOperationTest,
+       HandlesTrustTokenOperationSuccess) {
+  ResourceRequest request =
+      CreateResourceRequest("GET", test_server()->GetURL("/simple_page.html"));
+
+  base::RunLoop delete_run_loop;
+  mojo::PendingRemote<mojom::URLLoader> loader_remote;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      nullptr /* network_context_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      loader_remote.InitWithNewPipeAndPassReceiver(), 0, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      /*coep_reporter=*/nullptr, 0 /* request_id */,
+      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */,
+      nullptr /* origin_policy_manager */,
+      std::make_unique<MockTrustTokenRequestHelper>(
+          mojom::TrustTokenOperationStatus::kOk /* on_begin */,
+          mojom::TrustTokenOperationStatus::kOk /* on_finalize */, GetParam(),
+          &outbound_trust_token_operation_was_successful_));
+
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  EXPECT_EQ(client()->completion_status().error_code, net::OK);
+  EXPECT_THAT(client()->completion_status().trust_token_operation_status,
+              Optional(mojom::TrustTokenOperationStatus::kOk));
+  // The page should still have loaded.
+  base::FilePath file = GetTestFilePath("simple_page.html");
+  std::string expected;
+  if (!base::ReadFileToString(file, &expected)) {
+    ADD_FAILURE() << "File not found: " << file.value();
+    return;
+  }
+  EXPECT_EQ(ReadBody(), expected);
+
+  EXPECT_FALSE(client()->response_head()->headers->raw_headers().empty());
+}
+
+// A request with an associated Trust Tokens operation whose Begin step returns
+// kAlreadyExists should return a success result immediately, without completing
+// the load.
+//
+// (This is the case exactly when the request is for token redemption, and the
+// Trust Tokens logic determines that there is already a cached signed
+// redemption record stored locally, obviating the need to execute a redemption
+// operation.)
+TEST_P(URLLoaderSyncOrAsyncTrustTokenOperationTest,
+       HandlesTrustTokenSignedRedemptionRecordCacheHit) {
+  ResourceRequest request =
+      CreateResourceRequest("GET", test_server()->GetURL("/simple_page.html"));
+
+  base::RunLoop delete_run_loop;
+  mojo::PendingRemote<mojom::URLLoader> loader_remote;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      nullptr /* network_context_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      loader_remote.InitWithNewPipeAndPassReceiver(), 0, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      /*coep_reporter=*/nullptr, 0 /* request_id */,
+      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */,
+      nullptr /* origin_policy_manager */,
+      std::make_unique<MockTrustTokenRequestHelper>(
+          mojom::TrustTokenOperationStatus::kAlreadyExists /* on_begin */,
+          base::nullopt /* on_finalize */, GetParam(),
+          &outbound_trust_token_operation_was_successful_));
+
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  EXPECT_EQ(client()->completion_status().error_code,
+            net::ERR_TRUST_TOKEN_OPERATION_CACHE_HIT);
+  EXPECT_THAT(client()->completion_status().trust_token_operation_status,
+              Optional(mojom::TrustTokenOperationStatus::kAlreadyExists));
+
+  EXPECT_FALSE(client()->response_head());
+  EXPECT_FALSE(client()->response_body().is_valid());
+}
+
+// When a request's associated Trust Tokens operation's Begin step fails, the
+// request itself should fail immediately.
+TEST_P(URLLoaderSyncOrAsyncTrustTokenOperationTest,
+       HandlesTrustTokenBeginFailure) {
+  ResourceRequest request =
+      CreateResourceRequest("GET", test_server()->GetURL("/simple_page.html"));
+
+  base::RunLoop delete_run_loop;
+  mojo::PendingRemote<mojom::URLLoader> loader_remote;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      nullptr /* network_context_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      loader_remote.InitWithNewPipeAndPassReceiver(), 0, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      /*coep_reporter=*/nullptr, 0 /* request_id */,
+      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */,
+      nullptr /* origin_policy_manager */,
+      std::make_unique<MockTrustTokenRequestHelper>(
+          mojom::TrustTokenOperationStatus::kFailedPrecondition /* on_begin */,
+          base::nullopt /* on_finalize */, GetParam(),
+          &outbound_trust_token_operation_was_successful_));
+
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  EXPECT_EQ(client()->completion_status().error_code,
+            net::ERR_TRUST_TOKEN_OPERATION_FAILED);
+  EXPECT_THAT(client()->completion_status().trust_token_operation_status,
+              Optional(mojom::TrustTokenOperationStatus::kFailedPrecondition));
+
+  EXPECT_FALSE(client()->response_head());
+  EXPECT_FALSE(client()->response_body().is_valid());
+}
+
+// When a request's associated Trust Tokens operation's Begin step succeeds but
+// its Finalize step fails, the request itself should fail.
+TEST_P(URLLoaderSyncOrAsyncTrustTokenOperationTest,
+       HandlesTrustTokenFinalizeFailure) {
+  ResourceRequest request =
+      CreateResourceRequest("GET", test_server()->GetURL("/simple_page.html"));
+
+  base::RunLoop delete_run_loop;
+  mojo::PendingRemote<mojom::URLLoader> loader_remote;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      nullptr /* network_context_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      loader_remote.InitWithNewPipeAndPassReceiver(), 0, request,
+      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      /*coep_reporter=*/nullptr, 0 /* request_id */,
+      0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */,
+      nullptr /* origin_policy_manager */,
+      std::make_unique<MockTrustTokenRequestHelper>(
+          mojom::TrustTokenOperationStatus::kOk /* on_begin */,
+          mojom::TrustTokenOperationStatus::kBadResponse /* on_finalize */,
+          GetParam(), &outbound_trust_token_operation_was_successful_));
+
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  EXPECT_EQ(client()->completion_status().error_code,
+            net::ERR_TRUST_TOKEN_OPERATION_FAILED);
+  EXPECT_THAT(client()->completion_status().trust_token_operation_status,
+              Optional(mojom::TrustTokenOperationStatus::kBadResponse));
 }
 
 }  // namespace network

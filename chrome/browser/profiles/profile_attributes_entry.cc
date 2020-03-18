@@ -237,9 +237,9 @@ const gfx::Image& ProfileAttributesEntry::GetAvatarIcon() const {
       return *image;
   }
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  // Use the high resolution version of the avatar if it exists. Mobile and
-  // ChromeOS don't need the high resolution version so no need to fetch it.
+#if !defined(OS_ANDROID)
+  // Use the high resolution version of the avatar if it exists. Mobile doesn't
+  // need the high resolution version so no need to fetch it.
   const gfx::Image* image = GetHighResAvatar();
   if (image)
     return *image;

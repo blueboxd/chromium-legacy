@@ -37,9 +37,8 @@
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller_delegate.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
-#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -572,8 +571,7 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
   }
   UrlLoadParams params = UrlLoadParams::InCurrentTab(url);
   params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  UrlLoadingServiceFactory::GetForBrowserState(_currentBrowserState)
-      ->Load(params);
+  UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
 }
 
 - (void)openURLInNewTab:(const GURL&)url
@@ -584,8 +582,7 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
   UrlLoadParams params = UrlLoadParams::InNewTab(url);
   params.SetInBackground(inBackground);
   params.in_incognito = inIncognito;
-  UrlLoadingServiceFactory::GetForBrowserState(_currentBrowserState)
-      ->Load(params);
+  UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
 }
 
 @end

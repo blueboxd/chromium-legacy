@@ -10,7 +10,7 @@
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.m.js';
 // #import {TestOpenWindowProxy} from 'chrome://test/settings/test_open_window_proxy.m.js';
-// clang-format-on
+// clang-format on
 
 suite('PasswordsAndForms', function() {
   /**

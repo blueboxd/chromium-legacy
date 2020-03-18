@@ -2989,6 +2989,12 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Fail
 crbug.com/1053965 external/wpt/css/css-values/ex-unit-004.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-text/line-break/line-break-strict-015.xht [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text/line-break/line-break-strict-015.xht [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-text/line-break/line-break-strict-015.xht [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-text/line-break/line-break-normal-015.xht [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text/line-break/line-break-normal-015.xht [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-text/line-break/line-break-normal-015.xht [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/cssom/CSSStyleSheet-constructable-disallow-import.tentative.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/css/cssom/CSSStyleSheet-constructable-disallow-import.tentative.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/css/cssom/CSSStyleSheet-constructable-disallow-import.tentative.html [ Timeout ]

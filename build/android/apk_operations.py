@@ -1460,12 +1460,7 @@ To disable filtering, (but keep coloring), use --verbose.
   def Run(self):
     deobfuscate = None
     if self.args.proguard_mapping_path and not self.args.no_deobfuscate:
-      try:
-        deobfuscate = deobfuscator.Deobfuscator(self.args.proguard_mapping_path)
-      except OSError:
-        sys.stderr.write('Error executing "bin/java_deobfuscate". '
-                         'Did you forget to build it?\n')
-        sys.exit(1)
+      deobfuscate = deobfuscator.Deobfuscator(self.args.proguard_mapping_path)
 
     stack_script_context = _StackScriptContext(
         self.args.output_directory,

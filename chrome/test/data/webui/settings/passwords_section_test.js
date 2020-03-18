@@ -15,7 +15,7 @@
 // #import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.m.js';
 // #import {getSyncAllPrefs, simulateSyncStatus} from 'chrome://test/settings/sync_test_util.m.js';
 // #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
-// clang-format-on
+// clang-format on
 
 cr.define('settings_passwords_section', function() {
   const PasswordCheckState = chrome.passwordsPrivate.PasswordCheckState;
@@ -33,8 +33,8 @@ cr.define('settings_passwords_section', function() {
     const listElement = passwordsSection.$.passwordList;
     assertEquals(passwordList.length, listElement.items.length);
     for (let index = 0; index < passwordList.length; ++index) {
-      const listItems = passwordsSection.shadowRoot.querySelectorAll(
-          'password-list-item');
+      const listItems =
+          passwordsSection.shadowRoot.querySelectorAll('password-list-item');
       const node = listItems[index];
       assertTrue(!!node);
       const passwordInfo = passwordList[index];
@@ -127,7 +127,7 @@ cr.define('settings_passwords_section', function() {
     let elementFactory = null;
 
     suiteSetup(function() {
-        loadTimeData.overrideValues({enablePasswordCheck: true});
+      loadTimeData.overrideValues({enablePasswordCheck: true});
     });
 
     setup(function() {
@@ -925,10 +925,8 @@ cr.define('settings_passwords_section', function() {
             passwordsSection.$$('#checkPasswordsBannerContainer').hidden);
         assertTrue(passwordsSection.$$('#checkPasswordsButton').hidden);
         assertFalse(passwordsSection.$$('#checkPasswordsLinkRow').hidden);
-        assertTrue(
-            passwordsSection.$$('#checkPasswordLeakDescription').hidden);
-        assertFalse(
-            passwordsSection.$$('#checkPasswordWarningIcon').hidden);
+        assertTrue(passwordsSection.$$('#checkPasswordLeakDescription').hidden);
+        assertFalse(passwordsSection.$$('#checkPasswordWarningIcon').hidden);
         assertFalse(passwordsSection.$$('#checkPasswordLeakCount').hidden);
       });
     });

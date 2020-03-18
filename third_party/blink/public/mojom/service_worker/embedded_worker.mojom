@@ -22,6 +22,7 @@ import "third_party/blink/public/mojom/service_worker/service_worker_installed_s
 import "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom";
+import "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom";
 import "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom";
 import "third_party/blink/public/mojom/web_feature/web_feature.mojom";
 import "url/mojom/url.mojom";
@@ -51,6 +52,10 @@ struct EmbeddedWorkerStartParams {
 
   // The string used for "user-agent" HTTP header.
   string user_agent;
+
+  // The metadata for userAgentData and the UA-CH headers.
+  // See https://wicg.github.io/ua-client-hints/ for more details.
+  UserAgentMetadata ua_metadata;
 
   // The id this service worker uses as render_frame_id in
   // network::ResourceRequests it makes.

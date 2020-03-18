@@ -200,6 +200,7 @@ class ThreadedWorkletMessagingProxyForTest
         std::make_unique<GlobalScopeCreationParams>(
             document->Url(), mojom::blink::ScriptType::kModule,
             "threaded_worklet", document->UserAgent(),
+            document->GetFrame()->Loader().UserAgentMetadata(),
             nullptr /* web_worker_fetch_context */,
             document->GetContentSecurityPolicy()->Headers(),
             document->GetReferrerPolicy(), document->GetSecurityOrigin(),

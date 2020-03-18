@@ -209,7 +209,7 @@ void URLLoaderFactory::CreateLoaderAndStart(
       std::move(keepalive_statistics_recorder),
       std::move(network_usage_accumulator),
       header_client_.is_bound() ? header_client_.get() : nullptr,
-      context_->origin_policy_manager());
+      context_->origin_policy_manager(), nullptr /* trust_token_helper */);
   cors_url_loader_factory_->OnLoaderCreated(std::move(loader));
 }
 

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/frame/navigator_id.h"
 #include "third_party/blink/renderer/core/frame/navigator_language.h"
 #include "third_party/blink/renderer/core/frame/navigator_on_line.h"
+#include "third_party/blink/renderer/core/frame/navigator_ua.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -50,12 +51,15 @@ class CORE_EXPORT WorkerNavigator final
       public NavigatorID,
       public NavigatorLanguage,
       public NavigatorOnLine,
+      public NavigatorUA,
       public Supplementable<WorkerNavigator> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigator);
 
  public:
-  explicit WorkerNavigator(const String&, ExecutionContext* execution_context);
+  WorkerNavigator(const String& user_agent,
+                  const UserAgentMetadata&,
+                  ExecutionContext* execution_context);
   ~WorkerNavigator() override;
 
   // NavigatorID override
@@ -69,8 +73,17 @@ class CORE_EXPORT WorkerNavigator final
 
   void Trace(Visitor*) override;
 
+ protected:
+  UserAgentMetadata GetUserAgentMetadata() const override {
+    return ua_metadata_;
+  }
+  ExecutionContext* GetUAExecutionContext() const override {
+    return GetExecutionContext();
+  }
+
  private:
   String user_agent_;
+  UserAgentMetadata ua_metadata_;
 };
 
 }  // namespace blink

@@ -1666,7 +1666,9 @@
     No saved passwords
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_BUTTON" desc="This button allows users to change their compromised passwords.">
-    Change passwords
+    {NUM_PASSWORDS, plural,
+     =1 {Change password}
+     other {Change passwords}}
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_ENABLED" desc="This text points out that Safe Browsing is enabled and that the user is protected.">
     Safe Browsing is up to date and protecting you from harmful sites and downloads

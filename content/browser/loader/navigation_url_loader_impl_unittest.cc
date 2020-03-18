@@ -100,7 +100,7 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
         0 /* keepalive_request_size */, resource_scheduler_client_,
         nullptr /* keepalive_statistics_recorder */,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
   }
 
   bool MaybeCreateLoaderForResponse(

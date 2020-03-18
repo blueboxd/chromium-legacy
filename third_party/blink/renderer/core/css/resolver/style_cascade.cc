@@ -112,7 +112,25 @@ void StyleCascade::Analyze(const CascadeInterpolations& interpolations,
       uint32_t position = EncodeInterpolationPosition(
           i, active_interpolation.key.IsPresentationAttribute());
       CascadePriority priority(entries[i].origin, false, 0, position);
-      map_.Add(active_interpolation.key.GetCSSPropertyName(), priority);
+
+      auto name = active_interpolation.key.GetCSSPropertyName();
+      CSSPropertyRef ref(name, GetDocument());
+      DCHECK(ref.IsValid());
+      const CSSProperty& property = ref.GetProperty();
+
+      if (filter.Rejects(property))
+        continue;
+
+      map_.Add(name, priority);
+
+      // Since an interpolation for an unvisited property also causes an
+      // interpolation of the visited property, add the visited property to
+      // the map as well.
+      // TODO(crbug.com/1062217): Interpolate visited colors separately
+      if (const CSSProperty* visited = property.GetVisitedProperty()) {
+        if (!filter.Rejects(*visited))
+          map_.Add(visited->GetCSSPropertyName(), priority);
+      }
     }
   }
 }
@@ -286,12 +304,13 @@ void StyleCascade::ApplyInterpolationMap(const ActiveInterpolationsMap& map,
     if (ResolveIfSurrogate(property, priority, resolver) == Surrogate::kSkip)
       continue;
 
-    ApplyInterpolation(property, entry.value, resolver);
+    ApplyInterpolation(property, priority, entry.value, resolver);
   }
 }
 
 void StyleCascade::ApplyInterpolation(
     const CSSProperty& property,
+    CascadePriority priority,
     const ActiveInterpolations& interpolations,
     Resolver& resolver) {
   const Interpolation& interpolation = *interpolations.front();
@@ -302,6 +321,24 @@ void StyleCascade::ApplyInterpolation(
     InvalidatableInterpolation::ApplyStack(interpolations, environment);
   } else {
     To<TransitionInterpolation>(interpolation).Apply(state_);
+  }
+
+  // Applying a color property interpolation will also unconditionally apply
+  // the -internal-visited- counterpart (see CSSColorInterpolationType::
+  // ApplyStandardPropertyValue). To make sure !important rules in :visited
+  // selectors win over animations, we re-apply the -internal-visited property
+  // if its priority is higher.
+  //
+  // TODO(crbug.com/1062217): Interpolate visited colors separately
+  if (const CSSProperty* visited = property.GetVisitedProperty()) {
+    CascadePriority* visited_priority =
+        map_.Find(visited->GetCSSPropertyName());
+    if (visited_priority && priority < *visited_priority) {
+      // Resetting generation to zero makes it possible to apply the
+      // visited property again.
+      *visited_priority = CascadePriority(*visited_priority, 0);
+      LookupAndApply(*visited, resolver);
+    }
   }
 }
 
@@ -359,6 +396,12 @@ void StyleCascade::LookupAndApplyInterpolation(
     CascadePriority priority,
     const CascadeInterpolations& interpolations,
     Resolver& resolver) {
+  // Interpolations for -internal-visited properties are applied via the
+  // interpolation for the main (unvisited) property, so we don't need to
+  // apply it twice.
+  // TODO(crbug.com/1062217): Interpolate visited colors separately
+  if (property.IsVisited())
+    return;
   DCHECK(priority.GetOrigin() >= CascadeOrigin::kAnimation);
   size_t index = DecodeInterpolationIndex(priority.GetPosition());
   DCHECK_LE(index, interpolations.GetEntries().size());
@@ -366,7 +409,7 @@ void StyleCascade::LookupAndApplyInterpolation(
   PropertyHandle handle = ToPropertyHandle(property, priority);
   const auto& entry = map.find(handle);
   DCHECK_NE(entry, map.end());
-  ApplyInterpolation(property, entry->value, resolver);
+  ApplyInterpolation(property, priority, entry->value, resolver);
 }
 
 bool StyleCascade::IsRootElement() const {

@@ -20,7 +20,6 @@
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/performance_manager_impl.h"
 #include "components/performance_manager/public/graph/process_node.h"
-#include "components/performance_manager/public/render_process_host_proxy.h"
 #include "components/performance_manager/render_process_user_data.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -67,8 +66,6 @@ class RenderProcessHostProxyTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(RenderProcessHostProxyTest, RPHDeletionInvalidatesProxy) {
-  //  content::RenderProcessHost* host(
-  //      rph_factory_->CreateRenderProcessHost(profile_, nullptr));
   std::unique_ptr<TestingProfileManager> profile_manager(
       new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
   ASSERT_TRUE(profile_manager->SetUp());

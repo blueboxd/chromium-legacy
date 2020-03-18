@@ -551,10 +551,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 
 // Opens the add account screen and then cancels it by opening a new tab.
 // Ensures that the add account screen is correctly dismissed. crbug.com/462200
-//
-// TODO(crbug.com/962847): This test crashes when the the add account screen
-// is dismissed.
-- (void)DISABLED_testSignInCancelAddAccount {
+- (void)testSignInCancelAddAccount {
   // Add an identity to avoid arriving on the Add Account screen when opening
   // sign-in.
   FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];

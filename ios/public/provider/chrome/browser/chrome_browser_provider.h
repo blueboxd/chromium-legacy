@@ -135,14 +135,14 @@ class ChromeBrowserProvider {
   // Returns an instance of the app distribution provider.
   virtual AppDistributionProvider* GetAppDistributionProvider() const;
 
-  virtual id<LogoVendor> CreateLogoVendor(ChromeBrowserState* browser_state,
-                                          web::WebState* web_state) const
-      NS_RETURNS_RETAINED;
-
   virtual id<LogoVendor> CreateLogoVendor(
       Browser* browser,
       web::WebState* web_state,
       id<URLLoadingBridge> loading_bridge) const NS_RETURNS_RETAINED;
+
+  virtual id<LogoVendor> CreateLogoVendor(Browser* browser,
+                                          web::WebState* web_state) const
+      NS_RETURNS_RETAINED;
 
   // Returns an instance of the omaha service provider.
   virtual OmahaServiceProvider* GetOmahaServiceProvider() const;

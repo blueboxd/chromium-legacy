@@ -65,7 +65,7 @@ ios_appex_bundle("credential_provider_extension") {
 
   extra_substitutions = [
     "CHROMIUM_SHORT_NAME=$chromium_short_name",
-    "CREDENTIAL_PROVIDER_EXTENSION_BUNDLE_ID=$chromium_bundle_id.CredentialProvider",
+    "CREDENTIAL_PROVIDER_EXTENSION_BUNDLE_ID=$chromium_bundle_id.CredentialProviderExtension",
   ]
 
   entitlements_target = ":entitlements"

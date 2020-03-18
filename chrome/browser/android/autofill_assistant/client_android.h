@@ -140,11 +140,14 @@ class ClientAndroid : public Client,
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   content::WebContents* web_contents_;
+  // Once initialized, the |password_manager_client_| is available while
+  // |web_contents_| is available.
+  mutable password_manager::PasswordManagerClient* password_manager_client_ =
+      nullptr;
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
   std::unique_ptr<Controller> controller_;
   mutable std::unique_ptr<WebsiteLoginFetcher> website_login_fetcher_;
-  mutable password_manager::PasswordManagerClient* password_manager_client_;
 
   // True if Start() was called. This turns on the tracking of dropouts.
   bool started_ = false;

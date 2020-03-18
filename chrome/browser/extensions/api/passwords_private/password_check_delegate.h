@@ -38,8 +38,6 @@ class PasswordCheckDelegate
       public password_manager::CompromisedCredentialsProvider::Observer,
       public password_manager::BulkLeakCheckService::Observer {
  public:
-  static constexpr size_t kTooManyPasswords = 1000;
-
   using CredentialPasswordsMap =
       std::map<password_manager::CredentialWithPassword,
                std::vector<autofill::PasswordForm>,

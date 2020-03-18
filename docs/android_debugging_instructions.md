@@ -222,19 +222,13 @@ file as follows:
 **Googlers Only**: For official build mapping files, see
 [go/chromejavadeobfuscation](https://goto.google.com/chromejavadeobfuscation).
 
-Once you have a .mapping file, build the `java_deobfuscate` tool:
-
-```shell
-ninja -C out/Default java_deobfuscate
-```
-
-Then run it via:
+Once you have a .mapping file:
 
 ```shell
 # For a file:
-out/Default/bin/java_deobfuscate PROGUARD_MAPPING_FILE.mapping < FILE
+build/android/stacktrace/java_deobfuscate.py PROGUARD_MAPPING_FILE.mapping < FILE
 # For logcat:
-adb logcat | out/Default/bin/java_deobfuscate PROGUARD_MAPPING_FILE.mapping
+adb logcat | build/android/stacktrace/java_deobfuscate.py PROGUARD_MAPPING_FILE.mapping
 ```
 
 ## Get WebKit code to output to the adb log

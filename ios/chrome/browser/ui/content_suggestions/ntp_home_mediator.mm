@@ -43,8 +43,8 @@
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/voice/voice_search_availability.h"
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -80,7 +80,7 @@ const char kNTPHelpURL[] =
   std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityObserverBridge;
   // Used to load URLs.
-  UrlLoadingService* _urlLoadingService;
+  UrlLoadingBrowserAgent* _URLLoader;
 }
 
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
@@ -103,7 +103,7 @@ const char kNTPHelpURL[] =
 
 - (instancetype)initWithWebState:(web::WebState*)webState
               templateURLService:(TemplateURLService*)templateURLService
-               urlLoadingService:(UrlLoadingService*)urlLoadingService
+                       URLLoader:(UrlLoadingBrowserAgent*)URLLoader
                      authService:(AuthenticationService*)authService
                  identityManager:(signin::IdentityManager*)identityManager
                       logoVendor:(id<LogoVendor>)logoVendor
@@ -113,7 +113,7 @@ const char kNTPHelpURL[] =
   if (self) {
     _webState = webState;
     _templateURLService = templateURLService;
-    _urlLoadingService = urlLoadingService;
+    _URLLoader = URLLoader;
     _authService = authService;
     _identityObserverBridge.reset(
         new signin::IdentityManagerObserverBridge(identityManager, self));
@@ -234,7 +234,7 @@ const char kNTPHelpURL[] =
   params.web_params.referrer =
       web::Referrer(GURL(ntp_snippets::GetContentSuggestionsReferrerURL()),
                     web::ReferrerPolicyDefault);
-  _urlLoadingService->Load(params);
+  _URLLoader->Load(params);
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_SUGGESTION];
 }
 
@@ -280,7 +280,7 @@ const char kNTPHelpURL[] =
 
   UrlLoadParams params = UrlLoadParams::InCurrentTab(mostVisitedItem.URL);
   params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  _urlLoadingService->Load(params);
+  _URLLoader->Load(params);
 }
 
 - (void)displayContextMenuForSuggestion:(CollectionViewItem*)item
@@ -352,7 +352,7 @@ const char kNTPHelpURL[] =
   if (notificationPromo->IsURLPromo()) {
     UrlLoadParams params = UrlLoadParams::InNewTab(notificationPromo->url());
     params.append_to = kCurrentTab;
-    _urlLoadingService->Load(params);
+    _URLLoader->Load(params);
     return;
   }
 
@@ -371,7 +371,7 @@ const char kNTPHelpURL[] =
       NewTabPageTabHelper::FromWebState(self.webState);
   if (NTPHelper && NTPHelper->IgnoreLoadRequests())
     return;
-  _urlLoadingService->Load(UrlLoadParams::InCurrentTab(GURL(kNTPHelpURL)));
+  _URLLoader->Load(UrlLoadParams::InCurrentTab(GURL(kNTPHelpURL)));
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_LEARN_MORE];
 }
 
@@ -541,7 +541,7 @@ const char kNTPHelpURL[] =
   params.in_incognito = incognito;
   params.append_to = kCurrentTab;
   params.origin_point = originPoint;
-  _urlLoadingService->Load(params);
+  _URLLoader->Load(params);
 }
 
 // Logs a histogram due to a Most Visited item being opened.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 20
+// Next MinVersion: 21
 
 module arc.mojom;
 
@@ -288,6 +288,7 @@ struct AccessibilityNodeInfoData {
   [MinVersion=5] AccessibilityCollectionItemInfoData? collection_item_info;
   [MinVersion=5] AccessibilityRangeInfoData? range_info;
   [MinVersion=12] int32 window_id;
+  [MinVersion=20] bool is_virtual_node;
 };
 
 // AccessibilityWindowInfoData is a struct to contain info about

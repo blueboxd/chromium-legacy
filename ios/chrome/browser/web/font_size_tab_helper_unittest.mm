@@ -277,3 +277,15 @@ TEST_F(FontSizeTabHelperTest, ClearUserZoomPrefs) {
                   ->Get(prefs::kIosUserZoomMultipliers)
                   ->DictEmpty());
 }
+
+// Tests that zoom is only enabled if the page content is html.
+TEST_F(FontSizeTabHelperTest, CanZoomContent) {
+  FontSizeTabHelper* font_size_tab_helper =
+      FontSizeTabHelper::FromWebState(&web_state_);
+
+  web_state_.SetContentIsHTML(false);
+  EXPECT_FALSE(font_size_tab_helper->CurrentPageSupportsTextZoom());
+
+  web_state_.SetContentIsHTML(true);
+  EXPECT_TRUE(font_size_tab_helper->CurrentPageSupportsTextZoom());
+}

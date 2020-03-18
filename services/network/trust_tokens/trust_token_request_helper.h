@@ -6,8 +6,8 @@
 #define SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_REQUEST_HELPER_H_
 
 #include "base/callback_forward.h"
+#include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
-#include "services/network/trust_tokens/trust_token_operation_status.h"
 
 namespace net {
 class URLRequest;
@@ -33,12 +33,12 @@ class TrustTokenRequestHelper {
   // Tokens issuance and redemption, this involves executing a network request).
   virtual void Begin(
       net::URLRequest* request,
-      base::OnceCallback<void(TrustTokenOperationStatus)> done) = 0;
+      base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) = 0;
 
   // Checks |response| for issuance response headers; if these are present and
   // valid, removes the headers, updates internal protocol state, and returns
   // true. Otherwise, returns false.
-  virtual TrustTokenOperationStatus Finalize(
+  virtual mojom::TrustTokenOperationStatus Finalize(
       mojom::URLResponseHead* response) = 0;
 };
 

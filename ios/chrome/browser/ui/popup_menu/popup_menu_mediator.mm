@@ -652,7 +652,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 
 // Whether or not text zoom is enabled
 - (BOOL)isTextZoomEnabled {
-  if (self.webContentAreaShowingOverlay || ![self isCurrentURLWebURL]) {
+  if (self.webContentAreaShowingOverlay) {
     return NO;
   }
 
@@ -660,7 +660,8 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
     return NO;
   }
   FontSizeTabHelper* helper = FontSizeTabHelper::FromWebState(self.webState);
-  return helper && !helper->IsTextZoomUIActive();
+  return helper && helper->CurrentPageSupportsTextZoom() &&
+         !helper->IsTextZoomUIActive();
 }
 
 // Whether the page is currently loading.

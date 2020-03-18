@@ -179,6 +179,10 @@ class SafetyCheckHandlerTest : public ChromeRenderViewHostTestHarness {
                            const base::string16& expected);
   void VerifyDisplayString(const base::DictionaryValue* event,
                            const std::string& expected);
+  void VerifyButtonString(const base::DictionaryValue* event,
+                          const base::string16& expected);
+  void VerifyButtonString(const base::DictionaryValue* event,
+                          const std::string& expected);
 
  protected:
   TestVersionUpdater* version_updater_ = nullptr;
@@ -267,6 +271,20 @@ void SafetyCheckHandlerTest::VerifyDisplayString(
     const base::DictionaryValue* event,
     const std::string& expected) {
   VerifyDisplayString(event, base::ASCIIToUTF16(expected));
+}
+
+void SafetyCheckHandlerTest::VerifyButtonString(
+    const base::DictionaryValue* event,
+    const base::string16& expected) {
+  base::string16 button;
+  ASSERT_TRUE(event->GetString("buttonString", &button));
+  EXPECT_EQ(expected, button);
+}
+
+void SafetyCheckHandlerTest::VerifyButtonString(
+    const base::DictionaryValue* event,
+    const std::string& expected) {
+  VerifyButtonString(event, base::ASCIIToUTF16(expected));
 }
 
 void SafetyCheckHandlerTest::ReplaceBrowserName(base::string16* s) {
@@ -587,6 +605,7 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_CompromisedExist) {
   ASSERT_TRUE(event2);
   VerifyDisplayString(
       event2, base::NumberToString(kCompromised) + " compromised passwords");
+  VerifyButtonString(event2, "Change passwords");
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckPasswords_Error) {
@@ -622,6 +641,7 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_RunningOneCompromised) {
               SafetyCheckHandler::PasswordsStatus::kCompromisedExist));
   ASSERT_TRUE(event);
   VerifyDisplayString(event, "1 compromised password");
+  VerifyButtonString(event, "Change password");
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckPasswords_NoPasswords) {

@@ -10,7 +10,8 @@
 
 namespace blink {
 
-NavigatorUAData::NavigatorUAData(LocalFrame* frame) : DOMWindowClient(frame) {
+NavigatorUAData::NavigatorUAData(ExecutionContext* context)
+    : ExecutionContextClient(context) {
   NavigatorUABrandVersion* dict = NavigatorUABrandVersion::Create();
   dict->setBrand("");
   dict->setVersion("");
@@ -46,7 +47,7 @@ void NavigatorUAData::SetUAFullVersion(const String& ua_full_version) {
 }
 
 bool NavigatorUAData::mobile() const {
-  if (GetFrame() && GetFrame()->GetPage()) {
+  if (GetExecutionContext()) {
     return is_mobile_;
   }
   return false;
@@ -54,10 +55,10 @@ bool NavigatorUAData::mobile() const {
 
 const HeapVector<Member<NavigatorUABrandVersion>>& NavigatorUAData::uaList()
     const {
-  if (!GetFrame() || !GetFrame()->GetPage()) {
-    return empty_brand_set_;
+  if (GetExecutionContext()) {
+    return brand_set_;
   }
-  return brand_set_;
+  return empty_brand_set_;
 }
 
 ScriptPromise NavigatorUAData::getHighEntropyValues(
@@ -87,7 +88,7 @@ void NavigatorUAData::Trace(Visitor* visitor) {
   visitor->Trace(brand_set_);
   visitor->Trace(empty_brand_set_);
   ScriptWrappable::Trace(visitor);
-  DOMWindowClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

@@ -18,10 +18,12 @@ template("ios_eg2_test_app_host") {
       bundle_deps = []
     }
     bundle_deps += [ "//ios/third_party/earl_grey2:app_framework+bundle" ]
-    if (ios_firebase_resources_target != "") {
-      bundle_deps += [ ios_firebase_resources_target ]
+    if (!defined(include_provider_resources)) {
+      include_provider_resources = true
     }
-
+    if (include_provider_resources) {
+      bundle_deps += ios_providers_resources_targets
+    }
     if (!defined(deps)) {
       deps = []
     }

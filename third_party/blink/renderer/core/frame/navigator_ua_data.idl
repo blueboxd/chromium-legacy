@@ -5,7 +5,8 @@
 // https://github.com/WICG/ua-client-hints
 
 [
-    RuntimeEnabled=UserAgentClientHint
+    RuntimeEnabled=UserAgentClientHint,
+    Exposed=(Window,Worker)
 ] interface NavigatorUAData {
   readonly attribute FrozenArray<NavigatorUABrandVersion> uaList;
   readonly attribute boolean mobile;

@@ -151,11 +151,10 @@
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
 #import "ios/chrome/browser/url_loading/image_search_param_generator.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_observer_bridge.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
-#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
@@ -1168,7 +1167,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
   params.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
   params.in_incognito = self.isOffTheRecord;
-  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)->Load(params);
+  UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
 }
 
 - (void)appendTabAddedCompletion:(ProceduralBlock)tabAddedCompletion {
@@ -3099,8 +3098,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         params.in_incognito = strongSelf.isOffTheRecord;
         params.append_to = kCurrentTab;
         params.origin_point = originPoint;
-        UrlLoadingServiceFactory::GetForBrowserState(strongSelf.browserState)
-            ->Load(params);
+        UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
       };
       [_contextMenuCoordinator addItemWithTitle:title action:action];
       if (!_isOffTheRecord) {
@@ -3120,8 +3118,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           params.web_params.referrer = referrer;
           params.in_incognito = YES;
           params.append_to = kCurrentTab;
-          UrlLoadingServiceFactory::GetForBrowserState(strongSelf.browserState)
-              ->Load(params);
+          UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
         };
         [_contextMenuCoordinator addItemWithTitle:title action:action];
       }
@@ -3188,7 +3185,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         return;
 
       Record(ACTION_OPEN_IMAGE, isImage, isLink);
-      UrlLoadingServiceFactory::GetForBrowserState(strongSelf.browserState)
+      UrlLoadingBrowserAgent::FromBrowser(self.browser)
           ->Load(UrlLoadParams::InCurrentTab(imageUrl));
     };
     [_contextMenuCoordinator addItemWithTitle:title action:action];
@@ -3209,8 +3206,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       params.in_incognito = strongSelf.isOffTheRecord;
       params.append_to = kCurrentTab;
       params.origin_point = originPoint;
-      UrlLoadingServiceFactory::GetForBrowserState(strongSelf.browserState)
-          ->Load(params);
+      UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
     };
     [_contextMenuCoordinator addItemWithTitle:title action:action];
 
@@ -3338,10 +3334,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (inNewTab) {
     UrlLoadParams params = UrlLoadParams::InNewTab(webParams);
     params.in_incognito = self.isOffTheRecord;
-    UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->Load(params);
+    UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
   } else {
-    UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+    UrlLoadingBrowserAgent::FromBrowser(self.browser)
         ->Load(UrlLoadParams::InCurrentTab(webParams));
   }
 }
@@ -4079,7 +4074,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   UrlLoadParams params = UrlLoadParams::InNewTab(helpUrl);
   params.append_to = kCurrentTab;
   params.user_initiated = NO;
-  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)->Load(params);
+  UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
 }
 
 - (void)showBookmarksManager {

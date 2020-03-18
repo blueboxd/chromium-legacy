@@ -50,6 +50,11 @@ class AXLanguageDetectionTestFixture : public testing::Test {
   AXLanguageDetectionTestFixture() = default;
   ~AXLanguageDetectionTestFixture() override = default;
 
+  AXLanguageDetectionTestFixture(const AXLanguageDetectionTestFixture&) =
+      delete;
+  AXLanguageDetectionTestFixture& operator=(
+      const AXLanguageDetectionTestFixture&) = delete;
+
  protected:
   AXLanguageDetectionObserver* getObserver(AXTree& tree) {
     return tree.language_detection_manager->language_detection_observer_.get();
@@ -93,9 +98,6 @@ class AXLanguageDetectionTestFixture : public testing::Test {
     return tree.language_detection_manager->lang_info_stats_
         .unique_top_lang_detected_;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AXLanguageDetectionTestFixture);
 };
 
 class AXLanguageDetectionTestStaticContent
@@ -103,6 +105,11 @@ class AXLanguageDetectionTestStaticContent
  public:
   AXLanguageDetectionTestStaticContent() = default;
   ~AXLanguageDetectionTestStaticContent() override = default;
+
+  AXLanguageDetectionTestStaticContent(
+      const AXLanguageDetectionTestStaticContent&) = delete;
+  AXLanguageDetectionTestStaticContent& operator=(
+      const AXLanguageDetectionTestStaticContent&) = delete;
 
   void SetUp() override {
     AXLanguageDetectionTestFixture::SetUp();
@@ -117,6 +124,11 @@ class AXLanguageDetectionTestDynamicContent
  public:
   AXLanguageDetectionTestDynamicContent() = default;
   ~AXLanguageDetectionTestDynamicContent() override = default;
+
+  AXLanguageDetectionTestDynamicContent(
+      const AXLanguageDetectionTestDynamicContent&) = delete;
+  AXLanguageDetectionTestDynamicContent& operator=(
+      const AXLanguageDetectionTestDynamicContent&) = delete;
 
   void SetUp() override {
     AXLanguageDetectionTestStaticContent::SetUp();

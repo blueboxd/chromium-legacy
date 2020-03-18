@@ -10,7 +10,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/common/ui/colors/dynamic_color_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 
@@ -25,13 +25,13 @@
 
 @implementation IncognitoViewController {
   // The UrlLoadingService associated with this view.
-  UrlLoadingService* _urlLoadingService;  // weak
+  UrlLoadingBrowserAgent* _URLLoader;  // weak
 }
 
-- (id)initWithUrlLoadingService:(UrlLoadingService*)urlLoadingService {
+- (instancetype)initWithUrlLoader:(UrlLoadingBrowserAgent*)URLLoader {
   self = [super init];
   if (self) {
-    _urlLoadingService = urlLoadingService;
+    _URLLoader = URLLoader;
   }
   return self;
 }
@@ -42,7 +42,7 @@
   }
 
   self.incognitoView = [[IncognitoView alloc] initWithFrame:self.view.bounds
-                                          urlLoadingService:_urlLoadingService];
+                                                  URLLoader:_URLLoader];
   [self.incognitoView setAutoresizingMask:UIViewAutoresizingFlexibleHeight |
                                           UIViewAutoresizingFlexibleWidth];
 

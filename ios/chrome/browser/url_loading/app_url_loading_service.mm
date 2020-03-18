@@ -8,9 +8,8 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
-#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -27,35 +26,33 @@ void AppUrlLoadingService::SetDelegate(
 void AppUrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
   DCHECK(delegate_);
 
-  ChromeBrowserState* current_browser_state =
-      delegate_.currentBrowserForURLLoading->GetBrowserState();
+  Browser* browser = delegate_.currentBrowserForURLLoading;
+  ChromeBrowserState* browser_state = browser->GetBrowserState();
 
   if (params.web_params.url.is_valid()) {
     UrlLoadParams saved_params = params;
     saved_params.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
 
     if (params.from_chrome) {
-      [delegate_
-          dismissModalDialogsWithCompletion:^{
-            [delegate_
-                openSelectedTabInMode:ApplicationModeForTabOpening::NORMAL
-                    withUrlLoadParams:saved_params
-                           completion:nil];
-          }
-                             dismissOmnibox:YES];
+      auto dismiss_completion = ^{
+        [delegate_ openSelectedTabInMode:ApplicationModeForTabOpening::NORMAL
+                       withUrlLoadParams:saved_params
+                              completion:nil];
+      };
+      [delegate_ dismissModalDialogsWithCompletion:dismiss_completion
+                                    dismissOmnibox:YES];
     } else {
       ApplicationMode mode = params.in_incognito ? ApplicationMode::INCOGNITO
                                                  : ApplicationMode::NORMAL;
-      [delegate_
-          dismissModalDialogsWithCompletion:^{
-            [delegate_ setCurrentInterfaceForMode:mode];
-            UrlLoadingServiceFactory::GetForBrowserState(current_browser_state)
-                ->Load(saved_params);
-          }
-                             dismissOmnibox:YES];
+      auto dismiss_completion = ^{
+        [delegate_ setCurrentInterfaceForMode:mode];
+        UrlLoadingBrowserAgent::FromBrowser(browser)->Load(saved_params);
+      };
+      [delegate_ dismissModalDialogsWithCompletion:dismiss_completion
+                                    dismissOmnibox:YES];
     }
   } else {
-    if (current_browser_state->IsOffTheRecord() != params.in_incognito) {
+    if (browser_state->IsOffTheRecord() != params.in_incognito) {
       // Must take a snapshot of the tab before we switch the incognito mode
       // because the currentTab will change after the switch.
       web::WebState* currentWebState =

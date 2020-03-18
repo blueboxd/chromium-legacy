@@ -94,8 +94,8 @@ class TestTranslateAgent : public translate::TranslateAgent {
 
     // Will get new result values via OnPageTranslated.
     TranslateFrame(translate_script, source_lang, target_lang,
-                   base::Bind(&TestTranslateAgent::OnPageTranslated,
-                              base::Unretained(this)));
+                   base::BindOnce(&TestTranslateAgent::OnPageTranslated,
+                                  base::Unretained(this)));
   }
 
   bool GetPageTranslatedResult(std::string* original_lang,
@@ -160,8 +160,8 @@ class TranslateAgentBrowserTest : public ChromeRenderViewTest {
         ->GetBrowserInterfaceBroker()
         ->SetBinderForTesting(
             translate::mojom::ContentTranslateDriver::Name_,
-            base::Bind(&FakeContentTranslateDriver::BindHandle,
-                       base::Unretained(&fake_translate_driver_)));
+            base::BindRepeating(&FakeContentTranslateDriver::BindHandle,
+                                base::Unretained(&fake_translate_driver_)));
   }
 
   void TearDown() override {

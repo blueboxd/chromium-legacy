@@ -126,6 +126,9 @@ void FontSizeTabHelper::ClearUserZoomPrefs(PrefService* pref_service) {
 }
 
 void FontSizeTabHelper::SetPageFontSize(int size) {
+  if (!CurrentPageSupportsTextZoom()) {
+    return;
+  }
   tab_helper_has_zoomed_ = true;
   if (web_state_->ContentIsHTML()) {
     NSString* js = [NSString
@@ -135,6 +138,7 @@ void FontSizeTabHelper::SetPageFontSize(int size) {
 }
 
 void FontSizeTabHelper::UserZoom(Zoom zoom) {
+  DCHECK(CurrentPageSupportsTextZoom());
   double new_zoom_multiplier = NewMultiplierAfterZoom(zoom).value_or(1);
   StoreCurrentUserZoomMultiplier(new_zoom_multiplier);
 
@@ -204,6 +208,10 @@ bool FontSizeTabHelper::IsTextZoomUIActive() const {
 
 void FontSizeTabHelper::SetTextZoomUIActive(bool active) {
   text_zoom_ui_active_ = active;
+}
+
+bool FontSizeTabHelper::CurrentPageSupportsTextZoom() const {
+  return web_state_->ContentIsHTML();
 }
 
 int FontSizeTabHelper::GetFontSize() const {

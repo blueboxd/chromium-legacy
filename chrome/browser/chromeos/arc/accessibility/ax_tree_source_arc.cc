@@ -588,12 +588,15 @@ void AXTreeSourceArc::GetChildren(
   if (out_children->empty())
     return;
 
-  if (IsWebViewNode(info_data->GetNode()))
+  if (info_data->IsVirtualNode())
     return;
 
   std::map<int32_t, size_t> id_to_index;
-  for (size_t i = 0; i < out_children->size(); i++)
+  for (size_t i = 0; i < out_children->size(); i++) {
+    if (out_children->at(i)->IsVirtualNode())
+      return;
     id_to_index[out_children->at(i)->GetId()] = i;
+  }
 
   // Sort children based on their enclosing bounding rectangles, based on their
   // descendants.

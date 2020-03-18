@@ -24,6 +24,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_CONTAINER_H_
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_model_object.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -108,7 +109,12 @@ class LayoutSVGContainer : public LayoutSVGModelObject {
   mutable bool has_non_isolated_blending_descendants_dirty_ : 1;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGContainer, IsSVGContainer());
+template <>
+struct DowncastTraits<LayoutSVGContainer> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsSVGContainer();
+  }
+};
 
 }  // namespace blink
 

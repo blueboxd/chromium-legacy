@@ -19,17 +19,18 @@ std::unique_ptr<net::URLRequest> TrustTokenRequestHelperTest::MakeURLRequest(
                                 &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
 }
 
-TrustTokenOperationStatus
+mojom::TrustTokenOperationStatus
 TrustTokenRequestHelperTest::ExecuteBeginOperationAndWaitForResult(
     TrustTokenRequestHelper* helper,
     net::URLRequest* request) {
   base::RunLoop run_loop;
-  TrustTokenOperationStatus status;
-  helper->Begin(request, base::BindLambdaForTesting(
-                             [&](TrustTokenOperationStatus returned_status) {
-                               status = returned_status;
-                               run_loop.Quit();
-                             }));
+  mojom::TrustTokenOperationStatus status;
+  helper->Begin(request,
+                base::BindLambdaForTesting(
+                    [&](mojom::TrustTokenOperationStatus returned_status) {
+                      status = returned_status;
+                      run_loop.Quit();
+                    }));
   run_loop.Run();
   return status;
 }

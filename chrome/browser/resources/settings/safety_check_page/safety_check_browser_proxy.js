@@ -37,8 +37,7 @@ cr.define('settings', function() {
     NO_PASSWORDS: 4,
     SIGNED_OUT: 5,
     QUOTA_LIMIT: 6,
-    TOO_MANY_PASSWORDS: 7,
-    ERROR: 8,
+    ERROR: 7,
   };
 
   /**

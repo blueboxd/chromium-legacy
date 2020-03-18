@@ -12,8 +12,8 @@
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/dynamic_color_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -138,14 +138,13 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   NSArray<NSLayoutConstraint*>* _superViewConstraints;
 
   // The UrlLoadingService associated with this view.
-  UrlLoadingService* _urlLoadingService;  // weak
+  UrlLoadingBrowserAgent* _URLLoader;  // weak
 }
-
 - (instancetype)initWithFrame:(CGRect)frame
-            urlLoadingService:(UrlLoadingService*)urlLoadingService {
+                    URLLoader:(UrlLoadingBrowserAgent*)URLLoader {
   self = [super initWithFrame:frame];
   if (self) {
-    _urlLoadingService = urlLoadingService;
+    _URLLoader = URLLoader;
 
     self.alwaysBounceVertical = YES;
     // The bottom safe area is taken care of with the bottomUnsafeArea guides.
@@ -353,7 +352,7 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 
 // Triggers a navigation to the help page.
 - (void)learnMoreButtonPressed {
-  _urlLoadingService->Load(UrlLoadParams::InCurrentTab(
+  _URLLoader->Load(UrlLoadParams::InCurrentTab(
       GetUrlWithLang(GURL(kLearnMoreIncognitoUrl))));
 }
 

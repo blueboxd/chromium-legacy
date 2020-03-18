@@ -41,4 +41,4 @@ Navigator includes NavigatorID;
 Navigator includes NavigatorLanguage;
 Navigator includes NavigatorOnLine;
 Navigator includes NavigatorAutomationInformation;
-Navigator includes NavigatorUserAgent;
+Navigator includes NavigatorUA;

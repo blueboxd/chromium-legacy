@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -134,9 +135,13 @@ void ProfileMenuView::BuildMenu() {
   }
 
   BuildFeatureButtons();
+
+//  ChromeOS doesn't support multi-profile.
+#if !defined(OS_CHROMEOS)
   BuildProfileManagementHeading();
   BuildSelectableProfiles();
   BuildProfileManagementFeatureButtons();
+#endif
 }
 
 gfx::ImageSkia ProfileMenuView::GetSyncIcon() const {
@@ -233,14 +238,6 @@ void ProfileMenuView::OnGuestProfileButtonClicked() {
   profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
 }
 
-void ProfileMenuView::OnManageProfilesButtonClicked() {
-  RecordClick(ActionableItem::kManageProfilesButton);
-  // TODO(crbug.com/995757): Remove user action.
-  base::RecordAction(base::UserMetricsAction("ProfileChooser_ManageClicked"));
-  UserManager::Show(base::FilePath(),
-                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
-}
-
 void ProfileMenuView::OnExitProfileButtonClicked() {
   RecordClick(ActionableItem::kExitProfileButton);
   // TODO(crbug.com/995757): Remove user action.
@@ -255,6 +252,10 @@ void ProfileMenuView::OnSyncSettingsButtonClicked() {
 
 void ProfileMenuView::OnSyncErrorButtonClicked(
     sync_ui_util::AvatarSyncErrorType error) {
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, sync errors are fixed by re-signing into the OS.
+  chrome::AttemptUserExit();
+#else
   RecordClick(ActionableItem::kSyncErrorButton);
   // TODO(crbug.com/995757): Remove user action.
   base::RecordAction(
@@ -303,14 +304,7 @@ void ProfileMenuView::OnSyncErrorButtonClicked(
       NOTREACHED();
       break;
   }
-}
-
-void ProfileMenuView::OnSigninButtonClicked() {
-  RecordClick(ActionableItem::kSigninButton);
-  Hide();
-  browser()->signin_view_controller()->ShowSignin(
-      profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser(),
-      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
+#endif
 }
 
 void ProfileMenuView::OnSigninAccountButtonClicked(AccountInfo account) {
@@ -334,6 +328,15 @@ void ProfileMenuView::OnSignoutButtonClicked() {
                               kUserMenu_SignOutAllAccounts);
 }
 
+#if !defined(OS_CHROMEOS)
+void ProfileMenuView::OnSigninButtonClicked() {
+  RecordClick(ActionableItem::kSigninButton);
+  Hide();
+  browser()->signin_view_controller()->ShowSignin(
+      profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser(),
+      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
+}
+
 void ProfileMenuView::OnOtherProfileSelected(
     const base::FilePath& profile_path) {
   RecordClick(ActionableItem::kOtherProfileButton);
@@ -344,6 +347,26 @@ void ProfileMenuView::OnOtherProfileSelected(
                             ProfileManager::CreateCallback());
 }
 
+void ProfileMenuView::OnAddNewProfileButtonClicked() {
+  RecordClick(ActionableItem::kAddNewProfileButton);
+  UserManager::Show(/*profile_path_to_focus=*/base::FilePath(),
+                    profiles::USER_MANAGER_OPEN_CREATE_USER_PAGE);
+}
+
+void ProfileMenuView::OnManageProfilesButtonClicked() {
+  RecordClick(ActionableItem::kManageProfilesButton);
+  // TODO(crbug.com/995757): Remove user action.
+  base::RecordAction(base::UserMetricsAction("ProfileChooser_ManageClicked"));
+  UserManager::Show(base::FilePath(),
+                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
+}
+
+void ProfileMenuView::OnEditProfileButtonClicked() {
+  RecordClick(ActionableItem::kEditProfileButton);
+  chrome::ShowSettingsSubPage(browser(), chrome::kManageProfileSubPage);
+}
+#endif  // defined(OS_CHROMEOS)
+
 void ProfileMenuView::OnCookiesClearedOnExitLinkClicked() {
   RecordClick(ActionableItem::kCookiesClearedOnExitLink);
   // TODO(crbug.com/995757): Remove user action.
@@ -352,17 +375,6 @@ void ProfileMenuView::OnCookiesClearedOnExitLinkClicked() {
   chrome::ShowSettingsSubPage(browser(), chrome::kContentSettingsSubPage +
                                              std::string("/") +
                                              chrome::kCookieSettingsSubPage);
-}
-
-void ProfileMenuView::OnAddNewProfileButtonClicked() {
-  RecordClick(ActionableItem::kAddNewProfileButton);
-  UserManager::Show(/*profile_path_to_focus=*/base::FilePath(),
-                    profiles::USER_MANAGER_OPEN_CREATE_USER_PAGE);
-}
-
-void ProfileMenuView::OnEditProfileButtonClicked() {
-  RecordClick(ActionableItem::kEditProfileButton);
-  chrome::ShowSettingsSubPage(browser(), chrome::kManageProfileSubPage);
 }
 
 void ProfileMenuView::BuildIdentity() {
@@ -376,15 +388,18 @@ void ProfileMenuView::BuildIdentity() {
           account);
   ProfileAttributesEntry* profile_attributes =
       GetProfileAttributesEntry(profile);
+
+// Profile names are not supported on ChromeOS.
+#if !defined(OS_CHROMEOS)
   size_t num_of_profiles =
       g_browser_process->profile_manager()->GetNumberOfProfiles();
-
   if (num_of_profiles > 1 || !profile_attributes->IsUsingDefaultName()) {
     SetHeading(profile_attributes->GetLocalProfileName(),
                l10n_util::GetStringUTF16(IDS_SETTINGS_EDIT_PERSON),
                base::BindRepeating(&ProfileMenuView::OnEditProfileButtonClicked,
                                    base::Unretained(this)));
   }
+#endif
 
   if (account_info.has_value()) {
     SetIdentityInfo(
@@ -489,12 +504,17 @@ void ProfileMenuView::BuildSyncInfo() {
         base::BindRepeating(&ProfileMenuView::OnSigninAccountButtonClicked,
                             base::Unretained(this), account_info.value()));
   } else {
+#if defined(OS_CHROMEOS)
+    // There is always an account on ChromeOS.
+    NOTREACHED();
+#else
     SetSyncInfo(l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SYNC_PROMO),
                 l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON),
                 SyncInfoContainerBackgroundState::kNoPrimaryAccount,
                 base::BindRepeating(&ProfileMenuView::OnSigninButtonClicked,
                                     base::Unretained(this)),
                 /*show_badge=*/false);
+#endif
   }
 }
 
@@ -549,6 +569,7 @@ void ProfileMenuView::BuildFeatureButtons() {
   }
 }
 
+#if !defined(OS_CHROMEOS)
 void ProfileMenuView::BuildProfileManagementHeading() {
   SetProfileManagementHeading(
       l10n_util::GetStringUTF16(IDS_PROFILES_OTHER_PROFILES_TITLE));
@@ -601,3 +622,4 @@ void ProfileMenuView::BuildProfileManagementFeatureButtons() {
                             base::Unretained(this)));
   }
 }
+#endif  // defined(OS_CHROMEOS)

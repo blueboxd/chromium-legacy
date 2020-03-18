@@ -82,7 +82,7 @@ There are two main methods for deobfuscating Java stack traces locally:
   * `$OUT/bin/chrome_public_apk run`  # Launch chrome and run adb logcat
 
 2. Using `java_deobfuscate`
-  * `$OUT/bin/java_deobfuscate $OUT/apks/ChromePublic.apk.mapping < logcat.txt`
+  * build/android/stacktrace/java_deobfuscate.py $OUT/apks/ChromePublic.apk.mapping < logcat.txt`
     * ProGuard mapping files are located beside APKs (ex.
       `$OUT/apks/ChromePublic.apk` and `$OUT/apks/ChromePublic.apk.mapping`)
 

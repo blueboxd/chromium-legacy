@@ -48,9 +48,8 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
-#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -1107,7 +1106,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
     params.load_strategy = self.loadStrategy;
     params.in_incognito = self.isIncognito;
-    UrlLoadingServiceFactory::GetForBrowserState(_browserState)->Load(params);
+    UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
   }
   UMA_HISTOGRAM_COUNTS_100(
       "Mobile.RecentTabsManager.TotalTabsFromOtherDevicesOpenAll",

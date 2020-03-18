@@ -493,3 +493,16 @@ fuzzer_test("network_content_security_policy_fuzzer") {
   dict = "//testing/libfuzzer/fuzzers/dicts/content_security_policy.dict"
   seed_corpus = "//testing/libfuzzer/fuzzers/content_security_policy_corpus"
 }
+
+fuzzer_test("origin_policy_parser_fuzzer") {
+  sources = [ "origin_policy/origin_policy_parser_fuzzer.cc" ]
+  deps = [
+    "//base",
+    "//net",
+    "//services/network:network_service",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
+  ]
+  dict = "origin_policy/origin_policy_parser_fuzzer.dict"
+  seed_corpus = "origin_policy/origin_policy_parser_fuzzer_corpus"
+}

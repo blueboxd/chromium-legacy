@@ -45,9 +45,8 @@
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
-#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/voice/voice_search_availability.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/url_loading_bridge.h"
@@ -116,15 +115,14 @@
     ntp_home::RecordNTPImpression(ntp_home::LOCAL_SUGGESTIONS);
   }
 
-  UrlLoadingService* urlLoadingService =
-      UrlLoadingServiceFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
+  UrlLoadingBrowserAgent* URLLoader =
+      UrlLoadingBrowserAgent::FromBrowser(self.browser);
 
   self.NTPMediator = [[NTPHomeMediator alloc]
              initWithWebState:self.webState
            templateURLService:ios::TemplateURLServiceFactory::
                                   GetForBrowserState(self.browserState)
-            urlLoadingService:urlLoadingService
+                    URLLoader:URLLoader
                   authService:AuthenticationServiceFactory::GetForBrowserState(
                                   self.browserState)
               identityManager:IdentityManagerFactory::GetForBrowserState(
@@ -294,8 +292,7 @@
   UrlLoadParams params = UrlLoadParams::InCurrentTab(URL);
   params.web_params.transition_type = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-  UrlLoadingServiceFactory::GetForBrowserState(self.browser->GetBrowserState())
-      ->Load(params);
+  UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
 }
 
 #pragma mark - Public methods

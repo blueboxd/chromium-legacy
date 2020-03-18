@@ -39,6 +39,7 @@ constexpr char kPerformSafetyCheck[] = "performSafetyCheck";
 constexpr char kGetParentRanDisplayString[] = "getSafetyCheckRanDisplayString";
 constexpr char kNewState[] = "newState";
 constexpr char kDisplayString[] = "displayString";
+constexpr char kButtonString[] = "buttonString";
 constexpr char kPasswordsCompromised[] = "passwordsCompromised";
 constexpr char kExtensionsReenabledByUser[] = "extensionsReenabledByUser";
 constexpr char kExtensionsReenabledByAdmin[] = "extensionsReenabledByAdmin";
@@ -263,6 +264,10 @@ void SafetyCheckHandler::OnPasswordsCheckResult(PasswordsStatus status,
   event.SetIntKey(kNewState, static_cast<int>(status));
   if (status == PasswordsStatus::kCompromisedExist) {
     event.SetIntKey(kPasswordsCompromised, num_compromised);
+    event.SetStringKey(
+        kButtonString,
+        l10n_util::GetPluralStringFUTF16(
+            IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_BUTTON, num_compromised));
   }
   event.SetStringKey(kDisplayString,
                      GetStringForPasswords(status, num_compromised));
@@ -363,9 +368,6 @@ base::string16 SafetyCheckHandler::GetStringForPasswords(PasswordsStatus status,
     case PasswordsStatus::kQuotaLimit:
       return l10n_util::GetStringUTF16(
           IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_QUOTA_LIMIT);
-    case PasswordsStatus::kTooManyPasswords:
-      return l10n_util::GetStringUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_TOO_MANY_PASSWORDS);
     case PasswordsStatus::kError:
       return l10n_util::GetStringUTF16(
           IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_ERROR);

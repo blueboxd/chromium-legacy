@@ -61,9 +61,8 @@
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
-#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -1308,8 +1307,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
       [targetInterface.bvc appendTabAddedCompletion:tabOpenedCompletion];
       UrlLoadParams savedParams = urlLoadParams;
       savedParams.in_incognito = targetMode == ApplicationMode::INCOGNITO;
-      UrlLoadingServiceFactory::GetForBrowserState(
-          [targetInterface.bvc browserState])
+      UrlLoadingBrowserAgent::FromBrowser(targetInterface.browser)
           ->Load(savedParams);
     } else {
       // Voice search, QRScanner and the omnibox are presented by the BVC.
@@ -1386,12 +1384,13 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 - (void)openOrReuseTabInMode:(ApplicationMode)targetMode
            withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
          tabOpenedCompletion:(ProceduralBlock)tabOpenedCompletion {
-  BrowserViewController* targetBVC =
-      targetMode == ApplicationMode::NORMAL
-          ? self.browserViewWrangler.mainInterface.bvc
-          : self.browserViewWrangler.incognitoInterface.bvc;
+  id<BrowserInterface> targetInterface = targetMode == ApplicationMode::NORMAL
+                                             ? self.mainInterface
+                                             : self.incognitoInterface;
+
+  BrowserViewController* targetBVC = targetInterface.bvc;
   web::WebState* currentWebState =
-      targetBVC.tabModel.webStateList->GetActiveWebState();
+      targetInterface.browser->GetWebStateList()->GetActiveWebState();
 
   // Don't call loadWithParams for chrome://newtab when it's already loaded.
   // Note that it's safe to use -GetVisibleURL here, as it doesn't matter if the
@@ -1418,7 +1417,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
     UrlLoadParams newTabParams = urlLoadParams;
     newTabParams.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
     newTabParams.in_incognito = targetMode == ApplicationMode::INCOGNITO;
-    UrlLoadingServiceFactory::GetForBrowserState([targetBVC browserState])
+    UrlLoadingBrowserAgent::FromBrowser(targetInterface.browser)
         ->Load(newTabParams);
     return;
   }
@@ -1426,7 +1425,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   // Otherwise, load |urlLoadParams| in the current tab.
   UrlLoadParams sameTabParams = urlLoadParams;
   sameTabParams.disposition = WindowOpenDisposition::CURRENT_TAB;
-  UrlLoadingServiceFactory::GetForBrowserState([targetBVC browserState])
+  UrlLoadingBrowserAgent::FromBrowser(targetInterface.browser)
       ->Load(sameTabParams);
   if (tabOpenedCompletion) {
     tabOpenedCompletion();

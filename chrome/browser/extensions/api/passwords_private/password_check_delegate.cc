@@ -208,8 +208,6 @@ std::string FormatElapsedTime(base::Time time) {
 
 }  // namespace
 
-constexpr size_t PasswordCheckDelegate::kTooManyPasswords;
-
 PasswordCheckDelegate::PasswordCheckDelegate(Profile* profile)
     : profile_(profile),
       password_store_(PasswordStoreFactory::GetForProfile(
@@ -440,20 +438,13 @@ PasswordCheckDelegate::GetPasswordCheckStatus() const {
     return result;
   }
 
-  if (saved_passwords.size() >= kTooManyPasswords) {
-    result.state =
-        api::passwords_private::PASSWORD_CHECK_STATE_TOO_MANY_PASSWORDS;
-    return result;
-  }
-
   result.state = ConvertPasswordCheckState(state);
   return result;
 }
 
 void PasswordCheckDelegate::OnSavedPasswordsChanged(SavedPasswordsView) {
   // A change in the saved passwords might result in leaving or entering the
-  // NO_PASSWORDS or TOO_MANY_PASSWORDS state, thus we need to trigger a
-  // notification.
+  // NO_PASSWORDS state, thus we need to trigger a notification.
   NotifyPasswordCheckStatusChanged();
 }
 

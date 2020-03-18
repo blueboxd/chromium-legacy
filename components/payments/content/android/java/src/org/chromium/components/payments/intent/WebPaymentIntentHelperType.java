@@ -5,11 +5,21 @@
 package org.chromium.components.payments.intent;
 
 /**
- * The types that mirror the corresponding types in org.chromium.payments.mojom. This class should
- * be independent of the org.chromium package.
+ * The types that corresponds to the types in org.chromium.payments.mojom. The fields of these types
+ * are the subset of those in the mojom types. The subset is minimally selected based on the need of
+ * this package. This class should be independent of the org.chromium package.
+ *
+ * @see <a
+ *         href="https://developers.google.com/web/fundamentals/payments/payment-apps-developer-guide/android-payment-apps#payment_parameters">Payment
+ *         parameters</a>
+ * @see <a
+ *         href="https://developers.google.com/web/fundamentals/payments/payment-apps-developer-guide/android-payment-apps#%E2%80%9Cis_ready_to_pay%E2%80%9D_parameters">“Is
+ *         ready to pay” parameters</a>
  */
 public final class WebPaymentIntentHelperType {
-    /** The class that mirrors mojom.PaymentCurrencyAmount. */
+    /**
+     * The class that corresponds to mojom.PaymentCurrencyAmount, with minimally required fields.
+     */
     public static final class PaymentCurrencyAmount {
         public final String currency;
         public final String value;
@@ -19,7 +29,7 @@ public final class WebPaymentIntentHelperType {
         }
     }
 
-    /** The class that mirrors mojom.PaymentItem. */
+    /** The class that corresponds mojom.PaymentItem, with minimally required fields. */
     public static final class PaymentItem {
         public final PaymentCurrencyAmount amount;
         public PaymentItem(PaymentCurrencyAmount amount) {
@@ -27,7 +37,7 @@ public final class WebPaymentIntentHelperType {
         }
     }
 
-    /** The class that mirrors mojom.PaymentDetailsModifier. */
+    /** The class that corresponds mojom.PaymentDetailsModifier, with minimally required fields. */
     public static final class PaymentDetailsModifier {
         public final PaymentItem total;
         public final PaymentMethodData methodData;
@@ -37,7 +47,7 @@ public final class WebPaymentIntentHelperType {
         }
     }
 
-    /** The class that mirrors mojom.PaymentMethodData. */
+    /** The class that corresponds mojom.PaymentMethodData, with minimally required fields. */
     public static final class PaymentMethodData {
         public final String supportedMethod;
         public final String stringifiedData;

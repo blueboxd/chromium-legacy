@@ -11,7 +11,6 @@
 @protocol ApplicationCommands;
 @protocol BrowsingDataCommands;
 @class BrowserViewController;
-@class TabModel;
 
 class AppUrlLoadingService;
 

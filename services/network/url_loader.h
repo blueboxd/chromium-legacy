@@ -33,9 +33,11 @@
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
+#include "services/network/trust_tokens/trust_token_request_helper.h"
 #include "services/network/upload_progress_tracker.h"
 
 namespace net {
@@ -88,6 +90,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // The URLLoader must be destroyed before the |url_request_context|.
   // The |origin_policy_manager| must always be provided for requests that
   // have the |obey_origin_policy| flag set.
+  // If |trust_token_helper| is non-null, it will be queried to perform trust
+  // token operation steps before each request is started, and after each
+  // response's headers arrive.
   URLLoader(
       net::URLRequestContext* url_request_context,
       mojom::NetworkServiceClient* network_service_client,
@@ -106,7 +111,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder,
       base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator,
       mojom::TrustedURLLoaderHeaderClient* url_loader_header_client,
-      mojom::OriginPolicyManager* origin_policy_manager);
+      mojom::OriginPolicyManager* origin_policy_manager,
+      std::unique_ptr<TrustTokenRequestHelper> trust_token_helper);
   ~URLLoader() override;
 
   // mojom::URLLoader implementation:
@@ -235,6 +241,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   void SetUpUpload(const ResourceRequest& request,
                    int error_code,
                    const std::vector<base::File> opened_files);
+  void BeginTrustTokenOperationIfNecessaryAndThenScheduleStart();
+  void OnDoneBeginningTrustTokenOperation(
+      mojom::TrustTokenOperationStatus status);
   void ScheduleStart();
   void ReadMore();
   void DidRead(int num_bytes, bool completed_synchronously);
@@ -423,6 +432,22 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   // Will only be set for requests that have |obey_origin_policy| set.
   mojom::OriginPolicyManager* origin_policy_manager_;
+
+  // If the request is configured for Trust Tokens
+  // (https://github.com/WICG/trust-token-api) protocol operations, annotates
+  // the request with the pertinent request headers and, on receiving the
+  // corresponding response, processes and strips Trust Tokens response headers.
+  //
+  // |trust_token_helper_| is null for (the usual case where) the request has no
+  // associated Trust Tokens operation.
+  std::unique_ptr<TrustTokenRequestHelper> trust_token_helper_;
+
+  // The cached result of the request's Trust Tokens protocol operation, if any.
+  // This can describe the result of either an outbound (request-annotating)
+  // protocol step or an inbound (response header reading) step; some error
+  // codes, like kFailedPrecondition (outbound) and kBadResponse (inbound) are
+  // specific to one direction.
+  base::Optional<mojom::TrustTokenOperationStatus> trust_token_status_;
 
   // Stores ResourceRequest::isolated_world_origin.
   //

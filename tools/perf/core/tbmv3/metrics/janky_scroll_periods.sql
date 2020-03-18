@@ -18,10 +18,9 @@
 -- Get the GestureScrollUpdate events by name ordered by timestamp, compute
 -- the number of frames (relative to 60 fps) that each event took. 1.6e+7 is
 -- 16 ms in nanoseconds.
--- Note that here and further below the result is a table not a view because
--- it speeds up the metric computation.
-CREATE TABLE GestureScrollUpdates AS
+CREATE VIEW GestureScrollUpdates AS
 SELECT
+  ROW_NUMBER() OVER (ORDER BY ts ASC) AS rowNumber,
   id AS ScrollId,
   ts AS ScrollTs,
   arg_set_id AS ScrollArgSetId,
@@ -34,23 +33,13 @@ WHERE
   name = 'InputLatency::GestureScrollUpdate'
 ORDER BY ScrollTs;
 
--- TODO(khokhlov): This is pretty slow and should be rewritten using window
--- functions when they are enabled in Chrome's sqlite.
-CREATE TABLE GestureScrollUpdatesWithRowNumbers AS
-SELECT
-  (SELECT COUNT(*)
-   FROM GestureScrollUpdates prev
-   WHERE prev.ScrollTs < next.ScrollTs) + 1 as rowNumber,
-  *
-FROM
-  GestureScrollUpdates next;
-
 -- This takes the GestureScrollUpdate and joins it to the previous row (NULL
 -- if there isn't one) and the next row (NULL if there isn't one). And then
 -- computes whether the duration of the event (relative to 60 fps) varied by
 -- more than 0.5 (which is 1/2 of 16 ms).
-CREATE TABLE ScrollJanksComplete AS
+CREATE VIEW ScrollJanksComplete AS
 SELECT
+  ROW_NUMBER() OVER (ORDER BY currTs ASC) AS rowNumber,
   currScrollId,
   currTs,
   currScrollFramesExact,
@@ -83,22 +72,11 @@ FROM (
       curr.ScrollFramesExact AS currScrollFramesExact,
       prev.ScrollFramesExact AS prevScrollFramesExact
     FROM
-      GestureScrollUpdatesWithRowNumbers curr LEFT JOIN
-      GestureScrollUpdatesWithRowNumbers prev ON prev.rowNumber + 1 = curr.rowNumber
+      GestureScrollUpdates curr LEFT JOIN
+      GestureScrollUpdates prev ON prev.rowNumber + 1 = curr.rowNumber
   ) currprev JOIN
-  GestureScrollUpdatesWithRowNumbers next ON currprev.currRowNumber + 1 = next.rowNumber
+  GestureScrollUpdates next ON currprev.currRowNumber + 1 = next.rowNumber
 ORDER BY currprev.currTs ASC;
-
--- TODO(khokhlov): This is pretty slow and should be rewritten using window
--- functions when they are enabled in Chrome's sqlite.
-CREATE TABLE ScrollJanksCompleteWithRowNumbers AS
-SELECT
-  (SELECT COUNT(*)
-   FROM ScrollJanksComplete prev
-   WHERE prev.currTs < next.currTs) + 1 as rowNumber,
-  *
-FROM
-  ScrollJanksComplete next;
 
 -- This just lists outs the rowNumber (which is ordered by timestamp) and
 -- whether it was a janky slice (as defined by comparing to both the next and
@@ -110,7 +88,7 @@ CREATE VIEW ScrollJanks AS
     (nextJank AND prevJank IS NULL) OR
     (prevJank AND nextJank IS NULL)
     AS Jank
-  FROM ScrollJanksCompleteWithRowNumbers;
+  FROM ScrollJanksComplete;
 
 -- This sums the number of periods with sequential janky slices. When Chrome
 -- experiences a jank it often stumbles for a while, this attempts to

@@ -66,6 +66,8 @@ class AutomationManifestPermission : public ManifestPermission {
 
   bool RequiresManagementUIWarning() const override;
 
+  bool RequiresManagedSessionFullLoginWarning() const override;
+
  private:
   std::unique_ptr<const AutomationInfo> automation_info_;
 };
@@ -161,6 +163,11 @@ std::unique_ptr<ManifestPermission> AutomationManifestPermission::Intersect(
 }
 
 bool AutomationManifestPermission::RequiresManagementUIWarning() const {
+  return automation_info_->desktop || !automation_info_->matches.is_empty();
+}
+
+bool AutomationManifestPermission::RequiresManagedSessionFullLoginWarning()
+    const {
   return automation_info_->desktop || !automation_info_->matches.is_empty();
 }
 

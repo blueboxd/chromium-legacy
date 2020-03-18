@@ -112,6 +112,7 @@ class CORE_EXPORT WorkerGlobalScope
   bool IsContextThread() const final;
   const KURL& BaseURL() const final;
   String UserAgent() const final { return user_agent_; }
+  const UserAgentMetadata& GetUserAgentMetadata() const { return ua_metadata_; }
   HttpsState GetHttpsState() const override { return https_state_; }
   scheduler::WorkerScheduler* GetScheduler() final;
 
@@ -234,6 +235,7 @@ class CORE_EXPORT WorkerGlobalScope
   KURL url_;
   const mojom::ScriptType script_type_;
   const String user_agent_;
+  const UserAgentMetadata ua_metadata_;
   std::unique_ptr<WorkerSettings> worker_settings_;
 
   mutable Member<WorkerLocation> location_;

@@ -55,6 +55,9 @@ class FontSizeTabHelper : public web::WebStateObserver,
   // not the UI should be displayed when possible.
   void SetTextZoomUIActive(bool active);
 
+  // Text zoom is currently only supported on HTML pages.
+  bool CurrentPageSupportsTextZoom() const;
+
   // Remove any stored zoom levels from the provided |PrefService|.
   static void ClearUserZoomPrefs(PrefService* pref_service);
 

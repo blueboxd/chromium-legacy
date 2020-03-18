@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/frame/navigator_user_agent.h"
-
+#include "third_party/blink/renderer/core/frame/navigator_ua.h"
 
 namespace blink {
 
-NavigatorUAData* NavigatorUserAgent::userAgentData() {
-  blink::NavigatorUAData* ua_data =
-      blink::NavigatorUAData::Create(GetLocalFrame());
+NavigatorUAData* NavigatorUA::userAgentData() {
+  NavigatorUAData* ua_data =
+      MakeGarbageCollected<NavigatorUAData>(GetUAExecutionContext());
 
-  blink::UserAgentMetadata metadata = GetUserAgentMetadata();
+  UserAgentMetadata metadata = GetUserAgentMetadata();
   ua_data->AddBrand(String::FromUTF8(metadata.brand),
                     String::FromUTF8(metadata.major_version));
   ua_data->SetMobile(metadata.mobile);

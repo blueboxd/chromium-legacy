@@ -11,18 +11,14 @@ source_set("url_loading") {
     "image_search_param_generator.mm",
     "test_app_url_loading_service.h",
     "test_app_url_loading_service.mm",
-    "test_url_loading_service.h",
-    "test_url_loading_service.mm",
+    "url_loading_browser_agent.h",
+    "url_loading_browser_agent.mm",
     "url_loading_notifier_browser_agent.h",
     "url_loading_notifier_browser_agent.mm",
     "url_loading_observer_bridge.h",
     "url_loading_observer_bridge.mm",
     "url_loading_params.h",
     "url_loading_params.mm",
-    "url_loading_service.h",
-    "url_loading_service.mm",
-    "url_loading_service_factory.h",
-    "url_loading_service_factory.mm",
     "url_loading_util.h",
     "url_loading_util.mm",
   ]
@@ -51,12 +47,22 @@ source_set("url_loading") {
   ]
 }
 
+source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "fake_url_loading_browser_agent.h",
+    "fake_url_loading_browser_agent.mm",
+  ]
+  deps = [ ":url_loading" ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "image_search_param_generator_unittest.mm",
-    "url_loading_service_unittest.mm",
+    "url_loading_browser_agent_unittest.mm",
   ]
   deps = [
     ":url_loading",

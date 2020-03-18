@@ -116,4 +116,11 @@ void Navigator::Trace(Visitor* visitor) {
   Supplementable<Navigator>::Trace(visitor);
 }
 
+ExecutionContext* Navigator::GetUAExecutionContext() const {
+  if (GetFrame() && GetFrame()->GetDocument()) {
+    return GetFrame()->GetDocument()->GetExecutionContext();
+  }
+  return nullptr;
+}
+
 }  // namespace blink

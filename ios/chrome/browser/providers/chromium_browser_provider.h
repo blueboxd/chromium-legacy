@@ -20,13 +20,13 @@ class ChromiumBrowserProvider : public ios::ChromeBrowserProvider {
   ios::ChromeIdentityService* GetChromeIdentityService() override;
   UITextField* CreateStyledTextField() const override NS_RETURNS_RETAINED;
   VoiceSearchProvider* GetVoiceSearchProvider() const override;
-  id<LogoVendor> CreateLogoVendor(ChromeBrowserState* browser_state,
-                                  web::WebState* web_state) const override
-      NS_RETURNS_RETAINED;
   id<LogoVendor> CreateLogoVendor(
       Browser* browser,
       web::WebState* web_state,
       id<URLLoadingBridge> loading_bridge) const override NS_RETURNS_RETAINED;
+
+  id<LogoVendor> CreateLogoVendor(Browser* browser, web::WebState* web_state)
+      const override NS_RETURNS_RETAINED;
   UserFeedbackProvider* GetUserFeedbackProvider() const override;
   AppDistributionProvider* GetAppDistributionProvider() const override;
   BrandedImageProvider* GetBrandedImageProvider() const override;

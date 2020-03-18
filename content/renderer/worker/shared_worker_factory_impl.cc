@@ -25,6 +25,7 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
     blink::mojom::SharedWorkerInfoPtr info,
     const url::Origin& constructor_origin,
     const std::string& user_agent,
+    const blink::UserAgentMetadata& ua_metadata,
     bool pause_on_start,
     const base::UnguessableToken& devtools_worker_token,
     blink::mojom::RendererPreferencesPtr renderer_preferences,
@@ -45,8 +46,8 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
         browser_interface_broker) {
   // Bound to the lifetime of the underlying blink::WebSharedWorker instance.
   new EmbeddedSharedWorkerStub(
-      std::move(info), constructor_origin, user_agent, pause_on_start,
-      devtools_worker_token, *renderer_preferences,
+      std::move(info), constructor_origin, user_agent, ua_metadata,
+      pause_on_start, devtools_worker_token, *renderer_preferences,
       std::move(preference_watcher_receiver), std::move(content_settings),
       std::move(service_worker_provider_info),
       appcache_host_id.value_or(base::UnguessableToken()),

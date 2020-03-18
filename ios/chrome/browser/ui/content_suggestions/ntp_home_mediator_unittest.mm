@@ -9,6 +9,8 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -23,9 +25,9 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_consumer.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_navigation_manager.h"
-#include "ios/chrome/browser/url_loading/test_url_loading_service.h"
-#include "ios/chrome/browser/url_loading/url_loading_params.h"
-#include "ios/chrome/browser/url_loading/url_loading_service_factory.h"
+#import "ios/chrome/browser/url_loading/fake_url_loading_browser_agent.h"
+#import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/voice/fake_voice_search_availability.h"
 #import "ios/public/provider/chrome/browser/ui/logo_vendor.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -52,13 +54,11 @@ class NTPHomeMediatorTest : public PlatformTest {
         IOSChromeContentSuggestionsServiceFactory::GetInstance(),
         IOSChromeContentSuggestionsServiceFactory::GetDefaultFactory());
     test_cbs_builder.AddTestingFactory(
-        UrlLoadingServiceFactory::GetInstance(),
-        UrlLoadingServiceFactory::GetDefaultFactory());
-    test_cbs_builder.AddTestingFactory(
         AuthenticationServiceFactory::GetInstance(),
         base::BindRepeating(
             &AuthenticationServiceFake::CreateAuthenticationService));
     chrome_browser_state_ = test_cbs_builder.Build();
+    browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
 
     std::unique_ptr<ToolbarTestNavigationManager> navigation_manager =
         std::make_unique<ToolbarTestNavigationManager>();
@@ -69,9 +69,12 @@ class NTPHomeMediatorTest : public PlatformTest {
     suggestions_view_controller_ =
         OCMClassMock([ContentSuggestionsViewController class]);
     voice_availability_.SetVoiceProviderEnabled(true);
-    url_loader_ =
-        (TestUrlLoadingService*)UrlLoadingServiceFactory::GetForBrowserState(
-            chrome_browser_state_.get());
+
+    UrlLoadingNotifierBrowserAgent::CreateForBrowser(browser_.get());
+    FakeUrlLoadingBrowserAgent::InjectForBrowser(browser_.get());
+    url_loader_ = FakeUrlLoadingBrowserAgent::FromUrlLoadingBrowserAgent(
+        UrlLoadingBrowserAgent::FromBrowser(browser_.get()));
+
     auth_service_ = static_cast<AuthenticationServiceFake*>(
         AuthenticationServiceFactory::GetInstance()->GetForBrowserState(
             chrome_browser_state_.get()));
@@ -82,7 +85,7 @@ class NTPHomeMediatorTest : public PlatformTest {
              templateURLService:ios::TemplateURLServiceFactory::
                                     GetForBrowserState(
                                         chrome_browser_state_.get())
-              urlLoadingService:url_loader_
+                      URLLoader:url_loader_
                     authService:auth_service_
                 identityManager:identity_manager_
                      logoVendor:logo_vendor_
@@ -102,6 +105,7 @@ class NTPHomeMediatorTest : public PlatformTest {
  protected:
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  std::unique_ptr<Browser> browser_;
   id consumer_;
   id logo_vendor_;
   id dispatcher_;
@@ -109,7 +113,7 @@ class NTPHomeMediatorTest : public PlatformTest {
   FakeVoiceSearchAvailability voice_availability_;
   NTPHomeMediator* mediator_;
   ToolbarTestNavigationManager* navigation_manager_;
-  TestUrlLoadingService* url_loader_;
+  FakeUrlLoadingBrowserAgent* url_loader_;
   AuthenticationServiceFake* auth_service_;
   signin::IdentityManager* identity_manager_;
 

@@ -486,7 +486,8 @@ URLLoader::URLLoader(
     base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder,
     base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator,
     mojom::TrustedURLLoaderHeaderClient* url_loader_header_client,
-    mojom::OriginPolicyManager* origin_policy_manager)
+    mojom::OriginPolicyManager* origin_policy_manager,
+    std::unique_ptr<TrustTokenRequestHelper> trust_token_helper)
     : url_request_context_(url_request_context),
       network_service_client_(network_service_client),
       network_context_client_(network_context_client),
@@ -527,6 +528,7 @@ URLLoader::URLLoader(
               ? request.trusted_params->update_network_isolation_key_on_redirect
               : mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate),
       origin_policy_manager_(nullptr),
+      trust_token_helper_(std::move(trust_token_helper)),
       isolated_world_origin_(request.isolated_world_origin) {
   DCHECK(delete_callback_);
   DCHECK(factory_params_);
@@ -647,7 +649,8 @@ URLLoader::URLLoader(
     OpenFilesForUpload(request);
     return;
   }
-  ScheduleStart();
+
+  BeginTrustTokenOperationIfNecessaryAndThenScheduleStart();
 }
 
 // This class is used to manage the queue of pending file upload operations
@@ -805,7 +808,42 @@ void URLLoader::SetUpUpload(const ResourceRequest& request,
                             base::Unretained(this)),
         url_request_.get());
   }
-  ScheduleStart();
+  BeginTrustTokenOperationIfNecessaryAndThenScheduleStart();
+}
+
+void URLLoader::BeginTrustTokenOperationIfNecessaryAndThenScheduleStart() {
+  if (!trust_token_helper_) {
+    ScheduleStart();
+    return;
+  }
+
+  trust_token_helper_->Begin(
+      url_request_.get(),
+      base::BindOnce(&URLLoader::OnDoneBeginningTrustTokenOperation,
+                     weak_ptr_factory_.GetWeakPtr()));
+  // |this| may have been deleted.
+}
+
+void URLLoader::OnDoneBeginningTrustTokenOperation(
+    mojom::TrustTokenOperationStatus status) {
+  trust_token_status_ = status;
+  if (status == mojom::TrustTokenOperationStatus::kOk) {
+    ScheduleStart();
+  } else if (status == mojom::TrustTokenOperationStatus::kAlreadyExists) {
+    // Cache hit: no need to send the request; we return an empty resource.
+    //
+    // Here and below, defer calling NotifyCompleted to make sure the URLLoader
+    // finishes initializing before getting deleted.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&URLLoader::NotifyCompleted,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  net::ERR_TRUST_TOKEN_OPERATION_CACHE_HIT));
+  } else {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&URLLoader::NotifyCompleted,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  net::ERR_TRUST_TOKEN_OPERATION_FAILED));
+  }
 }
 
 void URLLoader::ScheduleStart() {
@@ -1131,6 +1169,19 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
                             blocked_reason);
     DeleteSelf();
     return;
+  }
+
+  // Parse and remove the Trust Tokens response headers, if any are expected,
+  // potentially failing the request if an error occurs.
+  if (trust_token_helper_) {
+    mojom::TrustTokenOperationStatus status =
+        trust_token_helper_->Finalize(response_.get());
+    if (status != mojom::TrustTokenOperationStatus::kOk) {
+      trust_token_status_ = status;
+      NotifyCompleted(net::ERR_TRUST_TOKEN_OPERATION_FAILED);
+      // |this| may have been deleted.
+      return;
+    }
   }
 
   // Figure out if we need to sniff (for MIME type detection or for Cross-Origin
@@ -1576,6 +1627,7 @@ void URLLoader::NotifyCompleted(int error_code) {
     status.proxy_server = url_request_->proxy_server();
     status.resolve_error_info =
         url_request_->response_info().resolve_error_info;
+    status.trust_token_operation_status = trust_token_status_;
 
     if ((options_ & mojom::kURLLoadOptionSendSSLInfoForCertificateError) &&
         net::IsCertStatusError(url_request_->ssl_info().cert_status)) {

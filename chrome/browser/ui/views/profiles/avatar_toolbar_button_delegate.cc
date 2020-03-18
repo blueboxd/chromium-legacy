@@ -95,10 +95,8 @@ void AvatarToolbarButtonDelegate::Init(AvatarToolbarButton* button,
                                        Profile* profile) {
   avatar_toolbar_button_ = button;
   profile_ = profile;
-#if !defined(OS_CHROMEOS)
   error_controller_ =
       std::make_unique<AvatarButtonErrorController>(this, profile_);
-#endif  // !defined(OS_CHROMEOS)
   profile_observer_.Add(&GetProfileAttributesStorage());
   AvatarToolbarButton::State state = GetState();
   if (state == AvatarToolbarButton::State::kIncognitoProfile) {
@@ -183,16 +181,15 @@ AvatarToolbarButton::State AvatarToolbarButtonDelegate::GetState() const {
     return AvatarToolbarButton::State::kAnimatedUserIdentity;
   }
 
-#if !defined(OS_CHROMEOS)
   if (identity_manager->HasPrimaryAccount() &&
       ProfileSyncServiceFactory::IsSyncAllowed(profile_) &&
       error_controller_->HasAvatarError()) {
-    // When DICE is enabled and the error is an auth error, the sync-paused
-    // icon is shown.
     int unused;
     const sync_ui_util::AvatarSyncErrorType error =
         sync_ui_util::GetMessagesForAvatarSyncError(profile_, &unused, &unused);
 
+    // When DICE is enabled and the error is an auth error, the sync-paused
+    // icon is shown.
     if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_) &&
         error == sync_ui_util::AUTH_ERROR) {
       return AvatarToolbarButton::State::kSyncPaused;
@@ -204,7 +201,7 @@ AvatarToolbarButton::State AvatarToolbarButtonDelegate::GetState() const {
 
     return AvatarToolbarButton::State::kSyncError;
   }
-#endif  // !defined(OS_CHROMEOS)
+
   return AvatarToolbarButton::State::kNormal;
 }
 

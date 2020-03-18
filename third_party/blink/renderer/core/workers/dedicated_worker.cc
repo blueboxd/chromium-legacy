@@ -368,15 +368,20 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
     base::Optional<network::mojom::IPAddressSpace> response_address_space) {
   base::UnguessableToken parent_devtools_token;
   std::unique_ptr<WorkerSettings> settings;
+  UserAgentMetadata ua_metadata;
   if (auto* document = Document::DynamicFrom(GetExecutionContext())) {
-    if (document->GetFrame())
-      parent_devtools_token = document->GetFrame()->GetDevToolsFrameToken();
+    auto* frame = document->GetFrame();
+    if (frame) {
+      parent_devtools_token = frame->GetDevToolsFrameToken();
+      ua_metadata = frame->Loader().UserAgentMetadata();
+    }
     settings = std::make_unique<WorkerSettings>(document->GetSettings());
   } else {
     WorkerGlobalScope* worker_global_scope =
         To<WorkerGlobalScope>(GetExecutionContext());
     parent_devtools_token =
         worker_global_scope->GetThread()->GetDevToolsWorkerToken();
+    ua_metadata = worker_global_scope->GetUserAgentMetadata();
     settings = WorkerSettings::Copy(worker_global_scope->GetWorkerSettings());
   }
 
@@ -386,7 +391,8 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
 
   return std::make_unique<GlobalScopeCreationParams>(
       script_url, script_type, options_->name(),
-      GetExecutionContext()->UserAgent(), CreateWebWorkerFetchContext(),
+      GetExecutionContext()->UserAgent(), ua_metadata,
+      CreateWebWorkerFetchContext(),
       GetExecutionContext()->GetContentSecurityPolicy()->Headers(),
       referrer_policy, GetExecutionContext()->GetSecurityOrigin(),
       GetExecutionContext()->IsSecureContext(),

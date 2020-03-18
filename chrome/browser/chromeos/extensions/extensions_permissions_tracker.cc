@@ -72,20 +72,25 @@ void ExtensionsPermissionsTracker::OnForcedExtensionsPrefChanged() {
 
 bool ExtensionsPermissionsTracker::IsSafePerms(
     const PermissionsData* perms_data) const {
-  APIPermissionSet api_permissions =
-      perms_data->active_permissions().apis().Clone();
+  const PermissionSet& active_permissions = perms_data->active_permissions();
+  const APIPermissionSet& api_permissions = active_permissions.apis();
   for (auto* permission : api_permissions) {
     if (!permission->info()->requires_managed_session_full_login_warning()) {
       return false;
     }
   }
-  ManifestPermissionSet manifest_permissions =
-      perms_data->active_permissions().manifest_permissions().Clone();
+  const ManifestPermissionSet& manifest_permissions =
+      active_permissions.manifest_permissions();
   for (const auto* permission : manifest_permissions) {
     if (!permission->RequiresManagedSessionFullLoginWarning()) {
       return false;
     }
   }
+  if (active_permissions.ShouldWarnAllHosts() ||
+      !active_permissions.effective_hosts().is_empty()) {
+    return false;
+  }
+
   return true;
 }
 

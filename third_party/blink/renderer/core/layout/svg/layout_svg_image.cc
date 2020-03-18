@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_image_resource.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
@@ -39,6 +40,7 @@
 #include "third_party/blink/renderer/core/layout/svg/transformed_hit_test_location.h"
 #include "third_party/blink/renderer/core/paint/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/svg_image_painter.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/svg_image_element.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
@@ -89,6 +91,7 @@ bool LayoutSVGImage::HasOverriddenIntrinsicSize() const {
 FloatSize LayoutSVGImage::CalculateObjectSize() const {
   FloatSize intrinsic_size;
   ImageResourceContent* cached_image = image_resource_->CachedImage();
+  bool has_intrinsic_ratio = true;
   if (HasOverriddenIntrinsicSize()) {
     intrinsic_size = FloatSize(LayoutReplaced::kDefaultWidth,
                                LayoutReplaced::kDefaultHeight);
@@ -98,20 +101,33 @@ FloatSize LayoutSVGImage::CalculateObjectSize() const {
       return object_bounding_box_.Size();
 
     intrinsic_size = FloatSize(cached_image->GetImage()->Size());
+    if (auto* svg_image = DynamicTo<SVGImage>(cached_image->GetImage())) {
+      IntrinsicSizingInfo intrinsic_sizing_info;
+      has_intrinsic_ratio &= svg_image->GetIntrinsicSizingInfo(intrinsic_sizing_info);
+      has_intrinsic_ratio &= !intrinsic_sizing_info.aspect_ratio.IsEmpty();
+    }
   }
 
   if (StyleRef().Width().IsAuto() && StyleRef().Height().IsAuto())
     return intrinsic_size;
 
-  if (StyleRef().Height().IsAuto())
-    return FloatSize(
-        object_bounding_box_.Width(),
-        ResolveHeightForRatio(object_bounding_box_.Width(), intrinsic_size));
+  if (StyleRef().Height().IsAuto()) {
+    if (has_intrinsic_ratio) {
+      return FloatSize(
+          object_bounding_box_.Width(),
+          ResolveHeightForRatio(object_bounding_box_.Width(), intrinsic_size));
+    }
+    return FloatSize(object_bounding_box_.Width(), intrinsic_size.Height());
+  }
 
   DCHECK(StyleRef().Width().IsAuto());
-  return FloatSize(
-      ResolveWidthForRatio(object_bounding_box_.Height(), intrinsic_size),
-      object_bounding_box_.Height());
+  if (has_intrinsic_ratio) {
+    return FloatSize(
+        ResolveWidthForRatio(object_bounding_box_.Height(), intrinsic_size),
+        object_bounding_box_.Height());
+  }
+
+  return FloatSize(intrinsic_size.Width(), object_bounding_box_.Height());
 }
 
 bool LayoutSVGImage::UpdateBoundingBox() {

@@ -28,7 +28,6 @@
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
-#include "services/network/trust_tokens/trust_token_operation_status.h"
 #include "services/network/trust_tokens/trust_token_request_canonicalizer.h"
 #include "services/network/trust_tokens/trust_token_store.h"
 #include "services/network/trust_tokens/trust_token_test_util.h"
@@ -247,10 +246,10 @@ TEST_F(TrustTokenRequestSigningHelperTest, WontSignIfNoRedemptionRecord) {
   my_request->set_initiator(
       url::Origin::Create(GURL("https://initiator.com/")));
 
-  TrustTokenOperationStatus result =
+  mojom::TrustTokenOperationStatus result =
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
-  EXPECT_EQ(result, TrustTokenOperationStatus::kResourceExhausted);
+  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kResourceExhausted);
   EXPECT_THAT(*my_request, Header("Sec-Signed-Redemption-Record", IsEmpty()));
   EXPECT_THAT(*my_request, Not(Header("Sec-Signature")));
 }
@@ -283,10 +282,10 @@ TEST_F(TrustTokenRequestSigningHelperTest, MergesHeaders) {
   my_request->SetExtraRequestHeaderByName(
       "Signed-Headers", "Sec-Signed-Redemption-Record", /*overwrite=*/true);
 
-  TrustTokenOperationStatus result =
+  mojom::TrustTokenOperationStatus result =
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
-  EXPECT_EQ(result, TrustTokenOperationStatus::kOk);
+  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
   std::string signed_headers_header_value;
   ASSERT_TRUE(my_request->extra_request_headers().GetHeader(
       "Signed-Headers", &signed_headers_header_value));
@@ -330,10 +329,10 @@ TEST_F(TrustTokenRequestSigningHelperTest,
       "TrustTokenRequestSigningHelper::kSignableRequestHeaders",
       /*overwrite=*/true);
 
-  TrustTokenOperationStatus result =
+  mojom::TrustTokenOperationStatus result =
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
-  EXPECT_EQ(result, TrustTokenOperationStatus::kInvalidArgument);
+  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kInvalidArgument);
   EXPECT_THAT(*my_request, Not(Header("Signed-Headers")));
 }
 
@@ -365,10 +364,10 @@ TEST_F(TrustTokenRequestSigningHelperTest,
   auto my_request = MakeURLRequest("https://destination.com/");
   my_request->set_initiator(
       url::Origin::Create(GURL("https://initiator.com/")));
-  TrustTokenOperationStatus result =
+  mojom::TrustTokenOperationStatus result =
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
-  EXPECT_EQ(result, TrustTokenOperationStatus::kInvalidArgument);
+  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kInvalidArgument);
   EXPECT_THAT(*my_request, Not(Header("Signed-Headers")));
 }
 
@@ -400,10 +399,10 @@ TEST_F(TrustTokenRequestSigningHelperTestWithMockTime, ProvidesTimeHeader) {
 
   auto my_request = MakeURLRequest("https://destination.com/");
   my_request->set_initiator(url::Origin::Create(GURL("https://issuer.com/")));
-  TrustTokenOperationStatus result =
+  mojom::TrustTokenOperationStatus result =
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
-  EXPECT_EQ(result, TrustTokenOperationStatus::kOk);
+  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
   EXPECT_THAT(
       *my_request,
       Header("Sec-Time", StrEq(base::TimeToISO8601(base::Time::Now()))));
@@ -432,10 +431,10 @@ TEST_F(TrustTokenRequestSigningHelperTest,
 
   auto my_request = MakeURLRequest("https://destination.com/");
   my_request->set_initiator(url::Origin::Create(GURL("https://issuer.com/")));
-  TrustTokenOperationStatus result =
+  mojom::TrustTokenOperationStatus result =
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
-  ASSERT_EQ(result, TrustTokenOperationStatus::kOk);
+  ASSERT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
   EXPECT_THAT(*my_request, Header("Sec-Signed-Redemption-Record",
                                   StrEq(base::Base64Encode(base::as_bytes(
                                       base::make_span(my_record.body()))))));
@@ -469,10 +468,10 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyMinimal) {
 
   auto my_request = MakeURLRequest("https://destination.com/");
   my_request->set_initiator(url::Origin::Create(GURL("https://issuer.com/")));
-  TrustTokenOperationStatus result =
+  mojom::TrustTokenOperationStatus result =
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
-  EXPECT_EQ(result, TrustTokenOperationStatus::kOk);
+  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
 
   ASSERT_NO_FATAL_FAILURE(
       ReconstructSigningDataAndAssertSignatureVerifies<IdentitySigner>(
@@ -502,10 +501,10 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyWithHeaders) {
 
   auto my_request = MakeURLRequest("https://destination.com/");
   my_request->set_initiator(url::Origin::Create(GURL("https://issuer.com/")));
-  TrustTokenOperationStatus result =
+  mojom::TrustTokenOperationStatus result =
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
-  EXPECT_EQ(result, TrustTokenOperationStatus::kOk);
+  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
   ASSERT_NO_FATAL_FAILURE(
       ReconstructSigningDataAndAssertSignatureVerifies<IdentitySigner>(
           my_request.get(), *raw_canonicalizer));
@@ -537,10 +536,10 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyTimestampHeader) {
   auto my_request = MakeURLRequest("https://destination.com/");
   my_request->set_initiator(
       url::Origin::Create(GURL("https://initiator.com/")));
-  TrustTokenOperationStatus result =
+  mojom::TrustTokenOperationStatus result =
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
-  EXPECT_EQ(result, TrustTokenOperationStatus::kOk);
+  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
   ASSERT_NO_FATAL_FAILURE(
       ReconstructSigningDataAndAssertSignatureVerifies<IdentitySigner>(
           my_request.get(), *raw_canonicalizer));
@@ -580,13 +579,13 @@ TEST_F(TrustTokenRequestSigningHelperTest,
   auto my_request = MakeURLRequest("https://destination.com/");
   my_request->set_initiator(
       url::Origin::Create(GURL("https://initiator.com/")));
-  TrustTokenOperationStatus result =
+  mojom::TrustTokenOperationStatus result =
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
   // In addition to testing that the signing data equals
   // ReconstructSigningDataAndAssertSignatureVerifies's reconstruction of the
   // data, explicitly check that it contains a "url" field with the right value.
-  EXPECT_EQ(result, TrustTokenOperationStatus::kOk);
+  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
 
   ASSERT_NO_FATAL_FAILURE(
       ReconstructSigningDataAndAssertSignatureVerifies<IdentitySigner>(
@@ -631,10 +630,10 @@ TEST_F(TrustTokenRequestSigningHelperTest, CatchesSignatureFailure) {
   auto my_request = MakeURLRequest("https://destination.com/");
   my_request->set_initiator(
       url::Origin::Create(GURL("https://initiator.com/")));
-  TrustTokenOperationStatus result =
+  mojom::TrustTokenOperationStatus result =
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
-  EXPECT_EQ(result, TrustTokenOperationStatus::kInternalError);
+  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kInternalError);
   EXPECT_THAT(*my_request, Not(Header("Signed-Headers")));
   EXPECT_THAT(*my_request, Not(Header("Sec-Time")));
   EXPECT_THAT(*my_request, Not(Header("Sec-Signature")));

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/avatar_menu_observer.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -50,17 +51,19 @@ class ProfileMenuView : public ProfileMenuViewBase {
   void OnCreditCardsButtonClicked();
   void OnAddressesButtonClicked();
   void OnGuestProfileButtonClicked();
-  void OnManageProfilesButtonClicked();
   void OnExitProfileButtonClicked();
   void OnSyncSettingsButtonClicked();
   void OnSyncErrorButtonClicked(sync_ui_util::AvatarSyncErrorType error);
-  void OnSigninButtonClicked();
   void OnSigninAccountButtonClicked(AccountInfo account);
   void OnSignoutButtonClicked();
-  void OnOtherProfileSelected(const base::FilePath& profile_path);
   void OnCookiesClearedOnExitLinkClicked();
+#if !defined(OS_CHROMEOS)
+  void OnSigninButtonClicked();
+  void OnOtherProfileSelected(const base::FilePath& profile_path);
   void OnAddNewProfileButtonClicked();
+  void OnManageProfilesButtonClicked();
   void OnEditProfileButtonClicked();
+#endif
 
   // We normally close the bubble any time it becomes inactive but this can lead
   // to flaky tests where unexpected UI events are triggering this behavior.
@@ -73,9 +76,11 @@ class ProfileMenuView : public ProfileMenuViewBase {
   void BuildAutofillButtons();
   void BuildSyncInfo();
   void BuildFeatureButtons();
-  void BuildProfileManagementHeading();
+#if !defined(OS_CHROMEOS)
   void BuildSelectableProfiles();
+  void BuildProfileManagementHeading();
   void BuildProfileManagementFeatureButtons();
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ProfileMenuView);
 };

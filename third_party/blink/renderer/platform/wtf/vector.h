@@ -602,7 +602,7 @@ class VectorBuffer<T, 0, Allocator> : protected VectorBufferBase<T, Allocator> {
   bool HasOutOfLineBuffer() const {
     // When inlineCapacity is 0 we have an out of line buffer if we have a
     // buffer.
-    return IsOutOfLineBuffer(this, Buffer());
+    return IsOutOfLineBuffer(Buffer());
   }
 
   T** BufferSlot() { return &buffer_; }
@@ -613,9 +613,7 @@ class VectorBuffer<T, 0, Allocator> : protected VectorBufferBase<T, Allocator> {
 
   using Base::size_;
 
-  static bool IsOutOfLineBuffer(const VectorBuffer* vector, const T* buffer) {
-    return buffer;
-  }
+  bool IsOutOfLineBuffer(const T* buffer) const { return buffer; }
 
  private:
   using Base::buffer_;
@@ -889,7 +887,7 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
   using Base::Buffer;
   using Base::capacity;
 
-  bool HasOutOfLineBuffer() const { return IsOutOfLineBuffer(this, Buffer()); }
+  bool HasOutOfLineBuffer() const { return IsOutOfLineBuffer(Buffer()); }
 
   T** BufferSlot() { return &buffer_; }
   const T* const* BufferSlot() const { return &buffer_; }
@@ -899,8 +897,8 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
 
   using Base::size_;
 
-  static bool IsOutOfLineBuffer(const VectorBuffer* vector, const T* buffer) {
-    return buffer && buffer != vector->InlineBuffer();
+  bool IsOutOfLineBuffer(const T* buffer) const {
+    return buffer && buffer != InlineBuffer();
   }
 
  private:
@@ -2047,7 +2045,7 @@ Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
                 "Garbage collector must be enabled.");
 
   const T* buffer = BufferSafe();
-  if (Base::IsOutOfLineBuffer(this, buffer)) {
+  if (Base::IsOutOfLineBuffer(buffer)) {
     Allocator::TraceVectorBacking(visitor, buffer, Base::BufferSlot());
   } else {
     // We should not visit inline buffers, but we still need to register the

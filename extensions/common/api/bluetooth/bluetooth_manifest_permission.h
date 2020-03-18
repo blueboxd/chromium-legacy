@@ -54,6 +54,7 @@ class BluetoothManifestPermission : public ManifestPermission {
   std::unique_ptr<ManifestPermission> Intersect(
       const ManifestPermission* rhs) const override;
   bool RequiresManagementUIWarning() const override;
+  bool RequiresManagedSessionFullLoginWarning() const override;
 
   const BluetoothUuidSet& uuids() const {
     return uuids_;

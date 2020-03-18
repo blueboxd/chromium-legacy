@@ -15,7 +15,6 @@
 #include "net/http/http_request_headers.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
-#include "services/network/trust_tokens/trust_token_operation_status.h"
 #include "services/network/trust_tokens/trust_token_request_helper.h"
 #include "url/origin.h"
 
@@ -186,12 +185,14 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
   // empty SRR header, no signature header, and no timestamp header.
   // - On precondition failure, returns an error code and possibly attaches an
   // empty SRR header; see PRECONDITIONS section above.
-  void Begin(net::URLRequest* request,
-             base::OnceCallback<void(TrustTokenOperationStatus)> done) override;
+  void Begin(
+      net::URLRequest* request,
+      base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) override;
 
   // Immediately returns kOk with no other effect. (Signing is an operation that
   // only needs to process requests, not their corresponding responses.)
-  TrustTokenOperationStatus Finalize(mojom::URLResponseHead* response) override;
+  mojom::TrustTokenOperationStatus Finalize(
+      mojom::URLResponseHead* response) override;
 
  private:
   // Given (unencoded) bytestrings |public_key| and |signature|, returns the

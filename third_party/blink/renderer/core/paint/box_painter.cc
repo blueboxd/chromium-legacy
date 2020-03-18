@@ -46,9 +46,8 @@ void BoxPainter::PaintChildren(const PaintInfo& paint_info) {
   PaintInfo child_info(paint_info);
   for (LayoutObject* child = layout_box_.SlowFirstChild(); child;
        child = child->NextSibling()) {
-    if (child->IsSVGForeignObject()) {
-      SVGForeignObjectPainter(ToLayoutSVGForeignObject(*child))
-          .PaintLayer(paint_info);
+    if (auto* foreign_object = DynamicTo<LayoutSVGForeignObject>(*child)) {
+      SVGForeignObjectPainter(*foreign_object).PaintLayer(paint_info);
     } else {
       child->Paint(child_info);
     }

@@ -210,10 +210,9 @@ inline void SVGLayoutSupport::UpdateObjectBoundingBox(
     bool& object_bounding_box_valid,
     LayoutObject* other,
     FloatRect other_bounding_box) {
+  auto* svg_container = DynamicTo<LayoutSVGContainer>(other);
   bool other_valid =
-      other->IsSVGContainer()
-          ? ToLayoutSVGContainer(other)->IsObjectBoundingBoxValid()
-          : true;
+      svg_container ? svg_container->IsObjectBoundingBoxValid() : true;
   if (!other_valid)
     return;
 
@@ -236,8 +235,8 @@ static bool HasValidBoundingBoxForContainer(const LayoutObject* object) {
   if (object->IsSVGHiddenContainer())
     return false;
 
-  if (object->IsSVGForeignObject())
-    return ToLayoutSVGForeignObject(object)->IsObjectBoundingBoxValid();
+  if (auto* foreign_object = DynamicTo<LayoutSVGForeignObject>(object))
+    return foreign_object->IsObjectBoundingBoxValid();
 
   if (object->IsSVGImage())
     return ToLayoutSVGImage(object)->IsObjectBoundingBoxValid();
@@ -470,8 +469,8 @@ bool SVGLayoutSupport::HitTestChildren(LayoutObject* last_child,
                                        HitTestAction hit_test_action) {
   for (LayoutObject* child = last_child; child;
        child = child->PreviousSibling()) {
-    if (child->IsSVGForeignObject()) {
-      if (ToLayoutSVGForeignObject(child)->NodeAtPointFromSVG(
+    if (auto* foreign_object = DynamicTo<LayoutSVGForeignObject>(child)) {
+      if (foreign_object->NodeAtPointFromSVG(
               result, location, accumulated_offset, hit_test_action))
         return true;
     } else {

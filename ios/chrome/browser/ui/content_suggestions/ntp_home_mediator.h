@@ -36,7 +36,7 @@ class AuthenticationService;
 @protocol OmniboxFocuser;
 class TemplateURLService;
 @protocol SnackbarCommands;
-class UrlLoadingService;
+class UrlLoadingBrowserAgent;
 class VoiceSearchAvailability;
 
 // Mediator for the NTP Home panel, handling the interactions with the
@@ -49,7 +49,7 @@ class VoiceSearchAvailability;
 - (nullable instancetype)
            initWithWebState:(nonnull web::WebState*)webState
          templateURLService:(nonnull TemplateURLService*)templateURLService
-          urlLoadingService:(nonnull UrlLoadingService*)urlLoadingService
+                  URLLoader:(nonnull UrlLoadingBrowserAgent*)URLLoader
                 authService:(nonnull AuthenticationService*)authService
             identityManager:(nonnull signin::IdentityManager*)identityManager
                  logoVendor:(nonnull id<LogoVendor>)logoVendor

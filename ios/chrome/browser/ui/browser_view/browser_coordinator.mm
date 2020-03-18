@@ -61,9 +61,8 @@
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_presenter.h"
 #import "ios/chrome/browser/ui/translate/legacy_translate_infobar_coordinator.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
-#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/font_size_tab_helper.h"
 #import "ios/chrome/browser/web/print_tab_helper.h"
@@ -84,7 +83,7 @@
                                   PageInfoCommands,
                                   RepostFormTabHelperDelegate,
                                   ToolbarAccessoryCoordinatorDelegate,
-                                  URLLoadingServiceDelegate,
+                                  URLLoadingDelegate,
                                   WebStateListObserving>
 
 // Whether the coordinator is started.
@@ -221,7 +220,7 @@
   [self.dispatcher startDispatchingToTarget:self
                                 forProtocol:@protocol(PageInfoCommands)];
   [self installDelegatesForAllWebStates];
-  [self installDelegatesForBrowserState];
+  [self installDelegatesForBrowser];
   [self addWebStateListObserver];
   [super start];
   self.started = YES;
@@ -232,7 +231,7 @@
     return;
   [super stop];
   [self removeWebStateListObserver];
-  [self uninstallDelegatesForBrowserState];
+  [self uninstallDelegatesForBrowser];
   [self uninstallDelegatesForAllWebStates];
   [self.dispatcher stopDispatchingToTarget:self];
   [self stopChildCoordinators];
@@ -710,7 +709,7 @@
 - (void)showSecurityHelpPage {
   UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kPageInfoHelpCenterURL));
   params.in_incognito = self.browserState->IsOffTheRecord();
-  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)->Load(params);
+  UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
   [self hidePageInfo];
 }
 
@@ -894,25 +893,23 @@
   }
 }
 
-// Installs delegates for self.browserState.
-- (void)installDelegatesForBrowserState {
-  UrlLoadingService* urlLoadingService =
-      UrlLoadingServiceFactory::GetForBrowserState(self.browserState);
-  if (urlLoadingService) {
-    urlLoadingService->SetAppService(self.appURLLoadingService);
-    urlLoadingService->SetDelegate(self);
-    urlLoadingService->SetBrowser(self.browser);
+// Installs delegates for self.browser.
+- (void)installDelegatesForBrowser {
+  UrlLoadingBrowserAgent* loadingAgent =
+      UrlLoadingBrowserAgent::FromBrowser(self.browser);
+  if (loadingAgent) {
+    loadingAgent->SetAppService(self.appURLLoadingService);
+    loadingAgent->SetDelegate(self);
   }
 }
 
-// Uninstalls delegates for self.browserState.
-- (void)uninstallDelegatesForBrowserState {
-  UrlLoadingService* urlLoadingService =
-      UrlLoadingServiceFactory::GetForBrowserState(self.browserState);
-  if (urlLoadingService) {
-    urlLoadingService->SetAppService(nullptr);
-    urlLoadingService->SetDelegate(nil);
-    urlLoadingService->SetBrowser(nil);
+// Uninstalls delegates for self.browser.
+- (void)uninstallDelegatesForBrowser {
+  UrlLoadingBrowserAgent* loadingAgent =
+      UrlLoadingBrowserAgent::FromBrowser(self.browser);
+  if (loadingAgent) {
+    loadingAgent->SetAppService(nullptr);
+    loadingAgent->SetDelegate(nil);
   }
 }
 

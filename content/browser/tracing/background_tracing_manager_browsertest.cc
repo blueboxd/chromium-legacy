@@ -1098,8 +1098,9 @@ void DummyFunc() {}
 
 // Test that the tracing sampler profiler running in background tracing mode,
 // produces stack frames in the expected JSON format.
+// TODO(https://crbug.com/1062581) Disabled for being flaky.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       EndToEndStackSampling) {
+                       DISABLED_EndToEndStackSampling) {
   // In the browser process, the tracing sampler profiler gets constructed by
   // the chrome/ layer, so we need to do the same manually for testing purposes.
   auto tracing_sampler_profiler =

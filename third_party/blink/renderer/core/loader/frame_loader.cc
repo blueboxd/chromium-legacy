@@ -700,7 +700,8 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   mojo::PendingRemote<mojom::blink::NavigationInitiator> navigation_initiator;
   WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr> initiator_csp;
   network::mojom::blink::CSPSourcePtr initiator_self_source;
-  if (origin_document) {
+  if (origin_document && origin_document->GetContentSecurityPolicy()
+                             ->ExperimentalFeaturesEnabled()) {
     initiator_csp = origin_document->GetContentSecurityPolicy()
                         ->ExposeForNavigationalChecks();
     initiator_self_source = origin_document->GetContentSecurityPolicy()

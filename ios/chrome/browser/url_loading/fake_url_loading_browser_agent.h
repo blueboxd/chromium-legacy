@@ -2,23 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_URL_LOADING_TEST_URL_LOADING_SERVICE_H_
-#define IOS_CHROME_BROWSER_URL_LOADING_TEST_URL_LOADING_SERVICE_H_
+#ifndef IOS_CHROME_BROWSER_URL_LOADING_FAKE_URL_LOADING_BROWSER_AGENT_H_
+#define IOS_CHROME_BROWSER_URL_LOADING_FAKE_URL_LOADING_BROWSER_AGENT_H_
 
+#include "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#include "ios/chrome/browser/url_loading/url_loading_service.h"
 
-class TestUrlLoadingService : public UrlLoadingService {
+class FakeUrlLoadingBrowserAgent : public UrlLoadingBrowserAgent {
  public:
-  TestUrlLoadingService();
+  // Injects an instance attached to |browser|, using the superclass user data
+  // key.
+  static void InjectForBrowser(Browser* browser);
+
+  static FakeUrlLoadingBrowserAgent* FromUrlLoadingBrowserAgent(
+      UrlLoadingBrowserAgent*);
 
   // These are the last parameters passed to |OpenUrl|.
   UrlLoadParams last_params;
+
+  // Call counts for overridden methods.
   int load_current_tab_call_count = 0;
   int switch_tab_call_count = 0;
   int load_new_tab_call_count = 0;
 
  private:
+  explicit FakeUrlLoadingBrowserAgent(Browser* browser);
+
   // Switches to a tab that matches |params.web_params| or opens in a new tab.
   void SwitchToTab(const UrlLoadParams& params) override;
 
@@ -29,4 +38,4 @@ class TestUrlLoadingService : public UrlLoadingService {
   void LoadUrlInNewTab(const UrlLoadParams& params) override;
 };
 
-#endif  // IOS_CHROME_BROWSER_URL_LOADING_TEST_URL_LOADING_SERVICE_H_
+#endif  // IOS_CHROME_BROWSER_URL_LOADING_FAKE_URL_LOADING_BROWSER_AGENT_H_

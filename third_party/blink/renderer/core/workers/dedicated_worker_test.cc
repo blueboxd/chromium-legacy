@@ -131,8 +131,8 @@ class DedicatedWorkerMessagingProxyForTest
         Document::From(GetExecutionContext())->GetSettings());
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
-            script_url, mojom::ScriptType::kClassic,
-            "fake global scope name", "fake user agent",
+            script_url, mojom::ScriptType::kClassic, "fake global scope name",
+            "fake user agent", UserAgentMetadata(),
             nullptr /* web_worker_fetch_context */, headers,
             network::mojom::ReferrerPolicy::kDefault, security_origin_.get(),
             false /* starter_secure_context */,

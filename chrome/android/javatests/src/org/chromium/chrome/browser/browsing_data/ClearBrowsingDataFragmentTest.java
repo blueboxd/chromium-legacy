@@ -31,7 +31,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -278,6 +277,7 @@ public class ClearBrowsingDataFragmentTest {
      */
     @Test
     @LargeTest
+    @DisabledTest(message = "https://crbug.com/1062568")
     public void testDialogAboutOtherFormsOfBrowsingHistory() {
         // Sign in.
         SigninTestUtil.addAndSignInTestAccount();
@@ -397,7 +397,7 @@ public class ClearBrowsingDataFragmentTest {
     @Test
     @MediumTest
     @Feature({"SiteEngagement"})
-    @DisableIf.Build(sdk_is_greater_than = 25, message = "crbug.com/999361")
+    @DisabledTest(message = "https://crbug.com/999361 and https://crbug.com/1062568")
     public void testImportantSitesDialogNoFiltering() throws Exception {
         // Sign in.
         SigninTestUtil.addAndSignInTestAccount();

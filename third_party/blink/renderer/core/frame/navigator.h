@@ -28,7 +28,7 @@
 #include "third_party/blink/renderer/core/frame/navigator_id.h"
 #include "third_party/blink/renderer/core/frame/navigator_language.h"
 #include "third_party/blink/renderer/core/frame/navigator_on_line.h"
-#include "third_party/blink/renderer/core/frame/navigator_user_agent.h"
+#include "third_party/blink/renderer/core/frame/navigator_ua.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -44,7 +44,7 @@ class CORE_EXPORT Navigator final : public ScriptWrappable,
                                     public NavigatorID,
                                     public NavigatorLanguage,
                                     public NavigatorOnLine,
-                                    public NavigatorUserAgent,
+                                    public NavigatorUA,
                                     public DOMWindowClient,
                                     public Supplementable<Navigator> {
   DEFINE_WRAPPERTYPEINFO();
@@ -72,7 +72,7 @@ class CORE_EXPORT Navigator final : public ScriptWrappable,
   void Trace(Visitor*) override;
 
  protected:
-  LocalFrame* GetLocalFrame() const override { return GetFrame(); }
+  ExecutionContext* GetUAExecutionContext() const override;
 
  private:
   UserAgentMetadata metadata_;

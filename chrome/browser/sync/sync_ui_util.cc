@@ -224,7 +224,6 @@ MessageType GetStatus(Profile* profile) {
   return GetStatusLabels(profile).message_type;
 }
 
-#if !defined(OS_CHROMEOS)
 AvatarSyncErrorType GetMessagesForAvatarSyncError(
     Profile* profile,
     int* content_string_id,
@@ -303,7 +302,6 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
   // There is no error.
   return NO_SYNC_ERROR;
 }
-#endif  // !defined(OS_CHROMEOS)
 
 bool ShouldRequestSyncConfirmation(const syncer::SyncService* service) {
   // This method mostly handles two situations:

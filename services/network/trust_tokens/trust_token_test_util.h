@@ -12,7 +12,7 @@
 #include "base/test/task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/network/trust_tokens/trust_token_operation_status.h"
+#include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/trust_tokens/trust_token_request_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,7 +43,7 @@ class TrustTokenRequestHelperTest : public ::testing::Test {
   // Executes a request helper's Begin operation synchronously, removing some
   // boilerplate from waiting for the results of the (actually asynchronous)
   // operation's result.
-  TrustTokenOperationStatus ExecuteBeginOperationAndWaitForResult(
+  mojom::TrustTokenOperationStatus ExecuteBeginOperationAndWaitForResult(
       TrustTokenRequestHelper* helper,
       net::URLRequest* request);
 

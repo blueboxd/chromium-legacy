@@ -14,6 +14,7 @@ group("all_tests") {
 ios_eg_test("ios_web_view_shell_egtests") {
   info_plist = "//ios/web_view/shell/Info.plist"
   sources = [ "shell_egtest.mm" ]
+  include_provider_resources = false
 
   deps = [
     ":earl_grey_test_support",

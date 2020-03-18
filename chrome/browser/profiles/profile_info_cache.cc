@@ -112,9 +112,11 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
   if (!disable_avatar_download_for_testing_)
     DownloadAvatars();
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID)
   LoadGAIAPictureIfNeeded();
+#endif
 
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   bool migrate_legacy_profile_names =
       (!prefs_->GetBoolean(kLegacyProfileNameMigrated) ||
        migration_enabled_for_testing);
@@ -534,7 +536,7 @@ const gfx::Image* ProfileInfoCache::GetHighResAvatarOfProfileAtIndex(
                                    image_path);
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID)
 void ProfileInfoCache::LoadGAIAPictureIfNeeded() {
   std::vector<ProfileAttributesEntry*> entries = GetAllProfilesAttributes();
   for (ProfileAttributesEntry* entry : entries) {
@@ -548,7 +550,9 @@ void ProfileInfoCache::LoadGAIAPictureIfNeeded() {
       entry->GetGAIAPicture();
   }
 }
+#endif
 
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 void ProfileInfoCache::MigrateLegacyProfileNamesAndRecomputeIfNeeded() {
   std::vector<ProfileAttributesEntry*> entries = GetAllProfilesAttributes();
   for (size_t i = 0; i < entries.size(); i++) {
@@ -587,8 +591,7 @@ void ProfileInfoCache::SetLegacyProfileMigrationForTesting(bool value) {
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
 void ProfileInfoCache::DownloadAvatars() {
-  // Only do this on desktop platforms.
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID)
   std::vector<ProfileAttributesEntry*> entries = GetAllProfilesAttributes();
   for (ProfileAttributesEntry* entry : entries) {
     DownloadHighResAvatarIfNeeded(entry->GetAvatarIconIndex(),

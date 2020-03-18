@@ -57,7 +57,6 @@ class SafetyCheckHandler
     kNoPasswords,
     kSignedOut,
     kQuotaLimit,
-    kTooManyPasswords,
     kError,
   };
   enum class ExtensionsStatus {

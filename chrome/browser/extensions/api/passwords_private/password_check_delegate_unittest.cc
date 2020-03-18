@@ -694,19 +694,6 @@ TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusNoPasswords) {
             delegate().GetPasswordCheckStatus().state);
 }
 
-// Verifies that the case where the user has too many saved passwords is
-// reported correctly.
-TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusTooManyPasswords) {
-  for (size_t i = 0; i < PasswordCheckDelegate::kTooManyPasswords; ++i) {
-    store().AddLogin(MakeSavedPassword(
-        kExampleCom, base::StrCat({kUsername1, base::NumberToString(i)})));
-  }
-  RunUntilIdle();
-
-  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_TOO_MANY_PASSWORDS,
-            delegate().GetPasswordCheckStatus().state);
-}
-
 // Verifies that the case where the check is idle is reported correctly.
 TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusIdle) {
   store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));

@@ -97,14 +97,12 @@ StatusLabels GetStatusLabels(Profile* profile);
 // actual labels, only in the return value.
 MessageType GetStatus(Profile* profile);
 
-#if !defined(OS_CHROMEOS)
 // Gets the error message and button label for the sync errors that should be
 // exposed to the user through the titlebar avatar button.
 AvatarSyncErrorType GetMessagesForAvatarSyncError(
     Profile* profile,
     int* content_string_id,
     int* button_string_id);
-#endif
 
 // Whether sync is currently blocked from starting because the sync
 // confirmation dialog hasn't been shown. Note that once the dialog is

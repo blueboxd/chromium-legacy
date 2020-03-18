@@ -8,5 +8,7 @@ per-file deep_scanning_browsertest_base*=rogerta@chromium.org
 per-file deep_scanning_browsertest_base*=domfc@chromium.org
 per-file deep_scanning_utils*=rogerta@chromium.org
 per-file deep_scanning_utils*=domfc@chromium.org
+per-file deep_scanning_test_utils*=rogerta@chromium.org
+per-file deep_scanning_test_utils*=domfc@chromium.org
 
 drubery@chromium.org

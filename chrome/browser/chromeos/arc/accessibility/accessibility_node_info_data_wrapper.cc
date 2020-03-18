@@ -66,6 +66,10 @@ bool AccessibilityNodeInfoDataWrapper::IsVisibleToUser() const {
   return GetProperty(AXBooleanProperty::VISIBLE_TO_USER);
 }
 
+bool AccessibilityNodeInfoDataWrapper::IsVirtualNode() const {
+  return node_ptr_->is_virtual_node;
+}
+
 bool AccessibilityNodeInfoDataWrapper::CanBeAccessibilityFocused() const {
   // An important node with a non-generic role and:
   // - actionable nodes
@@ -204,13 +208,13 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXRole(
   // These mappings were taken from accessibility utils (Android -> Chrome) and
   // BrowserAccessibilityAndroid. They do not completely match the above two
   // sources.
+  // EditText is excluded because it can be a container (b/150827734).
   MAP_ROLE(ui::kAXAbsListViewClassname, ax::mojom::Role::kList);
   MAP_ROLE(ui::kAXButtonClassname, ax::mojom::Role::kButton);
   MAP_ROLE(ui::kAXCheckBoxClassname, ax::mojom::Role::kCheckBox);
   MAP_ROLE(ui::kAXCheckedTextViewClassname, ax::mojom::Role::kStaticText);
   MAP_ROLE(ui::kAXCompoundButtonClassname, ax::mojom::Role::kCheckBox);
   MAP_ROLE(ui::kAXDialogClassname, ax::mojom::Role::kDialog);
-  MAP_ROLE(ui::kAXEditTextClassname, ax::mojom::Role::kTextField);
   MAP_ROLE(ui::kAXGridViewClassname, ax::mojom::Role::kTable);
   MAP_ROLE(ui::kAXHorizontalScrollViewClassname, ax::mojom::Role::kScrollView);
   MAP_ROLE(ui::kAXImageClassname, ax::mojom::Role::kImage);
@@ -238,7 +242,9 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXRole(
 
   std::string text;
   GetProperty(AXStringProperty::TEXT, &text);
-  if (!text.empty())
+  std::vector<AccessibilityInfoDataWrapper*> children;
+  GetChildren(&children);
+  if (!text.empty() && children.empty())
     out_data->role = ax::mojom::Role::kStaticText;
   else
     out_data->role = ax::mojom::Role::kGenericContainer;

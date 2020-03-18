@@ -151,6 +151,7 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -209,9 +210,6 @@ const char kHostedAppVersion[] = "1.0.0.0";
 const char kGoodExtensionID[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char kGoodExtensionCRXPath[] = "extensions/good.crx";
 const char kGoodExtensionVersion[] = "1.0";
-// Chrome RDP extension
-const char kPublicSessionWhitelistedExtensionID[] =
-    "cbkkbcmdlboombapidmoeolnmdacpkch";
 const char kPackagedAppCRXPath[] = "extensions/platform_apps/app_window_2.crx";
 const char kShowManagedStorageID[] = "ongnjlefhnoajpbodoldndkbkdgfomlp";
 const char kShowManagedStorageCRXPath[] = "extensions/show_managed_storage.crx";
@@ -2508,6 +2506,10 @@ class ManagedSessionsTest : public DeviceLocalAccountTest {
         kGoodExtensionID, kGoodExtensionVersion,
         embedded_test_server()->GetURL(std::string("/") +
                                        kGoodExtensionCRXPath));
+    testing_update_manifest_provider->AddUpdate(
+        kShowManagedStorageID, kShowManagedStorageVersion,
+        embedded_test_server()->GetURL(std::string("/") +
+                                       kShowManagedStorageCRXPath));
     embedded_test_server()->RegisterRequestHandler(
         base::BindRepeating(&TestingUpdateManifestProvider::HandleRequest,
                             testing_update_manifest_provider));
@@ -2534,7 +2536,7 @@ class ManagedSessionsTest : public DeviceLocalAccountTest {
   void AddForceInstalledExtension() { AddExtension(kGoodExtensionID); }
 
   void AddForceInstalledWhitelistedExtension() {
-    AddExtension(kPublicSessionWhitelistedExtensionID);
+    AddExtension(kShowManagedStorageID);
   }
 
   void WaitForCertificateUpdate() {
@@ -2605,6 +2607,16 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ManagedSessionsEnabledNonRisky) {
       chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
           *user));
 
+  // Management disclosure warning is shown in the beginning, because
+  // kManagedSessionUseFullLoginWarning pref is set to true in the beginning.
+  ASSERT_TRUE(
+      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
+          broker));
+
+  ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
+  WaitForSessionStart();
+
+  // After the login, kManagedSessionUseFullLoginWarning pref is updated.
   // Check that management disclosure warning is not shown when managed sessions
   // are enabled, but policy settings are not risky.
   ASSERT_FALSE(
@@ -2635,6 +2647,20 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ForceInstalledExtension) {
       chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
           *user));
 
+  // Management disclosure warning is shown in the beginning, because
+  // kManagedSessionUseFullLoginWarning pref is set to true in the beginning.
+  ASSERT_TRUE(
+      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
+          broker));
+
+  ExtensionInstallObserver install_observer(kGoodExtensionID);
+
+  ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
+  WaitForSessionStart();
+
+  install_observer.Wait();
+
+  // After the login, kManagedSessionUseFullLoginWarning pref is updated.
   // Check that force-installed extension activates managed session mode for
   // device-local users.
   EXPECT_TRUE(
@@ -2665,6 +2691,20 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, WhitelistedExtension) {
       chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
           *user));
 
+  // Management disclosure warning is shown in the beginning, because
+  // kManagedSessionUseFullLoginWarning pref is set to true in the beginning.
+  ASSERT_TRUE(
+      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
+          broker));
+
+  ExtensionInstallObserver install_observer(kShowManagedStorageID);
+
+  ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
+  WaitForSessionStart();
+
+  install_observer.Wait();
+
+  // After the login, kManagedSessionUseFullLoginWarning pref is updated.
   // Check that white-listed extension is not considered risky and doesn't
   // activate managed session mode.
   EXPECT_FALSE(

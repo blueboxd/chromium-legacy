@@ -45,9 +45,8 @@
 #include "ios/chrome/browser/ui/omnibox/web_omnibox_edit_controller_impl.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
-#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
 #import "ios/chrome/browser/web/web_navigation_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -293,8 +292,7 @@ const int kLocationAuthorizationStatusCount = 5;
     web_params.extra_headers = [combinedExtraHeaders copy];
     UrlLoadParams params = UrlLoadParams::InCurrentTab(web_params);
     params.disposition = disposition;
-    UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->Load(params);
+    UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
 
     if (google_util::IsGoogleSearchUrl(url)) {
       UMA_HISTOGRAM_ENUMERATION(
@@ -460,8 +458,7 @@ const int kLocationAuthorizationStatusCount = 5;
     UrlLoadParams params = UrlLoadParams::InCurrentTab(searchURL);
     params.web_params.transition_type = ui::PageTransitionFromInt(
         ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-    UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->Load(params);
+    UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
   }
 }
 

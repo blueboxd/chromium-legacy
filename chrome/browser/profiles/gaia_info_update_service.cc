@@ -28,6 +28,10 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/constants/chromeos_features.h"
+#endif
+
 GAIAInfoUpdateService::GAIAInfoUpdateService(
     signin::IdentityManager* identity_manager,
     ProfileAttributesStorage* profile_attributes_storage,
@@ -106,7 +110,7 @@ void GAIAInfoUpdateService::Update(const AccountInfo& info) {
 // static
 bool GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(Profile* profile) {
 #if defined(OS_CHROMEOS)
-  return false;
+  return base::FeatureList::IsEnabled(chromeos::features::kAvatarToolbarButton);
 #endif
   return true;
 }

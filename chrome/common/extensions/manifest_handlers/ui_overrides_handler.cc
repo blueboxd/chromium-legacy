@@ -86,6 +86,8 @@ class UIOverridesHandler::ManifestPermissionImpl : public ManifestPermission {
 
   bool RequiresManagementUIWarning() const override { return false; }
 
+  bool RequiresManagedSessionFullLoginWarning() const override { return false; }
+
  private:
   bool override_bookmarks_ui_permission_;
 };

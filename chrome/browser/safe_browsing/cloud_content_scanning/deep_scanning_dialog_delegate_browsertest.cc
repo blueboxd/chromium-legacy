@@ -13,6 +13,7 @@
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_browsertest_base.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_views.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
@@ -211,20 +212,14 @@ class DeepScanningDialogDelegateBrowserTest
       const std::string& expected_trigger,
       const std::set<std::string>* expected_mimetypes,
       int expected_content_size) {
-    expected_event_key_ =
-        SafeBrowsingPrivateEventRouter::kKeyDangerousDownloadEvent;
-    expected_url_ = expected_url;
-    expected_filename_ = expected_filename;
-    expected_sha256_ = expected_sha256;
-    expected_threat_type_ = expected_threat_type;
-    expected_mimetypes_ = expected_mimetypes;
-    expected_trigger_ = expected_trigger;
-    expected_content_size_ = expected_content_size;
     EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
-        .WillOnce([this](base::Value& report,
-                         base::OnceCallback<void(bool)>& callback) {
-          ValidateReport(report);
-        });
+        .WillOnce(
+            [=](base::Value& report, base::OnceCallback<void(bool)>& callback) {
+              EventReportValidator::DangerousDeepScanningResult(
+                  &report, expected_url, expected_filename, expected_sha256,
+                  expected_threat_type, expected_trigger, expected_mimetypes,
+                  expected_content_size);
+            });
   }
 
   void ExpectSensitiveDataEvent(
@@ -234,19 +229,12 @@ class DeepScanningDialogDelegateBrowserTest
       const std::string& expected_trigger,
       const std::set<std::string>* expected_mimetypes,
       int expected_content_size) {
-    expected_event_key_ =
-        SafeBrowsingPrivateEventRouter::kKeySensitiveDataEvent;
-    expected_url_ = expected_url;
-    expected_dlp_verdict_ = expected_dlp_verdict;
-    expected_filename_ = expected_filename;
-    expected_mimetypes_ = expected_mimetypes;
-    expected_trigger_ = expected_trigger;
-    expected_clicked_through_ = false;
-    expected_content_size_ = expected_content_size;
     EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
-        .WillOnce([this](base::Value& report,
-                         base::OnceCallback<void(bool)>& callback) {
-          ValidateReport(report);
+        .WillOnce([=](base::Value& report,
+                      base::OnceCallback<void(bool)>& callback) {
+          EventReportValidator::SensitiveDataEvent(
+              &report, expected_dlp_verdict, expected_url, expected_filename,
+              expected_trigger, expected_mimetypes, expected_content_size);
         });
   }
 
@@ -257,156 +245,19 @@ class DeepScanningDialogDelegateBrowserTest
                                 const std::string& expected_reason,
                                 const std::set<std::string>* expected_mimetypes,
                                 int expected_content_size) {
-    expected_event_key_ =
-        SafeBrowsingPrivateEventRouter::kKeyUnscannedFileEvent;
-    expected_url_ = expected_url;
-    expected_filename_ = expected_filename;
-    expected_sha256_ = expected_sha256;
-    expected_mimetypes_ = expected_mimetypes;
-    expected_trigger_ = expected_trigger;
-    expected_reason_ = expected_reason;
-    expected_content_size_ = expected_content_size;
     EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
-        .WillOnce([this](base::Value& report,
-                         base::OnceCallback<void(bool)>& callback) {
-          ValidateReport(report);
-        });
+        .WillOnce(
+            [=](base::Value& report, base::OnceCallback<void(bool)>& callback) {
+              EventReportValidator::UnscannedFileEvent(
+                  &report, expected_url, expected_filename, expected_sha256,
+                  expected_trigger, expected_reason, expected_mimetypes,
+                  expected_content_size);
+            });
   }
 
  private:
-  void ValidateReport(base::Value& report) {
-    // Extract the event list.
-    base::Value* event_list = report.FindKey(
-        policy::RealtimeReportingJobConfiguration::kEventListKey);
-    ASSERT_NE(nullptr, event_list);
-    EXPECT_EQ(base::Value::Type::LIST, event_list->type());
-    const base::Value::ListView mutable_list = event_list->GetList();
-
-    // There should only be 1 event per test.
-    ASSERT_EQ(1, (int)mutable_list.size());
-    base::Value wrapper = std::move(mutable_list[0]);
-    EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper.type());
-    value_ = wrapper.FindKey(expected_event_key_);
-    ASSERT_NE(nullptr, value_);
-    ASSERT_EQ(base::Value::Type::DICTIONARY, value_->type());
-
-    // The event should match the expected values.
-    ValidateField(SafeBrowsingPrivateEventRouter::kKeyUrl, expected_url_);
-    ValidateField(SafeBrowsingPrivateEventRouter::kKeyFileName,
-                  expected_filename_);
-    ValidateField(SafeBrowsingPrivateEventRouter::kKeyDownloadDigestSha256,
-                  expected_sha256_);
-    ValidateField(SafeBrowsingPrivateEventRouter::kKeyTrigger,
-                  expected_trigger_);
-    ValidateField(SafeBrowsingPrivateEventRouter::kKeyContentSize,
-                  expected_content_size_);
-    ValidateField(SafeBrowsingPrivateEventRouter::kKeyThreatType,
-                  expected_threat_type_);
-    ValidateField(SafeBrowsingPrivateEventRouter::kKeyReason, expected_reason_);
-    ValidateMimeType();
-    ValidateDlpVerdict();
-  }
-
-  void ValidateMimeType() {
-    std::string* type =
-        value_->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyContentType);
-    if (expected_mimetypes_)
-      EXPECT_TRUE(base::Contains(*expected_mimetypes_, *type));
-    else
-      EXPECT_EQ(nullptr, type);
-  }
-
-  void ValidateDlpVerdict() {
-    if (!expected_dlp_verdict_.has_value())
-      return;
-
-    ValidateField(SafeBrowsingPrivateEventRouter::kKeyClickedThrough,
-                  expected_clicked_through_);
-    base::Value* triggered_rules = value_->FindListKey(
-        SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleInfo);
-    ASSERT_NE(nullptr, triggered_rules);
-    ASSERT_EQ(base::Value::Type::LIST, triggered_rules->type());
-    base::Value::ListView rules_list = triggered_rules->GetList();
-    int rules_size = rules_list.size();
-    ASSERT_EQ(rules_size, expected_dlp_verdict_.value().triggered_rules_size());
-    for (int i = 0; i < rules_size; ++i) {
-      value_ = &rules_list[i];
-      ASSERT_EQ(base::Value::Type::DICTIONARY, value_->type());
-      ValidateDlpRule(expected_dlp_verdict_.value().triggered_rules(i));
-    }
-  }
-
-  void ValidateDlpRule(const DlpDeepScanningVerdict::TriggeredRule& rule) {
-    ValidateField(SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleAction,
-                  base::Optional<int>(rule.action()));
-    ValidateField(SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleName,
-                  rule.rule_name());
-    ValidateField(SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleId,
-                  base::Optional<int>(rule.rule_id()));
-    ValidateField(SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleSeverity,
-                  rule.rule_severity());
-    ValidateField(SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleResourceName,
-                  rule.rule_resource_name());
-
-    base::Value* matched_detectors = value_->FindListKey(
-        SafeBrowsingPrivateEventRouter::kKeyMatchedDetectors);
-    ASSERT_NE(nullptr, matched_detectors);
-    ASSERT_EQ(base::Value::Type::LIST, matched_detectors->type());
-    base::Value::ListView detectors_list = matched_detectors->GetList();
-    int detectors_size = detectors_list.size();
-    ASSERT_EQ(detectors_size, rule.matched_detectors_size());
-
-    for (int j = 0; j < detectors_size; ++j) {
-      value_ = &detectors_list[j];
-      ASSERT_EQ(base::Value::Type::DICTIONARY, value_->type());
-      const DlpDeepScanningVerdict::MatchedDetector& detector =
-          rule.matched_detectors(j);
-      ValidateField(SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorId,
-                    detector.detector_id());
-      ValidateField(SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorName,
-                    detector.display_name());
-      ValidateField(SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorType,
-                    detector.detector_type());
-    }
-  }
-
-  void ValidateField(const std::string& field_key,
-                     const base::Optional<std::string>& expected_value) {
-    if (expected_value.has_value())
-      ASSERT_EQ(*value_->FindStringKey(field_key), expected_value.value());
-    else
-      ASSERT_EQ(nullptr, value_->FindStringKey(field_key));
-  }
-
-  void ValidateField(const std::string& field_key,
-                     const base::Optional<int>& expected_value) {
-    ASSERT_EQ(value_->FindIntKey(field_key), expected_value);
-  }
-
-  void ValidateField(const std::string& field_key,
-                     const base::Optional<bool>& expected_value) {
-    ASSERT_EQ(value_->FindBoolKey(field_key), expected_value);
-  }
-
-  // Expected fields for reports checked against |value_|. The optional ones are
-  // not present on every unsafe event. The mimetype field is handled by a
-  // pointer to a set since different builds/platforms can return different
-  // mimetype strings for the same file.
-  std::string expected_event_key_;
-  std::string expected_url_;
-  std::string expected_filename_;
-  std::string expected_sha256_;
-  std::string expected_trigger_;
-  base::Optional<DlpDeepScanningVerdict> expected_dlp_verdict_ = base::nullopt;
-  base::Optional<std::string> expected_threat_type_ = base::nullopt;
-  base::Optional<std::string> expected_reason_ = base::nullopt;
-  base::Optional<bool> expected_clicked_through_ = base::nullopt;
-  base::Optional<int> expected_content_size_ = base::nullopt;
-  const std::set<std::string>* expected_mimetypes_ = nullptr;
-
   std::unique_ptr<policy::MockCloudPolicyClient> client_;
   base::ScopedTempDir temp_dir_;
-  base::Value* value_;
 };
 
 IN_PROC_BROWSER_TEST_F(DeepScanningDialogDelegateBrowserTest, Unauthorized) {

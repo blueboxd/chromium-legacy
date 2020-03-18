@@ -59,13 +59,11 @@ int32_t PepperFlashDRMRendererHost::OnGetVoucherFile(
   create_msgs.push_back(PpapiHostMsg_FileRef_CreateForRawFS(voucher_file));
 
   renderer_ppapi_host_->CreateBrowserResourceHosts(
-      pp_instance(),
-      create_msgs,
-      base::Bind(&PepperFlashDRMRendererHost::DidCreateFileRefHosts,
-                 weak_factory_.GetWeakPtr(),
-                 context->MakeReplyMessageContext(),
-                 voucher_file,
-                 renderer_pending_host_id));
+      pp_instance(), create_msgs,
+      base::BindOnce(&PepperFlashDRMRendererHost::DidCreateFileRefHosts,
+                     weak_factory_.GetWeakPtr(),
+                     context->MakeReplyMessageContext(), voucher_file,
+                     renderer_pending_host_id));
   return PP_OK_COMPLETIONPENDING;
 }
 

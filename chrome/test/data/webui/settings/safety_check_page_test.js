@@ -29,6 +29,7 @@ suite('SafetyCheckUiTests', function() {
     const event = {};
     event.newState = state;
     event.displayString = null;
+    event.passwordsButtonString = null;
     cr.webUIListenerCallback(
         settings.SafetyCheckCallbackConstants.PASSWORDS_CHANGED, event);
   }

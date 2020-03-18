@@ -34,9 +34,8 @@
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
-#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -1044,8 +1043,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
       base::UserMetricsAction("MobileHistoryPage_EntryLinkOpenNewTab"));
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
   [self.delegate dismissHistoryWithCompletion:^{
-    UrlLoadingServiceFactory::GetForBrowserState(_browser->GetBrowserState())
-        ->Load(params);
+    UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
     [self.presentationDelegate showActiveRegularTabFromHistory];
   }];
 }
@@ -1057,8 +1055,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
   params.in_incognito = YES;
   [self.delegate dismissHistoryWithCompletion:^{
-    UrlLoadingServiceFactory::GetForBrowserState(_browser->GetBrowserState())
-        ->Load(params);
+    UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
     [self.presentationDelegate showActiveIncognitoTabFromHistory];
   }];
 }
@@ -1075,8 +1072,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   params.load_strategy = self.loadStrategy;
   [self.delegate dismissHistoryWithCompletion:^{
-    UrlLoadingServiceFactory::GetForBrowserState(_browser->GetBrowserState())
-        ->Load(params);
+    UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
     [self.presentationDelegate showActiveRegularTabFromHistory];
   }];
 }

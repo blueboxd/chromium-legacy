@@ -1134,6 +1134,8 @@ if (!is_android) {
       "../browser/safe_browsing/cloud_content_scanning/deep_scanning_browsertest_base.h",
       "../browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate_browsertest.cc",
       "../browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_views_browsertest.cc",
+      "../browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.cc",
+      "../browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h",
       "../browser/safe_browsing/download_protection/download_protection_service_browsertest.cc",
       "../browser/safe_browsing/test_safe_browsing_database_helper.cc",
       "../browser/safe_browsing/test_safe_browsing_database_helper.h",

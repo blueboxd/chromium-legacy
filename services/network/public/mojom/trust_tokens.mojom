@@ -6,6 +6,42 @@ module network.mojom;
 
 import "url/mojom/origin.mojom";
 
+// TrustTokenOperationStatus enumerates (an incomplete collection of) outcomes
+// for a Trust Tokens protocol operation.
+//
+// Each status may be returned in similar cases beyond those listed in its
+// comment.
+enum TrustTokenOperationStatus {
+  kOk,
+
+  // A client-provided argument was malformed or otherwise invalid.
+  kInvalidArgument,
+
+  // A precondition failed (for instance, no verification key was available for
+  // an issuer when executing an operation required such a key to be present).
+  kFailedPrecondition,
+
+  // No inputs for the given operation available, or a quota on the operation's
+  // output would be exceeded.
+  kResourceExhausted,
+
+  // The operation's result already exists (for instance, a cache was hit).
+  kAlreadyExists,
+
+  // Internal storage has not yet initialized, or the system is unavailable in
+  // some other general, probably transient, manner.
+  kUnavailable,
+
+  // The server response was malformed or otherwise invalid.
+  kBadResponse,
+
+  // A, usually severe, internal error occurred.
+  kInternalError,
+
+  // The operation failed for some other reason.
+  kUnknownError,
+};
+
 // Trust Tokens operation parameterization
 //
 // This file specifies Mojo objects related to Trust Tokens protocol operations

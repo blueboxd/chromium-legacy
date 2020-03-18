@@ -34,9 +34,8 @@
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
-#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/navigation/referrer.h"
@@ -385,15 +384,13 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
     params.in_incognito = incognito;
     params.web_params.referrer = web::Referrer(GURL(kReadingListReferrerURL),
                                                web::ReferrerPolicyDefault);
-    UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->Load(params);
+    UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
   } else {
     UrlLoadParams params = UrlLoadParams::InCurrentTab(loadURL);
     params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
     params.web_params.referrer = web::Referrer(GURL(kReadingListReferrerURL),
                                                web::ReferrerPolicyDefault);
-    UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->Load(params);
+    UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
   }
 
   [self stop];

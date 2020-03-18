@@ -65,6 +65,7 @@ let UpdatesChangedEvent;
  * @typedef {{
  *   newState: settings.SafetyCheckPasswordsStatus,
  *   displayString: string,
+ *   buttonString: string,
  * }}
  */
 let PasswordsChangedEvent;
@@ -168,6 +169,12 @@ Polymer({
      * @private
      */
     extensionsDisplayString_: String,
+
+    /**
+     * UI string to display in the password button.
+     * @private
+     */
+    passwordsButtonString_: String,
   },
 
   /** @private {settings.SafetyCheckBrowserProxy} */
@@ -271,6 +278,7 @@ Polymer({
    */
   onSafetyCheckPasswordsChanged_: function(event) {
     this.passwordsDisplayString_ = event.displayString;
+    this.passwordsButtonString_ = event.buttonString;
     this.passwordsStatus_ = event.newState;
     this.updateParentFromChildren_();
   },
@@ -430,7 +438,6 @@ Polymer({
       case settings.SafetyCheckPasswordsStatus.NO_PASSWORDS:
       case settings.SafetyCheckPasswordsStatus.SIGNED_OUT:
       case settings.SafetyCheckPasswordsStatus.QUOTA_LIMIT:
-      case settings.SafetyCheckPasswordsStatus.TOO_MANY_PASSWORDS:
       case settings.SafetyCheckPasswordsStatus.ERROR:
         return 'cr:info';
       default:

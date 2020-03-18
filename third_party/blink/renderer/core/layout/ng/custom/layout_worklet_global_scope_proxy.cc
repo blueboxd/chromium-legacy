@@ -41,7 +41,8 @@ LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
 
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
       document->Url(), mojom::blink::ScriptType::kModule, global_scope_name,
-      document->UserAgent(), frame->Client()->CreateWorkerFetchContext(),
+      document->UserAgent(), frame->Client()->UserAgentMetadata(),
+      frame->Client()->CreateWorkerFetchContext(),
       document->GetContentSecurityPolicy()->Headers(),
       document->GetReferrerPolicy(), document->GetSecurityOrigin(),
       document->IsSecureContext(), document->GetHttpsState(),

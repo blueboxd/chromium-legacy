@@ -88,6 +88,12 @@ TEST(OriginPolicyParsedHeader, AllowedEmpty) {
   ASSERT_FALSE(parsed.has_value());
 }
 
+TEST(OriginPolicyParsedHeader, AllowedEmptyString) {
+  auto parsed = OriginPolicyParsedHeader::FromString("allowed=(\"\")");
+
+  ASSERT_FALSE(parsed.has_value());
+}
+
 TEST(OriginPolicyParsedHeader, AllowedValid) {
   auto parsed =
       OriginPolicyParsedHeader::FromString("allowed=(\"1\" null \"2\" latest)");
@@ -275,10 +281,8 @@ TEST(OriginPolicyParsedHeader, CombinedValidExtraDictionaryEntriesIgnored) {
 }
 
 TEST(OriginPolicyParsedHeader, CombinedValidParametersIgnored) {
-  // TODO(domenic): after https://crbug.com/1060740 is fixed we can add
-  // ;param-a=1;param-b=?0 after "1" and make sure that too gets ignored.
   auto parsed = OriginPolicyParsedHeader::FromString(
-      "allowed=(\"1\" \"2\" latest);param-c=\"x\", "
+      "allowed=(\"1\";param-a=1;param-b=?0 \"2\" latest);param-c=\"x\", "
       "preferred=latest-from-network;param-d=y");
 
   ASSERT_TRUE(parsed.has_value());

@@ -2,24 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_URL_LOADING_URL_LOADING_SERVICE_H_
-#define IOS_CHROME_BROWSER_URL_LOADING_URL_LOADING_SERVICE_H_
+#ifndef IOS_CHROME_BROWSER_URL_LOADING_URL_LOADING_BROWSER_AGENT_H_
+#define IOS_CHROME_BROWSER_URL_LOADING_URL_LOADING_BROWSER_AGENT_H_
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
 
-#include "components/keyed_service/core/keyed_service.h"
-#import "ios/web/public/navigation/navigation_manager.h"
-#include "ui/base/page_transition_types.h"
-#include "url/gurl.h"
+#import "ios/chrome/browser/main/browser_user_data.h"
 
 class AppUrlLoadingService;
 class Browser;
 class UrlLoadingNotifierBrowserAgent;
 struct UrlLoadParams;
 
-// Objective-C delegate for UrlLoadingService.
-@protocol URLLoadingServiceDelegate
+// A delegate for URL loading that can handle UI animations that are needed at
+// specific points in the loading cycle.
+@protocol URLLoadingDelegate
 
 // Implementing delegate can do an animation using information in |params| when
 // opening a background tab, then call |completion|.
@@ -29,21 +26,30 @@ struct UrlLoadParams;
 @end
 
 // Service used to load url in current or new tab.
-class UrlLoadingService : public KeyedService {
+class UrlLoadingBrowserAgent : public BrowserUserData<UrlLoadingBrowserAgent> {
  public:
-  UrlLoadingService();
+  // Not copyable or moveable.
+  UrlLoadingBrowserAgent(const UrlLoadingBrowserAgent&) = delete;
+  UrlLoadingBrowserAgent& operator=(const UrlLoadingBrowserAgent&) = delete;
+  ~UrlLoadingBrowserAgent() override;
 
   void SetAppService(AppUrlLoadingService* app_service);
-  void SetDelegate(id<URLLoadingServiceDelegate> delegate);
-  void SetBrowser(Browser* browser);
+  void SetIncognitoLoader(UrlLoadingBrowserAgent* loader);
+  void SetDelegate(id<URLLoadingDelegate> delegate);
 
   // Applies load strategy then calls |Dispatch|.
-  virtual void Load(const UrlLoadParams& params);
+  void Load(const UrlLoadParams& params);
 
  private:
+  friend class BrowserUserData<UrlLoadingBrowserAgent>;
+  friend class FakeUrlLoadingBrowserAgent;
+  explicit UrlLoadingBrowserAgent(Browser* browser);
+  BROWSER_USER_DATA_KEY_DECL();
+
   // Dispatches to one action method below, depending on |params.disposition|.
   void Dispatch(const UrlLoadParams& params);
 
+  // Action methods.
   // Switches to a tab that matches |params.web_params| or loads in a new tab.
   virtual void SwitchToTab(const UrlLoadParams& params);
 
@@ -53,10 +59,11 @@ class UrlLoadingService : public KeyedService {
   // Loads a url based on |params| in a new tab.
   virtual void LoadUrlInNewTab(const UrlLoadParams& params);
 
-  __weak id<URLLoadingServiceDelegate> delegate_;
-  AppUrlLoadingService* app_service_;
+  __weak id<URLLoadingDelegate> delegate_;
   Browser* browser_;
-  UrlLoadingNotifierBrowserAgent* notifier_;
+  UrlLoadingNotifierBrowserAgent* notifier_ = nullptr;
+  UrlLoadingBrowserAgent* incognito_loader_ = nullptr;
+  AppUrlLoadingService* app_service_ = nullptr;
 };
 
-#endif  // IOS_CHROME_BROWSER_URL_LOADING_URL_LOADING_SERVICE_H_
+#endif  // IOS_CHROME_BROWSER_URL_LOADING_URL_LOADING_BROWSER_AGENT_H_

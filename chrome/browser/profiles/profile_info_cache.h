@@ -170,9 +170,11 @@ class ProfileInfoCache : public ProfileInfoInterface,
       const std::string& key,
       const std::string& image_url_with_size,
       bool image_is_empty) const;
+#if !defined(OS_ANDROID)
+  void LoadGAIAPictureIfNeeded();
+#endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  void LoadGAIAPictureIfNeeded();
   // Migrate any legacy profile names ("First user", "Default Profile") to
   // new style default names ("Person 1"). Rename any duplicates of "Person n"
   // i.e. Two or more profiles with the profile name "Person 1" would be

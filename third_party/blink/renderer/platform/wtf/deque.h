@@ -696,7 +696,7 @@ Deque<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
   static_assert(Allocator::kIsGarbageCollected,
                 "Garbage collector must be enabled.");
   const T* buffer = buffer_.BufferSafe();
-  DCHECK(!buffer || BackingBuffer::IsOutOfLineBuffer(&buffer_, buffer));
+  DCHECK(!buffer || buffer_.IsOutOfLineBuffer(buffer));
   Allocator::TraceVectorBacking(visitor, buffer, buffer_.BufferSlot());
 }
 

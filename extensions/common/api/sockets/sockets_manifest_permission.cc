@@ -318,4 +318,8 @@ bool SocketsManifestPermission::RequiresManagementUIWarning() const {
   return false;
 }
 
+bool SocketsManifestPermission::RequiresManagedSessionFullLoginWarning() const {
+  return false;
+}
+
 }  // namespace extensions

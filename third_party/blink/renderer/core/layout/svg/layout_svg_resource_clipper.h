@@ -51,16 +51,6 @@ class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
   base::Optional<Path> AsPath();
   sk_sp<const PaintRecord> CreatePaintRecord();
 
-  bool HasCycle() { return in_clip_expansion_; }
-  void BeginClipExpansion() {
-    DCHECK(!in_clip_expansion_);
-    in_clip_expansion_ = true;
-  }
-  void EndClipExpansion() {
-    DCHECK(in_clip_expansion_);
-    in_clip_expansion_ = false;
-  }
-
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void WillBeDestroyed() override;
@@ -81,9 +71,6 @@ class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
   sk_sp<const PaintRecord> cached_paint_record_;
 
   FloatRect local_clip_bounds_;
-
-  // Reference cycle detection.
-  bool in_clip_expansion_;
 };
 
 DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(LayoutSVGResourceClipper,

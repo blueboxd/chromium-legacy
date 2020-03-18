@@ -17,6 +17,7 @@
 #include "services/network/public/cpp/blocked_by_response_reason.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
+#include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 
 namespace network {
 
@@ -67,6 +68,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) URLLoaderCompletionStatus {
 
   // Optional CORS error details.
   base::Optional<CorsErrorStatus> cors_error_status;
+
+  // Optional Trust Tokens (https://github.com/wicg/trust-token-api) error
+  // details.
+  base::Optional<mojom::TrustTokenOperationStatus> trust_token_operation_status;
 
   // Optional SSL certificate info.
   base::Optional<net::SSLInfo> ssl_info;

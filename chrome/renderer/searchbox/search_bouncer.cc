@@ -36,7 +36,7 @@ void SearchBouncer::RegisterMojoInterfaces(
     blink::AssociatedInterfaceRegistry* associated_interfaces) {
   // Note: Unretained is safe here because this class is a leaky LazyInstance.
   // For the same reason, UnregisterMojoInterfaces isn't required.
-  associated_interfaces->AddInterface(base::Bind(
+  associated_interfaces->AddInterface(base::BindRepeating(
       &SearchBouncer::BindSearchBouncerReceiver, base::Unretained(this)));
 }
 

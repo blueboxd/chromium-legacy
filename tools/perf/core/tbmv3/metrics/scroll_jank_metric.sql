@@ -11,35 +11,22 @@
 -- to leave only one of them.
 -- TODO(khokhlov): Remove one of these metrics.
 
--- This selects GestureScrollUpdate events. Note the result is a table not a
--- view to speed up the metric computation.
-CREATE TABLE input_latency_events AS
+-- This selects GestureScrollUpdate events.
+CREATE VIEW input_latency_events AS
 SELECT
   ts AS start, ts + dur AS finish
 FROM slice
 WHERE
   name = "InputLatency::GestureScrollUpdate";
 
--- This selects timestamps of finishes of GestureScrollUpdate events, and for
--- each finish, finds the timestamp of the next finish.
--- TODO(khokhlov): This query is pretty slow. Rewrite using window functions
--- when they are enabled in Chrome's sqlite.
-CREATE TABLE next_finish AS
-SELECT
-  finish,
-  (SELECT MIN(next.finish)
-   FROM input_latency_events next
-   WHERE next.finish > prev.finish) AS next_finish
-FROM input_latency_events prev;
-
 -- Every row of this query is a span from one event finish to the next.
 -- Column names 'ts' and 'dur' are as expected by SPAN_JOIN function.
 CREATE VIEW intervals_between_finishes AS
 SELECT
   finish AS ts,
-  next_finish AS next_ts,
-  next_finish - finish AS dur
-FROM next_finish;
+  LEAD(finish) OVER (ORDER BY finish) AS next_ts,
+  LEAD(finish) OVER (ORDER BY finish) - finish AS dur
+FROM input_latency_events;
 
 -- Every row of this query marks the start of some GestureScrollUpdate event.
 -- Column names 'ts' and 'dur' are as expected by SPAN_JOIN function.

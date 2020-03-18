@@ -37,10 +37,12 @@
 namespace blink {
 
 WorkerNavigator::WorkerNavigator(const String& user_agent,
+                                 const UserAgentMetadata& ua_metadata,
                                  ExecutionContext* execution_context)
     : ExecutionContextClient(execution_context),
       NavigatorLanguage(execution_context),
-      user_agent_(user_agent) {}
+      user_agent_(user_agent),
+      ua_metadata_(ua_metadata) {}
 
 WorkerNavigator::~WorkerNavigator() = default;
 

@@ -2973,11 +2973,10 @@ TEST_P(DeepScanningDownloadTest, PasswordProtectedArchivesBlockedByPreference) {
   test_upload_service->SetResponse(BinaryUploadService::Result::FILE_ENCRYPTED,
                                    DeepScanningClientResponse());
 
-  {
+  for (AllowPasswordProtectedFilesValues pref : {ALLOW_NONE, ALLOW_UPLOADS}) {
     SetSendFilesForMalwareCheckPref(
         SendFilesForMalwareCheckValues::SEND_DOWNLOADS);
-    SetPasswordProtectedAllowedPref(
-        AllowPasswordProtectedFilesValues::ALLOW_NONE);
+    SetPasswordProtectedAllowedPref(pref);
     PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
     RunLoop run_loop;
@@ -2990,9 +2989,9 @@ TEST_P(DeepScanningDownloadTest, PasswordProtectedArchivesBlockedByPreference) {
     EXPECT_TRUE(HasClientDownloadRequest());
   }
 
-  {
-    SetPasswordProtectedAllowedPref(
-        AllowPasswordProtectedFilesValues::ALLOW_DOWNLOADS);
+  for (AllowPasswordProtectedFilesValues pref :
+       {ALLOW_DOWNLOADS, ALLOW_UPLOADS_AND_DOWNLOADS}) {
+    SetPasswordProtectedAllowedPref(pref);
     PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
     RunLoop run_loop;
@@ -3036,10 +3035,11 @@ TEST_P(DeepScanningDownloadTest, LargeFileBlockedByPreference) {
   test_upload_service->SetResponse(BinaryUploadService::Result::FILE_TOO_LARGE,
                                    DeepScanningClientResponse());
 
-  {
+  for (BlockLargeFileTransferValues pref :
+       {BLOCK_LARGE_DOWNLOADS, BLOCK_LARGE_UPLOADS_AND_DOWNLOADS}) {
     SetSendFilesForMalwareCheckPref(
         SendFilesForMalwareCheckValues::SEND_DOWNLOADS);
-    SetBlockLargeFilesPref(BlockLargeFileTransferValues::BLOCK_LARGE_DOWNLOADS);
+    SetBlockLargeFilesPref(pref);
     PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
     RunLoop run_loop;
@@ -3052,8 +3052,8 @@ TEST_P(DeepScanningDownloadTest, LargeFileBlockedByPreference) {
     EXPECT_TRUE(HasClientDownloadRequest());
   }
 
-  {
-    SetBlockLargeFilesPref(BlockLargeFileTransferValues::BLOCK_NONE);
+  for (BlockLargeFileTransferValues pref : {BLOCK_NONE, BLOCK_LARGE_UPLOADS}) {
+    SetBlockLargeFilesPref(pref);
     PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
     RunLoop run_loop;
@@ -3099,18 +3099,19 @@ TEST_P(DeepScanningDownloadTest, UnsupportedFiletypeBlockedByPreference) {
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
-      .Times(2);
+      .Times(4);
   EXPECT_CALL(*binary_feature_extractor_.get(),
               ExtractImageFeatures(
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
-      .Times(2);
+      .Times(4);
 
   SetCheckContentCompliancePref(CheckContentComplianceValues::CHECK_DOWNLOADS);
   SetUrlToCheckContentCompliance("www.evil.com");
 
-  {
-    SetBlockUnsupportedFiletypePref(
-        BlockUnsupportedFiletypesValues::BLOCK_UNSUPPORTED_FILETYPES_DOWNLOADS);
+  for (BlockUnsupportedFiletypesValues pref :
+       {BLOCK_UNSUPPORTED_FILETYPES_DOWNLOADS,
+        BLOCK_UNSUPPORTED_FILETYPES_UPLOADS_AND_DOWNLOADS}) {
+    SetBlockUnsupportedFiletypePref(pref);
     PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
     RunLoop run_loop;
@@ -3123,9 +3124,10 @@ TEST_P(DeepScanningDownloadTest, UnsupportedFiletypeBlockedByPreference) {
     EXPECT_TRUE(HasClientDownloadRequest());
   }
 
-  {
-    SetBlockUnsupportedFiletypePref(
-        BlockUnsupportedFiletypesValues::BLOCK_UNSUPPORTED_FILETYPES_NONE);
+  for (BlockUnsupportedFiletypesValues pref :
+       {BLOCK_UNSUPPORTED_FILETYPES_NONE,
+        BLOCK_UNSUPPORTED_FILETYPES_UPLOADS}) {
+    SetBlockUnsupportedFiletypePref(pref);
     PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
     RunLoop run_loop;

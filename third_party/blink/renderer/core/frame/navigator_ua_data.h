@@ -15,16 +15,16 @@ namespace blink {
 
 class ScriptState;
 
-class NavigatorUAData : public ScriptWrappable, DOMWindowClient {
+class NavigatorUAData : public ScriptWrappable, ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorUAData);
 
  public:
-  static NavigatorUAData* Create(LocalFrame* frame) {
-    return MakeGarbageCollected<NavigatorUAData>(frame);
+  static NavigatorUAData* Create(ExecutionContext* context) {
+    return MakeGarbageCollected<NavigatorUAData>(context);
   }
 
-  explicit NavigatorUAData(LocalFrame* frame);
+  explicit NavigatorUAData(ExecutionContext* context);
 
   void AddBrand(const String& brand, const String& version);
   void SetMobile(bool mobile);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 
 #include "base/strings/string_number_conversions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -15,7 +15,6 @@
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
@@ -26,13 +25,14 @@
 #error "This file requires ARC support."
 #endif
 
+BROWSER_USER_DATA_KEY_IMPL(UrlLoadingBrowserAgent)
+
 namespace {
 // Helper method for inducing intentional freezes and crashes, in a separate
-// function so it will show up in stack traces.
-// If a delay parameter is present, the main thread will be frozen for that
-// number of seconds.
-// If a crash parameter is "true" (which is the default value), the browser will
-// crash after this delay. Any other value will not trigger a crash.
+// function so it will show up in stack traces. If a delay parameter is present,
+// the main thread will be frozen for that number of seconds. If a crash
+// parameter is "true" (which is the default value), the browser will crash
+// after this delay. Any other value will not trigger a crash.
 void InduceBrowserCrash(const GURL& url) {
   int delay = 0;
   std::string delay_string;
@@ -58,25 +58,30 @@ void InduceBrowserCrash(const GURL& url) {
     CHECK(true);
   }
 }
+}  // namespace
+
+UrlLoadingBrowserAgent::UrlLoadingBrowserAgent(Browser* browser)
+    : browser_(browser),
+      notifier_(UrlLoadingNotifierBrowserAgent::FromBrowser(browser_)) {
+  DCHECK(notifier_);
 }
 
-UrlLoadingService::UrlLoadingService() {}
+UrlLoadingBrowserAgent::~UrlLoadingBrowserAgent() {}
 
-void UrlLoadingService::SetAppService(AppUrlLoadingService* app_service) {
+void UrlLoadingBrowserAgent::SetAppService(AppUrlLoadingService* app_service) {
   app_service_ = app_service;
 }
 
-void UrlLoadingService::SetDelegate(id<URLLoadingServiceDelegate> delegate) {
+void UrlLoadingBrowserAgent::SetDelegate(id<URLLoadingDelegate> delegate) {
   delegate_ = delegate;
 }
 
-void UrlLoadingService::SetBrowser(Browser* browser) {
-  browser_ = browser;
-  if (browser_)
-    notifier_ = UrlLoadingNotifierBrowserAgent::FromBrowser(browser_);
+void UrlLoadingBrowserAgent::SetIncognitoLoader(
+    UrlLoadingBrowserAgent* loader) {
+  incognito_loader_ = loader;
 }
 
-void UrlLoadingService::Load(const UrlLoadParams& params) {
+void UrlLoadingBrowserAgent::Load(const UrlLoadParams& params) {
   // Apply any override load strategy and dispatch.
   switch (params.load_strategy) {
     case UrlLoadStrategy::ALWAYS_NEW_FOREGROUND_TAB: {
@@ -89,9 +94,8 @@ void UrlLoadingService::Load(const UrlLoadParams& params) {
       ChromeBrowserState* browser_state = browser_->GetBrowserState();
       if (params.disposition == WindowOpenDisposition::CURRENT_TAB &&
           !browser_state->IsOffTheRecord()) {
-        UrlLoadingServiceFactory::GetForBrowserState(
-            browser_state->GetOffTheRecordChromeBrowserState())
-            ->Load(params);
+        DCHECK(incognito_loader_);
+        incognito_loader_->Load(params);
       } else {
         UrlLoadParams fixed_params = params;
         fixed_params.in_incognito = YES;
@@ -106,7 +110,7 @@ void UrlLoadingService::Load(const UrlLoadParams& params) {
   }
 }
 
-void UrlLoadingService::Dispatch(const UrlLoadParams& params) {
+void UrlLoadingBrowserAgent::Dispatch(const UrlLoadParams& params) {
   // Then dispatch.
   switch (params.disposition) {
     case WindowOpenDisposition::NEW_BACKGROUND_TAB:
@@ -125,7 +129,7 @@ void UrlLoadingService::Dispatch(const UrlLoadParams& params) {
   }
 }
 
-void UrlLoadingService::LoadUrlInCurrentTab(const UrlLoadParams& params) {
+void UrlLoadingBrowserAgent::LoadUrlInCurrentTab(const UrlLoadParams& params) {
   web::NavigationManager::WebLoadParams web_params = params.web_params;
 
   ChromeBrowserState* browser_state = browser_->GetBrowserState();
@@ -207,7 +211,7 @@ void UrlLoadingService::LoadUrlInCurrentTab(const UrlLoadParams& params) {
   notifier_->TabDidLoadUrl(web_params.url, web_params.transition_type);
 }
 
-void UrlLoadingService::SwitchToTab(const UrlLoadParams& params) {
+void UrlLoadingBrowserAgent::SwitchToTab(const UrlLoadParams& params) {
   DCHECK(app_service_);
 
   web::NavigationManager::WebLoadParams web_params = params.web_params;
@@ -251,7 +255,7 @@ void UrlLoadingService::SwitchToTab(const UrlLoadParams& params) {
   notifier_->DidSwitchToTabWithUrl(web_params.url, new_web_state_index);
 }
 
-void UrlLoadingService::LoadUrlInNewTab(const UrlLoadParams& params) {
+void UrlLoadingBrowserAgent::LoadUrlInNewTab(const UrlLoadParams& params) {
   DCHECK(app_service_);
   DCHECK(delegate_);
   DCHECK(browser_);

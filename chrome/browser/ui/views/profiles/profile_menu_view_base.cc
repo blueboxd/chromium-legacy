@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/profiles/incognito_menu_view.h"
+#include "chrome/browser/ui/views/profiles/profile_menu_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
@@ -41,7 +42,6 @@
 #include "ui/views/view_class_properties.h"
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/profiles/profile_menu_view.h"
 #include "chrome/browser/ui/views/sync/dice_signin_button_view.h"
 #endif
 
@@ -319,12 +319,7 @@ void ProfileMenuViewBase::ShowBubble(
     bubble = new IncognitoMenuView(anchor_button, browser);
   } else {
     DCHECK_EQ(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, view_mode);
-#if !defined(OS_CHROMEOS)
     bubble = new ProfileMenuView(anchor_button, browser);
-#else
-    NOTREACHED();
-    return;
-#endif
   }
 
   views::BubbleDialogDelegateView::CreateBubble(bubble)->Show();

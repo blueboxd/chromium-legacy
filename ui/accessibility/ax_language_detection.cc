@@ -118,8 +118,8 @@ void AXLanguageInfoStats::GenerateTopResults() {
 }
 
 void AXLanguageInfoStats::RecordLabelStatistics(
-    std::string labelled_lang,
-    std::string author_lang,
+    const std::string& labelled_lang,
+    const std::string& author_lang,
     bool labelled_with_first_result) {
   // Count the number of nodes we labelled, and the number we labelled with
   // our highest confidence result.
@@ -366,7 +366,7 @@ void AXLanguageDetectionManager::LabelLanguagesForNode(AXNode* node) {
     if (lang_info_stats_.CheckLanguageWithinTop(lang)) {
       lang_info->language = lang;
 
-      std::string author_lang = node->GetInheritedStringAttribute(
+      const std::string& author_lang = node->GetInheritedStringAttribute(
           ax::mojom::StringAttribute::kLanguage);
       lang_info_stats_.RecordLabelStatistics(lang, author_lang,
                                              labelled_with_first_result);

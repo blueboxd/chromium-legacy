@@ -38,6 +38,7 @@
 #include "services/network/public/mojom/content_security_policy.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-shared.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -67,6 +68,7 @@ class BLINK_EXPORT WebSharedWorker {
       const WebString& name,
       WebSecurityOrigin constructor_origin,
       const WebString& user_agent,
+      const UserAgentMetadata& ua_metadata,
       const WebString& content_security_policy,
       network::mojom::ContentSecurityPolicyType,
       network::mojom::IPAddressSpace,

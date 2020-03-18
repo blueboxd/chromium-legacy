@@ -108,15 +108,12 @@ class AvatarToolbarButtonDelegate : public BrowserListObserver,
   IdentityAnimationState identity_animation_state_ =
       IdentityAnimationState::kNotShowing;
   bool refresh_tokens_loaded_ = false;
+  std::unique_ptr<AvatarButtonErrorController> error_controller_;
 
   // Whether the avatar highlight animation is visible. The animation is shown
   // when an Autofill datatype is saved. When this is true the avatar button
   // sync paused/error state will be disabled.
   bool highlight_animation_visible_ = false;
-
-#if !defined(OS_CHROMEOS)
-  std::unique_ptr<AvatarButtonErrorController> error_controller_;
-#endif  // !defined(OS_CHROMEOS)
 
   base::WeakPtrFactory<AvatarToolbarButtonDelegate> weak_ptr_factory_{this};
 

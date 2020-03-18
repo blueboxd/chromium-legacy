@@ -11,7 +11,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_coordinator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller.h"
-#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -50,11 +50,10 @@
 
   if (self.browser->GetBrowserState()->IsOffTheRecord()) {
     DCHECK(!self.incognitoViewController);
-    UrlLoadingService* urlLoadingService =
-        UrlLoadingServiceFactory::GetForBrowserState(
-            self.browser->GetBrowserState());
-    self.incognitoViewController = [[IncognitoViewController alloc]
-        initWithUrlLoadingService:urlLoadingService];
+    UrlLoadingBrowserAgent* URLLoader =
+        UrlLoadingBrowserAgent::FromBrowser(self.browser);
+    self.incognitoViewController =
+        [[IncognitoViewController alloc] initWithUrlLoader:URLLoader];
   } else {
     DCHECK(!self.contentSuggestionsCoordinator);
     self.contentSuggestionsCoordinator = [[ContentSuggestionsCoordinator alloc]

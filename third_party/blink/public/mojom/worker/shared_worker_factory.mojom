@@ -5,6 +5,7 @@
 module blink.mojom;
 
 import "mojo/public/mojom/base/unguessable_token.mojom";
+import "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom";
 import "third_party/blink/public/mojom/browser_interface_broker.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/renderer_preference_watcher.mojom";
@@ -42,6 +43,7 @@ interface SharedWorkerFactory {
       url.mojom.Origin constructor_origin,
 
       string user_agent,
+      UserAgentMetadata ua_metadata,
       bool pause_on_start,
       mojo_base.mojom.UnguessableToken devtools_worker_token,
       RendererPreferences renderer_preferences,

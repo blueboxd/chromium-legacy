@@ -46,10 +46,11 @@
 -- IDs to group them together into scrolls later and the timestamp and duration
 -- to compute the duration of the scroll.
 
-DROP TABLE IF EXISTS ScrollBeginsAndEnds;
+DROP VIEW IF EXISTS ScrollBeginsAndEnds;
 
-CREATE TABLE ScrollBeginsAndEnds AS
+CREATE VIEW ScrollBeginsAndEnds AS
   SELECT
+    ROW_NUMBER() OVER (ORDER BY ts ASC) AS rowNumber,
     name,
     id AS scrollId,
     ts AS scrollTs,
@@ -63,31 +64,17 @@ CREATE TABLE ScrollBeginsAndEnds AS
     )
   ORDER BY ts ASC;
 
--- TODO(nuskos): Once chromium TBMv3 supports windowing functions use
--- ROW_NUMBER(ORDER BY ts ASC) OVER() instead.
-
-DROP TABLE IF EXISTS ScrollBeginsAndEndsRowNumbers;
-
-CREATE TABLE ScrollBeginsAndEndsRowNumbers AS
-SELECT
-  (SELECT COUNT(*)
-    FROM ScrollBeginsAndEnds prev
-    WHERE prev.scrollTs < next.scrollTs) + 1 as rowNumber,
-  *
-FROM
-  ScrollBeginsAndEnds next;
-
 -- Now we take the Begin and the End events and join the information into a
 -- single row per scroll.
 
-DROP TABLE IF EXISTS JoinedScrollBeginsAndEnds;
+DROP VIEW IF EXISTS JoinedScrollBeginsAndEnds;
 
-CREATE TABLE JoinedScrollBeginsAndEnds AS
+CREATE VIEW JoinedScrollBeginsAndEnds AS
   SELECT
     begin.scrollId AS beginId,
     begin.scrollTs AS scrollBegin,
     end.scrollTs + end.scrollDur AS maybeScrollEnd
-  FROM ScrollBeginsAndEndsRowNumbers begin JOIN ScrollBeginsAndEndsRowNumbers end ON
+  FROM ScrollBeginsAndEnds begin JOIN ScrollBeginsAndEnds end ON
     begin.rowNumber + 1 = end.rowNumber AND
     begin.name = 'InputLatency::GestureScrollBegin' AND
     end.name = 'InputLatency::GestureScrollEnd';
@@ -101,10 +88,11 @@ CREATE TABLE JoinedScrollBeginsAndEnds AS
 -- and can't reasonably determine what it should be. We have separate tracking
 -- to ensure this only happens at the end of the trace.
 
-DROP TABLE IF EXISTS GestureScrollUpdates;
+DROP VIEW IF EXISTS GestureScrollUpdates;
 
-CREATE TABLE GestureScrollUpdates AS
+CREATE VIEW GestureScrollUpdates AS
 SELECT
+  ROW_NUMBER() OVER (ORDER BY ts ASC) AS rowNumber,
   beginId,
   scrollBegin,
   CASE WHEN
@@ -139,21 +127,6 @@ FROM JoinedScrollBeginsAndEnds beginAndEnd LEFT JOIN (
   scrollUpdate.ts >= beginAndEnd.ScrollBegin
 ORDER BY ts ASC;
 
--- TODO(nuskos): Once chromium TBMv3 supports windowing functions use
--- ROW_NUMBER(ORDER BY ts ASC) OVER() instead.
-
-DROP TABLE IF EXISTS GestureScrollUpdatesRowNumbers;
-
-CREATE TABLE GestureScrollUpdatesRowNumbers AS
-SELECT
-  (SELECT COUNT(*)
-    FROM GestureScrollUpdates prev
-    WHERE prev.scrollTs < next.scrollTs) + 1 as rowNumber,
-  *
-FROM
-  GestureScrollUpdates next;
-
-
 -- This takes the GestureScrollUpdate and joins it to the previous row (NULL
 -- if there isn't one) and the next row (NULL if there isn't one). And then
 -- computes if the duration of the event (relative to 60 fps) increased by more
@@ -164,10 +137,11 @@ FROM
 -- (currBeginId == prev/next BeginId). This controls somewhat for variability
 -- of scrolls.
 
-DROP TABLE IF EXISTS ScrollJanksMaybeNull;
+DROP VIEW IF EXISTS ScrollJanksMaybeNull;
 
-CREATE TABLE ScrollJanksMaybeNull AS
+CREATE VIEW ScrollJanksMaybeNull AS
   SELECT
+    ROW_NUMBER() OVER (ORDER BY currScrollTs ASC) AS rowNumber,
     currBeginId,
     currUpdateDur,
     currScrollDur,
@@ -198,35 +172,19 @@ CREATE TABLE ScrollJanksMaybeNull AS
      prev.beginId as prevBeginId,
      prev.scrollFramesExact AS prevScrollFramesExact
    FROM
-     GestureScrollUpdatesRowNumbers curr LEFT JOIN
-     GestureScrollUpdatesRowNumbers prev ON prev.rowNumber + 1 = curr.rowNumber
+     GestureScrollUpdates curr LEFT JOIN
+     GestureScrollUpdates prev ON prev.rowNumber + 1 = curr.rowNumber
    ) currprev JOIN
-   GestureScrollUpdatesRowNumbers next ON currprev.currRowNumber + 1 = next.rowNumber
+   GestureScrollUpdates next ON currprev.currRowNumber + 1 = next.rowNumber
 ORDER BY currprev.currScrollTs ASC;
-
--- TODO(nuskos): Once chromium TBMv3 supports windowing functions use
--- ROW_NUMBER(ORDER BY ts ASC) OVER() instead.
-
-DROP TABLE IF EXISTS ScrollJanksMaybeNullRowNumbers;
-
-CREATE TABLE ScrollJanksMaybeNullRowNumbers AS
-SELECT
-  (SELECT COUNT(*)
-    FROM ScrollJanksMaybeNull prev
-    WHERE prev.currScrollTs < next.currScrollTs) + 1 as rowNumber,
-  *
-FROM
-  ScrollJanksMaybeNull next;
-
-
 
 -- This just lists outs the rowNumber (which is ordered by timestamp), its jank
 -- status and information about the update and scroll overall. Basically
 -- getting it into a next queriable format.
 
-DROP TABLE IF EXISTS ScrollJanks;
+DROP VIEW IF EXISTS ScrollJanks;
 
-CREATE TABLE ScrollJanks AS
+CREATE VIEW ScrollJanks AS
   SELECT
     rowNumber,
     currBeginId,
@@ -235,7 +193,7 @@ CREATE TABLE ScrollJanks AS
     (nextJank IS NOT NULL AND nextJank) OR
     (prevJank IS NOT NULL AND prevJank)
     AS jank
-  FROM ScrollJanksMaybeNullRowNumbers;
+  FROM ScrollJanksMaybeNull;
 
 -- Compute the total amount of nanoseconds from Janky GestureScrollUpdates and
 -- the total amount of nanoseconds we spent scrolling in the trace. Also need
@@ -250,9 +208,9 @@ CREATE TABLE ScrollJanks AS
 -- TODO(nuskos): We should support more types (floats and strings) in our
 --               metrics as well as support for specifying units (nanoseconds).
 
-DROP TABLE IF EXISTS JankyNanosPerScrollNanosMaybeNull;
+DROP VIEW IF EXISTS JankyNanosPerScrollNanosMaybeNull;
 
-CREATE TABLE JankyNanosPerScrollNanosMaybeNull AS
+CREATE VIEW JankyNanosPerScrollNanosMaybeNull AS
   SELECT
     SUM(jank) as numJankyUpdates,
     SUM(CASE WHEN jank = 1 THEN
@@ -270,9 +228,9 @@ CREATE TABLE JankyNanosPerScrollNanosMaybeNull AS
     ) AS scrollNanos
   FROM ScrollJanks;
 
-DROP TABLE IF EXISTS janky_time_per_scroll_processing_time;
+DROP VIEW IF EXISTS janky_time_per_scroll_processing_time;
 
-CREATE TABLE janky_time_per_scroll_processing_time AS
+CREATE VIEW janky_time_per_scroll_processing_time AS
   SELECT
     (SELECT
       CASE WHEN
@@ -297,9 +255,9 @@ CREATE TABLE janky_time_per_scroll_processing_time AS
 
 -- Specify how to fill the metrics proto properly.
 
-DROP TABLE IF EXISTS janky_time_per_scroll_processing_time_output;
+DROP VIEW IF EXISTS janky_time_per_scroll_processing_time_output;
 
-CREATE TABLE janky_time_per_scroll_processing_time_output AS
+CREATE VIEW janky_time_per_scroll_processing_time_output AS
   SELECT JankyTimePerScrollProcessingTime(
     'janky_time_per_scroll_processing_time_percentage', jankyPercentage,
     'gesture_scroll_milliseconds', CAST(scrollMillis AS INT),

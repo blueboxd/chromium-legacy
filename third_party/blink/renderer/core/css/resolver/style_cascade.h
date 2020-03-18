@@ -230,6 +230,7 @@ class CORE_EXPORT StyleCascade {
                              size_t index,
                              Resolver&);
   void ApplyInterpolation(const CSSProperty&,
+                          CascadePriority,
                           const ActiveInterpolations&,
                           Resolver&);
 

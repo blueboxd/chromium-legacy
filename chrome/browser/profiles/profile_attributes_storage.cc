@@ -315,8 +315,7 @@ void ProfileAttributesStorage::NotifyOnProfileHighResAvatarLoaded(
 void ProfileAttributesStorage::DownloadHighResAvatarIfNeeded(
     size_t icon_index,
     const base::FilePath& profile_path) {
-// Downloading is only supported on desktop.
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID)
   return;
 #endif
   DCHECK(!disable_avatar_download_for_testing_);
@@ -340,8 +339,7 @@ void ProfileAttributesStorage::DownloadHighResAvatarIfNeeded(
 void ProfileAttributesStorage::DownloadHighResAvatar(
     size_t icon_index,
     const base::FilePath& profile_path) {
-// Downloading is only supported on desktop.
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID)
   return;
 #endif
   const char* file_name =

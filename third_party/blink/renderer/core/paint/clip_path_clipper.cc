@@ -25,22 +25,6 @@ namespace blink {
 
 namespace {
 
-class SVGClipExpansionCycleHelper {
- public:
-  void Lock(LayoutSVGResourceClipper& clipper) {
-    DCHECK(!clipper.HasCycle());
-    clipper.BeginClipExpansion();
-    clippers_.push_back(&clipper);
-  }
-  ~SVGClipExpansionCycleHelper() {
-    for (auto* clipper : clippers_)
-      clipper->EndClipExpansion();
-  }
-
- private:
-  Vector<LayoutSVGResourceClipper*, 1> clippers_;
-};
-
 LayoutSVGResourceClipper* ResolveElementReference(
     const LayoutObject& layout_object,
     const ReferenceClipPathOperation& reference_clip_path_operation) {
@@ -127,8 +111,6 @@ static bool IsClipPathOperationValid(
       return false;
     SECURITY_DCHECK(!resource_clipper->NeedsLayout());
     resource_clipper->ClearInvalidationMask();
-    if (resource_clipper->HasCycle())
-      return false;
   }
   return true;
 }
@@ -182,7 +164,6 @@ ClipPathClipper::~ClipPathClipper() {
   context_.Save();
   context_.Translate(paint_offset_.left, paint_offset_.top);
 
-  SVGClipExpansionCycleHelper locks;
   bool is_first = true;
   bool rest_of_the_chain_already_appled = false;
   const LayoutObject* current_object = &layout_object_;
@@ -204,7 +185,6 @@ ClipPathClipper::~ClipPathClipper() {
     // because it would have been applied as path-based clip already.
     DCHECK(resource_clipper);
     DCHECK_EQ(clip_path->GetType(), ClipPathOperation::REFERENCE);
-    locks.Lock(*resource_clipper);
     if (resource_clipper->StyleRef().ClipPath()) {
       // Try to apply nested clip-path as path-based clip.
       bool unused;

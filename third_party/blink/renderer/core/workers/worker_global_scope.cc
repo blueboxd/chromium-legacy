@@ -200,8 +200,8 @@ WorkerLocation* WorkerGlobalScope::location() const {
 
 WorkerNavigator* WorkerGlobalScope::navigator() const {
   if (!navigator_) {
-    navigator_ = MakeGarbageCollected<WorkerNavigator>(user_agent_,
-                                                       GetExecutionContext());
+    navigator_ = MakeGarbageCollected<WorkerNavigator>(
+        user_agent_, ua_metadata_, GetExecutionContext());
   }
   return navigator_.Get();
 }
@@ -488,6 +488,7 @@ WorkerGlobalScope::WorkerGlobalScope(
           thread->GetWorkerReportingProxy()),
       script_type_(creation_params->script_type),
       user_agent_(creation_params->user_agent),
+      ua_metadata_(creation_params->ua_metadata),
       thread_(thread),
       time_origin_(time_origin),
       font_selector_(MakeGarbageCollected<OffscreenFontSelector>(this)),

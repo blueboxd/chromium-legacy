@@ -405,20 +405,17 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     }
 
     private void loadNativeLibrary(String packageName) {
-        // Loading the library triggers disk access.
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                WebViewFactory.loadWebViewNativeLibraryFromPackage(
-                        packageName, getClass().getClassLoader());
-            } else {
-                try {
-                    Method loadNativeLibrary =
-                            WebViewFactory.class.getDeclaredMethod("loadNativeLibrary");
-                    loadNativeLibrary.setAccessible(true);
-                    loadNativeLibrary.invoke(null);
-                } catch (ReflectiveOperationException e) {
-                    Log.e(TAG, "Failed to load native library.", e);
-                }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            WebViewFactory.loadWebViewNativeLibraryFromPackage(
+                    packageName, getClass().getClassLoader());
+        } else {
+            try {
+                Method loadNativeLibrary =
+                        WebViewFactory.class.getDeclaredMethod("loadNativeLibrary");
+                loadNativeLibrary.setAccessible(true);
+                loadNativeLibrary.invoke(null);
+            } catch (ReflectiveOperationException e) {
+                Log.e(TAG, "Failed to load native library.", e);
             }
         }
     }

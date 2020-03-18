@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
-#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -210,6 +210,17 @@ class CORE_EXPORT NGPhysicalFragment
   // from GetNode() when this fragment is content of a pseudo node.
   Node* NodeForHitTest() const { return layout_object_->NodeForHitTest(); }
 
+  bool IsInSelfHitTestingPhase(HitTestAction action) const {
+    if (const auto* box = ToLayoutBoxOrNull(GetLayoutObject()))
+      return box->IsInSelfHitTestingPhase(action);
+    if (IsInlineBox())
+      return action == kHitTestForeground;
+    // Assuming this is some sort of container, e.g. a fragmentainer (they don't
+    // have a LayoutObject associated).
+    return action == kHitTestBlockBackground ||
+           action == kHitTestChildBlockBackground;
+  }
+
   // Whether there is a PaintLayer associated with the fragment.
   bool HasLayer() const { return IsCSSBox() && layout_object_->HasLayer(); }
 
@@ -272,6 +283,11 @@ class CORE_EXPORT NGPhysicalFragment
   // may keep the reference to old generations of this fragment. Callers can
   // check if there were newer generations.
   const NGPhysicalFragment* PostLayout() const;
+
+  PhysicalRect InkOverflow() const {
+    // TODO(layout-dev): Implement box fragment overflow.
+    return LocalRect();
+  }
 
   // Scrollable overflow. including contents, in the local coordinate.
   PhysicalRect ScrollableOverflow() const;

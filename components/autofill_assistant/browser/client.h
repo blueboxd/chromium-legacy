@@ -39,39 +39,39 @@ class Client {
   virtual void DestroyUI() = 0;
 
   // Returns the API key to be used for requests to the backend.
-  virtual std::string GetApiKey() = 0;
+  virtual std::string GetApiKey() const = 0;
 
   // Returns the e-mail address that corresponds to the auth credentials. Might
   // be empty.
-  virtual std::string GetAccountEmailAddress() = 0;
+  virtual std::string GetAccountEmailAddress() const = 0;
 
   // Returns the AccessTokenFetcher to use to get oauth credentials.
   virtual AccessTokenFetcher* GetAccessTokenFetcher() = 0;
 
   // Returns the current active personal data manager.
-  virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
+  virtual autofill::PersonalDataManager* GetPersonalDataManager() const = 0;
 
   // Return the password manager client for the current WebContents.
-  virtual password_manager::PasswordManagerClient*
-  GetPasswordManagerClient() = 0;
+  virtual password_manager::PasswordManagerClient* GetPasswordManagerClient()
+      const = 0;
 
   // Returns the currently active login fetcher.
-  virtual WebsiteLoginFetcher* GetWebsiteLoginFetcher() = 0;
+  virtual WebsiteLoginFetcher* GetWebsiteLoginFetcher() const = 0;
 
   // Returns the server URL to be used for requests to the backend.
-  virtual std::string GetServerUrl() = 0;
+  virtual std::string GetServerUrl() const = 0;
 
   // Returns the locale.
-  virtual std::string GetLocale() = 0;
+  virtual std::string GetLocale() const = 0;
 
   // Returns the country code.
-  virtual std::string GetCountryCode() = 0;
+  virtual std::string GetCountryCode() const = 0;
 
   // Returns details about the device.
-  virtual DeviceContext GetDeviceContext() = 0;
+  virtual DeviceContext GetDeviceContext() const = 0;
 
   // Returns current WebContents.
-  virtual content::WebContents* GetWebContents() = 0;
+  virtual content::WebContents* GetWebContents() const = 0;
 
   // Stops autofill assistant for the current WebContents, both controller
   // and UI.

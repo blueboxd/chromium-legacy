@@ -8,6 +8,7 @@ include_rules = [
   "+content/shell/browser/shell.h",
   "+components/signin/public/identity_manager",
   "+components/strings/grit/components_strings.h",
+  "+crypto",
   "+google_apis",
   "+net",
   "+services/network/public/cpp",

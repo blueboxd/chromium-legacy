@@ -89,6 +89,7 @@ source_set("counting_allocator") {
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   public = [ "internal/counting_allocator.h" ]
+  deps = [ "../base:config" ]
   visibility = []
   visibility += [ ":*" ]
 }
@@ -205,6 +206,7 @@ source_set("hash_function_defaults") {
     "../base:config",
     "../hash",
     "../strings",
+    "../strings:cord",
   ]
 }
 
@@ -220,6 +222,7 @@ source_set("hash_generator_testing") {
   public = [ "internal/hash_generator_testing.h" ]
   deps = [
     ":hash_policy_testing",
+    "../memory",
     "../meta:type_traits",
     "../strings",
   ]
@@ -270,6 +273,7 @@ source_set("hashtable_debug_hooks") {
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   public = [ "internal/hashtable_debug_hooks.h" ]
+  deps = [ "../base:config" ]
 }
 
 source_set("hashtablez_sampler") {
@@ -288,6 +292,7 @@ source_set("hashtablez_sampler") {
     ":have_sse",
     "../base",
     "../base:core_headers",
+    "../base:exponential_biased",
     "../debugging:stacktrace",
     "../memory",
     "../synchronization",
@@ -303,6 +308,7 @@ source_set("node_hash_policy") {
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   public = [ "internal/node_hash_policy.h" ]
+  deps = [ "../base:config" ]
 }
 
 source_set("raw_hash_map") {
@@ -400,6 +406,7 @@ source_set("tracked") {
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   public = [ "internal/tracked.h" ]
+  deps = [ "../base:config" ]
 }
 
 source_set("unordered_map_constructor_test") {
@@ -554,6 +561,7 @@ source_set("btree") {
     "../memory",
     "../meta:type_traits",
     "../strings",
+    "../strings:cord",
     "../types:compare",
     "../utility",
   ]

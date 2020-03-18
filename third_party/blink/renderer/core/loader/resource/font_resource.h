@@ -53,7 +53,7 @@ class CORE_EXPORT FontResource final : public Resource {
 
   void DidAddClient(ResourceClient*) override;
 
-  void SetRevalidatingRequest(const ResourceRequest&) override;
+  void SetRevalidatingRequest(const ResourceRequestHead&) override;
 
   void AllClientsAndObserversRemoved() override;
   void StartLoadLimitTimersIfNecessary(base::SingleThreadTaskRunner*);

@@ -150,12 +150,13 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   int MenuListInternalPadding(const ComputedStyle&, int padding) const;
 
   static const RGBA32 kDefaultTapHighlightColor = 0x2e000000;  // 18% black.
-  base::TimeDelta caret_blink_interval_;
 
-  Color active_selection_background_color_ = 0xff1e90ff;
-  Color active_selection_foreground_color_ = Color::kBlack;
-  Color inactive_selection_background_color_ = 0xffc8c8c8;
-  Color inactive_selection_foreground_color_ = 0xff323232;
+  static base::TimeDelta caret_blink_interval_;
+
+  static Color active_selection_background_color_;
+  static Color active_selection_foreground_color_;
+  static Color inactive_selection_background_color_;
+  static Color inactive_selection_foreground_color_;
 
   ThemePainterDefault painter_;
   // Cached values for crbug.com/673754.

@@ -82,7 +82,7 @@ void FontResource::DidAddClient(ResourceClient* c) {
     static_cast<FontResourceClient*>(c)->FontLoadLongLimitExceeded(this);
 }
 
-void FontResource::SetRevalidatingRequest(const ResourceRequest& request) {
+void FontResource::SetRevalidatingRequest(const ResourceRequestHead& request) {
   // Reload will use the same object, and needs to reset |m_loadLimitState|
   // before any didAddClient() is called again.
   DCHECK(IsLoaded());

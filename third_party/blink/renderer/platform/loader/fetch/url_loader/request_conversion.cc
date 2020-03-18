@@ -251,7 +251,8 @@ void PopulateResourceRequestBody(const EncodedFormData& src,
   }
 }
 
-void PopulateResourceRequest(const ResourceRequest& src,
+void PopulateResourceRequest(const ResourceRequestHead& src,
+                             ResourceRequestBody src_body,
                              network::ResourceRequest* dest) {
   dest->method = src.HttpMethod().Latin1();
   dest->url = src.Url();
@@ -296,7 +297,8 @@ void PopulateResourceRequest(const ResourceRequest& src,
   }
 
   // TODO(yhirano): Remove this WrappedResourceRequest.
-  dest->load_flags = WrappedResourceRequest(src).GetLoadFlagsForWebUrlRequest();
+  dest->load_flags = WrappedResourceRequest(ResourceRequest(src))
+                         .GetLoadFlagsForWebUrlRequest();
   dest->recursive_prefetch_token = src.RecursivePrefetchToken();
   dest->priority = ConvertWebKitPriorityToNetPriority(src.Priority());
   dest->should_reset_appcache = src.ShouldResetAppCache();
@@ -348,7 +350,7 @@ void PopulateResourceRequest(const ResourceRequest& src,
     dest->is_signed_exchange_prefetch_cache_enabled = true;
   }
 
-  if (const EncodedFormData* body = src.HttpBody()) {
+  if (const EncodedFormData* body = src_body.FormBody().get()) {
     DCHECK_NE(dest->method, net::HttpRequestHeaders::kGetMethod);
     DCHECK_NE(dest->method, net::HttpRequestHeaders::kHeadMethod);
     dest->request_body = base::MakeRefCounted<network::ResourceRequestBody>();

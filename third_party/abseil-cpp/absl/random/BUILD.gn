@@ -63,15 +63,17 @@ source_set("distributions") {
   ]
   deps = [
     "../base:base_internal",
+    "../base:config",
     "../base:core_headers",
     "../meta:type_traits",
-    "../random/internal:distribution_impl",
     "../random/internal:distributions",
     "../random/internal:fast_uniform_bits",
     "../random/internal:fastmath",
+    "../random/internal:generate_real",
     "../random/internal:iostream_state_saver",
     "../random/internal:traits",
     "../random/internal:uniform_helper",
+    "../random/internal:wide_multiply",
     "../strings",
     "../types:span",
   ]
@@ -106,5 +108,22 @@ source_set("seed_sequences") {
     "../random/internal:salted_seed_seq",
     "../random/internal:seed_material",
     "../types:span",
+  ]
+}
+
+source_set("bit_gen_ref") {
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
+  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+  public = [ "bit_gen_ref.h" ]
+  deps = [
+    "../base:core_headers",
+    "../meta:type_traits",
+    "../random/internal:distribution_caller",
+    "../random/internal:fast_uniform_bits",
+    "../random/internal:mocking_bit_gen_base",
   ]
 }

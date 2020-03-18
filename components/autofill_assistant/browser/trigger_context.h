@@ -59,6 +59,8 @@ class TriggerContext {
 
   // Returns true if the current action was triggered by a direct action.
   virtual bool is_direct_action() const = 0;
+
+  virtual std::string get_caller_account_hash() const = 0;
 };
 
 // Straightforward implementation of TriggerContext.
@@ -82,11 +84,15 @@ class TriggerContextImpl : public TriggerContext {
   void SetCCT(bool value) { cct_ = value; }
   void SetOnboardingShown(bool value) { onboarding_shown_ = value; }
   void SetDirectAction(bool value) { direct_action_ = value; }
+  void SetCallerAccountHash(const std::string& value) {
+    caller_account_hash_ = value;
+  }
 
   std::string experiment_ids() const override;
   bool is_cct() const override;
   bool is_onboarding_shown() const override;
   bool is_direct_action() const override;
+  std::string get_caller_account_hash() const override;
 
  private:
   // Script parameters provided by the caller.
@@ -101,6 +107,8 @@ class TriggerContextImpl : public TriggerContext {
   bool direct_action_ = false;
 
   bool onboarding_shown_ = false;
+
+  std::string caller_account_hash_ = "";
 };
 
 // Merges several TriggerContexts together.
@@ -120,6 +128,7 @@ class MergedTriggerContext : public TriggerContext {
   bool is_cct() const override;
   bool is_onboarding_shown() const override;
   bool is_direct_action() const override;
+  std::string get_caller_account_hash() const override;
 
  private:
   std::vector<const TriggerContext*> contexts_;

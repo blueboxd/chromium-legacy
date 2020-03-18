@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/values_test_util.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_test.h"
@@ -54,9 +53,7 @@ std::unique_ptr<DeclarativeContentIsBookmarkedPredicate> CreatePredicate(
   std::string error;
   std::unique_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
       DeclarativeContentIsBookmarkedPredicate::Create(
-          evaluator, extension,
-          *base::test::ParseJsonDeprecated(is_bookmarked ? "true" : "false"),
-          &error);
+          evaluator, extension, base::Value(is_bookmarked), &error);
   EXPECT_EQ("", error);
   EXPECT_TRUE(predicate);
   EXPECT_EQ(is_bookmarked, predicate->is_bookmarked());
@@ -169,8 +166,7 @@ TEST(DeclarativeContentIsBookmarkedPredicateTest,
   std::string error;
   std::unique_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
       DeclarativeContentIsBookmarkedPredicate::Create(
-          nullptr, extension.get(), *base::test::ParseJsonDeprecated("true"),
-          &error);
+          nullptr, extension.get(), base::Value(true), &error);
   EXPECT_THAT(error, HasSubstr("requires 'bookmarks' permission"));
   EXPECT_FALSE(predicate);
 }
@@ -183,7 +179,7 @@ TEST(DeclarativeContentIsBookmarkedPredicateTest,
   std::string error;
   std::unique_ptr<DeclarativeContentIsBookmarkedPredicate> predicate =
       DeclarativeContentIsBookmarkedPredicate::Create(
-          nullptr, extension.get(), *base::test::ParseJsonDeprecated("[]"),
+          nullptr, extension.get(), base::Value(base::Value::Type::LIST),
           &error);
   EXPECT_THAT(error, HasSubstr("invalid type"));
   EXPECT_FALSE(predicate);

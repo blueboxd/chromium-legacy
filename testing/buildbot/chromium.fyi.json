@@ -19828,7 +19828,7 @@
       }
     ]
   },
-  "linux-bfcache-debug": {
+  "linux-bfcache-rel": {
     "gtest_tests": [
       {
         "args": [
@@ -19927,7 +19927,6 @@
       {
         "args": [
           "--num-retries=3",
-          "--debug",
           "--additional-driver-flag=--enable-features=BackForwardCache",
           "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=BackForwardCache"
         ],

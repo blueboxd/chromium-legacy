@@ -111,6 +111,7 @@ class CORE_EXPORT FileInputType final : public InputType,
   void WillOpenPopup() override;
 
   void SetFilesFromDirectory(const String&);
+  Node* FileStatusElement() const;
 
   Member<FileList> file_list_;
   String dropped_file_system_id_;

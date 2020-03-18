@@ -91,7 +91,7 @@ class AudioFocusManager::SourceObserverHolder {
 
 void AudioFocusManager::RequestAudioFocus(
     mojo::PendingReceiver<mojom::AudioFocusRequestClient> receiver,
-    mojo::PendingRemote<mojom::MediaSession> media_session,
+    mojo::PendingRemote<mojom::MediaSession> session,
     mojom::MediaSessionInfoPtr session_info,
     mojom::AudioFocusType type,
     RequestAudioFocusCallback callback) {
@@ -100,7 +100,7 @@ void AudioFocusManager::RequestAudioFocus(
   RequestAudioFocusInternal(
       std::make_unique<AudioFocusRequest>(
           weak_ptr_factory_.GetWeakPtr(), std::move(receiver),
-          std::move(media_session), std::move(session_info), type, request_id,
+          std::move(session), std::move(session_info), type, request_id,
           GetBindingSourceName(), base::UnguessableToken::Create(),
           GetBindingIdentity()),
       type);
@@ -111,7 +111,7 @@ void AudioFocusManager::RequestAudioFocus(
 void AudioFocusManager::RequestGroupedAudioFocus(
     const base::UnguessableToken& request_id,
     mojo::PendingReceiver<mojom::AudioFocusRequestClient> receiver,
-    mojo::PendingRemote<mojom::MediaSession> media_session,
+    mojo::PendingRemote<mojom::MediaSession> session,
     mojom::MediaSessionInfoPtr session_info,
     mojom::AudioFocusType type,
     const base::UnguessableToken& group_id,
@@ -124,7 +124,7 @@ void AudioFocusManager::RequestGroupedAudioFocus(
   RequestAudioFocusInternal(
       std::make_unique<AudioFocusRequest>(
           weak_ptr_factory_.GetWeakPtr(), std::move(receiver),
-          std::move(media_session), std::move(session_info), type, request_id,
+          std::move(session), std::move(session_info), type, request_id,
           GetBindingSourceName(), group_id, GetBindingIdentity()),
       type);
 

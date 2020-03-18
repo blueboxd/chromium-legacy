@@ -5,6 +5,7 @@
 #include "absl/strings/str_format.h"
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 namespace str_format_internal {
 namespace {
 
@@ -12,7 +13,7 @@ std::string ConvToString(Conv conv) {
   std::string out;
 #define CONV_SET_CASE(c) \
   if (Contains(conv, Conv::c)) out += #c;
-  ABSL_CONVERSION_CHARS_EXPAND_(CONV_SET_CASE, )
+  ABSL_INTERNAL_CONVERSION_CHARS_EXPAND_(CONV_SET_CASE, )
 #undef CONV_SET_CASE
   if (Contains(conv, Conv::star)) out += "*";
   return out;
@@ -35,7 +36,7 @@ TEST(StrFormatChecker, ArgumentToConv) {
   EXPECT_EQ(ConvToString(conv), "p");
 }
 
-#if ABSL_INTERNAL_ENABLE_FORMAT_CHECKER
+#ifdef ABSL_INTERNAL_ENABLE_FORMAT_CHECKER
 
 struct Case {
   bool result;
@@ -147,4 +148,5 @@ TEST(StrFormatChecker, LongFormat) {
 
 }  // namespace
 }  // namespace str_format_internal
+ABSL_NAMESPACE_END
 }  // namespace absl

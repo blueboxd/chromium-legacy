@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -29,11 +30,12 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
     @Override
     public void start(@NonNull Tab tab, @NonNull WebContents webContents, boolean skipOnboarding,
             String initialUrl, Map<String, String> parameters, String experimentIds,
-            Bundle intentExtras) {
+            @Nullable String callerAccount, Bundle intentExtras) {
         if (skipOnboarding) {
             AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_NOT_SHOWN);
             AutofillAssistantClient.fromWebContents(tab.getWebContents())
-                    .start(initialUrl, parameters, experimentIds, intentExtras, null);
+                    .start(initialUrl, parameters, experimentIds, callerAccount, intentExtras,
+                            null);
             return;
         }
 
@@ -44,7 +46,7 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
             if (!accepted) return;
 
             AutofillAssistantClient.fromWebContents(tab.getWebContents())
-                    .start(initialUrl, parameters, experimentIds, intentExtras,
+                    .start(initialUrl, parameters, experimentIds, callerAccount, intentExtras,
                             onboardingCoordinator);
         });
     }

@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/test/values_test_util.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/constants.h"
@@ -112,22 +113,19 @@ TEST_F(BrowserActionManifestTest,
 
 TEST_F(BrowserActionManifestTest,
        BrowserActionManifestIcons_InvalidDefaultIcon) {
-  std::unique_ptr<base::DictionaryValue> manifest_value =
-      DictionaryBuilder()
-          .Set("name", "Invalid default icon")
-          .Set("version", "1.0.0")
-          .Set("manifest_version", 2)
-          .Set("browser_action",
-               DictionaryBuilder()
-                   .Set("default_icon",
-                        DictionaryBuilder()
-                            .Set("19", std::string())  // Invalid value.
-                            .Set("24", "icon24.png")
-                            .Set("38", "icon38.png")
-                            .Build())
-                   .Build())
-          .Build();
-
+  base::Value manifest_value = base::test::ParseJson(R"(
+      {
+        "name": "Invalid default icon",
+        "version": "1.0.0",
+        "manifest_version": 2,
+        "browser_action": {
+          "default_icon": {
+            "19": "",  // Invalid value.
+            "24": "icon24.png",
+            "38": "icon38.png"
+          }
+        }
+      })");
   base::string16 error = ErrorUtils::FormatErrorMessageUTF16(
       errors::kInvalidIconPath, "19");
   LoadAndExpectError(

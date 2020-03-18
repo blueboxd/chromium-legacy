@@ -1873,7 +1873,7 @@
           'scripts': 'test_traffic_annotation_auditor_script',
         },
       },
-      'linux-bfcache-debug': {
+      'linux-bfcache-rel': {
         'mixins': [
           'linux-xenial',
         ],

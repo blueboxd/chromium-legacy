@@ -231,7 +231,8 @@ void ScriptResource::DestroyDecodedDataForFailedRevalidation() {
   SetDecodedSize(0);
 }
 
-void ScriptResource::SetRevalidatingRequest(const ResourceRequest& request) {
+void ScriptResource::SetRevalidatingRequest(
+    const ResourceRequestHead& request) {
   CHECK_EQ(streaming_state_, StreamingState::kFinishedNotificationSent);
   if (streamer_) {
     CHECK(streamer_->IsStreamingFinished());

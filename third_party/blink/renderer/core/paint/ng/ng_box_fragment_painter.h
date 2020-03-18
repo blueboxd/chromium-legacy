@@ -109,7 +109,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
 
   void PaintInternal(const PaintInfo&);
   void PaintAllPhasesAtomically(const PaintInfo&);
-  void PaintBlockChildren(const PaintInfo&);
+  void PaintBlockChildren(const PaintInfo&, PhysicalOffset);
   void PaintInlineItems(const PaintInfo&,
                         const PhysicalOffset& paint_offset,
                         const PhysicalOffset& parent_offset,
@@ -176,7 +176,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
 
   bool ShouldRecordHitTestData(const PaintInfo&);
 
-  bool IsInSelfHitTestingPhase(HitTestAction) const;
   bool VisibleToHitTestRequest(const HitTestRequest&) const;
 
   // This struct has common data needed while traversing trees for the hit

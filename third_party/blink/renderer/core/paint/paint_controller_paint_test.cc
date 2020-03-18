@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
@@ -58,37 +59,39 @@ TEST_P(PaintControllerPaintTest, InlineRelayout) {
   auto& div_block =
       *To<LayoutBlock>(GetDocument().body()->firstChild()->GetLayoutObject());
   LayoutText& text = *ToLayoutText(div_block.FirstChild());
-  DisplayItemClient& first_text_box =
-      text.FirstInlineFragment()
-          ? (DisplayItemClient&)*text.FirstInlineFragment()
-          : (DisplayItemClient&)*text.FirstTextBox();
+  const DisplayItemClient* first_text_box = text.FirstTextBox();
+  if (text.IsInLayoutNGInlineFormattingContext()) {
+    NGInlineCursor cursor;
+    cursor.MoveTo(text);
+    first_text_box = cursor.Current().GetDisplayItemClient();
+  }
 
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
               ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
                                    kDocumentBackgroundType),
-                          IsSameId(&first_text_box, kForegroundType)));
+                          IsSameId(first_text_box, kForegroundType)));
 
   div.setAttribute(html_names::kStyleAttr, "width: 10px; height: 200px");
   UpdateAllLifecyclePhasesForTest();
 
   LayoutText& new_text = *ToLayoutText(div_block.FirstChild());
-  DisplayItemClient& new_first_text_box =
-      new_text.FirstInlineFragment()
-          ? (DisplayItemClient&)*new_text.FirstInlineFragment()
-          : (DisplayItemClient&)*text.FirstTextBox();
-  DisplayItemClient& second_text_box =
-      new_text.FirstInlineFragment()
-          ? (DisplayItemClient&)*NGPaintFragment::
-                TraverseNextForSameLayoutObject::Next(
-                    new_text.FirstInlineFragment())
-          : (DisplayItemClient&)*new_text.FirstTextBox()
-                ->NextForSameLayoutObject();
+  const DisplayItemClient* new_first_text_box = text.FirstTextBox();
+  const DisplayItemClient* second_text_box = nullptr;
+  if (!text.IsInLayoutNGInlineFormattingContext()) {
+    second_text_box = new_text.FirstTextBox()->NextForSameLayoutObject();
+  } else {
+    NGInlineCursor cursor;
+    cursor.MoveTo(text);
+    new_first_text_box = cursor.Current().GetDisplayItemClient();
+    cursor.MoveToNextForSameLayoutObject();
+    second_text_box = cursor.Current().GetDisplayItemClient();
+  }
 
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
               ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
                                    kDocumentBackgroundType),
-                          IsSameId(&new_first_text_box, kForegroundType),
-                          IsSameId(&second_text_box, kForegroundType)));
+                          IsSameId(new_first_text_box, kForegroundType),
+                          IsSameId(second_text_box, kForegroundType)));
 }
 
 TEST_P(PaintControllerPaintTest, ChunkIdClientCacheFlag) {

@@ -294,9 +294,8 @@
           'shards': 1,
         },
       },
-      'linux-bfcache-debug': {
+      'linux-bfcache-rel': {
         'args': [
-          '--debug',
           '--additional-driver-flag=--enable-features=BackForwardCache',
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=BackForwardCache',
         ],

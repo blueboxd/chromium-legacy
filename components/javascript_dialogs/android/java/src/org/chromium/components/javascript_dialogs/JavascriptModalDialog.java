@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import androidx.annotation.StringRes;
 
 import org.chromium.base.Log;
-import org.chromium.base.StrictModeContext;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -53,11 +52,8 @@ public abstract class JavascriptModalDialog implements ModalDialogProperties.Con
     protected void show(Context context, ModalDialogManager manager,
             @ModalDialogManager.ModalDialogType int dialogType) {
         assert manager != null;
-        // LayoutInflater may trigger accessing the disk.
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            mDialogCustomView = (JavascriptDialogCustomView) LayoutInflater.from(context).inflate(
-                    R.layout.js_modal_dialog, null);
-        }
+        mDialogCustomView = (JavascriptDialogCustomView) LayoutInflater.from(context).inflate(
+                R.layout.js_modal_dialog, null);
         mDialogCustomView.setPromptText(mDefaultPromptText);
         mDialogCustomView.setSuppressCheckBoxVisibility(mShouldShowSuppressCheckBox);
 

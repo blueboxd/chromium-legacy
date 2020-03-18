@@ -133,7 +133,7 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
 
   if (response_source == ResponseSource::kFromMemoryCache) {
     frame_client->DispatchDidLoadResourceFromMemoryCache(
-        resource->GetResourceRequest(), response);
+        ResourceRequest(resource->GetResourceRequest()), response);
 
     // Note: probe::WillSendRequest needs to precede before this probe method.
     probe::MarkResourceAsCached(&frame, &document_loader, identifier);

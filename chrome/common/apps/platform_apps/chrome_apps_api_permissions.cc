@@ -22,18 +22,31 @@ std::unique_ptr<extensions::APIPermission> CreateAPIPermission(
 // ChromePermissionMessageProvider::GetPermissionMessages as well.
 constexpr extensions::APIPermissionInfo::InitInfo permissions_to_register[] = {
     {extensions::APIPermission::kArcAppsPrivate, "arcAppsPrivate"},
-    {extensions::APIPermission::kBrowser, "browser"},
+    {extensions::APIPermission::kBrowser, "browser",
+     extensions::APIPermissionInfo::
+         kFlagDoesNotRequireManagedSessionFullLoginWarning},
     {extensions::APIPermission::kFirstRunPrivate, "firstRunPrivate",
-     extensions::APIPermissionInfo::kFlagCannotBeOptional},
+     extensions::APIPermissionInfo::kFlagCannotBeOptional |
+         extensions::APIPermissionInfo::
+             kFlagDoesNotRequireManagedSessionFullLoginWarning},
     {extensions::APIPermission::kMusicManagerPrivate, "musicManagerPrivate",
-     extensions::APIPermissionInfo::kFlagCannotBeOptional},
+     extensions::APIPermissionInfo::kFlagCannotBeOptional |
+         extensions::APIPermissionInfo::
+             kFlagDoesNotRequireManagedSessionFullLoginWarning},
     {extensions::APIPermission::kMediaGalleries, "mediaGalleries",
-     extensions::APIPermissionInfo::kFlagNone,
+     extensions::APIPermissionInfo::
+         kFlagDoesNotRequireManagedSessionFullLoginWarning,
      &CreateAPIPermission<chrome_apps::MediaGalleriesPermission>},
-    {extensions::APIPermission::kPointerLock, "pointerLock"},
-    {extensions::APIPermission::kSyncFileSystem, "syncFileSystem"},
+    {extensions::APIPermission::kPointerLock, "pointerLock",
+     extensions::APIPermissionInfo::
+         kFlagDoesNotRequireManagedSessionFullLoginWarning},
+    {extensions::APIPermission::kSyncFileSystem, "syncFileSystem",
+     extensions::APIPermissionInfo::
+         kFlagDoesNotRequireManagedSessionFullLoginWarning},
     {extensions::APIPermission::kWebstoreWidgetPrivate, "webstoreWidgetPrivate",
-     extensions::APIPermissionInfo::kFlagCannotBeOptional},
+     extensions::APIPermissionInfo::kFlagCannotBeOptional |
+         extensions::APIPermissionInfo::
+             kFlagDoesNotRequireManagedSessionFullLoginWarning},
 };
 
 }  // namespace

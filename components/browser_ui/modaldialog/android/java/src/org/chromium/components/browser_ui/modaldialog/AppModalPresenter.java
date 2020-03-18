@@ -13,7 +13,6 @@ import android.view.WindowManager;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.StrictModeContext;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -47,14 +46,6 @@ public class AppModalPresenter extends ModalDialogManager.Presenter {
         mContext = context;
     }
 
-    private ModalDialogView loadDialogView() {
-        // LayoutInflater may access the disk.
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return (ModalDialogView) LayoutInflater.from(mDialog.getContext())
-                    .inflate(R.layout.modal_dialog_view, null);
-        }
-    }
-
     @Override
     protected void addDialogView(PropertyModel model) {
         int style = model.get(ModalDialogProperties.PRIMARY_BUTTON_FILLED)
@@ -66,13 +57,11 @@ public class AppModalPresenter extends ModalDialogManager.Presenter {
         // Cancel on touch outside should be disabled by default. The ModelChangeProcessor wouldn't
         // notify change if the property is not set during initialization.
         mDialog.setCanceledOnTouchOutside(false);
-        ModalDialogView dialogView = loadDialogView();
+        ModalDialogView dialogView = (ModalDialogView) LayoutInflater.from(mDialog.getContext())
+                                             .inflate(R.layout.modal_dialog_view, null);
         mModelChangeProcessor =
                 PropertyModelChangeProcessor.create(model, dialogView, new ViewBinder());
-        // setContentView() can trigger using LayoutInflater, which may read from disk.
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            mDialog.setContentView(dialogView);
-        }
+        mDialog.setContentView(dialogView);
 
         try {
             mDialog.show();

@@ -45,6 +45,8 @@ class NGPaintFragmentTest : public RenderingTest,
 };
 
 TEST_F(NGPaintFragmentTest, InlineFragmentsFor) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -102,6 +104,8 @@ TEST_F(NGPaintFragmentTest, InlineFragmentsFor) {
   } while (false)
 
 TEST_F(NGPaintFragmentTest, InlineBox) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -145,6 +149,8 @@ TEST_F(NGPaintFragmentTest, InlineBox) {
 }
 
 TEST_F(NGPaintFragmentTest, InlineBoxVerticalRL) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -189,6 +195,8 @@ TEST_F(NGPaintFragmentTest, InlineBoxVerticalRL) {
 }
 
 TEST_F(NGPaintFragmentTest, InlineBoxWithDecorations) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -244,6 +252,8 @@ TEST_F(NGPaintFragmentTest, InlineBoxWithDecorations) {
 }
 
 TEST_F(NGPaintFragmentTest, InlineBoxWithDecorationsVerticalRL) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -300,6 +310,8 @@ TEST_F(NGPaintFragmentTest, InlineBoxWithDecorationsVerticalRL) {
 }
 
 TEST_F(NGPaintFragmentTest, InlineBlock) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -404,6 +416,8 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
 }
 
 TEST_F(NGPaintFragmentTest, InlineBlockVerticalRL) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -511,6 +525,8 @@ TEST_F(NGPaintFragmentTest, InlineBlockVerticalRL) {
 }
 
 TEST_F(NGPaintFragmentTest, RelativeBlock) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -550,6 +566,8 @@ TEST_F(NGPaintFragmentTest, RelativeBlock) {
 }
 
 TEST_F(NGPaintFragmentTest, RelativeInline) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -604,6 +622,8 @@ TEST_F(NGPaintFragmentTest, RelativeInline) {
 }
 
 TEST_F(NGPaintFragmentTest, RelativeBlockAndInline) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -659,6 +679,8 @@ TEST_F(NGPaintFragmentTest, RelativeBlockAndInline) {
 
 // Test that OOF should not create a NGPaintFragment.
 TEST_F(NGPaintFragmentTest, OutOfFlow) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -683,6 +705,8 @@ TEST_F(NGPaintFragmentTest, OutOfFlow) {
 }
 
 TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveBr) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
     return;
   SetBodyInnerHTML(
@@ -710,6 +734,8 @@ INSTANTIATE_TEST_SUITE_P(NGPaintFragmentTest,
                          testing::ValuesIn(inline_child_data));
 
 TEST_P(InlineChildTest, RemoveInlineChild) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   SetBodyInnerHTML(String(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -735,6 +761,8 @@ TEST_P(InlineChildTest, RemoveInlineChild) {
 }
 
 TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveChild) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
     return;
   SetBodyInnerHTML(
@@ -750,6 +778,8 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveChild) {
 }
 
 TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveSpanWithBr) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
     return;
   SetBodyInnerHTML(
@@ -768,6 +798,8 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveSpanWithBr) {
 // to update |IsDirty|, but NGPaintFragment maybe re-used during the layout. In
 // such case, the result is not deterministic.
 TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtStart) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
     return;
   SetBodyInnerHTML(
@@ -796,6 +828,8 @@ TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtStart) {
 // to update |IsDirty|, but NGPaintFragment maybe re-used during the layout. In
 // such case, the result is not deterministic.
 TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtLast) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
     return;
   SetBodyInnerHTML(
@@ -823,6 +857,8 @@ TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtLast) {
 // to update |IsDirty|, but NGPaintFragment maybe re-used during the layout. In
 // such case, the result is not deterministic.
 TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtMiddle) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
     return;
   SetBodyInnerHTML(
@@ -848,6 +884,8 @@ TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtMiddle) {
 }
 
 TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByTextSetData) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
     return;
   SetBodyInnerHTML(
@@ -863,6 +901,8 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByTextSetData) {
 }
 
 TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyWrappedLine) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
     return;
   SetBodyInnerHTML(R"HTML(
@@ -887,6 +927,8 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyWrappedLine) {
 }
 
 TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyInsideInlineBlock) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
     return;
   SetBodyInnerHTML(R"HTML(

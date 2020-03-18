@@ -32,6 +32,7 @@ class SelectType : public GarbageCollected<SelectType> {
   virtual void DidDetachLayoutTree();
   virtual void DidRecalcStyle(const StyleRecalcChange change);
   virtual void DidSetSuggestedOption(HTMLOptionElement* option) = 0;
+  virtual void SaveLastSelection() = 0;
 
   // Update style of text in the CSS box on style or selected OPTION change.
   virtual void UpdateTextStyle();

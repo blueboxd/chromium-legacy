@@ -17,27 +17,43 @@
 
 #include <stdlib.h>
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <iterator>
+#include <string>
 #include <tuple>
+#include <utility>
+#include <vector>
 
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
+#include "absl/base/attributes.h"
+#include "absl/base/config.h"
+#include "absl/base/const_init.h"
+#include "absl/base/thread_annotations.h"
+#include "absl/flags/config.h"
 #include "absl/flags/flag.h"
+#include "absl/flags/internal/commandlineflag.h"
+#include "absl/flags/internal/flag.h"
+#include "absl/flags/internal/parse.h"
 #include "absl/flags/internal/program_name.h"
 #include "absl/flags/internal/registry.h"
 #include "absl/flags/internal/usage.h"
 #include "absl/flags/usage.h"
 #include "absl/flags/usage_config.h"
+#include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "absl/synchronization/mutex.h"
 
 // --------------------------------------------------------------------
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 namespace flags_internal {
 namespace {
 
@@ -52,6 +68,7 @@ ABSL_CONST_INIT bool tryfromenv_needs_processing
 
 }  // namespace
 }  // namespace flags_internal
+ABSL_NAMESPACE_END
 }  // namespace absl
 
 ABSL_FLAG(std::vector<std::string>, flagfile, {},
@@ -109,6 +126,7 @@ ABSL_FLAG(std::vector<std::string>, undefok, {},
           "with that name");
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 namespace flags_internal {
 
 namespace {
@@ -277,9 +295,7 @@ void CheckDefaultValuesParsingRoundtrip() {
 #define IGNORE_TYPE(T) \
   if (flag->IsOfType<T>()) return;
 
-    ABSL_FLAGS_INTERNAL_FOR_EACH_LOCK_FREE(IGNORE_TYPE)
-    IGNORE_TYPE(std::string)
-    IGNORE_TYPE(std::vector<std::string>)
+    ABSL_FLAGS_INTERNAL_BUILTIN_TYPES(IGNORE_TYPE)
 #undef IGNORE_TYPE
 
     flag->CheckDefaultValueParsingRoundtrip();
@@ -517,12 +533,12 @@ std::tuple<bool, absl::string_view> DeduceFlagValue(const CommandLineFlag& flag,
     curr_list->PopFront();
     value = curr_list->Front();
 
-    // Heuristic to detect the case where someone treats a std::string arg
+    // Heuristic to detect the case where someone treats a string arg
     // like a bool or just forgets to pass a value:
     // --my_string_var --foo=bar
-    // We look for a flag of std::string type, whose value begins with a
+    // We look for a flag of string type, whose value begins with a
     // dash and corresponds to known flag or standalone --.
-    if (value[0] == '-' && flag.IsOfType<std::string>()) {
+    if (!value.empty() && value[0] == '-' && flag.IsOfType<std::string>()) {
       auto maybe_flag_name = std::get<0>(SplitNameAndValue(value.substr(1)));
 
       if (maybe_flag_name.empty() ||
@@ -630,7 +646,7 @@ std::vector<char*> ParseCommandLineImpl(int argc, char* argv[],
 
     // 60. Split the current argument on '=' to figure out the argument
     // name and value. If flag name is empty it means we've got "--". value
-    // can be empty either if there were no '=' in argument std::string at all or
+    // can be empty either if there were no '=' in argument string at all or
     // an argument looked like "--foo=". In a latter case is_empty_value is
     // true.
     absl::string_view flag_name;
@@ -748,4 +764,5 @@ std::vector<char*> ParseCommandLine(int argc, char* argv[]) {
       flags_internal::OnUndefinedFlag::kAbortIfUndefined);
 }
 
+ABSL_NAMESPACE_END
 }  // namespace absl

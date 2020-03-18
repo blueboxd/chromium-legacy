@@ -63,6 +63,8 @@ class NGPaintFragmentTraversalTest : public RenderingTest,
 };
 
 TEST_F(NGPaintFragmentTraversalTest, MoveToNext) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   SetUpHtml("t", R"HTML(
     <div id=t>
       line0
@@ -83,6 +85,8 @@ TEST_F(NGPaintFragmentTraversalTest, MoveToNext) {
 }
 
 TEST_F(NGPaintFragmentTraversalTest, MoveToNextWithRoot) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   SetUpHtml("t", R"HTML(
     <div id=t>
       line0
@@ -101,6 +105,8 @@ TEST_F(NGPaintFragmentTraversalTest, MoveToNextWithRoot) {
 }
 
 TEST_F(NGPaintFragmentTraversalTest, MoveToPrevious) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   SetUpHtml("t", R"HTML(
     <div id=t>
       line0
@@ -122,6 +128,8 @@ TEST_F(NGPaintFragmentTraversalTest, MoveToPrevious) {
 }
 
 TEST_F(NGPaintFragmentTraversalTest, MoveToPreviousWithRoot) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   SetUpHtml("t", R"HTML(
     <div id=t>
       line0
@@ -141,6 +149,8 @@ TEST_F(NGPaintFragmentTraversalTest, MoveToPreviousWithRoot) {
 }
 
 TEST_F(NGPaintFragmentTraversalTest, MoveTo) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   SetUpHtml("t", R"HTML(
     <div id=t>
       line0
@@ -162,6 +172,8 @@ TEST_F(NGPaintFragmentTraversalTest, MoveTo) {
 }
 
 TEST_F(NGPaintFragmentTraversalTest, MoveToWithRoot) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   SetUpHtml("t", R"HTML(
     <div id=t>
       line0
@@ -181,6 +193,8 @@ TEST_F(NGPaintFragmentTraversalTest, MoveToWithRoot) {
 }
 
 TEST_F(NGPaintFragmentTraversalTest, InlineDescendantsOf) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   SetUpHtml("t",
             "<ul>"
             "<li id=t style='position: absolute'>"

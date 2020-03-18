@@ -66,8 +66,6 @@ TEST(ExtensionAPIPermissionTest, ManagedSessionLoginWarningFlag) {
   info->RegisterPermissions(base::make_span(init_info),
                             base::span<const extensions::Alias>());
 
-  EXPECT_TRUE(info->GetByID(APIPermission::kAlwaysOnTopWindows)
-                  ->requires_managed_session_full_login_warning());
   EXPECT_FALSE(info->GetByID(APIPermission::kUnknown)
                    ->requires_managed_session_full_login_warning());
 }

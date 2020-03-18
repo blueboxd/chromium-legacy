@@ -46,7 +46,7 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
     std::replace(json_manifest_with_double_quotes.begin(),
                  json_manifest_with_double_quotes.end(), '\'', '"');
     app_ = env_.MakeExtension(
-        *base::test::ParseJsonDeprecated(json_manifest_with_double_quotes),
+        base::test::ParseJson(json_manifest_with_double_quotes),
         kAllowlistedExtensionID);
   }
 

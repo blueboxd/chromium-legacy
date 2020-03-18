@@ -39,11 +39,6 @@ class ManifestTest : public testing::Test {
 
     ManifestData(ManifestData&& other);
 
-    // DEPRECATED. Use one of the above constructors.
-    ManifestData(base::Value* manifest, const char* name);
-    explicit ManifestData(std::unique_ptr<base::Value> manifest,
-                          const char* name);
-
     ~ManifestData();
 
     const std::string& name() const { return name_; }

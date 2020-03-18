@@ -54,6 +54,8 @@ class CORE_EXPORT LayoutFileUploadControl final : public LayoutBlockFlow {
   const char* GetName() const override { return "LayoutFileUploadControl"; }
 
  private:
+  bool IsChildAllowed(LayoutObject* child,
+                      const ComputedStyle& style) const override;
   void PaintObject(const PaintInfo&,
                    const PhysicalOffset& paint_offset) const override;
 

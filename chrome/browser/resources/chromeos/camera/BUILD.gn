@@ -140,6 +140,7 @@ copy("chrome_camera_app_js_device") {
 
 copy("chrome_camera_app_js_lib") {
   sources = [
+    "src/js/lib/comlink.js",
     "src/js/lib/google-analytics-bundle.js",
   ]
 

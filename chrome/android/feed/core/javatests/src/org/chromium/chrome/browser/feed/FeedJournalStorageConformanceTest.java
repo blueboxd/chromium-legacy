@@ -85,7 +85,7 @@ public final class FeedJournalStorageConformanceTest extends JournalStorageConfo
     public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // journalStorage is declared and tested in JournalStorageConformanceTest.
-            mJournalStorage = new JournalStorageWrapper(Profile.getLastUsedProfile());
+            mJournalStorage = new JournalStorageWrapper(Profile.getLastUsedRegularProfile());
         });
     }
 

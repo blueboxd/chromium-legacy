@@ -191,7 +191,7 @@ static ThreadSpecific<PriorityObserverMap>& PriorityObservers() {
 ResourceLoadPriority AdjustPriorityWithPriorityHint(
     ResourceLoadPriority priority_so_far,
     ResourceType type,
-    const ResourceRequest& resource_request,
+    const ResourceRequestHead& resource_request,
     FetchParameters::DeferOption defer_option,
     bool is_link_preload) {
   mojom::FetchImportanceMode importance_mode =
@@ -241,7 +241,7 @@ ResourceLoadPriority AdjustPriorityWithDeferScriptIntervention(
     const FetchContext& fetch_context,
     ResourceLoadPriority priority_so_far,
     ResourceType type,
-    const ResourceRequest& resource_request,
+    const ResourceRequestHead& resource_request,
     FetchParameters::DeferOption defer_option,
     bool is_link_preload) {
   if (!base::FeatureList::IsEnabled(
@@ -417,7 +417,7 @@ void ResourceFetcher::AddPriorityObserverForTesting(
 // images, which may need to be reprioritized.
 ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
     ResourceType type,
-    const ResourceRequest& resource_request,
+    const ResourceRequestHead& resource_request,
     ResourcePriority::VisibilityStatus visibility,
     FetchParameters::DeferOption defer_option,
     FetchParameters::SpeculativePreloadType speculative_preload_type,
@@ -1093,7 +1093,8 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   // the resource was already initialized for the revalidation here, but won't
   // start loading.
   if (ResourceNeedsLoad(resource, params, policy)) {
-    if (!StartLoad(resource)) {
+    if (!StartLoad(resource,
+                   std::move(params.MutableResourceRequest().MutableBody()))) {
       resource->FinishAsError(ResourceError::CancelledError(params.Url()),
                               task_runner_.get());
     }
@@ -1849,6 +1850,11 @@ void ResourceFetcher::MoveResourceLoaderToNonBlocking(ResourceLoader* loader) {
 }
 
 bool ResourceFetcher::StartLoad(Resource* resource) {
+  return StartLoad(resource, ResourceRequestBody());
+}
+
+bool ResourceFetcher::StartLoad(Resource* resource,
+                                ResourceRequestBody request_body) {
   DCHECK(resource);
   DCHECK(resource->StillNeedsLoad());
 
@@ -1866,11 +1872,13 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
       return false;
     }
 
-    const auto& request = resource->GetResourceRequest();
-    ResourceResponse response;
+    const ResourceRequestHead& request_head = resource->GetResourceRequest();
 
     if (resource_load_observer_) {
       DCHECK(!IsDetached());
+      ResourceRequest request(request_head);
+      request.SetHttpBody(request_body.FormBody());
+      ResourceResponse response;
       resource_load_observer_->WillSendRequest(
           resource->InspectorId(), request, response, resource->GetType(),
           resource->Options().initiator_info);
@@ -1878,8 +1886,8 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
 
     using QuotaType = decltype(inflight_keepalive_bytes_);
     QuotaType size = 0;
-    if (request.GetKeepalive() && request.HttpBody()) {
-      auto original_size = request.HttpBody()->SizeInBytes();
+    if (request_head.GetKeepalive() && request_body.FormBody()) {
+      auto original_size = request_body.FormBody()->SizeInBytes();
       DCHECK_LE(inflight_keepalive_bytes_, kKeepaliveInflightBytesQuota);
       if (original_size > std::numeric_limits<QuotaType>::max())
         return false;
@@ -1890,8 +1898,8 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
       inflight_keepalive_bytes_ += size;
     }
 
-    loader =
-        MakeGarbageCollected<ResourceLoader>(this, scheduler_, resource, size);
+    loader = MakeGarbageCollected<ResourceLoader>(
+        this, scheduler_, resource, std::move(request_body), size);
     // Preload requests should not block the load event. IsLinkPreload()
     // actually continues to return true for Resources matched from the preload
     // cache that must block the load event, but that is OK because this method

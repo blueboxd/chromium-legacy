@@ -34,6 +34,7 @@ TriggerContextImpl::TriggerContextImpl(
     const std::string& experiment_ids)
     : parameters_(std::move(parameters)),
       experiment_ids_(std::move(experiment_ids)) {}
+
 TriggerContextImpl::~TriggerContextImpl() = default;
 
 void TriggerContextImpl::AddParameters(
@@ -68,6 +69,10 @@ bool TriggerContextImpl::is_onboarding_shown() const {
 
 bool TriggerContextImpl::is_direct_action() const {
   return direct_action_;
+}
+
+std::string TriggerContextImpl::get_caller_account_hash() const {
+  return caller_account_hash_;
 }
 
 MergedTriggerContext::MergedTriggerContext(
@@ -130,6 +135,14 @@ bool MergedTriggerContext::is_direct_action() const {
       return true;
   }
   return false;
+}
+
+std::string MergedTriggerContext::get_caller_account_hash() const {
+  for (const TriggerContext* context : contexts_) {
+    if (!context->get_caller_account_hash().empty())
+      return context->get_caller_account_hash();
+  }
+  return "";
 }
 
 }  // namespace autofill_assistant

@@ -168,6 +168,7 @@ class PLATFORM_EXPORT ResourceFetcher
   // call this method explicitly on cases such as ResourceNeedsLoad() returning
   // false.
   bool StartLoad(Resource*);
+  bool StartLoad(Resource*, ResourceRequestBody);
 
   void SetAutoLoadImages(bool);
   void SetImagesEnabled(bool);
@@ -257,7 +258,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   ResourceLoadPriority ComputeLoadPriorityForTesting(
       ResourceType type,
-      const ResourceRequest& request,
+      const ResourceRequestHead& request,
       ResourcePriority::VisibilityStatus visibility_statue,
       FetchParameters::DeferOption defer_option,
       FetchParameters::SpeculativePreloadType speculative_preload_type,
@@ -288,7 +289,7 @@ class PLATFORM_EXPORT ResourceFetcher
   void StorePerformanceTimingInitiatorInformation(Resource*);
   ResourceLoadPriority ComputeLoadPriority(
       ResourceType,
-      const ResourceRequest&,
+      const ResourceRequestHead&,
       ResourcePriority::VisibilityStatus,
       FetchParameters::DeferOption = FetchParameters::kNoDefer,
       FetchParameters::SpeculativePreloadType =

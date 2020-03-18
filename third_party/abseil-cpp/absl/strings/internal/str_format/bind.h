@@ -13,6 +13,7 @@
 #include "absl/types/span.h"
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 
 class UntypedFormatSpec;
 
@@ -73,13 +74,13 @@ class FormatSpecTemplate
   using Base = typename MakeDependent<UntypedFormatSpec, Args...>::type;
 
  public:
-#if ABSL_INTERNAL_ENABLE_FORMAT_CHECKER
+#ifdef ABSL_INTERNAL_ENABLE_FORMAT_CHECKER
 
-  // Honeypot overload for when the std::string is not constexpr.
+  // Honeypot overload for when the string is not constexpr.
   // We use the 'unavailable' attribute to give a better compiler error than
   // just 'method is deleted'.
   FormatSpecTemplate(...)  // NOLINT
-      __attribute__((unavailable("Format std::string is not constexpr.")));
+      __attribute__((unavailable("Format string is not constexpr.")));
 
   // Honeypot overload for when the format is constexpr and invalid.
   // We use the 'unavailable' attribute to give a better compiler error than
@@ -121,8 +122,8 @@ class FormatSpecTemplate
 #endif  // ABSL_INTERNAL_ENABLE_FORMAT_CHECKER
 
   template <Conv... C, typename = typename std::enable_if<
-                           sizeof...(C) == sizeof...(Args) &&
-                           AllOf(Contains(ArgumentToConv<Args>(),
+                           AllOf(sizeof...(C) == sizeof...(Args),
+                             Contains(ArgumentToConv<Args>(),
                                           C)...)>::type>
   FormatSpecTemplate(const ExtendedParsedFormat<C...>& pc)  // NOLINT
       : Base(&pc) {}
@@ -178,12 +179,8 @@ bool FormatUntyped(FormatRawSinkImpl raw_sink,
 std::string& AppendPack(std::string* out, UntypedFormatSpecImpl format,
                         absl::Span<const FormatArgImpl> args);
 
-inline std::string FormatPack(const UntypedFormatSpecImpl format,
-                              absl::Span<const FormatArgImpl> args) {
-  std::string out;
-  AppendPack(&out, format, args);
-  return out;
-}
+std::string FormatPack(const UntypedFormatSpecImpl format,
+                       absl::Span<const FormatArgImpl> args);
 
 int FprintF(std::FILE* output, UntypedFormatSpecImpl format,
             absl::Span<const FormatArgImpl> args);
@@ -206,6 +203,7 @@ class StreamedWrapper {
 };
 
 }  // namespace str_format_internal
+ABSL_NAMESPACE_END
 }  // namespace absl
 
 #endif  // ABSL_STRINGS_INTERNAL_STR_FORMAT_BIND_H_

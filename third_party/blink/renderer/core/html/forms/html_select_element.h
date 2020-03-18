@@ -231,7 +231,6 @@ class CORE_EXPORT HTMLSelectElement final
   enum ResetReason { kResetReasonSelectedOptionRemoved, kResetReasonOthers };
   void ResetToDefaultSelection(ResetReason = kResetReasonOthers);
   void TypeAheadFind(const KeyboardEvent&);
-  void SaveLastSelection();
   // Returns the first selected OPTION, or nullptr.
   HTMLOptionElement* SelectedOption() const;
 

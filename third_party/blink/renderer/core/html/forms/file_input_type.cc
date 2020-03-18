@@ -325,8 +325,10 @@ void FileInputType::CountUsage() {
 
 void FileInputType::CreateShadowSubtree() {
   DCHECK(IsShadowHost(GetElement()));
-  auto* button = MakeGarbageCollected<HTMLInputElement>(
-      GetElement().GetDocument(), CreateElementFlags());
+  Document& document = GetElement().GetDocument();
+
+  auto* button =
+      MakeGarbageCollected<HTMLInputElement>(document, CreateElementFlags());
   button->setType(input_type_names::kButton);
   button->setAttribute(
       html_names::kValueAttr,
@@ -338,6 +340,15 @@ void FileInputType::CreateShadowSubtree() {
                        shadow_element_names::FileUploadButton());
   button->SetActive(GetElement().CanReceiveDroppedFiles());
   GetElement().UserAgentShadowRoot()->AppendChild(button);
+
+  // The following element is used only in LayoutNG.
+  // See LayoutFileUploadControl::IsChildAllowed().
+  auto* span = document.CreateRawElement(html_names::kSpanTag);
+  // This element is hidden from AX trees for a historical reason.
+  span->setAttribute(html_names::kAriaHiddenAttr, "true");
+  GetElement().UserAgentShadowRoot()->AppendChild(span);
+
+  UpdateView();
 }
 
 HTMLInputElement* FileInputType::UploadButton() const {
@@ -345,6 +356,10 @@ HTMLInputElement* FileInputType::UploadButton() const {
       shadow_element_names::FileUploadButton());
   CHECK(!element || IsA<HTMLInputElement>(element));
   return To<HTMLInputElement>(element);
+}
+
+Node* FileInputType::FileStatusElement() const {
+  return GetElement().UserAgentShadowRoot()->lastChild();
 }
 
 void FileInputType::DisabledAttributeChanged() {
@@ -545,8 +560,12 @@ String FileInputType::FileStatusText() const {
 }
 
 void FileInputType::UpdateView() {
-  if (auto* layout_object = GetElement().GetLayoutObject())
+  auto* layout_object = GetElement().GetLayoutObject();
+  if (layout_object && layout_object->IsFileUploadControl())
     layout_object->SetShouldDoFullPaintInvalidation();
+
+  if (auto* span = FileStatusElement())
+    span->setTextContent(FileStatusText());
 }
 
 }  // namespace blink

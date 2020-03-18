@@ -15,11 +15,25 @@
 
 #include "absl/flags/flag.h"
 
+#include <stdint.h>
+
+#include <cmath>
+#include <string>
+#include <vector>
+
 #include "gtest/gtest.h"
+#include "absl/base/attributes.h"
+#include "absl/flags/config.h"
+#include "absl/flags/declare.h"
+#include "absl/flags/internal/commandlineflag.h"
+#include "absl/flags/internal/flag.h"
+#include "absl/flags/internal/registry.h"
+#include "absl/flags/usage_config.h"
 #include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 
 ABSL_DECLARE_FLAG(int64_t, mistyped_int_flag);
 ABSL_DECLARE_FLAG(std::vector<std::string>, mistyped_string_flag);
@@ -28,33 +42,12 @@ namespace {
 
 namespace flags = absl::flags_internal;
 
-std::string TestHelpMsg() { return "help"; }
+std::string TestHelpMsg() { return "dynamic help"; }
 template <typename T>
 void* TestMakeDflt() {
   return new T{};
 }
 void TestCallback() {}
-
-template <typename T>
-bool TestConstructionFor() {
-  constexpr flags::Flag<T> f1("f1", &TestHelpMsg, "file",
-                              &absl::flags_internal::FlagMarshallingOps<T>,
-                              &TestMakeDflt<T>);
-  EXPECT_EQ(f1.Name(), "f1");
-  EXPECT_EQ(f1.Help(), "help");
-  EXPECT_EQ(f1.Filename(), "file");
-
-  ABSL_CONST_INIT static flags::Flag<T> f2(
-      "f2", &TestHelpMsg, "file", &absl::flags_internal::FlagMarshallingOps<T>,
-      &TestMakeDflt<T>);
-  flags::FlagRegistrar<T, false>(&f2).OnUpdate(TestCallback);
-
-  EXPECT_EQ(f2.Name(), "f2");
-  EXPECT_EQ(f2.Help(), "help");
-  EXPECT_EQ(f2.Filename(), "file");
-
-  return true;
-}
 
 struct UDT {
   UDT() = default;
@@ -63,19 +56,123 @@ struct UDT {
 bool AbslParseFlag(absl::string_view, UDT*, std::string*) { return true; }
 std::string AbslUnparseFlag(const UDT&) { return ""; }
 
-TEST(FlagTest, TestConstruction) {
-  TestConstructionFor<bool>();
-  TestConstructionFor<int16_t>();
-  TestConstructionFor<uint16_t>();
-  TestConstructionFor<int32_t>();
-  TestConstructionFor<uint32_t>();
-  TestConstructionFor<int64_t>();
-  TestConstructionFor<uint64_t>();
-  TestConstructionFor<double>();
-  TestConstructionFor<float>();
-  TestConstructionFor<std::string>();
+class FlagTest : public testing::Test {
+ protected:
+  static void SetUpTestSuite() {
+    // Install a function to normalize filenames before this test is run.
+    absl::FlagsUsageConfig default_config;
+    default_config.normalize_filename = &FlagTest::NormalizeFileName;
+    absl::SetFlagsUsageConfig(default_config);
+  }
 
-  TestConstructionFor<UDT>();
+ private:
+  static std::string NormalizeFileName(absl::string_view fname) {
+#ifdef _WIN32
+    std::string normalized(fname);
+    std::replace(normalized.begin(), normalized.end(), '\\', '/');
+    fname = normalized;
+#endif
+    return std::string(fname);
+  }
+};
+
+struct S1 {
+  S1() = default;
+  S1(const S1&) = default;
+  int32_t f1;
+  int64_t f2;
+};
+
+struct S2 {
+  S2() = default;
+  S2(const S2&) = default;
+  int64_t f1;
+  double f2;
+};
+
+TEST_F(FlagTest, Traits) {
+  EXPECT_EQ(flags::FlagValue::Kind<int>(),
+            flags::FlagValueStorageKind::kOneWordAtomic);
+  EXPECT_EQ(flags::FlagValue::Kind<bool>(),
+            flags::FlagValueStorageKind::kOneWordAtomic);
+  EXPECT_EQ(flags::FlagValue::Kind<double>(),
+            flags::FlagValueStorageKind::kOneWordAtomic);
+  EXPECT_EQ(flags::FlagValue::Kind<int64_t>(),
+            flags::FlagValueStorageKind::kOneWordAtomic);
+
+#if defined(ABSL_FLAGS_INTERNAL_ATOMIC_DOUBLE_WORD)
+  EXPECT_EQ(flags::FlagValue::Kind<S1>(),
+            flags::FlagValueStorageKind::kTwoWordsAtomic);
+  EXPECT_EQ(flags::FlagValue::Kind<S2>(),
+            flags::FlagValueStorageKind::kTwoWordsAtomic);
+#else
+  EXPECT_EQ(flags::FlagValue::Kind<S1>(),
+            flags::FlagValueStorageKind::kHeapAllocated);
+  EXPECT_EQ(flags::FlagValue::Kind<S2>(),
+            flags::FlagValueStorageKind::kHeapAllocated);
+#endif
+
+  EXPECT_EQ(flags::FlagValue::Kind<std::string>(),
+            flags::FlagValueStorageKind::kHeapAllocated);
+  EXPECT_EQ(flags::FlagValue::Kind<std::vector<std::string>>(),
+            flags::FlagValueStorageKind::kHeapAllocated);
+}
+
+// --------------------------------------------------------------------
+
+constexpr flags::FlagHelpArg help_arg{flags::FlagHelpMsg("literal help"),
+                                      flags::FlagHelpKind::kLiteral};
+
+using String = std::string;
+
+#define DEFINE_CONSTRUCTED_FLAG(T)                                          \
+  constexpr flags::Flag<T> f1##T("f1", "file", help_arg, &TestMakeDflt<T>); \
+  ABSL_CONST_INIT flags::Flag<T> f2##T(                                     \
+      "f2", "file",                                                         \
+      {flags::FlagHelpMsg(&TestHelpMsg), flags::FlagHelpKind::kGenFunc},    \
+      &TestMakeDflt<T>)
+
+#define TEST_CONSTRUCTED_FLAG(T) TestConstructionFor(f1##T, &f2##T);
+
+DEFINE_CONSTRUCTED_FLAG(bool);
+DEFINE_CONSTRUCTED_FLAG(int16_t);
+DEFINE_CONSTRUCTED_FLAG(uint16_t);
+DEFINE_CONSTRUCTED_FLAG(int32_t);
+DEFINE_CONSTRUCTED_FLAG(uint32_t);
+DEFINE_CONSTRUCTED_FLAG(int64_t);
+DEFINE_CONSTRUCTED_FLAG(uint64_t);
+DEFINE_CONSTRUCTED_FLAG(float);
+DEFINE_CONSTRUCTED_FLAG(double);
+DEFINE_CONSTRUCTED_FLAG(String);
+DEFINE_CONSTRUCTED_FLAG(UDT);
+
+template <typename T>
+bool TestConstructionFor(const flags::Flag<T>& f1, flags::Flag<T>* f2) {
+  EXPECT_EQ(f1.Name(), "f1");
+  EXPECT_EQ(f1.Help(), "literal help");
+  EXPECT_EQ(f1.Filename(), "file");
+
+  flags::FlagRegistrar<T, false>(f2).OnUpdate(TestCallback);
+
+  EXPECT_EQ(f2->Name(), "f2");
+  EXPECT_EQ(f2->Help(), "dynamic help");
+  EXPECT_EQ(f2->Filename(), "file");
+
+  return true;
+}
+
+TEST_F(FlagTest, TestConstruction) {
+  TEST_CONSTRUCTED_FLAG(bool);
+  TEST_CONSTRUCTED_FLAG(int16_t);
+  TEST_CONSTRUCTED_FLAG(uint16_t);
+  TEST_CONSTRUCTED_FLAG(int32_t);
+  TEST_CONSTRUCTED_FLAG(uint32_t);
+  TEST_CONSTRUCTED_FLAG(int64_t);
+  TEST_CONSTRUCTED_FLAG(uint64_t);
+  TEST_CONSTRUCTED_FLAG(float);
+  TEST_CONSTRUCTED_FLAG(double);
+  TEST_CONSTRUCTED_FLAG(String);
+  TEST_CONSTRUCTED_FLAG(UDT);
 }
 
 // --------------------------------------------------------------------
@@ -98,7 +195,7 @@ namespace {
 
 #if !ABSL_FLAGS_STRIP_NAMES
 
-TEST(FlagTest, TestFlagDeclaration) {
+TEST_F(FlagTest, TestFlagDeclaration) {
   // test that we can access flag objects.
   EXPECT_EQ(FLAGS_test_flag_01.Name(), "test_flag_01");
   EXPECT_EQ(FLAGS_test_flag_02.Name(), "test_flag_02");
@@ -133,69 +230,69 @@ ABSL_FLAG(std::string, test_flag_11, "", "test flag 11");
 namespace {
 
 #if !ABSL_FLAGS_STRIP_NAMES
-TEST(FlagTest, TestFlagDefinition) {
+TEST_F(FlagTest, TestFlagDefinition) {
   absl::string_view expected_file_name = "absl/flags/flag_test.cc";
 
   EXPECT_EQ(FLAGS_test_flag_01.Name(), "test_flag_01");
   EXPECT_EQ(FLAGS_test_flag_01.Help(), "test flag 01");
-  EXPECT_TRUE(
-      absl::EndsWith(FLAGS_test_flag_01.Filename(), expected_file_name));
+  EXPECT_TRUE(absl::EndsWith(FLAGS_test_flag_01.Filename(), expected_file_name))
+      << FLAGS_test_flag_01.Filename();
 
   EXPECT_EQ(FLAGS_test_flag_02.Name(), "test_flag_02");
   EXPECT_EQ(FLAGS_test_flag_02.Help(), "test flag 02");
-  EXPECT_TRUE(
-      absl::EndsWith(FLAGS_test_flag_02.Filename(), expected_file_name));
+  EXPECT_TRUE(absl::EndsWith(FLAGS_test_flag_02.Filename(), expected_file_name))
+      << FLAGS_test_flag_02.Filename();
 
   EXPECT_EQ(FLAGS_test_flag_03.Name(), "test_flag_03");
   EXPECT_EQ(FLAGS_test_flag_03.Help(), "test flag 03");
-  EXPECT_TRUE(
-      absl::EndsWith(FLAGS_test_flag_03.Filename(), expected_file_name));
+  EXPECT_TRUE(absl::EndsWith(FLAGS_test_flag_03.Filename(), expected_file_name))
+      << FLAGS_test_flag_03.Filename();
 
   EXPECT_EQ(FLAGS_test_flag_04.Name(), "test_flag_04");
   EXPECT_EQ(FLAGS_test_flag_04.Help(), "test flag 04");
-  EXPECT_TRUE(
-      absl::EndsWith(FLAGS_test_flag_04.Filename(), expected_file_name));
+  EXPECT_TRUE(absl::EndsWith(FLAGS_test_flag_04.Filename(), expected_file_name))
+      << FLAGS_test_flag_04.Filename();
 
   EXPECT_EQ(FLAGS_test_flag_05.Name(), "test_flag_05");
   EXPECT_EQ(FLAGS_test_flag_05.Help(), "test flag 05");
-  EXPECT_TRUE(
-      absl::EndsWith(FLAGS_test_flag_05.Filename(), expected_file_name));
+  EXPECT_TRUE(absl::EndsWith(FLAGS_test_flag_05.Filename(), expected_file_name))
+      << FLAGS_test_flag_05.Filename();
 
   EXPECT_EQ(FLAGS_test_flag_06.Name(), "test_flag_06");
   EXPECT_EQ(FLAGS_test_flag_06.Help(), "test flag 06");
-  EXPECT_TRUE(
-      absl::EndsWith(FLAGS_test_flag_06.Filename(), expected_file_name));
+  EXPECT_TRUE(absl::EndsWith(FLAGS_test_flag_06.Filename(), expected_file_name))
+      << FLAGS_test_flag_06.Filename();
 
   EXPECT_EQ(FLAGS_test_flag_07.Name(), "test_flag_07");
   EXPECT_EQ(FLAGS_test_flag_07.Help(), "test flag 07");
-  EXPECT_TRUE(
-      absl::EndsWith(FLAGS_test_flag_07.Filename(), expected_file_name));
+  EXPECT_TRUE(absl::EndsWith(FLAGS_test_flag_07.Filename(), expected_file_name))
+      << FLAGS_test_flag_07.Filename();
 
   EXPECT_EQ(FLAGS_test_flag_08.Name(), "test_flag_08");
   EXPECT_EQ(FLAGS_test_flag_08.Help(), "test flag 08");
-  EXPECT_TRUE(
-      absl::EndsWith(FLAGS_test_flag_08.Filename(), expected_file_name));
+  EXPECT_TRUE(absl::EndsWith(FLAGS_test_flag_08.Filename(), expected_file_name))
+      << FLAGS_test_flag_08.Filename();
 
   EXPECT_EQ(FLAGS_test_flag_09.Name(), "test_flag_09");
   EXPECT_EQ(FLAGS_test_flag_09.Help(), "test flag 09");
-  EXPECT_TRUE(
-      absl::EndsWith(FLAGS_test_flag_09.Filename(), expected_file_name));
+  EXPECT_TRUE(absl::EndsWith(FLAGS_test_flag_09.Filename(), expected_file_name))
+      << FLAGS_test_flag_09.Filename();
 
   EXPECT_EQ(FLAGS_test_flag_10.Name(), "test_flag_10");
   EXPECT_EQ(FLAGS_test_flag_10.Help(), "test flag 10");
-  EXPECT_TRUE(
-      absl::EndsWith(FLAGS_test_flag_10.Filename(), expected_file_name));
+  EXPECT_TRUE(absl::EndsWith(FLAGS_test_flag_10.Filename(), expected_file_name))
+      << FLAGS_test_flag_10.Filename();
 
   EXPECT_EQ(FLAGS_test_flag_11.Name(), "test_flag_11");
   EXPECT_EQ(FLAGS_test_flag_11.Help(), "test flag 11");
-  EXPECT_TRUE(
-      absl::EndsWith(FLAGS_test_flag_11.Filename(), expected_file_name));
+  EXPECT_TRUE(absl::EndsWith(FLAGS_test_flag_11.Filename(), expected_file_name))
+      << FLAGS_test_flag_11.Filename();
 }
 #endif  // !ABSL_FLAGS_STRIP_NAMES
 
 // --------------------------------------------------------------------
 
-TEST(FlagTest, TestDefault) {
+TEST_F(FlagTest, TestDefault) {
   EXPECT_EQ(absl::GetFlag(FLAGS_test_flag_01), true);
   EXPECT_EQ(absl::GetFlag(FLAGS_test_flag_02), 1234);
   EXPECT_EQ(absl::GetFlag(FLAGS_test_flag_03), -34);
@@ -211,7 +308,7 @@ TEST(FlagTest, TestDefault) {
 
 // --------------------------------------------------------------------
 
-TEST(FlagTest, TestGetSet) {
+TEST_F(FlagTest, TestGetSet) {
   absl::SetFlag(&FLAGS_test_flag_01, false);
   EXPECT_EQ(absl::GetFlag(FLAGS_test_flag_01), false);
 
@@ -258,7 +355,7 @@ ABSL_FLAG(std::string, test_flag_13, absl::StrCat("AAA", "BBB"),
 
 namespace {
 
-TEST(FlagTest, TestNonConstexprDefault) {
+TEST_F(FlagTest, TestNonConstexprDefault) {
   EXPECT_EQ(absl::GetFlag(FLAGS_test_flag_12), 1);
   EXPECT_EQ(absl::GetFlag(FLAGS_test_flag_13), "AAABBB");
 }
@@ -272,7 +369,7 @@ ABSL_FLAG(bool, test_flag_14, true, absl::StrCat("test ", "flag ", "14"));
 namespace {
 
 #if !ABSL_FLAGS_STRIP_HELP
-TEST(FlagTest, TestNonConstexprHelp) {
+TEST_F(FlagTest, TestNonConstexprHelp) {
   EXPECT_EQ(FLAGS_test_flag_14.Help(), "test flag 14");
 }
 #endif  //! ABSL_FLAGS_STRIP_HELP
@@ -296,7 +393,7 @@ namespace {
 void TestFlagCB() { cb_test_value = absl::GetFlag(FLAGS_test_flag_with_cb); }
 
 // Tests side-effects of callback invocation.
-TEST(FlagTest, CallbackInvocation) {
+TEST_F(FlagTest, CallbackInvocation) {
   EXPECT_EQ(absl::GetFlag(FLAGS_test_flag_with_cb), 100);
   EXPECT_EQ(absl::GetFlag(FLAGS_test_flag_with_lambda_cb), 200);
   EXPECT_EQ(cb_test_value, 300);
@@ -343,7 +440,7 @@ ABSL_FLAG(CustomUDT, test_flag_15, CustomUDT(), "test flag 15");
 
 namespace {
 
-TEST(FlagTest, TestCustomUDT) {
+TEST_F(FlagTest, TestCustomUDT) {
   EXPECT_EQ(absl::GetFlag(FLAGS_test_flag_15), CustomUDT(1, 1));
   absl::SetFlag(&FLAGS_test_flag_15, CustomUDT(2, 3));
   EXPECT_EQ(absl::GetFlag(FLAGS_test_flag_15), CustomUDT(2, 3));
@@ -351,21 +448,23 @@ TEST(FlagTest, TestCustomUDT) {
 
 // MSVC produces link error on the type mismatch.
 // Linux does not have build errors and validations work as expected.
-#if 0  // !defined(_WIN32) && GTEST_HAS_DEATH_TEST
+#if !defined(_WIN32) && GTEST_HAS_DEATH_TEST
 
-TEST(Flagtest, TestTypeMismatchValidations) {
-  // For builtin types, GetFlag() only does validation in debug mode.
-  EXPECT_DEBUG_DEATH(
-      absl::GetFlag(FLAGS_mistyped_int_flag),
-      "Flag 'mistyped_int_flag' is defined as one type and declared "
-      "as another");
-  EXPECT_DEATH(absl::SetFlag(&FLAGS_mistyped_int_flag, 0),
+using FlagDeathTest = FlagTest;
+
+TEST_F(FlagDeathTest, TestTypeMismatchValidations) {
+#if !defined(NDEBUG)
+  EXPECT_DEATH(static_cast<void>(absl::GetFlag(FLAGS_mistyped_int_flag)),
                "Flag 'mistyped_int_flag' is defined as one type and declared "
                "as another");
-
-  EXPECT_DEATH(absl::GetFlag(FLAGS_mistyped_string_flag),
+  EXPECT_DEATH(static_cast<void>(absl::GetFlag(FLAGS_mistyped_string_flag)),
                "Flag 'mistyped_string_flag' is defined as one type and "
                "declared as another");
+#endif
+
+  EXPECT_DEATH(absl::SetFlag(&FLAGS_mistyped_int_flag, 1),
+               "Flag 'mistyped_int_flag' is defined as one type and declared "
+               "as another");
   EXPECT_DEATH(
       absl::SetFlag(&FLAGS_mistyped_string_flag, std::vector<std::string>{}),
       "Flag 'mistyped_string_flag' is defined as one type and declared as "
@@ -409,7 +508,7 @@ ABSL_FLAG(ConversionTestVal, test_flag_16,
 
 namespace {
 
-TEST(FlagTest, CanSetViaImplicitConversion) {
+TEST_F(FlagTest, CanSetViaImplicitConversion) {
   EXPECT_EQ(absl::GetFlag(FLAGS_test_flag_16).a, 10);
   absl::SetFlag(&FLAGS_test_flag_16,
                 ConversionTestVal::ViaImplicitConv::kEleven);
@@ -447,7 +546,7 @@ ABSL_FLAG(NonDfltConstructible, ndc_flag2, 0,
 
 namespace {
 
-TEST(FlagTest, TestNonDefaultConstructibleType) {
+TEST_F(FlagTest, TestNonDefaultConstructibleType) {
   EXPECT_EQ(absl::GetFlag(FLAGS_ndc_flag1).value, '1' + 100);
   EXPECT_EQ(absl::GetFlag(FLAGS_ndc_flag2).value, 0);
 
@@ -468,7 +567,7 @@ ABSL_RETIRED_FLAG(std::string, old_str_flag, "", absl::StrCat("old ", "descr"));
 
 namespace {
 
-TEST(FlagTest, TestRetiredFlagRegistration) {
+TEST_F(FlagTest, TestRetiredFlagRegistration) {
   bool is_bool = false;
   EXPECT_TRUE(flags::IsRetiredFlag("old_bool_flag", &is_bool));
   EXPECT_TRUE(is_bool);

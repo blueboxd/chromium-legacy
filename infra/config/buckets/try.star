@@ -337,7 +337,7 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
-    name = 'linux-bfcache-debug',
+    name = 'linux-bfcache-rel',
 )
 
 try_.chromium_linux_builder(

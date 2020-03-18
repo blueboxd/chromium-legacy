@@ -26,9 +26,11 @@
 #include <string>
 #include <vector>
 
+#include "absl/base/config.h"
 #include "absl/flags/internal/parse.h"
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 
 // ParseCommandLine()
 //
@@ -53,6 +55,7 @@ namespace absl {
 // help messages and then exits the program.
 std::vector<char*> ParseCommandLine(int argc, char* argv[]);
 
+ABSL_NAMESPACE_END
 }  // namespace absl
 
 #endif  // ABSL_FLAGS_PARSE_H_

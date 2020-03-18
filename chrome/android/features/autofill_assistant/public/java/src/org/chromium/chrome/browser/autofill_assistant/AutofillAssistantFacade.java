@@ -67,6 +67,8 @@ public class AutofillAssistantFacade {
 
     private static final String EXPERIMENTS_SYNTHETIC_TRIAL = "AutofillAssistantExperimentsTrial";
 
+    private static final String CALLER_ACCOUNT_IDENTIFIER = "CALLER_ACCOUNT";
+
     /** Returns true if conditions are satisfied to attempt to start Autofill Assistant. */
     private static boolean isConfigured(@Nullable Bundle intentExtras) {
         return getBooleanParameter(intentExtras, PARAMETER_ENABLED);
@@ -112,12 +114,13 @@ public class AutofillAssistantFacade {
                                     DropOutReason.DFM_INSTALL_FAILED);
                             return;
                         }
-
                         Map<String, String> parameters = extractParameters(bundleExtras);
-                        parameters.remove(PARAMETER_ENABLED);
+                        String callerAccount = parameters.get(CALLER_ACCOUNT_IDENTIFIER);
+
                         moduleEntry.start(tab, tab.getWebContents(),
                                 !AutofillAssistantPreferencesUtil.getShowOnboarding(), initialUrl,
-                                parameters, experimentIds, bundleExtras);
+                                filterParameters(parameters), experimentIds, callerAccount,
+                                bundleExtras);
                     });
         });
     }
@@ -197,6 +200,13 @@ public class AutofillAssistantFacade {
             }
         }
         return result;
+    }
+
+    /** Removes the parameters we don't want to send to the client */
+    private static Map<String, String> filterParameters(Map<String, String> paramenters) {
+        paramenters.remove(PARAMETER_ENABLED);
+        paramenters.remove(CALLER_ACCOUNT_IDENTIFIER);
+        return paramenters;
     }
 
     /** Provides the callback with a tab that has a web contents, waits if necessary. */

@@ -141,7 +141,7 @@ luci.console_view(
             category = 'linux',
         ),
         luci.console_view_entry(
-            builder = 'ci/linux-bfcache-debug',
+            builder = 'ci/linux-bfcache-rel',
             category = 'linux',
         ),
         luci.console_view_entry(

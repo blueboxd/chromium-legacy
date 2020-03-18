@@ -75,6 +75,7 @@ class PLATFORM_EXPORT ResourceLoader final
   ResourceLoader(ResourceFetcher*,
                  ResourceLoadScheduler*,
                  Resource*,
+                 ResourceRequestBody request_body = ResourceRequestBody(),
                  uint32_t inflight_keepalive_bytes = 0);
   ~ResourceLoader() override;
   void Trace(Visitor*) override;
@@ -90,7 +91,7 @@ class PLATFORM_EXPORT ResourceLoader final
 
   // Called before start() to activate cache-aware loading if enabled in
   // |m_resource->options()| and applicable.
-  void ActivateCacheAwareLoadingIfNeeded(const ResourceRequest&);
+  void ActivateCacheAwareLoadingIfNeeded(const ResourceRequestHead&);
 
   bool IsCacheAwareLoadingActivated() const {
     return is_cache_aware_loading_activated_;
@@ -165,7 +166,7 @@ class PLATFORM_EXPORT ResourceLoader final
   void DidCancelLoadingBody() override;
 
   bool ShouldFetchCodeCache();
-  void StartWith(const ResourceRequest&);
+  void StartWith(const ResourceRequestHead&);
 
   void Release(ResourceLoadScheduler::ReleaseOption,
                const ResourceLoadScheduler::TrafficReportHints&);
@@ -173,7 +174,7 @@ class PLATFORM_EXPORT ResourceLoader final
   // This method is currently only used for service worker fallback request and
   // cache-aware loading, other users should be careful not to break
   // ResourceLoader state.
-  void Restart(const ResourceRequest&);
+  void Restart(const ResourceRequestHead&);
 
   FetchContext& Context() const;
 
@@ -183,8 +184,8 @@ class PLATFORM_EXPORT ResourceLoader final
 
   void CancelForRedirectAccessCheckError(const KURL&,
                                          ResourceRequestBlockedReason);
-  void RequestSynchronously(const ResourceRequest&);
-  void RequestAsynchronously(const ResourceRequest&);
+  void RequestSynchronously(const ResourceRequestHead&);
+  void RequestAsynchronously(const ResourceRequestHead&);
   void Dispose();
 
   void DidReceiveResponseInternal(const ResourceResponse&);
@@ -210,8 +211,7 @@ class PLATFORM_EXPORT ResourceLoader final
   Member<ResourceFetcher> fetcher_;
   Member<ResourceLoadScheduler> scheduler_;
   Member<Resource> resource_;
-  // This flag is only needed when OOB-CORS is disabled.
-  scoped_refptr<EncodedFormData> request_body_for_reidirect_;
+  ResourceRequestBody request_body_;
   Member<ResponseBodyLoader> response_body_loader_;
   Member<DataPipeBytesConsumer::CompletionNotifier>
       data_pipe_completion_notifier_;

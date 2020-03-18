@@ -881,7 +881,7 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
-    name = 'linux-bfcache-debug',
+    name = 'linux-bfcache-rel',
 )
 
 ci.fyi_builder(

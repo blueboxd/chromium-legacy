@@ -43,6 +43,7 @@ namespace {
 
 void FillClientContext(const ClientContextProto& client_context,
                        const TriggerContext& trigger_context,
+                       const std::string& client_account_hash,
                        ClientContextProto* proto) {
   proto->CopyFrom(client_context);
   std::string experiment_ids = trigger_context.experiment_ids();
@@ -58,6 +59,17 @@ void FillClientContext(const ClientContextProto& client_context,
   if (trigger_context.is_direct_action()) {
     proto->set_is_direct_action(true);
   }
+  if (trigger_context.get_caller_account_hash().empty()) {
+    proto->set_accounts_matching_status(ClientContextProto::UNKNOWN);
+  } else {
+    if (trigger_context.get_caller_account_hash() == client_account_hash) {
+      proto->set_accounts_matching_status(
+          ClientContextProto::ACCOUNTS_MATCHING);
+    } else {
+      proto->set_accounts_matching_status(
+          ClientContextProto::ACCOUNTS_NOT_MATCHING);
+    }
+  }
 }
 
 }  // namespace
@@ -66,12 +78,13 @@ void FillClientContext(const ClientContextProto& client_context,
 std::string ProtocolUtils::CreateGetScriptsRequest(
     const GURL& url,
     const TriggerContext& trigger_context,
-    const ClientContextProto& client_context) {
+    const ClientContextProto& client_context,
+    const std::string& client_account_hash) {
   DCHECK(!url.is_empty());
 
   SupportsScriptRequestProto script_proto;
   script_proto.set_url(url.spec());
-  FillClientContext(client_context, trigger_context,
+  FillClientContext(client_context, trigger_context, client_account_hash,
                     script_proto.mutable_client_context());
   trigger_context.AddParameters(script_proto.mutable_script_parameters());
   std::string serialized_script_proto;
@@ -123,7 +136,8 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
     const TriggerContext& trigger_context,
     const std::string& global_payload,
     const std::string& script_payload,
-    const ClientContextProto& client_context) {
+    const ClientContextProto& client_context,
+    const std::string& client_account_hash) {
   ScriptActionRequestProto request_proto;
   InitialScriptActionsRequestProto* initial_request_proto =
       request_proto.mutable_initial_request();
@@ -132,7 +146,7 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
   query->add_script_path(script_path);
   query->set_url(url.spec());
   query->set_policy(PolicyType::SCRIPT);
-  FillClientContext(client_context, trigger_context,
+  FillClientContext(client_context, trigger_context, client_account_hash,
                     request_proto.mutable_client_context());
   trigger_context.AddParameters(
       initial_request_proto->mutable_script_parameters());
@@ -156,7 +170,8 @@ std::string ProtocolUtils::CreateNextScriptActionsRequest(
     const std::string& global_payload,
     const std::string& script_payload,
     const std::vector<ProcessedActionProto>& processed_actions,
-    const ClientContextProto& client_context) {
+    const ClientContextProto& client_context,
+    const std::string& client_account_hash) {
   ScriptActionRequestProto request_proto;
   request_proto.set_global_payload(global_payload);
   request_proto.set_script_payload(script_payload);
@@ -165,7 +180,7 @@ std::string ProtocolUtils::CreateNextScriptActionsRequest(
   for (const auto& processed_action : processed_actions) {
     next_request->add_processed_actions()->MergeFrom(processed_action);
   }
-  FillClientContext(client_context, trigger_context,
+  FillClientContext(client_context, trigger_context, client_account_hash,
                     request_proto.mutable_client_context());
   std::string serialized_request_proto;
   bool success = request_proto.SerializeToString(&serialized_request_proto);

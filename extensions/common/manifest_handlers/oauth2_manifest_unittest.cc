@@ -46,50 +46,49 @@ class OAuth2ManifestTest : public ManifestTest {
     CLIENT_ID_EMPTY
   };
 
-  std::unique_ptr<base::Value> CreateManifest(AutoApproveValue auto_approve,
-                                              bool extension_id_whitelisted,
-                                              ClientIdValue client_id) {
-    std::unique_ptr<base::Value> manifest = base::test::ParseJsonDeprecated(
-        "{ \n"
-        "  \"name\": \"test\", \n"
-        "  \"version\": \"0.1\", \n"
-        "  \"manifest_version\": 2, \n"
-        "  \"oauth2\": { \n"
-        "    \"scopes\": [ \"scope1\" ], \n"
-        "  }, \n"
-        "} \n");
-    EXPECT_TRUE(manifest);
-    EXPECT_TRUE(manifest->is_dict());
+  base::Value CreateManifest(AutoApproveValue auto_approve,
+                             bool extension_id_whitelisted,
+                             ClientIdValue client_id) {
+    base::Value manifest = base::test::ParseJson(R"({
+          "name": "test",
+          "version": "0.1",
+          "manifest_version": 2,
+          "oauth2": {
+            "scopes": [ "scope1" ],
+          },
+        })");
+    EXPECT_TRUE(manifest.is_dict());
     switch (auto_approve) {
       case AUTO_APPROVE_NOT_SET:
         break;
       case AUTO_APPROVE_FALSE:
-        manifest->SetPath(TokenizeDictionaryPath(keys::kOAuth2AutoApprove),
-                          base::Value(false));
+        manifest.SetPath(TokenizeDictionaryPath(keys::kOAuth2AutoApprove),
+                         base::Value(false));
         break;
       case AUTO_APPROVE_TRUE:
-        manifest->SetPath(TokenizeDictionaryPath(keys::kOAuth2AutoApprove),
-                          base::Value(true));
+        manifest.SetPath(TokenizeDictionaryPath(keys::kOAuth2AutoApprove),
+                         base::Value(true));
         break;
       case AUTO_APPROVE_INVALID:
-        manifest->SetPath(TokenizeDictionaryPath(keys::kOAuth2AutoApprove),
-                          base::Value("incorrect value"));
+        manifest.SetPath(TokenizeDictionaryPath(keys::kOAuth2AutoApprove),
+                         base::Value("incorrect value"));
         break;
     }
     switch (client_id) {
       case CLIENT_ID_DEFAULT:
-        manifest->SetPath(TokenizeDictionaryPath(keys::kOAuth2ClientId),
-                          base::Value("client1"));
+        manifest.SetPath(TokenizeDictionaryPath(keys::kOAuth2ClientId),
+                         base::Value("client1"));
         break;
       case CLIENT_ID_NOT_SET:
         break;
       case CLIENT_ID_EMPTY:
-        manifest->SetPath(TokenizeDictionaryPath(keys::kOAuth2ClientId),
-                          base::Value(""));
+        manifest.SetPath(TokenizeDictionaryPath(keys::kOAuth2ClientId),
+                         base::Value(""));
     }
-    if (extension_id_whitelisted)
-      manifest->SetPath(TokenizeDictionaryPath(keys::kKey),
-                        base::Value(kExtensionKey));
+    if (extension_id_whitelisted) {
+      manifest.SetPath(TokenizeDictionaryPath(keys::kKey),
+                       base::Value(kExtensionKey));
+    }
     return manifest;
   }
 };
@@ -122,7 +121,7 @@ TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {
     ext_manifest.SetPath(TokenizeDictionaryPath(keys::kOAuth2AutoApprove),
                          base::Value(true));
 
-    ManifestData manifest(&ext_manifest, "test");
+    ManifestData manifest(std::move(ext_manifest), "test");
     scoped_refptr<extensions::Extension> extension =
         LoadAndExpectSuccess(manifest);
     EXPECT_TRUE(extension->install_warnings().empty());
@@ -140,7 +139,7 @@ TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {
                          base::Value("launch.html"));
     app_manifest.MergeDictionary(&base_manifest);
 
-    ManifestData manifest(&app_manifest, "test");
+    ManifestData manifest(std::move(app_manifest), "test");
     scoped_refptr<extensions::Extension> extension =
         LoadAndExpectSuccess(manifest);
     EXPECT_TRUE(extension->install_warnings().empty());
@@ -158,7 +157,7 @@ TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {
                          base::Value("http://www.google.com"));
     app_manifest.MergeDictionary(&base_manifest);
 
-    ManifestData manifest(&app_manifest, "test");
+    ManifestData manifest(std::move(app_manifest), "test");
     scoped_refptr<extensions::Extension> extension =
         LoadAndExpectSuccess(manifest);
     EXPECT_EQ(1U, extension->install_warnings().size());
@@ -174,7 +173,7 @@ TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {
 }
 
 TEST_F(OAuth2ManifestTest, AutoApproveNotSetExtensionNotOnWhitelist) {
-  std::unique_ptr<base::Value> ext_manifest =
+  base::Value ext_manifest =
       CreateManifest(AUTO_APPROVE_NOT_SET, false, CLIENT_ID_DEFAULT);
   ManifestData manifest(std::move(ext_manifest), "test");
   scoped_refptr<extensions::Extension> extension =
@@ -184,7 +183,7 @@ TEST_F(OAuth2ManifestTest, AutoApproveNotSetExtensionNotOnWhitelist) {
 }
 
 TEST_F(OAuth2ManifestTest, AutoApproveFalseExtensionNotOnWhitelist) {
-  std::unique_ptr<base::Value> ext_manifest =
+  base::Value ext_manifest =
       CreateManifest(AUTO_APPROVE_FALSE, false, CLIENT_ID_DEFAULT);
   ManifestData manifest(std::move(ext_manifest), "test");
   scoped_refptr<extensions::Extension> extension =
@@ -197,7 +196,7 @@ TEST_F(OAuth2ManifestTest, AutoApproveFalseExtensionNotOnWhitelist) {
 }
 
 TEST_F(OAuth2ManifestTest, AutoApproveTrueExtensionNotOnWhitelist) {
-  std::unique_ptr<base::Value> ext_manifest =
+  base::Value ext_manifest =
       CreateManifest(AUTO_APPROVE_TRUE, false, CLIENT_ID_DEFAULT);
   ManifestData manifest(std::move(ext_manifest), "test");
   scoped_refptr<extensions::Extension> extension =
@@ -210,7 +209,7 @@ TEST_F(OAuth2ManifestTest, AutoApproveTrueExtensionNotOnWhitelist) {
 }
 
 TEST_F(OAuth2ManifestTest, AutoApproveInvalidExtensionNotOnWhitelist) {
-  std::unique_ptr<base::Value> ext_manifest =
+  base::Value ext_manifest =
       CreateManifest(AUTO_APPROVE_INVALID, false, CLIENT_ID_DEFAULT);
   ManifestData manifest(std::move(ext_manifest), "test");
   scoped_refptr<extensions::Extension> extension =
@@ -223,7 +222,7 @@ TEST_F(OAuth2ManifestTest, AutoApproveInvalidExtensionNotOnWhitelist) {
 }
 
 TEST_F(OAuth2ManifestTest, AutoApproveNotSetExtensionOnWhitelist) {
-  std::unique_ptr<base::Value> ext_manifest =
+  base::Value ext_manifest =
       CreateManifest(AUTO_APPROVE_NOT_SET, true, CLIENT_ID_DEFAULT);
   ManifestData manifest(std::move(ext_manifest), "test");
   scoped_refptr<extensions::Extension> extension =
@@ -233,7 +232,7 @@ TEST_F(OAuth2ManifestTest, AutoApproveNotSetExtensionOnWhitelist) {
 }
 
 TEST_F(OAuth2ManifestTest, AutoApproveFalseExtensionOnWhitelist) {
-  std::unique_ptr<base::Value> ext_manifest =
+  base::Value ext_manifest =
       CreateManifest(AUTO_APPROVE_FALSE, true, CLIENT_ID_DEFAULT);
   ManifestData manifest(std::move(ext_manifest), "test");
   scoped_refptr<extensions::Extension> extension =
@@ -243,7 +242,7 @@ TEST_F(OAuth2ManifestTest, AutoApproveFalseExtensionOnWhitelist) {
 }
 
 TEST_F(OAuth2ManifestTest, AutoApproveTrueExtensionOnWhitelist) {
-  std::unique_ptr<base::Value> ext_manifest =
+  base::Value ext_manifest =
       CreateManifest(AUTO_APPROVE_TRUE, true, CLIENT_ID_DEFAULT);
   ManifestData manifest(std::move(ext_manifest), "test");
   scoped_refptr<extensions::Extension> extension =
@@ -253,7 +252,7 @@ TEST_F(OAuth2ManifestTest, AutoApproveTrueExtensionOnWhitelist) {
 }
 
 TEST_F(OAuth2ManifestTest, AutoApproveInvalidExtensionOnWhitelist) {
-  std::unique_ptr<base::Value> ext_manifest =
+  base::Value ext_manifest =
       CreateManifest(AUTO_APPROVE_INVALID, true, CLIENT_ID_DEFAULT);
   ManifestData manifest(std::move(ext_manifest), "test");
   std::string error;
@@ -266,7 +265,7 @@ TEST_F(OAuth2ManifestTest, AutoApproveInvalidExtensionOnWhitelist) {
 
 TEST_F(OAuth2ManifestTest, InvalidClientId) {
   {
-    std::unique_ptr<base::Value> ext_manifest =
+    base::Value ext_manifest =
         CreateManifest(AUTO_APPROVE_NOT_SET, false, CLIENT_ID_NOT_SET);
     ManifestData manifest(std::move(ext_manifest), "test");
     std::string error;
@@ -274,7 +273,7 @@ TEST_F(OAuth2ManifestTest, InvalidClientId) {
   }
 
   {
-    std::unique_ptr<base::Value> ext_manifest =
+    base::Value ext_manifest =
         CreateManifest(AUTO_APPROVE_NOT_SET, false, CLIENT_ID_EMPTY);
     ManifestData manifest(std::move(ext_manifest), "test");
     std::string error;
@@ -285,7 +284,7 @@ TEST_F(OAuth2ManifestTest, InvalidClientId) {
 TEST_F(OAuth2ManifestTest, ComponentInvalidClientId) {
   // Component Apps without auto_approve must include a client ID.
   {
-    std::unique_ptr<base::Value> ext_manifest =
+    base::Value ext_manifest =
         CreateManifest(AUTO_APPROVE_NOT_SET, false, CLIENT_ID_NOT_SET);
     ManifestData manifest(std::move(ext_manifest), "test");
     std::string error;
@@ -295,7 +294,7 @@ TEST_F(OAuth2ManifestTest, ComponentInvalidClientId) {
   }
 
   {
-    std::unique_ptr<base::Value> ext_manifest =
+    base::Value ext_manifest =
         CreateManifest(AUTO_APPROVE_NOT_SET, false, CLIENT_ID_EMPTY);
     ManifestData manifest(std::move(ext_manifest), "test");
     std::string error;
@@ -307,7 +306,7 @@ TEST_F(OAuth2ManifestTest, ComponentInvalidClientId) {
 
 TEST_F(OAuth2ManifestTest, ComponentWithChromeClientId) {
   {
-    std::unique_ptr<base::Value> ext_manifest =
+    base::Value ext_manifest =
         CreateManifest(AUTO_APPROVE_TRUE, true, CLIENT_ID_NOT_SET);
     ManifestData manifest(std::move(ext_manifest), "test");
     scoped_refptr<extensions::Extension> extension =
@@ -316,7 +315,7 @@ TEST_F(OAuth2ManifestTest, ComponentWithChromeClientId) {
   }
 
   {
-    std::unique_ptr<base::Value> ext_manifest =
+    base::Value ext_manifest =
         CreateManifest(AUTO_APPROVE_TRUE, true, CLIENT_ID_EMPTY);
     ManifestData manifest(std::move(ext_manifest), "test");
     scoped_refptr<extensions::Extension> extension =
@@ -326,7 +325,7 @@ TEST_F(OAuth2ManifestTest, ComponentWithChromeClientId) {
 }
 
 TEST_F(OAuth2ManifestTest, ComponentWithStandardClientId) {
-  std::unique_ptr<base::Value> ext_manifest =
+  base::Value ext_manifest =
       CreateManifest(AUTO_APPROVE_TRUE, true, CLIENT_ID_DEFAULT);
   ManifestData manifest(std::move(ext_manifest), "test");
   scoped_refptr<extensions::Extension> extension =

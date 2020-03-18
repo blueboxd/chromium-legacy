@@ -107,8 +107,8 @@ class DeclarativeContentCssConditionTrackerTest
   void CreatePredicateImpl(const std::string& value,
                            std::unique_ptr<const ContentPredicate>* predicate) {
     std::string error;
-    *predicate = tracker_.CreatePredicate(
-        nullptr, *base::test::ParseJsonDeprecated(value), &error);
+    *predicate =
+        tracker_.CreatePredicate(nullptr, base::test::ParseJson(value), &error);
     EXPECT_EQ("", error);
     ASSERT_TRUE(*predicate);
   }
@@ -119,8 +119,8 @@ class DeclarativeContentCssConditionTrackerTest
 TEST(DeclarativeContentCssPredicateTest, WrongCssDatatype) {
   std::string error;
   std::unique_ptr<DeclarativeContentCssPredicate> predicate =
-      DeclarativeContentCssPredicate::Create(
-          nullptr, *base::test::ParseJsonDeprecated("\"selector\""), &error);
+      DeclarativeContentCssPredicate::Create(nullptr, base::Value("selector"),
+                                             &error);
   EXPECT_THAT(error, HasSubstr("invalid type"));
   EXPECT_FALSE(predicate);
 }
@@ -129,8 +129,7 @@ TEST(DeclarativeContentCssPredicateTest, CssPredicate) {
   std::string error;
   std::unique_ptr<DeclarativeContentCssPredicate> predicate =
       DeclarativeContentCssPredicate::Create(
-          nullptr, *base::test::ParseJsonDeprecated("[\"input\", \"a\"]"),
-          &error);
+          nullptr, base::test::ParseJson("[\"input\", \"a\"]"), &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(predicate);
 

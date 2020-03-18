@@ -38,6 +38,7 @@ source_set("hash") {
     "../meta:type_traits",
     "../numeric:int128",
     "../strings",
+    "../strings:cord",
     "../types:optional",
     "../types:variant",
     "../utility",

@@ -80,6 +80,7 @@ class MenuListSelectType final : public SelectType {
   void DidDetachLayoutTree() override;
   void DidRecalcStyle(const StyleRecalcChange change) override;
   void DidSetSuggestedOption(HTMLOptionElement* option) override;
+  void SaveLastSelection() override;
 
   void UpdateTextStyle() override { UpdateTextStyleInternal(); }
   void UpdateTextStyleAndContent() override;
@@ -234,7 +235,7 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
         // when we call onChange during selectOption, which gets called
         // from selectOptionByPopup, which gets called after the user
         // makes a selection from the menu.
-        select_->SaveLastSelection();
+        SaveLastSelection();
         // TODO(lanwei): Will check if we need to add
         // InputDeviceCapabilities here when select menu list gets
         // focus, see https://crbug.com/476530.
@@ -284,7 +285,7 @@ bool MenuListSelectType::HandlePopupOpenKeyboardEvent() {
   // dispatching change events during SelectOption, which gets called from
   // SelectOptionByPopup, which gets called after the user makes a selection
   // from the menu.
-  select_->SaveLastSelection();
+  SaveLastSelection();
   ShowPopup();
   return true;
 }
@@ -401,6 +402,10 @@ void MenuListSelectType::DidSetSuggestedOption(HTMLOptionElement*) {
   UpdateTextStyleAndContent();
   if (PopupIsVisible())
     popup_->UpdateFromElement(PopupMenu::kBySelectionChange);
+}
+
+void MenuListSelectType::SaveLastSelection() {
+  select_->last_on_change_option_ = select_->SelectedOption();
 }
 
 void MenuListSelectType::DidDetachLayoutTree() {
@@ -609,6 +614,7 @@ class ListBoxSelectType final : public SelectType {
   explicit ListBoxSelectType(HTMLSelectElement& select) : SelectType(select) {}
   bool DefaultEventHandler(const Event& event) override;
   void DidSetSuggestedOption(HTMLOptionElement* option) override;
+  void SaveLastSelection() override;
   void SelectAll() override;
   void SaveListboxActiveSelection() override;
   void HandleMouseRelease() override;
@@ -822,7 +828,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
       // Save the selection so it can be compared to the new selection
       // when dispatching change events immediately after making the new
       // selection.
-      select_->SaveLastSelection();
+      SaveLastSelection();
 
       select_->SetActiveSelectionEnd(end_option);
 
@@ -893,6 +899,15 @@ void ListBoxSelectType::DidSetSuggestedOption(HTMLOptionElement* option) {
     select_->ScrollToOption(option);
 }
 
+void ListBoxSelectType::SaveLastSelection() {
+  select_->last_on_change_selection_.clear();
+  for (auto& element : select_->GetListItems()) {
+    auto* option_element = DynamicTo<HTMLOptionElement>(element.Get());
+    select_->last_on_change_selection_.push_back(option_element &&
+                                                 option_element->Selected());
+  }
+}
+
 void ListBoxSelectType::UpdateMultiSelectFocus() {
   if (!select_->is_multiple_)
     return;
@@ -913,7 +928,7 @@ void ListBoxSelectType::SelectAll() {
 
   // Save the selection so it can be compared to the new selectAll selection
   // when dispatching change events.
-  select_->SaveLastSelection();
+  SaveLastSelection();
 
   active_selection_state_ = true;
   select_->SetActiveSelectionAnchor(NextSelectableOption(nullptr));
@@ -956,7 +971,7 @@ void ListBoxSelectType::UpdateSelectedState(HTMLOptionElement* clicked_option,
   DCHECK(clicked_option);
   // Save the selection so it can be compared to the new selection when
   // dispatching change events during mouseup, or after autoscroll finishes.
-  select_->SaveLastSelection();
+  SaveLastSelection();
 
   active_selection_state_ = true;
 

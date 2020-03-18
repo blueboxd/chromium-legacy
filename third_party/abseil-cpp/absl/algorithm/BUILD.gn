@@ -25,6 +25,7 @@ source_set("algorithm") {
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   public = [ "algorithm.h" ]
+  deps = [ "../base:config" ]
 }
 
 source_set("container") {

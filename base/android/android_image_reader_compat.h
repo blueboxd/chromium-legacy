@@ -22,9 +22,6 @@ class BASE_EXPORT AndroidImageReader {
   // Thread safe GetInstance.
   static AndroidImageReader& GetInstance();
 
-  // Disable image reader support.
-  static void DisableSupport();
-
   // Check if the image reader usage is supported. This function returns TRUE
   // if android version is >=OREO, image reader support is not disabled and all
   // the required functions are loaded.
@@ -67,7 +64,6 @@ class BASE_EXPORT AndroidImageReader {
   AndroidImageReader();
   bool LoadFunctions();
 
-  static bool disable_support_;
   bool is_supported_;
   pAImage_delete AImage_delete_;
   pAImage_deleteAsync AImage_deleteAsync_;

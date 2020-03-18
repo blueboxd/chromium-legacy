@@ -100,13 +100,16 @@ TEST(ProtocolUtilsTest, CreateInitialScriptActionsRequest) {
   EXPECT_TRUE(
       request.ParseFromString(ProtocolUtils::CreateInitialScriptActionsRequest(
           "script_path", GURL("http://example.com/"), trigger_context,
-          "global_payload", "script_payload", CreateClientContextProto())));
+          "global_payload", "script_payload", CreateClientContextProto(),
+          "accountsha")));
 
   AssertClientContext(request.client_context());
   EXPECT_THAT(request.client_context().experiment_ids(), Eq("1,2,3"));
   EXPECT_TRUE(request.client_context().is_cct());
   EXPECT_FALSE(request.client_context().is_onboarding_shown());
   EXPECT_FALSE(request.client_context().is_direct_action());
+  EXPECT_THAT(request.client_context().accounts_matching_status(),
+              Eq(ClientContextProto::UNKNOWN));
 
   const InitialScriptActionsRequestProto& initial = request.initial_request();
   EXPECT_THAT(initial.query().script_path(), ElementsAre("script_path"));
@@ -130,16 +133,20 @@ TEST(ProtocolUtilsTest, TestCreateInitialScriptActionsRequestFlags) {
   trigger_context_flags.SetCCT(true);
   trigger_context_flags.SetOnboardingShown(true);
   trigger_context_flags.SetDirectAction(true);
+  trigger_context_flags.SetCallerAccountHash("accountsha");
 
   EXPECT_TRUE(
       request.ParseFromString(ProtocolUtils::CreateInitialScriptActionsRequest(
           "script_path", GURL("http://example.com/"), trigger_context_flags,
-          "global_payload", "script_payload", CreateClientContextProto())));
+          "global_payload", "script_payload", CreateClientContextProto(),
+          "accountsha")));
 
   AssertClientContext(request.client_context());
   EXPECT_TRUE(request.client_context().is_cct());
   EXPECT_TRUE(request.client_context().is_onboarding_shown());
   EXPECT_TRUE(request.client_context().is_direct_action());
+  EXPECT_THAT(request.client_context().accounts_matching_status(),
+              Eq(ClientContextProto::ACCOUNTS_MATCHING));
 
   // Without flags.
   TriggerContextImpl trigger_context_no_flags(parameters, std::string());
@@ -147,12 +154,42 @@ TEST(ProtocolUtilsTest, TestCreateInitialScriptActionsRequestFlags) {
   EXPECT_TRUE(
       request.ParseFromString(ProtocolUtils::CreateInitialScriptActionsRequest(
           "script_path", GURL("http://example.com/"), trigger_context_no_flags,
-          "global_payload", "script_payload", CreateClientContextProto())));
+          "global_payload", "script_payload", CreateClientContextProto(),
+          "accountsha")));
 
   AssertClientContext(request.client_context());
   EXPECT_FALSE(request.client_context().is_cct());
   EXPECT_FALSE(request.client_context().is_onboarding_shown());
   EXPECT_FALSE(request.client_context().is_direct_action());
+  EXPECT_THAT(request.client_context().accounts_matching_status(),
+              Eq(ClientContextProto::UNKNOWN));
+}
+
+TEST(ProtocolUtilsTest,
+     TestCreateInitialScriptActionsRequestAccountsNotMatching) {
+  std::map<std::string, std::string> parameters;
+
+  ScriptActionRequestProto request;
+
+  // With flags.
+  TriggerContextImpl trigger_context_flags(parameters, std::string());
+  trigger_context_flags.SetCCT(true);
+  trigger_context_flags.SetOnboardingShown(true);
+  trigger_context_flags.SetDirectAction(true);
+  trigger_context_flags.SetCallerAccountHash("accountsha");
+
+  EXPECT_TRUE(
+      request.ParseFromString(ProtocolUtils::CreateInitialScriptActionsRequest(
+          "script_path", GURL("http://example.com/"), trigger_context_flags,
+          "global_payload", "script_payload", CreateClientContextProto(),
+          "differentaccountsha")));
+
+  AssertClientContext(request.client_context());
+  EXPECT_TRUE(request.client_context().is_cct());
+  EXPECT_TRUE(request.client_context().is_onboarding_shown());
+  EXPECT_TRUE(request.client_context().is_direct_action());
+  EXPECT_THAT(request.client_context().accounts_matching_status(),
+              Eq(ClientContextProto::ACCOUNTS_NOT_MATCHING));
 }
 
 TEST(ProtocolUtilsTest, CreateNextScriptActionsRequest) {
@@ -167,7 +204,7 @@ TEST(ProtocolUtilsTest, CreateNextScriptActionsRequest) {
   EXPECT_TRUE(
       request.ParseFromString(ProtocolUtils::CreateNextScriptActionsRequest(
           trigger_context, "global_payload", "script_payload",
-          processed_actions, CreateClientContextProto())));
+          processed_actions, CreateClientContextProto(), "accountsha")));
 
   AssertClientContext(request.client_context());
   EXPECT_THAT(request.client_context().experiment_ids(), Eq("1,2,3"));
@@ -187,16 +224,19 @@ TEST(ProtocolUtilsTest, TestCreateNextScriptActionsRequestFlags) {
   trigger_context_flags.SetCCT(true);
   trigger_context_flags.SetOnboardingShown(true);
   trigger_context_flags.SetDirectAction(true);
+  trigger_context_flags.SetCallerAccountHash("accountsha");
 
   EXPECT_TRUE(
       request.ParseFromString(ProtocolUtils::CreateNextScriptActionsRequest(
           trigger_context_flags, "global_payload", "script_payload",
-          processed_actions, CreateClientContextProto())));
+          processed_actions, CreateClientContextProto(), "accountsha")));
 
   AssertClientContext(request.client_context());
   EXPECT_TRUE(request.client_context().is_cct());
   EXPECT_TRUE(request.client_context().is_onboarding_shown());
   EXPECT_TRUE(request.client_context().is_direct_action());
+  EXPECT_THAT(request.client_context().accounts_matching_status(),
+              Eq(ClientContextProto::ACCOUNTS_MATCHING));
 
   // Without flags.
   TriggerContextImpl trigger_context_no_flags(parameters, std::string());
@@ -204,12 +244,14 @@ TEST(ProtocolUtilsTest, TestCreateNextScriptActionsRequestFlags) {
   EXPECT_TRUE(
       request.ParseFromString(ProtocolUtils::CreateNextScriptActionsRequest(
           trigger_context_no_flags, "global_payload", "script_payload",
-          processed_actions, CreateClientContextProto())));
+          processed_actions, CreateClientContextProto(), "accountsha")));
 
   AssertClientContext(request.client_context());
   EXPECT_FALSE(request.client_context().is_cct());
   EXPECT_FALSE(request.client_context().is_onboarding_shown());
   EXPECT_FALSE(request.client_context().is_direct_action());
+  EXPECT_THAT(request.client_context().accounts_matching_status(),
+              Eq(ClientContextProto::UNKNOWN));
 }
 
 TEST(ProtocolUtilsTest, CreateGetScriptsRequest) {
@@ -221,14 +263,16 @@ TEST(ProtocolUtilsTest, CreateGetScriptsRequest) {
 
   SupportsScriptRequestProto request;
   EXPECT_TRUE(request.ParseFromString(ProtocolUtils::CreateGetScriptsRequest(
-      GURL("http://example.com/"), trigger_context,
-      CreateClientContextProto())));
+      GURL("http://example.com/"), trigger_context, CreateClientContextProto(),
+      "accountsha")));
 
   AssertClientContext(request.client_context());
   EXPECT_THAT(request.client_context().experiment_ids(), Eq("1,2,3"));
   EXPECT_FALSE(request.client_context().is_cct());
   EXPECT_FALSE(request.client_context().is_onboarding_shown());
   EXPECT_TRUE(request.client_context().is_direct_action());
+  EXPECT_THAT(request.client_context().accounts_matching_status(),
+              Eq(ClientContextProto::UNKNOWN));
 
   EXPECT_EQ("http://example.com/", request.url());
   ASSERT_EQ(2, request.script_parameters_size());
@@ -247,27 +291,32 @@ TEST(ProtocolUtilsTest, TestCreateGetScriptsRequestFlags) {
   trigger_context_flags.SetCCT(true);
   trigger_context_flags.SetOnboardingShown(true);
   trigger_context_flags.SetDirectAction(true);
+  trigger_context_flags.SetCallerAccountHash("accountsha");
 
   EXPECT_TRUE(request.ParseFromString(ProtocolUtils::CreateGetScriptsRequest(
       GURL("http://example.com/"), trigger_context_flags,
-      CreateClientContextProto())));
+      CreateClientContextProto(), "accountsha")));
 
   AssertClientContext(request.client_context());
   EXPECT_TRUE(request.client_context().is_cct());
   EXPECT_TRUE(request.client_context().is_onboarding_shown());
   EXPECT_TRUE(request.client_context().is_direct_action());
+  EXPECT_THAT(request.client_context().accounts_matching_status(),
+              Eq(ClientContextProto::ACCOUNTS_MATCHING));
 
   // Without flags.
   TriggerContextImpl trigger_context_no_flags(parameters, std::string());
 
   EXPECT_TRUE(request.ParseFromString(ProtocolUtils::CreateGetScriptsRequest(
       GURL("http://example.com/"), trigger_context_no_flags,
-      CreateClientContextProto())));
+      CreateClientContextProto(), "accountsha")));
 
   AssertClientContext(request.client_context());
   EXPECT_FALSE(request.client_context().is_cct());
   EXPECT_FALSE(request.client_context().is_onboarding_shown());
   EXPECT_FALSE(request.client_context().is_direct_action());
+  EXPECT_THAT(request.client_context().accounts_matching_status(),
+              Eq(ClientContextProto::UNKNOWN));
 }
 
 TEST(ProtocolUtilsTest, AddScriptIgnoreInvalid) {

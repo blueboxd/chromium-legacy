@@ -13,17 +13,18 @@
 //   limitations under the License.
 
 #if !defined(HAS_STRPTIME)
-# if !defined(_MSC_VER) && !defined(__MINGW32__)
-#  define HAS_STRPTIME 1  // assume everyone has strptime() except windows
-# endif
+#if !defined(_MSC_VER) && !defined(__MINGW32__)
+#define HAS_STRPTIME 1  // assume everyone has strptime() except windows
+#endif
 #endif
 
 #if defined(HAS_STRPTIME) && HAS_STRPTIME
-# if !defined(_XOPEN_SOURCE)
-#  define _XOPEN_SOURCE  // Definedness suffices for strptime.
-# endif
+#if !defined(_XOPEN_SOURCE)
+#define _XOPEN_SOURCE  // Definedness suffices for strptime.
+#endif
 #endif
 
+#include "absl/base/config.h"
 #include "absl/time/internal/cctz/include/cctz/time_zone.h"
 
 // Include time.h directly since, by C++ standards, ctime doesn't have to
@@ -48,6 +49,7 @@
 #include "time_zone_if.h"
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 namespace time_internal {
 namespace cctz {
 namespace detail {
@@ -187,7 +189,7 @@ void FormatTM(std::string* out, const std::string& fmt, const std::tm& tm) {
   // strftime(3) returns the number of characters placed in the output
   // array (which may be 0 characters).  It also returns 0 to indicate
   // an error, like the array wasn't large enough.  To accommodate this,
-  // the following code grows the buffer size from 2x the format std::string
+  // the following code grows the buffer size from 2x the format string
   // length up to 32x.
   for (std::size_t i = 2; i != 32; i *= 2) {
     std::size_t buf_size = fmt.size() * i;
@@ -502,8 +504,9 @@ std::string format(const std::string& format, const time_point<seconds>& tp,
           bp = ep;
           if (n > 0) {
             if (n > kDigits10_64) n = kDigits10_64;
-            bp = Format64(bp, n, (n > 15) ? fs.count() * kExp10[n - 15]
-                                          : fs.count() / kExp10[15 - n]);
+            bp = Format64(bp, n,
+                          (n > 15) ? fs.count() * kExp10[n - 15]
+                                   : fs.count() / kExp10[15 - n]);
             if (*np == 'S') *--bp = '.';
           }
           if (*np == 'S') bp = Format02d(bp, al.cs.second());
@@ -720,10 +723,9 @@ bool parse(const std::string& format, const std::string& input,
         data = ParseZone(data, &zone);
         continue;
       case 's':
-        data = ParseInt(data, 0,
-                        std::numeric_limits<std::int_fast64_t>::min(),
-                        std::numeric_limits<std::int_fast64_t>::max(),
-                        &percent_s);
+        data =
+            ParseInt(data, 0, std::numeric_limits<std::int_fast64_t>::min(),
+                     std::numeric_limits<std::int_fast64_t>::max(), &percent_s);
         if (data != nullptr) saw_percent_s = true;
         continue;
       case ':':
@@ -837,7 +839,7 @@ bool parse(const std::string& format, const std::string& input,
   // Skip any remaining whitespace.
   while (std::isspace(*data)) ++data;
 
-  // parse() must consume the entire input std::string.
+  // parse() must consume the entire input string.
   if (*data != '\0') {
     if (err != nullptr) *err = "Illegal trailing data in input string";
     return false;
@@ -916,4 +918,5 @@ bool parse(const std::string& format, const std::string& input,
 }  // namespace detail
 }  // namespace cctz
 }  // namespace time_internal
+ABSL_NAMESPACE_END
 }  // namespace absl

@@ -717,7 +717,7 @@ luci.console_view(
             short_name = 'rel',
         ),
         luci.console_view_entry(
-            builder = 'ci/linux-bfcache-debug',
+            builder = 'ci/linux-bfcache-rel',
             category = 'week15a|linux',
             short_name = 'bfc',
         ),

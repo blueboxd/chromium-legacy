@@ -57,15 +57,6 @@ class PLATFORM_EXPORT FontData : public RefCounted<FontData> {
   DISALLOW_COPY_AND_ASSIGN(FontData);
 };
 
-#define DEFINE_FONT_DATA_TYPE_CASTS(thisType, predicate)     \
-  template <typename T>                                      \
-  inline thisType* To##thisType(const scoped_refptr<T>& fontData) { \
-    return To##thisType(fontData.get());                     \
-  }                                                          \
-  DEFINE_TYPE_CASTS(thisType, FontData, fontData,            \
-                    fontData->IsSegmented() == predicate,    \
-                    fontData.IsSegmented() == predicate)
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_DATA_H_

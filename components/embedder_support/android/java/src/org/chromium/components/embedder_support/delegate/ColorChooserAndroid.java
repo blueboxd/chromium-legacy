@@ -7,7 +7,6 @@ package org.chromium.components.embedder_support.delegate;
 import android.content.Context;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -38,10 +37,7 @@ public class ColorChooserAndroid {
     }
 
     private void openColorChooser() {
-        // This triggers LayoutInflater, which may access the disk.
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            mDialog.show();
-        }
+        mDialog.show();
     }
 
     @CalledByNative

@@ -297,9 +297,9 @@ PhysicalRect NGBoxFragmentPainter::SelfInkOverflow() const {
 }
 
 PhysicalRect NGBoxFragmentPainter::ContentsInkOverflow() const {
-  const NGPhysicalFragment& fragment = PhysicalFragment();
-  return ToLayoutBox(fragment.GetLayoutObject())
-      ->PhysicalContentsVisualOverflowRect();
+  if (const LayoutObject* layout_object = box_fragment_.GetLayoutObject())
+    return ToLayoutBox(layout_object)->PhysicalContentsVisualOverflowRect();
+  return box_fragment_.ContentsInkOverflow();
 }
 
 void NGBoxFragmentPainter::Paint(const PaintInfo& paint_info) {
@@ -490,7 +490,7 @@ void NGBoxFragmentPainter::PaintObject(
                               paint_offset);
         }
       } else {
-        PaintBlockChildren(paint_info);
+        PaintBlockChildren(paint_info, paint_offset);
       }
     }
 
@@ -537,7 +537,8 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
   // When the layout-tree gets into a bad state, we can end up trying to paint
   // a fragment with inline children, without a paint fragment. See:
   // http://crbug.com/1022545
-  if ((!paint_fragment_ && !items_) || layout_object->NeedsLayout()) {
+  if ((!paint_fragment_ && !items_) ||
+      (layout_object && layout_object->NeedsLayout())) {
     NOTREACHED();
     return;
   }
@@ -560,9 +561,6 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
   if (!paint_info.GetCullRect().Intersects(content_ink_rect.ToLayoutRect()))
     return;
 
-  DCHECK(layout_object->IsLayoutBlockFlow());
-  const auto& layout_block = To<LayoutBlock>(*layout_object);
-  DCHECK(layout_block.ChildrenInline());
   if (paint_fragment_) {
     NGInlineCursor children(*paint_fragment_);
     PaintLineBoxChildren(&children, paint_info.ForDescendants(), paint_offset);
@@ -573,7 +571,8 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
   PaintLineBoxChildren(&children, paint_info.ForDescendants(), paint_offset);
 }
 
-void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info) {
+void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info,
+                                              PhysicalOffset paint_offset) {
   DCHECK(!box_fragment_.IsInlineFormattingContext());
   PaintInfo paint_info_for_descendants = paint_info.ForDescendants();
   for (const NGLink& child : box_fragment_.Children()) {
@@ -585,6 +584,19 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info) {
 
     const auto& box_child_fragment = To<NGPhysicalBoxFragment>(child_fragment);
     if (box_child_fragment.CanTraverse()) {
+      if (!box_child_fragment.GetLayoutObject()) {
+        // It's normally FragmentData that provides us with the paint offset.
+        // FragmentData is (at least currently) associated with a LayoutObject.
+        // If we have no LayoutObject, we have no FragmentData, so we need to
+        // calculate the offset on our own (which is very simple, anyway).
+        // Bypass Paint() and jump directly to PaintObject(), to skip the code
+        // that assumes that we have a LayoutObject (and FragmentData).
+        PhysicalOffset child_offset = paint_offset + child.offset;
+        NGBoxFragmentPainter(box_child_fragment)
+            .PaintObject(paint_info, child_offset);
+        continue;
+      }
+
       NGBoxFragmentPainter(box_child_fragment)
           .Paint(paint_info_for_descendants);
       continue;
@@ -1207,7 +1219,7 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
 
   // The only way an inline could paint like this is if it has a layer.
   const auto* layout_object = box_fragment_.GetLayoutObject();
-  DCHECK(layout_object->IsLayoutBlock() ||
+  DCHECK(!layout_object || layout_object->IsLayoutBlock() ||
          (layout_object->IsLayoutInline() && layout_object->HasLayer()));
 
   // if (paint_info.phase == PaintPhase::kForeground && paint_info.IsPrinting())
@@ -1219,7 +1231,7 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
     return;
 
   if (paint_info.phase == PaintPhase::kForcedColorsModeBackplate &&
-      layout_object->GetDocument().InForcedColorsMode()) {
+      box_fragment_.GetDocument().InForcedColorsMode()) {
     PaintBackplate(children, paint_info, paint_offset);
     return;
   }
@@ -1629,14 +1641,6 @@ BoxPainterBase::FillLayerInfo NGBoxFragmentPainter::GetFillLayerInfo(
       is_painting_scrolling_background);
 }
 
-bool NGBoxFragmentPainter::IsInSelfHitTestingPhase(HitTestAction action) const {
-  // TODO(layout-dev): We should set an IsContainingBlock flag on
-  // NGPhysicalBoxFragment, instead of routing back to LayoutObject.
-  if (const auto* box = ToLayoutBoxOrNull(PhysicalFragment().GetLayoutObject()))
-    return box->IsInSelfHitTestingPhase(action);
-  return action == kHitTestForeground;
-}
-
 bool NGBoxFragmentPainter::HitTestContext::AddNodeToResult(
     Node* node,
     const PhysicalRect& bounds_rect,
@@ -1661,14 +1665,16 @@ bool NGBoxFragmentPainter::NodeAtPoint(const HitTestContext& hit_test,
   const PhysicalSize& size = box_fragment_.Size();
   const ComputedStyle& style = box_fragment_.Style();
 
-  bool hit_test_self = IsInSelfHitTestingPhase(hit_test.action);
+  bool hit_test_self = fragment.IsInSelfHitTestingPhase(hit_test.action);
 
   if (hit_test_self && box_fragment_.HasOverflowClip() &&
       HitTestOverflowControl(hit_test, physical_offset))
     return true;
 
-  bool skip_children = hit_test.result->GetHitTestRequest().GetStopNode() ==
-                       PhysicalFragment().GetLayoutObject();
+  const LayoutObject* layout_object = PhysicalFragment().GetLayoutObject();
+  bool skip_children =
+      layout_object &&
+      layout_object == hit_test.result->GetHitTestRequest().GetStopNode();
   if (!skip_children && box_fragment_.ShouldClipOverflow()) {
     // PaintLayer::HitTestContentsForFragments checked the fragments'
     // foreground rect for intersection if a layer is self painting,

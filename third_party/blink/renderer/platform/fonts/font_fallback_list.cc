@@ -69,7 +69,7 @@ void FontFallbackList::ReleaseFontData() {
     if (!font_list_[i]->IsCustomFont()) {
       DCHECK(!font_list_[i]->IsSegmented());
       FontCache::GetFontCache()->ReleaseFontData(
-          ToSimpleFontData(font_list_[i]));
+          To<SimpleFontData>(font_list_[i].get()));
     }
   }
   shape_cache_.reset();  // Clear the weak pointer to the cache instance.
@@ -125,8 +125,8 @@ const SimpleFontData* FontFallbackList::DeterminePrimarySimpleFontData(
       return last_resort_fallback;
     }
 
-    if (font_data->IsSegmented() &&
-        !ToSegmentedFontData(font_data)->ContainsCharacter(kSpaceCharacter))
+    const auto* segmented = DynamicTo<SegmentedFontData>(font_data);
+    if (segmented && !segmented->ContainsCharacter(kSpaceCharacter))
       continue;
 
     const SimpleFontData* font_data_for_space =
@@ -139,8 +139,7 @@ const SimpleFontData* FontFallbackList::DeterminePrimarySimpleFontData(
     if (!font_data_for_space->IsLoadingFallback())
       return font_data_for_space;
 
-    if (font_data->IsSegmented()) {
-      const SegmentedFontData* segmented = ToSegmentedFontData(font_data);
+    if (segmented) {
       for (unsigned i = 0; i < segmented->NumFaces(); i++) {
         const SimpleFontData* range_font_data =
             segmented->FaceAt(i)->FontData();
@@ -223,8 +222,9 @@ FallbackListCompositeKey FontFallbackList::CompositeKey(
       if (result) {
         bool is_unique_match = false;
         key.Add(font_description.CacheKey(params, is_unique_match));
-        if (!result->IsSegmented() && !result->IsCustomFont())
-          FontCache::GetFontCache()->ReleaseFontData(ToSimpleFontData(result));
+        auto* font_data = DynamicTo<SimpleFontData>(result.get());
+        if (!font_data && !result->IsCustomFont())
+          FontCache::GetFontCache()->ReleaseFontData(font_data);
       }
     }
     current_family = current_family->Next();

@@ -146,5 +146,20 @@ TEST(TriggerContextText, MergeDirectAction) {
   EXPECT_TRUE(one_direct_action->is_direct_action());
 }
 
+TEST(TriggerContextText, MergeAccountsMatchingStatusTest) {
+  auto empty = TriggerContext::CreateEmpty();
+
+  auto all_empty = TriggerContext::Merge({empty.get(), empty.get()});
+  EXPECT_EQ(all_empty->get_caller_account_hash(), "");
+
+  TriggerContextImpl context_matching;
+  context_matching.SetCallerAccountHash("accountsha");
+  auto one_with_accounts_matching =
+      TriggerContext::Merge({empty.get(), &context_matching, empty.get()});
+
+  EXPECT_EQ(one_with_accounts_matching->get_caller_account_hash(),
+            "accountsha");
+}
+
 }  // namespace
 }  // namespace autofill_assistant

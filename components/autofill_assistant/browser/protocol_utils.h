@@ -27,7 +27,8 @@ class ProtocolUtils {
   static std::string CreateGetScriptsRequest(
       const GURL& url,
       const TriggerContext& trigger_context,
-      const ClientContextProto& client_context);
+      const ClientContextProto& client_context,
+      const std::string& client_account);
 
   // Convert |script_proto| to a script struct and if the script is valid, add
   // it to |scripts|.
@@ -44,7 +45,8 @@ class ProtocolUtils {
       const TriggerContext& trigger_context,
       const std::string& global_payload,
       const std::string& script_payload,
-      const ClientContextProto& client_context);
+      const ClientContextProto& client_context,
+      const std::string& client_account);
 
   // Create request to get next sequence of actions for a script.
   static std::string CreateNextScriptActionsRequest(
@@ -52,7 +54,8 @@ class ProtocolUtils {
       const std::string& global_payload,
       const std::string& script_payload,
       const std::vector<ProcessedActionProto>& processed_actions,
-      const ClientContextProto& client_context);
+      const ClientContextProto& client_context,
+      const std::string& client_account);
 
   // Parse actions from the given |response|, which can be an empty string.
   //

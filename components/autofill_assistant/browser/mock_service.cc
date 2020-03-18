@@ -17,7 +17,8 @@ MockService::MockService()
                   nullptr,
                   "en_US",
                   "",
-                  DeviceContext()) {}
+                  DeviceContext(),
+                  nullptr) {}
 MockService::~MockService() {}
 
 }  // namespace autofill_assistant

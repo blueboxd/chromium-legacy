@@ -52,14 +52,14 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   // mojom::AudioFocusManager.
   void RequestAudioFocus(
       mojo::PendingReceiver<mojom::AudioFocusRequestClient> receiver,
-      mojo::PendingRemote<mojom::MediaSession> media_session,
+      mojo::PendingRemote<mojom::MediaSession> session,
       mojom::MediaSessionInfoPtr session_info,
       mojom::AudioFocusType type,
       RequestAudioFocusCallback callback) override;
   void RequestGroupedAudioFocus(
       const base::UnguessableToken& request_id,
       mojo::PendingReceiver<mojom::AudioFocusRequestClient> receiver,
-      mojo::PendingRemote<mojom::MediaSession> media_session,
+      mojo::PendingRemote<mojom::MediaSession> session,
       mojom::MediaSessionInfoPtr session_info,
       mojom::AudioFocusType type,
       const base::UnguessableToken& group_id,

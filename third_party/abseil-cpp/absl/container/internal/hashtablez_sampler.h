@@ -51,6 +51,7 @@
 #include "absl/utility/utility.h"
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 namespace container_internal {
 
 // Stores information about a sampled hashtable.  All mutations to this *must*
@@ -97,7 +98,7 @@ struct HashtablezInfo {
 };
 
 inline void RecordRehashSlow(HashtablezInfo* info, size_t total_probe_length) {
-#if SWISSTABLE_HAVE_SSE2
+#if ABSL_INTERNAL_RAW_HASH_SET_HAVE_SSE2
   total_probe_length /= 16;
 #else
   total_probe_length /= 8;
@@ -179,23 +180,30 @@ class HashtablezInfoHandle {
   HashtablezInfo* info_;
 };
 
-#if ABSL_PER_THREAD_TLS == 1
+#if defined(ABSL_INTERNAL_HASHTABLEZ_SAMPLE)
+#error ABSL_INTERNAL_HASHTABLEZ_SAMPLE cannot be directly set
+#endif  // defined(ABSL_INTERNAL_HASHTABLEZ_SAMPLE)
+
+#if (ABSL_PER_THREAD_TLS == 1) && !defined(ABSL_BUILD_DLL) && \
+    !defined(ABSL_CONSUME_DLL)
+#define ABSL_INTERNAL_HASHTABLEZ_SAMPLE
+#endif
+
+#if defined(ABSL_INTERNAL_HASHTABLEZ_SAMPLE)
 extern ABSL_PER_THREAD_TLS_KEYWORD int64_t global_next_sample;
 #endif  // ABSL_PER_THREAD_TLS
 
 // Returns an RAII sampling handle that manages registration and unregistation
 // with the global sampler.
 inline HashtablezInfoHandle Sample() {
-#if ABSL_PER_THREAD_TLS == 0
-  static auto* mu = new absl::Mutex;
-  static int64_t global_next_sample = 0;
-  absl::MutexLock l(mu);
-#endif  // !ABSL_HAVE_THREAD_LOCAL
-
+#if defined(ABSL_INTERNAL_HASHTABLEZ_SAMPLE)
   if (ABSL_PREDICT_TRUE(--global_next_sample > 0)) {
     return HashtablezInfoHandle(nullptr);
   }
   return HashtablezInfoHandle(SampleSlow(&global_next_sample));
+#else
+  return HashtablezInfoHandle(nullptr);
+#endif  // !ABSL_PER_THREAD_TLS
 }
 
 // Holds samples and their associated stack traces with a soft limit of
@@ -280,9 +288,10 @@ void SetHashtablezMaxSamples(int32_t max);
 // initialization of static storage duration objects.
 // The definition of this constant is weak, which allows us to inject a
 // different value for it at link time.
-extern "C" const bool kAbslContainerInternalSampleEverything;
+extern "C" bool AbslContainerInternalSampleEverything();
 
 }  // namespace container_internal
+ABSL_NAMESPACE_END
 }  // namespace absl
 
 #endif  // ABSL_CONTAINER_INTERNAL_HASHTABLEZ_SAMPLER_H_

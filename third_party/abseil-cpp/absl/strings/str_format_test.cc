@@ -10,6 +10,7 @@
 #include "absl/strings/string_view.h"
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 namespace {
 using str_format_internal::FormatArgImpl;
 
@@ -241,7 +242,7 @@ class TempFile {
 
   std::FILE* file() const { return file_; }
 
-  // Read the file into a std::string.
+  // Read the file into a string.
   std::string ReadFile() {
     std::fseek(file_, 0, SEEK_END);
     int size = std::ftell(file_);
@@ -344,7 +345,7 @@ TEST(StrFormat, BehavesAsDocumented) {
   EXPECT_EQ(StrFormat("%c", int{'a'}), "a");
   EXPECT_EQ(StrFormat("%c", long{'a'}), "a");  // NOLINT
   EXPECT_EQ(StrFormat("%c", uint64_t{'a'}), "a");
-  //     "s" - std::string       Eg: "C" -> "C", std::string("C++") -> "C++"
+  //     "s" - string       Eg: "C" -> "C", std::string("C++") -> "C++"
   //           Formats std::string, char*, string_view, and Cord.
   EXPECT_EQ(StrFormat("%s", "C"), "C");
   EXPECT_EQ(StrFormat("%s", std::string("C++")), "C++");
@@ -449,7 +450,7 @@ struct SummarizeConsumer {
     if (conv.precision.is_from_arg()) {
       *out += "." + std::to_string(conv.precision.get_from_arg()) + "$*";
     }
-    *out += conv.conv.Char();
+    *out += FormatConversionCharToChar(conv.conv);
     *out += "}";
     return true;
   }
@@ -622,6 +623,7 @@ TEST_F(FormatWrapperTest, ParsedFormat) {
 }
 
 }  // namespace
+ABSL_NAMESPACE_END
 }  // namespace absl
 
 // Some codegen thunks that we can use to easily dump the generated assembly for

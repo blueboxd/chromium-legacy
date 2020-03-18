@@ -71,6 +71,7 @@
 #include "absl/time/time.h"
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 
 namespace {
 
@@ -197,11 +198,11 @@ inline int64_t DecodeTwosComp(uint64_t v) { return absl::bit_cast<int64_t>(v); }
 // double as overflow cases.
 inline bool SafeAddRepHi(double a_hi, double b_hi, Duration* d) {
   double c = a_hi + b_hi;
-  if (c >= kint64max) {
+  if (c >= static_cast<double>(kint64max)) {
     *d = InfiniteDuration();
     return false;
   }
-  if (c <= kint64min) {
+  if (c <= static_cast<double>(kint64min)) {
     *d = -InfiniteDuration();
     return false;
   }
@@ -873,12 +874,12 @@ bool ParseDuration(const std::string& dur_string, Duration* d) {
     ++start;
   }
 
-  // Can't parse a duration from an empty std::string.
+  // Can't parse a duration from an empty string.
   if (*start == '\0') {
     return false;
   }
 
-  // Special case for a std::string of "0".
+  // Special case for a string of "0".
   if (*start == '0' && *(start + 1) == '\0') {
     *d = ZeroDuration();
     return true;
@@ -906,10 +907,16 @@ bool ParseDuration(const std::string& dur_string, Duration* d) {
   return true;
 }
 
+bool AbslParseFlag(absl::string_view text, Duration* dst, std::string*) {
+  return ParseDuration(std::string(text), dst);
+}
+
+std::string AbslUnparseFlag(Duration d) { return FormatDuration(d); }
 bool ParseFlag(const std::string& text, Duration* dst, std::string* ) {
   return ParseDuration(text, dst);
 }
 
 std::string UnparseFlag(Duration d) { return FormatDuration(d); }
 
+ABSL_NAMESPACE_END
 }  // namespace absl

@@ -46,6 +46,7 @@
 #include "absl/base/thread_annotations.h"
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 namespace base_internal {
 
 class ABSL_LOCKABLE SpinLock {
@@ -225,11 +226,10 @@ inline uint32_t SpinLock::TryLockInternal(uint32_t lock_value,
     }
   }
 
-  if (lockword_.compare_exchange_strong(
+  if (!lockword_.compare_exchange_strong(
           lock_value,
           kSpinLockHeld | lock_value | wait_cycles | sched_disabled_bit,
           std::memory_order_acquire, std::memory_order_relaxed)) {
-  } else {
     base_internal::SchedulingGuard::EnableRescheduling(sched_disabled_bit != 0);
   }
 
@@ -237,6 +237,7 @@ inline uint32_t SpinLock::TryLockInternal(uint32_t lock_value,
 }
 
 }  // namespace base_internal
+ABSL_NAMESPACE_END
 }  // namespace absl
 
 #endif  // ABSL_BASE_INTERNAL_SPINLOCK_H_

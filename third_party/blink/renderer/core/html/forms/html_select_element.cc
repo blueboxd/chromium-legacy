@@ -509,20 +509,6 @@ void HTMLSelectElement::SelectAll() {
   select_type_->SelectAll();
 }
 
-void HTMLSelectElement::SaveLastSelection() {
-  if (UsesMenuList()) {
-    last_on_change_option_ = SelectedOption();
-    return;
-  }
-
-  last_on_change_selection_.clear();
-  for (auto& element : GetListItems()) {
-    auto* option_element = DynamicTo<HTMLOptionElement>(element.Get());
-    last_on_change_selection_.push_back(option_element &&
-                                        option_element->Selected());
-  }
-}
-
 void HTMLSelectElement::SetActiveSelectionAnchor(HTMLOptionElement* option) {
   active_selection_anchor_ = option;
   select_type_->SaveListboxActiveSelection();
@@ -927,7 +913,7 @@ void HTMLSelectElement::DispatchFocusEvent(
   // Save the selection so it can be compared to the new selection when
   // dispatching change events during blur event dispatch.
   if (UsesMenuList())
-    SaveLastSelection();
+    select_type_->SaveLastSelection();
   HTMLFormControlElementWithState::DispatchFocusEvent(old_focused_element, type,
                                                       source_capabilities);
 }

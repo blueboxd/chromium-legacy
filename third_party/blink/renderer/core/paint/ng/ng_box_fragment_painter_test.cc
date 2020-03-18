@@ -6,6 +6,7 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
@@ -44,9 +45,15 @@ TEST_P(NGBoxFragmentPainterTest, ScrollHitTestOrder) {
   )HTML");
   auto& scroller = ToLayoutBox(*GetLayoutObjectByElementId("scroller"));
 
-  const NGPaintFragment& root_fragment = *scroller.PaintFragment();
-  const NGPaintFragment& line_box_fragment = *root_fragment.FirstChild();
-  const NGPaintFragment& text_fragment = *line_box_fragment.FirstChild();
+  const DisplayItemClient& root_fragment =
+      scroller.PaintFragment()
+          ? static_cast<const DisplayItemClient&>(*scroller.PaintFragment())
+          : static_cast<const DisplayItemClient&>(scroller);
+
+  NGInlineCursor cursor;
+  cursor.MoveTo(*scroller.SlowFirstChild());
+  const DisplayItemClient& text_fragment =
+      *cursor.Current().GetDisplayItemClient();
 
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
               ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),

@@ -42,6 +42,16 @@ LayoutFileUploadControl::LayoutFileUploadControl(Element* input)
 
 LayoutFileUploadControl::~LayoutFileUploadControl() = default;
 
+bool LayoutFileUploadControl::IsChildAllowed(LayoutObject* child,
+                                             const ComputedStyle& style) const {
+  const Node* child_node = child->GetNode();
+  // Reject shadow nodes other than UploadButton.
+  if (child_node && child_node->OwnerShadowHost() == GetNode() &&
+      child_node != UploadButton())
+    return false;
+  return LayoutBlockFlow::IsChildAllowed(child, style);
+}
+
 int LayoutFileUploadControl::MaxFilenameWidth() const {
   int upload_button_width =
       (UploadButton() && UploadButton()->GetLayoutBox())

@@ -29,13 +29,14 @@
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
 
-#if SWISSTABLE_HAVE_SSE2
+#if ABSL_INTERNAL_RAW_HASH_SET_HAVE_SSE2
 constexpr int kProbeLength = 16;
 #else
 constexpr int kProbeLength = 8;
 #endif
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 namespace container_internal {
 class HashtablezInfoHandlePeer {
  public:
@@ -168,6 +169,7 @@ TEST(HashtablezInfoTest, RecordRehash) {
   EXPECT_EQ(info.num_erases.load(), 0);
 }
 
+#if defined(ABSL_HASHTABLEZ_SAMPLE)
 TEST(HashtablezSamplerTest, SmallSampleParameter) {
   SetHashtablezEnabled(true);
   SetHashtablezSampleParameter(100);
@@ -211,6 +213,7 @@ TEST(HashtablezSamplerTest, Sample) {
   }
   EXPECT_NEAR(sample_rate, 0.01, 0.005);
 }
+#endif
 
 TEST(HashtablezSamplerTest, Handle) {
   auto& sampler = HashtablezSampler::Global();
@@ -352,4 +355,5 @@ TEST(HashtablezSamplerTest, Callback) {
 
 }  // namespace
 }  // namespace container_internal
+ABSL_NAMESPACE_END
 }  // namespace absl

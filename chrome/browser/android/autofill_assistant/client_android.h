@@ -47,6 +47,7 @@ class ClientAndroid : public Client,
       const base::android::JavaParamRef<jobject>& jcaller,
       const base::android::JavaParamRef<jstring>& jinitial_url,
       const base::android::JavaParamRef<jstring>& jexperiment_ids,
+      const base::android::JavaParamRef<jstring>& jcaller_account,
       const base::android::JavaParamRef<jobjectArray>& parameter_names,
       const base::android::JavaParamRef<jobjectArray>& parameter_values,
       const base::android::JavaParamRef<jobject>& jonboarding_coordinator,
@@ -95,17 +96,18 @@ class ClientAndroid : public Client,
   // Overrides Client
   void AttachUI() override;
   void DestroyUI() override;
-  std::string GetApiKey() override;
-  std::string GetAccountEmailAddress() override;
+  std::string GetApiKey() const override;
+  std::string GetAccountEmailAddress() const override;
   AccessTokenFetcher* GetAccessTokenFetcher() override;
-  autofill::PersonalDataManager* GetPersonalDataManager() override;
-  password_manager::PasswordManagerClient* GetPasswordManagerClient() override;
-  WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
-  std::string GetServerUrl() override;
-  std::string GetLocale() override;
-  std::string GetCountryCode() override;
-  DeviceContext GetDeviceContext() override;
-  content::WebContents* GetWebContents() override;
+  autofill::PersonalDataManager* GetPersonalDataManager() const override;
+  password_manager::PasswordManagerClient* GetPasswordManagerClient()
+      const override;
+  WebsiteLoginFetcher* GetWebsiteLoginFetcher() const override;
+  std::string GetServerUrl() const override;
+  std::string GetLocale() const override;
+  std::string GetCountryCode() const override;
+  DeviceContext GetDeviceContext() const override;
+  content::WebContents* GetWebContents() const override;
   void Shutdown(Metrics::DropOutReason reason) override;
 
   // Overrides AccessTokenFetcher
@@ -141,8 +143,8 @@ class ClientAndroid : public Client,
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
   std::unique_ptr<Controller> controller_;
-  std::unique_ptr<WebsiteLoginFetcher> website_login_fetcher_;
-  password_manager::PasswordManagerClient* password_manager_client_;
+  mutable std::unique_ptr<WebsiteLoginFetcher> website_login_fetcher_;
+  mutable password_manager::PasswordManagerClient* password_manager_client_;
 
   // True if Start() was called. This turns on the tracking of dropouts.
   bool started_ = false;

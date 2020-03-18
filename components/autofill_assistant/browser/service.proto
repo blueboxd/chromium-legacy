@@ -66,6 +66,19 @@ message ClientContextProto {
     optional string model = 3;
   }
   optional DeviceContextProto device_context = 11;
+
+  enum AccountsMatchingStatus {
+    // The account was not present in the intent.
+    UNKNOWN = 0;
+
+    // The account in the intent and the current chrome account match.
+    ACCOUNTS_MATCHING = 1;
+
+    // The account in the intent and the current chrome account DON'T match.
+    ACCOUNTS_NOT_MATCHING = 2;
+  }
+  // Whether the account from the intent and the chrome account match.
+  optional AccountsMatchingStatus accounts_matching_status = 12;
 }
 
 // Get the list of scripts that can potentially be run on a url.

@@ -146,7 +146,7 @@ static inline base::Time Now() {
   return clock->Now();
 }
 
-Resource::Resource(const ResourceRequest& request,
+Resource::Resource(const ResourceRequestHead& request,
                    ResourceType type,
                    const ResourceLoaderOptions& options)
     : type_(type),
@@ -162,8 +162,8 @@ Resource::Resource(const ResourceRequest& request,
       integrity_disposition_(ResourceIntegrityDisposition::kNotChecked),
       options_(options),
       response_timestamp_(Now()),
+      resource_request_(request),
       overhead_size_(CalculateOverheadSize()) {
-  resource_request_.CopyFrom(request);
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceCounter);
 
   if (IsMainThread())
@@ -484,13 +484,13 @@ const ResourceResponse* Resource::LastResourceResponse() const {
   return &redirect_chain_.back().redirect_response_;
 }
 
-void Resource::SetRevalidatingRequest(const ResourceRequest& request) {
+void Resource::SetRevalidatingRequest(const ResourceRequestHead& request) {
   SECURITY_CHECK(redirect_chain_.IsEmpty());
   SECURITY_CHECK(!is_unused_preload_);
   DCHECK(!request.IsNull());
   CHECK(!is_revalidation_start_forbidden_);
   is_revalidating_ = true;
-  resource_request_.CopyHeadFrom(request);
+  resource_request_ = request;
   status_ = ResourceStatus::kNotStarted;
 }
 

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/posix/eintr_wrapper.h"
@@ -237,6 +238,17 @@ void CameraHalDispatcherImpl::CreateSocket(base::WaitableEvent* started) {
     return;
   }
 
+  // TODO(crbug.com/1053569): Remove these lines once the issue is solved.
+  base::File::Info info;
+  if (!base::GetFileInfo(socket_path, &info)) {
+    LOG(WARNING) << "Failed to get the socket info after building Mojo channel";
+  } else {
+    LOG(WARNING) << "Building Mojo channel. Socket info:"
+                 << " creation_time: " << info.creation_time
+                 << " last_accessed: " << info.last_accessed
+                 << " last_modified: " << info.last_modified;
+  }
+
   // Change permissions on the socket.
   struct group arc_camera_group;
   struct group* result = nullptr;
@@ -392,6 +404,18 @@ void CameraHalDispatcherImpl::OnCameraHalClientConnectionError(
 
 void CameraHalDispatcherImpl::StopOnProxyThread() {
   DCHECK(proxy_task_runner_->BelongsToCurrentThread());
+
+  // TODO(crbug.com/1053569): Remove these lines once the issue is solved.
+  base::File::Info info;
+  if (!base::GetFileInfo(base::FilePath(kArcCamera3SocketPath), &info)) {
+    LOG(WARNING) << "Failed to get socket info before deleting";
+  } else {
+    LOG(WARNING) << "Delete socket. Socket info:"
+                 << " creation_time: " << info.creation_time
+                 << " last_accessed: " << info.last_accessed
+                 << " last_modified: " << info.last_modified;
+  }
+
   if (!base::DeleteFile(base::FilePath(kArcCamera3SocketPath),
                         /* recursive */ false)) {
     LOG(ERROR) << "Failed to delete " << kArcCamera3SocketPath;

@@ -91,6 +91,22 @@ ResourceRequestHead& ResourceRequestHead::operator=(ResourceRequestHead&&) =
 
 ResourceRequestHead::~ResourceRequestHead() = default;
 
+ResourceRequestBody::ResourceRequestBody() : ResourceRequestBody(nullptr) {}
+
+ResourceRequestBody::ResourceRequestBody(
+    scoped_refptr<EncodedFormData> form_body)
+    : form_body_(form_body) {}
+
+ResourceRequestBody::ResourceRequestBody(ResourceRequestBody&& src)
+    : ResourceRequestBody(std::move(src.form_body_)) {}
+
+ResourceRequestBody& ResourceRequestBody::operator=(ResourceRequestBody&& src) {
+  form_body_ = std::move(src.form_body_);
+  return *this;
+}
+
+ResourceRequestBody::~ResourceRequestBody() = default;
+
 ResourceRequest::ResourceRequest() : ResourceRequestHead(NullURL()) {}
 
 ResourceRequest::ResourceRequest(const String& url_string)
@@ -101,7 +117,11 @@ ResourceRequest::ResourceRequest(const KURL& url) : ResourceRequestHead(url) {}
 ResourceRequest::ResourceRequest(const ResourceRequestHead& head)
     : ResourceRequestHead(head) {}
 
-ResourceRequest& ResourceRequest::operator=(const ResourceRequest&) = default;
+ResourceRequest& ResourceRequest::operator=(const ResourceRequest& src) {
+  this->ResourceRequestHead::operator=(src);
+  body_.SetFormBody(src.body_.FormBody());
+  return *this;
+}
 
 ResourceRequest::ResourceRequest(ResourceRequest&&) = default;
 
@@ -274,12 +294,17 @@ void ResourceRequestHead::ClearHTTPUserAgent() {
   http_header_fields_.Remove(http_names::kUserAgent);
 }
 
-EncodedFormData* ResourceRequest::HttpBody() const {
-  return http_body_.get();
+void ResourceRequestBody::SetFormBody(
+    scoped_refptr<EncodedFormData> form_body) {
+  form_body_ = std::move(form_body);
+}
+
+const scoped_refptr<EncodedFormData>& ResourceRequest::HttpBody() const {
+  return body_.FormBody();
 }
 
 void ResourceRequest::SetHttpBody(scoped_refptr<EncodedFormData> http_body) {
-  http_body_ = std::move(http_body);
+  body_.SetFormBody(std::move(http_body));
 }
 
 bool ResourceRequestHead::AllowStoredCredentials() const {

@@ -35,7 +35,7 @@
 namespace {
 
 MATCHER_P(DataIs, data,
-          absl::StrCat("data() is ", negation ? "is " : "isn't ",
+          absl::StrCat("data() ", negation ? "isn't " : "is ",
                        testing::PrintToString(data))) {
   return arg.data() == data;
 }
@@ -232,6 +232,11 @@ TEST(IntSpan, ElementAccess) {
 
   EXPECT_EQ(s.front(), s[0]);
   EXPECT_EQ(s.back(), s[9]);
+
+#ifndef NDEBUG
+  EXPECT_DEATH_IF_SUPPORTED(s[-1], "");
+  EXPECT_DEATH_IF_SUPPORTED(s[10], "");
+#endif
 }
 
 TEST(IntSpan, AtThrows) {

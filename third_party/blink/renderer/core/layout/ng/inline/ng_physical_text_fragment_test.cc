@@ -43,6 +43,8 @@ class NGPhysicalTextFragmentTest : public NGLayoutTest {
 };
 
 TEST_F(NGPhysicalTextFragmentTest, LocalRect) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -59,6 +61,8 @@ TEST_F(NGPhysicalTextFragmentTest, LocalRect) {
 }
 
 TEST_F(NGPhysicalTextFragmentTest, LocalRectRTL) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -81,6 +85,8 @@ TEST_F(NGPhysicalTextFragmentTest, LocalRectRTL) {
 }
 
 TEST_F(NGPhysicalTextFragmentTest, LocalRectVLR) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -98,6 +104,8 @@ TEST_F(NGPhysicalTextFragmentTest, LocalRectVLR) {
 }
 
 TEST_F(NGPhysicalTextFragmentTest, LocalRectVRL) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -115,6 +123,8 @@ TEST_F(NGPhysicalTextFragmentTest, LocalRectVRL) {
 }
 
 TEST_F(NGPhysicalTextFragmentTest, NormalTextIsNotAnonymousText) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   SetBodyInnerHTML("<div id=div>text</div>");
 
   auto text_fragments = CollectTextFragmentsInContainer("div");
@@ -125,6 +135,8 @@ TEST_F(NGPhysicalTextFragmentTest, NormalTextIsNotAnonymousText) {
 }
 
 TEST_F(NGPhysicalTextFragmentTest, FirstLetterIsNotAnonymousText) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   SetBodyInnerHTML(
       "<style>::first-letter {color:red}</style>"
       "<div id=div>text</div>");
@@ -139,6 +151,8 @@ TEST_F(NGPhysicalTextFragmentTest, FirstLetterIsNotAnonymousText) {
 }
 
 TEST_F(NGPhysicalTextFragmentTest, BeforeAndAfterAreAnonymousText) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   SetBodyInnerHTML(
       "<style>::before{content:'x'} ::after{content:'x'}</style>"
       "<div id=div>text</div>");
@@ -155,6 +169,8 @@ TEST_F(NGPhysicalTextFragmentTest, BeforeAndAfterAreAnonymousText) {
 }
 
 TEST_F(NGPhysicalTextFragmentTest, Ellipsis) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
       <style>
@@ -191,6 +207,8 @@ TEST_F(NGPhysicalTextFragmentTest, Ellipsis) {
 }
 
 TEST_F(NGPhysicalTextFragmentTest, ListMarkerIsGeneratedText) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   SetBodyInnerHTML(
       "<ol style='list-style-position:inside'>"
       "<li id=list>text</li>"
@@ -206,6 +224,8 @@ TEST_F(NGPhysicalTextFragmentTest, ListMarkerIsGeneratedText) {
 }
 
 TEST_F(NGPhysicalTextFragmentTest, SoftHyphen) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -234,6 +254,8 @@ TEST_F(NGPhysicalTextFragmentTest, SoftHyphen) {
 }
 
 TEST_F(NGPhysicalTextFragmentTest, QuotationMarksAreAnonymousText) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   SetBodyInnerHTML("<div id=div><q>text</q></div>");
 
   auto text_fragments = CollectTextFragmentsInContainer("div");
@@ -248,6 +270,8 @@ TEST_F(NGPhysicalTextFragmentTest, QuotationMarksAreAnonymousText) {
 }
 
 TEST_F(NGPhysicalTextFragmentTest, TextOffsetForPointForTabulation) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -270,6 +294,8 @@ TEST_F(NGPhysicalTextFragmentTest, TextOffsetForPointForTabulation) {
 }
 
 TEST_F(NGPhysicalTextFragmentTest, TextOffsetForPointForTabulationRtl) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>

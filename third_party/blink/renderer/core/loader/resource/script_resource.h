@@ -150,7 +150,7 @@ class CORE_EXPORT ScriptResource final : public TextResource {
   bool HasFinishedStreamer() { return streamer_ && streamer_->IsFinished(); }
 
   // Visible for tests.
-  void SetRevalidatingRequest(const ResourceRequest&) override;
+  void SetRevalidatingRequest(const ResourceRequestHead&) override;
 
  protected:
   CachedMetadataHandler* CreateCachedMetadataHandler(

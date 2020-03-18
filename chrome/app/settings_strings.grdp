@@ -2371,7 +2371,7 @@
     Show all (recommended)
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES_ALLOW" desc="The sub-label for links to manage cookies when the current cookie setting is allow.">
-    {COUNT plural,
+    {COUNT, plural,
      =0 {Cookies are allowed}
      =1 {Cookies are allowed, 1 exception}
      other {Cookies are allowed, {COUNT} exceptions}}

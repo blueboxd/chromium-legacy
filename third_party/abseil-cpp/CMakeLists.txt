@@ -27,10 +27,16 @@ cmake_policy(SET CMP0025 NEW)
 # if command can use IN_LIST
 cmake_policy(SET CMP0057 NEW)
 
-# Project version variables are the empty std::string if version is unspecified
+# Project version variables are the empty string if version is unspecified
 cmake_policy(SET CMP0048 NEW)
 
 project(absl CXX)
+
+# Output directory is correct by default for most build setups. However, when
+# building Abseil as a DLL, it is important to have the DLL in the same
+# directory as the executable using it. Thus, we put all executables in a single
+# /bin directory.
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # when absl is included as subproject (i.e. using add_subdirectory(abseil-cpp))
 # in the source tree of a project that uses it, install rules are disabled.
@@ -47,6 +53,7 @@ list(APPEND CMAKE_MODULE_PATH
 
 include(AbseilInstallDirs)
 include(CMakePackageConfigHelpers)
+include(AbseilDll)
 include(AbseilHelpers)
 
 
@@ -77,6 +84,10 @@ find_package(Threads REQUIRED)
 option(ABSL_USE_GOOGLETEST_HEAD
   "If ON, abseil will download HEAD from googletest at config time." OFF)
 
+set(ABSL_LOCAL_GOOGLETEST_DIR "/usr/src/googletest" CACHE PATH
+  "If ABSL_USE_GOOGLETEST_HEAD is OFF, specifies the directory of a local googletest checkout."
+  )
+
 option(ABSL_RUN_TESTS "If ON, Abseil tests will be run." OFF)
 
 if(${ABSL_RUN_TESTS})
@@ -89,11 +100,13 @@ endif()
 ## check targets
 if(BUILD_TESTING)
 
+  set(absl_gtest_build_dir ${CMAKE_BINARY_DIR}/googletest-build)
   if(${ABSL_USE_GOOGLETEST_HEAD})
-    include(CMake/Googletest/DownloadGTest.cmake)
     set(absl_gtest_src_dir ${CMAKE_BINARY_DIR}/googletest-src)
-    set(absl_gtest_build_dir ${CMAKE_BINARY_DIR}/googletest-build)
+  else()
+    set(absl_gtest_src_dir ${ABSL_LOCAL_GOOGLETEST_DIR})
   endif()
+  include(CMake/Googletest/DownloadGTest.cmake)
 
   check_target(gtest)
   check_target(gtest_main)

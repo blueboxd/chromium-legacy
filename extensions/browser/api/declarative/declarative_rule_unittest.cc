@@ -12,6 +12,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::test::ParseJson;
 using base::test::ParseJsonDeprecated;
 using url_matcher::URLMatcher;
 using url_matcher::URLMatcherConditionFactory;
@@ -300,21 +301,21 @@ TEST(DeclarativeActionTest, ApplyActionSet) {
 TEST(DeclarativeRuleTest, Create) {
   typedef DeclarativeRule<FulfillableCondition, SummingAction> Rule;
   Rule::JsonRule json_rule;
-  ASSERT_TRUE(Rule::JsonRule::Populate(
-      *ParseJsonDeprecated("{ \n"
-                           "  \"id\": \"rule1\", \n"
-                           "  \"conditions\": [ \n"
-                           "    {\"url_id\": 1, \"max\": 3}, \n"
-                           "    {\"url_id\": 2, \"max\": 5}, \n"
-                           "  ], \n"
-                           "  \"actions\": [ \n"
-                           "    { \n"
-                           "      \"value\": 2 \n"
-                           "    } \n"
-                           "  ], \n"
-                           "  \"priority\": 200 \n"
-                           "}"),
-      &json_rule));
+  ASSERT_TRUE(Rule::JsonRule::Populate(ParseJson(R"(
+      {
+        "id": "rule1",
+        "conditions": [
+          {"url_id": 1, "max": 3},
+          {"url_id": 2, "max": 5},
+        ],
+        "actions": [
+          {
+            "value": 2
+          }
+        ],
+        "priority": 200
+      })"),
+                                       &json_rule));
 
   const char kExtensionId[] = "ext1";
   scoped_refptr<const Extension> extension = ExtensionBuilder()
@@ -376,40 +377,39 @@ TEST(DeclarativeRuleTest, CheckConsistency) {
                                                  .SetID(kExtensionId)
                                                  .Build();
 
-  ASSERT_TRUE(Rule::JsonRule::Populate(
-      *ParseJsonDeprecated("{ \n"
-                           "  \"id\": \"rule1\", \n"
-                           "  \"conditions\": [ \n"
-                           "    {\"url_id\": 1, \"max\": 3}, \n"
-                           "    {\"url_id\": 2, \"max\": 5}, \n"
-                           "  ], \n"
-                           "  \"actions\": [ \n"
-                           "    { \n"
-                           "      \"value\": 2 \n"
-                           "    } \n"
-                           "  ], \n"
-                           "  \"priority\": 200 \n"
-                           "}"),
-      &json_rule));
+  ASSERT_TRUE(Rule::JsonRule::Populate(ParseJson(R"(
+      {
+        "id": "rule1",
+        "conditions": [
+          {"url_id": 1, "max": 3},
+          {"url_id": 2, "max": 5},
+        ],
+        "actions": [
+          {
+            "value": 2
+          }
+        ],
+        "priority": 200
+      })"),
+                                       &json_rule));
   std::unique_ptr<Rule> rule(Rule::Create(
       matcher.condition_factory(), nullptr, extension.get(), base::Time(),
       json_rule, base::Bind(AtLeastOneCondition), &error));
   EXPECT_TRUE(rule);
   EXPECT_EQ("", error);
 
-  ASSERT_TRUE(
-      Rule::JsonRule::Populate(*ParseJsonDeprecated("{ \n"
-                                                    "  \"id\": \"rule1\", \n"
-                                                    "  \"conditions\": [ \n"
-                                                    "  ], \n"
-                                                    "  \"actions\": [ \n"
-                                                    "    { \n"
-                                                    "      \"value\": 2 \n"
-                                                    "    } \n"
-                                                    "  ], \n"
-                                                    "  \"priority\": 200 \n"
-                                                    "}"),
-                               &json_rule));
+  ASSERT_TRUE(Rule::JsonRule::Populate(ParseJson(R"({
+                                                   "id": "rule1",
+                                                   "conditions": [
+                                                   ],
+                                                   "actions": [
+                                                     {
+                                                       "value": 2
+                                                     }
+                                                   ],
+                                                   "priority": 200
+                                                 })"),
+                                       &json_rule));
   rule = Rule::Create(matcher.condition_factory(), nullptr, extension.get(),
                       base::Time(), json_rule, base::Bind(AtLeastOneCondition),
                       &error);

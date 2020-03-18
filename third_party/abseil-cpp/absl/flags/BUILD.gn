@@ -22,7 +22,7 @@ if (build_with_chromium) {
 # If this is a problem, feel free to remove "testonly" and use "assert_no_deps"
 # on the main Chrome binary.
 
-source_set("internal") {
+source_set("flag_internal") {
   testonly = true
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
@@ -30,14 +30,62 @@ source_set("internal") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [ "internal/program_name.cc" ]
+  sources = [ "internal/flag.cc", ]
   public = [
-    "internal/path_util.h",
-    "internal/program_name.h",
+    "internal/flag.h",
   ]
   deps = [
+    ":config",
+    ":handle",
+    ":registry",
+    "../base",
+    "../base:config",
+    "../base:core_headers",
+    "../memory",
+    "../meta:type_traits",
     "../strings",
     "../synchronization",
+  ]
+  visibility = []
+  visibility += [
+    ":*",
+    "../base/*",
+  ]
+}
+
+source_set("program_name") {
+  testonly = true
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
+  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+  sources = [ "internal/program_name.cc", ]
+  public = [  "internal/program_name.h" ]
+  deps = [
+    ":path_util",
+    "../base:config",
+    "../base:core_headers",
+    "../strings",
+    "../synchronization",
+  ]
+  visibility = []
+  visibility += [ ":*" ]
+}
+
+source_set("path_util") {
+  testonly = true
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
+  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+  public = [  "internal/path_util.h" ]
+  deps = [
+    "../base:config",
+    "../strings",
   ]
   visibility = []
   visibility += [ ":*" ]
@@ -57,7 +105,9 @@ source_set("config") {
     "usage_config.h",
   ]
   deps = [
-    ":internal",
+    ":path_util",
+    ":program_name",
+    "../base:config",
     "../base:core_headers",
     "../strings",
     "../synchronization",
@@ -75,7 +125,9 @@ source_set("marshalling") {
   sources = [ "marshalling.cc" ]
   public = [ "marshalling.h" ]
   deps = [
+    "../base:config",
     "../base:core_headers",
+    "../base:log_severity",
     "../strings",
     "../strings:str_format",
   ]
@@ -94,10 +146,9 @@ source_set("handle") {
   deps = [
     ":config",
     ":marshalling",
-    "../base",
+    "../base:config",
     "../base:core_headers",
     "../strings",
-    "../synchronization",
     "../types:optional",
   ]
   visibility = []
@@ -123,9 +174,9 @@ source_set("registry") {
   deps = [
     ":config",
     ":handle",
-    "../base",
+    "../base:config",
     "../base:core_headers",
-    "../base:dynamic_annotations",
+    "../base:raw_logging_internal",
     "../strings",
     "../synchronization",
   ]
@@ -145,14 +196,15 @@ source_set("flag") {
   public = [
     "declare.h",
     "flag.h",
-    "internal/flag.h",
   ]
   deps = [
     ":config",
+    ":flag_internal",
     ":handle",
     ":marshalling",
     ":registry",
     "../base",
+    "../base:config",
     "../base:core_headers",
     "../strings",
   ]
@@ -171,10 +223,14 @@ source_set("usage_internal") {
   deps = [
     ":config",
     ":flag",
+    ":flag_internal",
     ":handle",
-    ":internal",
+    ":path_util",
+    ":program_name",
+    ":registry",
+    "../base:config",
+    "../base:core_headers",
     "../strings",
-    "../synchronization",
   ]
   visibility = []
   visibility += [ ":*" ]
@@ -192,6 +248,8 @@ source_set("usage") {
   public = [ "usage.h" ]
   deps = [
     ":usage_internal",
+    "../base:config",
+    "../base:core_headers",
     "../strings",
     "../synchronization",
   ]
@@ -213,11 +271,14 @@ source_set("parse") {
   deps = [
     ":config",
     ":flag",
+    ":flag_internal",
     ":handle",
-    ":internal",
+    ":program_name",
     ":registry",
     ":usage",
     ":usage_internal",
+    "../base:config",
+    "../base:core_headers",
     "../strings",
     "../synchronization",
   ]

@@ -524,12 +524,6 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 #endif
 
-#if defined(OS_ANDROID)
-  // Disable AImageReader if the workaround is enabled.
-  if (gpu_feature_info_.IsWorkaroundEnabled(DISABLE_AIMAGEREADER)) {
-    base::android::AndroidImageReader::DisableSupport();
-  }
-#endif
 #if defined(USE_OZONE)
   gpu_feature_info_.supported_buffer_formats_for_allocation_and_texturing =
       std::move(supported_buffer_formats_for_texturing);
@@ -555,11 +549,6 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   InitializeVulkan();
 
   default_offscreen_surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
-
-  // Disable AImageReader if the workaround is enabled.
-  if (gpu_feature_info_.IsWorkaroundEnabled(DISABLE_AIMAGEREADER)) {
-    base::android::AndroidImageReader::DisableSupport();
-  }
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GLImplementation", gl::GetGLImplementation());
 }

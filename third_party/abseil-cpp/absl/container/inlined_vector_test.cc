@@ -780,7 +780,7 @@ TEST(IntVec, Reserve) {
 TEST(StringVec, SelfRefPushBack) {
   std::vector<std::string> std_v;
   absl::InlinedVector<std::string, 4> v;
-  const std::string s = "A quite long std::string to ensure heap.";
+  const std::string s = "A quite long string to ensure heap.";
   std_v.push_back(s);
   v.push_back(s);
   for (int i = 0; i < 20; ++i) {
@@ -795,7 +795,7 @@ TEST(StringVec, SelfRefPushBack) {
 TEST(StringVec, SelfRefPushBackWithMove) {
   std::vector<std::string> std_v;
   absl::InlinedVector<std::string, 4> v;
-  const std::string s = "A quite long std::string to ensure heap.";
+  const std::string s = "A quite long string to ensure heap.";
   std_v.push_back(s);
   v.push_back(s);
   for (int i = 0; i < 20; ++i) {
@@ -808,7 +808,7 @@ TEST(StringVec, SelfRefPushBackWithMove) {
 }
 
 TEST(StringVec, SelfMove) {
-  const std::string s = "A quite long std::string to ensure heap.";
+  const std::string s = "A quite long string to ensure heap.";
   for (int len = 0; len < 20; len++) {
     SCOPED_TRACE(len);
     absl::InlinedVector<std::string, 8> v;
@@ -1689,7 +1689,11 @@ TEST(AllocatorSupportTest, ScopedAllocatorWorksInlined) {
   inlined_case.emplace_back();
 
   int64_t absl_responsible_for_count = total_allocated_byte_count;
+
+  // MSVC's allocator preemptively allocates in debug mode
+#if !defined(_MSC_VER)
   EXPECT_EQ(absl_responsible_for_count, 0);
+#endif  // !defined(_MSC_VER)
 
   inlined_case[0].emplace_back();
   EXPECT_GT(total_allocated_byte_count, absl_responsible_for_count);
@@ -1748,6 +1752,30 @@ TEST(AllocatorSupportTest, SizeAllocConstructor) {
     EXPECT_THAT(allocated, len * sizeof(int));
     EXPECT_THAT(v, AllOf(SizeIs(len), Each(0)));
   }
+}
+
+TEST(InlinedVectorTest, MinimumAllocatorCompilesUsingTraits) {
+  using T = int;
+  using A = std::allocator<T>;
+  using ATraits = absl::allocator_traits<A>;
+
+  struct MinimumAllocator {
+    using value_type = T;
+
+    value_type* allocate(size_t n) {
+      A a;
+      return ATraits::allocate(a, n);
+    }
+
+    void deallocate(value_type* p, size_t n) {
+      A a;
+      ATraits::deallocate(a, p, n);
+    }
+  };
+
+  absl::InlinedVector<T, 1, MinimumAllocator> vec;
+  vec.emplace_back();
+  vec.resize(0);
 }
 
 TEST(InlinedVectorTest, AbslHashValueWorks) {

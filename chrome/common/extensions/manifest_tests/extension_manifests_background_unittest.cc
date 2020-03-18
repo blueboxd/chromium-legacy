@@ -39,7 +39,7 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundScripts) {
   ASSERT_TRUE(manifest.is_dict());
 
   scoped_refptr<Extension> extension(
-      LoadAndExpectSuccess(ManifestData(&manifest, "")));
+      LoadAndExpectSuccess(ManifestData(manifest.Clone(), "")));
   ASSERT_TRUE(extension.get());
   const std::vector<std::string>& background_scripts =
       BackgroundInfo::GetBackgroundScripts(extension.get());
@@ -53,7 +53,7 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundScripts) {
       BackgroundInfo::GetBackgroundURL(extension.get()).path());
 
   manifest.SetPath({"background", "page"}, base::Value("monkey.html"));
-  LoadAndExpectError(ManifestData(&manifest, ""),
+  LoadAndExpectError(ManifestData(std::move(manifest), ""),
                      errors::kInvalidBackgroundCombination);
 }
 
@@ -86,14 +86,14 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundPageWebRequest) {
   manifest.SetPath({"background", "persistent"}, base::Value(false));
   manifest.SetKey(keys::kManifestVersion, base::Value(2));
   scoped_refptr<Extension> extension(
-      LoadAndExpectSuccess(ManifestData(&manifest, "")));
+      LoadAndExpectSuccess(ManifestData(manifest.Clone(), "")));
   ASSERT_TRUE(extension.get());
   EXPECT_TRUE(BackgroundInfo::HasLazyBackgroundPage(extension.get()));
 
   base::Value permissions(base::Value::Type::LIST);
   permissions.Append(base::Value("webRequest"));
   manifest.SetKey(keys::kPermissions, std::move(permissions));
-  LoadAndExpectError(ManifestData(&manifest, ""),
+  LoadAndExpectError(ManifestData(std::move(manifest), ""),
                      errors::kWebRequestConflictsWithLazyBackground);
 }
 

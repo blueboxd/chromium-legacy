@@ -547,6 +547,25 @@ class PLATFORM_EXPORT ResourceRequestHead {
   base::Optional<base::UnguessableToken> recursive_prefetch_token_;
 };
 
+class PLATFORM_EXPORT ResourceRequestBody {
+ public:
+  ResourceRequestBody();
+  explicit ResourceRequestBody(scoped_refptr<EncodedFormData> form_body);
+  ResourceRequestBody(const ResourceRequestBody&) = delete;
+  ResourceRequestBody(ResourceRequestBody&&);
+
+  ResourceRequestBody& operator=(const ResourceRequestBody&) = delete;
+  ResourceRequestBody& operator=(ResourceRequestBody&&);
+
+  ~ResourceRequestBody();
+
+  const scoped_refptr<EncodedFormData>& FormBody() const { return form_body_; }
+  void SetFormBody(scoped_refptr<EncodedFormData>);
+
+ private:
+  scoped_refptr<EncodedFormData> form_body_;
+};
+
 // A ResourceRequest is a "request" object for ResourceLoader. Conceptually
 // it is https://fetch.spec.whatwg.org/#concept-request, but it contains
 // a lot of blink specific fields. WebURLRequest is the "public version"
@@ -581,13 +600,15 @@ class PLATFORM_EXPORT ResourceRequest final : public ResourceRequestHead {
   void CopyFrom(const ResourceRequest&);
   void CopyHeadFrom(const ResourceRequestHead&);
 
-  EncodedFormData* HttpBody() const;
+  const scoped_refptr<EncodedFormData>& HttpBody() const;
   void SetHttpBody(scoped_refptr<EncodedFormData>);
+
+  ResourceRequestBody& MutableBody() { return body_; }
 
  private:
   ResourceRequest& operator=(const ResourceRequest&);
 
-  scoped_refptr<EncodedFormData> http_body_;
+  ResourceRequestBody body_;
 };
 
 }  // namespace blink

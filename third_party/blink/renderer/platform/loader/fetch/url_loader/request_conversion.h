@@ -14,13 +14,15 @@ struct ResourceRequest;
 
 namespace blink {
 
-class ResourceRequest;
+class ResourceRequestHead;
+class ResourceRequestBody;
 class EncodedFormData;
 
 void PopulateResourceRequestBody(const EncodedFormData& src,
                                  network::ResourceRequestBody* dest);
 
-void PopulateResourceRequest(const ResourceRequest& src,
+void PopulateResourceRequest(const ResourceRequestHead& src,
+                             ResourceRequestBody src_body,
                              network::ResourceRequest* dest);
 }  // namespace blink
 

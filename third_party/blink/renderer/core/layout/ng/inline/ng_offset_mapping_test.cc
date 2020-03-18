@@ -1495,7 +1495,8 @@ TEST_P(NGOffsetMappingGetterTest, Get) {
 
   // For the purpose of this test, ensure this is laid out by each layout
   // engine.
-  DCHECK_EQ(layout_block_flow->IsLayoutNGMixin(), GetParam());
+  DCHECK_EQ(layout_block_flow->IsLayoutNGMixin(),
+            RuntimeEnabledFeatures::LayoutNGEnabled());
 
   const NGOffsetMapping* mapping =
       NGInlineNode::GetOffsetMapping(layout_block_flow);

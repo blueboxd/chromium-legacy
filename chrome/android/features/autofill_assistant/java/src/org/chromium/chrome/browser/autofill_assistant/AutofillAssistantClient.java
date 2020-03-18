@@ -104,13 +104,14 @@ class AutofillAssistantClient {
      * still fail after this method returns true; the failure will be displayed on the UI.
      */
     boolean start(String initialUrl, Map<String, String> parameters, String experimentIds,
-            Bundle intentExtras, @Nullable AssistantOnboardingCoordinator onboardingCoordinator) {
+            @Nullable String callerAccount, Bundle intentExtras,
+            @Nullable AssistantOnboardingCoordinator onboardingCoordinator) {
         if (mNativeClientAndroid == 0) return false;
 
         checkNativeClientIsAliveOrThrow();
         chooseAccountAsyncIfNecessary(parameters.get(PARAMETER_USER_EMAIL), intentExtras);
         return AutofillAssistantClientJni.get().start(mNativeClientAndroid,
-                AutofillAssistantClient.this, initialUrl, experimentIds,
+                AutofillAssistantClient.this, initialUrl, experimentIds, callerAccount,
                 parameters.keySet().toArray(new String[parameters.size()]),
                 parameters.values().toArray(new String[parameters.size()]), onboardingCoordinator,
                 /* onboardingShown= */
@@ -381,7 +382,8 @@ class AutofillAssistantClient {
     interface Natives {
         AutofillAssistantClient fromWebContents(WebContents webContents);
         boolean start(long nativeClientAndroid, AutofillAssistantClient caller, String initialUrl,
-                String experimentIds, String[] parameterNames, String[] parameterValues,
+                String experimentIds, String callerAccount, String[] parameterNames,
+                String[] parameterValues,
                 @Nullable AssistantOnboardingCoordinator onboardingCoordinator,
                 boolean onboardingShown, long nativeService);
         void onAccessToken(long nativeClientAndroid, AutofillAssistantClient caller,

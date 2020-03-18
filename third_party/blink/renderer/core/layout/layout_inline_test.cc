@@ -8,6 +8,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -109,6 +110,14 @@ TEST_F(LayoutInlineTest, RegionHitTest) {
   LayoutInline* lots_of_boxes =
       ToLayoutInline(GetLayoutObjectByElementId("lotsOfBoxes"));
   ASSERT_TRUE(lots_of_boxes);
+
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    NGInlineCursor cursor;
+    cursor.MoveTo(*lots_of_boxes);
+    ASSERT_TRUE(cursor);
+    EXPECT_EQ(lots_of_boxes, cursor.Current().GetLayoutObject());
+    return;
+  }
 
   HitTestRequest hit_request(HitTestRequest::kTouchEvent |
                              HitTestRequest::kListBased);

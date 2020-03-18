@@ -17,6 +17,7 @@
       <structure name="IDR_CAMERA_CAMERA3_DEVICE_INFO_JS" file="src/js/device/camera3_device_info.js" type="chrome_html" />
       <structure name="IDR_CAMERA_CAMERA_JS" file="src/js/views/camera.js" type="chrome_html" />
       <structure name="IDR_CAMERA_CAMERA_INTENT_JS" file="src/js/views/camera_intent.js" type="chrome_html" />
+      <structure name="IDR_CAMERA_COMLINK_JS" file="src/js/lib/comlink.js" type="chrome_html" />
       <structure name="IDR_CAMERA_CONSTRAINTS_PREFERRER_JS" file="src/js/device/constraints_preferrer.js" type="chrome_html" />
       <structure name="IDR_CAMERA_CHROME_HELPER_JS" file="src/js/mojo/chrome_helper.js" type="chrome_html" />
       <structure name="IDR_CAMERA_CHROME_UTIL_JS" file="src/js/chrome_util.js" type="chrome_html" />

@@ -176,13 +176,13 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
 
   virtual bool ShouldIgnoreHTTPStatusCodeErrors() const { return false; }
 
-  const ResourceRequest& GetResourceRequest() const {
+  const ResourceRequestHead& GetResourceRequest() const {
     return resource_request_;
   }
   const ResourceRequestHead& LastResourceRequest() const;
   const ResourceResponse* LastResourceResponse() const;
 
-  virtual void SetRevalidatingRequest(const ResourceRequest&);
+  virtual void SetRevalidatingRequest(const ResourceRequestHead&);
 
   // This url can have a fragment, but it can match resources that differ by the
   // fragment only.
@@ -420,7 +420,9 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
   static void SetClockForTesting(const base::Clock* clock);
 
  protected:
-  Resource(const ResourceRequest&, ResourceType, const ResourceLoaderOptions&);
+  Resource(const ResourceRequestHead&,
+           ResourceType,
+           const ResourceLoaderOptions&);
 
   // Returns true if the resource has finished any processing it wanted to do
   // after loading. Should only be used to decide whether to call
@@ -559,7 +561,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
 
   TaskHandle async_finish_pending_clients_task_;
 
-  ResourceRequest resource_request_;
+  ResourceRequestHead resource_request_;
 
   // Resource::CalculateOverheadSize() is affected by changes in
   // |m_resourceRequest.url()|, but |m_overheadSize| is not updated after

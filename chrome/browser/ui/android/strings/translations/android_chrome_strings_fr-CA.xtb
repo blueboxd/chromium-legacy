@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">Envoi à <ph name="DEVICE_NAME" /> en cours…</translation>
 <translation id="1036727731225946849">Ajout de <ph name="WEBAPK_NAME" /> en cours…</translation>
 <translation id="1041308826830691739">À partir de sites Web</translation>
+<translation id="1044891598689252897">Les sites fonctionneront normalement</translation>
 <translation id="1049743911850919806">Navigation privée</translation>
 <translation id="10614374240317010">Jamais enregistré</translation>
 <translation id="1067922213147265141">Autres services Google</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">Impossible de partager l'élément suivant : <ph name="CONTENT_TYPE" /></translation>
 <translation id="1477626028522505441">Échec du téléchargement de <ph name="FILE_NAME" /> en raison de problèmes au niveau du serveur.</translation>
 <translation id="1506061864768559482">Moteur de recherche</translation>
+<translation id="1509960214886564027">Des fonctionnalités sur de nombreux sites risquent de ne pas fonctionner</translation>
 <translation id="1513352483775369820">Favoris et historique Web</translation>
 <translation id="1513858653616922153">Supprimer le mot de passe</translation>
 <translation id="1521774566618522728">Actif aujourd'hui</translation>
@@ -235,6 +237,7 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="2647434099613338025">Ajouter une langue</translation>
 <translation id="2650751991977523696">Télécharger de nouveau le fichier?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# fichier audio}one{# fichier audio}other{# fichiers audio}}</translation>
+<translation id="2687403674020088961">Bloquer tous les témoins (non recommandé)</translation>
 <translation id="2707726405694321444">Actualiser la page</translation>
 <translation id="2709516037105925701">Remplissage automatique</translation>
 <translation id="2717722538473713889">Adresses de courriel</translation>
@@ -340,6 +343,7 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="3478363558367712427">Vous pouvez choisir votre moteur de recherche</translation>
 <translation id="3492207499832628349">Nouv. onglet nav. privée</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /> sur le contenu suggéré</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Réalité augmentée</translation>
 <translation id="3518985090088779359">Accepter et continuer</translation>
 <translation id="3522247891732774234">Mise à jour disponible. Plus d'options</translation>
@@ -355,6 +359,7 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="358794129225322306">Permet au site de télécharger plusieurs fichiers automatiquement.</translation>
 <translation id="3590487821116122040">Le stockage des sites que Chrome ne considère pas comme importants (comme les sites qui n'ont pas de paramètres enregistrés ou que vous ne consultez pas souvent)</translation>
 <translation id="3594780231884063836">Désactiver le son de la vidéo</translation>
+<translation id="3596414637720633074">Bloquer les témoins tiers en navigation privée</translation>
 <translation id="3599863153486145794">Efface l'historique de tous les appareils connectés. D'autres formes d'historique de navigation peuvent exister sur votre compte Google à l'adresse <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Désactiver le son sur les sites qui en font jouer</translation>
 <translation id="3616113530831147358">Audio</translation>
@@ -921,6 +926,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="780301667611848630">Non merci</translation>
 <translation id="7810647596859435254">Ouvrir avec…</translation>
 <translation id="7821588508402923572">Vos économies de données s'afficheront ici</translation>
+<translation id="7828557259026017104">Les témoins sont des fichiers créés par les sites Web que vous visitez. Les sites les utilisent pour mémoriser vos préférences. Les témoins tiers sont ceux que créent d'autres sites. Ces sites possèdent certains types de contenu, comme des annonces et des images, que vous voyez sur les pages que vous visitez.</translation>
 <translation id="783819812427904514">Réactiver le son de la vidéo</translation>
 <translation id="784934925303690534">Intervalle de temps</translation>
 <translation id="7851858861565204677">Autres appareils</translation>
@@ -941,6 +947,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="79859296434321399">Pour regarder du contenu de réalité augmentée, installez ARCore</translation>
 <translation id="7986741934819883144">Sélectionner un contact</translation>
 <translation id="7987073022710626672">Conditions d’utilisation Chrome</translation>
+<translation id="7993619969781047893">Des fonctionnalités sur certains sites risquent de ne pas fonctionner</translation>
 <translation id="7998918019931843664">Rouvrir l'onglet fermé</translation>
 <translation id="7999064672810608036">Voulez-vous vraiment effacer toutes les données locales de ce site Web, y compris les témoins, et réinitialiser toutes les autorisations pour ce site Web?</translation>
 <translation id="8004582292198964060">Navigateur</translation>
@@ -1075,6 +1082,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8965591936373831584">en attente</translation>
 <translation id="8970887620466824814">Une erreur s'est produite.</translation>
 <translation id="8972098258593396643">Télécharger vers le dossier par défaut?</translation>
+<translation id="8988028529677883095">Utiliser le téléphone comme clé de sécurité</translation>
 <translation id="8993760627012879038">Ouvrir un nouvel onglet en mode de nav. privée</translation>
 <translation id="8998729206196772491">Vous vous connectez avec un compte géré par <ph name="MANAGED_DOMAIN" />, et son administrateur pourra contrôler vos données Google Chrome. Celles-ci seront définitivement liées à votre compte. En vous déconnectant de Chrome, vous supprimerez vos données sur cet appareil, mais celles-ci resteront stockées dans votre compte Google.</translation>
 <translation id="9019902583201351841">Géré par tes parents</translation>

@@ -398,8 +398,8 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   // be used for comparison with their after layout size.
   NGBoxStrut before_layout_scrollbars =
       ComputeScrollbars(constraint_space, *this);
-  bool before_layout_preferred_logical_widths_dirty =
-      box_->PreferredLogicalWidthsDirty();
+  bool before_layout_intrinsic_logical_widths_dirty =
+      box_->IntrinsicLogicalWidthsDirty();
 
   if (!layout_result)
     layout_result = LayoutWithAlgorithm(params);
@@ -414,8 +414,8 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   // This mirrors legacy code in PaintLayerScrollableArea::UpdateAfterLayout.
   if ((before_layout_scrollbars !=
        ComputeScrollbars(constraint_space, *this)) ||
-      (!before_layout_preferred_logical_widths_dirty &&
-       box_->PreferredLogicalWidthsDirty())) {
+      (!before_layout_intrinsic_logical_widths_dirty &&
+       box_->IntrinsicLogicalWidthsDirty())) {
     PaintLayerScrollableArea::FreezeScrollbarsScope freeze_scrollbars;
 
     // We need to clear any previous results when scrollbars change. For

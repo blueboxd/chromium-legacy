@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">A enviar para <ph name="DEVICE_NAME" />…</translation>
 <translation id="1036727731225946849">A adicionar <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">De Websites</translation>
+<translation id="1044891598689252897">Os sites funcionam normalmente.</translation>
 <translation id="1049743911850919806">Navegação anónima</translation>
 <translation id="10614374240317010">Nunca guardadas</translation>
 <translation id="1067922213147265141">Outros serviços Google</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">Não é possível partilhar <ph name="CONTENT_TYPE" /></translation>
 <translation id="1477626028522505441">A transferência de <ph name="FILE_NAME" /> falhou devido a problemas do servidor.</translation>
 <translation id="1506061864768559482">Motor de pesquisa</translation>
+<translation id="1509960214886564027">As funcionalidades em muitos sites podem falhar.</translation>
 <translation id="1513352483775369820">Marcadores e histórico da Web</translation>
 <translation id="1513858653616922153">Eliminar palavra-passe</translation>
 <translation id="1521774566618522728">Ativo hoje</translation>
@@ -235,6 +237,7 @@ Toque sem soltar em qualquer palavra para pesquisar. Para refinar a sua pesquisa
 <translation id="2647434099613338025">Adicionar idioma</translation>
 <translation id="2650751991977523696">Pretende transferir o ficheiro novamente?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ficheiro de áudio}other{# ficheiros de áudio}}</translation>
+<translation id="2687403674020088961">Bloquear todos os cookies (não recomendado).</translation>
 <translation id="2707726405694321444">Atualizar página</translation>
 <translation id="2709516037105925701">Preenchimento automático</translation>
 <translation id="2717722538473713889">Endereços de email</translation>
@@ -340,6 +343,7 @@ Toque sem soltar em qualquer palavra para pesquisar. Para refinar a sua pesquisa
 <translation id="3478363558367712427">Pode escolher o seu motor de pesquisa.</translation>
 <translation id="3492207499832628349">Novo separador anónimo</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /> acerca do conteúdo sugerido</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Realidade aumentada</translation>
 <translation id="3518985090088779359">Aceitar e continuar</translation>
 <translation id="3522247891732774234">Atualização disponível. Mais opções</translation>
@@ -355,6 +359,7 @@ Toque sem soltar em qualquer palavra para pesquisar. Para refinar a sua pesquisa
 <translation id="358794129225322306">Permitir que um site transfira vários ficheiros automaticamente.</translation>
 <translation id="3590487821116122040">Armazenamento do site que o Chrome não considera importante (por exemplo, sites sem definições guardadas ou aos quais não acede com frequência)</translation>
 <translation id="3594780231884063836">Desativar o som do vídeo</translation>
+<translation id="3596414637720633074">Bloqueie cookies de terceiros na Navegação anónima.</translation>
 <translation id="3599863153486145794">Limpa o histórico de todos os dispositivos com sessão iniciada. A sua Conta Google pode ter outras formas do histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Desativar o som dos sites que reproduzem som</translation>
 <translation id="3616113530831147358">Áudio</translation>
@@ -921,6 +926,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="780301667611848630">Não, obrigado</translation>
 <translation id="7810647596859435254">Abrir com…</translation>
 <translation id="7821588508402923572">A sua poupança de dados é apresentada aqui</translation>
+<translation id="7828557259026017104">Os cookies são ficheiros criados pelos Websites que visitou. Os sites utilizam os cookies para memorizar as suas preferências. Os cookies de terceiros são criados por outros sites. Estes sites possuem algum do conteúdo, tal como anúncios ou imagens, que vê na página Web que visita.</translation>
 <translation id="783819812427904514">Reativar o som do vídeo</translation>
 <translation id="784934925303690534">Intervalo de tempo</translation>
 <translation id="7851858861565204677">Outros aparelhos</translation>
@@ -941,6 +947,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="79859296434321399">Para ver conteúdo de realidade aumentada, instale o ARCore.</translation>
 <translation id="7986741934819883144">Selecionar um contacto</translation>
 <translation id="7987073022710626672">Termos de Utilização do Chrome</translation>
+<translation id="7993619969781047893">As funcionalidades em alguns sites podem falhar.</translation>
 <translation id="7998918019931843664">Reabrir separador fechado</translation>
 <translation id="7999064672810608036">Tem a certeza de que pretende limpar todos os dados locais, incluindo cookies, e repor todas as autorizações para este Website?</translation>
 <translation id="8004582292198964060">Navegador</translation>
@@ -1075,6 +1082,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8965591936373831584">pendente</translation>
 <translation id="8970887620466824814">Ocorreu um erro.</translation>
 <translation id="8972098258593396643">Pretende transferir para a pasta predefinida?</translation>
+<translation id="8988028529677883095">Utilizar o telemóvel como chave de segurança</translation>
 <translation id="8993760627012879038">Abrir novo separador no modo de navegação anónima</translation>
 <translation id="8998729206196772491">Está a iniciar sessão com uma conta gerida por <ph name="MANAGED_DOMAIN" /> e a conceder ao respetivo gestor o controlo dos seus dados do Chrome. Os dados ficarão permanentemente associados a esta conta. Terminar sessão no Chrome elimina os seus dados deste dispositivo, embora permaneçam armazenados na Conta Google.</translation>
 <translation id="9019902583201351841">Gerido pelos teus pais</translation>

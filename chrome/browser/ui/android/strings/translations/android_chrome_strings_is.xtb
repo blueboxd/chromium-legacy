@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">Sendir í <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">Bætir við <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Af vefsvæðum</translation>
+<translation id="1044891598689252897">Vefsvæði virka sem skyldi</translation>
 <translation id="1049743911850919806">Fara huldu höfðu</translation>
 <translation id="10614374240317010">Aldrei vistað</translation>
 <translation id="1067922213147265141">Önnur Google þjónusta</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">Ekki er hægt að deila <ph name="CONTENT_TYPE" /></translation>
 <translation id="1477626028522505441">Niðurhal á <ph name="FILE_NAME" /> mistókst vegna vandamála á netþjóni.</translation>
 <translation id="1506061864768559482">Leitarvél</translation>
+<translation id="1509960214886564027">Eiginleikar gætu bilað á mörgum vefsvæðum</translation>
 <translation id="1513352483775369820">Bókamerki og vefferill</translation>
 <translation id="1513858653616922153">Eyða aðgangsorði</translation>
 <translation id="1521774566618522728">Virkt í dag</translation>
@@ -235,6 +237,7 @@ Haltu fingri á hvaða orði sem er til að leita að því. Veldu fleiri eða f
 <translation id="2647434099613338025">Bæta tungumáli við</translation>
 <translation id="2650751991977523696">Sækja skrá aftur?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# hljóðskrá}one{# hljóðskrá}other{# hljóðskrár}}</translation>
+<translation id="2687403674020088961">Loka á öll fótspor (ekki mælt með)</translation>
 <translation id="2707726405694321444">Endurnýja síðu</translation>
 <translation id="2709516037105925701">Sjálfvirk útfylling</translation>
 <translation id="2717722538473713889">Netföng</translation>
@@ -340,6 +343,7 @@ Haltu fingri á hvaða orði sem er til að leita að því. Veldu fleiri eða f
 <translation id="3478363558367712427">Þú getur valið leitarvélina þína</translation>
 <translation id="3492207499832628349">Nýr huliðsflipi</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Frekari upplýsingar<ph name="END_LINK" /> um uppástungur að efni</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Aukinn veruleiki</translation>
 <translation id="3518985090088779359">Samþykkja og áfram</translation>
 <translation id="3522247891732774234">Uppfærsla í boði. Fleiri valkostir</translation>
@@ -355,6 +359,7 @@ Haltu fingri á hvaða orði sem er til að leita að því. Veldu fleiri eða f
 <translation id="358794129225322306">Leyfa vefsvæði að sækja margar skrár sjálfkrafa.</translation>
 <translation id="3590487821116122040">Geymsla vefsvæða sem Chrome telur ekki mikilvæg (t.d. vefsvæði með engar vistaðar stillingar eða sem þú heimsækir sjaldan)</translation>
 <translation id="3594780231884063836">Slökkva á mynd</translation>
+<translation id="3596414637720633074">Loka á fótspor þriðju aðila í huliðsstillingu</translation>
 <translation id="3599863153486145794">Hreinsar ferilinn úr öllum innskráðum tækjum. Google reikningurinn þinn kann að vera með annars konar vefskoðunarferil á <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Slökkva á hljóði vefsvæða sem spila hljóð</translation>
 <translation id="3616113530831147358">Hljóð</translation>
@@ -921,6 +926,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="780301667611848630">Nei, takk</translation>
 <translation id="7810647596859435254">Opna með…</translation>
 <translation id="7821588508402923572">Gagnasparnaður birtist hér</translation>
+<translation id="7828557259026017104">Fótspor eru skrár sem myndast á vefsvæðum sem þú heimsækir. Svæði geta notað þau til að muna kjörstillingar þínar. Fótspor frá þriðja aðila eru búin til af öðrum vefsvæðum. Þessi vefsvæði eiga eitthvað af efninu, eins og auglýsingar eða myndir, sem þú sérð á vefsíðunni sem þú heimsækir.</translation>
 <translation id="783819812427904514">Kveikja á mynd</translation>
 <translation id="784934925303690534">Tímabil</translation>
 <translation id="7851858861565204677">Önnur tæki</translation>
@@ -941,6 +947,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="79859296434321399">Til að skoða efni aukins veruleika skaltu setja upp ARCore</translation>
 <translation id="7986741934819883144">Velja tengilið</translation>
 <translation id="7987073022710626672">Þjónustuskilmálar Chrome</translation>
+<translation id="7993619969781047893">Ekki er víst að allir eiginleikar á öllum vefsvæðum virki</translation>
 <translation id="7998918019931843664">Opna aftur flipa sem var lokað</translation>
 <translation id="7999064672810608036">Ertu viss um að þú viljir hreinsa öll staðbundin gögn fyrir þetta vefsvæði, þar á meðal fótspor, og endurstilla allar heimildir þess?</translation>
 <translation id="8004582292198964060">Vafri</translation>
@@ -1075,6 +1082,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="8965591936373831584">bíður</translation>
 <translation id="8970887620466824814">Eitthvað fór úrskeiðis.</translation>
 <translation id="8972098258593396643">Hlaða niður í sjálfgefna möppu?</translation>
+<translation id="8988028529677883095">Nota síma sem öryggislykil</translation>
 <translation id="8993760627012879038">Opna nýjan flipa í huliðsstillingu</translation>
 <translation id="8998729206196772491">Þú ert að skrá þig út af reikningi sem <ph name="MANAGED_DOMAIN" /> stýrir og veitir í leiðinni stjórnanda lénsins umsjón með Chrome gögnunum þínum. Gögnin þín verða tengd við þennan reikning til frambúðar. Ef þú skráir þig út af Chrome verður gögnunum þínum á þessu tæki eytt, en þau verða áfram geymd á Google reikningnum þínum.</translation>
 <translation id="9019902583201351841">Stjórnað af foreldrum þínum</translation>

@@ -7,7 +7,6 @@ variant = "blink"
 for_blink = true
 
 _typemap_imports = [
-  "//cc/typemaps.gni",
   "//device/gamepad/public/cpp/typemaps.gni",
   "//device/vr/public/mojom/blink_typemaps.gni",
   "//media/learning/mojo/public/cpp/typemaps.gni",

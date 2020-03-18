@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">Сигнал средње јачине</translation>
 <translation id="4112140312785995938">Премотај уназад</translation>
 <translation id="4129129681837227511">Да бисте видели обавештења на закључаном екрану, откључајте га како бисте променили подешавање</translation>
+<translation id="4144413954005649103">Када кликнете десним татером или притиснете и задржите, Помоћник вам приказује информације на основу онога што изаберете на екрану.</translation>
 <translation id="4146833061457621061">Пусти музику</translation>
 <translation id="4149156641122542261">Уређајем <ph name="DEVICE_TYPE" /> управља <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Језици</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">Прикажи тастатуру на екрану</translation>
 <translation id="6164005077879661055">Све датотеке и локални подаци повезани са корисником под надзором ће бити трајно избрисани када уклоните овог корисника под надзором. Менаџер ће можда и даље моћи да види посећене веб-сајтове и подешавања за овог корисника под надзором на <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
+<translation id="6236290670123303279">Управљајте подешавањима</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Хоризонтални приказ је закључан</translation>
 <translation id="6259254695169772643">Изаберите помоћу писаљке</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">Укључено</translation>
 <translation id="6670153871843998651">Радна површина 3</translation>
 <translation id="6691659475504239918">Тастер за претрагу + Shift + H</translation>
+<translation id="6692996468359469499">Пронађите информације у вези са вашим избором</translation>
 <translation id="6696025732084565524">Треба да инсталирате важно ажурирање за одвојиву тастатуру</translation>
 <translation id="6700713906295497288">Дугме IME менија</translation>
 <translation id="6713285437468012787">Bluetooth уређај „<ph name="DEVICE_NAME" />“ је упарен и сада је доступан свим корисницима. Можете да уклоните то упаривање помоћу Подешавања.</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895">Налогом управљају <ph name="FIRST_PARENT_EMAIL" /> и <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">Режим високог контраста</translation>
 <translation id="7977927628060636163">Траже се мобилне мреже…</translation>
+<translation id="7980780401175799550">Испробајте нове начине за кретање кроз Chrome ОС</translation>
 <translation id="7982789257301363584">Мрежа</translation>
 <translation id="7984197416080286869">Превише покушаја откључавања помоћу отиска прста</translation>
 <translation id="7994370417837006925">Вишеструко пријављивање</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835">Користи се <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Прилагоди језике и унос...</translation>
 <translation id="8192202700944119416">Обавештења су сакривена.</translation>
+<translation id="8196787716797768628">Користите покрете да бисте брзо прелазили са једне апликације на другу и имали иинтеракцију са Chromebook-ом у режиму таблета.</translation>
 <translation id="8203795194971602413">Десни клик</translation>
 <translation id="8236042855478648955">Време је за паузу</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />, батерија телефона <ph name="BATTERY_STATUS" /></translation>

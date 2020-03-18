@@ -19,7 +19,7 @@
 // BluetoothChooserController is a chooser that presents a list of
 // Bluetooth device names, which come from |bluetooth_chooser_desktop_|.
 // It can be used by WebBluetooth API to get the user's permission to
-// access a Bluetooth device. It is owned by ChooserBubbleDelegate.
+// access a Bluetooth device.
 class BluetoothChooserController : public ChooserController {
  public:
   BluetoothChooserController(

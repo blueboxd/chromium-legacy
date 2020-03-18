@@ -5,6 +5,7 @@
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> құрылғысына жіберілуде…</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> енгізілуде…</translation>
 <translation id="1041308826830691739">Вебсайттардан</translation>
+<translation id="1044891598689252897">Сайттар қалыпты күйде жұмыс істейді.</translation>
 <translation id="1049743911850919806">Инкогнито</translation>
 <translation id="10614374240317010">Ешқашан сақталмайды</translation>
 <translation id="1067922213147265141">Басқа Google қызметтері</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> бөлісу мүмкін емес</translation>
 <translation id="1477626028522505441">Сервердегі ақаулықтар себебінен <ph name="FILE_NAME" /> жүктелмеді.</translation>
 <translation id="1506061864768559482">Іздеу жүйесі</translation>
+<translation id="1509960214886564027">Көптеген сайттағы функциялар дұрыс жұмыс істемеуі мүмкін.</translation>
 <translation id="1513352483775369820">Бетбелгілер мен веб-журнал</translation>
 <translation id="1513858653616922153">Құпия сөзді жою</translation>
 <translation id="1521774566618522728">Бүгін белсенді болды</translation>
@@ -235,6 +237,7 @@
 <translation id="2647434099613338025">Тіл қосу</translation>
 <translation id="2650751991977523696">Файл қайта жүктеп алынсын ба?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудиофайл}other{# аудиофайл}}</translation>
+<translation id="2687403674020088961">Барлық cookie файлын бөгеу (ұсынылмайды)</translation>
 <translation id="2707726405694321444">Бетті жаңарту</translation>
 <translation id="2709516037105925701">Автотолтыру</translation>
 <translation id="2717722538473713889">электрондық пошта мекенжайлары</translation>
@@ -340,6 +343,7 @@
 <translation id="3478363558367712427">Іздеу жүйесін таңдай аласыз.</translation>
 <translation id="3492207499832628349">Жаңа жасырын қойынды</translation>
 <translation id="3493531032208478708">Ұсынылған мазмұн туралы <ph name="BEGIN_LINK" />толығырақ<ph name="END_LINK" /></translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Толықтырылған шындық</translation>
 <translation id="3518985090088779359">Қабылдап, жалғастыру</translation>
 <translation id="3522247891732774234">Жаңа нұсқа қолжетімді. Қосымша опциялар</translation>
@@ -355,6 +359,7 @@
 <translation id="358794129225322306">Сайтқа бірнеше файлды автоматты түрде жүктеу рұқсатын беру.</translation>
 <translation id="3590487821116122040">Маңызды деп саналмайтын сайт деректері (мысалы, параметрлері сақталмаған немесе сіз жиі кірмейтін сайттар)</translation>
 <translation id="3594780231884063836">Бейненің дыбысын өшіру</translation>
+<translation id="3596414637720633074">Инкогнито режимінде үшінші тарап cookie файлдарын бөгеу</translation>
 <translation id="3599863153486145794">Барлық жүйеге кірген құрылғылардан тарихты өшіреді.<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> мекенжайында Google есептік жазбасымен шолу тарихының басқа да үлгілері болуы мүмкін.</translation>
 <translation id="3600792891314830896">Сайттардың дыбысы өшірілді</translation>
 <translation id="3616113530831147358">Аудио</translation>
@@ -921,6 +926,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="780301667611848630">Жоқ, рақмет</translation>
 <translation id="7810647596859435254">Ашу әдісі…</translation>
 <translation id="7821588508402923572">Деректерді үнемдеу ақпараты осы жерде көрсетіледі</translation>
+<translation id="7828557259026017104">Cookie файлдары сайттарға кірген кезде жасалады. Сайттар оларды параметрлер есте сақталуы үшін пайдаланады. Үшінші тараптың cookie файлдары басқа сайттарда жасалады. Бұл сайттарда сіз кірген сайттың мазмұны (мысалы, жарнамалар немесе суреттер) болады.</translation>
 <translation id="783819812427904514">Бейненің дыбысын қосу</translation>
 <translation id="784934925303690534">Уақыт ауқымы</translation>
 <translation id="7851858861565204677">Басқа құрылғылар</translation>
@@ -941,6 +947,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="79859296434321399">Толықтырылған шындық мазмұнын көру үшін ARCore платформасын орнатыңыз</translation>
 <translation id="7986741934819883144">Контактіні таңдау</translation>
 <translation id="7987073022710626672">Chrome қызмет шарттары</translation>
+<translation id="7993619969781047893">Кейбір сайттағы функциялар дұрыс жұмыс істемеуі мүмкін.</translation>
 <translation id="7998918019931843664">Жабық қойындыны қайта ашу</translation>
 <translation id="7999064672810608036">Cookie файлдарын қоса, барлық жергілікті деректерді өшіруді және осы веб-сайтқа арналған барлық рұқсаттарды қалпына келтіруді қалайсыз ба?</translation>
 <translation id="8004582292198964060">Браузер</translation>
@@ -1075,6 +1082,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="8965591936373831584">күтілуде</translation>
 <translation id="8970887620466824814">Бірдеңе дұрыс болмады.</translation>
 <translation id="8972098258593396643">Әдепкі қалтаға жүктеп алынсын ба?</translation>
+<translation id="8988028529677883095">Телефонды қауіпсіздік кілті ретінде пайдалану</translation>
 <translation id="8993760627012879038">Жаңа қойындыны инкогнито режимінде ашу</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> басқаратын есептік жазбамен кірудесіз және оның әкімшісіне Chrome деректерін басқару құқығы берілуде. Деректер бұл есептік жазбаға біржола байланыстырылады. Chrome жүйесінен шыққанда, деректер бұл құрылғыдан жойылады, бірақ Google есептік жазбасында сақталады.</translation>
 <translation id="9019902583201351841">Ата-аналар басқарады</translation>

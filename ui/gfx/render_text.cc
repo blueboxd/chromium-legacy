@@ -1598,8 +1598,7 @@ void RenderText::UpdateDisplayText(float text_width) {
   EnsureLayoutTextUpdated();
 
   // TODO(krb): Consider other elision modes for multiline.
-  if ((multiline_ && (!max_lines_ || (elide_behavior() != ELIDE_TAIL &&
-                                      elide_behavior() != TRUNCATE_HEAD))) ||
+  if ((multiline_ && (!max_lines_ || elide_behavior() != ELIDE_TAIL)) ||
       elide_behavior() == NO_ELIDE || elide_behavior() == FADE_TAIL ||
       (text_width > 0 && text_width < display_rect_.width()) ||
       layout_text_.empty()) {
@@ -1628,31 +1627,18 @@ void RenderText::UpdateDisplayText(float text_width) {
     render_text->EnsureLayout();
 
     if (render_text->GetShapedText()->lines().size() > max_lines_) {
-      if (elide_behavior() == TRUNCATE_HEAD) {
-        size_t num_lines = render_text->GetShapedText()->lines().size();
-        if (num_lines > max_lines_) {
-          internal::Line line =
-              render_text->GetShapedText()->lines()[num_lines - max_lines_];
-          int start_index = line.segments[0].char_range.GetMin();
-          int end_index = render_text->text().size();
-          display_text_.assign(layout_text_.substr(start_index, end_index));
-        }
-      } else {
-        DCHECK_EQ(ELIDE_TAIL, elide_behavior());
-        // Find the start and end index of the line to be elided.
-        Range line_range =
-            GetLineRange(layout_text_,
-                         render_text->GetShapedText()->lines()[max_lines_ - 1]);
-        // Add an ellipsis character in case the last line is short enough to
-        // fit on a single line. Otherwise that character will be elided anyway.
-        base::string16 text_to_elide =
-            layout_text_.substr(line_range.start(), line_range.length()) +
-            base::string16(kEllipsisUTF16);
-        display_text_.assign(layout_text_.substr(0, line_range.start()) +
-                             Elide(text_to_elide, 0,
-                                   static_cast<float>(display_rect_.width()),
-                                   ELIDE_TAIL));
-      }
+      // Find the start and end index of the line to be elided.
+      Range line_range = GetLineRange(
+          layout_text_, render_text->GetShapedText()->lines()[max_lines_ - 1]);
+      // Add an ellipsis character in case the last line is short enough to fit
+      // on a single line. Otherwise that character will be elided anyway.
+      base::string16 text_to_elide =
+          layout_text_.substr(line_range.start(), line_range.length()) +
+          base::string16(kEllipsisUTF16);
+      display_text_.assign(layout_text_.substr(0, line_range.start()) +
+                           Elide(text_to_elide, 0,
+                                 static_cast<float>(display_rect_.width()),
+                                 ELIDE_TAIL));
       // Have GetLineBreaks() re-calculate.
       line_breaks_.SetMax(0);
     } else {

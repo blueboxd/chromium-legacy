@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Inser</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;Tout sélectionner</translation>
-<translation id="1938451708255335766">Pour ajuster la densité d'affichage de la fenêtre, redémarrez l'application.</translation>
 <translation id="2006524834898217237">Assurez-vous que cet appareil est connecté à Internet.</translation>
 <translation id="208586643495776849">Veuillez réessayer</translation>
 <translation id="2090963878406559571">Pour envoyer un numéro de <ph name="ORIGIN" /> vers votre téléphone Android, <ph name="TROUBLESHOOT_LINK" /> pour les deux appareils dans les paramètres.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Écran intégré</translation>
 <translation id="335581015389089642">Parole</translation>
 <translation id="3389286852084373014">La taille du texte est trop grande</translation>
-<translation id="3479552764303398839">Pas maintenant</translation>
 <translation id="348799646910989694">L'étagère est masquée automatiquement</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> a été épinglé</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 jour restant}one{# jour restant}other{# jours restants}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}one{# min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Actif aujourd'hui}=1{Actif il y a 1 jour}one{Actif il y a # jour}other{Actif il y a # jours}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 jour et }one{# jour et }other{# jours et }}</translation>
+<translation id="5789643057113097023">,</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{dans 1 an}one{dans # an}other{dans # ans}}</translation>
-<translation id="5895138241574237353">Redémarrer</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 seconde restante}one{# seconde restante}other{# secondes restantes}}</translation>
 <translation id="5941711191222866238">Réduire</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 heure}one{# heure}other{# heures}}</translation>

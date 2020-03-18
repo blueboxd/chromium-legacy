@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Seleziona &amp;tutto</translation>
-<translation id="1938451708255335766">Riavvia l'app per regolare la densità della visualizzazione della finestra.</translation>
 <translation id="2006524834898217237">Assicurati che questo dispositivo sia connesso a Internet.</translation>
 <translation id="208586643495776849">Riprova</translation>
 <translation id="2090963878406559571">Per inviare un numero da <ph name="ORIGIN" /> al tuo telefono Android, <ph name="TROUBLESHOOT_LINK" /> per entrambi i dispositivi nelle impostazioni.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Display incorporato</translation>
 <translation id="335581015389089642">Voce</translation>
 <translation id="3389286852084373014">Il testo è troppo grande</translation>
-<translation id="3479552764303398839">Non adesso</translation>
 <translation id="348799646910989694">Shelf nascosto in automatico</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> è stato bloccato</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 giorno rimanente}other{# giorni rimanenti}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Ultima attività: oggi}=1{Ultima attività: 1 giorno fa}other{Ultima attività: # giorni fa}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 giorno e }other{# giorni e }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{tra 1 a}other{tra # a}}</translation>
-<translation id="5895138241574237353">Riavvia</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 secondo rimanente}other{# secondi rimanenti}}</translation>
 <translation id="5941711191222866238">Riduci a icona</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ora}other{# ore}}</translation>

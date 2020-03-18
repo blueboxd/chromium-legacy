@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">วิธีการรับสินค้า</translation>
 <translation id="1281476433249504884">สแต็กเกอร์ 1</translation>
 <translation id="1285320974508926690">ไม่ต้องแปลเว็บไซต์นี้</translation>
-<translation id="1285400217480592994">สแกนเนื้อหาในไฟล์ที่คุณดาวน์โหลดหรืออัปโหลดใน Chrome</translation>
 <translation id="1292701964462482250">"ซอฟต์แวร์ในคอมพิวเตอร์ของคุณทำให้ Chrome เชื่อมต่อกับเว็บอย่างปลอดภัยไม่ได้" (คอมพิวเตอร์ที่ใช้ระบบปฏิบัติการ Windows เท่านั้น)</translation>
 <translation id="1294154142200295408">บรรทัดคำสั่งรูปแบบต่างๆ</translation>
 <translation id="129553762522093515">เพิ่งปิด</translation>
@@ -645,6 +644,7 @@
 <translation id="3784372983762739446">อุปกรณ์บลูทูธ</translation>
 <translation id="3787705759683870569">หมดอายุ <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">ขนาด 16</translation>
+<translation id="3793574014653384240">จำนวนและสาเหตุของการขัดข้องที่เกิดขึ้นเมื่อเร็วๆ นี้</translation>
 <translation id="3797522431967816232">Prc3 (ซองจดหมาย)</translation>
 <translation id="3799805948399000906">ขอแบบอักษรแล้ว</translation>
 <translation id="3807366285948165054">เปลี่ยนตำแหน่งรูปภาพตามแกน X</translation>

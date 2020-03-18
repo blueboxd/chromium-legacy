@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">மெனு உருப்படி</translation>
 <translation id="10623998915015855">நிலைமாற்றுவதற்கான பொத்தான்</translation>
 <translation id="1088086359088493902">வினாடிகள்</translation>
+<translation id="1142001580032786438">வாரத் தேர்வுக் கருவியைக் காட்டும்</translation>
 <translation id="1171774979989969504">ஒரு மின்னஞ்சல் முகவரியை உள்ளிடவும்.</translation>
 <translation id="1178581264944972037">இடைநிறுத்து</translation>
 <translation id="1188858454923323853">ஈடுசெய்யக்கூடியது</translation>
@@ -114,7 +115,9 @@
 <translation id="479989351350248267">தேடல்</translation>
 <translation id="4812940957355064477">எண்ணை உள்ளிடுக.</translation>
 <translation id="4912536737030637138">நூல்விவர அட்டவணை உள்ளீடு</translation>
+<translation id="4915360478455618802">நேரத் தேர்வுக் கருவியைக் காட்டும்</translation>
 <translation id="492244087561876220">கருத்து</translation>
+<translation id="4950364064308314478">உள்ளூர் தேதி மற்றும் நேரத் தேர்வுக் கருவியைக் காட்டும்</translation>
 <translation id="4971739861736909480"><ph name="ACCNAME" /> தேர்ந்தெடுக்கப்பட்டது</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> தேர்ந்தெடுக்கப்பட்டன</translation>
 <translation id="4992066212339426712">ஒலி இயக்கு</translation>
@@ -233,6 +236,7 @@
 <translation id="8284326494547611709">வசனங்கள்</translation>
 <translation id="8346634859695247203">பிரிவு</translation>
 <translation id="835897206747267392">செல்லாத மதிப்பு.</translation>
+<translation id="839593075537728968">நேரமானது <ph name="MINIMUM_TIME" />-<ph name="MAXIMUM_TIME" />க்கு இடையில் இருக்க வேண்டும்</translation>
 <translation id="8403857369060869934">முடிவடைந்த நேரம்: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">பகுதி</translation>
 <translation id="8433900881053900389">கருவிப்பட்டி</translation>
@@ -249,6 +253,7 @@
 <translation id="860475260694818407">உள்ளடக்க அட்டவணை</translation>
 <translation id="8613126697340063924">தொலைநிலை இயக்கத்தைக் கட்டுப்படுத்தவும்</translation>
 <translation id="862370744433916922">துணை தலைப்பு</translation>
+<translation id="8634971699417195529">மாதத் தேர்வுக் கருவியைக் காட்டும்</translation>
 <translation id="8711688047404765493">வெளியீடு</translation>
 <translation id="8750798805984357768">தயவுசெய்து இந்த விருப்பங்களில் ஒன்றைத் தேர்ந்தெடுங்கள்.</translation>
 <translation id="8808573423886751634">அத்தியாயம்</translation>

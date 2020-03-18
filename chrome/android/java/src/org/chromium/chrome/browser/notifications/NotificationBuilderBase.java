@@ -24,8 +24,8 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.chrome.browser.favicon.RoundedIconGenerator;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.ui.favicon.RoundedIconGenerator;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

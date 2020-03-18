@@ -2233,8 +2233,7 @@ void Document::UpdateStyleInvalidationIfNeeded() {
 
 void Document::SetupFontBuilder(ComputedStyle& document_style) {
   FontBuilder font_builder(this);
-  CSSFontSelector* selector = GetStyleEngine().GetFontSelector();
-  font_builder.CreateFontForDocument(selector, document_style);
+  font_builder.CreateFontForDocument(document_style);
 }
 
 #define PROPAGATE_FROM(source, getter, setter, initial) \

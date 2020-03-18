@@ -60,6 +60,7 @@ source_set("headers") {
     "css/navigation_controls.h",
     "css/preferred_color_scheme.h",
     "device_memory/approximated_device_memory.h",
+    "devtools/web_device_emulation_params.h",
     "dom_storage/session_storage_namespace_id.h",
     "experiments/memory_ablation_experiment.h",
     "feature_policy/document_policy.h",

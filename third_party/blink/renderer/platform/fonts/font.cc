@@ -52,6 +52,11 @@ Font::Font() = default;
 
 Font::Font(const FontDescription& fd) : font_description_(fd) {}
 
+Font::Font(const FontDescription& font_description, FontSelector* font_selector)
+    : font_description_(font_description),
+      font_fallback_list_(
+          font_selector ? FontFallbackList::Create(font_selector) : nullptr) {}
+
 Font::Font(const Font& other) = default;
 
 Font& Font::operator=(const Font& other) {
@@ -87,7 +92,7 @@ void Font::Update(FontSelector* font_selector) const {
   // in trouble). Still, this is pretty disgusting, and could eventually be
   // rectified by using RefPtrs for Fonts themselves.
   if (!font_fallback_list_)
-    font_fallback_list_ = FontFallbackList::Create();
+    font_fallback_list_ = FontFallbackList::Create(nullptr);
   font_fallback_list_->Invalidate(font_selector);
 }
 

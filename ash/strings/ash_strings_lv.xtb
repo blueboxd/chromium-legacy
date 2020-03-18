@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">Vidēji spēcīgs signāls</translation>
 <translation id="4112140312785995938">Pārtīt atpakaļ</translation>
 <translation id="4129129681837227511">Lai skatītu paziņojumus bloķēšanas ekrānā, atbloķējiet, lai mainītu iestatījumu</translation>
+<translation id="4144413954005649103">Ja noklikšķināsiet uz ekrānā redzamā satura ar peles labo pogu vai nospiedīsiet un turēsiet saturu, Asistents parādīs ar to saistītu informāciju.</translation>
 <translation id="4146833061457621061">Atskaņot mūziku</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> pārvalda domēns <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Valodas</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">Rādīt ekrāna tastatūru</translation>
 <translation id="6164005077879661055">Visi faili un lokālie dati, kas ir saistīti ar uzraudzīto lietotāju, tiks neatgriezeniski dzēsti, tiklīdz uzraudzītais lietotājs tiks noņemts. Iespējams, pārzinis joprojām varēs skatīt šī uzraudzītā lietotāja apmeklētās vietnes un iestatījumus (vietnē <ph name="MANAGEMENT_URL" />).</translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
+<translation id="6236290670123303279">Pārvaldīt iestatījumus</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Bloķēts horizontāli</translation>
 <translation id="6259254695169772643">Atlasīšanai izmantojiet skārienekrāna pildspalvu.</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">Ieslēgts</translation>
 <translation id="6670153871843998651">3. galds</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
+<translation id="6692996468359469499">Iespēja saņemt informāciju par atlasīto saturu</translation>
 <translation id="6696025732084565524">Noņemamajai tastatūrai nepieciešams svarīgs atjauninājums</translation>
 <translation id="6700713906295497288">IME izvēlnes poga</translation>
 <translation id="6713285437468012787">Bluetooth ierīce “<ph name="DEVICE_NAME" />” ir savienota pārī un ir pieejama visiem lietotājiem. Lai pārtrauktu šo savienojumus, atveriet iestatījumus.</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895">Kontu pārvalda <ph name="FIRST_PARENT_EMAIL" /> un <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">Augsta kontrasta režīms</translation>
 <translation id="7977927628060636163">Notiek mobilo tīklu meklēšana...</translation>
+<translation id="7980780401175799550">Izmēģiniet jaunus Chrome OS navigācijas veidus</translation>
 <translation id="7982789257301363584">Tīkls</translation>
 <translation id="7984197416080286869">Pārāk daudz mēģinājumu atbloķēt ar pirksta nospiedumu</translation>
 <translation id="7994370417837006925">Vairākkārtēja pierakstīšanās</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835">Izmantotā valoda: <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Pielāgot valodas un ievadi...</translation>
 <translation id="8192202700944119416">Paziņojumi ir paslēpti.</translation>
+<translation id="8196787716797768628">Izmantojiet žestus, lai ātri pārslēgtu lietotnes un mijiedarbotos ar Chromebook datoru planšetdatora režīmā.</translation>
 <translation id="8203795194971602413">Noklikšķināt ar peles labo pogu</translation>
 <translation id="8236042855478648955">Laiks pārtraukumam</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, signāla stiprums: <ph name="SIGNAL_STRENGTH" />, tālruņa akumulatora statuss: <ph name="BATTERY_STATUS" /></translation>

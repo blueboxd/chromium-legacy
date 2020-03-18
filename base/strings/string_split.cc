@@ -104,6 +104,11 @@ std::vector<OutputStringType> SplitStringUsingSubstrT(
   using size_type = typename Piece::size_type;
 
   std::vector<OutputStringType> result;
+  if (delimiter.size() == 0) {
+    result.emplace_back(input);
+    return result;
+  }
+
   for (size_type begin_index = 0, end_index = 0; end_index != Piece::npos;
        begin_index = end_index + delimiter.size()) {
     end_index = input.find(delimiter, begin_index);

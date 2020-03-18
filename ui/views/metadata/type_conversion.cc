@@ -271,7 +271,6 @@ DEFINE_ENUM_CONVERTERS(
     gfx::ElideBehavior,
     {gfx::ElideBehavior::NO_ELIDE, base::ASCIIToUTF16("NO_ELIDE")},
     {gfx::ElideBehavior::TRUNCATE, base::ASCIIToUTF16("TRUNCATE")},
-    {gfx::ElideBehavior::TRUNCATE_HEAD, base::ASCIIToUTF16("TRUNCATE_HEAD")},
     {gfx::ElideBehavior::ELIDE_HEAD, base::ASCIIToUTF16("ELIDE_HEAD")},
     {gfx::ElideBehavior::ELIDE_MIDDLE, base::ASCIIToUTF16("ELIDE_MIDDLE")},
     {gfx::ElideBehavior::ELIDE_TAIL, base::ASCIIToUTF16("ELIDE_TAIL")},

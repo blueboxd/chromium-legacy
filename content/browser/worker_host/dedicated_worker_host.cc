@@ -390,6 +390,16 @@ void DedicatedWorkerHost::CreateQuicTransportConnector(
                               std::move(receiver));
 }
 
+void DedicatedWorkerHost::CreateWakeLockService(
+    mojo::PendingReceiver<blink::mojom::WakeLockService> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // Unconditionally disallow wake locks from workers until
+  // WakeLockPermissionContext has been updated to no longer force the
+  // permission to "denied" and WakeLockServiceImpl checks permissions on
+  // every request.
+  return;
+}
+
 void DedicatedWorkerHost::BindCacheStorage(
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

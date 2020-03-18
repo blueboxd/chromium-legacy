@@ -1066,7 +1066,7 @@ bool AXObject::ComputeIsInertOrAriaHidden(
 }
 
 bool AXObject::IsVisible() const {
-  return !IsInertOrAriaHidden() && !IsHiddenForTextAlternativeCalculation();
+  return !IsInertOrAriaHidden() && !IsHiddenViaStyle();
 }
 
 bool AXObject::IsDescendantOfLeafNode() const {
@@ -1242,7 +1242,7 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
   if (RuntimeEnabledFeatures::AccessibilityExposeDisplayNoneEnabled()) {
     if (Element* element = GetElement()) {
       if (element->FastHasAttribute(html_names::kIdAttr) &&
-          IsHiddenForTextAlternativeCalculation()) {
+          IsHiddenViaStyle()) {
         return true;
       }
     }
@@ -1634,6 +1634,33 @@ String AXObject::RecursiveTextAlternative(const AXObject& ax_obj,
 
   return ax_obj.TextAlternative(true, in_aria_labelled_by_traversal, visited,
                                 name_from, nullptr, nullptr);
+}
+
+bool AXObject::IsHiddenViaStyle() const {
+  if (GetLayoutObject())
+    return GetLayoutObject()->Style()->Visibility() != EVisibility::kVisible;
+  if (Node* node = GetNode()) {
+    if (node->isConnected()) {
+      bool is_first_loop = true;
+      auto* element = DynamicTo<Element>(node);
+      while (element && !element->GetLayoutObject()) {
+        const ComputedStyle* style = element->EnsureComputedStyle();
+        if (is_first_loop && style->Visibility() != EVisibility::kVisible)
+          return true;
+        // CSS Display:
+        // - does not inherit
+        // - display: none affects entire subtrees regardless of descendants
+        //   attempting to override it
+        // - causes elements to have no associated layout object
+        // Therefore, check each consecutive parent without a layout object.
+        if (style->Display() == EDisplay::kNone)
+          return true;
+        element = element->parentElement();
+        is_first_loop = false;
+      }
+    }
+  }
+  return false;
 }
 
 bool AXObject::IsHiddenForTextAlternativeCalculation() const {

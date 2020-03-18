@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">Sender til <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">Tilføjer <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Fra websites</translation>
+<translation id="1044891598689252897">Websites fungerer som normalt</translation>
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="10614374240317010">Gemmes aldrig</translation>
 <translation id="1067922213147265141">Andre Google-tjenester</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">Delingen af <ph name="CONTENT_TYPE" /> mislykkedes</translation>
 <translation id="1477626028522505441">Download af <ph name="FILE_NAME" /> mislykkedes på grund af serverproblemer.</translation>
 <translation id="1506061864768559482">Søgemaskine</translation>
+<translation id="1509960214886564027">Funktioner på mange websites virker muligvis ikke</translation>
 <translation id="1513352483775369820">Bogmærker og webhistorik</translation>
 <translation id="1513858653616922153">Slet adgangskoden</translation>
 <translation id="1521774566618522728">Aktiv i dag</translation>
@@ -235,6 +237,7 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="2647434099613338025">Tilføj sprog</translation>
 <translation id="2650751991977523696">Vil du downloade filen igen?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# lydfil}one{# lydfil}other{# lydfiler}}</translation>
+<translation id="2687403674020088961">Bloker alle cookies (anbefales ikke)</translation>
 <translation id="2707726405694321444">Opdater siden</translation>
 <translation id="2709516037105925701">AutoFyld</translation>
 <translation id="2717722538473713889">Mailadresser</translation>
@@ -340,6 +343,7 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="3478363558367712427">Du kan vælge din søgemaskine</translation>
 <translation id="3492207499832628349">Ny inkognitofane</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /> om anbefalet indhold</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Augmented reality</translation>
 <translation id="3518985090088779359">Acceptér og fortsæt</translation>
 <translation id="3522247891732774234">Tilgængelig opdatering. Flere muligheder</translation>
@@ -355,6 +359,7 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="358794129225322306">Tillad, at et website kan downloade flere filer automatisk.</translation>
 <translation id="3590487821116122040">Websitelagerplads, som ikke er vigtig ifølge Chrome (f.eks. websites uden gemte indstillinger eller websites, du ikke besøger så ofte)</translation>
 <translation id="3594780231884063836">Slå lyden i videoen fra</translation>
+<translation id="3596414637720633074">Bloker tredjepartscookies i Inkognito</translation>
 <translation id="3599863153486145794">Rydder historikken på alle enheder, hvor du er logget ind. Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Lyden slås fra for websites, der afspiller lyd</translation>
 <translation id="3616113530831147358">Lyd</translation>
@@ -478,7 +483,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="4558311620361989323">Genveje på websider</translation>
 <translation id="4561979708150884304">Der er ingen forbindelse</translation>
 <translation id="4565377596337484307">Skjul adgangskode</translation>
-<translation id="4572422548854449519">Log ind på mangerstyret konto</translation>
+<translation id="4572422548854449519">Log ind på managerstyret konto</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{For # minut siden}one{For # minut siden}other{For # minutter siden}}</translation>
 <translation id="4587589328781138893">Websites</translation>
@@ -921,6 +926,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="780301667611848630">Nej tak</translation>
 <translation id="7810647596859435254">Åbn med…</translation>
 <translation id="7821588508402923572">Din databesparelse vises her</translation>
+<translation id="7828557259026017104">Cookies er filer, som oprettes af de websites, du besøger. Websites anvender dem til at huske dine præferencer. Tredjepartscookies oprettes af andre websites. Disse websites ejer noget af indholdet, f.eks. de annoncer eller billeder, der vises på den webside, du besøger.</translation>
 <translation id="783819812427904514">Slå lyden i videoen til</translation>
 <translation id="784934925303690534">Tidsinterval</translation>
 <translation id="7851858861565204677">Andre enheder</translation>
@@ -941,6 +947,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="79859296434321399">Installer ARCore for at se augmented reality-indhold</translation>
 <translation id="7986741934819883144">Vælg en kontakt</translation>
 <translation id="7987073022710626672">Chromes servicevilkår</translation>
+<translation id="7993619969781047893">Funktioner på visse websites fungerer muligvis ikke</translation>
 <translation id="7998918019931843664">Åbn lukket fane igen</translation>
 <translation id="7999064672810608036">Er du sikker på, at du vil slette alle lokale data, herunder cookies, og nulstille alle tilladelser for dette website?</translation>
 <translation id="8004582292198964060">Browser</translation>
@@ -1075,6 +1082,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8965591936373831584">afventer</translation>
 <translation id="8970887620466824814">Der opstod en fejl.</translation>
 <translation id="8972098258593396643">Vil du downloade til standardmappen?</translation>
+<translation id="8988028529677883095">Brug telefonen som en sikkerhedsnøgle</translation>
 <translation id="8993760627012879038">Åbn en ny fane i inkognitotilstand</translation>
 <translation id="8998729206196772491">Du er ved at logge ind med en konto, der administreres af <ph name="MANAGED_DOMAIN" />, hvilket giver administratoren kontrol over dine Chrome-data. Dine data tilknyttes denne konto permanent. Hvis du logger ud af Chrome, slettes dine data fra denne enhed, men de forbliver gemt på din Google-konto.</translation>
 <translation id="9019902583201351841">Administreret af dine forældre</translation>

@@ -126,6 +126,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="chrome/browser/ui/android/appmenu/internal/java/src"/>
     <classpathentry kind="src" path="chrome/browser/ui/android/appmenu/java/src"/>
     <classpathentry kind="src" path="chrome/browser/ui/android/appmenu/test/java/src"/>
+    <classpathentry kind="src" path="chrome/browser/ui/android/favicon/java/src"/>
     <classpathentry kind="src" path="chrome/browser/ui/android/native_page/java/src"/>
     <classpathentry kind="src" path="chrome/browser/ui/messages/android/java/src"/>
     <classpathentry kind="src" path="chrome/browser/util/android/java/src"/>

@@ -36,14 +36,14 @@ void ListMarker::ListStyleTypeChanged(LayoutObject& marker) {
     return;
 
   marker_text_type_ = kUnresolved;
-  marker.SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+  marker.SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kListStyleTypeChange);
 }
 
 void ListMarker::OrdinalValueChanged(LayoutObject& marker) {
   if (marker_text_type_ == kOrdinalValue) {
     marker_text_type_ = kUnresolved;
-    marker.SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+    marker.SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
         layout_invalidation_reason::kListValueChange);
   }
 }

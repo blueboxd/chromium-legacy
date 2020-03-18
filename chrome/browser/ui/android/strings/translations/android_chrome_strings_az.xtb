@@ -5,6 +5,7 @@
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> cihazına göndərilir...</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> əlavə edilir...</translation>
 <translation id="1041308826830691739">Veb səhifələrdən</translation>
+<translation id="1044891598689252897">Saytlar normal qaydada işləyəcək</translation>
 <translation id="1049743911850919806">Gizli Rejim</translation>
 <translation id="10614374240317010">Heç vaxt saxlanılmır</translation>
 <translation id="1067922213147265141">Digər Google xidmətləri</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> paylaşmaq mümkün deyil</translation>
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> faylının endirilməsi server problemləri səbəbindən alınmadı.</translation>
 <translation id="1506061864768559482">Axtarış mühərriki</translation>
+<translation id="1509960214886564027">Bir çox saytdakı xüsusiyyətlər işləməyə bilər</translation>
 <translation id="1513352483775369820">Əlfəcin və veb tarixçəsi</translation>
 <translation id="1513858653616922153">Parolu silin</translation>
 <translation id="1521774566618522728">Bu gün aktivdir</translation>
@@ -235,6 +237,7 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="2647434099613338025">Dil əlavə edin</translation>
 <translation id="2650751991977523696">Fayl yenidən endirilsin?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Audio fayl}other{# Audio fayl}}</translation>
+<translation id="2687403674020088961">Bütün kukiləri bloklayın (tövsiyə edilmir)</translation>
 <translation id="2707726405694321444">Səhifəni yeniləyin</translation>
 <translation id="2709516037105925701">Avtomatik doldurma</translation>
 <translation id="2717722538473713889">E-poçt ünvanları</translation>
@@ -340,6 +343,7 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="3478363558367712427">Axtarış maşınını seçə bilərsiniz</translation>
 <translation id="3492207499832628349">Yeni gizli panel</translation>
 <translation id="3493531032208478708">Təklif məzmunu haqqında <ph name="BEGIN_LINK" />daha ətraflı<ph name="END_LINK" /></translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Artırılmış Reallıq</translation>
 <translation id="3518985090088779359">Qəbul edin və davam edin</translation>
 <translation id="3522247891732774234">Güncəlləmə əlçatandır. Daha çox seçim</translation>
@@ -355,6 +359,7 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="358794129225322306">Sayta çoxsaylı faylları avtomatik endirmək icazəsi verin.</translation>
 <translation id="3590487821116122040">Sayt yaddaşı Chrome vacib olduğunu düşünmür (məs. yadda saxlanmayan ayarlar ilə olan və ya tez-tez daxil olmadığınız saytlar)</translation>
 <translation id="3594780231884063836">Videonu səssiz rejimə keçirin</translation>
+<translation id="3596414637720633074">Anonim rejimdə üçüncü tərəf kukilərini bloklayın</translation>
 <translation id="3599863153486145794">Bütün daxil olunmuş cihazlardan tarixçəni silir. <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> linkində Google Hesabına məxsus axtarış tarixçəsinin başqa formaları ola bilər.</translation>
 <translation id="3600792891314830896">Səs oxudan saytları səssiz rejimə keçirin</translation>
 <translation id="3616113530831147358">Audio</translation>
@@ -919,6 +924,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="780301667611848630">Yox, çox sağ olun</translation>
 <translation id="7810647596859435254">Bununla açın...</translation>
 <translation id="7821588508402923572">Data istifadəsi burada görünəcək</translation>
+<translation id="7828557259026017104">Kukilər daxil olduğunuz veb saytların yaratdığı fayllardır. Saytlar tərcihlərinizi yadda saxlamaq üçün onlardan istifadə edir. Üçüncü tərəf kukiləri başqa saytlar tərəfindən yaradılır. Bu saytlar daxil olduğunuz veb səhifədə gördüyünüz reklam və ya şəkillər kimi bəzi məzmunların sahibidir.</translation>
 <translation id="783819812427904514">Videonu səssiz rejimdən çıxarın</translation>
 <translation id="784934925303690534">Vaxt aralığı</translation>
 <translation id="7851858861565204677">Digər cihazlar</translation>
@@ -939,6 +945,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="79859296434321399">Təkmilləşdirilmiş virtual reallıq kontentinə baxmaq üçün ARCore'u quraşdırın</translation>
 <translation id="7986741934819883144">Kontakt seçin</translation>
 <translation id="7987073022710626672">Chrome xidmət şərtləri</translation>
+<translation id="7993619969781047893">Bəzi saytlardakı xüsusiyyətlər işləməyə bilər</translation>
 <translation id="7998918019931843664">Qapalı nişanı yenidən</translation>
 <translation id="7999064672810608036">Bütün lokal datanı silmək və bu sayt üçün bütün icazələri sıfırlamaq istəyirsiniz?</translation>
 <translation id="8004582292198964060">Brauzer</translation>
@@ -1073,6 +1080,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="8965591936373831584">gözlənilir</translation>
 <translation id="8970887620466824814">Xəta baş verdi.</translation>
 <translation id="8972098258593396643">Defolt qovluğa endirilsin?</translation>
+<translation id="8988028529677883095">Təhlükəsizlik açarı kimi telefondan istifadə edin</translation>
 <translation id="8993760627012879038">Incognito rejimində yeni panel açın</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> tərəfindən idarə olunan hesab ilə daxil olursunuz və onun administratoruna Chrome datanız üzərində nəzarəti verirsiniz. Datanız həmişəlik bu hesab ilə əlaqələndiriləcək. Chrome'dan çıxmaq datanızı bu cihazdan siləcək, lakin data Google Hesabında qalacaq.</translation>
 <translation id="9019902583201351841">Valideynləriniz tərəfindən idarə olunur</translation>

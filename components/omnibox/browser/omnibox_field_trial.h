@@ -415,6 +415,13 @@ bool IsExperimentalKeywordModeEnabled();
 // is enabled.
 bool IsMaxURLMatchesFeatureEnabled();
 
+// Rich autocompletion.
+bool IsRichAutocompletionEnabled();
+bool RichAutocompletionAutocompleteTitles();
+bool RichAutocompletionTwoLineOmnibox();
+bool RichAutocompletionShowTitles();
+bool RichAutocompletionAutocompleteNonPrefix();
+
 // ---------------------------------------------------------
 // Clipboard URL suggestions:
 
@@ -489,6 +496,12 @@ extern const char kOnDeviceHeadSuggestDemoteMode[];
 // previous one unless overridden by a field trial parameter.
 // Non-const because some unittests modify this value.
 extern int kDefaultMinimumTimeBetweenSuggestQueriesMs;
+
+// Parameter names used for rich autocompletion variations.
+extern const char kRichAutocompletionAutocompleteTitlesParam[];
+extern const char kRichAutocompletionTwoLineOmniboxParam[];
+extern const char kRichAutocompletionShowTitlesParam[];
+extern const char kRichAutocompletionAutocompleteNonPrefix[];
 
 namespace internal {
 // The bundled omnibox experiment comes with a set of parameters

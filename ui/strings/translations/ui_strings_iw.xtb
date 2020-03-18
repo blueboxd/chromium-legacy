@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652">%<ph name="NUMBER" /></translation>
 <translation id="1901303067676059328">בחר &amp;הכל</translation>
-<translation id="1938451708255335766">כדי להתאים את דחיסות התצוגה של החלון, צריך להפעיל מחדש את האפליקציה.</translation>
 <translation id="2006524834898217237">יש לוודא שהמכשיר הזה מחובר לאינטרנט.</translation>
 <translation id="208586643495776849">יש לנסות שוב</translation>
 <translation id="2090963878406559571">‏כדי לשלוח מספר מ-<ph name="ORIGIN" /> לטלפון ה-Android שלך, צריך <ph name="TROUBLESHOOT_LINK" /> בהגדרות של שני המכשירים.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">מסך מובנה</translation>
 <translation id="335581015389089642">דיבור</translation>
 <translation id="3389286852084373014">הטקסט ארוך מדי</translation>
-<translation id="3479552764303398839">לא עכשיו</translation>
 <translation id="348799646910989694">המדף יוסתר באופן אוטומטי</translation>
 <translation id="3554637740840164787">הפריט <ph name="ITEM_TITLE" /> הוצמד</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{נותר יום אחד}two{נותרו יומיים}many{נותרו # ימים}other{נותרו # ימים}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{דק‘ אחת}two{# דק‘}many{# דק‘}other{# דק‘}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{פעילות אחרונה: היום}=1{פעילות אחרונה: אתמול}two{פעילות אחרונה: לפני יומיים}many{פעילות אחרונה: לפני # ימים}other{פעילות אחרונה: לפני # ימים}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{יום אחד ו }two{יומיים ו }many{# ימים ו }other{# ימים ו }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{עוד שנה אחת}two{עוד 2 שנים}many{עוד # שנים}other{עוד # שנים}}</translation>
-<translation id="5895138241574237353">הפעל מחדש</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{נותרה שנייה אחת}two{נותרו # שניות}many{נותרו # שניות}other{נותרו # שניות}}</translation>
 <translation id="5941711191222866238">מזער</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{שעה אחת}two{שעתיים}many{# שעות}other{# שעות}}</translation>

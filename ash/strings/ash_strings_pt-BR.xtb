@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">Sinal médio</translation>
 <translation id="4112140312785995938">Retroceder</translation>
 <translation id="4129129681837227511">Para ver as notificações na sua tela de bloqueio, desbloqueie a tela e altere a configuração</translation>
+<translation id="4144413954005649103">Com um clique com o botão direito ou ao tocar a tela e mantê-la pressionada, o Assistente mostra informações relacionadas ao que você selecionou na tela.</translation>
 <translation id="4146833061457621061">Ouvir música</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> gerenciado por <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Idiomas</translation>
@@ -399,6 +400,7 @@
 <translation id="6164005077879661055">Todos os arquivos e dados locais associados ao usuário supervisionado serão
 permanentemente excluídos assim que esse usuário for removido. Os websites visitados por esse usuário supervisionado e suas configurações ainda poderão ser vistos pelo administrador em <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
+<translation id="6236290670123303279">Gerenciar configurações</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Bloqueado na horizontal</translation>
 <translation id="6259254695169772643">Use a stylus para selecionar</translation>
@@ -440,6 +442,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6669268301501499730">Ativado</translation>
 <translation id="6670153871843998651">Área de trabalho 3</translation>
 <translation id="6691659475504239918">Pesquisa+Shift+H</translation>
+<translation id="6692996468359469499">Veja informações relacionadas à sua seleção</translation>
 <translation id="6696025732084565524">Seu teclado removível precisa de uma atualização crítica</translation>
 <translation id="6700713906295497288">Botão do menu do IME</translation>
 <translation id="6713285437468012787">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" está pareado e disponível para todos os usuários. Para cancelar o pareamento, vá para "Configurações".</translation>
@@ -528,6 +531,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="79341161159229895">Conta gerenciada por <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">Modo de alto contraste</translation>
 <translation id="7977927628060636163">Pesquisando redes móveis…</translation>
+<translation id="7980780401175799550">Teste novas maneiras de navegar pelo Chrome OS</translation>
 <translation id="7982789257301363584">Rede</translation>
 <translation id="7984197416080286869">Muitas tentativas de usar impressão digital</translation>
 <translation id="7994370417837006925">Login múltiplo</translation>
@@ -549,6 +553,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8167567890448493835">Usando <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Personalizar idiomas e entrada...</translation>
 <translation id="8192202700944119416">As notificações estão ocultas.</translation>
+<translation id="8196787716797768628">Use os gestos para alternar rapidamente entre apps e interagir com o Chromebook no modo tablet.</translation>
 <translation id="8203795194971602413">Clicar com o botão direito</translation>
 <translation id="8236042855478648955">Hora de fazer uma pausa</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, intensidade do sinal em <ph name="SIGNAL_STRENGTH" />, bateria do smartphone em <ph name="BATTERY_STATUS" /></translation>

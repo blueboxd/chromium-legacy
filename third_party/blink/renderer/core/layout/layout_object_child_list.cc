@@ -100,7 +100,7 @@ LayoutObject* LayoutObjectChildList::RemoveChildNode(
     // issue paint invalidations, so that the area exposed when the child
     // disappears gets paint invalidated properly.
     if (notify_layout_object && old_child->EverHadLayout()) {
-      old_child->SetNeedsLayoutAndPrefWidthsRecalc(
+      old_child->SetNeedsLayoutAndIntrinsicWidthsRecalc(
           layout_invalidation_reason::kRemovedFromLayout);
       if (old_child->IsOutOfFlowPositioned() &&
           RuntimeEnabledFeatures::LayoutNGEnabled())
@@ -244,7 +244,7 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
     // actually happens.
   }
 
-  new_child->SetNeedsLayoutAndPrefWidthsRecalc(
+  new_child->SetNeedsLayoutAndIntrinsicWidthsRecalc(
       layout_invalidation_reason::kAddedToLayout);
   if (new_child->IsOutOfFlowPositioned() &&
       RuntimeEnabledFeatures::LayoutNGEnabled())

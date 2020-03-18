@@ -19,6 +19,7 @@
 #include "services/device/public/cpp/geolocation/geoposition.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
+#include "third_party/blink/public/mojom/devtools/device_emulation_params.mojom.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 
 namespace content {
@@ -26,17 +27,17 @@ namespace protocol {
 
 namespace {
 
-blink::WebScreenOrientationType WebScreenOrientationTypeFromString(
+blink::mojom::ScreenOrientationType ScreenOrientationFromString(
     const std::string& type) {
   if (type == Emulation::ScreenOrientation::TypeEnum::PortraitPrimary)
-    return blink::kWebScreenOrientationPortraitPrimary;
+    return blink::mojom::ScreenOrientationType::kPortraitPrimary;
   if (type == Emulation::ScreenOrientation::TypeEnum::PortraitSecondary)
-    return blink::kWebScreenOrientationPortraitSecondary;
+    return blink::mojom::ScreenOrientationType::kPortraitSecondary;
   if (type == Emulation::ScreenOrientation::TypeEnum::LandscapePrimary)
-    return blink::kWebScreenOrientationLandscapePrimary;
+    return blink::mojom::ScreenOrientationType::kLandscapePrimary;
   if (type == Emulation::ScreenOrientation::TypeEnum::LandscapeSecondary)
-    return blink::kWebScreenOrientationLandscapeSecondary;
-  return blink::kWebScreenOrientationUndefined;
+    return blink::mojom::ScreenOrientationType::kLandscapeSecondary;
+  return blink::mojom::ScreenOrientationType::kUndefined;
 }
 
 ui::GestureProviderConfigType TouchEmulationConfigurationToType(
@@ -59,7 +60,6 @@ ui::GestureProviderConfigType TouchEmulationConfigurationToType(
 EmulationHandler::EmulationHandler()
     : DevToolsDomainHandler(Emulation::Metainfo::domainName),
       touch_emulation_enabled_(false),
-      device_emulation_enabled_(false),
       host_(nullptr) {
 }
 
@@ -80,7 +80,7 @@ void EmulationHandler::SetRenderer(int process_host_id,
   host_ = frame_host;
   if (touch_emulation_enabled_)
     UpdateTouchEventEmulationState();
-  if (device_emulation_enabled_)
+  if (device_emulation_params_)
     UpdateDeviceEmulationState();
 }
 
@@ -94,8 +94,8 @@ Response EmulationHandler::Disable() {
     UpdateTouchEventEmulationState();
   }
   user_agent_ = std::string();
-  if (device_emulation_enabled_) {
-    device_emulation_enabled_ = false;
+  if (device_emulation_params_) {
+    device_emulation_params_.reset();
     UpdateDeviceEmulationState();
   }
   return Response::OK();
@@ -205,14 +205,13 @@ Response EmulationHandler::SetDeviceMetricsOverride(
                                    base::NumberToString(max_scale));
   }
 
-  blink::WebScreenOrientationType orientationType =
-      blink::kWebScreenOrientationUndefined;
+  blink::mojom::ScreenOrientationType orientation_type =
+      blink::mojom::ScreenOrientationType::kUndefined;
   int orientationAngle = 0;
   if (screen_orientation.isJust()) {
     Emulation::ScreenOrientation* orientation = screen_orientation.fromJust();
-    orientationType = WebScreenOrientationTypeFromString(
-        orientation->GetType());
-    if (orientationType == blink::kWebScreenOrientationUndefined)
+    orientation_type = ScreenOrientationFromString(orientation->GetType());
+    if (orientation_type == blink::mojom::ScreenOrientationType::kUndefined)
       return Response::InvalidParams("Invalid screen orientation type value");
     orientationAngle = orientation->GetAngle();
     if (orientationAngle < 0 || orientationAngle >= max_orientation_angle) {
@@ -223,23 +222,23 @@ Response EmulationHandler::SetDeviceMetricsOverride(
   }
 
   blink::WebDeviceEmulationParams params;
-  params.screen_position = mobile ? blink::WebDeviceEmulationParams::kMobile
-                                  : blink::WebDeviceEmulationParams::kDesktop;
+  params.screen_position = mobile ? blink::mojom::ScreenPosition::kMobile
+                                  : blink::mojom::ScreenPosition::kDesktop;
   params.screen_size =
-      blink::WebSize(screen_width.fromMaybe(0), screen_height.fromMaybe(0));
+      gfx::Size(screen_width.fromMaybe(0), screen_height.fromMaybe(0));
   if (position_x.isJust() && position_y.isJust()) {
     params.view_position =
         gfx::Point(position_x.fromMaybe(0), position_y.fromMaybe(0));
   }
   params.device_scale_factor = device_scale_factor;
-  params.view_size = blink::WebSize(width, height);
+  params.view_size = gfx::Size(width, height);
   params.scale = scale.fromMaybe(1);
-  params.screen_orientation_type = orientationType;
+  params.screen_orientation_type = orientation_type;
   params.screen_orientation_angle = orientationAngle;
 
   if (viewport.isJust()) {
-    params.viewport_offset.SetPoint(viewport.fromJust()->GetX(),
-                                    viewport.fromJust()->GetY());
+    params.viewport_offset =
+        gfx::PointF(viewport.fromJust()->GetX(), viewport.fromJust()->GetY());
 
     ScreenInfo screen_info;
     host_->GetRenderWidgetHost()->GetScreenInfo(&screen_info);
@@ -265,7 +264,7 @@ Response EmulationHandler::SetDeviceMetricsOverride(
     }
   }
 
-  if (device_emulation_enabled_ && params == device_emulation_params_) {
+  if (device_emulation_params_ && *device_emulation_params_ == params) {
     // Renderer should answer after size was changed, so that the response is
     // only sent to the client once updates were applied.
     if (size_changed)
@@ -273,8 +272,7 @@ Response EmulationHandler::SetDeviceMetricsOverride(
     return Response::OK();
   }
 
-  device_emulation_enabled_ = true;
-  device_emulation_params_ = params;
+  device_emulation_params_ = std::move(params);
   UpdateDeviceEmulationState();
 
   // Renderer should answer after emulation params were updated, so that the
@@ -286,13 +284,12 @@ Response EmulationHandler::SetDeviceMetricsOverride(
 }
 
 Response EmulationHandler::ClearDeviceMetricsOverride() {
-  if (!device_emulation_enabled_)
+  if (!device_emulation_params_)
     return Response::OK();
   if (!host_)
     return Response::Error("Can't find the associated web contents");
   GetWebContents()->ClearDeviceEmulationSize();
-  device_emulation_enabled_ = false;
-  device_emulation_params_ = blink::WebDeviceEmulationParams();
+  device_emulation_params_.reset();
   UpdateDeviceEmulationState();
   // Renderer should answer after emulation was disabled, so that the response
   // is only sent to the client once updates were applied.
@@ -329,20 +326,15 @@ Response EmulationHandler::SetUserAgentOverride(
   return Response::FallThrough();
 }
 
-blink::WebDeviceEmulationParams EmulationHandler::GetDeviceEmulationParams() {
+const base::Optional<blink::WebDeviceEmulationParams>&
+EmulationHandler::GetDeviceEmulationParams() const {
   return device_emulation_params_;
 }
 
 void EmulationHandler::SetDeviceEmulationParams(
-    const blink::WebDeviceEmulationParams& params) {
-  bool enabled = params != blink::WebDeviceEmulationParams();
-  bool enable_changed = enabled != device_emulation_enabled_;
-  bool params_changed = params != device_emulation_params_;
-  if (!device_emulation_enabled_ && !enable_changed)
-    return;  // Still disabled.
-  if (!enable_changed && !params_changed)
-    return;  // Nothing changed.
-  device_emulation_enabled_ = enabled;
+    const base::Optional<blink::WebDeviceEmulationParams>& params) {
+  if (params == device_emulation_params_)
+    return;
   device_emulation_params_ = params;
   UpdateDeviceEmulationState();
 }
@@ -381,21 +373,11 @@ void EmulationHandler::UpdateDeviceEmulationState() {
   if (!host_->frame_tree_node()->IsMainFrame())
     return;
 
-  // TODO(eseckler): Once we change this to mojo, we should wait for an ack to
-  // these messages from the renderer. The renderer should send the ack once the
-  // emulation params were applied. That way, we can avoid having to handle
-  // Set/ClearDeviceMetricsOverride in the renderer. With the old IPC system,
-  // this is tricky since we'd have to track the DevTools message id with the
-  // WidgetMsg and acknowledgment, as well as plump the acknowledgment back to
-  // the EmulationHandler somehow. Mojo callbacks should make this much simpler.
-  if (device_emulation_enabled_) {
-    host_->GetRenderWidgetHost()->Send(new WidgetMsg_EnableDeviceEmulation(
-        host_->GetRenderWidgetHost()->GetRoutingID(),
-        device_emulation_params_));
-  } else {
-    host_->GetRenderWidgetHost()->Send(new WidgetMsg_DisableDeviceEmulation(
-        host_->GetRenderWidgetHost()->GetRoutingID()));
-  }
+  // TODO(caseq,eseckler): We should wait for an ack to these messages from the
+  // renderer. The renderer should send the ack once the emulation params were
+  // applied. That way, we can avoid having to handle
+  // Set/ClearDeviceMetricsOverride in the renderer.
+  host_->SetDeviceEmulation(device_emulation_params_);
 }
 
 void EmulationHandler::ApplyOverrides(net::HttpRequestHeaders* headers) {

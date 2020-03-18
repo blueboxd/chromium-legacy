@@ -531,6 +531,7 @@
 <translation id="79341161159229895">Account gestito da <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">Modalità ad alto contrasto</translation>
 <translation id="7977927628060636163">Ricerca di reti mobili...</translation>
+<translation id="7980780401175799550">Prova nuove modalità di esplorazione di Chrome OS</translation>
 <translation id="7982789257301363584">Rete</translation>
 <translation id="7984197416080286869">Troppi tentativi di sblocco con l'impronta</translation>
 <translation id="7994370417837006925">Accesso simultaneo</translation>
@@ -552,6 +553,7 @@
 <translation id="8167567890448493835">In uso: <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Personalizza lingue e immissione...</translation>
 <translation id="8192202700944119416">Le notifiche sono nascoste.</translation>
+<translation id="8196787716797768628">Usa i gesti per spostarti rapidamente tra le app e per interagire con il Chromebook in modalità tablet.</translation>
 <translation id="8203795194971602413">Clic con il pulsante destro</translation>
 <translation id="8236042855478648955">È ora di fare una pausa</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, intensità del segnale <ph name="SIGNAL_STRENGTH" />, batteria del telefono <ph name="BATTERY_STATUS" /></translation>

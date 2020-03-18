@@ -125,7 +125,7 @@ void CanvasRenderingContext2DState::FontsNeedUpdate(
   DCHECK_EQ(font_selector, font_.GetFontSelector());
   DCHECK(realized_font_);
 
-  font_.Update(font_selector);
+  font_ = Font(font_.GetFontDescription(), font_selector);
   // FIXME: We only really need to invalidate the resolved filter if the font
   // update above changed anything and the filter uses font-dependent units.
   resolved_filter_.reset();
@@ -256,8 +256,7 @@ void CanvasRenderingContext2DState::ClipPath(
 void CanvasRenderingContext2DState::SetFont(
     const FontDescription& font_description,
     FontSelector* selector) {
-  font_ = Font(font_description);
-  font_.Update(selector);
+  font_ = Font(font_description, selector);
   realized_font_ = true;
   if (selector)
     selector->RegisterForInvalidationCallbacks(this);

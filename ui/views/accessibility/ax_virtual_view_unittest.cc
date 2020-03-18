@@ -534,6 +534,20 @@ TEST_F(AXVirtualViewTest, OverrideFocus) {
   ExpectReceivedAccessibilityEvents(
       {std::make_pair(virtual_child_3, ax::mojom::Event::kFocus)});
 
+  // Test that calling GetFocus() while the owner view is not focused will
+  // return nullptr.
+  EXPECT_EQ(nullptr, virtual_label_->GetFocus());
+  EXPECT_EQ(nullptr, virtual_child_1->GetFocus());
+  EXPECT_EQ(nullptr, virtual_child_2->GetFocus());
+  EXPECT_EQ(nullptr, virtual_child_3->GetFocus());
+
+  button_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  button_->RequestFocus();
+  ExpectReceivedAccessibilityEvents(
+      {std::make_pair(GetButtonAccessibility(), ax::mojom::Event::kFocus),
+       std::make_pair(GetButtonAccessibility(),
+                      ax::mojom::Event::kChildrenChanged)});
+
   // Test that calling GetFocus() from any object in the tree will return the
   // same result.
   EXPECT_EQ(virtual_child_3->GetNativeObject(), virtual_label_->GetFocus());

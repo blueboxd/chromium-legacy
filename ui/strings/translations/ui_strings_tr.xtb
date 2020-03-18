@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652">%<ph name="NUMBER" /></translation>
 <translation id="1901303067676059328">Tümünü &amp;seç</translation>
-<translation id="1938451708255335766">Pencerenin görüntü yoğunluğunu ayarlamak için uygulamayı yeniden başlatın.</translation>
 <translation id="2006524834898217237">Bu cihazın internete bağlı olduğundan emin olun.</translation>
 <translation id="208586643495776849">Lütfen tekrar deneyin</translation>
 <translation id="2090963878406559571"><ph name="ORIGIN" /> sitesinden Android telefonunuza bir numara göndermek üzere ayarlarda her iki cihaz için <ph name="TROUBLESHOOT_LINK" />.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Yerleşik ekran</translation>
 <translation id="335581015389089642">Konuşma</translation>
 <translation id="3389286852084373014">Metin çok büyük</translation>
-<translation id="3479552764303398839">Şimdi değil</translation>
 <translation id="348799646910989694">Raf otomatik olarak gizlenecek</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> sabitlendi</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 gün kaldı}other{# gün kaldı}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 dk.}other{# dk.}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Bugün etkin}=1{1 gün önce etkindi}other{# gün önce etkindi}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 gün ve }other{# gün ve }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 yıl içinde}other{# yıl içinde}}</translation>
-<translation id="5895138241574237353">Yeniden başlat</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 saniye kaldı}other{# saniye kaldı}}</translation>
 <translation id="5941711191222866238">Simge durumuna küçült</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 saat}other{# saat}}</translation>

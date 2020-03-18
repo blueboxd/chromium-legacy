@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Insert</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">전체 선택(&amp;A)</translation>
-<translation id="1938451708255335766">창 표시 밀도를 조정하려면 앱을 다시 시작하세요.</translation>
 <translation id="2006524834898217237">기기가 인터넷에 연결되어 있는지 확인하세요.</translation>
 <translation id="208586643495776849">다시 시도해 주세요.</translation>
 <translation id="2090963878406559571"><ph name="ORIGIN" />에서 Android 휴대전화로 번호를 전송하려면 설정에서 두 기기 모두의 <ph name="TROUBLESHOOT_LINK" />하세요.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">내장 디스플레이</translation>
 <translation id="335581015389089642">음성</translation>
 <translation id="3389286852084373014">텍스트가 너무 큼</translation>
-<translation id="3479552764303398839">나중에</translation>
 <translation id="348799646910989694">실행기 자동 숨김</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> 고정됨</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1일 남음}other{#일 남음}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1분}other{#분}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{오늘 사용}=1{1일 전에 사용}other{#일 전에 사용}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1일 }other{#일 }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1년 후}other{#년 후}}</translation>
-<translation id="5895138241574237353">다시 시작</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1초 남음}other{#초 남음}}</translation>
 <translation id="5941711191222866238">최소화</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1시간}other{#시간}}</translation>

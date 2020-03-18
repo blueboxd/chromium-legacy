@@ -52,6 +52,7 @@ class TestingSafetyCheckHandler : public SafetyCheckHandler {
   using SafetyCheckHandler::AllowJavascript;
   using SafetyCheckHandler::DisallowJavascript;
   using SafetyCheckHandler::set_web_ui;
+  using SafetyCheckHandler::SetVersionUpdaterForTesting;
 
   TestingSafetyCheckHandler(
       std::unique_ptr<VersionUpdater> version_updater,
@@ -65,6 +66,21 @@ class TestingSafetyCheckHandler : public SafetyCheckHandler {
                            extension_prefs,
                            extension_service) {}
 };
+
+class TestDestructionVersionUpdater : public TestVersionUpdater {
+ public:
+  ~TestDestructionVersionUpdater() override { destructor_invoked_ = true; }
+
+  void CheckForUpdate(const StatusCallback& callback,
+                      const PromoteCallback&) override {}
+
+  static bool GetDestructorInvoked() { return destructor_invoked_; }
+
+ private:
+  static bool destructor_invoked_;
+};
+
+bool TestDestructionVersionUpdater::destructor_invoked_ = false;
 
 class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
  public:
@@ -408,6 +424,15 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Failed) {
       "Browser update problems and failed updates.</a>");
 }
 
+TEST_F(SafetyCheckHandlerTest, CheckUpdates_DestroyedOnJavascriptDisallowed) {
+  EXPECT_FALSE(TestDestructionVersionUpdater::GetDestructorInvoked());
+  safety_check_->SetVersionUpdaterForTesting(
+      std::make_unique<TestDestructionVersionUpdater>());
+  safety_check_->PerformSafetyCheck();
+  safety_check_->DisallowJavascript();
+  EXPECT_TRUE(TestDestructionVersionUpdater::GetDestructorInvoked());
+}
+
 TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_Enabled) {
   Profile::FromWebUI(&test_web_ui_)
       ->GetPrefs()
@@ -520,6 +545,10 @@ TEST_F(SafetyCheckHandlerTest, CheckPasswords_InterruptedAndRefreshed) {
   // The check gets interrupted and the page is refreshed.
   safety_check_->DisallowJavascript();
   safety_check_->AllowJavascript();
+  // Need to set the |TestVersionUpdater| instance again to prevent
+  // |PerformSafetyCheck()| from creating a real |VersionUpdater| instance.
+  safety_check_->SetVersionUpdaterForTesting(
+      std::make_unique<TestVersionUpdater>());
   // Another run of the safety check.
   safety_check_->PerformSafetyCheck();
   test_leak_service_->set_state_and_notify(

@@ -89,7 +89,7 @@ void LayoutListMarker::StyleWillChange(StyleDifference diff,
        (new_style.ListStyleType() == EListStyleType::kString &&
         new_style.ListStyleStringValue() !=
             StyleRef().ListStyleStringValue()))) {
-    SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+    SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
         layout_invalidation_reason::kStyleChange);
   }
 
@@ -163,7 +163,7 @@ void LayoutListMarker::ImageChanged(WrappedImagePtr o, CanDeferInvalidation) {
 
   LayoutSize image_size = IsImage() ? ImageBulletSize() : LayoutSize();
   if (Size() != image_size || image_->ErrorOccurred()) {
-    SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+    SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
         layout_invalidation_reason::kImageChanged);
   } else {
     SetShouldDoFullPaintInvalidation();
@@ -175,7 +175,7 @@ void LayoutListMarker::UpdateMarginsAndContent() {
 }
 
 void LayoutListMarker::UpdateContent() {
-  DCHECK(PreferredLogicalWidthsDirty());
+  DCHECK(IntrinsicLogicalWidthsDirty());
 
   text_ = "";
 
@@ -257,11 +257,11 @@ MinMaxSizes LayoutListMarker::ComputeIntrinsicLogicalWidths() const {
 }
 
 void LayoutListMarker::ComputePreferredLogicalWidths() {
-  DCHECK(PreferredLogicalWidthsDirty());
+  DCHECK(IntrinsicLogicalWidthsDirty());
   MinMaxSizes sizes = ComputeIntrinsicLogicalWidths();
   min_preferred_logical_width_ = sizes.min_size;
   max_preferred_logical_width_ = sizes.max_size;
-  ClearPreferredLogicalWidthsDirty();
+  ClearIntrinsicLogicalWidthsDirty();
 }
 
 LayoutUnit LayoutListMarker::WidthOfSymbol(const ComputedStyle& style) {

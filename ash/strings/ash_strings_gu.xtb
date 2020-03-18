@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">મધ્યમ સિગ્નલ</translation>
 <translation id="4112140312785995938">પાછળ કરો</translation>
 <translation id="4129129681837227511">તમારી લૉક સ્ક્રીન પર નોટિફિકેશન જોવા માટે, સેટિંગને બદલવા માટે અનલૉક કરો</translation>
+<translation id="4144413954005649103">બટનને રાઇટ ક્લિક કરવાથી અથવા થોડીવાર દબાવી રાખવાથી, Assistant તમને તમે સ્ક્રીન પર જે પસંદ કર્યુ છે તેનાથી સંબંધિત માહિતી બતાવે છે.</translation>
 <translation id="4146833061457621061">મ્યુઝિક વગાડો</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> <ph name="DOMAIN" /> દ્વારા મેનેજ કરવામાં આવે છે</translation>
 <translation id="4181841719683918333">ભાષાઓ</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">ઑન-સ્ક્રીન કીબોર્ડ બતાવો</translation>
 <translation id="6164005077879661055">એકવાર આ નિરીક્ષણ કરેલ વપરાશકર્તાને દૂર કરવામાં આવે પછી નિરીક્ષણ કરેલ વપરાશકર્તા સાથે સંકળાયેલી બધી ફાઇલો અને સ્થાનિક ડેટા કાયમી રૂપે કાઢી નાંખવામાં આવશે. નિરીક્ષણ કરેલ વપરાશકર્તા માટે મુલાકાત લીધેલી વેબસાઇટ્સ અને સેટિંગ્સ <ph name="MANAGEMENT_URL" /> પરના સંચાલકને હજી પણ દૃશ્યમાન હોઈ શકે છે.</translation>
 <translation id="6165508094623778733">વધુ જાણો</translation>
+<translation id="6236290670123303279">સેટિંગને મેનેજ કરો</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">આડા પર લૉક કરેલું છે</translation>
 <translation id="6259254695169772643">પસંદ કરવા માટે તમારા સ્ટાઇલસનો ઉપયોગ કરો</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">ચાલુ</translation>
 <translation id="6670153871843998651">ડેસ્ક 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
+<translation id="6692996468359469499">તમારી પસંદગી સંબંધિત માહિતી મેળવો</translation>
 <translation id="6696025732084565524">અલગ પાડી શકાય તેવા તમારા કીબોર્ડ માટે મહત્ત્વપૂર્ણ અપડેટ જરૂરી છે</translation>
 <translation id="6700713906295497288">IME મેનૂ બટન</translation>
 <translation id="6713285437468012787">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ની જોડી બનાવવામાં આવી અને હવે તે બધા વપરાશકર્તાઓને ઉપલબ્ધ છે. તમે સેટિંગનો ઉપયોગ કરીને આ જોડીને દૂર કરી શકો છો.</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> અને <ph name="SECOND_PARENT_EMAIL" /> દ્વારા મેનેજ કરાતું એકાઉન્ટ</translation>
 <translation id="7955885781510802139">ઉચ્ચ કોન્ટ્રાસ્ટ મોડ</translation>
 <translation id="7977927628060636163">મોબાઇલ નેટવર્કની શોધ કરી રહ્યું છે...</translation>
+<translation id="7980780401175799550">Chrome OS પર નૅવિગેટ કરવાની નવી રીતો અજમાવી જુઓ</translation>
 <translation id="7982789257301363584">નેટવર્ક</translation>
 <translation id="7984197416080286869">ફિંગરપ્રિન્ટ માટેના ઘણા બધા પ્રયત્નો</translation>
 <translation id="7994370417837006925">બહુવિધ સાઇન-ઇન</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" />નો ઉપયોગ કરી રહ્યા છે</translation>
 <translation id="8190698733819146287">ભાષાઓ અને ઇનપુટને કસ્ટમાઇઝ કરો...</translation>
 <translation id="8192202700944119416">નોટિફિકેશન છુપાવેલા છે.</translation>
+<translation id="8196787716797768628">ઍપ વચ્ચે ઝડપથી સ્વિચ કરવા માટે અને તમારી Chromebook સાથે ટૅબ્લેટ મોડમાં ક્રિયાપ્રતિક્રિયા કરવા માટે સંકેતોનો ઉપયોગ કરો.</translation>
 <translation id="8203795194971602413">રાઇટ ક્લિક કરો</translation>
 <translation id="8236042855478648955">વિરામ લેવાનો સમય</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, સિગ્નલની સશક્તતા <ph name="SIGNAL_STRENGTH" />, ફોનની બૅટરી <ph name="BATTERY_STATUS" /></translation>

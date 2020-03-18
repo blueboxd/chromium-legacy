@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">កំពុងផ្ញើទៅ <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">កំពុងបញ្ចូល <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">ពីគេហទំព័រ</translation>
+<translation id="1044891598689252897">គេហទំព័រនឹងដំណើរការធម្មតា</translation>
 <translation id="1049743911850919806">អនាមិក</translation>
 <translation id="10614374240317010">មិនដែលបានរក្សាទុក</translation>
 <translation id="1067922213147265141">សេវាកម្ម​​ Google ផ្សេងទៀត</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">មិន​អាច​ចែក​រំលែក <ph name="CONTENT_TYPE" />​ បាន​ទេ</translation>
 <translation id="1477626028522505441">ការដោនឡូត <ph name="FILE_NAME" /> បានបរាជ័យដោយសារមានបញ្ហាផ្នែកម៉ាស៊ីនមេ។</translation>
 <translation id="1506061864768559482">ម៉ាស៊ីនស្វែងរក</translation>
+<translation id="1509960214886564027">មុខងារ​នៅលើ​គេហទំព័រ​ជាច្រើន​អាចដំណើរការមិន​ត្រឹមត្រូវ</translation>
 <translation id="1513352483775369820">ចំណាំ និងប្រវត្តិគេហទំព័រ</translation>
 <translation id="1513858653616922153">លុបពាក្យសម្ងាត់</translation>
 <translation id="1521774566618522728">ដំណើរការ​ថ្ងៃនេះ</translation>
@@ -235,6 +237,7 @@
 <translation id="2647434099613338025">បន្ថែមភាសា</translation>
 <translation id="2650751991977523696">ទាញយក​ឯកសារ​ម្ដងទៀត​មែនទេ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{ឯកសារសំឡេង #}other{ឯកសារ​សំឡេង #}}</translation>
+<translation id="2687403674020088961">ទប់ស្កាត់ខូគីទាំងអស់ (មិនណែនាំ)</translation>
 <translation id="2707726405694321444">ធ្វើឲ្យទំព័រថ្មីឡើងវិញ</translation>
 <translation id="2709516037105925701">បំពេញស្វ័យប្រវត្តិ</translation>
 <translation id="2717722538473713889">អាសយដ្ឋានអ៊ីមែល</translation>
@@ -340,6 +343,7 @@
 <translation id="3478363558367712427">អ្នកអាច​ជ្រើសរើស​ម៉ាស៊ីន​ស្វែងរក​របស់អ្នក​បាន</translation>
 <translation id="3492207499832628349">ផ្ទាំងអនាមិកថ្មី</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LINK" />អំពីមាតិកាដែលបានណែនាំ</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">AR</translation>
 <translation id="3518985090088779359">ព្រមទទួល និងបន្ត</translation>
 <translation id="3522247891732774234">មានផ្តល់ជូនការអាប់ដេត។ ជម្រើសច្រើនទៀត</translation>
@@ -355,6 +359,7 @@
 <translation id="358794129225322306">អនុញ្ញាតឱ្យ​គេហទំព័រទាញយក​ឯកសារជាច្រើន​ដោយស្វ័យប្រវត្តិ។</translation>
 <translation id="3590487821116122040">ទំហំផ្ទុកគេហទំព័រដែល Chrome គិតថាមិនសំខាន់ (ឧ៖ គេហទំព័រដែលគ្មានការកំណត់ដែលបានរក្សាទុក ឬគេហទំព័រដែលអ្នកមិនសូវចូលទៅកាន់ញឹកញាប់)</translation>
 <translation id="3594780231884063836">បិទ​សំឡេង​វីដេអូ</translation>
+<translation id="3596414637720633074">ទប់ស្កាត់​ខូគីភាគីទីបីក្នុងមុខងារឯកជន</translation>
 <translation id="3599863153486145794">សម្អាតប្រវត្តិពីឧបករណ៍ទាំងអស់ដែលបានចូលគណនី។ គណនី Google របស់អ្នកអាចនឹងមានទម្រង់ប្រវត្តិរុករកផ្សេងទៀតនៅ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ។</translation>
 <translation id="3600792891314830896">បិទសំឡេងទំព័រដែលចាក់សំឡេង</translation>
 <translation id="3616113530831147358">សម្លេង</translation>
@@ -921,6 +926,7 @@
 <translation id="780301667611848630">ទេ អរគុណ</translation>
 <translation id="7810647596859435254">បើក​ដោយ​ប្រើ…</translation>
 <translation id="7821588508402923572">ការសន្សំសំចៃ​ទិន្នន័យ​របស់អ្នក​នឹង​បង្ហាញ​នៅ​ទីនេះ</translation>
+<translation id="7828557259026017104">ខូគី​ជាឯកសារ​ដែលបង្កើត​ដោយ​គេហទំព័រ​ដែលអ្នក​ចូលមើល។ គេហទំព័រប្រើ​ខូគីទាំងនេះ ដើម្បីចងចាំចំណូលចិត្តរបស់អ្នក។ ខូគី​ភាគីទីបី​បង្កើត​ដោយ​គេហទំព័រ​ផ្សេងទៀត។ គេហទំព័រ​ទាំងនេះ​គឺជាម្ចាស់​នៃខ្លឹមសារ​មួយចំនួន ​ដូចជា​ការផ្សាយពាណិជ្ជកម្ម ឬរូបភាព ដែលអ្នក​ឃើញ​នៅលើ​ទំព័របណ្ដាញដែលអ្នកចូលមើលជាដើម។</translation>
 <translation id="783819812427904514">បើក​សំឡេង​វីដេអូ</translation>
 <translation id="784934925303690534">ចន្លោះពេល</translation>
 <translation id="7851858861565204677">ឧបករណ៍ផ្សេងទៀត</translation>
@@ -941,6 +947,7 @@
 <translation id="79859296434321399">ដើម្បី​មើលខ្លឹមសារ AR សូមដំឡើង ARCore</translation>
 <translation id="7986741934819883144">ជ្រើស​រើសទំ​នាក់ទំនង</translation>
 <translation id="7987073022710626672">លក្ខខណ្ឌសេវាកម្ម Chrome</translation>
+<translation id="7993619969781047893">មុខងារ​នៅលើ​គេហទំព័រ​មួយចំនួន​អាចដំណើរការ​មិន​ត្រឹមត្រូវ</translation>
 <translation id="7998918019931843664">បើកផ្ទាំងដែលបានបិទឡើងវិញ</translation>
 <translation id="7999064672810608036">តើអ្នកប្រាកដទេដែលចង់សម្អាតទិន្នន័យមូលដ្ឋានទាំងអស់រាប់ទាំងខុឃី ហើយកំណត់ការអនុញ្ញាតទាំងឡាយសម្រាប់គេហទំព័រនេះឡើងវិញនោះ?</translation>
 <translation id="8004582292198964060">កម្មវិធីរុករក</translation>
@@ -1075,6 +1082,7 @@
 <translation id="8965591936373831584">មិនទាន់សម្រេច</translation>
 <translation id="8970887620466824814">មានអ្វីមួយ​ខុសប្រក្រតី។</translation>
 <translation id="8972098258593396643">ទាញយក​ទៅថត​លំនាំដើម​មែនទេ?</translation>
+<translation id="8988028529677883095">ប្រើ​ទូរសព្ទ​ធ្វើជាសោសុវត្ថិភាព</translation>
 <translation id="8993760627012879038">បើកផ្ទាំងថ្មីនៅក្នុងមុខងារអនាមិក</translation>
 <translation id="8998729206196772491">អ្នកកំពុងចូលដោយប្រើគណនីដែលគ្រប់គ្រងដោយ <ph name="MANAGED_DOMAIN" /> និងកំពុងផ្តល់ឲ្យអ្នកគ្រប់គ្រងរបស់វានូវលទ្ធភាពគ្រប់គ្រងទិន្នន័យ Chrome របស់អ្នក។ ទិន្នន័យរបស់អ្នកនឹងភ្ជាប់ជាមួយគណនីនេះជាអចិន្ត្រៃយ៍។ ការចេញពី Chrome នឹងលុបទិន្នន័យរបស់អ្នកចេញពីឧបករណ៍នេះ ប៉ុន្តែវានឹងនៅតែត្រូវបានរក្សាទុកក្នុងគណនី Google របស់អ្នកដដែល។</translation>
 <translation id="9019902583201351841">គ្រប់គ្រងដោយឪពុកម្តាយរបស់អ្នក</translation>

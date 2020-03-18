@@ -95,9 +95,7 @@ Font CreateTestFont(const AtomicString& family_name,
   if (ligatures)
     font_description.SetVariantLigatures(*ligatures);
 
-  Font font(font_description);
-  font.Update(TestFontSelector::Create(font_path));
-  return font;
+  return Font(font_description, TestFontSelector::Create(font_path));
 }
 
 }  // namespace test

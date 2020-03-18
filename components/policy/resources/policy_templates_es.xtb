@@ -65,6 +65,15 @@
 
       Si se asigna el valor "false" a esta política o no se establece, no se enviará ninguna información.
       Si se le asigna el valor "true", se enviará la información sobre la retroiluminación del dispositivo.</translation>
+<translation id="1076271193420500757">Configura esta política para especificar qué variaciones pueden aplicarse a un dispositivo <ph name="PRODUCT_OS_NAME" /> gestionado por una empresa.
+
+      Las variaciones proporcionan un medio para ofrecer modificaciones a <ph name="PRODUCT_OS_NAME" /> sin enviar una nueva versión, ya que permiten habilitar o inhabilitar de forma selectiva las funciones existentes.
+
+      Si se establece la opción <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valor 0) o no se le asigna ningún valor a la política, se permitirá que se apliquen todas las variaciones a <ph name="PRODUCT_OS_NAME" />.
+
+      Si se establece la opción <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valor 1), solo se permitirá que se apliquen a <ph name="PRODUCT_OS_NAME" /> las variaciones que se consideren correcciones críticas de seguridad o de estabilidad.
+
+      Si se establece la opción <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valor 2), no se permitirá aplicar ninguna variación al navegador en la pantalla de inicio de sesión. Ten en cuenta que este modo puede evitar que los desarrolladores de <ph name="PRODUCT_OS_NAME" /> proporcionen correcciones críticas de seguridad a su debido tiempo y, por lo tanto, no se recomienda su uso.</translation>
 <translation id="1078643757670228170">Ten en cuenta que esta política está obsoleta y se eliminará de la versión 82 de <ph name="PRODUCT_OS_NAME" />. Utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> en su lugar.
 
           Permite especificar el tiempo que debe transcurrir sin que el usuario realice ninguna acción antes de que se apague la pantalla (con conexión a la red eléctrica).
@@ -1169,14 +1178,6 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
       Si no se establece esta política, <ph name="PRODUCT_NAME" /> se utilizará el valor predeterminado de 10.000 milisegundos.</translation>
 <translation id="257788512393330403">Es obligatorio introducir la contraseña cada seis horas</translation>
 <translation id="2580104054820772954">Retrasar la entrega de archivos hasta conocer el resultado del análisis</translation>
-<translation id="2582582399758251985">Si se habilita esta opción, <ph name="PRODUCT_NAME" /> verificará los certificados de los servidores utilizando el verificador de certificados integrado.
-      Si se inhabilita esta opción, <ph name="PRODUCT_NAME" /> verificará los certificados de los servidores utilizando el verificador de certificados antiguo proporcionado por la plataforma.
-      Si no se configura esta opción, se podrá utilizar el verificador de certificados integrado o el antiguo.
-
-      Esta política se eliminará en la versión 81 de <ph name="PRODUCT_OS_NAME" />, en la que el verificador de certificados antiguo dejará de ser compatible con <ph name="PRODUCT_OS_NAME" />.
-
-      Esta política se eliminará en la versión 83 de <ph name="PRODUCT_NAME" /> para Linux, en la que el verificador de certificados antiguo dejará de ser compatible con Linux.
-      </translation>
 <translation id="2586162458524426376">
       Esta política se aplica a la pantalla de inicio de sesión. También puedes consultar la política <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, que se aplica a la sesión del usuario.
       Si se habilita la política, cada uno de los orígenes especificados en una lista de elementos separados por comas se ejecutará en un proceso propio. También se aislarán los orígenes de los subdominios correspondientes (por ejemplo, especificar https://example.com/ aísla https://foo.example.com/ como parte del sitio web https://example.com/).
@@ -1196,9 +1197,6 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 <translation id="26023406105317310">Configurar las cuentas de Kerberos</translation>
 <translation id="2604182581880595781">Configura las políticas relacionadas con el uso compartido de archivos del sistema.</translation>
 <translation id="2615240493030733717">Informar sobre la zona horaria</translation>
-<translation id="2620943247255660284">Esta política está obsoleta y se ha sustituido por la política AdvancedProtectionExtraSecurityAllowed.
-
-      Esta política controla si a los usuarios registrados en el Programa de Protección Avanzada se les permite enviar a Google el contenido descargado para realizar un análisis de software malicioso. Si se asigna el valor "true" a esta política o no se le asigna ningún valor, se le pedirá al usuario que envíe los archivos descargados a Google para realizar un análisis profundo. Si el usuario selecciona "Analizar", los archivos descargados se enviarán a Google. Si se le asigna el valor "false", no se le pedirá nada al usuario y los archivos descargados no se enviarán a Google.</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Proporciona opciones de configuración de impresoras de empresa vinculadas con los dispositivos.
@@ -1238,6 +1236,11 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
       Si no se define esta política, no estará disponible de forma predeterminada para los usuarios administrados pero sí lo estará para los no administrados.</translation>
 <translation id="2660846099862559570">No utilizar nunca un proxy</translation>
 <translation id="2665422249821137126">Habilitar el cursor grande en la pantalla de inicio de sesión</translation>
+<translation id="266882888912227087"> Controla las notificaciones de inicio automático de las sesiones de invitado administradas en <ph name="PRODUCT_OS_NAME" />.
+
+      Si se asigna el valor "True" a esta política, la notificación de advertencia de privacidad se cerrará después de unos segundos.
+
+      Si se le asigna el valor "False" o no se le asigna ningún valor, la notificación de advertencia de privacidad permanecerá fijada hasta que el usuario la cierre.</translation>
 <translation id="2672012807430078509">Controla la habilitación de NTLM como protocolo de autenticación para activaciones SMB.</translation>
 <translation id="267596348720209223">Permite especificar las codificaciones de caracteres admitidas por el proveedor de búsquedas. Las codificaciones son nombres de páginas de códigos, como UTF-8, GB2312 o ISO-8859-1. Los intentos de uso se hacen en el orden especificado.
 
@@ -3004,6 +3007,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           Si se establece el valor "true" o no se configura la política, el usuario podrá crear y administrar usuarios supervisados.</translation>
 <translation id="5369937289900051171">Solo impresión en color</translation>
 <translation id="5370279767682621504">Habilitar la compatibilidad con HTTP/0.9 en puertos no utilizados de forma predeterminada</translation>
+<translation id="5373065931879562543">Determinar la disponibilidad de variaciones en ChromeOS</translation>
 <translation id="5378985487213287085">Permite establecer si los sitios web pueden mostrar notificaciones de escritorio. Se puede permitir o denegar que se muestren notificaciones de escritorio de forma predeterminada o se puede establecer que los sitios web pidan permiso al usuario cada vez que quieran mostrar notificaciones de escritorio.
 
           Si no se establece esta política, se usará la política AskNotifications y el usuario podrá modificarla.</translation>
@@ -3132,6 +3136,16 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5475361623548884387">Habilitar impresión</translation>
 <translation id="547601067149622666">No permitir anuncios en sitios web con anuncios invasivos</translation>
 <translation id="5483065054530244863">Permite certificados SHA-1 firmados emitidos por anclajes de veracidad locales</translation>
+<translation id="5486493714323160905">Si se habilita esta opción, <ph name="PRODUCT_NAME" /> verificará los certificados de los servidores utilizando el verificador de certificados integrado.
+      Si se inhabilita esta opción, <ph name="PRODUCT_NAME" /> verificará los certificados de los servidores utilizando el verificador de certificados antiguo proporcionado por la plataforma.
+      Si no se configura esta opción, se podrá utilizar el verificador de certificados integrado o el antiguo.
+
+      Esta política se eliminará en la versión 81 de <ph name="PRODUCT_OS_NAME" />, en la que el verificador de certificados antiguo dejará de ser compatible con <ph name="PRODUCT_OS_NAME" />.
+
+      Esta política se eliminará en la versión 83 de <ph name="PRODUCT_NAME" /> para Linux, en la que el verificador de certificados antiguo dejará de ser compatible con Linux.
+
+      Esta política se eliminará en la versión 87 de <ph name="PRODUCT_NAME" /> para Mac OS X, en la que el verificador de certificados antiguo dejará de ser compatible con Mac OS X.
+      </translation>
 <translation id="5498045818698736356">Permite especificar una lista de sitios web que se instalan de forma automática sin la intervención del usuario, que no podrá desinstalarlos ni inhabilitarlos.
 
       Cada elemento de la política incluido en la lista es un objeto con un componente "url" obligatorio y dos opcionales: "default_launch_container" y "create_desktop_shortcut". El valor de "url" es la URL de la aplicación web que se va a instalar, mientras que el valor de "launch_container" debe ser "window" o "tab", e indica cómo se abrirá la aplicación web una vez instalada. Además, si hay que crear un acceso directo en el escritorio con Linux y Windows, el valor de "create_desktop_shortcut" debe ser "True". Si se omite "default_launch_container", la aplicación se abrirá en una pestaña de forma predeterminada. Independientemente del valor de "default_launch_container", los usuarios pueden cambiar el contenedor en el que se abrirá la aplicación. Si se omite "create_desktop_shortcuts", no se crearán accesos directos en el escritorio. Consulta la política <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> para fijar aplicaciones en la estantería de Chrome OS.</translation>
@@ -3352,6 +3366,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           Si no se proporciona ningún parámetro, <ph name="PRODUCT_NAME" /> volverá a utilizar un nombre de biblioteca predeterminado.</translation>
 <translation id="5783009211970309878">Imprimir encabezados y pies de página</translation>
+<translation id="5790763087505467169">Reducir las notificaciones de inicio automático de las sesiones de invitado administradas</translation>
 <translation id="5806128552675651249">Permitir imprimir solo sin gráficos de fondo</translation>
 <translation id="5809210507920527553">Controla la configuración del contenedor de Linux (Crostini).</translation>
 <translation id="5809728392451418079">Establecer el nombre visible de cuentas locales del dispositivo</translation>
@@ -3849,6 +3864,9 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 <translation id="6689792153960219308">Informar sobre el estado del hardware</translation>
 <translation id="6698632841807204978">Habilitar la impresión en monocromo</translation>
 <translation id="6699880231565102694">Habilitar la autenticación de dos factores para hosts de acceso remoto</translation>
+<translation id="6704515759227307131">Esta política está obsoleta y se ha sustituido por la política AdvancedProtectionAllowed.
+
+      Esta política controla si a los usuarios registrados en el Programa de Protección Avanzada se les permite enviar a Google el contenido descargado para realizar un análisis de software malicioso. Si se asigna el valor "True" a esta política o no se le asigna ningún valor, se le pedirá al usuario que envíe los archivos descargados a Google para realizar un análisis profundo. Si el usuario selecciona "Analizar", los archivos descargados se enviarán a Google. Si se le asigna el valor "False", no se le pedirá nada al usuario y los archivos descargados no se enviarán a Google.</translation>
 <translation id="670597451099978576">Concede permiso automáticamente a estos sitios web para conectarse a dispositivos USB con los ID de proveedor y producto facilitados en la pantalla de inicio de sesión.</translation>
 <translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> proporciona una instalación y actualización seguras de las extensiones. Sin embargo, el contenido de algunas extensiones alojadas fuera de Chrome Web Store solo lo pueden proteger algoritmos de hash o de firma no seguros, como SHA1. Si esta política no está habilitada, Chrome no permitirá la instalación ni las actualizaciones de esas extensiones hasta que sus desarrolladores modifiquen su diseño e incluyan algoritmos más seguros. Si esta política está habilitada, se permitirá la instalación y las actualizaciones de esas extensiones.
 
@@ -3872,6 +3890,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
       Esta opción controla la presentación de páginas de bienvenida que ayudan a los usuarios a iniciar sesión en <ph name="PRODUCT_NAME" />, les permiten elegirlo como navegador predeterminado o les informan de funciones del producto.</translation>
 <translation id="6766216162565713893">Permitir que los sitios web le pidan permiso al usuario para acceder a dispositivos Bluetooth cercanos</translation>
 <translation id="6770454900105963262">Informar sobre sesiones del kiosco activas</translation>
+<translation id="6772045451150098845">Esta política controla si los usuarios registrados en el Programa de Protección Avanzada tienen acceso a funciones adicionales. Puede que algunas de estas funciones impliquen compartir datos con Google (por ejemplo, los usuarios del Programa de Protección Avanzada podrán enviar sus descargas a Google para que realice un análisis de software malicioso). Si se asigna el valor "True" a esta política o no se le asigna ningún valor, los usuarios registrados tendrán acceso a funciones adicionales. Si se le asigna el valor "False", los usuarios de Protección Avanzada solo tendrán acceso a las funciones estándar.</translation>
 <translation id="6780908086869332493">Permite definir una lista de patrones de URL que especifica los sitios web para los que se selecciona automáticamente un certificado de cliente en la pantalla de inicio de sesión, en el marco en el que se aloja el flujo SAML (si el sitio web solicita un certificado). Por ejemplo, se puede configurar un certificado que abarque todos los dispositivos para presentarlo al proveedor de identidad SAML.
 
       El valor debe ser una matriz de diccionarios JSON de tipo string. Cada diccionario debe tener el formato <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> (<ph name="URL_PATTERN_PLACEHOLDER" /> es un patrón de configuración de contenido). <ph name="FILTER_PLACEHOLDER" /> restringe los certificados de cliente que puede seleccionar automáticamente el navegador. Independientemente del filtro, solo se seleccionarán los certificados que coincidan con la solicitud de certificado del servidor. Si <ph name="FILTER_PLACEHOLDER" /> tiene el formato <ph name="JSON_DICTIONARY_EXAMPLE" />, solo se seleccionarán certificados de cliente emitidos por un certificado en el que CommonName tenga el valor <ph name="ISSUER_CN_PLACEHOLDER" />. Si <ph name="FILTER_PLACEHOLDER" /> es el diccionario vacío {}, no se aplicarán más restricciones a la selección de certificados de cliente.
@@ -4615,6 +4634,15 @@ NOTA: Hasta la versión 45, esta política solo se admitía en modo kiosco.</tr
 <translation id="793473937901685727">Establecer la disponibilidad del certificado para las aplicaciones ARC</translation>
 <translation id="7937491150792971922">Combina políticas de lista de instalación de extensiones de varias fuentes</translation>
 <translation id="7937766917976512374">Permitir o denegar captura de vídeo</translation>
+<translation id="7937944288846766530">Esta política controla las solicitudes de instalación de extensiones de <ph name="PRODUCT_NAME" /> que permiten a los usuarios enviar las solicitudes a la consola de administración de Google para su aprobación.
+
+      Si no se establece ningún valor para la política CloudReportingEnabled o se inhabilita, esta política se ignorará y las solicitudes de instalación de extensiones no se crearán ni se subirán.
+      Si no se le asigna ningún valor o se inhabilita, las solicitudes de instalación de extensiones no se crearán ni se subirán.
+      Si se habilita, la solicitudes de instalación de extensiones se crearán y se subirán a la consola de administración de Google.
+
+      Las solicitudes de instalación de extensiones se crean cuando los usuarios intentan instalar una extensión que no está incluida en la lista blanca de <ph name="EXTENSION_INSTALL_WHITELIST" /> o <ph name="EXTENSION_SETTINGS" />.
+
+      Esta política solo es efectiva cuando el equipo está registrado en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> y <ph name="CLOUD_REPORTING_ENABLED" /> está habilitado.</translation>
 <translation id="7941975817681987555">No predecir las acciones de red en ninguna conexión de red</translation>
 <translation id="7951605113561734721">Especifica los certificados de cliente de todo el dispositivo que deberían registrarse usando el protocolo de gestión de dispositivos.</translation>
 <translation id="7952007677054834789">Permite configurar las páginas que se cargan al abrir el navegador, la página principal predeterminada y la página Nueva pestaña predeterminada en <ph name="PRODUCT_NAME" /> e impide que los usuarios las cambien.
@@ -5210,7 +5238,6 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
       sobre el estado de la pantalla y la tarjeta gráfica.</translation>
 <translation id="891435090623616439">codificado como cadena JSON, consulta <ph name="COMPLEX_POLICIES_URL" /> para obtener más información</translation>
 <translation id="8917070657147922192">Permite que los usuarios gestionen los certificados de CA instalados.</translation>
-<translation id="8924721011887485485">Esta política controla si los usuarios registrados en el Programa de Protección Avanzada tienen acceso a funciones de seguridad adicionales. Puede que algunas de estas funciones impliquen compartir datos con Google (por ejemplo, los usuarios del Programa de Protección Avanzada podrán enviar sus descargas a Google para que realice un análisis de software malicioso). Si se le asigna el valor "true" a esta política o no se establece, los usuarios registrados tendrán acceso a funciones de seguridad adicionales. Si se le asigna el valor "false", los usuarios de Protección Avanzada solo tendrán acceso a las funciones de seguridad generales.</translation>
 <translation id="8926275581598789324">Ten en cuenta que esta política está obsoleta y se eliminará de la versión 82 de <ph name="PRODUCT_OS_NAME" />. Utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> en su lugar.
 
           Permite especificar el tiempo que debe transcurrir sin que el usuario realice ninguna acción antes de que se habilite el modo de inactividad (con batería).

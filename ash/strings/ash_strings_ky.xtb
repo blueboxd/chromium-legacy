@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">Орточо сигнал</translation>
 <translation id="4112140312785995938">Артка түрдүрүү</translation>
 <translation id="4129129681837227511">Билдирмелерди кулпуланган экранда көрүү максатында өзгөртүү киргизүү үчүн, түзмөгүңүздүн кулпусун ачыңыз</translation>
+<translation id="4144413954005649103">Чычкандын оң баскычын чыкылдатуу же коё бербей басып туруу менен, Жардамчы экранда тандаган нерсеге окшош маалыматты көрсөтөт.</translation>
 <translation id="4146833061457621061">Музыканы ойнотуу</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> түзмөгү <ph name="DOMAIN" /> тарабынан башкарылат</translation>
 <translation id="4181841719683918333">Тилдер</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">Экрандагы баскычтопту көрсөтүү</translation>
 <translation id="6164005077879661055">Көзөмөлдөнгөн колдонуучуга тийиштүү бардык файлдар менен жергиликтүү дайындар, көзөмөлдөнгөн колдонуучу чыгарылып салынганда биротоло жок болот. Көзөмөлдөнгөн колдонуучу кирген веб-сайттарды жана жөндөөлөрдү жетекчи бул жерден көрө алат <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Кошумча маалымат</translation>
+<translation id="6236290670123303279">Жөндөөлөрдү башкаруу</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Тикесинен бекитилген</translation>
 <translation id="6259254695169772643">Стилус менен тандаңыз</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">Күйүк</translation>
 <translation id="6670153871843998651">3-иш такта</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
+<translation id="6692996468359469499">Сиз тандаган нерсеге тиешелүү маалыматты алуу</translation>
 <translation id="6696025732084565524">Ажыратылуучу баскычтопко жаңыртуу талап кылынат</translation>
 <translation id="6700713906295497288">IME меню баскычы</translation>
 <translation id="6713285437468012787">"<ph name="DEVICE_NAME" />" Bluetooth түзмөгү жупташтырылып, эми ал бардык колдонуучуларга жеткиликтүү. Бул жупташууну Жөндөөлөрдөн алып салсаңыз болот.</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895">Аккаунтту башкарган: <ph name="FIRST_PARENT_EMAIL" /> жана <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">Жогорку контраст режими</translation>
 <translation id="7977927628060636163">Мобилдик тармактар изделүүдө…</translation>
+<translation id="7980780401175799550">Chrome OS'ту чабыттоонун жаңы жолдорун колдонуп көрүңүз</translation>
 <translation id="7982789257301363584">Тармак</translation>
 <translation id="7984197416080286869">Кулпуну манжа изи менен ачууга өтө көп аракет жасалды</translation>
 <translation id="7994370417837006925">Бир нече аккаунт менен кирүү</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> колдонулууда</translation>
 <translation id="8190698733819146287">Тилдерди жана киргизүү ыкмаларын өзгөчөлөштүрүү…</translation>
 <translation id="8192202700944119416">Билдирмелер жашырылды.</translation>
+<translation id="8196787716797768628">Жаңсоо аркылуу колдонмолорду тез которуштуруп, Chromebook'ту планшет режиминде колдонуңуз.</translation>
 <translation id="8203795194971602413">Оң баскычын чыкылдатуу</translation>
 <translation id="8236042855478648955">Тыныгууга убакыт келди</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, Сигналдын күчү <ph name="SIGNAL_STRENGTH" />, Телефондун батареясы <ph name="BATTERY_STATUS" /></translation>

@@ -333,11 +333,13 @@ gfx::NativeViewAccessible AXVirtualView::HitTestSync(int x, int y) const {
 }
 
 gfx::NativeViewAccessible AXVirtualView::GetFocus() {
-  if (parent_view_)
-    return parent_view_->GetFocusedDescendant();
-
-  if (virtual_parent_view_)
-    return virtual_parent_view_->GetFocus();
+  auto* owner_view = GetOwnerView();
+  if (owner_view) {
+    if (!(owner_view->HasFocus())) {
+      return nullptr;
+    }
+    return owner_view->GetViewAccessibility().GetFocusedDescendant();
+  }
 
   // This virtual view hasn't been added to a parent view yet.
   return nullptr;

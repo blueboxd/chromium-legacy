@@ -270,6 +270,21 @@ AppTimeController::AppTimeController(Profile* profile)
 
   // Record enagement metrics.
   base::UmaHistogramCounts1000(kEngagementMetric, apps_with_limit_);
+
+  // If chrome is paused at the beginning of the session, notify
+  // web_time_enforcer directly. This is a workaround for bug in AppService that
+  // occurs at the beginning of the session. It could be removed when
+  // AppService successfully calls OnWebTimeLimitReached at the beginning of
+  // sessions.
+  if (app_registry_->IsAppInstalled(GetChromeAppId()) &&
+      app_registry_->IsAppTimeLimitReached(GetChromeAppId())) {
+    base::Optional<AppLimit> web_time_limit = app_registry_->GetWebTimeLimit();
+    DCHECK(web_time_limit);
+    DCHECK(web_time_limit->daily_limit());
+    DCHECK(web_time_enforcer_);
+    web_time_enforcer_->OnWebTimeLimitReached(
+        web_time_limit->daily_limit().value());
+  }
 }
 
 AppTimeController::~AppTimeController() {

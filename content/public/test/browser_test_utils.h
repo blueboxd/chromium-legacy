@@ -133,7 +133,7 @@ void NavigateToURLBlockUntilNavigationsComplete(WebContents* web_contents,
 // finishes.  Uses a renderer-initiated navigation from script code in the
 // main frame.
 bool NavigateIframeToURL(WebContents* web_contents,
-                         const std::string& iframe_id,
+                         std::string iframe_id,
                          const GURL& url);
 
 // Generate a URL for a file path including a query string.
@@ -385,7 +385,7 @@ class ScopedSimulateModifierKeyPress {
 bool IsWebcamAvailableOnSystem(WebContents* web_contents);
 
 // Allow ExecuteScript* methods to target either a WebContents or a
-// RenderFrameHost.  Targeting a WebContents means executing the script in the
+// RenderFrameHost.  Targetting a WebContents means executing the script in the
 // RenderFrameHost returned by WebContents::GetMainFrame(), which is the main
 // frame.  Pass a specific RenderFrameHost to target it. Embedders may declare
 // additional ConvertToRenderFrameHost functions for convenience.

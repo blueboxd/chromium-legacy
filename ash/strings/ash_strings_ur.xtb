@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">اوسط سگنل</translation>
 <translation id="4112140312785995938">پیچھے کریں</translation>
 <translation id="4129129681837227511">اپنی مقفل اسکرین پر اطلاعات دیکھنے کیلئے، ترتیب تبدیل کرنے کیلئے غیر مقفل کریں</translation>
+<translation id="4144413954005649103">دائیں طرف کلک کرنے یا لانگ پریس سے، اسسٹنٹ آپ کو اسکرین پر آپ کی منتخب کردہ چیزوں سے متعلق معلومات دکھاتی ہے۔</translation>
 <translation id="4146833061457621061">موسیقی چلائیں</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> <ph name="DOMAIN" /> کے زیر انتظام ہے</translation>
 <translation id="4181841719683918333">زبانیں</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">آن اسکرین کی بورڈ دکھائیں</translation>
 <translation id="6164005077879661055">یہ تحفظ یافتہ صارف ہٹائے جانے پر تحفظ یافتہ صارف کے ساتھ وابستہ سبھی فائلیں اور مقامی ڈیٹا مستقل طور پر حذف کر دیے جائیں گے۔ اس تحفظ یافتہ صارف کیلئے ملاحظہ کردہ ویب سائٹس اور ترتیبات مینیجر کے ذریعے ابھی بھی <ph name="MANAGEMENT_URL" /> پر مرئی ہونگی۔</translation>
 <translation id="6165508094623778733">مزید جانیں</translation>
+<translation id="6236290670123303279">ترتیبات کا نظم کریں</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">افقی پر مقفل ہے</translation>
 <translation id="6259254695169772643">منتخب کرنے کے لئے اپنا اسٹائلس استعمال کریں</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">آن</translation>
 <translation id="6670153871843998651">ڈیسک 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
+<translation id="6692996468359469499">اپنے انتخاب سے متعلق معلومات حاصل کریں</translation>
 <translation id="6696025732084565524">آپ کے الگ ہونے کے قابل کی بورڈ کو ایک اہم اپ ڈیٹ درکار ہے</translation>
 <translation id="6700713906295497288">‏IME مینو بٹن</translation>
 <translation id="6713285437468012787">بلوٹوتھ آلہ "<ph name="DEVICE_NAME" />" کا جوڑا بنایا گیا ہے اور اب سبھی صارفین کیلئے دستیاب ہے۔ آپ ترتیبات کا استعمال کر کے اس جوڑا بنانے کو ہٹا سکتے ہیں۔</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> اور <ph name="SECOND_PARENT_EMAIL" /> کے زیر نظم اکاؤنٹ</translation>
 <translation id="7955885781510802139">اعلی تناسب امتزاج وضع</translation>
 <translation id="7977927628060636163">موبائل نیٹ ورکس کو تلاش کیا جا رہا ہے…</translation>
+<translation id="7980780401175799550">‏کروم OS پر نیویگیٹ کرنے کیلئے نئے طریقے آزمائیں</translation>
 <translation id="7982789257301363584">نیٹ ورک</translation>
 <translation id="7984197416080286869">فنگر پرنٹ سے غیر مقفل کرنے کی کافی زیادہ کوششیں کی گئیں</translation>
 <translation id="7994370417837006925">متعدد سائن ان</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> استعمال کر کے</translation>
 <translation id="8190698733819146287">زبانوں اور ان پٹ کو حسب ضرورت بنائیں…</translation>
 <translation id="8192202700944119416">اطلاعات پوشیدہ ہیں۔</translation>
+<translation id="8196787716797768628">‏ایپس کے درمیان فوری طور پر سوئچ کرنے کے لیے اشارات کا استعمال کریں اور ٹیبلیٹ وضع میں اپنے Chromebook کے ساتھ تعامل کریں۔</translation>
 <translation id="8203795194971602413">دائیں طرف کلک کریں</translation>
 <translation id="8236042855478648955">وقفے کا وقت ہو گیا</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />، سگنل کی مضبوطی <ph name="SIGNAL_STRENGTH" />، فون کی بیٹری <ph name="BATTERY_STATUS" /></translation>

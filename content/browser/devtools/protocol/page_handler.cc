@@ -678,8 +678,7 @@ void PageHandler::CaptureScreenshot(
         base::BindOnce(&PageHandler::ScreenshotCaptured,
                        weak_factory_.GetWeakPtr(),
                        base::Passed(std::move(callback)), screenshot_format,
-                       screenshot_quality, gfx::Size(), gfx::Size(),
-                       blink::WebDeviceEmulationParams()),
+                       screenshot_quality, gfx::Size(), gfx::Size(), nullptr),
         false);
     return;
   }
@@ -687,9 +686,13 @@ void PageHandler::CaptureScreenshot(
   // Welcome to the neural net of capturing screenshot while emulating device
   // metrics!
   bool emulation_enabled = emulation_handler_->device_emulation_enabled();
-  blink::WebDeviceEmulationParams original_params =
-      emulation_handler_->GetDeviceEmulationParams();
-  blink::WebDeviceEmulationParams modified_params = original_params;
+  std::unique_ptr<blink::WebDeviceEmulationParams> original_params;
+  blink::WebDeviceEmulationParams modified_params;
+  if (emulation_enabled) {
+    original_params = std::make_unique<blink::WebDeviceEmulationParams>(
+        *emulation_handler_->GetDeviceEmulationParams());
+    modified_params = *original_params;
+  }
 
   // Capture original view size if we know we are going to destroy it. We use
   // it in ScreenshotCaptured to restore.
@@ -703,16 +706,17 @@ void PageHandler::CaptureScreenshot(
   ScreenInfo screen_info;
   widget_host->GetScreenInfo(&screen_info);
   if (emulation_enabled) {
+    DCHECK(original_params);
     // When emulating, emulate again and scale to make resulting image match
-    // physical DP resolution. If view_size is not overriden, use actual view
+    // physical DP resolution. If view_size is not overridden, use actual view
     // size.
     float original_scale =
-        original_params.scale > 0 ? original_params.scale : 1;
-    if (!modified_params.view_size.width) {
+        original_params->scale > 0 ? original_params->scale : 1;
+    if (!modified_params.view_size.width()) {
       emulated_view_size.set_width(
           ceil(original_view_size.width() / original_scale));
     }
-    if (!modified_params.view_size.height) {
+    if (!modified_params.view_size.height()) {
       emulated_view_size.set_height(
           ceil(original_view_size.height() / original_scale));
     }
@@ -724,22 +728,19 @@ void PageHandler::CaptureScreenshot(
     // When clip is specified, we scale viewport via clip, otherwise we use
     // scale.
     modified_params.scale = clip.isJust() ? 1 : dpfactor;
-    modified_params.view_size.width = emulated_view_size.width();
-    modified_params.view_size.height = emulated_view_size.height();
+    modified_params.view_size = emulated_view_size;
   } else if (clip.isJust()) {
     // When not emulating, still need to emulate the page size.
-    modified_params.view_size.width = original_view_size.width();
-    modified_params.view_size.height = original_view_size.height();
-    modified_params.screen_size.width = 0;
-    modified_params.screen_size.height = 0;
+    modified_params.view_size = original_view_size;
+    modified_params.screen_size = gfx::Size();
     modified_params.device_scale_factor = 0;
     modified_params.scale = 1;
   }
 
   // Set up viewport in renderer.
   if (clip.isJust()) {
-    modified_params.viewport_offset.SetPoint(clip.fromJust()->GetX(),
-                                             clip.fromJust()->GetY());
+    modified_params.viewport_offset =
+        gfx::PointF(clip.fromJust()->GetX(), clip.fromJust()->GetY());
     modified_params.viewport_scale = clip.fromJust()->GetScale() * dpfactor;
     if (IsUseZoomForDSFEnabled()) {
       modified_params.viewport_offset.Scale(screen_info.device_scale_factor);
@@ -767,7 +768,7 @@ void PageHandler::CaptureScreenshot(
     } else {
       requested_image_size = emulated_view_size;
     }
-    double scale = emulation_enabled ? original_params.device_scale_factor
+    double scale = emulation_enabled ? original_params->device_scale_factor
                                      : screen_info.device_scale_factor;
     if (clip.isJust())
       scale *= clip.fromJust()->GetScale();
@@ -779,7 +780,7 @@ void PageHandler::CaptureScreenshot(
                      weak_factory_.GetWeakPtr(),
                      base::Passed(std::move(callback)), screenshot_format,
                      screenshot_quality, original_view_size,
-                     requested_image_size, original_params),
+                     requested_image_size, std::move(original_params)),
       true);
 }
 
@@ -1106,12 +1107,16 @@ void PageHandler::ScreenshotCaptured(
     int quality,
     const gfx::Size& original_view_size,
     const gfx::Size& requested_image_size,
-    const blink::WebDeviceEmulationParams& original_emulation_params,
+    std::unique_ptr<blink::WebDeviceEmulationParams> original_emulation_params,
     const gfx::Image& image) {
   if (original_view_size.width()) {
     RenderWidgetHostImpl* widget_host = host_->GetRenderWidgetHost();
     widget_host->GetView()->SetSize(original_view_size);
-    emulation_handler_->SetDeviceEmulationParams(original_emulation_params);
+    if (original_emulation_params) {
+      emulation_handler_->SetDeviceEmulationParams(*original_emulation_params);
+    } else {
+      emulation_handler_->SetDeviceEmulationParams(base::nullopt);
+    }
   }
 
   if (image.IsEmpty()) {

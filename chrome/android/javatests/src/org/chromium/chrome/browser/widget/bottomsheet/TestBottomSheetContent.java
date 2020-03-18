@@ -35,6 +35,9 @@ public class TestBottomSheetContent implements BottomSheetContent {
     /** Whether this content is browser specific. */
     private boolean mHasCustomLifecycle;
 
+    /** Whether this content has a custom scrim lifecycle. */
+    private boolean mHasCustomScrimLifecycle;
+
     /** The peek height of this content. */
     private int mPeekHeight;
 
@@ -149,6 +152,15 @@ public class TestBottomSheetContent implements BottomSheetContent {
     @Override
     public float getFullHeightRatio() {
         return mFullHeight;
+    }
+
+    public void setHasCustomScrimLifecycle(boolean hasCustomScrimLifecycle) {
+        mHasCustomScrimLifecycle = hasCustomScrimLifecycle;
+    }
+
+    @Override
+    public boolean hasCustomScrimLifecycle() {
+        return mHasCustomScrimLifecycle;
     }
 
     @Override

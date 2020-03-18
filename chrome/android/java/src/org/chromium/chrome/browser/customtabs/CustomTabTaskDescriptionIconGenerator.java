@@ -8,7 +8,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
 
-import org.chromium.chrome.browser.favicon.RoundedIconGenerator;
+import org.chromium.chrome.browser.ui.favicon.RoundedIconGenerator;
 
 /**
  * Generates icons suitable for Custom Tabs in the recent tasks list.

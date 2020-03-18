@@ -649,7 +649,8 @@ bool OmniboxFieldTrial::IsReverseAnswersEnabled() {
 bool OmniboxFieldTrial::IsShortBookmarkSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(
              omnibox::kOmniboxShortBookmarkSuggestions) ||
-         base::FeatureList::IsEnabled(omnibox::kAutocompleteTitles);
+         base::FeatureList::IsEnabled(omnibox::kAutocompleteTitles) ||
+         base::FeatureList::IsEnabled(omnibox::kRichAutocompletion);
 }
 
 bool OmniboxFieldTrial::IsSuggestionButtonRowEnabled() {
@@ -689,6 +690,33 @@ bool OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() {
 
 bool OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxMaxURLMatches);
+}
+
+bool OmniboxFieldTrial::IsRichAutocompletionEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kRichAutocompletion);
+}
+
+bool OmniboxFieldTrial::RichAutocompletionAutocompleteTitles() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      omnibox::kRichAutocompletion, kRichAutocompletionAutocompleteTitlesParam,
+      false);
+}
+
+bool OmniboxFieldTrial::RichAutocompletionTwoLineOmnibox() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      omnibox::kRichAutocompletion, kRichAutocompletionTwoLineOmniboxParam,
+      false);
+}
+
+bool OmniboxFieldTrial::RichAutocompletionShowTitles() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      omnibox::kRichAutocompletion, kRichAutocompletionShowTitlesParam, false);
+}
+
+bool OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefix() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      omnibox::kRichAutocompletion, kRichAutocompletionAutocompleteNonPrefix,
+      false);
 }
 
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
@@ -777,8 +805,16 @@ const char
 const char OmniboxFieldTrial::kOnDeviceHeadSuggestDemoteMode[] =
     "DemoteOnDeviceSearchSuggestionsMode";
 
-// static
 int OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 100;
+
+const char OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesParam[] =
+    "RichAutocompletionAutocompleteTitles";
+const char OmniboxFieldTrial::kRichAutocompletionTwoLineOmniboxParam[] =
+    "RichAutocompletionTwoLineOmnibox";
+const char OmniboxFieldTrial::kRichAutocompletionShowTitlesParam[] =
+    "RichAutocompletionShowTitles";
+const char OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefix[] =
+    "RichAutocompletionAutocompleteNonPrefix";
 
 std::string OmniboxFieldTrial::internal::GetValueForRuleInContext(
     const std::string& rule,

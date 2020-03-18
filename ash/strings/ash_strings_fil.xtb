@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">Katamtaman ang signal</translation>
 <translation id="4112140312785995938">Mag-seek Pabalik</translation>
 <translation id="4129129681837227511">Para makakita ng mga notification sa iyong screen ng lock, i-unlock para baguhin ang setting</translation>
+<translation id="4144413954005649103">Sa pamamagitan ng pag-right click o matagal na pagpindot, magpapakita sa iyo ang Assistant ng impormasyong kaugnay ng pipiliin mo sa screen.</translation>
 <translation id="4146833061457621061">Mag-play ng musika</translation>
 <translation id="4149156641122542261">Pinapamahalaan ng <ph name="DOMAIN" /> ang <ph name="DEVICE_TYPE" /></translation>
 <translation id="4181841719683918333">Mga Wika</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">Ipakita ang on-screen na keyboard</translation>
 <translation id="6164005077879661055">Permanenteng matatanggal ang lahat ng file at lokal na data na kaugnay ng pinangangasiwaang user sa oras na alisin ang pinangangasiwaang user na ito. Maaari pa ring makita ng manager ang mga nabisitang website at setting para sa pinangangasiwaang user na ito sa <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Matuto pa</translation>
+<translation id="6236290670123303279">Pamahalaan ang Mga Setting</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Naka-lock sa horizontal</translation>
 <translation id="6259254695169772643">Gamitin ang iyong stylus para pumili</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">Naka-on</translation>
 <translation id="6670153871843998651">Desk 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
+<translation id="6692996468359469499">Kumuha ng impormasyon kaugnay ng iyong pinili</translation>
 <translation id="6696025732084565524">Nangangailangan ng mahalagang update ang iyong naaalis na keyboard</translation>
 <translation id="6700713906295497288">Button ng menu ng IME</translation>
 <translation id="6713285437468012787">Naipares na ang bluetooth device na "<ph name="DEVICE_NAME" />" at available na ngayon sa lahat ng user. Maaari mong alisin ang pagpapares na ito gamit ang Mga Setting.</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895">Pinamamahalaan nina <ph name="FIRST_PARENT_EMAIL" /> at <ph name="SECOND_PARENT_EMAIL" /> ang account</translation>
 <translation id="7955885781510802139">High-contrast mode</translation>
 <translation id="7977927628060636163">Naghahanap ng mga mobile network...</translation>
+<translation id="7980780401175799550">Sumubok ng mga bagong paraan para i-navigate ang Chrome OS</translation>
 <translation id="7982789257301363584">Network</translation>
 <translation id="7984197416080286869">Masyadong maraming beses sumubok gamit ang fingerprint</translation>
 <translation id="7994370417837006925">Multiple na pag-sign in</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835">Gamit ang <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">I-customize ang mga wika at input...</translation>
 <translation id="8192202700944119416">Nakatago ang mga notification.</translation>
+<translation id="8196787716797768628">Gamitin ang mga galaw para mabilis na magpalipat-lipat sa mga app at magamit ang iyong Chromebook sa tablet mode.</translation>
 <translation id="8203795194971602413">Mag-right click</translation>
 <translation id="8236042855478648955">Oras na para magpahinga</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, Lakas ng Signal <ph name="SIGNAL_STRENGTH" />, Baterya ng Telepono <ph name="BATTERY_STATUS" /></translation>

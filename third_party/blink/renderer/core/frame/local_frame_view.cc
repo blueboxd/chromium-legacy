@@ -3085,7 +3085,7 @@ void LocalFrameView::ForceLayoutForPagination(
         static_cast<LayoutUnit>(page_logical_height);
     layout_view->SetLogicalWidth(floored_page_logical_width);
     layout_view->SetPageLogicalHeight(floored_page_logical_height);
-    layout_view->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+    layout_view->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
         layout_invalidation_reason::kPrintingChanged);
     UpdateLayout();
 
@@ -3121,8 +3121,9 @@ void LocalFrameView::ForceLayoutForPagination(
           static_cast<LayoutUnit>(page_logical_height);
       layout_view->SetLogicalWidth(floored_page_logical_width);
       layout_view->SetPageLogicalHeight(floored_page_logical_height);
-      layout_view->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-          layout_invalidation_reason::kPrintingChanged);
+      layout_view
+          ->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
+              layout_invalidation_reason::kPrintingChanged);
       UpdateLayout();
 
       PhysicalRect updated_document_rect(layout_view->DocumentRect());
@@ -3682,6 +3683,12 @@ void LocalFrameView::NotifyFrameRectsChangedIfNeeded() {
     root_layer_did_scroll_ = false;
     PropagateFrameRects();
   }
+}
+
+void LocalFrameView::SetViewportIntersection(
+    const ViewportIntersectionState& intersection_state) {
+  GetFrame().Client()->OnMainFrameDocumentIntersectionChanged(
+      intersection_state.main_frame_document_intersection);
 }
 
 PhysicalOffset LocalFrameView::ViewportToFrame(
@@ -4394,22 +4401,11 @@ bool LocalFrameView::MapToVisualRectInRemoteRootFrame(
   // This is the top-level frame, so no mapping necessary.
   if (frame_->IsMainFrame())
     return true;
-  bool result;
-  if (apply_overflow_clip) {
-    result = rect.InclusiveIntersect(
-        PhysicalRect(frame_->RemoteViewportIntersection()));
-    if (result)
-      rect.Move(PhysicalOffset(GetFrame().RemoteViewportOffset()));
-  } else {
-    // If we are not applying the overflow clip, the mapping should be in the
-    // remote viewport's coordinate system. Map rect to the remote viewport's
-    // coordinate system prior to intersecting.
-    // RemoteMainFrameDocumentIntersection is in the remote viewport's
-    // coordinate system.
+  bool result = rect.InclusiveIntersect(PhysicalRect(
+      apply_overflow_clip ? frame_->RemoteViewportIntersection()
+                          : frame_->RemoteMainFrameDocumentIntersection()));
+  if (result)
     rect.Move(PhysicalOffset(GetFrame().RemoteViewportOffset()));
-    result = rect.InclusiveIntersect(
-        PhysicalRect(frame_->RemoteMainFrameDocumentIntersection()));
-  }
   return result;
 }
 

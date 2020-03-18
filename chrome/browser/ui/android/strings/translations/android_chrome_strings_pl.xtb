@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">Przesyłam na: <ph name="DEVICE_NAME" />…</translation>
 <translation id="1036727731225946849">Dodaję aplikację <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">Ze stron internetowych</translation>
+<translation id="1044891598689252897">Strony będą działać normalnie</translation>
 <translation id="1049743911850919806">Incognito</translation>
 <translation id="10614374240317010">Nigdy nie zapisane</translation>
 <translation id="1067922213147265141">Inne usługi Google</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" />: nie udało się udostępnić</translation>
 <translation id="1477626028522505441">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu problemów z serwerem.</translation>
 <translation id="1506061864768559482">Wyszukiwarka</translation>
+<translation id="1509960214886564027">Funkcje wielu stron mogą nie działać prawidłowo</translation>
 <translation id="1513352483775369820">Zakładki i historia online</translation>
 <translation id="1513858653616922153">Usuń hasło</translation>
 <translation id="1521774566618522728">Aktywność: dzisiaj</translation>
@@ -235,6 +237,7 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="2647434099613338025">Dodaj język</translation>
 <translation id="2650751991977523696">Czy pobrać plik ponownie?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# plik dźwiękowy}few{# pliki dźwiękowe}many{# plików dźwiękowych}other{# pliku dźwiękowego}}</translation>
+<translation id="2687403674020088961">Blokuj wszystkie pliki cookie (niezalecane)</translation>
 <translation id="2707726405694321444">Odśwież stronę</translation>
 <translation id="2709516037105925701">Autouzupełnianie</translation>
 <translation id="2717722538473713889">Adresy e-mail</translation>
@@ -340,6 +343,7 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="3478363558367712427">Możesz wybrać wyszukiwarkę</translation>
 <translation id="3492207499832628349">Nowa karta incognito</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Dowiedz się więcej<ph name="END_LINK" /> o proponowanej treści</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Rzeczywistość rozszerzona</translation>
 <translation id="3518985090088779359">Akceptuj i kontynuuj</translation>
 <translation id="3522247891732774234">Dostępna jest aktualizacja. Więcej opcji</translation>
@@ -355,6 +359,7 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="358794129225322306">Zezwól stronie na automatyczne pobieranie wielu plików.</translation>
 <translation id="3590487821116122040">Dane witryn, które Chrome uznaje za nieistotne (np. witryny, które rzadko odwiedzasz lub które nie mają zapisanych ustawień)</translation>
 <translation id="3594780231884063836">Wycisz film</translation>
+<translation id="3596414637720633074">Blokowanie plików cookie innych firm w trybie incognito</translation>
 <translation id="3599863153486145794">Usuwa historię ze wszystkich urządzeń, na których jesteś zalogowany. Inne rodzaje historii przeglądania mogą być nadal dostępne na Twoim koncie Google na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Wycisz strony, które odtwarzają dźwięk</translation>
 <translation id="3616113530831147358">Dźwięk</translation>
@@ -921,6 +926,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="780301667611848630">Nie, dziękuję</translation>
 <translation id="7810647596859435254">Otwórz za pomocą…</translation>
 <translation id="7821588508402923572">Tutaj będą widoczne informacje o zaoszczędzonych danych</translation>
+<translation id="7828557259026017104">Pliki cookie są tworzone przez odwiedzane strony. Strony zapisują w nich Twoje ustawienia. Pliki cookie innych firm są tworzone przez inne strony. Na tych stronach znajdują się niektóre treści, np. reklamy i obrazy, które wyświetlają się na odwiedzanej stronie.</translation>
 <translation id="783819812427904514">Wyłącz wyciszenie filmu</translation>
 <translation id="784934925303690534">Zakres czasu</translation>
 <translation id="7851858861565204677">Inne urządzenia</translation>
@@ -941,6 +947,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="79859296434321399">Aby oglądać treści rzeczywistości rozszerzonej, zainstaluj ARCore</translation>
 <translation id="7986741934819883144">Wybierz kontakt</translation>
 <translation id="7987073022710626672">Warunki korzystania z Chrome</translation>
+<translation id="7993619969781047893">Funkcje niektórych stron mogą nie działać prawidłowo</translation>
 <translation id="7998918019931843664">Otwórz ponownie zamkniętą kartę</translation>
 <translation id="7999064672810608036">Na pewno chcesz usunąć wszystkie dane lokalne (w tym pliki cookie) i zresetować uprawnienia tej witryny?</translation>
 <translation id="8004582292198964060">Przeglądarka</translation>
@@ -1075,6 +1082,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8965591936373831584">Oczekiwanie</translation>
 <translation id="8970887620466824814">Coś poszło nie tak.</translation>
 <translation id="8972098258593396643">Czy pobrać do folderu domyślnego?</translation>
+<translation id="8988028529677883095">Używaj telefonu jako klucza bezpieczeństwa</translation>
 <translation id="8993760627012879038">Otwórz nową kartę w trybie incognito</translation>
 <translation id="8998729206196772491">Logujesz się na konto, którym zarządza <ph name="MANAGED_DOMAIN" />, i przekazujesz jego administratorowi kontrolę nad Twoimi danymi Chrome. Zostaną one trwale przypisane do tego konta. Gdy się wylogujesz, znikną one z tego urządzenia, ale pozostaną zapisane na Twoim koncie Google.</translation>
 <translation id="9019902583201351841">Zarządzany przez Twoich rodziców</translation>

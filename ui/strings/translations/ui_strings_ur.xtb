@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;سبھی کو منتخب کریں</translation>
-<translation id="1938451708255335766">ونڈو ڈسپلے کی کثافت کو ایڈجسٹ کرنے کیلئے، ایپ کو دوبارہ شروع کریں۔</translation>
 <translation id="2006524834898217237">یہ یقینی بنائیں کہ آپ کا آلہ انٹرنیٹ سے منسلک ہے۔</translation>
 <translation id="208586643495776849">براہ کرم دوبارہ کوشش کریں</translation>
 <translation id="2090963878406559571">‏<ph name="ORIGIN" /> سے اپنے Android فون پر نمبر بھیجنے کے لیے، ترتیبات میں دونوں آلات کے لیے <ph name="TROUBLESHOOT_LINK" />۔</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">پہلے سے شامل ڈسپلے</translation>
 <translation id="335581015389089642">اسپیچ</translation>
 <translation id="3389286852084373014">متن کافی بڑا ہے</translation>
-<translation id="3479552764303398839">ابھی نہیں</translation>
 <translation id="348799646910989694">شیلف خودکار طور پر پوشیدہ</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> کو پن کر دیا گیا</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 دن باقی}other{# دن باقی}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 منٹ}other{# منٹ}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{آج فعال تھا}=1{1 دن پہلے فعال تھا}other{# دن پہلے فعال تھا}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 دن اور }other{# دن اور }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 سال میں}other{# سال میں}}</translation>
-<translation id="5895138241574237353">دوبارہ شروع کریں</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 سیکنڈ باقی}other{# سیکنڈ باقی}}</translation>
 <translation id="5941711191222866238">چھوٹا کریں</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 گھنٹہ}other{# گھنٹے}}</translation>

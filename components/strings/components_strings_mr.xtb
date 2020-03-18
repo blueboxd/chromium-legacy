@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">घेण्याची पद्धत</translation>
 <translation id="1281476433249504884">स्टॅकर १</translation>
 <translation id="1285320974508926690">या साइटचा कधीही भाषांतर करु नका</translation>
-<translation id="1285400217480592994">तुम्ही Chrome मध्ये डाउनलोड किंवा अपलोड करता त्या फाइलचे आशय स्कॅन करा</translation>
 <translation id="1292701964462482250">"तुमच्या कॉंप्युटरवरील सॉफ्टवेअर Chrome ला सुरक्षितपणे वेबशी कनेक्ट होण्यापासून थांबवत आहे" (फक्‍त Windows कॉंप्युटरचा)</translation>
 <translation id="1294154142200295408">विविध कमांड लाइन</translation>
 <translation id="129553762522093515">अलीकडे बंद केलेले</translation>
@@ -651,6 +650,7 @@
 <translation id="3784372983762739446">ब्लूटूथ डिव्हाइस</translation>
 <translation id="3787705759683870569">समाप्त होते: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">आकार १६</translation>
+<translation id="3793574014653384240">अलीकडे झालेल्या क्रॅशची संख्या आणि कारणे</translation>
 <translation id="3797522431967816232">Prc3 (Envelope)</translation>
 <translation id="3799805948399000906">फॉन्टची विनंती केली</translation>
 <translation id="3807366285948165054">इमेज X शिफ्ट</translation>

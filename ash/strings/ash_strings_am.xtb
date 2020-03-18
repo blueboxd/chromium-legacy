@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">መካከለኛ ሲግናል</translation>
 <translation id="4112140312785995938">ወደኋላ ፈልግ</translation>
 <translation id="4129129681837227511">በማያ ገጽ መቆለፊያዎ ላይ ማሳወቂያዎችን ለማየት ቅንብሩችን ለመቀየር ይክፈቱ</translation>
+<translation id="4144413954005649103">በቀኝ ጠቅ በማድረግ ወይም ተጭነው በመያዝ ረዳት በማያ ገጽ ላይ እርስዎ ምን እንደመረጡ ጋር ግንኙነት ያለው መረጃ ያሳይዎታል።</translation>
 <translation id="4146833061457621061">Play ሙዚቃ</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> በ<ph name="DOMAIN" /> የሚተዳደር ነው</translation>
 <translation id="4181841719683918333">ቋንቋዎች</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">የማያ ገጽ ላይ ቁልፍ ሰሌዳ አሳይ</translation>
 <translation id="6164005077879661055">ይህ ክትትል የሚደረግበት ተጠቃሚ አንዴ ከተወገደ በኋላ ሁሉም ከዚህ ክትትል የሚደረግበት ተጠቃሚ ጋር የተጎዳኙ ፋይሎች እና አካባቢያዊ ውሂብ እስከመጨረሻው ይሰረዛሉ። አስተዳዳሪው የዚህ ክትትል የሚደረግበት ተጠቃሚ የጎበኛቸው ድር ጣቢያዎች እና ቅንብሮች <ph name="MANAGEMENT_URL" /> ላይ ሊያዩት ይችላሉ።</translation>
 <translation id="6165508094623778733">የበለጠ ለመረዳት</translation>
+<translation id="6236290670123303279">ቅንብሮችን ያቀናብሩ</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">ወደ አግድም ተቆልፏል</translation>
 <translation id="6259254695169772643">ለመጠቀም የእርስዎን ስታይለስ ይጠቀሙ</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">አብራ</translation>
 <translation id="6670153871843998651">ዴስክ 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
+<translation id="6692996468359469499">ከእርስዎ ምርጫ ጋር የተገናኘ መረጃ ያግኙ</translation>
 <translation id="6696025732084565524">የእርስዎ ተነቃይ የቁልፍ ሰሌዳ ወሳኝ የሆነ ዝማኔ ያስፈልገዋል</translation>
 <translation id="6700713906295497288">የIME ምናሌ አዝራር</translation>
 <translation id="6713285437468012787">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME" />» ተጣምሯል፣ እና አሁን ለሁሉም ተጠቃሚዎች ይገኛል። ቅንብሮችን በመጠቀም ይህን ጥምረት ማስወገድ ይችላሉ።</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895">መለያው በ<ph name="FIRST_PARENT_EMAIL" /> እና <ph name="SECOND_PARENT_EMAIL" /> ነው የሚቀናበረው</translation>
 <translation id="7955885781510802139">ባለከፍተኛ ንፅፅር ሁነታ</translation>
 <translation id="7977927628060636163">የተንቀሳቃሽ ስልክ አውታረ መረቦችን በመፈለግ ላይ...</translation>
+<translation id="7980780401175799550">Chrome OSን የሚዳስሱበት አዲስ መንገዶችን ይሞክሩ</translation>
 <translation id="7982789257301363584">አውታረ መረብ</translation>
 <translation id="7984197416080286869">ከልክ በላይ ብዙ የጣት አሻራ ሙከራዎች</translation>
 <translation id="7994370417837006925">ባለብዙ በመለያ-መግቢያ</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" />ን በመጠቀም ላይ</translation>
 <translation id="8190698733819146287">ቋንቋዎችን እና ግብአቶችን አብጅ...</translation>
 <translation id="8192202700944119416">ማሳወቂያዎች ተደብቀዋል</translation>
+<translation id="8196787716797768628">በመተግበሪያዎች መካከል በፍጥነት ለመቀያየር እና ከእርስዎ Chromebook ጋር በጡባዊ ሁነታ መስተጋብር ለመፈጸም የእጅ ምልክቶችን ይጠቀሙ።</translation>
 <translation id="8203795194971602413">የቀኝ ጠቅታ</translation>
 <translation id="8236042855478648955">የዕረፍት ጊዜ</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" />፣ የስልክ ባትሪ <ph name="BATTERY_STATUS" /></translation>

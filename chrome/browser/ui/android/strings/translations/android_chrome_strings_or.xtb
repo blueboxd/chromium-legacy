@@ -5,6 +5,7 @@
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" />କୁ ପଠାଉଛି...</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> ଯୋଗ କରାଯାଉଛି...</translation>
 <translation id="1041308826830691739">ୱେବ୍‍ସାଇଟ୍‍ରୁ</translation>
+<translation id="1044891598689252897">ସାଇଟଗୁଡ଼ିକ ସାଧାରଣ ଭାବେ କାମ କରିବ</translation>
 <translation id="1049743911850919806">ଇନ୍‌କଗ୍ନିଟୋ</translation>
 <translation id="10614374240317010">ଆଦୌ ସେଭ୍‍ କରାଯାଇନାହିଁ</translation>
 <translation id="1067922213147265141">ଅନ୍ୟାନ୍ୟ Google ସେବା</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> ସେୟାର୍ କରାଯାଇ ପାରିବ ନାହିଁ</translation>
 <translation id="1477626028522505441">ସର୍ଭର୍ ସମସ୍ୟା ଯୋଗୁଁ <ph name="FILE_NAME" /> ଡାଉନ୍‌ଲୋଡ୍ ହେବାରେ ବିଫଳ ହେଲା।</translation>
 <translation id="1506061864768559482">ସନ୍ଧାନ ଇଞ୍ଜିନ୍</translation>
+<translation id="1509960214886564027">କିଛି ସାଇଟରେ ଫିଚରଗୁଡ଼ିକ ଠିକ୍ ଭାବେ କାମ କରିନପାରେ</translation>
 <translation id="1513352483775369820">ବୁକ୍‌ମାର୍କ ଏବଂ ୱେବ୍ ଇତିବୃତ୍ତି</translation>
 <translation id="1513858653616922153">ପାସ୍‍ୱାର୍ଡକୁ ଡିଲିଟ୍ କରନ୍ତୁ</translation>
 <translation id="1521774566618522728">ଆଜି ସକ୍ରିୟ ଅଛି</translation>
@@ -235,6 +237,7 @@
 <translation id="2647434099613338025">ଭାଷା ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="2650751991977523696">ଫାଇଲ୍‌ଟି ପୁଣି ଡାଉନ୍‌ଲୋଡ୍ କରିବେ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{#ଟି ଅଡିଓ ଫାଇଲ୍‌}other{#ଟି ଅଡିଓ ଫାଇଲ୍‌}}</translation>
+<translation id="2687403674020088961">ସମସ୍ତ କୁକୀ ବ୍ଲକ୍ କରନ୍ତୁ (ସୁପାରିଶ କରାଯାଇ ନାହିଁ)</translation>
 <translation id="2707726405694321444">ପୃଷ୍ଠା ରିଫ୍ରେସ୍ କରନ୍ତୁ</translation>
 <translation id="2709516037105925701">ସ୍ୱତଃପୂରଣ</translation>
 <translation id="2717722538473713889">ଇମେଲ୍ ଠିକଣାଗୁଡ଼ିକ</translation>
@@ -340,6 +343,7 @@
 <translation id="3478363558367712427">ଆପଣ ଆପଣଙ୍କର ସର୍ଚ୍ଚ ଇଞ୍ଜିନ୍ ବାଛିପାରିବେ</translation>
 <translation id="3492207499832628349">ନୂଆ ଇନ୍‌କଗ୍ନିଟୋ ଟାବ୍</translation>
 <translation id="3493531032208478708">ପ୍ରସ୍ତାବିତ ବିଷୟବସ୍ତୁ ବିଷୟରେ <ph name="BEGIN_LINK" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="END_LINK" /></translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">ବୃଦ୍ଧି ହେଉଥିବା ବାସ୍ତବତା</translation>
 <translation id="3518985090088779359">ସ୍ୱୀକାର କରନ୍ତୁ ଏବଂ ଜାରି ରଖନ୍ତୁ</translation>
 <translation id="3522247891732774234">ଅପ୍‍‍‍‍‍ଡେଟ୍‌ ଉପଲବ୍ଧ ଅଟେ। ଅଧିକ ବିକଳ୍ପ</translation>
@@ -355,6 +359,7 @@
 <translation id="358794129225322306">ସ୍ୱଚାଳିତ ଭାବେ ଏକାଧିକ ଫାଇଲ୍ ଡାଉନ୍‌ଲୋଡ୍ କରିବା ପାଇଁ ଗୋଟିଏ ସାଇଟ୍‌କୁ ଅନୁମତି ଦିଅନ୍ତୁ।</translation>
 <translation id="3590487821116122040">Chromeକୁ ସାଇଟ୍ ସଂଗ୍ରହ ମହତ୍ବପୂର୍ଣ୍ଣ ଲାଗୁ ନାହିଁ (ଉ.ଦା. ସାଇଟ୍, ଯେଉଁଥିରେ କୌଣସି ସେଟିଂସ୍ ସେଭ୍ ନାହିଁ ବା ଯେଉଁ ସାଇଟ୍‌କୁ ଆପଣ ପ୍ରାୟତଃ ଯାଉନଥିବା)</translation>
 <translation id="3594780231884063836">ଭିଡିଓ ମ୍ୟୁଟ୍ କରନ୍ତୁ</translation>
+<translation id="3596414637720633074">ଇନକଗ୍ନିଟୋ ମୋଡରେ ତୃତୀୟ-ପକ୍ଷ କୁକୀଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="3599863153486145794">ସମସ୍ତ ସାଇନ୍‌-ଇନ୍‍ ହୋ‍ଇଥିବା ଡିଭାଇସ୍‍ରୁ ଇତିବୃତ୍ତି ଖାଲି କରେ। ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟର <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ରେ ଅନ୍ୟ ପ୍ରକାରର ବ୍ରାଉଜିଂ ଇତିବୃତ୍ତି ଥାଇପାରେ।</translation>
 <translation id="3600792891314830896">ଯେଉଁ ୱେବ୍‌ସାଇଟ୍‌ଗୁଡ଼ିକରେ ସାଉଣ୍ଡ ଚାଲୁଛି ସେଗୁଡ଼ିକୁ ମ୍ୟୁଟ୍ କରନ୍ତୁ</translation>
 <translation id="3616113530831147358">ଅଡିଓ</translation>
@@ -941,6 +946,7 @@
 <translation id="79859296434321399">ବୃଦ୍ଧି ହେଉଥିବା ବାସ୍ତବତା ବିଷୟବସ୍ତୁ ଦେଖିବାକୁ ARCore ଇନ୍‌ଷ୍ଟଲ୍ କରନ୍ତୁ</translation>
 <translation id="7986741934819883144">ଗୋଟିଏ ଯୋଗାଯୋଗ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="7987073022710626672">Chrome ସେବାର ସର୍ତ୍ତାବଳୀ</translation>
+<translation id="7993619969781047893">କିଛି ସାଇଟରେ ଫିଚରଗୁଡ଼ିକ ଠିକ୍ ଭାବେ କାମ କରିନପାରେ</translation>
 <translation id="7998918019931843664">ବନ୍ଦ ହୋଇଥିବା ଟାବ୍ ପୁଣି ଖୋଲନ୍ତୁ</translation>
 <translation id="7999064672810608036">ଆପଣ କ’ଣ ସୁନିଶ୍ଚିତ ଯେ ଆପଣ କୁକୀ ସହିତ ଏହି ୱେବ୍‌ସାଇଟ୍‌ର ସମସ୍ତ ସ୍ଥାନୀୟ ଡାଟା ଖାଲି କରିବା ଏବଂ ଏହାର ସମସ୍ତ ଅନୁମତି ରିସେଟ୍‍ କରିବା ପାଇଁ ଚାହୁଁଛନ୍ତି?</translation>
 <translation id="8004582292198964060">ବ୍ରାଉଜର</translation>
@@ -1075,6 +1081,7 @@
 <translation id="8965591936373831584">ବାକି ଅଛି</translation>
 <translation id="8970887620466824814">କିଛି ଭୁଲ ହୋଇଗଲା।</translation>
 <translation id="8972098258593396643">ଡିଫଲ୍ଟ ଫୋଲ୍ଡର୍‍କୁ ଡାଉନ୍‍‍ଲୋଡ୍ କରିବେ କି?</translation>
+<translation id="8988028529677883095">ଫୋନକୁ ଏକ ସୁରକ୍ଷା କୀ ଭାବରେ ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="8993760627012879038">ଇନ୍‌କଗ୍‌ନିଟୋ ମୋଡ୍‍‍ରେ ଏକ ନୂଆ ଟାବ୍ ଖୋଲନ୍ତୁ</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" />ଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ ଏକ ଆକାଉଣ୍ଟ ମାଧ୍ୟମରେ ଆପଣ ସାଇନ୍ ଇନ୍ କରିଛନ୍ତି ଏବଂ ଏହାର ଆଡ୍‍ମିନିଷ୍ଟ୍ରେଟର୍‍ଙ୍କୁ ଆପଣଙ୍କ Chrome ଡାଟାର ନିୟନ୍ତ୍ରଣ ଦେଇଛନ୍ତି। ଆପଣଙ୍କର ଡାଟା ସ୍ଥାୟୀ ରୂପେ ଏହି ଆକାଉଣ୍ଟ ସହିତ ଯୋଡ଼ି ହୋଇଯିବ। Chromeରୁ ସାଇନ୍-ଆଉଟ୍ କରିବା ଦ୍ଵାରା ଏହି ଡିଭାଇସ୍‍ରୁ ଆପଣଙ୍କ ଡାଟା ଡିଲିଟ୍ ହୋଇଯିବ କିନ୍ତୁ ଏହା ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟରେ ଷ୍ଟୋର୍ ହୋଇ ରହିଥିବ।</translation>
 <translation id="9019902583201351841">ଆପଣଙ୍କ ମାତା-ପିତାଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ କରାଯାଉଛି</translation>

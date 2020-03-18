@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Vybrať &amp;všetko</translation>
-<translation id="1938451708255335766">Ak chcete upraviť hustotu zobrazenia okien, reštartujte aplikáciu.</translation>
 <translation id="2006524834898217237">Skontrolujte, či je toto zariadenie pripojené k internetu.</translation>
 <translation id="208586643495776849">Skúste to znova</translation>
 <translation id="2090963878406559571">Ak chcete zo zariadenia <ph name="ORIGIN" /> odoslať číslo do telefónu s Androidom, <ph name="TROUBLESHOOT_LINK" /> pre obidve zariadenia v nastaveniach.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Vstavaná obrazovka</translation>
 <translation id="335581015389089642">Reč</translation>
 <translation id="3389286852084373014">Text je príliš veľký</translation>
-<translation id="3479552764303398839">Teraz nie</translation>
 <translation id="348799646910989694">Polička sa bude automaticky skrývať</translation>
 <translation id="3554637740840164787">Položka <ph name="ITEM_TITLE" /> bola pripnutá</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Zostáva 1 deň}few{Zostávajú # dni}many{Zostáva # dňa}other{Zostáva # dní}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktívne dnes}=1{Aktívne včera}few{Aktívne pred # dňami}many{Aktívne pred # dňa}other{Aktívne pred # dňami}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 deň a }few{# dni a }many{# dňa a }other{# dní a }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{o 1 r.}few{o # r.}many{o # r.}other{o # r.}}</translation>
-<translation id="5895138241574237353">Reštartovať</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Zostáva 1 sekunda}few{Zostávajú # sekundy}many{Zostáva # sekundy}other{Zostáva # sekúnd}}</translation>
 <translation id="5941711191222866238">Minimalizovať</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 hodina}few{# hodiny}many{# hodiny}other{# hodín}}</translation>

@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">Odesílání na zařízení <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">Přidávání aplikace <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Z webů</translation>
+<translation id="1044891598689252897">Weby budou fungovat normálně</translation>
 <translation id="1049743911850919806">Anonymní režim</translation>
 <translation id="10614374240317010">Nikdy se neukládají</translation>
 <translation id="1067922213147265141">Další služby Google</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">Sdílení obsahu typu <ph name="CONTENT_TYPE" /> se nezdařilo</translation>
 <translation id="1477626028522505441">Stažení souboru <ph name="FILE_NAME" /> se nezdařilo z důvodu problémů se serverem.</translation>
 <translation id="1506061864768559482">Vyhledávač</translation>
+<translation id="1509960214886564027">Mnoho webů může přestat fungovat</translation>
 <translation id="1513352483775369820">Záložky a webová historie</translation>
 <translation id="1513858653616922153">Vymazat heslo</translation>
 <translation id="1521774566618522728">Aktivní dnes</translation>
@@ -235,6 +237,7 @@ Vyhledávání spustíte podržením libovolného slova. Vyhledávání můžete
 <translation id="2647434099613338025">Přidat jazyk</translation>
 <translation id="2650751991977523696">Stáhnout soubor znovu?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# zvukový soubor}few{# zvukové soubory}many{# zvukového souboru}other{# zvukových souborů}}</translation>
+<translation id="2687403674020088961">Blokovat všechny soubory cookie (nedoporučujeme)</translation>
 <translation id="2707726405694321444">Obnovit stránku</translation>
 <translation id="2709516037105925701">Automatické vyplňování</translation>
 <translation id="2717722538473713889">E‑mailové adresy</translation>
@@ -340,6 +343,7 @@ Vyhledávání spustíte podržením libovolného slova. Vyhledávání můžete
 <translation id="3478363558367712427">Můžete si vybrat vyhledávač</translation>
 <translation id="3492207499832628349">Nová anonymní karta</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /> o navrhovaném obsahu</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Rozšířená realita</translation>
 <translation id="3518985090088779359">PŘIJMOUT A POKRAČOVAT</translation>
 <translation id="3522247891732774234">K dispozici je aktualizace. Další možnosti</translation>
@@ -355,6 +359,7 @@ Vyhledávání spustíte podržením libovolného slova. Vyhledávání můžete
 <translation id="358794129225322306">Povolit webu automaticky stáhnout několik souborů.</translation>
 <translation id="3590487821116122040">Úložiště webů, které Chrome považuje za nedůležité (např. weby bez uložených nastavení nebo weby, které nenavštěvujete často)</translation>
 <translation id="3594780231884063836">Vypnout zvuk videa</translation>
+<translation id="3596414637720633074">V anonymním režimu blokovat soubory cookie třetích stran</translation>
 <translation id="3599863153486145794">Vymaže historii ze všech zařízení, na kterých jste přihlášeni. Na stránce <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google.</translation>
 <translation id="3600792891314830896">Ztlumit weby, které přehrávají zvuky</translation>
 <translation id="3616113530831147358">Zvuk</translation>
@@ -921,6 +926,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="780301667611848630">Ne, děkuji</translation>
 <translation id="7810647596859435254">Otevřít v aplikaci…</translation>
 <translation id="7821588508402923572">Zde se budou zobrazovat vaše úspory dat</translation>
+<translation id="7828557259026017104">Soubory cookie jsou vytvářeny webovými stránkami, které navštěvujete. Weby je používají k tomu, aby si zapamatovaly vaše preference. Soubory cookie třetích stran jsou vytvářeny ostatními weby. Tyto weby na navštívené stránce vlastní nějaký obsah, např. reklamy nebo obrázky.</translation>
 <translation id="783819812427904514">Zapnout zvuk videa</translation>
 <translation id="784934925303690534">Časové období</translation>
 <translation id="7851858861565204677">Jiná zařízení</translation>
@@ -941,6 +947,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="79859296434321399">Chcete-li zobrazit obsah pro rozšířenou realitu, nainstalujte ARCore</translation>
 <translation id="7986741934819883144">Výběr kontaktu</translation>
 <translation id="7987073022710626672">Smluvní podmínky Chrome</translation>
+<translation id="7993619969781047893">Některé weby mohou přestat fungovat</translation>
 <translation id="7998918019931843664">Znovu otevřít zavřenou kartu</translation>
 <translation id="7999064672810608036">Opravdu chcete vymazat všechna místní data tohoto webu, včetně souborů cookie, a resetovat všechna jeho oprávnění?</translation>
 <translation id="8004582292198964060">Prohlížeč</translation>
@@ -1075,6 +1082,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8965591936373831584">nevyřízeno</translation>
 <translation id="8970887620466824814">Došlo k chybě.</translation>
 <translation id="8972098258593396643">Stáhnout do výchozí složky?</translation>
+<translation id="8988028529677883095">Používat telefon jako bezpečnostní klíč</translation>
 <translation id="8993760627012879038">Otevřít novou kartu v anonymním režimu</translation>
 <translation id="8998729206196772491">Přihlašujete se pomocí účtu spravovaného doménou <ph name="MANAGED_DOMAIN" /> a poskytujete jeho správci kontrolu nad svými daty prohlížeče Chrome. Vaše data budou trvale přidružena k tomuto účtu. Odhlášením z Chromu svá data smažete z tohoto zařízení, ve vašem účtu Google však uložena zůstanou.</translation>
 <translation id="9019902583201351841">Spravováno vašimi rodiči</translation>

@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">сигнал средней мощности</translation>
 <translation id="4112140312785995938">Перемотать назад</translation>
 <translation id="4129129681837227511">Чтобы разрешить показ уведомлений на заблокированном экране, разблокируйте устройство, а затем измените эту настройку.</translation>
+<translation id="4144413954005649103">Чтобы увидеть информацию об объекте, выберите его с помощью правого клика или долгого нажатия.</translation>
 <translation id="4146833061457621061">Включить музыку</translation>
 <translation id="4149156641122542261">Устройство <ph name="DEVICE_TYPE" /> находится в домене <ph name="DOMAIN" />.</translation>
 <translation id="4181841719683918333">Языки</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">Показывать экранную клавиатуру</translation>
 <translation id="6164005077879661055">После удаления контролируемого профиля все файлы и локальные данные, связанные с ним, будут удалены. Посещенные страницы и настройки этого профиля будут видны его менеджеру на странице: <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Подробнее...</translation>
+<translation id="6236290670123303279">Настройки</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Заблокировано в горизонтальном положении</translation>
 <translation id="6259254695169772643">Выберите нужное с помощью стилуса</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">Включено</translation>
 <translation id="6670153871843998651">Рабочий стол 3</translation>
 <translation id="6691659475504239918">ПОИСК + SHIFT + H</translation>
+<translation id="6692996468359469499">Получайте информацию об объектах на экране</translation>
 <translation id="6696025732084565524">Необходимо обновить внешнюю клавиатуру</translation>
 <translation id="6700713906295497288">Кнопка меню редактора методов ввода</translation>
 <translation id="6713285437468012787">Устройство <ph name="DEVICE_NAME" /> подключено через Bluetooth и доступно всем пользователям. Вы можете отключить его на странице настроек.</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895">Администраторы аккаунта: <ph name="FIRST_PARENT_EMAIL" /> и <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">Режим высокой контрастности</translation>
 <translation id="7977927628060636163">Поиск мобильных сетей...</translation>
+<translation id="7980780401175799550">Новые способы навигации в Chrome OS</translation>
 <translation id="7982789257301363584">Сеть</translation>
 <translation id="7984197416080286869">Вы сделали слишком много попыток</translation>
 <translation id="7994370417837006925">Множественный вход</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835">Используемый язык: <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Настройки языков и ввода…</translation>
 <translation id="8192202700944119416">Уведомления скрыты</translation>
+<translation id="8196787716797768628">Используйте жесты, чтобы быстро переключаться между приложениями и работать с устройством Chromebook в режиме планшета.</translation>
 <translation id="8203795194971602413">Нажатие правой кнопкой мыши</translation>
 <translation id="8236042855478648955">Пора сделать перерыв</translation>
 <translation id="8247060538831475781">Статус подключения – "<ph name="CONNECTION_STATUS" />", уровень сигнала – <ph name="SIGNAL_STRENGTH" />, заряд батареи – <ph name="BATTERY_STATUS" /></translation>

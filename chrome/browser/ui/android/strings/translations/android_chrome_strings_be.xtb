@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">Ідзе адпраўка на прыладу "<ph name="DEVICE_NAME" />"...</translation>
 <translation id="1036727731225946849">Дадаецца <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">З вэб-сайтаў</translation>
+<translation id="1044891598689252897">Сайты будуць працаваць нармальна</translation>
 <translation id="1049743911850919806">Інкогніта</translation>
 <translation id="10614374240317010">Ніколі не захоўваліся</translation>
 <translation id="1067922213147265141">Іншыя сэрвісы Google</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">Не ўдалося абагуліць наступнае змесціва: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1477626028522505441">Збой спампоўкі файла "<ph name="FILE_NAME" />" з-за праблем на серверы.</translation>
 <translation id="1506061864768559482">Пошукавая сістэма</translation>
+<translation id="1509960214886564027">Функцыі на многіх сайтах могуць перастаць працаваць</translation>
 <translation id="1513352483775369820">Закладкі і гісторыя вэб-пошуку</translation>
 <translation id="1513858653616922153">Выдаліць пароль</translation>
 <translation id="1521774566618522728">Апошнія дзеянні адбываліся сёння</translation>
@@ -235,6 +237,7 @@
 <translation id="2647434099613338025">Дадаць мову</translation>
 <translation id="2650751991977523696">Спампаваць файл зноў?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аўдыяфайл}one{# аўдыяфайл}few{# аўдыяфайлы}many{# аўдыяфайлаў}other{# аўдыяфайла}}</translation>
+<translation id="2687403674020088961">Блакіраваць усе файлы cookie (не рэкамендуецца)</translation>
 <translation id="2707726405694321444">Абнавіць старонку</translation>
 <translation id="2709516037105925701">Аўтазапаўненне</translation>
 <translation id="2717722538473713889">Адрасы электроннай пошты</translation>
@@ -340,6 +343,7 @@
 <translation id="3478363558367712427">Вы можаце выбраць пошукавую сістэму</translation>
 <translation id="3492207499832628349">Новая ўкладка інкогніта</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Даведацца больш<ph name="END_LINK" /> пра прапанаванае змесціва</translation>
+<translation id="3499246418971111862">chrome_qr-код_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Дапоўненая рэальнасць</translation>
 <translation id="3518985090088779359">Прыняць і працягнуць</translation>
 <translation id="3522247891732774234">З'явілася абнаўленне. Дадатковыя параметры</translation>
@@ -354,7 +358,8 @@
 <translation id="3587482841069643663">Усе</translation>
 <translation id="358794129225322306">Дазволіць сайту аўтаматычна спампоўваць некалькі файлаў.</translation>
 <translation id="3590487821116122040">Даныя сайтаў, якія Chrome не лічыць важнымі (напрыклад, сайты, налады якіх не захаваны або якія вы наведваеце рэдка)</translation>
-<translation id="3594780231884063836">Адключыць гук відэа</translation>
+<translation id="3594780231884063836">Выключыць гук відэа</translation>
+<translation id="3596414637720633074">Блакіраваць староннія файлы cookie у рэжыме інкогніта</translation>
 <translation id="3599863153486145794">Ачышчае гісторыю на ўсіх прыладах, з якіх выкананы ўваход. На сайце <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> могуць быць размешчаны іншыя формы запісу гісторыі прагляду сайтаў для вашага Уліковага запісу Google.</translation>
 <translation id="3600792891314830896">Выключыць гук на сайтах, якія прайграюць гукі</translation>
 <translation id="3616113530831147358">Аўдыя</translation>
@@ -921,6 +926,7 @@
 <translation id="780301667611848630">Не, дзякуй</translation>
 <translation id="7810647596859435254">Адкрыць з дапамогай…</translation>
 <translation id="7821588508402923572">Тут будзе паказвацца аб'ём сэканомленага трафіка</translation>
+<translation id="7828557259026017104">Файлы cookie – гэта файлы, якія ствараюцца наведанымі вамі вэб-сайтамі, каб запамінаць вашы налады. Староннія файлы cookie ствараюцца іншымі сайтамі. Гэтым сайтам належыць пэўнае змесціва (напрыклад рэклама або відарысы), размешчанае на вэб-старонцы, якую вы наведваеце.</translation>
 <translation id="783819812427904514">Уключыць гук відэа</translation>
 <translation id="784934925303690534">Прамежак часу</translation>
 <translation id="7851858861565204677">Іншыя прылады</translation>
@@ -941,6 +947,7 @@
 <translation id="79859296434321399">Каб праглядаць змесціва ў рэжыме дапоўненай рэальнасці, усталюйце ARCore</translation>
 <translation id="7986741934819883144">Выберыце кантакт</translation>
 <translation id="7987073022710626672">Умовы выкарыстання Chrome</translation>
+<translation id="7993619969781047893">Функцыі на некаторых сайтах могуць перастаць працаваць</translation>
 <translation id="7998918019931843664">Паўторна адкрыць закрытую ўкладку</translation>
 <translation id="7999064672810608036">Вы сапраўды хочаце ачысціць усе лакальныя даныя, у тым ліку файлы cookie, і скінуць усе дазволы для гэтага вэб-сайта?</translation>
 <translation id="8004582292198964060">Браўзер</translation>
@@ -1075,6 +1082,7 @@
 <translation id="8965591936373831584">у стане чакання</translation>
 <translation id="8970887620466824814">Нешта пайшло не так.</translation>
 <translation id="8972098258593396643">Спампаваць у стандартную папку?</translation>
+<translation id="8988028529677883095">Выкарыстоўваць тэлефон як ключ бяспекі</translation>
 <translation id="8993760627012879038">Адкрыць новую ўкладку ў рэжыме інкогніта</translation>
 <translation id="8998729206196772491">Вы ўваходзіце праз уліковы запіс, які кіруецца даменам <ph name="MANAGED_DOMAIN" />, што дае адміністратару кантроль над вашымі данымі з браўзера Chrome. Вашы даныя будуць назаўсёды прывязаны да гэтага ўліковага запісу. Калі выйсці з браўзера Chrome, вашы даныя будуць выдалены з гэтай прылады, але застануцца ва Уліковым запісе Google.</translation>
 <translation id="9019902583201351841">Пад кіраваннем вашых бацькоў</translation>

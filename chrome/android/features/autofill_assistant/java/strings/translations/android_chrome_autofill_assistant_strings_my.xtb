@@ -5,6 +5,7 @@
 <translation id="1699570257714336246">အချက်အလက်များ လိုအပ်နေသည်</translation>
 <translation id="1932278019417741381">သင်၏လုပ်ဆောင်စရာများ ပြီးမြောက်အောင် ကူညီရန် Assistant ကို အသုံးပြုထားသည့် ဝဘ်ဆိုက်များ၏ URL နှင့် အကြောင်းအရာများအပြင် Assistant ဖြင့် ပေးပို့ထားသည့် အချက်အလက်များကို Google က ရရှိပါမည်။ ဤအချက်အလက်များကို သင်၏ Google အကောင့်တွင် သိမ်းနိုင်သည်။ Assistant ကို Chrome ဆက်တင်များတွင် ပိတ်နိုင်သည်။ <ph name="BEGIN_LINK" />ပိုမိုလေ့လာရန်<ph name="END_LINK" /></translation>
 <translation id="2203046366315513658">တန်ဖိုး လျှော့ချသည်</translation>
+<translation id="3353437022146208653">Google Assistant ဖြင့် \n အဆင့်အနည်းငယ် ပြုလုပ်ကာ \n ကားငှားပါ။</translation>
 <translation id="4130750466177569591">ကျွန်ုပ် သဘောတူ</translation>
 <translation id="4437727785356380473">Chrome ရှိ Google Assistant ကို ပိတ်ထားသည်။</translation>
 <translation id="4517854969512651305">တန်ဖိုး တိုးသည်</translation>
@@ -12,8 +13,10 @@
 <translation id="4952448020231702394">ရှာဖွေမှုနှင့် ငွေရှင်းခြင်းကဲ့သို့သော ဝဘ်ပေါ်ရှိ လုပ်ဆောင်ချက်များကို Google Assistant က ကူညီလုပ်ဆောင်ပေးခြင်းဖြင့် အချိန်ကုန်သက်သာစေပါသည်။</translation>
 <translation id="5267269112080050255">Chrome တွင် Google Assistant ကို မျက်နှာပြင်အပြည့်အထိ ဖွင့်ထားသည်။</translation>
 <translation id="6555233628095991027">Chrome ရှိ Google Assistant ကို မျက်နှာပြင်တစ်ဝက်အထိ ဖွင့်ထားသည်။</translation>
+<translation id="6620345200476149840">Google Assistant ကို \n Chrome တွင် စမ်းကြည့်ပါ</translation>
 <translation id="6973932557599545801">ကျွန်ုပ် ကူညီ၍မရပါ၊ ကိုယ်တိုင် ဆက်လုပ်ပါ။</translation>
 <translation id="7658239707568436148">မလုပ်တော့</translation>
 <translation id="8253702004019660079">Chrome ရှိ Google Assistant။</translation>
+<translation id="8323517642730821247">Google Assistant ဖြင့် \n အဆင့်အနည်းငယ် ပြုလုပ်၍ \n ရုပ်ရှင်လက်မှတ်များ ဝယ်ပါ။</translation>
 <translation id="945522503751344254">အကြံပြုချက် ပေးပို့မည်</translation>
 </translationbundle>

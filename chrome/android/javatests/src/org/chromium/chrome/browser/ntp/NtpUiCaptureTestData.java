@@ -13,13 +13,13 @@ import static org.chromium.chrome.test.util.browser.suggestions.mostvisited.Fake
 import android.graphics.Bitmap;
 
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.favicon.IconType;
-import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
+import org.chromium.chrome.browser.ui.favicon.IconType;
+import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 import org.chromium.chrome.test.util.browser.offlinepages.FakeOfflinePageBridge;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.DummySuggestionsEventReporter;

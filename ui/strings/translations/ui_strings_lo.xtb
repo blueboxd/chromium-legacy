@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">ແຊກເຂົ້າ</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">ເລືອກ​ທັງ​ຫມົດ</translation>
-<translation id="1938451708255335766">ເພື່ອປັບຄວາມເຂັ້ມການສະແດງຜົນຂອງໜ້າຈໍ, ກະລຸນາປິດເປີດແອັບຄືນໃໝ່.</translation>
 <translation id="2006524834898217237">ກວດໃຫ້ແນ່ໃຈວ່າອຸປະກອນນີ້ເຊື່ອມຕໍ່ກັບອິນເຕີເນັດ.</translation>
 <translation id="208586643495776849">ກະລຸນາລອງໃໝ່</translation>
 <translation id="2090963878406559571">ບໍ່ສາມາດສົ່ງເບີຈາກ <ph name="ORIGIN" /> ຫາໂທລະສັບ Android ຂອງທ່ານໄດ້, <ph name="TROUBLESHOOT_LINK" /> ສຳລັບທັງສອງອຸປະກອນໃນການຕັ້ງຄ່າ.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">ຈໍສະແດງຜົນໃນຕົວ</translation>
 <translation id="335581015389089642">ການເວົ້າ</translation>
 <translation id="3389286852084373014">ຂໍ້ຄວາມໃຫຍ່ເກີນໄປ</translation>
-<translation id="3479552764303398839">ບໍ່ແມ່ນດຽວນີ້</translation>
 <translation id="348799646910989694">ເຊື່ອງຊັ້ນວາງໂດຍອັດຕະໂນມັດແລ້ວ</translation>
 <translation id="3554637740840164787">ປັກໝຸດ <ph name="ITEM_TITLE" /> ແລ້ວ</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{ຍັງ​ເຫຼືອ 1 ວັນ}other{ຍັງ​ເຫຼືອ # ວັນ}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 ນາ​ທີ}other{# ນາ​ທີ}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{ເປີດນຳໃຊ້ມື້ນີ້}=1{ເປີດນຳໃຊ້ເມື່ອ 1 ມື້ກ່ອນ}other{ເປີດນຳໃຊ້ເມື່ອ # ມື້ກ່ອນ}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ວັນ​ ແລະ }other{# ວັນ ແລະ }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{ໃນ 1 ປີ}other{ໃນ # ປີ}}</translation>
-<translation id="5895138241574237353">ເລີ່ມຕົ້ນໃໝ່</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{ຍັງ​ເຫຼືອ 1 ວິ​ນາ​ທີ}other{ຍັງ​ເຫຼືອ # ວິ​ນາ​ທີ}}</translation>
 <translation id="5941711191222866238">ຫຍໍ້ລົງ</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ຊົ່ວ​ໂມງ}other{# ຊົ່ວ​ໂມງ}}</translation>

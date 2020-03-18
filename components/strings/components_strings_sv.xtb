@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">Alternativ för utlämning</translation>
 <translation id="1281476433249504884">Utmatningsfack 1</translation>
 <translation id="1285320974508926690">Översätt aldrig den här webbplatsen</translation>
-<translation id="1285400217480592994">Genomsöka innehållet i filer som du laddar ned eller laddar upp i Chrome.</translation>
 <translation id="1292701964462482250">Programvara på datorn förhindrar att Chrome ansluter till internet på ett säkert sätt (endast Windows-datorer)</translation>
 <translation id="1294154142200295408">Varianter på kommandoraden</translation>
 <translation id="129553762522093515">Nyligen stängda</translation>
@@ -652,6 +651,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="3784372983762739446">Bluetooth-enheter</translation>
 <translation id="3787705759683870569">Utgångsdatum: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">Storlek 16</translation>
+<translation id="3793574014653384240">Antal och orsaker till krascher som har skett nyligen</translation>
 <translation id="3797522431967816232">Prc3 (kuvert)</translation>
 <translation id="3799805948399000906">Teckensnitt begärt</translation>
 <translation id="3807366285948165054">Bild X – byte</translation>

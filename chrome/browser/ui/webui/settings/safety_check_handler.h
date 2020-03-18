@@ -91,6 +91,11 @@ class SafetyCheckHandler
                      extensions::ExtensionPrefs* extension_prefs,
                      extensions::ExtensionServiceInterface* extension_service);
 
+  void SetVersionUpdaterForTesting(
+      std::unique_ptr<VersionUpdater> version_updater) {
+    version_updater_ = std::move(version_updater);
+  }
+
  private:
   // These ensure integers are passed in the correct possitions in the extension
   // check methods.

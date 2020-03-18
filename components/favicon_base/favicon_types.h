@@ -32,7 +32,7 @@ typedef int64_t FaviconID;
 // data is returned in HistoryBackend and ThumbnailDatabase.
 //
 // A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.favicon
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ui.favicon
 enum class IconType {
   kInvalid = 0,
   kFavicon,

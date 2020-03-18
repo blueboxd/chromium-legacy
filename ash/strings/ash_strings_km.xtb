@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">សេវាមធ្យម</translation>
 <translation id="4112140312785995938">សា​ថយក្រោយ</translation>
 <translation id="4129129681837227511">ដើម្បីមើលការជូនដំណឹង​នៅលើអេក្រង់ចាក់​សោរបស់អ្នក សូមដោះសោ ដើម្បីប្ដូរការកំណត់</translation>
+<translation id="4144413954005649103">ជំនួយការនឹងបង្ហាញអ្នកអំពីព័ត៌មានពាក់ព័ន្ធនឹងអ្វីដែលអ្នកជ្រើសរើស​នៅលើអេក្រង់ នៅពេលអ្នកចុចកណ្ដុរខាងស្ដាំ ឬចុចឱ្យយូរ។</translation>
 <translation id="4146833061457621061">ចាក់​តន្ត្រី</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> គ្រប់គ្រង​ដោយ <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">ភាសា</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">បង្ហាញក្តារចុចលើអេក្រង់</translation>
 <translation id="6164005077879661055">ឯកសារ និងទិន្នន័យមូលដ្ឋានទាំងអស់ដែលពាក់ព័ន្ធជាមួយអ្នកប្រើដែលបានចាត់នឹងត្រូវបានលុបជាអចិន្ត្រៃយ៍នៅពេលអ្នកប្រើដែលបានចាត់ត្រូវបានដកចេញ។ គេហទំព័រដែលបានទៅកាន់ ការកំណត់សម្រាប់អ្នកប្រើដែលបានចាត់នេះអាចនៅតែមើលឃើញដោយអ្នកគ្រប់គ្រង <ph name="MANAGEMENT_URL" />។</translation>
 <translation id="6165508094623778733">ស្វែងយល់​បន្ថែម</translation>
+<translation id="6236290670123303279">គ្រប់គ្រង​ការកំណត់</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">បាន​ចាក់សោ​ឱ្យ​ស្ថិត​ក្នុងទិសដៅផ្ដេក</translation>
 <translation id="6259254695169772643">ប្រើប៊ិច​របស់អ្នក​ដើម្បី​ជ្រើសរើស</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">បើក</translation>
 <translation id="6670153871843998651">តុទី 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
+<translation id="6692996468359469499">ទទួលបានព័ត៌មានពាក់ព័ន្ធនឹងការជ្រើសរើស​របស់អ្នក</translation>
 <translation id="6696025732084565524">ក្ដារចុច​ដែល​អាច​ផ្ដាច់ចេញបាន​របស់អ្នក​ត្រូវ​ការ​កំណែថ្មីជា​ចាំបាច់</translation>
 <translation id="6700713906295497288">ប៊ូតុងម៉ឺនុយ IME</translation>
 <translation id="6713285437468012787">ឧបករណ៍ប៊្លូធូស "<ph name="DEVICE_NAME" />" បានភ្ជាប់ ហើយមានសម្រាប់អ្នកប្រើឥឡូវនេះ។ អ្នកអាចដកការភ្ជាប់នេះដោយប្រើការកំណត់។</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895">គណនី​ស្ថិត​ក្រោមការគ្រប់គ្រង​របស់ <ph name="FIRST_PARENT_EMAIL" /> និង <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">មុខងារ​ភាពដិត​កម្រិតខ្ពស់</translation>
 <translation id="7977927628060636163">កំពុង​ស្វែងរក​បណ្ដាញ​ទូរសព្ទ​ចល័ត...</translation>
+<translation id="7980780401175799550">សាកល្បងវិធីថ្មីក្នុងការរុករក Chrome OS</translation>
 <translation id="7982789257301363584">បណ្តាញ</translation>
 <translation id="7984197416080286869">ព្យាយាមដោះសោ​តាមរយៈស្នាមម្រាមដៃច្រើនដងពេក</translation>
 <translation id="7994370417837006925">ការចូលច្រើន</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835">កំពុង​ប្រើ <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">កែសម្រូលភាសា និងធាតុបញ្ចូល...</translation>
 <translation id="8192202700944119416">ការជូនដំណឹងត្រូវបាន​លាក់។</translation>
+<translation id="8196787716797768628">ប្រើចលនា​ ដើម្បី​ប្ដូររវាង​កម្មវិធីនានា និង​ធ្វើអន្តរកម្ម​ជាមួយ Chromebook របស់អ្នក​នៅក្នុង​មុខងារ​ថេប្លេត​បានយ៉ាងរហ័ស។</translation>
 <translation id="8203795194971602413">ចុចកណ្ដុរខាងស្ដាំ</translation>
 <translation id="8236042855478648955">ដល់​ពេល​សម្រាក​ហើយ</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, កម្លាំង​រលកសញ្ញា <ph name="SIGNAL_STRENGTH" />, ថ្មទូរសព្ទ <ph name="BATTERY_STATUS" /></translation>

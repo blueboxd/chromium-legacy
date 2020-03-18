@@ -25,7 +25,6 @@ class RenderFrameHost;
 class HidChooserContext;
 
 // HidChooserController provides data for the WebHID API permission prompt.
-// It is owned by ChooserBubbleDelegate.
 class HidChooserController : public ChooserController {
  public:
   // Construct a chooser controller for Human Interface Devices (HID).

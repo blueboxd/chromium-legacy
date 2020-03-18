@@ -67,6 +67,15 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       정책이 False로 설정되거나 설정되지 않으면 정보가 보고되지 않습니다.
       True로 설정된 경우 기기의 백라이트 정보가 보고됩니다.</translation>
+<translation id="1076271193420500757">이 정책을 구성하면 기업에서 관리하는 <ph name="PRODUCT_OS_NAME" /> 기기에 적용할 변형을 지정할 수 있습니다.
+
+      변형을 사용하면 새로운 버전을 제공하지 않고도 이미 존재하는 기능을 선별적으로 사용 설정 또는 중지하여 <ph name="PRODUCT_OS_NAME" />의 변형본을 제공할 수 있습니다.
+
+      <ph name="VARIATIONS_ENABLED_OPTION_NAME" />을(를) 설정하거나(값 0) 정책을 설정하지 않으면 <ph name="PRODUCT_OS_NAME" />에 모든 변형을 적용할 수 있습니다.
+
+      <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />을(를) 설정하면(값 1) 중요한 보안 문제 또는 안정성 관련 수정사항으로 간주되는 변형만 <ph name="PRODUCT_OS_NAME" />에 적용 가능합니다.
+
+      <ph name="VARIATIONS_DISABLED_OPTION_NAME" />을(를) 설정하면(값 2) 로그인 화면에서 브라우저에 어떤 변형도 적용할 수 없습니다. 이 모드는 <ph name="PRODUCT_OS_NAME" /> 개발자가 중요한 보안 수정사항을 신속히 제공하지 못하게 할 수 있으므로 권장되지 않습니다.</translation>
 <translation id="1078643757670228170">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 82에서 삭제될 예정입니다. 대신 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> 정책을 사용하세요.
 
           AC 전원으로 실행할 때 사용자 입력이 없어서 화면이 꺼지기까지 걸리는 시간을 지정합니다.
@@ -1168,14 +1177,6 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
       이 정책이 설정되지 않은 경우 <ph name="PRODUCT_NAME" />에서 기본값인 10,000밀리초를 사용합니다.</translation>
 <translation id="257788512393330403">6시간마다 비밀번호를 입력해야 합니다.</translation>
 <translation id="2580104054820772954">스캔 평가가 확인될 때까지 파일 전송 지연</translation>
-<translation id="2582582399758251985">이 설정을 사용하면 <ph name="PRODUCT_NAME" />에서 내장 인증서 확인 기능을 사용하여 서버 인증서를 확인합니다.
-      설정을 사용 중지하면 <ph name="PRODUCT_NAME" />에서 플랫폼에서 제공하는 레거시 인증서 확인 기능을 사용하여 서버 인증서를 확인합니다.
-      설정하지 않으면 내장 또는 레거시 인증서 확인 기능이 사용될 수 있습니다.
-
-      이 정책은 <ph name="PRODUCT_OS_NAME" />의 레거시 인증서 확인 기능이 지원 중단되는 <ph name="PRODUCT_OS_NAME" /> 버전 81부터 삭제될 예정입니다.
-
-      이 정책은 Linux의 레거시 인증서 확인 기능이 지원 중단되는 Linux 버전 83용 <ph name="PRODUCT_NAME" />부터 삭제될 예정입니다.
-      </translation>
 <translation id="2586162458524426376">
       이 정책은 로그인 화면에 적용됩니다. 사용자 세션에 적용되는 <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> 정책도 확인하세요.
       이 정책이 사용 설정되어 있으면 쉼표로 구분된 목록에서 이름이 지정된 각 출처는 자체 프로세스로 동작합니다. 또한 하위 도메인으로 이름이 지정된 출처도 격리됩니다. 예를 들어 https://example.com/을 지정하면 https://foo.example.com/도 https://example.com/ 사이트의 일부로 격리됩니다.
@@ -1195,9 +1196,6 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 <translation id="26023406105317310">Kerberos 계정 구성</translation>
 <translation id="2604182581880595781">네트워크 파일 공유 관련 정책을 구성합니다.</translation>
 <translation id="2615240493030733717">시간대 정보 보고</translation>
-<translation id="2620943247255660284">지원이 중단된 정책이며, AdvancedProtectionExtraSecurityAllowed로 대체되었습니다.
-
-      이 정책은 고급 보호 프로그램에 등록한 사용자가 다운로드한 파일을 Google에 전송하여 멀웨어가 있는지 검사하도록 허용할지 결정합니다. 정책이 True로 설정되거나 설정되지 않으면 등록된 사용자에게 파일을 Google에 전송하여 심층 검사를 받으라는 메시지가 표시됩니다. 이때 사용자가 '검사'를 선택하면 다운로드한 파일이 Google에 전송됩니다. False로 설정되면 사용자에게 메시지가 표시되지 않으며 다운로드한 파일이 Google에 전송되지 않습니다.</translation>
 <translation id="2623014935069176671">첫 번째 사용자 활동 기다리기</translation>
 <translation id="262740370354162807"><ph name="CLOUD_PRINT_NAME" />(으)로 문서 제출 사용</translation>
 <translation id="2627554163382448569">엔터프라이즈 프린터의 설정을 제공합니다.
@@ -1234,6 +1232,11 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
       이 정책을 설정하지 않고 그대로 두면 기본적으로 관리되는 사용자에게는 허용되지 않고 관리되지 않는 사용자에게는 허용됩니다.</translation>
 <translation id="2660846099862559570">프록시 사용하지 않음</translation>
 <translation id="2665422249821137126">로그인 화면에서 큰 커서 사용</translation>
+<translation id="266882888912227087"> <ph name="PRODUCT_OS_NAME" />에서 관리되는 게스트 세션의 자동 실행 알림을 제어합니다.
+
+      정책이 True로 설정되면 개인정보 보호 경고 알림이 몇 초 후 닫힙니다.
+
+      False로 설정되거나 설정되지 않으면 사용자가 닫을 때까지 개인정보 보호 경고 알림이 고정됩니다.</translation>
 <translation id="2672012807430078509">SMB 마운트용 인증 프로토콜로 NTLM을 사용할지 여부를 제어합니다.</translation>
 <translation id="267596348720209223">검색 공급자가 지원하는 문자 인코딩을 지정합니다. 인코딩은 UTF-8, GB2312 및 ISO-8859-1과 같은 코드 페이지 이름입니다. 인코딩은 제공된 순서대로 시도됩니다.
 
@@ -2994,6 +2997,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
           true로 설정하거나 설정하지 않으면 이 사용자가 관리 대상 사용자를 생성하고 관리할 수 있습니다.</translation>
 <translation id="5369937289900051171">컬러 인쇄만</translation>
 <translation id="5370279767682621504">기본 포트가 아닌 포트에서 HTTP/0.9 지원 사용</translation>
+<translation id="5373065931879562543">ChromeOS에서 변형 제공 여부 결정</translation>
 <translation id="5378985487213287085">웹사이트에서 데스크톱 알림을 표시하도록 허용할지 여부를 설정할 수 있습니다. 데스크톱 알림 표시는 기본적으로 허용 또는 거부하거나 웹사이트에서 데스크톱 알림을 표시할 때마다 사용자에게 확인하도록 할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'AskNotifications' 정책이 사용되며 사용자가 설정을 변경할 수 있습니다.</translation>
@@ -3123,6 +3127,16 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="5475361623548884387">인쇄 사용</translation>
 <translation id="547601067149622666">방해가 되는 광고가 포함된 사이트에서 광고 허용 안 함</translation>
 <translation id="5483065054530244863">로컬 트러스트 앵커에서 발행된 SHA-1 서명 인증서를 허용합니다.</translation>
+<translation id="5486493714323160905">이 설정을 사용하면 <ph name="PRODUCT_NAME" />에서 내장 인증서 확인 기능을 사용하여 서버 인증서를 확인합니다.
+      설정을 사용 중지하면 <ph name="PRODUCT_NAME" />에서 플랫폼이 제공하는 레거시 인증서 확인 기능을 사용하여 서버 인증서를 확인합니다.
+      설정하지 않으면 내장 또는 레거시 인증서 확인 기능이 사용될 수 있습니다.
+
+      이 정책은 <ph name="PRODUCT_OS_NAME" />의 레거시 인증서 확인 기능이 지원 중단되는 <ph name="PRODUCT_OS_NAME" /> 버전 81부터 삭제될 예정입니다.
+
+      이 정책은 Linux의 레거시 인증서 확인 기능이 지원 중단되는 Linux용 <ph name="PRODUCT_NAME" /> 버전 83부터 삭제될 예정입니다.
+
+      이 정책은 Mac OS X에서 레거시 인증서 확인 기능이 지원 중단되는 Mac OS X용 <ph name="PRODUCT_NAME" /> 버전 87부터 삭제될 예정입니다.
+      </translation>
 <translation id="5498045818698736356">사용자가 개입하지 않아도 자동 설치되며 사용자가 제거하거나 사용 중지할 수 없는 웹사이트의 목록을 지정합니다.
 
       정책 목록의 각 항목은 필수 구성요소 'url'과 두 개의 선택적 구성요소인 'default_launch_container' 및 'create_desktop_shortcut'으로 구성된 개체입니다. 'url'은 설치할 웹 앱의 URL이어야 하며 'launch_container'는 웹 앱이 설치된 뒤 어떻게 열릴지 표시하는 'window' 또는 'tab'이어야 합니다. 바탕화면 바로가기가 Linux 및 Windows에서 만들어져야 하는 경우 'create_desktop_shortcut'이 true여야 합니다. 'default_launch_container'가 생략된 경우, 앱이 기본적으로 탭에서 열립니다. 'default_launch_container'의 값과 관계없이 사용자는 앱이 어떤 컨테이너에서 열릴지 변경할 수 있습니다. 'create_desktop_shortcuts'가 생략된 경우 바탕화면 바로가기가 생성되지 않습니다. Chrome OS 런처에 앱 고정하기와 관련된 <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> 정책을 참조하세요.</translation>
@@ -3347,6 +3361,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
           설정하지 않으면 <ph name="PRODUCT_NAME" />이(가) 기본 라이브러리 이름을 다시 사용합니다.</translation>
 <translation id="5783009211970309878">인쇄 머리글 및 바닥글</translation>
+<translation id="5790763087505467169">관리되는 게스트 세션 자동 실행 알림 줄이기</translation>
 <translation id="5806128552675651249">배경 그래픽을 포함하지 않은 경우에만 인쇄 허용</translation>
 <translation id="5809210507920527553">Linux 컨테이너(Crostini) 관련 설정을 제어합니다.</translation>
 <translation id="5809728392451418079">기기 로컬 계정용 표시 이름 설정</translation>
@@ -3845,6 +3860,9 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="6689792153960219308">하드웨어 상태 보고</translation>
 <translation id="6698632841807204978">단색 인쇄 사용 설정</translation>
 <translation id="6699880231565102694">원격 액세스 호스트를 위한 2단계 인증 사용</translation>
+<translation id="6704515759227307131">지원이 중단되어 AdvancedProtectionAllowed로 대체된 정책입니다.
+
+      이 정책은 고급 보호 프로그램에 등록한 사용자가 Google에 다운로드 항목을 전송하여 멀웨어가 있는지 검사하도록 허용할지 결정합니다. 정책이 True로 설정되거나 설정되지 않으면 등록된 사용자에게 파일을 Google에 전송하여 심층 검사를 받으라는 메시지가 표시됩니다. 이때 사용자가 '검사'를 선택하면 다운로드 항목이 Google로 전송됩니다. False로 설정되면 사용자에게 메시지가 표시되지 않으며 다운로드한 파일이 Google에 전송되지 않습니다.</translation>
 <translation id="670597451099978576">로그인 화면에서 다음 사이트가 주어진 공급업체 및 제품 ID를 사용하여 USB 기기에 연결할 수 있는 권한을 자동으로 부여합니다.</translation>
 <translation id="6720080634516505446"><ph name="PRODUCT_NAME" />을(를) 사용하면 확장 프로그램을 안전하게 설치 및 업데이트할 수 있습니다. 하지만 Chrome 웹 스토어 외부에 호스팅된 일부 확장 프로그램의 콘텐츠는 보안이 취약한 서명이나 SHA1과 같은 해싱 알고리즘만 사용하여 보호할 수 있습니다. 정책이 사용 중지되면 개발자가 더 강력한 알고리즘을 사용해 확장 프로그램을 다시 제작할 때까지 Chrome에서 이러한 확장 프로그램을 설치하거나 업데이트할 수 없습니다. 정책이 사용 설정되면 이러한 확장 프로그램을 설치하거나 업데이트할 수 있습니다.
 
@@ -3868,6 +3886,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       이 설정은 사용자가 <ph name="PRODUCT_NAME" />에 로그인하는 시작 페이지의 표시를 제어하며, 이를 기본 브라우저로 선택할지 또는 제품 기능을 사용자에게 알릴지 선택할 수 있습니다.</translation>
 <translation id="6766216162565713893">사이트에서 사용자에게 근처 블루투스 기기에 대한 액세스 권한을 부여할 것인지 묻도록 허용합니다.</translation>
 <translation id="6770454900105963262">활성 키오스크 세션에 관한 정보 보고</translation>
+<translation id="6772045451150098845">이 정책은 고급 보호 프로그램에 등록한 사용자에게 추가 기능을 제공할지 결정합니다. 추가 기능 중 일부를 사용하려면 Google과 데이터를 공유해야 합니다. 예를 들어, 고급 보호 사용자가 멀웨어 검사를 위해 다운로드한 파일을 Google에 전송할 수 있습니다. 정책을 True로 설정하거나 설정하지 않으면 등록된 사용자에게 추가 기능이 제공됩니다. False로 설정하면 고급 보호 사용자에게 표준 소비자 기능만 제공됩니다.</translation>
 <translation id="6780908086869332493">사이트에서 인증서를 요청하는 경우 SAML 플로를 호스팅하는 프레임의 로그인 화면에서 클라이언트 인증서가 자동으로 선택되는 사이트를 지정하는 URL 패턴 목록을 지정하도록 합니다. 예를 들어 SAML IdP에 제시될 기기 수준 인증서를 구성하는 데 사용할 수 있습니다.
 
       이 값은 stringified JSON 사전의 배열이어야 합니다. 각 사전은 <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> 형태여야 하며, 여기에서 <ph name="URL_PATTERN_PLACEHOLDER" />은(는) 콘텐츠 설정 패턴입니다. <ph name="FILTER_PLACEHOLDER" />에서는 브라우저에서 자동으로 선택할 클라이언트 인증서를 제한합니다. 필터와 관계없이 서버의 인증서 요청과 일치하는 인증서만이 선택됩니다. <ph name="FILTER_PLACEHOLDER" />이(가) <ph name="JSON_DICTIONARY_EXAMPLE" />인 경우 추가로 CommonName이 <ph name="ISSUER_CN_PLACEHOLDER" />인 인증서에서 발행된 클라이언트 인증서만 선택됩니다. <ph name="FILTER_PLACEHOLDER" />이(가) 빈 사전 {}인 경우 클라이언트 인증서 선택에 추가로 적용되는 제한은 없습니다.
@@ -4615,6 +4634,15 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="793473937901685727">ARC 앱에 인증서 사용 가능 여부 설정</translation>
 <translation id="7937491150792971922">여러 출처의 확장 프로그램 설치 목록 정책 병합</translation>
 <translation id="7937766917976512374">동영상 캡처 허용 또는 거부</translation>
+<translation id="7937944288846766530">이 정책은 사용자가 Google 관리 콘솔에 승인 요청을 보낼 수 있도록 허용하는 <ph name="PRODUCT_NAME" /> 확장 프로그램 설치 요청을 제어합니다.
+
+      CloudReportingEnabled 정책이 설정되지 않거나 사용 중지되면 정책은 무시되며 확장 프로그램 설치 요청은 생성 또는 업로드되지 않습니다.
+      정책이 설정되지 않거나 사용 중지되면 확장 프로그램 설치 요청은 생성 또는 업로드되지 않습니다.
+      정책이 사용 설정되면 확장 프로그램 설치 요청이 생성되고 Google 관리 콘솔에 업로드됩니다.
+
+      사용자가 <ph name="EXTENSION_INSTALL_WHITELIST" /> 또는 <ph name="EXTENSION_SETTINGS" />에서 허용되지 않은 확장 프로그램을 설치하려고 하면 확장 프로그램 설치 요청이 생성됩니다.
+
+      이 정책은 기기가 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />에 등록되어 있고 <ph name="CLOUD_REPORTING_ENABLED" />가 사용 설정된 경우에만 적용됩니다.</translation>
 <translation id="7941975817681987555">모든 네트워크 연결의 네트워크 활동 예측 안함</translation>
 <translation id="7951605113561734721">기기 관리 프로토콜을 사용하여 등록해야 하는 기기 수준 클라이언트 인증서를 지정합니다.</translation>
 <translation id="7952007677054834789"><ph name="PRODUCT_NAME" />에서 시작 시 로드될 페이지, 기본 홈페이지, 기본 새 탭 페이지를 구성하고 사용자가 변경하지 못하게 합니다.
@@ -5223,7 +5251,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       보고됩니다.</translation>
 <translation id="891435090623616439">JSON 문자열로 인코딩됨, 자세한 내용은 <ph name="COMPLEX_POLICIES_URL" /> 참조</translation>
 <translation id="8917070657147922192">사용자가 설치된 CA 인증을 관리하도록 허용합니다.</translation>
-<translation id="8924721011887485485">이 정책은 고급 보호 프로그램에 등록한 사용자에게 추가 보안 기능을 제공할지 결정합니다. 추가 보안 기능 중 일부를 사용하려면 Google과 데이터를 공유해야 합니다. 예를 들어, 고급 보호 사용자가 멀웨어 검사를 위해 다운로드한 파일을 Google에 전송할 수 있습니다. 정책을 True로 설정하거나 설정하지 않으면 등록된 사용자에게 추가 보안 기능이 제공됩니다. False로 설정하면 고급 보호 사용자에게 일반 보안 기능만 제공됩니다.</translation>
 <translation id="8926275581598789324">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 82에서 삭제될 예정입니다. 대신 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> 정책을 사용하세요.
 
           배터리 전원으로 실행할 때 사용자 입력이 없어서 유휴 작업이 수행되기까지 걸리는 시간을 지정합니다.

@@ -291,7 +291,7 @@ class GFX_EXPORT RenderText {
   void SetMultiline(bool multiline);
 
   // If multiline, a non-zero value will cap the number of lines rendered,
-  // and elide the rest (currently only ELIDE_TAIL and TRUNCATE_HEAD supported.)
+  // and elide the rest (currently only ELIDE_TAIL supported.)
   void SetMaxLines(size_t max_lines);
   size_t max_lines() const { return max_lines_; }
 

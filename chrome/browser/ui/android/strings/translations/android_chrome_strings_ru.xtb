@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">Отправка на устройство "<ph name="DEVICE_NAME" />"…</translation>
 <translation id="1036727731225946849">Добавление файла "<ph name="WEBAPK_NAME" />"…</translation>
 <translation id="1041308826830691739">От сайтов</translation>
+<translation id="1044891598689252897">Сайты будут работать в нормальном режиме</translation>
 <translation id="1049743911850919806">Инкогнито</translation>
 <translation id="10614374240317010">Сайты, пароли для которых не сохраняются</translation>
 <translation id="1067922213147265141">Другие сервисы Google</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">Не удается отправить: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1477626028522505441">Не удалось скачать файл <ph name="FILE_NAME" /> из-за неполадок на сервере.</translation>
 <translation id="1506061864768559482">Поисковая система</translation>
+<translation id="1509960214886564027">Многие функции на сайтах могут работать некорректно</translation>
 <translation id="1513352483775369820">Закладки и история поиска</translation>
 <translation id="1513858653616922153">Удалить пароль</translation>
 <translation id="1521774566618522728">Последние действия: сегодня</translation>
@@ -235,6 +237,7 @@
 <translation id="2647434099613338025">Добавить язык</translation>
 <translation id="2650751991977523696">Скачать файл ещё раз?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудиофайл}one{# аудиофайл}few{# аудиофайла}many{# аудиофайлов}other{# аудиофайла}}</translation>
+<translation id="2687403674020088961">Заблокировать все файлы cookie (не рекомендуется)</translation>
 <translation id="2707726405694321444">Обновить страницу</translation>
 <translation id="2709516037105925701">Автозаполнение</translation>
 <translation id="2717722538473713889">Адреса электронной почты</translation>
@@ -340,6 +343,7 @@
 <translation id="3478363558367712427">Вы можете выбрать другую поисковую систему.</translation>
 <translation id="3492207499832628349">Новая вкладка инкогнито</translation>
 <translation id="3493531032208478708">Подробнее <ph name="BEGIN_LINK" />о рекомендованном контенте<ph name="END_LINK" />…</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Дополненная реальность</translation>
 <translation id="3518985090088779359">Продолжить</translation>
 <translation id="3522247891732774234">Доступно обновление. Другие параметры…</translation>
@@ -355,6 +359,7 @@
 <translation id="358794129225322306">Разрешить сайту автоматически скачивать несколько файлов.</translation>
 <translation id="3590487821116122040">Маловажные данные сайтов (например, сайты, которые вы редко посещаете или на которых не сохранили настройки)</translation>
 <translation id="3594780231884063836">Выключить звук для видео</translation>
+<translation id="3596414637720633074">Блокировать файлы cookie сторонних сайтов в режиме инкогнито</translation>
 <translation id="3599863153486145794">Удаление истории со всех устройств, на которых выполнен вход в аккаунт. Информация о других ваших действиях в Интернете может также храниться на странице <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Отключить звуки на сайтах</translation>
 <translation id="3616113530831147358">Аудио</translation>
@@ -921,6 +926,7 @@
 <translation id="780301667611848630">Спасибо, не надо</translation>
 <translation id="7810647596859435254">Открыть с помощью...</translation>
 <translation id="7821588508402923572">Здесь появятся данные об экономии трафика</translation>
+<translation id="7828557259026017104">Когда вы посещаете сайты, они создают файлы cookie для сохранения настроек и других пользовательских данных. Сторонние файлы cookie создаются другими сайтами, которые размещают свой контент (например, объявления или изображения) на просматриваемых вами веб-страницах.</translation>
 <translation id="783819812427904514">Включить звук для видео</translation>
 <translation id="784934925303690534">Временной диапазон</translation>
 <translation id="7851858861565204677">Другие устройства</translation>
@@ -941,6 +947,7 @@
 <translation id="79859296434321399">Чтобы просматривать контент в режиме дополненной реальности, установите приложение ARCore.</translation>
 <translation id="7986741934819883144">Выберите контакт</translation>
 <translation id="7987073022710626672">Условия использования Chrome</translation>
+<translation id="7993619969781047893">Некоторые функции на сайтах могут работать некорректно</translation>
 <translation id="7998918019931843664">Восстановить закрытую вкладку</translation>
 <translation id="7999064672810608036">Вы уверены, что хотите удалить все данные этого веб-сайта, включая файлы cookie, и сбросить заданные разрешения?</translation>
 <translation id="8004582292198964060">Браузер</translation>
@@ -1075,6 +1082,7 @@
 <translation id="8965591936373831584">ожидание</translation>
 <translation id="8970887620466824814">Произошла ошибка</translation>
 <translation id="8972098258593396643">Скачать в папку по умолчанию?</translation>
+<translation id="8988028529677883095">Использовать телефон в качестве электронного ключа</translation>
 <translation id="8993760627012879038">Открыть новое окно в режиме инкогнито</translation>
 <translation id="8998729206196772491">Вы входите в аккаунт, которым управляет администратор домена <ph name="MANAGED_DOMAIN" />. Он может контролировать ваши данные Chrome, которые теперь будут связаны с управляемым аккаунтом. При выходе из системы все данные Chrome, хранящиеся на этом устройстве, будут удалены, но останутся в вашем аккаунте Google.</translation>
 <translation id="9019902583201351841">Управляется вашими родителями</translation>

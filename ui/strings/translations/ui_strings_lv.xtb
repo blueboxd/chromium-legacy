@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Iespraušana</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Izvēlēties visus</translation>
-<translation id="1938451708255335766">Lai pielāgotu loga attēlojuma blīvumu, restartējiet lietotni.</translation>
 <translation id="2006524834898217237">Pārbaudiet, vai šajā ierīcē ir izveidots savienojums ar internetu.</translation>
 <translation id="208586643495776849">Lūdzu, mēģiniet vēlreiz</translation>
 <translation id="2090963878406559571">Lai no vietnes <ph name="ORIGIN" /> uz Android tālruni nosūtītu numuru, <ph name="TROUBLESHOOT_LINK" /> abām iestatījumos esošajām ierīcēm.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Iebūvēts displejs</translation>
 <translation id="335581015389089642">Runa</translation>
 <translation id="3389286852084373014">Teksts ir pārāk liels</translation>
-<translation id="3479552764303398839">Vēlāk</translation>
 <translation id="348799646910989694">Plaukts tiek automātiski paslēpts</translation>
 <translation id="3554637740840164787">Vienums <ph name="ITEM_TITLE" /> tika piesprausts</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Atlikusi 1 diena}zero{Atlikušas # dienas}one{Atlikusi # diena}other{Atlikušas # dienas}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}zero{# min}one{# min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktīva šodien}=1{Aktīva pirms 1 dienas}zero{Aktīva pirms # dienām}one{Aktīva pirms # dienas}other{Aktīva pirms # dienām}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 diena un }zero{# dienas un }one{# diena un }other{# dienas un }}</translation>
+<translation id="5789643057113097023">:</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{pēc 1 g.}zero{pēc # g.}one{pēc # g.}other{pēc # g.}}</translation>
-<translation id="5895138241574237353">Restartēt</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Atlikusi 1 sekunde}zero{Atlikušas # sekundes}one{Atlikusi # sekunde}other{Atlikušas # sekundes}}</translation>
 <translation id="5941711191222866238">Minimizēt</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 stunda}zero{# stundas}one{# stunda}other{# stundas}}</translation>

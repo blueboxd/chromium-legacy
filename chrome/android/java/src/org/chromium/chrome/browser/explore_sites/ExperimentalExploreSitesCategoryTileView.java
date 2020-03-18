@@ -16,7 +16,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.favicon.RoundedIconGenerator;
+import org.chromium.chrome.browser.ui.favicon.RoundedIconGenerator;
 import org.chromium.ui.base.ViewUtils;
 
 /**

@@ -100,7 +100,7 @@ class NGLengthUtilsTestWithNode : public NGLayoutTest {
       const MinMaxSizes& sizes = MinMaxSizes()) {
     LayoutBox* body = ToLayoutBox(GetDocument().body()->GetLayoutObject());
     body->SetStyle(style_);
-    body->SetPreferredLogicalWidthsDirty();
+    body->SetIntrinsicLogicalWidthsDirty();
     NGBlockNode node(body);
 
     NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
@@ -114,7 +114,7 @@ class NGLengthUtilsTestWithNode : public NGLayoutTest {
       LayoutUnit content_size = LayoutUnit()) {
     LayoutBox* body = ToLayoutBox(GetDocument().body()->GetLayoutObject());
     body->SetStyle(style_);
-    body->SetPreferredLogicalWidthsDirty();
+    body->SetIntrinsicLogicalWidthsDirty();
 
     NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
                                 ComputePadding(constraint_space, *style_);

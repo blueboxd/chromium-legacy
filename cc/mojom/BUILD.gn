@@ -9,4 +9,18 @@ mojom("mojom") {
   sources = [ "touch_action.mojom" ]
 
   public_deps = [ "//mojo/public/mojom/base" ]
+
+  touch_action_typemap = {
+    types = [
+      {
+        mojom = "cc.mojom.TouchAction"
+        cpp = "::cc::TouchAction"
+      },
+    ]
+    traits_headers = [ "//cc/ipc/cc_param_traits_macros.h" ]
+    traits_public_deps = [ "//cc/ipc" ]
+  }
+
+  cpp_typemaps = [ touch_action_typemap ]
+  blink_cpp_typemaps = [ touch_action_typemap ]
 }

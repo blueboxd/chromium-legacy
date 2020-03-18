@@ -1,0 +1,43 @@
+syntax = "proto2";
+
+package content.fuzzing.code_cache_host.proto;
+
+import "third_party/blink/public/mojom/loader/code_cache.mojom.mojolpm.proto";
+
+message NewCodeCacheHost {
+  enum OriginId {
+    ORIGIN_A = 0;
+    ORIGIN_B = 1;
+    ORIGIN_OPAQUE = 2;
+    ORIGIN_EMPTY = 3;
+  }
+
+  required uint32 id = 1;
+  required uint32 render_process_id = 2;
+  required OriginId origin_id = 3;
+}
+
+message RunUntilIdle {
+  enum ThreadId {
+    IO = 0;
+    UI = 1;
+  }
+
+  required ThreadId id = 1;
+}
+
+message Action {
+  oneof action {
+    NewCodeCacheHost new_code_cache_host = 1;
+    RunUntilIdle run_until_idle = 2;
+    mojolpm.blink.mojom.CodeCacheHost.RemoteMethodCall code_cache_host_call = 3;
+  }
+}
+
+message Sequence {
+  repeated Action actions = 1;
+}
+
+message Testcase {
+  repeated Sequence sequences = 1;
+}

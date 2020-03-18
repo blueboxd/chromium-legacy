@@ -195,6 +195,13 @@ TEST_P(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
 }
 
 TEST_P(DisplayChangeObserverTest, FindDeviceScaleFactor) {
+  // sanity check
+  EXPECT_EQ(1.25f, DisplayChangeObserver::FindDeviceScaleFactor(150));
+  EXPECT_EQ(1.6f, DisplayChangeObserver::FindDeviceScaleFactor(180));
+  EXPECT_EQ(kDsf_1_777, DisplayChangeObserver::FindDeviceScaleFactor(220));
+  EXPECT_EQ(2.f, DisplayChangeObserver::FindDeviceScaleFactor(230));
+  EXPECT_EQ(kDsf_2_252, DisplayChangeObserver::FindDeviceScaleFactor(270));
+  EXPECT_EQ(kDsf_2_666, DisplayChangeObserver::FindDeviceScaleFactor(300));
   constexpr struct Data {
     const float diagonal_size;
     const gfx::Size resolution;
@@ -212,6 +219,7 @@ TEST_P(DisplayChangeObserverTest, FindDeviceScaleFactor) {
       {14.0f,  {1920, 1080}, 1.25f,      {1536, 864},  false},
       {11.6f,  {1920, 1080}, 1.6f,       {1200, 675},  false},
       {12.02f, {2160, 1440}, 1.6f,       {1350, 900},  false},
+      {9.7f,   {1536, 2048}, 2.0f,       {768, 1024},  false},
       {12.85f, {2560, 1700}, 2.0f,       {1280, 850},  false},
       {12.3f,  {2400, 1600}, 2.0f,       {1200, 800},  false},
       {10.1f,  {1920, 1200}, kDsf_1_777, {1080, 675},  false},

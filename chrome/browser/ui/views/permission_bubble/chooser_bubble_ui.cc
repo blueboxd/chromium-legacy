@@ -234,6 +234,9 @@ base::OnceClosure ShowDeviceChooserDialog(
     std::unique_ptr<ChooserController> controller) {
   Browser* browser = chrome::FindBrowserWithWebContents(
       content::WebContents::FromRenderFrameHost(owner));
+  if (!browser)
+    return base::DoNothing();
+
   auto bubble = std::make_unique<ChooserBubbleUiViewDelegate>(
       browser, std::move(controller));
 

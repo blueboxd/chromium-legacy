@@ -13,13 +13,13 @@
 #include "cc/trees/transform_node.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/devtools/web_device_emulation_params.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_ax_context.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
-#include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_script_source.h"
@@ -2593,7 +2593,7 @@ TEST_P(VisualViewportTest, DeviceEmulation) {
   WebDeviceEmulationParams params;
   params.viewport_offset = gfx::PointF();
   params.viewport_scale = 1.f;
-  WebView()->EnableDeviceEmulation(params);
+  WebView()->SetDeviceEmulation(params);
 
   UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_FALSE(visual_viewport.GetDeviceEmulationTransformNode());
@@ -2603,7 +2603,7 @@ TEST_P(VisualViewportTest, DeviceEmulation) {
 
   // Set device mulation with viewport offset should repaint visual viewport.
   params.viewport_offset = gfx::PointF(314, 159);
-  WebView()->EnableDeviceEmulation(params);
+  WebView()->SetDeviceEmulation(params);
 
   UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(GetFrame()->View()->VisualViewportNeedsRepaint());
@@ -2617,7 +2617,7 @@ TEST_P(VisualViewportTest, DeviceEmulation) {
   // Change device emulation with scale should not repaint visual viewport.
   params.viewport_offset = gfx::PointF();
   params.viewport_scale = 1.5f;
-  WebView()->EnableDeviceEmulation(params);
+  WebView()->SetDeviceEmulation(params);
 
   UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_FALSE(GetFrame()->View()->VisualViewportNeedsRepaint());
@@ -2629,7 +2629,7 @@ TEST_P(VisualViewportTest, DeviceEmulation) {
 
   // Set an identity device emulation transform and ensure the transform
   // paint property node is cleared and repaint visual viewport.
-  WebView()->EnableDeviceEmulation(WebDeviceEmulationParams());
+  WebView()->SetDeviceEmulation(WebDeviceEmulationParams());
   UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(GetFrame()->View()->VisualViewportNeedsRepaint());
   EXPECT_FALSE(visual_viewport.GetDeviceEmulationTransformNode());
@@ -2685,21 +2685,21 @@ TEST_P(VisualViewportTest, PaintScrollbar) {
   WebDeviceEmulationParams params;
   params.viewport_offset = gfx::PointF();
   params.viewport_scale = 1.5f;
-  WebView()->EnableDeviceEmulation(params);
+  WebView()->SetDeviceEmulation(params);
   UpdateAllLifecyclePhases();
   ASSERT_EQ(scrollbar,
             GetFrame()->View()->RootCcLayer()->children().back().get());
   check_scrollbar(scrollbar, 1.5f);
 
   params.viewport_scale = 1.f;
-  WebView()->EnableDeviceEmulation(params);
+  WebView()->SetDeviceEmulation(params);
   UpdateAllLifecyclePhases();
   ASSERT_EQ(scrollbar,
             GetFrame()->View()->RootCcLayer()->children().back().get());
   check_scrollbar(scrollbar, 1.f);
 
   params.viewport_scale = 0.75f;
-  WebView()->EnableDeviceEmulation(params);
+  WebView()->SetDeviceEmulation(params);
   UpdateAllLifecyclePhases();
   ASSERT_EQ(scrollbar,
             GetFrame()->View()->RootCcLayer()->children().back().get());

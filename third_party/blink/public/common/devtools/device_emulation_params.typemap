@@ -1,0 +1,19 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+mojom =
+    "//third_party/blink/public/mojom/devtools/device_emulation_params.mojom"
+public_headers = [
+  "//third_party/blink/public/common/devtools/web_device_emulation_params.h",
+  "//third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h",
+  "//ui/gfx/geometry/point_f.h",
+  "//ui/gfx/geometry/size.h",
+]
+traits_headers = [ "//third_party/blink/public/common/devtools/device_emulation_params_mojom_traits.h" ]
+sources = [
+  "//third_party/blink/common/devtools/device_emulation_params_mojom_traits.cc",
+]
+public_deps = [ "//base" ]
+type_mappings =
+    [ "blink.mojom.DeviceEmulationParams=::blink::WebDeviceEmulationParams" ]

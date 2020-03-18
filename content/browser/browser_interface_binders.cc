@@ -739,6 +739,8 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
   map->Add<blink::mojom::QuicTransportConnector>(
       base::BindRepeating(&DedicatedWorkerHost::CreateQuicTransportConnector,
                           base::Unretained(host)));
+  map->Add<blink::mojom::WakeLockService>(base::BindRepeating(
+      &DedicatedWorkerHost::CreateWakeLockService, base::Unretained(host)));
   map->Add<blink::mojom::CacheStorage>(base::BindRepeating(
       &DedicatedWorkerHost::BindCacheStorage, base::Unretained(host)));
 #if !defined(OS_ANDROID)

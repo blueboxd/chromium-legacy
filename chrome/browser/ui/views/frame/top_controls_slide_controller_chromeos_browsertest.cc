@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -640,6 +641,37 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestScrollingPage) {
   // chrome to be fully shown.
   ScrollAndExpectTopChromeToBe(ScrollDirection::kUp,
                                TopChromeShownState::kFullyShown);
+}
+
+IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestCtrlL) {
+  // Switch to tablet mode, and scroll until the top controls are fully hidden.
+  ToggleTabletMode();
+  ASSERT_TRUE(GetTabletModeEnabled());
+  EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());
+  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
+  OpenUrlAtIndex(embedded_test_server()->GetURL("/top_controls_scroll.html"),
+                 0);
+  auto* active_contents = browser_view()->GetActiveWebContents();
+  EXPECT_TRUE(content::WaitForLoadStop(active_contents));
+  TabNonEmptyPaintWaiter paint_waiter(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  paint_waiter.Wait();
+  SCOPED_TRACE("Scrolling to fully hide the top controls.");
+  ScrollAndExpectTopChromeToBe(ScrollDirection::kDown,
+                               TopChromeShownState::kFullyHidden);
+  content::WaitForResizeComplete(active_contents);
+
+  // Hit Ctrl+L which should focus the omnibox. This should unhide the top
+  // controls.
+  SCOPED_TRACE("Firing Ctrl+L.");
+  aura::Window* browser_window = browser()->window()->GetNativeWindow();
+  ui::test::EventGenerator event_generator(browser_window->GetRootWindow(),
+                                           browser_window);
+  TopControlsShownRatioWaiter waiter(top_controls_slide_controller());
+  event_generator.PressKey(ui::VKEY_L, ui::EF_CONTROL_DOWN);
+  event_generator.ReleaseKey(ui::VKEY_L, ui::EF_CONTROL_DOWN);
+  waiter.WaitForRatio(1.f);
+  EXPECT_TRUE(browser_view()->GetLocationBarView()->omnibox_view()->HasFocus());
 }
 
 // TODO(https://crbug.com/911949): Times out on CrOS on the waterfall.

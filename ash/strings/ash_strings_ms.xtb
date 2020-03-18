@@ -252,6 +252,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4072264167173457037">Isyarat sederhana</translation>
 <translation id="4112140312785995938">Cari Ke Belakang</translation>
 <translation id="4129129681837227511">Untuk melihat pemberitahuan pada skrin kunci anda, buka kunci untuk menukar tetapan</translation>
+<translation id="4144413954005649103">Dengan klik kanan atau tekan lama, Assistant menunjukkan kepada anda maklumat yang berkaitan dengan perkara yang dipilih pada skrin.</translation>
 <translation id="4146833061457621061">Mainkan muzik</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> diurus oleh <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Bahasa</translation>
@@ -399,6 +400,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="615957422585914272">Paparkan papan kekunci pada skrin</translation>
 <translation id="6164005077879661055">Semua fail dan data setempat yang dikaitkan dengan pengguna diselia akan dipadamkan secara kekal apabila pengguna diselia ini dialih keluar. Tapak web yang dilawati dan tetapan untuk pengguna diselia ini masih boleh dilihat oleh pengurus di <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Ketahui lebih lanjut</translation>
+<translation id="6236290670123303279">Urus Tetapan</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Dikunci mendatar</translation>
 <translation id="6259254695169772643">Gunakan stilus anda untuk memilih</translation>
@@ -440,6 +442,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6669268301501499730">Hidupkan</translation>
 <translation id="6670153871843998651">Meja 3</translation>
 <translation id="6691659475504239918">Cari+Shift+H</translation>
+<translation id="6692996468359469499">Dapatkan maklumat yang berkaitan dengan pilihan anda</translation>
 <translation id="6696025732084565524">Papan kekunci anda yang boleh dicabut memerlukan kemas kini kritikal</translation>
 <translation id="6700713906295497288">Butang menu IME</translation>
 <translation id="6713285437468012787">Peranti Bluetooth "<ph name="DEVICE_NAME" />" telah dipasangkan dan kini tersedia untuk semua pengguna. Anda boleh mengalih keluar pasangan ini menggunakan Tetapan.</translation>
@@ -528,6 +531,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="79341161159229895">Akaun diurus oleh <ph name="FIRST_PARENT_EMAIL" /> dan <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">Mod kontras tinggi</translation>
 <translation id="7977927628060636163">Mencari rangkaian mudah alih...</translation>
+<translation id="7980780401175799550">Cuba cara baharu untuk menavigasi OS Chrome</translation>
 <translation id="7982789257301363584">Rangkaian</translation>
 <translation id="7984197416080286869">Terlalu banyak percubaan cap jari</translation>
 <translation id="7994370417837006925">Log masuk berbilang</translation>
@@ -549,6 +553,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8167567890448493835">Menggunakan <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Sesuaikan bahasa dan input...</translation>
 <translation id="8192202700944119416">Pemberitahuan disembunyikan.</translation>
+<translation id="8196787716797768628">Gunakan gerak isyarat untuk bertukar antara apl dengan pantas dan berinteraksi dengan Chromebook anda dalam mod tablet.</translation>
 <translation id="8203795194971602413">Klik kanan</translation>
 <translation id="8236042855478648955">Masa rehat</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />, Bateri Telefon <ph name="BATTERY_STATUS" /></translation>

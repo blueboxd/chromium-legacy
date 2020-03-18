@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">Saatmine seadmesse <ph name="DEVICE_NAME" /> …</translation>
 <translation id="1036727731225946849">APK <ph name="WEBAPK_NAME" /> lisamine …</translation>
 <translation id="1041308826830691739">Veebisaitidelt</translation>
+<translation id="1044891598689252897">Saidid töötavad tavapärasel moel</translation>
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="10614374240317010">Ei ole kunagi salvestatud</translation>
 <translation id="1067922213147265141">Muud Google'i teenused</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">Üksust <ph name="CONTENT_TYPE" /> ei saa jagada</translation>
 <translation id="1477626028522505441">Faili <ph name="FILE_NAME" /> allalaadimine ebaõnnestus serveriprobleemide tõttu.</translation>
 <translation id="1506061864768559482">Otsingumootor</translation>
+<translation id="1509960214886564027">Paljude saitide funktsioonid ei pruugi töötada</translation>
 <translation id="1513352483775369820">Järjehoidjad ja veebiajalugu</translation>
 <translation id="1513858653616922153">Kustuta parool</translation>
 <translation id="1521774566618522728">Aktiivne täna</translation>
@@ -235,6 +237,7 @@ Puudutage pikalt mis tahes sõna, et seda otsida. Otsingu täpsustamiseks valige
 <translation id="2647434099613338025">Lisa keel</translation>
 <translation id="2650751991977523696">Kas soovite faili uuesti alla laadida?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# helifail}other{# helifaili}}</translation>
+<translation id="2687403674020088961">Blokeeri kõik küpsised (ei ole soovitatav)</translation>
 <translation id="2707726405694321444">Lehe värskendamine</translation>
 <translation id="2709516037105925701">Automaatne täitmine</translation>
 <translation id="2717722538473713889">E-posti aadressid</translation>
@@ -340,6 +343,7 @@ Puudutage pikalt mis tahes sõna, et seda otsida. Otsingu täpsustamiseks valige
 <translation id="3478363558367712427">Võite valida oma otsingumootori</translation>
 <translation id="3492207499832628349">Uus inkognito vaheleht</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /> soovitatud sisu kohta</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Liitreaalsus</translation>
 <translation id="3518985090088779359">Nõustu ja jätka</translation>
 <translation id="3522247891732774234">Värskendus on saadaval. Rohkem valikuid</translation>
@@ -355,6 +359,7 @@ Puudutage pikalt mis tahes sõna, et seda otsida. Otsingu täpsustamiseks valige
 <translation id="358794129225322306">Lubab saidil automaatselt mitut faili alla laadida.</translation>
 <translation id="3590487821116122040">Saitide salvestusruum, mida Chrome peab ebatähtsaks (nt saidid, mida külastate harva või millel ei ole salvestatud seadeid)</translation>
 <translation id="3594780231884063836">Video vaigistamine</translation>
+<translation id="3596414637720633074">Blokeerige kolmanda osapoole küpsisefailid inkognito režiimis</translation>
 <translation id="3599863153486145794">Kustutab ajaloo kõigist sisselogitud seadmetest. Aadressil <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> võib teie Google'i kontol olla muus vormis sirvimisajalugu.</translation>
 <translation id="3600792891314830896">Heli esitavad saidid vaigistatakse</translation>
 <translation id="3616113530831147358">Heli</translation>
@@ -921,6 +926,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="780301667611848630">Ei, aitäh</translation>
 <translation id="7810647596859435254">Ava rakendusega …</translation>
 <translation id="7821588508402923572">Siin kuvatakse teie säästetud andmemaht</translation>
+<translation id="7828557259026017104">Küpsisefailid on failid, mille on loonud teie külastatud veebisaidid. Saidid kasutavad neid teie eelistuste meeldejätmiseks. Kolmanda osapoole küpsisefailid loovad teised saidid. Need saidid omavad külastatud veebisaidil kuvatud sisu, nt reklaame või pilte.</translation>
 <translation id="783819812427904514">Video vaigistuse tühistamine</translation>
 <translation id="784934925303690534">Ajavahemik</translation>
 <translation id="7851858861565204677">Muud seadmed</translation>
@@ -941,6 +947,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="79859296434321399">Liitreaalsuse sisu vaatamiseks installige ARCore</translation>
 <translation id="7986741934819883144">Kontakti valimine</translation>
 <translation id="7987073022710626672">Chrome'i teenusetingimused</translation>
+<translation id="7993619969781047893">Mõne saidi funktsioonid ei pruugi töötada.</translation>
 <translation id="7998918019931843664">Suletud vahelehe uuesti avamine</translation>
 <translation id="7999064672810608036">Kas soovite kindlasti kustutada kõik kohalikud andmed (sh küpsised) ja lähtestada kõik selle veebisaidi load?</translation>
 <translation id="8004582292198964060">Brauser</translation>
@@ -1075,6 +1082,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="8965591936373831584">ootel</translation>
 <translation id="8970887620466824814">Midagi läks valesti.</translation>
 <translation id="8972098258593396643">Kas soovite alla laadida vaikekausta?</translation>
+<translation id="8988028529677883095">Kasutage oma telefoni turvavõtmena</translation>
 <translation id="8993760627012879038">Uue vahelehe avamine inkognito režiimis</translation>
 <translation id="8998729206196772491">Logite sisse kontoga, mida haldab <ph name="MANAGED_DOMAIN" />, ja annate selle administraatorile üle Chrome'i andmete juhtimise. Teie andmed seotakse jäädavalt selle kontoga. Chrome'ist väljalogimisel kustutatakse teie andmed sellest seadmest, kuid need jäävad alles teie Google'i kontole.</translation>
 <translation id="9019902583201351841">Vanemate hallatud</translation>

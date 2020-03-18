@@ -309,6 +309,13 @@ const base::Feature kConfirmOmniboxSuggestionRemovals{
 extern const base::Feature kDeferredKeyboardPopup{
     "OmniboxDeferredKeyboardPopup", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, expands autocompletion to possibly (depending on params) include
+// suggestion titles and non-prefixes as opposed to be restricted to URL
+// prefixes. Will also adjust the location bar UI and omnibox text selection to
+// accommodate the autocompletions.
+const base::Feature kRichAutocompletion{"OmniboxRichAutocompletion",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature that enables not counting submatches towards the maximum
 // suggestion limit.
 const base::Feature kOmniboxLooseMaxLimitOnDedicatedRows{

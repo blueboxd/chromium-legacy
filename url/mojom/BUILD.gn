@@ -7,9 +7,39 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("url_mojom_gurl") {
   generate_java = true
   sources = [ "url.mojom" ]
-  cpp_typemaps = [ ":url_typemap" ]
-  blink_cpp_typemaps =
-      [ "//third_party/blink/renderer/platform/mojo:url_typemap" ]
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "url.mojom.Url"
+          cpp = "::GURL"
+        },
+      ]
+      traits_headers = [ "//url/mojom/url_gurl_mojom_traits.h" ]
+      traits_public_deps = [
+        ":mojom_traits",
+        "//url",
+      ]
+    },
+  ]
+
+  blink_cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "url.mojom.Url"
+          cpp = "::blink::KURL"
+          force_serialize = true
+        },
+      ]
+      traits_headers = [
+        "//third_party/blink/renderer/platform/mojo/kurl_mojom_traits.h",
+        "//third_party/blink/renderer/platform/weborigin/kurl_hash.h",
+      ]
+      traits_public_deps = [ "//url" ]
+    },
+  ]
 }
 
 mojom("url_mojom_origin") {
@@ -23,9 +53,35 @@ mojom("url_mojom_origin") {
 
   check_includes_blink = false
 
-  cpp_typemaps = [ ":origin_typemap" ]
-  blink_cpp_typemaps =
-      [ "//third_party/blink/renderer/platform/mojo:origin_typemap" ]
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "url.mojom.Origin"
+          cpp = "::url::Origin"
+        },
+      ]
+      traits_headers = [ "//url/mojom/origin_mojom_traits.h" ]
+      traits_public_deps = [
+        ":mojom_traits",
+        "//url",
+      ]
+    },
+  ]
+
+  blink_cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "url.mojom.Origin"
+          cpp = "::scoped_refptr<const ::blink::SecurityOrigin>"
+          nullable_is_same_type = true
+        },
+      ]
+      traits_headers = [ "//third_party/blink/renderer/platform/mojo/security_origin_mojom_traits.h" ]
+      traits_public_deps = [ "//url" ]
+    },
+  ]
 }
 
 mojom("test_url_mojom_gurl") {
@@ -54,40 +110,6 @@ component("mojom_traits") {
     ":url_mojom_origin_shared",
     "//base",
     "//mojo/public/cpp/base:shared_typemap_traits",
-    "//url",
-  ]
-}
-
-mojom_cpp_typemap("url_typemap") {
-  types = [
-    {
-      mojom = "url.mojom.Url"
-      cpp = "::GURL"
-    },
-  ]
-  public_headers = [
-    "//url/gurl.h",
-    "//url/mojom/url_gurl_mojom_traits.h",
-  ]
-  public_deps = [
-    ":mojom_traits",
-    "//url",
-  ]
-}
-
-mojom_cpp_typemap("origin_typemap") {
-  types = [
-    {
-      mojom = "url.mojom.Origin"
-      cpp = "::url::Origin"
-    },
-  ]
-  public_headers = [
-    "//url/origin.h",
-    "//url/mojom/origin_mojom_traits.h",
-  ]
-  public_deps = [
-    ":mojom_traits",
     "//url",
   ]
 }

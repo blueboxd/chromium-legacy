@@ -87,12 +87,12 @@ void LayoutTableCell::WillBeRemovedFromTree() {
     // remove-cell-with-border-box.html only passes with setNeedsLayout but
     // other places use setChildNeedsLayout.
     PreviousCell()->SetNeedsLayout(layout_invalidation_reason::kTableChanged);
-    PreviousCell()->SetPreferredLogicalWidthsDirty();
+    PreviousCell()->SetIntrinsicLogicalWidthsDirty();
   }
   if (NextCell()) {
     // TODO(dgrogan): Same as above re: setChildNeedsLayout vs setNeedsLayout.
     NextCell()->SetNeedsLayout(layout_invalidation_reason::kTableChanged);
-    NextCell()->SetPreferredLogicalWidthsDirty();
+    NextCell()->SetIntrinsicLogicalWidthsDirty();
   }
 }
 
@@ -125,7 +125,7 @@ void LayoutTableCell::ColSpanOrRowSpanChanged() {
 
   UpdateColAndRowSpanFlags();
 
-  SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+  SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kAttributeChanged);
   if (Parent() && Section()) {
     Section()->SetNeedsCellRecalc();
@@ -474,13 +474,13 @@ void LayoutTableCell::StyleDidChange(StyleDifference diff,
       // TODO(dgrogan) Add a web test showing that SetChildNeedsLayout is
       // needed instead of SetNeedsLayout.
       PreviousCell()->SetChildNeedsLayout();
-      PreviousCell()->SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
+      PreviousCell()->SetIntrinsicLogicalWidthsDirty(kMarkOnlyThis);
     }
     if (NextCell()) {
       // TODO(dgrogan) Add a web test showing that SetChildNeedsLayout is
       // needed instead of SetNeedsLayout.
       NextCell()->SetChildNeedsLayout();
-      NextCell()->SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
+      NextCell()->SetIntrinsicLogicalWidthsDirty(kMarkOnlyThis);
     }
   }
 }

@@ -8,9 +8,9 @@ import android.graphics.drawable.Drawable;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.suggestions.OfflinableSuggestion;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
+import org.chromium.chrome.browser.ui.favicon.IconType;
 
 /**
  * Holds the details to populate a site suggestion tile.

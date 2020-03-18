@@ -1420,69 +1420,85 @@ struct StructTraits<url::mojom::UrlDataView, GURL> {
 
 We've defined the `StructTraits` necessary, but we still need to teach the
 bindings generator (and hence the build system) about the mapping. To do this we
-must create a new `mojom_cpp_typemap` target in GN. We can define this
-anywhere, but conventionally we will put it in the same BUILD.gn that defines
-the `mojom` target which will use it.
+must add some more information to our `mojom` target in GN:
 
 ```
-mojom_cpp_typemap("geometry_typemap") {
-  types = [
-    {
-      mojom = "gfx.mojom.Rect"
-      cpp = "::gfx::Rect"
-    }
-  ]
-
-  public_headers = [
-    "//ui/gfx/geometry/mojo/geometry_mojom_traits.h",
-    "//ui/gfx/geometry/rect.h",
-  ]
-
-  # NOTE: We use |traits_sources| for simplicity in this example, but see the
-  # section below for a more robust alternative.
-  traits_sources = [
-    "//ui/gfx/geometry/mojo/geometry_mojom_traits.cc",
-    "//ui/gfx/geometry/mojo/geometry_mojom_traits.h",
-  ]
-
-  public_deps = [ "//ui/gfx/geometry" ]
-}
-```
-
-See the `mojom_cpp_typemap` documentation in
-[mojom.gni](https://cs.chromium.org/chromium/src/mojo/public/tools/bindings/mojom.gni)
-for details on the above definition and other supported parameters.
-
-Now that we have the typemap target defined we need to reference it in the
-`mojom` GN target which defines gfx.mojom.Rect. We can do that trivially by
-adding to the `cpp_typemaps` list:
-
-```
+# Without a typemap
 mojom("mojom") {
   sources = [
     "rect.mojom",
-    ...
+  ]
+}
+
+# With a typemap.
+mojom("mojom") {
+  sources = [
+    "rect.mojom",
   ]
 
-  cpp_typemaps = [ ":geometry_typemap" ]
-
-  ...
+  cpp_typemaps = [
+    {
+      # NOTE: A single typemap entry can list multiple individual type mappings.
+      # Each mapping assumes the same values for |traits_headers| etc below.
+      #
+      # To typemap a type with separate |traits_headers| etc, add a separate
+      # entry to |cpp_typemaps|.
+      types = [
+        {
+          mojom = "gfx.mojom.Rect"
+          cpp = "::gfx::Rect"
+        },
+      ]
+      traits_headers = [ "//ui/gfx/geometry/mojo/geometry_mojom_traits.h" ]
+      traits_sources = [ "//ui/gfx/geometry/mojo/geometry_mojom_traits.cc" ]
+      traits_public_deps = [ "//ui/gfx/geometry" ]
+    },
+  ]
 }
+```
+
+See typemap documentation in
+[mojom.gni](https://cs.chromium.org/chromium/src/mojo/public/tools/bindings/mojom.gni)
+for details on the above definition and other supported parameters.
+
+With this extra configuration present, any mojom references to `gfx.mojom.Rect`
+(e.g. for method parameters or struct fields) will be `gfx::Rect` references in
+generated C++ code.
 ```
 
 For the Blink variant of bindings, add to the `blink_cpp_typemaps` list instead.
 
 ### Type Mapping Without `traits_sources`
 
-Inlining the traits sources into the typemap definition means that the sources
-get baked directly into the corresponding `mojom` target's sources. This can
-be problematic if you want to use the same typemap for both Blink and non-Blink
-bindings.
+Using `traits_sources` in a typemap configuration means that the listed sources
+will be baked directly into the corresponding `mojom` target's own sources. This
+can be problematic if you want to use the same typemap for both Blink and
+non-Blink bindings.
 
 For such cases, it is recommended that you define a separate `component` target
-for your typemap traits, and reference this in the `public_deps` of the typemap:
+for your typemap traits, and reference this in the `traits_public_deps` of the
+typemap:
 
 ```
+mojom("mojom") {
+  sources = [
+    "rect.mojom",
+  ]
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "gfx.mojom.Rect"
+          cpp = "::gfx::Rect"
+        },
+      ]
+      traits_headers = [ "//ui/gfx/geometry/mojo/geometry_mojom_traits.h" ]
+      traits_public_deps = [ ":geometry_mojom_traits" ]
+    },
+  ]
+}
+
 component("geometry_mojom_traits") {
   sources = [
     "//ui/gfx/geometry/mojo/geometry_mojom_traits.cc",
@@ -1491,67 +1507,8 @@ component("geometry_mojom_traits") {
 
   # The header of course needs corresponding COMPONENT_EXPORT() tags.
   defines = [ "IS_GEOMETRY_MOJOM_TRAITS_IMPL" ]
-
-  ...
-}
-
-mojom_cpp_typemap("geometry_typemap") {
-  # Same as the example above.
-  types = [ ... ]
-  public_headers = [ ... ]
-
-  # NOTE: No |traits_sources|.
-
-  public_deps = [
-    ":geometry_mojom_traits",
-    "//ui/gfx/geometry",
-  ]
 }
 ```
-
-### Type Mapping For `mojom_component` Targets
-
-Due to how component builds manage symbol exports, `mojom_component` targets
-require some special consideration when applying a C++ typemap. The simplest
-rule to apply here is to just **define your traits in a separate `component`
-target and reference that target in the typemap's `public_deps`**, as
-demonstrated in the previous section.
-
-If you must use `traits_sources` for your traits definitions, you will need to
-tag traits symbols with the same generated export macro that your mojom uses,
-and you will need to assign `traits_defines` to define an appropriate macro
-in the typemap rule itself. Example:
-
-```
-mojom_component("mojom") {
-  output_prefix = "my_mojom"
-  macro_prefix = "MY_MOJOM"
-  sources = [ "foo.mojom" ]
-  cpp_typemaps = [ ":typemap" ]
-}
-
-mojom_cpp_typemap("typemap") {
-  types = [ ... ]
-  public_headers = [ ... ]
-  traits_sources = [
-    "foo_mojom_traits.cc",
-    "foo_mojom_traits.h",
-  ]
-  traits_defines = [ "IS_MY_MOJOM_IMPL" ]
-}
-```
-
-And the C++ code would look like:
-
-``` cpp
-template <>
-struct COMPONENT_EXPORT(MY_MOJOM) StructTraits<...> {
- ...
-```
-
-If this were a Blink typemap, the traits would instead define
-`IS_MY_MOJOM_BLINK_IMPL` and tag symbols with
-`COMPONENT_EXPORT(MY_MOJOM_BLINK)`.
 
 ### StructTraits Reference
 

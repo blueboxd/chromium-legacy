@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Избери ги &amp;сите</translation>
-<translation id="1938451708255335766">За да ја приспособите густината на приказот на прозорците, рестартирајте ја апликацијата.</translation>
 <translation id="2006524834898217237">Проверете дали уредов е поврзан на интернет.</translation>
 <translation id="208586643495776849">Обидете се повторно</translation>
 <translation id="2090963878406559571">За да испратите број од <ph name="ORIGIN" /> во телефонот со Android, <ph name="TROUBLESHOOT_LINK" /> за двата уреди во „Поставки“.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Вграден екран</translation>
 <translation id="335581015389089642">Говор</translation>
 <translation id="3389286852084373014">Премногу е долго</translation>
-<translation id="3479552764303398839">Не сега</translation>
 <translation id="348799646910989694">Полицата е автоматски сокриена</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> е прикачена</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Преостана 1 ден}one{Преостана # ден}other{Преостанаа # дена}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 мин.}one{# мин.}other{# мин.}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Активен денес}=1{Активен пред 1 ден}one{Активен пред # ден}other{Активен пред # дена}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ден и }one{# ден и }other{# дена и }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{за 1 г.}one{за # г.}other{за # г.}}</translation>
-<translation id="5895138241574237353">Рестартирај</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Преостана 1 секунда}one{Преостана # секунда}other{Преостанаа # секунди}}</translation>
 <translation id="5941711191222866238">Минимизирај</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 час}one{# час}other{# часа}}</translation>

@@ -57,7 +57,6 @@ class CORE_EXPORT FrameView : public EmbeddedContentView {
   bool RectInParentIsStable(const base::TimeTicks& timestamp) const;
 
  protected:
-  virtual bool ShouldReportMainFrameIntersection() const { return false; }
   virtual bool NeedsViewportOffset() const { return false; }
   virtual void SetViewportIntersection(
       const ViewportIntersectionState& intersection_state) = 0;

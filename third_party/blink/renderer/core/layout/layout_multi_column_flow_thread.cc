@@ -611,7 +611,7 @@ bool LayoutMultiColumnFlowThread::RemoveSpannerPlaceholderIfNoLongerValid(
   // We may have a new containing block, since we're no longer a spanner. Mark
   // it for relayout.
   spanner_object_in_flow_thread->ContainingBlock()
-      ->SetNeedsLayoutAndPrefWidthsRecalc(
+      ->SetNeedsLayoutAndIntrinsicWidthsRecalc(
           layout_invalidation_reason::kColumnsChanged);
 
   // Now generate a column set for this ex-spanner, if needed and none is there
@@ -1347,10 +1347,10 @@ void LayoutMultiColumnFlowThread::ComputePreferredLogicalWidths() {
   if (flow->HasOverrideIntrinsicContentLogicalWidth()) {
     min_preferred_logical_width_ = max_preferred_logical_width_ =
         flow->OverrideIntrinsicContentLogicalWidth();
-    ClearPreferredLogicalWidthsDirty();
+    ClearIntrinsicLogicalWidthsDirty();
   } else if (flow->ShouldApplySizeContainment()) {
     min_preferred_logical_width_ = max_preferred_logical_width_ = LayoutUnit();
-    ClearPreferredLogicalWidthsDirty();
+    ClearIntrinsicLogicalWidthsDirty();
   } else {
     // Calculate and set new min_preferred_logical_width_ and
     // max_preferred_logical_width_.

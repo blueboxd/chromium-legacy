@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">মাঝারি সিগন্যাল</translation>
 <translation id="4112140312785995938">পিছিয়ে যান</translation>
 <translation id="4129129681837227511">আপনার লক স্ক্রিনে বিজ্ঞপ্তি দেখার জন্য সেটিংস পরিবর্তন করতে আনলক করুন</translation>
+<translation id="4144413954005649103">ডানদিকের বোতামে ক্লিক করে অথবা বেশিক্ষণ টিপে ধরে রেখে আপনি স্ক্রিনে যেটি বেছে নিয়েছেন Assistant সেই সম্পর্কিত তথ্য আপনাকে দেখায়।</translation>
 <translation id="4146833061457621061">মিউজিক চালান</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> <ph name="DOMAIN" /> ম্যানেজ করে</translation>
 <translation id="4181841719683918333">ভাষাসমূহ</translation>
@@ -399,6 +400,7 @@
 <translation id="6164005077879661055">একবার এই তত্ত্বাবধানে থাকা ব্যবহারকারী সরানো হলে এর সঙ্গে সংশ্লিষ্ট সমস্ত ফাইল এবং
 স্থানীয় ডেটা স্থায়ীভাবে মুছে ফেলা হবে৷ এই তত্ত্বাবধানে থাকা ব্যবহারকারীর জন্য পরিদর্শিত এবং সেটিংস <ph name="MANAGEMENT_URL" />-এ পরিচালকের কাছে এখনো দৃশ্যমান হতে পারে৷</translation>
 <translation id="6165508094623778733">আরও জানুন</translation>
+<translation id="6236290670123303279">সেটিংস ম্যানেজ করুন</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">স্ক্রিনটি ল্যান্ডস্কেপ মোডে লক করা আছে</translation>
 <translation id="6259254695169772643">বেছে নিতে স্টাইলাস ব্যবহার করুন</translation>
@@ -440,6 +442,7 @@
 <translation id="6669268301501499730">চালু করা আছে</translation>
 <translation id="6670153871843998651">ডেস্ক ৩</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
+<translation id="6692996468359469499">আপনার বেছে নেওয়া প্রশ্ন সম্পর্কিত উত্তর পান</translation>
 <translation id="6696025732084565524">আলাদা করা যায় এমন কীবোর্ডের একটি জরুরি আপডেট প্রয়োজন</translation>
 <translation id="6700713906295497288">IME মেনু বোতাম</translation>
 <translation id="6713285437468012787">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করা হয়েছে এবং এখন সমস্ত ব্যবহারকারীর কাছে উপলব্ধ। আপনি সেটিংস ব্যবহার করে এই সংযুক্তি সরিয়ে দিতে পারেন।</translation>
@@ -528,6 +531,7 @@
 <translation id="79341161159229895">অ্যাকাউন্টটি <ph name="FIRST_PARENT_EMAIL" /> এবং <ph name="SECOND_PARENT_EMAIL" /> ম্যানেজ করছেন</translation>
 <translation id="7955885781510802139">হাই-কনট্রাস্ট মোড</translation>
 <translation id="7977927628060636163">মোবাইল নেটওয়ার্কগুলির জন্য সার্চ করছে...</translation>
+<translation id="7980780401175799550">Chrome OS নেভিগেট করার নতুন পদ্ধতিগুলি ব্যবহার করে দেখুন</translation>
 <translation id="7982789257301363584">নেটওয়ার্ক</translation>
 <translation id="7984197416080286869">অনেকবার আঙ্গুলের ছাপ দিয়ে আনলক করার চেষ্টা করা হয়েছে</translation>
 <translation id="7994370417837006925">একাধিক সাইন-ইন</translation>
@@ -549,6 +553,7 @@
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> ব্যবহার করা হচ্ছে</translation>
 <translation id="8190698733819146287">ভাষা এবং ইনপুট কাস্টমাইজ করুন...</translation>
 <translation id="8192202700944119416">বিজ্ঞপ্তি লুকানো আছে।</translation>
+<translation id="8196787716797768628">একটি অ্যাপ থেকে খুব তাড়াতাড়ি অন্য অ্যাপে যেতে এবং ট্যাবলেট মোডে আপনার Chromebook ব্যবহার করার জন্য নতুন 'জেসচার' ফিচারগুলি ব্যবহার করুন।</translation>
 <translation id="8203795194971602413">ডানদিকের বোতামে ক্লিক করুন</translation>
 <translation id="8236042855478648955">বিরতির সময় হয়েছে</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, সিগন্যাল: <ph name="SIGNAL_STRENGTH" />, ফোনের ব্যাটারি <ph name="BATTERY_STATUS" /></translation>

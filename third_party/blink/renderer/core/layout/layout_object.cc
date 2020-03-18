@@ -1143,20 +1143,20 @@ void LayoutObject::CheckBlockPositionedObjectsNeedLayout() {
 }
 #endif
 
-void LayoutObject::SetPreferredLogicalWidthsDirty(
+void LayoutObject::SetIntrinsicLogicalWidthsDirty(
     MarkingBehavior mark_parents) {
-  bitfields_.SetPreferredLogicalWidthsDirty(true);
+  bitfields_.SetIntrinsicLogicalWidthsDirty(true);
   if (mark_parents == kMarkContainerChain &&
       (IsText() || !StyleRef().HasOutOfFlowPosition()))
-    InvalidateContainerPreferredLogicalWidths();
+    InvalidateContainerIntrinsicLogicalWidths();
 }
 
-void LayoutObject::ClearPreferredLogicalWidthsDirty() {
-  bitfields_.SetPreferredLogicalWidthsDirty(false);
+void LayoutObject::ClearIntrinsicLogicalWidthsDirty() {
+  bitfields_.SetIntrinsicLogicalWidthsDirty(false);
 }
 
 void LayoutObject::InvalidateSubtreeLayoutForFontUpdates() {
-  SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+  SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kFontsChanged);
   for (LayoutObject* child = SlowFirstChild(); child;
        child = child->NextSibling()) {
@@ -1188,13 +1188,13 @@ static inline bool NGKeepInvalidatingBeyond(LayoutObject* o) {
   return false;
 }
 
-inline void LayoutObject::InvalidateContainerPreferredLogicalWidths() {
+inline void LayoutObject::InvalidateContainerIntrinsicLogicalWidths() {
   // In order to avoid pathological behavior when inlines are deeply nested, we
   // do include them in the chain that we mark dirty (even though they're kind
   // of irrelevant).
   LayoutObject* o = IsTableCell() ? ContainingBlock() : Container();
   while (o &&
-         (!o->PreferredLogicalWidthsDirty() || NGKeepInvalidatingBeyond(o))) {
+         (!o->IntrinsicLogicalWidthsDirty() || NGKeepInvalidatingBeyond(o))) {
     // Don't invalidate the outermost object of an unrooted subtree. That object
     // will be invalidated when the subtree is added to the document.
     LayoutObject* container =
@@ -1202,7 +1202,7 @@ inline void LayoutObject::InvalidateContainerPreferredLogicalWidths() {
     if (!container && !IsA<LayoutView>(o))
       break;
 
-    o->bitfields_.SetPreferredLogicalWidthsDirty(true);
+    o->bitfields_.SetIntrinsicLogicalWidthsDirty(true);
     // A positioned object has no effect on the min/max width of its containing
     // block ever. We can optimize this case and not go up any further.
     if (o->StyleRef().HasOutOfFlowPosition())
@@ -2125,7 +2125,7 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
 
   if (!diff.NeedsFullLayout()) {
     if (updated_diff.NeedsFullLayout()) {
-      SetNeedsLayoutAndPrefWidthsRecalc(
+      SetNeedsLayoutAndIntrinsicWidthsRecalc(
           layout_invalidation_reason::kStyleChange);
     } else if (updated_diff.NeedsPositionedMovementLayout()) {
       SetNeedsPositionedMovementLayout();
@@ -2146,7 +2146,7 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
       // layout). However in LayoutNG RecalcInlineChildrenInkOverflow() is
       // called and visual overflow is recomputed properly so we don't need this
       // (see crbug.com/1043927).
-      SetNeedsLayoutAndPrefWidthsRecalc(
+      SetNeedsLayoutAndIntrinsicWidthsRecalc(
           layout_invalidation_reason::kStyleChange);
     } else {
       PaintingLayer()->SetNeedsVisualOverflowRecalc();
@@ -2472,7 +2472,8 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
       MarkContainerChainForLayout();
     }
 
-    SetNeedsLayoutAndPrefWidthsRecalc(layout_invalidation_reason::kStyleChange);
+    SetNeedsLayoutAndIntrinsicWidthsRecalc(
+        layout_invalidation_reason::kStyleChange);
   } else if (diff.NeedsPositionedMovementLayout()) {
     SetNeedsPositionedMovementLayout();
   }
@@ -2559,7 +2560,8 @@ void LayoutObject::ApplyFirstLineChanges(const ComputedStyle* old_style) {
   if (diff.NeedsLayout()) {
     if (diff.NeedsFullLayout())
       SetNeedsCollectInlines();
-    SetNeedsLayoutAndPrefWidthsRecalc(layout_invalidation_reason::kStyleChange);
+    SetNeedsLayoutAndIntrinsicWidthsRecalc(
+        layout_invalidation_reason::kStyleChange);
   }
 }
 

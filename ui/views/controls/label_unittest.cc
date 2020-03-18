@@ -414,12 +414,6 @@ TEST_F(LabelTest, ElideBehaviorMinimumWidth) {
   EXPECT_LT(size.width(), label()->size().width());
   EXPECT_GT(text.length(), label()->GetDisplayTextForTesting().length());
 
-  label()->SetElideBehavior(gfx::TRUNCATE_HEAD);
-  label()->SetSize(gfx::Size(10, 10));
-  size = label()->GetMinimumSize();
-  EXPECT_LT(size.width(), label()->size().width());
-  EXPECT_GT(text.length(), label()->GetDisplayTextForTesting().length());
-
   // Non-elidable single-line labels should take up their full text size, since
   // this behavior implies the text should not be cut off.
   EXPECT_FALSE(label()->GetMultiLine());
@@ -797,10 +791,6 @@ TEST_F(LabelTest, MultiLineSizingWithElide) {
   EXPECT_GT(required_size.width(), kMinTextDimension);
   label()->SetBoundsRect(gfx::Rect(required_size));
 
-  label()->SetElideBehavior(gfx::TRUNCATE_HEAD);
-  EXPECT_EQ(required_size, label()->GetPreferredSize());
-  EXPECT_EQ(text, label()->GetDisplayTextForTesting());
-
   label()->SetElideBehavior(gfx::ELIDE_TAIL);
   EXPECT_EQ(required_size, label()->GetPreferredSize());
   EXPECT_EQ(text, label()->GetDisplayTextForTesting());
@@ -1010,9 +1000,6 @@ TEST_F(LabelTest, IsDisplayTextTruncated) {
   gfx::Size zero_size;
   label()->SetElideBehavior(gfx::ELIDE_TAIL);
   label()->SetBoundsRect(gfx::Rect(zero_size));
-  EXPECT_TRUE(label()->IsDisplayTextTruncated());
-
-  label()->SetElideBehavior(gfx::TRUNCATE_HEAD);
   EXPECT_TRUE(label()->IsDisplayTextTruncated());
 
   label()->SetElideBehavior(gfx::NO_ELIDE);

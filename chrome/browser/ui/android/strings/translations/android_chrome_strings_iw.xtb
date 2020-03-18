@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">הכרטיסייה נשלחת אל <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">מוסיף את <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">מאתרים</translation>
+<translation id="1044891598689252897">אתרים יפעלו כרגיל</translation>
 <translation id="1049743911850919806">גלישה פרטית</translation>
 <translation id="10614374240317010">פריטים שאף פעם לא נשמרו</translation>
 <translation id="1067922213147265141">‏שירותי Google אחרים</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">לא ניתן לשתף את ה<ph name="CONTENT_TYPE" /></translation>
 <translation id="1477626028522505441">הורדת <ph name="FILE_NAME" /> נכשלה עקב בעיות בשרת.</translation>
 <translation id="1506061864768559482">מנוע חיפוש</translation>
+<translation id="1509960214886564027">ייתכן שהתכונות של חלק גדול מהאתרים לא יפעלו כראוי</translation>
 <translation id="1513352483775369820">סימניות והיסטוריית אתרים</translation>
 <translation id="1513858653616922153">מחק סיסמה</translation>
 <translation id="1521774566618522728">שימוש אחרון: היום</translation>
@@ -235,6 +237,7 @@
 <translation id="2647434099613338025">להוספת שפה</translation>
 <translation id="2650751991977523696">האם להוריד את הקובץ שוב?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{קובץ אודיו אחד (#)}two{# קובצי אודיו}many{# קובצי אודיו}other{# קובצי אודיו}}</translation>
+<translation id="2687403674020088961">‏חסימה של כל קובצי ה-cookie (לא מומלץ)</translation>
 <translation id="2707726405694321444">רענן את הדף</translation>
 <translation id="2709516037105925701">מילוי אוטומטי</translation>
 <translation id="2717722538473713889">כתובות אימייל</translation>
@@ -340,6 +343,7 @@
 <translation id="3478363558367712427">אפשר לבחור את מנוע החיפוש</translation>
 <translation id="3492207499832628349">כרטיסייה חדשה לגלישה בסתר</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /> על הצעות לתוכן</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">מציאות רבודה</translation>
 <translation id="3518985090088779359">בסדר, מקובל עליי</translation>
 <translation id="3522247891732774234">יש עדכון זמין. עוד אפשרויות</translation>
@@ -355,6 +359,7 @@
 <translation id="358794129225322306">מתן הרשאה לאתר להוריד קבצים מרובים באופן אוטומטי.</translation>
 <translation id="3590487821116122040">‏נתוני אתר מאוחסנים ש-Chrome לא מחשיב כחשובים (לדוגמה, אתרים ללא הגדרות שמורות או כאלה שאינך מבקר בהם לעתים קרובות)</translation>
 <translation id="3594780231884063836">השתקת הסרטון</translation>
+<translation id="3596414637720633074">‏חסימת קובצי cookie של צד שלישי במצב אנונימי</translation>
 <translation id="3599863153486145794">‏ניקוי ההיסטוריה מכל המכשירים שבהם המשתמש נכנס לחשבון. ייתכן שלחשבון Google שלך יהיו צורות אחרות של היסטוריית גלישה בכתובת <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">השתקת אתרים שמשמיעים צלילים</translation>
 <translation id="3616113530831147358">אודיו</translation>
@@ -921,6 +926,7 @@
 <translation id="780301667611848630">לא תודה</translation>
 <translation id="7810647596859435254">פתח באמצעות...</translation>
 <translation id="7821588508402923572">ערכי החיסכון בנתונים יופיעו כאן</translation>
+<translation id="7828557259026017104">‏קובצי cookie נוצרים על ידי האתרים שביקרת בהם. האתרים משתמשים בהם כדי לזכור את ההעדפות שלך. קובצי cookie של צד שלישי נוצרים על-ידי אתרים אחרים. האתרים האלה הם הבעלים של חלק מהתוכן בדף האינטרנט שביקרת בו, למשל מודעות או תמונות.</translation>
 <translation id="783819812427904514">ביטול ההשתקה של הסרטון</translation>
 <translation id="784934925303690534">טווח זמן</translation>
 <translation id="7851858861565204677">מכשירים אחרים</translation>
@@ -941,6 +947,7 @@
 <translation id="79859296434321399">‏כדי להציג תוכן של מציאות רבודה, צריך להתקין את ARCore</translation>
 <translation id="7986741934819883144">בחירת איש קשר</translation>
 <translation id="7987073022710626672">‏התנאים וההגבלות של Chrome</translation>
+<translation id="7993619969781047893">ייתכן שהתכונות של חלק מהאתרים לא יפעלו כראוי</translation>
 <translation id="7998918019931843664">פתח מחדש כרטיסייה שנסגרה</translation>
 <translation id="7999064672810608036">‏האם אתה בטוח שברצונך לנקות את כל הנתונים המקומיים, כולל קובצי Cookie, ולאפס את כל ההרשאות של האתר הזה?</translation>
 <translation id="8004582292198964060">דפדפן</translation>
@@ -1075,6 +1082,7 @@
 <translation id="8965591936373831584">בהמתנה</translation>
 <translation id="8970887620466824814">משהו השתבש.</translation>
 <translation id="8972098258593396643">האם להוריד לתיקיית ברירת המחדל?</translation>
+<translation id="8988028529677883095">שימוש בטלפון כמפתח אבטחה</translation>
 <translation id="8993760627012879038">פתח חלון חדש במצב גלישה בסתר</translation>
 <translation id="8998729206196772491">‏אתה נכנס עם חשבון המנוהל על-ידי <ph name="MANAGED_DOMAIN" /> ומעניק למנהל שלו שליטה על הנתונים שלך ב-Chrome. הנתונים שלך ישויכו לצמיתות אל החשבון הזה. יציאה מ-Chrome תמחק את הנתונים שלך מהמכשיר הזה, אבל הם יישארו בחשבון Google.</translation>
 <translation id="9019902583201351841">מנוהל על-ידי ההורים שלך</translation>

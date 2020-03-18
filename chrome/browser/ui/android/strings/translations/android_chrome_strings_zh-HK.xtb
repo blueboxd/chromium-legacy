@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">正在傳送至 <ph name="DEVICE_NAME" />…</translation>
 <translation id="1036727731225946849">正在新增「<ph name="WEBAPK_NAME" />」…</translation>
 <translation id="1041308826830691739">來自網站</translation>
+<translation id="1044891598689252897">網站將正常運作</translation>
 <translation id="1049743911850919806">無痕模式</translation>
 <translation id="10614374240317010">永不儲存</translation>
 <translation id="1067922213147265141">其他 Google 服務</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">無法分享<ph name="CONTENT_TYPE" /></translation>
 <translation id="1477626028522505441">伺服器發生問題，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="1506061864768559482">搜尋引擎</translation>
+<translation id="1509960214886564027">很多網站的功能可能會無法正常運作</translation>
 <translation id="1513352483775369820">書籤和網頁記錄</translation>
 <translation id="1513858653616922153">刪除密碼</translation>
 <translation id="1521774566618522728">今天已使用</translation>
@@ -235,6 +237,7 @@
 <translation id="2647434099613338025">新增語言</translation>
 <translation id="2650751991977523696">要重新下載檔案嗎？</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# 個音訊檔案}other{# 個音訊檔案}}</translation>
+<translation id="2687403674020088961">封鎖所有 Cookie (不建議)</translation>
 <translation id="2707726405694321444">重新整理網頁</translation>
 <translation id="2709516037105925701">自動填入</translation>
 <translation id="2717722538473713889">電郵地址</translation>
@@ -340,6 +343,7 @@
 <translation id="3478363558367712427">您可以選擇搜尋引擎</translation>
 <translation id="3492207499832628349">新增無痕式分頁</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />進一步瞭解<ph name="END_LINK" />建議的內容</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">擴張實境</translation>
 <translation id="3518985090088779359">接受並繼續</translation>
 <translation id="3522247891732774234">有可用的更新。更多選項</translation>
@@ -355,6 +359,7 @@
 <translation id="358794129225322306">允許網站自動下載多個檔案。</translation>
 <translation id="3590487821116122040">Chrome 認為不重要的網站 (例如未儲存任何設定的網站，或您不常瀏覽的網站) 儲存空間的資料</translation>
 <translation id="3594780231884063836">將影片靜音</translation>
+<translation id="3596414637720633074">在無痕模式中封鎖第三方 Cookie</translation>
 <translation id="3599863153486145794">清除所有已登入裝置上的記錄。您的 Google 帳戶在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的瀏覽記錄。</translation>
 <translation id="3600792891314830896">將播放音效的網站設為靜音</translation>
 <translation id="3616113530831147358">音效檔案</translation>
@@ -921,6 +926,7 @@
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7810647596859435254">選擇開啟應用程式…</translation>
 <translation id="7821588508402923572">節省的數據會在這裡顯示</translation>
+<translation id="7828557259026017104">Cookie 是您瀏覽的網站所建立的檔案，網站會使用這些檔案記住您的偏好設定，第三方 Cookie 則由其他網站建立。這些網站擁有您所瀏覽網頁的部分內容，例如廣告和圖片。</translation>
 <translation id="783819812427904514">將影片取消靜音</translation>
 <translation id="784934925303690534">時間範圍</translation>
 <translation id="7851858861565204677">其他裝置</translation>
@@ -941,6 +947,7 @@
 <translation id="79859296434321399">如要觀看擴張實境內容，請先安裝 ARCore</translation>
 <translation id="7986741934819883144">選取聯絡人</translation>
 <translation id="7987073022710626672">Chrome 服務條款</translation>
+<translation id="7993619969781047893">部分網站的功能可能會無法正常運作</translation>
 <translation id="7998918019931843664">重新開啟先前關閉的分頁</translation>
 <translation id="7999064672810608036">您確定要清除這個網站的所有本機資料 (包括 Cookie)，然後重設其所有權限嗎？</translation>
 <translation id="8004582292198964060">瀏覽器</translation>
@@ -1075,6 +1082,7 @@
 <translation id="8965591936373831584">正在等待下載</translation>
 <translation id="8970887620466824814">發生錯誤。</translation>
 <translation id="8972098258593396643">要下載至預設資料夾嗎？</translation>
+<translation id="8988028529677883095">讓手機成為安全密鑰</translation>
 <translation id="8993760627012879038">在無痕模式中開啟新分頁</translation>
 <translation id="8998729206196772491">您即將登入由 <ph name="MANAGED_DOMAIN" /> 管理的帳戶，並讓帳戶管理員控制您的 Chrome 資料。您的資料將與這個帳戶建立永久連結。如果您登出 Chrome，系統將刪除此裝置上的資料，但這些資料仍會保留在您的 Google 帳戶中。</translation>
 <translation id="9019902583201351841">由您的家長管理</translation>

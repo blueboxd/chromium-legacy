@@ -83,9 +83,6 @@ crbug.com/927454 [ Linux ] external/wpt/pointerevents/pointerevent_lostpointerca
 # Sheriff 2019-02-21
 crbug.com/934144 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-flame-chart-automatically-size-window.js [ Pass Failure ]
 
-# Sheriff 2019-04-10
-crbug.com/951453 [ Linux ] external/wpt/html/user-activation/activation-transfer-cross-origin-with-click.sub.tentative.html [ Pass Failure ]
-
 # Sheriff 2019-08-21
 crbug.com/996235 [ Linux ] media/controls/doubletap-to-jump-backwards-at-start.html [ Pass Failure ]
 crbug.com/996235 [ Linux ] virtual/audio-service/media/controls/doubletap-to-jump-backwards-at-start.html [ Pass Failure ]

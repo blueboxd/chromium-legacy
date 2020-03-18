@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">Alma Yöntemi</translation>
 <translation id="1281476433249504884">Yığınlayıcı 1</translation>
 <translation id="1285320974508926690">Bu siteyi hiçbir zaman çevirme</translation>
-<translation id="1285400217480592994">Chrome'da indirdiğiniz veya yüklediğiniz dosyaların içeriğini tarama.</translation>
 <translation id="1292701964462482250">"Bilgisayarınızdaki yazılım, Chrome'un web'e güvenli bir şekilde bağlanmasını engelliyor" (yalnızca Windows bilgisayarlar)</translation>
 <translation id="1294154142200295408">Komut satırı varyasyonları</translation>
 <translation id="129553762522093515">Son kapatılan</translation>
@@ -649,6 +648,7 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="3784372983762739446">Bluetooth cihazlar</translation>
 <translation id="3787705759683870569">Son kullanma tarihi: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">Boyut 16</translation>
+<translation id="3793574014653384240">Son zamanlarda meydana gelen kilitlenmelerin sayısı ve nedenleri</translation>
 <translation id="3797522431967816232">Prc3 (Zarf)</translation>
 <translation id="3799805948399000906">Yazı tipi istendi</translation>
 <translation id="3807366285948165054">Resim X kayması</translation>

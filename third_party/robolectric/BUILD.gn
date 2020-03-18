@@ -413,6 +413,7 @@ java_library("robolectric_utils_java") {
     "robolectric/utils/reflector/src/main/java/org/robolectric/util/reflector/WeakerHashMap.java",
     "robolectric/utils/reflector/src/main/java/org/robolectric/util/reflector/WithType.java",
     "robolectric/utils/src/main/java/org/robolectric/AndroidMetadata.java",
+    "robolectric/utils/src/main/java/org/robolectric/AndroidMetadata.java",
     "robolectric/utils/src/main/java/org/robolectric/util/Clock.java",
     "robolectric/utils/src/main/java/org/robolectric/util/Consumer.java",
     "robolectric/utils/src/main/java/org/robolectric/util/Join.java",
@@ -557,10 +558,6 @@ java_library("robolectric_shadowapi_java") {
 
 java_library("shadows_core_java") {
   output_name = "shadows-core-3.2"
-
-  # Disable java headers since this target fails to compile with:
-  # error: An exception occurred in org.robolectric.annotation.processing.RobolectricProcessor:
-  enable_turbine = false
 
   # Skip platform checks since we must depend on accessibility_test_framework_java
   # here which requires_android.
@@ -1088,11 +1085,6 @@ java_library("shadows_multidex_java") {
   # Skip platform checks since we must depend on android_support_multidex_java
   # here which requires_android.
   bypass_platform_checks = true
-
-  # Disable java headers since this target fails to compile with:
-  # error: An exception occurred in org.robolectric.annotation.processing.RobolectricProcessor:
-  enable_turbine = false
-
   skip_jetify = true
   testonly = true
   processor_args_javac = [ "org.robolectric.annotation.processing.shadowPackage=org.robolectric.shadows.multidex" ]
@@ -1134,10 +1126,6 @@ java_library("shadows_play_services_java") {
   # Skip platform checks since we must depend on android_support_v4_java
   # and google_play_services_library here which both requires_android.
   bypass_platform_checks = true
-
-  # Disable java headers since this target fails to compile with:
-  # error: An exception occurred in org.robolectric.annotation.processing.RobolectricProcessor:
-  enable_turbine = false
 
   testonly = true
   skip_jetify = true

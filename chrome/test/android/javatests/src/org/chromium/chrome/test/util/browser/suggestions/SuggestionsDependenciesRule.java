@@ -8,8 +8,6 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
 import org.chromium.base.DiscardableReferencePool;
-import org.chromium.chrome.browser.favicon.FaviconHelper;
-import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -17,6 +15,8 @@ import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.mostvisited.MostVisitedSites;
 import org.chromium.chrome.browser.thumbnail.generator.ThumbnailProvider;
+import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
+import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 
 /**
  * Rule that allows mocking native dependencies of the suggestions package.

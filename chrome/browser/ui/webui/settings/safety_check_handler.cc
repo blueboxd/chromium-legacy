@@ -527,6 +527,9 @@ void SafetyCheckHandler::OnJavascriptDisallowed() {
   // another safety check is started. Otherwise |observed_leak_check_|
   // automatically calls RemoveAll() on destruction.
   observed_leak_check_.RemoveAll();
+  // Destroy the version updater to prevent getting a callback and firing a
+  // WebUI event, which would cause a crash.
+  version_updater_.reset();
 }
 
 void SafetyCheckHandler::RegisterMessages() {

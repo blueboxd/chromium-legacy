@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">Kättesaamisviis</translation>
 <translation id="1281476433249504884">Virnastaja 1</translation>
 <translation id="1285320974508926690">Ära kunagi seda saiti tõlgi</translation>
-<translation id="1285400217480592994">Chrome'is alla- ja üleslaaditavate failide sisu skannitakse.</translation>
 <translation id="1292701964462482250">„Teie arvutis olev tarkvara ei luba Chrome'il veebiga turvaliselt ühendust luua” (ainult Windowsi arvutid)</translation>
 <translation id="1294154142200295408">Käsurea variatsioonid</translation>
 <translation id="129553762522093515">Viimati suletud</translation>
@@ -652,6 +651,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="3784372983762739446">Bluetooth-seadmed</translation>
 <translation id="3787705759683870569">Aegub: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">Suurus 16</translation>
+<translation id="3793574014653384240">Hiljutiste krahhide arv ja põhjused</translation>
 <translation id="3797522431967816232">Prc3 (ümbrik)</translation>
 <translation id="3799805948399000906">Taotleti fonti</translation>
 <translation id="3807366285948165054">Pildi nihe X-teljel</translation>

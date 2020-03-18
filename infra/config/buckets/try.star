@@ -30,6 +30,7 @@ try_.defaults.caches.set([
 exec('//versioned/branches/beta/buckets/try.star')
 exec('//versioned/branches/stable/buckets/try.star')
 exec('//versioned/trunk/buckets/try.star')
+exec('//versioned/milestones/m80/buckets/try.star')
 
 
 # *** After this point everything is trunk only ***

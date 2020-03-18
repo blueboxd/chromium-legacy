@@ -1147,6 +1147,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool HasInternalsAttribute(Element&, const QualifiedName&) const;
   const AtomicString& GetInternalsAttribute(Element&,
                                             const QualifiedName&) const;
+  bool IsHiddenViaStyle() const;
 
   static unsigned number_of_live_ax_objects_;
 

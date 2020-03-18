@@ -5,6 +5,7 @@
 <translation id="1699570257714336246">情報が不足しています</translation>
 <translation id="1932278019417741381">タスクを完了するため、アシスタントを使用したサイトの URL とコンテンツ、およびアシスタントで送信した情報が Google に送られます。この情報は、Google アカウントに保存される可能性があります。アシスタントは、Chrome の設定で無効にできます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="2203046366315513658">値を小さくします</translation>
+<translation id="3353437022146208653">Google アシスタントを使うと\n数回のタップで\nレンタカーの手続きが可能です。</translation>
 <translation id="4130750466177569591">同意する</translation>
 <translation id="4437727785356380473">Chrome の Google アシスタントを終了しました。</translation>
 <translation id="4517854969512651305">値を大きくします</translation>
@@ -12,8 +13,10 @@
 <translation id="4952448020231702394">Google アシスタントを利用すると、検索や購入手続きといったウェブでの操作を時間をかけず簡単に完了できます</translation>
 <translation id="5267269112080050255">Chrome の Google アシスタントが画面全体に開いています。</translation>
 <translation id="6555233628095991027">Chrome の Google アシスタントが画面の下半分に開いています。</translation>
+<translation id="6620345200476149840">Chrome で\nGoogle アシスタントをお試しください</translation>
 <translation id="6973932557599545801">自動入力できません。残りの入力はご自身で行ってください。</translation>
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="8253702004019660079">Chrome の Google アシスタント。</translation>
+<translation id="8323517642730821247">Google アシスタントを使うと\n数回のタップで\n映画のチケット購入が可能です。</translation>
 <translation id="945522503751344254">フィードバックを送信</translation>
 </translationbundle>

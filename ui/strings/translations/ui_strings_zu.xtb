@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Okumaphakathi</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Khetha &amp;konke</translation>
-<translation id="1938451708255335766">Ukuze ulungise ukuminyana kwesibonisi sewindi, qalisa kabusha uhlelo lokusebenza.</translation>
 <translation id="2006524834898217237">Yenza isiqinisekiso sokuthi le divayisi ixhunywe ku-inthanethi.</translation>
 <translation id="208586643495776849">Sicela uzame futhi</translation>
 <translation id="2090963878406559571">Ukuze uthumele inombolo esuka ku-<ph name="ORIGIN" /> kuya kufoni yakho ye-Android, i-<ph name="TROUBLESHOOT_LINK" /> kuwo womabili amadivayisi kuzilungiselelo.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Izibonisi ezakhelwe phakathi</translation>
 <translation id="335581015389089642">Inkulumo</translation>
 <translation id="3389286852084373014">Umbhalo mkhulu kakhulu</translation>
-<translation id="3479552764303398839">Hhayi manje</translation>
 <translation id="348799646910989694">Ukufihla ngokuzenzakalelayo ishelufu</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> iphiniwe</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 usuku olusele}one{# izinsuku ezisele}other{# izinsuku ezisele}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 iminithi}one{# amaminithi}other{# amaminithi}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Iyasebenza namhlanje}=1{Isebenze ngosuku olungu-1 oludlule}one{Isebenze ngezinsuku ezingu-# ezedlule}other{Isebenze ngezinsuku ezingu-# ezedlule}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 usuku ne- }one{# izinsuku ne- }other{# izinsuku ne- }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{nge-1y}one{nge-#y}other{nge-#y}}</translation>
-<translation id="5895138241574237353">Qalisa kabusha</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 isekhondi elisele}one{# amasekhondi asele}other{# amasekhondi asele}}</translation>
 <translation id="5941711191222866238">Nciphisa</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ihora}one{# amahora}other{# amahora}}</translation>

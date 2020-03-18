@@ -25,12 +25,12 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.favicon.IconType;
-import org.chromium.chrome.browser.favicon.LargeIconBridge;
-import org.chromium.chrome.browser.favicon.RoundedIconGenerator;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver.PerformanceClass;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.ui.favicon.IconType;
+import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
+import org.chromium.chrome.browser.ui.favicon.RoundedIconGenerator;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -74,7 +74,7 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
     }
 
     /**
-     * See {@link org.chromium.chrome.browser.favicon.LargeIconBridge#getLargeIconForUrl}
+     * See {@link org.chromium.chrome.browser.ui.favicon.LargeIconBridge#getLargeIconForUrl}
      */
     private void onFaviconAvailable(@Nullable Bitmap icon, @ColorInt int fallbackColor,
             boolean isColorDefault, @IconType int iconType) {

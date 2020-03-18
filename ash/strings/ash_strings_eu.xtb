@@ -252,6 +252,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="4072264167173457037">Tarteko seinalea</translation>
 <translation id="4112140312785995938">Atzeratu</translation>
 <translation id="4129129681837227511">Pantaila blokeatuan jakinarazpenak ikusteko, desblokeatu gailua eta aldatu ezarpena</translation>
+<translation id="4144413954005649103">Eskuineko botoiarekin edo luze sakatuz gero, pantailan hautatu duzunari buruzko informazioa erakusten dizu Laguntzailea eginbideak.</translation>
 <translation id="4146833061457621061">Erreproduzitu musika</translation>
 <translation id="4149156641122542261"><ph name="DOMAIN" /> da <ph name="DEVICE_TYPE" /> gailuaren kudeatzailea</translation>
 <translation id="4181841719683918333">Hizkuntzak</translation>
@@ -399,6 +400,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="615957422585914272">Erakutsi pantailako teklatua</translation>
 <translation id="6164005077879661055">Erabiltzaile gainbegiratuarekin erlazionatutako fitxategi eta datu lokal guztiak behin betiko ezabatuko dira erabiltzaile gainbegiratua kentzean. Hala ere, erabiltzaile gainbegiratuak bisitatu dituen webguneak eta bere ezarpenak ikusten jarraitu ahal izango du kudeatzaileak <ph name="MANAGEMENT_URL" /> webgunean.</translation>
 <translation id="6165508094623778733">Lortu informazio gehiago</translation>
+<translation id="6236290670123303279">Kudeatu ezarpenak</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Modu horizontalean blokeatuta</translation>
 <translation id="6259254695169772643">Hautatzeko, erabili arkatza</translation>
@@ -440,6 +442,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="6669268301501499730">Aktibatuta</translation>
 <translation id="6670153871843998651">3. lan-eremua</translation>
 <translation id="6691659475504239918">Bilatu + Maius + H</translation>
+<translation id="6692996468359469499">Lortu hautatutakoari buruzko informazioa</translation>
 <translation id="6696025732084565524">Bereiz daitekeen teklatuak ezinbesteko eguneratze bat behar du</translation>
 <translation id="6700713906295497288">IME menu-botoia</translation>
 <translation id="6713285437468012787">Bluetooth bidezko "<ph name="DEVICE_NAME" />" gailua parekatu egin da eta, beraz, erabiltzaile guztientzat erabilgarri dago. Parekatzea kentzeko, erabili Ezarpenak.</translation>
@@ -528,6 +531,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> eta <ph name="SECOND_PARENT_EMAIL" /> kontuen bidez kudeatzen da kontu hau</translation>
 <translation id="7955885781510802139">Kontraste handiko modua</translation>
 <translation id="7977927628060636163">Sare mugikorren bila…</translation>
+<translation id="7980780401175799550">Probatu Chrome OS sisteman nabigatzeko modu berriak</translation>
 <translation id="7982789257301363584">Sarea</translation>
 <translation id="7984197416080286869">Saiakera gehiegi egin dira hatz-markarekin</translation>
 <translation id="7994370417837006925">Saio-hasiera anitza</translation>
@@ -549,6 +553,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> erabiltzen</translation>
 <translation id="8190698733819146287">Pertsonalizatu hizkuntzak eta idazketa…</translation>
 <translation id="8192202700944119416">Jakinarazpenak ezkutatuta daude.</translation>
+<translation id="8196787716797768628">Erabili keinuak aplikazio batetik bestera joateko eta Chromebook gailua tableta moduan erabiltzeko.</translation>
 <translation id="8203795194971602413">Egin klik eskuineko botoiarekin</translation>
 <translation id="8236042855478648955">Atseden hartzeko garaia da</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />. Seinalearen indarra: <ph name="SIGNAL_STRENGTH" />. Telefonoaren bateria: <ph name="BATTERY_STATUS" />.</translation>

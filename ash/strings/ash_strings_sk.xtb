@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">Stredne silný signál</translation>
 <translation id="4112140312785995938">Pretočiť dozadu</translation>
 <translation id="4129129681837227511">Ak chcete, aby sa na uzamknutej obrazovke zobrazovali upozornenia, odomknite zariadenie a zmeňte nastavenie</translation>
+<translation id="4144413954005649103">Po kliknutí pravým tlačidlom alebo dlhom stlačení zobrazí Asistent informácie súvisiace s výberom na obrazovke.</translation>
 <translation id="4146833061457621061">Prehrať hudbu</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> spravuje <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Jazyky</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">Zobraziť klávesnicu na obrazovke</translation>
 <translation id="6164005077879661055">Všetky súbory a miestne údaje spojené s týmto kontrolovaným používateľom budú po jeho odstránení natrvalo odstránené. Správca bude môcť naďalej zobraziť navštívené webové stránky a nastavenia tohto používateľa na adrese <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Ďalšie informácie</translation>
+<translation id="6236290670123303279">Spravovať nastavenia</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Uzamknuté vodorovne</translation>
 <translation id="6259254695169772643">Vyberte pomocou dotykového pera</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">Zapnuté</translation>
 <translation id="6670153871843998651">3. plocha</translation>
 <translation id="6691659475504239918">Hľadať+Shift+H</translation>
+<translation id="6692996468359469499">Získajte informácie súvisiace s vaším výberom</translation>
 <translation id="6696025732084565524">Odoberateľná klávesnica potrebuje kritickú aktualizáciu</translation>
 <translation id="6700713906295497288">Tlačidlo ponuky IME</translation>
 <translation id="6713285437468012787">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> bolo spárované a je k dispozícii pre všetkých používateľov. Párovanie môžete zrušiť pomocou ponuky Nastavenia.</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895">Správcovia účtu: <ph name="FIRST_PARENT_EMAIL" /> a <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">Režim s vysokým kontrastom</translation>
 <translation id="7977927628060636163">Hľadajú sa mobilné siete...</translation>
+<translation id="7980780401175799550">Vyskúšajte nové spôsoby navigácie v systéme Chrome OS</translation>
 <translation id="7982789257301363584">Sieť</translation>
 <translation id="7984197416080286869">Príliš veľa pokusov o nasnímanie odtlačku prsta</translation>
 <translation id="7994370417837006925">Viacnásobné prihlásenie</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835">Práve sa používa <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Prebieha prispôsobenie jazykov a vstupu...</translation>
 <translation id="8192202700944119416">Upozornenia sú skryté.</translation>
+<translation id="8196787716797768628">Gestami môžete rýchlo prepínať medzi aplikáciami a používať Chromebook v režime tabletu.</translation>
 <translation id="8203795194971602413">Kliknutie pravým tlačidlom myši</translation>
 <translation id="8236042855478648955">Čas na prestávku</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, sila signálu <ph name="SIGNAL_STRENGTH" />, batéria telefónu <ph name="BATTERY_STATUS" /></translation>

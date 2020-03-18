@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">Noutotapa</translation>
 <translation id="1281476433249504884">Pinoaja 1</translation>
 <translation id="1285320974508926690">Älä käännä tätä sivustoa</translation>
-<translation id="1285400217480592994">Tarkista Chromessa lataamiesi tai lähettämiesi tiedostojen sisältö.</translation>
 <translation id="1292701964462482250">Tietokoneelle asennettu ohjelmisto estää Chromea muodostamasta turvallista yhteyttä verkkoon (vain Windows-tietokoneilla)</translation>
 <translation id="1294154142200295408">Komentorivin muunnelmat</translation>
 <translation id="129553762522093515">Hiljattain suljetut välilehdet</translation>
@@ -653,6 +652,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="3784372983762739446">Bluetooth-laitteet</translation>
 <translation id="3787705759683870569">Vanhenee <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">Koko 16</translation>
+<translation id="3793574014653384240">Viime aikoina tapahtuneiden kaatumisten määrät ja syyt</translation>
 <translation id="3797522431967816232">Prc3 (kirjekuori)</translation>
 <translation id="3799805948399000906">Fonttia pyydetty</translation>
 <translation id="3807366285948165054">Kuvan X vaihto</translation>

@@ -24,6 +24,8 @@
 
 #include "third_party/blink/renderer/core/css/resolver/font_builder.h"
 
+#include "third_party/blink/renderer/core/css/css_font_selector.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -35,8 +37,7 @@
 
 namespace blink {
 
-FontBuilder::FontBuilder(const Document* document)
-    : document_(document), flags_(0) {
+FontBuilder::FontBuilder(Document* document) : document_(document), flags_(0) {
   DCHECK(!document || document->GetFrame());
 }
 
@@ -319,8 +320,7 @@ void FontBuilder::UpdateAdjustedSize(FontDescription& font_description,
   // FontDescription::EffectiveFontSize.
   font_description.SetAdjustedSize(font_description.ComputedSize());
 
-  Font font(font_description);
-  font.Update(font_selector);
+  Font font(font_description, font_selector);
 
   const SimpleFontData* font_data = font.PrimaryFont();
 
@@ -406,8 +406,7 @@ void FontBuilder::UpdateFontDescription(FontDescription& description,
     description.SetAdjustedSize(size);
 }
 
-void FontBuilder::CreateFont(FontSelector* font_selector,
-                             ComputedStyle& style) {
+void FontBuilder::CreateFont(ComputedStyle& style) {
   DCHECK(document_);
 
   if (!flags_)
@@ -419,6 +418,8 @@ void FontBuilder::CreateFont(FontSelector* font_selector,
 
   UpdateSpecifiedSize(description, style);
   UpdateComputedSize(description, style);
+
+  FontSelector* font_selector = document_->GetStyleEngine().GetFontSelector();
   UpdateAdjustedSize(description, style, font_selector);
 
   style.SetFontDescription(description);
@@ -426,8 +427,7 @@ void FontBuilder::CreateFont(FontSelector* font_selector,
   flags_ = 0;
 }
 
-void FontBuilder::CreateFontForDocument(FontSelector* font_selector,
-                                        ComputedStyle& document_style) {
+void FontBuilder::CreateFontForDocument(ComputedStyle& document_style) {
   DCHECK(document_);
   FontDescription font_description = FontDescription();
   font_description.SetLocale(document_style.GetFontDescription().Locale());
@@ -442,6 +442,8 @@ void FontBuilder::CreateFontForDocument(FontSelector* font_selector,
 
   font_description.SetOrientation(document_style.ComputeFontOrientation());
   document_style.SetFontDescription(font_description);
+
+  FontSelector* font_selector = document_->GetStyleEngine().GetFontSelector();
   document_style.GetFont().Update(font_selector);
 }
 

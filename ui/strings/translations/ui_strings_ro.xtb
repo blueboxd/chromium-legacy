@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Select&amp;ează tot</translation>
-<translation id="1938451708255335766">Pentru a regla densitatea afișajului ferestrei, repornește aplicația.</translation>
 <translation id="2006524834898217237">Verifică dacă dispozitivul este conectat la internet.</translation>
 <translation id="208586643495776849">Încearcă din nou</translation>
 <translation id="2090963878406559571">Pentru a trimite un număr de la <ph name="ORIGIN" /> pe telefonul Android, <ph name="TROUBLESHOOT_LINK" /> pentru ambele dispozitive din setări.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Ecran încorporat</translation>
 <translation id="335581015389089642">Voce</translation>
 <translation id="3389286852084373014">Textul este prea mare</translation>
-<translation id="3479552764303398839">Nu acum</translation>
 <translation id="348799646910989694">Raft ascuns automat</translation>
 <translation id="3554637740840164787">S-a fixat <ph name="ITEM_TITLE" /></translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{O zi rămasă}few{# zile rămase}other{# de zile rămase}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{Un min.}few{# min.}other{# min.}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Activ astăzi}=1{Activ acum o zi}few{Activ acum # zile}other{Activ acum # de zile}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{O zi și  }few{# zile și  }other{# de zile și  }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{în 1 an}few{în # ani}other{în # ani}}</translation>
-<translation id="5895138241574237353">Reîncepe</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{O secundă rămasă}few{# secunde rămase}other{# de secunde rămase}}</translation>
 <translation id="5941711191222866238">Minimizează</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{o oră}few{# ore}other{# de ore}}</translation>

@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">Paraan sa Pag-pick up</translation>
 <translation id="1281476433249504884">Stacker 1</translation>
 <translation id="1285320974508926690">Huwag isalin kailanman ang site na ito</translation>
-<translation id="1285400217480592994">I-scan ang mga content ng mga file na dina-download o ina-upload mo sa Chrome.</translation>
 <translation id="1292701964462482250">"Pinipigilan ng software sa iyong computer na makakonekta nang ligtas ang Chrome sa web" (mga Windows computer lang)</translation>
 <translation id="1294154142200295408">Mga variation ng command-line</translation>
 <translation id="129553762522093515">Kamakailang isinara</translation>
@@ -648,6 +647,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="3784372983762739446">Mga device ng bluetooth</translation>
 <translation id="3787705759683870569">Mag-e-expire sa <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">Laki 16</translation>
+<translation id="3793574014653384240">Mga bilang at sanhi ng mga pag-crash na naganap kamakailan</translation>
 <translation id="3797522431967816232">Prc3 (Envelope)</translation>
 <translation id="3799805948399000906">Hiniling na font</translation>
 <translation id="3807366285948165054">Pag-shift ng larawan X</translation>

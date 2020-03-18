@@ -313,7 +313,7 @@ void LayoutTable::UpdateLogicalWidth() {
   // Recalculate preferred logical widths now, rather than relying on them being
   // lazily recalculated, via PreferredLogicalWidths() further below. We might
   // not even get there.
-  if (PreferredLogicalWidthsDirty())
+  if (IntrinsicLogicalWidthsDirty())
     ComputePreferredLogicalWidths();
 
   if (IsFlexItemIncludingDeprecatedAndNG() || IsGridItem()) {
@@ -1106,7 +1106,7 @@ MinMaxSizes LayoutTable::ComputeIntrinsicLogicalWidths() const {
 }
 
 void LayoutTable::ComputePreferredLogicalWidths() {
-  DCHECK(PreferredLogicalWidthsDirty());
+  DCHECK(IntrinsicLogicalWidthsDirty());
 
   MinMaxSizes sizes = ComputeIntrinsicLogicalWidths();
 
@@ -1163,7 +1163,7 @@ void LayoutTable::ComputePreferredLogicalWidths() {
   // FIXME: We should be adding borderAndPaddingLogicalWidth here, but
   // m_tableLayout->computePreferredLogicalWidths already does, so a bunch of
   // tests break doing this naively.
-  ClearPreferredLogicalWidthsDirty();
+  ClearIntrinsicLogicalWidthsDirty();
 }
 
 LayoutTableSection* LayoutTable::TopNonEmptySection() const {

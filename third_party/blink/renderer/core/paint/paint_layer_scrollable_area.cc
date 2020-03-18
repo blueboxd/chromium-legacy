@@ -1075,7 +1075,7 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
            GetLayoutBox()->IsHorizontalWritingMode()) ||
           (horizontal_scrollbar_should_change &&
            !GetLayoutBox()->IsHorizontalWritingMode())) {
-        GetLayoutBox()->SetPreferredLogicalWidthsDirty();
+        GetLayoutBox()->SetIntrinsicLogicalWidthsDirty();
       }
       if (IsManagedByLayoutNG(*GetLayoutBox())) {
         // If the box is managed by LayoutNG, don't go here. We don't want to

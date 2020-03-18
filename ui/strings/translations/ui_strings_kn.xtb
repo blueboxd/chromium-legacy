@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;ಎಲ್ಲ ಆಯ್ಕೆ ಮಾಡಿ</translation>
-<translation id="1938451708255335766">ವಿಂಡೋ ಡಿಸ್‌ಪ್ಲೇ ಸಾಂದ್ರತೆಯನ್ನು ಸರಿಹೊಂದಿಸಲು, ಆ್ಯಪ್ ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
 <translation id="2006524834898217237">ಈ ಸಾಧನವು ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಗೊಂಡಿರುವುದನ್ನು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ.</translation>
 <translation id="208586643495776849">ಪುನಃ ಪ್ರಯತ್ನಿಸಿ</translation>
 <translation id="2090963878406559571"><ph name="ORIGIN" /> ನಿಂದ ನಿಮ್ಮ Android ಫೋನ್‌ಗೆ ಒಂದು ಸಂಖ್ಯೆಯನ್ನು ಕಳುಹಿಸಲು, ಎರಡೂ ಸಾಧನಗಳಿಗಾಗಿ, ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ <ph name="TROUBLESHOOT_LINK" />.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">ಅಂತರ್ನಿರ್ಮಿತ ಡಿಸ್‌ಪ್ಲೇ</translation>
 <translation id="335581015389089642">ಧ್ವನಿ</translation>
 <translation id="3389286852084373014">ಪಠ್ಯ ತುಂಬಾ ದೊಡ್ಡದಾಗಿದೆ</translation>
-<translation id="3479552764303398839">ಈಗ ಬೇಡ</translation>
 <translation id="348799646910989694">ಶೆಲ್ಫ್ ಸ್ವಯಂ ಮರೆಯಾಗಿದೆ</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> ಅನ್ನು ಪಿನ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 ದಿನ ಬಾಕಿ ಉಳಿದಿದೆ}one{# ದಿನಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}other{# ದಿನಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 ನಿಮಿ}one{# ನಿಮಿಷಗಳು}other{# ನಿಮಿಷಗಳು}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{ಇಂದು ಸಕ್ರಿಯ}=1{1 ದಿನದ ಹಿಂದೆ ಸಕ್ರಿಯ}one{# ದಿನಗಳ ಹಿಂದೆ ಸಕ್ರಿಯ}other{# ದಿನಗಳ ಹಿಂದೆ ಸಕ್ರಿಯ}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ದಿನ ಮತ್ತು }one{# ದಿನಗಳು ಮತ್ತು }other{# ದಿನಗಳು ಮತ್ತು }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1ವ. ದಲ್ಲಿ}one{#ವ. ಗಳಲ್ಲಿ}other{#ವ. ಗಳಲ್ಲಿ}}</translation>
-<translation id="5895138241574237353">ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 ಸೆಕೆಂಡ್ ಬಾಕಿ ಉಳಿದಿದೆ}one{# ಸೆಕೆಂಡುಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}other{# ಸೆಕೆಂಡುಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}}</translation>
 <translation id="5941711191222866238">ಕುಗ್ಗಿಸು</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ಗಂಟೆ}one{# ಗಂಟೆಗಳು}other{# ಗಂಟೆಗಳು}}</translation>

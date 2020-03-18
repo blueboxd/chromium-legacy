@@ -2643,16 +2643,6 @@ void BrowserView::ViewHierarchyChanged(
 void BrowserView::AddedToWidget() {
   views::ClientView::AddedToWidget();
 
-#if defined(OS_CHROMEOS)
-  // TopControlsSlideController must be initialized here in AddedToWidget()
-  // rather than Init() as it depends on the browser frame being ready.
-  if (IsBrowserTypeNormal()) {
-    DCHECK(frame_);
-    top_controls_slide_controller_ =
-        std::make_unique<TopControlsSlideControllerChromeOS>(this);
-  }
-#endif
-
   GetWidget()->AddObserver(this);
 
   // Stow a pointer to this object onto the window handle so that we can get at
@@ -2671,6 +2661,19 @@ void BrowserView::AddedToWidget() {
 #endif
 
   toolbar_->Init();
+
+#if defined(OS_CHROMEOS)
+  // TopControlsSlideController must be initialized here in AddedToWidget()
+  // rather than Init() as it depends on the browser frame being ready.
+  // It also needs to be after the |toolbar_| had been initialized since it uses
+  // the omnibox.
+  if (IsBrowserTypeNormal()) {
+    DCHECK(frame_);
+    DCHECK(toolbar_);
+    top_controls_slide_controller_ =
+        std::make_unique<TopControlsSlideControllerChromeOS>(this);
+  }
+#endif
 
   LoadAccelerators();
 

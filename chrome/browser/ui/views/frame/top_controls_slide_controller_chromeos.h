@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/display/display_observer.h"
+#include "ui/views/view_observer.h"
 
 class BrowserView;
 class TopControlsSlideTabObserver;
@@ -41,7 +42,8 @@ class TopControlsSlideControllerChromeOS : public TopControlsSlideController,
                                            public ash::TabletModeObserver,
                                            public TabStripModelObserver,
                                            public content::NotificationObserver,
-                                           public display::DisplayObserver {
+                                           public display::DisplayObserver,
+                                           public views::ViewObserver {
  public:
   explicit TopControlsSlideControllerChromeOS(BrowserView* browser_view);
   ~TopControlsSlideControllerChromeOS() override;
@@ -76,6 +78,22 @@ class TopControlsSlideControllerChromeOS : public TopControlsSlideController,
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
+
+  // views::ViewObserver:
+  void OnViewIsDeleting(views::View* observed_view) override;
+  void OnViewFocused(views::View* observed_view) override;
+  void OnViewBlurred(views::View* observed_view) override;
+
+  // Instructs the renderer of |web_contents| to show the top controls, and also
+  // updates its shown state constraints based on the current status of
+  // |web_contents| (see GetBrowserControlsStateConstraints()), and the focused
+  // state of the omnibox.
+  // If |web_contents| is nullptr, then browser's active WebContents will be
+  // updated.
+  // If |animate| is true and the top controls are hidden, they will animate to
+  // be fully shown.
+  void UpdateBrowserControlsStateShown(content::WebContents* web_contents,
+                                       bool animate);
 
  private:
   // Returns true if this feature can be turned on. If |fullscreen_state| is
@@ -115,6 +133,10 @@ class TopControlsSlideControllerChromeOS : public TopControlsSlideController,
   void UpdateDoBrowserControlsShrinkRendererSize();
 
   BrowserView* browser_view_;
+
+  // The omnibox can be focused via a keyboard shortcut, in which case, we have
+  // to show the top controls, and keep them shown until it's blurred.
+  views::View* observed_omni_box_ = nullptr;
 
   // Represents the per-browser (as opposed to per-tab) shown ratio of the top
   // controls that is currently applied.

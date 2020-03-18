@@ -1458,7 +1458,7 @@ MinMaxSizes LayoutBlock::ComputeIntrinsicLogicalWidths() const {
 
 DISABLE_CFI_PERF
 void LayoutBlock::ComputePreferredLogicalWidths() {
-  DCHECK(PreferredLogicalWidthsDirty());
+  DCHECK(IntrinsicLogicalWidthsDirty());
 
   min_preferred_logical_width_ = LayoutUnit();
   max_preferred_logical_width_ = LayoutUnit();
@@ -1512,7 +1512,7 @@ void LayoutBlock::ComputePreferredLogicalWidths() {
         LayoutUnit(max_preferred_logical_width_.Ceil());
   }
 
-  ClearPreferredLogicalWidthsDirty();
+  ClearIntrinsicLogicalWidthsDirty();
 }
 
 void LayoutBlock::ComputeBlockPreferredLogicalWidths(
@@ -1540,7 +1540,7 @@ void LayoutBlock::ComputeBlockPreferredLogicalWidths(
       // This is also an important hook for flow threads; if the container of a
       // flow thread needs its preferred logical widths recalculated, so does
       // the flow thread, potentially.
-      child->SetPreferredLogicalWidthsDirty();
+      child->SetIntrinsicLogicalWidthsDirty();
     }
 
     scoped_refptr<const ComputedStyle> child_style = child->Style();

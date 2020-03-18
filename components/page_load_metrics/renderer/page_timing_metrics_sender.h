@@ -69,8 +69,6 @@ class PageTimingMetricsSender {
                                       int request_id,
                                       int64_t encoded_body_length,
                                       const std::string& mime_type);
-  void OnMainFrameDocumentIntersectionChanged(
-      const blink::WebRect& intersect_rect);
 
   // Updates the timing information. Buffers |timing| to be sent over mojo
   // sometime 'soon'.
@@ -104,7 +102,7 @@ class PageTimingMetricsSender {
 
   // The the sender keep track of metadata as it comes in, because the sender is
   // scoped to a single committed load.
-  mojom::FrameMetadataPtr metadata_;
+  mojom::PageLoadMetadataPtr metadata_;
   // A list of newly observed features during page load, to be sent to the
   // browser.
   mojom::PageLoadFeaturesPtr new_features_;

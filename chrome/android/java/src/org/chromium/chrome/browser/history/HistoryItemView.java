@@ -19,13 +19,13 @@ import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.favicon.FaviconHelper.DefaultFaviconHelper;
-import org.chromium.chrome.browser.favicon.FaviconUtils;
-import org.chromium.chrome.browser.favicon.IconType;
-import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
-import org.chromium.chrome.browser.favicon.RoundedIconGenerator;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.ui.favicon.FaviconHelper.DefaultFaviconHelper;
+import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
+import org.chromium.chrome.browser.ui.favicon.IconType;
+import org.chromium.chrome.browser.ui.favicon.LargeIconBridge.LargeIconCallback;
+import org.chromium.chrome.browser.ui.favicon.RoundedIconGenerator;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
 
 /**

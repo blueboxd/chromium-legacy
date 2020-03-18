@@ -48,6 +48,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/devtools/web_device_emulation_params.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
@@ -62,7 +63,6 @@
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_console_message.h"
-#include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -2358,15 +2358,15 @@ TEST_F(WebViewTest, ExitingDeviceEmulationResetsPageScale) {
   float page_scale_expected = web_view_impl->PageScaleFactor();
 
   WebDeviceEmulationParams params;
-  params.screen_position = WebDeviceEmulationParams::kDesktop;
+  params.screen_position = mojom::ScreenPosition::kDesktop;
   params.device_scale_factor = 0;
   params.scale = 1;
 
-  web_view_impl->EnableDeviceEmulation(params);
+  web_view_impl->SetDeviceEmulation(params);
 
   web_view_impl->SetPageScaleFactor(2);
 
-  web_view_impl->DisableDeviceEmulation();
+  web_view_impl->SetDeviceEmulation(base::nullopt);
 
   EXPECT_EQ(page_scale_expected, web_view_impl->PageScaleFactor());
 }
@@ -4966,14 +4966,14 @@ TEST_F(WebViewTest, ViewportOverrideIntegratesDeviceMetricsOffsetAndScale) {
 
   WebDeviceEmulationParams emulation_params;
   emulation_params.scale = 2.f;
-  web_view_impl->EnableDeviceEmulation(emulation_params);
+  web_view_impl->SetDeviceEmulation(emulation_params);
   expected_matrix.MakeIdentity().Scale(2.f);
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
 
   // Device metrics offset and scale are applied before viewport override.
   emulation_params.viewport_offset = gfx::PointF(5, 10);
   emulation_params.viewport_scale = 1.5f;
-  web_view_impl->EnableDeviceEmulation(emulation_params);
+  web_view_impl->SetDeviceEmulation(emulation_params);
   expected_matrix.MakeIdentity()
       .Scale(1.5f)
       .Translate(-5, -10)
@@ -5005,7 +5005,7 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
   WebDeviceEmulationParams emulation_params;
   emulation_params.viewport_offset = gfx::PointF(50, 55);
   emulation_params.viewport_scale = 2.f;
-  web_view_impl->EnableDeviceEmulation(emulation_params);
+  web_view_impl->SetDeviceEmulation(emulation_params);
   expected_matrix.MakeIdentity()
       .Scale(2.f)
       .Translate(-50, -55)
@@ -5190,17 +5190,17 @@ TEST_F(WebViewTest, DeviceEmulationResetScrollbars) {
   EXPECT_NE(nullptr, frame_view->LayoutViewport()->VerticalScrollbar());
 
   WebDeviceEmulationParams params;
-  params.screen_position = WebDeviceEmulationParams::kMobile;
+  params.screen_position = mojom::ScreenPosition::kMobile;
   params.device_scale_factor = 0;
   params.scale = 1;
 
-  web_view->EnableDeviceEmulation(params);
+  web_view->SetDeviceEmulation(params);
 
   // The visual viewport should now proivde the scrollbars instead of the view.
   EXPECT_TRUE(frame_view->VisualViewportSuppliesScrollbars());
   EXPECT_EQ(nullptr, frame_view->LayoutViewport()->VerticalScrollbar());
 
-  web_view->DisableDeviceEmulation();
+  web_view->SetDeviceEmulation(base::nullopt);
 
   // The view should once again provide the scrollbars.
   EXPECT_FALSE(frame_view->VisualViewportSuppliesScrollbars());

@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">Küldés a következő eszközre: <ph name="DEVICE_NAME" />…</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> hozzáadása…</translation>
 <translation id="1041308826830691739">Webhelyekről</translation>
+<translation id="1044891598689252897">A webhelyek a megszokott módon fognak működni</translation>
 <translation id="1049743911850919806">Inkognitómód</translation>
 <translation id="10614374240317010">Az alábbi oldalakról soha ne mentsen jelszavakat</translation>
 <translation id="1067922213147265141">Egyéb Google-szolgáltatások</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">Nem sikerült a(z) <ph name="CONTENT_TYPE" /> megosztása</translation>
 <translation id="1477626028522505441">A következő fájl letöltése szerverproblémák miatt nem sikerült: <ph name="FILE_NAME" />.</translation>
 <translation id="1506061864768559482">Keresőmotor</translation>
+<translation id="1509960214886564027">Számos webhelyen nem működnek a funkciók</translation>
 <translation id="1513352483775369820">Könyvjelzők és webes előzmények</translation>
 <translation id="1513858653616922153">Jelszó törlése</translation>
 <translation id="1521774566618522728">Ma volt aktív</translation>
@@ -235,6 +237,7 @@ A kereséshez tartsa nyomva a kívánt szót. A keresés finomításához válas
 <translation id="2647434099613338025">Nyelv hozzáadása</translation>
 <translation id="2650751991977523696">Letölti újra a fájlt?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# hangfájl}other{# hangfájl}}</translation>
+<translation id="2687403674020088961">Az összes cookie letiltása (nem ajánlott)</translation>
 <translation id="2707726405694321444">Oldal frissítése</translation>
 <translation id="2709516037105925701">Automatikus kitöltés</translation>
 <translation id="2717722538473713889">E-mail-címek</translation>
@@ -340,6 +343,7 @@ A kereséshez tartsa nyomva a kívánt szót. A keresés finomításához válas
 <translation id="3478363558367712427">Kiválaszthatja keresőmotorját</translation>
 <translation id="3492207499832628349">Új inkognitólap</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /> a javasolt tartalomról</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Kiterjesztett valóság</translation>
 <translation id="3518985090088779359">Elfogadás és tovább</translation>
 <translation id="3522247891732774234">Frissítés áll rendelkezésre. További lehetőségek</translation>
@@ -355,6 +359,7 @@ A kereséshez tartsa nyomva a kívánt szót. A keresés finomításához válas
 <translation id="358794129225322306">Engedély webhelynek több fájl automatikus letöltésére.</translation>
 <translation id="3590487821116122040">A Chrome által nem fontosnak ítélt webhelytárhely (például a mentett beállítások nélküli vagy ritkán megnyitott webhelyek)</translation>
 <translation id="3594780231884063836">Videó némítása</translation>
+<translation id="3596414637720633074">Harmadik felektől származó cookie-k letiltása Inkognitómódban</translation>
 <translation id="3599863153486145794">Törli az előzményeket valamennyi bejelentkezett eszközről. Előfordulhat, hogy a böngészési előzmények más formái még megtalálhatók Google-fiókjában a <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> webhelyen.</translation>
 <translation id="3600792891314830896">Elnémítja a hangot lejátszó webhelyeket</translation>
 <translation id="3616113530831147358">Audio</translation>
@@ -921,6 +926,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="780301667611848630">Köszönöm, nem</translation>
 <translation id="7810647596859435254">Megnyitás ezzel:</translation>
 <translation id="7821588508402923572">Itt látható a megtakarított adatmennyiség</translation>
+<translation id="7828557259026017104">A cookie-k a felkeresett webhelyek által létrehozott fájlok. A webhelyek arra használják őket, hogy megjegyezzék az Ön preferenciáit. A harmadik féltől származó cookie-kat más webhelyek hozzák létre. Ezek a webhelyek birtokolják a meglátogatott weboldalon látható tartalom bizonyos részét (például hirdetéseket vagy képeket).</translation>
 <translation id="783819812427904514">Videó némításának feloldása</translation>
 <translation id="784934925303690534">Időszak</translation>
 <translation id="7851858861565204677">Egyéb eszközök</translation>
@@ -941,6 +947,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="79859296434321399">A kiterjesztett valósággal kapcsolatos tartalmak megtekintéséhez telepítse az ARCore-t</translation>
 <translation id="7986741934819883144">Válasszon ki egy névjegyet</translation>
 <translation id="7987073022710626672">Chrome – Általános Szerződési Feltételek</translation>
+<translation id="7993619969781047893">Előfordulhat, hogy bizonyos webhelyek funkciói nem működnek megfelelően</translation>
 <translation id="7998918019931843664">Bezárt lap megnyitása</translation>
 <translation id="7999064672810608036">Biztosan törli a webhellyel kapcsolatos összes helyi adatot (a cookie-kkal együtt), és visszaállítja az összes engedélyt?</translation>
 <translation id="8004582292198964060">Böngésző</translation>
@@ -1075,6 +1082,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8965591936373831584">függőben</translation>
 <translation id="8970887620466824814">Hiba történt.</translation>
 <translation id="8972098258593396643">Letölti az alapértelmezett mappába?</translation>
+<translation id="8988028529677883095">Telefon használata biztonsági hardverkulcsként</translation>
 <translation id="8993760627012879038">Új lap megnyitása inkognitómódban</translation>
 <translation id="8998729206196772491">Egy <ph name="MANAGED_DOMAIN" /> által felügyelt fiókkal jelentkezik be, és engedélyezi az adminisztrátor számára a Chrome-adatok kezelését. Adatai állandó jelleggel ehhez a fiókhoz lesznek társítva. A Chrome-ból való kijelentkezéssel törli adatait erről az eszközről, de Google-fiókjában továbbra is megmaradnak.</translation>
 <translation id="9019902583201351841">Szülők által kezelt</translation>

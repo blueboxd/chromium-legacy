@@ -117,7 +117,7 @@ void LayoutReplaced::IntrinsicSizeChanged() {
   int scaled_height =
       static_cast<int>(kDefaultHeight * StyleRef().EffectiveZoom());
   intrinsic_size_ = LayoutSize(scaled_width, scaled_height);
-  SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+  SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kSizeChanged);
 }
 
@@ -900,7 +900,7 @@ MinMaxSizes LayoutReplaced::ComputeIntrinsicLogicalWidths() const {
 }
 
 void LayoutReplaced::ComputePreferredLogicalWidths() {
-  DCHECK(PreferredLogicalWidthsDirty());
+  DCHECK(IntrinsicLogicalWidthsDirty());
 
   // We cannot resolve some logical width here (i.e. percent, fill-available or
   // fit-content) as the available logical width may not be set on our
@@ -949,7 +949,7 @@ void LayoutReplaced::ComputePreferredLogicalWidths() {
   min_preferred_logical_width_ += border_and_padding;
   max_preferred_logical_width_ += border_and_padding;
 
-  ClearPreferredLogicalWidthsDirty();
+  ClearIntrinsicLogicalWidthsDirty();
 }
 
 static std::pair<LayoutUnit, LayoutUnit> SelectionTopAndBottom(

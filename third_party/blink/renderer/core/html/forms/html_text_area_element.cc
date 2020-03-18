@@ -161,7 +161,7 @@ void HTMLTextAreaElement::ParseAttribute(
       rows_ = rows;
       if (GetLayoutObject()) {
         GetLayoutObject()
-            ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+            ->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
                 layout_invalidation_reason::kAttributeChanged);
       }
     }
@@ -174,7 +174,7 @@ void HTMLTextAreaElement::ParseAttribute(
       cols_ = cols;
       if (LayoutObject* layout_object = GetLayoutObject()) {
         layout_object
-            ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+            ->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
                 layout_invalidation_reason::kAttributeChanged);
       }
     }
@@ -195,7 +195,7 @@ void HTMLTextAreaElement::ParseAttribute(
       wrap_ = wrap;
       if (LayoutObject* layout_object = GetLayoutObject()) {
         layout_object
-            ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+            ->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
                 layout_invalidation_reason::kAttributeChanged);
       }
     }

@@ -103,9 +103,6 @@
     <color name="light_background_color">@android:color/white</color>
     <color name="resizing_background_color">@android:color/white</color>
 
-    <!-- Favicon colors -->
-    <color name="default_favicon_background_color">#787878</color>
-
     <!-- Photo Picker colors -->
     <color name="photo_picker_tile_bg_color">@color/modern_grey_200</color>
     <color name="photo_picker_special_tile_bg_color">@color/modern_grey_300</color>

@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;সকল বেছে নিন</translation>
-<translation id="1938451708255335766">উইন্ডো স্ক্রিনের রেজোলিউশন অ্যাডজাস্ট করতে অ্যাপটি রিস্টার্ট করুন।</translation>
 <translation id="2006524834898217237">এই ডিভাইস ইন্টারনেটে কানেক্ট করা আছে কিনা দেখে নিন।</translation>
 <translation id="208586643495776849">আবার চেষ্টা করুন</translation>
 <translation id="2090963878406559571"><ph name="ORIGIN" /> থেকে আপনার Android ফোনে কোনও নম্বর পাঠাতে, সেটিংসে গিয়ে দুটি ডিভাইসের জন্য <ph name="TROUBLESHOOT_LINK" />।</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">আগে থেকেই তৈরি করা আভ্যন্তরীণ ডিসপ্লে</translation>
 <translation id="335581015389089642">স্পিচ</translation>
 <translation id="3389286852084373014">টেক্সটটি অনেক বড়</translation>
-<translation id="3479552764303398839">এখনই নয়</translation>
 <translation id="348799646910989694">শেল্ফ অটোমেটিক লুকানো হবে</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> পিন করা হয়েছে</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{১ দিন বাকি}one{# দিন বাকি}other{# দিন বাকি}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{১ মিনিট}one{# মিনিট}other{# মিনিট}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{আজ ব্যবহার করা হয়েছে}=1{১ দিন আগে ব্যবহার করা হয়েছে}one{# দিন আগে ব্যবহার করা হয়েছে}other{# দিন আগে ব্যবহার করা হয়েছে}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{১ দিন এবং }one{# দিন এবং }other{# দিন এবং }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{১ বছরের মধ্যে}one{# বছরের মধ্যে}other{# বছরের মধ্যে}}</translation>
-<translation id="5895138241574237353">পুনর্সূচনা</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{১ সেকেন্ড বাকি}one{# সেকেন্ড বাকি}other{# সেকেন্ড বাকি}}</translation>
 <translation id="5941711191222866238">ছোট করুন</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{১ ঘণ্টা}one{# ঘণ্টা}other{# ঘণ্টা}}</translation>

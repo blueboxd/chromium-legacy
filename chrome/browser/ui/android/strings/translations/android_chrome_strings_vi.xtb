@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">Đang gửi đến <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">Đang thêm <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Từ trang web</translation>
+<translation id="1044891598689252897">Các trang web vẫn hoạt động bình thường</translation>
 <translation id="1049743911850919806">Ẩn danh</translation>
 <translation id="10614374240317010">Không bao giờ lưu</translation>
 <translation id="1067922213147265141">Các dịch vụ khác của Google</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">Không thể chia sẻ <ph name="CONTENT_TYPE" /></translation>
 <translation id="1477626028522505441">Tải xuống <ph name="FILE_NAME" /> không thành công do sự cố máy chủ.</translation>
 <translation id="1506061864768559482">Công cụ tìm kiếm</translation>
+<translation id="1509960214886564027">Các tính năng trên nhiều trang web có thể hoạt động không đúng cách</translation>
 <translation id="1513352483775369820">Dấu trang và lịch sử web</translation>
 <translation id="1513858653616922153">Xóa mật khẩu</translation>
 <translation id="1521774566618522728">Hoạt động hôm nay</translation>
@@ -235,6 +237,7 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="2647434099613338025">Thêm ngôn ngữ</translation>
 <translation id="2650751991977523696">Tải tệp xuống lần nữa?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# tệp âm thanh}other{# tệp âm thanh}}</translation>
+<translation id="2687403674020088961">Chặn tất cả các cookie (không khuyến nghị)</translation>
 <translation id="2707726405694321444">Làm mới trang</translation>
 <translation id="2709516037105925701">Tự động điền</translation>
 <translation id="2717722538473713889">Địa chỉ email</translation>
@@ -340,6 +343,7 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="3478363558367712427">Bạn có thể chọn công cụ tìm kiếm theo ý mình</translation>
 <translation id="3492207499832628349">Tab ẩn danh mới</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /> về nội dung đề xuất</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Thực tế tăng cường</translation>
 <translation id="3518985090088779359">Chấp nhận và tiếp tục</translation>
 <translation id="3522247891732774234">Bản cập nhật có sẵn. Tùy chọn khác</translation>
@@ -355,6 +359,7 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="358794129225322306">Cho phép một trang web tự động tải xuống nhiều tệp.</translation>
 <translation id="3590487821116122040">Bộ nhớ trang web mà Chrome cho rằng không quan trọng (ví dụ: những trang web không có cài đặt đã lưu nào hoặc trang web mà bạn không truy cập thường xuyên)</translation>
 <translation id="3594780231884063836">Tắt tiếng video</translation>
+<translation id="3596414637720633074">Chặn các cookie của bên thứ ba trong chế độ Ẩn danh</translation>
 <translation id="3599863153486145794">Xóa lịch sử khỏi tất cả các thiết bị đã đăng nhập. Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Tắt tiếng trên các trang web phát âm thanh</translation>
 <translation id="3616113530831147358">Âm thanh</translation>
@@ -921,6 +926,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="780301667611848630">Không, cảm ơn</translation>
 <translation id="7810647596859435254">Mở bằng…</translation>
 <translation id="7821588508402923572">Mức tiết kiệm dữ liệu sẽ hiển thị tại đây</translation>
+<translation id="7828557259026017104">Cookie là các tệp do các trang web bạn truy cập tạo ra. Các trang web dùng cookie để ghi nhớ lựa chọn của bạn. Cookie bên thứ ba do các trang web khác tạo ra. Các trang web này sở hữu một số nội dung như quảng cáo hoặc hình ảnh mà bạn thấy trên trang web mình truy cập.</translation>
 <translation id="783819812427904514">Bật tiếng video</translation>
 <translation id="784934925303690534">Phạm vi thời gian</translation>
 <translation id="7851858861565204677">Thiết bị khác</translation>
@@ -941,6 +947,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="79859296434321399">Để xem nội dung thực tế tăng cường, hãy cài đặt bộ công cụ ARCore</translation>
 <translation id="7986741934819883144">Chọn một người liên hệ</translation>
 <translation id="7987073022710626672">Điều khoản dịch vụ của Chrome</translation>
+<translation id="7993619969781047893">Các tính năng trên một số trang web có thể hoạt động không đúng cách</translation>
 <translation id="7998918019931843664">Mở lại tab đã đóng</translation>
 <translation id="7999064672810608036">Bạn có chắc chắn muốn xóa tất cả dữ liệu cục bộ, bao gồm cookie và đặt lại tất cả các quyền cho trang web này không?</translation>
 <translation id="8004582292198964060">Trình duyệt</translation>
@@ -1075,6 +1082,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8965591936373831584">đang chờ xử lý</translation>
 <translation id="8970887620466824814">Đã xảy ra lỗi.</translation>
 <translation id="8972098258593396643">Tải xuống thư mục mặc định?</translation>
+<translation id="8988028529677883095">Dùng điện thoại làm khóa bảo mật</translation>
 <translation id="8993760627012879038">Mở tab mới trong chế độ Ẩn danh</translation>
 <translation id="8998729206196772491">Bạn đang đăng nhập bằng tài khoản do <ph name="MANAGED_DOMAIN" /> quản lý và cấp cho quản trị viên quyền kiểm soát dữ liệu Chrome của bạn. Dữ liệu của bạn sẽ được liên kết vĩnh viễn với tài khoản này. Việc đăng xuất khỏi Chrome sẽ xóa dữ liệu của bạn khỏi thiết bị này nhưng dữ liệu sẽ vẫn được lưu trữ trong Tài khoản Google.</translation>
 <translation id="9019902583201351841">Do cha mẹ của bạn quản lý</translation>

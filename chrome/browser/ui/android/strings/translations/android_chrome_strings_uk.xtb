@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">Надсилання на пристрій "<ph name="DEVICE_NAME" />"…</translation>
 <translation id="1036727731225946849">Додається <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">З веб-сайтів</translation>
+<translation id="1044891598689252897">Сайти працюватимуть у звичному режимі</translation>
 <translation id="1049743911850919806">Анонімний перегляд</translation>
 <translation id="10614374240317010">Ніколи не зберігалося</translation>
 <translation id="1067922213147265141">Інші сервіси Google</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">Не вдалося надіслати: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1477626028522505441">Файл <ph name="FILE_NAME" /> не завантажено через проблеми із сервером.</translation>
 <translation id="1506061864768559482">Пошукова система</translation>
+<translation id="1509960214886564027">Функції на багатьох сайтах можуть не працювати</translation>
 <translation id="1513352483775369820">Закладки й історія веб-пошуку</translation>
 <translation id="1513858653616922153">Видалити пароль</translation>
 <translation id="1521774566618522728">У мережі сьогодні</translation>
@@ -235,6 +237,7 @@
 <translation id="2647434099613338025">Додати мову</translation>
 <translation id="2650751991977523696">Завантажити файл ще раз?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудіофайл}one{# аудіофайл}few{# аудіофайли}many{# аудіофайлів}other{# аудіофайлу}}</translation>
+<translation id="2687403674020088961">Блокувати всі файли cookie (не рекомендовано)</translation>
 <translation id="2707726405694321444">Оновити сторінку</translation>
 <translation id="2709516037105925701">Автозаповнення</translation>
 <translation id="2717722538473713889">Електронні адреси</translation>
@@ -340,6 +343,7 @@
 <translation id="3478363558367712427">Ви можете вибрати пошукову систему</translation>
 <translation id="3492207499832628349">Нова анонімна вкладка</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /> про рекомендований контент</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Доповнена реальність</translation>
 <translation id="3518985090088779359">Продовжити</translation>
 <translation id="3522247891732774234">Доступне оновлення. Більше опцій</translation>
@@ -355,6 +359,7 @@
 <translation id="358794129225322306">Дозволити сайту автоматично завантажувати декілька файлів.</translation>
 <translation id="3590487821116122040">Дані сайтів, які Chrome визначив як неважливі, зокрема сайтів із незбереженими налаштуваннями або тих, які ви рідко відвідуєте</translation>
 <translation id="3594780231884063836">Вимкнути звук у відео</translation>
+<translation id="3596414637720633074">Блокувати файли cookie третіх сторін в анонімному режимі</translation>
 <translation id="3599863153486145794">Видалення історії на всіх пристроях, на яких ви ввійшли в обліковий запис. Історія веб-перегляду може також зберігатися у вашому обліковому записі Google на сторінці  <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Вимкнути звук на сайтах, які відтворюють його</translation>
 <translation id="3616113530831147358">Аудіо</translation>
@@ -921,6 +926,7 @@
 <translation id="780301667611848630">Ні, дякую</translation>
 <translation id="7810647596859435254">Відкрити за допомогою…</translation>
 <translation id="7821588508402923572">Тут буде вказано обсяг заощадженого трафіку</translation>
+<translation id="7828557259026017104">Файли cookie – це файли, створені веб-сайтами, які ви відвідали. Сайти використовують їх, щоб запам'ятовувати ваші налаштування. Сторонні файли cookie створюються іншими сайтами. Ці сайти показують власний контент, як-от оголошення чи зображення, на веб-сторінці, яку ви відвідуєте.</translation>
 <translation id="783819812427904514">Увімкнути звук у відео</translation>
 <translation id="784934925303690534">Період часу</translation>
 <translation id="7851858861565204677">Інші пристрої</translation>
@@ -941,6 +947,7 @@
 <translation id="79859296434321399">Щоб переглядати вміст у режимі доповненої реальності, установіть ARCore</translation>
 <translation id="7986741934819883144">Виберіть контакт</translation>
 <translation id="7987073022710626672">Умови використання Google Chrome</translation>
+<translation id="7993619969781047893">Функції на деяких сайтах можуть не працювати</translation>
 <translation id="7998918019931843664">Знову відкрити закриту вкладку</translation>
 <translation id="7999064672810608036">Видалити всі локальні дані, зокрема файли cookie, і скинути всі дозволи для цього веб-сайту?</translation>
 <translation id="8004582292198964060">Переглядач</translation>
@@ -1075,6 +1082,7 @@
 <translation id="8965591936373831584">очікується</translation>
 <translation id="8970887620466824814">Сталася помилка.</translation>
 <translation id="8972098258593396643">Завантажити в папку за умовчанням?</translation>
+<translation id="8988028529677883095">Використовувати телефон як ключ безпеки</translation>
 <translation id="8993760627012879038">Відкрити нове вікно в режимі анонімного перегляду</translation>
 <translation id="8998729206196772491">Ви входите в обліковий запис, зареєстрований у домені <ph name="MANAGED_DOMAIN" />, і надаєте його адміністратору доступ до своїх даних Chrome. Ваші дані буде назавжди зв’язано з цим обліковим записом. Якщо ви вийдете з облікового запису в Chrome, дані буде видалено з цього пристрою, але вони залишаться у вашому обліковому записі Google.</translation>
 <translation id="9019902583201351841">Керується батьками</translation>

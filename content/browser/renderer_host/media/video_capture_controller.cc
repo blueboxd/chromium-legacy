@@ -587,6 +587,9 @@ void VideoCaptureController::OnFrameDropped(
     media::VideoCaptureFrameDropReason reason) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
                "VideoCaptureController::OnFrameDropped");
+
+  MaybeEmitFrameDropLogMessage(reason);
+
   if (reason == frame_drop_log_state_.drop_reason) {
     if (frame_drop_log_state_.max_log_count_exceeded)
       return;
@@ -595,12 +598,6 @@ void VideoCaptureController::OnFrameDropped(
         kMaxConsecutiveFrameDropForSameReasonCount) {
       frame_drop_log_state_.max_log_count_exceeded = true;
       LogMaxConsecutiveVideoFrameDropCountExceeded(reason, stream_type_);
-      std::ostringstream string_stream;
-      string_stream << "Too many consecutive frames dropped with reason code "
-                    << static_cast<int>(reason)
-                    << ". Stopping to log dropped frames for this reason in "
-                       "order to avoid log spam.";
-      EmitLogMessage(string_stream.str(), 1);
       return;
     }
   } else {
@@ -608,10 +605,6 @@ void VideoCaptureController::OnFrameDropped(
   }
 
   LogVideoFrameDrop(reason, stream_type_);
-  std::ostringstream string_stream;
-  string_stream << "Frame dropped with reason code "
-                << static_cast<int>(reason);
-  EmitLogMessage(string_stream.str(), 1);
 }
 
 void VideoCaptureController::OnLog(const std::string& message) {
@@ -864,6 +857,36 @@ void VideoCaptureController::EmitLogMessage(const std::string& message,
                                             int verbose_log_level) {
   DVLOG(verbose_log_level) << message;
   emit_log_message_cb_.Run(message);
+}
+
+void VideoCaptureController::MaybeEmitFrameDropLogMessage(
+    media::VideoCaptureFrameDropReason reason) {
+  using Type = std::underlying_type<media::VideoCaptureFrameDropReason>::type;
+  static_assert(
+      static_cast<Type>(media::VideoCaptureFrameDropReason::kMaxValue) <= 100,
+      "Risk of memory overuse.");
+
+  static_assert(kMaxEmittedLogsForDroppedFramesBeforeSuppressing <
+                    kFrequencyForSuppressedLogs,
+                "");
+
+  DCHECK_GE(static_cast<Type>(reason), 0);
+  DCHECK_LE(reason, media::VideoCaptureFrameDropReason::kMaxValue);
+
+  int& occurrences = frame_drop_log_counters_[reason];
+  if (++occurrences > kMaxEmittedLogsForDroppedFramesBeforeSuppressing &&
+      occurrences % kFrequencyForSuppressedLogs != 0) {
+    return;
+  }
+
+  std::ostringstream string_stream;
+  string_stream << "Frame dropped with reason code "
+                << static_cast<Type>(reason) << ".";
+  if (occurrences == kMaxEmittedLogsForDroppedFramesBeforeSuppressing) {
+    string_stream << " Additional logs will be partially suppressed.";
+  }
+
+  EmitLogMessage(string_stream.str(), 1);
 }
 
 }  // namespace content

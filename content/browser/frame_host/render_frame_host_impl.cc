@@ -206,6 +206,7 @@
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
+#include "third_party/blink/public/mojom/devtools/device_emulation_params.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom.h"
@@ -3119,6 +3120,12 @@ void RenderFrameHostImpl::ScaleFactorChanged(float scale) {
 void RenderFrameHostImpl::ContentsPreferredSizeChanged(
     const gfx::Size& pref_size) {
   render_view_host_->OnDidContentsPreferredSizeChange(pref_size);
+}
+
+void RenderFrameHostImpl::SetDeviceEmulation(
+    const base::Optional<blink::WebDeviceEmulationParams>& params) {
+  DCHECK(frame_tree_node()->IsMainFrame());
+  device_emulator_remote_->SetDeviceEmulation(params);
 }
 
 void RenderFrameHostImpl::UpdateFaviconURL(
@@ -6101,8 +6108,16 @@ void RenderFrameHostImpl::CancelBlockedRequestsForFrame() {
 void RenderFrameHostImpl::BindDevToolsAgent(
     mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
     mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver) {
-  GetNavigationControl()->BindDevToolsAgent(std::move(host),
-                                            std::move(receiver));
+  mojo::PendingAssociatedReceiver<mojom::DeviceEmulator>
+      pending_emulator_receiver;
+  if (frame_tree_node()->IsMainFrame()) {
+    device_emulator_remote_.reset();
+    pending_emulator_receiver =
+        device_emulator_remote_.BindNewEndpointAndPassReceiver();
+  }
+  GetNavigationControl()->BindDevToolsAgent(
+      std::move(host), std::move(receiver),
+      std::move(pending_emulator_receiver));
 }
 
 bool RenderFrameHostImpl::IsSameSiteInstance(

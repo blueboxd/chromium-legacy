@@ -9,7 +9,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/screen_info.h"
-#include "third_party/blink/public/web/web_device_emulation_params.h"
+#include "third_party/blink/public/mojom/devtools/device_emulation_params.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -68,7 +68,7 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
  private:
   bool emulating_desktop() const {
     return emulation_params_.screen_position ==
-           blink::WebDeviceEmulationParams::kDesktop;
+           blink::mojom::ScreenPosition::kDesktop;
   }
 
   // Applies emulated values to the RenderWidget.
@@ -76,7 +76,7 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
 
   RenderWidgetScreenMetricsEmulatorDelegate* const delegate_;
 
-  // Parameters as passed by RenderWidget::EnableScreenMetricsEmulation.
+  // Parameters as passed by RenderWidget::SetScreenMetricsEmulation.
   blink::WebDeviceEmulationParams emulation_params_;
 
   // Original values to restore back after emulation ends.

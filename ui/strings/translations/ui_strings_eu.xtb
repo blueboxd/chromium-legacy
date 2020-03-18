@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Txertatu</translation>
 <translation id="1884435127456172652">% <ph name="NUMBER" /></translation>
 <translation id="1901303067676059328">Hautatu &amp;guztiak</translation>
-<translation id="1938451708255335766">Leihoak bistaratzeko erabiltzen den dentsitatea doitzeko, berrabiarazi aplikazioa.</translation>
 <translation id="2006524834898217237">Ziurtatu gailua Internetera konektatuta dagoela.</translation>
 <translation id="208586643495776849">Saiatu berriro</translation>
 <translation id="2090963878406559571">Zenbaki bat <ph name="ORIGIN" /> helbidetik Android-eko telefonora bidaltzeko, joan ezarpenetara eta <ph name="TROUBLESHOOT_LINK" /> bi gailuetan.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Pantaila integratua</translation>
 <translation id="335581015389089642">Hizketa</translation>
 <translation id="3389286852084373014">Testua luzeegia da</translation>
-<translation id="3479552764303398839">Orain ez</translation>
 <translation id="348799646910989694">Biltegia automatikoki ezkutatuko da</translation>
 <translation id="3554637740840164787">Ainguratu da <ph name="ITEM_TITLE" /></translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 egun gelditzen da}other{# egun gelditzen dira}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktibo gaur}=1{Aktibo duela 1 egun}other{Aktibo duela # egun}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 egun eta }other{# egun eta }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 urte barru}other{# urte barru}}</translation>
-<translation id="5895138241574237353">Berrabiarazi</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 segundo gelditzen da}other{# segundo gelditzen dira}}</translation>
 <translation id="5941711191222866238">Minimizatu</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ordu}other{# ordu}}</translation>
@@ -158,7 +156,7 @@
 <translation id="6156262341071374681">Erakutsi aplikazio guztiak</translation>
 <translation id="6165508094623778733">Lortu informazio gehiago</translation>
 <translation id="6264365405983206840">Hautatu &amp;guztiak</translation>
-<translation id="6351032674660237738">IRADOKITAKO APLIKAZIOAK</translation>
+<translation id="6351032674660237738">APLIKAZIOEN IRADOKIZUNAK</translation>
 <translation id="6364916375976753737">Joan ezkerrera</translation>
 <translation id="6394627529324717982">Koma</translation>
 <translation id="6397363302884558537">Utzi hitz egiteari</translation>

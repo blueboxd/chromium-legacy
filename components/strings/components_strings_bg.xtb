@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">Начин на вземане</translation>
 <translation id="1281476433249504884">Стакер 1</translation>
 <translation id="1285320974508926690">Този сайт да не се превежда никога</translation>
-<translation id="1285400217480592994">Сканиране на съдържанието на файловете, които изтегляте или качвате в Chrome.</translation>
 <translation id="1292701964462482250">„Софтуер на компютъра ви пречи на Chrome да се свърже безопасно с мрежата“ (само на компютри под Windows)</translation>
 <translation id="1294154142200295408">Варианти във формат за командния ред</translation>
 <translation id="129553762522093515">Наскоро затворени</translation>
@@ -650,6 +649,7 @@
 <translation id="3784372983762739446">Bluetooth устройства</translation>
 <translation id="3787705759683870569">Изтича на <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">Размер 16</translation>
+<translation id="3793574014653384240">Брой и причини за наскоро възникналите сривове</translation>
 <translation id="3797522431967816232">Prc3 (плик)</translation>
 <translation id="3799805948399000906">Шрифтът е заявен</translation>
 <translation id="3807366285948165054">Изместване на изображението по оста X</translation>

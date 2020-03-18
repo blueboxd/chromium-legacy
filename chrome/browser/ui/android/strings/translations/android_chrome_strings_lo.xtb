@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">ກຳລັງສົ່ງຫາ <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">ກຳລັງເພີ່ມ <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">ຈາກເວັບໄຊ</translation>
+<translation id="1044891598689252897">ເວັບໄຊຈະເຮັດວຽກໄດ້ປົກກະຕິ</translation>
 <translation id="1049743911850919806">ບໍ່​ເຜີຍ​ຕົວຕົນ</translation>
 <translation id="10614374240317010">ຢ່າ​ບັນທຶກ</translation>
 <translation id="1067922213147265141">ການບໍລິການອື່ນຂອງ Google</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">ບໍ່ສາມາດແບ່ງປັນ <ph name="CONTENT_TYPE" /> ໄດ້</translation>
 <translation id="1477626028522505441">ການ​ດາວ​ໂຫຼ​ດ <ph name="FILE_NAME" /> ລົ້ມເຫລວເນື່ອງ​ຈາກ​ບັນຫາ​ເຊີບ​ເວີ.</translation>
 <translation id="1506061864768559482">ເຄື່ອງ​ຈັກ​ຄົ້ນ​ຫາ</translation>
+<translation id="1509960214886564027">ຄຸນສົມບັດໃນຫຼາຍໆເວັບໄຊອາດຈະໃຊ້ບໍ່ໄດ້</translation>
 <translation id="1513352483775369820">ບຸກມາກສ໌ ​ແລະ​ປະ​ຫວັດ​ເວັບ​</translation>
 <translation id="1513858653616922153">ລຶບລະຫັດຜ່ານ</translation>
 <translation id="1521774566618522728">ເປີດນຳໃຊ້ມື້ນີ້</translation>
@@ -235,6 +237,7 @@
 <translation id="2647434099613338025">ເພີ່ມພາສາ</translation>
 <translation id="2650751991977523696">ດາວໂຫຼດໄຟລ໌ອີກຄັ້ງບໍ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ໄຟລ໌ສຽງ}other{# ໄຟລ໌ສຽງ}}</translation>
+<translation id="2687403674020088961">ບລັອກຄຸກກີ້ທັງໝົດ (ບໍ່ແນະນຳ)</translation>
 <translation id="2707726405694321444">ຣີ​ເຟ​ຣ​ຊຫນ້າ</translation>
 <translation id="2709516037105925701">ຕື່ມອັດຕະໂນມັດ</translation>
 <translation id="2717722538473713889">ທີ່ຢູ່ອີເມວ</translation>
@@ -340,6 +343,7 @@
 <translation id="3478363558367712427">ທ່ານສາມາດເລືອກລະບົບການຊອກຫາຂອງທ່ານໄດ້</translation>
 <translation id="3492207499832628349">ແຖບບໍ່ເຜີຍຕົວຕົນໃໝ່</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />ສຶກສາເພີ່ມເຕີມ<ph name="END_LINK" /> ກ່ຽວກັບເນື້ອຫາທີ່ແນະນຳ</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">ອາກິວເມັນ ຣີອາລິຕີ</translation>
 <translation id="3518985090088779359">ຍອມ​ຮັບ​ ແລະ​ສືບ​ຕໍ່</translation>
 <translation id="3522247891732774234">ອັບເດດມີໃຫ້ແລ້ວ. ຕົວເລືອກເພີ່ມເຕີມ</translation>
@@ -355,6 +359,7 @@
 <translation id="358794129225322306">ອະນຸຍາດໃຫ້ເວັບໄຊດາວໂຫຼດຫຼາຍໄຟລ໌ໂດຍອັດຕະໂນມັດ.</translation>
 <translation id="3590487821116122040">ບ່ອນເກັບຂໍ້ມູນເວັບໄຊທີ່ Chrome ຄິດວ່າບໍ່ສຳຄັນ (ເຊັ່ນ ເວັບໄຊທີ່ບໍ່ມີການຕັ້ງຄ່າທີ່ບັນທຶກໄວ້ ຫຼື ທີ່ທ່ານບໍ່ຄ່ອຍເຂົ້າເບິ່ງ)</translation>
 <translation id="3594780231884063836">ປິດສຽງວິດີໂອ</translation>
+<translation id="3596414637720633074">ບລັອກຄຸກກີ້ພາກສ່ວນທີສາມໃນໂໝດບໍ່ເປີດເຜີຍຕົວຕົນ</translation>
 <translation id="3599863153486145794">ລຶບລ້າງປະຫວັດຈາກທຸກອຸປະກອນທີ່ເຂົ້າສູ່ລະບົບແລ້ວ. ບັນຊີ Google ຂອງທ່ານອາດຈະມີຮູບແບບອື່ນຂອງປະຫວັດການທ່ອງເວັບຢູ່ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">ປິດສຽງເວັບໄຊທີ່ຫຼິ້ນສຽງ</translation>
 <translation id="3616113530831147358">ສຽງ</translation>
@@ -921,6 +926,7 @@
 <translation id="780301667611848630">ບໍ່​, ​ຂອບ​ໃຈ</translation>
 <translation id="7810647596859435254">ເປີດດ້ວຍ...</translation>
 <translation id="7821588508402923572">ການປະຢັດຂໍ້ມູນຂອງທ່ານຈະປາກົດຢູ່ບ່ອນນີ້</translation>
+<translation id="7828557259026017104">ຄຸກກີ້ແມ່ນໄຟລ໌ທີ່ສ້າງຂຶ້ນໂດຍເວັບໄຊທີ່ທ່ານເຂົ້າເບິ່ງ. ເວັບໄຊໃຊ້ພວກມັນເພື່ອຈື່ການຕັ້ງຄ່າຂອງທ່ານ. ຄຸກກີ້ພາກສ່ວນທີສາມຖືກສ້າງຂຶ້ນໂດຍເວັບໄຊອື່ນ. ເວັບໄຊເຫຼົ່ານີ້ເປັນເຈົ້າຂອງບາງເນື້ອຫາ ເຊັ່ນ: ໂຄສະນາ ຫຼື ຮູບພາບ ທີ່ທ່ານເຫັນໃນໜ້າເວັບທີ່ທ່ານເຂົ້າເບິ່ງ.</translation>
 <translation id="783819812427904514">ເປີດສຽງວິດີໂອ</translation>
 <translation id="784934925303690534">ຂອບເຂດເວລາ</translation>
 <translation id="7851858861565204677">ອຸ​ປະ​ກອນ​ອື່ນໆ</translation>
@@ -941,6 +947,7 @@
 <translation id="79859296434321399">ເພື່ອເບິ່ງເນື້ອຫາອາກິວເມັນ ຣີອາລິຕີ, ກະລຸນາຕິດຕັ້ງ ARCore ກ່ອນ</translation>
 <translation id="7986741934819883144">ເລືອກລາຍຊື່ຜູ້ຕິດຕໍ່</translation>
 <translation id="7987073022710626672">ຂໍ້​ກຳ​ນົດ​ການ​ບໍ​ລິ​ການ​ຂອງ Chrome</translation>
+<translation id="7993619969781047893">ຄຸນສົມບັດໃນບາງເວັບໄຊອາດຈະໃຊ້ບໍ່ໄດ້</translation>
 <translation id="7998918019931843664">ເປີດ​ແຖບ​ປິດຄືນໃໝ່</translation>
 <translation id="7999064672810608036">ທ່ານ​ແນ່​ໃຈ​ບໍ​ວ່າ ທ່ານ​ຕ້ອງ​ການ​ລຶບ​ຂໍ້​ມູນໃນ​ເຄື່ອງ​ທັງ​ໝົດ, ລວມ​ທັງ​ຄຸກ​ກີ້, ແລະ​ຕັ້ງ​ຄ່າ​ການ​ອະ​ນຸ​ຍາດ​ທັງ​ໝົດສຳ​ລັບ​ເວັບ​ໄຊ​ທ໌​ນີ້?</translation>
 <translation id="8004582292198964060">ບຣາວ​ເຊີ</translation>
@@ -1075,6 +1082,7 @@
 <translation id="8965591936373831584">ຄ້າງຢູ່</translation>
 <translation id="8970887620466824814">ມີບາງຢ່າງຜິດພາດ.</translation>
 <translation id="8972098258593396643">ດາວໂຫຼດໃສ່ໂຟນເດີເລີ່ມຕົ້ນບໍ?</translation>
+<translation id="8988028529677883095">ໃຊ້ໂທລະສັບເປັນກະແຈຄວາມປອດໄພ</translation>
 <translation id="8993760627012879038">ເປີດແຖບໃໝ່ໃນໂໝດ Incognito</translation>
 <translation id="8998729206196772491">ທ່ານກຳລັງເຂົ້າສູ່ລະບົບດ້ວຍບັນຊີທີ່ຖືກຈັດການໂດຍ <ph name="MANAGED_DOMAIN" /> ແລະ ໃຫ້ການຄວບຄຸມຂໍ້ມູນ Chrome ຂອງທ່ານແກ່ຜູ້ເບິ່ງແຍງລະບົບຂອງມັນ. ຂໍ້ມູນຂອງທ່ານຈະຖືກເຊື່ອມໂຍງຢ່າງຖາວອນກັບບັນຊີນີ້. ການອອກຈາກລະບົບ Chrome ຈະລຶບຂໍ້ມູນຂອງທ່ານອອກຈາກອຸປະກອນນີ້, ແຕ່ຂໍ້ມູນຈະຍັງຄົງຖືກຮັກສາໄວ້ຢູ່ໃນບັນຊີ Google ຂອງທ່ານ.</translation>
 <translation id="9019902583201351841">ຈັດ​ການ​ໂດຍ​ຜູ້​ປົກ​ຄອງ​ຂອງ​ທ່ານ</translation>

@@ -7,6 +7,8 @@ static_library("profile_metrics") {
     "browser_profile_type.h",
     "counts.cc",
     "counts.h",
+    "state.cc",
+    "state.h",
   ]
 
   deps = [ "//base" ]

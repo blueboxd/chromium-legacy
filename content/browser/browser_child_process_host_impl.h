@@ -183,6 +183,9 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
       base::WeakPtr<BrowserChildProcessHostImpl> process,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       const std::string& error);
+  static void TerminateProcessForBadMessage(
+      base::WeakPtr<BrowserChildProcessHostImpl> process,
+      const std::string& error);
 
 #if defined(OS_WIN)
   // ObjectWatcher::Delegate implementation.

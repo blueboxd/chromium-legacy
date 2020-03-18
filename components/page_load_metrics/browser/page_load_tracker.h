@@ -188,8 +188,9 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       content::RenderFrameHost* rfh,
       const mojom::FrameRenderDataUpdate& render_data) override;
   void OnMainFrameMetadataChanged() override;
-  void OnSubframeMetadataChanged(content::RenderFrameHost* rfh,
-                                 const mojom::FrameMetadata& metadata) override;
+  void OnSubframeMetadataChanged(
+      content::RenderFrameHost* rfh,
+      const mojom::PageLoadMetadata& metadata) override;
   void UpdateFeaturesUsage(
       content::RenderFrameHost* rfh,
       const mojom::PageLoadFeatures& new_features) override;
@@ -200,9 +201,6 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       const mojom::DeferredResourceCounts& new_deferred_resource_data) override;
   void UpdateFrameCpuTiming(content::RenderFrameHost* rfh,
                             const mojom::CpuTiming& timing) override;
-  void OnFrameIntersectionUpdate(
-      content::RenderFrameHost* rfh,
-      const mojom::FrameIntersectionUpdate& frame_intersection_update) override;
 
   // PageLoadMetricsDelegate implementation:
   content::WebContents* GetWebContents() const override;
@@ -219,8 +217,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   PageEndReason GetPageEndReason() const override;
   const UserInitiatedInfo& GetPageEndUserInitiatedInfo() const override;
   base::Optional<base::TimeDelta> GetPageEndTime() const override;
-  const mojom::FrameMetadata& GetMainFrameMetadata() const override;
-  const mojom::FrameMetadata& GetSubframeMetadata() const override;
+  const mojom::PageLoadMetadata& GetMainFrameMetadata() const override;
+  const mojom::PageLoadMetadata& GetSubframeMetadata() const override;
   const PageRenderData& GetPageRenderData() const override;
   const PageRenderData& GetMainFrameRenderData() const override;
   const ui::ScopedVisibilityTracker& GetVisibilityTracker() const override;

@@ -1589,7 +1589,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // This function is public only for use by LayoutNG. Other callers should go
   // through PreferredLogicalWidths.
   virtual void ComputePreferredLogicalWidths() {
-    ClearPreferredLogicalWidthsDirty();
+    ClearIntrinsicLogicalWidthsDirty();
   }
 
   // LayoutNG can use this function to update our cache of preferred logical
@@ -1599,7 +1599,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void SetPreferredLogicalWidthsFromNG(MinMaxSizes sizes) {
     min_preferred_logical_width_ = sizes.min_size;
     max_preferred_logical_width_ = sizes.max_size;
-    ClearPreferredLogicalWidthsDirty();
+    ClearIntrinsicLogicalWidthsDirty();
   }
 
   // Calculates the intrinsic(https://drafts.csswg.org/css-sizing-3/#intrinsic)

@@ -158,7 +158,7 @@ class MetricsWebContentsObserver
   void OnTimingUpdated(
       content::RenderFrameHost* render_frame_host,
       mojom::PageLoadTimingPtr timing,
-      mojom::FrameMetadataPtr metadata,
+      mojom::PageLoadMetadataPtr metadata,
       mojom::PageLoadFeaturesPtr new_features,
       const std::vector<mojom::ResourceDataUpdatePtr>& resources,
       mojom::FrameRenderDataUpdatePtr render_data,
@@ -180,7 +180,7 @@ class MetricsWebContentsObserver
   // page_load_metrics::mojom::PageLoadMetrics implementation.
   void UpdateTiming(
       mojom::PageLoadTimingPtr timing,
-      mojom::FrameMetadataPtr metadata,
+      mojom::PageLoadMetadataPtr metadata,
       mojom::PageLoadFeaturesPtr new_features,
       std::vector<mojom::ResourceDataUpdatePtr> resources,
       mojom::FrameRenderDataUpdatePtr render_data,

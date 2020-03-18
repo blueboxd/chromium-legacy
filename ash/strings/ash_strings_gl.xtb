@@ -252,6 +252,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="4072264167173457037">Sinal medio</translation>
 <translation id="4112140312785995938">Retroceder</translation>
 <translation id="4129129681837227511">Para ver notificacións na pantalla de bloqueo, desbloquea o dispositivo e cambia a opción de configuración correspondente</translation>
+<translation id="4144413954005649103">Se fas clic co botón dereito ou realizas unha pulsación longa, o Asistente móstrache información relacionada co que seleccionaches na pantalla.</translation>
 <translation id="4146833061457621061">Reproducir música</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> (dispositivo xestionado por <ph name="DOMAIN" />)</translation>
 <translation id="4181841719683918333">Idiomas</translation>
@@ -399,6 +400,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="615957422585914272">Mostrar teclado en pantalla</translation>
 <translation id="6164005077879661055">É posible que todos os ficheiros e datos locais asociados co usuario supervisado se eliminen permanentemente en canto se elimine este usuario supervisado. É posible que o administrador de <ph name="MANAGEMENT_URL" /> continúe vendo os sitios web visitados e as configuracións deste usuario supervisado.</translation>
 <translation id="6165508094623778733">Máis información</translation>
+<translation id="6236290670123303279">Xestionar configuración</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Pantalla bloqueada en posición horizontal</translation>
 <translation id="6259254695169772643">Usa o teu lapis óptico para seleccionar</translation>
@@ -440,6 +442,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="6669268301501499730">Si</translation>
 <translation id="6670153871843998651">Escritorio 3</translation>
 <translation id="6691659475504239918">Buscar+Maiúsculas+H</translation>
+<translation id="6692996468359469499">Consultar a información relacionada coa túa selección</translation>
 <translation id="6696025732084565524">É necesario instalar unha actualización esencial do teclado extraíble</translation>
 <translation id="6700713906295497288">Botón de menú de IME</translation>
 <translation id="6713285437468012787">Sincronizouse o dispositivo Bluetooth "<ph name="DEVICE_NAME" />" e agora está dispoñible para todos os usuarios. Podes eliminar esta sincronización en Configuración.</translation>
@@ -528,6 +531,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="79341161159229895">A conta está xestionada por <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">Modo de alto contraste</translation>
 <translation id="7977927628060636163">Buscando redes móbiles...</translation>
+<translation id="7980780401175799550">Proba novas formas de usar Chrome OS</translation>
 <translation id="7982789257301363584">Rede</translation>
 <translation id="7984197416080286869">Realizáronse demasiados intentos de desbloqueo mediante a impresión dixital</translation>
 <translation id="7994370417837006925">Inicio de sesión múltiple</translation>
@@ -549,6 +553,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="8167567890448493835">Usando: <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Personalizar idiomas e introdución de texto...</translation>
 <translation id="8192202700944119416">As notificacións están ocultas.</translation>
+<translation id="8196787716797768628">Utiliza xestos para cambiar de aplicación rapidamente e interactuar co teu Chromebook no modo de tableta.</translation>
 <translation id="8203795194971602413">Clic co botón dereito</translation>
 <translation id="8236042855478648955">É hora de que fagas unha pausa</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" />, batería do teléfono ao <ph name="BATTERY_STATUS" /></translation>

@@ -194,8 +194,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebHitTestResult HitTestResultForTap(const gfx::Point&,
                                        const WebSize&) override;
   uint64_t CreateUniqueIdentifierForRequest() override;
-  void EnableDeviceEmulation(const WebDeviceEmulationParams&) override;
-  void DisableDeviceEmulation() override;
+  void SetDeviceEmulation(
+      const base::Optional<WebDeviceEmulationParams>&) override;
   void PerformCustomContextMenuAction(unsigned action) override;
   void DidCloseContextMenu() override;
   void CancelPagePopup() override;

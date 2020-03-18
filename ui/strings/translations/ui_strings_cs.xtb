@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Klávesa Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;Vybrat vše</translation>
-<translation id="1938451708255335766">Chcete-li upravit kompaktnost zobrazení okna, restartujte aplikaci.</translation>
 <translation id="2006524834898217237">Zkontrolujte, zda je toto zařízení připojeno k internetu.</translation>
 <translation id="208586643495776849">Zkuste to znovu</translation>
 <translation id="2090963878406559571">Chcete-li poslat číslo z webu <ph name="ORIGIN" /> na svůj telefon Android, v nastavení obou zařízení <ph name="TROUBLESHOOT_LINK" />.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Integrovaný displej</translation>
 <translation id="335581015389089642">Řeč</translation>
 <translation id="3389286852084373014">Text je příliš dlouhý</translation>
-<translation id="3479552764303398839">Teď ne</translation>
 <translation id="348799646910989694">Polička byla automaticky skryta</translation>
 <translation id="3554637740840164787">Položka <ph name="ITEM_TITLE" /> byla připnuta</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Zbývá 1 den}few{Zbývají # dny}many{Zbývá # dne}other{Zbývá # dnů}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktivní dnes}=1{Aktivní včera}few{Aktivní před # dny}many{Aktivní před # dne}other{Aktivní před # dny}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 den a  }few{# dny a  }many{# dne a  }other{# dnů a  }}</translation>
+<translation id="5789643057113097023">,</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{za 1 r}few{za # r}many{za # r}other{za # r}}</translation>
-<translation id="5895138241574237353">Restartovat</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Zbývá 1 sekunda}few{Zbývají # sekundy}many{Zbývá # sekundy}other{Zbývá # sekund}}</translation>
 <translation id="5941711191222866238">Minimalizovat</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 hodina}few{# hodiny}many{# hodiny}other{# hodin}}</translation>

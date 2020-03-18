@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">Signal o‘rtacha</translation>
 <translation id="4112140312785995938">Orqaga qaytarish</translation>
 <translation id="4129129681837227511">Bildirishnomalar qulflangan ekranda chiqishi uchun avval qulfdan chiqaring va sozlamani yangilang</translation>
+<translation id="4144413954005649103">Oʻng klik yoki biroz bosib turilsa, Assistent ekranda tanlangan narsaga mos axborot chiqaradi.</translation>
 <translation id="4146833061457621061">Musiqani tinglash</translation>
 <translation id="4149156641122542261">Bu <ph name="DEVICE_TYPE" /> qurilmasi <ph name="DOMAIN" /> domeni tomonidan boshqariladi</translation>
 <translation id="4181841719683918333">Tillar</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">Ekran klaviaturasini ko‘rsatish</translation>
 <translation id="6164005077879661055">Kuzatuvdagi profil o‘chirilganda unga bog‘liq barcha fayllar va mahalliy ma’lumotlar tozalanadi. Bu profil brauzeri tarixi va sozlamalari uning boshqaruvchisiga quyidagi sahifada ko‘rinadi: <ph name="MANAGEMENT_URL" /></translation>
 <translation id="6165508094623778733">Batafsil</translation>
+<translation id="6236290670123303279">Sozlamalarni boshqarish</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Gorizontal holatda qulflangan</translation>
 <translation id="6259254695169772643">Stilus yordamida tanlang</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">Yoniq</translation>
 <translation id="6670153871843998651">Desk 3</translation>
 <translation id="6691659475504239918">Qidiruv+Shift+H</translation>
+<translation id="6692996468359469499">Tanlovingizga aloqador axborot olish</translation>
 <translation id="6696025732084565524">Tashqi klaviatura yangilanishi zarur</translation>
 <translation id="6700713906295497288">IME menyusi tugmasi</translation>
 <translation id="6713285437468012787"><ph name="DEVICE_NAME" /> qurilmasi Bluetooth orqali ulanilgan va barcha foydalanuvchilarga ko‘rinadi. Siz uni sozlamalar sahifasida o‘chirib qo‘yishingiz mumkin.</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895">Hisobni <ph name="FIRST_PARENT_EMAIL" /> va <ph name="SECOND_PARENT_EMAIL" /> boshqaradi</translation>
 <translation id="7955885781510802139">Yuqori kontrastli rejim</translation>
 <translation id="7977927628060636163">Mobil tarmoqlar qidirilmoqda...</translation>
+<translation id="7980780401175799550">Chrome OS tizimini yangi usulda boshqaring</translation>
 <translation id="7982789257301363584">Tarmoq</translation>
 <translation id="7984197416080286869">Siz juda koʻp marta urindingiz</translation>
 <translation id="7994370417837006925">Bir nechta hisobdan kirish</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> ishlatilmoqda</translation>
 <translation id="8190698733819146287">Tillar va kiritish sozlamalari...</translation>
 <translation id="8192202700944119416">Bildirishnomalar yashirilgan.</translation>
+<translation id="8196787716797768628">Chromebook qurilmangizdagi ilovalarni tez va qulay almashtirish uchun planshet rejimi ishoralaridan foydalaning.</translation>
 <translation id="8203795194971602413">Oʻng klik</translation>
 <translation id="8236042855478648955">Tanaffus qilish vaqti keldi</translation>
 <translation id="8247060538831475781">Ulanish: <ph name="CONNECTION_STATUS" />, Signal darajasi: <ph name="SIGNAL_STRENGTH" />, Telefon quvvati: <ph name="BATTERY_STATUS" /></translation>

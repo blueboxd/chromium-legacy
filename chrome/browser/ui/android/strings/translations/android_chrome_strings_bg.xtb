@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">Изпраща се до <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> се добавя...</translation>
 <translation id="1041308826830691739">От уебсайтове</translation>
+<translation id="1044891598689252897">Сайтовете ще работят нормално</translation>
 <translation id="1049743911850919806">„Инкогнито“</translation>
 <translation id="10614374240317010">Незапазвани никога</translation>
 <translation id="1067922213147265141">Други услуги на Google</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">Споделянето на <ph name="CONTENT_TYPE" /> не е възможно</translation>
 <translation id="1477626028522505441">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради проблеми в сървъра.</translation>
 <translation id="1506061864768559482">Търсеща машина</translation>
+<translation id="1509960214886564027">Функциите в много сайтове може да не работят правилно</translation>
 <translation id="1513352483775369820">Отметки и посетени сайтове</translation>
 <translation id="1513858653616922153">Изтриване на паролата</translation>
 <translation id="1521774566618522728">Активно днес</translation>
@@ -235,6 +237,7 @@
 <translation id="2647434099613338025">Добавяне на език</translation>
 <translation id="2650751991977523696">Да се изтегли ли отново файлът?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудиофайл}other{# аудиофайла}}</translation>
+<translation id="2687403674020088961">Блокиране на всички „бисквитки“ (не се препоръчва)</translation>
 <translation id="2707726405694321444">Опресняване на страницата</translation>
 <translation id="2709516037105925701">Автоматично попълване</translation>
 <translation id="2717722538473713889">Имейл адреси</translation>
@@ -340,6 +343,7 @@
 <translation id="3478363558367712427">Можете да изберете търсещата си машина</translation>
 <translation id="3492207499832628349">Нов раздел „инкогнито“</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /> за предложеното съдържание</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Обогатена реалност</translation>
 <translation id="3518985090088779359">Приемам и напред</translation>
 <translation id="3522247891732774234">Налице е актуализация. Още опции</translation>
@@ -355,6 +359,7 @@
 <translation id="358794129225322306">Разрешаване на сайт автоматично да изтегля няколко файла.</translation>
 <translation id="3590487821116122040">Съхранявани данни от сайтове, които Chrome не счита за важни (напр. рядко посещавани или сайтове без запазени настройки)</translation>
 <translation id="3594780231884063836">Без образ</translation>
+<translation id="3596414637720633074">Блокиране на „бисквитките“ на трети страни в режим „инкогнито“</translation>
 <translation id="3599863153486145794">Изчиства историята от всички устройства, на които сте влезли в профила си в Google. В него може да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Спиране на звука, възпроизвеждан от сайтовете</translation>
 <translation id="3616113530831147358">Аудио</translation>
@@ -921,6 +926,7 @@
 <translation id="780301667611848630">Не, благодаря</translation>
 <translation id="7810647596859435254">Отваряне със…</translation>
 <translation id="7821588508402923572">Тук ще се показва количеството икономисани данни</translation>
+<translation id="7828557259026017104">Това са файлове, създавани от уебсайтовете, които посещавате. Сайтовете ги използват, за да запомнят предпочитанията ви. „Бисквитките“ на трети страни се създават от други сайтове. Тези сайтове притежават част от съдържанието, като например реклами или изображения, което виждате на посетената от вас уеб страница.</translation>
 <translation id="783819812427904514">С образ</translation>
 <translation id="784934925303690534">Период от време</translation>
 <translation id="7851858861565204677">Други устройства</translation>
@@ -941,6 +947,7 @@
 <translation id="79859296434321399">За да гледате съдържание с обогатена реалност, инсталирайте ARCore</translation>
 <translation id="7986741934819883144">Изберете контакт</translation>
 <translation id="7987073022710626672">Общи условия на Chrome</translation>
+<translation id="7993619969781047893">Функциите в някои сайтове може да не работят правилно</translation>
 <translation id="7998918019931843664">Повторно отваряне на затворения раздел</translation>
 <translation id="7999064672810608036">Наистина ли искате да изчистите всички локални данни, включително „бисквитките“, и да нулирате всички разрешения за този уебсайт?</translation>
 <translation id="8004582292198964060">Браузър</translation>
@@ -1075,6 +1082,7 @@
 <translation id="8965591936373831584">изчаква</translation>
 <translation id="8970887620466824814">Нещо се обърка.</translation>
 <translation id="8972098258593396643">Да се изтегли ли файлът в стандартната папка?</translation>
+<translation id="8988028529677883095">Използване на телефон като ключ за сигурност</translation>
 <translation id="8993760627012879038">Отваряне на нов раздел в режим „инкогнито“</translation>
 <translation id="8998729206196772491">Влизате с профил, управляван от <ph name="MANAGED_DOMAIN" />, и предоставяте на администратора му контрол върху данните си в Chrome. Те ще се свържат за постоянно с този профил. При излизане от профила в браузъра информацията ви ще се изтрие от устройството, но ще продължи да се съхранява в профила ви в Google.</translation>
 <translation id="9019902583201351841">Управлява се от родителите ви</translation>

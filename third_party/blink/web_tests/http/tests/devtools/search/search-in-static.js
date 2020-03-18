@@ -20,7 +20,7 @@
   }
 
   async function step3() {
-    staticContentProvider = Common.StaticContentProvider.fromString('', Common.resourceTypes.Script, resource.content);
+    staticContentProvider = TextUtils.StaticContentProvider.fromString('', Common.resourceTypes.Script, resource.content);
     TestRunner.addResult(resource.url);
 
     var text = 'searchTestUniqueString';

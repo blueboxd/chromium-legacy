@@ -1267,6 +1267,17 @@ const char kOmniboxLocalEntitySuggestionsDescription[] =
     "layout, similar to #omnibox-rich-entity-suggestions. Enabling this feature"
     "will also enable #omnibox-rich-entity-suggestions.";
 
+const char kOmniboxRichAutocompletionName[] = "Omnibox Rich Autocompletion";
+const char kOmniboxRichAutocompletionDescription[] =
+    "Allow autocompletion for titles and non-prefixes. I.e. suggestions whose "
+    "titles or URLs contain the user input as a continuous chunk, but not "
+    "necessarily a prefix, can be the default suggestion. Typically, only "
+    "suggestions whose URLs are prefixed by the user input can be. The "
+    "potential variations toggle 4 params: 1) 'Title UI' displays titles, 2) "
+    "'2-Line UI' includes titles (and URLs when autocompleting titles) on a "
+    "2nd line, 3) 'Title AC' autocompletes titles, and 4) 'Non-Prefix AC' "
+    "autocompletes non-prefixes.";
+
 const char kOmniboxOnFocusSuggestionsName[] = "Omnibox on-focus suggestions";
 const char kOmniboxOnFocusSuggestionsDescription[] =
     "Configures Omnibox on-focus suggestions - suggestions displayed on-focus "

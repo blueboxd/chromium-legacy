@@ -5,6 +5,7 @@
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" />-এ পাঠানো হচ্ছে...</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> যোগ করা হচ্ছে...</translation>
 <translation id="1041308826830691739">ওয়েবসাইট থেকে</translation>
+<translation id="1044891598689252897">সাইট স্বাভাবিকভাবেই কাজ করবে</translation>
 <translation id="1049743911850919806">ছদ্মবেশী</translation>
 <translation id="10614374240317010">কখনও সংরক্ষিত হয়নি</translation>
 <translation id="1067922213147265141">Google-এর অন্যান্য পরিষেবা</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> শেয়ার করা যাচ্ছে না</translation>
 <translation id="1477626028522505441">সার্ভার সমস্যার কারণে <ph name="FILE_NAME" /> ডাউনলোড করা যায়নি।</translation>
 <translation id="1506061864768559482">সার্চ ইঞ্জিন</translation>
+<translation id="1509960214886564027">একাধিক সাইটের ফিচারগুলি কাজ নাও করতে পারে</translation>
 <translation id="1513352483775369820">বুকমার্কগুলি এবং ওয়েব ইতিহাস</translation>
 <translation id="1513858653616922153">পাসওয়ার্ড মুছুন</translation>
 <translation id="1521774566618522728">আজ ব্যবহার করা হয়েছে</translation>
@@ -235,6 +237,7 @@
 <translation id="2647434099613338025">ভাষা যুক্ত করুন</translation>
 <translation id="2650751991977523696">আবার ফাইল ডাউনলোড করবেন?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{#টি অডিও ফাইল}one{#টি অডিও ফাইল}other{#টি অডিও ফাইল}}</translation>
+<translation id="2687403674020088961">সব কুকি ব্লক করুন (সাজেস্ট করা হচ্ছে না)</translation>
 <translation id="2707726405694321444">পৃষ্ঠা রিফ্রেশ করুন</translation>
 <translation id="2709516037105925701">স্বয়ংপূরণ</translation>
 <translation id="2717722538473713889">ইমেল আইডি</translation>
@@ -340,6 +343,7 @@
 <translation id="3478363558367712427">আপনার সার্চ ইঞ্জিন বেছে নিতে পারেন</translation>
 <translation id="3492207499832628349">নতুন ছদ্মবেশী ট্যাব</translation>
 <translation id="3493531032208478708">প্রস্তাবিত কন্টেন্ট সম্পর্কে <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">অগমেন্টেড রিয়েলিটি</translation>
 <translation id="3518985090088779359">স্বীকার করুন ও অবিরত রাখুন</translation>
 <translation id="3522247891732774234">আপডেট উপলব্ধ। আরও বিকল্প</translation>
@@ -355,6 +359,7 @@
 <translation id="358794129225322306">একটি সাইটকে একাধিক ফাইল অটোমেটিক ডাউনলোড করার অনুমতি দিন।</translation>
 <translation id="3590487821116122040">যে সাইট স্টোরেজকে Chrome গুরুত্বপূর্ণ মনে করে না (উদাঃ সেভকরা সেটিংস বিহীন সাইটগুলি বা আপনি প্রায়শই ঘুরে দেখেন না এমন সাইটগুলি)</translation>
 <translation id="3594780231884063836">ভিডিওটি মিউট করুন</translation>
+<translation id="3596414637720633074">ছদ্মবেশী মোডে থার্ড-পার্টি কুকি ব্লক করুন</translation>
 <translation id="3599863153486145794">সমস্ত সাইন-ইন করা ডিভাইসগুলি থেকে ইতিহাস মুছে ফেলে। <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />-এ আপনার Google অ্যাকাউন্টের অন্যান্য ধরনের ব্রাউজিংয়ের ইতিহাস থাকতে পারে।</translation>
 <translation id="3600792891314830896">সাউন্ড প্লে করা হয় যে সাইটগুলিতে সেগুলি মিউট করুন</translation>
 <translation id="3616113530831147358">অডিও</translation>
@@ -923,6 +928,7 @@
 <translation id="780301667611848630">না থাক</translation>
 <translation id="7810647596859435254">এর মাধ্যমে খুলুন...</translation>
 <translation id="7821588508402923572">আপনি কত ডেটা সেভ করেছেন তা এখানে দেখা যাবে</translation>
+<translation id="7828557259026017104">আপনার ব্রাউজ করা ওয়েবসাইটের মধ্যে তৈরি হওয়া ফাইলগুলিকে 'কুকি' বলা হয়। সাইট আপনার পছন্দগুলি মনে রাখতে, কুকি ব্যবহার করে। অন্যান্য সাইট 'থার্ড-পার্টি কুকি' তৈরি করে। এই সাইটগুলিতে বিজ্ঞাপন এবং ছবির মতো কিছু কন্টেন্ট থাকে, যেগুলি আপনার ভিজিট করা ওয়েবপেজে আপনি দেখতে পান।</translation>
 <translation id="783819812427904514">ভিডিওটি আনমিউট করুন</translation>
 <translation id="784934925303690534">সময় সীমা</translation>
 <translation id="7851858861565204677">অন্যান্য ডিভাইস</translation>
@@ -943,6 +949,7 @@
 <translation id="79859296434321399">অগমেন্টেড রিয়েলিটি কন্টেন্ট দেখার জন্য ARCore ইনস্টল করুন</translation>
 <translation id="7986741934819883144">একটি পরিচিতি বেছে নিন</translation>
 <translation id="7987073022710626672">Chrome পরিষেবার শর্তাবলি</translation>
+<translation id="7993619969781047893">কিছু কিছু সাইটের ফিচারগুলি কাজ নাও করতে পারে</translation>
 <translation id="7998918019931843664">বন্ধ হওয়া ট্যাব আবার খুলুন</translation>
 <translation id="7999064672810608036">আপনি কি এই ওয়েবসাইটের কুকি সহ সমস্ত ডেটা পরিষ্কার করার এবং এটির সমস্ত অনুমতি রিসেট করার বিষয়ে নিশ্চিত?</translation>
 <translation id="8004582292198964060">ব্রাউজার</translation>
@@ -1077,6 +1084,7 @@
 <translation id="8965591936373831584">বাকি আছে</translation>
 <translation id="8970887620466824814">কিছু সমস্যা হয়েছে।</translation>
 <translation id="8972098258593396643">ডিফল্ট ফোল্ডারে ডাউনলোড করবেন?</translation>
+<translation id="8988028529677883095">নিরাপত্তা কী হিসেবে ফোন নম্বর ব্যবহার করুন</translation>
 <translation id="8993760627012879038">ছদ্মবেশী মোডে একটি নতুন ট্যাব খুলুন</translation>
 <translation id="8998729206196772491">আপনি <ph name="MANAGED_DOMAIN" /> দ্বারা পরিচালিত একটি অ্যাকাউন্টের মাধ্যমে সাইন-ইন করছেন এবং এর অ্যাডমিনিস্ট্রেটরকে আপনার Chrome ডেটা নিয়ন্ত্রণ করতে দিচ্ছেন৷ আপনার ডেটা এই অ্যাকাউন্টের সাথে স্থায়ীভাবে আবদ্ধ হবে৷ Chrome থেকে সাইন-আউট করলে এই ডিভাইস থেকে আপনার ডেটা মুছে ফেলা হবে, কিন্তু এটা আপনার Google অ্যাকাউন্টে সঞ্চিত থাকবে।</translation>
 <translation id="9019902583201351841">আপনার পিতামাতার দ্বারা পরিচালিত</translation>

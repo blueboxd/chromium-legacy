@@ -43,6 +43,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -69,6 +70,7 @@ import java.io.IOException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 @Features.DisableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS)
+@DisabledTest(message = "crbug.com/1062659 This test suite is failing on several bots.")
 public class TabGridIphTest {
     // clang-format on
     @Rule

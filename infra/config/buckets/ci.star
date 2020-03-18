@@ -20,6 +20,7 @@ ci.defaults.swarming_tags.set(['vpython:native-python-wrapper'])
 exec('//versioned/branches/beta/buckets/ci.star')
 exec('//versioned/branches/stable/buckets/ci.star')
 exec('//versioned/trunk/buckets/ci.star')
+exec('//versioned/milestones/m80/buckets/ci.star')
 
 
 # *** After this point everything is trunk only ***

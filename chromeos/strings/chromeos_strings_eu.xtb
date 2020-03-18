@@ -16,7 +16,6 @@
 <translation id="2805756323405976993">Aplikazioak</translation>
 <translation id="2872961005593481000">Itzali</translation>
 <translation id="3008341117444806826">FRESKATU</translation>
-<translation id="3169472444629675720">Ezagutu</translation>
 <translation id="3820172043799983114">PIN kodeak ez du balio.</translation>
 <translation id="3838338534323494292">Pasahitz berria</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> domeinuak kudeatzen du gailu hau, eta erabiltzaileen jarduera guztiak atzi ditzake; besteak beste, bisitatutako webguneak, erabilitako pasahitzak eta posta elektronikoa.</translation>
@@ -43,7 +42,7 @@ Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="808894953321890993">Aldatu pasahitza</translation>
 <translation id="8208861521865154048">Abantailak</translation>
 <translation id="8747900814994928677">Berretsi aldaketa</translation>
-<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Gelditzen diren saiakerak: <ph name="ATTEMPTS_LEFT" /></translation>
+<translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> saiakera gelditzen dira</translation>
 <translation id="910415269708673980">Freskatu <ph name="PRINCIPAL_NAME" /> erabiltzailearen zerbitzu-eskaera</translation>
 <translation id="9111102763498581341">Desblokeatu</translation>
 </translationbundle>

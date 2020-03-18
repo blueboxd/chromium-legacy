@@ -520,7 +520,7 @@ void LayoutCounter::Invalidate() {
   DCHECK(!counter_node_);
   if (DocumentBeingDestroyed())
     return;
-  SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+  SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kCountersChanged);
 }
 

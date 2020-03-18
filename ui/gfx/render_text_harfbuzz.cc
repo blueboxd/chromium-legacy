@@ -1364,9 +1364,7 @@ RenderTextHarfBuzz::~RenderTextHarfBuzz() {}
 
 const base::string16& RenderTextHarfBuzz::GetDisplayText() {
   // TODO(krb): Consider other elision modes for multiline.
-  if ((multiline() &&
-       (max_lines() == 0 || (elide_behavior() != ELIDE_TAIL &&
-                             elide_behavior() != TRUNCATE_HEAD))) ||
+  if ((multiline() && (max_lines() == 0 || elide_behavior() != ELIDE_TAIL)) ||
       elide_behavior() == NO_ELIDE || elide_behavior() == FADE_TAIL) {
     // Call UpdateDisplayText to clear |display_text_| and |text_elided_|
     // on the RenderText class.

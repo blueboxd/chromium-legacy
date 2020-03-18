@@ -280,7 +280,7 @@ void NumberInputType::MinOrMaxAttributeChanged() {
   if (GetElement().GetLayoutObject()) {
     GetElement()
         .GetLayoutObject()
-        ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+        ->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
             layout_invalidation_reason::kAttributeChanged);
   }
 }
@@ -291,7 +291,7 @@ void NumberInputType::StepAttributeChanged() {
   if (GetElement().GetLayoutObject()) {
     GetElement()
         .GetLayoutObject()
-        ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+        ->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
             layout_invalidation_reason::kAttributeChanged);
   }
 }

@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">Senyal mitjà</translation>
 <translation id="4112140312785995938">Retrocedeix</translation>
 <translation id="4129129681837227511">Per veure notificacions a la pantalla de bloqueig, desbloqueja el dispositiu per canviar aquesta opció</translation>
+<translation id="4144413954005649103">Si mantens el botó premut o fas clic amb el botó dret, l'Assistent et mostrarà informació relacionada amb el que selecciones a la pantalla.</translation>
 <translation id="4146833061457621061">Reprodueix música</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> gestionat per <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Idiomes</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">Mostra el teclat en pantalla</translation>
 <translation id="6164005077879661055">Tots els fitxers i les dades locals associats amb l'usuari supervisat se suprimiran permanentment quan aquest usuari supervisat se suprimeixi. És possible que el gestor encara pugui veure els llocs web visitats i la configuració d'aquest usuari supervisat a la pàgina <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Més informació</translation>
+<translation id="6236290670123303279">Gestiona la configuració</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Bloquejada en horitzontal</translation>
 <translation id="6259254695169772643">Fes servir el llapis òptic per seleccionar</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">Activat</translation>
 <translation id="6670153871843998651">Escriptori 3</translation>
 <translation id="6691659475504239918">Cerca+Maj+H</translation>
+<translation id="6692996468359469499">Obtén informació relacionada amb la teva selecció</translation>
 <translation id="6696025732084565524">El teclat extraïble necessita una actualització molt important</translation>
 <translation id="6700713906295497288">Botó del menú d'IME</translation>
 <translation id="6713285437468012787">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" s'ha vinculat i ja està disponible per a tots els usuaris. Podeu eliminar la vinculació a Configuració.</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895">Compte gestionat per <ph name="FIRST_PARENT_EMAIL" /> i <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">Mode d'alt contrast</translation>
 <translation id="7977927628060636163">S'estan cercant xarxes mòbils…</translation>
+<translation id="7980780401175799550">Prova maneres noves de navegar per Chrome OS</translation>
 <translation id="7982789257301363584">Xarxa</translation>
 <translation id="7984197416080286869">Has intentat desbloquejar el dispositiu amb empremta digital massa vegades</translation>
 <translation id="7994370417837006925">Inici de sessió múltiple</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835">S'està utilitzant <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Personalitza idiomes i introducció de text...</translation>
 <translation id="8192202700944119416">S'han amagat les notificacions.</translation>
+<translation id="8196787716797768628">Utilitza gestos per canviar ràpidament entre aplicacions i interaccionar amb el teu Chromebook en mode de tauleta.</translation>
 <translation id="8203795194971602413">Fes clic amb el botó dret</translation>
 <translation id="8236042855478648955">Ara toca fer una pausa</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" /> d'intensitat del senyal, <ph name="BATTERY_STATUS" /> de bateria al telèfon</translation>

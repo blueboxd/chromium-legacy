@@ -97,8 +97,7 @@ bool FontFaceSetWorker::ResolveFontStyle(const String& font_string,
   FontDescription description = FontStyleResolver::ComputeFont(
       *parsed_style, GetWorker()->GetFontSelector());
 
-  font = Font(description);
-  font.Update(GetWorker()->GetFontSelector());
+  font = Font(description, GetWorker()->GetFontSelector());
 
   return true;
 }

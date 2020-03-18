@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">Mètode de recollida</translation>
 <translation id="1281476433249504884">Apiladora 1</translation>
 <translation id="1285320974508926690">No tradueixis mai aquest lloc</translation>
-<translation id="1285400217480592994">Comprova el contingut dels fitxers que baixis de Chrome o que hi pengis.</translation>
 <translation id="1292701964462482250">"L'ordinador conté programari que impedeix que Chrome es connecti de manera segura al web" (només en ordinadors Windows)</translation>
 <translation id="1294154142200295408">Variacions de la línia d'ordres</translation>
 <translation id="129553762522093515">Tancades recentment</translation>
@@ -646,6 +645,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="3784372983762739446">Dispositius Bluetooth</translation>
 <translation id="3787705759683870569">Data de caducitat: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">Mida 16</translation>
+<translation id="3793574014653384240">Nombre d'errors que s'han produït recentment i els motius corresponents</translation>
 <translation id="3797522431967816232">Prc3 (sobre)</translation>
 <translation id="3799805948399000906">Tipus de lletra sol·licitat</translation>
 <translation id="3807366285948165054">Desplaçament a l'eix X de la imatge</translation>

@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">Ipinapadala sa <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">Idinaragdag ang <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Mula sa mga website</translation>
+<translation id="1044891598689252897">Gagana nang normal ang mga site</translation>
 <translation id="1049743911850919806">Incognito</translation>
 <translation id="10614374240317010">Hindi kailanman nag-save</translation>
 <translation id="1067922213147265141">Iba pang serbisyo ng Google</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">Hindi maibahagi ang <ph name="CONTENT_TYPE" /></translation>
 <translation id="1477626028522505441">Hindi na-download ang <ph name="FILE_NAME" /> dahil sa mga isyu sa server.</translation>
 <translation id="1506061864768559482">Search engine</translation>
+<translation id="1509960214886564027">Posibleng masira ang mga feature sa maraming site</translation>
 <translation id="1513352483775369820">Bookmark at history ng web</translation>
 <translation id="1513858653616922153">I-delete ang password</translation>
 <translation id="1521774566618522728">Aktibo ngayong araw</translation>
@@ -235,6 +237,7 @@ Pindutin nang matagal ang anumang salita para maghanap. Para pinuhin ang iyong p
 <translation id="2647434099613338025">Magdagdag ng wika</translation>
 <translation id="2650751991977523696">I-download ulit ang file?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Audio file}one{# Audio file}other{# na Audio file}}</translation>
+<translation id="2687403674020088961">I-block ang lahat ng cookies (hindi inirerekomenda)</translation>
 <translation id="2707726405694321444">I-refresh ang page</translation>
 <translation id="2709516037105925701">AutoFill</translation>
 <translation id="2717722538473713889">Mga email address</translation>
@@ -340,6 +343,7 @@ Pindutin nang matagal ang anumang salita para maghanap. Para pinuhin ang iyong p
 <translation id="3478363558367712427">Puwede mong piliin ang iyong search engine</translation>
 <translation id="3492207499832628349">Bagong tab na incognito</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /> tungkol sa iminumungkahing content</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Augmented Reality</translation>
 <translation id="3518985090088779359">Tanggapin, magpatuloy</translation>
 <translation id="3522247891732774234">May available na update. Higit pang mga opsyon</translation>
@@ -355,6 +359,7 @@ Pindutin nang matagal ang anumang salita para maghanap. Para pinuhin ang iyong p
 <translation id="358794129225322306">Payagan ang isang site na awtomatikong mag-download ng maraming file.</translation>
 <translation id="3590487821116122040">Storage ng site na sa tingin ng Chrome ay hindi mahalaga (hal. mga site na walang mga naka-save na setting o hindi mo madalas bisitahin)</translation>
 <translation id="3594780231884063836">I-mute ang video</translation>
+<translation id="3596414637720633074">I-block ang third-party na cookies sa Incognito</translation>
 <translation id="3599863153486145794">Kini-clear ang history sa lahat ng naka-sign in na device. Maaaring may iba pang anyo ng history ng pag-browse ang iyong Google Account sa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">I-mute ang mga site na nagpe-play ng tunog</translation>
 <translation id="3616113530831147358">Audio</translation>
@@ -921,6 +926,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="780301667611848630">Hindi salamat</translation>
 <translation id="7810647596859435254">Buksan gamit ang…</translation>
 <translation id="7821588508402923572">Lalabas dito ang mga natipid sa iyong data</translation>
+<translation id="7828557259026017104">Ang cookies ay mga file na ginagawa ng mga website na binibisita mo. Ginagamit ng mga site ang mga ito para tandaan ang iyong mga kagustuhan. Ginagawa ng iba pang site ang third-party na cookies. Nagmamay-ari ang mga site na ito ng ilan sa content, gaya ng mga ad o larawan, na nakikita mo sa webpage na iyong binibisita.</translation>
 <translation id="783819812427904514">I-unmute ang video</translation>
 <translation id="784934925303690534">Sakop na oras</translation>
 <translation id="7851858861565204677">Iba pang device</translation>
@@ -941,6 +947,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="79859296434321399">Para matingnan ang augmented reality na content, i-install ang ARCore</translation>
 <translation id="7986741934819883144">Pumili ng contact</translation>
 <translation id="7987073022710626672">Mga Tuntunin ng Serbisyo ng Chrome</translation>
+<translation id="7993619969781047893">Posibleng masira ang mga feature sa ilang site</translation>
 <translation id="7998918019931843664">Muling buksan ang isinarang tab</translation>
 <translation id="7999064672810608036">Sigurado ka bang gusto mong i-clear ang lahat ng lokal na data, kasama ang cookies, at i-reset ang lahat ng pahintulot para sa website na ito?</translation>
 <translation id="8004582292198964060">Browser</translation>
@@ -1075,6 +1082,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8965591936373831584">nakabinbin</translation>
 <translation id="8970887620466824814">Nagkaproblema.</translation>
 <translation id="8972098258593396643">I-download sa default na folder?</translation>
+<translation id="8988028529677883095">Gamitin ang telepono bilang security key</translation>
 <translation id="8993760627012879038">Magbukas ng bagong tab sa Incognito mode</translation>
 <translation id="8998729206196772491">Nagsa-sign in ka gamit ang isang account na pinamamahalaan ng <ph name="MANAGED_DOMAIN" /> at binibigyan mo ang administrator nito ng kontrol sa iyong data sa Chrome. Permanenteng mauugnay ang iyong data sa account na ito. Made-delete ang data mo sa device na ito kapag nag-sign out ka sa Chrome, ngunit mananatili itong naka-store sa iyong Google Account.</translation>
 <translation id="9019902583201351841">Pinamamahalaan ng iyong mga magulang</translation>

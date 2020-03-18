@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Chọn &amp;tất cả</translation>
-<translation id="1938451708255335766">Để điều chỉnh mật độ hiển thị cửa sổ, hãy khởi động lại ứng dụng.</translation>
 <translation id="2006524834898217237">Hãy đảm bảo thiết bị này có kết nối Internet.</translation>
 <translation id="208586643495776849">Vui lòng thử lại</translation>
 <translation id="2090963878406559571">Để gửi một số điện thoại từ <ph name="ORIGIN" /> sang điện thoại Android, hãy <ph name="TROUBLESHOOT_LINK" /> cho cả hai thiết bị trong phần cài đặt.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Màn hình tích hợp</translation>
 <translation id="335581015389089642">Giọng nói</translation>
 <translation id="3389286852084373014">Văn bản quá lớn</translation>
-<translation id="3479552764303398839">Không phải bây giờ</translation>
 <translation id="348799646910989694">Giá tự động ẩn</translation>
 <translation id="3554637740840164787">Đã ghim <ph name="ITEM_TITLE" /></translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Còn 1 ngày}other{Còn # ngày}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 phút}other{# phút}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Hoạt động hôm nay}=1{Hoạt động 1 ngày trước}other{Hoạt động # ngày trước}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ngày và }other{# ngày và }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{trong 1 năm}other{trong # năm}}</translation>
-<translation id="5895138241574237353">Khởi động lại</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Còn 1 giây}other{Còn # giây}}</translation>
 <translation id="5941711191222866238">Thu nhỏ</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 giờ}other{# giờ}}</translation>

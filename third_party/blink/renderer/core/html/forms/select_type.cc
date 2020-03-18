@@ -524,7 +524,7 @@ HTMLOptionElement* MenuListSelectType::OptionToBeShown() const {
 
 void MenuListSelectType::MaximumOptionWidthMightBeChanged() const {
   if (LayoutObject* layout_object = select_->GetLayoutObject()) {
-    layout_object->SetNeedsLayoutAndPrefWidthsRecalc(
+    layout_object->SetNeedsLayoutAndIntrinsicWidthsRecalc(
         layout_invalidation_reason::kMenuOptionsChanged);
   }
 }

@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">Menghantar ke <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">Menambahkan <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Daripada tapak web</translation>
+<translation id="1044891598689252897">Tapak akan berfungsi seperti biasa</translation>
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="10614374240317010">Tidak pernah disimpan</translation>
 <translation id="1067922213147265141">Perkhidmatan Google yang lain</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">Tidak dapat berkongsi <ph name="CONTENT_TYPE" /></translation>
 <translation id="1477626028522505441">Muat turun <ph name="FILE_NAME" /> gagal disebabkan oleh masalah pelayan.</translation>
 <translation id="1506061864768559482">Enjin carian</translation>
+<translation id="1509960214886564027">Ciri pada banyak tapak mungkin rosak</translation>
 <translation id="1513352483775369820">Penanda halaman dan sejarah web</translation>
 <translation id="1513858653616922153">Padam kata laluan</translation>
 <translation id="1521774566618522728">Aktif hari ini</translation>
@@ -235,6 +237,7 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="2647434099613338025">Tambah bahasa</translation>
 <translation id="2650751991977523696">Muat turun fail sekali lagi?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Fail audio}other{# Fail audio}}</translation>
+<translation id="2687403674020088961">Sekat semua kuki (tidak disyorkan)</translation>
 <translation id="2707726405694321444">Muat semula halaman</translation>
 <translation id="2709516037105925701">Autoisi</translation>
 <translation id="2717722538473713889">Alamat e-mel</translation>
@@ -340,6 +343,7 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="3478363558367712427">Anda boleh memilih enjin carian anda</translation>
 <translation id="3492207499832628349">Tab inkognito baharu</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /> tentang kandungan yang disyorkan</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Realiti Tambahan</translation>
 <translation id="3518985090088779359">Terima &amp; teruskan</translation>
 <translation id="3522247891732774234">Kemas kini tersedia. Lagi pilihan</translation>
@@ -355,6 +359,7 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="358794129225322306">Benarkan tapak memuat turun berbilang fail secara automatik.</translation>
 <translation id="3590487821116122040">Storan tapak yang Chrome anggap tidak penting (misalnya tapak yang tiada tetapan yang disimpan atau yang jarang anda lawati)</translation>
 <translation id="3594780231884063836">Redam video</translation>
+<translation id="3596414637720633074">Sekat kuki pihak ketiga dalam Inkognito</translation>
 <translation id="3599863153486145794">Mengosongkan sejarah daripada semua peranti yang dilog masuk. Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Redam tapak yang memainkan bunyi</translation>
 <translation id="3616113530831147358">Audio</translation>
@@ -921,6 +926,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="780301667611848630">Tidak, terima kasih</translation>
 <translation id="7810647596859435254">Buka dengan...</translation>
 <translation id="7821588508402923572">Penjimatan data anda akan dipaparkan di sini</translation>
+<translation id="7828557259026017104">Kuki ialah fail yang dibuat oleh tapak web yang anda lawati. Tapak menggunakan kuki untuk mengingat pilihan anda. Kuki pihak ketiga dibuat oleh tapak lain. Tapak ini memiliki sebahagian daripada kandungan, seperti iklan atau imej, yang anda lihat dalam halaman web yang anda lawati.</translation>
 <translation id="783819812427904514">Nyahredam video</translation>
 <translation id="784934925303690534">Julat masa</translation>
 <translation id="7851858861565204677">Peranti lain</translation>
@@ -941,6 +947,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="79859296434321399">Untuk melihat kandungan realiti tambahan, pasang ARCore</translation>
 <translation id="7986741934819883144">Pilih kenalan</translation>
 <translation id="7987073022710626672">Syarat Perkhidmatan Chrome</translation>
+<translation id="7993619969781047893">Ciri pada sesetengah tapak mungkin rosak</translation>
 <translation id="7998918019931843664">Buka semula tab yang ditutup</translation>
 <translation id="7999064672810608036">Anda pasti ingin mengosongkan semua data setempat, termasuk kuki dan menetapkan semula semua kebenaran untuk tapak web ini?</translation>
 <translation id="8004582292198964060">Penyemak Imbas</translation>
@@ -1075,6 +1082,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8965591936373831584">belum selesai</translation>
 <translation id="8970887620466824814">Kesilapan telah berlaku.</translation>
 <translation id="8972098258593396643">Muat turun ke folder lalai?</translation>
+<translation id="8988028529677883095">Gunakan telefon sebagai kunci keselamatan</translation>
 <translation id="8993760627012879038">Buka tetingkap baharu dalam mod Inkognito</translation>
 <translation id="8998729206196772491">Anda log masuk dengan akaun yang diurus oleh <ph name="MANAGED_DOMAIN" /> dan memberikan kawalan terhadap data Chrome anda kepada pentadbirnya. Data anda akan terikat secara kekal kepada akaun ini. Tindakan log keluar daripada Chrome akan memadamkan data anda daripada peranti ini, tetapi data itu akan kekal disimpan dalam Akaun Google anda.</translation>
 <translation id="9019902583201351841">Diurus oleh ibu bapa anda</translation>

@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">เลือก&amp;ทั้งหมด</translation>
-<translation id="1938451708255335766">หากต้องการปรับความหนาแน่นของการแสดงผลในหน้าต่าง ให้ปิดแอปแล้วเปิดใหม่</translation>
 <translation id="2006524834898217237">ตรวจสอบว่าอุปกรณ์นี้เชื่อมต่ออินเทอร์เน็ตแล้ว</translation>
 <translation id="208586643495776849">โปรดลองอีกครั้ง</translation>
 <translation id="2090963878406559571">หากต้องการส่งหมายเลขจาก <ph name="ORIGIN" /> ไปยังโทรศัพท์ Android ให้<ph name="TROUBLESHOOT_LINK" />อุปกรณ์ทั้งสองในการตั้งค่า</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">จอแสดงผลในตัว</translation>
 <translation id="335581015389089642">คำพูด</translation>
 <translation id="3389286852084373014">ข้อความมีขนาดใหญ่เกินไป</translation>
-<translation id="3479552764303398839">ไม่ใช่ตอนนี้</translation>
 <translation id="348799646910989694">ซ่อนชั้นวางโดยอัตโนมัติ</translation>
 <translation id="3554637740840164787">ตรึง <ph name="ITEM_TITLE" /> แล้ว</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{เหลือ 1 วัน}other{เหลือ # วัน}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 นาที}other{# นาที}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{ใช้งานวันนี้}=1{ใช้งานเมื่อ 1 วันที่ผ่านมา}other{ใช้งานเมื่อ # วันที่ผ่านมา}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 วันกับอีก }other{# วันกับอีก }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{ใน 1 ปี}other{ใน # ปี}}</translation>
-<translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{เหลือ 1 วินาที}other{เหลือ # วินาที}}</translation>
 <translation id="5941711191222866238">ย่อ</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ชั่วโมง}other{# ชั่วโมง}}</translation>

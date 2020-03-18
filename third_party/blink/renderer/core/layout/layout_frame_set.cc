@@ -68,7 +68,7 @@ void LayoutFrameSet::Paint(const PaintInfo& paint_info) const {
 void LayoutFrameSet::ComputePreferredLogicalWidths() {
   min_preferred_logical_width_ = LayoutUnit();
   max_preferred_logical_width_ = LayoutUnit();
-  ClearPreferredLogicalWidthsDirty();
+  ClearIntrinsicLogicalWidthsDirty();
 }
 
 void LayoutFrameSet::GridAxis::Resize(int size) {

@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">Método de retiro</translation>
 <translation id="1281476433249504884">Apilador 1</translation>
 <translation id="1285320974508926690">Nunca traducir este sitio</translation>
-<translation id="1285400217480592994">Analiza el contenido de los archivos que descargas o subes mediante Chrome.</translation>
 <translation id="1292701964462482250">"Un software en tu computadora evita que Chrome se conecte de forma segura a la Web" (solo en computadoras con Windows)</translation>
 <translation id="1294154142200295408">Variaciones en la línea de comandos</translation>
 <translation id="129553762522093515">Cerrado recientemente</translation>
@@ -651,6 +650,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="3784372983762739446">Dispositivos Bluetooth</translation>
 <translation id="3787705759683870569">Vencimiento: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">Tamaño 16</translation>
+<translation id="3793574014653384240">Cantidad y causas de los errores que se produjeron recientemente</translation>
 <translation id="3797522431967816232">Prc3 (Envelope)</translation>
 <translation id="3799805948399000906">Se necesita la fuente</translation>
 <translation id="3807366285948165054">Cambio en el eje X de la imagen</translation>

@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">אות בינוני</translation>
 <translation id="4112140312785995938">הרצה לאחור</translation>
 <translation id="4129129681837227511">כדי להציג הודעות במסך הנעילה, יש לבטל את הנעילה כדי לשנות את ההגדרה</translation>
+<translation id="4144413954005649103">‏לאחר לחיצה ימנית או לחיצה ארוכה, Assistant יציג על המסך נתונים שקשורים לתוכן שבחרת.</translation>
 <translation id="4146833061457621061">השמעת מוזיקה</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> מנוהל על ידי <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">שפות</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">הצג מקלדת במסך</translation>
 <translation id="6164005077879661055">כל הקבצים והנתונים המקומיים המשויכים למשתמש בפיקוח יימחקו לצמיתות לאחר שמשתמש בפיקוח זה יוסר. המנהל עדיין יוכל לראות את האתרים שבהם משתמש בפיקוח זה ביקר, ואת ההגדרות שלו, בכתובת <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
+<translation id="6236290670123303279">ניהול ההגדרות</translation>
 <translation id="6237231532760393653">‎1X‎</translation>
 <translation id="6254629735336163724">נעול במצב אופקי</translation>
 <translation id="6259254695169772643">כדי לבחור יש להשתמש בסטיילוס</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">מופעל</translation>
 <translation id="6670153871843998651">שולחן עבודה 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
+<translation id="6692996468359469499">קבלת מידע בקשר לבחירה שלך</translation>
 <translation id="6696025732084565524">המקלדת הניתנת לניתוק זקוקה לעדכון קריטי</translation>
 <translation id="6700713906295497288">‏לחצן תפריט IME</translation>
 <translation id="6713285437468012787">‏מכשיר ה-Bluetooth‏ "<ph name="DEVICE_NAME" />" הותאם והוא זמין כעת לכל המשתמשים. אתה יכול להסיר את ההתאמה הזו ב'הגדרות'.</translation>
@@ -529,6 +532,7 @@
 <translation id="79341161159229895">החשבון מנוהל על-ידי <ph name="FIRST_PARENT_EMAIL" /> ועל-ידי <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">מצב ניגודיות גבוהה</translation>
 <translation id="7977927628060636163">מחפש רשתות סלולריות...</translation>
+<translation id="7980780401175799550">‏דרכים חדשות לנווט ב-Chrome OS</translation>
 <translation id="7982789257301363584">רשת</translation>
 <translation id="7984197416080286869">יותר מדי ניסיונות טביעת אצבע</translation>
 <translation id="7994370417837006925">כניסה עם מספר חשבונות</translation>
@@ -550,6 +554,7 @@
 <translation id="8167567890448493835">המיקום הנוכחי הוא<ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">התאם אישית שפה וקלט...</translation>
 <translation id="8192202700944119416">ההודעות מוסתרות.</translation>
+<translation id="8196787716797768628">‏במצב טאבלט אפשר לעבור במהירות בין אפליקציות ולבצע פעולות שונות ב-Chromebook באמצעות תנועות.</translation>
 <translation id="8203795194971602413">לחיצה ימנית</translation>
 <translation id="8236042855478648955">הגיע הזמן להפסקה</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, עוצמת האות: <ph name="SIGNAL_STRENGTH" />, סוללת הטלפון <ph name="BATTERY_STATUS" /></translation>

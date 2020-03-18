@@ -27,7 +27,7 @@ RenderWidgetScreenMetricsEmulator::~RenderWidgetScreenMetricsEmulator() =
     default;
 
 void RenderWidgetScreenMetricsEmulator::DisableAndApply() {
-  delegate_->SetScreenMetricsEmulationParameters(false, emulation_params_);
+  delegate_->SetScreenMetricsEmulationParameters(base::nullopt);
   delegate_->SetScreenRects(original_view_screen_rect_,
                             original_window_screen_rect_);
   delegate_->SetScreenInfoAndSize(original_screen_info_, original_widget_size_,
@@ -59,14 +59,14 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
 
   // If either the width or height are specified by the emulator, then we use
   // that size, and assume that they have the scale pre-applied to them.
-  if (emulation_params_.view_size.width) {
-    widget_size.set_width(emulation_params_.view_size.width);
+  if (emulation_params_.view_size.width()) {
+    widget_size.set_width(emulation_params_.view_size.width());
   } else {
     widget_size.set_width(
         gfx::ToRoundedInt(widget_size.width() / emulation_params_.scale));
   }
-  if (emulation_params_.view_size.height) {
-    widget_size.set_height(emulation_params_.view_size.height);
+  if (emulation_params_.view_size.height()) {
+    widget_size.set_height(emulation_params_.view_size.height());
   } else {
     widget_size.set_height(
         gfx::ToRoundedInt(widget_size.height() / emulation_params_.scale));
@@ -113,21 +113,21 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
   uint16_t orientation_angle = original_screen_info().orientation_angle;
 
   switch (emulation_params_.screen_orientation_type) {
-    case blink::kWebScreenOrientationUndefined:
+    case blink::mojom::ScreenOrientationType::kUndefined:
       break;  // Leave as the real value.
-    case blink::kWebScreenOrientationPortraitPrimary:
+    case blink::mojom::ScreenOrientationType::kPortraitPrimary:
       orientation_type = SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
       orientation_angle = emulation_params_.screen_orientation_angle;
       break;
-    case blink::kWebScreenOrientationPortraitSecondary:
+    case blink::mojom::ScreenOrientationType::kPortraitSecondary:
       orientation_type = SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY;
       orientation_angle = emulation_params_.screen_orientation_angle;
       break;
-    case blink::kWebScreenOrientationLandscapePrimary:
+    case blink::mojom::ScreenOrientationType::kLandscapePrimary:
       orientation_type = SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
       orientation_angle = emulation_params_.screen_orientation_angle;
       break;
-    case blink::kWebScreenOrientationLandscapeSecondary:
+    case blink::mojom::ScreenOrientationType::kLandscapeSecondary:
       orientation_type = SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY;
       orientation_angle = emulation_params_.screen_orientation_angle;
       break;
@@ -136,11 +136,10 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
   // Pass three emulation parameters to the blink side:
   // - we keep the real device scale factor in compositor to produce sharp image
   //   even when emulating different scale factor;
-  blink::WebDeviceEmulationParams modified_emulation_params = emulation_params_;
+  auto modified_emulation_params = emulation_params_;
   modified_emulation_params.device_scale_factor =
       original_screen_info().device_scale_factor;
-  delegate_->SetScreenMetricsEmulationParameters(true,
-                                                 modified_emulation_params);
+  delegate_->SetScreenMetricsEmulationParameters(modified_emulation_params);
 
   delegate_->SetScreenRects(gfx::Rect(widget_pos, widget_size),
                             gfx::Rect(window_pos, window_size));

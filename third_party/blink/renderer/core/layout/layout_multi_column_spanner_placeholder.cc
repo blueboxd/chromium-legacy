@@ -72,7 +72,7 @@ void LayoutMultiColumnSpannerPlaceholder::InsertedIntoTree() {
   LayoutBox::InsertedIntoTree();
   // The object may previously have been laid out as a non-spanner, but since
   // it's a spanner now, it needs to be relaid out.
-  layout_object_in_flow_thread_->SetNeedsLayoutAndPrefWidthsRecalc(
+  layout_object_in_flow_thread_->SetNeedsLayoutAndIntrinsicWidthsRecalc(
       layout_invalidation_reason::kColumnsChanged);
 }
 
@@ -83,7 +83,7 @@ void LayoutMultiColumnSpannerPlaceholder::WillBeRemovedFromTree() {
     // Even if the placeholder is going away, the object in the flow thread
     // might live on. Since it's not a spanner anymore, it needs to be relaid
     // out.
-    ex_spanner->SetNeedsLayoutAndPrefWidthsRecalc(
+    ex_spanner->SetNeedsLayoutAndIntrinsicWidthsRecalc(
         layout_invalidation_reason::kColumnsChanged);
   }
   LayoutBox::WillBeRemovedFromTree();

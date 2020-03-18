@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">سیگنال متوسط</translation>
 <translation id="4112140312785995938">رفتن به عقب</translation>
 <translation id="4129129681837227511">برای دیدن اعلان‌ها در صفحه قفل، ابتدا قفل را باز کنید و تنظیمات را تغییر دهید</translation>
+<translation id="4144413954005649103">با کلیک راست یا فشار طولانی، «دستیار» اطلاعات مرتبط با چیزی که در صفحه انتخاب کرده‌اید نشان می‌دهد.</translation>
 <translation id="4146833061457621061">‏Play music (موسیقی پخش کن)</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> تحت مدیریت <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">زبان‌ها</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">نمایش صفحه‌کلید روی صفحه</translation>
 <translation id="6164005077879661055">با حذف این کاربر نظارت‌شده، کلیه فایل‌ها و داده‌های محلی مربوط به کاربر نظارت‌شده برای همیشه حذف خواهند شد. وب‌سایت‌های بازدید شده و تنظیمات این کاربر نظارت‌شده همچنان برای مدیر در <ph name="MANAGEMENT_URL" /> قابل مشاهده خواهد بود.</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
+<translation id="6236290670123303279">مدیریت تنظیمات</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">قفل درحالت افقی</translation>
 <translation id="6259254695169772643">برای انتخاب از قلم استفاده کنید</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">روشن</translation>
 <translation id="6670153871843998651">میز ۳</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
+<translation id="6692996468359469499">دریافت اطلاعاتی که با انتخابتان مرتبط است</translation>
 <translation id="6696025732084565524">لازم است صفحه‌کلید قابل جدا شدن به‌روزرسانی ضروری شود</translation>
 <translation id="6700713906295497288">‏دکمه منو IME</translation>
 <translation id="6713285437468012787">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» مرتبط شده است و اکنون برای همه کاربران در دسترس است. می‌توانید این مرتبط‌سازی را با استفاده از تنظیمات حذف کنید.</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895">حساب تحت مدیریت <ph name="FIRST_PARENT_EMAIL" /> و <ph name="SECOND_PARENT_EMAIL" /> است</translation>
 <translation id="7955885781510802139">حالت کنتراست بالا</translation>
 <translation id="7977927628060636163">درحال جستجوی شبکه‌های تلفن همراه…</translation>
+<translation id="7980780401175799550">‏راه‌های جدید پیمایش «سیستم عامل Chrome» را امتحان کنید</translation>
 <translation id="7982789257301363584">شبکه</translation>
 <translation id="7984197416080286869">تلاش‌های بیش از حد برای باز کردن قفل با اثر انگشت</translation>
 <translation id="7994370417837006925">ورود چندگانه به سیستم</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835">درحال استفاده از <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">سفارشی کردن زبان‌ها و ورودی...</translation>
 <translation id="8192202700944119416">اعلان‌ها پنهان شده است.</translation>
+<translation id="8196787716797768628">‏از اشاره‌ها برای جابه‌جایی سریع بین برنامه‌ها و تعامل با Chromebook خود در حالت رایانه لوحی استفاده کنید.</translation>
 <translation id="8203795194971602413">کلیک راست</translation>
 <translation id="8236042855478648955">وقت استراحت</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />، باتری تلفن<ph name="BATTERY_STATUS" /></translation>

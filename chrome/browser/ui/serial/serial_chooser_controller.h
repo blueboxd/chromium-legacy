@@ -24,7 +24,6 @@ class RenderFrameHost;
 class SerialChooserContext;
 
 // SerialChooserController provides data for the Serial API permission prompt.
-// It is owned by ChooserBubbleDelegate.
 class SerialChooserController final : public ChooserController {
  public:
   SerialChooserController(

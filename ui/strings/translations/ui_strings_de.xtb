@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Einfg</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;Alles auswählen</translation>
-<translation id="1938451708255335766">Wenn Sie die Anzeigedichte der App-Fenster anpassen möchten, starten Sie die App neu.</translation>
 <translation id="2006524834898217237">Prüfen Sie, ob das Gerät mit dem Internet verbunden ist.</translation>
 <translation id="208586643495776849">Versuchen Sie es bitte noch einmal</translation>
 <translation id="2090963878406559571">Wenn Sie eine Nummer von <ph name="ORIGIN" /> an Ihr Android-Smartphone senden möchten, müssen Sie für beide Geräte in den Einstellungen die <ph name="TROUBLESHOOT_LINK" />.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Integriertes Display</translation>
 <translation id="335581015389089642">Sprachausgabe</translation>
 <translation id="3389286852084373014">SMS zu lang</translation>
-<translation id="3479552764303398839">Jetzt nicht</translation>
 <translation id="348799646910989694">Ablage automatisch ausgeblendet</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> wurde angepinnt</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 Tag übrig}other{# Tage übrig}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 Min.}other{# Min.}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Heute aktiv}=1{Vor 1 Tag aktiv}other{Vor # Tagen aktiv}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 Tag und  }other{# Tage und  }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{in 1 J.}other{in # J.}}</translation>
-<translation id="5895138241574237353">Neu starten</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 Sekunde übrig}other{# Sekunden übrig}}</translation>
 <translation id="5941711191222866238">Verkleinern</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 Stunde}other{# Stunden}}</translation>

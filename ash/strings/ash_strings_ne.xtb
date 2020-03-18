@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">मध्यम सिग्नल</translation>
 <translation id="4112140312785995938">पछाडि जानुहोस्</translation>
 <translation id="4129129681837227511">आफ्नो लक स्क्रिनमा सूचनाहरू हेर्नका लागि सेटिङहरू परिवर्तन गर्न अनलक गर्नुहोस्</translation>
+<translation id="4144413954005649103">दायाँ क्लिक गर्दा वा लङ प्रेस गर्दा सहायकले तपाईंलाई आफूले स्क्रिनमा चयन गरेको कुरासँग सम्बन्धित जानकारी देखाउँछ।</translation>
 <translation id="4146833061457621061">सङ्गीत प्ले गर्नुहोस्</translation>
 <translation id="4149156641122542261"><ph name="DOMAIN" /> ले व्यवस्थित गरेको<ph name="DEVICE_TYPE" /></translation>
 <translation id="4181841719683918333">भाषाहरू</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">अन-स्क्रिन कुञ्जीपाटी देखाउनुहोस्</translation>
 <translation id="6164005077879661055">यस पर्यवेक्षित प्रयोगकर्तालाई हटाइसकेपछि पर्यवेक्षित प्रयोगकर्तासँग सम्बन्धित सबै फाइलहरू र स्थानीय डाटालाई स्थायी रूपमा मेटाइनेछ। भ्रमण गरिएका वेबसाइटहरू र यस पर्यवेक्षित प्रयोगकर्ताको सेटिङहरूलाई व्यवस्थापकले अझै पनि <ph name="MANAGEMENT_URL" /> मा देख्न सक्छ।</translation>
 <translation id="6165508094623778733">थप जान्नुहोस्</translation>
+<translation id="6236290670123303279">सेटिङहरूको व्यवस्थापन गर्नुहोस्</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">तेर्सो अवस्थामा लक गरियो</translation>
 <translation id="6259254695169772643">चयन गर्न आफ्नो स्टाइलस प्रयोग गर्नुहोस्</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">सक्रिय छ</translation>
 <translation id="6670153871843998651">डेस्क ३</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
+<translation id="6692996468359469499">आफ्नो चयनसँग सम्बन्धित जानकारी प्राप्त गर्नुहोस्</translation>
 <translation id="6696025732084565524">तपाईंको अलग्याउन मिल्ने किबोर्डलाई महत्त्वपूर्ण अद्यावधिक आवश्यक छ</translation>
 <translation id="6700713906295497288">IME सम्बन्धी मेनुको बटन</translation>
 <translation id="6713285437468012787">ब्लुतुथ यन्त्र "<ph name="DEVICE_NAME" />" लाई जोडा मिलाइएको छ र अब सबै प्रयोगकर्ताहरूको लागि उपलब्ध छ। तपाइँले सेटिङहरू प्रयोग ग्रदै यस जोडालाई हटाउन सक्नुहुनेछ।</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> र <ph name="SECOND_PARENT_EMAIL" /> ले व्यवस्थापन गरेको खाता</translation>
 <translation id="7955885781510802139">उच्च कन्ट्रास्ट मोड</translation>
 <translation id="7977927628060636163">मोबाइल नेटवर्कहरू खोज्दै...</translation>
+<translation id="7980780401175799550">Chrome OS नेभिगेसन गर्ने नयाँ तरिकाहरू प्रयोग गरी हेर्नुहोस्</translation>
 <translation id="7982789257301363584">सञ्जाल</translation>
 <translation id="7984197416080286869">फिंगरप्रिन्टमार्फत अनलक गर्ने अत्यधिक प्रयासहरू गरिए</translation>
 <translation id="7994370417837006925">बहु साइन-इन</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> प्रयोग गर्दै</translation>
 <translation id="8190698733819146287">भाषा तथा इन्पुट आफू अनुकूल गर्नुहोस् ...</translation>
 <translation id="8192202700944119416">सूचनाहरू लुकाइन्छन्।</translation>
+<translation id="8196787716797768628">एउटा अनुप्रयोगबाट तुरुन्तै अर्को अनुप्रयोगमा जान र आफ्नो Chromebook ट्याब्लेट मोडमा प्रयोग गर्न इसाराहरूको प्रयोग गर्नुहोस्।</translation>
 <translation id="8203795194971602413">दायाँ क्लिक गर्नुहोस्</translation>
 <translation id="8236042855478648955">आराम गर्ने समय भयो</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, सिग्नलको क्षमता <ph name="SIGNAL_STRENGTH" />, फोनको ब्याट्री <ph name="BATTERY_STATUS" /></translation>

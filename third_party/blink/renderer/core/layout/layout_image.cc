@@ -185,7 +185,7 @@ void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded(
     return;
 
   if (old_intrinsic_size != new_intrinsic_size) {
-    SetPreferredLogicalWidthsDirty();
+    SetIntrinsicLogicalWidthsDirty();
 
     if (NeedsLayoutOnIntrinsicSizeChange()) {
       SetNeedsLayoutAndFullPaintInvalidation(

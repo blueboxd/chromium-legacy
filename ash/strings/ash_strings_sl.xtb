@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">Srednje močan signal</translation>
 <translation id="4112140312785995938">Išči nazaj</translation>
 <translation id="4129129681837227511">Če si želite ogledati obvestila na zaklenjenem zaslonu, ga odklenite in spremenite nastavitev</translation>
+<translation id="4144413954005649103">Če kliknete z desnim gumbom ali pridržite, vam Pomočnik pokaže informacije, povezane z izborom na zaslonu.</translation>
 <translation id="4146833061457621061">Predvajaj glasbo</translation>
 <translation id="4149156641122542261">Napravo <ph name="DEVICE_TYPE" /> upravlja domena <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Jeziki</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">Pokaži zaslonsko tipkovnico</translation>
 <translation id="6164005077879661055">Vse datoteke in lokalni podatki, povezani z zaščitenim uporabnikom, bodo trajno izbrisani, ko ga odstranite. Obiskana spletna mesta in nastavitve tega uporabnika bodo morda še vedno vidna upravitelju na <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Več o tem</translation>
+<translation id="6236290670123303279">Upravljanje nastavitev</translation>
 <translation id="6237231532760393653">1x</translation>
 <translation id="6254629735336163724">Zaklenjeno na ležeče</translation>
 <translation id="6259254695169772643">Uporabite pisalo za izbiranje</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">Vklopljeno</translation>
 <translation id="6670153871843998651">Namizje 3</translation>
 <translation id="6691659475504239918">Tipka za iskanje + Shift + H</translation>
+<translation id="6692996468359469499">Prejemanje podatkov, povezanih z izborom</translation>
 <translation id="6696025732084565524">Snemljiva tipkovnica potrebuje nujno posodobitev</translation>
 <translation id="6700713906295497288">Menijski gumb UNV-ja</translation>
 <translation id="6713285437468012787">Naprava Bluetooth »<ph name="DEVICE_NAME" />« je seznanjena in je zdaj na voljo vsem uporabnikom. To seznanitev lahko odstranite v nastavitvah.</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895">Račun upravljata <ph name="FIRST_PARENT_EMAIL" /> in <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">Visokokontrastni način</translation>
 <translation id="7977927628060636163">Iskanje mobilnih omrežij ...</translation>
+<translation id="7980780401175799550">Preizkusite nove načine krmarjenja po Chromu OS</translation>
 <translation id="7982789257301363584">Omrežje</translation>
 <translation id="7984197416080286869">Preveč poskusov odklepanja s prstnim odtisom</translation>
 <translation id="7994370417837006925">Prijava z več računi</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835">Uporaba jezika <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Prilagajanje jezikov in vnosa ...</translation>
 <translation id="8192202700944119416">Obvestila so skrita.</translation>
+<translation id="8196787716797768628">S potezami hitro preklapljajte med aplikacijami in uporabljajte Chromebook v načinu tabličnega računalnika.</translation>
 <translation id="8203795194971602413">Desni klik</translation>
 <translation id="8236042855478648955">Čas je za premor</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, moč signala je <ph name="SIGNAL_STRENGTH" />, stanje baterije telefona je <ph name="BATTERY_STATUS" /></translation>

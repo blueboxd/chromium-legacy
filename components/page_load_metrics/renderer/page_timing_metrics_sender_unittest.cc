@@ -389,21 +389,4 @@ TEST_F(PageTimingMetricsSenderTest, SendPageRenderData) {
   validator_.VerifyExpectedRenderData();
 }
 
-TEST_F(PageTimingMetricsSenderTest, SendFrameIntersectionUpdate) {
-  mojom::PageLoadTiming timing;
-  InitPageLoadTimingForTest(&timing);
-  metrics_sender_->Update(timing.Clone(),
-                          PageTimingMetadataRecorder::MonotonicTiming());
-  validator_.ExpectPageLoadTiming(timing);
-
-  metrics_sender_->OnMainFrameDocumentIntersectionChanged(
-      blink::WebRect(0, 0, 1, 1));
-  mojom::FrameIntersectionUpdate frame_intersection_update(
-      gfx::Rect(0, 0, 1, 1));
-  validator_.UpdateExpectFrameIntersectionUpdate(frame_intersection_update);
-
-  metrics_sender_->mock_timer()->Fire();
-  validator_.VerifyExpectedFrameIntersectionUpdate();
-}
-
 }  // namespace page_load_metrics

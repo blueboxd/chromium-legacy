@@ -187,8 +187,7 @@ void LayoutTextCombine::UpdateFontStyleForCombinedText() {
                                                       kQuarterWidth};
     for (size_t i = 0; i < base::size(kWidthVariants); ++i) {
       description.SetWidthVariant(kWidthVariants[i]);
-      Font compressed_font = Font(description);
-      compressed_font.Update(font_selector);
+      Font compressed_font(description, font_selector);
       float run_width = compressed_font.Width(run);
       if (run_width <= em_width) {
         combined_text_width_ = run_width;

@@ -12,10 +12,10 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.favicon.RoundedIconGenerator;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.ui.favicon.RoundedIconGenerator;
 import org.chromium.components.browser_ui.widget.LoadingView;
 import org.chromium.ui.modelutil.ForwardingListObservable;
 import org.chromium.ui.modelutil.ListObservable.ListObserver;

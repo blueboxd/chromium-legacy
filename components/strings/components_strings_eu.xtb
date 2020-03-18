@@ -40,7 +40,7 @@
 <translation id="1156303062776767266">Fitxategi lokal edo partekatu bat ari zara ikusten</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> webguneak konexioa eten du ustekabean.</translation>
 <translation id="115926840831309955">Egiaztatu CVC kodea eta saiatu berriro, edo eguneratu iraungitze-data</translation>
-<translation id="1161325031994447685">Wi-Fi sarera berriro konektatu.</translation>
+<translation id="1161325031994447685">Wifi-sarera berriro konektatu.</translation>
 <translation id="1165039591588034296">Errorea</translation>
 <translation id="1175364870820465910">In&amp;primatu…</translation>
 <translation id="1175875016430184367">Hiru grapa eskuinean</translation>
@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">Jasotzeko modua</translation>
 <translation id="1281476433249504884">1. pilatzailea</translation>
 <translation id="1285320974508926690">Ez itzuli inoiz webgune hau</translation>
-<translation id="1285400217480592994">Aztertu Chrome-ren bidez deskargatzen edo kargatzen dituzun fitxategien edukia.</translation>
 <translation id="1292701964462482250">"Ordenagailuan dagoen software batek ez dio uzten Chrome-ri sarera segurtasunez konektatzen" (Windows ordenagailuak soilik)</translation>
 <translation id="1294154142200295408">Agindu-lerroaren aldaerak</translation>
 <translation id="129553762522093515">Itxitako azkenak</translation>
@@ -623,7 +622,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="3711895659073496551">Ezarri inaktibo gisa</translation>
 <translation id="3712624925041724820">Lizentziak agortu dira</translation>
 <translation id="3714780639079136834">Datu-konexioa edo Wi-Fi konexioa gaitu.</translation>
-<translation id="3715597595485130451">Konektatu Wi-Fi sarera</translation>
+<translation id="3715597595485130451">Konektatu wifi-sarera</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Proxya, suebakia eta DNS konfigurazioa egiaztatu<ph name="END_LINK" />.</translation>
 <translation id="372429172604983730">Hona hemen errore hau sor dezaketen software motak: antibirusak, suebakiak, web-iragazkiak edo proxy-softwarea.</translation>
 <translation id="373042150751172459">B4 (gutun-azala)</translation>
@@ -645,6 +644,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="3784372983762739446">Bluetooth bidezko gailuak</translation>
 <translation id="3787705759683870569">Iraungitze-data: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">Tamaina: 16</translation>
+<translation id="3793574014653384240">Azkenaldian gertatutako hutsegiteen kopurua eta arrazoiak</translation>
 <translation id="3797522431967816232">Prc3 (gutun-azala)</translation>
 <translation id="3799805948399000906">Eskatutako letra</translation>
 <translation id="3807366285948165054">Irudia X ardatzaren arabera aldatuta</translation>

@@ -861,6 +861,133 @@ const FeatureEntry::FeatureVariation kOmniboxDocumentProviderVariations[] = {
      base::size(kOmniboxDocumentProviderClientScoring), nullptr},
     {"server and client scores", kOmniboxDocumentProviderServerAndClientScoring,
      base::size(kOmniboxDocumentProviderServerAndClientScoring), nullptr}};
+
+// The variations include 13 of the 16 possible permutations of "Title UI",
+// "2-Line UI", "Title AC", and "Non-Prefix AC". The remaining 3 permutations
+// would effectively be no-ops.
+// - Title UI: Displays suggestion titles in the omnibox.
+//   E.g. en.wikipe | [dia.org/wiki/Space_Shuttle] (Space Shuttle - Wikipedia)
+// - 2-Line UI: Stretches the omnibox vertically to fit 2 lines and displays
+//   titles on a 2nd line
+//   E.g. en.wikipe | [dia.org/wiki/Space_Shuttle]
+//        Space Shuttle - Wikipedia
+// - Title AC: Autocompletes suggestions when the input matches the title.
+//   E.g. Space Sh | [ttle - Wikipedia] (en.wikipedia.org/wiki/Space_Shuttle)
+// - Non-Prefix AC: Autocompletes suggestions when the input is not necessarily
+//   a prefix.
+//   E.g. [en.wikipe dia.org/] wiki/Spac | [e_Shuttle] (Space Shuttle -
+//   Wikipedia)
+const FeatureEntry::FeatureVariation kOmniboxRichAutocompletionVariations[] = {
+    {
+        "Title UI",
+        (FeatureEntry::FeatureParam[]){
+            {"RichAutocompletionShowTitles", "true"}},
+        1,
+        nullptr,
+    },
+    // Skipping "2-Line UI" as that would be a no-op
+    {
+        "Title UI & 2-Line UI",
+        (FeatureEntry::FeatureParam[]){
+            {"RichAutocompletionShowTitles", "true"},
+            {"RichAutocompletionTwoLineOmnibox", "true"}},
+        2,
+        nullptr,
+    },
+    {
+        "Title AC",
+        (FeatureEntry::FeatureParam[]){
+            {"RichAutocompletionAutocompleteTitles", "true"}},
+        1,
+        nullptr,
+    },
+    {
+        "Title UI & Title AC",
+        (FeatureEntry::FeatureParam[]){
+            {"RichAutocompletionShowTitles", "true"},
+            {"RichAutocompletionAutocompleteTitles", "true"}},
+        2,
+        nullptr,
+    },
+    {
+        "2-Line UI & Title AC",
+        (FeatureEntry::FeatureParam[]){
+            {"RichAutocompletionTwoLineOmnibox", "true"},
+            {"RichAutocompletionAutocompleteTitles", "true"}},
+        2,
+        nullptr,
+    },
+    {
+        "Title UI , 2-Line UI, & Title AC",
+        (FeatureEntry::FeatureParam[]){
+            {"RichAutocompletionShowTitles", "true"},
+            {"RichAutocompletionAutocompleteTitles", "true"},
+            {"RichAutocompletionTwoLineOmnibox", "true"}},
+        3,
+        nullptr,
+    },
+    {
+        "Non-Prefix AC",
+        (FeatureEntry::FeatureParam[]){
+            {"RichAutocompletionAutocompleteNonPrefix", "true"}},
+        1,
+        nullptr,
+    },
+    {
+        "Title UI & Non-Prefix AC",
+        (FeatureEntry::FeatureParam[]){
+            {"RichAutocompletionShowTitles", "true"},
+            {"RichAutocompletionAutocompleteNonPrefix", "true"}},
+        2,
+        nullptr,
+    },
+    // Skipping "2-Line UI & Non-Prefix AC" as that would be a no-op
+    {
+        "Title UI, 2-Line UI, & Non-Prefix AC",
+        (FeatureEntry::FeatureParam[]){
+            {"RichAutocompletionShowTitles", "true"},
+            {"RichAutocompletionTwoLineOmnibox", "true"},
+            {"RichAutocompletionAutocompleteNonPrefix", "true"}},
+        3,
+        nullptr,
+    },
+    {
+        "Title AC & Non-Prefix AC",
+        (FeatureEntry::FeatureParam[]){
+            {"RichAutocompletionAutocompleteTitles", "true"},
+            {"RichAutocompletionAutocompleteNonPrefix", "true"}},
+        2,
+        nullptr,
+    },
+    {
+        "Title UI, Title AC, & Non-Prefix AC",
+        (FeatureEntry::FeatureParam[]){
+            {"RichAutocompletionShowTitles", "true"},
+            {"RichAutocompletionAutocompleteTitles", "true"},
+            {"RichAutocompletionAutocompleteNonPrefix", "true"}},
+        3,
+        nullptr,
+    },
+    {
+        "2-Line UI, Title AC, & Non-Prefix AC",
+        (FeatureEntry::FeatureParam[]){
+            {"RichAutocompletionTwoLineOmnibox", "true"},
+            {"RichAutocompletionAutocompleteTitles", "true"},
+            {"RichAutocompletionAutocompleteNonPrefix", "true"}},
+        3,
+        nullptr,
+    },
+    {
+        "Title UI, 2-Line UI, Title AC, & Non-Prefix AC",
+        (FeatureEntry::FeatureParam[]){
+            {"RichAutocompletionAutocompleteNonPrefix", "true"},
+            {"RichAutocompletionShowTitles", "true"},
+            {"RichAutocompletionAutocompleteTitles", "true"},
+            {"RichAutocompletionTwoLineOmnibox", "true"}},
+        4,
+        nullptr,
+    }};
+
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
 const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamSERP[] = {
@@ -2987,6 +3114,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxAutocompleteTitlesName,
      flag_descriptions::kOmniboxAutocompleteTitlesDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kAutocompleteTitles)},
+    {"omnibox-rich-autocompletion",
+     flag_descriptions::kOmniboxRichAutocompletionName,
+     flag_descriptions::kOmniboxRichAutocompletionDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kRichAutocompletion,
+                                    kOmniboxRichAutocompletionVariations,
+                                    "OmniboxBundledExperimentV1")},
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
     {"enable-speculative-service-worker-start-on-query-input",

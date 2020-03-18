@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Выбраць &amp;усё</translation>
-<translation id="1938451708255335766">Перазапусціце праграму, каб наладзіць шчыльнасць адлюстравання акна.</translation>
 <translation id="2006524834898217237">Праверце, ці падключана прылада да інтэрнэту.</translation>
 <translation id="208586643495776849">Паўтарыце спробу</translation>
 <translation id="2090963878406559571">Каб адпраўляць нумары з <ph name="ORIGIN" /> на свой тэлефон Android, <ph name="TROUBLESHOOT_LINK" /> для абедзвюх прылад у наладах.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Убудаваны дысплэй</translation>
 <translation id="335581015389089642">Маўленне</translation>
 <translation id="3389286852084373014">Тэкст занадта вялікі</translation>
-<translation id="3479552764303398839">Не зараз</translation>
 <translation id="348799646910989694">Паліца аўтаматычна схавана</translation>
 <translation id="3554637740840164787">Элемент "<ph name="ITEM_TITLE" />" замацаваны</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Застаўся 1 дзень}one{Застаўся # дзень}few{Засталося # дні}many{Засталося # дзён}other{Засталося # дня}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 хв}one{# хв}few{# хв}many{# хв}other{# хв}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Апошнія дзеянні адбываліся сёння}=1{Апошнія дзеянні: дзень таму}one{Апошнія дзеянні: # дзень таму}few{Апошнія дзеянні: # дні таму}many{Апошнія дзеянні: # дзён таму}other{Апошнія дзеянні: # дня таму}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 дзень і }one{# дзень і }few{# дні і }many{# дзён і }other{# дня і }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{праз 1 г.}one{праз # г.}few{праз # г.}many{праз # г.}other{праз # г.}}</translation>
-<translation id="5895138241574237353">Перазапусціць</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Засталася 1 секунда}one{Засталася # секунда}few{Засталося # секунды}many{Засталося # секунд}other{Засталося # секунды}}</translation>
 <translation id="5941711191222866238">Згарнуць</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 гадзіна}one{# гадзіна}few{# гадзіны}many{# гадзін}other{# гадзіны}}</translation>

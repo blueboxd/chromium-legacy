@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Hamısını seçin</translation>
-<translation id="1938451708255335766">Pəncərə displeyi sıxlığını nizamlamaq üçün tətbiqi yenidən başladın.</translation>
 <translation id="2006524834898217237">Bu cihazın internetə qoşulduğuna əmin olun.</translation>
 <translation id="208586643495776849">Yenidən cəhd edin</translation>
 <translation id="2090963878406559571"><ph name="ORIGIN" /> cihazından Android telefonunuza nömrə göndərmək üçün ayarlarda hər iki cihaz üçün <ph name="TROUBLESHOOT_LINK" />.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Daxili displey</translation>
 <translation id="335581015389089642">Nitq</translation>
 <translation id="3389286852084373014">Mətn çox böyükdür</translation>
-<translation id="3479552764303398839">İndi yox</translation>
 <translation id="348799646910989694">Rəf avtomatik olaraq gizlədilib</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> bərkidildi</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 gün qaldı}other{# gün qaldı}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 dəq}other{# dəq}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Bu gün aktivdir}=1{1 gün əvvəl aktiv olub}other{# gün əvvəl aktiv olub}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 gün və }other{# gün }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 ildə}other{# ildə}}</translation>
-<translation id="5895138241574237353">Yenidən başladın</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 saniyə qalıb}other{# saniyə qalıb}}</translation>
 <translation id="5941711191222866238">Minimallaşdırın</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 saat}other{# saat}}</translation>

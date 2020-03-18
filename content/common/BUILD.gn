@@ -443,6 +443,7 @@ mojom("mojo_bindings") {
     "ax_content_tree_data.mojom",
     "ax_content_tree_update.mojom",
     "child_process.mojom",
+    "device_emulator.mojom",
     "document_scoped_interface_bundle.mojom",
     "download/mhtml_file_writer.mojom",
     "field_trial_recorder.mojom",
@@ -482,7 +483,317 @@ mojom("mojo_bindings") {
     enabled_features += [ "clang_profiling_inside_sandbox" ]
   }
 
-  import_dirs = [ "//mojo/services" ]
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "ax.mojom.AXContentNodeData"
+          cpp = "::content::AXContentNodeData"
+        },
+      ]
+      traits_headers =
+          [ "//content/common/ax_content_node_data_mojom_traits.h" ]
+      traits_sources =
+          [ "//content/common/ax_content_node_data_mojom_traits.cc" ]
+      traits_public_deps = [
+        ":mojo_bindings_shared",
+        "//ui/accessibility",
+      ]
+      traits_deps = [ "//ui/accessibility/mojom" ]
+    },
+    {
+      types = [
+        {
+          mojom = "ax.mojom.AXContentTreeData"
+          cpp = "::content::AXContentTreeData"
+        },
+      ]
+      traits_headers =
+          [ "//content/common/ax_content_tree_data_mojom_traits.h" ]
+      traits_sources =
+          [ "//content/common/ax_content_tree_data_mojom_traits.cc" ]
+      traits_public_deps = [
+        ":mojo_bindings_shared",
+        "//ui/accessibility",
+      ]
+      traits_deps = [ "//ui/accessibility/mojom" ]
+    },
+    {
+      types = [
+        {
+          mojom = "ax.mojom.AXContentTreeUpdate"
+          cpp = "::content::AXContentTreeUpdate"
+        },
+      ]
+      traits_headers =
+          [ "//content/common/ax_content_tree_update_mojom_traits.h" ]
+      traits_sources =
+          [ "//content/common/ax_content_tree_update_mojom_traits.cc" ]
+      traits_public_deps = [
+        ":mojo_bindings_shared",
+        "//ui/accessibility",
+      ]
+      traits_deps = [ "//ui/accessibility/mojom" ]
+    },
+    {
+      types = [
+        {
+          mojom = "content.mojom.DidCommitProvisionalLoadParams"
+          cpp = "::std::unique_ptr<::FrameHostMsg_DidCommitProvisionalLoad_Params>"
+          move_only = true
+          nullable_is_same_type = true
+        },
+      ]
+      traits_headers = [ "//content/common/frame_messages_forward.h" ]
+      traits_private_headers = [ "//content/common/frame_messages.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "content.mojom.SyncCompositorDemandDrawHwParams"
+          cpp = "::content::SyncCompositorDemandDrawHwParams"
+        },
+        {
+          mojom = "content.mojom.SyncCompositorSetSharedMemoryParams"
+          cpp = "::content::SyncCompositorSetSharedMemoryParams"
+        },
+        {
+          mojom = "content.mojom.SyncCompositorDemandDrawSwParams"
+          cpp = "::content::SyncCompositorDemandDrawSwParams"
+        },
+        {
+          mojom = "content.mojom.SyncCompositorCommonRendererParams"
+          cpp = "::content::SyncCompositorCommonRendererParams"
+        },
+      ]
+      traits_headers = [ "//content/common/input/sync_compositor_messages.h" ]
+      traits_public_deps = [ "//ui/gfx/ipc" ]
+    },
+    {
+      types = [
+        {
+          mojom = "content.mojom.Button"
+          cpp = "::blink::WebPointerProperties::Button"
+        },
+        {
+          mojom = "content.mojom.Cancelability"
+          cpp = "::blink::WebInputEvent::DispatchType"
+        },
+        {
+          mojom = "content.mojom.ContentSecurityPolicy"
+          cpp = "::content::ContentSecurityPolicy"
+        },
+        {
+          mojom = "content.mojom.DidOverscrollParams"
+          cpp = "::ui::DidOverscrollParams"
+        },
+        {
+          mojom = "content.mojom.EditCommand"
+          cpp = "::content::EditCommand"
+        },
+        {
+          mojom = "content.mojom.Event"
+          cpp = "::std::unique_ptr<::content::InputEvent>"
+          move_only = true
+        },
+        {
+          mojom = "content.mojom.EventType"
+          cpp = "::blink::WebInputEvent::Type"
+        },
+        {
+          mojom = "content.mojom.FrameReplicationState"
+          cpp = "::content::FrameReplicationState"
+        },
+        {
+          mojom = "content.mojom.GestureDevice"
+          cpp = "::blink::WebGestureDevice"
+        },
+        {
+          mojom = "content.mojom.InertialPhaseState"
+          cpp = "::blink::WebGestureEvent::InertialPhaseState"
+        },
+        {
+          mojom = "content.mojom.InputEventAckSource"
+          cpp = "::content::InputEventAckSource"
+        },
+        {
+          mojom = "content.mojom.InputEventAckState"
+          cpp = "::content::InputEventAckState"
+        },
+        {
+          mojom = "content.mojom.NetworkConnectionType"
+          cpp = "::net::NetworkChangeNotifier::ConnectionType"
+        },
+        {
+          mojom = "content.mojom.PointerType"
+          cpp = "::blink::WebPointerProperties::PointerType"
+        },
+        {
+          mojom = "content.mojom.ScrollGranularity"
+          cpp = "::ui::ScrollGranularity"
+        },
+        {
+          mojom = "content.mojom.SyntheticPinch"
+          cpp = "::content::SyntheticPinchGestureParams"
+        },
+        {
+          mojom = "content.mojom.SyntheticPointerAction"
+          cpp = "::content::SyntheticPointerActionListParams"
+        },
+        {
+          mojom = "content.mojom.SyntheticSmoothDrag"
+          cpp = "::content::SyntheticSmoothDragGestureParams"
+        },
+        {
+          mojom = "content.mojom.SyntheticSmoothScroll"
+          cpp = "::content::SyntheticSmoothScrollGestureParams"
+        },
+        {
+          mojom = "content.mojom.SyntheticTap"
+          cpp = "::content::SyntheticTapGestureParams"
+        },
+        {
+          mojom = "content.mojom.SystemThemeColor"
+          cpp = "::ui::NativeTheme::SystemThemeColor"
+        },
+        {
+          mojom = "content.mojom.TouchActionOptional"
+          cpp = "::cc::TouchAction"
+        },
+        {
+          mojom = "content.mojom.TouchState"
+          cpp = "::blink::WebTouchPoint::State"
+        },
+        {
+          mojom = "content.mojom.VisualProperties"
+          cpp = "::content::VisualProperties"
+        },
+        {
+          mojom = "content.mojom.WebCursor"
+          cpp = "::content::WebCursor"
+        },
+        {
+          mojom = "content.mojom.WebPopupType"
+          cpp = "::blink::WebPopupType"
+        },
+      ]
+
+      traits_headers = [
+        "//cc/input/touch_action.h",
+        "//content/common/cursors/webcursor.h",
+        "//content/common/edit_command.h",
+        "//content/common/frame_replication_state.h",
+        "//content/common/input/input_event.h",
+        "//content/common/input/synthetic_pinch_gesture_params.h",
+        "//content/common/input/synthetic_pointer_action_list_params.h",
+        "//content/common/input/synthetic_smooth_drag_gesture_params.h",
+        "//content/common/input/synthetic_smooth_scroll_gesture_params.h",
+        "//content/common/input/synthetic_tap_gesture_params.h",
+        "//content/common/visual_properties.h",
+        "//content/public/common/input_event_ack_source.h",
+        "//content/public/common/input_event_ack_state.h",
+        "//content/public/common/web_preferences.h",
+        "//net/base/network_change_notifier.h",
+        "//third_party/blink/public/common/input/web_gesture_device.h",
+        "//third_party/blink/public/common/input/web_gesture_event.h",
+        "//third_party/blink/public/common/input/web_input_event.h",
+        "//third_party/blink/public/common/input/web_mouse_wheel_event.h",
+        "//third_party/blink/public/common/input/web_pointer_properties.h",
+        "//third_party/blink/public/common/input/web_touch_point.h",
+        "//ui/events/blink/did_overscroll_params.h",
+        "//ui/events/blink/web_input_event_traits.h",
+        "//ui/latency/ipc/latency_info_param_traits.h",
+        "//ui/native_theme/native_theme.h",
+      ]
+
+      traits_private_headers = [
+        "//content/common/frame_messages.h",
+        "//content/common/input/input_event_mojom_traits.h",
+        "//content/common/input/touch_action_optional_mojom_traits.h",
+        "//content/common/input_messages.h",
+        "//content/common/view_messages.h",
+        "//content/common/widget_messages.h",
+        "//content/public/common/common_param_traits.h",
+        "//services/network/public/cpp/p2p_param_traits.h",
+      ]
+
+      traits_public_deps = [
+        # NOTE: These dependencies are here to satisfy gn check because
+        # common_param_traits_macros.h and/or view_messages.h include their headers.
+        # Although the mojo bindings target is configured to allow direct circular
+        # includes from //content/common and //content/public/common, this isn't a
+        # transitive allowance, so those targets' own public_deps aren't included in
+        # the set of implied dependencies.
+        "//content/common:buildflags",
+        "//media",
+        "//media/base/ipc",
+        "//net",
+        "//ppapi/buildflags",
+        "//services/network/public/cpp",
+        "//third_party/blink/public/common",
+        "//ui/accessibility",
+        "//ui/base/ime:text_input_types",
+        "//ui/events/blink",
+        "//ui/gfx/ipc",
+        "//ui/gfx/ipc/color",
+        "//ui/gfx/ipc/skia",
+        "//ui/surface",
+        "//url/ipc:url_ipc",
+      ]
+    },
+    {
+      types = [
+        {
+          mojom = "content.mojom.MixedContentContextType"
+          cpp = "::blink::WebMixedContentContextType"
+        },
+        {
+          mojom = "content.mojom.NavigationDownloadPolicy"
+          cpp = "::content::NavigationDownloadPolicy"
+        },
+        {
+          mojom = "content.mojom.PageState"
+          cpp = "::content::PageState"
+        },
+        {
+          mojom = "content.mojom.PageTransition"
+          cpp = "::ui::PageTransition"
+        },
+        {
+          mojom = "content.mojom.SHA256HashValue"
+          cpp = "::net::SHA256HashValue"
+        },
+      ]
+      traits_headers = [
+        "//content/common/content_param_traits.h",
+        "//content/common/navigation_params.h",
+        "//content/public/common/navigation_policy.h",
+        "//content/public/common/page_state.h",
+        "//third_party/blink/public/platform/web_mixed_content_context_type.h",
+        "//ui/base/page_transition_types.h",
+      ]
+      traits_private_headers = [
+        "//content/common/frame_messages.h",
+        "//content/common/resource_messages.h",
+      ]
+    },
+    {
+      types = [
+        {
+          mojom = "content.mojom.RenderFrameMetadata"
+          cpp = "::cc::RenderFrameMetadata"
+        },
+      ]
+      traits_headers =
+          [ "//content/common/render_frame_metadata_mojom_traits.h" ]
+      traits_sources =
+          [ "//content/common/render_frame_metadata_mojom_traits.cc" ]
+      traits_deps = [
+        "//cc",
+        "//ui/gfx/geometry/mojom:mojom_traits",
+      ]
+    },
+  ]
 
   public_deps = [
     "//cc/mojom",
@@ -522,6 +833,26 @@ mojom("mojo_bindings") {
       "web_contents_ns_view_bridge.mojom",
     ]
     public_deps += [ "//ui/display/mojom" ]
+    cpp_typemaps += [
+      {
+        types = [
+          {
+            mojom = "content.mojom.EncodedAttributedString"
+            cpp = "::mac::AttributedStringCoder::EncodedString"
+          },
+          {
+            mojom = "content.mojom.ScrollerStyle"
+            cpp = "::blink::ScrollerStyle"
+          },
+        ]
+        traits_headers = [
+          "//content/common/mac/attributed_string_coder.h",
+          "//third_party/blink/public/platform/mac/web_scrollbar_theme.h",
+        ]
+        traits_private_headers = [ "//content/common/view_messages.h" ]
+        traits_public_deps = [ "//third_party/blink/public:blink_headers" ]
+      },
+    ]
   }
 
   overridden_deps = [ "//third_party/blink/public/mojom:mojom_core" ]

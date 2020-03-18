@@ -1,4 +1,5 @@
 include_rules = [
+  "+chrome/browser/ui/android/favicon/java",
   "+chrome/browser/ui/messages/android/java",
   "+components/autofill/android/java/src/org/chromium/components/autofill",
   "+components/browser_ui/widget/android",

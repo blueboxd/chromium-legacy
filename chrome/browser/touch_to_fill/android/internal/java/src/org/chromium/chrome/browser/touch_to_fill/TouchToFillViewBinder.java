@@ -27,10 +27,10 @@ import android.widget.TextView;
 
 import androidx.annotation.StringRes;
 
-import org.chromium.chrome.browser.favicon.FaviconUtils;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ItemType;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
+import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyKey;

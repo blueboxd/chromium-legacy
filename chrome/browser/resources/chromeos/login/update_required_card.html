@@ -41,8 +41,7 @@
         subtitle-key="errorMessage">
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button inverse on-tap="onSelectNetworkClicked_"
-            class="focus-on-show" disabled="[[selectNetworkDisabled]]"
-            text-key="selectNetworkButtonCaption">
+            class="focus-on-show" text-key="selectNetworkButtonCaption">
         </oobe-text-button>
         <oobe-text-button inverse on-tap="onUpdateClicked_"
             id="update-button" text-key="updateButtonCaption">
@@ -78,13 +77,15 @@
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button inverse on-tap="onCellularPermissionAccepted_"
-            class="focus-on-show" text-key="AcceptUpdateOverCellularButton">
+            class="focus-on-show" text-key="AcceptUpdateOverCellularButton"
+            id="cellular-permission-accept-button">
         </oobe-text-button>
       </div>
     </oobe-dialog>
 
     <oobe-dialog hidden="[[showOn_(ui_state, 'update-no-network')]]"
-        has-buttons title-key="updateRequiredTitle">
+        has-buttons title-key="updateRequiredTitle"
+        id="update-required-no-network-dialog">
       <div slot="subtitle" class="update-subtitle"
           id="no-network-message">
         [[i18nDynamic(locale,'noNetworkMessage', enterpriseDomain)]]

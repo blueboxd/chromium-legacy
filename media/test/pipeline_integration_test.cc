@@ -41,14 +41,6 @@
 #define EXPECT_VIDEO_FORMAT_EQ(a, b) EXPECT_EQ(a, b)
 #define EXPECT_COLOR_SPACE_EQ(a, b) EXPECT_EQ(a, b)
 
-// TODO(xhwang): Currently DISABLE_EME_TESTS is not defined and EME tests are
-// not disabled. Check whether we still need it.
-#if defined(DISABLE_EME_TESTS)
-#define MAYBE_EME(test) DISABLED_##test
-#else
-#define MAYBE_EME(test) test
-#endif
-
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
@@ -1304,7 +1296,7 @@ TEST_F(PipelineIntegrationTest, F32PlaybackHashed) {
   EXPECT_HASH_EQ(kSfxLosslessHash, GetAudioHash());
 }
 
-TEST_F(PipelineIntegrationTest, MAYBE_EME(BasicPlaybackEncrypted)) {
+TEST_F(PipelineIntegrationTest, BasicPlaybackEncrypted) {
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   set_encrypted_media_init_data_cb(
       base::BindRepeating(&FakeEncryptedMedia::OnEncryptedMediaInitData,
@@ -1655,7 +1647,7 @@ TEST_F(PipelineIntegrationTest, MSE_GCWithDisabledVideoStream) {
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest, MAYBE_EME(MSE_ConfigChange_Encrypted_WebM)) {
+TEST_F(PipelineIntegrationTest, MSE_ConfigChange_Encrypted_WebM) {
   TestMediaSource source("bear-320x240-16x9-aspect-av_enc-av.webm",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
@@ -1686,8 +1678,7 @@ TEST_F(PipelineIntegrationTest, MAYBE_EME(MSE_ConfigChange_Encrypted_WebM)) {
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_ConfigChange_ClearThenEncrypted_WebM)) {
+TEST_F(PipelineIntegrationTest, MSE_ConfigChange_ClearThenEncrypted_WebM) {
   TestMediaSource source("bear-320x240-16x9-aspect.webm", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -1719,8 +1710,7 @@ TEST_F(PipelineIntegrationTest,
 
 // Config change from encrypted to clear is allowed by the demuxer, and is
 // supported by the Renderer.
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_ConfigChange_EncryptedThenClear_WebM)) {
+TEST_F(PipelineIntegrationTest, MSE_ConfigChange_EncryptedThenClear_WebM) {
   TestMediaSource source("bear-320x240-16x9-aspect-av_enc-av.webm",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
@@ -2129,8 +2119,7 @@ TEST_F(PipelineIntegrationTest, MSE_ConfigChange_MP4) {
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_ConfigChange_Encrypted_MP4_CENC_VideoOnly)) {
+TEST_F(PipelineIntegrationTest, MSE_ConfigChange_Encrypted_MP4_CENC_VideoOnly) {
   TestMediaSource source("bear-640x360-v_frag-cenc-mdat.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2160,7 +2149,7 @@ TEST_F(PipelineIntegrationTest,
 }
 
 TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_ConfigChange_Encrypted_MP4_CENC_KeyRotation_VideoOnly)) {
+       MSE_ConfigChange_Encrypted_MP4_CENC_KeyRotation_VideoOnly) {
   TestMediaSource source("bear-640x360-v_frag-cenc-key_rotation.mp4",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new RotatingKeyProvidingApp());
@@ -2186,8 +2175,7 @@ TEST_F(PipelineIntegrationTest,
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_ConfigChange_ClearThenEncrypted_MP4_CENC)) {
+TEST_F(PipelineIntegrationTest, MSE_ConfigChange_ClearThenEncrypted_MP4_CENC) {
   TestMediaSource source("bear-640x360-v_frag.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2215,8 +2203,7 @@ TEST_F(PipelineIntegrationTest,
 }
 
 // Config changes from encrypted to clear are not currently supported.
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_ConfigChange_EncryptedThenClear_MP4_CENC)) {
+TEST_F(PipelineIntegrationTest, MSE_ConfigChange_EncryptedThenClear_MP4_CENC) {
   TestMediaSource source("bear-640x360-v_frag-cenc-mdat.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2259,7 +2246,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_16x9AspectRatio) {
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
-TEST_F(PipelineIntegrationTest, MAYBE_EME(MSE_EncryptedPlayback_WebM)) {
+TEST_F(PipelineIntegrationTest, MSE_EncryptedPlayback_WebM) {
   TestMediaSource source("bear-320x240-av_enc-av.webm", 219816);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2275,8 +2262,7 @@ TEST_F(PipelineIntegrationTest, MAYBE_EME(MSE_EncryptedPlayback_WebM)) {
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_ClearStart_WebM)) {
+TEST_F(PipelineIntegrationTest, MSE_EncryptedPlayback_ClearStart_WebM) {
   TestMediaSource source("bear-320x240-av_enc-av_clear-1s.webm",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
@@ -2293,8 +2279,7 @@ TEST_F(PipelineIntegrationTest,
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_NoEncryptedFrames_WebM)) {
+TEST_F(PipelineIntegrationTest, MSE_EncryptedPlayback_NoEncryptedFrames_WebM) {
   TestMediaSource source("bear-320x240-av_enc-av_clear-all.webm",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new NoResponseApp());
@@ -2311,8 +2296,7 @@ TEST_F(PipelineIntegrationTest,
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_MP4_VP9_CENC_VideoOnly)) {
+TEST_F(PipelineIntegrationTest, MSE_EncryptedPlayback_MP4_VP9_CENC_VideoOnly) {
   TestMediaSource source("bear-320x240-v_frag-vp9-cenc.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2341,8 +2325,7 @@ TEST_F(PipelineIntegrationTest, MSE_BasicPlayback_VideoOnly_MP4_VP9) {
 }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_MP4_CENC_VideoOnly)) {
+TEST_F(PipelineIntegrationTest, MSE_EncryptedPlayback_MP4_CENC_VideoOnly) {
   TestMediaSource source("bear-1280x720-v_frag-cenc.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2358,8 +2341,7 @@ TEST_F(PipelineIntegrationTest,
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_MP4_CENC_AudioOnly)) {
+TEST_F(PipelineIntegrationTest, MSE_EncryptedPlayback_MP4_CENC_AudioOnly) {
   TestMediaSource source("bear-1280x720-a_frag-cenc.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2376,7 +2358,7 @@ TEST_F(PipelineIntegrationTest,
 }
 
 TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_NoEncryptedFrames_MP4_CENC_VideoOnly)) {
+       MSE_EncryptedPlayback_NoEncryptedFrames_MP4_CENC_VideoOnly) {
   TestMediaSource source("bear-1280x720-v_frag-cenc_clear-all.mp4",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new NoResponseApp());
@@ -2440,7 +2422,7 @@ TEST_F(PipelineIntegrationTest, MSE_Mpeg2ts_MP3Audio_Mp4a_69) {
 }
 
 TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_NoEncryptedFrames_MP4_CENC_AudioOnly)) {
+       MSE_EncryptedPlayback_NoEncryptedFrames_MP4_CENC_AudioOnly) {
   TestMediaSource source("bear-1280x720-a_frag-cenc_clear-all.mp4",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new NoResponseApp());
@@ -2458,8 +2440,7 @@ TEST_F(PipelineIntegrationTest,
 
 // Older packagers saved sample encryption auxiliary information in the
 // beginning of mdat box.
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_MP4_CENC_MDAT_Video)) {
+TEST_F(PipelineIntegrationTest, MSE_EncryptedPlayback_MP4_CENC_MDAT_Video) {
   TestMediaSource source("bear-640x360-v_frag-cenc-mdat.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2474,8 +2455,7 @@ TEST_F(PipelineIntegrationTest,
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_MP4_CENC_SENC_Video)) {
+TEST_F(PipelineIntegrationTest, MSE_EncryptedPlayback_MP4_CENC_SENC_Video) {
   TestMediaSource source("bear-640x360-v_frag-cenc-senc.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2496,7 +2476,7 @@ TEST_F(PipelineIntegrationTest,
 // boxes if 'SENC' box is present, so the code should work even if the two
 // boxes are not present.
 TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_MP4_CENC_SENC_NO_SAIZ_SAIO_Video)) {
+       MSE_EncryptedPlayback_MP4_CENC_SENC_NO_SAIZ_SAIO_Video) {
   TestMediaSource source("bear-640x360-v_frag-cenc-senc-no-saiz-saio.mp4",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
@@ -2513,7 +2493,7 @@ TEST_F(PipelineIntegrationTest,
 }
 
 TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_MP4_CENC_KeyRotation_Video)) {
+       MSE_EncryptedPlayback_MP4_CENC_KeyRotation_Video) {
   TestMediaSource source("bear-1280x720-v_frag-cenc-key_rotation.mp4",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new RotatingKeyProvidingApp());
@@ -2530,7 +2510,7 @@ TEST_F(PipelineIntegrationTest,
 }
 
 TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_MP4_CENC_KeyRotation_Audio)) {
+       MSE_EncryptedPlayback_MP4_CENC_KeyRotation_Audio) {
   TestMediaSource source("bear-1280x720-a_frag-cenc-key_rotation.mp4",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new RotatingKeyProvidingApp());

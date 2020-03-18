@@ -232,7 +232,7 @@ void FirstLetterPseudoElement::UpdateTextFragments() {
     // Make sure the first-letter layoutObject is set to require a layout as it
     // needs to re-create the line boxes. The remaining text layoutObject
     // will be marked by the LayoutText::setText.
-    child_fragment->SetNeedsLayoutAndPrefWidthsRecalc(
+    child_fragment->SetNeedsLayoutAndIntrinsicWidthsRecalc(
         layout_invalidation_reason::kTextChanged);
     break;
   }

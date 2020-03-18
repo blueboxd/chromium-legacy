@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">Afhentningsmetode</translation>
 <translation id="1281476433249504884">Stabler 1</translation>
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
-<translation id="1285400217480592994">Scan indholdet af de filer, du downloader eller uploader i Chrome.</translation>
 <translation id="1292701964462482250">"Der er software på computeren, som forhindrer, at Chrome kan oprette en sikker forbindelse til nettet" (kun Windows-computere)</translation>
 <translation id="1294154142200295408">Variationer i kommandolinjer</translation>
 <translation id="129553762522093515">Senest lukkede</translation>
@@ -652,6 +651,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="3784372983762739446">Bluetooth-enheder</translation>
 <translation id="3787705759683870569">Udløber <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">Størrelse 16</translation>
+<translation id="3793574014653384240">Antallene af og årsagerne til de nedbrud, der opstod for nylig</translation>
 <translation id="3797522431967816232">Prc3 (Envelope)</translation>
 <translation id="3799805948399000906">Der blev anmodet om skrifttype</translation>
 <translation id="3807366285948165054">Billedskift X</translation>

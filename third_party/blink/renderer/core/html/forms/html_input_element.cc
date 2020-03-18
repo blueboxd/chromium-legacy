@@ -853,7 +853,7 @@ void HTMLInputElement::ParseAttribute(
       size_ = size;
       if (GetLayoutObject()) {
         GetLayoutObject()
-            ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+            ->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
                 layout_invalidation_reason::kAttributeChanged);
       }
     }

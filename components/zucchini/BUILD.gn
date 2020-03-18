@@ -216,6 +216,8 @@ test("zucchini_integration_test") {
     "//base/test:test_support",
     "//testing/gtest",
   ]
+
+  data = [ "testdata" ]
 }
 
 # Group to build and depend on all the Zucchini related fuzzers.

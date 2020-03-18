@@ -146,16 +146,14 @@ gfx::ElideBehavior ConsumeElideBehavior(FuzzedDataProvider* fdp) {
     case 1:
       return gfx::TRUNCATE;
     case 2:
-      return gfx::TRUNCATE_HEAD;
-    case 3:
       return gfx::ELIDE_HEAD;
-    case 4:
+    case 3:
       return gfx::ELIDE_MIDDLE;
-    case 5:
+    case 4:
       return gfx::ELIDE_TAIL;
-    case 6:
+    case 5:
       return gfx::ELIDE_EMAIL;
-    case 7:
+    case 6:
       return gfx::FADE_TAIL;
     default:
       return gfx::NO_ELIDE;

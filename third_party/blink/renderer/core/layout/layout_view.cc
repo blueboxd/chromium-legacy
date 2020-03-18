@@ -114,7 +114,7 @@ LayoutView::LayoutView(Document* document)
   min_preferred_logical_width_ = LayoutUnit();
   max_preferred_logical_width_ = LayoutUnit();
 
-  SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
+  SetIntrinsicLogicalWidthsDirty(kMarkOnlyThis);
 
   SetPositionState(EPosition::kAbsolute);  // to 0,0 :)
 

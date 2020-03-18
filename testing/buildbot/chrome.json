@@ -79,6 +79,66 @@
   "chromeos-betty-pi-arc-cfi-thin-lto-chrome": {
     "additional_compile_targets": [
       "chromiumos_preflight"
+    ],
+    "gtest_tests": [
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04",
+              "pool": "chrome.tests.cros-vm.template"
+            }
+          ],
+          "idempotent": false,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "chrome_all_tast_tests",
+        "test_target": "//chromeos:chrome_all_tast_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04",
+              "pool": "chrome.tests.cros-vm.template"
+            }
+          ],
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "cros_browser_sanity_test",
+        "test_target": "//chromeos:cros_browser_sanity_test"
+      },
+      {
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04",
+              "pool": "chrome.tests.cros-vm.template"
+            }
+          ],
+          "idempotent": false,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "disk_usage_tast_test",
+        "test_target": "//chromeos:disk_usage_tast_test"
+      }
     ]
   },
   "chromeos-betty-pi-arc-chrome": {

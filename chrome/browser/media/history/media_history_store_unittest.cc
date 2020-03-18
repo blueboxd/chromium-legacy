@@ -564,6 +564,24 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
     return out;
   }
 
+  static media_feeds::mojom::ContentRatingPtr CreateRating(
+      const std::string& agency,
+      const std::string& value) {
+    auto rating = media_feeds::mojom::ContentRating::New();
+    rating->agency = agency;
+    rating->value = value;
+    return rating;
+  }
+
+  static media_feeds::mojom::IdentifierPtr CreateIdentifier(
+      const media_feeds::mojom::Identifier::Type& type,
+      const std::string& value) {
+    auto identifier = media_feeds::mojom::Identifier::New();
+    identifier->type = type;
+    identifier->value = value;
+    return identifier;
+  }
+
   static std::vector<media_feeds::mojom::MediaFeedItemPtr> GetExpectedItems() {
     std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
 
@@ -578,13 +596,48 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
           media_feeds::mojom::MediaFeedItemActionStatus::kPotential;
       item->genre = base::ASCIIToUTF16("test");
       item->duration = base::TimeDelta::FromSeconds(30);
-      item->is_live = true;
-      item->live_start_time = base::Time::FromDeltaSinceWindowsEpoch(
+      item->live = media_feeds::mojom::LiveDetails::New();
+      item->live->start_time = base::Time::FromDeltaSinceWindowsEpoch(
           base::TimeDelta::FromMinutes(20));
-      item->live_end_time = base::Time::FromDeltaSinceWindowsEpoch(
+      item->live->end_time = base::Time::FromDeltaSinceWindowsEpoch(
           base::TimeDelta::FromMinutes(30));
       item->shown_count = 3;
       item->clicked = true;
+      item->author = media_feeds::mojom::Author::New();
+      item->author->name = "Media Site";
+      item->author->url = GURL("https://www.example.com");
+      item->action = media_feeds::mojom::Action::New();
+      item->action->start_time = base::TimeDelta::FromSeconds(3);
+      item->action->url = GURL("https://www.example.com");
+      item->interaction_counters.emplace(
+          media_feeds::mojom::InteractionCounterType::kLike, 10000);
+      item->interaction_counters.emplace(
+          media_feeds::mojom::InteractionCounterType::kDislike, 20000);
+      item->interaction_counters.emplace(
+          media_feeds::mojom::InteractionCounterType::kWatch, 30000);
+      item->content_ratings.push_back(CreateRating("MPAA", "PG-13"));
+      item->content_ratings.push_back(CreateRating("agency", "TEST2"));
+      item->identifiers.push_back(CreateIdentifier(
+          media_feeds::mojom::Identifier::Type::kPartnerId, "TEST1"));
+      item->identifiers.push_back(CreateIdentifier(
+          media_feeds::mojom::Identifier::Type::kTMSId, "TEST2"));
+      item->tv_episode = media_feeds::mojom::TVEpisode::New();
+      item->tv_episode->name = "TV Episode Name";
+      item->tv_episode->season_number = 1;
+      item->tv_episode->episode_number = 2;
+      item->tv_episode->identifiers.push_back(CreateIdentifier(
+          media_feeds::mojom::Identifier::Type::kTMSId, "TEST3"));
+      item->play_next_candidate = media_feeds::mojom::PlayNextCandidate::New();
+      item->play_next_candidate->name = "Next TV Episode Name";
+      item->play_next_candidate->season_number = 1;
+      item->play_next_candidate->episode_number = 3;
+      item->play_next_candidate->duration = base::TimeDelta::FromMinutes(20);
+      item->play_next_candidate->action = media_feeds::mojom::Action::New();
+      item->play_next_candidate->action->start_time =
+          base::TimeDelta::FromSeconds(3);
+      item->play_next_candidate->action->url = GURL("https://www.example.com");
+      item->play_next_candidate->identifiers.push_back(CreateIdentifier(
+          media_feeds::mojom::Identifier::Type::kTMSId, "TEST4"));
       items.push_back(std::move(item));
     }
 
@@ -594,7 +647,18 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
       item->name = base::ASCIIToUTF16("The TV Series");
       item->action_status =
           media_feeds::mojom::MediaFeedItemActionStatus::kPotential;
-      item->duration = base::TimeDelta::FromSeconds(90);
+      item->author = media_feeds::mojom::Author::New();
+      item->author->name = "Media Site";
+      items.push_back(std::move(item));
+    }
+
+    {
+      auto item = media_feeds::mojom::MediaFeedItem::New();
+      item->type = media_feeds::mojom::MediaFeedItemType::kTVSeries;
+      item->name = base::ASCIIToUTF16("The Live TV Series");
+      item->action_status =
+          media_feeds::mojom::MediaFeedItemActionStatus::kPotential;
+      item->live = media_feeds::mojom::LiveDetails::New();
       items.push_back(std::move(item));
     }
 

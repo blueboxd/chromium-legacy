@@ -62,6 +62,6 @@
 
   function addUISourceCode(url, content) {
     return project.addContentProvider(
-        url, Common.StaticContentProvider.fromString(url, Common.resourceTypes.Stylesheet, content));
+        url, TextUtils.StaticContentProvider.fromString(url, Common.resourceTypes.Stylesheet, content));
   }
 })();

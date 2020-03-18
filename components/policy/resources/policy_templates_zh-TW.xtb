@@ -68,6 +68,15 @@
 
       如果將這項政策設為 False 或未設定，系統將不會回報這項資訊。
       如果設為 True，系統會回報裝置背光的資訊。</translation>
+<translation id="1076271193420500757">你可以透過這項政策指定哪些變化版本可套用至受企業管理的 <ph name="PRODUCT_OS_NAME" />裝置。
+
+      變化版本可以透過選擇性啟用或停用現有功能的方式，在不推出新版本的情況下提供對 <ph name="PRODUCT_OS_NAME" />的修改項目。
+
+      如果將這項政策設為 <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (值為 0) 或未設定，使用者可以將所有變化版本套用到 <ph name="PRODUCT_OS_NAME" />。
+
+      如果設為 <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (值為 1)，使用者只能將修正重大安全性或穩定性問題的變化版本套用到 <ph name="PRODUCT_OS_NAME" />。
+
+      如果設為 <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (值為 2)，使用者無法在登入畫面上將任何變化版本套用到瀏覽器。請注意，這個模式可能會讓 <ph name="PRODUCT_OS_NAME" />開發人員無法及時提供重大安全性修正項目，因此不建議使用。</translation>
 <translation id="1078643757670228170">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 82 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           指定 AC 供電時的閒置時間長度。如果使用者在這段時間內沒有任何動作，系統就會關閉螢幕。
@@ -1140,14 +1149,6 @@
       如果不設定這項政策，<ph name="PRODUCT_NAME" /> 將套用預設值 (10000 毫秒)。</translation>
 <translation id="257788512393330403">每 6 小時需輸入密碼</translation>
 <translation id="2580104054820772954">延遲提供檔案，直到系統取得掃描結果</translation>
-<translation id="2582582399758251985">如果啟用這項設定，<ph name="PRODUCT_NAME" /> 將使用內建的憑證驗證器執行伺服器憑證驗證作業。
-      如果停用這項設定，<ph name="PRODUCT_NAME" /> 將使用平台提供的舊版憑證驗證器執行伺服器憑證驗證作業。
-      如果未設定這項政策，系統可能會使用內建或舊版的憑證驗證器。
-
-      我們計劃將此政策從 <ph name="PRODUCT_OS_NAME" /> 81 版中移除，屆時也將停止支援 <ph name="PRODUCT_OS_NAME" />的舊版憑證驗證器。
-
-     我們計劃將此政策從 Linux 適用的 <ph name="PRODUCT_NAME" /> 83 版中移除，屆時也將停止支援 Linux 的舊版憑證驗證器。
-      </translation>
 <translation id="2586162458524426376">
       這項政策適用於登入畫面。另請查看適用於使用者工作階段的 <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> 政策。
       如果啟用這項政策，系統會以獨立程序分別執行逗號分隔清單中指定的每個來源。這也會讓系統隔離以子網域命名的來源，例如指定 https://example.com/ 也會導致 https://foo.example.com/ 遭到隔離，因為後者屬於 https://example.com/ 網站的一部分。
@@ -1167,9 +1168,6 @@
 <translation id="26023406105317310">設定 Kerberos 帳戶</translation>
 <translation id="2604182581880595781">設定網路檔案共用功能相關政策。</translation>
 <translation id="2615240493030733717">回報時區資訊</translation>
-<translation id="2620943247255660284">這項政策已遭淘汰，並已替換為 AdvancedProtectionExtraSecurityAllowed。
-
-      這項政策可控管已加入進階保護計畫的使用者是否可以將下載內容傳送至 Google 進行惡意軟體掃描。如果設為 True 或不予設定，系統會提示已加入計畫的使用者將檔案傳送至 Google 進行深度掃描。如果使用者選取「掃描」，系統會將其下載內容傳送至 Google。如果設為 False，系統不會提示使用者，也不會將其下載內容傳送至 Google。</translation>
 <translation id="2623014935069176671">等待初始使用者活動</translation>
 <translation id="262740370354162807">啟用「<ph name="CLOUD_PRINT_NAME" />」文件提交功能</translation>
 <translation id="2627554163382448569">為企業印表機進行設定。
@@ -1204,6 +1202,11 @@
       如未設定這項政策，在預設情況下，受管理的使用者無法使用這項功能，未受管理的使用者則可使用這項功能。</translation>
 <translation id="2660846099862559570">永不使用 Proxy</translation>
 <translation id="2665422249821137126">在登入畫面上啟用大型游標</translation>
+<translation id="266882888912227087"> 控管 <ph name="PRODUCT_OS_NAME" />上受管理訪客工作階段的自動啟動通知。
+
+      如果將這項政策設為 True，系統會在數秒後關閉隱私權警告通知。
+
+      如果將這項政策設為 False 或不予設定，系統會固定隱私權警告通知，直到使用者關閉為止。</translation>
 <translation id="2672012807430078509">控管是否要為 SMB 掛接功能啟用 NTLM 驗證通訊協定</translation>
 <translation id="267596348720209223">指定搜尋引擎支援的字元編碼。編碼就是 UTF-8、GB2312 和 ISO-8859-1 等字碼頁名稱。系統會以提供的順序來測試。這項政策是選擇性的，如果未設定，預設會使用的是 UTF-8。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="2678503605767349615">必須提供裝置通用用戶端憑證</translation>
@@ -2894,6 +2897,7 @@
           如果設為 True 或不予設定，這位使用者即可建立並管理受監督的使用者。</translation>
 <translation id="5369937289900051171">僅限彩色列印</translation>
 <translation id="5370279767682621504">在非預設通訊埠啟用 HTTP/0.9 支援功能</translation>
+<translation id="5373065931879562543">指定變化版本在 Chrome 作業系統上的可用性</translation>
 <translation id="5378985487213287085">允許你設定是否要讓網站顯示桌面通知。你可以將網站預設為允許或禁止顯示桌面通知，也可以設為每次網站要顯示桌面通知時再詢問使用者。如果未設定這項政策，系統會使用「AskNotifications」，但使用者可以變更這項設定。</translation>
 <translation id="5380329473151894945">設定大型游標無障礙功能在登入畫面中的預設狀態。
 
@@ -3016,6 +3020,16 @@
 <translation id="5475361623548884387">啟用列印功能</translation>
 <translation id="547601067149622666">禁止含侵入式廣告的網站顯示廣告</translation>
 <translation id="5483065054530244863">允許本機信任錨點核發的 SHA-1 簽署憑證</translation>
+<translation id="5486493714323160905">如果啟用這項設定，<ph name="PRODUCT_NAME" /> 將使用內建的憑證驗證器執行伺服器憑證驗證作業。
+      如果停用這項設定，<ph name="PRODUCT_NAME" /> 將使用平台提供的舊版憑證驗證器執行伺服器憑證驗證作業。
+      如果未設定這項政策，系統可能會使用內建或舊版的憑證驗證器。
+
+      我們計劃將這項政策從 <ph name="PRODUCT_OS_NAME" /> 81 版中移除，屆時也將停止支援 <ph name="PRODUCT_OS_NAME" />的舊版憑證驗證器。
+
+     我們計劃將這項政策從 Linux 適用的 <ph name="PRODUCT_NAME" /> 83 版中移除，屆時也將停止支援 Linux 的舊版憑證驗證器。
+
+      我們計劃將這項政策從 Mac OS X 適用的 <ph name="PRODUCT_NAME" /> 87 版中移除，屆時也將停止支援 Mac OS X 的舊版憑證驗證器。
+      </translation>
 <translation id="5498045818698736356">指定要以無訊息方式 (使用者無需操作) 安裝的網站清單；使用者無法解除安裝或停用這些網站。
 
       這項政策的每個清單項目都是一個物件，由下列必要元素組成：「url」和兩個選擇性元素：「default_launch_container」和「create_desktop_shortcut」。「url」是要安裝的網路應用程式網址，「launch_container」則是「window」(視窗) 或「tab」(分頁)，用於指定網路應用程式安裝後所採用的開啟方式。如要在 Linux 和 Windows 上建立桌面捷徑，請將「create_desktop_shortcut」設為 True。如果未設定「default_launch_container」，應用程式預設會在分頁中開啟。無論「default_launch_container」的值為何，使用者都可以變更開啟應用程式的方式。如果未設定「create_desktop_shortcuts」，系統將不會建立桌面捷徑。如需將應用程式固定到 Chrome OS 檔案櫃，請參閱 <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> 政策。</translation>
@@ -3231,6 +3245,7 @@
 
            如未設定這項政策，<ph name="PRODUCT_NAME" /> 會改用預設程式庫名稱。</translation>
 <translation id="5783009211970309878">列印頁首和頁尾</translation>
+<translation id="5790763087505467169">減少顯示受管理訪客工作階段的自動啟動通知</translation>
 <translation id="5806128552675651249">只允許不使用背景圖形的列印模式</translation>
 <translation id="5809210507920527553">控管 Linux 容器 (Crostini) 的設定。</translation>
 <translation id="5809728392451418079">設定裝置本機帳戶的顯示名稱</translation>
@@ -3705,6 +3720,9 @@
 <translation id="6689792153960219308">回報硬體狀態</translation>
 <translation id="6698632841807204978">啟用單色列印</translation>
 <translation id="6699880231565102694">為遠端存取主機啟用雙重驗證機制</translation>
+<translation id="6704515759227307131">這項政策已遭淘汰，並已替換為 AdvancedProtectionAllowed。
+
+      這項政策可控管已加入進階保護計畫的使用者是否可以將下載內容傳送至 Google 進行惡意軟體掃描。如果設為 True 或不予設定，系統會提示已加入計畫的使用者將檔案傳送至 Google 進行深度掃描。如果使用者選取「掃描」，系統會將其下載內容傳送至 Google。如果設為 False，系統不會提示使用者，也不會將其下載內容傳送至 Google。</translation>
 <translation id="670597451099978576">自動授予權限給這些網站，讓這些網站能在登入畫面上連結具有指定廠商和產品 ID 的 USB 裝置。</translation>
 <translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> 可讓你安全地更新及安裝擴充功能。不過，某些擴充功能並不是由 Chrome 線上應用程式商店代管，因此這些擴充功能的內容可能只受到不安全的簽署或是 SHA1 這類雜湊演算法保護。如果停用這項政策，Chrome 會禁止安裝及更新這類擴充功能 (除非擴充功能開發人員以更安全的演算法重建這些擴充功能)。如果啟用這項政策，瀏覽器將允許安裝及更新這類擴充功能。
 
@@ -3728,6 +3746,7 @@
       這項設定將決定歡迎頁面顯示與否，歡迎頁面可協助使用者登入 <ph name="PRODUCT_NAME" />，並將其設為預設瀏覽器，或是讓使用者瞭解產品功能。</translation>
 <translation id="6766216162565713893">允許網站要求使用者授權存取附近的藍牙裝置</translation>
 <translation id="6770454900105963262">回報運作中資訊站工作階段相關資訊</translation>
+<translation id="6772045451150098845">這項政策可控管已加入進階保護計畫的使用者是否可以享有額外的功能。部分功能可能涉及與 Google 共用資料 (例如，進階保護計畫的使用者可將下載內容傳送至 Google 進行惡意軟體掃描)。如果設為 True 或不予設定，已加入計畫的使用者將能享有額外的功能。如果設為 False，進階保護計畫的使用者只能享有標準的消費者功能。</translation>
 <translation id="6780908086869332493">允許你設定網址模式清單，指定在 SAML 流程代管架構的登入畫面中，系統要為哪些網站自動選取用戶端憑證 (如果網站要求憑證的話)。實際應用範例為設定要提供給 SAML IdP 的裝置通用憑證。
 
       這個值必須是字串化的 JSON 字典陣列。每個字典的格式都必須為 <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />，其中 <ph name="URL_PATTERN_PLACEHOLDER" /> 是內容設定模式。<ph name="FILTER_PLACEHOLDER" /> 會限制瀏覽器自動選取的用戶端憑證。無論是否設定篩選器，瀏覽器只會選取符合伺服器憑證要求的憑證。如果 <ph name="FILTER_PLACEHOLDER" /> 的格式為 <ph name="JSON_DICTIONARY_EXAMPLE" />，瀏覽器只會選取由 CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> 憑證所核發的用戶端憑證。如果 <ph name="FILTER_PLACEHOLDER" /> 是空白的字典 {}，則瀏覽器在選取用戶端憑證時不會受到額外限制。
@@ -4446,6 +4465,15 @@
 <translation id="793473937901685727">設定 ARC 應用程式的憑證可用性</translation>
 <translation id="7937491150792971922">合併多個來源的擴充功能安裝清單政策</translation>
 <translation id="7937766917976512374">允許或拒絕擷取視訊</translation>
+<translation id="7937944288846766530">這項政策用於控管 <ph name="PRODUCT_NAME" /> 擴充功能安裝要求，使用者可傳送要求至 Google 管理控制台以取得核准。
+
+      如果不設定 CloudReportingEnabled 政策或設為停用，系統將忽略這項政策，且不會建立或上傳擴充功能安裝要求。
+      如果不設定這項政策或設為停用，系統不會建立或上傳擴充功能安裝要求。
+      如果將這項政策設為啟用，系統會建立擴充功能安裝要求，並上傳至 Google 管理控制台。
+
+      當使用者嘗試安裝並未透過 <ph name="EXTENSION_INSTALL_WHITELIST" /> 或 <ph name="EXTENSION_SETTINGS" /> 加入許可清單的擴充功能時，系統會建立擴充功能安裝要求。
+
+      只有在已啟用 <ph name="CLOUD_REPORTING_ENABLED" /> 且已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊電腦的情況下，這項政策才會生效。</translation>
 <translation id="7941975817681987555">無論使用任何網路連線，皆不預測網路動作</translation>
 <translation id="7951605113561734721">指定應使用裝置管理通訊協定註冊的裝置通用用戶端憑證。</translation>
 <translation id="7952007677054834789">設定 <ph name="PRODUCT_NAME" /> 的起始載入頁面、預設首頁和預設新分頁，並禁止使用者變更這些設定。
@@ -5031,7 +5059,6 @@
       回報顯示狀態和圖形狀態。</translation>
 <translation id="891435090623616439">以 JSON 字串格式編碼，詳情請參閱 <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">允許使用者管理已安裝的 CA 憑證。</translation>
-<translation id="8924721011887485485">這項政策可控管已加入進階保護計畫的使用者是否可以享有額外的安全防護功能。部分功能可能涉及與 Google 共用資料 (例如，進階保護計畫的使用者可將下載內容傳送至 Google 進行惡意軟體掃描)。如果設為 True 或不予設定，已加入計畫的使用者將能享有額外的安全防護功能。如果設為 False，進階保護計畫的使用者只能享有一般的安全防護功能。</translation>
 <translation id="8926275581598789324">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 82 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           指定電池供電時的閒置時間長度。如果使用者在這段時間內沒有任何動作，系統就會執行閒置動作。

@@ -182,7 +182,8 @@ void LayoutText::StyleDidChange(StyleDifference diff,
   // We do have to schedule layouts, though, since a style change can force us
   // to need to relayout.
   if (diff.NeedsFullLayout()) {
-    SetNeedsLayoutAndPrefWidthsRecalc(layout_invalidation_reason::kStyleChange);
+    SetNeedsLayoutAndIntrinsicWidthsRecalc(
+        layout_invalidation_reason::kStyleChange);
     known_to_have_no_overflow_and_no_fallback_fonts_ = false;
   }
 
@@ -1015,7 +1016,7 @@ void LayoutText::TrimmedPrefWidths(LayoutUnit lead_width_layout_unit,
   if (!collapse_white_space)
     strip_front_spaces = false;
 
-  if (has_tab_ || PreferredLogicalWidthsDirty())
+  if (has_tab_ || IntrinsicLogicalWidthsDirty())
     ComputePreferredLogicalWidths(lead_width);
 
   has_breakable_start = !strip_front_spaces && has_breakable_start_;
@@ -1106,14 +1107,14 @@ void LayoutText::TrimmedPrefWidths(LayoutUnit lead_width_layout_unit,
 }
 
 float LayoutText::MinLogicalWidth() const {
-  if (PreferredLogicalWidthsDirty())
+  if (IntrinsicLogicalWidthsDirty())
     const_cast<LayoutText*>(this)->ComputePreferredLogicalWidths(0);
 
   return min_width_;
 }
 
 float LayoutText::MaxLogicalWidth() const {
-  if (PreferredLogicalWidthsDirty())
+  if (IntrinsicLogicalWidthsDirty())
     const_cast<LayoutText*>(this)->ComputePreferredLogicalWidths(0);
 
   return max_width_;
@@ -1209,7 +1210,7 @@ void LayoutText::ComputePreferredLogicalWidths(
     float lead_width,
     HashSet<const SimpleFontData*>& fallback_fonts,
     FloatRect& glyph_bounds) {
-  DCHECK(has_tab_ || PreferredLogicalWidthsDirty() ||
+  DCHECK(has_tab_ || IntrinsicLogicalWidthsDirty() ||
          !known_to_have_no_overflow_and_no_fallback_fonts_);
 
   min_width_ = 0;
@@ -1559,7 +1560,7 @@ void LayoutText::ComputePreferredLogicalWidths(
   known_to_have_no_overflow_and_no_fallback_fonts_ =
       fallback_fonts.IsEmpty() && glyph_overflow.IsApproximatelyZero();
 
-  ClearPreferredLogicalWidthsDirty();
+  ClearIntrinsicLogicalWidthsDirty();
 }
 
 bool LayoutText::IsAllCollapsibleWhitespace() const {
@@ -1837,7 +1838,7 @@ static inline bool IsInlineFlowOrEmptyText(const LayoutObject* o) {
 }
 
 OnlyWhitespaceOrNbsp LayoutText::ContainsOnlyWhitespaceOrNbsp() const {
-  return PreferredLogicalWidthsDirty() ? OnlyWhitespaceOrNbsp::kUnknown
+  return IntrinsicLogicalWidthsDirty() ? OnlyWhitespaceOrNbsp::kUnknown
                                        : static_cast<OnlyWhitespaceOrNbsp>(
                                              contains_only_whitespace_or_nbsp_);
 }
@@ -1928,10 +1929,10 @@ void LayoutText::ForceSetText(scoped_refptr<StringImpl> text) {
 void LayoutText::TextDidChange() {
   // If preferredLogicalWidthsDirty() of an orphan child is true,
   // LayoutObjectChildList::insertChildNode() fails to set true to owner.
-  // To avoid that, we call setNeedsLayoutAndPrefWidthsRecalc() only if this
-  // LayoutText has parent.
+  // To avoid that, we call SetNeedsLayoutAndIntrinsicWidthsRecalc() only if
+  // this LayoutText has parent.
   if (Parent()) {
-    SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+    SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
         layout_invalidation_reason::kTextChanged);
   }
   TextDidChangeWithoutInvalidation();
@@ -1961,7 +1962,7 @@ void LayoutText::InvalidateSubtreeLayoutForFontUpdates() {
   known_to_have_no_overflow_and_no_fallback_fonts_ = false;
   valid_ng_items_ = false;
   SetNeedsCollectInlines();
-  SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+  SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kFontsChanged);
 }
 
@@ -2046,7 +2047,7 @@ float LayoutText::Width(unsigned from,
     if (!StyleRef().PreserveNewline() && !from && len == TextLength()) {
       if (fallback_fonts) {
         DCHECK(glyph_bounds);
-        if (PreferredLogicalWidthsDirty() ||
+        if (IntrinsicLogicalWidthsDirty() ||
             !known_to_have_no_overflow_and_no_fallback_fonts_) {
           const_cast<LayoutText*>(this)->ComputePreferredLogicalWidths(
               0, *fallback_fonts, *glyph_bounds);

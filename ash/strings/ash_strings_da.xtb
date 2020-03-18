@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">Middel signal</translation>
 <translation id="4112140312785995938">Spol tilbage</translation>
 <translation id="4129129681837227511">Du kan se notifikationer på din låseskærm ved at låse skærmen op og ændre indstillingen</translation>
+<translation id="4144413954005649103">Når du højreklikker eller laver et langt tryk, viser Assistent dig oplysninger, som er relateret til det, du har valgt på skærmen.</translation>
 <translation id="4146833061457621061">Spil musik</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> administreres af <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Sprog</translation>
@@ -399,6 +400,7 @@
 <translation id="6164005077879661055">Alle filer og lokale data, der er knyttet til den administrerede bruger, 
 slettes permanent, når den administrerede bruger fjernes. Besøgte websites og indstillinger for denne administrerede bruger er muligvis stadig synlige for administratoren på <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
+<translation id="6236290670123303279">Administrer indstillinger</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Altid vandret</translation>
 <translation id="6259254695169772643">Vælg ved hjælp af din styluspen</translation>
@@ -440,6 +442,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6669268301501499730">Til</translation>
 <translation id="6670153871843998651">Skrivebord 3</translation>
 <translation id="6691659475504239918">Søg+Shift+H</translation>
+<translation id="6692996468359469499">Få oplysninger om det, du har markeret</translation>
 <translation id="6696025732084565524">Dit aftagelige tastatur kræver en vigtig opdatering</translation>
 <translation id="6700713906295497288">IME-menuknap</translation>
 <translation id="6713285437468012787">Bluetooth-enheden "<ph name="DEVICE_NAME" />" er blevet parret og er nu tilgængelig for alle brugere, Du kan fjerne denne parring i Indstillinger.</translation>
@@ -528,6 +531,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="79341161159229895">Kontoen administreres af <ph name="FIRST_PARENT_EMAIL" /> og <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">Tilstanden Høj kontrast</translation>
 <translation id="7977927628060636163">Søger efter mobilnetværk...</translation>
+<translation id="7980780401175799550">Prøv nye måder at navigere på i Chrome OS</translation>
 <translation id="7982789257301363584">Netværk</translation>
 <translation id="7984197416080286869">Du har brugt for mange forsøg på at logge ind med fingeraftryk</translation>
 <translation id="7994370417837006925">Samlet login fra flere konti</translation>
@@ -549,6 +553,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8167567890448493835">Bruger <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Tilpas sprog og indtastning...</translation>
 <translation id="8192202700944119416">Notifikationer er skjult.</translation>
+<translation id="8196787716797768628">Brug bevægelser til hurtigt at skifte mellem apps og bruge din Chromebook i tablettilstand.</translation>
 <translation id="8203795194971602413">Højreklik</translation>
 <translation id="8236042855478648955">Det er tid til at tage en pause</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, signalstyrke <ph name="SIGNAL_STRENGTH" />, telefonbatteri <ph name="BATTERY_STATUS" /></translation>

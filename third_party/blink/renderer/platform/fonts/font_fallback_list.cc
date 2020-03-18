@@ -39,10 +39,10 @@
 
 namespace blink {
 
-FontFallbackList::FontFallbackList()
+FontFallbackList::FontFallbackList(FontSelector* font_selector)
     : cached_primary_simple_font_data_(nullptr),
-      font_selector_(nullptr),
-      font_selector_version_(0),
+      font_selector_(font_selector),
+      font_selector_version_(font_selector ? font_selector->Version() : 0),
       family_index_(0),
       generation_(FontCache::GetFontCache()->Generation()),
       has_loading_fallback_(false),

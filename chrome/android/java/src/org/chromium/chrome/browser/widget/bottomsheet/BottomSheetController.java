@@ -327,21 +327,24 @@ public class BottomSheetController implements Destroyable {
 
             @Override
             public void onSheetClosed(@StateChangeReason int reason) {
-                if (mBottomSheet.getCurrentSheetContent() != null
-                        && mBottomSheet.getCurrentSheetContent().hasCustomScrimLifecycle()) {
-                    return;
+                // Hide the scrim if the current content doesn't have a custom scrim lifecycle.
+                if (mBottomSheet.getCurrentSheetContent() == null
+                        || !mBottomSheet.getCurrentSheetContent().hasCustomScrimLifecycle()) {
+                    scrim.get().hideScrim(true);
                 }
 
-                scrim.get().hideScrim(true);
-
-                // If the sheet is closed, it is an opportunity for another content to try to
-                // take its place if it is a higher priority.
-                BottomSheetContent content = mBottomSheet.getCurrentSheetContent();
-                BottomSheetContent nextContent = mContentQueue.peek();
-                if (content != null && nextContent != null
-                        && nextContent.getPriority() < content.getPriority()) {
-                    mContentQueue.add(content);
-                    mBottomSheet.setSheetState(SheetState.HIDDEN, true);
+                // Try to swap contents unless the sheet's content has a custom lifecycle.
+                if (mBottomSheet.getCurrentSheetContent() != null
+                        && !mBottomSheet.getCurrentSheetContent().hasCustomLifecycle()) {
+                    // If the sheet is closed, it is an opportunity for another content to try to
+                    // take its place if it is a higher priority.
+                    BottomSheetContent content = mBottomSheet.getCurrentSheetContent();
+                    BottomSheetContent nextContent = mContentQueue.peek();
+                    if (content != null && nextContent != null
+                            && nextContent.getPriority() < content.getPriority()) {
+                        mContentQueue.add(content);
+                        mBottomSheet.setSheetState(SheetState.HIDDEN, true);
+                    }
                 }
             }
 

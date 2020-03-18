@@ -376,7 +376,7 @@ void LayoutBox::StyleWillChange(StyleDifference diff,
         // We're about to go out of flow. Before that takes place, we need to
         // mark the current containing block chain for preferred widths
         // recalculation.
-        SetNeedsLayoutAndPrefWidthsRecalc(
+        SetNeedsLayoutAndIntrinsicWidthsRecalc(
             layout_invalidation_reason::kStyleChange);
       } else {
         MarkContainerChainForLayout();
@@ -1495,13 +1495,13 @@ MinMaxSizes LayoutBox::ComputeIntrinsicLogicalWidths() const {
 
 DISABLE_CFI_PERF
 MinMaxSizes LayoutBox::PreferredLogicalWidths() const {
-  if (PreferredLogicalWidthsDirty()) {
+  if (IntrinsicLogicalWidthsDirty()) {
 #if DCHECK_IS_ON()
     SetLayoutNeededForbiddenScope layout_forbidden_scope(
         const_cast<LayoutBox&>(*this));
 #endif
     const_cast<LayoutBox*>(this)->ComputePreferredLogicalWidths();
-    DCHECK(!PreferredLogicalWidthsDirty());
+    DCHECK(!IntrinsicLogicalWidthsDirty());
   }
 
   return {min_preferred_logical_width_, max_preferred_logical_width_};
@@ -3094,7 +3094,7 @@ void LayoutBox::InflateVisualRectForFilter(
 
 static bool ShouldRecalculateMinMaxWidthsAffectedByAncestor(
     const LayoutBox* box) {
-  if (box->PreferredLogicalWidthsDirty()) {
+  if (box->IntrinsicLogicalWidthsDirty()) {
     // If the preferred widths are already dirty at this point (during layout),
     // it actually means that we never need to calculate them, since that should
     // have been carried out by an ancestor that's sized based on preferred
@@ -3105,7 +3105,7 @@ static bool ShouldRecalculateMinMaxWidthsAffectedByAncestor(
   }
   if (const LayoutBox* containing_block = box->ContainingBlock()) {
     if (containing_block->NeedsPreferredWidthsRecalculation() &&
-        !containing_block->PreferredLogicalWidthsDirty()) {
+        !containing_block->IntrinsicLogicalWidthsDirty()) {
       // If our containing block also has min/max widths that are affected by
       // the ancestry, we have already dealt with this object as well. Avoid
       // unnecessary work and O(n^2) time complexity.
@@ -3124,7 +3124,7 @@ void LayoutBox::UpdateLogicalWidth() {
       // bottom-up, but that's not always the case), so since the containing
       // block size may have changed, we need to recalculate the min/max widths
       // of this object, and every child that has the same issue, recursively.
-      SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
+      SetIntrinsicLogicalWidthsDirty(kMarkOnlyThis);
 
       // Since all this takes place during actual layout, instead of being part
       // of min/max the width calculation machinery, we need to enter said
@@ -6184,7 +6184,7 @@ static void MarkBoxForRelayoutAfterSplit(LayoutBox* box) {
     ToInterface<LayoutNGTableSectionInterface>(box)->SetNeedsCellRecalc();
   }
 
-  box->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+  box->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kAnonymousBlockChange);
 }
 

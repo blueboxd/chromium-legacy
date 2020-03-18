@@ -157,8 +157,7 @@ bool FontFaceSetDocument::ResolveFontStyle(const String& font_string,
     auto* font_selector = GetDocument()->GetStyleEngine().GetFontSelector();
     FontDescription description =
         FontStyleResolver::ComputeFont(*parsed_style, font_selector);
-    font = Font(description);
-    font.Update(font_selector);
+    font = Font(description, font_selector);
     return true;
   }
 

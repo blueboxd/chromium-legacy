@@ -76,8 +76,7 @@ class CONTENT_EXPORT RenderWidgetDelegate {
   // Called when RenderWidget services RenderWidgetScreenMetricsEmulatorDelegate
   // SetScreenMetricsEmulationParameters().
   virtual void SetScreenMetricsEmulationParametersForWidget(
-      bool enabled,
-      const blink::WebDeviceEmulationParams& params) = 0;
+      const base::Optional<blink::WebDeviceEmulationParams>& params) = 0;
 };
 
 }  // namespace content

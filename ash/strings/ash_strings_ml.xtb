@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">ഇടത്തരം സിഗ്നൽ</translation>
 <translation id="4112140312785995938">പുറകിലേക്ക് നീക്കുക</translation>
 <translation id="4129129681837227511">നിങ്ങളുടെ ലോക്ക് സ്‌ക്രീനിൽ അറിയിപ്പുകൾ കാണാൻ, ക്രമീകരണം മാറ്റാനായി അൺലോക്ക് ചെയ്യുക</translation>
+<translation id="4144413954005649103">വലത്-ക്ലിക്ക് ചെയ്യുന്നതിലൂടെയോ ദീർഘനേരം അമർത്തുന്നതിലൂടെയോ സ്ക്രീനിൽ നിങ്ങൾ തിരഞ്ഞെടുക്കുന്നതുമായി ബന്ധപ്പെട്ട വിവരങ്ങൾ Assistant കാണിക്കുന്നു.</translation>
 <translation id="4146833061457621061">സംഗീതം പ്ലേ ചെയ്യുക</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> മാനേജ് ചെയ്യുന്നത് <ph name="DOMAIN" /> ആണ്</translation>
 <translation id="4181841719683918333">ഭാഷകൾ‌</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">ഓൺ-സ്‌ക്രീൻ കീബോർഡ് ദൃശ്യമാക്കുക</translation>
 <translation id="6164005077879661055">മേൽനോട്ടത്തിലുള്ള ഉപയോക്താവിനെ നീക്കംചെയ്‌താൽ, മേൽനോട്ടത്തിലുള്ള ഉപയോക്താവുമായി ബന്ധപ്പെടുത്തിയിട്ടുള്ള എല്ലാ ഫയലുകളും പ്രാദേശിക ഡാറ്റയും ശാശ്വതമായി ഇല്ലാതാക്കപ്പെടും. മേൽനോട്ടത്തിലുള്ള ഈ ഉപയോക്താവിനായി സന്ദർശിച്ച വെബ്‌സൈറ്റുകളും ക്രമീകരണങ്ങളും <ph name="MANAGEMENT_URL" />-ൽ മാനേജർക്ക് തുടർന്നും കാണാനായേക്കും.</translation>
 <translation id="6165508094623778733">കൂടുതലറിയുക</translation>
+<translation id="6236290670123303279">ക്രമീകരണം മാനേജ് ചെയ്യുക</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">സമാന്തരമായി ലോക്ക് ചെയ്‌തു</translation>
 <translation id="6259254695169772643">തിരഞ്ഞെടുക്കാൻ നിങ്ങളുടെ സ്റ്റൈലസ് ഉപയോഗിക്കുക</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">ഓണാണ്</translation>
 <translation id="6670153871843998651">ഡെസ്‌ക് 3</translation>
 <translation id="6691659475504239918">തിരയൽ+Shift+H</translation>
+<translation id="6692996468359469499">നിങ്ങളുടെ തിരഞ്ഞെടുക്കലുമായി ബന്ധപ്പെട്ട വിവരങ്ങൾ നേടുക</translation>
 <translation id="6696025732084565524">നിങ്ങളുടെ വേർപെടുത്താനാകുന്ന കീബോഡിന് നിർണ്ണായക അപ്‌ഡേറ്റ് ആവശ്യമാണ്</translation>
 <translation id="6700713906295497288">IME മെനു ബട്ടൺ</translation>
 <translation id="6713285437468012787">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കി, അത് ഇപ്പോൾ എല്ലാ ഉപയോക്താക്കൾക്കും ലഭ്യമാണ്. ക്രമീകരണങ്ങൾ ഉപയോഗിച്ച് നിങ്ങൾക്ക് ഈ ജോടിയാക്കൽ നീക്കംചെയ്യാം.</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895">അക്കൗണ്ട് മാനേജ് ചെയ്യുന്നത് <ph name="FIRST_PARENT_EMAIL" />, <ph name="SECOND_PARENT_EMAIL" /> എന്നിവരാണ്</translation>
 <translation id="7955885781510802139">ഉയർന്ന ദൃശ്യതീവ്രതാ മോഡ്</translation>
 <translation id="7977927628060636163">മൊബൈൽ നെറ്റ്‌വർക്കുകൾ തിരയുന്നു...</translation>
+<translation id="7980780401175799550">Chrome OS നാവിഗേറ്റ് ചെയ്യാനുള്ള പുതിയ മാർഗ്ഗങ്ങൾ പരീക്ഷിക്കുക</translation>
 <translation id="7982789257301363584">നെറ്റ്‌വർക്ക്</translation>
 <translation id="7984197416080286869">വിരലടയാളം ഉപയോഗിച്ച് നിരവധി ശ്രമങ്ങൾ നടത്തി</translation>
 <translation id="7994370417837006925">ഒന്നിലധികം സൈൻ ഇൻ</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> ഉപയോഗിക്കുന്നു</translation>
 <translation id="8190698733819146287">ഭാഷകൾ‌ ഇച്ഛാനുസൃതമാക്കി നല്‍‌കുക...</translation>
 <translation id="8192202700944119416">അറിയിപ്പുകൾ അദൃശ്യമാക്കിയിരിക്കുന്നു.</translation>
+<translation id="8196787716797768628">ആപ്പുകൾക്കിടയിൽ വേഗത്തിൽ മാറാനും ടാബ്‌ലെറ്റ് മോഡിൽ നിങ്ങളുടെ Chromebook-മായി സംവദിക്കാനും വിരൽചലനങ്ങൾ ഉപയോഗിക്കുക.</translation>
 <translation id="8203795194971602413">വലത് ക്ലിക്ക്</translation>
 <translation id="8236042855478648955">ഇടവേളയ്ക്ക് സമയമായി</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />, ഫോൺ ബാറ്ററി <ph name="BATTERY_STATUS" /></translation>

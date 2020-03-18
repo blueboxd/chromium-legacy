@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Marker &amp;alt</translation>
-<translation id="1938451708255335766">For å justere visningstettheten for vinduer, start appen på nytt.</translation>
 <translation id="2006524834898217237">Kontrollér at enheten er koblet til internett.</translation>
 <translation id="208586643495776849">Prøv igjen</translation>
 <translation id="2090963878406559571">For å sende numre fra <ph name="ORIGIN" /> til Android-telefonen din, <ph name="TROUBLESHOOT_LINK" /> for begge enhetene i innstillingene.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Innebygd skjerm</translation>
 <translation id="335581015389089642">Tale</translation>
 <translation id="3389286852084373014">Teksten er for stor</translation>
-<translation id="3479552764303398839">Ikke nå</translation>
 <translation id="348799646910989694">Hyllen skjules automatisk</translation>
 <translation id="3554637740840164787">Festet <ph name="ITEM_TITLE" /></translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dag igjen}other{# dager igjen}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktiv i dag}=1{Aktiv for én dag siden}other{Aktiv for # dager siden}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dag og }other{# dager og }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{om 1 år}other{om # år}}</translation>
-<translation id="5895138241574237353">Start på nytt</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 sekund igjen}other{# sekunder igjen}}</translation>
 <translation id="5941711191222866238">Minimer</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 time}other{# timer}}</translation>

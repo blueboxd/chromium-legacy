@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">全选(&amp;A)</translation>
-<translation id="1938451708255335766">要调整窗口显示密度，请重启该应用。</translation>
 <translation id="2006524834898217237">请确保此设备已连接到互联网。</translation>
 <translation id="208586643495776849">请重试</translation>
 <translation id="2090963878406559571">要从 <ph name="ORIGIN" /> 向您的 Android 手机发送电话号码，请在这两部设备的设置中分别<ph name="TROUBLESHOOT_LINK" />。</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">内置显示屏</translation>
 <translation id="335581015389089642">语音</translation>
 <translation id="3389286852084373014">文本过长</translation>
-<translation id="3479552764303398839">以后再说</translation>
 <translation id="348799646910989694">任务栏已自动隐藏</translation>
 <translation id="3554637740840164787">“<ph name="ITEM_TITLE" />”已被固定</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{还剩 1 天}other{还剩 # 天}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 分钟}other{# 分钟}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{今天曾有活动}=1{1 天前曾有活动}other{# 天前曾有活动}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 天 }other{# 天 }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 年后}other{# 年后}}</translation>
-<translation id="5895138241574237353">重新启动</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{还剩 1 秒}other{还剩 # 秒}}</translation>
 <translation id="5941711191222866238">最小化</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 小时}other{# 小时}}</translation>

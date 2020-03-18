@@ -1,0 +1,117 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+package media_feeds;
+
+// Chrome requires this.
+option optimize_for = LITE_RUNTIME;
+
+// The protos in this file are committed to storage so do not change the
+// numbering.
+
+// Official rating for a piece of content (e.g. MPAA PG-13).
+// https://schema.org/contentRating
+message ContentRating {
+  // The rating agency (e.g. MPAA).
+  string agency = 1;
+
+  // The content rating.
+  string value = 2;
+};
+
+// Set of content ratings associated with an entity.
+message ContentRatingSet {
+  repeated ContentRating rating = 1;
+};
+
+// A counter for a type of interaction e.g. how many likes or dislikes.
+// https://schema.org/InteractionCounter
+message InteractionCounter {
+  enum Type {
+    WATCH = 0;
+    LIKE = 1;
+    DISLIKE = 2;
+  };
+
+  Type type = 1;
+  uint64 count = 2;
+};
+
+// Set of interaction counters with one for each type.
+message InteractionCounterSet {
+  repeated InteractionCounter counter = 1;
+}
+
+// The author of the content.
+// https://schema.org/author
+message Author {
+  // A displayable name for the author.
+  string name = 1;
+
+  // The URL of the author.
+  string url = 2;
+}
+
+// A third party identifier for a piece of content.
+// https://schema.org/identifier
+message Identifier {
+  enum Type {
+    TMS_ROOT_ID = 0;
+    TMS_ID = 1;
+    PARTNER_ID = 2;
+  };
+
+  Type type = 1;
+  string value = 2;
+}
+
+// A set of identifiers with up to one of each type.
+message IdentifierSet {
+  repeated Identifier identifier = 1;
+}
+
+// An action to start watching a piece of content.
+// https://schema.org/WatchAction
+message Action {
+  // The URL to watch the content.
+  string url = 1;
+
+  // The time the content will start playing in seconds.
+  int64 start_time_secs = 2;
+}
+
+// The content that should be suggested to play next if the user has finished
+// watching the current content.
+message PlayNextCandidate {
+  // A displayable name of the play next content.
+  string name = 1;
+
+  // The season and episode number of the content.
+  int64 season_number = 2;
+  int64 episode_number = 3;
+
+  // The action to launch the content.
+  Action action = 4;
+
+  // The duration of the content in seconds.
+  int64 duration_secs = 5;
+
+  // The identifiers for the content. We will store up to one of each type.
+  repeated Identifier identifier = 6;
+}
+
+// https://schema.org/TVEpisode
+message TVEpisode {
+  // The displayable name of the episode.
+  string name = 1;
+
+  // The season and episode number of the episode.
+  int64 episode_number = 2;
+  int64 season_number = 3;
+
+  // The identifiers for the episode. We will store up to one of each type.
+  repeated Identifier identifier = 4;
+}

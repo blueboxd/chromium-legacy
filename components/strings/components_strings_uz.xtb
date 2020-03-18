@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">Olib ketish usuli</translation>
 <translation id="1281476433249504884">Taxlovchi 1</translation>
 <translation id="1285320974508926690">Bu sayt hech qachon tarjima qilinmasin</translation>
-<translation id="1285400217480592994">Chrome orqali yuklab olinayotgan yoki yuklanayotgan fayllar tarkibini tekshirish.</translation>
 <translation id="1292701964462482250">“Kompyuteringizdagi dastur Chrome brauzerini internetga xavfsiz ulanishiga imkon bermayapti” (Faqat Windows o‘rnatilgan tizimlar uchun)</translation>
 <translation id="1294154142200295408">Buyruqlar qatori variantlari</translation>
 <translation id="129553762522093515">Yaqinda yopilganlar</translation>
@@ -647,6 +646,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="3784372983762739446">Bluetooth qurilmalar</translation>
 <translation id="3787705759683870569">Amal qilish muddati: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">Hajmi: 16</translation>
+<translation id="3793574014653384240">Oxirgi ishdan chiqishlar va ularning sabablari</translation>
 <translation id="3797522431967816232">Prc3 (Envelope)</translation>
 <translation id="3799805948399000906">Shrift talabi qilindi</translation>
 <translation id="3807366285948165054">Tasvirning X oʻqidagi siljishi</translation>
@@ -1048,7 +1048,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="549333378215107354">Hajmi: 3</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">Boshqariladigan xatcho‘plar</translation>
-<translation id="5510481203689988000">Bu sozlama Cookie fayllar sozlamalari orqali boshqariladi</translation>
+<translation id="5510481203689988000">Bu sozlama Cookie sozlamalari orqali boshqariladi</translation>
 <translation id="5510766032865166053">Fayl boshqa joyga ko‘chirilgan yoki o‘chirib yuborilgan bo‘lishi mumkin.</translation>
 <translation id="5523118979700054094">Parametr nomi</translation>
 <translation id="55293785478302737">Chekkasini tikish</translation>

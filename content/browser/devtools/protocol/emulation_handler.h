@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/emulation.h"
-#include "third_party/blink/public/web/web_device_emulation_params.h"
+#include "third_party/blink/public/mojom/devtools/device_emulation_params.mojom.h"
 
 namespace net {
 class HttpRequestHeaders;
@@ -68,10 +68,12 @@ class EmulationHandler : public DevToolsDomainHandler,
 
   Response SetVisibleSize(int width, int height) override;
 
-  blink::WebDeviceEmulationParams GetDeviceEmulationParams();
-  void SetDeviceEmulationParams(const blink::WebDeviceEmulationParams& params);
+  const base::Optional<blink::WebDeviceEmulationParams>&
+  GetDeviceEmulationParams() const;
+  void SetDeviceEmulationParams(
+      const base::Optional<blink::WebDeviceEmulationParams>& params);
 
-  bool device_emulation_enabled() { return device_emulation_enabled_; }
+  bool device_emulation_enabled() const { return !!device_emulation_params_; }
 
   void ApplyOverrides(net::HttpRequestHeaders* headers);
 
@@ -83,8 +85,7 @@ class EmulationHandler : public DevToolsDomainHandler,
   bool touch_emulation_enabled_;
   std::string touch_emulation_configuration_;
 
-  bool device_emulation_enabled_;
-  blink::WebDeviceEmulationParams device_emulation_params_;
+  base::Optional<blink::WebDeviceEmulationParams> device_emulation_params_;
   std::string user_agent_;
   std::string accept_language_;
 

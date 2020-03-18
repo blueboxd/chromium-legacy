@@ -68,6 +68,15 @@
 
       Se il criterio viene impostato su false o non viene impostato, le informazioni non vengono segnalate.
       Se viene impostato su true, le informazioni sulla retroilluminazione del dispositivo vengono segnalate.</translation>
+<translation id="1076271193420500757">La configurazione di questo criterio consente di specificare quali varianti è possibile applicare su un dispositivo <ph name="PRODUCT_OS_NAME" /> gestito dall'azienda.
+
+      Le varianti forniscono un mezzo per apportare modifiche a <ph name="PRODUCT_OS_NAME" /> senza inviare una nuova versione attivando o disattivando in modo selettivo le funzionalità già esistenti.
+
+      Se imposti <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valore 0) o se non imposti il criterio, è possibile applicare tutte le varianti a <ph name="PRODUCT_OS_NAME" />.
+
+      Se imposti <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valore 1), è possibile applicare a <ph name="PRODUCT_OS_NAME" /> soltanto le varianti considerate correzioni fondamentali per la sicurezza o la stabilità.
+
+      L'impostazione di <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valore 2) impedisce di applicare al browser tutte le varianti nella schermata di accesso. Questa modalità potrebbe impedire agli sviluppatori di <ph name="PRODUCT_OS_NAME" /> di fornire tempestivamente correzioni fondamentali per la sicurezza ed è pertanto sconsigliata.</translation>
 <translation id="1078643757670228170">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 82 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene disattivato quando viene usata la corrente alternata.
@@ -1123,14 +1132,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Se questo criterio non viene impostato, <ph name="PRODUCT_NAME" /> utilizzerà il valore predefinito di 10.000 millisecondi.</translation>
 <translation id="257788512393330403">Richiedi inserimento della password ogni sei ore</translation>
 <translation id="2580104054820772954">Ritarda la consegna dei file finché il risultato dell'analisi non viene reso noto</translation>
-<translation id="2582582399758251985">Quando questa impostazione è attiva, <ph name="PRODUCT_NAME" /> verifica i certificati dei server mediante lo strumento di verifica dei certificati integrato.
-      Quando questa impostazione non è attiva, <ph name="PRODUCT_NAME" /> verifica i certificati dei server mediante lo strumento di verifica dei certificati precedente fornito dalla piattaforma.
-      Quando questa impostazione non è definita, potrebbe essere utilizzato lo strumento di verifica dei certificati integrato o quello precedente.
-
-      Si prevede che la rimozione di questo criterio dalla versione 81 di <ph name="PRODUCT_OS_NAME" /> avverrà in concomitanza con la rimozione del supporto dello strumento di verifica dei certificati precedente da <ph name="PRODUCT_OS_NAME" />.
-
-      Si prevede che la rimozione di questo criterio dalla versione 83 di <ph name="PRODUCT_NAME" /> per Linux avverrà in concomitanza con la rimozione del supporto per lo strumento di verifica dei certificati precedente da Linux.
-      </translation>
 <translation id="2586162458524426376">
       Questo criterio si applica alla schermata di accesso. Vedi anche il criterio <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> che viene applicato alla sessione utente.
       Se il criterio è attivato, ciascuna delle origini denominate all'interno di un elenco separato da virgole verrà eseguita nel proprio processo. Ciò isolerà anche le origini indicate dai sottodomini, ad esempio specificando https://example.com/ si isolerà anche https://foo.example.com/, perché fa parte del sito https://example.com/.
@@ -1150,9 +1151,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="26023406105317310">Configura account Kerberos</translation>
 <translation id="2604182581880595781">Configura le norme relative alla funzione Condivisioni file di rete</translation>
 <translation id="2615240493030733717">Segnala informazioni sul fuso orario</translation>
-<translation id="2620943247255660284">Questo criterio è obsoleto ed è stato sostituito dal criterio AdvancedProtectionExtraSecurityAllowed.
-
-      Questo criterio consente di stabilire se gli utenti iscritti al programma di protezione avanzata possono inviare o meno i propri download a Google per verificare l'eventuale presenza di malware. Se il criterio viene impostato su True o non viene impostato, agli utenti iscritti al programma verrà chiesto di inviare i propri file a Google per una scansione approfondita. Se l'utente seleziona "Scansiona", il download verrà inviato a Google. Se il criterio viene impostato su False, agli utenti non verrà chiesto di inviare i propri download a Google.</translation>
 <translation id="2623014935069176671">Attesa dell'attività iniziale dell'utente</translation>
 <translation id="262740370354162807">Attiva l'invio di documenti a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Consente di specificare le configurazioni delle stampanti aziendali.
@@ -1187,6 +1185,11 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Se questa norma non viene impostata, per impostazione predefinita non sarà disponibile per gli utenti gestiti, mentre lo sarà invece per gli utenti non gestiti.</translation>
 <translation id="2660846099862559570">Non utilizzare mai un proxy</translation>
 <translation id="2665422249821137126">Attiva il puntatore grande nella schermata di accesso</translation>
+<translation id="266882888912227087"> Consente di controllare la notifica ad avvio automatico della sessione Ospite gestita su <ph name="PRODUCT_OS_NAME" />.
+
+      Se questo criterio viene impostato su True, la notifica di avviso sulla privacy viene chiusa dopo alcuni secondi.
+
+      Se il criterio viene impostato su False o non viene impostato, la notifica di avviso sulla privacy viene bloccata finché non viene ignorata dall'utente.</translation>
 <translation id="2672012807430078509">Controlla l'attivazione del protocollo di autenticazione NTLM per i montaggi SMB</translation>
 <translation id="267596348720209223">Consente di specificare le codifiche dei caratteri supportate dal provider di ricerca. Le codifiche sono nomi di pagine codificati come UTF-8, GB2312 e ISO-8859-1. Vengono provate nell'ordine indicato. Questa norma è facoltativa. Se non viene impostata viene utilizzato il valore predefinito UTF-8. Questa norma viene rispettata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="2678503605767349615">Certificati client a livello di dispositivo richiesti</translation>
@@ -2886,6 +2889,7 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
           Se questa norma è impostata su true o non è configurata, questo utente può creare e gestire utenti supervisionati.</translation>
 <translation id="5369937289900051171">Solo stampa a colori</translation>
 <translation id="5370279767682621504">Attiva il supporto HTTP/0.9 sulle porte non predefinite</translation>
+<translation id="5373065931879562543">Determina la disponibilità delle varianti su Chrome OS</translation>
 <translation id="5378985487213287085">Permette di stabilire se consentire o meno la visualizzazione di notifiche desktop nei siti web. La visualizzazione di notifiche desktop può essere consentita o negata per impostazione predefinita oppure l'utente può ricevere una richiesta ogni volta che un sito web desidera visualizzare le notifiche desktop. Se questa norma non viene impostata, verrà utilizzato il valore "AskNotifications", che potrà essere modificato dagli utenti.</translation>
 <translation id="5380329473151894945">Consente di impostare lo stato predefinito della funzione di accessibilità del puntatore grande nella schermata di accesso.
 
@@ -3007,6 +3011,16 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5475361623548884387">Attiva la stampa</translation>
 <translation id="547601067149622666">Non consentire gli annunci su siti con annunci invasivi</translation>
 <translation id="5483065054530244863">Consenti i certificati SHA-1 firmati emessi dai trust anchor locali</translation>
+<translation id="5486493714323160905">Quando questa impostazione è attiva, <ph name="PRODUCT_NAME" /> verifica i certificati dei server mediante lo strumento di verifica dei certificati integrato.
+      Quando questa impostazione non è attiva, <ph name="PRODUCT_NAME" /> verifica i certificati dei server mediante lo strumento di verifica dei certificati precedente fornito dalla piattaforma.
+      Quando questa impostazione non è definita, potrebbe essere utilizzato lo strumento di verifica dei certificati integrato o quello precedente.
+
+      È prevista la rimozione di questo criterio nella versione 81 di <ph name="PRODUCT_OS_NAME" />, in concomitanza con la rimozione del supporto dello strumento di verifica dei certificati precedente da <ph name="PRODUCT_OS_NAME" />.
+
+      È prevista la rimozione di questo criterio nella versione 83 di <ph name="PRODUCT_NAME" /> per Linux, in concomitanza con la rimozione del supporto dello strumento di verifica dei certificati precedente da Linux.
+
+      È prevista la rimozione di questo criterio nella versione 87 di <ph name="PRODUCT_NAME" /> per Mac OS X, in concomitanza con la rimozione del supporto dello strumento di verifica dei certificati precedente da Mac OS X.
+      </translation>
 <translation id="5498045818698736356">Consente di specificare un elenco di siti web che vengono installati automaticamente, senza l'interazione dell'utente, e che non possono essere disinstallati o disattivati dall'utente.
 
       Ogni voce dell'elenco del criterio è un oggetto con un componente obbligatorio "url" e due componenti facoltativi: "default_launch_container" e "create_desktop_shortcut". "url" deve essere l'URL dell'applicazione web da installare, "launch_container" deve essere "window" o "tab" per indicare in che modo l'applicazione web verrà aperta una volta installata e "create_desktop_shortcut" deve essere "true" se è necessario creare un collegamento sul desktop su Linux e Windows. Se "default_launch_container" viene omesso, l'applicazione si aprirà in una scheda per impostazione predefinita. A prescindere dal valore di "default_launch_container", gli utenti possono modificare il contenitore in cui si aprirà l'applicazione. Se "create_desktop_shortcuts" viene omesso, non verranno creati collegamenti sul desktop. Vedi il criterio <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> per bloccare app sulla shelf di Chrome OS.</translation>
@@ -3227,6 +3241,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
           Se non viene fornita alcuna impostazione, <ph name="PRODUCT_NAME" /> dovrà ricorrere a un nome di libreria predefinito.</translation>
 <translation id="5783009211970309878">Stampa intestazioni e piè di pagina</translation>
+<translation id="5790763087505467169">Riduci notifiche ad avvio automatico della sessione Ospite gestita</translation>
 <translation id="5806128552675651249">Consenti solo la stampa senza immagini di sfondo</translation>
 <translation id="5809210507920527553">Consente di gestire le impostazioni relative al container Linux (Crostini).</translation>
 <translation id="5809728392451418079">Imposta il nome visualizzato per gli account del dispositivo</translation>
@@ -3713,6 +3728,9 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6689792153960219308">Segnala lo stato dell'hardware</translation>
 <translation id="6698632841807204978">Attiva la stampa monocromatica</translation>
 <translation id="6699880231565102694">Abilita autenticazione a due fattori per gli host di accesso remoto</translation>
+<translation id="6704515759227307131">Questo criterio è obsoleto ed è stato sostituito dal criterio AdvancedProtectionAllowed.
+
+      Questo criterio consente di stabilire se gli utenti iscritti al programma di protezione avanzata possono inviare o meno i propri download a Google per verificare l'eventuale presenza di malware. Se il criterio viene impostato su True o non viene impostato, agli utenti iscritti al programma verrà chiesto di inviare i propri file a Google per una scansione approfondita. Se l'utente seleziona "Scansiona", il download verrà inviato a Google. Se il criterio viene impostato su False, agli utenti non verrà chiesto di inviare i propri download a Google.</translation>
 <translation id="670597451099978576">Concede automaticamente a questi siti l'autorizzazione a connettersi a dispositivi USB usando gli ID fornitore e prodotto indicati nella schermata di accesso.</translation>
 <translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> garantisce la sicurezza degli aggiornamenti e dell'installazione delle estensioni. Tuttavia, i contenuti di alcune estensioni ospitate al di fuori del Chrome Web Store potrebbero essere protetti solo dagli accessi non sicuri o da algoritmi di hashing, ad esempio SHA1. Quando questo criterio è disattivato, la nuova installazione o gli aggiornamenti di tali estensioni non verranno consentiti da Chrome (finché gli sviluppatori delle estensioni non ricreano le estensioni con algoritmi più efficaci). Se questo criterio viene attivato, l'installazione e gli aggiornamenti di queste estensioni saranno concessi.
 
@@ -3736,6 +3754,7 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
       Questa impostazione consente di gestire la presentazione delle pagine di benvenuto che consentono agli utenti di accedere a <ph name="PRODUCT_NAME" /> o sceglierlo come browser predefinito oppure che danno agli utenti informazioni sulle funzionalità del prodotto.</translation>
 <translation id="6766216162565713893">Consenti ai siti di chiedere all'utente di concedere l'accesso a un dispositivo Bluetooth nelle vicinanze.</translation>
 <translation id="6770454900105963262">Segnala informazioni sulle sessioni kiosk attive</translation>
+<translation id="6772045451150098845">Questo criterio consente di stabilire se gli utenti iscritti al programma di protezione avanzata ricevono o meno funzionalità extra. Alcune di queste funzionalità potrebbero prevedere la condivisione di dati con Google (ad esempio, gli utenti che usano la protezione avanzata potranno inviare i propri download a Google per verificare l'eventuale presenza di malware). Se questo criterio viene impostato su True o non viene impostato, gli utenti iscritti al programma riceveranno funzionalità extra. Se viene impostato su False, gli utenti che usano la protezione avanzata riceveranno soltanto le funzionalità standard per i consumatori.</translation>
 <translation id="6780908086869332493">Consente di specificare un elenco di pattern URL relativi ai siti per i quali viene selezionato automaticamente un certificato client nella schermata di accesso all'interno del frame che ospita il flusso SAML, se il sito richiede un certificato. Un esempio di utilizzo è la configurazione di un certificato a livello di dispositivo da presentare all'IdP SAML.
 
       Il valore deve essere un array di dizionari JSON sotto forma di stringa. Ogni dizionario deve avere il formato <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, dove <ph name="URL_PATTERN_PLACEHOLDER" /> rappresenta un pattern di impostazioni contenuti. <ph name="FILTER_PLACEHOLDER" /> limita la gamma di certificati client che il browser può selezionare automaticamente. Indipendentemente dal filtro, saranno selezionati solo i certificati che soddisfano la richiesta di certificato del server. Se <ph name="FILTER_PLACEHOLDER" /> è nel formato <ph name="JSON_DICTIONARY_EXAMPLE" />, vengono inoltre selezionati solo i certificati client emessi da un certificato con valore CommonName uguale a <ph name="ISSUER_CN_PLACEHOLDER" />. Se <ph name="FILTER_PLACEHOLDER" /> rappresenta il dizionario vuoto {}, la selezione dei certificati client non viene limitata ulteriormente.
@@ -4466,9 +4485,9 @@ L'aggiornamento dinamico della norma è supportato in M56 e versioni successive.
 <translation id="7937766917976512374">Consenti o nega acquisizione video</translation>
 <translation id="7937944288846766530">Questo criterio controlla le richieste di installazione delle estensioni di <ph name="PRODUCT_NAME" /> consentendo agli utenti di inviare alla Console di amministrazione Google le richieste per l'approvazione.
 
-      Se il criterio CloudReportingEnabled non è impostato o è disattivato, questo criterio verrà ignorato e le richieste di installazione delle estensioni non vengono create né caricate.
+      Se il criterio CloudReportingEnabled non è impostato o è disattivato, questo criterio verrà ignorato e le richieste di installazione delle estensioni non verranno create né caricate.
       Se il criterio non è impostato o è disattivato, le richieste di installazione delle estensioni non vengono create né caricate.
-      Se il criterio è attivato, le richieste di installazione delle estensioni vengono create e caricate sulla Console di amministrazione Google
+      Se il criterio è attivato, le richieste di installazione delle estensioni vengono create e caricate sulla Console di amministrazione Google.
 
       Le richieste di installazione delle estensioni vengono create quando gli utenti tentano di installare un'estensione non autorizzata da <ph name="EXTENSION_INSTALL_WHITELIST" /> o <ph name="EXTENSION_SETTINGS" />.
 
@@ -5047,7 +5066,6 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
       Se il criterio viene impostato su false o non viene impostato, gli stati relativi a display e grafica non vengono segnalati. Se viene impostato su true, gli stati relativi a display e grafica vengono segnalati.</translation>
 <translation id="891435090623616439">codificato sotto forma di stringa JSON; per informazioni dettagliate, visita la pagina <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Consenti agli utenti di gestire i certificati CA installati.</translation>
-<translation id="8924721011887485485">Questo criterio consente di stabilire se gli utenti iscritti al programma di protezione avanzata ricevono o meno funzionalità di sicurezza extra. Alcune di queste funzionalità potrebbero prevedere la condivisione di dati con Google (ad esempio, gli utenti che usano la protezione avanzata potranno inviare i propri download a Google per verificare l'eventuale presenza di malware). Se questo criterio viene impostato su True o non viene impostato, gli utenti iscritti al programma riceveranno funzionalità di sicurezza extra. Se viene impostato su False, gli utenti che usano la protezione avanzata riceveranno soltanto le funzionalità di sicurezza per i consumatori.</translation>
 <translation id="8926275581598789324">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 82 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale viene compiuta l'azione stabilita per l'inattività quando viene usata la batteria.

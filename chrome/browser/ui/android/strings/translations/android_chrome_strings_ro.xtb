@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">Se trimite la <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">Se adaugă <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">De la site-uri</translation>
+<translation id="1044891598689252897">Site-urile vor funcționa normal</translation>
 <translation id="1049743911850919806">Incognito</translation>
 <translation id="10614374240317010">Nu se salvează niciodată</translation>
 <translation id="1067922213147265141">Alte servicii Google</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">Nu se poate trimite <ph name="CONTENT_TYPE" /></translation>
 <translation id="1477626028522505441">Descărcarea fișierului <ph name="FILE_NAME" /> nu a reușit din cauza unor probleme de server.</translation>
 <translation id="1506061864768559482">Motor de căutare</translation>
+<translation id="1509960214886564027">Este posibil ca funcțiile de pe mai multe site-uri să fie întrerupte</translation>
 <translation id="1513352483775369820">Marcaje și istoric web</translation>
 <translation id="1513858653616922153">Șterge parola</translation>
 <translation id="1521774566618522728">Activ astăzi</translation>
@@ -235,6 +237,7 @@ Atinge lung orice cuvânt pentru a-l căuta. Pentru a rafina căutarea, selectea
 <translation id="2647434099613338025">Adaugă o limbă</translation>
 <translation id="2650751991977523696">Descarci din nou fișierul?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{Un fișier audio}few{# fișiere audio}other{# de fișiere audio}}</translation>
+<translation id="2687403674020088961">Blochează toate cookie-urile (nu este recomandat)</translation>
 <translation id="2707726405694321444">Actualizează pagina</translation>
 <translation id="2709516037105925701">Completare automată</translation>
 <translation id="2717722538473713889">Adrese de e-mail</translation>
@@ -340,6 +343,7 @@ Atinge lung orice cuvânt pentru a-l căuta. Pentru a rafina căutarea, selectea
 <translation id="3478363558367712427">Poți alege motorul de căutare</translation>
 <translation id="3492207499832628349">Filă incognito nouă</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /> despre conținutul sugerat</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Realitate augmentată</translation>
 <translation id="3518985090088779359">Acceptă și continuă</translation>
 <translation id="3522247891732774234">Actualizare disponibilă. Mai multe opțiuni</translation>
@@ -355,6 +359,7 @@ Atinge lung orice cuvânt pentru a-l căuta. Pentru a rafina căutarea, selectea
 <translation id="358794129225322306">Permite unui site să descarce automat mai multe fișiere.</translation>
 <translation id="3590487821116122040">Stocare a site-urilor pe care Chrome nu o consideră importantă (de ex., site-uri care nu au setări salvate sau pe care nu le accesezi frecvent)</translation>
 <translation id="3594780231884063836">Dezactivează sunetul videoclipului</translation>
+<translation id="3596414637720633074">Blochează cookie-urile terță parte în modul incognito</translation>
 <translation id="3599863153486145794">Șterge istoricul de pe toate dispozitivele conectate. Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Dezactivează sunetul pentru site-urile care îl redau</translation>
 <translation id="3616113530831147358">Audio</translation>
@@ -921,6 +926,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="780301667611848630">Nu, mulțumesc</translation>
 <translation id="7810647596859435254">Deschide cu…</translation>
 <translation id="7821588508402923572">Economiile de date vor apărea aici</translation>
+<translation id="7828557259026017104">Cookie-urile sunt fișiere create de site-urile pe care le accesezi. Site-urile le folosesc pentru a-ți reține preferințele. Cookie-urile terță parte sunt create de alte site-uri. Aceste site-uri dețin o parte din conținut, cum ar fi anunțuri sau imagini, pe care le vezi pe pagina web pe care o accesezi.</translation>
 <translation id="783819812427904514">Activează sunetul videoclipului</translation>
 <translation id="784934925303690534">Interval de timp</translation>
 <translation id="7851858861565204677">Alte dispozitive</translation>
@@ -941,6 +947,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="79859296434321399">Pentru a vedea conținut din realitatea augmentată, instalează ARCore</translation>
 <translation id="7986741934819883144">Selectează o persoană de contact</translation>
 <translation id="7987073022710626672">Termenii și condițiile Chrome</translation>
+<translation id="7993619969781047893">Este posibil ca funcțiile de pe anumite site-uri să fie întrerupte</translation>
 <translation id="7998918019931843664">Redeschideți fila închisă</translation>
 <translation id="7999064672810608036">Sigur dorești să ștergi toate datele locale, inclusiv cookie-urile pentru acest site și să îi resetezi permisiunile?</translation>
 <translation id="8004582292198964060">Browser</translation>
@@ -1075,6 +1082,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8965591936373831584">în așteptare</translation>
 <translation id="8970887620466824814">A apărut o eroare.</translation>
 <translation id="8972098258593396643">Descarci în dosarul prestabilit?</translation>
+<translation id="8988028529677883095">Folosește telefonul ca pe o cheie de securitate</translation>
 <translation id="8993760627012879038">Deschide o filă nouă în modul incognito</translation>
 <translation id="8998729206196772491">Te conectezi cu un cont gestionat de <ph name="MANAGED_DOMAIN" /> și acorzi administratorului acestuia controlul asupra datelor Chrome. Datele vor fi asociate definitiv acestui cont. Dacă te deconectezi de la Chrome, datele se vor șterge de pe acest dispozitiv, dar vor rămâne stocate în Contul Google.</translation>
 <translation id="9019902583201351841">Gestionat de părinții tăi</translation>

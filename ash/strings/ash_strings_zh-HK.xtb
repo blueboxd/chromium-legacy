@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">訊號中等</translation>
 <translation id="4112140312785995938">向後回轉</translation>
 <translation id="4129129681837227511">如要在上鎖畫面上查看通知，請將裝置解鎖並變更相關設定</translation>
+<translation id="4144413954005649103">按一下右鍵或長按主畫面按鈕，「Google 助理」即可根據畫面上的內容顯示相關資料。</translation>
 <translation id="4146833061457621061">播音樂</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> 由 <ph name="DOMAIN" /> 管理</translation>
 <translation id="4181841719683918333">語言</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">顯示螢幕小鍵盤</translation>
 <translation id="6164005077879661055">將這位受管使用者移除後，系統即會永久刪除所有與該使用者相關的檔案和本機數據。管理員仍可前往 <ph name="MANAGEMENT_URL" /> 查看這位受管使用者的網頁瀏覽記錄和設定。</translation>
 <translation id="6165508094623778733">瞭解更多資料</translation>
+<translation id="6236290670123303279">管理設定</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">已鎖定為水平</translation>
 <translation id="6259254695169772643">使用觸控筆選擇</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">開啟</translation>
 <translation id="6670153871843998651">桌面 3</translation>
 <translation id="6691659475504239918">Search+Shift+H 鍵</translation>
+<translation id="6692996468359469499">取得您選取項目相關資料</translation>
 <translation id="6696025732084565524">您的拆除式鍵盤需執行重要更新</translation>
 <translation id="6700713906295497288">IME 選單按鈕</translation>
 <translation id="6713285437468012787">藍牙裝置「<ph name="DEVICE_NAME" />」已配對成功，可供所有使用者使用。您亦可使用「設定」移除配對。</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895">帳戶由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 管理</translation>
 <translation id="7955885781510802139">高對比模式</translation>
 <translation id="7977927628060636163">正在搜尋流動網絡…</translation>
+<translation id="7980780401175799550">試用導覽 Chrome 作業系統的新方式</translation>
 <translation id="7982789257301363584">網絡</translation>
 <translation id="7984197416080286869">指紋識別失敗嘅次數太多</translation>
 <translation id="7994370417837006925">多重登入</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835">正在使用「<ph name="LOCALE_NAME" />」</translation>
 <translation id="8190698733819146287">自訂語言與輸入法…</translation>
 <translation id="8192202700944119416">已隱藏通知。</translation>
+<translation id="8196787716797768628">在平板電腦模式中使用手勢快速切換應用程式，並與 Chromebook 互動。</translation>
 <translation id="8203795194971602413">按一下右鍵</translation>
 <translation id="8236042855478648955">休息時間到了</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />，訊號強度係 <ph name="SIGNAL_STRENGTH" />，手機電量係 <ph name="BATTERY_STATUS" /></translation>

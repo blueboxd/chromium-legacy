@@ -382,8 +382,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
       const gfx::Size& visible_viewport_size,
       cc::BrowserControlsParams browser_controls_params) override;
   void SetScreenMetricsEmulationParametersForWidget(
-      bool enabled,
-      const blink::WebDeviceEmulationParams& params) override;
+      const base::Optional<blink::WebDeviceEmulationParams>& params) override;
 
   // Old WebLocalFrameClient implementations
   // ----------------------------------------

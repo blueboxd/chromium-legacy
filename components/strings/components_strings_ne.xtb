@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">पिकअपको विधि</translation>
 <translation id="1281476433249504884">स्ट्याकर १</translation>
 <translation id="1285320974508926690">यो साइट कहिले पनि अनुवाद नगर्नुहोस्</translation>
-<translation id="1285400217480592994">तपाईंले Chrome मा डाउनलोड गर्ने वा अपलोड गर्ने फाइलहरूका सामग्री स्क्यान गर्नुहोस्।</translation>
 <translation id="1292701964462482250">"तपाईंको कम्प्युटरमा रहेको सफ्टवेयरले Chrome लाई सुरक्षित रूपमा वेबमा जडान हुनबाट रोकिरहेको छ" (Windows कम्प्युटरहरू मात्र)</translation>
 <translation id="1294154142200295408">कमान्ड लाइनसम्बन्धी विविधताहरू</translation>
 <translation id="129553762522093515">हालैमा बन्द गरिएको</translation>
@@ -645,6 +644,7 @@
 <translation id="3784372983762739446">ब्लुटुथ उपकरणहरू</translation>
 <translation id="3787705759683870569"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /> मा म्याद सकिन्छ</translation>
 <translation id="3789155188480882154">आकार १६</translation>
+<translation id="3793574014653384240">हालसालै भएका क्र्यासहरूको सङ्ख्या र तिनको कारण</translation>
 <translation id="3797522431967816232">Prc3 (Envelope)</translation>
 <translation id="3799805948399000906">मागिएको फन्ट</translation>
 <translation id="3807366285948165054">छविको X सिफ्ट</translation>

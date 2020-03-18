@@ -54,6 +54,12 @@ class CONTENT_EXPORT VideoCaptureController
   // and Media.VideoCapture.MaxFrameDropExceeded.
   static constexpr int kMaxConsecutiveFrameDropForSameReasonCount = 10;
 
+  // Number of logs for dropped frames to be emitted before suppressing.
+  static constexpr int kMaxEmittedLogsForDroppedFramesBeforeSuppressing = 3;
+
+  // Suppressed logs for dropped frames will still be emitted this often.
+  static constexpr int kFrequencyForSuppressedLogs = 100;
+
   base::WeakPtr<VideoCaptureController> GetWeakPtrForIOThread();
 
   // Start video capturing and try to use the resolution specified in |params|.
@@ -244,6 +250,8 @@ class CONTENT_EXPORT VideoCaptureController
 
   void EmitLogMessage(const std::string& message, int verbose_log_level);
 
+  void MaybeEmitFrameDropLogMessage(media::VideoCaptureFrameDropReason reason);
+
   const int serial_id_;
   const std::string device_id_;
   const blink::mojom::MediaStreamType stream_type_;
@@ -263,6 +271,9 @@ class CONTENT_EXPORT VideoCaptureController
   blink::VideoCaptureState state_;
 
   FrameDropLogState frame_drop_log_state_;
+
+  // Tracks how often each frame-drop reason was encountered.
+  std::map<media::VideoCaptureFrameDropReason, int> frame_drop_log_counters_;
 
   int next_buffer_context_id_ = 0;
 

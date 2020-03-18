@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">‏مفتاح Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">تح&amp;ديد الكلّ</translation>
-<translation id="1938451708255335766">لتعديل كثافة عرض النافذة، يمكنك إعادة تشغيل التطبيق.</translation>
 <translation id="2006524834898217237">عليك التأكّد من اتصال الجهاز بالإنترنت.</translation>
 <translation id="208586643495776849">يُرجى إعادة المحاولة</translation>
 <translation id="2090963878406559571">‏لإرسال رقم من <ph name="ORIGIN" /> إلى هاتفك الذي يعمل بنظام التشغيل Android، يُرجى <ph name="TROUBLESHOOT_LINK" /> لكلا الجهازَين في الإعدادات.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">عرض مُضمَّن</translation>
 <translation id="335581015389089642">الحديث</translation>
 <translation id="3389286852084373014">النص كبير جدًا</translation>
-<translation id="3479552764303398839">ليس الآن</translation>
 <translation id="348799646910989694">إخفاء الرف تلقائيًا</translation>
 <translation id="3554637740840164787">تم تثبيت <ph name="ITEM_TITLE" /></translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{يتبقى يوم واحد}zero{يتبقى عدد # من الأيام}two{يتبقى يومان (#)}few{يتبقى # أيام}many{يتبقى # يومًا}other{يتبقى # من الأيام}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{دقيقة واحدة}zero{# من الدقائق}two{دقيقتان (#)}few{# دقائق}many{# دقيقة}other{# من الدقائق}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{نشط اليوم}=1{نشط قبل يوم واحد}two{نشط قبل يومين (#)}few{نشط قبل # أيام}many{نشط قبل # يومًا}other{نشط قبل # يوم}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{يوم واحد و }zero{# من الأيام و }two{يومان (#) و }few{# أيام و }many{# يومًا و }other{# من الأيام و }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{خلال عام واحد}zero{خلال # عام}two{خلال عامين (#)}few{خلال # أعوام}many{خلال # عامًا}other{خلال # عام}}</translation>
-<translation id="5895138241574237353">إعادة التشغيل</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{يتبقى ثانية واحدة}zero{يتبقى # من الثواني}two{يتبقى ثانيتان (#)}few{يتبقى # ثانية}many{يتبقى # ثانية}other{يتبقى # من الثواني}}</translation>
 <translation id="5941711191222866238">تصغير</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{ساعة واحدة}zero{# من الساعات}two{ساعتان (#)}few{# ساعات}many{# ساعةً}other{# من الساعات}}</translation>

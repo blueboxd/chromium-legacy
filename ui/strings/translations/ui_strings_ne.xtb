@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;सबै चयन गर्नुहोस्</translation>
-<translation id="1938451708255335766">विन्डोको प्रदर्शन घनत्व समायोजन गर्न, अनुप्रयोगलाई पुनः सुरु गर्नुहोस्।</translation>
 <translation id="2006524834898217237">यो यन्त्र इन्टरनेटमा जोडिएको छ भन्ने कुरा सुनिश्चित गर्नुहोस्।</translation>
 <translation id="208586643495776849">कृपया फेरि प्रयास गर्नुहोस्</translation>
 <translation id="2090963878406559571"><ph name="ORIGIN" /> बाट आफ्नो Android फोनमा कुनै नम्बर पठाउन सेटिङमा गई दुवै यन्त्रहरूमा <ph name="TROUBLESHOOT_LINK" />।</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">अन्तर्निर्मित डिस्प्ले</translation>
 <translation id="335581015389089642">बोली</translation>
 <translation id="3389286852084373014">पाठ ज्यादै ठुलो छ</translation>
-<translation id="3479552764303398839">अहिले होइन</translation>
 <translation id="348799646910989694">सेल्फ स्वतः लुक्ने छ</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> पिन गरिएको थियो</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{ १ दिन बाँकी}other{ # दिन बाँकी}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{ १ मिनेट}other{ # मिनेट}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{आज सक्रिय रहेको}=1{१ दिनअघि सक्रिय रहेको}other{# दिनअघि सक्रिय रहेको}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{ १ दिन र }other{ # दिन र }}</translation>
+<translation id="5789643057113097023">।</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{१ वर्षमा}other{# वर्षमा}}</translation>
-<translation id="5895138241574237353">पुन: शुरू गर्नुहोस्</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{ १ सेकेन्ड बाँकी}other{ # सेकेन्ड बाँकी}}</translation>
 <translation id="5941711191222866238">सानो बनाउनुहोस</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{ १ घन्टा}other{ # घन्टा}}</translation>

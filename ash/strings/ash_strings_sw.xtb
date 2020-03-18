@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">Mtandao ni thabiti kiasi</translation>
 <translation id="4112140312785995938">Sogeza Nyuma</translation>
 <translation id="4129129681837227511">Ili uone arifa kwenye skrini iliyofungwa, ifungue ili ubadilishe mipangilio hii</translation>
+<translation id="4144413954005649103">Ukibofya kulia au kubonyeza kwa muda mrefu, programu ya Mratibu hukuonyesha maelezo yanayohusiana na unachochagua kwenye skrini.</translation>
 <translation id="4146833061457621061">Cheza muziki</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> inadhibitiwa na <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Lugha</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">Onyesha kibodi ya skrini</translation>
 <translation id="6164005077879661055">Faili zote na data ya ndani zinazohusishwa na mtumiaji anayesimamiwa zitafutwa kabisa mtumiaji huyu anayesimamiwa atakapoondolewa. Tovuti zilizotembelewa na mipangilio ya mtumiaji huyu anayesimamiwa inaweza bado kuonekana na msimamizi katika <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
+<translation id="6236290670123303279">Dhibiti Mipangilio</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Inatumia skrini ya mlalo pekee</translation>
 <translation id="6259254695169772643">Tumia stylus yako kuchagua</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">Imewashwa</translation>
 <translation id="6670153871843998651">Eneokazi la 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
+<translation id="6692996468359469499">Pata maelezo yanayohusiana na chaguo lako</translation>
 <translation id="6696025732084565524">Kibodi unayoweza kutenganisha inahitaji sasisho muhimu</translation>
 <translation id="6700713906295497288">Kitufe cha menyu ya IME</translation>
 <translation id="6713285437468012787">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kimeoanishwa na sasa kinapatikana kwa watumiaji wote. Unaweza kuondoa uoanishaji huu kwa kutumia Mipangilio.</translation>
@@ -528,6 +531,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="79341161159229895">Akaunti inasimamiwa na <ph name="FIRST_PARENT_EMAIL" /> na <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">Hali ya utofautishaji wa juu</translation>
 <translation id="7977927628060636163">Inatafuta mitandao ya simu...</translation>
+<translation id="7980780401175799550">Jaribu njia mpya za kutumia Mfumo wa Uendeshaji wa Chrome</translation>
 <translation id="7982789257301363584">Mtandao</translation>
 <translation id="7984197416080286869">Umejaribu kuweka alama ya kidole mara nyingi mno</translation>
 <translation id="7994370417837006925">Uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja</translation>
@@ -549,6 +553,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8167567890448493835">Unatumia <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Geuza lugha na uingizaji kukufaa...</translation>
 <translation id="8192202700944119416">Arifa zimefichwa.</translation>
+<translation id="8196787716797768628">Tumia ishara kubadili haraka kati ya programu na utumie Chromebook katika hali ya kompyuta kibao.</translation>
 <translation id="8203795194971602413">Mbofyo wa kulia</translation>
 <translation id="8236042855478648955">Ni wakati wa kupumzika</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" />, Betri ya Simu <ph name="BATTERY_STATUS" /></translation>

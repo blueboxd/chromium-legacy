@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">插入鍵</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">全部選取(&amp;A)</translation>
-<translation id="1938451708255335766">如要調整視窗顯示密度，請重新啟動應用程式。</translation>
 <translation id="2006524834898217237">請確保此裝置已連接互聯網。</translation>
 <translation id="208586643495776849">請再試一次</translation>
 <translation id="2090963878406559571">如要將 <ph name="ORIGIN" /> 的號碼從此裝置傳送至您的 Android 手機，請在這兩部裝置的設定中<ph name="TROUBLESHOOT_LINK" />。</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">內置顯示屏</translation>
 <translation id="335581015389089642">語音</translation>
 <translation id="3389286852084373014">文字過多</translation>
-<translation id="3479552764303398839">略過</translation>
 <translation id="348799646910989694">自動隱藏檔案櫃</translation>
 <translation id="3554637740840164787">已經將<ph name="ITEM_TITLE" />置頂</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{還有 1 天}other{還有 # 天}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 分鐘}other{# 分鐘}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{上次使用時間：今天}=1{上次使用時間：1 天前}other{上次使用時間：# 天前}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 天和}other{# 天和}}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 年後}other{# 年後}}</translation>
-<translation id="5895138241574237353">重新啟動</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{還有 1 秒}other{還有 # 秒}}</translation>
 <translation id="5941711191222866238">最小化</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 小時}other{# 小時}}</translation>

@@ -1691,7 +1691,7 @@ void LayoutBlockFlow::ComputeInlinePreferredLogicalWidths(
           // did change or is going to change size. However, this is our only
           // opportunity to make sure that it gets its min/max widths
           // calculated.
-          child->SetPreferredLogicalWidthsDirty();
+          child->SetIntrinsicLogicalWidthsDirty();
         }
 
         // Case (1) and (2). Inline replaced and inline flow elements.
@@ -1700,7 +1700,7 @@ void LayoutBlockFlow::ComputeInlinePreferredLogicalWidths(
                                     child_min, child_max);
           inline_min += child_min;
           inline_max += child_max;
-          child->ClearPreferredLogicalWidthsDirty();
+          child->ClearIntrinsicLogicalWidthsDirty();
         } else {
           AdjustMarginForInlineReplaced(child, child_min, child_max);
         }

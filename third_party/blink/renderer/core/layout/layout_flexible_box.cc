@@ -115,7 +115,7 @@ MinMaxSizes LayoutFlexibleBox::ComputeIntrinsicLogicalWidths() const {
     LayoutUnit min_preferred_logical_width;
     LayoutUnit max_preferred_logical_width;
     if (child->NeedsPreferredWidthsRecalculation())
-      child->SetPreferredLogicalWidthsDirty();
+      child->SetIntrinsicLogicalWidthsDirty();
     ComputeChildPreferredLogicalWidths(*child, min_preferred_logical_width,
                                        max_preferred_logical_width);
     DCHECK_GE(min_preferred_logical_width, LayoutUnit());

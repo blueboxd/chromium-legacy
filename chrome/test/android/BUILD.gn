@@ -210,6 +210,7 @@ android_library("chrome_java_test_support") {
     "//chrome/browser/preferences:java",
     "//chrome/browser/ui/android/appmenu:java",
     "//chrome/browser/ui/android/appmenu:test_support_java",
+    "//chrome/browser/ui/android/favicon:java",
     "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/util:java",
     "//components/bookmarks/common/android:bookmarks_java",

@@ -5,6 +5,7 @@
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> gailura bidaltzen…</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> gehitzen…</translation>
 <translation id="1041308826830691739">Webguneenak</translation>
+<translation id="1044891598689252897">Webguneek ohiko moduan funtzionatuko dute</translation>
 <translation id="1049743911850919806">Ezkutuko modua</translation>
 <translation id="10614374240317010">Sekula gorde gabeak</translation>
 <translation id="1067922213147265141">Beste Google-ren zerbitzu batzuk</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">Ezin da partekatu <ph name="CONTENT_TYPE" /></translation>
 <translation id="1477626028522505441">Ezin izan da deskargatu <ph name="FILE_NAME" />, zerbitzariarekin arazoak daudelako.</translation>
 <translation id="1506061864768559482">Bilatzailea</translation>
+<translation id="1509960214886564027">Baliteke webgune askotako eginbideek ez funtzionatzea</translation>
 <translation id="1513352483775369820">Laster-markak eta web-historia</translation>
 <translation id="1513858653616922153">Ezabatu pasahitza</translation>
 <translation id="1521774566618522728">Aktibo gaur</translation>
@@ -235,6 +237,7 @@ Eduki sakatuta bilatu nahi duzun hitza. Bilaketa mugatzeko, hautatu hitz gehiago
 <translation id="2647434099613338025">Gehitu hizkuntza</translation>
 <translation id="2650751991977523696">Fitxategia berriro deskargatu nahi duzu?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# audio-fitxategi}other{# audio-fitxategi}}</translation>
+<translation id="2687403674020088961">Blokeatu cookie guztiak (ez da gomendatzen)</translation>
 <translation id="2707726405694321444">Freskatu orria</translation>
 <translation id="2709516037105925701">Betetze automatikoa</translation>
 <translation id="2717722538473713889">Helbide elektronikoak</translation>
@@ -340,6 +343,7 @@ Eduki sakatuta bilatu nahi duzun hitza. Bilaketa mugatzeko, hautatu hitz gehiago
 <translation id="3478363558367712427">Bilatzailea aukera dezakezu</translation>
 <translation id="3492207499832628349">Ezkutuko moduko fitxa berria</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /> iradokitako edukiari buruz</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Errealitate areagotua</translation>
 <translation id="3518985090088779359">Onartu eta jarraitu</translation>
 <translation id="3522247891732774234">Eguneratze bat dago eskuragarri. Aukera gehiago.</translation>
@@ -355,6 +359,7 @@ Eduki sakatuta bilatu nahi duzun hitza. Bilaketa mugatzeko, hautatu hitz gehiago
 <translation id="358794129225322306">Eman hainbat fitxategi automatikoki deskargatzeko baimena webgune bati.</translation>
 <translation id="3590487821116122040">Chrome-k garrantzi gabekotzat jotako webguneen datuak (hala nola ezarpenik gordeta ez duten webguneenak edo maiz bisitatzen ez dituzun webguneenak)</translation>
 <translation id="3594780231884063836">Desaktibatu bideoaren audioa</translation>
+<translation id="3596414637720633074">Blokeatu hirugarrenen cookieak ezkutuko moduan</translation>
 <translation id="3599863153486145794">Saioa hasita daukaten gailu guztietako historia garbitzen du. Google-ko kontuko historia arakatzeko beste modu batzuk aurki zenitzake <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> webgunean.</translation>
 <translation id="3600792891314830896">Desaktibatu soinua erreproduzitzen duten webguneen audioa</translation>
 <translation id="3616113530831147358">Audioa</translation>
@@ -903,7 +908,7 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="7641339528570811325">Garbitu arakatze-datuak…</translation>
 <translation id="7648422057306047504">Enkriptatu pasahitzak Google kredentzialekin</translation>
 <translation id="7658239707568436148">Utzi</translation>
-<translation id="7665369617277396874">Gehitu kontua</translation>
+<translation id="7665369617277396874">Gehitu kontu bat</translation>
 <translation id="766587987807204883">Artikuluak agertuko dira hemen, nahi duzunean irakur ditzazun, baita konektatuta ez bazaude ere</translation>
 <translation id="7682724950699840886">Saiatu hau egiten: ziurtatu gailuan behar adina toki duzula eta saiatu berriro esportatzen.</translation>
 <translation id="7698359219371678927">Sortu mezu elektronikoa <ph name="APP_NAME" /> aplikazioan</translation>
@@ -921,6 +926,7 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="780301667611848630">Ez, eskerrik asko</translation>
 <translation id="7810647596859435254">Ireki honekin…</translation>
 <translation id="7821588508402923572">Hemen agertuko da zenbat datu aurreztu dituzun</translation>
+<translation id="7828557259026017104">Bisitatzen dituzun webguneek sortutako fitxategiak dira cookieak. Zure hobespenak gogoratzeko erabiltzen dituzte webguneek. Hirugarrenen cookieak beste webgune batzuek sortzen dituzte. Bisitatzen duzun web-orrian ikusten dituzun eduki batzuen jabeak dira webgune horiek; adibidez, iragarkienak edo irudienak.</translation>
 <translation id="783819812427904514">Aktibatu bideoaren audioa</translation>
 <translation id="784934925303690534">Denbora tartea</translation>
 <translation id="7851858861565204677">Beste gailu batzuk</translation>
@@ -941,6 +947,7 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="79859296434321399">Errealitate areagotuko edukia ikusteko, instalatu ARCore</translation>
 <translation id="7986741934819883144">Hautatu kontaktu bat</translation>
 <translation id="7987073022710626672">Chrome-ren Zerbitzu-baldintzak</translation>
+<translation id="7993619969781047893">Baliteke webgune batzuetako eginbideek ez funtzionatzea</translation>
 <translation id="7998918019931843664">Ireki berriro itxitako fitxa</translation>
 <translation id="7999064672810608036">Ziur webgune honek gailuan ezarritako datu guztiak (cookieak barne) ezabatu eta baimen guztiak berrezarri nahi dituzula?</translation>
 <translation id="8004582292198964060">Arakatzailea</translation>
@@ -1075,6 +1082,7 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="8965591936373831584">zain</translation>
 <translation id="8970887620466824814">Arazoren bat izan da.</translation>
 <translation id="8972098258593396643">Karpeta lehenetsira deskargatu nahi duzu?</translation>
+<translation id="8988028529677883095">Erabili telefonoa segurtasun-giltza gisa</translation>
 <translation id="8993760627012879038">Ireki beste fitxa bat ezkutuko moduan</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> domeinuak kudeatutako kontu batekin hastera zoaz saioa, eta, ondorioz, domeinu horretako administratzaileari emango diozu Chrome datuen kontrola. Datuak betiko lotuko zaizkio kontu honi. Chrome-ko saioa amaitzen baduzu, gailuko datuak ezabatu egingo dira, baina Google-ko kontuan izango dituzu gordeta.</translation>
 <translation id="9019902583201351841">Gurasoek kudeatuta</translation>

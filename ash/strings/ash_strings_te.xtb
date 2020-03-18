@@ -209,6 +209,7 @@
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> ద్వారా ఖాతా నిర్వహించబడుతోంది</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />"కు వెనుక‌కు మార్చండి (పునఃప్రారంభం అవసరం)</translation>
 <translation id="3576141592585647168">సమయ మండలిని మార్చండి</translation>
+<translation id="3593646411856133110">తెరిచి ఉన్న యాప్‌లను చూడటానికి పైకి స్వైప్ చేసి, పట్టుకోండి</translation>
 <translation id="3595596368722241419">బ్యాటరీ నిండింది</translation>
 <translation id="3604801046548457007">"<ph name="DESK_TITILE" />" డెస్క్ సృష్టించబడింది</translation>
 <translation id="3606978283550408104">బ్రెయిలీ డిస్‌ప్లే కనెక్ట్ చేయబడింది.</translation>
@@ -251,6 +252,7 @@
 <translation id="4072264167173457037">సిగ్నల్ ఓ మోస్తరుగా ఉంది</translation>
 <translation id="4112140312785995938">వెనుకకు జరుపు</translation>
 <translation id="4129129681837227511">మీ లాక్ స్క్రీన్‌లో నోటిఫికేషన్‌లను చూడటానికి, సెట్టింగ్‌ను మార్చేందుకు అన్‌లాక్ చేయండి</translation>
+<translation id="4144413954005649103">కుడి క్లిక్ చేస్తే లేదా ఎక్కువ సేపు నొక్కి ఉంచితే, మీరు స్క్రీన్‌పై ఎంచుకునే సమాచారానికి సంబంధించిన అంశాలను Assistant చూపుతుంది.</translation>
 <translation id="4146833061457621061">సంగీతాన్ని ప్లే చేయి</translation>
 <translation id="4149156641122542261"><ph name="DOMAIN" /> ద్వారా <ph name="DEVICE_TYPE" /> మేనేజ్ అవుతోంది</translation>
 <translation id="4181841719683918333">భాషలు</translation>
@@ -365,6 +367,7 @@
 <translation id="5745612484876805746">సూర్యాస్తమయ సమయానికి రాత్రి కాంతి ఆటోమేటిక్‌గా ఆన్ అవుతుంది</translation>
 <translation id="5750765938512549687">బ్లూటూత్ ఆఫ్ చేయబడింది</translation>
 <translation id="576453121877257266">రాత్రి కాంతి ఆన్‌లో ఉంది.</translation>
+<translation id="5769373120130404283">గోప్యతా స్క్రీన్</translation>
 <translation id="5777841717266010279">స్క్రీన్ భాగస్వామ్యాన్ని ఆపివేయాలా?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" />లో <ph name="ROUTE_TITLE" /> ఆపివేయి</translation>
@@ -397,6 +400,7 @@
 <translation id="615957422585914272">స్క్రీన్‌పై కీబోర్డ్‌ను చూపు</translation>
 <translation id="6164005077879661055">ఈ పర్యవేక్షించబడే వినియోగదారు తీసివేయబడినప్పుడు, పర్యవేక్షించబడే వినియోగదారుతో అనుబంధించబడిన అన్ని ఫైల్‌లు మరియు స్థానిక డేటా శాశ్వతంగా తొలగించబడతాయి. ఈ పర్యవేక్షించబడే వినియోగదారు సందర్శించిన వెబ్‌సైట్‌లు మరియు వీరి సెట్టింగ్‌లు ఇప్పటికీ <ph name="MANAGEMENT_URL" />లో నిర్వాహకునికి కనిపించవచ్చు.</translation>
 <translation id="6165508094623778733">మరింత తెలుసుకోండి</translation>
+<translation id="6236290670123303279">సెట్టింగ్‌లను మేనేజ్ చేయండి</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">సమాంతర ప్రదర్శనకు లాక్ చేయబడింది</translation>
 <translation id="6259254695169772643">ఎంచుకోవడానికి మీ స్టైలస్‌ను ఉపయోగించండి</translation>
@@ -406,6 +410,7 @@
 <translation id="6297287540776456956">ప్రాంతాన్ని ఎంచుకోవడానికి స్టైలస్‌ను ఉపయోగించండి</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" />కి తిప్పబడింది</translation>
 <translation id="6376931439017688372">బ్లూటూత్ ఆన్ చేయబడింది</translation>
+<translation id="6381109794406942707">పరికరాన్ని అన్‌లాక్ చేయడానికి, మీ పిన్‌ను ఎంటర్ చేయండి.</translation>
 <translation id="639644700271529076">CAPS LOCK ఆపివేయబడింది</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" /></translation>
@@ -437,6 +442,7 @@
 <translation id="6669268301501499730">ఆన్‌లో ఉంది</translation>
 <translation id="6670153871843998651">డెస్క్ 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
+<translation id="6692996468359469499">మీ ఎంచుకున్న దానికి సంబంధించిన సమాచారాన్ని పొందండి</translation>
 <translation id="6696025732084565524">మీ తీసివేయగల కీబోర్డ్‌కి ఒక ముఖ్యమైన అప్‌డేట్ అవసరం</translation>
 <translation id="6700713906295497288">IME మెను బటన్</translation>
 <translation id="6713285437468012787">బ్లూటూత్ పరికరం "<ph name="DEVICE_NAME" />" జత చేయబడింది. ఇప్పుడు అందరు వినియోగదారులకు అందుబాటులో ఉంది. మీరు సెట్టింగ్‌లను ఉపయోగించి ఈ జతను తీసివేయవచ్చు.</translation>
@@ -619,6 +625,7 @@
 <translation id="9072519059834302790">బ్యాటరీ ఛార్జ్ <ph name="TIME_LEFT" />లో ఖాళీ అవుతుంది.</translation>
 <translation id="9074739597929991885">బ్లూటూత్</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
+<translation id="9080132581049224423">హోమ్‌కు వెళ్లడానికి పైకి స్వైప్ చేయండి</translation>
 <translation id="9080206825613744995">మైక్రోఫోన్ ఉపయోగంలో ఉంది.</translation>
 <translation id="9084606467167974638">మెనూ స్థానం టోగుల్ చేయండి</translation>
 <translation id="9089416786594320554">ఇన్‌పుట్ పద్ధతులు</translation>

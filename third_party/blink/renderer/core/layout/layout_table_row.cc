@@ -92,7 +92,7 @@ void LayoutTableRow::StyleDidChange(StyleDifference diff,
       // TODO(dgrogan) Add a web test showing that SetChildNeedsLayout is
       // needed instead of SetNeedsLayout.
       child_box->SetChildNeedsLayout();
-      child_box->SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
+      child_box->SetIntrinsicLogicalWidthsDirty(kMarkOnlyThis);
     }
     // Most table componenents can rely on LayoutObject::styleDidChange
     // to mark the container chain dirty. But LayoutTableSection seems
@@ -100,7 +100,7 @@ void LayoutTableRow::StyleDidChange(StyleDifference diff,
     // anything under LayoutTableSection has to restart the propagation
     // at the table.
     // TODO(dgrogan): Make LayoutTableSection clear its dirty bit.
-    table->SetPreferredLogicalWidthsDirty();
+    table->SetIntrinsicLogicalWidthsDirty();
   }
 
   // When a row gets collapsed or uncollapsed, it's necessary to check all the
@@ -178,11 +178,11 @@ void LayoutTableRow::AddChild(LayoutObject* child, LayoutObject* before_child) {
     if (enclosing_table && enclosing_table->ShouldCollapseBorders()) {
       enclosing_table->InvalidateCollapsedBorders();
       if (LayoutTableCell* previous_cell = cell->PreviousCell()) {
-        previous_cell->SetNeedsLayoutAndPrefWidthsRecalc(
+        previous_cell->SetNeedsLayoutAndIntrinsicWidthsRecalc(
             layout_invalidation_reason::kTableChanged);
       }
       if (LayoutTableCell* next_cell = cell->NextCell()) {
-        next_cell->SetNeedsLayoutAndPrefWidthsRecalc(
+        next_cell->SetNeedsLayoutAndIntrinsicWidthsRecalc(
             layout_invalidation_reason::kTableChanged);
       }
     }

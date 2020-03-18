@@ -92,7 +92,7 @@ void LayoutListItem::SubtreeDidChange() {
   // If the marker is inside we need to redo the preferred width calculations
   // as the size of the item now includes the size of the list marker.
   if (marker->IsInsideListMarker())
-    SetPreferredLogicalWidthsDirty();
+    SetIntrinsicLogicalWidthsDirty();
 }
 
 int LayoutListItem::Value() const {
@@ -560,7 +560,7 @@ const String& LayoutListItem::MarkerText() const {
 
 void LayoutListItem::OrdinalValueChanged() {
   if (LayoutListMarker* marker = Marker()) {
-    marker->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+    marker->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
         layout_invalidation_reason::kListValueChange);
   }
 }

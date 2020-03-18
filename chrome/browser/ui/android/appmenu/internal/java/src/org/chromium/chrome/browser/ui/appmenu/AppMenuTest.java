@@ -202,8 +202,7 @@ public class AppMenuTest extends DummyUiActivityTestCase {
                         -> AppMenuTestSupport.callOnItemClick(
                                 mAppMenuCoordinator, R.id.menu_item_three));
 
-        Assert.assertEquals("Item selected callback should have been called.", 1,
-                mDelegate.itemSelectedCallbackHelper.getCallCount());
+        mDelegate.itemSelectedCallbackHelper.waitForCallback(0);
         Assert.assertEquals("Incorrect id for last selected item.", R.id.menu_item_three,
                 mDelegate.lastSelectedItemId);
     }
@@ -228,8 +227,7 @@ public class AppMenuTest extends DummyUiActivityTestCase {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mAppMenuHandler.getAppMenu().onItemClick(null, null, 0, 0));
 
-        Assert.assertEquals("Item selected callback should have been called.", 1,
-                mDelegate.itemSelectedCallbackHelper.getCallCount());
+        mDelegate.itemSelectedCallbackHelper.waitForCallback(0);
         Assert.assertEquals("Incorrect id for last selected item.", R.id.menu_item_one,
                 mDelegate.lastSelectedItemId);
     }
@@ -648,8 +646,7 @@ public class AppMenuTest extends DummyUiActivityTestCase {
         sendMotionEventToButtonHelper(
                 buttonHelper, mTestMenuButtonDelegate.getMenuButtonView(), upMotionEvent);
 
-        Assert.assertEquals("Item selected callback should have been called.", 1,
-                mDelegate.itemSelectedCallbackHelper.getCallCount());
+        mDelegate.itemSelectedCallbackHelper.waitForCallback(0);
         Assert.assertEquals("Incorrect id for last selected item.", R.id.menu_item_one,
                 mDelegate.lastSelectedItemId);
     }

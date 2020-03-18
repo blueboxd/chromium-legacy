@@ -212,12 +212,12 @@ void LayoutCustomScrollbarPart::UpdateScrollbarHeight() {
 }
 
 void LayoutCustomScrollbarPart::ComputePreferredLogicalWidths() {
-  if (!PreferredLogicalWidthsDirty())
+  if (!IntrinsicLogicalWidthsDirty())
     return;
 
   min_preferred_logical_width_ = max_preferred_logical_width_ = LayoutUnit();
 
-  ClearPreferredLogicalWidthsDirty();
+  ClearIntrinsicLogicalWidthsDirty();
 }
 
 void LayoutCustomScrollbarPart::StyleWillChange(

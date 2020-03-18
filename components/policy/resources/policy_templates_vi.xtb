@@ -68,6 +68,15 @@
 
       Nếu bạn không đặt chính sách này hoặc đặt chính sách thành false, thì thông tin sẽ không được báo cáo.
       Nếu bạn đặt chính sách này thành true, thì thông tin về đèn nền của thiết bị sẽ được báo cáo.</translation>
+<translation id="1076271193420500757">Việc định cấu hình chính sách này sẽ cho phép chỉ định những biến thể được phép áp dụng trên thiết bị <ph name="PRODUCT_OS_NAME" /> do doanh nghiệp quản lý.
+
+      Biến thể là phương tiện để sửa đổi <ph name="PRODUCT_OS_NAME" /> mà không cần gửi phiên bản mới bằng cách bật hoặc tắt những tính năng đã có một cách chọn lọc.
+
+      Việc đặt <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (giá trị 0) hoặc không đặt chính sách này sẽ cho phép áp dụng tất cả các biến thể cho <ph name="PRODUCT_OS_NAME" />.
+
+      Việc đặt <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (giá trị 1) sẽ chỉ cho phép áp dụng những biến thể được xem là bản sửa lỗi quan trọng về độ bảo mật hoặc độ ổn định cho <ph name="PRODUCT_OS_NAME" />.
+
+      Việc đặt <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (giá trị 2) sẽ không cho phép áp dụng tất cả các biến thể cho trình duyệt trên màn hình đăng nhập. Xin lưu ý rằng chế độ này có thể khiến nhà phát triển <ph name="PRODUCT_OS_NAME" /> không thể cung cấp kịp thời các bản sửa lỗi bảo mật quan trọng nên không được khuyên dùng.</translation>
 <translation id="1078643757670228170">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm màn hình bị tắt khi chạy trên nguồn AC.
@@ -335,11 +344,11 @@
 
       Nếu chính sách không được đặt, giá trị mặc định 'MultiProfileUserBehaviorMustBePrimary' sẽ áp dụng cho người dùng được doanh nghiệp quản lý và 'MultiProfileUserBehaviorUnrestricted' sẽ được sử dụng cho người dùng không bị quản lý.</translation>
 <translation id="1465619815762735808">Nhấp để phát</translation>
-<translation id="1467633031685836974">Tính năng này cho phép bạn chuyển đến văn bản đích cụ thể (có trong siêu liên kết và URL trên thanh địa chỉ) trong một trang web. Sau khi trang web tải xong, bạn sẽ được chuyển tới phần văn bản đó.
+<translation id="1467633031685836974">Tính năng này cho phép bạn chỉ định văn bản đích cụ thể để chuyển hướng siêu liên kết và URL trên thanh địa chỉ đến đó. Khi trang web tải xong, trang sẽ cuộn đến văn bản đó.
 
-Nếu bạn bật hoặc không định cấu hình chính sách này, thì tùy chọn chuyển đến những phần văn bản cụ thể trên trang web khi nhấp vào URL sẽ được bật.
+Nếu bạn bật hoặc không định cấu hình chính sách này, thì việc cuộn trang web đến các phần văn bản cụ thể qua URL sẽ được bật.
 
-Nếu bạn tắt chính sách này, thì tùy chọn chuyển đến những phần văn bản cụ thể trên trang web khi nhấp vào URL sẽ bị tắt.</translation>
+Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các phần văn bản cụ thể qua URL sẽ bị tắt.</translation>
 <translation id="1468707346106619889">Nếu chính sách này được đặt thành true thì Màn hình hợp nhất sẽ được cho phép và
       bật theo mặc định, nhờ đó cho phép ứng dụng mở rộng nhiều màn hình.
       Người dùng có thể tắt Màn hình hợp nhất cho các màn hình riêng lẻ bằng cách bỏ
@@ -1170,14 +1179,6 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
       Nếu bạn không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng giá trị mặc định là 10000 mili giây.</translation>
 <translation id="257788512393330403">Yêu cầu cứ 6 giờ nhập mật khẩu một lần</translation>
 <translation id="2580104054820772954">Trì hoãn phân phối tệp cho đến khi biết kết quả quét</translation>
-<translation id="2582582399758251985">Khi bạn bật tùy chọn cài đặt này, <ph name="PRODUCT_NAME" /> sẽ sử dụng trình xác minh chứng chỉ tích hợp sẵn để xác minh chứng chỉ máy chủ.
-      Khi bạn tắt tùy chọn cài đặt này, <ph name="PRODUCT_NAME" /> sẽ sử dụng trình xác minh chứng chỉ cũ do nền tảng này cung cấp để xác minh chứng chỉ máy chủ.
-      Nếu bạn không đặt tùy chọn cài đặt này, thì trình xác minh chứng chỉ cũ hoặc tích hợp sẵn có thể được sử dụng.
-
-      Chúng tôi dự định loại bỏ chính sách này trong <ph name="PRODUCT_OS_NAME" /> phiên bản 81, khi ngừng hỗ trợ trình xác minh chứng chỉ cũ trong <ph name="PRODUCT_OS_NAME" /> theo kế hoạch.
-
-      Chúng tôi dự định loại bỏ chính sách này trong <ph name="PRODUCT_NAME" /> cho Linux phiên bản 83, khi ngừng hỗ trợ trình xác minh chứng chỉ cũ trên Linux theo kế hoạch.
-      </translation>
 <translation id="2586162458524426376">
       Chính sách này áp dụng cho màn hình đăng nhập. Vui lòng xem cả chính sách <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> áp dụng cho phiên người dùng.
       Nếu bạn bật chính sách này, thì mỗi nguồn gốc có tên trong danh sách được phân tách bằng dấu phẩy sẽ chạy ở quy trình riêng. Điều này cũng sẽ cách ly các nguồn gốc được đặt tên theo miền con. Ví dụ: việc chỉ định https://example.com/ cũng sẽ khiến https://foo.example.com/ bị cách ly vì là một phần của trang web https://example.com/.
@@ -1197,9 +1198,6 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
 <translation id="26023406105317310">Định cấu hình các tài khoản Kerberos</translation>
 <translation id="2604182581880595781">Định cấu hình các chính sách liên quan đến tính năng Chia sẻ tệp trong mạng.</translation>
 <translation id="2615240493030733717">Báo cáo thông tin về múi giờ</translation>
-<translation id="2620943247255660284">Chính sách này không còn dùng nữa và đã được thay thế bằng AdvancedProtectionExtraSecurityAllowed.
-
-      Chính sách này kiểm soát liệu người dùng đăng ký chương trình Bảo vệ nâng cao có được phép gửi các tệp đã tải xuống cho Google để quét tìm phần mềm độc hại hay không. Nếu bạn đặt hoặc không đặt thành True, thì người dùng đã đăng ký sẽ được nhắc gửi các tệp của họ cho Google để quét sâu. Nếu người dùng chọn 'Quét' thì tệp họ đã tải xuống sẽ được gửi cho Google. Nếu bạn đặt thành False thì người dùng sẽ không được nhắc và các tệp họ đã tải xuống sẽ không được gửi cho Google.</translation>
 <translation id="2623014935069176671">Đợi hoạt động người dùng đầu tiên</translation>
 <translation id="262740370354162807">Cho phép gửi tài liệu tới <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Cung cấp cấu hình máy in dành cho doanh nghiệp.
@@ -1236,6 +1234,11 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
       Nếu không đặt chính sách này, chế độ mặc định sẽ là không được phép đối với người dùng được quản lý và được phép đối với người dùng không được quản lý.</translation>
 <translation id="2660846099862559570">Không bao giờ sử dụng proxy</translation>
 <translation id="2665422249821137126">Bật con trỏ lớn trên màn hình đăng nhập</translation>
+<translation id="266882888912227087"> Kiểm soát thông báo tự động chạy phiên khách được quản lý trên <ph name="PRODUCT_OS_NAME" />.
+
+      Nếu bạn đặt chính sách này thành True, thì hệ thống sẽ đóng thông báo cảnh báo về quyền riêng tư sau một vài giây.
+
+      Nếu bạn không đặt hoặc đặt chính sách này thành False, thì hệ thống sẽ ghim thông báo cảnh báo về quyền riêng tư cho đến khi người dùng đóng thông báo đó.</translation>
 <translation id="2672012807430078509">Kiểm soát việc bật NTLM làm giao thức xác thực cho các điểm kết nối SMB</translation>
 <translation id="267596348720209223">Chỉ định các mã hóa ký tự được nhà cung cấp dịch vụ tìm kiếm hỗ trợ. Mã hóa là các tên trang mã như UTF-8, GB2312  và ISO-8859-1. Các mã này được thử theo thứ tự cung cấp.
 
@@ -2995,6 +2998,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
           Nếu đặt thành đúng hoặc không định cấu hình, người dùng này có thể tạo và quản lý tài khoản người dùng bị giám sát.</translation>
 <translation id="5369937289900051171">Chỉ in màu</translation>
 <translation id="5370279767682621504">Bật hỗ trợ HTTP/0.9 trên các cổng không phải là cổng mặc định</translation>
+<translation id="5373065931879562543">Xác định tình trạng có sẵn của các biến thể trên Chrome OS</translation>
 <translation id="5378985487213287085">Cho phép bạn đặt liệu các trang web có được phép hiển thị thông báo trên màn hình hay không. Việc hiển thị thông báo trên màn hình có thể được cho phép theo mặc định, từ chối theo mặc định hoặc người dùng có thể được hỏi mỗi lần trang web muốn hiển thị thông báo trên màn hình.
 
           Nếu không thiết lập chính sách này, 'AskNotifications' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
@@ -3124,6 +3128,16 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="5475361623548884387">Bật tính năng in</translation>
 <translation id="547601067149622666">Không cho phép quảng cáo trên các trang web chứa quảng cáo xâm nhập</translation>
 <translation id="5483065054530244863">Cho phép các chứng chỉ SHA-1 có chữ ký do neo tin cậy cục bộ phát hành</translation>
+<translation id="5486493714323160905">Khi bạn bật tùy chọn cài đặt này, <ph name="PRODUCT_NAME" /> sẽ sử dụng trình xác minh chứng chỉ tích hợp sẵn để xác minh chứng chỉ máy chủ.
+      Khi bạn tắt tùy chọn cài đặt này, <ph name="PRODUCT_NAME" /> sẽ sử dụng trình xác minh chứng chỉ cũ do nền tảng này cung cấp để xác minh chứng chỉ máy chủ.
+      Nếu bạn không đặt tùy chọn cài đặt này, thì trình xác minh chứng chỉ cũ hoặc tích hợp sẵn có thể được sử dụng.
+
+      Chúng tôi dự định loại bỏ chính sách này trong <ph name="PRODUCT_OS_NAME" /> phiên bản 81, khi ngừng hỗ trợ trình xác minh chứng chỉ cũ trong <ph name="PRODUCT_OS_NAME" /> theo kế hoạch.
+
+      Chúng tôi dự định loại bỏ chính sách này trong <ph name="PRODUCT_NAME" /> cho Linux phiên bản 83, khi ngừng hỗ trợ trình xác minh chứng chỉ cũ trên Linux theo kế hoạch.
+
+      Chúng tôi dự định loại bỏ chính sách này trong <ph name="PRODUCT_NAME" /> cho Mac OS X phiên bản 87, khi ngừng hỗ trợ trình xác minh chứng chỉ cũ trên Mac OS X theo kế hoạch.
+      </translation>
 <translation id="5498045818698736356">Chỉ định danh sách các trang web được cài đặt tự động mà không có sự tương tác của người dùng và người dùng không thể gỡ cài đặt cũng như tắt.
 
       Mỗi mục trong danh sách của chính sách này là một đối tượng chứa một thành phần bắt buộc: "url" và hai thành phần không bắt buộc: "default_launch_container" và "create_desktop_shortcut". "url" phải là URL của ứng dụng web cần cài đặt, "launch_container" phải là "window" hoặc "tab" để xác định cách mở Ứng dụng web sau khi cài đặt và "create_desktop_shortcut" phải có giá trị true nếu lối tắt trên màn hình được tạo trên Linux và Windows. Nếu bỏ qua mục "default_launch_container", thì ứng dụng sẽ mở trong tab theo mặc định. Người dùng có thể thay đổi vùng chứa dùng để mở ứng dụng bất kể giá trị của "default_launch_container". Nếu bỏ qua mục "create_desktop_shortcuts", thì sẽ không có lối tắt trên màn hình nào được tạo. Xem chính sách <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> về việc ghim ứng dụng vào giá ChromeOS.</translation>
@@ -3346,6 +3360,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
           Nếu không có cài đặt nào được cung cấp, <ph name="PRODUCT_NAME" /> sẽ quay trở lại sử dụng tên thư viện mặc định.</translation>
 <translation id="5783009211970309878">In đầu trang và chân trang</translation>
+<translation id="5790763087505467169">Hạn chế các thông báo tự động chạy phiên khách được quản lý</translation>
 <translation id="5806128552675651249">Chỉ cho phép in không có đồ họa nền</translation>
 <translation id="5809210507920527553">Kiểm soát các tùy chọn cài đặt cho vùng chứa Linux (Crostini).</translation>
 <translation id="5809728392451418079">Đặt tên hiển thị cho tài khoản trong thiết bị</translation>
@@ -3486,7 +3501,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
           Bạn phải chỉ định giá trị chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn khoảng thời gian trễ khi không sử dụng.</translation>
 <translation id="6097601282776163274">Bật tính năng thu thập dữ liệu ẩn danh có khóa URL</translation>
 <translation id="6099853574908182288">Chế độ in màu mặc định</translation>
-<translation id="6102342563050263313">Bật tùy chọn chuyển đến những phần văn bản cụ thể có trong URL</translation>
+<translation id="6102342563050263313">Bật tùy chọn cuộn đến những phần văn bản cụ thể trong URL</translation>
 <translation id="6107642964266628393">Kiểm soát cách thức và thời điểm áp dụng bản cập nhật Chrome OS.</translation>
 <translation id="6111936128861357925">Cho phép trò chơi trứng khủng long Phục sinh</translation>
 <translation id="6114416803310251055">không được chấp thuận</translation>
@@ -3843,6 +3858,9 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="6689792153960219308">Báo cáo trạng thái phần cứng</translation>
 <translation id="6698632841807204978">Bật chế độ in đen trắng</translation>
 <translation id="6699880231565102694">Bật xác thực hai bước cho máy chủ truy cập từ xa</translation>
+<translation id="6704515759227307131">Chính sách này không còn dùng nữa và đã được thay thế bằng AdvancedProtectionAllowed.
+
+      Chính sách này kiểm soát liệu người dùng đăng ký chương trình Bảo vệ nâng cao có được phép gửi các tệp đã tải xuống cho Google để quét tìm phần mềm độc hại hay không. Nếu bạn không đặt hoặc đặt thành True, thì người dùng đã đăng ký sẽ được nhắc gửi các tệp của họ cho Google để quét sâu. Nếu người dùng chọn 'Quét' thì tệp họ đã tải xuống sẽ được gửi cho Google. Nếu bạn đặt thành False, thì người dùng sẽ không được nhắc và các tệp họ đã tải xuống sẽ không được gửi cho Google.</translation>
 <translation id="670597451099978576">Tự động cấp quyền cho những trang web này để kết nối với các thiết bị USB bằng mã sản phẩm và mã nhà cung cấp cụ thể trên màn hình đăng nhập.</translation>
 <translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> cung cấp bản cập nhật và chương trình cài đặt an toàn cho tiện ích. Tuy nhiên, bạn chỉ có thể bảo vệ nội dung của một số tiện ích lưu trữ bên ngoài Cửa hàng Chrome trực tuyến bằng các thuật toán ký hoặc băm không an toàn như SHA1. Nếu bạn tắt chính sách này, thì Chrome sẽ không cho phép thực hiện quá trình cài đặt và cập nhật mới đối với những tiện ích đó (cho đến khi nhà phát triển tiện ích tạo lại tiện ích có thuật toán mạnh hơn). Khi bạn bật chính sách này, thì Chrome sẽ cho phép thực hiện quá trình cài đặt và cập nhật đối với những tiện ích đó.
 
@@ -3866,6 +3884,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Mục cài đặt này sẽ kiểm soát việc trình bày các trang chào mừng giúp người dùng đăng nhập vào <ph name="PRODUCT_NAME" />, chọn trang đó làm trình duyệt mặc định hoặc thông báo cho họ về các tính năng sản phẩm.</translation>
 <translation id="6766216162565713893">Cho phép trang web yêu cầu người dùng cấp quyền truy cập vào thiết bị Bluetooth lân cận</translation>
 <translation id="6770454900105963262">Báo cáo thông tin về các phiên kiosk hiện hoạt</translation>
+<translation id="6772045451150098845">Chính sách này kiểm soát việc người dùng đăng ký chương trình Bảo vệ nâng cao có nhận được các tính năng cao cấp hay không. Một số tính năng trong số này có thể chia sẻ dữ liệu với Google (ví dụ: người dùng chương trình Bảo vệ nâng cao có thể gửi các tệp đã tải xuống cho Google để quét tìm phần mềm độc hại). Nếu bạn không đặt hoặc đặt chính sách này thành True, thì người dùng đã đăng ký sẽ nhận được các tính năng cao cấp. Nếu bạn đặt chính sách này thành False, thì người dùng tính năng Bảo vệ nâng cao sẽ chỉ nhận được các tính năng dành cho người dùng thông thường.</translation>
 <translation id="6780908086869332493">Cho phép bạn chỉ định danh sách các mẫu url. Những mẫu url này chỉ định các trang web có chứng chỉ ứng dụng khách được chọn tự động trên màn hình đăng nhập trong khung lưu trữ quy trình SAML nếu trang web yêu cầu chứng chỉ. Một ví dụ về cách sử dụng là định cấu hình một chứng chỉ cho toàn thiết bị sẽ hiển thị với SAML IdP.
 
       Giá trị phải là một mảng từ điển JSON dạng chuỗi. Mỗi từ điển phải có dạng <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, trong đó <ph name="URL_PATTERN_PLACEHOLDER" /> là mẫu tùy chọn cài đặt nội dung. <ph name="FILTER_PLACEHOLDER" /> giới hạn các chứng chỉ ứng dụng khách mà trình duyệt sẽ tự động chọn. Bất kể bộ lọc là gì, chỉ các chứng chỉ khớp với yêu cầu chứng chỉ của máy chủ mới được chọn. Nếu <ph name="FILTER_PLACEHOLDER" /> có dạng <ph name="JSON_DICTIONARY_EXAMPLE" />, thì chỉ các chứng chỉ ứng dụng khách do chứng chỉ có CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> cấp mới được chọn. Nếu <ph name="FILTER_PLACEHOLDER" /> là từ điển trống {}, thì việc chọn chứng chỉ ứng dụng khách sẽ không có các hạn chế bổ sung.
@@ -4605,6 +4624,15 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="793473937901685727">Đặt mức độ khả dụng của chứng chỉ cho ứng dụng ARC</translation>
 <translation id="7937491150792971922">Các chính sách hợp nhất danh sách cài đặt tiện ích từ nhiều nguồn</translation>
 <translation id="7937766917976512374">Cho phép hoặc từ chối quay video</translation>
+<translation id="7937944288846766530">Chính sách này kiểm soát việc người dùng có thể gửi yêu cầu cài đặt tiện ích của <ph name="PRODUCT_NAME" /> đến Bảng điều khiển dành cho quản trị viên của Google để xin phê duyệt hay không.
+
+      Khi bạn không đặt hoặc đặt chính sách CloudReportingEnabled thành tắt, chính sách này sẽ bị bỏ qua, các yêu cầu cài đặt tiện ích sẽ không được tạo hoặc tải lên.
+      Khi bạn không đặt hoặc đặt chính sách này thành tắt, thì các yêu cầu cài đặt tiện ích sẽ không được tạo hoặc tải lên.
+      Khi bạn đặt chính sách này thành bật, thì các yêu cầu cài đặt tiện ích sẽ được tạo và tải lên Bảng điều khiển dành cho quản trị viên của Google.
+
+      Các yêu cầu cài đặt tiện ích sẽ được tạo khi người dùng cố gắng cài đặt một tiện ích mà <ph name="EXTENSION_INSTALL_WHITELIST" /> hoặc <ph name="EXTENSION_SETTINGS" /> không đưa vào danh sách cho phép.
+
+      Chính sách này chỉ có hiệu lực khi <ph name="CLOUD_REPORTING_ENABLED" /> ở trạng thái bật và máy được đăng ký bằng <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />.</translation>
 <translation id="7941975817681987555">Không dự đoán tác vụ mạng trên kết nối mạng bất kỳ</translation>
 <translation id="7951605113561734721">Chỉ định chứng chỉ ứng dụng cần được đăng ký bằng giao thức quản lý thiết bị cho toàn thiết bị.</translation>
 <translation id="7952007677054834789">Định cấu hình các trang sẽ tải khi khởi động, trang chủ mặc định và trang tab mới mặc định trong <ph name="PRODUCT_NAME" />, đồng thời không cho phép người dùng thay đổi các tùy chọn đó.
@@ -5210,7 +5238,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       sẽ được báo cáo.</translation>
 <translation id="891435090623616439">được mã hóa dưới dạng chuỗi JSON, để biết chi tiết hãy xem <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Cho phép người dùng quản lý các chứng chỉ CA đã cài đặt.</translation>
-<translation id="8924721011887485485">Chính sách này kiểm soát việc người dùng đăng ký chương trình Bảo vệ nâng cao có nhận được các tính năng tăng cường bảo mật hay không. Một số tính năng trong số này có thể chia sẻ dữ liệu với Google (ví dụ: người dùng chương trình Bảo vệ nâng cao có thể gửi các tệp đã tải xuống cho Google để quét tìm phần mềm độc hại). Nếu bạn đặt chính sách này thành True hoặc không đặt, thì người dùng đã đăng ký sẽ nhận được các tính năng tăng cường bảo mật. Nếu bạn đặt chính sách này thành False, thì người dùng chương trình Bảo vệ nâng cao sẽ chỉ nhận được các tính năng bảo mật dành cho người dùng cá nhân.</translation>
 <translation id="8926275581598789324">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm hệ thống thực hiện hành động ở chế độ tạm vắng khi chạy trên nguồn pin.

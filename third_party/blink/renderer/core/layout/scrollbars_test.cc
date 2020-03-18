@@ -1360,8 +1360,8 @@ TEST_F(ScrollbarsTest, CustomScrollbarChangeToMobileByEmulator) {
 
   // Turn on mobile emulator.
   WebDeviceEmulationParams params;
-  params.screen_position = WebDeviceEmulationParams::kMobile;
-  WebView().EnableDeviceEmulation(params);
+  params.screen_position = mojom::ScreenPosition::kMobile;
+  WebView().SetDeviceEmulation(params);
 
   // For root Scrollbar, mobile emulator will change them to page VisualViewport
   // scrollbar layer.
@@ -1371,7 +1371,7 @@ TEST_F(ScrollbarsTest, CustomScrollbarChangeToMobileByEmulator) {
   EXPECT_TRUE(div_scrollable->VerticalScrollbar()->IsCustomScrollbar());
 
   // Turn off mobile emulator.
-  WebView().DisableDeviceEmulation();
+  WebView().SetDeviceEmulation(base::nullopt);
 
   EXPECT_TRUE(root_scrollable->VerticalScrollbar());
   EXPECT_TRUE(root_scrollable->VerticalScrollbar()->IsCustomScrollbar());
@@ -1611,8 +1611,8 @@ TEST_P(ScrollbarAppearanceTest, NativeScrollbarChangeToMobileByEmulator) {
 
   // Turn on mobile emulator.
   WebDeviceEmulationParams params;
-  params.screen_position = WebDeviceEmulationParams::kMobile;
-  WebView().EnableDeviceEmulation(params);
+  params.screen_position = mojom::ScreenPosition::kMobile;
+  WebView().SetDeviceEmulation(params);
 
   // For root Scrollbar, mobile emulator will change them to page VisualViewport
   // scrollbar layer.
@@ -1621,9 +1621,8 @@ TEST_P(ScrollbarAppearanceTest, NativeScrollbarChangeToMobileByEmulator) {
   // Ensure div scrollbar also change to mobile overlay theme.
   EXPECT_TRUE(div_scrollable->VerticalScrollbar()->IsOverlayScrollbar());
   EXPECT_TRUE(div_scrollable->VerticalScrollbar()->IsSolidColor());
-
   // Turn off mobile emulator.
-  WebView().DisableDeviceEmulation();
+  WebView().SetDeviceEmulation(base::nullopt);
 
   EXPECT_TRUE(root_scrollable->VerticalScrollbar());
   EXPECT_FALSE(root_scrollable->VerticalScrollbar()->IsCustomScrollbar());

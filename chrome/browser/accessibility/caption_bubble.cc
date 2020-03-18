@@ -42,7 +42,6 @@ void CaptionBubble::Init() {
   label_ = new views::Label();
   label_->SetMultiLine(true);
   label_->SetMaxLines(2);
-  label_->SetElideBehavior(gfx::TRUNCATE_HEAD);
   int max_width = GetAnchorView()->width() * 0.8;
   label_->SetMaximumWidth(max_width);
   label_->SetEnabledColor(SK_ColorWHITE);

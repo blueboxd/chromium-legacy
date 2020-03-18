@@ -420,7 +420,7 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
 // static
 float DisplayChangeObserver::FindDeviceScaleFactor(float dpi) {
   for (size_t i = 0; i < base::size(kThresholdTableForInternal); ++i) {
-    if (dpi > kThresholdTableForInternal[i].dpi)
+    if (dpi >= kThresholdTableForInternal[i].dpi)
       return kThresholdTableForInternal[i].device_scale_factor;
   }
   return 1.0f;

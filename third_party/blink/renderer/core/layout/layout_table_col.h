@@ -60,7 +60,7 @@ class LayoutTableCol final : public LayoutTableBoxComponent {
  public:
   explicit LayoutTableCol(Element*);
 
-  void ClearPreferredLogicalWidthsDirtyBits();
+  void ClearIntrinsicLogicalWidthsDirtyBits();
 
   // The 'span' attribute in HTML.
   // For CSS table columns or colgroups, this is always 1.

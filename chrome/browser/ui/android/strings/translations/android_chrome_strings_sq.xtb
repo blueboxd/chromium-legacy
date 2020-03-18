@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">Po dërgohet te <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">Po shton <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Nga sajtet e uebit</translation>
+<translation id="1044891598689252897">Sajtet do të punojnë normalisht</translation>
 <translation id="1049743911850919806">I fshehtë</translation>
 <translation id="10614374240317010">Nuk u ruaj asnjëherë</translation>
 <translation id="1067922213147265141">Shërbime e tjera të Google</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">Nuk mund të ndahet <ph name="CONTENT_TYPE" /></translation>
 <translation id="1477626028522505441">Shkarkimi i <ph name="FILE_NAME" /> dështoi për shkak të problemeve të serverit.</translation>
 <translation id="1506061864768559482">Motori i kërkimit</translation>
+<translation id="1509960214886564027">Veçoritë në shumë sajte mund të ndalojnë së funksionuari</translation>
 <translation id="1513352483775369820">Faqeshënuesit dhe historiku i uebit</translation>
 <translation id="1513858653616922153">Fshi fjalëkalimin</translation>
 <translation id="1521774566618522728">Aktiv sot</translation>
@@ -235,6 +237,7 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="2647434099613338025">Shto gjuhën</translation>
 <translation id="2650751991977523696">Të shkarkohet skedari sërish?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# skedar audio}other{# skedarë audio}}</translation>
+<translation id="2687403674020088961">Blloko të gjitha kukit (nuk rekomandohet)</translation>
 <translation id="2707726405694321444">Rifresko faqen</translation>
 <translation id="2709516037105925701">Plotëso automatikisht</translation>
 <translation id="2717722538473713889">Adresat e email-it</translation>
@@ -340,6 +343,7 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="3478363558367712427">Mund të zgjedhësh motorin tënd të kërkimit</translation>
 <translation id="3492207499832628349">Skedë e re e fshehtë</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /> mbi përmbajtjen e sugjeruar</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Realiteti i zgjeruar</translation>
 <translation id="3518985090088779359">Prano dhe vazhdo</translation>
 <translation id="3522247891732774234">Një përditësim i disponueshëm. Më shumë opsione</translation>
@@ -355,6 +359,7 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="358794129225322306">Lejo një sajt të shkarkojë shumë skedarë automatikisht.</translation>
 <translation id="3590487821116122040">Hapësira ruajtëse që Chrome nuk e konsideron të rëndësishme (p.sh. sajtet pa cilësime të ruajtura ose ti që nuk i viziton shpesh)</translation>
 <translation id="3594780231884063836">Çaktivizo zërin e videos</translation>
+<translation id="3596414637720633074">Blloko kukit e palëve të treta në modalitetin "I fshehtë"</translation>
 <translation id="3599863153486145794">Pastron historikun nga të gjitha pajisjet ku je identifikuar. Llogaria jote e Google mund të ketë forma të tjera të historikut të shfletimit në <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Hiq zërin për sajtet që luajnë tinguj</translation>
 <translation id="3616113530831147358">Audio</translation>
@@ -921,6 +926,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="780301667611848630">Jo, faleminderit</translation>
 <translation id="7810647596859435254">Hape me...</translation>
 <translation id="7821588508402923572">Kursimet e të dhënave të tua do të shfaqen këtu</translation>
+<translation id="7828557259026017104">Kukit janë skedarë të krijuar nga sajtet e uebit që viziton ti. Përdori ato për të kujtuar preferencat e tua. Kukit e palëve të treta krijohen nga sajte të tjera. Këto sajte zotërojnë disa nga përmbajtjet, si p.sh. reklamat ose imazhet që ti shikon në faqen e uebit që viziton.</translation>
 <translation id="783819812427904514">Aktivizo zërin e videos</translation>
 <translation id="784934925303690534">Shtrirja kohore</translation>
 <translation id="7851858861565204677">Pajisjet e tjera</translation>
@@ -941,6 +947,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="79859296434321399">Për të parë përmbajtje realiteti të zgjeruar, instalo ARCore</translation>
 <translation id="7986741934819883144">Zgjidh një kontakt</translation>
 <translation id="7987073022710626672">Kushtet e shërbimit të Chrome</translation>
+<translation id="7993619969781047893">Veçoritë në disa sajte mund të ndalojnë së funksionuari</translation>
 <translation id="7998918019931843664">Rihap skedën e mbyllur</translation>
 <translation id="7999064672810608036">Je i sigurt që dëshiron t'i pastrosh të gjitha të dhënat lokale, duke përfshirë kukit, dhe të rivendosësh të gjitha lejet për këtë sajt uebi?</translation>
 <translation id="8004582292198964060">Shfletuesi</translation>
@@ -1075,6 +1082,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="8965591936373831584">në pritje</translation>
 <translation id="8970887620466824814">Ndodhi një gabim.</translation>
 <translation id="8972098258593396643">Të shkarkohet në dosjen e parazgjedhur?</translation>
+<translation id="8988028529677883095">Përdore telefonin si çelës sigurie</translation>
 <translation id="8993760627012879038">Hap një skedë të re në "Modalitetin e fshehtë"</translation>
 <translation id="8998729206196772491">Po identifikohesh me një llogari të menaxhuar nga <ph name="MANAGED_DOMAIN" /> dhe po i jep administratorit të saj kontroll mbi të dhënat e tua të Chrome. Duke dalë nga Chrome do të fshihen të dhënat e tua nga kjo pajisje, por do të mbeten të ruajtura në llogarinë tënde të Google.</translation>
 <translation id="9019902583201351841">Menaxhuar nga prindërit e tu</translation>

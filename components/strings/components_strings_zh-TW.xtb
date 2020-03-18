@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">取件方式</translation>
 <translation id="1281476433249504884">堆疊出紙器 1</translation>
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
-<translation id="1285400217480592994">掃描你透過 Chrome 下載或上傳的檔案。</translation>
 <translation id="1292701964462482250">「你的電腦上有軟體阻止 Chrome 建立安全的網路連線」(僅限 Windows 電腦)</translation>
 <translation id="1294154142200295408">命令列變化版本</translation>
 <translation id="129553762522093515">最近關閉的分頁</translation>
@@ -646,6 +645,7 @@
 <translation id="3784372983762739446">藍牙裝置</translation>
 <translation id="3787705759683870569">到期日：<ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">粗細：16</translation>
+<translation id="3793574014653384240">最近發生當機情形的次數和原因</translation>
 <translation id="3797522431967816232">Prc3 (信封)</translation>
 <translation id="3799805948399000906">要求的字型</translation>
 <translation id="3807366285948165054">圖片 X 批次</translation>
@@ -809,7 +809,7 @@
 <translation id="4466881336512663640">你對表單所做變更將會遺失。確定要繼續嗎？</translation>
 <translation id="4477350412780666475">下一首曲目</translation>
 <translation id="4482953324121162758">系統不會翻譯這個網站。</translation>
-<translation id="4486757593530038591">開啟這項功能時，網站不會根據你在各網站的瀏覽活動放送個人化廣告。某些網站的功能可能會無法正常運作。</translation>
+<translation id="4486757593530038591">開啟這項功能時，網站不會根據你在各網站的瀏覽活動放送個人化廣告。某些網站的功能可能無法正常運作。</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">這些功能預設為停用。日後發布的 Chrome 版本將不再提供這些功能。</translation>
 <translation id="4493480324863638523">網址無效。網址必須採用標準架構，例如 http://example.com 或 https://example.com。</translation>

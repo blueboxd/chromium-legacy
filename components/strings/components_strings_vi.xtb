@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">Phương thức nhận hàng</translation>
 <translation id="1281476433249504884">Khay xếp chồng 1</translation>
 <translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
-<translation id="1285400217480592994">Quét nội dung của các tệp mà bạn tải lên hoặc tải xuống trên Chrome.</translation>
 <translation id="1292701964462482250">"Phần mềm trên máy tính của bạn đang ngăn không cho Chrome kết nối an toàn với web" (chỉ trên máy tính Windows)</translation>
 <translation id="1294154142200295408">Các biến thể của dòng lệnh</translation>
 <translation id="129553762522093515">Các tab đã đóng gần đây</translation>
@@ -652,6 +651,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="3784372983762739446">Thiết bị Bluetooth</translation>
 <translation id="3787705759683870569">Ngày hết hạn <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">Kích thước 16</translation>
+<translation id="3793574014653384240">Số lượng lỗi và nguyên nhân gây ra các lỗi gần đây</translation>
 <translation id="3797522431967816232">Prc3 (Phong bì)</translation>
 <translation id="3799805948399000906">Phông chữ đã yêu cầu</translation>
 <translation id="3807366285948165054">Trục X của hình ảnh</translation>
@@ -815,7 +815,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="4466881336512663640">Các thay đổi đối với biểu mẫu sẽ bị mất. Bạn có chắc chắn muốn tiếp tục không?</translation>
 <translation id="4477350412780666475">Bản nhạc tiếp theo</translation>
 <translation id="4482953324121162758">Trang web này sẽ không được dịch.</translation>
-<translation id="4486757593530038591">Khi tùy chọn này bật, các trang web không thể dùng hoạt động duyệt web của bạn trên nhiều trang web để điều chỉnh quảng cáo cho phù hợp với bạn. Do đó, có thể khiến các tính năng trên một số trang web hoạt động không đúng cách.</translation>
+<translation id="4486757593530038591">Khi tùy chọn này bật, các trang web không thể dùng hoạt động duyệt web của bạn trên nhiều trang web để điều chỉnh quảng cáo cho phù hợp với bạn. Do đó, các tính năng trên một số trang web có thể hoạt động không đúng cách.</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="4492519888999857993">Theo mặc định, những tính năng này sẽ bị tắt. Những tính năng này sẽ không có trên các phiên bản Chrome trong tương lai.</translation>
 <translation id="4493480324863638523">URL không hợp lệ. Phải là URL chứa tên giao thức chuẩn, chẳng hạn như: http://example.com hoặc https://example.com.</translation>
@@ -1053,7 +1053,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="549333378215107354">Kích thước 3</translation>
 <translation id="5509762909502811065">B0</translation>
 <translation id="5509780412636533143">Dấu trang được quản lý</translation>
-<translation id="5510481203689988000">Bạn có thể kiểm soát tùy chọn cài đặt này trong phần cài đặt Cookie.</translation>
+<translation id="5510481203689988000">Bạn có thể kiểm soát tùy chọn cài đặt này trong phần Cài đặt cookie.</translation>
 <translation id="5510766032865166053">Tệp này có thể đã bị di chuyển hoặc xóa.</translation>
 <translation id="5523118979700054094">Tên chính sách</translation>
 <translation id="55293785478302737">May viền</translation>

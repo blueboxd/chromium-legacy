@@ -1440,6 +1440,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // - Ignore any OnUnloadACK sent by the renderer process.
   void DoNotDeleteForTesting();
 
+  void SetDeviceEmulation(
+      const base::Optional<blink::WebDeviceEmulationParams>& params);
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -2761,6 +2764,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // If true, RenderFrameHost should not be actually deleted and should be left
   // stuck in pending deletion.
   bool do_not_delete_for_testing_ = false;
+
+  mojo::AssociatedRemote<mojom::DeviceEmulator> device_emulator_remote_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

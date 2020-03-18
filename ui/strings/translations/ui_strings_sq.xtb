@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Zgjidhi &amp;të gjitha</translation>
-<translation id="1938451708255335766">Për të rregulluar dendësinë e pamjes së dritares, rinis aplikacionin.</translation>
 <translation id="2006524834898217237">Sigurohu që kjo pajisje të jetë e lidhur me internetin.</translation>
 <translation id="208586643495776849">Provo sërish</translation>
 <translation id="2090963878406559571">Për të dërguar një numër nga <ph name="ORIGIN" /> te telefoni yt Android, <ph name="TROUBLESHOOT_LINK" /> për të dyja pajisjet te cilësimet.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Ekrani i integruar</translation>
 <translation id="335581015389089642">Ligjërimi</translation>
 <translation id="3389286852084373014">Teksti është tepër i madh</translation>
-<translation id="3479552764303398839">Jo tani</translation>
 <translation id="348799646910989694">Rafti i fshehur automatikisht</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> u gozhdua</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 ditë e mbetur}other{# ditë të mbetura}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min.}other{# min.}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktive sot}=1{Aktive 1 ditë më parë}other{Aktive # ditë më parë}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ditë e }other{# ditë e }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{në 1 vit}other{në # vite}}</translation>
-<translation id="5895138241574237353">Rinis</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 sekondë e mbetur}other{# sekonda të mbetura}}</translation>
 <translation id="5941711191222866238">Minimizo</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 orë}other{# orë}}</translation>

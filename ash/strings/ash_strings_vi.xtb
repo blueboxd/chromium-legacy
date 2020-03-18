@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">Tín hiệu trung bình</translation>
 <translation id="4112140312785995938">Tua lùi</translation>
 <translation id="4129129681837227511">Để xem thông báo trên màn hình khóa, hãy mở khóa thiết bị để thay đổi tùy chọn cài đặt này</translation>
+<translation id="4144413954005649103">Bằng cách nhấp chuột phải hoặc nhấn và giữ, Trợ lý sẽ hiển thị cho bạn thông tin liên quan đến nội dung bạn chọn trên màn hình.</translation>
 <translation id="4146833061457621061">Phát nhạc</translation>
 <translation id="4149156641122542261"><ph name="DOMAIN" /> quản lý <ph name="DEVICE_TYPE" /></translation>
 <translation id="4181841719683918333">Ngôn ngữ</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">Hiển thị bàn phím ảo</translation>
 <translation id="6164005077879661055">Tất cả các tệp và dữ liệu trên máy được liên kết với người dùng được giám sát sẽ vĩnh viễn bị xóa khi người dùng được giám sát này bị xóa. Các trang web đã truy cập và các cài đặt của người dùng được giám sát này có thể vẫn hiển thị với người quản lý tại <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
+<translation id="6236290670123303279">Quản lý các tùy chọn cài đặt</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Đã khóa theo chiều ngang</translation>
 <translation id="6259254695169772643">Sử dụng bút cảm ứng để chọn</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">Đang bật</translation>
 <translation id="6670153871843998651">Không gian làm việc 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
+<translation id="6692996468359469499">Nhận thông tin liên quan đến lựa chọn của bạn</translation>
 <translation id="6696025732084565524">Bàn phím có thể tháo rời của bạn cần một bản cập nhật quan trọng</translation>
 <translation id="6700713906295497288">Nút menu IME</translation>
 <translation id="6713285437468012787">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />"đã được ghép nối và hiện khả dụng với tất cả người dùng. Bạn có thể xóa ghép nối này bằng Cài đặt.</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895">Tài khoản được quản lý bởi <ph name="FIRST_PARENT_EMAIL" /> và <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">Chế độ tương phản cao</translation>
 <translation id="7977927628060636163">Đang tìm kiếm mạng di động...</translation>
+<translation id="7980780401175799550">Thử những cách mới để thao tác trong Chrome OS</translation>
 <translation id="7982789257301363584">Mạng</translation>
 <translation id="7984197416080286869">Quá nhiều lần thử vân tay</translation>
 <translation id="7994370417837006925">Đăng nhập nhiều tài khoản</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835">Đang dùng <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Tùy chỉnh ngôn ngữ và dữ liệu nhập...</translation>
 <translation id="8192202700944119416">Đã ẩn thông báo.</translation>
+<translation id="8196787716797768628">Dùng cử chỉ để chuyển đổi nhanh giữa các ứng dụng và tương tác với Chromebook ở chế độ máy tính bảng.</translation>
 <translation id="8203795194971602413">Nhấp chuột phải</translation>
 <translation id="8236042855478648955">Giờ nghỉ giải lao</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, Cường độ tín hiệu <ph name="SIGNAL_STRENGTH" />, Pin điện thoại <ph name="BATTERY_STATUS" /></translation>

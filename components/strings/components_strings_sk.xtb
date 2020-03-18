@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">Spôsob vyzdvihnutia</translation>
 <translation id="1281476433249504884">Odkladač č. 1</translation>
 <translation id="1285320974508926690">Nikdy neprekladať tieto webové stránky</translation>
-<translation id="1285400217480592994">Preskenovanie obsahu súborov, ktoré sťahujete alebo nahrávate v Chrome.</translation>
 <translation id="1292701964462482250">„Softvér vo vašom počítači bráni Chromu bezpečne sa pripojiť k internetu“ (iba počítače so systémom Windows)</translation>
 <translation id="1294154142200295408">Variácie v príkazovom riadku</translation>
 <translation id="129553762522093515">Nedávno zatvorené</translation>
@@ -642,6 +641,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="3784372983762739446">Zariadenia Bluetooth</translation>
 <translation id="3787705759683870569">Platnosť vyprší <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">Veľkosť 16</translation>
+<translation id="3793574014653384240">Počty a príčiny nedávnych zrútení</translation>
 <translation id="3797522431967816232">Prc3 (obálka)</translation>
 <translation id="3799805948399000906">Písmo bolo vyžiadané</translation>
 <translation id="3807366285948165054">Posun obrázka na osi X</translation>

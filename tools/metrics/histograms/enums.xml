@@ -37835,6 +37835,7 @@ from previous Chrome versions.
   <int value="-1480926949" label="MaterialDesignBookmarks:enabled"/>
   <int value="-1480866718" label="ash-disable-login-dim-and-blur"/>
   <int value="-1478876902" label="disable-permission-action-reporting"/>
+  <int value="-1477686864" label="OmniboxRichAutocompletion:enabled"/>
   <int value="-1477560322" label="kiosk"/>
   <int value="-1476930281" label="Windows10CustomTitlebar:enabled"/>
   <int value="-1473878093" label="HideArcMediaNotifications:disabled"/>
@@ -38153,6 +38154,7 @@ from previous Chrome versions.
   <int value="-1158993534" label="PrintScaling:enabled"/>
   <int value="-1156179600" label="OmniboxRichEntitySuggestions:enabled"/>
   <int value="-1155543191" label="CopylessPaste:disabled"/>
+  <int value="-1154834060" label="OmniboxRichAutocompletion:disabled"/>
   <int value="-1154819618" label="FilesNG:enabled"/>
   <int value="-1154394293"
       label="UpdateNotificationScheduleServiceImmediateShowOption:enabled"/>
@@ -53745,6 +53747,15 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="Profile deleted"/>
 </enum>
 
+<enum name="ProfileAvatarState">
+  <int value="0" label="Signed In: Gaia avatar"/>
+  <int value="1" label="Signed In: Modern avatar"/>
+  <int value="2" label="Signed In: Old avatar"/>
+  <int value="3" label="Signed Out: Default avatar (Grey silhouette)"/>
+  <int value="4" label="Signed Out: Modern avatar"/>
+  <int value="5" label="Signed Out: Old avatar"/>
+</enum>
+
 <enum name="ProfileCreateResult">
   <int value="0" label="Failed locally"/>
   <int value="1" label="Failed remotely"/>
@@ -53869,6 +53880,14 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="17" label="Edit profile button"/>
 </enum>
 
+<enum name="ProfileNameState">
+  <int value="0" label="Gaia name"/>
+  <int value="1" label="Gaia name and custom name"/>
+  <int value="2" label="Gaia name and default name (for unambiguity)"/>
+  <int value="3" label="Custom name only (signed-out)"/>
+  <int value="4" label="Default name only (signed-out)"/>
+</enum>
+
 <enum name="ProfileNetUserCount">
   <int value="0" label="Added new user"/>
   <int value="1" label="Deleted a profile"/>
@@ -53977,6 +53996,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 <enum name="ProfileType">
   <int value="0" label="Original (default) profile"/>
   <int value="1" label="Secondary (user-created) profile"/>
+</enum>
+
+<enum name="ProfileUnconsentedPrimaryAccountType">
+  <int value="0" label="Consumer account"/>
+  <int value="1" label="Enterprise account"/>
+  <int value="2" label="Child account"/>
+  <int value="3" label="No account (signed-out)"/>
 </enum>
 
 <enum name="ProfileUpgradeEnrollment">

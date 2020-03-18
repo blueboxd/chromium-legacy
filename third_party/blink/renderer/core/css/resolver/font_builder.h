@@ -42,7 +42,7 @@ class CORE_EXPORT FontBuilder {
   STACK_ALLOCATED();
 
  public:
-  FontBuilder(const Document*);
+  explicit FontBuilder(Document*);
 
   void SetInitial(float effective_zoom);
 
@@ -79,9 +79,8 @@ class CORE_EXPORT FontBuilder {
   // FIXME: These need to just vend a Font object eventually.
   void UpdateFontDescription(FontDescription&,
                              FontOrientation = FontOrientation::kHorizontal);
-  void CreateFont(FontSelector*, ComputedStyle&);
-
-  void CreateFontForDocument(FontSelector*, ComputedStyle&);
+  void CreateFont(ComputedStyle&);
+  void CreateFontForDocument(ComputedStyle&);
 
   bool FontDirty() const { return flags_; }
 
@@ -139,7 +138,7 @@ class CORE_EXPORT FontBuilder {
                                          float effective_zoom,
                                          float specified_size);
 
-  const Document* document_;
+  Document* document_;
   FontDescription font_description_;
 
   enum class PropertySetFlag {

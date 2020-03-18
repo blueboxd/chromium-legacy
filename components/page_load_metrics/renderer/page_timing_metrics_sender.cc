@@ -17,7 +17,6 @@
 #include "components/page_load_metrics/renderer/page_timing_sender.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "ui/gfx/geometry/rect.h"
 
 namespace page_load_metrics {
 
@@ -37,8 +36,9 @@ PageTimingMetricsSender::PageTimingMetricsSender(
       timer_(std::move(timer)),
       last_timing_(std::move(initial_timing)),
       last_cpu_timing_(mojom::CpuTiming::New()),
-      metadata_(mojom::FrameMetadata::New()),
+      metadata_(mojom::PageLoadMetadata::New()),
       new_features_(mojom::PageLoadFeatures::New()),
+      render_data_(),
       new_deferred_resource_data_(mojom::DeferredResourceCounts::New()),
       buffer_timer_delay_ms_(kBufferTimerDelayMillis),
       metadata_recorder_(initial_monotonic_timing) {
@@ -206,13 +206,6 @@ void PageTimingMetricsSender::DidLoadResourceFromMemoryCache(
   modified_resources_.insert(resource_it.first->second.get());
 }
 
-void PageTimingMetricsSender::OnMainFrameDocumentIntersectionChanged(
-    const blink::WebRect& main_frame_document_intersection) {
-  metadata_->intersection_update = mojom::FrameIntersectionUpdate::New(
-      gfx::Rect(main_frame_document_intersection));
-  EnsureSendTimer();
-}
-
 void PageTimingMetricsSender::UpdateResourceMetadata(
     int resource_id,
     bool reported_as_ad_resource,
@@ -295,7 +288,6 @@ void PageTimingMetricsSender::SendNow() {
                       std::move(new_deferred_resource_data_));
   new_deferred_resource_data_ = mojom::DeferredResourceCounts::New();
   new_features_ = mojom::PageLoadFeatures::New();
-  metadata_->intersection_update.reset();
   last_cpu_timing_->task_time = base::TimeDelta();
   modified_resources_.clear();
   render_data_.layout_shift_delta = 0;

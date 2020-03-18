@@ -1478,7 +1478,7 @@ void LayoutTableSection::MarkAllCellsWidthsDirtyAndOrNeedsLayout(
   for (LayoutTableRow* row = FirstRow(); row; row = row->NextRow()) {
     for (LayoutTableCell* cell = row->FirstCell(); cell;
          cell = cell->NextCell()) {
-      cell->SetPreferredLogicalWidthsDirty();
+      cell->SetIntrinsicLogicalWidthsDirty();
       if (what_to_mark == LayoutTable::kMarkDirtyAndNeedsLayout)
         cell->SetChildNeedsLayout();
     }

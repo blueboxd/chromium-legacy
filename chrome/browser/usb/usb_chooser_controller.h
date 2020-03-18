@@ -26,7 +26,6 @@ class WebContents;
 }
 
 // UsbChooserController creates a chooser for WebUSB.
-// It is owned by ChooserBubbleDelegate.
 class UsbChooserController : public ChooserController,
                              public UsbChooserContext::DeviceObserver {
  public:

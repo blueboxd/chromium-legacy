@@ -5,6 +5,7 @@
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> түзмөгүнө жөнөтүлүүдө...</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> кошулууда…</translation>
 <translation id="1041308826830691739">Вебсайттардан</translation>
+<translation id="1044891598689252897">Сайттар кадимкидей иштейт</translation>
 <translation id="1049743911850919806">Жашыруун</translation>
 <translation id="10614374240317010">Эч качан сакталбайт</translation>
 <translation id="1067922213147265141">Башка Google кызматтары</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> менен бөлүшүү мүмкүн эмес</translation>
 <translation id="1477626028522505441">Сервердеги маселелерден улам <ph name="FILE_NAME" /> жүктөлүп алынган жок.</translation>
 <translation id="1506061864768559482">Издөө каражаты</translation>
+<translation id="1509960214886564027">Функциялар көпчүлүк сайттарда туура иштебеши мүмкүн.</translation>
 <translation id="1513352483775369820">Кыстармалар жана издөө таржымалы</translation>
 <translation id="1513858653616922153">Сырсөздү жок кылуу</translation>
 <translation id="1521774566618522728">Акыркы аракеттер: бүгүн</translation>
@@ -235,6 +237,7 @@
 <translation id="2647434099613338025">Тил кошуу</translation>
 <translation id="2650751991977523696">Файл кайра жүктөлүп алынсынбы?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудио файл}other{# аудио файл}}</translation>
+<translation id="2687403674020088961">Бардык cookie файлдарды бөгөттөө (сунушталбайт)</translation>
 <translation id="2707726405694321444">Бетти жаңылоо</translation>
 <translation id="2709516037105925701">Автотолтуруу</translation>
 <translation id="2717722538473713889">Электрондук почта даректери</translation>
@@ -340,6 +343,7 @@
 <translation id="3478363558367712427">Өзүңүз каалаган издөө каражатын тандай аласыз</translation>
 <translation id="3492207499832628349">Жаңы жашыруун өтмөк</translation>
 <translation id="3493531032208478708">Сунушталган мазмун жөнүндө <ph name="BEGIN_LINK" />көбүрөөк билүү<ph name="END_LINK" /></translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Кошумчаланган чындык</translation>
 <translation id="3518985090088779359">Кабыл алып, улантуу</translation>
 <translation id="3522247891732774234">Жаңыртуу бар. Дагы опциялар</translation>
@@ -355,6 +359,7 @@
 <translation id="358794129225322306">Сайтка бир нече файлды автоматтык түрдө жүктөп алууга уруксат берүү.</translation>
 <translation id="3590487821116122040">Анча маанилүү болбогон сайттардын дайындары (мис., жөндөөлөрү сакталбаган же сиз көп кирбеген сайттар)</translation>
 <translation id="3594780231884063836">Видеонун үнүн басуу</translation>
+<translation id="3596414637720633074">Жашыруун режимде үчүнчү тараптын cookie файлдарын бөгөттөө</translation>
 <translation id="3599863153486145794">Аккаунтка кирген бардык түзмөктөрүңүздөгү таржымал тазаланат. Google аккаунтуңуздун серептөө таржымалынын башка түрлөрү <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> дарегинде болушу мүмкүн.</translation>
 <translation id="3600792891314830896">Добуш чыгарган сайттардын үнү өчүрүлөт</translation>
 <translation id="3616113530831147358">Аудио</translation>
@@ -921,6 +926,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="780301667611848630">Жок, рахмат</translation>
 <translation id="7810647596859435254">Төмөнкү менен ачуу…</translation>
 <translation id="7821588508402923572">Үнөмдөлгөн трафик ушул жерде көрүнөт</translation>
+<translation id="7828557259026017104">Cookie файлдары сиз баш баккан вебсайттар түзгөн файлдар. Сайттар аларды жеке параметрлериңизди эстеп калуу үчүн колдонушат. Биринчи тараптын cookie файлдарын башка сайттар түзөт. Ал сайттарга сиз баш баккан веб-баракчада көрсөтүлгөн жарнамалар жана сүрөттөр сыяктуу айрым мазмун таандык.</translation>
 <translation id="783819812427904514">Видеонун үнүн чыгаруу</translation>
 <translation id="784934925303690534">Убакыт аралыгы</translation>
 <translation id="7851858861565204677">Башка түзмөктөр</translation>
@@ -941,6 +947,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="79859296434321399">Кошумчаланган чындыкты көрүү үчүн ARCore кызматын орнотуңуз</translation>
 <translation id="7986741934819883144">Байланышты тандоо</translation>
 <translation id="7987073022710626672">Chrome Тейлөө шарттары</translation>
+<translation id="7993619969781047893">Функциялар айрым сайттарда туура иштебеши мүмкүн</translation>
 <translation id="7998918019931843664">Жабылган кыстырманы кайра ачуу</translation>
 <translation id="7999064672810608036">Чын эле жергиликтүү дайындарын баарын тазалап, анын ичинде кукилерди, жана бул вебсайттын уруксаттарынын баарын баштапкы абалга келтиргиңиз келеби?</translation>
 <translation id="8004582292198964060">Серепчи</translation>
@@ -1075,6 +1082,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="8965591936373831584">күтүүдө</translation>
 <translation id="8970887620466824814">Бир жерден ката кетти.</translation>
 <translation id="8972098258593396643">Демейки папкага жүктөлүп алынсынбы?</translation>
+<translation id="8988028529677883095">Телефонду Коопсуздук ачкычы катары колдонуу</translation>
 <translation id="8993760627012879038">Жаңы өтмөктү жашыруун режимде ачуу</translation>
 <translation id="8998729206196772491">Сиз <ph name="MANAGED_DOMAIN" /> доменинин администратору тарабынан башкарылган аккаунтка кирип жатасыз. Ал мындан тарта сиздин аккаунтуңузга байланган Chrome дайын-даректериңизды башкарып калат. Chrome аккаунткан чыксаңыз, бул түзмөктөн дайын-даректериңиз жок кылынып, бирок Google Каттоо эсебинде сакталып кала берет.</translation>
 <translation id="9019902583201351841">Ата-энеңиз башкарат</translation>

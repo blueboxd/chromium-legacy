@@ -18,8 +18,7 @@ FontDescription FontStyleResolver::ComputeFont(
   FontBuilder builder(nullptr);
 
   FontDescription fontDescription;
-  Font font(fontDescription);
-  font.Update(font_selector);
+  Font font(fontDescription, font_selector);
   CSSToLengthConversionData::FontSizes fontSizes(10, 10, &font, 1);
   CSSToLengthConversionData::ViewportSize viewportSize(0, 0);
   CSSToLengthConversionData conversionData(nullptr, fontSizes, viewportSize, 1);

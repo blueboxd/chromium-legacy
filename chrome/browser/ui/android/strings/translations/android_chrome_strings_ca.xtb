@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">S'està enviant a <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">S'està afegint <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">De llocs web</translation>
+<translation id="1044891598689252897">Els llocs web funcionaran amb normalitat</translation>
 <translation id="1049743911850919806">Incògnit</translation>
 <translation id="10614374240317010">Contrasenyes que no es desen mai</translation>
 <translation id="1067922213147265141">Altres serveis de Google</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">No es pot compartir <ph name="CONTENT_TYPE" /></translation>
 <translation id="1477626028522505441">No s'ha pogut baixar <ph name="FILE_NAME" /> a causa de problemes amb el servidor.</translation>
 <translation id="1506061864768559482">Motor de cerca</translation>
+<translation id="1509960214886564027">Pot ser que les funcions de molts llocs web no funcionin</translation>
 <translation id="1513352483775369820">Adreces interès i historial web</translation>
 <translation id="1513858653616922153">Suprimeix la contrasenya</translation>
 <translation id="1521774566618522728">Actiu avui</translation>
@@ -235,6 +237,7 @@ Mantén premuda qualsevol paraula per cercar-la. Per definir millor la cerca, se
 <translation id="2647434099613338025">Afegeix un idioma</translation>
 <translation id="2650751991977523696">Vols tornar a baixar el fitxer?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# fitxer d'àudio}other{# fitxers d'àudio}}</translation>
+<translation id="2687403674020088961">Bloqueja totes les galetes (opció no recomanada)</translation>
 <translation id="2707726405694321444">Actualitza la pàgina</translation>
 <translation id="2709516037105925701">Emplenament automàtic</translation>
 <translation id="2717722538473713889">Adreces electròniques</translation>
@@ -340,6 +343,7 @@ Mantén premuda qualsevol paraula per cercar-la. Per definir millor la cerca, se
 <translation id="3478363558367712427">Pots triar el motor de cerca que prefereixis</translation>
 <translation id="3492207499832628349">Pestanya d'incògnit nova</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /> sobre el contingut suggerit</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Realitat augmentada</translation>
 <translation id="3518985090088779359">Accepta i continua</translation>
 <translation id="3522247891732774234">Hi ha una actualització disponible. Més opcions</translation>
@@ -355,6 +359,7 @@ Mantén premuda qualsevol paraula per cercar-la. Per definir millor la cerca, se
 <translation id="358794129225322306">Permet que un lloc web baixi diversos fitxers automàticament.</translation>
 <translation id="3590487821116122040">Emmagatzematge de llocs web que Chrome no considera important (com ara llocs web sense configuració desada o aquells que no visites sovint)</translation>
 <translation id="3594780231884063836">Silencia el vídeo</translation>
+<translation id="3596414637720633074">Bloqueja les galetes de tercers en mode d'incògnit</translation>
 <translation id="3599863153486145794">Esborra l'historial de tots els dispositius en què tinguis iniciada la sessió. A <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> trobaràs altres maneres d'explorar l'historial de navegació del Compte de Google.</translation>
 <translation id="3600792891314830896">Silencia els llocs web que reprodueixen so</translation>
 <translation id="3616113530831147358">Àudio</translation>
@@ -921,6 +926,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="780301667611848630">No, gràcies</translation>
 <translation id="7810647596859435254">Obre amb…</translation>
 <translation id="7821588508402923572">Les dades que estalviïs es mostraran aquí</translation>
+<translation id="7828557259026017104">Les galetes són fitxers que creen els llocs web que visites. Els llocs web les fan servir per recordar les teves preferències. Les galetes de tercers són les que creen altres llocs web. Part del contingut d'aquests llocs, com ara els anuncis o les imatges, es mostra a la pàgina web que visites.</translation>
 <translation id="783819812427904514">Deixa de silenciar el vídeo</translation>
 <translation id="784934925303690534">Interval de temps</translation>
 <translation id="7851858861565204677">Altres dispositius</translation>
@@ -941,6 +947,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="79859296434321399">Per veure contingut en realitat augmentada, instal·la ARCore</translation>
 <translation id="7986741934819883144">Selecciona un contacte</translation>
 <translation id="7987073022710626672">Condicions del servei de Chrome</translation>
+<translation id="7993619969781047893">Pot ser que les funcions d'alguns llocs web no funcionin</translation>
 <translation id="7998918019931843664">Torna a obrir la pestanya tancada</translation>
 <translation id="7999064672810608036">Confirmes que vols esborrar d'aquest lloc web totes les dades locals, incloses les galetes, i restablir-ne tots els permisos?</translation>
 <translation id="8004582292198964060">Navegador</translation>
@@ -1075,6 +1082,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8965591936373831584">pendent</translation>
 <translation id="8970887620466824814">S'ha produït un error.</translation>
 <translation id="8972098258593396643">Vols baixar el fitxer a la carpeta predeterminada?</translation>
+<translation id="8988028529677883095">Fes servir el telèfon com a clau de seguretat</translation>
 <translation id="8993760627012879038">Obre una pestanya nova en mode d'incògnit</translation>
 <translation id="8998729206196772491">Estàs iniciant la sessió amb un compte gestionat per <ph name="MANAGED_DOMAIN" /> i estàs donant a l'administrador el control de les teves dades de Chrome. Les dades passaran a estar vinculades a aquest compte permanentment. Si tanques la sessió de Chrome, se suprimiran les teves dades d'aquest dispositiu, però continuaran emmagatzemades al teu compte de Google.</translation>
 <translation id="9019902583201351841">Gestionat pels pares</translation>

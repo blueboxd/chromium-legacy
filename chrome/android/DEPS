@@ -4,6 +4,7 @@ include_rules = [
   "+chrome/browser/notifications",
   "+chrome/browser/preferences/android/java",
   "+chrome/browser/settings/android",
+  "+chrome/browser/ui/android/favicon/java",
   "+chrome/browser/ui/android/native_page",
   "+chrome/browser/util/android/java",
   "+chrome/browser/xsurface/android",

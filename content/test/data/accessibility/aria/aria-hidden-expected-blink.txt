@@ -10,6 +10,6 @@ rootWebArea isLineBreakingObject=true
 ++++genericContainer isLineBreakingObject=true
 ++++++staticText name='blockDisplay Hiddenfalse'
 ++++++++inlineTextBox name='blockDisplay Hiddenfalse'
-++++genericContainer
+++++genericContainer invisible
 ++++genericContainer invisible name='blockDisplay Hiddentruefocusable' isLineBreakingObject=true
 ++++++staticText ignored invisible name='blockDisplay Hiddentruefocusable'

@@ -17,7 +17,6 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 
 class GURL;
@@ -87,9 +86,6 @@ class MetricsRenderFrameObserver
   // AdResourceTracker implementation
   void OnAdResourceTrackerGoingAway() override;
   void OnAdResourceObserved(int request_id) override;
-
-  void OnMainFrameDocumentIntersectionChanged(
-      const blink::WebRect& main_frame_document_intersection) override;
 
  protected:
   // The relative and monotonic page load timings.

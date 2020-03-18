@@ -310,12 +310,7 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
       // TODO(lukasza): https://crbug.com/920634: Report bad message and return
       // false below.
       NOTREACHED();
-      url::debug::ScopedOriginCrashKey initiator_lock_crash_key(
-          debug::GetRequestInitiatorSiteLockCrashKey(),
-          base::OptionalOrNullptr(request_initiator_site_lock_));
-      mojo::ReportBadMessage(
-          "CorsURLLoaderFactory: lock VS initiator mismatch");
-      return false;
+      break;
   }
 
   if (context) {

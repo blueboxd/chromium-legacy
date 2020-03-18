@@ -533,7 +533,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutCandidate(
       // logical widths, it means that scrollbars appeared or disappeared. We
       // have the same logic in legacy layout in
       // |LayoutBlockFlow::UpdateBlockLayout()|.
-      if (node.GetLayoutBox()->PreferredLogicalWidthsDirty() &&
+      if (node.GetLayoutBox()->IntrinsicLogicalWidthsDirty() &&
           AbsoluteNeedsChildInlineSize(candidate_style)) {
         // Freeze the scrollbars for this layout pass. We don't want them to
         // change *again*.

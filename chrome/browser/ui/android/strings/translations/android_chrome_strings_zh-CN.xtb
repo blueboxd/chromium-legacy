@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">正在发送到<ph name="DEVICE_NAME" />…</translation>
 <translation id="1036727731225946849">正在添加<ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">来自网站</translation>
+<translation id="1044891598689252897">网站将能够正常运行</translation>
 <translation id="1049743911850919806">无痕</translation>
 <translation id="10614374240317010">一律不保存</translation>
 <translation id="1067922213147265141">其他 Google 服务</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">无法分享<ph name="CONTENT_TYPE" /></translation>
 <translation id="1477626028522505441">未能成功下载 <ph name="FILE_NAME" />，因为服务器出现了问题。</translation>
 <translation id="1506061864768559482">搜索引擎</translation>
+<translation id="1509960214886564027">很多网站上的功能可能会无法正常运作</translation>
 <translation id="1513352483775369820">书签和网络历史记录</translation>
 <translation id="1513858653616922153">删除密码</translation>
 <translation id="1521774566618522728">今天曾有活动</translation>
@@ -235,6 +237,7 @@
 <translation id="2647434099613338025">添加语言</translation>
 <translation id="2650751991977523696">是否重新下载文件？</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# 个音频文件}other{# 个音频文件}}</translation>
+<translation id="2687403674020088961">阻止所有 Cookie（不建议）</translation>
 <translation id="2707726405694321444">刷新网页</translation>
 <translation id="2709516037105925701">自动填充</translation>
 <translation id="2717722538473713889">电子邮件地址</translation>
@@ -340,6 +343,7 @@
 <translation id="3478363558367712427">您可自行选择要使用的搜索引擎</translation>
 <translation id="3492207499832628349">打开新的无痕式标签页</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />详细了解<ph name="END_LINK" />推荐内容</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">增强现实</translation>
 <translation id="3518985090088779359">接受并继续</translation>
 <translation id="3522247891732774234">有更新。更多选项</translation>
@@ -355,6 +359,7 @@
 <translation id="358794129225322306">允许网站自动下载多个文件。</translation>
 <translation id="3590487821116122040">Chrome 认为不重要的网站（例如未保存任何设置的网站或您不常访问的网站）存储的数据</translation>
 <translation id="3594780231884063836">将视频静音</translation>
+<translation id="3596414637720633074">在无痕模式下阻止第三方 Cookie</translation>
 <translation id="3599863153486145794">清除所有登录过的设备上的历史记录。您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
 <translation id="3600792891314830896">将播放声音的网站静音</translation>
 <translation id="3616113530831147358">音频</translation>
@@ -921,6 +926,7 @@
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7810647596859435254">打开方式…</translation>
 <translation id="7821588508402923572">您的数据流量节省情况将显示在这里</translation>
+<translation id="7828557259026017104">Cookie 是由您访问过的网站创建的文件，供网站用来记住您的偏好；第三方 Cookie 是由其他网站创建而成，这些网站拥有您在所访问网页上看到的部分内容（比如广告或图片）。</translation>
 <translation id="783819812427904514">将视频取消静音</translation>
 <translation id="784934925303690534">时间范围</translation>
 <translation id="7851858861565204677">来自其他设备的同步</translation>
@@ -941,6 +947,7 @@
 <translation id="79859296434321399">要查看增强现实内容，请安装 ARCore</translation>
 <translation id="7986741934819883144">选择联系人</translation>
 <translation id="7987073022710626672">Chrome 服务条款</translation>
+<translation id="7993619969781047893">某些网站上的功能可能会无法正常运作</translation>
 <translation id="7998918019931843664">重新打开关闭的标签页</translation>
 <translation id="7999064672810608036">确定要清除该网站的所有本地数据（包括 Cookie）并重置该网站的所有权限吗？</translation>
 <translation id="8004582292198964060">浏览器</translation>
@@ -1075,6 +1082,7 @@
 <translation id="8965591936373831584">待下载</translation>
 <translation id="8970887620466824814">出了点问题。</translation>
 <translation id="8972098258593396643">是否下载到默认文件夹？</translation>
+<translation id="8988028529677883095">使用手机作为安全密钥</translation>
 <translation id="8993760627012879038">在无痕模式下打开新标签页</translation>
 <translation id="8998729206196772491">您正要登录由 <ph name="MANAGED_DOMAIN" /> 管理的帐号，并要授权其管理员控制您的 Chrome 数据。您的数据将与此帐号永久关联。退出 Chrome 后，您的数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>
 <translation id="9019902583201351841">由您父母管理</translation>

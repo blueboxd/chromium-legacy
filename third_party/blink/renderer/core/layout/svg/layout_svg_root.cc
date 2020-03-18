@@ -300,7 +300,7 @@ bool LayoutSVGRoot::StyleChangeAffectsIntrinsicSize(
 }
 
 void LayoutSVGRoot::IntrinsicSizingInfoChanged() {
-  SetPreferredLogicalWidthsDirty();
+  SetIntrinsicLogicalWidthsDirty();
 
   // TODO(fs): Merge with IntrinsicSizeChanged()? (from LayoutReplaced)
   // Ignore changes to intrinsic dimensions if the <svg> is not in an SVG

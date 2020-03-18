@@ -208,7 +208,6 @@ void StyleCascade::ApplyHighPriority(Resolver& resolver) {
   }
 
   state_.GetFontBuilder().CreateFont(
-      state_.GetDocument().GetStyleEngine().GetFontSelector(),
       state_.StyleRef());
   state_.SetConversionFontSizes(CSSToLengthConversionData::FontSizes(
       state_.Style(), state_.RootElementStyle()));

@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">Střední signál</translation>
 <translation id="4112140312785995938">Přetočit dozadu</translation>
 <translation id="4129129681837227511">Chcete-li zobrazovat oznámení na obrazovce uzamčení, odemkněte zařízení a změňte příslušné nastavení.</translation>
+<translation id="4144413954005649103">Po kliknutí pravým tlačítkem nebo dlouhém stisknutí vám Asistent zobrazí informace související s obsahem vybraným na obrazovce.</translation>
 <translation id="4146833061457621061">Přehrát hudbu</translation>
 <translation id="4149156641122542261">Zařízení <ph name="DEVICE_TYPE" /> spravované doménou <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Jazyky</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">Zobrazit softwarovou klávesnici</translation>
 <translation id="6164005077879661055">Po odebrání dozorovaného uživatele budou trvale smazány všechny soubory a místní data, která jsou k němu přiřazena. Navštívené weby a nastavení tohoto dozorovaného uživatele může správce i nadále zobrazit na adrese <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Další informace</translation>
+<translation id="6236290670123303279">Spravovat nastavení</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Uzamknuto na šířku</translation>
 <translation id="6259254695169772643">K výběru použijte dotykové pero</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">Zapnuto</translation>
 <translation id="6670153871843998651">Plocha 3</translation>
 <translation id="6691659475504239918">Hledat+Shift+H</translation>
+<translation id="6692996468359469499">Získejte informace týkající se vybraného obsahu</translation>
 <translation id="6696025732084565524">Odpojitelná klávesnice vyžaduje kritickou aktualizaci</translation>
 <translation id="6700713906295497288">Tlačítko nabídky IME</translation>
 <translation id="6713285437468012787">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ bylo spárováno a je teď k dispozici všem uživatelům. Toto párování můžete odebrat pomocí Nastavení.</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895">Správci účtu: <ph name="FIRST_PARENT_EMAIL" /> a <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">Režim vysokého kontrastu</translation>
 <translation id="7977927628060636163">Vyhledávání mobilních sítí...</translation>
+<translation id="7980780401175799550">Vyzkoušejte nové způsoby navigace v Chrome OS</translation>
 <translation id="7982789257301363584">Síť</translation>
 <translation id="7984197416080286869">Příliš mnoho pokusů o odemknutí otiskem prstu</translation>
 <translation id="7994370417837006925">Vícenásobné přihlášení</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835">Používá se <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Personalizovat jazyky a zadávání...</translation>
 <translation id="8192202700944119416">Oznámení jsou skryta.</translation>
+<translation id="8196787716797768628">Rychle přepínejte mezi aplikacemi a pracujte s Chromebookem pomocí gest v režimu tabletu.</translation>
 <translation id="8203795194971602413">Kliknutí pravým tlačítkem</translation>
 <translation id="8236042855478648955">Čas na přestávku</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, síla signálu: <ph name="SIGNAL_STRENGTH" />, baterie telefonu: <ph name="BATTERY_STATUS" /></translation>

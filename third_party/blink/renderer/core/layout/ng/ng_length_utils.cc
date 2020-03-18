@@ -321,11 +321,11 @@ MinMaxSizes ComputeMinAndMaxContentContribution(
     // whether the containing block of this child did change or is going to
     // change size. However, this is our only opportunity to make sure that it
     // gets its min/max widths calculated.
-    box->SetPreferredLogicalWidthsDirty();
+    box->SetIntrinsicLogicalWidthsDirty();
   }
 
   if (IsParallelWritingMode(parent_writing_mode, child_writing_mode)) {
-    if (!box->PreferredLogicalWidthsDirty()) {
+    if (!box->IntrinsicLogicalWidthsDirty()) {
       return box->PreferredLogicalWidths();
     }
     // Tables are special; even if a width is specified, they may end up being
@@ -390,7 +390,7 @@ MinMaxSizes ComputeMinAndMaxContentSizeForOutOfFlow(
   // instead of ComputeMinAndMaxContentContribution below because
   // ComputeMinAndMaxContentContribution assumes that if an element has a
   // specified size, that's its final size, which tables don't follow.
-  if ((!box->PreferredLogicalWidthsDirty() &&
+  if ((!box->IntrinsicLogicalWidthsDirty() &&
        !box->NeedsPreferredWidthsRecalculation()) ||
       box->IsTable()) {
     return box->PreferredLogicalWidths();
@@ -427,7 +427,7 @@ LayoutUnit ComputeInlineSizeForFragment(
   // the constraints on our own. We also need to discard the cached values if
   // the box has certain properties (e.g. percentage padding) that cause the
   // cached values to be affected by extrinsic sizing.
-  if (!box->PreferredLogicalWidthsDirty() && !override_min_max_sizes_for_test &&
+  if (!box->IntrinsicLogicalWidthsDirty() && !override_min_max_sizes_for_test &&
       !style.LogicalMinWidth().IsPercentOrCalc() &&
       !style.LogicalMaxWidth().IsPercentOrCalc() &&
       !box->NeedsPreferredWidthsRecalculation()) {

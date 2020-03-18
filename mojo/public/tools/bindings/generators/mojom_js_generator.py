@@ -236,7 +236,7 @@ def GetRelativeUrl(module, base_module):
 
 class JavaScriptStylizer(generator.Stylizer):
   def StylizeConstant(self, mojom_name):
-    return generator.ToConstantCase(mojom_name)
+    return generator.ToUpperSnakeCase(mojom_name)
 
   def StylizeField(self, mojom_name):
     return generator.ToCamel(mojom_name, lower_initial=True)
@@ -267,20 +267,20 @@ class JavaScriptStylizer(generator.Stylizer):
 class Generator(generator.Generator):
   def _GetParameters(self, for_compile=False):
     return {
-      "enums": self.module.enums,
-      "html_imports": self._GenerateHtmlImports(),
-      "imports": self.module.imports,
-      "interfaces": self.module.interfaces,
-      "kinds": self.module.kinds,
-      "module": self.module,
-      "mojom_filename": os.path.basename(self.module.path),
-      "mojom_namespace": self.module.mojom_namespace,
-      "structs": self.module.structs + self._GetStructsFromMethods(),
-      "unions": self.module.unions,
-      "generate_fuzzing": self.generate_fuzzing,
-      "generate_closure_exports": for_compile,
-      "generate_struct_deserializers": self.js_generate_struct_deserializers,
-   }
+        "enums": self.module.enums,
+        "html_imports": self._GenerateHtmlImports(),
+        "imports": self.module.imports,
+        "interfaces": self.module.interfaces,
+        "kinds": self.module.kinds,
+        "module": self.module,
+        "mojom_filename": os.path.basename(self.module.path),
+        "mojom_namespace": self.module.mojom_namespace,
+        "structs": self.module.structs + self._GetStructsFromMethods(),
+        "unions": self.module.unions,
+        "generate_fuzzing": self.generate_fuzzing,
+        "generate_closure_exports": for_compile,
+        "generate_struct_deserializers": self.js_generate_struct_deserializers,
+    }
 
   @staticmethod
   def GetTemplatePrefix():

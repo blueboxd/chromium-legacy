@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">Орташа сигнал</translation>
 <translation id="4112140312785995938">Артқа</translation>
 <translation id="4129129681837227511">Құлып экранында хабарландыруларды көру және параметрді өзгерту үшін құлыпты ашыңыз.</translation>
+<translation id="4144413954005649103">Тінтуірдің оң жақ түймесін бассаңыз немесе басып ұстап тұрсаңыз, Assistant экрандағы таңдаған нәрсеңізге қатысты ақпарат көрсетеді.</translation>
 <translation id="4146833061457621061">Музыка ойнату</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> құрылғысын <ph name="DOMAIN" /> басқарады.</translation>
 <translation id="4181841719683918333">Тілдер</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">Экрандағы пернетақтаны көрсету</translation>
 <translation id="6164005077879661055">Бақылаудағы пайдаланушыға қатысты барлық файлдар мен жергілікті деректер осы бақылаудағы пайдаланушы алып тасталғаннан кейін біржола жойылады. Осы бақылаудағы пайдаланушының кірген веб-сайттар мен параметрлері <ph name="MANAGEMENT_URL" /> сілтемесіндегі басқарушыға көрінуі мүмкін.</translation>
 <translation id="6165508094623778733">Толығырақ</translation>
+<translation id="6236290670123303279">Параметрлерді басқару</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Көлденең күйде құлыптаулы</translation>
 <translation id="6259254695169772643">Стилустың көмегімен таңдаңыз</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">Қосулы</translation>
 <translation id="6670153871843998651">3-ші жұмыс үстелі</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
+<translation id="6692996468359469499">Таңдауға қатысты ақпарат алу</translation>
 <translation id="6696025732084565524">Алынбалы пернетақтаны жаңарту қажет</translation>
 <translation id="6700713906295497288">IME мәзір түймесі</translation>
 <translation id="6713285437468012787">"<ph name="DEVICE_NAME" />" Bluetooth құрылғысы жұпталды және қазір барлық пайдаланушылар үшін қолжетімді. Бұл жұптауды параметрлердің көмегімен жоюыңызға болады.</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> және <ph name="SECOND_PARENT_EMAIL" /> басқаратын есептік жазба</translation>
 <translation id="7955885781510802139">Жоғары контраст режимі</translation>
 <translation id="7977927628060636163">Мобильдік желілер ізделуде…</translation>
+<translation id="7980780401175799550">Chrome OS жүйесінде жылжудың жаңа тәсілдері</translation>
 <translation id="7982789257301363584">Желі</translation>
 <translation id="7984197416080286869">Саусақ ізі тым көп енгізілді</translation>
 <translation id="7994370417837006925">Бірнеше профильдердің кіруі</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> тілін пайдалану</translation>
 <translation id="8190698733819146287">Тілдер мен енгізуді реттеу…</translation>
 <translation id="8192202700944119416">Хабарландырулар жасырулы.</translation>
+<translation id="8196787716797768628">Қолданбалар арасында жылдам ауысып, Chromebook-ті планшет режимінде қолдану үшін қимылдарды пайдаланыңыз.</translation>
 <translation id="8203795194971602413">Тінтуірдің оң жақ түймесін басу</translation>
 <translation id="8236042855478648955">Үзіліс жасайтын кез келді</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, сигнал күші: <ph name="SIGNAL_STRENGTH" />, телефонның батарея заряды: <ph name="BATTERY_STATUS" /></translation>

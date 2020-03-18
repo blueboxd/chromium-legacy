@@ -176,7 +176,6 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/externalnav/ExternalNavigationHandlerTest.java",
   "javatests/src/org/chromium/chrome/browser/externalnav/IntentWithGesturesHandlerTest.java",
   "javatests/src/org/chromium/chrome/browser/externalnav/UrlOverridingTest.java",
-  "javatests/src/org/chromium/chrome/browser/favicon/RoundedIconGeneratorTest.java",
   "javatests/src/org/chromium/chrome/browser/feature_engagement/ScreenshotMonitorTest.java",
   "javatests/src/org/chromium/chrome/browser/feature_engagement/ScreenshotTabObserverTest.java",
   "javatests/src/org/chromium/chrome/browser/feedback/ConnectivityCheckerTest.java",

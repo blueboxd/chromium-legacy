@@ -5,6 +5,7 @@
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> ਨੂੰ ਭੇਜਿਆ ਜਾ ਰਿਹਾ ਹੈ...</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> ਨੂੰ ਸ਼ਾਮਲ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...</translation>
 <translation id="1041308826830691739">ਵੈੱਬਸਾਈਟਾਂ ਤੋਂ</translation>
+<translation id="1044891598689252897">ਸਾਈਟਾਂ ਸਹੀ ਤਰੀਕੇ ਨਾਲ ਕੰਮ ਕਰਨਗੀਆਂ</translation>
 <translation id="1049743911850919806">ਗੁਮਨਾਮ</translation>
 <translation id="10614374240317010">ਕਦੇ ਵੀ ਸੁਰੱਖਿਅਤ ਨਹੀਂ ਕੀਤਾ</translation>
 <translation id="1067922213147265141">ਹੋਰ Google ਸੇਵਾਵਾਂ</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> ਨੂੰ ਸਾਂਝਾ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ</translation>
 <translation id="1477626028522505441">ਸਰਵਰ ਸਮੱਸਿਆਵਾਂ ਦੇ ਕਾਰਨ <ph name="FILE_NAME" /> ਡਾਊਨਲੋਡ ਅਸਫ਼ਲ ਰਿਹਾ।</translation>
 <translation id="1506061864768559482">ਖੋਜ ਇੰਜਣ</translation>
+<translation id="1509960214886564027">ਸ਼ਾਇਦ ਕਈ ਸਾਈਟਾਂ 'ਤੇ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਠੀਕ ਤਰੀਕੇ ਨਾਲ ਕੰਮ ਨਾ ਕਰਨ</translation>
 <translation id="1513352483775369820">ਬੁੱਕਮਾਰਕ ਅਤੇ ਵੈੱਬ ਇਤਿਹਾਸ</translation>
 <translation id="1513858653616922153">ਪਾਸਵਰਡ ਮਿਟਾਓ</translation>
 <translation id="1521774566618522728">ਅੱਜ ਕਿਰਿਆਸ਼ੀਲ</translation>
@@ -235,6 +237,7 @@
 <translation id="2647434099613338025">ਭਾਸ਼ਾ ਜੋੜੋ</translation>
 <translation id="2650751991977523696">ਕੀ ਫ਼ਾਈਲ ਦੁਬਾਰਾ ਡਾਊਨਲੋਡ ਕਰਨੀ ਹੈ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ਆਡੀਓ ਫ਼ਾਈਲ}one{# ਆਡੀਓ ਫ਼ਾਈਲ}other{# ਆਡੀਓ ਫ਼ਾਈਲਾਂ}}</translation>
+<translation id="2687403674020088961">ਸਾਰੀਆਂ ਕੁਕੀਜ਼ ਨੂੰ ਬਲਾਕ ਕਰੋ (ਇਸਦੀ ਸਿਫ਼ਾਰਸ਼ ਨਹੀਂ ਕੀਤੀ ਜਾਂਦੀ)</translation>
 <translation id="2707726405694321444">ਪੰਨੇ ਰਿਫ੍ਰੈਸ਼ ਕਰੋ</translation>
 <translation id="2709516037105925701">ਆਟੋਫਿਲ</translation>
 <translation id="2717722538473713889">ਈਮੇਲ ਪਤੇ</translation>
@@ -340,6 +343,7 @@
 <translation id="3478363558367712427">ਤੁਸੀਂ ਆਪਣਾ ਖੋਜ ਇੰਜਣ ਚੁਣ ਸਕਦੇ ਹੋ</translation>
 <translation id="3492207499832628349">ਨਵੀਂ ਇਨਕੋਗਨਿਟੋ ਟੈਬ</translation>
 <translation id="3493531032208478708">ਸੁਝਾਈ ਗਈ ਸਮੱਗਰੀ ਬਾਰੇ <ph name="BEGIN_LINK" />ਹੋਰ ਜਾਣੋ<ph name="END_LINK" /></translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">ਆਗਮੈਂਟਿਡ ਰਿਐਲਿਟੀ</translation>
 <translation id="3518985090088779359">ਸਵੀਕਾਰ ਕਰੋ &amp; ਜਾਰੀ ਰੱਖੋ</translation>
 <translation id="3522247891732774234">ਅੱਪਡੇਟ ਉਪਲਬਧ ਹੈ। ਹੋਰ ਵਿਕਲਪ</translation>
@@ -355,6 +359,7 @@
 <translation id="358794129225322306">ਕਿਸੇ ਸਾਈਟ ਨੂੰ ਇੱਕ ਤੋਂ ਜ਼ਿਆਦਾ ਫ਼ਾਈਲਾਂ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਡਾਊਨਲੋਡ ਕਰਨ ਦਿਓ।</translation>
 <translation id="3590487821116122040">ਸਾਈਟ ਸਟੋਰੇਜ ਜੋ Chrome ਅਨੁਸਾਰ ਮਹੱਤਵਪੂਰਨ ਨਹੀਂ ਹੈ (ਜਿਵੇਂ ਕਿ ਉਹ ਸਾਈਟਾਂ ਜੋ ਸੈਟਿੰਗਾਂ ਰੱਖਿਅਤ ਨਹੀਂ ਕਰਦੀਆਂ ਜਾਂ ਉਹ ਸਾਈਟਾਂ ਜਿੰਨ੍ਹਾਂ 'ਤੇ ਤੁਸੀਂ ਅਕਸਰ ਨਹੀਂ ਜਾਂਦੇ ਹੋ)</translation>
 <translation id="3594780231884063836">ਵੀਡੀਓ ਮਿਊਟ ਕਰੋ</translation>
+<translation id="3596414637720633074">ਇਨਕੋਗਨਿਟੋ ਵਿੱਚ ਤੀਜੀ-ਧਿਰ ਦੀਆਂ ਕੁਕੀਜ਼ ਨੂੰ ਬਲਾਕ ਕਰੋ</translation>
 <translation id="3599863153486145794">ਸਾਈਨ-ਇਨ ਕੀਤੇ ਸਾਰੇ ਡੀਵਾਈਸਾਂ ਤੋਂ ਇਤਿਹਾਸ ਕਲੀਅਰ ਕਰਦਾ ਹੈ। ਤੁਹਾਡੇ Google ਖਾਤੇ ਵਿੱਚ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 'ਤੇ ਬ੍ਰਾਊਜ਼ਿੰਗ ਇਤਿਹਾਸ ਦੀਆਂ ਹੋਰ ਕਿਸਮਾਂ ਹੋ ਸਕਦੀਆਂ ਹਨ।</translation>
 <translation id="3600792891314830896">ਧੁਨੀ ਵਜਾਉਣ ਵਾਲੀਆਂ ਸਾਈਟਾਂ ਨੂੰ ਮਿਊਟ ਕਰੋ</translation>
 <translation id="3616113530831147358">ਆਡੀਓ</translation>
@@ -921,6 +926,7 @@
 <translation id="780301667611848630">ਨਹੀਂ ਧੰਨਵਾਦ</translation>
 <translation id="7810647596859435254">ਇਸ ਨਾਲ ਖੋਲ੍ਹੋ...</translation>
 <translation id="7821588508402923572">ਤੁਹਾਡੀਆਂ ਡਾਟਾ ਬਚਤਾਂ ਇੱਥੇ ਦਿਖਾਈ ਦੇਣਗੀਆਂ</translation>
+<translation id="7828557259026017104">ਕੁਕੀਜ਼ ਉਹ ਫ਼ਾਈਲਾਂ ਹਨ ਜੋ ਤੁਹਾਡੇ ਵੱਲੋਂ ਦੇਖੀਆਂ ਵੈੱਬਸਾਈਟਾਂ ਦੁਆਰਾ ਬਣਾਈਆਂ ਜਾਂਦੀਆਂ ਹਨ। ਸਾਈਟਾਂ ਉਹਨਾਂ ਨੂੰ ਤੁਹਾਡੀਆਂ ਤਰਜੀਹਾਂ ਯਾਦ ਰੱਖਣ ਲਈ ਵਰਤਦੀਆਂ ਹਨ। ਤੀਜੀ-ਧਿਰ ਦੀਆਂ ਕੁਕੀਜ਼ ਹੋਰ ਸਾਈਟਾਂ ਵੱਲੋਂ ਬਣਾਈਆਂ ਜਾਂਦੀਆਂ ਹਨ। ਇਹ ਸਾਈਟਾਂ ਵਿਗਿਆਪਨਾਂ ਜਾਂ ਚਿੱਤਰਾਂ ਵਰਗੀ ਕੁਝ ਸਮੱਗਰੀ ਦੀਆਂ ਮਾਲਕ ਹੁੰਦੀਆਂ ਹਨ, ਜੋ ਤੁਸੀਂ ਵੈੱਬਸਾਈਟ 'ਤੇ ਦੇਖਦੇ ਹੋ।</translation>
 <translation id="783819812427904514">ਵੀਡੀਓ ਅਣਮਿਊਟ ਕਰੋ</translation>
 <translation id="784934925303690534">ਸਮਾਂ ਰੇਂਜ</translation>
 <translation id="7851858861565204677">ਹੋਰ ਡਿਵਾਈਸਾਂ</translation>
@@ -941,6 +947,7 @@
 <translation id="79859296434321399">ਸੰਵਰਧਿਤ ਵਾਸਤਵਿਕਤਾ ਵਾਲੀ ਸਮੱਗਰੀ ਦੇਖਣ ਲਈ, ARCore ਸਥਾਪਤ ਕਰੋ</translation>
 <translation id="7986741934819883144">ਇੱਕ ਸੰਪਰਕ ਚੁਣੋ</translation>
 <translation id="7987073022710626672">Chrome ਸੇਵਾ ਦੇ ਨਿਯਮ</translation>
+<translation id="7993619969781047893">ਸ਼ਾਇਦ ਕੁਝ ਸਾਈਟਾਂ 'ਤੇ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਠੀਕ ਤਰੀਕੇ ਨਾਲ ਕੰਮ ਨਾ ਕਰਨ</translation>
 <translation id="7998918019931843664">ਬੰਦ ਕੀਤੀ ਟੈਬ ਦੁਬਾਰਾ ਖੋਲ੍ਹੋ</translation>
 <translation id="7999064672810608036">ਕੀ ਤੁਸੀਂ ਪੱਕਾ ਕੁਕੀਜ਼ ਸਮੇਤ ਸਾਰਾ ਸਥਾਨਕ ਡਾਟਾ ਮਿਟਾਉਣਾ ਚਾਹੁੰਦੇ ਹੋ ਅਤੇ ਇਸ ਵੈੱਬਸਾਈਟ ਲਈ ਸਾਰੀਆਂ ਇਜਾਜ਼ਤਾਂ ਨੂੰ ਰੀਸੈੱਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?</translation>
 <translation id="8004582292198964060">ਬ੍ਰਾਊਜ਼ਰ</translation>
@@ -1075,6 +1082,7 @@
 <translation id="8965591936373831584">ਵਿਚਾਰ-ਅਧੀਨ</translation>
 <translation id="8970887620466824814">ਕੋਈ ਗੜਬੜ ਹੋ ਗਈ।</translation>
 <translation id="8972098258593396643">ਕੀ ਪੂਰਵ-ਨਿਰਧਾਰਤ ਫੋਲਡਰ ਵਿੱਚ ਡਾਊਨਲੋਡ ਕਰਨਾ ਹੈ?</translation>
+<translation id="8988028529677883095">ਫ਼ੋਨ ਨੂੰ ਇੱਕ ਸੁਰੱਖਿਆ ਕੁੰਜੀ ਵਜੋਂ ਵਰਤੋ</translation>
 <translation id="8993760627012879038">ਇਨਕੋਗਨਿਟੋ ਮੋਡ ਵਿੱਚ ਇੱਕ ਨਵੀਂ ਟੈਬ ਖੋਲ੍ਹੋ</translation>
 <translation id="8998729206196772491">ਤੁਸੀਂ <ph name="MANAGED_DOMAIN" /> ਵੱਲੋਂ ਪ੍ਰਬੰਧਿਤ ਕੀਤੇ ਖਾਤੇ ਨਾਲ ਸਾਈਨ-ਇਨ ਕਰ ਰਹੇ ਹੋ ਅਤੇ ਉਸਦੇ ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਆਪਣੇ Chrome ਡਾਟੇ ਦਾ ਕੰਟਰੋਲ ਦੇ ਰਹੇ ਹੋ। ਤੁਹਾਡਾ ਡਾਟਾ ਸਥਾਈ ਤੌਰ 'ਤੇ ਇਸ ਖਾਤੇ ਨਾਲ ਜੋੜ ਦਿੱਤਾ ਜਾਵੇਗਾ। Chrome ਤੋਂ ਸਾਈਨ-ਆਊਟ ਹੋਣ ਨਾਲ ਤੁਹਾਡਾ ਡਾਟਾ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਮਿਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ, ਪਰ ਇਹ ਤੁਹਾਡੇ Google ਖਾਤੇ ਵਿੱਚ ਸਟੋਰ ਰਹੇਗਾ।</translation>
 <translation id="9019902583201351841">ਤੁਹਾਡੇ ਮਾਪਿਆਂ ਵੱਲੋਂ ਵਿਵਸਥਿਤ</translation>

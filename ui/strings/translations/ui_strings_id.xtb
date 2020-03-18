@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Pilih semu&amp;a</translation>
-<translation id="1938451708255335766">Untuk menyesuaikan kepadatan tampilan jendela, mulai ulang aplikasi.</translation>
 <translation id="2006524834898217237">Pastikan perangkat ini tersambung ke internet.</translation>
 <translation id="208586643495776849">Coba lagi</translation>
 <translation id="2090963878406559571">Untuk mengirim nomor dari <ph name="ORIGIN" /> ke ponsel Android Anda, <ph name="TROUBLESHOOT_LINK" /> untuk kedua perangkat di setelan.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Tampilan built-in</translation>
 <translation id="335581015389089642">Ucapan</translation>
 <translation id="3389286852084373014">Teks terlalu besar</translation>
-<translation id="3479552764303398839">Jangan sekarang</translation>
 <translation id="348799646910989694">Rak otomatis disembunyikan</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> telah dipasangi pin</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 hari lagi}other{# hari lagi}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 mnt}other{# mnt}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktif hari ini}=1{Aktif 1 hari yang lalu}other{Aktif # hari yang lalu}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 hari dan }other{# hari dan }}</translation>
+<translation id="5789643057113097023">:</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{dalam 1 t}other{dalam # t}}</translation>
-<translation id="5895138241574237353">Mulai Ulang</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 detik lagi}other{# detik lagi}}</translation>
 <translation id="5941711191222866238">Perkecil</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 jam}other{# jam}}</translation>

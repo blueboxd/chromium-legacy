@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Piliin ang &amp;lahat</translation>
-<translation id="1938451708255335766">Para i-adjust ang density ng display ng window, i-restart ang app.</translation>
 <translation id="2006524834898217237">Siguraduhing nakakonekta ang device na ito sa Internet.</translation>
 <translation id="208586643495776849">Pakisubukang muli</translation>
 <translation id="2090963878406559571">Para magpadala ng numero sa iyong Android phone mula sa <ph name="ORIGIN" />, <ph name="TROUBLESHOOT_LINK" /> para sa parehong device sa mga setting.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Built-in na display</translation>
 <translation id="335581015389089642">Pananalita</translation>
 <translation id="3389286852084373014">Masyadong malaki ang text</translation>
-<translation id="3479552764303398839">Hindi ngayon</translation>
 <translation id="348799646910989694">Awtomatikong itinago ang shelf</translation>
 <translation id="3554637740840164787">Na-pin ang <ph name="ITEM_TITLE" /></translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 araw na lang ang natitira}one{# araw na lang ang natitira}other{# na araw na lang ang natitira}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 minuto}one{# minuto}other{# na minuto}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktibo ngayong araw}=1{Aktibo 1 araw ang nakalipas}one{Aktibo # araw ang nakalipas}other{Aktibo # na araw ang nakalipas}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 araw at }one{# araw at }other{# na araw at }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{sa loob ng 1 taon}one{sa loob ng # taon}other{sa loob ng # na taon}}</translation>
-<translation id="5895138241574237353">I-restart</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 segundo na lang ang natitira}one{# segundo na lang ang natitira}other{# na segundo na lang ang natitira}}</translation>
 <translation id="5941711191222866238">Minimize</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 oras}one{# oras}other{# na oras}}</translation>

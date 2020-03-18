@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">Método de recollida</translation>
 <translation id="1281476433249504884">Amontoador 1</translation>
 <translation id="1285320974508926690">Non traducir nunca este sitio</translation>
-<translation id="1285400217480592994">Analiza o contido dos ficheiros que descargas ou cargas en Chrome.</translation>
 <translation id="1292701964462482250">"Hai software no teu ordenador que está evitando que Chrome se conecte de forma segura á web" (só para ordenadores con Windows)</translation>
 <translation id="1294154142200295408">Variacións da liña de comandos</translation>
 <translation id="129553762522093515">Pechado recentemente</translation>
@@ -650,6 +649,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="3784372983762739446">Dispositivos Bluetooth</translation>
 <translation id="3787705759683870569">Caduca o <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">Tamaño 16</translation>
+<translation id="3793574014653384240">Número de fallos ocorridos recentemente e as súas causas</translation>
 <translation id="3797522431967816232">Prc3 (sobre)</translation>
 <translation id="3799805948399000906">Solicitouse a fonte</translation>
 <translation id="3807366285948165054">Desprazamento da imaxe no eixe X</translation>

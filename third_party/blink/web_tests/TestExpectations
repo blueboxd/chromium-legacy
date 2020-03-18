@@ -63,11 +63,6 @@ crbug.com/860713 external/wpt/bluetooth/requestDevice/request-from-sandboxed-ifr
 crbug.com/860713 virtual/web-bluetooth-new-permissions-backend/external/wpt/bluetooth/requestDevice/cross-origin-iframe.sub.https.html [ Failure Timeout ]
 crbug.com/860713 virtual/web-bluetooth-new-permissions-backend/external/wpt/bluetooth/requestDevice/request-from-sandboxed-iframe.https.html [ Failure Timeout ]
 
-# The following tests would pass with User Activation Delegation.
-crbug.com/928838 external/wpt/html/user-activation/activation-transfer-with-click.tentative.html [ Failure ]
-crbug.com/928838 external/wpt/html/user-activation/activation-transfer-cross-origin-with-click.sub.tentative.html [ Failure ]
-crbug.com/928838 external/wpt/html/user-activation/activation-transfer-cross-origin-with-click-two-child-frames.sub.tentative.html [ Failure ]
-
 # These two are left over from crbug.com/881040, I rebaselined them twice and
 # they continue to fail.
 crbug.com/881040 media/controls/lazy-loaded-style.html [ Failure Pass ]
@@ -6666,6 +6661,8 @@ crbug.com/1058403 external/wpt/webaudio/the-audio-api/the-audioworklet-interface
 
 crbug.com/1057020 [ Fuchsia ] http/tests/streams/chromium/get-reader-byob.html [ Pass Timeout ]
 
+crbug.com/1062667 [ Mac ] external/wpt/server-timing/idlharness.https.any.html [ Pass Timeout ]
+
 # Sheriff 2020-03-05
 crbug.com/1058073 [ Retina ] virtual/threaded/fast/scroll-snap/snap-to-target-on-layout-change.html [ Pass Failure ]
 crbug.com/1058073 [ Mac10.14 ] accessibility/content-changed-notification-causes-crash.html [ Pass Failure ]
@@ -6948,10 +6945,6 @@ crbug.com/1060175 [ Win ] wpt_internal/storage/estimate-usage-details-filesystem
 crbug.com/1060175 [ Win ] wpt_internal/storage/estimate-usage-details-filesystem.https.tentative.any.worker.html [ Pass Failure ]
 crbug.com/1060175 [ Win ] wpt_internal/virtual-scroller/large-child-comment.html [ Pass Failure ]
 crbug.com/1060175 [ Win ] wpt_internal/webxr/xr_view_projection_detached.https.html [ Pass Failure ]
-
-# Temporarily disable to land https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2097337
-crbug.com/1011811 http/tests/devtools/changes/changes-sidebar.js [ Pass Failure ]
-crbug.com/1011811 http/tests/devtools/search/search-in-static.js [ Pass Failure ]
 
 # Temporarily disabled to land https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2101972
 crbug.com/174309 http/tests/devtools/quick-open/command-menu.js [ Pass Failure ]

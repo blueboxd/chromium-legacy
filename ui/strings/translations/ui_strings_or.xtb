@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;ସମସ୍ତ ଚୟନ କରନ୍ତୁ</translation>
-<translation id="1938451708255335766">ୱିଣ୍ଡୋ ଡିସ୍‌ପ୍ଲେର ସାନ୍ଧ୍ରତା ଆଡ୍‍ଜଷ୍ଟ କରିବାକୁ, ଆପ୍‌ ରିଷ୍ଟାର୍ଟ କରନ୍ତୁ।</translation>
 <translation id="2006524834898217237">ଏହି ଡିଭାଇସ୍‌ଟି ଇଣ୍ଟର୍ନେଟ୍ ସହ ସଂଯୁକ୍ତ ହୋଇଥିବା ସୁନିଶ୍ଚିତ କରନ୍ତୁ।</translation>
 <translation id="208586643495776849">ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ</translation>
 <translation id="2090963878406559571"><ph name="ORIGIN" />ରୁ ଆପଣଙ୍କ Android ଫୋନ୍‌କୁ ଏକ ନମ୍ବର ପଠାଇବା ପାଇଁ ସେଟିଂସ୍‌ରେ ଉଭୟ ଡିଭାଇସ୍ ନିମନ୍ତେ <ph name="TROUBLESHOOT_LINK" />।</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">ବିଲ୍ଟ-ଇନ୍ ଡିସପ୍ଲେ</translation>
 <translation id="335581015389089642">ସ୍ପୀଚ୍‌</translation>
 <translation id="3389286852084373014">ଟେକ୍ସଟ୍ ବହୁତ ଲମ୍ବା ଅଟେ</translation>
-<translation id="3479552764303398839">ଏବେ ନୁହେଁ</translation>
 <translation id="348799646910989694">ସେଲ୍ପ ସ୍ୱଚାଳିତ ରୂପେ ଲୁଚାଯାଇଛି</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> ପିନ୍ କରାଯାଇଥିଲା</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 ଦିନ ବାକି ଅଛି}other{# ଦିନ ବାକି ଅଛି}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 ମିନିଟ୍}other{# ମିନିଟ୍}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{ଆଜି ସକ୍ରିୟ ଅଛି}=1{1 ଦିନ ପୂର୍ବେ ସକ୍ରିୟ ଥିଲା}other{# ଦିନ ପୂର୍ବେ ସକ୍ରିୟ ଥିଲା}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ଦିନ ଏବଂ }other{# ଦିନ ଏବଂ }}</translation>
+<translation id="5789643057113097023">।</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{ବର୍ଷରେ}other{# ବର୍ଷରେ}}</translation>
-<translation id="5895138241574237353">ପୁନଃଆରମ୍ଭ</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 ସେକେଣ୍ଡ ବାକିଅଛି}other{# ସେକେଣ୍ଡ ବାକିଅଛି}}</translation>
 <translation id="5941711191222866238">ସର୍ବନିମ୍ନ କରନ୍ତୁ</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ଘଣ୍ଟା}other{# ଘଣ୍ଟା}}</translation>

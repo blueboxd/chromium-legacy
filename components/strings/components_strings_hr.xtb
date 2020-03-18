@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">Način preuzimanja</translation>
 <translation id="1281476433249504884">Spremnik za slaganje u snopove 1</translation>
 <translation id="1285320974508926690">Nikad nemoj prevoditi ovu web-lokaciju</translation>
-<translation id="1285400217480592994">Pregledajte sadržaj datoteka koje preuzimate s Chromea ili prenosite putem Chromea.</translation>
 <translation id="1292701964462482250">"Softver na vašem računalu sprječava sigurno povezivanje Chromea s webom" (samo na Windows računalima)</translation>
 <translation id="1294154142200295408">Varijacije naredbenog retka</translation>
 <translation id="129553762522093515">Nedavno zatvoreno</translation>
@@ -651,6 +650,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="3784372983762739446">Bluetooth uređaji</translation>
 <translation id="3787705759683870569">Istječe <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">Veličina 16</translation>
+<translation id="3793574014653384240">Broj nedavnih rušenja i njihovi razlozi</translation>
 <translation id="3797522431967816232">Prc3 (omotnica)</translation>
 <translation id="3799805948399000906">Zatraženi font</translation>
 <translation id="3807366285948165054">X-pomak slike</translation>

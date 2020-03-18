@@ -63,9 +63,9 @@ public class NotificationManager {
                     final String action = intent.getAction();
                     final String guid =
                             IntentUtils.safeGetStringExtra(intent, NOTIFICATION_GUID_EXTRA);
-                    // TODO(https://crbug.com/1041781): Use the current profile (i.e.,
-                    //  regular profile or incognito profile) instead of always using
-                    //  regular profile. It is wrong and need to be fixed.
+                    // If this feature ever supports incognito mode, we need to modify
+                    // this method to obtain the current profile, rather than the last-used
+                    // regular profile.
                     final Profile profile = Profile.getLastUsedRegularProfile();
                     switch (action) {
                         case NOTIFICATION_ACTION_TAP:

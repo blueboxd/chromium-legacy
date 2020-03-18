@@ -314,7 +314,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     if (EverHadLayout())
       SetChildNeedsLayout();
     if (had_transform_related_property) {
-      SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+      SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
           layout_invalidation_reason::kStyleChange);
     }
     if (!NeedsLayout()) {

@@ -68,11 +68,6 @@ class FakePageTimingSender : public PageTimingSender {
       expected_render_data_ = render_data;
     }
 
-    void UpdateExpectFrameIntersectionUpdate(
-        const mojom::FrameIntersectionUpdate& frame_intersection_update) {
-      expected_frame_intersection_update_ = frame_intersection_update.Clone();
-    }
-
     // Forces verification that actual features sent through SendTiming match
     // expected features provided via ExpectPageLoadFeatures.
     void VerifyExpectedFeatures() const;
@@ -80,7 +75,6 @@ class FakePageTimingSender : public PageTimingSender {
     // match expected CSS properties provided via ExpectPageLoadCSSProperties.
     void VerifyExpectedCssProperties() const;
     void VerifyExpectedRenderData() const;
-    void VerifyExpectedFrameIntersectionUpdate() const;
 
     const std::vector<mojom::PageLoadTimingPtr>& expected_timings() const {
       return expected_timings_;
@@ -91,7 +85,7 @@ class FakePageTimingSender : public PageTimingSender {
 
     void UpdateTiming(
         const mojom::PageLoadTimingPtr& timing,
-        const mojom::FrameMetadataPtr& metadata,
+        const mojom::PageLoadMetadataPtr& metadata,
         const mojom::PageLoadFeaturesPtr& new_features,
         const std::vector<mojom::ResourceDataUpdatePtr>& resources,
         const mojom::FrameRenderDataUpdate& render_data,
@@ -109,8 +103,6 @@ class FakePageTimingSender : public PageTimingSender {
     std::set<blink::mojom::CSSSampleId> actual_css_properties_;
     mojom::FrameRenderDataUpdate expected_render_data_;
     mojom::FrameRenderDataUpdate actual_render_data_;
-    mojom::FrameIntersectionUpdatePtr expected_frame_intersection_update_;
-    mojom::FrameIntersectionUpdatePtr actual_frame_intersection_update_;
     DISALLOW_COPY_AND_ASSIGN(PageTimingValidator);
   };
 
@@ -118,7 +110,7 @@ class FakePageTimingSender : public PageTimingSender {
   ~FakePageTimingSender() override;
   void SendTiming(
       const mojom::PageLoadTimingPtr& timing,
-      const mojom::FrameMetadataPtr& metadata,
+      const mojom::PageLoadMetadataPtr& metadata,
       mojom::PageLoadFeaturesPtr new_features,
       std::vector<mojom::ResourceDataUpdatePtr> resources,
       const mojom::FrameRenderDataUpdate& render_data,

@@ -5,6 +5,7 @@
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> પર મોકલી રહ્યાં છીએ...</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> ઉમેરી રહ્યાં છીએ…</translation>
 <translation id="1041308826830691739">વેબસાઇટ પરથી</translation>
+<translation id="1044891598689252897">સાઇટ સામાન્ય રીતે કાર્ય કરશે</translation>
 <translation id="1049743911850919806">છૂપી</translation>
 <translation id="10614374240317010">ક્યારેય ન સચવાયેલું</translation>
 <translation id="1067922213147265141">અન્ય Google સેવાઓ</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> શેર કરી શકતાં નથી</translation>
 <translation id="1477626028522505441">સર્વર સમસ્યાઓને કારણે <ph name="FILE_NAME" /> ડાઉનલોડ નિષ્ફળ થયું.</translation>
 <translation id="1506061864768559482">શોધ એન્જિન</translation>
+<translation id="1509960214886564027">ઘણી સાઇટ પરની સુવિધાઓને કદાચ બંધ કરવામાં આવી શકે</translation>
 <translation id="1513352483775369820">બુકમાર્ક્સ અને વેબ ઇતિહાસ</translation>
 <translation id="1513858653616922153">પાસવર્ડ ડિલીટ કરો</translation>
 <translation id="1521774566618522728">આજે સક્રિય છે</translation>
@@ -235,6 +237,7 @@
 <translation id="2647434099613338025">ભાષા ઉમેરો</translation>
 <translation id="2650751991977523696">ફાઇલને ફરીથી ડાઉનલોડ કરીએ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ઑડિયો ફાઇલ}one{# ઑડિયો ફાઇલો}other{# ઑડિયો ફાઇલો}}</translation>
+<translation id="2687403674020088961">બધી કુકીને બ્લૉક કરો (સુઝાવ આપતા નથી)</translation>
 <translation id="2707726405694321444">પેજ રિફ્રેશ કરો</translation>
 <translation id="2709516037105925701">સ્વતઃભરો</translation>
 <translation id="2717722538473713889">ઇમેઇલ ઍડ્રેસ</translation>
@@ -340,6 +343,7 @@
 <translation id="3478363558367712427">તમે તમારું શોધ એન્જિન પસંદ કરી શકો છો</translation>
 <translation id="3492207499832628349">નવી છુપી ટેબ</translation>
 <translation id="3493531032208478708">સૂચવેલ કન્ટેન્ટ વિશે <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">ઑગ્મેન્ટેડ રિયાલિટી</translation>
 <translation id="3518985090088779359">સ્વીકારો અને ચાલુ રાખો</translation>
 <translation id="3522247891732774234">અપડેટ ઉપલબ્ધ છે. વધુ વિકલ્પો</translation>
@@ -355,6 +359,7 @@
 <translation id="358794129225322306">એકથી વધુ ફાઇલો ઑટોમૅટિક રીતે ડાઉનલોડ કરવાની મંજૂરી સાઇટને આપો.</translation>
 <translation id="3590487821116122040">Chrome ને મહત્વનું ન લાગતું સાઇટ સ્ટોરેજ (ઉદા., કોઇ સાચવેલ સેટિંગ્સ ન હોય તેવી અથવા વારંવાર મુલાકાત ન લેવાતી હોય તેવી સાઇટ્સ)</translation>
 <translation id="3594780231884063836">વીડિયોને મ્યૂટ કરો</translation>
+<translation id="3596414637720633074">ત્રીજા પક્ષની કુકીને છૂપા મોડમાં બ્લૉક કરો</translation>
 <translation id="3599863153486145794">બધા સાઇન ઇન કરેલ ડિવાઇસમાંથી ઇતિહાસ સાફ કરે છે. તમારા Google એકાઉન્ટમાં <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> પર બ્રાઉઝિંગ ઇતિહાસના બીજા સ્વરૂપો હોય શકે.</translation>
 <translation id="3600792891314830896">જે સાઇટ અવાજ ચલાવતી હોય તેઓનો અવાજ બંધ કરો</translation>
 <translation id="3616113530831147358">ઑડિઓ</translation>
@@ -921,6 +926,7 @@
 <translation id="780301667611848630">નહીં, આભાર</translation>
 <translation id="7810647596859435254">આની સાથે ખોલો…</translation>
 <translation id="7821588508402923572">તમારી ડેટા બચત અહીં દેખાશે</translation>
+<translation id="7828557259026017104">કુકી એ તમે મુલાકાત લો છો તે વેબસાઇટ દ્વારા બનાવવામાં આવેલી ફાઇલો છે. સાઇટ તેનો ઉપયોગ તમારી પસંદગીઓને યાદ રાખવા માટે કરે છે. ત્રીજા પક્ષની કુકી અન્ય સાઇટ દ્વારા બનાવવામાં આવે છે. અમુક પ્રકારનું કન્ટેન્ટ આ સાઇટની માલિકીનું હોય છે, જેમ કે તમે મુલાકાત લો છો તે વેેબપેજ પર તમે જોયેલી જાહેરાતો કે છબીઓ.</translation>
 <translation id="783819812427904514">વીડિયોને અનમ્યૂટ કરો</translation>
 <translation id="784934925303690534">સમય શ્રેણી</translation>
 <translation id="7851858861565204677">અન્ય ઉપકરણો</translation>
@@ -941,6 +947,7 @@
 <translation id="79859296434321399">ઑગ્મેન્ટેડ રિયાલિટી કન્ટેન્ટ જોવા માટે, ARCore ઇન્સ્ટૉલ કરો</translation>
 <translation id="7986741934819883144">સંપર્ક પસંદ કરો</translation>
 <translation id="7987073022710626672">Chrome સેવાની શરતો</translation>
+<translation id="7993619969781047893">અમુક સાઇટ પરની સુવિધાઓને કદાચ બંધ કરવામાં આવી શકે</translation>
 <translation id="7998918019931843664">બંધ કરેલ ટેબ ફરીથી ખોલો</translation>
 <translation id="7999064672810608036">શું તમે ખરેખર કૂકીઝ સહિત આ વેબસાઇટ માટેનો બધો ડેટા સાફ કરી અને આ વેબસાઇટ માટેની બધી પરવાનગીઓ ફરીથી સેટ કરવા માગો છો?</translation>
 <translation id="8004582292198964060">બ્રાઉઝર</translation>
@@ -1075,6 +1082,7 @@
 <translation id="8965591936373831584">બાકી</translation>
 <translation id="8970887620466824814">કંઈક ખોટું થયું.</translation>
 <translation id="8972098258593396643">ડિફૉલ્ટ ફોલ્ડરમાં ડાઉનલોડ કરીએ?</translation>
+<translation id="8988028529677883095">સિક્યુરિટી કી તરીકે ફોનનો ઉપયોગ કરો</translation>
 <translation id="8993760627012879038">છુપા મોડમાં એક નવું ટૅબ ખોલો</translation>
 <translation id="8998729206196772491">તમે <ph name="MANAGED_DOMAIN" /> દ્વારા મેનેજ એકાઉન્ટમાં સાઇન ઇન કરી રહ્યાં છો અને તમારા Chrome ડેટા પર એનું એડમિન નિયંત્રણ આપી રહ્યાં છો. તમારો ડેટા આ એકાઉન્ટ સાથે કાયમીરૂપે જોડાયેલું રહેશે. Chromeમાંથી સાઇન આઉટ કરવું આ ડિવાઇસ પરથી તમારો ડેટા ડિલીટ કરશે, પરંતુ એ તમારા Google એકાઉન્ટમાં સ્ટોર રહેશે.</translation>
 <translation id="9019902583201351841">તમારા માતાપિતા દ્વારા સંચાલિત</translation>

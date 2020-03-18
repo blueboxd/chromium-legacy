@@ -1,0 +1,17 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content.mojom;
+
+import "third_party/blink/public/mojom/devtools/device_emulation_params.mojom";
+
+// Interface exposed by the renderer to allow configuration of device emulator.
+// Used internally by DevTools, but needs to be a separate interface now, as it
+// needs to be implemented in content and be associated to
+// FrameNavigationControl.
+interface DeviceEmulator {
+  // Conigure device emulation parameter. When |params| is null, the emulation
+  // is disabled and all parameters are reverted to original values.
+  SetDeviceEmulation(blink.mojom.DeviceEmulationParams? params);
+};

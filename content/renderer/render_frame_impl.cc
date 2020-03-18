@@ -3677,8 +3677,12 @@ void RenderFrameImpl::UpdateSubresourceLoaderFactories(
 
 void RenderFrameImpl::BindDevToolsAgent(
     mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
-    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver) {
-  frame_->BindDevToolsAgent(host.PassHandle(), receiver.PassHandle());
+    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent,
+    mojo::PendingAssociatedReceiver<mojom::DeviceEmulator> device_emulator) {
+  frame_->BindDevToolsAgent(host.PassHandle(), agent.PassHandle());
+  DCHECK_EQ(!!device_emulator, IsMainFrame());
+  if (device_emulator)
+    render_widget_->BindDeviceEmulator(std::move(device_emulator));
 }
 
 // blink::WebLocalFrameClient implementation

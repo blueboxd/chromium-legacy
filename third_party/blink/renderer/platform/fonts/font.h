@@ -65,7 +65,8 @@ class PLATFORM_EXPORT Font {
 
  public:
   Font();
-  Font(const FontDescription&);
+  explicit Font(const FontDescription&);
+  Font(const FontDescription&, FontSelector*);
   ~Font();
 
   Font(const Font&);
@@ -244,7 +245,7 @@ class PLATFORM_EXPORT Font {
  private:
   FontFallbackList* EnsureFontFallbackList() const {
     if (!font_fallback_list_)
-      font_fallback_list_ = FontFallbackList::Create();
+      font_fallback_list_ = FontFallbackList::Create(nullptr);
     return font_fallback_list_.get();
   }
 

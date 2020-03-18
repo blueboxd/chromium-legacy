@@ -8,6 +8,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.StrictMode;
+import android.os.StrictMode.ThreadPolicy;
+import android.os.StrictMode.VmPolicy;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -58,6 +61,17 @@ public class InstrumentationActivity extends FragmentActivity {
     private Bundle mSavedInstanceState;
     private TabCallback mTabCallback;
 
+    private static boolean isJaCoCoEnabled() {
+        // Nothing is set at runtime indicating jacoco is being used. This looks for the existence
+        // of a javacoco class to determine if jacoco is enabled.
+        try {
+            Class.forName("org.jacoco.agent.rt.RT");
+            return true;
+        } catch (LinkageError | ClassNotFoundException e) {
+        }
+        return false;
+    }
+
     public Tab getTab() {
         return mTab;
     }
@@ -95,6 +109,19 @@ public class InstrumentationActivity extends FragmentActivity {
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
+        // JaCoCo injects code that does file access, which doesn't work well with strict mode.
+        if (!isJaCoCoEnabled()) {
+            StrictMode.setThreadPolicy(
+                    new ThreadPolicy.Builder().detectAll().penaltyLog().penaltyDeath().build());
+            // This doesn't use detectAll() as the untagged sockets policy is encountered in tests
+            // using TestServer.
+            StrictMode.setVmPolicy(new VmPolicy.Builder()
+                                           .detectLeakedSqlLiteObjects()
+                                           .detectLeakedClosableObjects()
+                                           .penaltyLog()
+                                           .penaltyDeath()
+                                           .build());
+        }
         super.onCreate(savedInstanceState);
         mSavedInstanceState = savedInstanceState;
         LinearLayout mainView = new LinearLayout(this);

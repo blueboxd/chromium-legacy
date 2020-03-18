@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Ընտրել &amp;բոլորը</translation>
-<translation id="1938451708255335766">Միջերեսի նոր կարգավորումները կիրառելու համար վերագործարկեք հավելվածը:</translation>
 <translation id="2006524834898217237">Համոզվեք, որ սարքը միացված է ինտերնետին։</translation>
 <translation id="208586643495776849">Նորից փորձեք</translation>
 <translation id="2090963878406559571">Համարը <ph name="ORIGIN" /> կայքից ձեր Android հեռախոսին ուղարկելու համար <ph name="TROUBLESHOOT_LINK" /> սարքերի համար կարգավորումներում։</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Ներկառուցված էկրան</translation>
 <translation id="335581015389089642">Speech</translation>
 <translation id="3389286852084373014">Տեքստը չափազանց մեծ է</translation>
-<translation id="3479552764303398839">Հիմա չէ</translation>
 <translation id="348799646910989694">Դարակն ավտոմատ թաքցվում է</translation>
 <translation id="3554637740840164787">«<ph name="ITEM_TITLE" />» տարրն ամրացվեց</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Մնացել է 1 օր}one{Մնացել է # օր}other{Մնացել է # օր}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 րոպե}one{# րոպե}other{# րոպե}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Այսօր ակտիվ է եղել}=1{Ակտիվ է եղել 1 օր առաջ}one{Ակտիվ է եղել # օր առաջ}other{Ակտիվ է եղել # օր առաջ}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 օր }one{# օր }other{# օր }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 տ-ուց}one{# տ-ուց}other{# տ-ուց}}</translation>
-<translation id="5895138241574237353">Վերագործարկել</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Մնացել է 1 վայրկյան}one{Մնացել է # վայրկյան}other{Մնացել է # վայրկյան}}</translation>
 <translation id="5941711191222866238">Նվազեցնել</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ժամ}one{# ժամ}other{# ժամ}}</translation>

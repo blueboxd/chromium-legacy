@@ -72,7 +72,6 @@
 <translation id="1270502636509132238">픽업 방법</translation>
 <translation id="1281476433249504884">스태커 1</translation>
 <translation id="1285320974508926690">이 사이트 번역 안함</translation>
-<translation id="1285400217480592994">Chrome에서 다운로드 또는 업로드한 파일의 콘텐츠를 검사합니다.</translation>
 <translation id="1292701964462482250">'컴퓨터의 소프트웨어로 인해 Chrome이 안전하게 웹에 접속할 수 없습니다'(Windows 컴퓨터만 해당)</translation>
 <translation id="1294154142200295408">명령줄 변형</translation>
 <translation id="129553762522093515">최근에 닫은 탭</translation>
@@ -650,6 +649,7 @@
 <translation id="3784372983762739446">블루투스 장치</translation>
 <translation id="3787705759683870569">만료: <ph name="EXPIRATION_YEAR" />년 <ph name="EXPIRATION_MONTH" />월</translation>
 <translation id="3789155188480882154">크기 16</translation>
+<translation id="3793574014653384240">최근 발생한 비정상 종료의 횟수 및 원인</translation>
 <translation id="3797522431967816232">Prc3(봉투)</translation>
 <translation id="3799805948399000906">글꼴 요청됨</translation>
 <translation id="3807366285948165054">이미지 X 시프트</translation>

@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">Enviando para este dispositivo: <ph name="DEVICE_NAME" />…</translation>
 <translation id="1036727731225946849">Adicionando <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">De sites</translation>
+<translation id="1044891598689252897">Os sites funcionarão normalmente</translation>
 <translation id="1049743911850919806">Modo anônimo</translation>
 <translation id="10614374240317010">Nunca salvas</translation>
 <translation id="1067922213147265141">Outros serviços do Google</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">Falha no compartilhamento de <ph name="CONTENT_TYPE" /></translation>
 <translation id="1477626028522505441">Falha no download do arquivo <ph name="FILE_NAME" /> devido a problemas de servidor.</translation>
 <translation id="1506061864768559482">Mecanismo de pesquisa</translation>
+<translation id="1509960214886564027">Os recursos de muitos sites podem apresentar falhas</translation>
 <translation id="1513352483775369820">Favoritos e histórico da Web</translation>
 <translation id="1513858653616922153">Excluir senha</translation>
 <translation id="1521774566618522728">Ativado hoje</translation>
@@ -235,6 +237,7 @@ Toque em qualquer palavra e a mantenha pressionada para pesquisar. Para refinar 
 <translation id="2647434099613338025">Adicionar idioma</translation>
 <translation id="2650751991977523696">Fazer o download do arquivo novamente?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# arquivo de áudio}one{# arquivo de áudio}other{# arquivos de áudio}}</translation>
+<translation id="2687403674020088961">Bloquear todos os cookies (não recomendado)</translation>
 <translation id="2707726405694321444">Atualizar página</translation>
 <translation id="2709516037105925701">Preenchimento automático</translation>
 <translation id="2717722538473713889">Endereços de e-mail</translation>
@@ -340,6 +343,7 @@ Toque em qualquer palavra e a mantenha pressionada para pesquisar. Para refinar 
 <translation id="3478363558367712427">Você pode escolher seu mecanismo de pesquisa</translation>
 <translation id="3492207499832628349">Nova guia anônima</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /> sobre o conteúdo sugerido</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Realidade aumentada</translation>
 <translation id="3518985090088779359">Aceitar e continuar</translation>
 <translation id="3522247891732774234">Atualização disponível. Mais opções</translation>
@@ -355,6 +359,7 @@ Toque em qualquer palavra e a mantenha pressionada para pesquisar. Para refinar 
 <translation id="358794129225322306">Permite que um site faça o download de vários arquivos automaticamente.</translation>
 <translation id="3590487821116122040">Dados de armazenamento de site que o Chrome não acredita serem importantes (por exemplo, sites sem configurações salvas ou que você não visita com frequência)</translation>
 <translation id="3594780231884063836">Desativar som do vídeo</translation>
+<translation id="3596414637720633074">Bloquear cookies de terceiros na navegação anônima</translation>
 <translation id="3599863153486145794">Limpa o histórico de todos os dispositivos conectados. Sua Conta do Google pode ter outras formas de histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Silenciar sites com áudio</translation>
 <translation id="3616113530831147358">Áudio</translation>
@@ -922,6 +927,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="780301667611848630">Não</translation>
 <translation id="7810647596859435254">Abrir com…</translation>
 <translation id="7821588508402923572">Sua economia de dados será exibida aqui</translation>
+<translation id="7828557259026017104">Os cookies são arquivos criados pelos sites que você visita, usados por esses sites para lembrar suas preferências. Os cookies de terceiros são criados por outros sites, que possuem uma parte do conteúdo, como anúncios ou imagens, que você vê na página da Web acessada.</translation>
 <translation id="783819812427904514">Ativar som do vídeo</translation>
 <translation id="784934925303690534">Período</translation>
 <translation id="7851858861565204677">Outros dispositivos</translation>
@@ -942,6 +948,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="79859296434321399">Para ver conteúdo de realidade aumentada, instale o ARCore</translation>
 <translation id="7986741934819883144">Selecione um contato</translation>
 <translation id="7987073022710626672">Termos de Serviço do Chrome</translation>
+<translation id="7993619969781047893">Os recursos de alguns sites podem apresentar falhas</translation>
 <translation id="7998918019931843664">Reabrir guia fechada</translation>
 <translation id="7999064672810608036">Você quer mesmo apagar todos os dados locais, inclusive os cookies, e redefinir todas as permissões para este website?</translation>
 <translation id="8004582292198964060">Navegador</translation>
@@ -1076,6 +1083,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="8965591936373831584">pendente</translation>
 <translation id="8970887620466824814">Algo deu errado.</translation>
 <translation id="8972098258593396643">Fazer o download para a pasta padrão?</translation>
+<translation id="8988028529677883095">Usar o smartphone como chave de segurança</translation>
 <translation id="8993760627012879038">Abrir uma nova guia no modo de navegação anônima</translation>
 <translation id="8998729206196772491">Você está fazendo login com uma conta gerenciada por <ph name="MANAGED_DOMAIN" /> e dando ao administrador dela o controle sobre seus dados do Chrome, os quais ficarão permanentemente vinculados a essa conta. Se você sair do Chrome, seus dados serão excluídos desse dispositivo, mas permanecerão armazenados na sua Conta do Google.</translation>
 <translation id="9019902583201351841">Gerenciado pelos seus pais</translation>

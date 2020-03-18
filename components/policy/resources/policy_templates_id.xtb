@@ -65,6 +65,15 @@ Jika kebijakan ini tidak disetel, setelan default-nya dinonaktifkan bagi penggun
 
       Jika kebijakan ditetapkan ke false, atau tidak ditetapkan, informasi tidak akan dilaporkan.
       Jika ditetapkan ke true, informasi lampu latar perangkat akan dilaporkan.</translation>
+<translation id="1076271193420500757">Dengan mengonfigurasi kebijakan ini, Anda dapat menentukan variasi mana yang diizinkan untuk diterapkan pada perangkat <ph name="PRODUCT_OS_NAME" /> yang dikelola perusahaan.
+
+      Variasi memberikan cara untuk menawarkan modifikasi pada <ph name="PRODUCT_OS_NAME" /> tanpa mengirimkan versi baru, dengan mengaktifkan atau menonaktifkan fitur yang sudah ada secara selektif.
+
+      Jika <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (nilai 0) ditetapkan, atau jika kebijakan ini tidak ditetapkan, semua variasi akan dapat diterapkan pada <ph name="PRODUCT_OS_NAME" />.
+
+      Jika <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (nilai 1) ditetapkan, hanya variasi yang dianggap sebagai perbaikan keamanan atau stabilitas penting yang akan dapat diterapkan pada <ph name="PRODUCT_OS_NAME" />.
+
+      Jika <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (nilai 2) ditetapkan, semua variasi tidak dapat diterapkan pada browser di layar login. Perlu diketahui, mode ini tidak direkomendasikan karena berpotensi menyebabkan developer <ph name="PRODUCT_OS_NAME" /> tidak dapat menyediakan perbaikan keamanan penting secara tepat waktu.</translation>
 <translation id="1078643757670228170">Perhatikan bahwa kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 82. Sebagai gantinya, gunakan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Menentukan durasi waktu tanpa input pengguna sebelum layar dinonaktifkan saat menggunakan daya AC.
@@ -1141,14 +1150,6 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
       Jika kebijakan ini tidak ditetapkan, <ph name="PRODUCT_NAME" /> akan menggunakan nilai default 10000 milidetik.</translation>
 <translation id="257788512393330403">Sandi harus dimasukkan setiap enam jam</translation>
 <translation id="2580104054820772954">Menunda pengiriman file hingga mengetahui keputusan pemindaian</translation>
-<translation id="2582582399758251985">Jika setelan ini diaktifkan, <ph name="PRODUCT_NAME" /> akan menjalankan verifikasi sertifikat server menggunakan pemverifikasi sertifikat bawaan.
-      Jika setelan ini dinonaktifkan, <ph name="PRODUCT_NAME" /> akan menjalankan verifikasi sertifikat server menggunakan pemverifikasi sertifikat lama yang disediakan oleh platform.
-      Jika setelan ini tidak ditetapkan, pemverifikasi sertifikat yang lama atau bawaan dapat digunakan.
-
-      Kebijakan ini akan dihapus dari <ph name="PRODUCT_OS_NAME" /> versi 81, saat dukungan untuk pemverifikasi sertifikat yang lama di <ph name="PRODUCT_OS_NAME" /> dihapus.
-
-      Kebijakan ini akan dihapus dari <ph name="PRODUCT_NAME" /> untuk Linux versi 83, saat dukungan untuk pemverifikasi sertifikat yang lama di Linux dihapus.
-      </translation>
 <translation id="2586162458524426376">
       Kebijakan ini berlaku untuk layar login. Baca juga kebijakan <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> yang berlaku untuk sesi pengguna.
       Jika kebijakan diaktifkan, tiap asal bernama dalam daftar yang dipisahkan koma akan dijalankan dalam prosesnya sendiri. Hal ini juga akan mengisolasi asal yang diberi nama berdasarkan subdomain; misalnya, menentukan https://example.com/ juga akan menyebabkan https://foo.example.com/ diisolasi sebagai bagian dari situs https://example.com/.
@@ -1170,9 +1171,6 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 <translation id="26023406105317310">Konfigurasikan akun Kerberos</translation>
 <translation id="2604182581880595781">Mengonfigurasi kebijakan terkait fitur Berbagi File Jaringan.</translation>
 <translation id="2615240493030733717">Melaporkan Info Zona waktu</translation>
-<translation id="2620943247255660284">Kebijakan ini tidak digunakan lagi, dan telah digantikan dengan AdvancedProtectionExtraSecurityAllowed.
-
-      Kebijakan ini mengontrol apakah pengguna yang terdaftar dalam Program Perlindungan Lanjutan diizinkan mengirimkan hasil download mereka ke Google untuk pemindaian malware. Jika ditetapkan ke Benar atau tidak ditetapkan, pengguna terdaftar akan diminta mengirimkan file mereka ke Google untuk pemindaian mendalam. Jika pengguna memilih 'Pindai', hasil download mereka akan dikirim ke Google. Jika ditetapkan ke Salah, pengguna tidak akan diminta mengirimkan hasil download ke Google.</translation>
 <translation id="2623014935069176671">Tunggu aktivitas pengguna awal</translation>
 <translation id="262740370354162807">Aktifkan penyerahan dokumen ke <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Memberikan konfigurasi untuk printer perusahaan.
@@ -1207,6 +1205,11 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
       Jika kebijakan ini tidak ditetapkan, setelan defaultnya adalah tidak diizinkan untuk pengguna yang dikelola dan diizinkan untuk pengguna yang tidak dikelola.</translation>
 <translation id="2660846099862559570">Jangan pernah gunakan proxy</translation>
 <translation id="2665422249821137126">Mengaktifkan kursor besar di layar login</translation>
+<translation id="266882888912227087"> Mengontrol notifikasi peluncuran otomatis sesi tamu terkelola di <ph name="PRODUCT_OS_NAME" />.
+
+      Jika kebijakan ini ditetapkan ke Benar, notifikasi peringatan privasi akan ditutup setelah beberapa detik.
+
+      Jika kebijakan ini ditetapkan ke Salah atau tidak ditetapkan, notifikasi peringatan privasi akan dipasangi pin hingga pengguna menutupnya.</translation>
 <translation id="2672012807430078509">Kontrol yang mengaktifkan NTLM sebagai protokol autentikasi untuk pemasangan SMB</translation>
 <translation id="267596348720209223">Menentukan penyandiaksaraan karakter yang didukung oleh penyedia penelusuran. Penyandiaksaraan adalah nama-nama halaman kode seperti UTF-8, GB2312, dan ISO-8859-1. Kode tersebut dicoba dalam urutan yang disediakan. Kebijakan ini bersifat opsional. Jika tidak disetel, default yang akan digunakan adalah UTF-8. Kebijakan ini hanya dipatuhi jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="2678503605767349615">Sertifikat Klien seluruh perangkat yang diperlukan</translation>
@@ -2923,6 +2926,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
           Jika disetel ke true atau tidak dikonfigurasi, pengguna yang dilindungi dapat dibuat dan dikelola oleh pengguna ini.</translation>
 <translation id="5369937289900051171">Khusus pencetakan warna</translation>
 <translation id="5370279767682621504">Aktifkan dukungan HTTP/0.9 pada porta non-default</translation>
+<translation id="5373065931879562543">Menentukan ketersediaan variasi di ChromeOS</translation>
 <translation id="5378985487213287085">Memungkinkan Anda menyetel apakah situs web diizinkan untuk menampilkan pemberitahuan desktop. Menampilkan pemberitahuan desktop dapat diizinkan secara default, ditolak secara default, atau pengguna dapat ditanya setiap kali sebuah situs web ingin menampilkan pemberitahuan desktop. Jika kebijakan ini tidak disetel, 'AskNotifications' akan digunakan dan pengguna dapat mengubahnya.</translation>
 <translation id="5380329473151894945">Menyetel status default fitur aksesibilitas kursor besar di layar login.
 
@@ -3042,6 +3046,16 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5475361623548884387">Aktifkan pencetakan</translation>
 <translation id="547601067149622666">Jangan izinkan iklan di situs yang menayangkan iklan mengganggu</translation>
 <translation id="5483065054530244863">Mengizinkan sertifikat bertanda tangan SHA-1 yang dikeluarkan oleh sumber tepercaya setempat</translation>
+<translation id="5486493714323160905">Jika setelan ini diaktifkan, <ph name="PRODUCT_NAME" /> akan menjalankan verifikasi sertifikat server menggunakan pemverifikasi sertifikat bawaan.
+      Jika setelan ini dinonaktifkan, <ph name="PRODUCT_NAME" /> akan menjalankan verifikasi sertifikat server menggunakan pemverifikasi sertifikat lama yang disediakan oleh platform.
+      Jika setelan ini tidak ditetapkan, pemverifikasi sertifikat bawaan ataupun yang lama dapat digunakan.
+
+      Kebijakan ini akan dihapus dari <ph name="PRODUCT_OS_NAME" /> versi 81, saat dukungan untuk pemverifikasi sertifikat yang lama di <ph name="PRODUCT_OS_NAME" /> dihapus.
+
+      Kebijakan ini akan dihapus dari <ph name="PRODUCT_NAME" /> untuk Linux versi 83, saat dukungan untuk pemverifikasi sertifikat yang lama di Linux dihapus.
+
+      Kebijakan ini akan dihapus dari <ph name="PRODUCT_NAME" /> untuk Mac OS X versi 87, saat dukungan untuk pemverifikasi sertifikat yang lama di Mac OS X dihapus.
+      </translation>
 <translation id="5498045818698736356">Menetapkan daftar situs yang diinstal otomatis, tanpa interaksi pengguna, dan yang tidak dapat di-uninstal atau dinonaktifkan oleh pengguna.
 
       Setiap item daftar kebijakan adalah objek dengan satu anggota wajib: "url" dan dua anggota opsional: "default_launch_container" dan "create_desktop_shortcut". "url" harus berupa URL aplikasi web untuk menginstal, "launch_container" harus berupa "window" atau "tab" untuk menunjukkan cara Aplikasi Web dibuka setelah diinstal, dan "create_desktop_shortcut" harus memiliki nilai True jika pintasan desktop harus dibuat di Linux dan Windows. Jika "default_launch_container" dihilangkan, aplikasi akan terbuka di tab secara default. Terlepas dari nilai "default_launch_container", pengguna dapat mengubah penampung tempat aplikasi akan terbuka. Jika "create_desktop_shortcuts" dihilangkan, tidak akan ada pintasan desktop yang dibuat. Lihat kebijakan <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> untuk memasang pin pada aplikasi ke rak ChromeOS.</translation>
@@ -3266,6 +3280,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
           Jika tidak ada setelan yang diberikan, <ph name="PRODUCT_NAME" /> akan kembali menggunakan nama pustaka default.</translation>
 <translation id="5783009211970309878">Cetak Header dan Footer</translation>
+<translation id="5790763087505467169">Mengurangi Notifikasi peluncuran otomatis sesi tamu terkelola</translation>
 <translation id="5806128552675651249">Izinkan pencetakan hanya tanpa grafis latar belakang</translation>
 <translation id="5809210507920527553">Mengontrol setelan untuk container Linux (Crostini).</translation>
 <translation id="5809728392451418079">Setel nama tampilan untuk akun lokal perangkat</translation>
@@ -3736,6 +3751,9 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6689792153960219308">Melaporkan status hardware</translation>
 <translation id="6698632841807204978">Aktifkan pencetakan monokrom</translation>
 <translation id="6699880231565102694">Mengaktifkan autentikasi dua faktor untuk hosting akses jarak jauh</translation>
+<translation id="6704515759227307131">Kebijakan ini tidak digunakan lagi, dan telah digantikan dengan AdvancedProtectionAllowed.
+
+      Kebijakan ini mengontrol apakah pengguna yang terdaftar dalam Program Perlindungan Lanjutan diizinkan mengirimkan hasil download mereka ke Google untuk pemindaian malware. Jika ditetapkan ke Benar atau tidak ditetapkan, pengguna terdaftar akan diminta mengirimkan file mereka ke Google untuk pemindaian mendalam. Jika pengguna memilih 'Pindai', hasil download mereka akan dikirim ke Google. Jika ditetapkan ke Salah, pengguna tidak akan diminta mengirimkan hasil download ke Google.</translation>
 <translation id="670597451099978576">Memberikan izin secara otomatis ke situs ini untuk terhubung ke perangkat USB dengan ID vendor dan ID produk tertentu pada layar login.</translation>
 <translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> menyediakan update dan penginstalan ekstensi yang aman. Namun, konten dari beberapa ekstensi yang di-host di luar Chrome Web Store mungkin hanya dilindungi dengan algoritme hashing atau penandatanganan yang tidak aman seperti SHA1. Jika kebijakan ini dinonaktifkan, penginstalan baru dan update ekstensi tersebut tidak akan diizinkan oleh Chrome (sampai developer membuat ulang ekstensi ini dengan algoritme yang lebih kuat). Jika kebijakan ini diaktifkan, penginstalan dan update ekstensi tersebut akan diizinkan.
 
@@ -3759,6 +3777,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Setelan ini mengontrol penyajian halaman sambutan yang membantu pengguna login ke <ph name="PRODUCT_NAME" />, memilihnya sebagai browser default, atau memberi tahu pengguna tentang fitur produk.</translation>
 <translation id="6766216162565713893">Izinkan situs meminta pengguna memberikan akses ke perangkat Bluetooth di sekitar</translation>
 <translation id="6770454900105963262">Melaporkan informasi tentang sesi kios aktif</translation>
+<translation id="6772045451150098845">Kebijakan ini mengontrol apakah pengguna yang terdaftar dalam Program Perlindungan Lanjutan menerima fitur tambahan. Beberapa fitur ini dapat mencakup pembagian data dengan Google (misalnya, pengguna Perlindungan Lanjutan akan dapat mengirimkan hasil downloadnya ke Google untuk pemindaian malware). Jika ditetapkan ke Benar atau tidak ditetapkan, pengguna terdaftar akan menerima fitur tambahan. Jika ditetapkan ke Salah, pengguna Perlindungan Lanjutan hanya akan menerima fitur konsumen standar.</translation>
 <translation id="6780908086869332493">Mengizinkan Anda untuk menentukan daftar pola URL yang menetapkan situs tempat sertifikat klien dipilih secara otomatis di layar login dalam alur SAML hosting frame, jika situs tersebut meminta sertifikat. Contoh penggunaan adalah ketika mengonfigurasikan sertifikat di seluruh perangkat untuk ditampilkan ke SAML IdP.
 
       Nilai harus berupa array kamus dengan string JSON. Setiap kamus harus memiliki bentuk <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, dengan <ph name="URL_PATTERN_PLACEHOLDER" /> merupakan pola setelan konten. <ph name="FILTER_PLACEHOLDER" /> akan membatasi asal sertifikat klien yang akan dipilih secara otomatis oleh browser. Terlepas dari filter, hanya sertifikat yang cocok dengan permintaan sertifikat server yang akan dipilih. Jika <ph name="FILTER_PLACEHOLDER" /> memiliki bentuk <ph name="JSON_DICTIONARY_EXAMPLE" />, hanya sertifikat klien yang diterbitkan oleh sertifikat dengan CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> yang akan dipilih. Jika <ph name="FILTER_PLACEHOLDER" /> berupa kamus kosong {}, pemilihan sertifikat klien tidak dibatasi lagi.
@@ -4484,6 +4503,15 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 <translation id="793473937901685727">Menyetel ketersediaan sertifikat untuk aplikasi ARC</translation>
 <translation id="7937491150792971922">Gabungkan kebijakan daftar instal ekstensi dari beberapa sumber</translation>
 <translation id="7937766917976512374">Izinkan atau tolak penangkapan video</translation>
+<translation id="7937944288846766530">Kebijakan ini mengontrol permintaan penginstalan ekstensi <ph name="PRODUCT_NAME" /> yang memungkinkan pengguna mengirim permintaan ke konsol Google Admin untuk mendapatkan persetujuan.
+
+      Jika kebijakan CloudReportingEnabled tidak ditetapkan atau ditetapkan ke nonaktif, kebijakan ini akan diabaikan, permintaan penginstalan ekstensi tidak akan dibuat atau diupload.
+      Jika kebijakan ini tidak ditetapkan atau ditetapkan ke nonaktif, permintaan penginstalan ekstensi tidak akan dibuat atau diupload.
+      Jika kebijakan ini ditetapkan ke aktif, permintaan penginstalan ekstensi akan dibuat dan diupload ke konsol Google Admin.
+
+      Permintaan penginstalan ekstensi akan dibuat saat pengguna mencoba menginstal ekstensi yang tidak diizinkan oleh <ph name="EXTENSION_INSTALL_WHITELIST" /> atau <ph name="EXTENSION_SETTINGS" />.
+
+      Kebijakan ini hanya berlaku saat perangkat didaftarkan dengan <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> dan <ph name="CLOUD_REPORTING_ENABLED" /> diaktifkan.</translation>
 <translation id="7941975817681987555">Jangan memprediksi tindakan jaringan di sambungan jaringan apa pun</translation>
 <translation id="7951605113561734721">Menentukan sertifikat klien di seluruh perangkat yang seharusnya didaftarkan menggunakan protokol pengelolaan perangkat.</translation>
 <translation id="7952007677054834789">Mengonfigurasi halaman yang akan dimuat saat permulaan, halaman beranda default, dan halaman tab baru default di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubahnya.
@@ -5064,7 +5092,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       akan dilaporkan.</translation>
 <translation id="891435090623616439">dienkode sebagai string JSON, untuk detailnya lihat <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Izinkan pengguna mengelola sertifikat CA yang terinstal.</translation>
-<translation id="8924721011887485485">Kebijakan ini mengontrol apakah pengguna yang terdaftar dalam Program Perlindungan Lanjutan menerima fitur keamanan tambahan. Beberapa fitur ini dapat mencakup pembagian data dengan Google (misalnya, pengguna Perlindungan Lanjutan akan dapat mengirimkan hasil downloadnya ke Google untuk pemindaian malware). Jika ditetapkan ke Benar atau tidak ditetapkan, pengguna terdaftar akan menerima fitur keamanan tambahan. Jika ditetapkan ke Salah, pengguna Perlindungan Lanjutan hanya akan menerima fitur keamanan konsumen.</translation>
 <translation id="8926275581598789324">Perhatikan bahwa kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 82. Sebagai gantinya, gunakan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           ﻿Menentukan durasi waktu tanpa input pengguna sebelum tindakan menganggur diambil, saat menggunakan daya baterai.

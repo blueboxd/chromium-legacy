@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Zaznacz &amp;wszystko</translation>
-<translation id="1938451708255335766">Aby dostosować gęstość wyświetlania okien, ponownie uruchom aplikację.</translation>
 <translation id="2006524834898217237">Upewnij się, że to urządzenie jest połączone z internetem.</translation>
 <translation id="208586643495776849">Spróbuj ponownie</translation>
 <translation id="2090963878406559571">Aby przesłać numer z <ph name="ORIGIN" /> na swój telefon z Androidem, <ph name="TROUBLESHOOT_LINK" /> obu urządzeń w ustawieniach.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Wbudowany wyświetlacz</translation>
 <translation id="335581015389089642">Mowa</translation>
 <translation id="3389286852084373014">Tekst jest za długi</translation>
-<translation id="3479552764303398839">Nie teraz</translation>
 <translation id="348799646910989694">Półka ukryta automatycznie</translation>
 <translation id="3554637740840164787">Element <ph name="ITEM_TITLE" /> został przypięty</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Pozostał 1 dzień}few{Pozostały # dni}many{Pozostało # dni}other{Pozostało # dnia}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktywność dzisiaj}=1{Aktywność 1 dzień temu}few{Aktywność # dni temu}many{Aktywność # dni temu}other{Aktywność # dnia temu}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dzień i }few{# dni i }many{# dni i }other{# dnia i }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{za 1 rok}few{za # lata}many{za # lat}other{za # roku}}</translation>
-<translation id="5895138241574237353">Uruchom ponownie</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Pozostała 1 sekunda}few{Pozostały # sekundy}many{Pozostało # sekund}other{Pozostało # sekundy}}</translation>
 <translation id="5941711191222866238">Minimalizuj</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 godzina}few{# godziny}many{# godzin}other{# godziny}}</translation>

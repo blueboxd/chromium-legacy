@@ -531,7 +531,7 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
 
   LayoutBoxModelObject::AddChild(new_child, before_child);
 
-  new_child->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+  new_child->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kChildChanged);
 }
 
@@ -686,7 +686,7 @@ void LayoutInline::SplitFlow(LayoutObject* before_child,
       o = no->NextSibling();
       pre->Children()->AppendChildNode(
           pre, block->Children()->RemoveChildNode(block, no));
-      no->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+      no->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
           layout_invalidation_reason::kAnonymousBlockChange);
     }
   }
@@ -704,11 +704,11 @@ void LayoutInline::SplitFlow(LayoutObject* before_child,
   // wrappers for images) get deleted properly. Because objects moves from the
   // pre block into the post block, we want to make new line boxes instead of
   // leaving the old line boxes around.
-  pre->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+  pre->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kAnonymousBlockChange);
-  block->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+  block->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kAnonymousBlockChange);
-  post->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+  post->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kAnonymousBlockChange);
 }
 

@@ -61,7 +61,7 @@ void LayoutVideo::UpdateIntrinsicSize(bool is_in_layout) {
     return;
 
   SetIntrinsicSize(size);
-  SetPreferredLogicalWidthsDirty();
+  SetIntrinsicLogicalWidthsDirty();
   if (!is_in_layout) {
     SetNeedsLayoutAndFullPaintInvalidation(
         layout_invalidation_reason::kSizeChanged);

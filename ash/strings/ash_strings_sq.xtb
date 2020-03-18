@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">Sinjal mesatar</translation>
 <translation id="4112140312785995938">Kërko prapa</translation>
 <translation id="4129129681837227511">Për të parë njoftime në ekranin e kyçjes, shkyçe për të ndryshuar cilësimin</translation>
+<translation id="4144413954005649103">Me një klikim me butonin djathtas ose shtypje të gjatë, "Asistenti" të tregon informacion në lidhje me atë që zgjedh në ekran.</translation>
 <translation id="4146833061457621061">Luaj muzikë</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> menaxhohet nga <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Gjuhët</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">Shfaq tastierën në ekran</translation>
 <translation id="6164005077879661055">Të gjithë skedarët dhe të dhënat lokale të lidhura me përdoruesin e kontrolluar do të fshihen përgjithmonë pasi të hiqet përdoruesi i kontrolluar. Sajtet e uebit të vizituara dhe cilësimet për këtë përdorues të kontrolluar mund të jenë akoma të dukshme nga menaxheri në <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Mëso më shumë</translation>
+<translation id="6236290670123303279">Menaxho cilësimet</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Kyçur horizontalisht</translation>
 <translation id="6259254695169772643">Përdor lapsin për të zgjedhur</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">Aktive</translation>
 <translation id="6670153871843998651">Tavolina e punës 3</translation>
 <translation id="6691659475504239918">Kërko+Shift+H</translation>
+<translation id="6692996468359469499">Merr informacion në lidhje me përzgjedhjen tënde</translation>
 <translation id="6696025732084565524">Tastiera jote e shkëputshme ka nevojë për një përditësim me rëndësi</translation>
 <translation id="6700713906295497288">Butoni i menysë IME</translation>
 <translation id="6713285437468012787">Pajisja me Bluetooth "<ph name="DEVICE_NAME" />" është çiftuar dhe mundësohet tani për të gjithë përdoruesit. Mund ta heqësh këtë çiftim duke përdorur "Cilësimet".</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895">Llogaria menaxhohet nga <ph name="FIRST_PARENT_EMAIL" /> dhe <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">Modaliteti i kontrastit të lartë</translation>
 <translation id="7977927628060636163">Po kërkon për rrjete celulare...</translation>
+<translation id="7980780401175799550">Provo mënyra të reja për të naviguar Chrome OS</translation>
 <translation id="7982789257301363584">Rrjeti</translation>
 <translation id="7984197416080286869">Shumë përpjekje të gjurmës së gishtit</translation>
 <translation id="7994370417837006925">Identifikim i shumëfishtë</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835">Po përdor <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Personalizo gjuhët dhe hyrjen...</translation>
 <translation id="8192202700944119416">Njoftimet janë të fshehura.</translation>
+<translation id="8196787716797768628">Përdor gjestet për të kaluar me shpejtësi mes aplikacioneve dhe bashkëvepro me pajisjen tënde Chromebook në modalitetin e tabletit.</translation>
 <translation id="8203795194971602413">Klikimi me butonin djathtas</translation>
 <translation id="8236042855478648955">Koha për një pushim</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, fuqia e sinjalit <ph name="SIGNAL_STRENGTH" />, bateria e telefonit <ph name="BATTERY_STATUS" /></translation>

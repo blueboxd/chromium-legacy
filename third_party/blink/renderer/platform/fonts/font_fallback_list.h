@@ -43,8 +43,8 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   USING_FAST_MALLOC(FontFallbackList);
 
  public:
-  static scoped_refptr<FontFallbackList> Create() {
-    return base::AdoptRef(new FontFallbackList());
+  static scoped_refptr<FontFallbackList> Create(FontSelector* font_selector) {
+    return base::AdoptRef(new FontFallbackList(font_selector));
   }
 
   ~FontFallbackList() { ReleaseFontData(); }
@@ -100,7 +100,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   }
 
  private:
-  FontFallbackList();
+  explicit FontFallbackList(FontSelector* font_selector);
 
   scoped_refptr<FontData> GetFontData(const FontDescription&, int& family_index) const;
 

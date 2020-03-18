@@ -209,7 +209,7 @@
 <translation id="3513798432020909783">கணக்கை நிர்வகிப்பது: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" க்கு மீண்டும் மாற்று (மறுதொடக்கம் தேவை)</translation>
 <translation id="3576141592585647168">நேரமண்டலத்தை மாற்றுக</translation>
-<translation id="3593646411856133110">ஆப்ஸ் திறப்பதைப் பார்க்க மேலே ஸ்வைப் செய்து பிடிக்கவும்</translation>
+<translation id="3593646411856133110">திறந்திருக்கும் ஆப்ஸ்களைப் பார்க்க மேலே ஸ்வைப் செய்து பிடிக்கவும்</translation>
 <translation id="3595596368722241419">பேட்டரி நிரம்பியது</translation>
 <translation id="3604801046548457007">டெஸ்க் <ph name="DESK_TITILE" /> உருவாக்கப்பட்டது</translation>
 <translation id="3606978283550408104">பிரெய்ல் திரை இணைக்கப்பட்டது.</translation>
@@ -217,6 +217,7 @@
 <translation id="3621712662352432595">ஆடியோ அமைப்புகள்</translation>
 <translation id="3626281679859535460">ஒளிர்வு</translation>
 <translation id="3631369015426612114">பின்வருவனவற்றிலிருந்து வரும் அறிவிப்புகளை அனுமதி:</translation>
+<translation id="3638400994746983214">தனிப்பட்ட திரையை நிலைமாற்றும். <ph name="STATE_TEXT" />.</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">பகுதியைப் படமெடு</translation>
 <translation id="371370241367527062">முன்பக்க மைக்ரோஃபோன்</translation>
@@ -250,6 +251,7 @@
 <translation id="4072264167173457037">நடுத்தரமான சிக்னல்</translation>
 <translation id="4112140312785995938">பின்செல்</translation>
 <translation id="4129129681837227511">பூட்டுத் திரையில் அறிவிப்புகளைப் பார்க்க, அமைப்பை மாற்றுவதற்குச் சாதனத்தைத் திறக்கவும்</translation>
+<translation id="4144413954005649103">வலது கிளிக் செய்தாலோ நீண்ட நேரம் அழுத்தினாலோ, திரையில் நீங்கள் தேர்ந்தெடுத்ததுடன் தொடர்பான தகவலை Assistant காட்டும்.</translation>
 <translation id="4146833061457621061">இசையை இயக்கு</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> சாதனத்தை <ph name="DOMAIN" /> நிர்வகிக்கிறது</translation>
 <translation id="4181841719683918333">மொழிகள்</translation>
@@ -292,6 +294,7 @@
 <translation id="4659419629803378708">ChromeVox இயக்கப்பட்டது</translation>
 <translation id="4665114317261903604">'தொந்தரவு செய்ய வேண்டாம்' அம்சத்தை ஆன்/ஆஃப் செய்யும். <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">பெற்றோர் குறியீட்டின் மூலம் சாதனத்தை திறத்தல்</translation>
+<translation id="4702647871202761252">தனிப்பட்ட திரை முடக்கப்பட்டுள்ளது</translation>
 <translation id="4710243778082831592">IME அமைப்புகள்</translation>
 <translation id="4731797938093519117">பெற்றோர் அணுகல்</translation>
 <translation id="4734965478015604180">கிடைமட்டம்</translation>
@@ -396,6 +399,7 @@
 <translation id="615957422585914272">ஸ்கிரீன் கீபோர்டைக் காட்டு</translation>
 <translation id="6164005077879661055">இந்தக் மேற்பார்வையிடப்படும் பயனர் அகற்றப்பட்டவுடன் மேற்பார்வையிடப்படும் பயனருடன் தொடர்புடைய எல்லா கோப்புகளும், அகத் தரவும் நிரந்தரமாக நீக்கப்படும். இந்தக் மேற்பார்வையிடப்படும் பயனர் பார்வையிட்ட இணையதளங்களையும் அமைப்புகளையும் <ph name="MANAGEMENT_URL" /> இல் இன்னும் நிர்வாகியால் பார்க்க முடியும்.</translation>
 <translation id="6165508094623778733">மேலும் அறிக</translation>
+<translation id="6236290670123303279">அமைப்புகளை நிர்வகி</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">கிடைமட்ட நிலையில் பூட்டப்பட்டது</translation>
 <translation id="6259254695169772643">தேர்ந்தெடுக்க, ஸ்டைலஸைப் பயன்படுத்தலாம்</translation>
@@ -428,6 +432,7 @@
 <translation id="6559976592393364813">நிர்வாகியைக் கேட்கவும்</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> இல் அமர்வு முடிந்துவிடும்.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, சிக்னல் வலிமை: <ph name="SIGNAL_STRENGTH" />, உங்கள் நிர்வாகி நிர்வகிக்கிறார்</translation>
+<translation id="6614169507485700968">தனிப்பட்ட திரை இயக்கப்பட்டுள்ளது</translation>
 <translation id="6627638273713273709">தேடல்+Shift+K</translation>
 <translation id="6637729079642709226">நேரத்தை மாற்றுக</translation>
 <translation id="6650933572246256093">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />" இணைப்பதற்கான அனுமதியை விரும்புகிறது. அந்தச் சாதனத்தில் இந்தக் கடவுச்சொல்லை உள்ளிடவும்: <ph name="PASSKEY" /></translation>
@@ -436,12 +441,14 @@
 <translation id="6669268301501499730">ஆன்</translation>
 <translation id="6670153871843998651">மேசை 3</translation>
 <translation id="6691659475504239918">தேடல்+Shift+H</translation>
+<translation id="6692996468359469499">திரையில் நீங்கள் தேர்ந்தெடுத்தது தொடர்பாக தகவல்களைப் பெறவும்</translation>
 <translation id="6696025732084565524">உங்கள் அகற்றத்தக்க விசைப்பலகைக்கு முக்கியப் புதுப்பிப்பு வேண்டும்</translation>
 <translation id="6700713906295497288">IME மெனு பொத்தான்</translation>
 <translation id="6713285437468012787">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />" ஆனது இணைக்கப்பட்டது மற்றும் இப்போது எல்லா பயனர்களுக்கும் கிடைக்கக்கூடியதாக உள்ளது. அமைப்புகளைப் பயன்படுத்தி இந்த இணைத்தலை நீங்கள் அகற்றலாம்.</translation>
 <translation id="6715542151869432661">மொபைல் சாதனங்கள் எதுவுமில்லை.</translation>
 <translation id="6723839937902243910">ஆற்றல்</translation>
 <translation id="6727969043791803658">இணைக்கப்பட்டது, பேட்டரி: <ph name="BATTERY_PERCENTAGE" />%</translation>
+<translation id="6751052314767925245">உங்கள் நிர்வாகி செயல்படுத்தியுள்ளார்</translation>
 <translation id="6751826523481687655">செயல்திறன் டிரேஸிங் இயக்கத்தில் உள்ளது</translation>
 <translation id="6752912906630585008">டெஸ்க் <ph name="REMOVED_DESK" /> அகற்றப்பட்டு டெஸ்க் <ph name="RECEIVE_DESK" /> உடன் சேர்க்கப்பட்டது</translation>
 <translation id="6777216307882431711">இணைக்கப்பட்ட USB-C சாதனங்களுக்கு சார்ஜ் ஏற்றப்படுகிறது</translation>
@@ -485,6 +492,7 @@
 <translation id="7405710164030118432">இந்தச் சாதனத்தைத் திறக்க உங்கள் Family Linkகின் முதல்நிலை அணுகல் குறியீட்டை உள்ளிடவும்</translation>
 <translation id="742594950370306541">கேமரா பயன்பாட்டில் உள்ளது.</translation>
 <translation id="743058460480092004">கேமராவும் மைக்ரோஃபோனும் பயன்பாட்டில் உள்ளன.</translation>
+<translation id="7466449121337984263">சென்சாரைத் தொடவும்</translation>
 <translation id="7497767806359279797">மொழியையும் கீபோர்ட்டையும் தேர்வுசெய்யவும்</translation>
 <translation id="7526573455193969409">நெட்வொர்க் கண்காணிக்கப்படலாம்</translation>
 <translation id="7536035074519304529">IP முகவரி: <ph name="ADDRESS" /></translation>

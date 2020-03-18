@@ -530,6 +530,7 @@
 <translation id="79341161159229895">Account managed by <ph name="FIRST_PARENT_EMAIL" /> and <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">High-contrast mode</translation>
 <translation id="7977927628060636163">Searching for mobile networks...</translation>
+<translation id="7980780401175799550">Try new ways to navigate Chrome OS</translation>
 <translation id="7982789257301363584">Network</translation>
 <translation id="7984197416080286869">Too many fingerprint attempts</translation>
 <translation id="7994370417837006925">Multiple sign-in</translation>
@@ -551,6 +552,7 @@
 <translation id="8167567890448493835">Using <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Customise languages and input...</translation>
 <translation id="8192202700944119416">Notifications are hidden.</translation>
+<translation id="8196787716797768628">Use gestures to quickly switch between apps and interact with your Chromebook in tablet mode.</translation>
 <translation id="8203795194971602413">Right click</translation>
 <translation id="8236042855478648955">Time for a break</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />, phone battery <ph name="BATTERY_STATUS" /></translation>

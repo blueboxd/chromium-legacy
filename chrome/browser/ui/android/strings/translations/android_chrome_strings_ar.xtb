@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">جارٍ الإرسال إلى <ph name="DEVICE_NAME" />...</translation>
 <translation id="1036727731225946849">جارٍ إضافة <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">من المواقع الإلكترونية</translation>
+<translation id="1044891598689252897">ستعمل المواقع الإلكترونية بشكلٍ طبيعي.</translation>
 <translation id="1049743911850919806">التصفح المتخفي</translation>
 <translation id="10614374240317010">المواقع التي لن تحفظ كلمات المرور أبدًا</translation>
 <translation id="1067922213147265141">‏خدمات Google الأخرى</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080">تعذَّرت مشاركة <ph name="CONTENT_TYPE" />.</translation>
 <translation id="1477626028522505441">تعذّر تنزيل الملف <ph name="FILE_NAME" /> بسبب مشاكل بالخادم.</translation>
 <translation id="1506061864768559482">محرك البحث</translation>
+<translation id="1509960214886564027">قد تتوقف الميزات عن العمل في العديد من المواقع الإلكترونية.</translation>
 <translation id="1513352483775369820">الإشارات المرجعية وسجلّ الويب</translation>
 <translation id="1513858653616922153">حذف كلمة المرور</translation>
 <translation id="1521774566618522728">نشط اليوم</translation>
@@ -235,6 +237,7 @@
 <translation id="2647434099613338025">إضافة لغة</translation>
 <translation id="2650751991977523696">هل تريد تنزيل الملف مرة أخرى؟</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{ملف صوتي واحد (#)}zero{# ملف صوتي}two{ملفان صوتيان (#)}few{# ملفات صوتية}many{# ملفًا صوتيًا}other{# ملف صوتي}}</translation>
+<translation id="2687403674020088961">حظر كل ملفات تعريف الارتباط (غير مُستحسَن)</translation>
 <translation id="2707726405694321444">إعادة تحميل الصفحة</translation>
 <translation id="2709516037105925701">الملء التلقائي</translation>
 <translation id="2717722538473713889">عنوان البريد الإلكتروني</translation>
@@ -340,6 +343,7 @@
 <translation id="3478363558367712427">يمكنك استخدام محرّك بحث آخر.</translation>
 <translation id="3492207499832628349">علامة تبويب جديدة للتصفح المتخفي </translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /> حول المحتوى المقترح</translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">الواقع المعزّز</translation>
 <translation id="3518985090088779359">القبول والمتابعة</translation>
 <translation id="3522247891732774234">التحديث متاح. مزيد من الخيارات</translation>
@@ -355,6 +359,7 @@
 <translation id="358794129225322306">السماح لموقع ويب بتنزيل عدة ملفات تلقائيًا.</translation>
 <translation id="3590487821116122040">‏مساحة تخزين الموقع التي لا يعتقد Chrome أنها مهمة (مثل المواقع التي لا تتضمَّن إعدادات محفوظة أو تلك التي لا تزورها مرارًا)</translation>
 <translation id="3594780231884063836">كتم صوت الفيديو</translation>
+<translation id="3596414637720633074">حظر ملفات تعريف الارتباط التابعة لجهات خارجية في وضع التصفّح المتخفي</translation>
 <translation id="3599863153486145794">‏يمسح السجل من كل الأجهزة التي تم تسجيل الدخول عليها. وقد يتضمن حسابك في Google نماذج أخرى من سجل التصفح في <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">كتم صوت مواقع الويب التي تشغّل الصوت</translation>
 <translation id="3616113530831147358">المقاطع الصوتية</translation>
@@ -438,7 +443,7 @@
 <translation id="4259722352634471385">التنقل محظور: <ph name="URL" /></translation>
 <translation id="4269820728363426813">نسخ عنوان الرابط</translation>
 <translation id="4275663329226226506">الوسائط</translation>
-<translation id="4278390842282768270">مسموح</translation>
+<translation id="4278390842282768270">منح الإذن</translation>
 <translation id="429312253194641664">تفعيل موقع ويب للوسائط</translation>
 <translation id="4298388696830689168">المواقع المرتبطة</translation>
 <translation id="4307992518367153382">الإعدادات الأساسية</translation>
@@ -637,7 +642,7 @@
 <translation id="5659593005791499971">البريد الإلكتروني</translation>
 <translation id="5665379678064389456">إنشاء حدث في <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">تجاوز طلب موقع الويب لمنع التكبير</translation>
-<translation id="5677928146339483299">محظور </translation>
+<translation id="5677928146339483299">الحظر</translation>
 <translation id="5684874026226664614">عفوًا. تعذرت ترجمة هذه الصفحة.</translation>
 <translation id="5686790454216892815">اسم الملف طويل جدًا</translation>
 <translation id="5689516760719285838">الموقع الجغرافي</translation>
@@ -921,6 +926,7 @@
 <translation id="780301667611848630">لا، شكرًا</translation>
 <translation id="7810647596859435254">فتح باستخدام...</translation>
 <translation id="7821588508402923572">سيظهر توفير البيانات هنا</translation>
+<translation id="7828557259026017104">ملفات تعريف الارتباط هي ملفات تُنشئها المواقع الإلكترونية التي تزورها. وتستخدمها المواقع الإلكترونية لتتذكّر الإعدادات المفضّلة. أمّا ملفات تعريف الارتباط التابعة لجهات خارجية، فتُنشئها مواقع إلكترونية أخرى. وتمتلك هذه المواقع الإلكترونية بعضًا من المحتوى الذي تراه على صفحة الويب التي تزورها، مثل الإعلانات أو الصور.</translation>
 <translation id="783819812427904514">إعادة صوت الفيديو</translation>
 <translation id="784934925303690534">النطاق الزمني</translation>
 <translation id="7851858861565204677">أجهزة أخرى</translation>
@@ -941,6 +947,7 @@
 <translation id="79859296434321399">‏لعرض محتوى الواقع المُعزَّز، يُرجى تثبيت ARCore</translation>
 <translation id="7986741934819883144">اختيار جهة اتصال</translation>
 <translation id="7987073022710626672">‏بنود خدمة Chrome</translation>
+<translation id="7993619969781047893">قد تتوقف الميزات عن العمل في بعض المواقع الإلكترونية.</translation>
 <translation id="7998918019931843664">إعادة فتح علامة التبويب المغلقة</translation>
 <translation id="7999064672810608036">هل أنت متأكّد أنك تريد محو كل البيانات المحلية، بما في ذلك ملفات تعريف الارتباط، وإعادة ضبط كافة الأذونات لهذا الموقع الإلكتروني؟</translation>
 <translation id="8004582292198964060">المتصفّح</translation>
@@ -1075,6 +1082,7 @@
 <translation id="8965591936373831584">في الانتظار</translation>
 <translation id="8970887620466824814">حدث خطأ.</translation>
 <translation id="8972098258593396643">هل تريد التنزيل إلى المجلد التلقائي؟</translation>
+<translation id="8988028529677883095">استخدام الهاتف كمفتاح أمان</translation>
 <translation id="8993760627012879038">فتح علامة تبويب جديدة في وضع التصفّح المتخفّي</translation>
 <translation id="8998729206196772491">‏يتم تسجيل دخولك باستخدام حساب تتم إدارته من خلال <ph name="MANAGED_DOMAIN" /> ومنح مشرفه الحق في التحكم في بياناتك على Chrome. سيؤدي ذلك إلى جعل بياناتك مرتبطة دائمًا بهذا الحساب. كما سيؤدي الخروج من Chrome إلى حذف بياناتك من هذا الجهاز، ولكن ستظل هذه البيانات مخزَّنة على حسابك في Google.</translation>
 <translation id="9019902583201351841">يديره والداك</translation>

@@ -443,17 +443,6 @@
     <dimen name="custom_tabs_screenshot_height">300dp</dimen>
     <dimen name="custom_tabs_screenshot_width">190dp</dimen>
 
-    <!-- Favicon dimensions -->
-    <dimen name="default_favicon_size">16dp</dimen>
-    <dimen name="default_favicon_corner_radius">3dp</dimen>
-    <dimen name="default_favicon_icon_text_size">10dp</dimen>
-    <!-- We intentionally use 16px since most websites have a favicon that's 16px. If we use 16dp
-         and scale then we'll start showing fewer favicons in some UIs on higher density devices.
-         -->
-    <dimen tools:ignore="PxUsage" name="default_favicon_min_size">16px</dimen>
-    <dimen name="circular_monogram_size">20dp</dimen>
-    <dimen name="circular_monogram_text_size">14dp</dimen>
-
     <!-- Contact Picker dimensions -->
     <dimen name="contact_picker_icon_size">36dp</dimen>
 

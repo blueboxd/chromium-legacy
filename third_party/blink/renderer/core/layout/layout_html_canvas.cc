@@ -61,8 +61,8 @@ void LayoutHTMLCanvas::CanvasSizeChanged() {
   if (!Parent())
     return;
 
-  if (!PreferredLogicalWidthsDirty())
-    SetPreferredLogicalWidthsDirty();
+  if (!IntrinsicLogicalWidthsDirty())
+    SetIntrinsicLogicalWidthsDirty();
 
   LayoutSize old_size = Size();
   UpdateLogicalWidth();

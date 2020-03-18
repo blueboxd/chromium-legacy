@@ -127,16 +127,6 @@ java_group("com_android_support_cardview_v7_java") {
   ]
 }
 
-java_group("com_android_support_cursoradapter_java") {
-  deps = [
-    ":${target_name}_orig__unpack_aar",
-    ":androidx_cursoradapter_cursoradapter_java",
-  ]
-  input_jars_paths = [
-    "${target_out_dir}/com_android_support_cursoradapter_java_orig/classes.jar",
-  ]
-}
-
 java_group("com_android_support_design_java") {
   deps = [
     ":${target_name}_orig__unpack_aar",
@@ -834,7 +824,7 @@ android_aar_prebuilt("com_android_support_appcompat_v7_java_orig") {
   deps = [
     ":com_android_support_animated_vector_drawable_java_orig",
     ":com_android_support_collections_java_orig",
-    ":com_android_support_cursoradapter_java_orig",
+    ":com_android_support_cursoradapter_java",
     ":com_android_support_support_annotations_java_orig",
     ":com_android_support_support_compat_java_orig",
     ":com_android_support_support_core_utils_java_orig",
@@ -874,12 +864,12 @@ java_prebuilt("com_android_support_collections_java_orig") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("com_android_support_coordinatorlayout_java_orig") {
+android_aar_prebuilt("com_android_support_coordinatorlayout_java") {
   aar_path =
       "libs/com_android_support_coordinatorlayout/coordinatorlayout-28.0.0.aar"
   info_path = "libs/com_android_support_coordinatorlayout/com_android_support_coordinatorlayout.info"
   deps = [
-    ":com_android_support_customview_java_orig",
+    ":com_android_support_customview_java",
     ":com_android_support_support_annotations_java_orig",
     ":com_android_support_support_compat_java_orig",
   ]
@@ -890,7 +880,7 @@ android_aar_prebuilt("com_android_support_coordinatorlayout_java_orig") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("com_android_support_customview_java_orig") {
+android_aar_prebuilt("com_android_support_customview_java") {
   aar_path = "libs/com_android_support_customview/customview-28.0.0.aar"
   info_path =
       "libs/com_android_support_customview/com_android_support_customview.info"
@@ -914,7 +904,7 @@ android_aar_prebuilt("com_android_support_design_java_orig") {
     ":com_android_support_support_core_ui_java_orig",
     ":com_android_support_support_core_utils_java_orig",
     ":com_android_support_support_fragment_java_orig",
-    ":com_android_support_transition_java_orig",
+    ":com_android_support_transition_java",
   ]
   skip_jetify = true
   ignore_proguard_configs = true
@@ -925,7 +915,7 @@ android_aar_prebuilt("com_android_support_drawerlayout_java_orig") {
   aar_path = "libs/com_android_support_drawerlayout/drawerlayout-28.0.0.aar"
   info_path = "libs/com_android_support_drawerlayout/com_android_support_drawerlayout.info"
   deps = [
-    ":com_android_support_customview_java_orig",
+    ":com_android_support_customview_java",
     ":com_android_support_support_annotations_java_orig",
     ":com_android_support_support_compat_java_orig",
   ]
@@ -933,7 +923,7 @@ android_aar_prebuilt("com_android_support_drawerlayout_java_orig") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("com_android_support_gridlayout_v7_java_orig") {
+android_aar_prebuilt("com_android_support_gridlayout_v7_java") {
   aar_path = "libs/com_android_support_gridlayout_v7/gridlayout-v7-28.0.0.aar"
   info_path = "libs/com_android_support_gridlayout_v7/com_android_support_gridlayout_v7.info"
   deps = [
@@ -984,13 +974,13 @@ android_aar_prebuilt("com_android_support_multidex_java_orig") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("com_android_support_preference_leanback_v17_java_orig") {
+android_aar_prebuilt("com_android_support_preference_leanback_v17_java") {
   aar_path = "libs/com_android_support_preference_leanback_v17/preference-leanback-v17-28.0.0.aar"
   info_path = "libs/com_android_support_preference_leanback_v17/com_android_support_preference_leanback_v17.info"
   deps = [
     ":com_android_support_appcompat_v7_java_orig",
     ":com_android_support_collections_java_orig",
-    ":com_android_support_leanback_v17_java_orig",
+    ":com_android_support_leanback_v17_java",
     ":com_android_support_preference_v14_java_orig",
     ":com_android_support_preference_v7_java_orig",
     ":com_android_support_recyclerview_v7_java_orig",
@@ -1072,17 +1062,17 @@ android_aar_prebuilt("com_android_support_support_core_ui_java_orig") {
   info_path = "libs/com_android_support_support_core_ui/com_android_support_support_core_ui.info"
   deps = [
     ":com_android_support_asynclayoutinflater_java_orig",
-    ":com_android_support_coordinatorlayout_java_orig",
-    ":com_android_support_cursoradapter_java_orig",
-    ":com_android_support_customview_java_orig",
+    ":com_android_support_coordinatorlayout_java",
+    ":com_android_support_cursoradapter_java",
+    ":com_android_support_customview_java",
     ":com_android_support_drawerlayout_java_orig",
     ":com_android_support_interpolator_java_orig",
     ":com_android_support_slidingpanelayout_java_orig",
     ":com_android_support_support_annotations_java_orig",
     ":com_android_support_support_compat_java_orig",
     ":com_android_support_support_core_utils_java_orig",
-    ":com_android_support_swiperefreshlayout_java_orig",
-    ":com_android_support_viewpager_java_orig",
+    ":com_android_support_swiperefreshlayout_java",
+    ":com_android_support_viewpager_java",
   ]
   skip_jetify = true
 }
@@ -1142,7 +1132,7 @@ android_aar_prebuilt("com_android_support_support_v4_java_orig") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("com_android_support_swiperefreshlayout_java_orig") {
+android_aar_prebuilt("com_android_support_swiperefreshlayout_java") {
   aar_path = "libs/com_android_support_swiperefreshlayout/swiperefreshlayout-28.0.0.aar"
   info_path = "libs/com_android_support_swiperefreshlayout/com_android_support_swiperefreshlayout.info"
   deps = [
@@ -1154,12 +1144,12 @@ android_aar_prebuilt("com_android_support_swiperefreshlayout_java_orig") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("com_android_support_viewpager_java_orig") {
+android_aar_prebuilt("com_android_support_viewpager_java") {
   aar_path = "libs/com_android_support_viewpager/viewpager-28.0.0.aar"
   info_path =
       "libs/com_android_support_viewpager/com_android_support_viewpager.info"
   deps = [
-    ":com_android_support_customview_java_orig",
+    ":com_android_support_customview_java",
     ":com_android_support_support_annotations_java_orig",
     ":com_android_support_support_compat_java_orig",
   ]
@@ -1962,7 +1952,7 @@ android_aar_prebuilt("com_android_support_animated_vector_drawable_java_orig") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("com_android_support_cursoradapter_java_orig") {
+android_aar_prebuilt("com_android_support_cursoradapter_java") {
   aar_path = "libs/com_android_support_cursoradapter/cursoradapter-28.0.0.aar"
   info_path = "libs/com_android_support_cursoradapter/com_android_support_cursoradapter.info"
 
@@ -1986,7 +1976,7 @@ android_aar_prebuilt("com_android_support_documentfile_java_orig") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("com_android_support_leanback_v17_java_orig") {
+android_aar_prebuilt("com_android_support_leanback_v17_java") {
   aar_path = "libs/com_android_support_leanback_v17/leanback-v17-28.0.0.aar"
   info_path = "libs/com_android_support_leanback_v17/com_android_support_leanback_v17.info"
 
@@ -2071,7 +2061,7 @@ android_aar_prebuilt("com_android_support_slidingpanelayout_java_orig") {
   # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
-    ":com_android_support_customview_java_orig",
+    ":com_android_support_customview_java",
     ":com_android_support_support_annotations_java_orig",
     ":com_android_support_support_compat_java_orig",
   ]
@@ -2112,7 +2102,7 @@ android_aar_prebuilt("com_android_support_support_vector_drawable_java_orig") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("com_android_support_transition_java_orig") {
+android_aar_prebuilt("com_android_support_transition_java") {
   aar_path = "libs/com_android_support_transition/transition-28.0.0.aar"
   info_path =
       "libs/com_android_support_transition/com_android_support_transition.info"

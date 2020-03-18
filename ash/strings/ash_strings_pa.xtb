@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">ਮੱਧਮ ਸਿਗਨਲ</translation>
 <translation id="4112140312785995938">ਪਿੱਛੇ ਕਰੋ</translation>
 <translation id="4129129681837227511">ਆਪਣੀ ਲਾਕ ਸਕ੍ਰੀਨ 'ਤੇ ਸੂਚਨਾਵਾਂ ਦੇਖਣ ਲਈ, ਅਣਲਾਕ ਕਰਕੇ ਸੈਟਿੰਗ ਬਦਲੋ</translation>
+<translation id="4144413954005649103">ਸੱਜੇ-ਕਲਿੱਕ ਜਾਂ ਦਬਾਈ ਰੱਖਣ ਨਾਲ, Assistant ਵੱਲੋਂ ਸਕ੍ਰੀਨ 'ਤੇ ਤੁਹਾਡੀ ਚੋਣ ਨਾਲ ਸੰਬੰਧਿਤ ਜਾਣਕਾਰੀ ਤੁਹਾਨੂੰ ਦਿਖਾਈ ਜਾਵੇਗੀ।</translation>
 <translation id="4146833061457621061">ਸੰਗੀਤ ਚਲਾਓ</translation>
 <translation id="4149156641122542261"><ph name="DOMAIN" /> ਡੋਮੇਨ <ph name="DEVICE_TYPE" /> ਦਾ ਪ੍ਰਬੰਧਨ ਕਰਦਾ ਹੈ</translation>
 <translation id="4181841719683918333">ਭਾਸ਼ਾਵਾਂ</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">ਔਨ-ਸਕ੍ਰੀਨ ਕੀ-ਬੋਰਡ ਦਿਖਾਓ</translation>
 <translation id="6164005077879661055">ਇਸ ਵਰਤੋਂਕਾਰ ਨੂੰ ਹਟਾਏ ਜਾਣ ਤੋਂ ਬਾਅਦ ਇਸ ਵਰਤੋਂਕਾਰ ਨਾਲ ਸੰਬੰਧਿਤ ਸਾਰੀਆਂ ਫ਼ਾਈਲਾਂ ਅਤੇ ਸਥਾਨਕ ਡਾਟਾ ਸਥਾਈ ਤੌਰ 'ਤੇ ਮਿਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ। ਇਸ ਨਿਗਰਨੀ ਕੀਤੇ ਵਰਤੋਂਕਾਰ ਦੀਆਂ ਦੇਖੀਆਂ ਗਈਆਂ ਵੈੱਬਸਾਈਟਾਂ ਅਤੇ ਸੈਟਿੰਗਾਂ 'ਤੇ ਪ੍ਰਬੰਧਕ ਵੱਲੋਂ ਅਜੇ ਵੀ ਦੇਖੀਆਂ ਜਾ ਸਕਦੀਆਂ ਹਨ <ph name="MANAGEMENT_URL" />।</translation>
 <translation id="6165508094623778733">ਹੋਰ ਜਾਣੋ</translation>
+<translation id="6236290670123303279">ਸੈਟਿੰਗਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">ਲੇਟਵੀਂ ਸਥਿਤੀ ਵਿੱਚ ਲਾਕ ਕੀਤੀ ਗਈ</translation>
 <translation id="6259254695169772643">ਚੁਣਨ ਲਈ ਆਪਣੇ ਸਟਾਈਲਸ ਦੀ ਵਰਤੋਂ ਕਰੋ</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">ਚਾਲੂ</translation>
 <translation id="6670153871843998651">ਡੈਸਕ 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
+<translation id="6692996468359469499">ਆਪਣੀ ਚੋਣ ਨਾਲ ਸੰਬੰਧਿਤ ਜਾਣਕਾਰੀ ਪ੍ਰਾਪਤ ਕਰੋ</translation>
 <translation id="6696025732084565524">ਤੁਹਾਡੇ ਵੱਖ ਹੋਣਯੋਗ ਕੀ-ਬੋਰਡ ਨੂੰ ਅਤਿ ਜ਼ਰੂਰੀ ਅੱਪਡੇਟ ਦੀ ਲੋੜ ਹੈ</translation>
 <translation id="6700713906295497288">IME ਮੀਨੂ ਬਟਨ</translation>
 <translation id="6713285437468012787">ਬਲੂਟੁੱਥ ਡੀਵਾਈਸ "<ph name="DEVICE_NAME" />" ਪੇਅਰ ਕੀਤੀ ਗਈ ਹੈ ਅਤੇ ਹੁਣ ਸਾਰੇ ਵਰਤੋਂਕਾਰਾਂ ਲਈ ਉਪਲਬਧ ਹੈ। ਤੁਸੀਂ ਸੈਟਿੰਗਾਂ ਵਰਤਦੇ ਹੋਏ ਇਸ ਜੋੜਾਬੱਧ ਨੂੰ ਹਟਾ ਸਕਦੇ ਹੋ।</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> ਅਤੇ <ph name="SECOND_PARENT_EMAIL" /> ਵੱਲੋਂ ਖਾਤੇ ਦਾ ਪ੍ਰਬੰਧਨ ਕੀਤਾ ਜਾਂਦਾ ਹੈ</translation>
 <translation id="7955885781510802139">ਉੱਚ-ਵਖਰੇਵਾਂ ਮੋਡ</translation>
 <translation id="7977927628060636163">ਮੋਬਾਈਲ ਨੈੱਟਵਰਕਾਂ ਦੀ ਖੋਜ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ...</translation>
+<translation id="7980780401175799550">Chrome OS 'ਤੇ ਨੈਵੀਗੇਟ ਕਰਨ ਲਈ ਨਵੇਂ ਤਰੀਕੇ ਵਰਤ ਕੇ ਦੇਖੋ</translation>
 <translation id="7982789257301363584">ਨੈੱਟਵਰਕ</translation>
 <translation id="7984197416080286869">ਫਿੰਗਰਪ੍ਰਿੰਟ ਸੰਬੰਧੀ ਬਹੁਤ ਜ਼ਿਆਦਾ ਕੋਸ਼ਿਸ਼ਾਂ</translation>
 <translation id="7994370417837006925">ਬਹੁ-ਗਿਣਤੀ ਸਾਈਨ-ਇਨ</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> ਦੀ ਵਰਤੋਂ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ</translation>
 <translation id="8190698733819146287">ਭਾਸ਼ਾਵਾਂ ਅਤੇ ਇਨਪੁਟ ਨੂੰ ਵਿਉਂਤਬੱਧ ਕਰੋ...</translation>
 <translation id="8192202700944119416">ਸੂਚਨਾਵਾਂ ਲੁਕੀਆਂ ਹੋਈਆਂ ਹਨ।</translation>
+<translation id="8196787716797768628">ਐਪਾਂ ਵਿਚਾਲੇ ਤੁਰੰਤ ਸਵਿੱਚ ਕਰਨ ਲਈ ਅਤੇ ਟੈਬਲੈੱਟ ਮੋਡ ਵਿੱਚ ਆਪਣੀ Chromebook ਨਾਲ ਅੰਤਰਕਿਰਿਆ ਕਰਨ ਲਈ ਇਸ਼ਾਰਿਆਂ ਦੀ ਵਰਤੋਂ ਕਰੋ।</translation>
 <translation id="8203795194971602413">ਸੱਜਾ ਕਲਿੱਕ ਕਰੋ</translation>
 <translation id="8236042855478648955">ਆਰਾਮ ਕਰਨ ਦਾ ਸਮਾਂ ਹੋ ਗਿਆ ਹੈ</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, ਸਿਗਨਲ ਦੀ ਤੀਬਰਤਾ <ph name="SIGNAL_STRENGTH" />, ਫ਼ੋਨ ਦੀ ਬੈਟਰੀ <ph name="BATTERY_STATUS" /></translation>

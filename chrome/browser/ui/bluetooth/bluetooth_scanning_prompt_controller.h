@@ -19,8 +19,7 @@
 
 // BluetoothScanningPromptController is a prompt that presents a list of
 // Bluetooth device names. It can be used by Bluetooth Scanning API to
-// show example nearby Bluetooth devices to user. It is owned by
-// ChooserBubbleDelegate.
+// show example nearby Bluetooth devices to user.
 class BluetoothScanningPromptController : public ChooserController {
  public:
   BluetoothScanningPromptController(

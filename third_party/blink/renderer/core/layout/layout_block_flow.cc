@@ -458,7 +458,7 @@ void LayoutBlockFlow::UpdateBlockLayout(bool relayout_children) {
   TextAutosizer::LayoutScope text_autosizer_layout_scope(this, &layout_scope);
 
   bool pagination_state_changed = pagination_state_changed_;
-  bool preferred_logical_widths_were_dirty = PreferredLogicalWidthsDirty();
+  bool intrinsic_logical_widths_were_dirty = IntrinsicLogicalWidthsDirty();
 
   // Multiple passes might be required for column based layout.
   // The number of passes could be as high as the number of columns.
@@ -475,7 +475,7 @@ void LayoutBlockFlow::UpdateBlockLayout(bool relayout_children) {
 
     LayoutChildren(relayout_children, layout_scope);
 
-    if (!preferred_logical_widths_were_dirty && PreferredLogicalWidthsDirty()) {
+    if (!intrinsic_logical_widths_were_dirty && IntrinsicLogicalWidthsDirty()) {
       // The only thing that should dirty preferred widths at this point is the
       // addition of overflow:auto scrollbars in a descendant. To avoid a
       // potential infinite loop, run layout again with auto scrollbars frozen
@@ -3138,7 +3138,7 @@ void LayoutBlockFlow::CollapseAnonymousBlockChild(LayoutBlockFlow* child) {
   // design, so we don't remove them.
   if (child->IsRubyRun() || child->IsRubyBase())
     return;
-  SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+  SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kChildAnonymousBlockChanged);
 
   child->MoveAllChildrenTo(this, child->NextSibling(), child->HasLayer());
@@ -3164,7 +3164,7 @@ bool LayoutBlockFlow::MergeSiblingContiguousAnonymousBlock(
       !IsMergeableAnonymousBlock(sibling_that_may_be_deleted))
     return false;
 
-  SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+  SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kAnonymousBlockChange);
 
   // If the inlineness of children of the two block don't match, we'd need

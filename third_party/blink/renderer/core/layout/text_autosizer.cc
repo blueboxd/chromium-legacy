@@ -464,11 +464,11 @@ float TextAutosizer::Inflate(LayoutObject* parent,
 
       if (behavior == kDescendToInnerBlocks) {
         // The ancestor nodes might be inline-blocks. We should
-        // setPreferredLogicalWidthsDirty for ancestor nodes here.
-        child->SetPreferredLogicalWidthsDirty();
+        // SetIntrinsicLogicalWidthsDirty for ancestor nodes here.
+        child->SetIntrinsicLogicalWidthsDirty();
       } else if (parent->IsLayoutInline()) {
         // FIXME: Investigate why MarkOnlyThis is sufficient.
-        child->SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
+        child->SetIntrinsicLogicalWidthsDirty(kMarkOnlyThis);
       }
     } else if (child->IsLayoutInline()) {
       multiplier = Inflate(child, layouter, behavior, multiplier);
@@ -514,7 +514,7 @@ float TextAutosizer::Inflate(LayoutObject* parent,
     for (LayoutObject* walker = marker; walker;
          walker = walker->NextInPreOrder(marker)) {
       ApplyMultiplier(walker, multiplier, layouter);
-      walker->SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
+      walker->SetIntrinsicLogicalWidthsDirty(kMarkOnlyThis);
     }
   }
 

@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
+import android.view.View;
 import android.view.ViewGroup;
 
 import org.junit.Before;
@@ -344,6 +345,20 @@ public class BottomSheetControllerTest {
 
         ThreadUtils.runOnUiThreadBlocking(getBottomSheet()::endAnimations);
         assertEquals(customLifecycleContent, mSheetController.getCurrentSheetContent());
+    }
+
+    @Test
+    @MediumTest
+    public void testCustomScrimLifecycle() throws TimeoutException {
+        TestBottomSheetContent customScrimContent = new TestBottomSheetContent(
+                mActivityTestRule.getActivity(), BottomSheetContent.ContentPriority.LOW, true);
+        customScrimContent.setHasCustomScrimLifecycle(true);
+        requestContentInSheet(customScrimContent, true);
+
+        expandSheet();
+
+        assertEquals("The scrim should not be visible with a custom scrim lifecycle.", View.GONE,
+                mScrimView.getVisibility());
     }
 
     @Test

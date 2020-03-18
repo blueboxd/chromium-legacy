@@ -1102,12 +1102,8 @@ void RenderViewImpl::ResizeWebWidgetForWidget(
 }
 
 void RenderViewImpl::SetScreenMetricsEmulationParametersForWidget(
-    bool enabled,
-    const blink::WebDeviceEmulationParams& params) {
-  if (enabled)
-    GetWebView()->EnableDeviceEmulation(params);
-  else
-    GetWebView()->DisableDeviceEmulation();
+    const base::Optional<blink::WebDeviceEmulationParams>& params) {
+  GetWebView()->SetDeviceEmulation(params);
 }
 
 // IPC message handlers -----------------------------------------

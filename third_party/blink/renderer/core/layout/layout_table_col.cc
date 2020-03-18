@@ -79,7 +79,7 @@ void LayoutTableCol::UpdateFromElement() {
     span_ = 1;
   }
   if (span_ != old_span && Style() && Parent()) {
-    SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+    SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
         layout_invalidation_reason::kAttributeChanged);
   }
 }
@@ -106,11 +106,11 @@ bool LayoutTableCol::CanHaveChildren() const {
   return IsTableColumnGroup();
 }
 
-void LayoutTableCol::ClearPreferredLogicalWidthsDirtyBits() {
-  ClearPreferredLogicalWidthsDirty();
+void LayoutTableCol::ClearIntrinsicLogicalWidthsDirtyBits() {
+  ClearIntrinsicLogicalWidthsDirty();
 
   for (LayoutObject* child = FirstChild(); child; child = child->NextSibling())
-    child->ClearPreferredLogicalWidthsDirty();
+    child->ClearIntrinsicLogicalWidthsDirty();
 }
 
 LayoutTable* LayoutTableCol::Table() const {

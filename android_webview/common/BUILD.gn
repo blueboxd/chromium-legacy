@@ -5,20 +5,6 @@
 import("//build/config/android/rules.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom_cpp_typemap("common_typemap") {
-  types = [
-    {
-      mojom = "android_webview.mojom.AwOriginMatcher"
-      cpp = "::android_webview::AwOriginMatcher"
-    },
-  ]
-
-  public_headers = [
-    "//android_webview/common/aw_origin_matcher.h",
-    "//android_webview/common/aw_origin_matcher_mojom_traits.h",
-  ]
-}
-
 mojom("common_mojom") {
   sources = [
     "aw_origin_matcher.mojom",
@@ -30,7 +16,18 @@ mojom("common_mojom") {
     "//services/network/public/mojom:mojom",
   ]
 
-  cpp_typemaps = [ ":common_typemap" ]
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "android_webview.mojom.AwOriginMatcher"
+          cpp = "::android_webview::AwOriginMatcher"
+        },
+      ]
+      traits_headers =
+          [ "//android_webview/common/aw_origin_matcher_mojom_traits.h" ]
+    },
+  ]
 }
 
 source_set("common") {

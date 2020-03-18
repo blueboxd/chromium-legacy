@@ -16,10 +16,9 @@
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2872961005593481000">Herunterfahren</translation>
 <translation id="3008341117444806826">AKTUALISIEREN</translation>
-<translation id="3169472444629675720">Discover</translation>
 <translation id="3820172043799983114">Ungültige PIN.</translation>
 <translation id="3838338534323494292">Neues Passwort</translation>
-<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> verwaltet dieses Gerät und hat Zugriff auf alle Nutzeraktivitäten, einschließlich besuchten Webseiten, Passwörtern und E-Mails.</translation>
+<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> verwaltet dieses Gerät und hat Zugriff auf alle Nutzeraktivitäten, einschließlich besuchter Webseiten, Passwörter und E-Mails.</translation>
 <translation id="4227825898293920515">Passwort läuft in <ph name="TIME" /> ab</translation>
 <translation id="4429881212383817840">Kerberos-Ticket läuft bald ab</translation>
 <translation id="445059817448385655">Altes Passwort</translation>

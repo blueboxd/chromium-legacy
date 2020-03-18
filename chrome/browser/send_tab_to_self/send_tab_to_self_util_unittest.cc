@@ -97,6 +97,9 @@ TEST_F(SendTabToSelfUtilTest, NativePage) {
 }
 
 TEST_F(SendTabToSelfUtilTest, IncognitoMode) {
+  // Note: if changing this, audit profile-finding logic in the feature.
+  // For example, NotificationManager.java in the Android code assumes
+  // incognito is not supported.
   EXPECT_FALSE(AreContentRequirementsMet(url_, incognito_profile_));
 }
 

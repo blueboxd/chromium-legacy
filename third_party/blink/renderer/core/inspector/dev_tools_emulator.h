@@ -7,9 +7,9 @@
 
 #include <memory>
 #include "base/optional.h"
+#include "third_party/blink/public/common/devtools/web_device_emulation_params.h"
 #include "third_party/blink/public/platform/pointer_properties.h"
 #include "third_party/blink/public/platform/web_viewport_style.h"
-#include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -47,11 +47,11 @@ class CORE_EXPORT DevToolsEmulator final
   void SetPrimaryHoverType(HoverType);
   void SetMainFrameResizesAreOrientationChanges(bool);
 
-  // Enables and/or sets the parameters for emulation. Returns the emulation
-  // transform to be used as a result.
-  TransformationMatrix EnableDeviceEmulation(const WebDeviceEmulationParams&);
-  // Disables emulation.
-  void DisableDeviceEmulation();
+  // Sets the parameters for emulation (enables emulation if it hasn't been
+  // previously enabled and disables it if params is null).
+  // Returns the emulation transform to be used as a result.
+  TransformationMatrix SetDeviceEmulation(
+      const base::Optional<blink::WebDeviceEmulationParams>& params);
 
   bool ResizeIsDeviceSizeChange();
   void SetTouchEventEmulationEnabled(bool, int max_touch_points);
@@ -87,6 +87,7 @@ class CORE_EXPORT DevToolsEmulator final
  private:
   void EnableMobileEmulation();
   void DisableMobileEmulation();
+  void DisableDeviceEmulation();
 
   // Enables viewport override and returns the emulation transform to be used.
   // The |position| is in CSS pixels, and |scale| is relative to a page scale of
@@ -104,9 +105,8 @@ class CORE_EXPORT DevToolsEmulator final
 
   WebViewImpl* web_view_;
 
-  bool device_metrics_enabled_;
   bool emulate_mobile_enabled_;
-  WebDeviceEmulationParams emulation_params_;
+  base::Optional<blink::WebDeviceEmulationParams> emulation_params_;
 
   struct ViewportOverride {
     FloatPoint position;

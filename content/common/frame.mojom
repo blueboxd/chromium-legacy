@@ -5,6 +5,7 @@
 module content.mojom;
 
 import "content/common/ax_content_tree_update.mojom";
+import "content/common/device_emulator.mojom";
 import "content/common/document_scoped_interface_bundle.mojom";
 import "content/common/frame_messages.mojom";
 import "content/common/native_types.mojom";
@@ -172,9 +173,13 @@ interface FrameNavigationControl {
   // Returned DevToolsAgent must be associated with navigation control,
   // due to various ordering dependencies between DevTools protocol and
   // navigation.
+  // The same applies to DeviceEmulator interface, which is currently
+  // a separate interface for convenience of implementation and is only
+  // passed for the root frame.
   BindDevToolsAgent(
       pending_associated_remote<blink.mojom.DevToolsAgentHost> agent_host,
-      pending_associated_receiver<blink.mojom.DevToolsAgent> agent);
+      pending_associated_receiver<blink.mojom.DevToolsAgent> agent,
+      pending_associated_receiver<DeviceEmulator>? emulator);
 
   // Request for the renderer to execute JavaScript in the frame's context.
   //

@@ -898,8 +898,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.PerformActions(actions)
     time.sleep(1)
     rect = target.GetRect()
-    self.assertEquals(150, rect['x'])
-    self.assertEquals(200, rect['y'])
+    self.assertAlmostEqual(150, rect['x'], delta=1)
+    self.assertAlmostEqual(200, rect['y'], delta=1)
 
     # Without releasing mouse button, should continue the drag.
     actions = ({'actions': [{
@@ -917,8 +917,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.PerformActions(actions)
     time.sleep(1)
     rect = target.GetRect()
-    self.assertEquals(180, rect['x'])
-    self.assertEquals(240, rect['y'])
+    self.assertAlmostEqual(180, rect['x'], delta=1)
+    self.assertAlmostEqual(240, rect['y'], delta=1)
 
     # Releasing mouse button stops the drag.
     actions = ({'actions': [{
@@ -938,8 +938,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.PerformActions(actions)
     time.sleep(1)
     rect = target.GetRect()
-    self.assertEquals(180, rect['x'])
-    self.assertEquals(240, rect['y'])
+    self.assertAlmostEqual(180, rect['x'], delta=1)
+    self.assertAlmostEqual(240, rect['y'], delta=1)
 
   def testActionsTouchTap(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -1006,10 +1006,10 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEquals("touchstart", events[1]['type'])
     self.assertEquals("touchend", events[2]['type'])
     self.assertEquals("touchend", events[3]['type'])
-    self.assertEquals(50, events[0]['x'])
-    self.assertEquals(50, events[0]['y'])
-    self.assertEquals(60, events[1]['x'])
-    self.assertEquals(60, events[1]['y'])
+    self.assertAlmostEqual(50, events[0]['x'], delta=1)
+    self.assertAlmostEqual(50, events[0]['y'], delta=1)
+    self.assertAlmostEqual(60, events[1]['x'], delta=1)
+    self.assertAlmostEqual(60, events[1]['y'], delta=1)
 
     self._driver.ReleaseActions()
 
@@ -1050,8 +1050,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     ]})
     events = self._driver.ExecuteScript('return window.events')
     self.assertEquals(1, len(events))
-    self.assertEquals(50, events[0]['x'])
-    self.assertEquals(50, events[0]['y'])
+    self.assertAlmostEqual(50, events[0]['x'], delta=1)
+    self.assertAlmostEqual(50, events[0]['y'], delta=1)
 
     # Clean up action states, move mouse back to (0, 0).
     self._driver.ReleaseActions()
@@ -1070,8 +1070,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     ]})
     events = self._driver.ExecuteScript('return window.events')
     self.assertEquals(2, len(events))
-    self.assertEquals(80, events[1]['x'])
-    self.assertEquals(80, events[1]['y'])
+    self.assertAlmostEqual(80, events[1]['x'], delta=1)
+    self.assertAlmostEqual(80, events[1]['y'], delta=1)
 
     self._driver.ReleaseActions()
 
@@ -1189,8 +1189,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     events = self._driver.ExecuteScript('return window.events')
     self.assertEquals(2, len(events))
     self.assertEquals('mousedown', events[0]['type'])
-    self.assertEquals(50, events[0]['x'])
-    self.assertEquals(50, events[0]['y'])
+    self.assertAlmostEqual(50, events[0]['x'], delta=1)
+    self.assertAlmostEqual(50, events[0]['y'], delta=1)
     self.assertEquals('keydown', events[1]['type'])
     self.assertEquals('KeyA', events[1]['code'])
 
@@ -1201,8 +1201,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEquals('keyup', events[2]['type'])
     self.assertEquals('KeyA', events[2]['code'])
     self.assertEquals('mouseup', events[3]['type'])
-    self.assertEquals(50, events[3]['x'])
-    self.assertEquals(50, events[3]['y'])
+    self.assertAlmostEqual(50, events[3]['x'], delta=1)
+    self.assertAlmostEqual(50, events[3]['y'], delta=1)
 
   def testPageLoadStrategyIsNormalByDefault(self):
     self.assertEquals('normal',
@@ -1923,9 +1923,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEquals(0, len(self._driver.GetCookies()))
 
   def testCookieForFrame(self):
-    # Frame must have separate url than outer context for Cookies to be distinct
-    # the cross_domain_iframe with site-per-process fakes the needed setup
-    self._driver = self.CreateDriver(chrome_switches=['--site-per-process'])
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/cross_domain_iframe.html'))
     self._driver.AddCookie({'name': 'outer', 'value': 'main context'})

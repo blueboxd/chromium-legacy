@@ -7,9 +7,9 @@
 
 #include <memory>
 
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "chrome/browser/usb/web_usb_chooser.h"
-#include "components/bubble/bubble_reference.h"
 
 // Implementation of WebUsbChooser for desktop browsers that uses a bubble to
 // display the permission prompt.
@@ -24,7 +24,7 @@ class WebUsbChooserDesktop : public WebUsbChooser {
   base::WeakPtr<WebUsbChooser> GetWeakPtr() override;
 
  private:
-  BubbleReference bubble_;
+  base::ScopedClosureRunner closure_runner_{base::DoNothing()};
 
   base::WeakPtrFactory<WebUsbChooserDesktop> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(WebUsbChooserDesktop);

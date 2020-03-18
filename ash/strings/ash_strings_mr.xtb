@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">मध्यम सिग्नल</translation>
 <translation id="4112140312785995938">मागे शोधा</translation>
 <translation id="4129129681837227511">तुमच्या लॉक स्क्रीनवर सूचना पाहाण्यासाठी, सेटिंग बदलण्याकरिता अनलॉक करा</translation>
+<translation id="4144413954005649103">राइट क्लिक केल्याने किंवा दाबून ठेवल्याने, Assistant तुम्हाला तुम्ही स्क्रीनवर काय निवडता त्याच्याशी संबंधित माहिती दाखवतो.</translation>
 <translation id="4146833061457621061">म्युझिक प्ले करा</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> हे <ph name="DOMAIN" /> द्वारे व्यवस्थापित केले जाते</translation>
 <translation id="4181841719683918333">भाषा</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">ऑन-स्‍क्रीन कीबोर्ड दर्शवा</translation>
 <translation id="6164005077879661055">एकदा हा पर्यवेक्षित वापरकर्ता काढल्यानंतर पर्यवेक्षित वापरकर्त्याशी संबद्ध सर्व फायली आणि स्थानिक डेटा कायमचा हटवला जाईल. या पर्यवेक्षित वापरकर्त्यासाठी भेट दिलेल्या वेबसाइट आणि सेटिंग्ज तरीही <ph name="MANAGEMENT_URL" /> वर व्यवस्थापकाद्वारे दृश्यमान असू शकतात.</translation>
 <translation id="6165508094623778733">अधिक जाणून घ्या</translation>
+<translation id="6236290670123303279">सेटिंग्ज व्यवस्थापित करा</translation>
 <translation id="6237231532760393653">१X</translation>
 <translation id="6254629735336163724">आडव्या दिशेने लॉक केले</translation>
 <translation id="6259254695169772643">निवडण्यासाठी तुमचे स्टायलस वापरा</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">सुरू</translation>
 <translation id="6670153871843998651">डेस्‍क ३</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
+<translation id="6692996468359469499">तुमच्या निवडीशी संबंधित माहिती मिळवा</translation>
 <translation id="6696025732084565524">तुमच्या वेगळ्या करण्यायोग्य कीबोर्डला गंभीर अपडेटची आवश्यकता आहे</translation>
 <translation id="6700713906295497288">IME मेनू बटण</translation>
 <translation id="6713285437468012787">"<ph name="DEVICE_NAME" />" ब्लूटूथ डिव्हाइस जोडले गेले आहे आणि सर्व वापरकर्त्यांसाठी आता उपलब्ध आहे. तुम्ही सेटिंग्ज वापरून हे पेअरिंग काढू शकता.</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895">खाते <ph name="FIRST_PARENT_EMAIL" /> आणि <ph name="SECOND_PARENT_EMAIL" /> ने व्‍यवस्‍थापित केले आहे</translation>
 <translation id="7955885781510802139">उच्च काँट्रास्ट मोड</translation>
 <translation id="7977927628060636163">मोबाइल नेटवर्क शोधत आहे...</translation>
+<translation id="7980780401175799550">Chrome OS नेव्हिगेट करण्याचे नवीन मार्ग वापरून पहा</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
 <translation id="7984197416080286869">खूप जास्त फिंगरप्रिंट प्रयत्न</translation>
 <translation id="7994370417837006925">मल्टिपल साइन इन</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> वापरत आहे</translation>
 <translation id="8190698733819146287">भाषा आणि इनपुट कस्टमाइझ करा...</translation>
 <translation id="8192202700944119416">सूचना लपवलेल्या आहेत.</translation>
+<translation id="8196787716797768628">टॅबलेट मोडमध्ये अ‍ॅप्सदरम्यान झटपट स्विच करण्यासाठी आणि तुमच्या Chromebook सोबत परस्परसंवाद साधण्यासाठी जेश्चर वापरा.</translation>
 <translation id="8203795194971602413">राइट क्लिक</translation>
 <translation id="8236042855478648955">विश्रांतीची वेळ</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />, फोन बॅटरी <ph name="BATTERY_STATUS" /></translation>

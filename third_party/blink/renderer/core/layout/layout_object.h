@@ -225,7 +225,7 @@ const int kShowTreeCharacterOffset = 39;
 // The 2 widths are computed lazily during layout when the getters are called.
 // The computation is done by calling ComputePreferredLogicalWidths() behind the
 // scene. The boolean used to control the lazy recomputation is
-// PreferredLogicalWidthsDirty.
+// IntrinsicLogicalWidthsDirty.
 //
 // See the individual getters below for more details about what each width is.
 class CORE_EXPORT LayoutObject : public ImageResourceObserver,
@@ -1080,14 +1080,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   bool NeedsCollectInlines() const { return bitfields_.NeedsCollectInlines(); }
 
-  // Return true if the min/max preferred logical widths aren't up-to-date. Note
-  // that for objects that *don't* need to calculate preferred logical widths
-  // (e.g. if inline-size is a fixed value, and no other inline lengths are
-  // intrinsic, and the object isn't a descendant of something that needs
+  // Return true if the min/max intrinsic logical widths aren't up-to-date.
+  // Note that for objects that *don't* need to calculate intrinsic logical
+  // widths (e.g. if inline-size is a fixed value, and no other inline lengths
+  // are intrinsic, and the object isn't a descendant of something that needs
   // min/max), this flag will never be cleared (since the values will never be
   // calculated).
-  bool PreferredLogicalWidthsDirty() const {
-    return bitfields_.PreferredLogicalWidthsDirty();
+  bool IntrinsicLogicalWidthsDirty() const {
+    return bitfields_.IntrinsicLogicalWidthsDirty();
   }
 
   bool NeedsLayoutOverflowRecalc() const {
@@ -1351,18 +1351,18 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void SetChildNeedsLayout(MarkingBehavior = kMarkContainerChain,
                            SubtreeLayoutScope* = nullptr);
   void SetNeedsPositionedMovementLayout();
-  void SetPreferredLogicalWidthsDirty(MarkingBehavior = kMarkContainerChain);
-  void ClearPreferredLogicalWidthsDirty();
+  void SetIntrinsicLogicalWidthsDirty(MarkingBehavior = kMarkContainerChain);
+  void ClearIntrinsicLogicalWidthsDirty();
 
-  void SetNeedsLayoutAndPrefWidthsRecalc(
+  void SetNeedsLayoutAndIntrinsicWidthsRecalc(
       LayoutInvalidationReasonForTracing reason) {
     SetNeedsLayout(reason);
-    SetPreferredLogicalWidthsDirty();
+    SetIntrinsicLogicalWidthsDirty();
   }
-  void SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+  void SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
       LayoutInvalidationReasonForTracing reason) {
     SetNeedsLayoutAndFullPaintInvalidation(reason);
-    SetPreferredLogicalWidthsDirty();
+    SetIntrinsicLogicalWidthsDirty();
   }
 
   // Traverses subtree, and marks all layout objects as need relayout, repaint
@@ -2772,7 +2772,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   inline void SetNeedsPaintOffsetAndVisualRectUpdate();
 
-  inline void InvalidateContainerPreferredLogicalWidths();
+  inline void InvalidateContainerIntrinsicLogicalWidths();
 
   const LayoutBoxModelObject* EnclosingCompositedContainer() const;
 
@@ -2869,7 +2869,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           needs_simplified_normal_flow_layout_(false),
           self_needs_layout_overflow_recalc_(false),
           child_needs_layout_overflow_recalc_(false),
-          preferred_logical_widths_dirty_(false),
+          intrinsic_logical_widths_dirty_(false),
           needs_collect_inlines_(false),
           should_check_for_paint_invalidation_(true),
           subtree_should_check_for_paint_invalidation_(false),
@@ -2978,12 +2978,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     ADD_BOOLEAN_BITFIELD(child_needs_layout_overflow_recalc_,
                          ChildNeedsLayoutOverflowRecalc);
 
-    // This boolean marks preferred logical widths for lazy recomputation.
+    // This boolean marks the intrinsic logical widths for lazy recomputation.
     //
     // See INTRINSIC SIZES / PREFERRED LOGICAL WIDTHS above about those
     // widths.
-    ADD_BOOLEAN_BITFIELD(preferred_logical_widths_dirty_,
-                         PreferredLogicalWidthsDirty);
+    ADD_BOOLEAN_BITFIELD(intrinsic_logical_widths_dirty_,
+                         IntrinsicLogicalWidthsDirty);
 
     // This flag is set on inline container boxes that need to run the
     // Pre-layout phase in LayoutNG. See NGInlineNode::CollectInlines().

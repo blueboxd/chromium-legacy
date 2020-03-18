@@ -65,6 +65,15 @@ Wenn die Richtlinie nicht festgelegt ist, gilt die Standardeinstellung: Vom Unte
 
       Wenn sie auf "false" gesetzt oder nicht konfiguriert ist, werden keine Informationen ausgegeben.
       Ist sie auf "true" gesetzt, werden Informationen zur Hintergrundbeleuchtung des Geräts ausgegeben.</translation>
+<translation id="1076271193420500757">Über diese Richtlinie können Sie festlegen, welche Variationen auf einem vom Unternehmen verwalteten <ph name="PRODUCT_OS_NAME" />-Gerät zulässig sind.
+
+      Mit Variationen sind kleine Konfigurationsänderungen an <ph name="PRODUCT_OS_NAME" /> möglich, ohne dass eine neue Version veröffentlicht werden muss. Dazu werden bestehende Funktionen aktiviert oder deaktiviert.
+
+      Wenn Sie "<ph name="VARIATIONS_ENABLED_OPTION_NAME" />" (Wert: 0) festlegen oder die Richtlinie nicht konfigurieren, können alle Variationen für <ph name="PRODUCT_OS_NAME" /> angewendet werden.
+
+      Wenn Sie "<ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />" festlegen (Wert: 1), werden nur Variationen für <ph name="PRODUCT_OS_NAME" /> angewendet, die als wichtige Sicherheits- oder Stabilitätskorrekturen gewertet werden.
+
+      Wenn Sie "<ph name="VARIATIONS_DISABLED_OPTION_NAME" />" festlegen (Wert: 2), werden auf dem Anmeldebildschirm keine Variationen auf den Browser angewendet. Dieser Modus kann die Entwickler <ph name="PRODUCT_OS_NAME" /> möglicherweise daran hindern, wichtige Sicherheitskorrekturen zeitnah durchzuführen. Er wird daher nicht empfohlen.</translation>
 <translation id="1078643757670228170">Diese Richtlinie ist veraltet und wird in Version 82 von <ph name="PRODUCT_OS_NAME" /> entfernt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />".
 
           Diese Richtlinie gibt an, nach welcher Inaktivitätsspanne des Nutzers im Netzbetrieb eine Warnmeldung angezeigt wird.
@@ -1152,14 +1161,6 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
       Ist diese Richtlinie nicht konfiguriert, verwendet <ph name="PRODUCT_NAME" /> den Standardwert von 10.000 Millisekunden.</translation>
 <translation id="257788512393330403">Passworteingabe alle sechs Stunden erforderlich</translation>
 <translation id="2580104054820772954">Dateibereitstellung hinauszögern, bis Scanergebnisse vorliegen</translation>
-<translation id="2582582399758251985">Wenn diese Einstellung aktiviert ist, verifiziert <ph name="PRODUCT_NAME" /> Serverzertifikate anhand der integrierten Zertifikatsprüfung.
-      Ist sie deaktiviert, verifiziert <ph name="PRODUCT_NAME" /> Serverzertifikate mit der von der Plattform stammenden Legacy-Zertifikatsprüfung.
-      Wenn diese Einstellung nicht konfiguriert ist, wird die integrierte oder die Legacy-Zertifikatsprüfung verwendet.
-
-      Diese Richtlinie wird voraussichtlich in Version 81 von <ph name="PRODUCT_OS_NAME" /> entfernt, wenn auch die Legacy-Zertifikatsprüfung in <ph name="PRODUCT_OS_NAME" /> voraussichtlich nicht mehr unterstützt wird.
-
-      Außerdem wird sie voraussichtlich in Version 83 von <ph name="PRODUCT_NAME" /> für Linux entfernt, wenn auch die Legacy-Zertifikatsprüfung unter Linux voraussichtlich nicht mehr unterstützt wird.
-      </translation>
 <translation id="2586162458524426376">
       Diese Richtlinie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="ISOLATE_ORIGINS_POLICY_NAME" />" für die eigentliche Nutzersitzung an.
       Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge in einer durch Kommas getrennten Liste ein eigener Prozess ausgeführt. Dabei werden auch durch Subdomains benannte Ursprünge isoliert. Wenn Sie z. B. https://example.com/ angeben, wird auch https://foo.example.com/ als Teil der Website https://example.com/ isoliert.
@@ -1179,9 +1180,6 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="26023406105317310">Kerberos-Konten konfigurieren</translation>
 <translation id="2604182581880595781">Richtlinien für Netzwerkfreigaben konfigurieren.</translation>
 <translation id="2615240493030733717">Informationen zur Zeitzone ausgeben</translation>
-<translation id="2620943247255660284">Diese Richtlinie ist veraltet und wurde durch "AdvancedProtectionExtraSecurityAllowed" ersetzt.
-
-      Mit dieser Richtlinie wird festgelegt, ob Nutzer, die am erweiterten Sicherheitsprogramm teilnehmen, ihre heruntergeladenen Dateien für einen Malware-Scan an Google senden können. Wird die Richtlinie auf "true" gesetzt oder nicht konfiguriert, werden Nutzer dazu aufgefordert, ihre heruntergeladenen Dateien für einen Tiefenscan an Google zu senden. Wenn der Nutzer "Suchen" auswählt, wird der Download an Google gesendet. Wird diese Richtlinie auf "false" gesetzt, werden Nutzer nicht dazu aufgefordert, ihre heruntergeladenen Dateien an Google zu senden.</translation>
 <translation id="2623014935069176671">Auf erste Nutzeraktivität warten</translation>
 <translation id="262740370354162807">Senden von Dokumenten an <ph name="CLOUD_PRINT_NAME" /> aktivieren</translation>
 <translation id="2627554163382448569">Stellt Konfigurationen für Unternehmensdrucker bereit.
@@ -2924,6 +2922,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
           Wurde "true" oder "not configured" festgelegt, kann dieser Nutzer betreute Nutzer erstellen und verwalten.</translation>
 <translation id="5369937289900051171">Nur Farbdruck</translation>
 <translation id="5370279767682621504">HTTP/0.9-Unterstützung für nicht standardmäßige Ports aktivieren</translation>
+<translation id="5373065931879562543">Verfügbarkeit von Variationen auf Chrome OS festlegen</translation>
 <translation id="5378985487213287085">Ermöglicht Ihnen festzulegen, ob Websites Desktop-Benachrichtigungen anzeigen dürfen. Das Anzeigen von Desktop-Benachrichtigungen kann entweder standardmäßig gestattet oder nicht gestattet werden oder auf Anfrage beim Nutzer geschehen. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "AskNotifications" zum Einsatz, wobei dies vom Nutzer geändert werden kann.</translation>
 <translation id="5380329473151894945">Hiermit wird der Standardstatus der Bedienungshilfe "großer Cursor" auf der Anmeldeseite festgelegt.
 
@@ -4489,6 +4488,15 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 <translation id="793473937901685727">Verfügbarkeit von Zertifikaten für ARC-Apps festlegen</translation>
 <translation id="7937491150792971922">Richtlinien für Listen zur Installation von Erweiterungen aus mehreren Quellen zusammenführen</translation>
 <translation id="7937766917976512374">Videoaufzeichnung gestatten oder ablehnen</translation>
+<translation id="7937944288846766530">Mit dieser Richtlinie legen Sie fest, ob Nutzer Anfragen zur Installation von Erweiterungen für <ph name="PRODUCT_NAME" /> zur Bestätigung an die Google Admin-Konsole senden dürfen.
+
+      Wenn die Richtlinie "CloudReportingEnabled" deaktiviert oder nicht konfiguriert ist, wird sie ignoriert. Anfragen zur Installation von Erweiterungen können weder erstellt noch hochgeladen werden.
+      Wenn diese Richtlinie deaktiviert oder nicht konfiguriert ist, können Anfragen zur Installation von Erweiterungen weder erstellt noch hochgeladen werden.
+      Wenn diese Richtlinie aktiviert ist, können Anfragen zur Installation von Erweiterungen erstellt und in der Google Admin-Konsole hochgeladen werden.
+
+      Anfragen zur Installation von Erweiterungen werden erstellt, wenn Nutzer versuchen, eine Erweiterung zu installieren, die weder von <ph name="EXTENSION_INSTALL_WHITELIST" /> noch von <ph name="EXTENSION_SETTINGS" /> auf die weiße Liste gesetzt wurde.
+
+      Die Richtlinie wird nur angewendet, wenn das Gerät mit <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> registriert ist und <ph name="CLOUD_REPORTING_ENABLED" /> aktiviert ist.</translation>
 <translation id="7941975817681987555">Netzwerkaktionen nicht über Netzwerkverbindungen vervollständigen</translation>
 <translation id="7951605113561734721">Diese Richtlinie gibt geräteübergreifende Clientzertifikate an, die über das Geräteverwaltungsprotokoll registriert werden sollen.</translation>
 <translation id="7952007677054834789">Hiermit werden die Seiten konfiguriert, die beim Start geladen werden: die standardmäßige Startseite und die Standardseite "Neuer Tab" in <ph name="PRODUCT_NAME" />. Außerdem wird verhindert, dass Nutzer diese Einstellungen ändern.
@@ -5067,7 +5075,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Status von Display und Grafikkarte gemeldet.</translation>
 <translation id="891435090623616439">Als JSON-String codiert, weitere Informationen unter <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Nutzern erlauben, installierte CA-Zertifikate zu verwalten.</translation>
-<translation id="8924721011887485485">Mit dieser Richtlinie wird festgelegt, ob Nutzer, die am erweiterten Sicherheitsprogramm teilnehmen, zusätzliche Sicherheitsfunktionen verwenden können. Bei manchen dieser Funktionen werden Daten mit Google geteilt. Nutzer, die die erweiterte Sicherheit verwenden, können beispielsweise ihre heruntergeladenen Dateien für einen Malware-Scan an Google senden. Wird die Richtlinie auf "true" gesetzt oder nicht konfiguriert, können diese Nutzer zusätzliche Sicherheitsfunktionen verwenden. Wird sie auf "false" gesetzt, stehen ihnen nur die Sicherheitsfunktionen für Privatnutzer zur Verfügung.</translation>
 <translation id="8926275581598789324">Diese Richtlinie ist veraltet und wird in Version 82 von <ph name="PRODUCT_OS_NAME" /> entfernt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />".
 
           Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe im Akkubetrieb in den Inaktivitätsmodus gewechselt wird.

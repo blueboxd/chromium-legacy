@@ -251,6 +251,7 @@
 <translation id="4072264167173457037">Умераны сігнал</translation>
 <translation id="4112140312785995938">Перайсці назад</translation>
 <translation id="4129129681837227511">Каб бачыць апавяшчэнні на экране блакіроўкі, разблакіруйце прыладу і змяніце адпаведную наладу</translation>
+<translation id="4144413954005649103">Калі націснуць правай кнопкай мышы або націснуць і трымаць, Памочнік паказвае інфармацыю, якая датычыцца таго, што вылучана на экране.</translation>
 <translation id="4146833061457621061">Уключыць музыку</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> знаходзіцца пад кіраваннем дамена <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Мовы</translation>
@@ -398,6 +399,7 @@
 <translation id="615957422585914272">Паказаць экранную клавіятуру</translation>
 <translation id="6164005077879661055">Пры выдаленні падкантрольнага карыстальніка будуць выдалены ўсе звязаныя з ім файлы і лакальныя даныя. На старонцы <ph name="MANAGEMENT_URL" /> менеджар па-ранейшаму можа мець магчымасць бачыць гісторыю наведаных вэб-сайтаў і налады для гэтага карыстальніка.</translation>
 <translation id="6165508094623778733">Даведацца больш</translation>
+<translation id="6236290670123303279">Кіраваць наладамі</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Зафіксаваны гарызантальны фармат</translation>
 <translation id="6259254695169772643">Для выбару выкарыстайце стыло</translation>
@@ -439,6 +441,7 @@
 <translation id="6669268301501499730">Уключана</translation>
 <translation id="6670153871843998651">Стол 3</translation>
 <translation id="6691659475504239918">"Пошук"+Shift+H</translation>
+<translation id="6692996468359469499">Атрыманне інфармацыі, звязанай з вылучаным вамі</translation>
 <translation id="6696025732084565524">Патрабуецца крытычнае абнаўленне для здымнай клавіятуры</translation>
 <translation id="6700713906295497288">Кнопка меню рэдактара метадаў уводу</translation>
 <translation id="6713285437468012787">Прылада Bluetooth "<ph name="DEVICE_NAME" />" спалучана і цяпер даступная ўсім карыстальнікам. Гэта спалучэнне можна выдаліць у "Наладах".</translation>
@@ -527,6 +530,7 @@
 <translation id="79341161159229895">Уліковым запісам кіруюць <ph name="FIRST_PARENT_EMAIL" /> і <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">Рэжым высокай кантраснасці</translation>
 <translation id="7977927628060636163">Ідзе пошук мабільных сетак...</translation>
+<translation id="7980780401175799550">Апрабуйце новыя магчымасці навігацыі ў Chrome OS</translation>
 <translation id="7982789257301363584">Сетка</translation>
 <translation id="7984197416080286869">Зашмат спроб разблакіроўкі адбіткам</translation>
 <translation id="7994370417837006925">Уваход у некалькі ўліковых запісаў</translation>
@@ -548,6 +552,7 @@
 <translation id="8167567890448493835">Выкарыстоўваецца <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Наладзіць мову і ўвод...</translation>
 <translation id="8192202700944119416">Апавяшчэнні схаваны.</translation>
+<translation id="8196787716797768628">З дапамогай жэстаў можна хутка пераключацца паміж праграмамі і выкарыстоўваць Chromebook у планшэтным рэжыме.</translation>
 <translation id="8203795194971602413">Націсканне правай клавішай мышы</translation>
 <translation id="8236042855478648955">Час перапынку</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />, зарад акумулятара тэлефона – <ph name="BATTERY_STATUS" /></translation>

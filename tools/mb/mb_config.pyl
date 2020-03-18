@@ -14,11 +14,11 @@
   # below). MB uses this dict to look up which config to use for a given bot.
   'masters': {
     'chrome': {
-      'chromeos-arm-generic-cfi-thin-lto-chrome': 'chromeos_arm-generic_cfi_thin_lto',
+      'chromeos-arm-generic-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
       'chromeos-betty-cfi-thin-lto-chrome': 'chromeos_betty_cfi_thin_lto',
       'chromeos-betty-chrome': 'chromeos_betty_include_unwind_tables',
-      'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'chromeos_betty-pi-arc_cfi_thin_lto',
-      'chromeos-betty-pi-arc-chrome': 'chromeos_betty-pi-arc_include_unwind_tables',
+      'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
+      'chromeos-betty-pi-arc-chrome': 'cros_chrome_sdk_include_unwind_tables',
       'chromeos-eve-chrome': 'chromeos_eve_include_unwind_tables',
       'chromeos-kevin-chrome': 'chromeos_kevin_include_unwind_tables',
       # Don't include unwind tables for the remaining three builders since
@@ -739,11 +739,11 @@
     },
 
     'tryserver.chrome': {
-      'chromeos-arm-generic-cfi-thin-lto-chrome': 'chromeos_arm-generic_cfi_thin_lto',
+      'chromeos-arm-generic-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
       'chromeos-betty-cfi-thin-lto-chrome': 'chromeos_betty_cfi_thin_lto',
       'chromeos-betty-chrome': 'chromeos_betty_include_unwind_tables',
-      'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'chromeos_betty-pi-arc_cfi_thin_lto',
-      'chromeos-betty-pi-arc-chrome': 'chromeos_betty-pi-arc_include_unwind_tables',
+      'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
+      'chromeos-betty-pi-arc-chrome': 'cros_chrome_sdk_include_unwind_tables',
       'chromeos-eve-chrome': 'chromeos_eve_include_unwind_tables',
       'chromeos-eve-compile-chrome': 'chromeos_eve_include_unwind_tables',
       'chromeos-kevin-chrome': 'chromeos_kevin_include_unwind_tables',
@@ -1371,10 +1371,6 @@
       'chromeos_device', 'arm-generic',
     ],
 
-    'chromeos_arm-generic_cfi_thin_lto': [
-      'chromeos_device', 'arm-generic', 'cfi_full', 'thin_lto',
-    ],
-
     'chromeos_arm-generic_dcheck_always_on': [
       'chromeos_device', 'arm-generic', 'dcheck_always_on',
     ],
@@ -1393,14 +1389,6 @@
 
     'chromeos_betty_include_unwind_tables': [
       'chromeos_device', 'betty', 'include_unwind_tables',
-    ],
-
-    'chromeos_betty-pi-arc_cfi_thin_lto': [
-      'chromeos_device', 'betty-pi-arc', 'cfi_full', 'thin_lto',
-    ],
-
-    'chromeos_betty-pi-arc_include_unwind_tables': [
-      'chromeos_device', 'betty-pi-arc', 'include_unwind_tables',
     ],
 
     'chromeos_eve_include_unwind_tables': [
@@ -1556,6 +1544,14 @@
 
     'codesearch_gen_chromium_bot': [
       'codesearch',
+    ],
+
+    'cros_chrome_sdk_cfi_thin_lto': [
+      'cros_chrome_sdk', 'cfi_full', 'thin_lto',
+    ],
+
+    'cros_chrome_sdk_include_unwind_tables': [
+      'cros_chrome_sdk', 'include_unwind_tables',
     ],
 
     'dawn_tests_release_trybot': [
@@ -2162,10 +2158,6 @@
       'args_file': '//build/args/chromeos/betty.gni',
     },
 
-    'betty-pi-arc': {
-      'args_file': '//build/args/chromeos/betty-pi-arc.gni',
-    },
-
     'cast': {
       'gn_args': 'is_chromecast=true'
     },
@@ -2247,6 +2239,18 @@
                   'use_crash_key_stubs=true use_hashed_jni_names=true '
                   'clang_use_default_sample_profile=false '
                   'enable_resource_whitelist_generation=false'),
+    },
+
+    'cros_chrome_sdk': {
+      # This is used so that the cros chrome_sdk (simplechrome) builders
+      # can manage the list of GN args in their .ebuild
+      # files and just pass through the desired arguments, hence not
+      # really using MB. If a bot uses this mixin, we expect that
+      # both GYP_DEFINES and GN_ARGS are set in the environment,
+      # and that GYP_DEFINES has chromeos=1 and GN_ARGS has
+      # target_os="chromeos" in it.
+      'cros_passthrough': True,
+      'gn_args': 'ozone_platform_headless=true',
     },
 
     'dawn_tests': {

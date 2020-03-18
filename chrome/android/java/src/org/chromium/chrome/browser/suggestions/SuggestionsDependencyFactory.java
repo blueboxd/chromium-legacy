@@ -10,8 +10,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.favicon.FaviconHelper;
-import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.snippets.EmptySuggestionsSource;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
@@ -22,6 +20,8 @@ import org.chromium.chrome.browser.suggestions.mostvisited.MostVisitedSites;
 import org.chromium.chrome.browser.suggestions.mostvisited.MostVisitedSitesBridge;
 import org.chromium.chrome.browser.thumbnail.generator.ThumbnailProvider;
 import org.chromium.chrome.browser.thumbnail.generator.ThumbnailProviderImpl;
+import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
+import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 
 /**
  * Provides an injection mechanisms for dependencies of the suggestions package.

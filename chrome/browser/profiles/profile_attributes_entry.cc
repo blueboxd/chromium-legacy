@@ -177,22 +177,6 @@ bool ProfileAttributesEntry::ShouldShowProfileLocalName(
   return false;
 }
 
-base::string16 ProfileAttributesEntry::GetNameToDisplay() const {
-  base::string16 name_to_display = GetGAIANameToDisplay();
-
-  base::string16 local_profile_name = GetLocalProfileName();
-  if (name_to_display.empty())
-    return local_profile_name;
-
-  if (!ShouldShowProfileLocalName(name_to_display))
-    return name_to_display;
-
-  name_to_display.append(base::UTF8ToUTF16(" ("));
-  name_to_display.append(local_profile_name);
-  name_to_display.append(base::UTF8ToUTF16(")"));
-  return name_to_display;
-}
-
 base::string16 ProfileAttributesEntry::GetLastNameToDisplay() const {
   return last_name_to_display_;
 }
@@ -206,8 +190,25 @@ bool ProfileAttributesEntry::HasProfileNameChanged() {
   return true;
 }
 
+NameForm ProfileAttributesEntry::GetNameForm() const {
+  base::string16 name_to_display = GetGAIANameToDisplay();
+  if (name_to_display.empty())
+    return NameForm::kLocalName;
+  if (!ShouldShowProfileLocalName(name_to_display))
+    return NameForm::kGaiaName;
+  return NameForm::kGaiaAndLocalName;
+}
+
 base::string16 ProfileAttributesEntry::GetName() const {
-  return GetNameToDisplay();
+  switch (GetNameForm()) {
+    case NameForm::kGaiaName:
+      return GetGAIANameToDisplay();
+    case NameForm::kLocalName:
+      return GetLocalProfileName();
+    case NameForm::kGaiaAndLocalName:
+      return GetGAIANameToDisplay() + base::UTF8ToUTF16(" (") +
+             GetLocalProfileName() + base::UTF8ToUTF16(")");
+  }
 }
 
 base::string16 ProfileAttributesEntry::GetShortcutName() const {

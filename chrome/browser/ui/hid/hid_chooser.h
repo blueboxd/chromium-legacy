@@ -5,18 +5,18 @@
 #ifndef CHROME_BROWSER_UI_HID_HID_CHOOSER_H_
 #define CHROME_BROWSER_UI_HID_HID_CHOOSER_H_
 
+#include "base/callback_helpers.h"
 #include "base/macros.h"
-#include "components/bubble/bubble_reference.h"
 #include "content/public/browser/hid_chooser.h"
 
 // Owns a HID device chooser dialog and closes it when destroyed.
 class HidChooser : public content::HidChooser {
  public:
-  explicit HidChooser(BubbleReference bubble);
-  ~HidChooser() override;
+  explicit HidChooser(base::OnceClosure close_closure);
+  ~HidChooser() override = default;
 
  private:
-  BubbleReference bubble_;
+  base::ScopedClosureRunner closure_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(HidChooser);
 };

@@ -395,8 +395,7 @@
     // TODO(https://crbug.com/977612): Chromium currently lacks support for
     // |permission_params.one_realm| and will always consider it is set to false.
     return internals.setPermission(permission_params.descriptor,
-                                   permission_params.state,
-                                   location.origin, location.origin);
+                                   permission_params.state);
   }
 
   // Enable automation so we don't wait for user input on unimplemented APIs

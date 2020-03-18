@@ -5,6 +5,7 @@
 <translation id="1028699632127661925">درحال ارسال به <ph name="DEVICE_NAME" />…</translation>
 <translation id="1036727731225946849">درحال افزودن <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">از وب‌سایت‌ها</translation>
+<translation id="1044891598689252897">عملکرد سایت‌ها عادی خواهد بود</translation>
 <translation id="1049743911850919806">ناشناس</translation>
 <translation id="10614374240317010">هرگز ذخیره نمی‌شود</translation>
 <translation id="1067922213147265141">‏سایر سرویس‌های Google</translation>
@@ -72,6 +73,7 @@
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> هم‌رسانی نشد</translation>
 <translation id="1477626028522505441">به‌دلیل مشکلاتی در سرور، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
 <translation id="1506061864768559482">موتور جستجو</translation>
+<translation id="1509960214886564027">ویژگی‌های بسیاری از سایت‌ها ممکن است درست کار نکنند</translation>
 <translation id="1513352483775369820">نشانک‌ها و سابقه وب</translation>
 <translation id="1513858653616922153">حذف گذرواژه</translation>
 <translation id="1521774566618522728">امروز فعال بود</translation>
@@ -235,6 +237,7 @@
 <translation id="2647434099613338025">افزودن زبان</translation>
 <translation id="2650751991977523696">فایل دوباره بارگیری شود؟</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# فایل صوتی}one{# فایل صوتی}other{# فایل صوتی}}</translation>
+<translation id="2687403674020088961">مسدود کردن همه کوکی‌ها (توصیه نمی‌شود)</translation>
 <translation id="2707726405694321444">بازخوانی صفحه</translation>
 <translation id="2709516037105925701">تکمیل خودکار</translation>
 <translation id="2717722538473713889">آدرس‌های ایمیل</translation>
@@ -340,6 +343,7 @@
 <translation id="3478363558367712427">می‌توانید موتور جستجویتان را انتخاب کنید</translation>
 <translation id="3492207499832628349">برگه ناشناس جدید</translation>
 <translation id="3493531032208478708">درباره محتوای پیشنهادی <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
+<translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">واقعیت افزوده</translation>
 <translation id="3518985090088779359">پذیرش و ادامه</translation>
 <translation id="3522247891732774234">به‌روزرسانی موجود است. گزینه‌های بیشتر</translation>
@@ -355,6 +359,7 @@
 <translation id="358794129225322306">به سایت اجازه داده شود چند فایل را به‌طور خودکار بارگیری کند.</translation>
 <translation id="3590487821116122040">‏فضای ذخیره‌سازی سایت که از نظر Chrome مهم نیست (مثلاً سایت‌هایی که تنظیمات ذخیره‌شده ندارند یا شما مرتب بازدید نمی‌کنید)</translation>
 <translation id="3594780231884063836">بی‌صدا کردن ویدیو</translation>
+<translation id="3596414637720633074">مسدود کردن کوکی‌های شخص ثالث در «حالت ناشناس»</translation>
 <translation id="3599863153486145794">‏سابقه را از همه دستگاه‌های به سیستم واردشده پاک می‌کند. ممکن است حساب Google شما اشکال دیگری از سابقه مرور در <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> داشته باشد.</translation>
 <translation id="3600792891314830896">سایت‌هایی که صدا پخش می‌کنند بی‌صدا شوند</translation>
 <translation id="3616113530831147358">صوتی</translation>
@@ -921,6 +926,7 @@
 <translation id="780301667611848630">نه متشکرم</translation>
 <translation id="7810647596859435254">باز کردن با…</translation>
 <translation id="7821588508402923572">میزان داده صرفه‌جویی‌شده اینجا نشان داده می‌شود</translation>
+<translation id="7828557259026017104">کوکی‌ها فایل‌هایی هستند که توسط وب‌سایت‌هایی که بازدید می‌کنید ایجاد می‌شوند. سایت‌ها برای به‌خاطر سپردن اولویت‌هایتان از آن‌ها استفاده می‌کنند. کوکی‌های شخص ثالث را سایت‌های دیگری ایجاد می‌کنند. برخی از محتواها مثل آگهی‌ها یا تصاویر موجود در صفحه وبی که از آن دیدن می‌کنید، متعلق به این سایت‌ها هستند.</translation>
 <translation id="783819812427904514">با صدا کردن ویدیو</translation>
 <translation id="784934925303690534">محدوده زمانی</translation>
 <translation id="7851858861565204677">دستگاه‌های دیگر</translation>
@@ -941,6 +947,7 @@
 <translation id="79859296434321399">‏برای مشاهده محتوای واقعیت افزوده، ARCore را نصب کنید</translation>
 <translation id="7986741934819883144">مخاطبی انتخاب کنید</translation>
 <translation id="7987073022710626672">‏شرایط خدمات Chrome</translation>
+<translation id="7993619969781047893">ویژگی‌های بعضی از سایت‌ها ممکن است درست کار نکنند</translation>
 <translation id="7998918019931843664">بازکردن مجدد برگه‌های بسته شده</translation>
 <translation id="7999064672810608036">مطمئنید که می‌خواهید تمام داده‌های محلی، شامل کوکی‌ها را حذف کنید و تمام مجوزهای این وب‌سایت را بازنشانی کنید؟</translation>
 <translation id="8004582292198964060">مرورگر</translation>
@@ -1075,6 +1082,7 @@
 <translation id="8965591936373831584">در انتظار</translation>
 <translation id="8970887620466824814">مشکلی پیش آمد.</translation>
 <translation id="8972098258593396643">در پوشه پیش‌فرض بارگیری شود؟</translation>
+<translation id="8988028529677883095">استفاده از تلفن به‌عنوان کلید امنیتی</translation>
 <translation id="8993760627012879038">باز کردن برگه جدیدی در حالت ناشناس</translation>
 <translation id="8998729206196772491">‏هم‌اکنون درحال ورود به سیستم با یک حساب مدیریت‌شده توسط <ph name="MANAGED_DOMAIN" /> و ارائه کنترل داده‌های Chrome خودتان به سرپرست این حساب هستید. داده‌هایتان به‌طور دائم به این حساب مرتبط می‌شوند. با خروج از Chrome، داده‌هایتان از این دستگاه حذف می‌شوند اما همچنان در حساب Google شما باقی می‌ماند.</translation>
 <translation id="9019902583201351841">مدیریت شده توسط والدین شما</translation>

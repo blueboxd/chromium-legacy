@@ -91,9 +91,9 @@ int TableLayoutAlgorithmFixed::CalcWidthArray() {
        col = col->NextColumn()) {
     // LayoutTableCols don't have the concept of preferred logical width, but we
     // need to clear their dirty bits so that if we call
-    // setPreferredWidthsDirty(true) on a col or one of its descendants, we'll
+    // SetPreferredWidthsDirty(true) on a col or one of its descendants, we'll
     // mark it's ancestors as dirty.
-    col->ClearPreferredLogicalWidthsDirtyBits();
+    col->ClearIntrinsicLogicalWidthsDirtyBits();
 
     // Width specified by column-groups that have column child does not affect
     // column width in fixed layout tables
@@ -186,10 +186,10 @@ int TableLayoutAlgorithmFixed::CalcWidthArray() {
 
     // TableLayoutAlgorithmFixed doesn't use PreferredLogicalWidths, but we
     // need to clear the dirty bit on the cell so that we'll correctly mark its
-    // ancestors dirty in case we later call SetPreferredLogicalWidthsDirty()
+    // ancestors dirty in case we later call SetIntrinsicLogicalWidthsDirty()
     // on it later.
-    if (cell->PreferredLogicalWidthsDirty())
-      cell->ClearPreferredLogicalWidthsDirty();
+    if (cell->IntrinsicLogicalWidthsDirty())
+      cell->ClearIntrinsicLogicalWidthsDirty();
   }
 
   return used_width;

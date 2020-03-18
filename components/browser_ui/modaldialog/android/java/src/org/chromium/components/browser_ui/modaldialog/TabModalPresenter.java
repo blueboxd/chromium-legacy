@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
 
+import org.chromium.base.StrictModeContext;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
@@ -105,6 +106,14 @@ public abstract class TabModalPresenter extends ModalDialogManager.Presenter {
         return mDialogContainer;
     }
 
+    private ModalDialogView loadDialogView(int style) {
+        // LayoutInflater may access the disk.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            return (ModalDialogView) LayoutInflater.from(new ContextThemeWrapper(mContext, style))
+                    .inflate(R.layout.modal_dialog_view, null);
+        }
+    }
+
     @Override
     protected void addDialogView(PropertyModel model) {
         if (mDialogContainer == null) mDialogContainer = createDialogContainer();
@@ -112,9 +121,7 @@ public abstract class TabModalPresenter extends ModalDialogManager.Presenter {
         int style = model.get(ModalDialogProperties.PRIMARY_BUTTON_FILLED)
                 ? R.style.Theme_Chromium_ModalDialog_FilledPrimaryButton
                 : R.style.Theme_Chromium_ModalDialog_TextPrimaryButton;
-        mDialogView =
-                (ModalDialogView) LayoutInflater.from(new ContextThemeWrapper(mContext, style))
-                        .inflate(R.layout.modal_dialog_view, null);
+        mDialogView = loadDialogView(style);
         mModelChangeProcessor =
                 PropertyModelChangeProcessor.create(model, mDialogView, new ViewBinder());
 

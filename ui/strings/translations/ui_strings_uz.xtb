@@ -39,7 +39,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Hammasini belgilash</translation>
-<translation id="1938451708255335766">Tahrirlar kuchga kirishi uchun ilovani yopib, qaytadan ishga tushiring.</translation>
 <translation id="2006524834898217237">Bu qurilma internetga ulanganini tekshiring.</translation>
 <translation id="208586643495776849">Qayta urining</translation>
 <translation id="2090963878406559571"><ph name="ORIGIN" /> orqali Android telefoningizga raqam yuborish uchun ikkala qurilma sozlamalarida <ph name="TROUBLESHOOT_LINK" /> sahifasini oching.</translation>
@@ -88,7 +87,6 @@
 <translation id="3306688585798492231">Ichki displey</translation>
 <translation id="335581015389089642">Ovoz berish</translation>
 <translation id="3389286852084373014">Matn juda katta</translation>
-<translation id="3479552764303398839">Hozir emas</translation>
 <translation id="348799646910989694">Vaqtincha xotira avtomatik yopildi</translation>
 <translation id="3554637740840164787">Mahkamlandi: <ph name="ITEM_TITLE" /></translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{ 1 kun qoldi}other{ # kun qoldi}}</translation>
@@ -143,8 +141,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 daqiqa}other{# daqiqa}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Bugun onlayn edi}=1{1 kun oldin onlayn edi}other{# kun oldin onlayn edi}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 kun va }other{# kun va }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 yildan keyin}other{# yildan keyin}}</translation>
-<translation id="5895138241574237353">Qayta ishga tushirish</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 soniya qoldi}other{# soniya qoldi}}</translation>
 <translation id="5941711191222866238">Yig‘ish</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 soat}other{# soat}}</translation>

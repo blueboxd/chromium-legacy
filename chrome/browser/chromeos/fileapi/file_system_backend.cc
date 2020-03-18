@@ -69,6 +69,7 @@ FileSystemBackend::FileSystemBackend(
     std::unique_ptr<FileSystemBackendDelegate> arc_content_delegate,
     std::unique_ptr<FileSystemBackendDelegate> arc_documents_provider_delegate,
     std::unique_ptr<FileSystemBackendDelegate> drivefs_delegate,
+    std::unique_ptr<FileSystemBackendDelegate> smbfs_delegate,
     scoped_refptr<storage::ExternalMountPoints> mount_points,
     storage::ExternalMountPoints* system_mount_points)
     : file_access_permissions_(new FileAccessPermissions()),
@@ -79,6 +80,7 @@ FileSystemBackend::FileSystemBackend(
       arc_documents_provider_delegate_(
           std::move(arc_documents_provider_delegate)),
       drivefs_delegate_(std::move(drivefs_delegate)),
+      smbfs_delegate_(std::move(smbfs_delegate)),
       mount_points_(mount_points),
       system_mount_points_(system_mount_points) {}
 
@@ -282,7 +284,6 @@ storage::AsyncFileUtil* FileSystemBackend::GetAsyncFileUtil(
       return file_system_provider_delegate_->GetAsyncFileUtil(type);
     case storage::kFileSystemTypeNativeLocal:
     case storage::kFileSystemTypeRestrictedNativeLocal:
-    case storage::kFileSystemTypeSmbFs:
       return local_file_util_.get();
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
       return mtp_delegate_->GetAsyncFileUtil(type);
@@ -292,6 +293,8 @@ storage::AsyncFileUtil* FileSystemBackend::GetAsyncFileUtil(
       return arc_documents_provider_delegate_->GetAsyncFileUtil(type);
     case storage::kFileSystemTypeDriveFs:
       return drivefs_delegate_->GetAsyncFileUtil(type);
+    case storage::kFileSystemTypeSmbFs:
+      return smbfs_delegate_->GetAsyncFileUtil(type);
     default:
       NOTREACHED();
   }

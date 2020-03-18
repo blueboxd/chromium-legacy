@@ -404,9 +404,6 @@ const base::Feature kLowerJavaScriptPriorityWhenForceDeferred{
 const base::Feature kDisableForceDeferInChildFrames{
     "DisableForceDeferInChildFrames", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kHtmlImportsRequestInitiatorLock{
-    "HtmlImportsRequestInitiatorLock", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables redirecting subresources in the page to better compressed and
 // optimized versions to provide data savings.
 const base::Feature kSubresourceRedirect{"SubresourceRedirect",

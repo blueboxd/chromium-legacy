@@ -45,6 +45,13 @@
 
 /* Forward Declarations */ 
 
+#ifndef __ICompleteStatus_FWD_DEFINED__
+#define __ICompleteStatus_FWD_DEFINED__
+typedef interface ICompleteStatus ICompleteStatus;
+
+#endif 	/* __ICompleteStatus_FWD_DEFINED__ */
+
+
 #ifndef __IUpdaterObserver_FWD_DEFINED__
 #define __IUpdaterObserver_FWD_DEFINED__
 typedef interface IUpdaterObserver IUpdaterObserver;
@@ -99,6 +106,96 @@ extern "C"{
 #endif 
 
 
+#ifndef __ICompleteStatus_INTERFACE_DEFINED__
+#define __ICompleteStatus_INTERFACE_DEFINED__
+
+/* interface ICompleteStatus */
+/* [unique][helpstring][uuid][dual][object] */ 
+
+
+EXTERN_C const IID IID_ICompleteStatus;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("2FCD14AF-B645-4351-8359-E80A0E202A0B")
+    ICompleteStatus : public IUnknown
+    {
+    public:
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_statusCode( 
+            /* [retval][out] */ LONG *__MIDL__ICompleteStatus0000) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_statusMessage( 
+            /* [retval][out] */ BSTR *__MIDL__ICompleteStatus0001) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct ICompleteStatusVtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            ICompleteStatus * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            ICompleteStatus * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            ICompleteStatus * This);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_statusCode )( 
+            ICompleteStatus * This,
+            /* [retval][out] */ LONG *__MIDL__ICompleteStatus0000);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_statusMessage )( 
+            ICompleteStatus * This,
+            /* [retval][out] */ BSTR *__MIDL__ICompleteStatus0001);
+        
+        END_INTERFACE
+    } ICompleteStatusVtbl;
+
+    interface ICompleteStatus
+    {
+        CONST_VTBL struct ICompleteStatusVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define ICompleteStatus_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define ICompleteStatus_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define ICompleteStatus_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define ICompleteStatus_get_statusCode(This,__MIDL__ICompleteStatus0000)	\
+    ( (This)->lpVtbl -> get_statusCode(This,__MIDL__ICompleteStatus0000) ) 
+
+#define ICompleteStatus_get_statusMessage(This,__MIDL__ICompleteStatus0001)	\
+    ( (This)->lpVtbl -> get_statusMessage(This,__MIDL__ICompleteStatus0001) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __ICompleteStatus_INTERFACE_DEFINED__ */
+
+
 #ifndef __IUpdaterObserver_INTERFACE_DEFINED__
 #define __IUpdaterObserver_INTERFACE_DEFINED__
 
@@ -115,7 +212,7 @@ EXTERN_C const IID IID_IUpdaterObserver;
     {
     public:
         virtual HRESULT STDMETHODCALLTYPE OnComplete( 
-            /* [in] */ int error_code) = 0;
+            /* [in] */ ICompleteStatus *status) = 0;
         
     };
     
@@ -140,7 +237,7 @@ EXTERN_C const IID IID_IUpdaterObserver;
         
         HRESULT ( STDMETHODCALLTYPE *OnComplete )( 
             IUpdaterObserver * This,
-            /* [in] */ int error_code);
+            /* [in] */ ICompleteStatus *status);
         
         END_INTERFACE
     } IUpdaterObserverVtbl;
@@ -165,8 +262,8 @@ EXTERN_C const IID IID_IUpdaterObserver;
     ( (This)->lpVtbl -> Release(This) ) 
 
 
-#define IUpdaterObserver_OnComplete(This,error_code)	\
-    ( (This)->lpVtbl -> OnComplete(This,error_code) ) 
+#define IUpdaterObserver_OnComplete(This,status)	\
+    ( (This)->lpVtbl -> OnComplete(This,status) ) 
 
 #endif /* COBJMACROS */
 
@@ -326,6 +423,11 @@ UpdaterServiceClass;
 #endif /* __UpdaterLib_LIBRARY_DEFINED__ */
 
 /* Additional Prototypes for ALL interfaces */
+
+unsigned long             __RPC_USER  BSTR_UserSize(     unsigned long *, unsigned long            , BSTR * ); 
+unsigned char * __RPC_USER  BSTR_UserMarshal(  unsigned long *, unsigned char *, BSTR * ); 
+unsigned char * __RPC_USER  BSTR_UserUnmarshal(unsigned long *, unsigned char *, BSTR * ); 
+void                      __RPC_USER  BSTR_UserFree(     unsigned long *, BSTR * ); 
 
 /* end of Additional Prototypes */
 

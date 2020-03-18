@@ -30,6 +30,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -52,9 +53,9 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.modelutil.ListObservable;
 
-import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -63,9 +64,12 @@ import java.util.concurrent.atomic.AtomicReference;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
         shadows = {CustomShadowAsyncTask.class, ShadowRecordHistogram.class})
+@Features.EnableFeatures(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)
 public class PasswordAccessorySheetControllerTest {
     @Rule
     public JniMocker mocker = new JniMocker();
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
     @Mock
     private RecyclerView mMockView;
     @Mock
@@ -78,7 +82,6 @@ public class PasswordAccessorySheetControllerTest {
 
     @Before
     public void setUp() {
-        setAutofillFeature(true);
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
         mocker.mock(RecordHistogramJni.TEST_HOOKS, mMockRecordHistogramNatives);
@@ -136,8 +139,8 @@ public class PasswordAccessorySheetControllerTest {
     }
 
     @Test
+    @Features.DisableFeatures(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)
     public void testSplitsTabDataToList() {
-        setAutofillFeature(false);
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         final AccessorySheetData testData =
                 new AccessorySheetData(AccessoryTabType.PASSWORDS, "Passwords for this site", "");
@@ -161,8 +164,8 @@ public class PasswordAccessorySheetControllerTest {
     }
 
     @Test
+    @Features.EnableFeatures(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)
     public void testUsesTabTitleOnlyForEmptyListsForModernDesign() {
-        setAutofillFeature(true);
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         final AccessorySheetData testData =
                 new AccessorySheetData(AccessoryTabType.PASSWORDS, "No passwords for this", "");
@@ -275,11 +278,5 @@ public class PasswordAccessorySheetControllerTest {
     private int getSuggestionsImpressions(@AccessoryTabType int type, int sample) {
         return RecordHistogram.getHistogramValueCountForTesting(
                 getHistogramForType(UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTIONS, type), sample);
-    }
-
-    private void setAutofillFeature(boolean enabled) {
-        HashMap<String, Boolean> features = new HashMap<>();
-        features.put(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY, enabled);
-        ChromeFeatureList.setTestFeatures(features);
     }
 }

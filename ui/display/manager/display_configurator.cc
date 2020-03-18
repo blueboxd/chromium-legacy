@@ -1058,11 +1058,18 @@ void DisplayConfigurator::UpdatePowerState(
     chromeos::DisplayPowerState new_power_state) {
   chromeos::DisplayPowerState old_power_state = current_power_state_;
   current_power_state_ = new_power_state;
+
+  // Don't notify observers of |current_power_state_| when there is a pending
+  // power state. Notifying the observers may confuse them because they may
+  // already know the up-to-date state via PowerManagerClient. Please refer to
+  // b/134459602 for details.
+  if (has_pending_power_state_)
+    return;
+
   // If the pending power state hasn't changed then make sure that value gets
   // updated as well since the last requested value may have been dependent on
   // certain conditions (ie: if only the internal monitor was present).
-  if (!has_pending_power_state_)
-    pending_power_state_ = new_power_state;
+  pending_power_state_ = new_power_state;
   if (old_power_state != current_power_state_)
     NotifyPowerStateObservers();
 }

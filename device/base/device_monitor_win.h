@@ -5,9 +5,11 @@
 #ifndef DEVICE_BASE_DEVICE_MONITOR_WIN_H_
 #define DEVICE_BASE_DEVICE_MONITOR_WIN_H_
 
-#include <windows.h>
+#include <string>
 
 #include "base/observer_list.h"
+#include "base/strings/string16.h"
+#include "base/win/windows_types.h"
 #include "device/base/device_base_export.h"
 
 namespace device {
@@ -19,9 +21,9 @@ class DEVICE_BASE_EXPORT DeviceMonitorWin {
   class DEVICE_BASE_EXPORT Observer {
    public:
     virtual void OnDeviceAdded(const GUID& class_guid,
-                               const std::string& device_path);
+                               const base::string16& device_path);
     virtual void OnDeviceRemoved(const GUID& class_guid,
-                                 const std::string& device_path);
+                                 const base::string16& device_path);
   };
 
   ~DeviceMonitorWin();
@@ -38,9 +40,9 @@ class DEVICE_BASE_EXPORT DeviceMonitorWin {
   DeviceMonitorWin();
 
   void NotifyDeviceAdded(const GUID& class_guid,
-                         const std::string& device_path);
+                         const base::string16& device_path);
   void NotifyDeviceRemoved(const GUID& class_guid,
-                           const std::string& device_path);
+                           const base::string16& device_path);
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 };

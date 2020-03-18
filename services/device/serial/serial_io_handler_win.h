@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/device/serial/serial_io_handler.h"
 
@@ -46,7 +47,7 @@ class SerialIoHandlerWin : public SerialIoHandler,
                      DWORD bytes_transfered,
                      DWORD error) override;
 
-  void OnDeviceRemoved(const std::string& device_path);
+  void OnDeviceRemoved(const base::string16& device_path);
 
   // Context used for asynchronous WaitCommEvent calls.
   std::unique_ptr<base::MessagePumpForIO::IOContext> comm_context_;

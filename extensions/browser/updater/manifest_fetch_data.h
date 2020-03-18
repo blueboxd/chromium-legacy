@@ -103,7 +103,7 @@ class ManifestFetchData {
                     const PingData* ping_data,
                     const std::string& update_url_data,
                     const std::string& install_source,
-                    const std::string& install_location,
+                    Manifest::Location install_location,
                     FetchPriority fetch_priority);
 
   const GURL& base_url() const { return base_url_; }

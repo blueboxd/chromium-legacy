@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
+#include "base/win/scoped_bstr.h"
 #include "base/win/scoped_com_initializer.h"
 #include "chrome/updater/app/app.h"
 #include "chrome/updater/configurator.h"
@@ -68,6 +69,20 @@ class ComServer : public App {
   scoped_refptr<Configurator> config_;
 };
 
+STDMETHODIMP CompleteStatusImpl::get_statusCode(LONG* code) {
+  DCHECK(code);
+
+  *code = code_;
+  return S_OK;
+}
+
+STDMETHODIMP CompleteStatusImpl::get_statusMessage(BSTR* message) {
+  DCHECK(message);
+
+  *message = base::win::ScopedBstr(message_).Release();
+  return S_OK;
+}
+
 HRESULT UpdaterImpl::CheckForUpdate(const base::char16* app_id) {
   return E_NOTIMPL;
 }
@@ -85,8 +100,11 @@ HRESULT UpdaterImpl::Update(const base::char16* app_id) {
 }
 
 HRESULT UpdaterImpl::UpdateAll(IUpdaterObserver* observer) {
-  if (observer)
-    observer->OnComplete(11);
+  if (observer) {
+    auto status = Microsoft::WRL::Make<CompleteStatusImpl>(11, L"Test");
+    observer->OnComplete(status.Get());
+  }
+
   return S_OK;
 }
 

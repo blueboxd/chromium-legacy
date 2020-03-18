@@ -941,8 +941,13 @@ void FrameSequenceTracker::ReportMainFrameCausedNoDamage(
   DCHECK_GE(main_throughput().frames_expected, main_frames_.size())
       << TRACKER_DCHECK_MSG;
 
-  if (begin_main_frame_data_.previous_sequence == args.frame_id.sequence_number)
-    begin_main_frame_data_.previous_sequence = 0;
+  // Could be 0 if there were a pause frame production.
+  if (begin_main_frame_data_.previous_sequence != 0) {
+    DCHECK_EQ(begin_main_frame_data_.previous_sequence,
+              args.frame_id.sequence_number)
+        << TRACKER_DCHECK_MSG;
+  }
+  begin_main_frame_data_.previous_sequence = 0;
 }
 
 void FrameSequenceTracker::PauseFrameProduction() {

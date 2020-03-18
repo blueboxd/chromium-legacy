@@ -8,17 +8,6 @@
 # certificates that can be used to test fetching of an intermediate via AIA.
 set -e -x
 
-# The maximum lifetime for any certificates that may go through a "real"
-# cert verifier. This is effectively:
-# min(OS verifier max lifetime for local certs, built-in verifier max lifetime
-#     for local certs)
-#
-# The current built-in verifier max lifetime is 39 months
-# The current OS verifier max lifetime is 825 days, which comes from
-#   iOS 13/macOS 10.15 - https://support.apple.com/en-us/HT210176
-# 731 is used here as just a short-hand for 2 years
-CERT_LIFETIME=730
-
 rm -rf out
 mkdir out
 mkdir out/int
@@ -128,7 +117,7 @@ CA_NAME="req_ca_dn" \
   openssl ca \
     -batch \
     -extensions user_cert \
-    -days ${CERT_LIFETIME} \
+    -days 3650 \
     -in out/ok_cert.req \
     -out out/ok_cert.pem \
     -config ca.cnf
@@ -139,7 +128,7 @@ CA_NAME="req_intermediate_dn" \
   openssl ca \
     -batch \
     -extensions user_cert \
-    -days ${CERT_LIFETIME} \
+    -days 3650 \
     -in out/ok_cert.req \
     -out out/int/ok_cert.pem \
     -config ca.cnf
@@ -148,6 +137,7 @@ CA_NAME="req_ca_dn" \
   openssl ca \
     -batch \
     -extensions user_cert \
+    -days 3650 \
     -in out/wildcard.req \
     -out out/wildcard.pem \
     -config ca.cnf
@@ -157,7 +147,7 @@ CA_NAME="req_ca_dn" \
     -batch \
     -extensions name_constraint_bad \
     -subj "/CN=Leaf certificate/" \
-    -days ${CERT_LIFETIME} \
+    -days 3650 \
     -in out/ok_cert.req \
     -out out/name_constraint_bad.pem \
     -config ca.cnf
@@ -167,7 +157,7 @@ CA_NAME="req_ca_dn" \
     -batch \
     -extensions name_constraint_good \
     -subj "/CN=Leaf Certificate/" \
-    -days ${CERT_LIFETIME} \
+    -days 3650 \
     -in out/ok_cert.req \
     -out out/name_constraint_good.pem \
     -config ca.cnf
@@ -176,7 +166,7 @@ CA_NAME="req_ca_dn" \
   openssl ca \
     -batch \
     -extensions user_cert \
-    -days ${CERT_LIFETIME} \
+    -days 3650 \
     -in out/localhost_cert.req \
     -out out/localhost_cert.pem \
     -config ca.cnf
@@ -196,7 +186,7 @@ CA_NAME="req_ca_dn" \
   openssl ca \
     -batch \
     -extensions user_cert \
-    -days ${CERT_LIFETIME} \
+    -days 3650 \
     -in out/test_names.req \
     -out out/test_names.pem \
     -config ca.cnf
@@ -251,8 +241,9 @@ SUBJECT_NAME="req_punycode_dn" \
     -out ../certificates/punycodetest.pem
 
 ## Reject intranet hostnames in "publicly" trusted certs
+# 365 * 3 = 1095
 SUBJECT_NAME="req_intranet_dn" \
-  openssl req -x509 -days ${CERT_LIFETIME} -extensions req_intranet_san \
+  openssl req -x509 -days 1095 -extensions req_intranet_san \
     -config ../scripts/ee.cnf -newkey rsa:2048 -text \
     -out ../certificates/reject_intranet_hosts.pem
 
@@ -289,6 +280,7 @@ CA_NAME="req_ca_dn" \
     -in out/10_year_validity.req \
     -out ../certificates/10_year_validity.pem \
     -config ca.cnf
+# 365 * 11 = 4015
 openssl req -config ../scripts/ee.cnf \
   -newkey rsa:2048 -text -out out/11_year_validity.req
 CA_NAME="req_ca_dn" \
@@ -296,7 +288,7 @@ CA_NAME="req_ca_dn" \
     -batch \
     -extensions user_cert \
     -startdate 141030000000Z \
-    -enddate   251030000000Z \
+    -days 4015 \
     -in out/11_year_validity.req \
     -out ../certificates/11_year_validity.pem \
     -config ca.cnf
@@ -335,12 +327,13 @@ CA_NAME="req_ca_dn" \
     -config ca.cnf
 openssl req -config ../scripts/ee.cnf \
   -newkey rsa:2048 -text -out out/61_months_after_2012_07.req
+# 30 * 61 = 1830
 CA_NAME="req_ca_dn" \
   openssl ca \
     -batch \
     -extensions user_cert \
     -startdate 141030000000Z \
-    -enddate   191103000000Z \
+    -days 1830 \
     -in out/61_months_after_2012_07.req \
     -out ../certificates/61_months_after_2012_07.pem \
     -config ca.cnf
@@ -510,7 +503,8 @@ CA_NAME="req_ca_dn" \
   openssl ca \
     -batch \
     -extensions user_cert \
-    -days ${CERT_LIFETIME} \
+    -startdate 171220000000Z \
+    -enddate   201220000000Z \
     -in out/sha1_leaf.req \
     -out out/sha1_leaf.pem \
     -config ca.cnf \
@@ -606,14 +600,13 @@ python crlsetutil.py -o ../certificates/crlset_by_root_spki.raw \
 }
 CRLBYROOTSPKI
 
-## Block a leaf cert by issuer-hash-and-serial
+## Block a leaf cert by issuer-hash-and-serial (ok_cert.pem == serial 3, by
+## virtue of the serial file and ordering above.
 python crlsetutil.py -o ../certificates/crlset_by_root_serial.raw \
 <<CRLBYROOTSERIAL
 {
   "BlockedByHash": {
-    "../certificates/root_ca_cert.pem": [
-      "../certificates/ok_cert.pem"
-    ]
+    "../certificates/root_ca_cert.pem": [3]
   }
 }
 CRLBYROOTSERIAL
@@ -624,9 +617,7 @@ python crlsetutil.py -o ../certificates/crlset_by_intermediate_serial.raw \
 <<CRLSETBYINTERMEDIATESERIAL
 {
   "BlockedByHash": {
-    "../certificates/intermediate_ca_cert.pem": [
-      "../certificates/ok_cert_by_intermediate.pem"
-    ]
+    "../certificates/intermediate_ca_cert.pem": [1]
   }
 }
 CRLSETBYINTERMEDIATESERIAL

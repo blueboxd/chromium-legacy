@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -46,9 +47,8 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.modelutil.ListObservable;
-
-import java.util.HashMap;
 
 /**
  * Controller tests for the address accessory sheet.
@@ -56,9 +56,13 @@ import java.util.HashMap;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
         shadows = {CustomShadowAsyncTask.class, ShadowRecordHistogram.class})
+@Features.EnableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
 public class AddressAccessorySheetControllerTest {
     @Rule
     public JniMocker mocker = new JniMocker();
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
+
     @Mock
     private RecyclerView mMockView;
     @Mock
@@ -75,7 +79,6 @@ public class AddressAccessorySheetControllerTest {
         MockitoAnnotations.initMocks(this);
         mocker.mock(RecordHistogramJni.TEST_HOOKS, mMockRecordHistogramNatives);
         AccessorySheetTabCoordinator.IconProvider.setIconForTesting(mock(Drawable.class));
-        setAutofillFeature(true);
         mCoordinator = new AddressAccessorySheetCoordinator(RuntimeEnvironment.application, null);
         assertNotNull(mCoordinator);
         mSheetDataPieces = mCoordinator.getSheetDataPiecesForTesting();
@@ -222,11 +225,5 @@ public class AddressAccessorySheetControllerTest {
     private int getSuggestionsImpressions(@AccessoryTabType int type, int sample) {
         return RecordHistogram.getHistogramValueCountForTesting(
                 getHistogramForType(UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTIONS, type), sample);
-    }
-
-    private void setAutofillFeature(boolean enabled) {
-        HashMap<String, Boolean> features = new HashMap<>();
-        features.put(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY, enabled);
-        ChromeFeatureList.setTestFeatures(features);
     }
 }

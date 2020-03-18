@@ -17,29 +17,33 @@ import android.content.Context;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Tests for {@link Tab}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@Features.EnableFeatures("ShoppingAssist")
 public class TabUnitTest {
     private static final int TAB1_ID = 456;
     private static final int TAB2_ID = 789;
+
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
 
     @Mock
     private WindowAndroid mWindowAndroid;
@@ -67,11 +71,6 @@ public class TabUnitTest {
         doReturn(mActivity).when(mWeakReferenceActivity).get();
         doReturn(mContext).when(mWeakReferenceContext).get();
         doReturn(mContext).when(mContext).getApplicationContext();
-
-        // Bypass feature checks.
-        Map<String, Boolean> features = new HashMap<>();
-        features.put("ShoppingAssist", true);
-        ChromeFeatureList.setTestFeatures(features);
 
         mTab = new TabImpl(TAB1_ID, null, false, null);
         mTab.addObserver(mObserver);

@@ -50,9 +50,10 @@ void DeleteComService() {
 }
 
 void DeleteComInterfaces(HKEY root) {
-  for (const auto iid : {__uuidof(IUpdater), __uuidof(IUpdaterObserver)}) {
-    for (const auto& reg_path : {GetComIidRegistryPath(iid), 
-                                 GetComTypeLibRegistryPath(iid)}) {
+  for (const auto iid : {__uuidof(IUpdater), __uuidof(IUpdaterObserver),
+                         __uuidof(ICompleteStatus)}) {
+    for (const auto& reg_path :
+         {GetComIidRegistryPath(iid), GetComTypeLibRegistryPath(iid)}) {
       InstallUtil::DeleteRegistryKey(root, reg_path, WorkItem::kWow64Default);
     }
   }

@@ -17,7 +17,8 @@ const char* const kFeatureEngagementName = "FeatureEngagement";
 
 // The enum values are used to index into the shared database. Do not rearrange
 // or reuse the integer values. Add new database types at the end of the enum,
-// and update the string mapping in ProtoDbTypeToString().
+// and update the string mapping in ProtoDbTypeToString(). Also update the
+// suffix LevelDBClients in histograms.xml to match the strings for the types.
 enum class ProtoDbType {
   TEST_DATABASE0 = 0,
   TEST_DATABASE1 = 1,

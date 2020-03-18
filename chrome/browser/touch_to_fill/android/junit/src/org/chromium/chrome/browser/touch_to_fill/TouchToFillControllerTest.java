@@ -28,13 +28,13 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.SH
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 
 import android.graphics.Bitmap;
-import android.support.test.espresso.core.deps.guava.collect.ImmutableMap;
 
 import androidx.annotation.Px;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -55,6 +55,7 @@ import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.Credentia
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ItemType;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.components.url_formatter.UrlFormatterJni;
@@ -71,6 +72,7 @@ import java.util.Collections;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
+@Features.EnableFeatures(ChromeFeatureList.TOUCH_TO_FILL_ANDROID)
 public class TouchToFillControllerTest {
     private static final String TEST_URL = "https://www.example.xyz";
     private static final String TEST_SUBDOMAIN_URL = "https://subdomain.example.xyz";
@@ -84,6 +86,8 @@ public class TouchToFillControllerTest {
 
     @Rule
     public JniMocker mJniMocker = new JniMocker();
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
     @Mock
     private UrlFormatter.Natives mUrlFormatterJniMock;
     @Mock
@@ -105,8 +109,6 @@ public class TouchToFillControllerTest {
     @Before
     public void setUp() {
         ShadowRecordHistogram.reset();
-        ChromeFeatureList.setTestFeatures(
-                ImmutableMap.of(ChromeFeatureList.TOUCH_TO_FILL_ANDROID, true));
         MockitoAnnotations.initMocks(this);
         mJniMocker.mock(UrlFormatterJni.TEST_HOOKS, mUrlFormatterJniMock);
         mJniMocker.mock(RecordHistogramJni.TEST_HOOKS, mMockRecordHistogram);

@@ -26,7 +26,6 @@
 
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -592,9 +591,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       // Fetch a classic script given url, settings object, options, classic
       // script CORS setting, and encoding.</spec>
       Document* document_for_origin = &element_document;
-      if (base::FeatureList::IsEnabled(
-              features::kHtmlImportsRequestInitiatorLock) &&
-          element_document.ImportsController()) {
+      if (element_document.ImportsController()) {
         document_for_origin = context_document;
       }
       FetchClassicScript(url, *document_for_origin, options, cross_origin,

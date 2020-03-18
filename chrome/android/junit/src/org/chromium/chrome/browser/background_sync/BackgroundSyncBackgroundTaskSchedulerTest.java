@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verify;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -30,21 +31,23 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.background_sync.BackgroundSyncBackgroundTaskScheduler.BackgroundSyncTask;
 import org.chromium.chrome.browser.background_task_scheduler.ChromeBackgroundTaskFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 
-import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 /** Unit tests for BackgroundSyncBackgroundTaskScheduler. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@Features.EnableFeatures(ChromeFeatureList.BACKGROUND_TASK_SCHEDULER_FOR_BACKGROUND_SYNC)
 public class BackgroundSyncBackgroundTaskSchedulerTest {
     @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
+    @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
-
     @Mock
     private BackgroundTaskScheduler mTaskScheduler;
     @Captor
@@ -58,9 +61,6 @@ public class BackgroundSyncBackgroundTaskSchedulerTest {
         MockitoAnnotations.initMocks(this);
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mTaskScheduler);
         ChromeBackgroundTaskFactory.setAsDefault();
-        HashMap<String, Boolean> features = new HashMap<String, Boolean>();
-        features.put(ChromeFeatureList.BACKGROUND_TASK_SCHEDULER_FOR_BACKGROUND_SYNC, true);
-        ChromeFeatureList.setTestFeatures(features);
         doReturn(true)
                 .when(mTaskScheduler)
                 .schedule(eq(ContextUtils.getApplicationContext()), mTaskInfo.capture());

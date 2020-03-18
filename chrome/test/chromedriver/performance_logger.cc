@@ -261,7 +261,8 @@ Status PerformanceLogger::CollectTraceEvents() {
 
   // Block up to 30 seconds until Tracing.tracingComplete event is received.
   status = browser_client_->HandleEventsUntil(
-      base::Bind(&PerformanceLogger::IsTraceDone, base::Unretained(this)),
+      base::BindRepeating(&PerformanceLogger::IsTraceDone,
+                          base::Unretained(this)),
       Timeout(base::TimeDelta::FromSeconds(30)));
   if (status.IsError())
     return status;

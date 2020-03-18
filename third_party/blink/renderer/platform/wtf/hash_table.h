@@ -2012,9 +2012,7 @@ void HashTable<Key,
   // race). Atomic reads are not needed here because this method is only called
   // on the mutator thread, which is also the only one that writes to them, so
   // there is *no* risk of data races when reading.
-  Value* tmp_table = other.table_;
-  AsAtomicPtr(&other.table_)->store(table_, std::memory_order_relaxed);
-  AsAtomicPtr(&table_)->store(tmp_table, std::memory_order_relaxed);
+  AtomicWriteSwap(table_, other.table_);
   Allocator::template BackingWriteBarrierForHashTable<HashTable>(&table_);
   Allocator::template BackingWriteBarrierForHashTable<HashTable>(&other.table_);
   if (IsWeak<ValueType>::value) {

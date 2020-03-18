@@ -146,6 +146,10 @@ class ComputedStyleUtils {
     kDontUsePixelSnappedBox,
     kUsePixelSnappedBox,
   };
+  static CSSValue* ValueForMatrixTransform(const TransformationMatrix&,
+                                           const ComputedStyle&);
+  static CSSValue* ValueForTransformOperation(const TransformOperation&,
+                                              float zoom);
   static FloatRect ReferenceBoxForTransform(
       const LayoutObject&,
       UsePixelSnappedBox = kUsePixelSnappedBox);

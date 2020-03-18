@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
-#include "chrome/browser/extensions/extension_sync_service_factory.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -169,10 +168,6 @@ void ExtensionActionRunnerUnitTest::IncrementExecutionCount(
 
 void ExtensionActionRunnerUnitTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
-
-  // Skip syncing for testing purposes.
-  ExtensionSyncServiceFactory::GetInstance()->SetTestingFactory(
-      profile(), BrowserContextKeyedServiceFactory::TestingFactory());
 
   TabHelper::CreateForWebContents(web_contents());
   TabHelper* tab_helper = TabHelper::FromWebContents(web_contents());

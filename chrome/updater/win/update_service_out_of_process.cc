@@ -2,10 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This macro is used in <wrl/module.h>. Since only the COM functionality is
+// used here (while WinRT is not being used), define this macro to optimize
+// compilation of <wrl/module.h> for COM-only.
+#ifndef __WRL_CLASSIC_COM_STRICT__
+#define __WRL_CLASSIC_COM_STRICT__
+#endif  // __WRL_CLASSIC_COM_STRICT__
+
 #include "chrome/updater/win/update_service_out_of_process.h"
 
 #include <windows.h>
 #include <wrl/client.h>
+#include <wrl/module.h>
 
 #include <memory>
 #include <utility>
@@ -15,6 +23,7 @@
 #include "base/logging.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "base/win/scoped_bstr.h"
 #include "chrome/updater/server/win/updater_idl.h"
 
 namespace {
@@ -27,8 +36,16 @@ static constexpr base::TaskTraits kComClientTraits = {
 
 namespace updater {
 
-HRESULT UpdaterObserverImpl::OnComplete(int error_code) {
-  VLOG(2) << "UpdaterObserverImpl::OnComplete(" << error_code << ")";
+HRESULT UpdaterObserverImpl::OnComplete(ICompleteStatus* status) {
+  DCHECK(status);
+
+  LONG code = 0;
+  base::win::ScopedBstr message;
+  CHECK(SUCCEEDED(status->get_statusCode(&code)));
+  CHECK(SUCCEEDED(status->get_statusMessage(message.Receive())));
+
+  VLOG(2) << "UpdaterObserverImpl::OnComplete(" << code << ", " << message.Get()
+          << ")";
   return S_OK;
 }
 
@@ -38,8 +55,15 @@ UpdateServiceOutOfProcess::~UpdateServiceOutOfProcess() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
+void UpdateServiceOutOfProcess::ModuleStop() {
+  VLOG(2) << "UpdateServiceOutOfProcess::ModuleStop";
+}
+
 std::unique_ptr<UpdateServiceOutOfProcess>
 UpdateServiceOutOfProcess::CreateInstance() {
+  Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::Create(
+      &UpdateServiceOutOfProcess::ModuleStop);
+
   struct Creator : public UpdateServiceOutOfProcess {};
   auto instance = std::make_unique<Creator>();
   instance->com_task_runner_ =
@@ -106,7 +130,6 @@ void UpdateServiceOutOfProcess::UpdateAllOnSTA(
     return;
   }
 
-  ::CoAddRefServerProcess();
   auto observer = Microsoft::WRL::Make<UpdaterObserverImpl>();
   hr = updater->UpdateAll(observer.Get());
   if (FAILED(hr)) {
@@ -114,9 +137,6 @@ void UpdateServiceOutOfProcess::UpdateAllOnSTA(
     std::move(callback).Run(static_cast<Result>(hr));
     return;
   }
-
-  observer.Reset();
-  ::CoReleaseServerProcess();
 }
 
 }  // namespace updater

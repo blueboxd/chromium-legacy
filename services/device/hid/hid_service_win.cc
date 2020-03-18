@@ -113,8 +113,7 @@ void HidServiceWin::EnumerateBlocking(
         continue;
       }
 
-      std::string device_path(
-          base::SysWideToUTF8(device_interface_detail_data->DevicePath));
+      base::string16 device_path(device_interface_detail_data->DevicePath);
       DCHECK(base::IsStringASCII(device_path));
       AddDeviceBlocking(service, task_runner, base::ToLowerASCII(device_path));
     }
@@ -171,7 +170,7 @@ void HidServiceWin::CollectInfoFromValueCaps(
 void HidServiceWin::AddDeviceBlocking(
     base::WeakPtr<HidServiceWin> service,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const std::string& device_path) {
+    const base::string16& device_path) {
   base::win::ScopedHandle device_handle(OpenDevice(device_path));
   if (!device_handle.IsValid()) {
     return;
@@ -267,7 +266,7 @@ void HidServiceWin::AddDeviceBlocking(
 }
 
 void HidServiceWin::OnDeviceAdded(const GUID& class_guid,
-                                  const std::string& device_path) {
+                                  const base::string16& device_path) {
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&HidServiceWin::AddDeviceBlocking,
@@ -275,7 +274,7 @@ void HidServiceWin::OnDeviceAdded(const GUID& class_guid,
 }
 
 void HidServiceWin::OnDeviceRemoved(const GUID& class_guid,
-                                    const std::string& device_path) {
+                                    const base::string16& device_path) {
   // Execute a no-op closure on the file task runner to synchronize with any
   // devices that are still being enumerated.
   blocking_task_runner_->PostTaskAndReply(
@@ -286,14 +285,14 @@ void HidServiceWin::OnDeviceRemoved(const GUID& class_guid,
 
 // static
 base::win::ScopedHandle HidServiceWin::OpenDevice(
-    const std::string& device_path) {
+    const base::string16& device_path) {
   base::win::ScopedHandle file(
-      CreateFileA(device_path.c_str(), GENERIC_WRITE | GENERIC_READ,
-                  FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
-                  FILE_FLAG_OVERLAPPED, NULL));
+      CreateFile(device_path.c_str(), GENERIC_WRITE | GENERIC_READ,
+                 FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
+                 FILE_FLAG_OVERLAPPED, nullptr));
   if (!file.IsValid() && GetLastError() == ERROR_ACCESS_DENIED) {
-    file.Set(CreateFileA(device_path.c_str(), GENERIC_READ, FILE_SHARE_READ,
-                         NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL));
+    file.Set(CreateFile(device_path.c_str(), GENERIC_READ, FILE_SHARE_READ,
+                        nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr));
   }
   return file;
 }

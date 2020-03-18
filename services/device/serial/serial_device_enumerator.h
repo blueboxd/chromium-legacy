@@ -24,7 +24,8 @@ class SerialDeviceEnumerator {
  public:
   using TokenPathMap = std::map<base::UnguessableToken, base::FilePath>;
 
-  static std::unique_ptr<SerialDeviceEnumerator> Create();
+  static std::unique_ptr<SerialDeviceEnumerator> Create(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   SerialDeviceEnumerator();
   virtual ~SerialDeviceEnumerator();

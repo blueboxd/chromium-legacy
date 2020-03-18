@@ -15,7 +15,9 @@ import android.os.Bundle;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
@@ -26,12 +28,11 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.signin.ChildAccountStatus;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Tests FirstRunFlowSequencer which contains the core logic of what should be shown during the
@@ -39,7 +40,11 @@ import java.util.Map;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowMultiDex.class})
+@Features.EnableFeatures(ChromeFeatureList.CHROME_DUET)
 public class FirstRunFlowSequencerTest {
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
+
     /** Information for Google OS account */
     private static final String GOOGLE_ACCOUNT_TYPE = "com.google";
     private static final String DEFAULT_ACCOUNT = "test@gmail.com";
@@ -137,21 +142,11 @@ public class FirstRunFlowSequencerTest {
     public void setUp() {
         mActivityController = Robolectric.buildActivity(Activity.class);
         mSequencer = new TestFirstRunFlowSequencer(mActivityController.setup().get());
-        setupFeatureList();
     }
 
     @After
     public void tearDown() {
         mActivityController.pause().stop().destroy();
-    }
-
-    // We need to initialize ChromeFeatureList here, otherwise test will crash/assert during
-    // FirstRunFlowSequencer::onNativeInitialized.
-    // TODO(crbug.com/1021705): Remove this method after duet fully launched.
-    private void setupFeatureList() {
-        Map<String, Boolean> featureList = new HashMap<>();
-        featureList.put(ChromeFeatureList.CHROME_DUET, true);
-        ChromeFeatureList.setTestFeatures(featureList);
     }
 
     @Test

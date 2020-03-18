@@ -102,6 +102,9 @@ source_set("lib") {
 
   libs = [ "winhttp.lib" ]
 
+  configs -= [ "//build/config/win:winver" ]
+  configs += [ "//chrome/updater/server/win:winver" ]
+
   deps = [
     ":base",
     ":constants",

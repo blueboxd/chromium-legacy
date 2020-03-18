@@ -276,9 +276,7 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
       const Vector<WebMouseEvent>& coalesced_events,
       const Vector<WebMouseEvent>& predicted_events,
       HitTestResult* hovered_node = nullptr,
-      HitTestLocation* hit_test_location = nullptr,
-      bool only_update_scrollbars = false,
-      bool force_leave = false);
+      HitTestLocation* hit_test_location = nullptr);
 
   // Updates the event, location and result to the adjusted target.
   void ApplyTouchAdjustment(WebGestureEvent*, HitTestLocation&, HitTestResult*);
@@ -372,6 +370,7 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
 
   const Member<SelectionController> selection_controller_;
 
+  // TODO(lanwei): Remove the below timers for updating hover and cursor.
   TaskRunnerTimer<EventHandler> hover_timer_;
 
   // TODO(rbyers): Mouse cursor update is page-wide, not per-frame.  Page-wide

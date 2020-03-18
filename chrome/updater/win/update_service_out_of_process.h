@@ -26,7 +26,8 @@ enum class Error;
 
 namespace updater {
 
-// This class implements the IUpdater interface and exposes it as a COM object.
+// This class implements the IUpdaterObserver interface and exposes it as a COM
+// object.
 class UpdaterObserverImpl
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
@@ -37,7 +38,7 @@ class UpdaterObserverImpl
   UpdaterObserverImpl& operator=(const UpdaterObserverImpl&) = delete;
 
   // Overrides for IUpdaterObserver.
-  IFACEMETHODIMP OnComplete(int error_code) override;
+  IFACEMETHODIMP OnComplete(ICompleteStatus* status) override;
 
  private:
   ~UpdaterObserverImpl() override = default;
@@ -55,6 +56,7 @@ class UpdateServiceOutOfProcess : public UpdateService {
   ~UpdateServiceOutOfProcess() override;
 
   static std::unique_ptr<UpdateServiceOutOfProcess> CreateInstance();
+  static void ModuleStop();
 
   // Overrides for updater::UpdateService.
   // Update-checks all registered applications. Calls |callback| once the

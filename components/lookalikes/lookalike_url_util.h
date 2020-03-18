@@ -119,4 +119,17 @@ bool GetMatchingDomain(const DomainInfo& navigated_domain,
 
 void RecordUMAFromMatchType(LookalikeUrlMatchType match_type);
 
+// Checks to see if a URL is a target embedding lookalike. This function sets
+// |safe_url| to the url of the embedded target domain.
+// At the moment we consider the following cases as Target Embedding:
+// example-google.com-site.com, example.google.com-site.com,
+// example-google-com-site.com, example.google.com.site.com,
+// example-googlé.com-site.com where the embedded target is google.com. In
+// addition to these examples, this function also detects domains embedded with
+// alternate TLDs, if the TLD is included in |important_tlds| (e.g. google.edu
+// instead of google.com in the above examples.)
+bool IsTargetEmbeddingLookalike(const GURL& url,
+                                const std::set<std::string>& important_tlds,
+                                GURL* safe_url);
+
 #endif  // COMPONENTS_LOOKALIKES_LOOKALIKE_URL_UTIL_H_

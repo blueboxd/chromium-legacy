@@ -10,12 +10,12 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import android.util.ArrayMap;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -28,15 +28,15 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.WebContents;
-
-import java.util.Map;
 
 /**
  * Unit tests for ChromeSurveyController.java.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@Features.EnableFeatures(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
 public class ChromeSurveyControllerTest {
     private static final String STUDY_NAME = "HorizontalTabSwitcherStudyName";
     private static final String GROUP_NAME = "HorizontalTabSwitcherGroupName";
@@ -44,6 +44,9 @@ public class ChromeSurveyControllerTest {
     private TestChromeSurveyController mTestController;
     private RiggedSurveyController mRiggedController;
     private SharedPreferencesManager mSharedPreferences;
+
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
 
     @Mock
     Tab mTab;
@@ -63,9 +66,6 @@ public class ChromeSurveyControllerTest {
         mTestController.setTabModelSelector(mSelector);
         mSharedPreferences = SharedPreferencesManager.getInstance();
         Assert.assertNull("Tab should be null", mTestController.getLastTabInfobarShown());
-        Map<String, Boolean> featureMap = new ArrayMap<>();
-        featureMap.put(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID, true);
-        ChromeFeatureList.setTestFeatures(featureMap);
     }
 
     @After

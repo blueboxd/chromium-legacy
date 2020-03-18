@@ -42,8 +42,7 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
 
   // CheckSerial returns the information contained in the set for a given
   // certificate:
-  //   serial_number: the serial number of the certificate, as the DER-encoded
-  //       value
+  //   serial_number: the serial number of the certificate
   //   issuer_spki_hash: the SHA256 of the SubjectPublicKeyInfo of the CRL
   //       signer
   Result CheckSerial(
@@ -92,7 +91,7 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
   // ForTesting returns a CRLSet for testing. If |is_expired| is true, calling
   // IsExpired on the result will return true. If |issuer_spki| is not NULL,
   // the CRLSet will cover certificates issued by that SPKI. If |serial_number|
-  // is not empty, then that DER-encoded serial number will be considered to
+  // is not empty, then that big-endian serial number will be considered to
   // have been revoked by |issuer_spki|. If |common_name| is not empty then the
   // CRLSet will consider certificates with a subject consisting only of that
   // common name to be revoked unless they match an SPKI hash from

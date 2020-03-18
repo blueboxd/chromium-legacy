@@ -19,6 +19,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -37,6 +38,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.ShadowDeviceConditions;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.background_task_scheduler.BackgroundTask;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
@@ -46,19 +48,21 @@ import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 import org.chromium.net.ConnectionType;
 
-import java.util.HashMap;
-
 /**
  * Unit tests for BackgroundSyncBackgroundTask.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowDeviceConditions.class})
+@Features.EnableFeatures(ChromeFeatureList.BACKGROUND_TASK_SCHEDULER_FOR_BACKGROUND_SYNC)
 public class BackgroundSyncBackgroundTaskTest {
     private static final String IS_LOW_END_DEVICE_SWITCH =
             "--" + BaseSwitches.ENABLE_LOW_END_DEVICE_MODE;
 
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
+
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
 
     @Rule
     public JniMocker mocker = new JniMocker();
@@ -82,9 +86,6 @@ public class BackgroundSyncBackgroundTaskTest {
         MockitoAnnotations.initMocks(this);
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mTaskScheduler);
 
-        HashMap<String, Boolean> features = new HashMap<>();
-        features.put(ChromeFeatureList.BACKGROUND_TASK_SCHEDULER_FOR_BACKGROUND_SYNC, true);
-        ChromeFeatureList.setTestFeatures(features);
         mTaskExtras = new Bundle();
 
         doReturn(true)

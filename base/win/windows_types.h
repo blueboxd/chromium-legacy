@@ -93,6 +93,7 @@ CHROME_DECLARE_HANDLE(HWND);
 typedef LPVOID HINTERNET;
 typedef HINSTANCE HMODULE;
 typedef PVOID LSA_HANDLE;
+typedef PVOID HDEVINFO;
 
 // Forward declare some Windows struct/typedef sets.
 
@@ -113,6 +114,8 @@ typedef struct _FILETIME FILETIME;
 typedef struct tagMENUITEMINFOW MENUITEMINFOW, MENUITEMINFO;
 
 typedef struct tagNMHDR NMHDR;
+
+typedef struct _SP_DEVINFO_DATA SP_DEVINFO_DATA;
 
 typedef PVOID PSID;
 

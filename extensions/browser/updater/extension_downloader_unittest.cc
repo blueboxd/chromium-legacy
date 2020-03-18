@@ -45,7 +45,8 @@ class ExtensionDownloaderTest : public ExtensionsTest {
     std::unique_ptr<ManifestFetchData> fetch(
         CreateManifestFetchData(kUpdateUrl));
     ManifestFetchData::PingData zero_days(0, 0, true, 0);
-    fetch->AddExtension(kTestExtensionId, "1.0", &zero_days, "", "", "",
+    fetch->AddExtension(kTestExtensionId, "1.0", &zero_days, "", "",
+                        Manifest::Location::INTERNAL,
                         ManifestFetchData::FetchPriority::BACKGROUND);
     return fetch;
   }

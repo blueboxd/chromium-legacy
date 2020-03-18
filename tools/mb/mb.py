@@ -866,23 +866,45 @@ class MetaBuildWrapper(object):
     return ' '.join(gn_args)
 
   def Lookup(self):
-    vals = self.ReadIOSBotConfig()
-    if not vals:
-      self.ReadConfigFile()
+    self.ReadConfigFile()
+    try:
       if self.group_by_bucket:
         config = self.ConfigFromArgsBucket()
       else:
         config = self.ConfigFromArgs()
-      if config.startswith('//'):
-        if not self.Exists(self.ToAbsPath(config)):
-          raise MBErr('args file "%s" not found' % config)
-        vals = DefaultVals()
-        vals['args_file'] = config
-      else:
-        if not config in self.configs:
-          raise MBErr('Config "%s" not found in %s' %
-                      (config, self.args.config_file))
-        vals = FlattenConfig(self.configs, self.mixins, config)
+    except MBErr as e:
+      # TODO(crbug.com/912681) While iOS bots are migrated to use the
+      # Chromium recipe, we want to ensure that we're checking MB's
+      # configurations first before going to iOS.
+      # This is to be removed once the migration is complete.
+      vals = self.ReadIOSBotConfig()
+      if not vals:
+        raise e
+      return vals
+
+    # TODO(crbug.com/912681) Some iOS bots have a definition, with ios_error
+    # as an indicator that it's incorrect. We utilize this to check the
+    # iOS JSON instead, and error out if there exists no definition at all.
+    # This is to be removed once the migration is complete.
+    if config == 'ios_error':
+      vals = self.ReadIOSBotConfig()
+      if not vals:
+        raise MBErr('No iOS definition was found. Please ensure there is a '
+                    'definition for the given iOS bot under '
+                    'mb_config.pyl or a JSON file definition under '
+                    '//ios/build/bots.')
+      return vals
+
+    if config.startswith('//'):
+      if not self.Exists(self.ToAbsPath(config)):
+        raise MBErr('args file "%s" not found' % config)
+      vals = DefaultVals()
+      vals['args_file'] = config
+    else:
+      if not config in self.configs:
+        raise MBErr(
+            'Config "%s" not found in %s' % (config, self.args.config_file))
+      vals = FlattenConfig(self.configs, self.mixins, config)
     return vals
 
   def ReadIOSBotConfig(self):

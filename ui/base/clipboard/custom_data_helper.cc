@@ -16,17 +16,7 @@ namespace ui {
 
 namespace {
 
-class SkippablePickle : public base::Pickle {
- public:
-  SkippablePickle(const void* data, size_t data_len);
-  bool SkipString16(base::PickleIterator* iter);
-};
-
-SkippablePickle::SkippablePickle(const void* data, size_t data_len)
-    : base::Pickle(reinterpret_cast<const char*>(data), data_len) {
-}
-
-bool SkippablePickle::SkipString16(base::PickleIterator* iter) {
+bool SkipString16(base::PickleIterator* iter) {
   DCHECK(iter);
 
   int len;
@@ -40,7 +30,7 @@ bool SkippablePickle::SkipString16(base::PickleIterator* iter) {
 void ReadCustomDataTypes(const void* data,
                          size_t data_length,
                          std::vector<base::string16>* types) {
-  SkippablePickle pickle(data, data_length);
+  base::Pickle pickle(reinterpret_cast<const char*>(data), data_length);
   base::PickleIterator iter(pickle);
 
   uint32_t size = 0;
@@ -54,7 +44,7 @@ void ReadCustomDataTypes(const void* data,
 
   for (uint32_t i = 0; i < size; ++i) {
     types->push_back(base::string16());
-    if (!iter.ReadString16(&types->back()) || !pickle.SkipString16(&iter)) {
+    if (!iter.ReadString16(&types->back()) || !SkipString16(&iter)) {
       types->resize(original_size);
       return;
     }
@@ -65,7 +55,7 @@ void ReadCustomDataForType(const void* data,
                            size_t data_length,
                            const base::string16& type,
                            base::string16* result) {
-  SkippablePickle pickle(data, data_length);
+  base::Pickle pickle(reinterpret_cast<const char*>(data), data_length);
   base::PickleIterator iter(pickle);
 
   uint32_t size = 0;
@@ -80,7 +70,7 @@ void ReadCustomDataForType(const void* data,
       ignore_result(iter.ReadString16(result));
       return;
     }
-    if (!pickle.SkipString16(&iter))
+    if (!SkipString16(&iter))
       return;
   }
 }

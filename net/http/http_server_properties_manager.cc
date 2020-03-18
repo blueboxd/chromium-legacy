@@ -529,6 +529,7 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceInfoDictOfServer(
   }
 
   // Advertised versions list is optional.
+  // It is only used for PROTOCOL_QUIC_CRYPTO versions.
   if (dict.HasKey(kAdvertisedVersionsKey)) {
     const base::ListValue* versions_list = nullptr;
     if (!dict.GetListWithoutPathExpansion(kAdvertisedVersionsKey,
@@ -545,8 +546,13 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceInfoDictOfServer(
                  << server_str;
         return false;
       }
-      // TODO(nharper): Support ParsedQuicVersions (instead of
-      // QuicTransportVersions) in AlternativeServiceMap.
+      if (!quic::ParsedQuicVersionIsValid(
+              quic::PROTOCOL_QUIC_CRYPTO,
+              quic::QuicTransportVersion(version))) {
+        // This version is not valid, this can happen if we've deprecated
+        // a version that used to be valid.
+        continue;
+      }
       advertised_versions.push_back(quic::ParsedQuicVersion(
           quic::PROTOCOL_QUIC_CRYPTO, quic::QuicTransportVersion(version)));
     }

@@ -13,7 +13,6 @@
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/session/session_observer.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 
@@ -29,7 +28,6 @@ enum class Gesture;
 
 namespace gfx {
 class Point;
-struct VectorIcon;
 }  // namespace gfx
 
 namespace ash {
@@ -52,101 +50,6 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
                                                public SessionObserver,
                                                public TabletModeObserver {
  public:
-  enum FeatureType {
-    kAutoclick = 0,
-    kCaretHighlight,
-    KCursorHighlight,
-    kDictation,
-    kFocusHighlight,
-    kFullscreenMagnifier,
-    kDockedMagnifier,
-    kHighContrast,
-    kLargeCursor,
-    kMonoAudio,
-    kSpokenFeedback,
-    kSelectToSpeak,
-    kStickyKeys,
-    kSwitchAccess,
-    kVirtualKeyboard,
-
-    kFeatureCount,
-    kNoConflictingFeature
-  };
-
-  // Common interface for all features.
-  class Feature {
-   public:
-    Feature(FeatureType type,
-            const std::string& pref_name,
-            const gfx::VectorIcon* icon,
-            AccessibilityControllerImpl* controller);
-    Feature(const Feature&) = delete;
-    Feature& operator=(Feature const&) = delete;
-    virtual ~Feature();
-
-    FeatureType type() const { return type_; }
-    // Tries to set the feature to |enabled| by setting the user pref.
-    // Setting feature to be enabled can fail in following conditions:
-    // - there is a higher priority pref(managed), which overrides this value.
-    // - there is an other feature, which conflicts with the current one.
-    virtual void SetEnabled(bool enabled);
-    bool enabled() const { return enabled_; }
-    bool IsVisibleInTray() const;
-    bool IsEnterpriseIconVisible() const;
-    const std::string& pref_name() const { return pref_name_; }
-    const gfx::VectorIcon& icon() const;
-
-    void UpdateFromPref();
-    void SetConflictingFeature(FeatureType feature);
-
-   protected:
-    FeatureType type_;
-    // Some features cannot be enabled while others are on. When a conflicting
-    // feature is enabled, we cannot enable current feature.
-    FeatureType conflicting_feature_ = FeatureType::kNoConflictingFeature;
-    bool enabled_;
-    const std::string pref_name_;
-    const gfx::VectorIcon* icon_;
-    AccessibilityControllerImpl* owner_;
-  };
-
-  // Helper struct to store information about a11y dialog -- pref name, resource
-  // ids for title and body. Also stores the information whether this dialog is
-  // mandatory for every SetEnabled call.
-  struct Dialog {
-    std::string pref_name;
-    int title_resource_id;
-    int body_resource_id;
-    // Whether this dialog should be shown on every SetEnabled action.
-    bool mandatory;
-  };
-
-  // Some features have confirmation dialog associated with them.
-  // Dialog can be applied for all SetEnabled() actions, or only to ones
-  // associated with accelerators.
-  class FeatureWithDialog : public Feature {
-   public:
-    FeatureWithDialog(FeatureType type,
-                      const std::string& pref_name,
-                      const gfx::VectorIcon* icon,
-                      const Dialog& dialog,
-                      AccessibilityControllerImpl* controller);
-    ~FeatureWithDialog() override;
-
-    // Tries to set the feature enabled, if its dialog is mandatory, shows the
-    // dailog for the first time feature is enabled.
-    void SetEnabled(bool enabled) override;
-    // If the dialog have not been accepted, we show it. When it is accepted, we
-    // call SetEnabled() and invoke |completion_callback|.
-    void SetEnabledWithDialog(bool enabled,
-                              base::OnceClosure completion_callback);
-    void SetDialogAccepted();
-    bool WasDialogAccepted() const;
-
-   private:
-    Dialog dialog_;
-  };
-
   AccessibilityControllerImpl();
   ~AccessibilityControllerImpl() override;
 
@@ -157,13 +60,6 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   void AddObserver(AccessibilityObserver* observer);
   void RemoveObserver(AccessibilityObserver* observer);
-
-  Feature& GetFeature(FeatureType feature) const;
-
-  // Getters for the corresponding features.
-  Feature& autoclick() const;
-  Feature& caret_highlight() const;
-  Feature& cursor_highlight() const;
 
   // The following functions read and write to their associated preference.
   // These values are then used to determine whether the accelerator
@@ -180,7 +76,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   bool HasDisplayRotationAcceleratorDialogBeenAccepted() const;
 
   void SetAutoclickEnabled(bool enabled);
-  bool autoclick_enabled() const { return autoclick().enabled(); }
+  bool autoclick_enabled() const { return autoclick_enabled_; }
   bool IsAutoclickSettingVisibleInTray();
   bool IsEnterpriseIconVisibleForAutoclick();
 
@@ -196,12 +92,12 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void UpdateAutoclickMenuBoundsIfNeeded();
 
   void SetCaretHighlightEnabled(bool enabled);
-  bool caret_highlight_enabled() const { return caret_highlight().enabled(); }
+  bool caret_highlight_enabled() const { return caret_highlight_enabled_; }
   bool IsCaretHighlightSettingVisibleInTray();
   bool IsEnterpriseIconVisibleForCaretHighlight();
 
   void SetCursorHighlightEnabled(bool enabled);
-  bool cursor_highlight_enabled() const { return cursor_highlight().enabled(); }
+  bool cursor_highlight_enabled() const { return cursor_highlight_enabled_; }
   bool IsCursorHighlightSettingVisibleInTray();
   bool IsEnterpriseIconVisibleForCursorHighlight();
 
@@ -372,12 +268,6 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   SwitchAccessEventHandler* GetSwitchAccessEventHandlerForTest();
 
  private:
-  // Populate |features_| with the feature of the correct type.
-  void CreateAccessibilityFeatures();
-
-  // Propagates the state of |feature| according to |feature->enabled()|.
-  void OnFeatureChanged(FeatureType feature);
-
   // TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
@@ -386,15 +276,15 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   // initial settings.
   void ObservePrefs(PrefService* prefs);
 
-  // Updates the actual feature status based on the prefs value.
-  void UpdateFeatureFromPref(FeatureType feature);
-
+  void UpdateAutoclickFromPref();
   void UpdateAutoclickDelayFromPref();
   void UpdateAutoclickEventTypeFromPref();
   void UpdateAutoclickRevertToLeftClickFromPref();
   void UpdateAutoclickStabilizePositionFromPref();
   void UpdateAutoclickMovementThresholdFromPref();
   void UpdateAutoclickMenuPositionFromPref();
+  void UpdateCaretHighlightFromPref();
+  void UpdateCursorHighlightFromPref();
   void UpdateDictationFromPref();
   void UpdateFocusHighlightFromPref();
   void UpdateHighContrastFromPref();
@@ -416,12 +306,19 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void MaybeCreateSelectToSpeakEventHandler();
   void MaybeCreateSwitchAccessEventHandler();
 
+  // The pref service of the currently active user or the signin profile before
+  // user logs in. Can be null in ash_unittests.
+  PrefService* active_user_prefs_ = nullptr;
+
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+
   // Client interface in chrome browser.
   AccessibilityControllerClient* client_ = nullptr;
 
-  std::unique_ptr<Feature> features_[kFeatureCount];
-
+  bool autoclick_enabled_ = false;
   base::TimeDelta autoclick_delay_;
+  bool caret_highlight_enabled_ = false;
+  bool cursor_highlight_enabled_ = false;
   bool dictation_enabled_ = false;
   bool focus_highlight_enabled_ = false;
   bool high_contrast_enabled_ = false;
@@ -457,15 +354,6 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   std::unique_ptr<ScopedBacklightsForcedOff> scoped_backlights_forced_off_;
 
   base::ObserverList<AccessibilityObserver> observers_;
-
-  // The pref service of the currently active user or the signin profile before
-  // user logs in. Can be null in ash_unittests.
-  PrefService* active_user_prefs_ = nullptr;
-  // This has to be the first one to be destroyed so we don't get updates about
-  // any prefs during destruction.
-  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
-
-  base::WeakPtrFactory<AccessibilityControllerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityControllerImpl);
 };

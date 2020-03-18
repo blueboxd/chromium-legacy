@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
@@ -20,6 +21,8 @@ namespace device {
 
 #if defined(OS_MACOSX)
 typedef uint64_t HidPlatformDeviceId;
+#elif defined(OS_WIN)
+typedef base::string16 HidPlatformDeviceId;
 #else
 typedef std::string HidPlatformDeviceId;
 #endif

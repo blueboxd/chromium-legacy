@@ -902,6 +902,15 @@ function testAddProviders(callback) {
   fakeFileSystemURLEntries['filesystem:smb/child'] =
       MockDirectoryEntry.create(smbProvider, '/smb_child');
 
+  // Add a volume representing an smbfs share to the mock filesystem.
+  volumeManager.createVolumeInfo(
+      VolumeManagerCommon.VolumeType.SMB, 'smbfs', 'SMBFS_LABEL');
+
+  // Add a sub directory to the Smb provider.
+  const smbfs = assert(volumeManager.volumeInfoList.item(4).fileSystem);
+  fakeFileSystemURLEntries['filesystem:smbfs/child'] =
+      MockDirectoryEntry.create(smbfs, '/smbfs_child');
+
   // Populate the directory tree with the mock filesystem.
   let directoryTree = createElements();
   const metadataModel = createMockMetadataModel();
@@ -916,14 +925,16 @@ function testAddProviders(callback) {
   directoryTree.redraw(true);
 
   // At top level, Drive and downloads should be listed.
-  assertEquals(4, directoryTree.items.length);
+  assertEquals(5, directoryTree.items.length);
   assertEquals(str('DRIVE_DIRECTORY_LABEL'), directoryTree.items[0].label);
   assertEquals(str('DOWNLOADS_DIRECTORY_LABEL'), directoryTree.items[1].label);
   assertEquals('NOT_SMB_LABEL', directoryTree.items[2].label);
   assertEquals('SMB_LABEL', directoryTree.items[3].label);
+  assertEquals('SMBFS_LABEL', directoryTree.items[4].label);
 
   const providerItem = directoryTree.items[2];
   const smbItem = directoryTree.items[3];
+  const smbfsItem = directoryTree.items[4];
   reportPromise(
       waitUntil(() => {
         // Under providerItem there should be 1 entry, 'child'. Ensure there are
@@ -932,6 +943,7 @@ function testAddProviders(callback) {
       }).then(() => {
         assertEquals('child', providerItem.items[0].label);
         assertEquals(0, smbItem.items.length);
+        assertEquals(0, smbfsItem.items.length);
       }),
       callback);
 }

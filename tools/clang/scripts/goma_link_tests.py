@@ -266,7 +266,7 @@ class GomaLdIntegrationTest(unittest.TestCase):
       self.assertFalse(os.path.exists(os.path.join(d, 'lto.main')))
       # Check that main calls foo.
       disasm = subprocess.check_output(['llvm-objdump', '-d', 'main'])
-      main_idx = disasm.index(b' main:\n')
+      main_idx = disasm.index(b' <main>:\n')
       after_main_idx = disasm.index(b'\n\n', main_idx)
       main_disasm = disasm[main_idx:after_main_idx]
       self.assertIn(b'foo', main_disasm)
@@ -290,7 +290,7 @@ class GomaLdIntegrationTest(unittest.TestCase):
       self.assertFalse(os.path.exists(os.path.join(d, 'lto.main')))
       # Check that main does not call foo.
       disasm = subprocess.check_output(['llvm-objdump', '-d', 'main'])
-      main_idx = disasm.index(b' main:\n')
+      main_idx = disasm.index(b' <main>:\n')
       after_main_idx = disasm.index(b'\n\n', main_idx)
       main_disasm = disasm[main_idx:after_main_idx]
       self.assertNotIn(b'foo', main_disasm)
@@ -318,7 +318,7 @@ class GomaLdIntegrationTest(unittest.TestCase):
         self.assertIn('build lto.main/foo.o : codegen ', buildrules)
       # Check that main does not call foo.
       disasm = subprocess.check_output(['llvm-objdump', '-d', 'main'])
-      main_idx = disasm.index(b' main:\n')
+      main_idx = disasm.index(b' <main>:\n')
       after_main_idx = disasm.index(b'\n\n', main_idx)
       main_disasm = disasm[main_idx:after_main_idx]
       self.assertNotIn(b'foo', main_disasm)
@@ -350,7 +350,7 @@ class GomaLdIntegrationTest(unittest.TestCase):
         self.assertIn('build lto.main/foo.o : codegen ', buildrules)
       # Check that main does not call foo.
       disasm = subprocess.check_output(['llvm-objdump', '-d', 'main'])
-      main_idx = disasm.index(b' main:\n')
+      main_idx = disasm.index(b' <main>:\n')
       after_main_idx = disasm.index(b'\n\n', main_idx)
       main_disasm = disasm[main_idx:after_main_idx]
       self.assertNotIn(b'foo', main_disasm)
@@ -388,7 +388,7 @@ class GomaLdIntegrationTest(unittest.TestCase):
         self.assertIn('build lto.main/obj/foo.o : codegen ', buildrules)
       # Check that main does not call foo.
       disasm = subprocess.check_output(['llvm-objdump', '-d', 'main'])
-      main_idx = disasm.index(b' main:\n')
+      main_idx = disasm.index(b' <main>:\n')
       after_main_idx = disasm.index(b'\n\n', main_idx)
       main_disasm = disasm[main_idx:after_main_idx]
       self.assertNotIn(b'foo', main_disasm)
@@ -444,7 +444,7 @@ class GomaLdIntegrationTest(unittest.TestCase):
         self.assertIn('main.split.o', link_text)
       # Check that main does not call foo.
       disasm = subprocess.check_output(['llvm-objdump', '-d', 'main'])
-      main_idx = disasm.index(b' main:\n')
+      main_idx = disasm.index(b' <main>:\n')
       after_main_idx = disasm.index(b'\n\n', main_idx)
       main_disasm = disasm[main_idx:after_main_idx]
       self.assertNotIn(b'foo', main_disasm)

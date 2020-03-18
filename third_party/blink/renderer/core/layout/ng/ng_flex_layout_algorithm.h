@@ -52,7 +52,8 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
 
   NGConstraintSpace BuildSpaceForFlexBasis(const NGBlockNode& flex_item) const;
   NGConstraintSpace BuildSpaceForIntrinsicBlockSize(
-      const NGBlockNode& flex_item) const;
+      const NGBlockNode& flex_item,
+      const NGPhysicalBoxStrut& physical_margins) const;
   void ConstructAndAppendFlexItems();
   void ApplyStretchAlignmentToChild(FlexItem& flex_item);
   void GiveLinesAndItemsFinalPositionAndSize();

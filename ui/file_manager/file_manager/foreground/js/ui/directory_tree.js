@@ -1145,7 +1145,9 @@ class VolumeItem extends DirectoryItem {
 
     // Populate children of this volume using resolved display root. For SMB
     // shares, avoid prefetching sub directories to delay authentication.
-    if (modelItem.volumeInfo_.providerId !== '@smb') {
+    if (modelItem.volumeInfo_.providerId !== '@smb' &&
+        modelItem.volumeInfo_.volumeType !==
+            VolumeManagerCommon.VolumeType.SMB) {
       this.volumeInfo_.resolveDisplayRoot((displayRoot) => {
         this.resolved_ = true;
         this.updateSubDirectories(false /* recursive */);

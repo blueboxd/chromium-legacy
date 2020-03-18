@@ -24,6 +24,8 @@ namespace {
 
 #if defined(OS_MACOSX)
 const uint64_t kTestDeviceIds[] = {0, 1, 2};
+#elif defined(OS_WIN)
+const wchar_t* const kTestDeviceIds[] = {L"0", L"1", L"2"};
 #else
 const char* const kTestDeviceIds[] = {"0", "1", "2"};
 #endif

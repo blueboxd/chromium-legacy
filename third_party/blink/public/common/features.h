@@ -117,7 +117,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
 
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlinkCompositorUseDisplayThreadPriority;
-BLINK_COMMON_EXPORT extern const base::Feature kHtmlImportsRequestInitiatorLock;
 
 BLINK_COMMON_EXPORT extern const base::Feature
     kIgnoreCrossOriginWindowWhenNamedAccessOnWindow;

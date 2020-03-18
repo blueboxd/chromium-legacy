@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "base/strings/string16.h"
 #include "services/device/usb/usb_device.h"
 
 namespace device {
@@ -27,16 +28,16 @@ class UsbDeviceWin : public UsbDevice {
   friend class UsbDeviceHandleWin;
 
   // Called by UsbServiceWin only.
-  UsbDeviceWin(const std::string& device_path,
-               const std::string& hub_path,
+  UsbDeviceWin(const base::string16& device_path,
+               const base::string16& hub_path,
                uint32_t bus_number,
                uint32_t port_number,
-               const std::string& driver_name);
+               const base::string16& driver_name);
 
   ~UsbDeviceWin() override;
 
-  const std::string& device_path() const { return device_path_; }
-  const std::string& driver_name() const { return driver_name_; }
+  const base::string16& device_path() const { return device_path_; }
+  const base::string16& driver_name() const { return driver_name_; }
 
   // Opens the device's parent hub in order to read the device, configuration
   // and string descriptors.
@@ -63,9 +64,9 @@ class UsbDeviceWin : public UsbDevice {
  private:
   SEQUENCE_CHECKER(sequence_checker_);
 
-  const std::string device_path_;
-  const std::string hub_path_;
-  const std::string driver_name_;
+  const base::string16 device_path_;
+  const base::string16 hub_path_;
+  const base::string16 driver_name_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceWin);
 };

@@ -36,7 +36,7 @@ void SerialPortManagerImpl::SetSerialEnumeratorForTesting(
 
 void SerialPortManagerImpl::GetDevices(GetDevicesCallback callback) {
   if (!enumerator_)
-    enumerator_ = SerialDeviceEnumerator::Create();
+    enumerator_ = SerialDeviceEnumerator::Create(ui_task_runner_);
   std::move(callback).Run(enumerator_->GetDevices());
 }
 
@@ -45,7 +45,7 @@ void SerialPortManagerImpl::GetPort(
     mojo::PendingReceiver<mojom::SerialPort> receiver,
     mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher) {
   if (!enumerator_)
-    enumerator_ = SerialDeviceEnumerator::Create();
+    enumerator_ = SerialDeviceEnumerator::Create(ui_task_runner_);
   base::Optional<base::FilePath> path = enumerator_->GetPathFromToken(token);
   if (path) {
     io_task_runner_->PostTask(

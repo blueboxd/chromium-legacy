@@ -14,6 +14,29 @@
 
 namespace updater {
 
+// This class implements the ICompleteStatus interface and exposes it as a COM
+// object.
+class CompleteStatusImpl
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          ICompleteStatus> {
+ public:
+  CompleteStatusImpl(int code, const base::string16& message)
+      : code_(code), message_(message) {}
+  CompleteStatusImpl(const CompleteStatusImpl&) = delete;
+  CompleteStatusImpl& operator=(const CompleteStatusImpl&) = delete;
+
+  // Overrides for ICompleteStatus.
+  IFACEMETHODIMP get_statusCode(LONG* code) override;
+  IFACEMETHODIMP get_statusMessage(BSTR* message) override;
+
+ private:
+  const int code_;
+  const base::string16 message_;
+
+  ~CompleteStatusImpl() override = default;
+};
+
 // This class implements the IUpdater interface and exposes it as a COM object.
 class UpdaterImpl
     : public Microsoft::WRL::RuntimeClass<

@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "services/device/usb/scoped_libusb_device_ref.h"
 #include "services/device/usb/usb_context.h"
@@ -52,9 +53,9 @@ class UsbServiceImpl final :
 #if defined(OS_WIN)
   // device::DeviceMonitorWin::Observer implementation
   void OnDeviceAdded(const GUID& class_guid,
-                     const std::string& device_path) override;
+                     const base::string16& device_path) override;
   void OnDeviceRemoved(const GUID& class_guid,
-                       const std::string& device_path) override;
+                       const base::string16& device_path) override;
 #endif  // OS_WIN
 
   void OnUsbContext(scoped_refptr<UsbContext> context);
@@ -100,7 +101,7 @@ class UsbServiceImpl final :
   // Enumeration callbacks are queued until an enumeration completes.
   bool enumeration_ready_ = false;
   bool enumeration_in_progress_ = false;
-  base::queue<std::string> pending_path_enumerations_;
+  base::queue<base::string16> pending_path_enumerations_;
   std::vector<GetDevicesCallback> pending_enumeration_callbacks_;
 
   // The map from libusb_device to UsbDeviceImpl. The key is a weak pointer to

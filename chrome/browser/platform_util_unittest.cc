@@ -58,7 +58,8 @@ class PlatformUtilTestContentBrowserClient : public ChromeContentBrowserClient {
     // New FileSystemBackend that uses our MockSpecialStoragePolicy.
     additional_backends->push_back(
         std::make_unique<chromeos::FileSystemBackend>(
-            nullptr, nullptr, nullptr, nullptr, nullptr, external_mount_points,
+            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+            external_mount_points,
             storage::ExternalMountPoints::GetSystemInstance()));
   }
 };

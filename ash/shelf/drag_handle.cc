@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
 #include "base/timer/timer.h"
@@ -103,11 +104,18 @@ bool DragHandle::DoesIntersectRect(const views::View* target,
 }
 
 bool DragHandle::ShowDragHandleNudge() {
+  // Stop observing overview state if nudge show timer has fired.
+  if (!show_drag_handle_nudge_timer_.IsRunning())
+    overview_observer_.RemoveAll();
+
   // Do not show drag handle nudge if it is already shown or drag handle is not
   // visible.
-  if (ShowingNudge() || !GetVisible())
+  if (ShowingNudge() || window_drag_from_shelf_in_progress_ || !GetVisible())
     return false;
   showing_nudge_ = true;
+
+  StopDragHandleNudgeShowTimer();
+
   PrefService* pref =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   base::TimeDelta nudge_duration = contextual_tooltip::GetNudgeTimeout(
@@ -127,8 +135,16 @@ bool DragHandle::ShowDragHandleNudge() {
 }
 
 void DragHandle::ScheduleShowDragHandleNudge() {
-  if (showing_nudge_)
+  if (showing_nudge_ || show_drag_handle_nudge_timer_.IsRunning() ||
+      window_drag_from_shelf_in_progress_ ||
+      Shell::Get()->overview_controller()->InOverviewSession()) {
     return;
+  }
+
+  // Observe overview controller to detect overview session start - this should
+  // cancel the scheduled nudge show.
+  overview_observer_.Add(Shell::Get()->overview_controller());
+
   show_drag_handle_nudge_timer_.Start(
       FROM_HERE, kShowNudgeDelay,
       base::BindOnce(base::IgnoreResult(&DragHandle::ShowDragHandleNudge),
@@ -141,12 +157,35 @@ void DragHandle::SetColorAndOpacity(SkColor color, float opacity) {
 }
 
 void DragHandle::HideDragHandleNudge(bool hidden_by_tap) {
-  show_drag_handle_nudge_timer_.Stop();
+  StopDragHandleNudgeShowTimer();
+
   if (!ShowingNudge())
     return;
   hide_drag_handle_nudge_timer_.Stop();
   HideDragHandleNudgeHelper(hidden_by_tap);
   showing_nudge_ = false;
+}
+
+void DragHandle::SetWindowDragFromShelfInProgress(bool gesture_in_progress) {
+  if (window_drag_from_shelf_in_progress_ == gesture_in_progress)
+    return;
+
+  window_drag_from_shelf_in_progress_ = gesture_in_progress;
+
+  // If the contextual nudge is not yet shown, make sure that any scheduled
+  // nudge show request is canceled.
+  if (!ShowingNudge()) {
+    StopDragHandleNudgeShowTimer();
+    return;
+  }
+
+  // If the drag handle nudge is shown when the gesture to home or overview
+  // starts, keep it around until the gesture completes.
+  if (window_drag_from_shelf_in_progress_) {
+    hide_drag_handle_nudge_timer_.Stop();
+  } else {
+    HideDragHandleNudge(/*hidden_by_tap=*/false);
+  }
 }
 
 void DragHandle::OnGestureEvent(ui::GestureEvent* event) {
@@ -178,6 +217,10 @@ gfx::Rect DragHandle::GetAnchorBoundsInScreen() const {
 
   anchor_bounds.set_origin(origin_in_screen);
   return anchor_bounds;
+}
+
+void DragHandle::OnOverviewModeStarting() {
+  StopDragHandleNudgeShowTimer();
 }
 
 void DragHandle::ShowDragHandleTooltip() {
@@ -251,7 +294,7 @@ void DragHandle::HideDragHandleNudgeHelper(bool hidden_by_tap) {
     ui::ScopedLayerAnimationSettings opacity_animation_settings(
         opacity_animator);
     opacity_animation_settings.SetPreemptionStrategy(
-        ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     opacity_animation_settings.SetTweenType(gfx::Tween::LINEAR);
     opacity_animation_settings.SetTransitionDuration(
         hidden_by_tap ? kDragHandleHideOnTapAnimationDuration
@@ -302,6 +345,11 @@ void DragHandle::HandleTapOnNudge() {
     return;
 
   HideDragHandleNudge(true /*hidden_by_tap*/);
+}
+
+void DragHandle::StopDragHandleNudgeShowTimer() {
+  show_drag_handle_nudge_timer_.Stop();
+  overview_observer_.RemoveAll();
 }
 
 }  // namespace ash

@@ -775,10 +775,6 @@ Document::Document(const DocumentInit& initializer,
     if (registry && registration_context_)
       registry->Entangle(registration_context_);
     cookie_jar_ = MakeGarbageCollected<CookieJar>(this);
-  } else if (imports_controller_ &&
-             !base::FeatureList::IsEnabled(
-                 features::kHtmlImportsRequestInitiatorLock)) {
-    fetcher_ = FrameFetchContext::CreateFetcherForImportedDocument(this);
   } else {
     // We disable fetches for frame-less Documents, including HTML-imported
     // Documents (if kHtmlImportsRequestInitiatorLock is enabled). Subresources

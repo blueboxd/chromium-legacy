@@ -186,6 +186,8 @@ function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type, d
   });
 }
 
+const LEGACY_MOUSE_WHEEL_TICK_MULTIPLIER = 120;
+
 // Returns the number of pixels per wheel tick which is a platform specific value.
 function pixelsPerTick() {
   // Comes from ui/events/event.cc

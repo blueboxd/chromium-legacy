@@ -79,6 +79,7 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
       std::unique_ptr<FileSystemBackendDelegate>
           arc_documents_provider_delegate,
       std::unique_ptr<FileSystemBackendDelegate> drivefs_delegate,
+      std::unique_ptr<FileSystemBackendDelegate> smbfs_delegate,
       scoped_refptr<storage::ExternalMountPoints> mount_points,
       storage::ExternalMountPoints* system_mount_points);
   ~FileSystemBackend() override;
@@ -162,6 +163,9 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
 
   // The delegate instance for the DriveFS file system related operations.
   std::unique_ptr<FileSystemBackendDelegate> drivefs_delegate_;
+
+  // The delegate instance for the SmbFs file system related operations.
+  std::unique_ptr<FileSystemBackendDelegate> smbfs_delegate_;
 
   // Mount points specific to the owning context (i.e. per-profile mount
   // points).

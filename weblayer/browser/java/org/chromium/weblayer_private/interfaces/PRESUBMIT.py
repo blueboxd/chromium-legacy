@@ -19,7 +19,9 @@ _INCOMPATIBLE_API_ERROR_STRING = """You have made an incompatible API change.
 Generally this means one of the following:
   A function has been removed.
   The arguments of a function has changed.
-This tool also reports renames as errors, which are generally okay."""
+This tool also reports renames as errors, which are generally okay.
+If the API you are changing was added in the current release, you can
+safely ignore this warning."""
 
 class AidlFile:
   """Provides information about an aidl file in the repo."""
@@ -137,7 +139,7 @@ def _CompareApiDumpForFiles(input_api, output_api, aidl_files):
     result = subprocess.call([aidl_tool_path, '--checkapi',
                               tmp_old_aidl_dir, tmp_new_aidl_dir])
     if result != 0:
-      return [output_api.PresubmitError(_INCOMPATIBLE_API_ERROR_STRING)]
+      return [output_api.PresubmitPromptWarning(_INCOMPATIBLE_API_ERROR_STRING)]
   finally:
     shutil.rmtree(tmp_old_contents_dir)
     shutil.rmtree(tmp_old_aidl_dir)

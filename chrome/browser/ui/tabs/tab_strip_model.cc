@@ -935,6 +935,11 @@ void TabStripModel::AddWebContents(
     index = order_controller_->DetermineInsertionIndex(transition,
                                                        add_types & ADD_ACTIVE);
     inherit_opener = true;
+
+    // The current active index is our opener. If the tab we are adding is not
+    // in a group, set the group of the tab to that of its opener.
+    if (!group.has_value())
+      group = GetTabGroupForTab(active_index());
   } else {
     // For all other types, respect what was passed to us, normalizing -1s and
     // values that are too large.

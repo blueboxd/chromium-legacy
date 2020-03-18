@@ -12,22 +12,24 @@ import android.text.format.DateUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
-
-import java.util.HashMap;
 
 /**
  * Tests of {@link DownloadUtils}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@Features.DisableFeatures(ChromeFeatureList.DOWNLOAD_FILE_PROVIDER)
 public class DownloadUtilsTest {
     private static final String OFFLINE_ITEM_TITLE = "Some Web Page Title.mhtml";
     private static final String OFFLINE_ITEM_DESCRIPTION = "Our web page";
@@ -38,13 +40,12 @@ public class DownloadUtilsTest {
     private static final String MULTIPART_RELATED = "multipart/related";
     private static final String ITEM_ID = "42";
 
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.InstrumentationProcessor();
+
     @Before
     public void setUp() {
         RecordHistogram.setDisabledForTests(true);
-
-        HashMap<String, Boolean> features = new HashMap<String, Boolean>();
-        features.put(ChromeFeatureList.DOWNLOAD_FILE_PROVIDER, false);
-        ChromeFeatureList.setTestFeatures(features);
     }
 
     @After

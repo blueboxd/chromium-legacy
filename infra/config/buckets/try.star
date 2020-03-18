@@ -541,6 +541,9 @@ try_.chromium_mac_ios_builder(
     name = 'ios-simulator-code-coverage',
     executable = 'recipe:chromium_trybot',
     use_clang_coverage = True,
+    properties = {
+        'xcode_build_version': '11c29',
+    },
 )
 
 try_.chromium_mac_ios_builder(

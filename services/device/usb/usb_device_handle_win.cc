@@ -523,7 +523,7 @@ bool UsbDeviceHandleWin::OpenInterfaceHandle(Interface* interface) {
   WINUSB_INTERFACE_HANDLE handle;
   if (interface->first_interface == interface->interface_number) {
     if (!function_handle_.IsValid()) {
-      function_handle_.Set(CreateFileA(
+      function_handle_.Set(CreateFile(
           device_->device_path().c_str(), GENERIC_READ | GENERIC_WRITE,
           FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
           FILE_FLAG_OVERLAPPED, nullptr));

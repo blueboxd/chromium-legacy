@@ -33,11 +33,6 @@ const char kRfcommMajor[] = "216";
 
 }  // namespace
 
-// static
-std::unique_ptr<SerialDeviceEnumerator> SerialDeviceEnumerator::Create() {
-  return std::make_unique<SerialDeviceEnumeratorLinux>();
-}
-
 SerialDeviceEnumeratorLinux::SerialDeviceEnumeratorLinux() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 

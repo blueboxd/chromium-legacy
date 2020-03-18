@@ -18,7 +18,9 @@ import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_componen
 import com.google.android.material.tabs.TabLayout;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -29,12 +31,11 @@ import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.modelutil.ListObservable;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyObservable.PropertyObserver;
-
-import java.util.HashMap;
 
 /**
  * Controller tests for the keyboard accessory tab layout component.
@@ -42,7 +43,11 @@ import java.util.HashMap;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
         shadows = {CustomShadowAsyncTask.class, ShadowRecordHistogram.class})
+@Features.EnableFeatures(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)
 public class KeyboardAccessoryTabLayoutControllerTest {
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
+
     @Mock
     private PropertyObserver<PropertyKey> mMockPropertyObserver;
     @Mock
@@ -63,9 +68,6 @@ public class KeyboardAccessoryTabLayoutControllerTest {
     public void setUp() {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
-        HashMap<String, Boolean> features = new HashMap<>();
-        features.put(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY, true);
-        ChromeFeatureList.setTestFeatures(features);
 
         mCoordinator = new KeyboardAccessoryTabLayoutCoordinator();
         mMediator = mCoordinator.getMediatorForTesting();

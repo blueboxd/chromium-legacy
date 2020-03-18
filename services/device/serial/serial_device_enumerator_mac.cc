@@ -104,11 +104,6 @@ bool GetUInt16Property(io_service_t service,
 
 }  // namespace
 
-// static
-std::unique_ptr<SerialDeviceEnumerator> SerialDeviceEnumerator::Create() {
-  return std::make_unique<SerialDeviceEnumeratorMac>();
-}
-
 SerialDeviceEnumeratorMac::SerialDeviceEnumeratorMac() {
   notify_port_.reset(IONotificationPortCreate(kIOMasterPortDefault));
   CFRunLoopAddSource(CFRunLoopGetMain(),

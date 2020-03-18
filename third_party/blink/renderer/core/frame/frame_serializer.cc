@@ -30,10 +30,8 @@
 
 #include "third_party/blink/renderer/core/frame/frame_serializer.h"
 
-#include "base/feature_list.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/css/css_font_face_rule.h"
 #include "third_party/blink/renderer/core/css/css_font_face_src_value.h"
 #include "third_party/blink/renderer/core/css/css_image_value.h"
@@ -622,9 +620,7 @@ void FrameSerializer::RetrieveResourcesForCSSValue(const CSSValue& css_value,
     if (font_face_src_value->IsLocal())
       return;
 
-    if (base::FeatureList::IsEnabled(
-            features::kHtmlImportsRequestInitiatorLock) &&
-        document.ImportsController()) {
+    if (document.ImportsController()) {
       if (Document* context_document = document.ContextDocument()) {
         // For @imports from HTML imported Documents, we use the
         // context document for getting origin and ResourceFetcher to use the

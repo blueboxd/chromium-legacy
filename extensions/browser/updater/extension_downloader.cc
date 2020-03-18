@@ -396,9 +396,6 @@ bool ExtensionDownloader::AddExtensionData(
   if (extra.is_corrupt_reinstall)
     install_source = kReinstallInstallSource;
 
-  const std::string install_location =
-      ManifestFetchData::GetSimpleLocationString(extension_location);
-
   ManifestFetchData::PingData ping_data;
   ManifestFetchData::PingData* optional_ping_data = NULL;
   if (delegate_->GetPingDataForExtension(id, &ping_data))
@@ -414,7 +411,7 @@ bool ExtensionDownloader::AddExtensionData(
     ManifestFetchData* existing_fetch = existing_iter->second.back().get();
     if (existing_fetch->AddExtension(
             id, version.GetString(), optional_ping_data, extra.update_url_data,
-            install_source, install_location, fetch_priority)) {
+            install_source, extension_location, fetch_priority)) {
       added = true;
     }
   }
@@ -428,7 +425,7 @@ bool ExtensionDownloader::AddExtensionData(
         std::move(fetch));
     added = fetch_ptr->AddExtension(id, version.GetString(), optional_ping_data,
                                     extra.update_url_data, install_source,
-                                    install_location, fetch_priority);
+                                    extension_location, fetch_priority);
     DCHECK(added);
   }
 

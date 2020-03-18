@@ -5,10 +5,10 @@
 #ifndef SERVICES_DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_WIN_H_
 #define SERVICES_DEVICE_SERIAL_SERIAL_DEVICE_ENUMERATOR_WIN_H_
 
-#include <vector>
-
 #include "base/macros.h"
-#include "base/optional.h"
+#include "base/scoped_observer.h"
+#include "base/win/windows_types.h"
+#include "device/base/device_monitor_win.h"
 #include "services/device/serial/serial_device_enumerator.h"
 
 namespace device {
@@ -16,11 +16,9 @@ namespace device {
 // Discovers and enumerates serial devices available to the host.
 class SerialDeviceEnumeratorWin : public SerialDeviceEnumerator {
  public:
-  SerialDeviceEnumeratorWin();
+  SerialDeviceEnumeratorWin(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~SerialDeviceEnumeratorWin() override;
-
-  // Implementation for SerialDeviceEnumerator.
-  std::vector<mojom::SerialPortInfoPtr> GetDevices() override;
 
   // Searches for the COM port in the device's friendly name and returns the
   // appropriate device path or nullopt if the input did not contain a valid
@@ -28,9 +26,25 @@ class SerialDeviceEnumeratorWin : public SerialDeviceEnumerator {
   static base::Optional<base::FilePath> GetPath(
       const std::string& friendly_name);
 
+  // SerialDeviceEnumerator
+  std::vector<mojom::SerialPortInfoPtr> GetDevices() override;
+  base::Optional<base::FilePath> GetPathFromToken(
+      const base::UnguessableToken& token) override;
+
+  void OnPathAdded(const base::string16& device_path);
+  void OnPathRemoved(const base::string16& device_path);
+
  private:
-  std::vector<mojom::SerialPortInfoPtr> GetDevicesNew();
-  std::vector<mojom::SerialPortInfoPtr> GetDevicesOld();
+  class UiThreadHelper;
+
+  void DoInitialEnumeration();
+  void EnumeratePort(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data);
+
+  std::map<base::UnguessableToken, mojom::SerialPortInfoPtr> ports_;
+  std::map<base::FilePath, base::UnguessableToken> paths_;
+
+  std::unique_ptr<UiThreadHelper, base::OnTaskRunnerDeleter> helper_;
+  base::WeakPtrFactory<SerialDeviceEnumeratorWin> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SerialDeviceEnumeratorWin);
 };

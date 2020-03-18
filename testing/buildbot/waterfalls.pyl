@@ -1448,6 +1448,15 @@
            'gtest_tests': 'chromium_swarm_linux_gtests',
         },
       },
+      'linux-rel-swarming-staging': {
+        'mixins': [
+          'linux-xenial',
+          'chromium-template-pool',
+        ],
+        'test_suites': {
+           'gtest_tests': 'chromium_swarm_linux_gtests',
+        },
+      },
       'mac-rel-swarming': {
         'mixins': [
           'chromium-template-pool',

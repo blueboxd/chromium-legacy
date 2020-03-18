@@ -182,7 +182,7 @@ class ScrollbarsTest : public SimTest {
   }
 
   void HandleMouseLeaveEvent() {
-    WebMouseEvent event(WebInputEvent::kMouseMove, gfx::PointF(1, 1),
+    WebMouseEvent event(WebInputEvent::kMouseLeave, gfx::PointF(1, 1),
                         gfx::PointF(1, 1), WebPointerProperties::Button::kLeft,
                         0, WebInputEvent::Modifiers::kLeftButtonDown,
                         base::TimeTicks::Now());
@@ -2313,7 +2313,8 @@ TEST_F(ScrollbarsTest, MiddleDownShouldNotAffectScrollbarPress) {
                       WebInputEvent::Modifiers::kLeftButtonDown,
                       base::TimeTicks::Now());
   event.SetFrameScale(1);
-  GetEventHandler().HandleMouseLeaveEvent(event);
+  GetEventHandler().HandleMouseMoveEvent(event, Vector<WebMouseEvent>(),
+                                         Vector<WebMouseEvent>());
   EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kThumbPart);
 
   // Middle click should not release scrollbar press state.

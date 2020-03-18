@@ -1509,8 +1509,8 @@ TEST_P(CertVerifyProcInternalTest, TestKnownRoot) {
 }
 
 // This tests that on successful certificate verification,
-// CertVerifyResult::public_key_hashes is filled with a SHA256 hash for each
-// of the certificates in the chain.
+// CertVerifyResult::public_key_hashes is filled with a SHA1 and SHA256 hash
+// for each of the certificates in the chain.
 TEST_P(CertVerifyProcInternalTest, PublicKeyHashes) {
   if (!SupportsReturningVerifiedChain()) {
     LOG(INFO) << "Skipping this test in this platform.";
@@ -1548,7 +1548,7 @@ TEST_P(CertVerifyProcInternalTest, PublicKeyHashes) {
 
   std::vector<std::string> expected_public_key_hashes = {
       // Target
-      "sha256/DZMTp9cNNYkzUG6baDB6T306ekLUYJpeEEtYpaeQpYE=",
+      "sha256/jpsUnwFFTO7e+l5zQDYhutkf7uA+dCVsWfRvv0UDX40=",
 
       // Intermediate
       "sha256/D9u0epgvPYlG9YiVp7V+IMT+xhUpB5BhsS/INjDXc4Y=",

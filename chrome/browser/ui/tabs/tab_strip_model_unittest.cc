@@ -1712,6 +1712,33 @@ TEST_F(TabStripModelTest, AddWebContents_ForgetOpeners) {
   EXPECT_TRUE(tabstrip.empty());
 }
 
+// Tests whether or not a WebContents in a new tab belongs in the same tab
+// group as its opener.
+TEST_F(TabStripModelTest, AddWebContents_LinkOpensInSameGroupAsOpener) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+  ASSERT_TRUE(tabstrip.empty());
+
+  // Open the home page and add the tab to a group.
+  std::unique_ptr<WebContents> homepage_contents = CreateWebContents();
+  tabstrip.AddWebContents(std::move(homepage_contents), -1,
+                          ui::PAGE_TRANSITION_AUTO_BOOKMARK,
+                          TabStripModel::ADD_ACTIVE);
+  ASSERT_EQ(1, tabstrip.count());
+  tab_groups::TabGroupId group_id = tabstrip.AddToNewGroup({0});
+  ASSERT_EQ(tabstrip.GetTabGroupForTab(0), group_id);
+
+  // Open a tab by simulating a link that opens in a new tab.
+  std::unique_ptr<WebContents> contents = CreateWebContents();
+  tabstrip.AddWebContents(std::move(contents), -1, ui::PAGE_TRANSITION_LINK,
+                          TabStripModel::ADD_ACTIVE);
+  EXPECT_EQ(2, tabstrip.count());
+  EXPECT_EQ(tabstrip.GetTabGroupForTab(1), group_id);
+
+  tabstrip.CloseAllTabs();
+  ASSERT_TRUE(tabstrip.empty());
+}
+
 // Added for http://b/issue?id=958960
 TEST_F(TabStripModelTest, AppendContentsReselectionTest) {
   TestTabStripModelDelegate delegate;

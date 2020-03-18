@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.InOrder;
@@ -40,14 +41,13 @@ import org.chromium.chrome.browser.omaha.metrics.UpdateProtos.Tracking;
 import org.chromium.chrome.browser.omaha.metrics.UpdateProtos.Tracking.Source;
 import org.chromium.chrome.browser.omaha.metrics.UpdateProtos.Tracking.Type;
 import org.chromium.chrome.browser.omaha.metrics.UpdateSuccessMetrics.UpdateType;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.version_info.VersionConstants;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /** Tests the API surface of UpdateSuccessMetrics. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
+@Features.DisableFeatures(ChromeFeatureList.INLINE_UPDATE_FLOW)
 public class UpdateSuccessMetricsTest {
     private static final int FAILED = 0;
     private static final int SUCCESS = 1;
@@ -63,13 +63,11 @@ public class UpdateSuccessMetricsTest {
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
+
     @Before
     public void setUp() {
-        Map<String, Boolean> featureList = new HashMap<>();
-        // The value we use does not matter.  ChromeFeatureList just needs to be initialized.
-        featureList.put(ChromeFeatureList.INLINE_UPDATE_FLOW, false);
-        ChromeFeatureList.setTestFeatures(featureList);
-
         mMetrics = new UpdateSuccessMetrics(mProvider);
     }
 

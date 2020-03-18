@@ -108,7 +108,7 @@ template <typename T>
 struct VectorUnusedSlotClearer<true, T> {
   STATIC_ONLY(VectorUnusedSlotClearer);
   static void Clear(T* begin, T* end) {
-    memset(reinterpret_cast<void*>(begin), 0, sizeof(T) * (end - begin));
+    AtomicMemzero(reinterpret_cast<void*>(begin), sizeof(T) * (end - begin));
   }
 
 #if DCHECK_IS_ON()
@@ -583,7 +583,7 @@ class VectorBuffer<T, 0, Allocator> : protected VectorBufferBase<T, Allocator> {
                         OffsetRange other_hole) {
     static_assert(VectorTraits<T>::kCanSwapUsingCopyOrMove,
                   "Cannot swap using copy or move.");
-    std::swap(buffer_, other.buffer_);
+    AtomicWriteSwap(buffer_, other.buffer_);
     std::swap(capacity_, other.capacity_);
     std::swap(size_, other.size_);
     Allocator::BackingWriteBarrier(&buffer_);

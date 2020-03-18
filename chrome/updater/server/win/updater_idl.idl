@@ -7,13 +7,25 @@ import "ocidl.idl";
 
 [
   object,
+  dual,
+  uuid(2FCD14AF-B645-4351-8359-E80A0E202A0B),
+  helpstring("ICompleteStatus Interface"),
+  pointer_default(unique)
+]
+interface ICompleteStatus : IUnknown {
+  [propget] HRESULT statusCode([out, retval] LONG*);
+  [propget] HRESULT statusMessage([out, retval] BSTR*);
+};
+
+[
+  object,
   oleautomation,
   uuid(7B416CFD-4216-4FD6-BD83-7C586054676E),
   helpstring("IUpdaterObserver Interface"),
   pointer_default(unique)
 ]
 interface IUpdaterObserver : IUnknown {
-  HRESULT OnComplete([in] int error_code);
+  HRESULT OnComplete([in] ICompleteStatus* status);
 };
 
 [

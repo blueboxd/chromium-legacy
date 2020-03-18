@@ -919,6 +919,7 @@ WebInputEventResult EventHandler::HandleMouseMoveEvent(
     const Vector<WebMouseEvent>& coalesced_events,
     const Vector<WebMouseEvent>& predicted_events) {
   TRACE_EVENT0("blink", "EventHandler::handleMouseMoveEvent");
+  DCHECK(event.GetType() == WebInputEvent::kMouseMove);
   HitTestResult hovered_node_result;
   HitTestLocation location;
   WebInputEventResult result =
@@ -953,13 +954,13 @@ WebInputEventResult EventHandler::HandleMouseMoveEvent(
 
 void EventHandler::HandleMouseLeaveEvent(const WebMouseEvent& event) {
   TRACE_EVENT0("blink", "EventHandler::handleMouseLeaveEvent");
+  DCHECK(event.GetType() == WebInputEvent::kMouseLeave);
 
   Page* page = frame_->GetPage();
   if (page)
     page->GetChromeClient().ClearToolTip(*frame_);
   HandleMouseMoveOrLeaveEvent(event, Vector<WebMouseEvent>(),
-                              Vector<WebMouseEvent>(), nullptr, nullptr, false,
-                              true);
+                              Vector<WebMouseEvent>());
   pointer_event_manager_->RemoveLastMousePosition();
 }
 
@@ -968,11 +969,11 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
     const Vector<WebMouseEvent>& coalesced_events,
     const Vector<WebMouseEvent>& predicted_events,
     HitTestResult* hovered_node_result,
-    HitTestLocation* hit_test_location,
-    bool only_update_scrollbars,
-    bool force_leave) {
+    HitTestLocation* hit_test_location) {
   DCHECK(frame_);
   DCHECK(frame_->View());
+  DCHECK(mouse_event.GetType() == WebInputEvent::kMouseMove ||
+         mouse_event.GetType() == WebInputEvent::kMouseLeave);
   mouse_event_manager_->SetLastKnownMousePosition(mouse_event);
 
   hover_timer_.Stop();
@@ -1016,31 +1017,27 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
       HitTestRequest::kMove | HitTestRequest::kRetargetForInert;
   if (mouse_event_manager_->MousePressed()) {
     hit_type |= HitTestRequest::kActive;
-  } else if (only_update_scrollbars) {
-    // Mouse events should be treated as "read-only" if we're updating only
-    // scrollbars. This means that :hover and :active freeze in the state they
-    // were in, rather than updating for nodes the mouse moves while the
-    // window is not key (which will be the case if onlyUpdateScrollbars is
-    // true).
-    hit_type |= HitTestRequest::kReadOnly;
   }
 
   // Treat any mouse move events as readonly if the user is currently touching
   // the screen.
-  if (pointer_event_manager_->IsAnyTouchActive() && !force_leave)
+  if (pointer_event_manager_->IsAnyTouchActive() &&
+      mouse_event.GetType() == WebInputEvent::kMouseMove) {
     hit_type |= HitTestRequest::kActive | HitTestRequest::kReadOnly;
+  }
   HitTestRequest request(hit_type);
   HitTestLocation out_location((PhysicalOffset()));
   MouseEventWithHitTestResults mev = MouseEventWithHitTestResults(
       mouse_event, out_location, HitTestResult(request, out_location));
 
-  // We don't want to do a hit-test in forceLeave scenarios because there
+  // We don't want to do a hit-test in MouseLeave scenarios because there
   // might actually be some other frame above this one at the specified
-  // co-ordinate. So we must force the hit-test to fail, while still clearing
-  // hover/active state.
-  if (force_leave) {
+  // coordinate. So we avoid the hit test but still clear the hover/active
+  // state.
+  if (mouse_event.GetType() == WebInputEvent::kMouseLeave) {
     frame_->GetDocument()->UpdateHoverActiveState(request.Active(),
-                                                  !request.Move(), nullptr);
+                                                  /*update_active_chain=*/false,
+                                                  nullptr);
   } else {
     mev = GetMouseEventTarget(request, mouse_event);
   }
@@ -1056,34 +1053,35 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
   if (scroll_manager_->InResizeMode()) {
     scroll_manager_->Resize(mev.Event());
   } else {
-    if (!scrollbar)
-      scrollbar = mev.GetScrollbar();
+    scrollbar = mev.GetScrollbar();
 
     UpdateLastScrollbarUnderMouse(scrollbar,
                                   !mouse_event_manager_->MousePressed());
-    if (only_update_scrollbars)
-      return WebInputEventResult::kHandledSuppressed;
   }
 
   WebInputEventResult event_result = WebInputEventResult::kNotHandled;
   bool is_portal =
       mev.InnerElement() && IsA<HTMLPortalElement>(*mev.InnerElement());
   bool is_remote_frame = false;
-  LocalFrame* new_subframe = event_handling_util::GetTargetSubframe(
+  LocalFrame* current_subframe = event_handling_util::GetTargetSubframe(
       mev, capturing_mouse_events_element_, &is_remote_frame);
 
   // We want mouseouts to happen first, from the inside out.  First send a
   // move event to the last subframe so that it will fire mouseouts.
+  // TODO(lanwei): figure out here if we should call HandleMouseLeaveEvent on a
+  // mouse move event.
   if (last_mouse_move_event_subframe_ &&
       last_mouse_move_event_subframe_->Tree().IsDescendantOf(frame_) &&
-      last_mouse_move_event_subframe_ != new_subframe) {
+      last_mouse_move_event_subframe_ != current_subframe) {
+    WebMouseEvent event = mev.Event();
+    event.SetType(WebInputEvent::kMouseLeave);
     last_mouse_move_event_subframe_->GetEventHandler().HandleMouseLeaveEvent(
-        mev.Event());
+        event);
     last_mouse_move_event_subframe_->GetEventHandler()
         .mouse_event_manager_->SetLastMousePositionAsUnknown();
   }
 
-  if (new_subframe) {
+  if (current_subframe) {
     // Update over/out state before passing the event to the subframe.
     pointer_event_manager_->SendMouseAndPointerBoundaryEvents(
         EffectiveMouseEventTargetElement(mev.InnerElement()),
@@ -1092,10 +1090,10 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
     // Event dispatch in sendMouseAndPointerBoundaryEvents may have caused the
     // subframe of the target node to be detached from its LocalFrameView, in
     // which case the event should not be passed.
-    if (new_subframe->View()) {
+    if (current_subframe->View()) {
       event_result =
           PassMouseMoveEventToSubframe(mev, coalesced_events, predicted_events,
-                                       new_subframe, hovered_node_result);
+                                       current_subframe, hovered_node_result);
     }
   } else {
     if (scrollbar && !mouse_event_manager_->MousePressed()) {
@@ -1113,7 +1111,7 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
     }
   }
 
-  last_mouse_move_event_subframe_ = new_subframe;
+  last_mouse_move_event_subframe_ = current_subframe;
 
   if (event_result != WebInputEventResult::kNotHandled)
     return event_result;
@@ -1985,7 +1983,7 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
     // Adjust the location of the gesture to the most likely nearby node, as
     // appropriate for the type of event.
     ApplyTouchAdjustment(&adjusted_event, location, &hit_test_result);
-    // Do a new hit-test at the (adjusted) gesture co-ordinates. This is
+    // Do a new hit-test at the (adjusted) gesture coordinates. This is
     // necessary because rect-based hit testing and touch adjustment sometimes
     // return a different node than what a point-based hit test would return for
     // the same point.

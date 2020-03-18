@@ -49,9 +49,10 @@ rm -rf out
 mkdir out
 
 echo Create the serial and index number files.
+serial=1000
 for i in B C D E F
 do
-  openssl rand -hex -out "out/${i}-serial" 16
+  /bin/sh -c "echo ${serial} > out/${i}-serial"
   touch "out/${i}-index.txt"
 done
 
@@ -228,13 +229,14 @@ python crlsetutil.py -o ../certificates/multi-root-crlset-E.raw \
 }
 CRLSETDOCBLOCK
 
-# Block C-by-D and F-by-E by way of serial number.
+# Block C-by-D (serial number 0x1001) and F-by-E (serial number 0x1002) by
+# way of serial number.
 python crlsetutil.py -o ../certificates/multi-root-crlset-CD-and-FE.raw \
 <<CRLSETDOCBLOCK
 {
   "BlockedByHash": {
-    "out/D.pem": ["out/C.pem"],
-    "out/E.pem": ["out/F.pem"]
+    "out/D.pem": [4097],
+    "out/E.pem": [4098]
   }
 }
 CRLSETDOCBLOCK
@@ -247,12 +249,12 @@ python crlsetutil.py -o ../certificates/multi-root-crlset-C.raw \
 }
 CRLSETDOCBLOCK
 
-# Block an unrelated/unissued serial (D, not issued by E) to enable all paths.
+# Block an unrelated/unissued serial (0x0FFF) to enable all paths.
 python crlsetutil.py -o ../certificates/multi-root-crlset-unrelated.raw \
 <<CRLSETDOCBLOCK
 {
   "BlockedByHash": {
-    "out/E.pem": ["out/D.pem"]
+    "out/E.pem": [4095]
   }
 }
 CRLSETDOCBLOCK

@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/inspector/inspector_resource_content_loader.h"
 
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
@@ -94,9 +93,7 @@ void InspectorResourceContentLoader::Start() {
     }
 
     ResourceFetcher* fetcher = document->Fetcher();
-    if (base::FeatureList::IsEnabled(
-            features::kHtmlImportsRequestInitiatorLock) &&
-        document->ImportsController()) {
+    if (document->ImportsController()) {
       // For @imports from HTML imported Documents, we use the
       // context document for getting origin and ResourceFetcher to use the
       // main Document's origin, while using the element document for

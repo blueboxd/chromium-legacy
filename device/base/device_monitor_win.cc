@@ -4,8 +4,10 @@
 
 #include "device/base/device_monitor_win.h"
 
-#include <dbt.h>
+// windows.h must be included before dbt.h.
 #include <windows.h>
+
+#include <dbt.h>
 
 #include <map>
 #include <memory>
@@ -121,7 +123,7 @@ class DeviceMonitorMessageWindow {
       if (map_entry != device_monitors_.end())
         device_monitor = map_entry->second.get();
 
-      std::string device_path(base::SysWideToUTF8(db->dbcc_name));
+      base::string16 device_path(db->dbcc_name);
       DCHECK(base::IsStringASCII(device_path));
       device_path = base::ToLowerASCII(device_path);
 
@@ -152,13 +154,13 @@ class DeviceMonitorMessageWindow {
   DISALLOW_COPY_AND_ASSIGN(DeviceMonitorMessageWindow);
 };
 
-void DeviceMonitorWin::Observer::OnDeviceAdded(const GUID& class_guid,
-                                               const std::string& device_path) {
-}
+void DeviceMonitorWin::Observer::OnDeviceAdded(
+    const GUID& class_guid,
+    const base::string16& device_path) {}
 
 void DeviceMonitorWin::Observer::OnDeviceRemoved(
     const GUID& class_guid,
-    const std::string& device_path) {}
+    const base::string16& device_path) {}
 
 // static
 DeviceMonitorWin* DeviceMonitorWin::GetForDeviceInterface(
@@ -194,13 +196,13 @@ void DeviceMonitorWin::RemoveObserver(Observer* observer) {
 DeviceMonitorWin::DeviceMonitorWin() {}
 
 void DeviceMonitorWin::NotifyDeviceAdded(const GUID& class_guid,
-                                         const std::string& device_path) {
+                                         const base::string16& device_path) {
   for (auto& observer : observer_list_)
     observer.OnDeviceAdded(class_guid, device_path);
 }
 
 void DeviceMonitorWin::NotifyDeviceRemoved(const GUID& class_guid,
-                                           const std::string& device_path) {
+                                           const base::string16& device_path) {
   for (auto& observer : observer_list_)
     observer.OnDeviceRemoved(class_guid, device_path);
 }

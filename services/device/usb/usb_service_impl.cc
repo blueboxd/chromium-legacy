@@ -50,7 +50,7 @@ const uint16_t kUsbVersion2_1 = 0x0210;
 
 #if defined(OS_WIN)
 
-bool IsWinUsbInterface(const std::string& device_path) {
+bool IsWinUsbInterface(const base::string16& device_path) {
   DeviceInfoQueryWin device_info_query;
   if (!device_info_query.device_info_list_valid()) {
     USB_PLOG(ERROR) << "Failed to create a device information set";
@@ -97,7 +97,7 @@ scoped_refptr<UsbContext> InitializeUsbContextBlocking() {
 }
 
 base::Optional<std::vector<ScopedLibusbDeviceRef>> GetDeviceListBlocking(
-    const std::string& new_device_path,
+    const base::string16& new_device_path,
     scoped_refptr<UsbContext> usb_context) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
@@ -267,20 +267,20 @@ void UsbServiceImpl::GetDevices(GetDevicesCallback callback) {
 #if defined(OS_WIN)
 
 void UsbServiceImpl::OnDeviceAdded(const GUID& class_guid,
-                                   const std::string& device_path) {
+                                   const base::string16& device_path) {
   // Only the root node of a composite USB device has the class GUID
   // GUID_DEVINTERFACE_USB_DEVICE but we want to wait until WinUSB is loaded.
   // This first pass filter will catch anything that's sitting on the USB bus
   // (including devices on 3rd party USB controllers) to avoid the more
   // expensive driver check that needs to be done on the FILE thread.
-  if (device_path.find("usb") != std::string::npos) {
+  if (device_path.find(L"usb") != base::string16::npos) {
     pending_path_enumerations_.push(device_path);
     RefreshDevices();
   }
 }
 
 void UsbServiceImpl::OnDeviceRemoved(const GUID& class_guid,
-                                     const std::string& device_path) {
+                                     const base::string16& device_path) {
   // The root USB device node is removed last.
   if (class_guid == GUID_DEVINTERFACE_USB_DEVICE) {
     RefreshDevices();
@@ -326,7 +326,7 @@ void UsbServiceImpl::RefreshDevices() {
   enumeration_in_progress_ = true;
   DCHECK(devices_being_enumerated_.empty());
 
-  std::string device_path;
+  base::string16 device_path;
   if (!pending_path_enumerations_.empty()) {
     device_path = pending_path_enumerations_.front();
     pending_path_enumerations_.pop();

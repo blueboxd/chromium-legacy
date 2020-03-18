@@ -281,7 +281,7 @@ void DevToolsClientImpl::AddListener(DevToolsEventListener* listener) {
 }
 
 Status DevToolsClientImpl::HandleReceivedEvents() {
-  return HandleEventsUntil(base::Bind(&ConditionIsMet),
+  return HandleEventsUntil(base::BindRepeating(&ConditionIsMet),
                            Timeout(base::TimeDelta()));
 }
 

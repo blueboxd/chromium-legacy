@@ -775,9 +775,9 @@ Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id,
     return Status(kUnsupportedOperation,
                   "Call WaitForPendingNavigations only on the parent WebView");
   VLOG(0) << "Waiting for pending navigations...";
-  const auto not_pending_navigation =
-      base::Bind(&WebViewImpl::IsNotPendingNavigation, base::Unretained(this),
-                 frame_id, base::Unretained(&timeout));
+  const auto not_pending_navigation = base::BindRepeating(
+      &WebViewImpl::IsNotPendingNavigation, base::Unretained(this), frame_id,
+      base::Unretained(&timeout));
   Status status = client_->HandleEventsUntil(not_pending_navigation, timeout);
   if (status.code() == kTimeout && stop_load_on_timeout) {
     VLOG(0) << "Timed out. Stopping navigation...";

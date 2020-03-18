@@ -384,6 +384,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/smb_client/fileapi/smbfs_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/speech/tts_chromeos.h"
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
@@ -3537,6 +3538,8 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
       std::make_unique<arc::ArcContentFileSystemBackendDelegate>(),
       std::make_unique<arc::ArcDocumentsProviderBackendDelegate>(),
       std::make_unique<drive::DriveFsFileSystemBackendDelegate>(
+          Profile::FromBrowserContext(browser_context)),
+      std::make_unique<chromeos::smb_client::SmbFsFileSystemBackendDelegate>(
           Profile::FromBrowserContext(browser_context)),
       external_mount_points, storage::ExternalMountPoints::GetSystemInstance());
   backend->AddSystemMountPoints();

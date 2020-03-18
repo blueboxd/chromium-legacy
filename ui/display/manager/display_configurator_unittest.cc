@@ -59,18 +59,24 @@ class TestObserver : public DisplayConfigurator::Observer {
 
   int num_changes() const { return num_changes_; }
   int num_failures() const { return num_failures_; }
+  int num_power_state_changes() const { return num_power_state_changes_; }
   const DisplayConfigurator::DisplayStateList& latest_outputs() const {
     return latest_outputs_;
   }
   MultipleDisplayState latest_failed_state() const {
     return latest_failed_state_;
   }
+  chromeos::DisplayPowerState latest_power_state() const {
+    return latest_power_state_;
+  }
 
   void Reset() {
     num_changes_ = 0;
     num_failures_ = 0;
+    num_power_state_changes_ = 0;
     latest_outputs_.clear();
     latest_failed_state_ = MULTIPLE_DISPLAY_STATE_INVALID;
+    latest_power_state_ = chromeos::DISPLAY_POWER_ALL_OFF;
   }
 
   // DisplayConfigurator::Observer overrides:
@@ -87,16 +93,25 @@ class TestObserver : public DisplayConfigurator::Observer {
     latest_failed_state_ = failed_new_state;
   }
 
+  void OnPowerStateChanged(chromeos::DisplayPowerState power_state) override {
+    num_power_state_changes_++;
+    latest_power_state_ = power_state;
+  }
+
  private:
   DisplayConfigurator* configurator_;  // Not owned.
 
   // Number of times that OnDisplayMode*() has been called.
   int num_changes_;
   int num_failures_;
+  // Number of times that OnPowerStateChanged() has been called.
+  int num_power_state_changes_;
 
   // Parameters most recently passed to OnDisplayMode*().
   DisplayConfigurator::DisplayStateList latest_outputs_;
   MultipleDisplayState latest_failed_state_;
+  // Value most recently passed to OnPowerStateChanged().
+  chromeos::DisplayPowerState latest_power_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -1359,6 +1374,61 @@ TEST_F(DisplayConfiguratorTest, SuspendResumeWithMultipleDisplays) {
             configurator_.current_power_state());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED,
             configurator_.display_state());
+}
+
+TEST_F(DisplayConfiguratorTest, PowerStateChange) {
+  InitWithOutputs(&small_mode_);
+
+  native_display_delegate_->set_run_async(true);
+
+  // Set the initial power state and verify that it is restored on resume.
+  config_waiter_.Reset();
+  configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_ON,
+                                DisplayConfigurator::kSetDisplayPowerNoFlags,
+                                config_waiter_.on_configuration_callback());
+
+  // SuspendDisplays causes notifying the DISPLAY_POWER_ALL_OFF state to the
+  // observer.
+  config_waiter_.Reset();
+  observer_.Reset();
+  configurator_.SuspendDisplays(config_waiter_.on_configuration_callback());
+  EXPECT_EQ(kNoDelay, config_waiter_.Wait());
+  EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
+  EXPECT_EQ(1, observer_.num_power_state_changes());
+  EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_OFF, observer_.latest_power_state());
+
+  // ResumeDisplays causes notifying the DISPLAY_POWER_ALL_ON state to the
+  // observer.
+  config_waiter_.Reset();
+  configurator_.ResumeDisplays();
+  EXPECT_EQ(base::TimeDelta::Max(), config_waiter_.Wait());
+  EXPECT_EQ(CALLBACK_NOT_CALLED, config_waiter_.callback_result());
+  EXPECT_EQ(2, observer_.num_power_state_changes());
+  EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON, observer_.latest_power_state());
+
+  // SuspendDisplays and ResumeDisplays before running the configuration task
+  // causes notifying only one power state change to the observer.
+  config_waiter_.Reset();
+  observer_.Reset();
+  configurator_.SuspendDisplays(config_waiter_.on_configuration_callback());
+  EXPECT_EQ(0, observer_.num_power_state_changes());
+  configurator_.ResumeDisplays();
+  // Run the task posted by TestNativeDisplayDelegate::GetDisplays() which is
+  // called by SuspendDisplays().
+  EXPECT_EQ(kNoDelay, config_waiter_.Wait());
+  EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
+  config_waiter_.Reset();
+  // Run the task posted by OnConfigured().
+  EXPECT_EQ(
+      base::TimeDelta::FromMilliseconds(DisplayConfigurator::kConfigureDelayMs),
+      config_waiter_.Wait());
+  EXPECT_EQ(CALLBACK_NOT_CALLED, config_waiter_.callback_result());
+  config_waiter_.Reset();
+  // Run the task posted by TestNativeDisplayDelegate::GetDisplays().
+  EXPECT_EQ(base::TimeDelta::Max(), config_waiter_.Wait());
+  EXPECT_EQ(CALLBACK_NOT_CALLED, config_waiter_.callback_result());
+  EXPECT_EQ(1, observer_.num_power_state_changes());
+  EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON, observer_.latest_power_state());
 }
 
 TEST_F(DisplayConfiguratorTest, EnablePrivacyScreenOnSupportedEmbeddedDisplay) {

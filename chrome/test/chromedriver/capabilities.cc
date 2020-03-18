@@ -31,7 +31,8 @@
 
 namespace {
 
-typedef base::Callback<Status(const base::Value&, Capabilities*)> Parser;
+typedef base::RepeatingCallback<Status(const base::Value&, Capabilities*)>
+    Parser;
 
 Status ParseBoolean(
     bool* to_set,
@@ -466,13 +467,14 @@ Status ParsePerfLoggingPrefs(const base::Value& option,
     return Status(kInvalidArgument, "must be a dictionary");
 
   std::map<std::string, Parser> parser_map;
-  parser_map["bufferUsageReportingInterval"] = base::Bind(&ParseInterval,
+  parser_map["bufferUsageReportingInterval"] = base::BindRepeating(
+      &ParseInterval,
       &capabilities->perf_logging_prefs.buffer_usage_reporting_interval);
-  parser_map["enableNetwork"] = base::Bind(
+  parser_map["enableNetwork"] = base::BindRepeating(
       &ParseInspectorDomainStatus, &capabilities->perf_logging_prefs.network);
-  parser_map["enablePage"] = base::Bind(
+  parser_map["enablePage"] = base::BindRepeating(
       &ParseInspectorDomainStatus, &capabilities->perf_logging_prefs.page);
-  parser_map["traceCategories"] = base::Bind(
+  parser_map["traceCategories"] = base::BindRepeating(
       &ParseString, &capabilities->perf_logging_prefs.trace_categories);
 
   for (base::DictionaryValue::Iterator it(*perf_logging_prefs); !it.IsAtEnd();
@@ -532,60 +534,64 @@ Status ParseChromeOptions(
   std::map<std::string, Parser> parser_map;
   // Ignore 'args', 'binary' and 'extensions' capabilities by default, since the
   // Java client always passes them.
-  parser_map["args"] = base::Bind(&IgnoreCapability);
-  parser_map["binary"] = base::Bind(&IgnoreCapability);
-  parser_map["extensions"] = base::Bind(&IgnoreCapability);
+  parser_map["args"] = base::BindRepeating(&IgnoreCapability);
+  parser_map["binary"] = base::BindRepeating(&IgnoreCapability);
+  parser_map["extensions"] = base::BindRepeating(&IgnoreCapability);
 
-  parser_map["perfLoggingPrefs"] = base::Bind(&ParsePerfLoggingPrefs);
-  parser_map["devToolsEventsToLog"] = base::Bind(
-          &ParseDevToolsEventsLoggingPrefs);
-  parser_map["windowTypes"] = base::Bind(&ParseWindowTypes);
+  parser_map["perfLoggingPrefs"] = base::BindRepeating(&ParsePerfLoggingPrefs);
+  parser_map["devToolsEventsToLog"] =
+      base::BindRepeating(&ParseDevToolsEventsLoggingPrefs);
+  parser_map["windowTypes"] = base::BindRepeating(&ParseWindowTypes);
   // Compliance is read when session is initialized and correct response is
   // sent if not parsed correctly.
-  parser_map["w3c"] = base::Bind(&IgnoreCapability);
+  parser_map["w3c"] = base::BindRepeating(&IgnoreCapability);
 
   parser_map["useUnsupportedLaunchAppDeprecationWorkaround"] =
       base::BindRepeating(&ParseBoolean, &capabilities->enable_launch_app);
 
   if (is_android) {
     parser_map["androidActivity"] =
-        base::Bind(&ParseString, &capabilities->android_activity);
+        base::BindRepeating(&ParseString, &capabilities->android_activity);
     parser_map["androidDeviceSerial"] =
-        base::Bind(&ParseString, &capabilities->android_device_serial);
+        base::BindRepeating(&ParseString, &capabilities->android_device_serial);
     parser_map["androidPackage"] =
-        base::Bind(&ParseString, &capabilities->android_package);
+        base::BindRepeating(&ParseString, &capabilities->android_package);
     parser_map["androidProcess"] =
-        base::Bind(&ParseString, &capabilities->android_process);
+        base::BindRepeating(&ParseString, &capabilities->android_process);
     parser_map["androidExecName"] =
         base::BindRepeating(&ParseString, &capabilities->android_exec_name);
     parser_map["androidDeviceSocket"] =
         base::BindRepeating(&ParseString, &capabilities->android_device_socket);
-    parser_map["androidUseRunningApp"] =
-        base::Bind(&ParseBoolean, &capabilities->android_use_running_app);
-    parser_map["args"] = base::Bind(&ParseSwitches);
-    parser_map["excludeSwitches"] = base::Bind(&ParseExcludeSwitches);
-    parser_map["loadAsync"] = base::Bind(&IgnoreDeprecatedOption, "loadAsync");
+    parser_map["androidUseRunningApp"] = base::BindRepeating(
+        &ParseBoolean, &capabilities->android_use_running_app);
+    parser_map["args"] = base::BindRepeating(&ParseSwitches);
+    parser_map["excludeSwitches"] = base::BindRepeating(&ParseExcludeSwitches);
+    parser_map["loadAsync"] =
+        base::BindRepeating(&IgnoreDeprecatedOption, "loadAsync");
   } else if (is_remote) {
     parser_map["debuggerAddress"] =
-        base::Bind(&ParseNetAddress, &capabilities->debugger_address);
+        base::BindRepeating(&ParseNetAddress, &capabilities->debugger_address);
   } else {
-    parser_map["args"] = base::Bind(&ParseSwitches);
-    parser_map["binary"] = base::Bind(&ParseFilePath, &capabilities->binary);
-    parser_map["detach"] = base::Bind(&ParseBoolean, &capabilities->detach);
-    parser_map["excludeSwitches"] = base::Bind(&ParseExcludeSwitches);
-    parser_map["extensions"] = base::Bind(&ParseExtensions);
-    parser_map["extensionLoadTimeout"] =
-        base::Bind(&ParseTimeDelta, &capabilities->extension_load_timeout);
-    parser_map["loadAsync"] = base::Bind(&IgnoreDeprecatedOption, "loadAsync");
+    parser_map["args"] = base::BindRepeating(&ParseSwitches);
+    parser_map["binary"] =
+        base::BindRepeating(&ParseFilePath, &capabilities->binary);
+    parser_map["detach"] =
+        base::BindRepeating(&ParseBoolean, &capabilities->detach);
+    parser_map["excludeSwitches"] = base::BindRepeating(&ParseExcludeSwitches);
+    parser_map["extensions"] = base::BindRepeating(&ParseExtensions);
+    parser_map["extensionLoadTimeout"] = base::BindRepeating(
+        &ParseTimeDelta, &capabilities->extension_load_timeout);
+    parser_map["loadAsync"] =
+        base::BindRepeating(&IgnoreDeprecatedOption, "loadAsync");
     parser_map["localState"] =
-        base::Bind(&ParseDict, &capabilities->local_state);
-    parser_map["logPath"] = base::Bind(&ParseLogPath);
+        base::BindRepeating(&ParseDict, &capabilities->local_state);
+    parser_map["logPath"] = base::BindRepeating(&ParseLogPath);
     parser_map["minidumpPath"] =
-        base::Bind(&ParseString, &capabilities->minidump_path);
-    parser_map["mobileEmulation"] = base::Bind(&ParseMobileEmulation);
-    parser_map["prefs"] = base::Bind(&ParseDict, &capabilities->prefs);
-    parser_map["useAutomationExtension"] =
-        base::Bind(&ParseBoolean, &capabilities->use_automation_extension);
+        base::BindRepeating(&ParseString, &capabilities->minidump_path);
+    parser_map["mobileEmulation"] = base::BindRepeating(&ParseMobileEmulation);
+    parser_map["prefs"] = base::BindRepeating(&ParseDict, &capabilities->prefs);
+    parser_map["useAutomationExtension"] = base::BindRepeating(
+        &ParseBoolean, &capabilities->use_automation_extension);
   }
 
   for (base::DictionaryValue::Iterator it(*chrome_options); !it.IsAtEnd();
@@ -611,7 +617,7 @@ Status ParseSeleniumOptions(
   if (!capability.GetAsDictionary(&selenium_options))
     return Status(kInvalidArgument, "must be a dictionary");
   std::map<std::string, Parser> parser_map;
-  parser_map["loggingPrefs"] = base::Bind(&ParseLoggingPrefs);
+  parser_map["loggingPrefs"] = base::BindRepeating(&ParseLoggingPrefs);
 
   for (base::DictionaryValue::Iterator it(*selenium_options); !it.IsAtEnd();
        it.Advance()) {

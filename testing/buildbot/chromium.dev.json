@@ -880,6 +880,144 @@
       }
     ]
   },
+  "linux-rel-swarming-staging": {
+    "gtest_tests": [
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "2",
+              "os": "Ubuntu-16.04",
+              "pool": "chromium.tests.template"
+            }
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "base_unittests",
+        "test_target": "//base:base_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "8",
+              "os": "Ubuntu-16.04",
+              "pool": "chromium.tests.template"
+            }
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
+        },
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "8",
+              "os": "Ubuntu-16.04",
+              "pool": "chromium.tests.template"
+            }
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "2",
+              "os": "Ubuntu-16.04",
+              "pool": "chromium.tests.template"
+            }
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "content_unittests",
+        "test_target": "//content/test:content_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "8",
+              "os": "Ubuntu-16.04",
+              "pool": "chromium.tests.template"
+            }
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "interactive_ui_tests",
+        "test_target": "//chrome/test:interactive_ui_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "8",
+              "os": "Ubuntu-16.04",
+              "pool": "chromium.tests.template"
+            }
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "net_unittests",
+        "test_target": "//net:net_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "2",
+              "os": "Ubuntu-16.04",
+              "pool": "chromium.tests.template"
+            }
+          ],
+          "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "unit_tests",
+        "test_target": "//chrome/test:unit_tests"
+      }
+    ]
+  },
   "mac-rel-swarming": {
     "gtest_tests": [
       {

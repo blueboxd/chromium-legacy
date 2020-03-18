@@ -24,11 +24,11 @@ namespace {
 const uint16_t kUsbVersion2_1 = 0x0210;
 }  // namespace
 
-UsbDeviceWin::UsbDeviceWin(const std::string& device_path,
-                           const std::string& hub_path,
+UsbDeviceWin::UsbDeviceWin(const base::string16& device_path,
+                           const base::string16& hub_path,
                            uint32_t bus_number,
                            uint32_t port_number,
-                           const std::string& driver_name)
+                           const base::string16& driver_name)
     : UsbDevice(bus_number, port_number),
       device_path_(device_path),
       hub_path_(hub_path),
@@ -40,7 +40,7 @@ void UsbDeviceWin::Open(OpenCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   scoped_refptr<UsbDeviceHandle> device_handle;
-  if (base::EqualsCaseInsensitiveASCII(driver_name_, "winusb"))
+  if (base::EqualsCaseInsensitiveASCII(driver_name_, L"winusb"))
     device_handle = new UsbDeviceHandleWin(this, false);
   // TODO: Support composite devices.
   // else if (base::EqualsCaseInsensitiveASCII(driver_name_, "usbccgp"))
@@ -55,8 +55,8 @@ void UsbDeviceWin::ReadDescriptors(base::OnceCallback<void(bool)> callback) {
 
   scoped_refptr<UsbDeviceHandle> device_handle;
   base::win::ScopedHandle handle(
-      CreateFileA(hub_path_.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, nullptr,
-                  OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr));
+      CreateFile(hub_path_.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, nullptr,
+                 OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr));
   if (handle.IsValid()) {
     device_handle = new UsbDeviceHandleWin(this, std::move(handle));
   } else {

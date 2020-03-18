@@ -84,6 +84,12 @@ void AddComServerWorkItems(HKEY root,
 
   base::CommandLine run_com_server_command(com_server_path);
   run_com_server_command.AppendSwitch(kServerSwitch);
+#if !defined(NDEBUG)
+  run_com_server_command.AppendSwitch(kEnableLoggingSwitch);
+  run_com_server_command.AppendSwitchASCII(kLoggingModuleSwitch,
+                                           "*/chrome/updater/*=2");
+#endif
+
   list->AddSetRegValueWorkItem(
       root, local_server32_reg_path, WorkItem::kWow64Default, L"",
       run_com_server_command.GetCommandLineString(), true);
@@ -132,7 +138,8 @@ void AddComInterfacesWorkItems(HKEY root,
     return;
   }
 
-  for (const auto iid : {__uuidof(IUpdater), __uuidof(IUpdaterObserver)}) {
+  for (const auto iid : {__uuidof(IUpdater), __uuidof(IUpdaterObserver),
+                         __uuidof(ICompleteStatus)}) {
     const base::string16 iid_reg_path = GetComIidRegistryPath(iid);
     const base::string16 typelib_reg_path = GetComTypeLibRegistryPath(iid);
 

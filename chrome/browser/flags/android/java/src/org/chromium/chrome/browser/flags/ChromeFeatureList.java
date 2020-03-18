@@ -50,9 +50,18 @@ public abstract class ChromeFeatureList {
 
     /**
      * @see FeatureList#setTestFeatures
+     * Sets the feature flags to use in JUnit tests, since native calls are not available there.
+     * Do not use directly, prefer using the {@link Features} annotation.
+     *
+     * @see Features
+     * @see Features.Processor
+     *
+     * @deprecated
+     * https://crbug.com/1058993
      */
     // TODO(crbug.com/1060097): Migrate callers to the FeatureList equivalent function.
     @VisibleForTesting
+    @Deprecated
     public static void setTestFeatures(Map<String, Boolean> features) {
         FeatureList.setTestFeatures(features);
     }

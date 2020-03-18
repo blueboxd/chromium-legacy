@@ -12,6 +12,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -126,6 +127,56 @@ std::string GetSimilarDomainFromEngagedSites(
 
 void RecordEvent(NavigationSuggestionEvent event) {
   UMA_HISTOGRAM_ENUMERATION(lookalikes::kHistogramName, event);
+}
+
+// Returns the parts of the url that are separated by "." or "-" not including
+// the TLD.
+std::vector<base::string16> SplitNonTLDDomainIntoTokens(
+    const base::string16& host) {
+  // Strip off TLD, and split the remaining URL by '-'s and '.'s.
+  // This assumes that the eTLD has only one part (eg. bbc.co.uk -> [bbc, co]).
+  // This increases false positives in ways that we need to investigate, since,
+  // e.g., google.co.uk will be identified as target embedding of google.co if
+  // .co is considered an important TLD.
+  base::string16::size_type last_dot = host.rfind('.');
+  DCHECK_NE(base::string16::npos, last_dot);
+  base::string16 host_without_tld = host.substr(0, last_dot);
+
+  return base::SplitString(host_without_tld, base::ASCIIToUTF16("-."),
+                           base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+}
+
+// For each possible e2LD+eTLD pair, check whether it forms a top domain.
+bool IsTopDomainCandidate(const std::set<std::string>& important_tlds,
+                          const base::string16& e2LD,
+                          GURL* found_domain) {
+  // We need to identify top domains, even when the spoof uses the 'wrong' TLD
+  // (e.g. google.gov). To do that, we check the embedded domain with each
+  // possible |important_tld| against the top domain list.
+  for (const auto& tld : important_tlds) {
+    // Create a GURL so we can get a DomainInfo from it for IsTopDomain
+    // e2LD is the smallest unit of a domain name that could be registered.
+    // (e.g. example in example.com)
+    base::string16 target16 =
+        e2LD + base::ASCIIToUTF16(".") + base::ASCIIToUTF16(tld);
+    GURL possible_target(base::ASCIIToUTF16(url::kHttpsScheme) +
+                         base::ASCIIToUTF16(url::kStandardSchemeSeparator) +
+                         target16);
+    DomainInfo possible_target_domain = GetDomainInfo(possible_target);
+    if (IsTopDomain(possible_target_domain)) {
+      *found_domain = GURL(possible_target.spec());
+      return true;
+    }
+    // If no match is found, check if e2LD is a unicode spoof
+    std::string top_targeted_domain =
+        url_formatter::IDNSpoofChecker().GetSimilarTopDomain(target16).domain;
+    if (!top_targeted_domain.empty()) {
+      *found_domain = GURL(std::string(url::kHttpsScheme) +
+                           url::kStandardSchemeSeparator + top_targeted_domain);
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -321,4 +372,44 @@ void RecordUMAFromMatchType(LookalikeUrlMatchType match_type) {
     case LookalikeUrlMatchType::kNone:
       break;
   }
+}
+
+bool IsTargetEmbeddingLookalike(const GURL& url,
+                                const std::set<std::string>& important_tlds,
+                                GURL* safe_url) {
+  DCHECK(url.SchemeIsHTTPOrHTTPS());
+
+  // url.host() will give punycode-encoded hostname, as we need all the unicode
+  // characters to stay in the url for further check we convert host to unicode
+  base::string16 host =
+      url_formatter::UnsafeIDNToUnicodeWithDetails(url.host()).result;
+  const std::vector<base::string16> hostname_tokens_without_tld =
+      SplitNonTLDDomainIntoTokens(host);
+
+  // When we find a valid TLD, we look backwards to the previous token
+  // to see if we can use it to build a top domain.
+  base::string16 prev_part = base::EmptyString16();
+
+  // We could have domains separated by '-'s or '.'s, in order to find target
+  // embedding urls with google.com.com or google-com.com, we get url parts as
+  // anything that is between two '-'s or '.'s. We check to see if an important
+  // TLD is following an important domain.
+  // Because of the way this matching is working, we can not identify target
+  // embedding attacks on legitimate websites that contain '-' in their names
+  // (e.g programme-tv.net).
+  for (const auto& token : hostname_tokens_without_tld) {
+    if (prev_part.empty()) {
+      prev_part = token;
+      continue;
+    }
+
+    const std::string tld = base::UTF16ToUTF8(token);
+    if (base::Contains(important_tlds, tld) &&
+        IsTopDomainCandidate(important_tlds, prev_part, safe_url)) {
+      return true;
+    }
+    prev_part = token;
+  }
+  *safe_url = GURL();
+  return false;
 }

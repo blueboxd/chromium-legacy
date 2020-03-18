@@ -4,7 +4,6 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 
-#include <map>
 #include <memory>
 #include <set>
 #include <utility>
@@ -59,40 +58,6 @@ using session_manager::SessionState;
 namespace ash {
 namespace {
 
-using FeatureType = AccessibilityControllerImpl::FeatureType;
-
-// These classes are used to store the static configuration for a11y features.
-struct FeatureData {
-  FeatureType type;
-  const char* pref;
-  const gfx::VectorIcon* icon;
-  FeatureType conflicting_feature = FeatureType::kNoConflictingFeature;
-};
-
-struct FeatureDialogData {
-  AccessibilityControllerImpl::FeatureType type;
-  const char* pref;
-  int title;
-  int body;
-  bool mandatory;
-};
-
-// A static array describing each feature.
-const FeatureData kFeatures[] = {
-    {FeatureType::kAutoclick, prefs::kAccessibilityAutoclickEnabled,
-     &kSystemMenuAccessibilityAutoClickIcon},
-    {FeatureType::kCaretHighlight, prefs::kAccessibilityCaretHighlightEnabled,
-     nullptr},
-    {FeatureType::KCursorHighlight, prefs::kAccessibilityCursorHighlightEnabled,
-     nullptr}};
-
-// TODO(crbug.com/1051892): Remove this once all features are properly handled.
-const FeatureType kLastAddedFeature = FeatureType::KCursorHighlight;
-
-// An array describing the confirmation dialogs for the features which have
-// them.
-const FeatureDialogData kFeatureDialogs[] = {};
-
 constexpr char kNotificationId[] = "chrome://settings/accessibility";
 constexpr char kNotifierAccessibility[] = "ash.accessibility";
 
@@ -135,26 +100,6 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kDictationAcceleratorDialogHasBeenAccepted,
     prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted2,
 };
-
-// Helper function that is used to verify the validity of kFeatures and
-// kFeatureDialogs.
-bool VerifyFeaturesData() {
-  // All feature prefs must be unique.
-  std::set<const char*> feature_prefs;
-  for (auto feature_data : kFeatures) {
-    if (feature_prefs.find(feature_data.pref) != feature_prefs.end())
-      return false;
-    feature_prefs.insert(feature_data.pref);
-  }
-
-  for (auto dialog_data : kFeatureDialogs) {
-    if (feature_prefs.find(dialog_data.pref) != feature_prefs.end())
-      return false;
-    feature_prefs.insert(dialog_data.pref);
-  }
-
-  return true;
-}
 
 // Returns true if |pref_service| is the one used for the signin screen.
 bool IsSigninPrefService(PrefService* pref_service) {
@@ -351,158 +296,13 @@ SwitchAccessCommandKeyCode UmaValueForKeyCode(int key_code) {
 
 }  // namespace
 
-AccessibilityControllerImpl::Feature::Feature(
-    FeatureType type,
-    const std::string& pref_name,
-    const gfx::VectorIcon* icon,
-    AccessibilityControllerImpl* controller)
-    : type_(type), pref_name_(pref_name), icon_(icon), owner_(controller) {}
-
-AccessibilityControllerImpl::Feature::~Feature() = default;
-
-void AccessibilityControllerImpl::Feature::SetEnabled(bool enabled) {
-  PrefService* prefs = owner_->active_user_prefs_;
-  if (!prefs)
-    return;
-  prefs->SetBoolean(pref_name_, enabled);
-  prefs->CommitPendingWrite();
-}
-
-bool AccessibilityControllerImpl::Feature::IsVisibleInTray() const {
-  return (conflicting_feature_ == kNoConflictingFeature ||
-          !owner_->GetFeature(conflicting_feature_).enabled()) &&
-         owner_->IsAccessibilityFeatureVisibleInTrayMenu(pref_name_);
-}
-
-bool AccessibilityControllerImpl::Feature::IsEnterpriseIconVisible() const {
-  return owner_->IsEnterpriseIconVisibleInTrayMenu(pref_name_);
-}
-
-const gfx::VectorIcon& AccessibilityControllerImpl::Feature::icon() const {
-  DCHECK(icon_);
-  if (icon_)
-    return *icon_;
-  return kPaletteTrayIconDefaultIcon;
-}
-
-void AccessibilityControllerImpl::Feature::UpdateFromPref() {
-  PrefService* prefs = owner_->active_user_prefs_;
-  DCHECK(prefs);
-
-  bool enabled = prefs->GetBoolean(pref_name_);
-
-  if (conflicting_feature_ != FeatureType::kNoConflictingFeature &&
-      owner_->GetFeature(conflicting_feature_).enabled()) {
-    enabled = false;
-  }
-
-  if (enabled == enabled_)
-    return;
-
-  enabled_ = enabled;
-  owner_->UpdateFeatureFromPref(type_);
-}
-
-void AccessibilityControllerImpl::Feature::SetConflictingFeature(
-    AccessibilityControllerImpl::FeatureType feature) {
-  DCHECK_EQ(conflicting_feature_, FeatureType::kNoConflictingFeature);
-  conflicting_feature_ = feature;
-}
-
-AccessibilityControllerImpl::FeatureWithDialog::FeatureWithDialog(
-    FeatureType type,
-    const std::string& pref_name,
-    const gfx::VectorIcon* icon,
-    const Dialog& dialog,
-    AccessibilityControllerImpl* controller)
-    : AccessibilityControllerImpl::Feature(type, pref_name, icon, controller),
-      dialog_(dialog) {}
-AccessibilityControllerImpl::FeatureWithDialog::~FeatureWithDialog() = default;
-
-void AccessibilityControllerImpl::FeatureWithDialog::SetDialogAccepted() {
-  PrefService* prefs = owner_->active_user_prefs_;
-  if (!prefs)
-    return;
-  prefs->SetBoolean(dialog_.pref_name, true);
-  prefs->CommitPendingWrite();
-}
-
-bool AccessibilityControllerImpl::FeatureWithDialog::WasDialogAccepted() const {
-  PrefService* prefs = owner_->active_user_prefs_;
-  DCHECK(prefs);
-  return prefs->GetBoolean(dialog_.pref_name);
-}
-
-void AccessibilityControllerImpl::FeatureWithDialog::SetEnabledWithDialog(
-    bool enabled,
-    base::OnceClosure completion_callback) {
-  PrefService* prefs = owner_->active_user_prefs_;
-  if (!prefs)
-    return;
-  // We should not show the dialog when the feature is already enabled.
-  if (enabled && !this->enabled() && !WasDialogAccepted()) {
-    Shell::Get()->accelerator_controller()->MaybeShowConfirmationDialog(
-        dialog_.title_resource_id, dialog_.body_resource_id,
-        // Callback for if the user accepts the dialog
-        base::BindOnce(
-            [](base::WeakPtr<AccessibilityControllerImpl> owner,
-               FeatureType type, base::OnceClosure completion_callback) {
-              if (!owner)
-                return;
-
-              static_cast<FeatureWithDialog&>(owner->GetFeature(type))
-                  .SetDialogAccepted();
-              // If they accept, try again to set value to true
-              owner->GetFeature(type).SetEnabled(true);
-              std::move(completion_callback).Run();
-            },
-            owner_->weak_ptr_factory_.GetWeakPtr(), type_,
-            std::move(completion_callback)),
-        base::DoNothing());
-
-    return;
-  }
-  Feature::SetEnabled(enabled);
-  std::move(completion_callback).Run();
-}
-
-void AccessibilityControllerImpl::FeatureWithDialog::SetEnabled(bool enabled) {
-  if (dialog_.mandatory)
-    SetEnabledWithDialog(enabled, base::DoNothing());
-  else
-    Feature::SetEnabled(enabled);
-}
-
 AccessibilityControllerImpl::AccessibilityControllerImpl()
     : autoclick_delay_(AutoclickController::GetDefaultAutoclickDelay()) {
   Shell::Get()->session_controller()->AddObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
-  CreateAccessibilityFeatures();
 }
 
 AccessibilityControllerImpl::~AccessibilityControllerImpl() = default;
-
-void AccessibilityControllerImpl::CreateAccessibilityFeatures() {
-  DCHECK(VerifyFeaturesData());
-  // First, build all features with dialog.
-  std::map<FeatureType, Dialog> dialogs;
-  for (auto dialog_data : kFeatureDialogs) {
-    dialogs[dialog_data.type] = {dialog_data.pref, dialog_data.title,
-                                 dialog_data.body, dialog_data.mandatory};
-  }
-  for (auto feature_data : kFeatures) {
-    DCHECK(!features_[feature_data.type]);
-    auto it = dialogs.find(feature_data.type);
-    if (it == dialogs.end()) {
-      features_[feature_data.type] = std::make_unique<Feature>(
-          feature_data.type, feature_data.pref, feature_data.icon, this);
-    } else {
-      features_[feature_data.type] = std::make_unique<FeatureWithDialog>(
-          feature_data.type, feature_data.pref, feature_data.icon, it->second,
-          this);
-    }
-  }
-}
 
 // static
 void AccessibilityControllerImpl::RegisterProfilePrefs(
@@ -727,37 +527,22 @@ void AccessibilityControllerImpl::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-AccessibilityControllerImpl::Feature& AccessibilityControllerImpl::GetFeature(
-    FeatureType type) const {
-  DCHECK(features_[type].get());
-  return *features_[type].get();
-}
-
-AccessibilityControllerImpl::Feature& AccessibilityControllerImpl::autoclick()
-    const {
-  return GetFeature(FeatureType::kAutoclick);
-}
-
-AccessibilityControllerImpl::Feature&
-AccessibilityControllerImpl::caret_highlight() const {
-  return GetFeature(FeatureType::kCaretHighlight);
-}
-
-AccessibilityControllerImpl::Feature&
-AccessibilityControllerImpl::cursor_highlight() const {
-  return GetFeature(FeatureType::KCursorHighlight);
-}
-
 void AccessibilityControllerImpl::SetAutoclickEnabled(bool enabled) {
-  autoclick().SetEnabled(enabled);
+  if (!active_user_prefs_)
+    return;
+  active_user_prefs_->SetBoolean(prefs::kAccessibilityAutoclickEnabled,
+                                 enabled);
+  active_user_prefs_->CommitPendingWrite();
 }
 
 bool AccessibilityControllerImpl::IsAutoclickSettingVisibleInTray() {
-  return autoclick().IsVisibleInTray();
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityAutoclickEnabled);
 }
 
 bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForAutoclick() {
-  return autoclick().IsEnterpriseIconVisible();
+  return IsEnterpriseIconVisibleInTrayMenu(
+      prefs::kAccessibilityAutoclickEnabled);
 }
 
 bool AccessibilityControllerImpl::IsPrimarySettingsViewVisibleInTray() {
@@ -789,27 +574,39 @@ bool AccessibilityControllerImpl::IsAdditionalSettingsSeparatorVisibleInTray() {
 }
 
 void AccessibilityControllerImpl::SetCaretHighlightEnabled(bool enabled) {
-  caret_highlight().SetEnabled(enabled);
+  if (!active_user_prefs_)
+    return;
+  active_user_prefs_->SetBoolean(prefs::kAccessibilityCaretHighlightEnabled,
+                                 enabled);
+  active_user_prefs_->CommitPendingWrite();
 }
 
 bool AccessibilityControllerImpl::IsCaretHighlightSettingVisibleInTray() {
-  return caret_highlight().IsVisibleInTray();
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityCaretHighlightEnabled);
 }
 
 bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForCaretHighlight() {
-  return caret_highlight().IsEnterpriseIconVisible();
+  return IsEnterpriseIconVisibleInTrayMenu(
+      prefs::kAccessibilityCaretHighlightEnabled);
 }
 
 void AccessibilityControllerImpl::SetCursorHighlightEnabled(bool enabled) {
-  cursor_highlight().SetEnabled(enabled);
+  if (!active_user_prefs_)
+    return;
+  active_user_prefs_->SetBoolean(prefs::kAccessibilityCursorHighlightEnabled,
+                                 enabled);
+  active_user_prefs_->CommitPendingWrite();
 }
 
 bool AccessibilityControllerImpl::IsCursorHighlightSettingVisibleInTray() {
-  return cursor_highlight().IsVisibleInTray();
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityCursorHighlightEnabled);
 }
 
 bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForCursorHighlight() {
-  return cursor_highlight().IsEnterpriseIconVisible();
+  return IsEnterpriseIconVisibleInTrayMenu(
+      prefs::kAccessibilityCursorHighlightEnabled);
 }
 
 void AccessibilityControllerImpl::SetDictationEnabled(bool enabled) {
@@ -1313,19 +1110,10 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
   // Watch for pref updates from webui settings and policy.
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(prefs);
-
-  // It is safe to use base::Unreatined since we own pref_change_registrar.
-  for (int feature_id = 0; feature_id <= kLastAddedFeature; feature_id++) {
-    Feature* feature = features_[feature_id].get();
-    DCHECK(feature);
-    pref_change_registrar_->Add(
-        feature->pref_name(),
-        base::BindRepeating(
-            &AccessibilityControllerImpl::Feature::UpdateFromPref,
-            base::Unretained(feature)));
-    feature->UpdateFromPref();
-  }
-
+  pref_change_registrar_->Add(
+      prefs::kAccessibilityAutoclickEnabled,
+      base::BindRepeating(&AccessibilityControllerImpl::UpdateAutoclickFromPref,
+                          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilityAutoclickDelayMs,
       base::BindRepeating(
@@ -1355,6 +1143,16 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
       prefs::kAccessibilityAutoclickMenuPosition,
       base::BindRepeating(
           &AccessibilityControllerImpl::UpdateAutoclickMenuPositionFromPref,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilityCaretHighlightEnabled,
+      base::BindRepeating(
+          &AccessibilityControllerImpl::UpdateCaretHighlightFromPref,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilityCursorHighlightEnabled,
+      base::BindRepeating(
+          &AccessibilityControllerImpl::UpdateCursorHighlightFromPref,
           base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilityDictationEnabled,
@@ -1451,16 +1249,15 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
                           base::Unretained(this)));
 
   // Load current state.
-  for (int feature_id = 0; feature_id <= kLastAddedFeature; feature_id++) {
-    features_[feature_id]->UpdateFromPref();
-  }
-
+  UpdateAutoclickFromPref();
   UpdateAutoclickDelayFromPref();
   UpdateAutoclickEventTypeFromPref();
   UpdateAutoclickRevertToLeftClickFromPref();
   UpdateAutoclickStabilizePositionFromPref();
   UpdateAutoclickMovementThresholdFromPref();
   UpdateAutoclickMenuPositionFromPref();
+  UpdateCaretHighlightFromPref();
+  UpdateCursorHighlightFromPref();
   UpdateDictationFromPref();
   UpdateFocusHighlightFromPref();
   UpdateHighContrastFromPref();
@@ -1473,6 +1270,22 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
   UpdateVirtualKeyboardFromPref();
   UpdateTabletModeShelfNavigationButtonsFromPref();
   UpdateShortcutsEnabledFromPref();
+}
+
+void AccessibilityControllerImpl::UpdateAutoclickFromPref() {
+  DCHECK(active_user_prefs_);
+  const bool enabled =
+      active_user_prefs_->GetBoolean(prefs::kAccessibilityAutoclickEnabled);
+
+  if (autoclick_enabled_ == enabled)
+    return;
+
+  autoclick_enabled_ = enabled;
+
+  NotifyAccessibilityStatusChanged();
+
+  Shell::Get()->autoclick_controller()->SetEnabled(
+      enabled, true /* show confirmation dialog */);
 }
 
 void AccessibilityControllerImpl::UpdateAutoclickDelayFromPref() {
@@ -1570,6 +1383,34 @@ void AccessibilityControllerImpl::OnAutoclickScrollableBoundsFound(
     gfx::Rect& bounds_in_screen) {
   Shell::Get()->autoclick_controller()->OnAutoclickScrollableBoundsFound(
       bounds_in_screen);
+}
+
+void AccessibilityControllerImpl::UpdateCaretHighlightFromPref() {
+  DCHECK(active_user_prefs_);
+  const bool enabled = active_user_prefs_->GetBoolean(
+      prefs::kAccessibilityCaretHighlightEnabled);
+
+  if (caret_highlight_enabled_ == enabled)
+    return;
+
+  caret_highlight_enabled_ = enabled;
+
+  NotifyAccessibilityStatusChanged();
+  UpdateAccessibilityHighlightingFromPrefs();
+}
+
+void AccessibilityControllerImpl::UpdateCursorHighlightFromPref() {
+  DCHECK(active_user_prefs_);
+  const bool enabled = active_user_prefs_->GetBoolean(
+      prefs::kAccessibilityCursorHighlightEnabled);
+
+  if (cursor_highlight_enabled_ == enabled)
+    return;
+
+  cursor_highlight_enabled_ = enabled;
+
+  NotifyAccessibilityStatusChanged();
+  UpdateAccessibilityHighlightingFromPrefs();
 }
 
 void AccessibilityControllerImpl::UpdateDictationFromPref() {
@@ -1679,7 +1520,7 @@ void AccessibilityControllerImpl::UpdateSpokenFeedbackFromPref() {
 }
 
 void AccessibilityControllerImpl::UpdateAccessibilityHighlightingFromPrefs() {
-  if (!caret_highlight().enabled() && !cursor_highlight().enabled() &&
+  if (!caret_highlight_enabled_ && !cursor_highlight_enabled_ &&
       !focus_highlight_enabled_) {
     accessibility_highlight_controller_.reset();
     return;
@@ -1690,10 +1531,9 @@ void AccessibilityControllerImpl::UpdateAccessibilityHighlightingFromPrefs() {
         std::make_unique<AccessibilityHighlightController>();
   }
 
-  accessibility_highlight_controller_->HighlightCaret(
-      caret_highlight().enabled());
+  accessibility_highlight_controller_->HighlightCaret(caret_highlight_enabled_);
   accessibility_highlight_controller_->HighlightCursor(
-      cursor_highlight().enabled());
+      cursor_highlight_enabled_);
   accessibility_highlight_controller_->HighlightFocus(focus_highlight_enabled_);
 }
 
@@ -1914,43 +1754,6 @@ bool AccessibilityControllerImpl::IsAccessibilityFeatureVisibleInTrayMenu(
     return false;
   }
   return true;
-}
-
-void AccessibilityControllerImpl::UpdateFeatureFromPref(FeatureType feature) {
-  bool enabled = features_[feature]->enabled();
-
-  switch (feature) {
-    case FeatureType::kAutoclick:
-      Shell::Get()->autoclick_controller()->SetEnabled(
-          enabled, true /* show confirmation dialog */);
-      break;
-    case FeatureType::kCaretHighlight:
-      UpdateAccessibilityHighlightingFromPrefs();
-      break;
-    case FeatureType::KCursorHighlight:
-      UpdateAccessibilityHighlightingFromPrefs();
-      break;
-    case FeatureType::kDictation:
-    case FeatureType::kFocusHighlight:
-    case FeatureType::kFullscreenMagnifier:
-    case FeatureType::kDockedMagnifier:
-    case FeatureType::kHighContrast:
-    case FeatureType::kLargeCursor:
-    case FeatureType::kMonoAudio:
-    case FeatureType::kSpokenFeedback:
-    case FeatureType::kSelectToSpeak:
-    case FeatureType::kStickyKeys:
-    case FeatureType::kSwitchAccess:
-    case FeatureType::kVirtualKeyboard:
-      // Do nothing for now.
-      // TODO(crbug.com/1051892): Add implementation for other features.
-      NOTIMPLEMENTED();
-      return;
-    case FeatureType::kFeatureCount:
-    case FeatureType::kNoConflictingFeature:
-      NOTREACHED();
-  }
-  NotifyAccessibilityStatusChanged();
 }
 
 }  // namespace ash

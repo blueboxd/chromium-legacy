@@ -25,7 +25,6 @@
 
 #include "third_party/blink/renderer/core/svg/svg_use_element.h"
 
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -206,9 +205,7 @@ void SVGUseElement::UpdateTargetReference() {
   params.MutableResourceRequest().SetMode(
       network::mojom::RequestMode::kSameOrigin);
   auto* context_document = &GetDocument();
-  if (base::FeatureList::IsEnabled(
-          features::kHtmlImportsRequestInitiatorLock) &&
-      GetDocument().ImportsController()) {
+  if (GetDocument().ImportsController()) {
     // For @imports from HTML imported Documents, we use the
     // context document for getting origin and ResourceFetcher to use the
     // main Document's origin, while using the element document for

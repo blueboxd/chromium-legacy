@@ -92,4 +92,48 @@ TEST_F(AtomicOperationsTest, AtomicWriteMemcpy_127Bytes) {
   TestAtomicWriteMemcpy<127>();
 }
 
+// Tests for AtomicMemzero
+template <size_t buffer_size>
+void TestAtomicMemzero() {
+  // Allocating extra memory before and after the buffer to make sure the
+  // AtomicMemzero doesn't exceed the buffer in any direction.
+  alignas(sizeof(size_t)) unsigned char buf[buffer_size + (2 * sizeof(size_t))];
+  memset(buf, ~uint8_t{0}, buffer_size + (2 * sizeof(size_t)));
+  AtomicMemzero<buffer_size>(buf + sizeof(size_t));
+  // Check nothing before the buffer was changed
+  EXPECT_EQ(~size_t{0}, *reinterpret_cast<size_t*>(&buf[0]));
+  // Check buffer was copied correctly
+  static const unsigned char for_comparison[buffer_size] = {0};
+  EXPECT_TRUE(!memcmp(buf + sizeof(size_t), for_comparison, buffer_size));
+  // Check nothing after the buffer was changed
+  EXPECT_EQ(~size_t{0},
+            *reinterpret_cast<size_t*>(&buf[sizeof(size_t) + buffer_size]));
+}
+
+TEST_F(AtomicOperationsTest, AtomicMemzero_UINT8T) {
+  TestAtomicMemzero<sizeof(uint8_t)>();
+}
+TEST_F(AtomicOperationsTest, AtomicMemzero_UINT16T) {
+  TestAtomicMemzero<sizeof(uint16_t)>();
+}
+TEST_F(AtomicOperationsTest, AtomicMemzero_UINT32T) {
+  TestAtomicMemzero<sizeof(uint32_t)>();
+}
+TEST_F(AtomicOperationsTest, AtomicMemzero_UINT64T) {
+  TestAtomicMemzero<sizeof(uint64_t)>();
+}
+
+TEST_F(AtomicOperationsTest, AtomicMemzero_17Bytes) {
+  TestAtomicMemzero<17>();
+}
+TEST_F(AtomicOperationsTest, AtomicMemzero_34Bytes) {
+  TestAtomicMemzero<34>();
+}
+TEST_F(AtomicOperationsTest, AtomicMemzero_68Bytes) {
+  TestAtomicMemzero<68>();
+}
+TEST_F(AtomicOperationsTest, AtomicMemzero_127Bytes) {
+  TestAtomicMemzero<127>();
+}
+
 }  // namespace WTF

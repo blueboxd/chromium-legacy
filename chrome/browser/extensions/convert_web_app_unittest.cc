@@ -485,7 +485,10 @@ TEST(ExtensionFromWebApp, FileHandlersAreCorrectlyConverted) {
 
 // Tests that |file_handler| on the WebAppManifest is correctly converted
 // to |web_app_file_handlers| on an extension manifest.
-TEST(ExtensionFromWebApp, WebAppFileHandlersAreCorrectlyConverted) {
+//
+// TODO(crbug.com/1062239): This test is failing on Windows trunk builds. It can
+// be temporarily disabled, since the feature hasn't shipped yet.
+TEST(ExtensionFromWebApp, DISABLED_WebAppFileHandlersAreCorrectlyConverted) {
   base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 

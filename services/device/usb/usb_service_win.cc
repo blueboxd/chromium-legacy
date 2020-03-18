@@ -58,7 +58,7 @@ bool GetDeviceUint32Property(HDEVINFO dev_info,
 bool GetDeviceStringProperty(HDEVINFO dev_info,
                              SP_DEVINFO_DATA* dev_info_data,
                              const DEVPROPKEY& property,
-                             std::string* property_buffer) {
+                             base::string16* buffer) {
   DEVPROPTYPE property_type;
   DWORD required_size;
   if (SetupDiGetDeviceProperty(dev_info, dev_info_data, &property,
@@ -68,25 +68,23 @@ bool GetDeviceStringProperty(HDEVINFO dev_info,
     return false;
   }
 
-  base::string16 buffer16;
   if (!SetupDiGetDeviceProperty(
           dev_info, dev_info_data, &property, &property_type,
-          reinterpret_cast<PBYTE>(base::WriteInto(&buffer16, required_size)),
+          reinterpret_cast<PBYTE>(base::WriteInto(buffer, required_size)),
           required_size, nullptr, 0)) {
     return false;
   }
 
-  *property_buffer = base::UTF16ToUTF8(buffer16);
   return true;
 }
 
 bool GetDeviceInterfaceDetails(HDEVINFO dev_info,
                                SP_DEVICE_INTERFACE_DATA* device_interface_data,
-                               std::string* device_path,
+                               base::string16* device_path,
                                uint32_t* bus_number,
                                uint32_t* port_number,
-                               std::string* parent_instance_id,
-                               std::string* service_name) {
+                               base::string16* parent_instance_id,
+                               base::string16* service_name) {
   DWORD required_size = 0;
   if (SetupDiGetDeviceInterfaceDetail(dev_info, device_interface_data, nullptr,
                                       0, &required_size, nullptr) ||
@@ -110,8 +108,7 @@ bool GetDeviceInterfaceDetails(HDEVINFO dev_info,
   }
 
   if (device_path) {
-    *device_path =
-        base::SysWideToUTF8(device_interface_detail_data->DevicePath);
+    *device_path = base::string16(device_interface_detail_data->DevicePath);
   }
 
   if (bus_number) {
@@ -147,7 +144,7 @@ bool GetDeviceInterfaceDetails(HDEVINFO dev_info,
 
     // Windows pads this string with a variable number of NUL bytes for no
     // discernible reason.
-    size_t end = service_name->find_last_not_of('\0');
+    size_t end = service_name->find_last_not_of(L'\0');
     if (end != std::string::npos)
       service_name->erase(end + 1);
   }
@@ -155,11 +152,11 @@ bool GetDeviceInterfaceDetails(HDEVINFO dev_info,
   return true;
 }
 
-bool GetHubDevicePath(const std::string& instance_id,
-                      std::string* device_path) {
+bool GetHubDevicePath(const base::string16& instance_id,
+                      base::string16* device_path) {
   ScopedDevInfo dev_info(
-      SetupDiGetClassDevsA(&GUID_DEVINTERFACE_USB_HUB, instance_id.c_str(), 0,
-                           DIGCF_DEVICEINTERFACE | DIGCF_PRESENT));
+      SetupDiGetClassDevs(&GUID_DEVINTERFACE_USB_HUB, instance_id.c_str(), 0,
+                          DIGCF_DEVICEINTERFACE | DIGCF_PRESENT));
   if (!dev_info.is_valid()) {
     USB_PLOG(ERROR) << "SetupDiGetClassDevs";
     return false;
@@ -205,20 +202,20 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
                                                   &GUID_DEVINTERFACE_USB_DEVICE,
                                                   i, &device_interface_data);
          ++i) {
-      std::string device_path;
+      base::string16 device_path;
       uint32_t bus_number;
       uint32_t port_number;
-      std::string parent_instance_id;
-      std::string service_name;
+      base::string16 parent_instance_id;
+      base::string16 service_name;
       if (!GetDeviceInterfaceDetails(dev_info.get(), &device_interface_data,
                                      &device_path, &bus_number, &port_number,
                                      &parent_instance_id, &service_name)) {
         continue;
       }
 
-      std::string& hub_path = hub_paths_[parent_instance_id];
+      base::string16& hub_path = hub_paths_[parent_instance_id];
       if (hub_path.empty()) {
-        std::string parent_path;
+        base::string16 parent_path;
         if (!GetHubDevicePath(parent_instance_id, &parent_path))
           continue;
 
@@ -238,7 +235,7 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
         FROM_HERE, base::BindOnce(&UsbServiceWin::HelperStarted, service_));
   }
 
-  void EnumerateDevicePath(const std::string& device_path) {
+  void EnumerateDevicePath(const base::string16& device_path) {
     ScopedDevInfo dev_info(
         SetupDiGetClassDevs(&GUID_DEVINTERFACE_USB_DEVICE, nullptr, 0,
                             DIGCF_DEVICEINTERFACE | DIGCF_PRESENT));
@@ -249,25 +246,25 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
 
     SP_DEVICE_INTERFACE_DATA device_interface_data;
     device_interface_data.cbSize = sizeof(device_interface_data);
-    if (!SetupDiOpenDeviceInterfaceA(dev_info.get(), device_path.c_str(), 0,
-                                     &device_interface_data)) {
+    if (!SetupDiOpenDeviceInterface(dev_info.get(), device_path.c_str(), 0,
+                                    &device_interface_data)) {
       USB_PLOG(ERROR) << "Failed to add device interface: " << device_path;
       return;
     }
 
     uint32_t bus_number;
     uint32_t port_number;
-    std::string parent_instance_id;
-    std::string service_name;
+    base::string16 parent_instance_id;
+    base::string16 service_name;
     if (!GetDeviceInterfaceDetails(dev_info.get(), &device_interface_data,
                                    nullptr, &bus_number, &port_number,
                                    &parent_instance_id, &service_name)) {
       return;
     }
 
-    std::string& hub_path = hub_paths_[parent_instance_id];
+    base::string16& hub_path = hub_paths_[parent_instance_id];
     if (hub_path.empty()) {
-      std::string parent_path;
+      base::string16 parent_path;
       if (!GetHubDevicePath(parent_instance_id, &parent_path))
         return;
 
@@ -281,7 +278,7 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
   }
 
  private:
-  std::unordered_map<std::string, std::string> hub_paths_;
+  std::unordered_map<base::string16, base::string16> hub_paths_;
 
   // Calls back to |service_| must be posted to |service_task_runner_|, which
   // runs tasks on the thread where that object lives.
@@ -318,14 +315,14 @@ void UsbServiceWin::GetDevices(GetDevicesCallback callback) {
 }
 
 void UsbServiceWin::OnDeviceAdded(const GUID& class_guid,
-                                  const std::string& device_path) {
+                                  const base::string16& device_path) {
   blocking_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::EnumerateDevicePath,
                                 base::Unretained(helper_.get()), device_path));
 }
 
 void UsbServiceWin::OnDeviceRemoved(const GUID& class_guid,
-                                    const std::string& device_path) {
+                                    const base::string16& device_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto by_path_it = devices_by_path_.find(device_path);
   if (by_path_it == devices_by_path_.end())
@@ -359,11 +356,11 @@ void UsbServiceWin::HelperStarted() {
   }
 }
 
-void UsbServiceWin::CreateDeviceObject(const std::string& device_path,
-                                       const std::string& hub_path,
+void UsbServiceWin::CreateDeviceObject(const base::string16& device_path,
+                                       const base::string16& hub_path,
                                        uint32_t bus_number,
                                        uint32_t port_number,
-                                       const std::string& driver_name) {
+                                       const base::string16& driver_name) {
   // Devices that appear during initial enumeration are gathered into the first
   // result returned by GetDevices() and prevent device add/remove notifications
   // from being sent.

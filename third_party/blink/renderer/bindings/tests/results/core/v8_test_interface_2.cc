@@ -397,10 +397,10 @@ static void NamedPropertySetter(
     return;
   }
 
-  bool result = impl->setNamedItem(name, property_value, exception_state);
+  NamedPropertySetterResult result = impl->setNamedItem(name, property_value, exception_state);
   if (exception_state.HadException())
     return;
-  if (!result)
+  if (result == NamedPropertySetterResult::kDidNotIntercept)
     return;
   V8SetReturnValue(info, v8_value);
 }
@@ -416,12 +416,12 @@ static void NamedPropertyDeleter(
 
   TestInterface2* impl = V8TestInterface2::ToImpl(info.Holder());
 
-  DeleteResult result = impl->deleteNamedItem(name, exception_state);
+  NamedPropertyDeleterResult result = impl->deleteNamedItem(name, exception_state);
   if (exception_state.HadException())
     return;
-  if (result == kDeleteUnknownProperty)
+  if (result == NamedPropertyDeleterResult::kDidNotIntercept)
     return;
-  V8SetReturnValue(info, result == kDeleteSuccess);
+  V8SetReturnValue(info, result == NamedPropertyDeleterResult::kDeleted);
 }
 
 static void NamedPropertyQuery(
@@ -520,10 +520,10 @@ static void IndexedPropertySetter(
     return;
   }
 
-  bool result = impl->setItem(index, property_value, exception_state);
+  IndexedPropertySetterResult result = impl->setItem(index, property_value, exception_state);
   if (exception_state.HadException())
     return;
-  if (!result)
+  if (result == IndexedPropertySetterResult::kDidNotIntercept)
     return;
   V8SetReturnValue(info, v8_value);
 }
@@ -537,12 +537,12 @@ static void IndexedPropertyDeleter(
 
   TestInterface2* impl = V8TestInterface2::ToImpl(info.Holder());
 
-  DeleteResult result = impl->deleteItem(index, exception_state);
+  NamedPropertyDeleterResult result = impl->deleteItem(index, exception_state);
   if (exception_state.HadException())
     return;
-  if (result == kDeleteUnknownProperty)
+  if (result == NamedPropertyDeleterResult::kDidNotIntercept)
     return;
-  V8SetReturnValue(info, result == kDeleteSuccess);
+  V8SetReturnValue(info, result == NamedPropertyDeleterResult::kDeleted);
 }
 
 }  // namespace test_interface_2_v8_internal

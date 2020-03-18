@@ -12,8 +12,11 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
-AppDialogView::AppDialogView()
-    : BubbleDialogDelegateView(nullptr, views::BubbleBorder::NONE) {}
+AppDialogView::AppDialogView(const std::string& app_name,
+                             const gfx::ImageSkia& image)
+    : BubbleDialogDelegateView(nullptr, views::BubbleBorder::NONE),
+      app_name_(app_name),
+      image_(image) {}
 
 AppDialogView::~AppDialogView() = default;
 
@@ -28,23 +31,27 @@ ui::ModalType AppDialogView::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
+gfx::ImageSkia AppDialogView::GetWindowIcon() {
+  return image_;
+}
+
 bool AppDialogView::ShouldShowCloseButton() const {
   return false;
 }
 
-void AppDialogView::InitializeView(const gfx::ImageSkia& image,
-                                   const base::string16& heading_text) {
+bool AppDialogView::ShouldShowWindowIcon() const {
+  return true;
+}
+
+void AppDialogView::InitializeView(const base::string16& heading_text) {
   DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal,
-      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
-
-  auto* icon_view = AddChildView(std::make_unique<views::ImageView>());
-  icon_view->SetImage(image);
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
   auto* label = AddChildView(std::make_unique<views::Label>(heading_text));
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetAllowCharacterBreak(true);
 }

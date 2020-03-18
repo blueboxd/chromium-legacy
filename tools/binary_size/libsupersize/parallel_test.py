@@ -149,7 +149,7 @@ class ConcurrentTest(unittest.TestCase):
   def testBulkForkAndCall_exception(self):
     parent_pid = os.getpid()
     results = parallel.BulkForkAndCall(_ForkTestHelper,
-                                       [(1, 'a', self, parent_pid)])
+                                       [(1, 'a', None, self, parent_pid)])
     self.assertRaises(TypeError, results.next)
 
 

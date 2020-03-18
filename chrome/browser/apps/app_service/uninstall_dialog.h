@@ -46,8 +46,8 @@ class UninstallDialog {
   // the icon image, and the callback function.
   class UiBase {
    public:
-    explicit UiBase(gfx::ImageSkia image, UninstallDialog* uninstall_dialog)
-        : image_(image), uninstall_dialog_(uninstall_dialog) {}
+    explicit UiBase(UninstallDialog* uninstall_dialog)
+        : uninstall_dialog_(uninstall_dialog) {}
 
     virtual ~UiBase() = default;
 
@@ -59,11 +59,9 @@ class UninstallDialog {
                        gfx::NativeWindow parent_window,
                        UninstallDialog* uninstall_dialog);
 
-    gfx::ImageSkia image() const { return image_; }
     UninstallDialog* uninstall_dialog() const { return uninstall_dialog_; }
 
    private:
-    gfx::ImageSkia image_;
     UninstallDialog* uninstall_dialog_;
 
     DISALLOW_COPY_AND_ASSIGN(UiBase);

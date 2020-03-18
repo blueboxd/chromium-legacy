@@ -39,7 +39,6 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
@@ -196,7 +195,6 @@ public class TabGroupUiMediatorUnitTest {
         // initAndAssertProperties(true), TabModel has 3 tabs in the following order: mTab1, mTab2,
         // and mTab3, while mTab2 and mTab3 are in a group. By default mTab1 is selected. If
         // initAndAssertProperties(false) is called instead, there's no tabs in TabModel.
-        RecordUserAction.setDisabledForTests(true);
         RecordHistogram.setDisabledForTests(true);
 
         MockitoAnnotations.initMocks(this);
@@ -282,7 +280,6 @@ public class TabGroupUiMediatorUnitTest {
 
     @After
     public void tearDown() {
-        RecordUserAction.setDisabledForTests(false);
         RecordHistogram.setDisabledForTests(false);
     }
 

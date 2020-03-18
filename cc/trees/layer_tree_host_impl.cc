@@ -147,7 +147,6 @@ FrameSequenceTrackerType GetTrackerTypeForScroll(ScrollInputType input_type) {
     case ScrollInputType::kScrollbar:
       return FrameSequenceTrackerType::kScrollbarScroll;
     case ScrollInputType::kAutoscroll:
-    case ScrollInputType::kUnknown:
       return FrameSequenceTrackerType::kMaxType;
   }
 }
@@ -224,7 +223,6 @@ enum ScrollThread { MAIN_THREAD, CC_THREAD };
 
 void RecordCompositorSlowScrollMetric(ScrollInputType type,
                                       ScrollThread scroll_thread) {
-  DCHECK_NE(type, ScrollInputType::kUnknown);
   bool scroll_on_main_thread = (scroll_thread == MAIN_THREAD);
   if (type == ScrollInputType::kWheel) {
     UMA_HISTOGRAM_BOOLEAN("Renderer4.CompositorWheelScrollUpdateThread",

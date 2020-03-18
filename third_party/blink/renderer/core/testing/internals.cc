@@ -225,17 +225,17 @@ class UseCounterHelperObserverImpl final : public UseCounterHelper::Observer {
 
 static base::Optional<DocumentMarker::MarkerType> MarkerTypeFrom(
     const String& marker_type) {
-  if (DeprecatedEqualIgnoringCase(marker_type, "Spelling"))
+  if (EqualIgnoringASCIICase(marker_type, "Spelling"))
     return DocumentMarker::kSpelling;
   if (EqualIgnoringASCIICase(marker_type, "Grammar"))
     return DocumentMarker::kGrammar;
   if (EqualIgnoringASCIICase(marker_type, "TextMatch"))
     return DocumentMarker::kTextMatch;
-  if (DeprecatedEqualIgnoringCase(marker_type, "Composition"))
+  if (EqualIgnoringASCIICase(marker_type, "Composition"))
     return DocumentMarker::kComposition;
-  if (DeprecatedEqualIgnoringCase(marker_type, "ActiveSuggestion"))
+  if (EqualIgnoringASCIICase(marker_type, "ActiveSuggestion"))
     return DocumentMarker::kActiveSuggestion;
-  if (DeprecatedEqualIgnoringCase(marker_type, "Suggestion"))
+  if (EqualIgnoringASCIICase(marker_type, "Suggestion"))
     return DocumentMarker::kSuggestion;
   return base::nullopt;
 }

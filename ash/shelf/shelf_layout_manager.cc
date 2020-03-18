@@ -1569,14 +1569,7 @@ gfx::Insets ShelfLayoutManager::CalculateTargetBounds(
 
   if (drag_status_ == kDragInProgress)
     UpdateTargetBoundsForGesture(hotseat_target_state);
-
-  // TODO(manucornet): Snap bounds in the shelf widget directly, and adjust
-  // tests that don't expect snapped bounds.
   const gfx::Rect shelf_bounds = shelf_->shelf_widget()->GetTargetBounds();
-  gfx::Rect snapped_shelf_bounds(shelf_bounds);
-  screen_util::SnapBoundsToDisplayEdge(
-      snapped_shelf_bounds, shelf_->shelf_widget()->GetNativeWindow());
-  shelf_->shelf_widget()->set_target_bounds(snapped_shelf_bounds);
 
   return shelf_->SelectValueForShelfAlignment(
       gfx::Insets(0, 0,

@@ -159,6 +159,17 @@ public final class CachingUmaRecorderTest {
     }
 
     @Test
+    public void testRecordUserActionDelegated() {
+        CachingUmaRecorder cachingUmaRecorder = new CachingUmaRecorder();
+        cachingUmaRecorder.setDelegate(mUmaRecorder);
+
+        cachingUmaRecorder.recordUserAction("ActionTested", 72);
+
+        verify(mUmaRecorder).recordUserAction("ActionTested", 72);
+        verifyNoMoreInteractions(mUmaRecorder);
+    }
+
+    @Test
     public void testSetDelegateStopsOldDelegation() {
         CachingUmaRecorder cachingUmaRecorder = new CachingUmaRecorder();
         cachingUmaRecorder.setDelegate(mUmaRecorder);
@@ -277,6 +288,11 @@ public final class CachingUmaRecorderTest {
         @Override
         public void recordSparseHistogram(String name, int sample) {
             recordedSamples.addAndGet(sample, 1);
+        }
+
+        @Override
+        public void recordUserAction(String name, long elapsedRealtimeMillis) {
+            throw new UnsupportedOperationException();
         }
     }
 

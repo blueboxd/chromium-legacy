@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -98,9 +99,9 @@ class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable,
   // Note: AnonymousNamedSetter() can end up throwing an exception via
   // SetPropertyInternal() even though it does not take an |ExceptionState| as
   // an argument (see bug 829408).
-  bool AnonymousNamedSetter(ScriptState*,
-                            const AtomicString& name,
-                            const String& value);
+  NamedPropertySetterResult AnonymousNamedSetter(ScriptState*,
+                                                 const AtomicString& name,
+                                                 const String& value);
   void NamedPropertyEnumerator(Vector<String>& names, ExceptionState&);
   bool NamedPropertyQuery(const AtomicString&, ExceptionState&);
 

@@ -23,6 +23,7 @@
 #include "build/build_config.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scroll_input_type.h"
+#include "cc/metrics/event_metrics.h"
 #include "services/tracing/public/cpp/perfetto/flow_event_utils.h"
 #include "services/tracing/public/cpp/perfetto/macros.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
@@ -113,10 +114,9 @@ cc::ScrollInputType GestureScrollInputType(blink::WebGestureDevice device) {
     case blink::WebGestureDevice::kScrollbar:
       return cc::ScrollInputType::kScrollbar;
     case blink::WebGestureDevice::kUninitialized:
-      break;
+      NOTREACHED();
+      return cc::ScrollInputType::kMaxValue;
   }
-  NOTREACHED();
-  return cc::ScrollInputType::kUnknown;
 }
 
 cc::SnapFlingController::GestureScrollType GestureScrollEventType(
@@ -338,7 +338,8 @@ void InputHandlerProxy::DispatchSingleInputEvent(
   auto scoped_event_metrics_monitor =
       input_handler_->GetScopedEventMetricsMonitor(
           {WebEventTypeToEventType(event_with_callback->event().GetType()),
-           event_with_callback->event().TimeStamp()});
+           event_with_callback->event().TimeStamp(),
+           GetScrollInputTypeForEvent(event_with_callback->event())});
 
   current_overscroll_params_.reset();
 

@@ -612,6 +612,7 @@ class ListBoxSelectType final : public SelectType {
   void SelectAll() override;
   void SaveListboxActiveSelection() override;
   void HandleMouseRelease() override;
+  void ListBoxOnChange() override;
 
  private:
   HTMLOptionElement* NextSelectableOptionPageAway(HTMLOptionElement*,
@@ -649,7 +650,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
         UpdateSelectedState(option, gesture_event->shiftKey()
                                         ? SelectionMode::kRange
                                         : SelectionMode::kNotChangeOthers);
-        select_->ListBoxOnChange();
+        ListBoxOnChange();
       }
       return true;
     }
@@ -846,7 +847,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
       if (select_new_item || is_in_non_contiguous_selection_) {
         if (select_new_item) {
           UpdateListBoxSelection(deselect_others);
-          select_->ListBoxOnChange();
+          ListBoxOnChange();
         }
         UpdateMultiSelectFocus();
       } else {
@@ -919,7 +920,7 @@ void ListBoxSelectType::SelectAll() {
   select_->SetActiveSelectionEnd(PreviousSelectableOption(nullptr));
 
   UpdateListBoxSelection(false, false);
-  select_->ListBoxOnChange();
+  ListBoxOnChange();
   select_->SetNeedsValidityCheck();
 }
 
@@ -947,7 +948,7 @@ HTMLOptionElement* ListBoxSelectType::NextSelectableOptionPageAway(
 void ListBoxSelectType::ToggleSelection(HTMLOptionElement& option) {
   active_selection_state_ = !active_selection_state_;
   UpdateSelectedState(&option, SelectionMode::kNotChangeOthers);
-  select_->ListBoxOnChange();
+  ListBoxOnChange();
 }
 
 void ListBoxSelectType::UpdateSelectedState(HTMLOptionElement* clicked_option,
@@ -1058,7 +1059,36 @@ void ListBoxSelectType::HandleMouseRelease() {
   // We didn't start this click/drag on any options.
   if (select_->last_on_change_selection_.IsEmpty())
     return;
-  select_->ListBoxOnChange();
+  ListBoxOnChange();
+}
+
+void ListBoxSelectType::ListBoxOnChange() {
+  const auto& items = select_->GetListItems();
+
+  // If the cached selection list is empty, or the size has changed, then fire
+  // 'change' event, and return early.
+  // FIXME: Why? This looks unreasonable.
+  if (select_->last_on_change_selection_.IsEmpty() ||
+      select_->last_on_change_selection_.size() != items.size()) {
+    select_->DispatchChangeEvent();
+    return;
+  }
+
+  // Update last_on_change_selection_ and fire a 'change' event.
+  bool fire_on_change = false;
+  for (unsigned i = 0; i < items.size(); ++i) {
+    HTMLElement* element = items[i];
+    auto* option_element = DynamicTo<HTMLOptionElement>(element);
+    bool selected = option_element && option_element->Selected();
+    if (selected != select_->last_on_change_selection_[i])
+      fire_on_change = true;
+    select_->last_on_change_selection_[i] = selected;
+  }
+
+  if (fire_on_change) {
+    select_->DispatchInputEvent();
+    select_->DispatchChangeEvent();
+  }
 }
 
 // ============================================================================
@@ -1118,6 +1148,8 @@ void SelectType::SelectAll() {
 void SelectType::SaveListboxActiveSelection() {}
 
 void SelectType::HandleMouseRelease() {}
+
+void SelectType::ListBoxOnChange() {}
 
 void SelectType::ShowPopup() {
   NOTREACHED();

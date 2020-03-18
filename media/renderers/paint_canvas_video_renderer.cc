@@ -389,6 +389,15 @@ GLuint ImportVideoFrameSingleMailbox(gpu::raster::RasterInterface* ri,
   return SynchronizeAndImportMailbox(ri, mailbox_holder.sync_token, *mailbox);
 }
 
+gpu::Mailbox SynchronizeVideoFrameSingleMailbox(
+    gpu::raster::RasterInterface* ri,
+    VideoFrame* video_frame) {
+  const gpu::MailboxHolder& mailbox_holder =
+      GetVideoFrameMailboxHolder(video_frame);
+  ri->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
+  return mailbox_holder.mailbox;
+}
+
 // Wraps a GL RGBA texture into a SkImage.
 sk_sp<SkImage> WrapGLTexture(
     GLenum target,
@@ -1748,27 +1757,20 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
         }
 
         DCHECK(!cache_->texture_ownership_in_skia);
-        auto* gl = raster_context_provider->ContextGL();
-        ScopedSharedImageAccess dest_access(
-            gl, cache_->source_texture, cache_->source_mailbox,
-            GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
         if (video_frame->NumTextures() == 1) {
-          gpu::Mailbox mailbox;
-          GLuint frame_texture =
-              ImportVideoFrameSingleMailbox(gl, video_frame.get(), &mailbox);
-          {
-            ScopedSharedImageAccess access(gl, frame_texture, mailbox);
-            gl->CopySubTextureCHROMIUM(frame_texture, 0, GL_TEXTURE_2D,
-                                       cache_->source_texture, 0, 0, 0, 0, 0,
-                                       video_frame->coded_size().width(),
-                                       video_frame->coded_size().height(),
-                                       GL_FALSE, GL_FALSE, GL_FALSE);
-          }
-          gl->DeleteTextures(1, &frame_texture);
+          auto frame_mailbox =
+              SynchronizeVideoFrameSingleMailbox(ri, video_frame.get());
+          ri->CopySubTexture(
+              frame_mailbox, cache_->source_mailbox, GL_TEXTURE_2D, 0, 0, 0, 0,
+              video_frame->coded_size().width(),
+              video_frame->coded_size().height(), GL_FALSE, GL_FALSE);
           source_image = WrapGLTexture(
               GL_TEXTURE_2D, cache_->source_texture, video_frame->coded_size(),
               gfx::ColorSpace(), raster_context_provider);
         } else {
+          ScopedSharedImageAccess dest_access(
+              ri, cache_->source_texture, cache_->source_mailbox,
+              GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
           source_image = NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(
               video_frame.get(), raster_context_provider, GL_TEXTURE_2D,
               cache_->source_texture);

@@ -239,57 +239,6 @@ std::unique_ptr<JSONObject> ObjectForSkPath(const SkPath& path) {
   return path_item;
 }
 
-String ColorTypeName(SkColorType color_type) {
-  switch (color_type) {
-    case kUnknown_SkColorType:
-      return "None";
-    case kAlpha_8_SkColorType:
-      return "A8";
-    case kRGB_565_SkColorType:
-      return "RGB565";
-    case kARGB_4444_SkColorType:
-      return "ARGB4444";
-    case kN32_SkColorType:
-      return "ARGB8888";
-    default:
-      NOTREACHED();
-      return "?";
-  };
-}
-
-std::unique_ptr<JSONObject> ObjectForBitmapData(const SkBitmap& bitmap) {
-  Vector<unsigned char> output;
-
-  SkPixmap src;
-  bool peekResult = bitmap.peekPixels(&src);
-  DCHECK(peekResult);
-
-  SkPngEncoder::Options options;
-  options.fFilterFlags = SkPngEncoder::FilterFlag::kSub;
-  options.fZLibLevel = 3;
-  if (!ImageEncoder::Encode(&output, src, options)) {
-    return nullptr;
-  }
-
-  auto data_item = std::make_unique<JSONObject>();
-  data_item->SetString("base64", Base64Encode(output));
-  data_item->SetString("mimeType", "image/png");
-  return data_item;
-}
-
-std::unique_ptr<JSONObject> ObjectForSkBitmap(const SkBitmap& bitmap) {
-  auto bitmap_item = std::make_unique<JSONObject>();
-  bitmap_item->SetInteger("width", bitmap.width());
-  bitmap_item->SetInteger("height", bitmap.height());
-  bitmap_item->SetString("config", ColorTypeName(bitmap.colorType()));
-  bitmap_item->SetBoolean("opaque", bitmap.isOpaque());
-  bitmap_item->SetBoolean("immutable", bitmap.isImmutable());
-  bitmap_item->SetBoolean("volatile", bitmap.isVolatile());
-  bitmap_item->SetInteger("genID", bitmap.getGenerationID());
-  bitmap_item->SetObject("data", ObjectForBitmapData(bitmap));
-  return bitmap_item;
-}
-
 std::unique_ptr<JSONObject> ObjectForSkImage(const SkImage* image) {
   auto image_item = std::make_unique<JSONObject>();
   image_item->SetInteger("width", image->width());
@@ -517,37 +466,6 @@ void LoggingCanvas::onDrawPath(const SkPath& path, const SkPaint& paint) {
   params->SetObject("path", ObjectForSkPath(path));
   params->SetObject("paint", ObjectForSkPaint(paint));
   this->SkCanvas::onDrawPath(path, paint);
-}
-
-void LoggingCanvas::onDrawBitmap(const SkBitmap& bitmap,
-                                 SkScalar left,
-                                 SkScalar top,
-                                 const SkPaint* paint) {
-  AutoLogger logger(this);
-  JSONObject* params = logger.LogItemWithParams("drawBitmap");
-  params->SetDouble("left", left);
-  params->SetDouble("top", top);
-  params->SetObject("bitmap", ObjectForSkBitmap(bitmap));
-  if (paint)
-    params->SetObject("paint", ObjectForSkPaint(*paint));
-  this->SkCanvas::onDrawBitmap(bitmap, left, top, paint);
-}
-
-void LoggingCanvas::onDrawBitmapRect(const SkBitmap& bitmap,
-                                     const SkRect* src,
-                                     const SkRect& dst,
-                                     const SkPaint* paint,
-                                     SrcRectConstraint constraint) {
-  AutoLogger logger(this);
-  JSONObject* params = logger.LogItemWithParams("drawBitmapRectToRect");
-  params->SetObject("bitmap", ObjectForSkBitmap(bitmap));
-  if (src)
-    params->SetObject("src", ObjectForSkRect(*src));
-  params->SetObject("dst", ObjectForSkRect(dst));
-  if (paint)
-    params->SetObject("paint", ObjectForSkPaint(*paint));
-  params->SetInteger("flags", constraint);
-  this->SkCanvas::onDrawBitmapRect(bitmap, src, dst, paint, constraint);
 }
 
 void LoggingCanvas::onDrawImage(const SkImage* image,

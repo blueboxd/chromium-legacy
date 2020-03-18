@@ -65,6 +65,12 @@ class CastComponent : public WebComponent,
     on_headless_disconnect_cb_ = std::move(on_headless_disconnect_cb);
   }
 
+  const chromium::cast::ApplicationConfig& application_config() {
+    return application_config_;
+  }
+
+  cr_fuchsia::AgentManager* agent_manager() { return agent_manager_.get(); }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(HeadlessCastRunnerIntegrationTest, Headless);
 

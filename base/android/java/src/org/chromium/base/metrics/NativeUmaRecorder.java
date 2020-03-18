@@ -4,6 +4,8 @@
 
 package org.chromium.base.metrics;
 
+import android.os.SystemClock;
+
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
@@ -61,6 +63,13 @@ import java.util.Map;
         maybeUpdateNativeHint(name, oldHint, newHint);
     }
 
+    @Override
+    public void recordUserAction(String name, long elapsedRealtimeMillis) {
+        // Java and native code use different clocks. We need a relative elapsed time.
+        long millisSinceEvent = SystemClock.elapsedRealtime() - elapsedRealtimeMillis;
+        NativeUmaRecorderJni.get().recordUserAction(name, millisSinceEvent);
+    }
+
     private long getNativeHint(String name) {
         Long hint = mNativeHints.get(name);
         // Note: If key is null, we don't have it cached. In that case, pass 0
@@ -85,5 +94,16 @@ import java.util.Map;
         long recordLinearHistogram(
                 String name, long nativeHint, int sample, int min, int max, int numBuckets);
         long recordSparseHistogram(String name, long nativeHint, int sample);
+
+        /**
+         * Records that the user performed an action. See {@code base::RecordComputedActionAt}.
+         * <p>
+         * Uses relative time, because Java and native code can use different clocks.
+         *
+         * @param name Name of the user-generated event.
+         * @param millisSinceEvent difference between now and the time when the event was observed.
+         *         Should be positive.
+         */
+        void recordUserAction(String name, long millisSinceEvent);
     }
 }

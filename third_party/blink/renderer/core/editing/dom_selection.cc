@@ -422,7 +422,7 @@ void DOMSelection::modify(const String& alter_string,
   SelectionModifyDirection direction;
   if (EqualIgnoringASCIICase(direction_string, "forward"))
     direction = SelectionModifyDirection::kForward;
-  else if (DeprecatedEqualIgnoringCase(direction_string, "backward"))
+  else if (EqualIgnoringASCIICase(direction_string, "backward"))
     direction = SelectionModifyDirection::kBackward;
   else if (EqualIgnoringASCIICase(direction_string, "left"))
     direction = SelectionModifyDirection::kLeft;
@@ -436,7 +436,7 @@ void DOMSelection::modify(const String& alter_string,
     granularity = TextGranularity::kCharacter;
   else if (EqualIgnoringASCIICase(granularity_string, "word"))
     granularity = TextGranularity::kWord;
-  else if (DeprecatedEqualIgnoringCase(granularity_string, "sentence"))
+  else if (EqualIgnoringASCIICase(granularity_string, "sentence"))
     granularity = TextGranularity::kSentence;
   else if (EqualIgnoringASCIICase(granularity_string, "line"))
     granularity = TextGranularity::kLine;
@@ -444,7 +444,7 @@ void DOMSelection::modify(const String& alter_string,
     granularity = TextGranularity::kParagraph;
   else if (EqualIgnoringASCIICase(granularity_string, "lineboundary"))
     granularity = TextGranularity::kLineBoundary;
-  else if (DeprecatedEqualIgnoringCase(granularity_string, "sentenceboundary"))
+  else if (EqualIgnoringASCIICase(granularity_string, "sentenceboundary"))
     granularity = TextGranularity::kSentenceBoundary;
   else if (EqualIgnoringASCIICase(granularity_string, "paragraphboundary"))
     granularity = TextGranularity::kParagraphBoundary;

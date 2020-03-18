@@ -10,8 +10,34 @@
 
 namespace cc {
 
-EventMetrics::EventMetrics(ui::EventType type, base::TimeTicks time_stamp)
-    : type_(type), time_stamp_(time_stamp) {}
+EventMetrics::EventMetrics(ui::EventType type,
+                           base::TimeTicks time_stamp,
+                           base::Optional<ScrollInputType> scroll_input_type)
+    : type_(type),
+      time_stamp_(time_stamp),
+      scroll_input_type_(scroll_input_type) {}
+
+EventMetrics::EventMetrics(const EventMetrics&) = default;
+EventMetrics& EventMetrics::operator=(const EventMetrics&) = default;
+
+bool EventMetrics::IsWhitelisted() const {
+  switch (type_) {
+    case ui::ET_MOUSE_PRESSED:
+    case ui::ET_MOUSE_RELEASED:
+    case ui::ET_MOUSEWHEEL:
+    case ui::ET_KEY_PRESSED:
+    case ui::ET_KEY_RELEASED:
+    case ui::ET_TOUCH_PRESSED:
+    case ui::ET_TOUCH_RELEASED:
+    case ui::ET_TOUCH_MOVED:
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+    case ui::ET_GESTURE_SCROLL_END:
+      return true;
+    default:
+      return false;
+  }
+}
 
 const char* EventMetrics::GetTypeName() const {
   DCHECK(IsWhitelisted()) << "Event type is not whitelisted for event metrics: "
@@ -34,31 +60,38 @@ const char* EventMetrics::GetTypeName() const {
       return "TouchReleased";
     case ui::ET_TOUCH_MOVED:
       return "TouchMoved";
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      return "GestureScrollBegin";
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      return "GestureScrollUpdate";
+    case ui::ET_GESTURE_SCROLL_END:
+      return "GestureScrollEnd";
     default:
       NOTREACHED();
       return nullptr;
   }
 }
 
-bool EventMetrics::IsWhitelisted() const {
-  switch (type_) {
-    case ui::ET_MOUSE_PRESSED:
-    case ui::ET_MOUSE_RELEASED:
-    case ui::ET_MOUSEWHEEL:
-    case ui::ET_KEY_PRESSED:
-    case ui::ET_KEY_RELEASED:
-    case ui::ET_TOUCH_PRESSED:
-    case ui::ET_TOUCH_RELEASED:
-    case ui::ET_TOUCH_MOVED:
-      return true;
-    default:
-      return false;
+const char* EventMetrics::GetScrollTypeName() const {
+  DCHECK(IsWhitelisted()) << "Event type is not whitelisted for event metrics: "
+                          << type_;
+  DCHECK(scroll_input_type_) << "Event is not a scroll event";
+
+  switch (*scroll_input_type_) {
+    case ScrollInputType::kTouchscreen:
+      return "Touchscreen";
+    case ScrollInputType::kWheel:
+      return "Wheel";
+    case ScrollInputType::kAutoscroll:
+      return "Autoscroll";
+    case ScrollInputType::kScrollbar:
+      return "Scrollbar";
   }
 }
 
 bool EventMetrics::operator==(const EventMetrics& other) const {
-  return std::tie(type_, time_stamp_) ==
-         std::tie(other.type_, other.time_stamp_);
+  return std::tie(type_, time_stamp_, scroll_input_type_) ==
+         std::tie(other.type_, other.time_stamp_, other.scroll_input_type_);
 }
 
 }  // namespace cc

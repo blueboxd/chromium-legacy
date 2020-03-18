@@ -290,8 +290,8 @@ void HTMLSelectElement::setValue(const String& value, bool send_events) {
     flags |= kDispatchInputAndChangeEventFlag;
   SelectOption(option, flags);
 
-  if (send_events && previous_selected_option != option && !UsesMenuList())
-    ListBoxOnChange();
+  if (send_events && previous_selected_option != option)
+    select_type_->ListBoxOnChange();
 }
 
 String HTMLSelectElement::SuggestedValue() const {
@@ -530,37 +530,6 @@ void HTMLSelectElement::SetActiveSelectionAnchor(HTMLOptionElement* option) {
 
 void HTMLSelectElement::SetActiveSelectionEnd(HTMLOptionElement* option) {
   active_selection_end_ = option;
-}
-
-void HTMLSelectElement::ListBoxOnChange() {
-  DCHECK(!UsesMenuList());
-
-  const ListItems& items = GetListItems();
-
-  // If the cached selection list is empty, or the size has changed, then fire
-  // dispatchFormControlChangeEvent, and return early.
-  // FIXME: Why? This looks unreasonable.
-  if (last_on_change_selection_.IsEmpty() ||
-      last_on_change_selection_.size() != items.size()) {
-    DispatchChangeEvent();
-    return;
-  }
-
-  // Update last_on_change_selection_ and fire a 'change' event.
-  bool fire_on_change = false;
-  for (unsigned i = 0; i < items.size(); ++i) {
-    HTMLElement* element = items[i];
-    auto* option_element = DynamicTo<HTMLOptionElement>(element);
-    bool selected = option_element && option_element->Selected();
-    if (selected != last_on_change_selection_[i])
-      fire_on_change = true;
-    last_on_change_selection_[i] = selected;
-  }
-
-  if (fire_on_change) {
-    DispatchInputEvent();
-    DispatchChangeEvent();
-  }
 }
 
 void HTMLSelectElement::ScrollToSelection() {
@@ -1223,8 +1192,7 @@ void HTMLSelectElement::TypeAheadFind(const KeyboardEvent& event) {
   SelectOption(OptionAtListIndex(index), kDeselectOtherOptionsFlag |
                                              kMakeOptionDirtyFlag |
                                              kDispatchInputAndChangeEventFlag);
-  if (!UsesMenuList())
-    ListBoxOnChange();
+  select_type_->ListBoxOnChange();
 }
 
 void HTMLSelectElement::SelectOptionByAccessKey(HTMLOptionElement* option) {
@@ -1250,7 +1218,7 @@ void HTMLSelectElement::SelectOptionByAccessKey(HTMLOptionElement* option) {
   option->SetDirty(true);
   if (UsesMenuList())
     return;
-  ListBoxOnChange();
+  select_type_->ListBoxOnChange();
   ScrollToSelection();
 }
 
@@ -1272,16 +1240,16 @@ void HTMLSelectElement::FinishParsingChildren() {
     cache->ListboxActiveIndexChanged(this);
 }
 
-bool HTMLSelectElement::AnonymousIndexedSetter(
+IndexedPropertySetterResult HTMLSelectElement::AnonymousIndexedSetter(
     unsigned index,
     HTMLOptionElement* value,
     ExceptionState& exception_state) {
   if (!value) {  // undefined or null
     remove(index);
-    return true;
+    return IndexedPropertySetterResult::kIntercepted;
   }
   SetOption(index, value, exception_state);
-  return true;
+  return IndexedPropertySetterResult::kIntercepted;
 }
 
 bool HTMLSelectElement::IsInteractiveContent() const {

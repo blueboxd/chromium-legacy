@@ -38,7 +38,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.IncognitoCookieControlsManager;
@@ -75,7 +74,6 @@ public class TasksSurfaceMediatorUnitTest {
 
     @Before
     public void setUp() {
-        RecordUserAction.setDisabledForTests(true);
         MockitoAnnotations.initMocks(this);
 
         mMediator = new TasksSurfaceMediator(mPropertyModel, mFakeboxDelegate,
@@ -84,7 +82,6 @@ public class TasksSurfaceMediatorUnitTest {
 
     @After
     public void tearDown() {
-        RecordUserAction.setDisabledForTests(false);
         mMediator = null;
     }
 

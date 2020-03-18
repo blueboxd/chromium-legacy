@@ -121,23 +121,6 @@ static std::vector<std::unique_ptr<AudioDecoder>> CreateAudioDecodersForTest(
 const char kNullVideoHash[] = "d41d8cd98f00b204e9800998ecf8427e";
 const char kNullAudioHash[] = "0.00,0.00,0.00,0.00,0.00,0.00,";
 
-class RendererFactoryImpl final : public PipelineTestRendererFactory {
- public:
-  explicit RendererFactoryImpl(PipelineIntegrationTestBase* integration_test)
-      : integration_test_(integration_test) {}
-  ~RendererFactoryImpl() override = default;
-
-  // PipelineTestRendererFactory implementation.
-  std::unique_ptr<Renderer> CreateRenderer() override {
-    return integration_test_->CreateRenderer(base::nullopt);
-  }
-
- private:
-  PipelineIntegrationTestBase* integration_test_;
-
-  DISALLOW_COPY_AND_ASSIGN(RendererFactoryImpl);
-};
-
 PipelineIntegrationTestBase::PipelineIntegrationTestBase()
     :
 // Use a UI type message loop on macOS, because it doesn't seem to schedule
@@ -154,8 +137,7 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
       ended_(false),
       pipeline_status_(PIPELINE_OK),
       last_video_frame_format_(PIXEL_FORMAT_UNKNOWN),
-      current_duration_(kInfiniteDuration),
-      renderer_factory_(new RendererFactoryImpl(this)) {
+      current_duration_(kInfiniteDuration) {
   pipeline_ = std::make_unique<PipelineImpl>(
       task_environment_.GetMainThreadTaskRunner(),
       task_environment_.GetMainThreadTaskRunner(),
@@ -261,6 +243,11 @@ void PipelineIntegrationTestBase::OnError(PipelineStatus status) {
   pipeline_->Stop();
   if (on_error_closure_)
     std::move(on_error_closure_).Run();
+}
+
+void PipelineIntegrationTestBase::SetWrapRendererCB(
+    WrapRendererCB wrap_renderer_cb) {
+  wrap_renderer_cb_ = std::move(wrap_renderer_cb);
 }
 
 PipelineStatus PipelineIntegrationTestBase::StartInternal(
@@ -551,7 +538,8 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
   if (clockless_playback_)
     renderer_impl->EnableClocklessVideoPlaybackForTesting();
 
-  return std::move(renderer_impl);
+  return wrap_renderer_cb_ ? wrap_renderer_cb_.Run(std::move(renderer_impl))
+                           : std::move(renderer_impl);
 }
 
 void PipelineIntegrationTestBase::OnVideoFramePaint(

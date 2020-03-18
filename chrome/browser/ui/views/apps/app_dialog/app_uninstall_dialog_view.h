@@ -54,9 +54,7 @@ class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
 
   // views::BubbleDialogDelegateView:
   ui::ModalType GetModalType() const override;
-  gfx::ImageSkia GetWindowIcon() override;
   base::string16 GetWindowTitle() const override;
-  bool ShouldShowWindowIcon() const override;
 
  private:
   void InitializeView(Profile* profile,
@@ -78,9 +76,6 @@ class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
 
   // The type of apps, e.g. Extension-backed app, Android app.
   apps::mojom::AppType app_type_;
-
-  // The name of apps, e.g. Camera.
-  const std::string app_name_;
 
   // Whether app represents a shortcut. |shortcut_| is available for the ARC
   // apps only.

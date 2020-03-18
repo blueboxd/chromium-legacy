@@ -273,12 +273,6 @@ const base::Feature kIsolateOrigins{"IsolateOrigins",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 const char kIsolateOriginsFieldTrialParamName[] = "OriginsList";
 
-const base::Feature kBuiltInModuleAll{"BuiltInModuleAll",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kBuiltInModuleInfra{"BuiltInModuleInfra",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kLazyFrameLoading{"LazyFrameLoading",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kLazyFrameVisibleLoadTimeMetrics {

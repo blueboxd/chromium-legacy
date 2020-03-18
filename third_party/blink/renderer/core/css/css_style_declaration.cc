@@ -168,16 +168,17 @@ String CSSStyleDeclaration::AnonymousNamedGetter(const AtomicString& name) {
   return GetPropertyValueInternal(resolveCSSPropertyID(unresolved_property));
 }
 
-bool CSSStyleDeclaration::AnonymousNamedSetter(ScriptState* script_state,
-                                               const AtomicString& name,
-                                               const String& value) {
+NamedPropertySetterResult CSSStyleDeclaration::AnonymousNamedSetter(
+    ScriptState* script_state,
+    const AtomicString& name,
+    const String& value) {
   const ExecutionContext* execution_context =
       ExecutionContext::From(script_state);
   if (!execution_context)
-    return false;
+    return NamedPropertySetterResult::kDidNotIntercept;
   CSSPropertyID unresolved_property = CssPropertyInfo(execution_context, name);
   if (!isValidCSSPropertyID(unresolved_property))
-    return false;
+    return NamedPropertySetterResult::kDidNotIntercept;
   // We create the ExceptionState manually due to performance issues: adding
   // [RaisesException] to the IDL causes the bindings layer to expensively
   // create a std::string to set the ExceptionState's |property_name| argument,
@@ -191,8 +192,8 @@ bool CSSStyleDeclaration::AnonymousNamedSetter(ScriptState* script_state,
                       execution_context->GetSecureContextMode(),
                       exception_state);
   if (exception_state.HadException())
-    return false;
-  return true;
+    return NamedPropertySetterResult::kIntercepted;
+  return NamedPropertySetterResult::kIntercepted;
 }
 
 void CSSStyleDeclaration::NamedPropertyEnumerator(Vector<String>& names,

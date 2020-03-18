@@ -17,6 +17,7 @@ class ImageSkia;
 class AppPauseDialogView : public AppDialogView {
  public:
   AppPauseDialogView(
+      apps::mojom::AppType app_type,
       const std::string& app_name,
       const gfx::ImageSkia& image,
       const apps::PauseData& pause_data,

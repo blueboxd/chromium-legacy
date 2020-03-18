@@ -25,7 +25,6 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
@@ -95,13 +94,11 @@ public class TabSuggestionsOrchestratorTest {
         doReturn(Arrays.asList(sTabs[0])).when(mTabModelFilter).getRelatedTabList(0);
         doReturn(Arrays.asList(sTabs[1])).when(mTabModelFilter).getRelatedTabList(1);
         doReturn(Arrays.asList(sTabs[2])).when(mTabModelFilter).getRelatedTabList(2);
-        RecordUserAction.setDisabledForTests(true);
         RecordHistogram.setDisabledForTests(true);
     }
 
     @After
     public void tearDown() throws Exception {
-        RecordUserAction.setDisabledForTests(false);
         RecordHistogram.setDisabledForTests(false);
     }
 

@@ -221,7 +221,9 @@ void SpellChecker::AdvanceToNextMisspelling(bool start_before_selection) {
         FindFirstMisspelling(spelling_search_start, spelling_search_end);
   }
 
-  if (!misspelled_word.IsEmpty()) {
+  if (misspelled_word.IsEmpty()) {
+    SpellCheckPanelHostClient().UpdateSpellingUIWithMisspelledWord({});
+  } else {
     // We found a misspelling. Select the misspelling, update the spelling
     // panel, and store a marker so we draw the red squiggle later.
 

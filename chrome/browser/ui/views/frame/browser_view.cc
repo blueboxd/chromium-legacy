@@ -1735,12 +1735,6 @@ void BrowserView::UserChangedTheme(BrowserThemeChangeType theme_change_type) {
   must_regenerate_frame |=
       theme_change_type == BrowserThemeChangeType::kBrowserTheme &&
       !IsFullscreen();
-
-  // TODO(https://crbug.com/953982): Remove the need to regenerate the frame
-  const bool should_use_custom_titlebar = ShouldCustomDrawSystemTitlebar();
-
-  must_regenerate_frame |=
-      (using_custom_titlebar_ != should_use_custom_titlebar);
 #else
   must_regenerate_frame |=
       theme_change_type == BrowserThemeChangeType::kBrowserTheme;
@@ -1756,10 +1750,6 @@ void BrowserView::UserChangedTheme(BrowserThemeChangeType theme_change_type) {
     GetWidget()->ThemeChanged();
   }
   using_native_frame_ = should_use_native_frame;
-
-#if defined(OS_WIN)
-  using_custom_titlebar_ = should_use_custom_titlebar;
-#endif
 }
 
 void BrowserView::ShowAppMenu() {

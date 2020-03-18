@@ -26440,8 +26440,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="2822"
       label="OBSOLETE_CSSValueAppearanceTextFieldForOthersRendered"/>
   <int value="2823" label="CSSValueAppearanceTextFieldForTemporalRendered"/>
-  <int value="2824" label="BuiltInModuleKvStorage"/>
-  <int value="2825" label="BuiltInModuleVirtualScroller"/>
+  <int value="2824" label="OBSOLETE_BuiltInModuleKvStorage"/>
+  <int value="2825" label="OBSOLETE_BuiltInModuleVirtualScroller"/>
   <int value="2826" label="AdClickNavigation"/>
   <int value="2827" label="RTCStatsRelativePacketArrivalDelay"/>
   <int value="2829" label="CSSSelectorHostContextInSnapshotProfile"/>
@@ -26540,12 +26540,12 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="2918" label="UnsizedMediaPolicy"/>
   <int value="2919" label="ScrollByPrecisionTouchPad"/>
   <int value="2920" label="PinchZoom"/>
-  <int value="2921" label="BuiltInModuleSwitchImported"/>
+  <int value="2921" label="OBSOLETE_BuiltInModuleSwitchImported"/>
   <int value="2922" label="FeaturePolicyCommaSeparatedDeclarations"/>
   <int value="2923" label="FeaturePolicySemicolonSeparatedDeclarations"/>
   <int value="2924" label="V8CallSiteAPIGetFunctionSloppyCall"/>
   <int value="2925" label="V8CallSiteAPIGetThisSloppyCall"/>
-  <int value="2926" label="BuiltInModuleToast"/>
+  <int value="2926" label="OBSOLETE_BuiltInModuleToast"/>
   <int value="2927" label="LargestContentfulPaintExplicitlyRequested"/>
   <int value="2928" label="PageFreezeOptIn"/>
   <int value="2929" label="PageFreezeOptOut"/>

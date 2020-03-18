@@ -379,7 +379,8 @@ void RenderWidgetInputHandler::HandleInputEvent(
   auto scoped_event_metrics_monitor =
       widget_->layer_tree_host()->GetScopedEventMetricsMonitor(
           {ui::WebEventTypeToEventType(input_event.GetType()),
-           input_event.TimeStamp()});
+           input_event.TimeStamp(),
+           ui::GetScrollInputTypeForEvent(input_event)});
 
   bool prevent_default = false;
   bool show_virtual_keyboard_for_mouse = false;
@@ -697,9 +698,10 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
       auto scoped_event_metrics_monitor =
           widget_->layer_tree_host()->GetScopedEventMetricsMonitor(
               {ui::WebEventTypeToEventType(gesture_event->GetType()),
-               gesture_event->TimeStamp()});
+               gesture_event->TimeStamp(),
+               ui::GetScrollInputTypeForEvent(*gesture_event)});
       widget_->GetWebWidget()->HandleInputEvent(
-          blink::WebCoalescedInputEvent(*gesture_event.get()));
+          blink::WebCoalescedInputEvent(*gesture_event));
     }
   }
 }

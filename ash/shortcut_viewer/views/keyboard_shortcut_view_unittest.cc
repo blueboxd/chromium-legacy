@@ -12,6 +12,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/test/test_utils.h"
@@ -26,7 +27,8 @@ namespace keyboard_shortcut_viewer {
 
 class KeyboardShortcutViewTest : public ash::AshTestBase {
  public:
-  KeyboardShortcutViewTest() = default;
+  KeyboardShortcutViewTest()
+      : ash::AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~KeyboardShortcutViewTest() override = default;
 
   views::Widget* Toggle() { return KeyboardShortcutView::Toggle(GetContext()); }
@@ -45,7 +47,7 @@ class KeyboardShortcutViewTest : public ash::AshTestBase {
   }
 
   const std::vector<std::unique_ptr<KeyboardShortcutItemView>>&
-  GetShortcutViews() {
+  GetShortcutViews() const {
     DCHECK(GetView());
     return GetView()->GetShortcutViewsForTesting();
   }
@@ -53,6 +55,11 @@ class KeyboardShortcutViewTest : public ash::AshTestBase {
   KSVSearchBoxView* GetSearchBoxView() {
     DCHECK(GetView());
     return GetView()->GetSearchBoxViewForTesting();
+  }
+
+  const std::vector<KeyboardShortcutItemView*>& GetFoundShortcutItems() const {
+    DCHECK(GetView());
+    return GetView()->GetFoundShortcutItemsForTesting();
   }
 
   void KeyPress(ui::KeyboardCode key_code, bool should_insert) {
@@ -230,6 +237,46 @@ TEST_F(KeyboardShortcutViewTest, ToggleWindow) {
   // Call |Toggle()| to close the active widget.
   Toggle();
   EXPECT_TRUE(widget->IsClosed());
+}
+
+// Test that the sub-labels of the |description_label_view| in the search
+// results page have the same height and are vertically aligned.
+TEST_F(KeyboardShortcutViewTest, ShouldAlignSubLabelsInSearchResults) {
+  // Show the widget.
+  Toggle();
+
+  EXPECT_TRUE(GetFoundShortcutItems().empty());
+  // Type a letter and show the search results.
+  KeyPress(ui::VKEY_A, /*should_insert=*/true);
+  auto time_out = base::TimeDelta::FromMilliseconds(300);
+  task_environment_->FastForwardBy(time_out);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(GetFoundShortcutItems().empty());
+
+  for (const auto* item_view : GetFoundShortcutItems()) {
+    ASSERT_EQ(2u, item_view->children().size());
+
+    const views::View* description = item_view->children()[0];
+    // Skip if it only has one label.
+    if (description->children().size() == 1)
+      continue;
+
+    // The sub-labels in |description_label_view_| have the same height and are
+    // vertically aligned in each line.
+    int height = 0;
+    int center_y = 0;
+    for (const auto* child : description->children()) {
+      // The first view in each line.
+      if (child->bounds().x() == 0) {
+        height = child->bounds().height();
+        center_y = child->bounds().CenterPoint().y();
+        continue;
+      }
+
+      EXPECT_EQ(height, child->GetPreferredSize().height());
+      EXPECT_EQ(center_y, child->bounds().CenterPoint().y());
+    }
+  }
 }
 
 }  // namespace keyboard_shortcut_viewer

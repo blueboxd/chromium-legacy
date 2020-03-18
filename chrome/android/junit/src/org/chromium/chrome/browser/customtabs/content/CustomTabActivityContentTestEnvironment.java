@@ -27,7 +27,6 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.UserDataHost;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabObserver;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -111,7 +110,6 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
     @Override
     protected void starting(Description description) {
         RecordHistogram.setDisabledForTests(true);
-        RecordUserAction.setDisabledForTests(true);
         MockitoAnnotations.initMocks(this);
 
         tabFromFactory = prepareTab();
@@ -137,7 +135,6 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
     @Override
     protected void finished(Description description) {
         RecordHistogram.setDisabledForTests(false);
-        RecordUserAction.setDisabledForTests(false);
         AsyncTabParamsManager.getAsyncTabParams().clear();
         ShadowExternalNavigationDelegateImpl.setWillChromeHandleIntent(false);
     }

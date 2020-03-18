@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 
 namespace blink {
 
@@ -32,7 +33,9 @@ class CORE_EXPORT AccessibleNodeList : public ScriptWrappable {
   AccessibleNode* item(unsigned offset) const;
   void add(AccessibleNode*, AccessibleNode* = nullptr);
   void remove(int index);
-  bool AnonymousIndexedSetter(unsigned, AccessibleNode*, ExceptionState&);
+  IndexedPropertySetterResult AnonymousIndexedSetter(unsigned,
+                                                     AccessibleNode*,
+                                                     ExceptionState&);
   unsigned length() const;
   void setLength(unsigned);
 

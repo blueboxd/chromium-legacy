@@ -18,4 +18,7 @@ package org.chromium.base.metrics;
 
     @Override
     public void recordSparseHistogram(String name, int sample) {}
+
+    @Override
+    public void recordUserAction(String name, long elapsedRealtimeMillis) {}
 }

@@ -17,12 +17,6 @@ struct ActionCallbackWrapper {
 namespace base {
 namespace android {
 
-static void JNI_RecordUserAction_RecordUserAction(
-    JNIEnv* env,
-    const JavaParamRef<jstring>& j_action) {
-  RecordComputedAction(ConvertJavaStringToUTF8(env, j_action));
-}
-
 static void OnActionRecorded(const JavaRef<jobject>& callback,
                              const std::string& action,
                              TimeTicks action_time) {

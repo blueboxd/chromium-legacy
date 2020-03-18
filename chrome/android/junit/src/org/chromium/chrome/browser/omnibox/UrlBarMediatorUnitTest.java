@@ -23,7 +23,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.components.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.components.omnibox.OmniboxUrlEmphasizer.UrlEmphasisColorSpan;
@@ -52,7 +51,6 @@ public class UrlBarMediatorUnitTest {
     @Before
     public void setUp() {
         RecordHistogram.setDisabledForTests(true);
-        RecordUserAction.setDisabledForTests(true);
         MockitoAnnotations.initMocks(this);
 
         mModel = new PropertyModel(UrlBarProperties.ALL_KEYS);
@@ -67,7 +65,6 @@ public class UrlBarMediatorUnitTest {
     @After
     public void tearDown() {
         RecordHistogram.setDisabledForTests(false);
-        RecordUserAction.setDisabledForTests(false);
     }
 
     @Test

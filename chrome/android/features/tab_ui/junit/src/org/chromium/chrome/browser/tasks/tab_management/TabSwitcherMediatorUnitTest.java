@@ -41,7 +41,6 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.UserDataHost;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -142,7 +141,6 @@ public class TabSwitcherMediatorUnitTest {
     @Before
     public void setUp() {
         ShadowRecordHistogram.reset();
-        RecordUserAction.setDisabledForTests(true);
         RecordHistogram.setDisabledForTests(true);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true);
 
@@ -197,7 +195,6 @@ public class TabSwitcherMediatorUnitTest {
 
     @After
     public void tearDown() {
-        RecordUserAction.setDisabledForTests(false);
         RecordHistogram.setDisabledForTests(false);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, null);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, null);

@@ -3,6 +3,7 @@
     "features": [
       "config-data"
     ],
+    "$comment": "Not all services are passed to WebEngine, see cast_runner.cc",
     "services": [
       "chromium.cast.ApplicationConfigManager",
       "fuchsia.accessibility.semantics.SemanticsManager",

@@ -17,7 +17,8 @@ class WebSpellCheckPanelHostClient {
   // Returns true if the spelling panel UI is showing.
   virtual bool IsShowingSpellingUI() = 0;
 
-  // Update the spelling panel UI with the given |word|.
+  // Update the spelling panel UI with the given |word|. Pass the empty string
+  // to indicate that there are no misspelled words left.
   virtual void UpdateSpellingUIWithMisspelledWord(const WebString& word) = 0;
 };
 

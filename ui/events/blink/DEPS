@@ -5,6 +5,7 @@ include_rules = [
   "+cc/input/scroll_elasticity_helper.h",
   "+cc/input/scroll_input_type.h",
   "+cc/input/snap_fling_controller.h",
+  "+cc/metrics/event_metrics.h",
   "+cc/trees/swap_promise_monitor.h",
 
   "+third_party/blink/public/common/input/web_gesture_device.h",

@@ -29,6 +29,16 @@ enum AshTextContext {
   ASH_TEXT_CONTEXT_END
 };
 
+enum AshTextStyle {
+  ASH_TEXT_STYLE_START = views::style::VIEWS_TEXT_STYLE_END,
+
+  // Used to draw attention to a section of body text such as a matched search
+  // string.
+  STYLE_EMPHASIZED = ASH_TEXT_STYLE_START,
+
+  ASH_TEXT_STYLE_END
+};
+
 // Sets the |size_delta| and |font_weight| for ash-specific text contexts.
 // Values are only set for contexts specific to ash.
 void ASH_PUBLIC_EXPORT ApplyAshFontStyles(int context,

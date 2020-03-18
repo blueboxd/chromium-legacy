@@ -66,8 +66,10 @@ class StorageArea final : public ScriptWrappable,
   unsigned length(ExceptionState&) const;
   String key(unsigned index, ExceptionState&) const;
   String getItem(const String& key, ExceptionState&) const;
-  bool setItem(const String& key, const String& value, ExceptionState&);
-  DeleteResult removeItem(const String& key, ExceptionState&);
+  NamedPropertySetterResult setItem(const String& key,
+                                    const String& value,
+                                    ExceptionState&);
+  NamedPropertyDeleterResult removeItem(const String& key, ExceptionState&);
   void clear(ExceptionState&);
   bool Contains(const String& key, ExceptionState& ec) const;
 

@@ -31,6 +31,7 @@
 #include "fuchsia/base/test_devtools_list_fetcher.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/base/url_request_rewrite_test_util.h"
+#include "fuchsia/runners/cast/audio_capturer_redirect.h"
 #include "fuchsia/runners/cast/cast_runner.h"
 #include "fuchsia/runners/cast/fake_application_config_manager.h"
 #include "fuchsia/runners/cast/test_api_bindings.h"
@@ -159,6 +160,9 @@ class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
   FakeComponentState(const FakeComponentState&) = delete;
   FakeComponentState& operator=(const FakeComponentState&) = delete;
 
+  // Make outgoing_directory() public.
+  using ComponentStateBase::outgoing_directory;
+
   FakeApplicationContext* application_context() {
     return &application_context_;
   }
@@ -254,6 +258,10 @@ class CastRunnerIntegrationTest : public testing::Test {
         component_url, &app_config_manager_, &api_bindings_,
         &url_request_rewrite_rules_provider_);
     component_state_ = component_state.get();
+
+    if (init_component_state_callback_)
+      std::move(init_component_state_callback_).Run(component_state_);
+
     return component_state;
   }
 
@@ -365,6 +373,8 @@ class CastRunnerIntegrationTest : public testing::Test {
   std::unique_ptr<sys::ServiceDirectory> component_services_client_;
   FakeComponentState* component_state_ = nullptr;
   CastComponent* cast_component_ = nullptr;
+
+  base::OnceCallback<void(FakeComponentState*)> init_component_state_callback_;
 
   // ServiceDirectory into which the CastRunner will publish itself.
   sys::OutgoingDirectory outgoing_directory_;
@@ -688,6 +698,37 @@ TEST_F(CastRunnerIntegrationTest, ApplicationConfigAgentUrlRewriteOptional) {
   EXPECT_FALSE(component_state_->api_bindings_has_clients());
   // Validate that the primary agent didn't provide its RewriteRules.
   EXPECT_FALSE(component_state_->url_request_rules_provider_has_clients());
+}
+
+TEST_F(CastRunnerIntegrationTest, MicRedirect) {
+  GURL app_url = test_server_.GetURL("/mic.html");
+  auto app_config =
+      FakeApplicationConfigManager::CreateConfig(kTestAppId, app_url);
+
+  fuchsia::web::PermissionDescriptor mic_permission;
+  mic_permission.set_type(fuchsia::web::PermissionType::MICROPHONE);
+  app_config.mutable_permissions()->push_back(std::move(mic_permission));
+  app_config_manager_.AddAppConfig(std::move(app_config));
+
+  base::RunLoop run_loop;
+  std::unique_ptr<AudioCapturerRedirect> redirect;
+
+  init_component_state_callback_ = base::BindOnce(
+      [](std::unique_ptr<AudioCapturerRedirect>* redirect,
+         base::OnceClosure quit_closure, FakeComponentState* component_state) {
+        *redirect = std::make_unique<AudioCapturerRedirect>(
+            component_state->outgoing_directory(),
+            base::BindRepeating(
+                [](base::OnceClosure quit_closure,
+                   fidl::InterfaceRequest<fuchsia::media::AudioCapturer>
+                       request) { std::move(quit_closure).Run(); },
+                base::Passed(std::move(quit_closure))));
+      },
+      &redirect, base::Passed(run_loop.QuitClosure()));
+
+  CreateComponentContextAndStartComponent();
+
+  run_loop.Run();
 }
 
 class HeadlessCastRunnerIntegrationTest : public CastRunnerIntegrationTest {

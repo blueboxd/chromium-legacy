@@ -65,9 +65,9 @@ AppUninstallDialogView::AppUninstallDialogView(
     const std::string& app_name,
     gfx::ImageSkia image,
     apps::UninstallDialog* uninstall_dialog)
-    : apps::UninstallDialog::UiBase(image, uninstall_dialog),
-      app_type_(app_type),
-      app_name_(app_name) {
+    : apps::UninstallDialog::UiBase(uninstall_dialog),
+      AppDialogView(app_name, image),
+      app_type_(app_type) {
   DialogDelegate::SetCloseCallback(base::BindOnce(
       &AppUninstallDialogView::OnDialogCancelled, base::Unretained(this)));
   DialogDelegate::SetCancelCallback(base::BindOnce(
@@ -110,10 +110,6 @@ ui::ModalType AppUninstallDialogView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-gfx::ImageSkia AppUninstallDialogView::GetWindowIcon() {
-  return image();
-}
-
 base::string16 AppUninstallDialogView::GetWindowTitle() const {
   switch (app_type_) {
     case apps::mojom::AppType::kUnknown:
@@ -142,12 +138,8 @@ base::string16 AppUninstallDialogView::GetWindowTitle() const {
     case apps::mojom::AppType::kExtension:
     case apps::mojom::AppType::kWeb:
       return l10n_util::GetStringFUTF16(IDS_PROMPT_APP_UNINSTALL_TITLE,
-                                        base::UTF8ToUTF16(app_name_));
+                                        base::UTF8ToUTF16(app_name()));
   }
-}
-
-bool AppUninstallDialogView::ShouldShowWindowIcon() const {
-  return true;
 }
 
 void AppUninstallDialogView::InitializeView(Profile* profile,
@@ -288,7 +280,7 @@ void AppUninstallDialogView::InitializeViewForCrostiniApp(
     const std::string& app_id) {
   base::string16 message = l10n_util::GetStringFUTF16(
       IDS_CROSTINI_APPLICATION_UNINSTALL_CONFIRM_BODY,
-      base::UTF8ToUTF16(app_name_));
+      base::UTF8ToUTF16(app_name()));
   auto* label = AddChildView(std::make_unique<views::Label>(message));
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

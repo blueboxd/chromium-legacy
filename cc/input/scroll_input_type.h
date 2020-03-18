@@ -8,11 +8,11 @@
 namespace cc {
 
 enum class ScrollInputType {
-  kTouchscreen,
+  kTouchscreen = 0,
   kWheel,
   kAutoscroll,
   kScrollbar,
-  kUnknown,
+  kMaxValue = kScrollbar,
 };
 
 }  // namespace cc

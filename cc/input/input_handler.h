@@ -16,7 +16,6 @@
 #include "cc/input/scroll_state.h"
 #include "cc/input/scrollbar.h"
 #include "cc/input/touch_action.h"
-#include "cc/metrics/event_metrics.h"
 #include "cc/metrics/events_metrics_manager.h"
 #include "cc/paint/element_id.h"
 #include "cc/trees/swap_promise_monitor.h"
@@ -36,6 +35,7 @@ class LatencyInfo;
 
 namespace cc {
 
+class EventMetrics;
 class ScrollElasticityHelper;
 
 enum PointerResultType { kUnhandled = 0, kScrollbarScroll };

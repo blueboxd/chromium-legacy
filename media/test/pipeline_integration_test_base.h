@@ -44,14 +44,6 @@ extern const char kNullVideoHash[];
 // Empty hash string.  Used to verify empty audio tracks.
 extern const char kNullAudioHash[];
 
-class PipelineTestRendererFactory {
- public:
-  virtual ~PipelineTestRendererFactory() = default;
-
-  // Creates and returns a Renderer.
-  virtual std::unique_ptr<Renderer> CreateRenderer() = 0;
-};
-
 // Integration tests for Pipeline. Real demuxers, real decoders, and
 // base renderer implementations are used to verify pipeline functionality. The
 // renderers used in these tests rely heavily on the AudioRendererBase &
@@ -176,7 +168,15 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   scoped_refptr<VideoFrame> last_frame_;
   base::TimeDelta current_duration_;
   AudioRendererImpl::PlayDelayCBForTesting audio_play_delay_cb_;
-  std::unique_ptr<PipelineTestRendererFactory> renderer_factory_;
+
+  // A callback that can wrap one Renderer into another Renderer.
+  using WrapRendererCB = base::RepeatingCallback<std::unique_ptr<Renderer>(
+      std::unique_ptr<Renderer>)>;
+  WrapRendererCB wrap_renderer_cb_;
+
+  // Sets |wrap_renderer_cb_| which will be used to wrap the Renderer created by
+  // CreateRenderer().
+  void SetWrapRendererCB(WrapRendererCB wrap_renderer_cb);
 
   PipelineStatus StartInternal(
       std::unique_ptr<DataSource> data_source,

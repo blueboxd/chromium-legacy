@@ -376,6 +376,24 @@ static void IndexedPropertyEnumerator(
 PLATFORM_EXPORT v8::Local<v8::Value> FreezeV8Object(v8::Local<v8::Value>,
                                                     v8::Isolate*);
 
+// Return values of indexed properties and named properties
+
+enum class IndexedPropertySetterResult {
+  kDidNotIntercept,  // Fallback to the default set operation.
+  kIntercepted,      // Intercepted regardless of whether it succeeded or not.
+};
+
+enum class NamedPropertySetterResult {
+  kDidNotIntercept,  // Fallback to the default set operation.
+  kIntercepted,      // Intercepted regardless of whether it succeeded or not.
+};
+
+enum class NamedPropertyDeleterResult {
+  kDidNotIntercept,  // Fallback to the default delete operation.
+  kDeleted,          // Successfully deleted.
+  kDidNotDelete,     // Intercepted but failed to delete.
+};
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_BINDING_H_

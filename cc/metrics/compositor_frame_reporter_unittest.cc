@@ -10,6 +10,7 @@
 
 #include "base/strings/strcat.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "cc/input/scroll_input_type.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 #include "cc/metrics/event_metrics.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -195,9 +196,9 @@ TEST_F(CompositorFrameReporterTest, EventLatencyForPresentedFrameReported) {
 
   const base::TimeTicks event_time = Now();
   std::vector<EventMetrics> events_metrics = {
-      {ui::ET_TOUCH_PRESSED, event_time},
-      {ui::ET_TOUCH_MOVED, event_time},
-      {ui::ET_TOUCH_MOVED, event_time},
+      {ui::ET_TOUCH_PRESSED, event_time, base::nullopt},
+      {ui::ET_TOUCH_MOVED, event_time, base::nullopt},
+      {ui::ET_TOUCH_MOVED, event_time, base::nullopt},
   };
   EXPECT_THAT(events_metrics, ::testing::Each(IsWhitelisted()));
 
@@ -236,6 +237,56 @@ TEST_F(CompositorFrameReporterTest, EventLatencyForPresentedFrameReported) {
                                      latency_ms, 2);
 }
 
+// Tests that when a frame is presented to the user, scroll event latency
+// metrics are reported properly.
+TEST_F(CompositorFrameReporterTest,
+       EventLatencyScrollForPresentedFrameReported) {
+  base::HistogramTester histogram_tester;
+
+  const base::TimeTicks event_time = Now();
+  std::vector<EventMetrics> events_metrics = {
+      {ui::ET_GESTURE_SCROLL_BEGIN, event_time, ScrollInputType::kWheel},
+      {ui::ET_GESTURE_SCROLL_UPDATE, event_time, ScrollInputType::kWheel},
+      {ui::ET_GESTURE_SCROLL_UPDATE, event_time, ScrollInputType::kWheel},
+  };
+  EXPECT_THAT(events_metrics, ::testing::Each(IsWhitelisted()));
+
+  AdvanceNowByMs(3);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kBeginImplFrameToSendBeginMainFrame,
+      Now());
+
+  AdvanceNowByMs(3);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kEndActivateToSubmitCompositorFrame,
+      Now());
+
+  AdvanceNowByMs(3);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::
+          kSubmitCompositorFrameToPresentationCompositorFrame,
+      Now());
+  pipeline_reporter_->SetEventsMetrics(std::move(events_metrics));
+
+  AdvanceNowByMs(3);
+  const base::TimeTicks presentation_time = Now();
+  pipeline_reporter_->TerminateFrame(
+      CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame,
+      presentation_time);
+
+  pipeline_reporter_ = nullptr;
+
+  const int latency_ms = (presentation_time - event_time).InMicroseconds();
+  histogram_tester.ExpectTotalCount(
+      "EventLatency.GestureScrollBegin.Wheel.TotalLatency", 1);
+  histogram_tester.ExpectTotalCount(
+      "EventLatency.GestureScrollUpdate.Wheel.TotalLatency", 2);
+  histogram_tester.ExpectBucketCount(
+      "EventLatency.GestureScrollBegin.Wheel.TotalLatency", latency_ms, 1);
+  histogram_tester.ExpectBucketCount(
+      "EventLatency.GestureScrollUpdate.Wheel.TotalLatency", latency_ms, 2);
+}
+
 // Tests that when the frame is not presented to the user, event latency metrics
 // are not reported.
 TEST_F(CompositorFrameReporterTest,
@@ -244,9 +295,9 @@ TEST_F(CompositorFrameReporterTest,
 
   const base::TimeTicks event_time = Now();
   std::vector<EventMetrics> events_metrics = {
-      {ui::ET_TOUCH_PRESSED, event_time},
-      {ui::ET_TOUCH_MOVED, event_time},
-      {ui::ET_TOUCH_MOVED, event_time},
+      {ui::ET_TOUCH_PRESSED, event_time, base::nullopt},
+      {ui::ET_TOUCH_MOVED, event_time, base::nullopt},
+      {ui::ET_TOUCH_MOVED, event_time, base::nullopt},
   };
   EXPECT_THAT(events_metrics, ::testing::Each(IsWhitelisted()));
 

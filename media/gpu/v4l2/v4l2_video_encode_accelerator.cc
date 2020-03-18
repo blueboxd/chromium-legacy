@@ -117,6 +117,15 @@ base::Optional<ImageProcessor::PortConfig> VideoFrameLayoutToPortConfig(
                                     layout.planes(), visible_rect,
                                     preferred_storage_types);
 }
+
+// Create Layout from |layout| with is_multi_planar = true.
+base::Optional<VideoFrameLayout> AsMultiPlanarLayout(
+    const VideoFrameLayout& layout) {
+  if (layout.is_multi_planar())
+    return base::make_optional<VideoFrameLayout>(layout);
+  return VideoFrameLayout::CreateMultiPlanar(
+      layout.format(), layout.coded_size(), layout.planes());
+}
 }  // namespace
 
 struct V4L2VideoEncodeAccelerator::BitstreamBufferRef {
@@ -282,8 +291,6 @@ void V4L2VideoEncodeAccelerator::InitializeTask(const Config& config,
     VLOGF(2) << "Input format: " << config.input_format << " is not supported "
              << "by the HW. Will try to convert to "
              << device_input_layout_->format();
-
-    // TODO(hiroh): Decide the appropriate planar in some way.
     auto input_layout = VideoFrameLayout::CreateMultiPlanar(
         config.input_format, encoder_input_visible_rect_.size(),
         std::vector<ColorPlaneLayout>(
@@ -354,25 +361,25 @@ bool V4L2VideoEncodeAccelerator::CreateImageProcessor(
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
   DCHECK_NE(input_layout.format(), output_layout.format());
 
+  auto ip_input_layout = AsMultiPlanarLayout(std::move(input_layout));
+  if (!ip_input_layout)
+    return false;
+
   VideoFrame::StorageType input_storage_type =
       native_input_mode_ ? VideoFrame::STORAGE_GPU_MEMORY_BUFFER
                          : VideoFrame::STORAGE_MOJO_SHARED_BUFFER;
-
   auto input_config = VideoFrameLayoutToPortConfig(
-      input_layout, input_visible_rect, {input_storage_type});
+      *ip_input_layout, input_visible_rect, {input_storage_type});
   if (!input_config)
     return false;
   auto output_config =
       VideoFrameLayoutToPortConfig(output_layout, output_visible_rect,
-                                   {VideoFrame::STORAGE_GPU_MEMORY_BUFFER,
-                                    VideoFrame::STORAGE_OWNED_MEMORY});
+                                   {VideoFrame::STORAGE_GPU_MEMORY_BUFFER});
   if (!output_config)
     return false;
 
   image_processor_ = ImageProcessorFactory::Create(
-      *input_config, *output_config,
-      {ImageProcessor::OutputMode::IMPORT,
-       ImageProcessor::OutputMode::ALLOCATE},
+      *input_config, *output_config, {ImageProcessor::OutputMode::IMPORT},
       kImageProcBufferCount, encoder_task_runner_,
       base::BindRepeating(&V4L2VideoEncodeAccelerator::ImageProcessorError,
                           weak_this_));
@@ -406,15 +413,9 @@ bool V4L2VideoEncodeAccelerator::AllocateImageProcessorOutputBuffers(
     size_t count) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
   DCHECK(image_processor_);
-  // Allocate VideoFrames for image processor output if its mode is IMPORT.
-  if (image_processor_->output_mode() != ImageProcessor::OutputMode::IMPORT) {
-    return true;
-  }
-
-  const ImageProcessor::PortConfig& output_config =
-      image_processor_->output_config();
-  if (output_config.storage_type() == VideoFrame::STORAGE_GPU_MEMORY_BUFFER &&
-      !image_processor_gmb_factory_) {
+  DCHECK_EQ(image_processor_->output_mode(),
+            ImageProcessor::OutputMode::IMPORT);
+  if (!image_processor_gmb_factory_) {
     image_processor_gmb_factory_ =
         gpu::GpuMemoryBufferFactory::CreateNativeType(nullptr);
     if (!image_processor_gmb_factory_) {
@@ -424,13 +425,10 @@ bool V4L2VideoEncodeAccelerator::AllocateImageProcessorOutputBuffers(
   }
 
   image_processor_output_buffers_.resize(count);
+  const ImageProcessor::PortConfig& output_config =
+      image_processor_->output_config();
   for (size_t i = 0; i < count; i++) {
     switch (output_config.storage_type()) {
-      case VideoFrame::STORAGE_OWNED_MEMORY:
-        image_processor_output_buffers_[i] = VideoFrame::CreateFrameWithLayout(
-            *device_input_layout_, output_config.visible_rect,
-            output_config.visible_rect.size(), base::TimeDelta(), true);
-        break;
       case VideoFrame::STORAGE_GPU_MEMORY_BUFFER:
         image_processor_output_buffers_[i] = CreateGpuMemoryBufferVideoFrame(
             image_processor_gmb_factory_.get(),

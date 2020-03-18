@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
@@ -54,7 +55,9 @@ class HTMLOptionsCollection final : public HTMLCollection {
   void setSelectedIndex(int);
 
   void setLength(unsigned, ExceptionState&);
-  bool AnonymousIndexedSetter(unsigned, HTMLOptionElement*, ExceptionState&);
+  IndexedPropertySetterResult AnonymousIndexedSetter(unsigned,
+                                                     HTMLOptionElement*,
+                                                     ExceptionState&);
 
   bool ElementMatches(const HTMLElement&) const;
 

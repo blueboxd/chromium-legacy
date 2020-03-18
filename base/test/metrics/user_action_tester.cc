@@ -23,17 +23,26 @@ UserActionTester::~UserActionTester() {
 }
 
 int UserActionTester::GetActionCount(const std::string& user_action) const {
-  auto iter = count_map_.find(user_action);
-  return iter == count_map_.end() ? 0 : iter->second;
+  return times_map_.count(user_action);
+}
+
+std::vector<TimeTicks> UserActionTester::GetActionTimes(
+    const std::string& user_action) const {
+  std::vector<TimeTicks> result;
+  auto range = times_map_.equal_range(user_action);
+  for (auto it = range.first; it != range.second; it++) {
+    result.push_back(it->second);
+  }
+  return result;
 }
 
 void UserActionTester::ResetCounts() {
-  count_map_.clear();
+  times_map_.clear();
 }
 
 void UserActionTester::OnUserAction(const std::string& user_action,
                                     TimeTicks action_time) {
-  ++(count_map_[user_action]);
+  times_map_.insert({user_action, action_time});
 }
 
 }  // namespace base

@@ -94,24 +94,25 @@ CSSUnparsedSegment CSSUnparsedValue::AnonymousIndexedGetter(
   return {};
 }
 
-bool CSSUnparsedValue::AnonymousIndexedSetter(unsigned index,
-                                              const CSSUnparsedSegment& segment,
-                                              ExceptionState& exception_state) {
+IndexedPropertySetterResult CSSUnparsedValue::AnonymousIndexedSetter(
+    unsigned index,
+    const CSSUnparsedSegment& segment,
+    ExceptionState& exception_state) {
   if (index < tokens_.size()) {
     tokens_[index] = segment;
-    return true;
+    return IndexedPropertySetterResult::kIntercepted;
   }
 
   if (index == tokens_.size()) {
     tokens_.push_back(segment);
-    return true;
+    return IndexedPropertySetterResult::kIntercepted;
   }
 
   exception_state.ThrowRangeError(
       ExceptionMessages::IndexOutsideRange<unsigned>(
           "index", index, 0, ExceptionMessages::kInclusiveBound, tokens_.size(),
           ExceptionMessages::kInclusiveBound));
-  return false;
+  return IndexedPropertySetterResult::kIntercepted;
 }
 
 const CSSValue* CSSUnparsedValue::ToCSSValue() const {

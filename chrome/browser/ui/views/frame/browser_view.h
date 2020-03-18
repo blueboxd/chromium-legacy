@@ -807,12 +807,6 @@ class BrowserView : public BrowserWindow,
   // True if (as of the last time it was checked) the frame type is native.
   bool using_native_frame_ = true;
 
-#if defined(OS_WIN)
-  // True if (as of the last time it was checked) we're using a custom drawn
-  // title bar.
-  bool using_custom_titlebar_ = true;
-#endif
-
   // True when in ProcessFullscreen(). The flag is used to avoid reentrance and
   // to ignore requests to layout while in ProcessFullscreen() to reduce
   // jankiness.

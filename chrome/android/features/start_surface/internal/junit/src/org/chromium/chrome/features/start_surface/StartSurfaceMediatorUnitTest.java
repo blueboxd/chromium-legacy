@@ -41,7 +41,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -109,7 +108,6 @@ public class StartSurfaceMediatorUnitTest {
 
     @Before
     public void setUp() {
-        RecordUserAction.setDisabledForTests(true);
         MockitoAnnotations.initMocks(this);
 
         ArrayList<PropertyKey> allProperties =
@@ -130,7 +128,6 @@ public class StartSurfaceMediatorUnitTest {
 
     @After
     public void tearDown() {
-        RecordUserAction.setDisabledForTests(false);
         mPropertyModel = null;
     }
 

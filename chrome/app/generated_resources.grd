@@ -10652,24 +10652,28 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
     <!-- App pause prompt -->
     <message name="IDS_APP_PAUSE_PROMPT_TITLE" desc="Titlebar of the app pause prompt window">
-      App paused
+      <ph name="APP_NAME">$1<ex>Gmail Checker</ex></ph> is paused
     </message>
 
     <message name="IDS_APP_PAUSE_HEADING" desc="Tells the user the app will be paused.">
-      The limit on "<ph name="APP_NAME">$1<ex>Google Photos</ex></ph>" that your parent set ran out. You can use it for <ph name="TIME_LIMIT">$2<ex>2 hours and 30 minutes</ex></ph> tomorrow.
+      You reached the time limit your parent set for <ph name="APP_NAME">$1<ex>Google Photos</ex></ph>. You can use it for <ph name="TIME_LIMIT">$2<ex>2 hours and 30 minutes</ex></ph> tomorrow.
+    </message>
+
+    <message name="IDS_APP_PAUSE_HEADING_FOR_WEB_APPS" desc="Tells the user the app will be paused.">
+      You reached the time limit your parent set for <ph name="APP_NAME">$1<ex>Google Photos</ex></ph> Chrome app. You can use it for <ph name="TIME_LIMIT">$2<ex>2 hours and 30 minutes</ex></ph> tomorrow.
     </message>
 
     <!-- App block prompt -->
     <message name="IDS_APP_BLOCK_PROMPT_TITLE" desc="Titlebar of the app block prompt window">
-      App blocked
+      <ph name="APP_NAME">$1<ex>Gmail Checker</ex></ph> is blocked
     </message>
 
     <message name="IDS_APP_BLOCK_HEADING_FOR_CHILD" desc="Tells the child the app is blocked.">
-      "<ph name="APP_NAME">$1<ex>Google Photos</ex></ph>" is blocked by your parent. Ask your parent for permission to use this app.
+      <ph name="APP_NAME">$1<ex>Google Photos</ex></ph> is blocked by your parent. Ask your parent for permission to use this app.
     </message>
 
     <message name="IDS_APP_BLOCK_HEADING" desc="Tells the user the app is blocked.">
-      "<ph name="APP_NAME">$1<ex>Google Photos</ex></ph>" is blocked by admin. Ask admin for permission to use this app.
+      <ph name="APP_NAME">$1<ex>Google Photos</ex></ph> is blocked by admin. Ask admin for permission to use this app.
     </message>
 
     <!-- Extension request -->

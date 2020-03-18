@@ -97,29 +97,32 @@ String StorageArea::getItem(const String& key,
   return cached_area_->GetItem(key);
 }
 
-bool StorageArea::setItem(const String& key,
-                          const String& value,
-                          ExceptionState& exception_state) {
+NamedPropertySetterResult StorageArea::setItem(
+    const String& key,
+    const String& value,
+    ExceptionState& exception_state) {
   if (!CanAccessStorage()) {
     exception_state.ThrowSecurityError("access is denied for this document.");
-    return true;
+    return NamedPropertySetterResult::kIntercepted;
   }
   if (!cached_area_->SetItem(key, value, this)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kQuotaExceededError,
         "Setting the value of '" + key + "' exceeded the quota.");
+    return NamedPropertySetterResult::kIntercepted;
   }
-  return true;
+  return NamedPropertySetterResult::kIntercepted;
 }
 
-DeleteResult StorageArea::removeItem(const String& key,
-                                     ExceptionState& exception_state) {
+NamedPropertyDeleterResult StorageArea::removeItem(
+    const String& key,
+    ExceptionState& exception_state) {
   if (!CanAccessStorage()) {
     exception_state.ThrowSecurityError("access is denied for this document.");
-    return kDeleteSuccess;
+    return NamedPropertyDeleterResult::kDidNotDelete;
   }
   cached_area_->RemoveItem(key, this);
-  return kDeleteSuccess;
+  return NamedPropertyDeleterResult::kDeleted;
 }
 
 void StorageArea::clear(ExceptionState& exception_state) {

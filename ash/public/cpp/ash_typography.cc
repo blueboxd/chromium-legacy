@@ -24,6 +24,12 @@ void ApplyAshFontStyles(int context,
       *size_delta = 15;
       break;
   }
+
+  switch (style) {
+    case STYLE_EMPHASIZED:
+      *font_weight = gfx::Font::Weight::SEMIBOLD;
+      break;
+  }
 }
 
 }  // namespace ash

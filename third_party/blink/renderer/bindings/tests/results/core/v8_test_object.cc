@@ -8934,8 +8934,8 @@ static void NamedPropertySetter(
   if (!property_value.Prepare())
     return;
 
-  bool result = impl->AnonymousNamedSetter(script_state, name, property_value);
-  if (!result)
+  NamedPropertySetterResult result = impl->AnonymousNamedSetter(script_state, name, property_value);
+  if (result == NamedPropertySetterResult::kDidNotIntercept)
     return;
   V8SetReturnValue(info, v8_value);
 }
@@ -8946,10 +8946,10 @@ static void NamedPropertyDeleter(
 
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
-  DeleteResult result = impl->AnonymousNamedDeleter(script_state, name);
-  if (result == kDeleteUnknownProperty)
+  NamedPropertyDeleterResult result = impl->AnonymousNamedDeleter(script_state, name);
+  if (result == NamedPropertyDeleterResult::kDidNotIntercept)
     return;
-  V8SetReturnValue(info, result == kDeleteSuccess);
+  V8SetReturnValue(info, result == NamedPropertyDeleterResult::kDeleted);
 }
 
 static void NamedPropertyQuery(
@@ -9042,8 +9042,8 @@ static void IndexedPropertySetter(
     return;
 
   ScriptState* script_state = ScriptState::ForRelevantRealm(info);
-  bool result = impl->setItem(script_state, index, property_value);
-  if (!result)
+  IndexedPropertySetterResult result = impl->setItem(script_state, index, property_value);
+  if (result == IndexedPropertySetterResult::kDidNotIntercept)
     return;
   V8SetReturnValue(info, v8_value);
 }
@@ -9058,12 +9058,12 @@ static void IndexedPropertyDeleter(
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
   ScriptState* script_state = ScriptState::ForRelevantRealm(info);
-  DeleteResult result = impl->AnonymousIndexedDeleter(script_state, index, exception_state);
+  NamedPropertyDeleterResult result = impl->AnonymousIndexedDeleter(script_state, index, exception_state);
   if (exception_state.HadException())
     return;
-  if (result == kDeleteUnknownProperty)
+  if (result == NamedPropertyDeleterResult::kDidNotIntercept)
     return;
-  V8SetReturnValue(info, result == kDeleteSuccess);
+  V8SetReturnValue(info, result == NamedPropertyDeleterResult::kDeleted);
 }
 
 }  // namespace test_object_v8_internal

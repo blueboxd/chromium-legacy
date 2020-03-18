@@ -94,17 +94,17 @@ void HTMLOptionsCollection::setLength(unsigned length,
   To<HTMLSelectElement>(ownerNode()).setLength(length, exception_state);
 }
 
-bool HTMLOptionsCollection::AnonymousIndexedSetter(
+IndexedPropertySetterResult HTMLOptionsCollection::AnonymousIndexedSetter(
     unsigned index,
     HTMLOptionElement* value,
     ExceptionState& exception_state) {
   auto& base = To<HTMLSelectElement>(ownerNode());
   if (!value) {  // undefined or null
     base.remove(index);
-    return true;
+    return IndexedPropertySetterResult::kIntercepted;
   }
   base.SetOption(index, value, exception_state);
-  return true;
+  return IndexedPropertySetterResult::kIntercepted;
 }
 
 }  // namespace blink

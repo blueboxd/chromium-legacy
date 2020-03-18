@@ -71,15 +71,16 @@ void AccessibleNodeList::remove(int index) {
     nodes_.EraseAt(index);
 }
 
-bool AccessibleNodeList::AnonymousIndexedSetter(unsigned index,
-                                                AccessibleNode* node,
-                                                ExceptionState& state) {
+IndexedPropertySetterResult AccessibleNodeList::AnonymousIndexedSetter(
+    unsigned index,
+    AccessibleNode* node,
+    ExceptionState& state) {
   if (!node) {
     remove(index);
-    return true;
+    return IndexedPropertySetterResult::kIntercepted;
   }
   if (index >= kMaxItems)
-    return false;
+    return IndexedPropertySetterResult::kDidNotIntercept;
   if (index >= nodes_.size()) {
     wtf_size_t old_size = nodes_.size();
     nodes_.resize(index + 1);
@@ -87,7 +88,7 @@ bool AccessibleNodeList::AnonymousIndexedSetter(unsigned index,
       nodes_[i] = nullptr;
   }
   nodes_[index] = node;
-  return true;
+  return IndexedPropertySetterResult::kIntercepted;
 }
 
 unsigned AccessibleNodeList::length() const {

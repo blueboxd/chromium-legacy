@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_PROPERTIES_SVG_LIST_PROPERTY_TEAR_OFF_HELPER_H_
 
 #include "third_party/blink/renderer/core/svg/properties/svg_property_tear_off.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
@@ -141,11 +142,12 @@ class SVGListPropertyTearOffHelper : public SVGPropertyTearOff<ListProperty> {
     return CreateItemTearOff(value);
   }
 
-  bool AnonymousIndexedSetter(uint32_t index,
-                              ItemTearOffType* item,
-                              ExceptionState& exception_state) {
+  IndexedPropertySetterResult AnonymousIndexedSetter(
+      uint32_t index,
+      ItemTearOffType* item,
+      ExceptionState& exception_state) {
     replaceItem(item, index, exception_state);
-    return true;
+    return IndexedPropertySetterResult::kIntercepted;
   }
 
   ItemTearOffType* removeItem(uint32_t index, ExceptionState& exception_state) {

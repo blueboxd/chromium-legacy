@@ -16,24 +16,10 @@ namespace {
 
 constexpr int kAppendTimeSec = 1;
 
-class TestRendererFactory final : public PipelineTestRendererFactory {
- public:
-  explicit TestRendererFactory(
-      std::unique_ptr<PipelineTestRendererFactory> renderer_factory)
-      : default_renderer_factory_(std::move(renderer_factory)) {}
-  ~TestRendererFactory() override = default;
-
-  // PipelineTestRendererFactory implementation.
-  std::unique_ptr<Renderer> CreateRenderer() override {
-    return std::make_unique<End2EndTestRenderer>(
-        default_renderer_factory_->CreateRenderer());
-  }
-
- private:
-  std::unique_ptr<PipelineTestRendererFactory> default_renderer_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestRendererFactory);
-};
+std::unique_ptr<Renderer> CreateEnd2EndTestRenderer(
+    std::unique_ptr<Renderer> default_renderer) {
+  return std::make_unique<End2EndTestRenderer>(std::move(default_renderer));
+}
 
 }  // namespace
 
@@ -41,9 +27,7 @@ class MediaRemotingIntegrationTest : public testing::Test,
                                      public PipelineIntegrationTestBase {
  public:
   MediaRemotingIntegrationTest() {
-    std::unique_ptr<PipelineTestRendererFactory> factory =
-        std::move(renderer_factory_);
-    renderer_factory_.reset(new TestRendererFactory(std::move(factory)));
+    SetWrapRendererCB(base::BindRepeating(&CreateEnd2EndTestRenderer));
   }
 
  private:

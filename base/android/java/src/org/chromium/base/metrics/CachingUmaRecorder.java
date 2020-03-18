@@ -473,4 +473,21 @@ import javax.annotation.concurrent.GuardedBy;
         final int numBuckets = 0;
         cacheOrRecordSample(Histogram.Type.SPARSE, name, sample, min, max, numBuckets);
     }
+
+    @Override
+    public void recordUserAction(String name, long elapsedRealtimeMillis) {
+        mRwLock.readLock().lock();
+        try {
+            if (mDelegate != null) {
+                mDelegate.recordUserAction(name, elapsedRealtimeMillis);
+            } else {
+                // TODO(crbug.com/1048429): Implement caching. Existing code hitting this branch
+                // would have crashed in the previous implementation.
+                Log.d(TAG, "recordUserAction(%s, %d) called, but cache is not implemented yet",
+                        name, elapsedRealtimeMillis);
+            }
+        } finally {
+            mRwLock.readLock().unlock();
+        }
+    }
 }

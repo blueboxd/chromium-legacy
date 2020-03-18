@@ -209,12 +209,14 @@ def BulkForkAndCall(func, arg_tuples, **kwargs):
 
   pool = _MakeProcessPool(arg_tuples, **kwargs)
   wrapped_func = _FuncWrapper(func)
-  for result in pool.imap_unordered(wrapped_func, xrange(len(arg_tuples))):
-    _CheckForException(result)
-    yield result
-  pool.close()
-  pool.join()
-  _all_pools.remove(pool)
+  try:
+    for result in pool.imap_unordered(wrapped_func, xrange(len(arg_tuples))):
+      _CheckForException(result)
+      yield result
+  finally:
+    pool.close()
+    pool.join()
+    _all_pools.remove(pool)
 
 
 def CallOnThread(func, *args, **kwargs):

@@ -4,9 +4,11 @@
 
 #include <memory>
 
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
@@ -17,7 +19,9 @@ namespace extensions {
 
 class TerminalPrivateBrowserTest : public InProcessBrowserTest {
  public:
-  TerminalPrivateBrowserTest() = default;
+  TerminalPrivateBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kTerminalSystemApp);
+  }
 
  protected:
   void ExpectJsResult(const std::string& script, const std::string& expected) {
@@ -30,6 +34,7 @@ class TerminalPrivateBrowserTest : public InProcessBrowserTest {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(TerminalPrivateBrowserTest);
 };
 

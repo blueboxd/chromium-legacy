@@ -47,15 +47,16 @@ class DOMStringMap : public ScriptWrappable {
                        const String& value,
                        ExceptionState&) = 0;
   virtual bool DeleteItem(const String& name) = 0;
-  bool AnonymousNamedSetter(const String& name,
-                            const String& value,
-                            ExceptionState& exception_state) {
+  NamedPropertySetterResult AnonymousNamedSetter(
+      const String& name,
+      const String& value,
+      ExceptionState& exception_state) {
     SetItem(name, value, exception_state);
-    return true;
+    return NamedPropertySetterResult::kIntercepted;
   }
-  DeleteResult AnonymousNamedDeleter(const AtomicString& name) {
-    bool known_property = DeleteItem(name);
-    return known_property ? kDeleteSuccess : kDeleteUnknownProperty;
+  NamedPropertyDeleterResult AnonymousNamedDeleter(const AtomicString& name) {
+    return DeleteItem(name) ? NamedPropertyDeleterResult::kDeleted
+                            : NamedPropertyDeleterResult::kDidNotIntercept;
   }
   void NamedPropertyEnumerator(Vector<String>& names, ExceptionState&) {
     GetNames(names);

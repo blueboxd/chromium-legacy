@@ -244,7 +244,8 @@ class AppServiceProxy : public KeyedService,
                                 const gfx::ImageSkia& image,
                                 Profile* profile);
 
-  static void CreatePauseDialog(const std::string& app_name,
+  static void CreatePauseDialog(apps::mojom::AppType app_type,
+                                const std::string& app_name,
                                 const gfx::ImageSkia& image,
                                 const PauseData& pause_data,
                                 OnPauseDialogClosedCallback pause_callback);

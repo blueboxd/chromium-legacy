@@ -62,6 +62,11 @@ BASE_EXPORT void RecordComputedAction(const std::string& action);
 BASE_EXPORT void RecordComputedActionAt(const std::string& action,
                                         TimeTicks action_time);
 
+// Similar to RecordComputedActionAt, but takes the amount of time elasped since
+// the action was observed.
+BASE_EXPORT void RecordComputedActionSince(const std::string& action,
+                                           TimeDelta time_since);
+
 // Called with the action string.
 using ActionCallback = RepeatingCallback<void(const std::string&, TimeTicks)>;
 

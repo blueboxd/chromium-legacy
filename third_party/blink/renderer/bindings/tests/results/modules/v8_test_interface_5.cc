@@ -613,8 +613,8 @@ static void IndexedPropertySetter(
   if (!property_value.Prepare())
     return;
 
-  bool result = impl->AnonymousIndexedSetter(index, property_value);
-  if (!result)
+  IndexedPropertySetterResult result = impl->AnonymousIndexedSetter(index, property_value);
+  if (result == IndexedPropertySetterResult::kDidNotIntercept)
     return;
   V8SetReturnValue(info, v8_value);
 }
@@ -623,10 +623,10 @@ static void IndexedPropertyDeleter(
     uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
   TestInterface5Implementation* impl = V8TestInterface5::ToImpl(info.Holder());
 
-  DeleteResult result = impl->AnonymousIndexedDeleter(index);
-  if (result == kDeleteUnknownProperty)
+  NamedPropertyDeleterResult result = impl->AnonymousIndexedDeleter(index);
+  if (result == NamedPropertyDeleterResult::kDidNotIntercept)
     return;
-  V8SetReturnValue(info, result == kDeleteSuccess);
+  V8SetReturnValue(info, result == NamedPropertyDeleterResult::kDeleted);
 }
 
 }  // namespace test_interface_5_implementation_v8_internal

@@ -12,6 +12,7 @@
 #include "ash/display/privacy_screen_controller.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/window_properties.h"
@@ -516,7 +517,8 @@ void KeyboardShortcutView::ShowSearchResults(
       search_query);
   ShortcutCategory current_category = ShortcutCategory::kUnknown;
   bool has_category_item = false;
-  std::vector<KeyboardShortcutItemView*> shortcut_items;
+  found_shortcut_items_.clear();
+
   for (const auto& item_view : shortcut_views_) {
     base::string16 description_text =
         item_view->description_label_view()->GetText();
@@ -547,8 +549,7 @@ void KeyboardShortcutView::ShowSearchResults(
             item_view->description_label_view();
         // Clear previous styles.
         description_label_view->ClearStyleRanges();
-        style.custom_font = description_label_view->GetDefaultFontList().Derive(
-            0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::BOLD);
+        style.text_style = ash::AshTextStyle::STYLE_EMPHASIZED;
         description_label_view->AddStyleRange(
             gfx::Range(match_index, match_index + match_length), style);
         // Apply new styles to highlight matched search query.
@@ -556,14 +557,14 @@ void KeyboardShortcutView::ShowSearchResults(
       }
 
       found_items_list_view->AddChildView(item_view.get());
-      shortcut_items.emplace_back(item_view.get());
+      found_shortcut_items_.emplace_back(item_view.get());
     }
   }
 
   std::vector<base::string16> replacement_strings;
-  const int number_search_results = shortcut_items.size();
+  const int number_search_results = found_shortcut_items_.size();
   if (!found_items_list_view->children().empty()) {
-    UpdateAXNodeDataPosition(shortcut_items);
+    UpdateAXNodeDataPosition(found_shortcut_items_);
     replacement_strings.emplace_back(
         base::NumberToString16(number_search_results));
 
@@ -622,6 +623,11 @@ KeyboardShortcutView::GetShortcutViewsForTesting() const {
 
 KSVSearchBoxView* KeyboardShortcutView::GetSearchBoxViewForTesting() {
   return search_box_view_.get();
+}
+
+const std::vector<KeyboardShortcutItemView*>&
+KeyboardShortcutView::GetFoundShortcutItemsForTesting() const {
+  return found_shortcut_items_;
 }
 
 }  // namespace keyboard_shortcut_viewer

@@ -462,10 +462,6 @@ CORE_EXPORT bool IsValidEnum(const Vector<String>& values,
                              const String& enum_name,
                              ExceptionState&);
 
-// Result values for platform object 'deleter' methods,
-// http://www.w3.org/TR/WebIDL/#delete
-enum DeleteResult { kDeleteSuccess, kDeleteReject, kDeleteUnknownProperty };
-
 CORE_EXPORT v8::Local<v8::Value> FromJSONString(v8::Isolate*,
                                                 v8::Local<v8::Context>,
                                                 const String& stringified_json,

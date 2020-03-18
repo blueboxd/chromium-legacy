@@ -843,6 +843,7 @@ void ShelfWidget::CalculateTargetBounds() {
 
   target_bounds_ =
       gfx::Rect(shelf_origin.x(), shelf_origin.y(), shelf_width, shelf_height);
+  screen_util::SnapBoundsToDisplayEdge(target_bounds_, GetNativeWindow());
 }
 
 void ShelfWidget::UpdateLayout(bool animate) {

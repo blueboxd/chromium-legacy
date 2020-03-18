@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_transform_component.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace blink {
@@ -45,9 +46,10 @@ class CORE_EXPORT CSSTransformValue final : public CSSStyleValue {
   CSSTransformComponent* AnonymousIndexedGetter(wtf_size_t index) {
     return transform_components_.at(index);
   }
-  bool AnonymousIndexedSetter(unsigned,
-                              const Member<CSSTransformComponent>,
-                              ExceptionState&);
+  IndexedPropertySetterResult AnonymousIndexedSetter(
+      unsigned,
+      const Member<CSSTransformComponent>,
+      ExceptionState&);
 
   wtf_size_t length() const { return transform_components_.size(); }
 

@@ -91,6 +91,8 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   const std::vector<std::unique_ptr<KeyboardShortcutItemView>>&
   GetShortcutViewsForTesting() const;
   KSVSearchBoxView* GetSearchBoxViewForTesting();
+  const std::vector<KeyboardShortcutItemView*>&
+  GetFoundShortcutItemsForTesting() const;
 
   // Owned by views hierarchy.
   // The container for category tabs and lists of KeyboardShortcutItemViews.
@@ -106,6 +108,9 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   // used for searching. The views are not owned by the Views hierarchy to avoid
   // KeyboardShortcutItemView layout when switching between tabs and search.
   std::vector<std::unique_ptr<KeyboardShortcutItemView>> shortcut_views_;
+
+  // Contains all the found shortcut items.
+  std::vector<KeyboardShortcutItemView*> found_shortcut_items_;
 
   // An illustration to indicate no search results found. Since this view need
   // to be added and removed frequently from the |search_results_container_|, it

@@ -111,8 +111,8 @@ static void NamedPropertySetter(
     return;
   }
 
-  bool result = impl->AnonymousNamedSetter(name, property_value);
-  if (!result)
+  NamedPropertySetterResult result = impl->AnonymousNamedSetter(name, property_value);
+  if (result == NamedPropertySetterResult::kDidNotIntercept)
     return;
   V8SetReturnValue(info, v8_value);
 }

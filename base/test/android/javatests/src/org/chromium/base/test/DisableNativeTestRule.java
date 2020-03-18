@@ -9,7 +9,6 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.base.Log;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.metrics.UmaRecorderHolder;
 
 /**
@@ -27,7 +26,6 @@ public final class DisableNativeTestRule implements TestRule {
                 if (loadNative == null) {
                     Log.i(TAG, "Disable RecordHistogram and RecordUserAction for testing");
                     UmaRecorderHolder.setDisabledForTests(true);
-                    RecordUserAction.setDisabledForTests(true);
                 } else {
                     Log.i(TAG, "Test will run with native libraries");
                 }
@@ -37,7 +35,6 @@ public final class DisableNativeTestRule implements TestRule {
                     if (loadNative == null) {
                         Log.i(TAG, "Re-enable RecordHistogram and RecordUserAction after test");
                         UmaRecorderHolder.setDisabledForTests(false);
-                        RecordUserAction.setDisabledForTests(false);
                     }
                 }
             }

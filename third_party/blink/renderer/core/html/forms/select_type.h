@@ -47,6 +47,7 @@ class SelectType : public GarbageCollected<SelectType> {
   virtual void SelectAll();
   virtual void SaveListboxActiveSelection();
   virtual void HandleMouseRelease();
+  virtual void ListBoxOnChange();
 
   virtual void ShowPopup();
   virtual void HidePopup();

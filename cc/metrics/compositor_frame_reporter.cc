@@ -136,8 +136,12 @@ constexpr int kCompositorLatencyHistogramMin = 1;
 constexpr int kCompositorLatencyHistogramMax = 350000;
 constexpr int kCompositorLatencyHistogramBucketCount = 50;
 
-constexpr int kMaxEventLatencyHistogramIndex =
+constexpr int kEventLatencyEventTypeCount =
     static_cast<int>(ui::EventType::ET_LAST);
+constexpr int kEventLatencyScrollTypeCount =
+    static_cast<int>(ScrollInputType::kMaxValue) + 1;
+constexpr int kMaxEventLatencyHistogramIndex =
+    kEventLatencyEventTypeCount * kEventLatencyScrollTypeCount;
 constexpr int kEventLatencyHistogramMin = 1;
 constexpr int kEventLatencyHistogramMax = 5000000;
 constexpr int kEventLatencyHistogramBucketCount = 100;
@@ -165,8 +169,11 @@ std::string GetCompositorLatencyHistogramName(
 }
 
 std::string GetEventLatencyHistogramName(const EventMetrics& event_metrics) {
-  return base::StrCat(
-      {"EventLatency.", event_metrics.GetTypeName(), ".TotalLatency"});
+  const bool is_scroll = event_metrics.scroll_input_type().has_value();
+  return base::StrCat({"EventLatency.", event_metrics.GetTypeName(),
+                       is_scroll ? "." : nullptr,
+                       is_scroll ? event_metrics.GetScrollTypeName() : nullptr,
+                       ".TotalLatency"});
 }
 
 }  // namespace
@@ -513,8 +520,14 @@ void CompositorFrameReporter::ReportEventLatencyHistograms() const {
         "cc,input", "EventLatency", trace_id, event_metrics.time_stamp(),
         "event", event_metrics.GetTypeName());
     const int type_index = static_cast<int>(event_metrics.type());
+    const int scroll_type_index =
+        event_metrics.scroll_input_type()
+            ? static_cast<int>(*event_metrics.scroll_input_type())
+            : 0;
+    const int histogram_index =
+        type_index * kEventLatencyScrollTypeCount + scroll_type_index;
     STATIC_HISTOGRAM_POINTER_GROUP(
-        GetEventLatencyHistogramName(event_metrics), type_index,
+        GetEventLatencyHistogramName(event_metrics), histogram_index,
         kMaxEventLatencyHistogramIndex,
         AddTimeMicrosecondsGranularity(total_latency),
         base::Histogram::FactoryGet(

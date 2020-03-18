@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/editing/drag_caret.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -1680,11 +1679,6 @@ bool LayoutBlock::HasLineIfEmpty() const {
   if (GetNode()) {
     if (IsRootEditableElement(*GetNode()))
       return true;
-
-    if (auto* shadow_root = DynamicTo<ShadowRoot>(GetNode())) {
-      if (IsA<HTMLInputElement>(shadow_root->host()))
-        return true;
-    }
   }
   return FirstLineStyleRef().HasLineIfEmpty();
 }

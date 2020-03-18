@@ -110,12 +110,12 @@ static void IndexedPropertySetter(
   {% if setter.is_raises_exception %}
   {% set setter_arguments = setter_arguments + ['exception_state'] %}
   {% endif %}
-  bool result = impl->{{setter_name}}({{setter_arguments | join(', ')}});
+  IndexedPropertySetterResult result = impl->{{setter_name}}({{setter_arguments | join(', ')}});
   {% if setter.is_raises_exception %}
   if (exception_state.HadException())
     return;
   {% endif %}
-  if (!result)
+  if (result == IndexedPropertySetterResult::kDidNotIntercept)
     return;
   V8SetReturnValue(info, v8_value);
 }
@@ -303,14 +303,14 @@ static void IndexedPropertyDeleter(
   {% if deleter.is_raises_exception %}
   {% set deleter_arguments = deleter_arguments + ['exception_state'] %}
   {% endif %}
-  DeleteResult result = impl->{{deleter_name}}({{deleter_arguments | join(', ')}});
+  NamedPropertyDeleterResult result = impl->{{deleter_name}}({{deleter_arguments | join(', ')}});
   {% if deleter.is_raises_exception %}
   if (exception_state.HadException())
     return;
   {% endif %}
-  if (result == kDeleteUnknownProperty)
+  if (result == NamedPropertyDeleterResult::kDidNotIntercept)
     return;
-  V8SetReturnValue(info, result == kDeleteSuccess);
+  V8SetReturnValue(info, result == NamedPropertyDeleterResult::kDeleted);
 }
 
 {% endif %}
@@ -494,12 +494,12 @@ static void NamedPropertySetter(
   {% if setter.is_raises_exception %}
   {% set setter_arguments =  setter_arguments + ['exception_state'] %}
   {% endif %}
-  bool result = impl->{{setter_name}}({{setter_arguments | join(', ')}});
+  NamedPropertySetterResult result = impl->{{setter_name}}({{setter_arguments | join(', ')}});
   {% if setter.is_raises_exception %}
   if (exception_state.HadException())
     return;
   {% endif %}
-  if (!result)
+  if (result == NamedPropertySetterResult::kDidNotIntercept)
     return;
   V8SetReturnValue(info, v8_value);
 }
@@ -563,14 +563,14 @@ static void NamedPropertyDeleter(
   {% if deleter.is_raises_exception %}
   {% set deleter_arguments = deleter_arguments + ['exception_state'] %}
   {% endif %}
-  DeleteResult result = impl->{{deleter_name}}({{deleter_arguments | join(', ')}});
+  NamedPropertyDeleterResult result = impl->{{deleter_name}}({{deleter_arguments | join(', ')}});
   {% if deleter.is_raises_exception %}
   if (exception_state.HadException())
     return;
   {% endif %}
-  if (result == kDeleteUnknownProperty)
+  if (result == NamedPropertyDeleterResult::kDidNotIntercept)
     return;
-  V8SetReturnValue(info, result == kDeleteSuccess);
+  V8SetReturnValue(info, result == NamedPropertyDeleterResult::kDeleted);
 }
 
 {% endif %}

@@ -28,7 +28,6 @@ import org.robolectric.shadows.ShadowPackageManager;
 
 import org.chromium.base.Callback;
 import org.chromium.base.PackageManagerUtils;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -75,7 +74,6 @@ public class ChromeActionModeCallbackTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        RecordUserAction.setDisabledForTests(true);
 
         mActionModeCallback =
                 Mockito.spy(new TestChromeActionModeCallback(mTab, mActionModeCallbackHelper));
@@ -84,7 +82,6 @@ public class ChromeActionModeCallbackTest {
     @After
     public void tearDown() {
         FirstRunStatus.setFirstRunFlowComplete(false);
-        RecordUserAction.setDisabledForTests(false);
     }
 
     @Test

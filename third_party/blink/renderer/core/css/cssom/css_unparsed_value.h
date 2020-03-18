@@ -48,9 +48,9 @@ class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue {
   StyleValueType GetType() const override { return kUnparsedType; }
 
   CSSUnparsedSegment AnonymousIndexedGetter(unsigned, ExceptionState&) const;
-  bool AnonymousIndexedSetter(unsigned,
-                              const CSSUnparsedSegment&,
-                              ExceptionState&);
+  IndexedPropertySetterResult AnonymousIndexedSetter(unsigned,
+                                                     const CSSUnparsedSegment&,
+                                                     ExceptionState&);
 
   wtf_size_t length() const { return tokens_.size(); }
 

@@ -27,6 +27,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_interface.h"
 #include "chrome/browser/supervised_user/grit/supervised_user_unscaled_resources.h"
+#include "extensions/common/constants.h"
 #endif
 
 namespace apps {
@@ -525,6 +526,10 @@ void AppServiceProxy::OnUninstallDialogClosed(
 #if defined(OS_CHROMEOS)
 bool AppServiceProxy::MaybeShowLaunchPreventionDialog(
     const apps::AppUpdate& update) {
+  if (update.AppId() == extension_misc::kChromeAppId) {
+    return false;
+  }
+
   // Return true, and load the icon for the app block dialog when the app
   // is blocked by policy.
   if (update.Readiness() == apps::mojom::Readiness::kDisabledByPolicy) {
@@ -617,7 +622,7 @@ void AppServiceProxy::OnLoadIconForPauseDialog(
   }
 
   AppServiceProxy::CreatePauseDialog(
-      app_name, icon_value->uncompressed, pause_data,
+      app_type, app_name, icon_value->uncompressed, pause_data,
       base::BindOnce(&AppServiceProxy::OnPauseDialogClosed,
                      weak_ptr_factory_.GetWeakPtr(), app_type, app_id));
 

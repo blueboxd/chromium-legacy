@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "cc/input/scroll_input_type.h"
 #include "cc/metrics/event_metrics.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,19 +42,23 @@ TEST_F(EventsMetricsManagerTest, EventsMetricsSaved) {
   std::vector<std::pair<EventMetrics, Behavior>> events = {
       // A whitelisted event type for which SaveActiveEventMetrics() is not
       // called.
-      {{ui::ET_MOUSE_PRESSED, TimeAtMs(0)}, Behavior::kDoNotSave},
+      {{ui::ET_MOUSE_PRESSED, TimeAtMs(0), base::nullopt},
+       Behavior::kDoNotSave},
 
       // A whitelisted event type for which SaveActiveEventMetrics() is called
       // inside its monitor scope.
-      {{ui::ET_MOUSE_PRESSED, TimeAtMs(1)}, Behavior::kSaveInsideScope},
+      {{ui::ET_MOUSE_PRESSED, TimeAtMs(1), base::nullopt},
+       Behavior::kSaveInsideScope},
 
       // A whitelisted event type for which SaveActiveEventMetrics() is called
       // after its monitor scope is finished.
-      {{ui::ET_MOUSE_PRESSED, TimeAtMs(2)}, Behavior::kSaveOutsideScope},
+      {{ui::ET_MOUSE_PRESSED, TimeAtMs(2), base::nullopt},
+       Behavior::kSaveOutsideScope},
 
       // A non-whitelisted event type for which SaveActiveEventMetrics() is
       // called inside its monitor scope.
-      {{ui::ET_MOUSE_MOVED, TimeAtMs(3)}, Behavior::kSaveInsideScope},
+      {{ui::ET_MOUSE_MOVED, TimeAtMs(3), base::nullopt},
+       Behavior::kSaveInsideScope},
   };
   EXPECT_TRUE(events[0].first.IsWhitelisted());
   EXPECT_TRUE(events[1].first.IsWhitelisted());
